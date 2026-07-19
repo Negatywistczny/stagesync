@@ -26,7 +26,9 @@ Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 
 ## SSOT i czas
 
-Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładzać playhead wyłącznie między tickami. Pełna decyzja: [ADR 0002](./adr/0002-timebase-ssot.md).
+Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładzać playhead wyłącznie między tickami serwera.
+
+**Kanon pozycji:** integer **ticks** + stałe **PPQ** (nie float `absBeat`, nie sekundy). **BBT** = widok/API. Takt 1 = start utworu; pre-roll ≤ 0. Pełna decyzja: [ADR 0002](./adr/0002-timebase-ssot.md).
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).  
 Kierunek UI (Booth): [ADR 0003](./adr/0003-ui-direction-booth.md).

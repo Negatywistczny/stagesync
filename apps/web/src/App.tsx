@@ -13,8 +13,8 @@ export default function App() {
         <p className="brand">StageSync</p>
         <h1>v5 monorepo</h1>
         <p className="lede">
-          Server is the authority. Clients may smooth the playhead between
-          ticks only.
+          Server is the authority (integer ticks + PPQ). Clients may smooth the
+          playhead between server ticks only; BBT is display.
         </p>
       </header>
 

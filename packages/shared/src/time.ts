@@ -1,6 +1,8 @@
 /**
  * Pure time helpers for StageSync.
- * Absolute beat positions use floating-point absBeat (0-based).
+ *
+ * TRANSITIONAL: floating-point absBeat (0-based). Canonical engine timebase is
+ * integer ticks + fixed PPQ; BBT is display-only — see docs/adr/0002-timebase-ssot.md.
  * Never mutate inputs — return new values only.
  */
 

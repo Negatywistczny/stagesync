@@ -38,6 +38,8 @@ Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować dr
 
 - Helpery w `@stagesync/shared` = **czyste funkcje**.
 - Bez `Date.now()` / `performance.now()` wewnątrz konwersji domenowej — clock/ticki od callera.
+- **Kanon pozycji:** integer **ticks** + stałe **PPQ**; **BBT** tylko jako widok/API (nie storage silnika). Float `absBeat` = przejściowy szkic.
+- Semantyka: takt 1 = start utworu; pre-roll ≤ 0. Szczegóły: `docs/adr/0002-timebase-ssot.md`.
 
 ## Walidacja (Zod)
 
