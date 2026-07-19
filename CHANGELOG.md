@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
+  `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
+  `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
 - Dokumentacja produktowa i reguły agenta po polsku (commity i kod pozostają EN).
 - [docs/STANDARDS.md](docs/STANDARDS.md) — linki do zewnętrznych standardów (bez vendoringu).
 - [`.editorconfig`](.editorconfig) — spójny styl edytora (jak legacy).

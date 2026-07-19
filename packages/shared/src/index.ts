@@ -6,7 +6,15 @@ export {
 
 export {
   LibrarySchema,
+  ProjectSchema,
+  CreateProjectBodySchema,
+  UpdateProjectBodySchema,
   HealthResponseSchema,
+  ApiErrorSchema,
   type Library,
+  type Project,
+  type CreateProjectBody,
+  type UpdateProjectBody,
   type HealthResponse,
+  type ApiError,
 } from "./schema.js";
