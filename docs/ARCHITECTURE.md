@@ -28,7 +28,8 @@ Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 
 Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładzać playhead wyłącznie między tickami. Pełna decyzja: [ADR 0002](./adr/0002-timebase-ssot.md).
 
-Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).
+Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).  
+Kierunek UI (Booth): [ADR 0003](./adr/0003-ui-direction-booth.md).
 
 ## Legacy
 

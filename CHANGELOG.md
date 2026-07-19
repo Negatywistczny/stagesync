@@ -14,6 +14,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - [`.editorconfig`](.editorconfig) — spójny styl edytora (jak legacy).
 - Workflow gałęzi (trunk-based): docs/chore na `main`; feature z TODO → `feat/*` + PR
   ([CONTRIBUTING.md](CONTRIBUTING.md)).
+- [ADR 0003](docs/adr/0003-ui-direction-booth.md) — kierunek UI: UI Lab **Booth** (`a-booth` w LEGACY).
 
 ### Zmieniono
 
