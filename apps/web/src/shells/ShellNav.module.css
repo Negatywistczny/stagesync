@@ -1,0 +1,29 @@
+.nav {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--ss-radius-sm);
+  color: var(--ss-color-text-muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color var(--ss-transition), background var(--ss-transition);
+}
+
+.link:hover {
+  color: var(--ss-color-text);
+  background: var(--ss-color-ghost-hover);
+}
+
+.active {
+  color: var(--ss-color-text);
+  background: var(--ss-color-selected);
+  border: 1px solid var(--ss-color-selected-border);
+  padding: calc(0.35rem - 1px) calc(0.65rem - 1px);
+}

@@ -5,7 +5,8 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
 
 ## Następne
 
-- [ ] Shelle UI (Admin / Client / Timeline) w kierunku **Booth** — [ADR 0003](./adr/0003-ui-direction-booth.md)
+- [ ] Timeline editor / Live Desk / Client roles — pełna treść (po szkielecie Booth)
+- [ ] Motywy (light / dark + `data-theme` na tokenach `--ss-*`; switcher w UI)
 - [ ] Warstwa MIDI I/O (clock / urządzenia po stronie serwera)
 - [ ] Migrator legacy 4.x → v5
 - [ ] Docker Compose pod lokalny stack

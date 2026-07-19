@@ -1,0 +1,270 @@
+.shell {
+  --sidebar-w: 220px;
+  --inspector-w: 260px;
+  --header-h: 56px;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr var(--inspector-w);
+  grid-template-rows: var(--header-h) 1fr;
+  grid-template-areas:
+    "top top top"
+    "side canvas insp";
+  min-height: 100vh;
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+}
+
+.sidebarCollapsed {
+  --sidebar-w: 0px;
+}
+
+.inspectorCollapsed {
+  --inspector-w: 0px;
+}
+
+.sidebarCollapsed .sidebar,
+.inspectorCollapsed .inspector {
+  display: none;
+}
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.brandMark {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ss-color-primary);
+}
+
+.brandSub {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--ss-color-text-muted);
+}
+
+.tools {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tool {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.tool:hover {
+  color: var(--ss-color-text);
+}
+
+.toolActive {
+  color: var(--ss-color-text);
+  border-color: var(--ss-color-selected-border);
+  background: var(--ss-color-selected);
+}
+
+.context {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.8125rem;
+}
+
+.context span {
+  color: var(--ss-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.sidebar,
+.inspector {
+  min-height: 0;
+  overflow: auto;
+  border-right: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+}
+
+.sidebar {
+  grid-area: side;
+}
+
+.inspector {
+  grid-area: insp;
+  border-right: none;
+  border-left: 1px solid var(--ss-color-border);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ss-color-border);
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.panelBody {
+  padding: 0.5rem;
+}
+
+.listRow {
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--ss-radius-sm);
+  border: 1px solid transparent;
+}
+
+.listSelected {
+  background: var(--ss-color-selected);
+  border-color: var(--ss-color-selected-border);
+}
+
+.listTitle {
+  font-weight: 560;
+}
+
+.listMeta {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--ss-color-text-muted);
+}
+
+.canvas {
+  grid-area: canvas;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: auto;
+  background: var(--ss-color-bg);
+}
+
+.ruler {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(48px, 1fr));
+  gap: 0;
+  padding: 0.4rem 0 0.4rem 7.5rem;
+  border-bottom: 1px solid var(--ss-color-border);
+  font-size: 0.7rem;
+  color: var(--ss-color-text-muted);
+}
+
+.tracks {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.75rem 1.5rem;
+}
+
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(7.5rem + 12%);
+  width: 2px;
+  background: var(--ss-color-primary);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+.trackLabel {
+  font-size: 0.75rem;
+  color: var(--ss-color-text-muted);
+}
+
+.trackLane {
+  display: flex;
+  gap: 0.4rem;
+  min-height: 2.4rem;
+  padding: 0.25rem;
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
+  border: 1px solid var(--ss-color-border);
+}
+
+.clip {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: var(--ss-radius-sm);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.clipSelected {
+  outline: 1px solid var(--ss-color-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ss-color-primary) 40%, transparent);
+}
+
+.toneA {
+  background: color-mix(in srgb, var(--ss-color-primary) 35%, var(--ss-color-surface));
+}
+.toneB {
+  background: color-mix(in srgb, var(--ss-color-focus-ring) 28%, var(--ss-color-surface));
+}
+.toneC {
+  background: color-mix(in srgb, var(--ss-color-primary-active) 40%, var(--ss-color-surface));
+}
+.toneD {
+  background: color-mix(in srgb, var(--ss-color-secondary-hover) 70%, var(--ss-color-primary));
+}
+.toneE {
+  background: color-mix(in srgb, var(--ss-color-selected) 80%, var(--ss-color-surface));
+}
+.toneF {
+  background: color-mix(in srgb, var(--ss-color-primary) 22%, var(--ss-color-surface));
+}
+.toneG {
+  background: color-mix(in srgb, var(--ss-color-primary-hover) 18%, var(--ss-color-surface));
+}
+
+.detailTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.muted {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: 0.875rem;
+}

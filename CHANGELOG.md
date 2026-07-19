@@ -9,6 +9,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Shelle Booth (Admin / Client / Timeline): `react-router` (`/`, `/admin`,
+  `/timeline`), CSS Modules, wspólny `TransportProvider` nad routerem (WS + rAF
+  bez reconnect przy nawigacji); Admin — read-only `GET /api/library`; Client —
+  HUD Play/Pause/BBT; Timeline — placeholder tracków/inspectora; tokeny ink/teal
+  w `--ss-*`.
 - Klient web: panel transportu (Play / Pause / Seek), WebSocket + soft playhead
   (`getDisplayTicks` w shared, rAF z `frameTime`), Vite proxy `/api` i `/ws`,
   `Button loading` na czas komend REST.

@@ -1,31 +1,33 @@
 /**
- * StageSync design tokens.
+ * StageSync design tokens — Booth ink/teal (single :root palette).
  * Components must use these variables — no ad-hoc HEX in UI packages.
+ * Themes (light/dark via data-theme) come later; keep shells on --ss-* only.
  */
 
 :root {
-  --ss-color-bg: #0f1419;
-  --ss-color-surface: #1a222c;
-  --ss-color-text: #e8eef4;
-  --ss-color-text-muted: #9aa8b5;
-  --ss-color-primary: #3d9cf0;
-  --ss-color-primary-hover: #5aaff5;
-  --ss-color-primary-active: #2b7fc4;
-  --ss-color-secondary: #2a3540;
-  --ss-color-secondary-hover: #364552;
-  --ss-color-secondary-active: #1f2830;
-  --ss-color-ghost-hover: rgba(232, 238, 244, 0.08);
-  --ss-color-ghost-active: rgba(232, 238, 244, 0.14);
-  --ss-color-border: #3a4754;
-  --ss-color-focus-ring: #7ec4ff;
-  --ss-color-selected: #1e4a6e;
-  --ss-color-selected-border: #3d9cf0;
-  --ss-color-disabled-bg: #252d36;
-  --ss-color-disabled-text: #6b7783;
+  --ss-color-bg: #070b0e;
+  --ss-color-surface: #121a20;
+  --ss-color-text: #e6eef2;
+  --ss-color-text-muted: #8a9ba8;
+  --ss-color-primary: #2ec4b6;
+  --ss-color-primary-hover: #3de0d0;
+  --ss-color-primary-active: #249e93;
+  --ss-color-secondary: #1a242c;
+  --ss-color-secondary-hover: #243039;
+  --ss-color-secondary-active: #0c1216;
+  --ss-color-ghost-hover: rgba(230, 238, 242, 0.08);
+  --ss-color-ghost-active: rgba(230, 238, 242, 0.14);
+  --ss-color-border: rgba(180, 210, 220, 0.16);
+  --ss-color-focus-ring: #3de0d0;
+  --ss-color-selected: rgba(46, 196, 182, 0.16);
+  --ss-color-selected-border: #2ec4b6;
+  --ss-color-disabled-bg: #0c1216;
+  --ss-color-disabled-text: #5c6d7a;
+  --ss-color-danger: #e86a5a;
   --ss-radius-sm: 6px;
   --ss-space-x: 0.875rem;
   --ss-space-y: 0.5rem;
-  --ss-font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
   --ss-font-size: 0.9375rem;
   --ss-line-height: 1.25;
   --ss-transition: 120ms ease;

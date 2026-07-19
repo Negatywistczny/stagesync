@@ -23,7 +23,9 @@ pnpm dev
 | Web | http://localhost:3000 |
 | Server | http://localhost:4000 |
 
-W dev Vite proxy’uje `/api` i `/ws` na serwer `:4000` (soft playhead między tickami WS).
+Ścieżki web (Booth): `/` Client · `/admin` · `/timeline`.
+
+W dev Vite proxy’uje `/api` i `/ws` na serwer `:4000` (soft playhead między tickami WS; `TransportProvider` żyje ponad routerem).
 
 ```sh
 pnpm dev      # web + server

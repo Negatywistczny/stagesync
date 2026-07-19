@@ -1,0 +1,246 @@
+.shell {
+  --rail-w: 200px;
+  --desk-h: 72px;
+  --header-h: 56px;
+  display: grid;
+  grid-template-columns: var(--rail-w) 1fr;
+  grid-template-rows: var(--header-h) 1fr var(--desk-h);
+  grid-template-areas:
+    "top top"
+    "rail main"
+    "desk desk";
+  min-height: 100vh;
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+}
+
+.railCollapsed {
+  --rail-w: 0px;
+}
+
+.railCollapsed .rail {
+  overflow: hidden;
+  padding: 0;
+  border: none;
+}
+
+.detailCollapsed .detail {
+  display: none;
+}
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.brandMark {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ss-color-primary);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ss-color-primary) 50%, transparent);
+}
+
+.brandSub {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--ss-color-text-muted);
+}
+
+.context {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+  font-size: 0.8125rem;
+}
+
+.context span {
+  color: var(--ss-color-text-muted);
+}
+
+.topbarActions {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  border-right: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+  transition: width var(--ss-transition);
+}
+
+.railItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.railItem:hover {
+  color: var(--ss-color-text);
+  background: var(--ss-color-ghost-hover);
+}
+
+.railItemActive {
+  color: var(--ss-color-text);
+  background: var(--ss-color-selected);
+  border: 1px solid var(--ss-color-selected-border);
+}
+
+.railLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.main {
+  grid-area: main;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.detailCollapsed .main {
+  grid-template-columns: 1fr;
+}
+
+.panel,
+.detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--ss-color-border);
+}
+
+.detail {
+  border-right: none;
+  background: color-mix(in srgb, var(--ss-color-surface) 80%, transparent);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ss-color-border);
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.panelBody {
+  flex: 1;
+  overflow: auto;
+  padding: 0.5rem;
+}
+
+.listRow {
+  display: flex;
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.listRow:hover {
+  background: var(--ss-color-ghost-hover);
+}
+
+.listRowSelected {
+  background: var(--ss-color-selected);
+  border-color: var(--ss-color-selected-border);
+}
+
+.listTitle {
+  font-weight: 560;
+}
+
+.listMeta {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--ss-color-text-muted);
+}
+
+.detailTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.muted {
+  margin: 0.5rem 0;
+  color: var(--ss-color-text-muted);
+  font-size: 0.875rem;
+}
+
+.error {
+  margin: 0.5rem;
+  color: var(--ss-color-danger);
+}
+
+.liveDesk {
+  grid-area: desk;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  border-top: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+}
+
+.deskLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ss-color-primary);
+}
+
+.deskMeta {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--ss-color-text-muted);
+}
+
+.deskActions {
+  display: flex;
+  gap: 0.5rem;
+}
