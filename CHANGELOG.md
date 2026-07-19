@@ -9,6 +9,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Skala typografii w tokenach: `--ss-text-xs|sm|md|lg|xl` (shells bez ad-hoc rem);
+  `--ss-font-size` = alias `md` dla Button.
 - Shelle UI: Admin w układzie **Booth** (topbar + rail + lista/detail + Live
   Desk) zmapowanym na funkcje v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md));
   Client / Timeline — inventarz kontrolek (osobny redesign layoutu); Booth

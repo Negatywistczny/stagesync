@@ -13,6 +13,8 @@ body,
 
 body {
   font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-line-height);
   background:
     radial-gradient(
       ellipse 80% 50% at 10% -10%,

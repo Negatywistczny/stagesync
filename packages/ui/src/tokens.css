@@ -28,7 +28,13 @@
   --ss-space-x: 0.875rem;
   --ss-space-y: 0.5rem;
   --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
-  --ss-font-size: 0.9375rem;
-  --ss-line-height: 1.25;
+  /* Type scale — shells/components use these only (no ad-hoc rem). */
+  --ss-text-xs: 0.75rem; /* 12px — labels, meta, desk eyebrows */
+  --ss-text-sm: 0.8125rem; /* 13px — secondary / muted UI */
+  --ss-text-md: 0.9375rem; /* 15px — body / default controls */
+  --ss-text-lg: 1.125rem; /* 18px — panel titles */
+  --ss-text-xl: 1.5rem; /* 24px — page / welcome titles */
+  --ss-font-size: var(--ss-text-md); /* Button / legacy alias */
+  --ss-line-height: 1.35;
   --ss-transition: 120ms ease;
 }
