@@ -9,6 +9,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Kanon timebase w `@stagesync/shared`: integer ticks + `DEFAULT_PPQ` (960),
+  helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
+  (oraz `quartersToTicks` / `ticksToQuarters` pod migrator); usunięty
+  przejściowy float `absBeat`.
 - CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
   `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
   `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.

@@ -1,7 +1,15 @@
 export {
-  absBeatToBarBeat,
-  barBeatToAbsBeat,
+  DEFAULT_PPQ,
+  assertValidTimeSignature,
+  ticksPerBar,
+  ticksToBbt,
+  bbtToTicks,
+  toDisplayBar,
+  fromDisplayBar,
+  quartersToTicks,
+  ticksToQuarters,
   type TimeSignature,
+  type Bbt,
 } from "./time.js";
 
 export {
