@@ -13,9 +13,19 @@ body,
 
 body {
   font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-line-height);
   background:
-    radial-gradient(1200px 600px at 10% -10%, #1a3a55 0%, transparent 55%),
-    radial-gradient(900px 500px at 90% 0%, #163028 0%, transparent 50%),
+    radial-gradient(
+      ellipse 80% 50% at 10% -10%,
+      color-mix(in srgb, var(--ss-color-primary) 10%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 100% 0%,
+      color-mix(in srgb, var(--ss-color-primary-hover) 6%, transparent),
+      transparent 45%
+    ),
     var(--ss-color-bg);
   color: var(--ss-color-text);
 }

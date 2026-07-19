@@ -1,0 +1,354 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: var(--ss-color-text);
+  background: var(--ss-color-bg);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+}
+
+.headerPrimary,
+.headerSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.brand,
+.brandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: var(--ss-font-weight-semibold);
+  color: inherit;
+}
+
+.brandBtn {
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.brandMark {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ss-color-primary);
+}
+
+.metronome {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ss-color-border);
+}
+
+.dotActive {
+  background: var(--ss-color-primary);
+}
+
+.conn {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-danger);
+  margin-left: auto;
+}
+
+.connOn {
+  color: var(--ss-color-primary);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  cursor: pointer;
+}
+
+.songTitle {
+  font-size: var(--ss-text-md);
+}
+
+.setlistNext,
+.takt {
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.takt {
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
+.welcome {
+  width: min(640px, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.greeting {
+  margin: 0 0 0.75rem;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-md);
+}
+
+.linkBtn {
+  border: none;
+  background: none;
+  color: var(--ss-color-primary);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.welcomeTitle {
+  margin: 0 0 0.5rem;
+  font-size: var(--ss-text-xl);
+}
+
+.muted {
+  margin: 0 0 1rem;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.roleTile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem;
+  border: 1px solid var(--ss-color-border);
+  border-radius: 10px;
+  background: var(--ss-color-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roleTile span {
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.roleOn {
+  border-color: var(--ss-color-selected-border);
+  background: var(--ss-color-selected);
+}
+
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  position: relative;
+  min-height: 0;
+}
+
+.stageSplit {
+  grid-template-columns: 1fr 1fr;
+}
+
+.rolePane {
+  padding: 1rem;
+  min-height: 12rem;
+  border-right: 1px solid var(--ss-color-border);
+}
+
+.rolePaneHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.rolePaneHead h2 {
+  margin: 0;
+  font-size: var(--ss-text-lg);
+}
+
+.empty {
+  margin: 2rem 0;
+  text-align: center;
+  color: var(--ss-color-text-muted);
+}
+
+.divider {
+  display: none;
+}
+
+.cueHost {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  z-index: 15;
+  pointer-events: none;
+}
+
+.cueToast {
+  padding: 0.65rem 1rem;
+  border-radius: var(--ss-radius-sm);
+  border: 1px solid var(--ss-color-primary);
+  background: var(--ss-color-surface);
+  font-size: var(--ss-text-sm);
+}
+
+.transportNote {
+  margin: 0;
+  padding: 0.35rem 0.85rem;
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  border-top: 1px solid var(--ss-color-border);
+}
+
+.modal {
+  width: min(400px, calc(100vw - 2rem));
+  margin: 20vh auto 0;
+  padding: 1.5rem;
+  border: 1px solid var(--ss-color-border);
+  border-radius: 12px;
+  background: var(--ss-color-surface);
+}
+
+.modalTitle {
+  margin: 0 0 0.5rem;
+  font-size: var(--ss-text-xl);
+}
+
+.input {
+  display: block;
+  width: 100%;
+  margin: 0.75rem 0 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: inherit;
+  font: inherit;
+}
+
+.drawerWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
+.drawerBackdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+  cursor: pointer;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(320px, 100%);
+  height: 100%;
+  padding: 1rem;
+  border-left: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+  overflow: auto;
+}
+
+.drawerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.drawerHead h2 {
+  margin: 0;
+  font-size: var(--ss-text-md);
+}
+
+.fieldLab,
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.65rem 0;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.chip {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  cursor: not-allowed;
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.45rem 0;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .roleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stageSplit {
+    grid-template-columns: 1fr;
+  }
+
+  .rolePane {
+    border-right: none;
+    border-bottom: 1px solid var(--ss-color-border);
+  }
+}

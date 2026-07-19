@@ -1,32 +1,51 @@
 /**
- * StageSync design tokens.
+ * StageSync design tokens — default black / amber (v4 brand).
  * Components must use these variables — no ad-hoc HEX in UI packages.
+ * Themes (light / high-contrast via data-theme) come later; keep shells on --ss-* only.
  */
 
 :root {
-  --ss-color-bg: #0f1419;
-  --ss-color-surface: #1a222c;
-  --ss-color-text: #e8eef4;
-  --ss-color-text-muted: #9aa8b5;
-  --ss-color-primary: #3d9cf0;
-  --ss-color-primary-hover: #5aaff5;
-  --ss-color-primary-active: #2b7fc4;
-  --ss-color-secondary: #2a3540;
-  --ss-color-secondary-hover: #364552;
-  --ss-color-secondary-active: #1f2830;
-  --ss-color-ghost-hover: rgba(232, 238, 244, 0.08);
-  --ss-color-ghost-active: rgba(232, 238, 244, 0.14);
-  --ss-color-border: #3a4754;
-  --ss-color-focus-ring: #7ec4ff;
-  --ss-color-selected: #1e4a6e;
-  --ss-color-selected-border: #3d9cf0;
-  --ss-color-disabled-bg: #252d36;
-  --ss-color-disabled-text: #6b7783;
+  --ss-color-bg: #000000;
+  --ss-color-surface: #18181b;
+  --ss-color-text: #fafafa;
+  --ss-color-text-muted: #a1a1aa;
+  --ss-color-primary: #fbbf24;
+  --ss-color-primary-hover: #fcd34d;
+  --ss-color-primary-active: #f59e0b;
+  --ss-color-on-primary: #0a0a0a;
+  --ss-color-secondary: #27272a;
+  --ss-color-secondary-hover: #3f3f46;
+  --ss-color-secondary-active: #18181b;
+  --ss-color-ghost-hover: rgba(250, 250, 250, 0.08);
+  --ss-color-ghost-active: rgba(250, 250, 250, 0.14);
+  --ss-color-border: #3f3f46;
+  --ss-color-focus-ring: #22d3ee;
+  --ss-color-selected: rgba(251, 191, 36, 0.16);
+  --ss-color-selected-border: #fbbf24;
+  --ss-color-disabled-bg: #09090b;
+  --ss-color-disabled-text: #52525b;
+  --ss-color-danger: #ef4444;
   --ss-radius-sm: 6px;
   --ss-space-x: 0.875rem;
   --ss-space-y: 0.5rem;
-  --ss-font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --ss-font-size: 0.9375rem;
-  --ss-line-height: 1.25;
+  --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
+  /* Type scale — size / weight / leading / tracking (no ad-hoc values in UI). */
+  --ss-text-xs: 0.75rem;
+  --ss-text-sm: 0.8125rem;
+  --ss-text-control: 0.875rem;
+  --ss-text-md: 0.9375rem;
+  --ss-text-lg: 1.125rem;
+  --ss-text-xl: 1.5rem;
+  --ss-font-size: var(--ss-text-control);
+  --ss-font-weight-regular: 400;
+  --ss-font-weight-medium: 500;
+  --ss-font-weight-semibold: 600;
+  --ss-font-weight-bold: 650;
+  --ss-leading-tight: 1.25;
+  --ss-leading-normal: 1.35;
+  --ss-leading-relaxed: 1.5;
+  --ss-line-height: var(--ss-leading-normal);
+  --ss-tracking-normal: 0;
+  --ss-tracking-label: 0.06em;
   --ss-transition: 120ms ease;
 }

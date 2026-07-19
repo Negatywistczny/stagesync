@@ -1,32 +1,24 @@
-# ADR 0003 — Kierunek wizualny UI (Booth)
+# ADR 0003 — Kierunek wizualny UI
 
-- **Status:** Zaakceptowany
+- **Status:** Zaakceptowany (zaktualizowany)
 - **Data:** 2026-07-19
+- **Aktualizacja:** 2026-07-19 — domyślna paleta **black / amber** (jak v4); layout nowy; inventarz = parity v4
 
 ## Kontekst
 
-Przy wprowadzaniu prawdziwych shelli UI w v5 (Admin / Client / Timeline w `apps/web` lub osobnych entry) potrzebny jest ustalony kierunek wizualny, żeby nie wracać do organicznego UI 4.x ani nie wymyślać layoutu od zera. W legacy powstał harness **UI Lab** z sześcioma propozycjami (A–F).
+Przy shellach v5 potrzebny jest spójny klimat wizualny i jasna reguła: redesign layoutu ≠ ucinanie kontrolek. Eksperyment Booth (ink/teal) nie jest domyślną marką produktu.
 
 ## Decyzja
 
-Docelowy wygląd i układ paneli **wzorujemy na propozycji A — Booth** (`a-booth`):
-
-- **DNA:** ink / teal („booth steel”)
-- **Admin:** left rail sekcji, lista utworów, panel szczegółów, Live Desk
-- **Client:** welcome → wybór roli → stage-first HUD, drawer ustawień
-- **Timeline:** tool strip, tracki + clipy, inspector, overlay help
-
-**Źródło (legacy, tylko mock — bez API/MIDI):**
-
-- Repo: [STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY)
-- Ścieżka: `tests/harnesses/ui-lab/proposals/a-booth/`
-- Gallery / opis lab: `tests/harnesses/ui-lab/README.md`
-- Screenshoty: `tests/harnesses/ui-lab/proposals/a-booth/shots/`
-
-Booth to **kierunek layoutu i klimatu**, nie pixel-perfect kopiowanie CSS labu. Tokeny v5 (`--ss-*` w `@stagesync/ui`) i konstytucja (7 stanów Button, bez HEX) nadal obowiązują; Booth mapujemy na te tokeny przy implementacji.
+1. **Paleta domyślna = black / amber** — tokeny `--ss-*` jak w v4 (`#000` / zinc surfaces / `#fbbf24`). Motywy light / high-contrast później przez `data-theme`.
+2. **Layout paneli = nowy** — świadomie zaprojektowany w v5 (nie 1:1 HTML 4.x, nie left-rail labu). Opis: implementacja shelli + [ui-shell-inventory.md](../ui-shell-inventory.md).
+3. **Inventarz kontrolek = parity v4** — jeśli użytkownik mógł kliknąć X w 4.x, w shellu v5 musi być kontrolka; `disabled` / overlay bez API OK. Usunięcie tylko jako **świadoma delta** (np. git-apply → [ADR 0004](./0004-updates-docker.md)).
+4. **Model na Timeline:** 1 akord = 1 clip; **Countdown** widoczny na Formie; **Audio 0…N**.
+5. **Style shelli:** tylko `*.module.css` + `--ss-*`.
+6. Checklisty: [docs/ui-shell-inventory.md](../ui-shell-inventory.md).
 
 ## Konsekwencje
 
-- Przy pierwszym większym UI (nie showcase Button) odnieść się do tego ADR i otworzyć mocki Booth z LEGACY.
-- Inne propozycje lab (Signal, Folio, Rack, Canon, Orbit) **nie** są kierunkiem produktu — najwyżej inspiracja szczegółów.
-- Nie kopiujemy całego `ui-lab` do v5, dopóki nie potrzeba żywego harnessu w tym repo (ew. później `tests/harnesses/`).
+- Przy review UI: najpierw inventarz, potem estetyka layoutu.
+- `TransportProvider` (WS + soft-clock rAF) poza redesignem chrome.
+- Alternatywne skiny (np. Booth) tylko jako przyszły motyw, nie jako `:root` domyślny.
