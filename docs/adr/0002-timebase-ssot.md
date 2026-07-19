@@ -1,20 +1,20 @@
 # ADR 0002 — Timebase SSOT
 
-- **Status:** Accepted
-- **Date:** 2026-07-19
+- **Status:** Zaakceptowany
+- **Data:** 2026-07-19
 
-## Context
+## Kontekst
 
-Live performance clients need a smooth playhead, but competing clocks (browser vs server vs MIDI) cause drift and desync. Domain time math must stay testable and shared across packages.
+Klienci na scenie potrzebują płynnego playhead, ale konkurujące zegary (przeglądarka vs serwer vs MIDI) powodują drift i desync. Matematyka czasu domenowego musi być testowalna i wspólna dla paczek.
 
-## Decision
+## Decyzja
 
-1. **Pure time** — beat/bar/tick helpers live in `@stagesync/shared` as pure functions (no I/O, no DOM).
-2. **Server SSOT** — `@stagesync/server` owns authoritative transport position and tempo/meter state; clients consume ticks/updates from the server.
-3. **Playhead smoothing** — `@stagesync/web` may interpolate/smooth the displayed playhead **between server ticks only**. It must not become the source of truth for musical time.
+1. **Czysty czas** — helpery beat/bar/tick w `@stagesync/shared` jako czyste funkcje (bez I/O, bez DOM).
+2. **SSOT serwera** — serwer (`apps/server`) jest właścicielem autorytatywnej pozycji transportu oraz tempa/metrum; klienci konsumują ticki / update’y z serwera.
+3. **Wygładzanie playhead** — `apps/web` może interpolować / wygładzać wyświetlany playhead **wyłącznie między tickami serwera**. Nie może stać się źródłem prawdy dla czasu muzycznego.
 
-## Consequences
+## Konsekwencje
 
-- Tests for time live next to shared helpers (Vitest).
-- UI animations stay cosmetic; seeking/transport commands go through the server.
-- MIDI / external clock integration (future) plugs into the server, not the client playhead smoother.
+- Testy czasu żyją obok helperów w shared (Vitest).
+- Animacje UI są kosmetyczne; seek / komendy transportu idą przez serwer.
+- Integracja MIDI / zewnętrznego clocka (przyszłość) podłącza się do serwera, nie do wygładzacza playhead w kliencie.

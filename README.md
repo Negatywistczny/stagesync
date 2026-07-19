@@ -1,43 +1,48 @@
 # StageSync
 
-StageSync **v5** — live performance timeline & sync (monorepo rewrite).
+StageSync **v5** — synchronizacja sceniczna / timeline (przepisanie na monorepo).
 
-> Legacy **4.x** is archived as **[STAGESYNC-APP-LEGACY](https://github.com/kacper/STAGESYNC-APP-LEGACY)** (adjust org/URL if your fork differs). New work happens here.
+> Legacy **4.x** jest zarchiwizowane jako **[STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY)**. Nowy rozwój odbywa się tutaj: **[stagesync](https://github.com/Negatywistczny/stagesync)**.
 
-## Requirements
+## Język dokumentacji
+
+- **Polski:** docs produktowe, ADR, README, CHANGELOG, reguły agenta (`.cursor/rules`)
+- **Angielski:** Conventional Commits, identyfikatory w kodzie, nazwy paczek/API
+
+## Wymagania
 
 - Node.js ≥ 20
 - [pnpm](https://pnpm.io/) 9
 
-## Quick start
+## Szybki start
 
 ```sh
-git clone <this-repo-url> stagesync
+git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 pnpm install
 pnpm dev
 ```
 
-| App | Dev URL | Role |
-|-----|---------|------|
-| Web | http://localhost:3000 | Vite + React client |
-| Server | http://localhost:4000 | Express API / transport SSOT |
+| Aplikacja | URL (dev) | Rola |
+|-----------|-----------|------|
+| Web | http://localhost:3000 | Klient Vite + React |
+| Server | http://localhost:4000 | API Express / transport SSOT |
 
 ## SSOT
 
-**Server is the source of truth** for transport and project state. The client may only smooth the playhead between server ticks.
+**Serwer jest źródłem prawdy** dla transportu i stanu projektu. Klient może jedynie wygładzać playhead **między tickami serwera**.
 
 ## Workspace
 
-- `apps/web` — Vite client  
-- `apps/server` — Express server  
-- `packages/shared` — Zod schemas & pure time  
-- `packages/ui` — Button + `--ss-*` tokens  
-- `data/` — library / projects / logs layout  
+- `apps/web` — klient Vite
+- `apps/server` — serwer Express
+- `packages/shared` — schematy Zod i czysty czas
+- `packages/ui` — `Button` + tokeny `--ss-*`
+- `data/` — układ library / projects / logs
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TODO.md](docs/TODO.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+Zobacz [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TODO.md](docs/TODO.md) i [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Scripts
+## Skrypty
 
 ```sh
 pnpm dev      # turbo dev (web + server)
@@ -46,4 +51,4 @@ pnpm build    # turbo build
 pnpm lint     # turbo lint
 ```
 
-Version: see `"version"` in root `package.json` (`5.0.0-alpha.1` at bootstrap).
+Wersja: pole `"version"` w root `package.json` (bootstrap: `5.0.0-alpha.1`).

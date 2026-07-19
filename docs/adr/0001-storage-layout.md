@@ -1,30 +1,30 @@
-# ADR 0001 — Storage layout
+# ADR 0001 — Układ storage
 
-- **Status:** Accepted
-- **Date:** 2026-07-19
+- **Status:** Zaakceptowany
+- **Data:** 2026-07-19
 
-## Context
+## Kontekst
 
-StageSync v5 needs a clear on-disk layout for library index, per-project data, and logs, separate from the legacy single `database.json` blob. Validation must happen at I/O edges so corrupt or unknown shapes fail fast.
+StageSync v5 potrzebuje jasnego układu na dysku: indeks biblioteki, dane per projekt i logi — osobno od legacy monolitu `database.json`. Walidacja ma być na krawędziach I/O, żeby uszkodzone lub nieznane kształty kończyły się szybkim błędem.
 
-## Decision
+## Decyzja
 
-Runtime / template data lives under repo `data/`:
+Dane runtime / szablony żyją pod `data/` w repo:
 
 ```
 data/
   library/
-    library.template.json   # seed / template for library index
-    …                       # runtime library index (user; gitignored where appropriate)
+    library.template.json   # seed / szablon indeksu biblioteki
+    …                       # runtime indeks (użytkownik; gitignore tam gdzie trzeba)
   projects/
-    <projectId>/            # one directory per project
-  logs/                     # server / app logs
+    <projectId>/            # jeden katalog na projekt
+  logs/                     # logi serwera / aplikacji
 ```
 
-- Empty directories are kept in git via `.gitkeep`.
-- **Zod schemas** from `@stagesync/shared` validate at edges (load/save, HTTP). Invalid data is rejected — no silent repair in day-0.
+- Puste katalogi utrzymujemy w gicie przez `.gitkeep`.
+- **Schematy Zod** z `@stagesync/shared` walidują na krawędziach (load/save, HTTP). Nieprawidłowe dane są odrzucane — bez cichej naprawy w day-0.
 
-## Consequences
+## Konsekwencje
 
-- Migrators and CRUD can target paths by project id without a monolithic DB file.
-- Legacy 4.x import belongs in a dedicated migrator later; do not dual-write legacy shapes into this layout.
+- Migratory i CRUD celują w ścieżki po id projektu, bez monolitycznego pliku DB.
+- Import legacy 4.x należy do osobnego migratora później; nie dual-write starych kształtów do tego układu.

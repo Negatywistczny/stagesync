@@ -1,66 +1,73 @@
 ---
-description: StageSync v5 constitution — SSOT, monorepo boundaries, design tokens, commits
+description: Konstytucja StageSync v5 — SSOT, granice monorepo, tokeny, commity, język docs
 alwaysApply: true
 ---
 
-# StageSync v5 — Constitution
+# StageSync v5 — Konstytucja
 
-## Single source of truth (SSOT)
+## Język
 
-- **Server authority**: transport, project state, and timing decisions live on `@stagesync/server`. Clients must not invent authoritative clock or song state.
-- **Client playhead**: the web client may **smooth / interpolate the playhead between server ticks only**. It must not advance authoritative musical time independently of the server.
+| Co | Język |
+|----|--------|
+| Docs produktowe, ADR, CHANGELOG, reguły agenta | **Polski** |
+| Conventional Commits, kod, nazwy paczek/API | **Angielski** |
 
-## Monorepo boundaries
+## Jedno źródło prawdy (SSOT)
 
-| Path | Role |
-|------|------|
-| `apps/server` | Express API, persistence, transport SSOT |
-| `apps/web` | Vite + React client (UI only; no authoritative time) |
-| `packages/shared` | Pure domain: Zod schemas, time helpers — no DOM, no Node FS |
-| `packages/ui` | Design-system primitives (`Button`, tokens) — no business logic |
-| `packages/eslint-config` / `typescript-config` | Tooling only |
-| `data/` | Local runtime layout (templates + gitkeeps; user data gitignored) |
+- **Autorytet serwera**: transport, stan projektu i decyzje timingowe żyją w `apps/server`. Klienci nie inventują autorytatywnego zegara ani stanu utworu.
+- **Playhead klienta**: web może **wygładzać / interpolować playhead wyłącznie między tickami serwera**. Nie przesuwa autorytatywnego czasu muzycznego niezależnie od serwera.
 
-Do not cross boundaries: UI must not import server; shared must stay pure; apps depend on packages, not the reverse.
+## Granice monorepo
 
-## Pure time
+| Ścieżka | Rola |
+|---------|------|
+| `apps/server` | API Express, persystencja, transport SSOT |
+| `apps/web` | Klient Vite + React (tylko UI; bez autorytatywnego czasu) |
+| `packages/shared` | Czysta domena: Zod, helpery czasu — bez DOM, bez Node FS |
+| `packages/ui` | Primitivy design system (`Button`, tokeny) — bez logiki biznesowej |
+| `packages/eslint-config` / `typescript-config` | Tylko tooling |
+| `data/` | Lokalny układ runtime (szablony + gitkeep; dane użytkownika w gitignore) |
 
-- Musical / beat time math lives in `@stagesync/shared` as **pure functions** (deterministic, side-effect free).
-- No `Date.now()` / `performance.now()` inside shared time helpers for domain conversion — callers pass clocks/ticks in.
+Nie łam granic: UI nie importuje servera; shared zostaje czyste; apps zależą od packages, nie odwrotnie.
 
-## Validation (Zod)
+## Czysty czas
 
-- Validate at **edges** (HTTP body, file load, IPC) with Zod from `@stagesync/shared`.
-- **Fail fast**: reject invalid payloads; do not silently coerce away required shape.
+- Matematyka czasu muzycznego / beatów w `@stagesync/shared` jako **czyste funkcje** (deterministyczne, bez efektów ubocznych).
+- W shared helperach konwersji domenowej nie używaj `Date.now()` / `performance.now()` — caller przekazuje clock/ticki.
 
-## UI — Button & tokens
+## Walidacja (Zod)
 
-- Canonical `Button` exposes a **closed set of 7 interaction states**: default, hover, focus, active, disabled, loading, selected.
-- Colors and spacing use **`--ss-*` CSS variables** only (`packages/ui` tokens). No ad-hoc HEX in components.
+- Waliduj na **krawędziach** (body HTTP, odczyt pliku, IPC) Zodem z `@stagesync/shared`.
+- **Fail fast**: odrzucaj nieprawidłowe payloady; nie poprawiaj cicho wymaganego kształtu.
 
-## Data layout
+## UI — Button i tokeny
+
+- Kanoniczny `Button` eksponuje **zamknięty zbiór 7 stanów interakcji**: default, hover, focus, active, disabled, loading, selected.
+- Kolory i odstępy tylko przez zmienne CSS **`--ss-*`** (tokeny w `packages/ui`). Bez ad-hoc HEX w komponentach.
+
+## Układ danych
 
 ```
 data/
-  library/          # library index (+ library.template.json)
-  projects/<id>/    # per-project files
-  logs/             # runtime logs (gitignored content)
+  library/          # indeks biblioteki (+ library.template.json)
+  projects/<id>/    # pliki per projekt
+  logs/             # logi runtime (treść gitignore)
 ```
 
-See `docs/adr/0001-storage-layout.md`.
+Zobacz `docs/adr/0001-storage-layout.md`.
 
-## Commits
+## Commity
 
-- [Conventional Commits](https://www.conventionalcommits.org/) only (commitlint + husky).
-- Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, …
-- Do not use `--no-verify` in normal workflow. See `CONTRIBUTING.md`.
+- Tylko [Conventional Commits](https://www.conventionalcommits.org/) (commitlint + husky).
+- Typy: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, …
+- W normalnym workflow nie używaj `--no-verify`. Zobacz `CONTRIBUTING.md`.
 
-## Out of scope (v5 day-0 / alpha)
+## Poza zakresem (v5 day-0 / alpha)
 
-Do **not** add without an explicit product decision:
+**Nie** dodawaj bez jawnej decyzji produktowej:
 
-- Admin / hygiene HTTP UI for storage scrubbing
-- Dual write paths to legacy 4.x database shapes
-- New Button variants outside the closed set
-- Client-authoritative transport or MIDI clock
-- Pushing secrets, local `data/projects/*` user content, or `node_modules` to git
+- Admin / hygiene HTTP UI do scrubbingu storage
+- Dual-write do kształtów bazy legacy 4.x
+- Nowe warianty Button poza zamkniętym zbiorem
+- Transport lub MIDI clock z autorytetem klienta
+- Commit sekretów, lokalnej treści `data/projects/*` użytkownika ani `node_modules`

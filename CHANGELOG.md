@@ -1,28 +1,34 @@
 # Changelog
 
-All notable changes to StageSync **5.x** are documented in this file.
+Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/).
+Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
+projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Added
+### Dodano
 
-- (none yet beyond alpha.1 bootstrap)
+- Dokumentacja produktowa i reguły agenta po polsku (commity i kod pozostają EN).
+
+### Zmieniono
+
+### Naprawiono
+
+### Usunięto
 
 ## [5.0.0-alpha.1] - 2026-07-19
 
-### Added
+### Dodano
 
-- Monorepo bootstrap: Turborepo + pnpm workspaces
-- `apps/web` — Vite + React client (port 3000)
-- `apps/server` — Express API scaffold (port 4000)
-- `packages/shared` — Zod schemas and pure time helpers
-- `packages/ui` — canonical `Button` (7 states) and `--ss-*` design tokens
-- `data/` layout: `library/`, `projects/`, `logs/` + library template
-- Constitution, ADRs (storage layout, timebase SSOT), architecture & TODO docs
-- Conventional Commits via commitlint + husky
+- Bootstrap monorepo: Turborepo + pnpm workspaces
+- `apps/web` — klient Vite + React (port 3000)
+- `apps/server` — szkielet API Express (port 4000)
+- `packages/shared` — schematy Zod i czyste helpery czasu
+- `packages/ui` — kanoniczny `Button` (7 stanów) i tokeny `--ss-*`
+- Układ `data/`: `library/`, `projects/`, `logs/` + szablon biblioteki
+- Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
+- Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/kacper/stagesync/compare/v5.0.0-alpha.1...HEAD
-[5.0.0-alpha.1]: https://github.com/kacper/stagesync/releases/tag/v5.0.0-alpha.1
+[Unreleased]: https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.1...HEAD
+[5.0.0-alpha.1]: https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-alpha.1

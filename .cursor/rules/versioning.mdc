@@ -32,14 +32,14 @@ Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o r
 ## Przyjazna nazwa linii (`MAJOR.MINOR`)
 
 - Jedna hero-nazwa na linię `X.Y` (nie na każdy patch).
-- **5.0 hero name: deferred** until stable `5.0.0` (alpha bez finalnej nazwy w CHANGELOG header poza numerem SemVer).
+- **Nazwa hero 5.0: odłożona** do stabilnego `5.0.0` (alpha bez finalnej nazwy w nagłówku CHANGELOG poza numerem SemVer).
 - Przy pierwszym stable `5.0.0`: ustal nazwę hero i dopisz do tabeli poniżej + nagłówek CHANGELOG `## [5.0.0] - RRRR-MM-DD — Nazwa`.
 
 ### Linie 5.x
 
 | Linia | Nazwa |
 |-------|-------|
-| **5.0** | *(deferred until stable 5.0.0)* |
+| **5.0** | *(odłożona do stabilnego 5.0.0)* |
 
 ## Release (gdy użytkownik prosi)
 

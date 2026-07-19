@@ -1,13 +1,20 @@
-# StageSync — contributor notes
+# StageSync — uwagi dla współtwórców
 
-## Commits
+## Język
 
-Only [Conventional Commits](https://www.conventionalcommits.org/) are accepted (enforced by commitlint + husky `commit-msg`):
+| Co | Język |
+|----|--------|
+| Dokumentacja produktowa, ADR, CHANGELOG, reguły agenta | **Polski** |
+| Treść commitów (Conventional Commits), kod, nazwy API | **Angielski** |
 
-- `feat: …` — new capability
-- `fix: …` — bug fix
-- `docs: …` — documentation only
-- `chore: …` — tooling, deps, scaffolding
-- `refactor: …` / `test: …` / `ci: …` as needed
+## Commity
 
-Do not use `--no-verify` in normal workflow.
+Akceptowane są wyłącznie [Conventional Commits](https://www.conventionalcommits.org/) (commitlint + husky `commit-msg`):
+
+- `feat: …` — nowa możliwość
+- `fix: …` — poprawka błędu
+- `docs: …` — tylko dokumentacja
+- `chore: …` — tooling, zależności, scaffolding
+- `refactor: …` / `test: …` / `ci: …` w razie potrzeby
+
+W normalnym workflow **nie** używaj `--no-verify`.

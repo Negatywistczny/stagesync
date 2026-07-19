@@ -1,21 +1,22 @@
 # StageSync v5 — TODO
 
-## Day-0 (done)
+## Day-0 (zrobione)
 
-- [x] Monorepo reshape: Vite `apps/web`, Express `apps/server`, `packages/shared`, `packages/ui`
-- [x] Data layout: `data/library`, `data/projects`, `data/logs` + template
-- [x] Constitution + ADRs + README / CHANGELOG
+- [x] Reshape monorepo: Vite `apps/web`, Express `apps/server`, `packages/shared`, `packages/ui`
+- [x] Układ danych: `data/library`, `data/projects`, `data/logs` + szablon
+- [x] Konstytucja + ADR + README / CHANGELOG
 - [x] Conventional Commits (commitlint + husky)
-- [x] Vitest for shared time + UI Button
+- [x] Vitest dla shared time + UI Button
+- [x] Dokumentacja produktowa po polsku
 
-## Next
+## Następne
 
-- [ ] Project / library CRUD API + persistence under `data/`
-- [ ] Transport protocol (play / pause / seek) with server SSOT ticks
-- [ ] Web client wired to transport + playhead smoothing
-- [ ] MIDI I/O layer (server-side clock / devices)
-- [ ] Legacy 4.x → v5 migrator
-- [ ] Docker Compose for local stack
-- [ ] CI (lint, test, build) on GitHub Actions
-- [ ] Auth / multi-user (if product requires)
-- [ ] Stable `5.0.0` release + hero name (see versioning rule)
+- [ ] CRUD API projektów / biblioteki + persystencja w `data/`
+- [ ] Protokół transportu (play / pause / seek) z tickami SSOT na serwerze
+- [ ] Klient web podłączony do transportu + wygładzanie playhead
+- [ ] Warstwa MIDI I/O (clock / urządzenia po stronie serwera)
+- [ ] Migrator legacy 4.x → v5
+- [ ] Docker Compose pod lokalny stack
+- [ ] CI (lint, test, build) w GitHub Actions
+- [ ] Auth / multi-user (jeśli produkt tego wymaga)
+- [ ] Stabilne wydanie `5.0.0` + nazwa hero (zob. reguła versioning)

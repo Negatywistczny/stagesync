@@ -1,29 +1,29 @@
-# StageSync v5 — Architecture
+# StageSync v5 — Architektura
 
-## Overview
+## Przegląd
 
-pnpm + Turborepo monorepo:
+Monorepo pnpm + Turborepo:
 
-| Package / app | Stack | Responsibility |
-|---------------|-------|----------------|
-| `apps/server` | Express (Node 20+) | API, persistence, **transport SSOT** |
-| `apps/web` | Vite + React | Client UI; playhead smooth between ticks only |
-| `packages/shared` | TypeScript + Zod | Pure schemas & time |
-| `packages/ui` | React | Design-system (`Button`, `--ss-*` tokens) |
-| `data/` | JSON / dirs | Library, `projects/<id>/`, logs |
+| Paczka / app | Stack | Odpowiedzialność |
+|--------------|-------|------------------|
+| `apps/server` | Express (Node 20+) | API, persystencja, **transport SSOT** |
+| `apps/web` | Vite + React | UI klienta; wygładzanie playhead tylko między tickami |
+| `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
+| `packages/ui` | React | Design system (`Button`, tokeny `--ss-*`) |
+| `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi |
 
-**SSOT:** server owns authoritative time and project state; client may only smooth the playhead between server ticks.
+**SSOT:** serwer jest właścicielem autorytatywnego czasu i stanu projektu; klient może jedynie wygładzać playhead między tickami serwera.
 
-## ADRs
+## ADR
 
-- [0001 — Storage layout](./adr/0001-storage-layout.md)
+- [0001 — Układ storage](./adr/0001-storage-layout.md)
 - [0002 — Timebase SSOT](./adr/0002-timebase-ssot.md)
 
-## Agent / product rules
+## Reguły agenta / produktu
 
 - [`.cursor/rules/constitution.mdc`](../.cursor/rules/constitution.mdc)
 - [`.cursor/rules/versioning.mdc`](../.cursor/rules/versioning.mdc)
 
 ## Legacy
 
-StageSync **4.x** lives in a separate archive repo: **STAGESYNC-APP-LEGACY**. Do not mix 4.x hotfix work into this v5 tree. A future migrator will import legacy projects into `data/projects/<id>/`.
+StageSync **4.x** żyje w osobnym, zarchiwizowanym repo: **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x w tym drzewie v5. Przyszły migrator zaimportuje projekty legacy do `data/projects/<id>/`.
