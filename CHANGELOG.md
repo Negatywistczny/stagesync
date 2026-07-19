@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Klient web: panel transportu (Play / Pause / Seek), WebSocket + soft playhead
+  (`getDisplayTicks` w shared, rAF z `frameTime`), Vite proxy `/api` i `/ws`,
+  `Button loading` na czas komend REST.
 - Transport SSOT na serwerze: `GET|POST /api/transport` (play / pause / seek),
   WebSocket `/ws/transport` (~25 Hz); pozycja z anchor + elapsed (bez driftu
   `+=` na timerze); schematy Zod w shared.
