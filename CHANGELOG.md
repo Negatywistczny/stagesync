@@ -9,13 +9,16 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- Skala typografii w tokenach: `--ss-text-xs|sm|md|lg|xl` (shells bez ad-hoc rem);
-  `--ss-font-size` = alias `md` dla Button.
-- Shelle UI: Admin w układzie **Booth** (topbar + rail + lista/detail + Live
-  Desk) zmapowanym na funkcje v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md));
-  Client / Timeline — inventarz kontrolek (osobny redesign layoutu); Booth
-  tokeny + CSS Modules; `TransportProvider` nad routerem; Audio 0…N; bez
-  git-apply ([ADR 0004](docs/adr/0004-updates-docker.md)).
+- Tokeny typografii: `--ss-text-*` (w tym `control` pod Button/inputy),
+  `--ss-font-weight-*`, `--ss-leading-*`, `--ss-tracking-*` (shells/`Button` bez
+  ad-hoc wartości; Button = control + semibold + leading tight).
+- Paleta domyślna black / amber (jak v4) w `--ss-*`; `--ss-color-on-primary` pod
+  tekst na amber CTA.
+- Shelle UI: Admin — własny layout (chrome + sekcje + status), inventarz
+  funkcji v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)); Client /
+  Timeline — inventarz (osobny redesign); tokeny black/amber + CSS Modules;
+  `TransportProvider` nad routerem; Audio 0…N; bez git-apply
+  ([ADR 0004](docs/adr/0004-updates-docker.md)).
 - Klient web: panel transportu (Play / Pause / Seek), WebSocket + soft playhead
   (`getDisplayTicks` w shared, rAF z `frameTime`), Vite proxy `/api` i `/ws`,
   `Button loading` na czas komend REST.
@@ -34,7 +37,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - [`.editorconfig`](.editorconfig) — spójny styl edytora (jak legacy).
 - Workflow gałęzi (trunk-based): docs/chore na `main`; feature z TODO → `feat/*` + PR
   ([CONTRIBUTING.md](CONTRIBUTING.md)).
-- [ADR 0003](docs/adr/0003-ui-direction-booth.md) — Booth = skin; layout nowy;
+- [ADR 0003](docs/adr/0003-ui-direction-booth.md) — black/amber domyślnie; layout nowy;
   inventarz kontrolek = parity v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)).
 - [ADR 0004](docs/adr/0004-updates-docker.md) — aktualizacje przez Docker (bez git-apply).
 

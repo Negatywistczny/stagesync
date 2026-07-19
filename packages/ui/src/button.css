@@ -8,8 +8,8 @@
   border-radius: var(--ss-radius-sm);
   font-family: var(--ss-font-sans);
   font-size: var(--ss-font-size);
-  line-height: var(--ss-line-height);
-  font-weight: 500;
+  line-height: var(--ss-leading-tight);
+  font-weight: var(--ss-font-weight-semibold);
   cursor: pointer;
   transition:
     background-color var(--ss-transition),
@@ -40,7 +40,7 @@
 
 .ss-btn--primary {
   background: var(--ss-color-primary);
-  color: var(--ss-color-bg);
+  color: var(--ss-color-on-primary);
 }
 
 .ss-btn--primary:hover:not(:disabled) {

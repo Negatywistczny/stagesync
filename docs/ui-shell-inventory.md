@@ -1,7 +1,7 @@
 # Inventarz kontrolek UI (v4 → v5 shelle)
 
 **Cel:** checklista **funkcji / kontrolek**, nie layoutu.  
-Layout paneli w v5 jest **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); Booth = tokeny.  
+Layout paneli w v5 jest **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta domyślna black/amber.  
 Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK). Usunięcie bez wpisu w „Świadome delty” = blocker.
 
 ## Świadome delty v5
@@ -59,31 +59,31 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 
 ## Admin
 
-**Layout v5:** Booth shell (topbar + rail + lista/detail + Live Desk) — nie strona collapsible v4.  
-Mapowanie regionów → kontrolki poniżej. Timeline/Client: osobny redesign.
+**Layout v5:** własny (sekcje w chrome + workspace + pasek statusu) — nie Booth rail/desk, nie accordion v4.  
+Kontrolki poniżej = inventarz funkcji. Timeline/Client: osobny redesign.
 
-### Booth: region → kontrolki v4
+### Sekcja → kontrolki
 
-| Region | Kontrolki |
+| Sekcja | Kontrolki |
 |--------|-----------|
-| **Topbar** | Brand + wersja; context (utwór / BPM / BBT); linki Timeline · Klient; Wygląd; zwiń rail |
-| **Rail → Biblioteka** | Search, sort, filtry ostrzeżeń; lista (PC, tytuł, artysta, gatunek); XML / Partytura / Edytuj / Usuń; export; wzory; panel szczegółów (metadane, assety XML/audio/okładka) |
-| **Rail → Setlista** | Włącz, auto, dodaj zaznaczone, zapisz, wyczyść, wiersze |
-| **Rail → Scena** | Komunikaty live (tekst, role, TTL, wyślij, wyczyść); sieć / klienci |
-| **Rail → Import** | Import / export paczki; drop zone; modal preview |
-| **Rail → System** | Ustawienia serwera; Logi; Monitor MIDI; O aplikacji (wersja, sprawdź aktualizacje **bez** Apply, kanał, backupy); Restart / Wyłącz |
-| **Live Desk** (zawsze) | Utwór · sekcja · BBT · następny · conn · Kontrola MIDI/Timeline; skrót transpozycja / sync lead / edycja zdalna |
+| **Chrome** | Brand + wersja; zakładki Utwory · Set · Scena · Pliki · Host; linki Timeline · Klient; Wygląd |
+| **Utwory** | Filtr, sort, filtry ostrzeżeń; lista (PC, tytuł); panel wybranego; XML / Partytura / Timeline / Usuń; eksport; import; wzory; Batch PC |
+| **Set** | Aktywny, auto, dodaj zaznaczone, zapisz, wyczyść, wiersze |
+| **Scena** | Komunikat (tekst, role, TTL, wyślij, wyczyść); klienci / sieć |
+| **Pliki** | Import / eksport paczki; drop zone; modal |
+| **Host** | Ustawienia; Logi; MIDI; O aplikacji (wersja, sprawdź aktualizacje **bez** Apply, kanał, backupy); Restart / Wyłącz |
+| **Status** (zawsze) | Teraz · sekcja · pozycja/BBT · dalej · conn · MIDI/Timeline; Tr. / Lead / edycja zdalna |
 
 ### Checklist (parity)
 
-- [ ] Topbar: brand, wersja, Timeline, Klient, Wygląd, collapse rail
-- [ ] Live Desk: utwór / sekcja / BBT / następny / conn / Kontrola + korekta skrót
-- [ ] Biblioteka: search, sort, filtry, lista+detail, XML/Partytura/Edytuj/Usuń, export, wzory
-- [ ] Setlista: włącz, auto, dodaj, zapisz, wyczyść
-- [ ] Scena: komunikaty live + sieć/klienci
-- [ ] Import: import/export + modal
-- [ ] System: ustawienia, logi, MIDI monitor, o aplikacji (bez Apply), restart/wyłącz
-- [ ] Modale w DOM: Wygląd, Ustawienia, import preview, MusicXML, path picker, batch PC
+- [ ] Chrome: brand, wersja, Timeline, Klient, Wygląd, zakładki sekcji
+- [ ] Status: utwór / sekcja / BBT / dalej / conn / Kontrola + korekta
+- [ ] Utwory: filtr, sort, filtry, lista+panel, XML/Partytura/Edytuj/Usuń, eksport, wzory
+- [ ] Set: włącz, auto, dodaj, zapisz, wyczyść
+- [ ] Scena: komunikat + klienci
+- [ ] Pliki: import/eksport + modal
+- [ ] Host: ustawienia, logi, MIDI, o aplikacji (bez Apply), restart/wyłącz
+- [ ] Modale w DOM: Wygląd, Ustawienia, import, MusicXML, path picker, batch PC
 
 ## Client
 

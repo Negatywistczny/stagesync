@@ -28,7 +28,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-weight: 600;
+  font-weight: var(--ss-font-weight-semibold);
   color: inherit;
 }
 

@@ -32,7 +32,7 @@
 .title {
   margin: 0;
   font-size: var(--ss-text-md);
-  font-weight: 650;
+  font-weight: var(--ss-font-weight-bold);
 }
 
 .adminLink {
@@ -155,7 +155,7 @@
 .bbt {
   margin: 0 0.35rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: var(--ss-font-weight-semibold);
   min-width: 3.5rem;
 }
 
@@ -365,7 +365,7 @@
   margin: 0;
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
-  line-height: 1.45;
+  line-height: var(--ss-leading-relaxed);
 }
 
 .lengthInput {
@@ -520,7 +520,7 @@
 
 .appearTitle {
   margin: 0 0 0.5rem;
-  font-weight: 600;
+  font-weight: var(--ss-font-weight-semibold);
   font-size: var(--ss-text-sm);
 }
 

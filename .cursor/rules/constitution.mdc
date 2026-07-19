@@ -49,8 +49,8 @@ Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować dr
 ## UI — Button i tokeny
 
 - `Button`: zamknięty zbiór 7 stanów (default, hover, focus, active, disabled, loading, selected).
-- Kolory / odstępy / **typografia** tylko `--ss-*` w `packages/ui` — bez HEX i bez ad-hoc `font-size` w rem w komponentach/shellach.
-- Skala tekstu: `--ss-text-xs|sm|md|lg|xl` (alias `--ss-font-size` = md dla Button).
+- Kolory / odstępy / **typografia** tylko `--ss-*` w `packages/ui` — bez HEX i bez ad-hoc wartości typograficznych (`font-size` / `font-weight` / `line-height` / `letter-spacing`) w komponentach i shellach.
+- Typografia: `--ss-text-xs|sm|control|md|lg|xl`, `--ss-font-weight-*`, `--ss-leading-*`, `--ss-tracking-*` (Button: `--ss-font-size` = control, weight semibold, leading tight).
 
 ## Poza zakresem (alpha)
 

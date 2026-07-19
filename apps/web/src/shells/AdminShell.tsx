@@ -7,23 +7,22 @@ import { useTransport } from "../transport/useTransport.js";
 import { IconSettings, IconSun } from "./icons.js";
 import styles from "./AdminShell.module.css";
 
-type RailId = "library" | "setlist" | "stage" | "import" | "system";
+type SectionId = "songs" | "set" | "stage" | "files" | "host";
 
-const RAIL: { id: RailId; label: string }[] = [
-  { id: "library", label: "Biblioteka" },
-  { id: "setlist", label: "Setlista" },
+const SECTIONS: { id: SectionId; label: string }[] = [
+  { id: "songs", label: "Utwory" },
+  { id: "set", label: "Set" },
   { id: "stage", label: "Scena" },
-  { id: "import", label: "Import" },
-  { id: "system", label: "System" },
+  { id: "files", label: "Pliki" },
+  { id: "host", label: "Host" },
 ];
 
 export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [rail, setRail] = useState<RailId>("library");
-  const [railCollapsed, setRailCollapsed] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(true);
+  const [section, setSection] = useState<SectionId>("songs");
+  const [inspectorOpen, setInspectorOpen] = useState(true);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -33,6 +32,7 @@ export function AdminShell() {
 
   const { state, displayTicks, wsStatus } = useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+  const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
 
   useEffect(() => {
     let cancelled = false;
@@ -55,66 +55,54 @@ export function AdminShell() {
     };
   }, []);
 
-  const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
-
   return (
-    <div
-      className={[styles.shell, railCollapsed ? styles.railCollapsed : ""]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <header className={styles.topbar}>
-        <div className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden />
-          <div>
-            <div className={styles.brandRow}>
-              <span className={styles.brandName}>StageSync</span>
-              <span className={styles.brandSub}>Admin</span>
-              <span className={styles.version}>5.0.0-alpha.1</span>
-            </div>
+    <div className={styles.shell}>
+      <div className={styles.chromeWrap}>
+        <header className={styles.chrome}>
+          <div className={styles.identity}>
+            <span className={styles.product}>
+              Stage<span className={styles.productMark}>Sync</span>
+            </span>
+            <span className={styles.productRole}>Admin</span>
+            <span className={styles.productVer}>5.0.0-alpha.1</span>
           </div>
-        </div>
 
-        <div className={styles.context}>
-          <strong>{selected?.name ?? "—"}</strong>
-          <span>
-            {state.bpm} BPM · {state.timeSignature.numerator}/
-            {state.timeSignature.denominator} · takt {toDisplayBar(bbt.bar)}.
-            {bbt.beat}
-          </span>
-        </div>
+          <nav className={styles.sections} aria-label="Sekcje">
+            {SECTIONS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={[
+                  styles.sectionTab,
+                  section === item.id ? styles.sectionTabOn : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                aria-pressed={section === item.id}
+                onClick={() => setSection(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
 
-        <nav className={styles.appLinks} aria-label="Aplikacje">
-          <Link className={styles.appLink} to="/timeline">
-            Timeline
-          </Link>
-          <Link className={styles.appLink} to="/">
-            Klient
-          </Link>
-        </nav>
-
-        <div className={styles.topbarActions}>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Zwiń rail"
-            aria-pressed={railCollapsed}
-            title="Zwiń rail"
-            onClick={() => setRailCollapsed((v) => !v)}
-          >
-            ☰
-          </button>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Wygląd"
-            aria-expanded={appearanceOpen}
-            title="Wygląd"
-            onClick={() => setAppearanceOpen((v) => !v)}
-          >
-            <IconSun />
-          </button>
-        </div>
+          <div className={styles.chromeAside}>
+            <nav className={styles.appJump} aria-label="Aplikacje">
+              <Link to="/timeline">Timeline</Link>
+              <Link to="/">Klient</Link>
+            </nav>
+            <button
+              type="button"
+              className={styles.iconBtn}
+              aria-label="Wygląd"
+              aria-expanded={appearanceOpen}
+              title="Wygląd"
+              onClick={() => setAppearanceOpen((v) => !v)}
+            >
+              <IconSun />
+            </button>
+          </div>
+        </header>
 
         {appearanceOpen ? (
           <div className={styles.appearPop} role="dialog" aria-label="Wygląd">
@@ -127,87 +115,71 @@ export function AdminShell() {
             </label>
           </div>
         ) : null}
-      </header>
+      </div>
 
-      <nav className={styles.rail} aria-label="Sekcje Admin">
-        {RAIL.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={[
-              styles.railItem,
-              rail === item.id ? styles.railItemOn : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            aria-pressed={rail === item.id}
-            onClick={() => setRail(item.id)}
-          >
-            <span className={styles.railLabel}>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <div className={styles.main}>
-        {rail === "library" ? (
-          <LibraryView
+      <main className={styles.workspace}>
+        {section === "songs" ? (
+          <SongsView
             library={library}
             libraryError={libraryError}
             selectedId={selectedId}
             selected={selected}
-            detailOpen={detailOpen}
+            inspectorOpen={inspectorOpen}
             onSelect={setSelectedId}
-            onToggleDetail={() => setDetailOpen((v) => !v)}
+            onToggleInspector={() => setInspectorOpen((v) => !v)}
             onImport={() => setImportModalOpen(true)}
             onXml={() => setXmlModalOpen(true)}
             onBatchPc={() => setBatchPcOpen(true)}
           />
         ) : null}
-        {rail === "setlist" ? <SetlistView /> : null}
-        {rail === "stage" ? <StageView /> : null}
-        {rail === "import" ? (
-          <ImportView onOpenModal={() => setImportModalOpen(true)} />
+        {section === "set" ? <SetView /> : null}
+        {section === "stage" ? <StageView /> : null}
+        {section === "files" ? (
+          <FilesView onOpenImport={() => setImportModalOpen(true)} />
         ) : null}
-        {rail === "system" ? (
-          <SystemView
+        {section === "host" ? (
+          <HostView
             onSettings={() => setSettingsOpen(true)}
             onPathPicker={() => setPathPickerOpen(true)}
           />
         ) : null}
-      </div>
+      </main>
 
-      <footer className={styles.liveDesk} aria-label="Live Desk">
-        <div className={styles.deskBlock}>
-          <span className={styles.deskLab}>Utwór</span>
-          <strong>{selected?.name ?? "—"}</strong>
+      <footer className={styles.status} aria-label="Status koncertu">
+        <div className={styles.statusGroup}>
+          <span className={styles.statusLab}>Teraz</span>
+          <span className={styles.statusVal}>{selected?.name ?? "—"}</span>
         </div>
-        <div className={styles.deskBlock}>
-          <span className={styles.deskLab}>Sekcja</span>
-          <span>—</span>
+        <div className={styles.statusGroup}>
+          <span className={styles.statusLab}>Sekcja</span>
+          <span className={styles.statusVal}>—</span>
         </div>
-        <div className={styles.deskBlock}>
-          <span className={styles.deskLab}>Pozycja</span>
-          <span className={styles.mono}>
-            {toDisplayBar(bbt.bar)}.{bbt.beat}
+        <div className={styles.statusGroup}>
+          <span className={styles.statusLab}>Pozycja</span>
+          <span className={[styles.statusVal, styles.statusMono].join(" ")}>
+            {toDisplayBar(bbt.bar)}.{bbt.beat} · {state.bpm} BPM ·{" "}
+            {state.timeSignature.numerator}/{state.timeSignature.denominator}
           </span>
         </div>
-        <div className={styles.deskBlock}>
-          <span className={styles.deskLab}>Następny</span>
-          <span className={styles.muted}>Setlista</span>
+        <div className={styles.statusGroup}>
+          <span className={styles.statusLab}>Dalej</span>
+          <span className={[styles.statusVal, styles.statusMuted].join(" ")}>
+            z setu
+          </span>
         </div>
-        <div className={styles.deskBlock}>
-          <span className={styles.deskLab}>Conn</span>
-          <span>{wsStatus}</span>
+        <div className={styles.statusGroup}>
+          <span className={styles.statusLab}>Połączenie</span>
+          <span className={styles.statusVal}>{wsStatus}</span>
         </div>
         <Button variant="secondary" disabled>
-          Kontrola MIDI / Timeline
+          MIDI / Timeline
         </Button>
-        <div className={styles.deskCorrect}>
-          <label className={styles.deskField} title="Transpozycja">
+        <div className={styles.statusCorrect}>
+          <label className={styles.statusField} title="Transpozycja">
             Tr.
             <input type="range" min={-12} max={12} defaultValue={0} disabled />
           </label>
-          <label className={styles.deskField} title="Sync lead">
+          <label className={styles.statusField} title="Sync lead">
             Lead
             <input
               type="range"
@@ -225,22 +197,24 @@ export function AdminShell() {
       </footer>
 
       {settingsOpen ? (
-        <Modal title="Ustawienia serwera" onClose={() => setSettingsOpen(false)}>
+        <Modal title="Ustawienia hosta" onClose={() => setSettingsOpen(false)}>
           <fieldset className={styles.fieldset} disabled>
             <legend>MIDI</legend>
             <label className={styles.field}>
-              Port MIDI
+              Port
               <input className={styles.input} />
             </label>
           </fieldset>
           <fieldset className={styles.fieldset} disabled>
-            <legend>Sieć / Logi / Ścieżki</legend>
-            <p className={styles.muted}>Pola .env jak w v4 — shell.</p>
+            <legend>Sieć, logi, ścieżki</legend>
+            <p className={styles.muted}>
+              Wartości z konfiguracji serwera — shell pod przyszłe API.
+            </p>
             <Button variant="ghost" onClick={() => setPathPickerOpen(true)}>
               Wybierz ścieżkę…
             </Button>
           </fieldset>
-          <div className={styles.row}>
+          <div className={styles.actions}>
             <Button variant="ghost" onClick={() => setSettingsOpen(false)}>
               Anuluj
             </Button>
@@ -252,16 +226,16 @@ export function AdminShell() {
       ) : null}
 
       {importModalOpen ? (
-        <Modal title="Import projektu" onClose={() => setImportModalOpen(false)}>
+        <Modal title="Import" onClose={() => setImportModalOpen(false)}>
           <p className={styles.muted}>
-            Preview konfliktów · Nadpisz / Utwórz jako nowe — shell.
+            Podgląd konfliktów i wybór nadpisania albo kopii — shell.
           </p>
-          <div className={styles.row}>
+          <div className={styles.actions}>
             <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
               Anuluj
             </Button>
             <Button variant="primary" disabled>
-              Importuj wybrane
+              Importuj
             </Button>
           </div>
         </Modal>
@@ -269,7 +243,7 @@ export function AdminShell() {
 
       {xmlModalOpen ? (
         <Modal title="MusicXML" onClose={() => setXmlModalOpen(false)}>
-          <p className={styles.muted}>Upload / podgląd OSMD — shell.</p>
+          <p className={styles.muted}>Wgranie i podgląd partytury — shell.</p>
           <Button variant="ghost" onClick={() => setXmlModalOpen(false)}>
             Zamknij
           </Button>
@@ -277,8 +251,10 @@ export function AdminShell() {
       ) : null}
 
       {batchPcOpen ? (
-        <Modal title="Batch MIDI PC" onClose={() => setBatchPcOpen(false)}>
-          <p className={styles.muted}>Numeruj PC dla zaznaczenia — shell.</p>
+        <Modal title="Batch PC" onClose={() => setBatchPcOpen(false)}>
+          <p className={styles.muted}>
+            Numeracja Program Change dla zaznaczonych — shell.
+          </p>
           <Button variant="ghost" onClick={() => setBatchPcOpen(false)}>
             Zamknij
           </Button>
@@ -286,8 +262,8 @@ export function AdminShell() {
       ) : null}
 
       {pathPickerOpen ? (
-        <Modal title="Wybór ścieżki" onClose={() => setPathPickerOpen(false)}>
-          <p className={styles.muted}>Browse katalogów — shell.</p>
+        <Modal title="Ścieżka" onClose={() => setPathPickerOpen(false)}>
+          <p className={styles.muted}>Przeglądanie katalogów — shell.</p>
           <Button variant="ghost" onClick={() => setPathPickerOpen(false)}>
             Zamknij
           </Button>
@@ -297,14 +273,14 @@ export function AdminShell() {
   );
 }
 
-function LibraryView({
+function SongsView({
   library,
   libraryError,
   selectedId,
   selected,
-  detailOpen,
+  inspectorOpen,
   onSelect,
-  onToggleDetail,
+  onToggleInspector,
   onImport,
   onXml,
   onBatchPc,
@@ -313,159 +289,178 @@ function LibraryView({
   libraryError: string | null;
   selectedId: string | null;
   selected: Library["projects"][number] | null;
-  detailOpen: boolean;
+  inspectorOpen: boolean;
   onSelect: (id: string) => void;
-  onToggleDetail: () => void;
+  onToggleInspector: () => void;
   onImport: () => void;
   onXml: () => void;
   onBatchPc: () => void;
 }) {
   return (
     <div
-      className={[styles.workspace, detailOpen ? "" : styles.detailHidden]
+      className={[styles.split, inspectorOpen ? "" : styles.splitSolo]
         .filter(Boolean)
         .join(" ")}
     >
-      <section className={styles.listPanel} aria-label="Lista utworów">
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>Biblioteka</h2>
-          <div className={styles.row}>
+      <section className={styles.card} aria-label="Utwory">
+        <div className={styles.cardHead}>
+          <div>
+            <h1 className={styles.cardTitle}>Utwory</h1>
+            <p className={styles.cardHint}>Biblioteka projektów na tym hoście</p>
+          </div>
+          <div className={styles.actions}>
             <Button variant="secondary" disabled>
-              + Nowy
+              Nowy
             </Button>
-            <Button variant="ghost" onClick={onToggleDetail}>
-              Szczegóły
+            <Button variant="ghost" onClick={onToggleInspector}>
+              {inspectorOpen ? "Ukryj panel" : "Pokaż panel"}
             </Button>
             <Button variant="ghost" disabled>
-              Eksportuj
+              Eksport
             </Button>
             <Button variant="ghost" onClick={onImport}>
-              Importuj
+              Import
             </Button>
           </div>
         </div>
-        <div className={styles.listToolbar}>
-          <input
-            className={styles.input}
-            placeholder="Szukaj…"
-            disabled
-            aria-label="Szukaj"
-          />
-          <select className={styles.select} disabled aria-label="Sortuj">
-            <option>Kolejność bazy</option>
-            <option>Tytuł A–Z</option>
-            <option>PC rosnąco</option>
-          </select>
-          <button type="button" className={styles.chipOn} disabled>
-            Wszystkie
-          </button>
-          <button type="button" className={styles.chip} disabled>
-            Ostrzeżenia
-          </button>
-          <Button variant="ghost" disabled onClick={onBatchPc}>
-            PC batch
-          </Button>
-        </div>
-        {libraryError ? (
-          <p className={styles.error} role="alert">
-            {libraryError}
-          </p>
-        ) : null}
-        <div className={styles.listBody}>
-          {library?.projects.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className={[
-                styles.listRow,
-                selectedId === p.id ? styles.listRowOn : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => onSelect(p.id)}
-            >
-              <span className={styles.listPc}>—</span>
-              <span className={styles.listTitle}>{p.name}</span>
-              <span className={styles.listMeta}>assety · XML · audio</span>
+        <div className={styles.cardBody}>
+          <div className={styles.toolbar}>
+            <input
+              className={styles.input}
+              placeholder="Filtruj…"
+              disabled
+              aria-label="Filtruj utwory"
+            />
+            <select className={styles.select} disabled aria-label="Sortowanie">
+              <option>Kolejność bazy</option>
+              <option>Tytuł A–Z</option>
+              <option>PC ↑</option>
+            </select>
+            <button type="button" className={styles.chipOn} disabled>
+              Wszystkie
             </button>
-          ))}
-          {!library && !libraryError ? (
-            <p className={styles.muted}>Ładowanie…</p>
+            <button type="button" className={styles.chip} disabled>
+              Ostrzeżenia
+            </button>
+            <Button variant="ghost" disabled onClick={onBatchPc}>
+              Batch PC
+            </Button>
+          </div>
+
+          {libraryError ? (
+            <p className={styles.error} role="alert">
+              {libraryError}
+            </p>
           ) : null}
-        </div>
-        <div className={styles.templates}>
-          <h3 className={styles.subTitle}>Wzory</h3>
-          <p className={styles.muted}>Szablony — Edytuj / Usuń (disabled).</p>
+
+          <div className={styles.list}>
+            {library?.projects.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={[
+                  styles.songRow,
+                  selectedId === p.id ? styles.songRowOn : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => onSelect(p.id)}
+              >
+                <span className={styles.songPc}>—</span>
+                <span className={styles.songName}>{p.name}</span>
+                <span className={styles.songMeta}>XML · audio</span>
+              </button>
+            ))}
+            {!library && !libraryError ? (
+              <p className={styles.muted}>Wczytywanie…</p>
+            ) : null}
+          </div>
+
+          <div className={styles.templates}>
+            <h2 className={styles.subTitle}>Wzory</h2>
+            <p className={styles.muted}>Szablony startowe — edycja później.</p>
+          </div>
         </div>
       </section>
 
-      {detailOpen ? (
-        <aside className={styles.detailPanel} aria-label="Szczegóły">
-          <div className={styles.panelHead}>
-            <h2 className={styles.panelTitle}>Szczegóły</h2>
-            <Button variant="ghost" onClick={onToggleDetail} aria-label="Zwiń">
+      {inspectorOpen ? (
+        <aside className={styles.card} aria-label="Wybrany utwór">
+          <div className={styles.cardHead}>
+            <h2 className={styles.cardTitle}>Wybrany</h2>
+            <Button
+              variant="ghost"
+              onClick={onToggleInspector}
+              aria-label="Zamknij panel"
+            >
               ×
             </Button>
           </div>
-          {selected ? (
-            <div className={styles.detailBody}>
-              <p className={styles.detailName}>{selected.name}</p>
-              <p className={styles.muted}>id: {selected.id}</p>
-              <div className={styles.row}>
-                <Button variant="secondary" onClick={onXml}>
-                  XML
-                </Button>
-                <Button variant="ghost" disabled>
-                  Partytura
-                </Button>
-                <Link className={styles.editLink} to="/timeline">
-                  Edytuj w Timeline
-                </Link>
-                <Button variant="ghost" disabled>
-                  Usuń
-                </Button>
-              </div>
-              <h3 className={styles.subTitle}>Assety projektu</h3>
-              <ul className={styles.assetList}>
-                <li>MusicXML</li>
-                <li>Audio (0…N plików)</li>
-                <li>Okładka</li>
-              </ul>
-            </div>
-          ) : (
-            <p className={styles.muted}>Wybierz utwór z listy.</p>
-          )}
+          <div className={styles.cardBody}>
+            {selected ? (
+              <>
+                <p className={styles.inspectorName}>{selected.name}</p>
+                <p className={styles.inspectorId}>{selected.id}</p>
+                <div className={styles.actions}>
+                  <Button variant="secondary" onClick={onXml}>
+                    XML
+                  </Button>
+                  <Button variant="ghost" disabled>
+                    Partytura
+                  </Button>
+                  <Link className={styles.editLink} to="/timeline">
+                    Otwórz w Timeline
+                  </Link>
+                  <Button variant="ghost" disabled>
+                    Usuń
+                  </Button>
+                </div>
+                <div>
+                  <h3 className={styles.subTitle}>Pliki projektu</h3>
+                  <ul className={styles.assetList}>
+                    <li>MusicXML</li>
+                    <li>Audio (0…N)</li>
+                    <li>Okładka</li>
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <p className={styles.muted}>Wybierz utwór z listy.</p>
+            )}
+          </div>
         </aside>
       ) : null}
     </div>
   );
 }
 
-function SetlistView() {
+function SetView() {
   return (
-    <section className={styles.singlePanel} aria-label="Setlista">
-      <div className={styles.panelHead}>
-        <h2 className={styles.panelTitle}>Setlista koncertowa</h2>
+    <section className={styles.card} aria-label="Set">
+      <div className={styles.cardHead}>
+        <div>
+          <h1 className={styles.cardTitle}>Set</h1>
+          <p className={styles.cardHint}>Kolejność utworów na koncert</p>
+        </div>
       </div>
-      <div className={styles.panelPad}>
+      <div className={styles.cardBody}>
         <label className={styles.switchRow}>
-          <input type="checkbox" disabled /> Włącz setlistę
+          <input type="checkbox" disabled /> Aktywny set
         </label>
         <label className={styles.switchRow}>
-          <input type="checkbox" disabled /> Auto-setlista
+          <input type="checkbox" disabled /> Auto z biblioteki
         </label>
-        <div className={styles.row}>
+        <div className={styles.actions}>
           <Button variant="secondary" disabled>
             Dodaj zaznaczone
           </Button>
           <Button variant="primary" disabled>
-            Zapisz setlistę
+            Zapisz
           </Button>
           <Button variant="ghost" disabled>
-            Usuń wszystkie
+            Wyczyść
           </Button>
         </div>
-        <p className={styles.muted}>Wiersze setlisty (drag) — shell.</p>
+        <p className={styles.muted}>Lista pozycji (przeciąganie) — shell.</p>
       </div>
     </section>
   );
@@ -473,16 +468,19 @@ function SetlistView() {
 
 function StageView() {
   return (
-    <div className={styles.stageGrid}>
-      <section className={styles.singlePanel} aria-label="Komunikaty live">
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>Komunikaty live</h2>
+    <div className={styles.twoUp}>
+      <section className={styles.card} aria-label="Komunikat">
+        <div className={styles.cardHead}>
+          <div>
+            <h1 className={styles.cardTitle}>Komunikat</h1>
+            <p className={styles.cardHint}>Na ekrany klientów</p>
+          </div>
         </div>
-        <div className={styles.panelPad}>
+        <div className={styles.cardBody}>
           <textarea
             className={styles.textarea}
             maxLength={200}
-            placeholder="Tekst komunikatu…"
+            placeholder="Treść…"
             disabled
           />
           <div className={styles.chips}>
@@ -492,7 +490,7 @@ function StageView() {
               </button>
             ))}
           </div>
-          <div className={styles.row}>
+          <div className={styles.actions}>
             <select className={styles.select} disabled>
               <option>TTL 6 s</option>
               <option>10 s</option>
@@ -507,13 +505,17 @@ function StageView() {
           </div>
         </div>
       </section>
-      <section className={styles.singlePanel} aria-label="Sieć i klienci">
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>Sieć i klienci</h2>
+
+      <section className={styles.card} aria-label="Klienci">
+        <div className={styles.cardHead}>
+          <div>
+            <h1 className={styles.cardTitle}>Klienci</h1>
+            <p className={styles.cardHint}>Sieć i role</p>
+          </div>
         </div>
-        <div className={styles.panelPad}>
-          <p className={styles.muted}>mDNS / IP fallback</p>
-          <p className={styles.muted}>Lista klientów + role</p>
+        <div className={styles.cardBody}>
+          <p className={styles.muted}>mDNS / IP</p>
+          <p className={styles.muted}>Lista urządzeń i ról — shell.</p>
           <Button variant="ghost" disabled>
             Odśwież
           </Button>
@@ -523,22 +525,23 @@ function StageView() {
   );
 }
 
-function ImportView({ onOpenModal }: { onOpenModal: () => void }) {
+function FilesView({ onOpenImport }: { onOpenImport: () => void }) {
   return (
-    <section className={styles.singlePanel} aria-label="Import">
-      <div className={styles.panelHead}>
-        <h2 className={styles.panelTitle}>Import / eksport</h2>
-      </div>
-      <div className={styles.panelPad}>
-        <div className={styles.dropZone}>
-          Upuść plik .stagesync / .zip tutaj (shell)
+    <section className={styles.card} aria-label="Pliki">
+      <div className={styles.cardHead}>
+        <div>
+          <h1 className={styles.cardTitle}>Pliki</h1>
+          <p className={styles.cardHint}>Paczki projektów</p>
         </div>
-        <div className={styles.row}>
-          <Button variant="secondary" onClick={onOpenModal}>
-            Importuj z pliku
+      </div>
+      <div className={styles.cardBody}>
+        <div className={styles.dropZone}>Upuść .stagesync lub .zip</div>
+        <div className={styles.actions}>
+          <Button variant="secondary" onClick={onOpenImport}>
+            Z pliku…
           </Button>
           <Button variant="ghost" disabled>
-            Eksportuj zaznaczone
+            Eksport zaznaczonych
           </Button>
         </div>
       </div>
@@ -546,7 +549,7 @@ function ImportView({ onOpenModal }: { onOpenModal: () => void }) {
   );
 }
 
-function SystemView({
+function HostView({
   onSettings,
   onPathPicker,
 }: {
@@ -554,11 +557,14 @@ function SystemView({
   onPathPicker: () => void;
 }) {
   return (
-    <div className={styles.systemStack}>
-      <section className={styles.singlePanel}>
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>System</h2>
-          <div className={styles.row}>
+    <div className={styles.stack}>
+      <section className={styles.card}>
+        <div className={styles.cardHead}>
+          <div>
+            <h1 className={styles.cardTitle}>Host</h1>
+            <p className={styles.cardHint}>Maszyna i usługa</p>
+          </div>
+          <div className={styles.actions}>
             <Button variant="secondary" onClick={onSettings}>
               <IconSettings /> Ustawienia
             </Button>
@@ -572,45 +578,47 @@ function SystemView({
         </div>
       </section>
 
-      <section className={styles.singlePanel} aria-label="Logi">
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>Logi serwera</h2>
-          <div className={styles.row}>
+      <section className={styles.card} aria-label="Logi">
+        <div className={styles.cardHead}>
+          <h2 className={styles.cardTitle}>Logi</h2>
+          <div className={styles.actions}>
             <Button variant="ghost" disabled>
-              Wstrzymaj
+              Pauza
             </Button>
             <Button variant="ghost" disabled>
               Wyczyść
             </Button>
           </div>
         </div>
-        <pre className={styles.terminal}>SSE logów — shell</pre>
+        <pre className={styles.terminal}>Strumień logów — shell</pre>
       </section>
 
-      <section className={styles.singlePanel} aria-label="Monitor MIDI">
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>Monitor MIDI</h2>
+      <section className={styles.card} aria-label="MIDI">
+        <div className={styles.cardHead}>
+          <h2 className={styles.cardTitle}>MIDI</h2>
         </div>
-        <div className={styles.midiGrid}>
-          <div className={styles.midiCard}>Clock/s —</div>
-          <div className={styles.midiCard}>SPP/s —</div>
-          <div className={styles.midiCard}>PC/s —</div>
-          <div className={styles.midiCard}>Beat→WS —</div>
+        <div className={styles.cardBody}>
+          <div className={styles.midiGrid}>
+            <div className={styles.midiCard}>Clock/s —</div>
+            <div className={styles.midiCard}>SPP/s —</div>
+            <div className={styles.midiCard}>PC/s —</div>
+            <div className={styles.midiCard}>Beat→WS —</div>
+          </div>
         </div>
       </section>
 
-      <section className={styles.singlePanel} aria-label="O aplikacji">
-        <div className={styles.panelHead}>
-          <h2 className={styles.panelTitle}>O aplikacji</h2>
+      <section className={styles.card} aria-label="O aplikacji">
+        <div className={styles.cardHead}>
+          <h2 className={styles.cardTitle}>O aplikacji</h2>
         </div>
-        <div className={styles.panelPad}>
+        <div className={styles.cardBody}>
           <p>
             Wersja <strong>5.0.0-alpha.1</strong>
           </p>
           <p className={styles.muted}>
-            Aktualizacja: Docker (bump tagu). Brak git-apply — ADR 0004.
+            Aktualizacje przez Docker (bump tagu) — bez Apply z UI.
           </p>
-          <div className={styles.row}>
+          <div className={styles.actions}>
             <Button variant="secondary" disabled>
               Sprawdź aktualizacje
             </Button>
@@ -619,13 +627,17 @@ function SystemView({
               <option>Testowe</option>
             </select>
           </div>
-          <h3 className={styles.subTitle}>Kopie zapasowe</h3>
-          <Button variant="ghost" disabled>
-            Przywróć…
-          </Button>
-          <Button variant="ghost" onClick={onPathPicker}>
-            Path picker (test)
-          </Button>
+          <div>
+            <h3 className={styles.subTitle}>Kopie zapasowe</h3>
+            <div className={styles.actions}>
+              <Button variant="ghost" disabled>
+                Przywróć…
+              </Button>
+              <Button variant="ghost" onClick={onPathPicker}>
+                Path picker
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
     </div>

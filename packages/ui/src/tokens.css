@@ -1,40 +1,51 @@
 /**
- * StageSync design tokens — Booth ink/teal (single :root palette).
+ * StageSync design tokens — default black / amber (v4 brand).
  * Components must use these variables — no ad-hoc HEX in UI packages.
- * Themes (light/dark via data-theme) come later; keep shells on --ss-* only.
+ * Themes (light / high-contrast via data-theme) come later; keep shells on --ss-* only.
  */
 
 :root {
-  --ss-color-bg: #070b0e;
-  --ss-color-surface: #121a20;
-  --ss-color-text: #e6eef2;
-  --ss-color-text-muted: #8a9ba8;
-  --ss-color-primary: #2ec4b6;
-  --ss-color-primary-hover: #3de0d0;
-  --ss-color-primary-active: #249e93;
-  --ss-color-secondary: #1a242c;
-  --ss-color-secondary-hover: #243039;
-  --ss-color-secondary-active: #0c1216;
-  --ss-color-ghost-hover: rgba(230, 238, 242, 0.08);
-  --ss-color-ghost-active: rgba(230, 238, 242, 0.14);
-  --ss-color-border: rgba(180, 210, 220, 0.16);
-  --ss-color-focus-ring: #3de0d0;
-  --ss-color-selected: rgba(46, 196, 182, 0.16);
-  --ss-color-selected-border: #2ec4b6;
-  --ss-color-disabled-bg: #0c1216;
-  --ss-color-disabled-text: #5c6d7a;
-  --ss-color-danger: #e86a5a;
+  --ss-color-bg: #000000;
+  --ss-color-surface: #18181b;
+  --ss-color-text: #fafafa;
+  --ss-color-text-muted: #a1a1aa;
+  --ss-color-primary: #fbbf24;
+  --ss-color-primary-hover: #fcd34d;
+  --ss-color-primary-active: #f59e0b;
+  --ss-color-on-primary: #0a0a0a;
+  --ss-color-secondary: #27272a;
+  --ss-color-secondary-hover: #3f3f46;
+  --ss-color-secondary-active: #18181b;
+  --ss-color-ghost-hover: rgba(250, 250, 250, 0.08);
+  --ss-color-ghost-active: rgba(250, 250, 250, 0.14);
+  --ss-color-border: #3f3f46;
+  --ss-color-focus-ring: #22d3ee;
+  --ss-color-selected: rgba(251, 191, 36, 0.16);
+  --ss-color-selected-border: #fbbf24;
+  --ss-color-disabled-bg: #09090b;
+  --ss-color-disabled-text: #52525b;
+  --ss-color-danger: #ef4444;
   --ss-radius-sm: 6px;
   --ss-space-x: 0.875rem;
   --ss-space-y: 0.5rem;
   --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
-  /* Type scale — shells/components use these only (no ad-hoc rem). */
-  --ss-text-xs: 0.75rem; /* 12px — labels, meta, desk eyebrows */
-  --ss-text-sm: 0.8125rem; /* 13px — secondary / muted UI */
-  --ss-text-md: 0.9375rem; /* 15px — body / default controls */
-  --ss-text-lg: 1.125rem; /* 18px — panel titles */
-  --ss-text-xl: 1.5rem; /* 24px — page / welcome titles */
-  --ss-font-size: var(--ss-text-md); /* Button / legacy alias */
-  --ss-line-height: 1.35;
+  /* Type scale — size / weight / leading / tracking (no ad-hoc values in UI). */
+  --ss-text-xs: 0.75rem;
+  --ss-text-sm: 0.8125rem;
+  --ss-text-control: 0.875rem;
+  --ss-text-md: 0.9375rem;
+  --ss-text-lg: 1.125rem;
+  --ss-text-xl: 1.5rem;
+  --ss-font-size: var(--ss-text-control);
+  --ss-font-weight-regular: 400;
+  --ss-font-weight-medium: 500;
+  --ss-font-weight-semibold: 600;
+  --ss-font-weight-bold: 650;
+  --ss-leading-tight: 1.25;
+  --ss-leading-normal: 1.35;
+  --ss-leading-relaxed: 1.5;
+  --ss-line-height: var(--ss-leading-normal);
+  --ss-tracking-normal: 0;
+  --ss-tracking-label: 0.06em;
   --ss-transition: 120ms ease;
 }
