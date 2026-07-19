@@ -9,7 +9,7 @@
 
 ## Commity
 
-Akceptowane są wyłącznie [Conventional Commits](https://www.conventionalcommits.org/) (commitlint + husky `commit-msg`):
+Akceptowane są wyłącznie [Conventional Commits](https://www.conventionalcommits.org/pl/v1.0.0/) (commitlint + husky `commit-msg`):
 
 - `feat: …` — nowa możliwość
 - `fix: …` — poprawka błędu
@@ -18,3 +18,5 @@ Akceptowane są wyłącznie [Conventional Commits](https://www.conventionalcommi
 - `refactor: …` / `test: …` / `ci: …` w razie potrzeby
 
 W normalnym workflow **nie** używaj `--no-verify`.
+
+Pełna lista standardów zewnętrznych (linki, bez kopii w repo): [docs/STANDARDS.md](docs/STANDARDS.md).

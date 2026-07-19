@@ -58,9 +58,9 @@ Zobacz `docs/adr/0001-storage-layout.md`.
 
 ## Commity
 
-- Tylko [Conventional Commits](https://www.conventionalcommits.org/) (commitlint + husky).
+- Tylko [Conventional Commits](https://www.conventionalcommits.org/pl/v1.0.0/) (commitlint + husky).
 - Typy: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, …
-- W normalnym workflow nie używaj `--no-verify`. Zobacz `CONTRIBUTING.md`.
+- W normalnym workflow nie używaj `--no-verify`. Zobacz `CONTRIBUTING.md` i `docs/STANDARDS.md`.
 
 ## Poza zakresem (v5 day-0 / alpha)
 

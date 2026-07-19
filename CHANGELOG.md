@@ -10,6 +10,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - Dokumentacja produktowa i reguły agenta po polsku (commity i kod pozostają EN).
+- [docs/STANDARDS.md](docs/STANDARDS.md) — linki do zewnętrznych standardów (bez vendoringu).
+- [`.editorconfig`](.editorconfig) — spójny styl edytora (jak legacy).
 
 ### Zmieniono
 

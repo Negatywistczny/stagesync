@@ -40,7 +40,7 @@ pnpm dev
 - `packages/ui` — `Button` + tokeny `--ss-*`
 - `data/` — układ library / projects / logs
 
-Zobacz [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TODO.md](docs/TODO.md) i [CONTRIBUTING.md](CONTRIBUTING.md).
+Zobacz [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TODO.md](docs/TODO.md), [docs/STANDARDS.md](docs/STANDARDS.md) i [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Skrypty
 
