@@ -1,0 +1,32 @@
+/**
+ * StageSync design tokens.
+ * Components must use these variables — no ad-hoc HEX in UI packages.
+ */
+
+:root {
+  --ss-color-bg: #0f1419;
+  --ss-color-surface: #1a222c;
+  --ss-color-text: #e8eef4;
+  --ss-color-text-muted: #9aa8b5;
+  --ss-color-primary: #3d9cf0;
+  --ss-color-primary-hover: #5aaff5;
+  --ss-color-primary-active: #2b7fc4;
+  --ss-color-secondary: #2a3540;
+  --ss-color-secondary-hover: #364552;
+  --ss-color-secondary-active: #1f2830;
+  --ss-color-ghost-hover: rgba(232, 238, 244, 0.08);
+  --ss-color-ghost-active: rgba(232, 238, 244, 0.14);
+  --ss-color-border: #3a4754;
+  --ss-color-focus-ring: #7ec4ff;
+  --ss-color-selected: #1e4a6e;
+  --ss-color-selected-border: #3d9cf0;
+  --ss-color-disabled-bg: #252d36;
+  --ss-color-disabled-text: #6b7783;
+  --ss-radius-sm: 6px;
+  --ss-space-x: 0.875rem;
+  --ss-space-y: 0.5rem;
+  --ss-font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --ss-font-size: 0.9375rem;
+  --ss-line-height: 1.25;
+  --ss-transition: 120ms ease;
+}

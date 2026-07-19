@@ -1,0 +1,111 @@
+.ss-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--ss-space-y) var(--ss-space-x);
+  border: 1px solid transparent;
+  border-radius: var(--ss-radius-sm);
+  font-family: var(--ss-font-sans);
+  font-size: var(--ss-font-size);
+  line-height: var(--ss-line-height);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--ss-transition),
+    border-color var(--ss-transition),
+    color var(--ss-transition),
+    box-shadow var(--ss-transition);
+  user-select: none;
+}
+
+.ss-btn:focus {
+  outline: none;
+}
+
+/* focus (keyboard) */
+.ss-btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--ss-color-focus-ring);
+}
+
+/* disabled */
+.ss-btn:disabled,
+.ss-btn[aria-disabled="true"] {
+  background: var(--ss-color-disabled-bg);
+  color: var(--ss-color-disabled-text);
+  border-color: transparent;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ss-btn--primary {
+  background: var(--ss-color-primary);
+  color: var(--ss-color-bg);
+}
+
+.ss-btn--primary:hover:not(:disabled) {
+  background: var(--ss-color-primary-hover);
+}
+
+.ss-btn--primary:active:not(:disabled) {
+  background: var(--ss-color-primary-active);
+}
+
+.ss-btn--secondary {
+  background: var(--ss-color-secondary);
+  color: var(--ss-color-text);
+  border-color: var(--ss-color-border);
+}
+
+.ss-btn--secondary:hover:not(:disabled) {
+  background: var(--ss-color-secondary-hover);
+}
+
+.ss-btn--secondary:active:not(:disabled) {
+  background: var(--ss-color-secondary-active);
+}
+
+.ss-btn--ghost {
+  background: transparent;
+  color: var(--ss-color-text);
+}
+
+.ss-btn--ghost:hover:not(:disabled) {
+  background: var(--ss-color-ghost-hover);
+}
+
+.ss-btn--ghost:active:not(:disabled) {
+  background: var(--ss-color-ghost-active);
+}
+
+/* selected */
+.ss-btn--selected:not(:disabled) {
+  background: var(--ss-color-selected);
+  border-color: var(--ss-color-selected-border);
+  color: var(--ss-color-text);
+}
+
+/* loading */
+.ss-btn--loading {
+  cursor: wait;
+}
+
+.ss-btn__spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ss-btn-spin 0.7s linear infinite;
+}
+
+@keyframes ss-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ss-btn__label {
+  display: inline-flex;
+  align-items: center;
+}

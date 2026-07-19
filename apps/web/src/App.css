@@ -1,0 +1,87 @@
+.page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.hero {
+  margin-bottom: 2.5rem;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--ss-color-text-muted);
+}
+
+.lede {
+  margin: 0;
+  max-width: 36rem;
+  color: var(--ss-color-text-muted);
+  line-height: 1.5;
+}
+
+.showcase h2 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 1rem;
+}
+
+.grid figure {
+  margin: 0;
+  padding: 1rem;
+  background: var(--ss-color-surface);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.grid figcaption {
+  font-size: 0.75rem;
+  color: var(--ss-color-text-muted);
+  text-align: center;
+}
+
+.variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.meta {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Demo helpers so hover/active are visible without pointer */
+.force-hover {
+  background: var(--ss-color-primary-hover) !important;
+}
+
+.force-active {
+  background: var(--ss-color-primary-active) !important;
+}
+
+.force-focus {
+  box-shadow: 0 0 0 3px var(--ss-color-focus-ring);
+}

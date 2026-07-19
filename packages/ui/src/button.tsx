@@ -1,20 +1,55 @@
-"use client";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import "./button.css";
 
-import { ReactNode } from "react";
+export type ButtonVariant = "primary" | "secondary" | "ghost";
 
-interface ButtonProps {
+export type ButtonProps = {
   children: ReactNode;
+  variant?: ButtonVariant;
+  /** Shows spinner and blocks interaction (loading state). */
+  loading?: boolean;
+  /** Toggle / selected state — sets aria-pressed. */
+  selected?: boolean;
   className?: string;
-  appName: string;
-}
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
-export const Button = ({ children, className, appName }: ButtonProps) => {
+/**
+ * Canonical StageSync button — closed set of interaction states:
+ * default, hover, focus, active, disabled, loading, selected.
+ */
+export function Button({
+  children,
+  variant = "primary",
+  loading = false,
+  selected,
+  disabled,
+  className = "",
+  type = "button",
+  ...rest
+}: ButtonProps) {
+  const isDisabled = Boolean(disabled || loading);
+  const classes = [
+    "ss-btn",
+    `ss-btn--${variant}`,
+    loading ? "ss-btn--loading" : "",
+    selected ? "ss-btn--selected" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <button
-      className={className}
-      onClick={() => alert(`Hello from your ${appName} app!`)}
+      type={type}
+      className={classes}
+      disabled={isDisabled}
+      aria-disabled={isDisabled || undefined}
+      aria-busy={loading || undefined}
+      aria-pressed={typeof selected === "boolean" ? selected : undefined}
+      {...rest}
     >
-      {children}
+      {loading ? <span className="ss-btn__spinner" aria-hidden="true" /> : null}
+      <span className="ss-btn__label">{children}</span>
     </button>
   );
-};
+}

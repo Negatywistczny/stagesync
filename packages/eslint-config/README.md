@@ -1,3 +1,3 @@
-# `@turbo/eslint-config`
+# `@stagesync/eslint-config`
 
-Collection of internal eslint configurations.
+Shared ESLint configurations for the StageSync monorepo.

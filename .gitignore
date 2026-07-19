@@ -27,6 +27,14 @@ out/
 build
 dist
 
+# Runtime data (keep directory structure via .gitkeep / templates)
+data/projects/*
+!data/projects/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+data/library/*
+!data/library/.gitkeep
+!data/library/library.template.json
 
 # Debug
 npm-debug.log*
