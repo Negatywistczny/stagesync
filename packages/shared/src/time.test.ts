@@ -3,9 +3,11 @@ import {
   DEFAULT_PPQ,
   assertValidTimeSignature,
   bbtToTicks,
+  elapsedToTicks,
   fromDisplayBar,
   quartersToTicks,
   ticksPerBar,
+  ticksPerMs,
   ticksToBbt,
   ticksToQuarters,
   toDisplayBar,
@@ -156,5 +158,20 @@ describe("quartersToTicks / ticksToQuarters", () => {
     expect(quartersToTicks(4)).toBe(4 * DEFAULT_PPQ);
     expect(ticksToQuarters(DEFAULT_PPQ)).toBe(1);
     expect(ticksToQuarters(-1)).toBe(-1); // floor toward −∞
+  });
+});
+
+describe("elapsedToTicks / ticksPerMs", () => {
+  it("maps one beat at 120 BPM 4/4 to DEFAULT_PPQ ticks", () => {
+    // 120 BPM → 500 ms per quarter; one beat = DEFAULT_PPQ ticks
+    expect(elapsedToTicks(500, 120, TS_4_4)).toBe(DEFAULT_PPQ);
+    expect(ticksPerMs(120, TS_4_4)).toBe(DEFAULT_PPQ / 500);
+  });
+
+  it("floors partial beats", () => {
+    expect(elapsedToTicks(250, 120, TS_4_4)).toBe(DEFAULT_PPQ / 2);
+    expect(elapsedToTicks(499, 120, TS_4_4)).toBe(
+      Math.floor(499 * (DEFAULT_PPQ / 500)),
+    );
   });
 });

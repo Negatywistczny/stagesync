@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Transport SSOT na serwerze: `GET|POST /api/transport` (play / pause / seek),
+  WebSocket `/ws/transport` (~25 Hz); pozycja z anchor + elapsed (bez driftu
+  `+=` na timerze); schematy Zod w shared.
 - Kanon timebase w `@stagesync/shared`: integer ticks + `DEFAULT_PPQ` (960),
   helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
   (oraz `quartersToTicks` / `ticksToQuarters` pod migrator); usunięty

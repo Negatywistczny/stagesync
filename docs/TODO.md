@@ -5,7 +5,6 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
 
 ## Następne
 
-- [ ] Protokół transportu (play / pause / seek) — SSOT na serwerze; pozycja w **integer ticks + PPQ** (BBT tylko display; [ADR 0002](./adr/0002-timebase-ssot.md))
 - [ ] Klient web podłączony do transportu + wygładzanie playhead
 - [ ] Shelle UI (Admin / Client / Timeline) w kierunku **Booth** — [ADR 0003](./adr/0003-ui-direction-booth.md)
 - [ ] Warstwa MIDI I/O (clock / urządzenia po stronie serwera)
