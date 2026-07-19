@@ -9,11 +9,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- Shelle UI (Admin / Client / Timeline): nowy layout paneli + **pełny inventarz
-  kontrolek v4** (disabled OK; bez usuwania wand/Pomoc/itd.); Booth = `--ss-*` /
-  CSS Modules; `TransportProvider` nad routerem; Audio 0…N; Countdown na Formie;
-  1 akord = 1 clip; bez git-apply ([ADR 0004](docs/adr/0004-updates-docker.md));
-  inventarz: [docs/ui-shell-inventory.md](docs/ui-shell-inventory.md).
+- Shelle UI: Admin w układzie **Booth** (topbar + rail + lista/detail + Live
+  Desk) zmapowanym na funkcje v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md));
+  Client / Timeline — inventarz kontrolek (osobny redesign layoutu); Booth
+  tokeny + CSS Modules; `TransportProvider` nad routerem; Audio 0…N; bez
+  git-apply ([ADR 0004](docs/adr/0004-updates-docker.md)).
 - Klient web: panel transportu (Play / Pause / Seek), WebSocket + soft playhead
   (`getDisplayTicks` w shared, rAF z `frameTime`), Vite proxy `/api` i `/ws`,
   `Button loading` na czas komend REST.

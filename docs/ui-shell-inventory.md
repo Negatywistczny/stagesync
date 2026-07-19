@@ -59,28 +59,31 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 
 ## Admin
 
-### Header
+**Layout v5:** Booth shell (topbar + rail + lista/detail + Live Desk) — nie strona collapsible v4.  
+Mapowanie regionów → kontrolki poniżej. Timeline/Client: osobny redesign.
 
-- [ ] Brand + wersja
-- [ ] Link Timeline / Klient
-- [ ] Wygląd / Ustawienia / Restart / Wyłącz
+### Booth: region → kontrolki v4
 
-### Live strip + body
+| Region | Kontrolki |
+|--------|-----------|
+| **Topbar** | Brand + wersja; context (utwór / BPM / BBT); linki Timeline · Klient; Wygląd; zwiń rail |
+| **Rail → Biblioteka** | Search, sort, filtry ostrzeżeń; lista (PC, tytuł, artysta, gatunek); XML / Partytura / Edytuj / Usuń; export; wzory; panel szczegółów (metadane, assety XML/audio/okładka) |
+| **Rail → Setlista** | Włącz, auto, dodaj zaznaczone, zapisz, wyczyść, wiersze |
+| **Rail → Scena** | Komunikaty live (tekst, role, TTL, wyślij, wyczyść); sieć / klienci |
+| **Rail → Import** | Import / export paczki; drop zone; modal preview |
+| **Rail → System** | Ustawienia serwera; Logi; Monitor MIDI; O aplikacji (wersja, sprawdź aktualizacje **bez** Apply, kanał, backupy); Restart / Wyłącz |
+| **Live Desk** (zawsze) | Utwór · sekcja · BBT · następny · conn · Kontrola MIDI/Timeline; skrót transpozycja / sync lead / edycja zdalna |
 
-- [ ] Utwór / sekcja / BBT / następny / conn / Kontrola MIDI↔Timeline
-- [ ] Biblioteka: search, sort, filtry, tabela (PC, tytuł, artysta, gatunek, akcje XML/Partytura/Edytuj/Usuń)
-- [ ] Export / Import
-- [ ] Wzory
-- [ ] Setlista (włącz, auto, dodaj, zapisz, wyczyść)
-- [ ] Komunikaty live
-- [ ] Sieć i klienci
-- [ ] Transpozycja / sync lead / edycja zdalna
-- [ ] Logi serwera / Monitor MIDI
-- [ ] O aplikacji: wersja, sprawdź aktualizacje (**bez** Apply), kanał, backupy
+### Checklist (parity)
 
-### Modale (markup w DOM)
-
-- [ ] Wygląd, Ustawienia serwera, import preview, MusicXML, path picker, batch PC
+- [ ] Topbar: brand, wersja, Timeline, Klient, Wygląd, collapse rail
+- [ ] Live Desk: utwór / sekcja / BBT / następny / conn / Kontrola + korekta skrót
+- [ ] Biblioteka: search, sort, filtry, lista+detail, XML/Partytura/Edytuj/Usuń, export, wzory
+- [ ] Setlista: włącz, auto, dodaj, zapisz, wyczyść
+- [ ] Scena: komunikaty live + sieć/klienci
+- [ ] Import: import/export + modal
+- [ ] System: ustawienia, logi, MIDI monitor, o aplikacji (bez Apply), restart/wyłącz
+- [ ] Modale w DOM: Wygląd, Ustawienia, import preview, MusicXML, path picker, batch PC
 
 ## Client
 
