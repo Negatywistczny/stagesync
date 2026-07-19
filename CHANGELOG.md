@@ -26,7 +26,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 - [ADR 0002](docs/adr/0002-timebase-ssot.md) — kanon timebase: integer ticks + PPQ;
-  BBT tylko jako widok; float `absBeat` oznaczony jako przejściowy.
+  BBT tylko jako widok (float `absBeat` usunięty w shared).
 - Podział dokumentacji bez dublowania (README = start, TODO = tylko przyszłość,
   ARCHITECTURE = mapa + monorepo, historia = CHANGELOG); usunięte odhaczone day-0 z TODO.
 
