@@ -15,6 +15,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
+- Podział dokumentacji bez dublowania (README = start, TODO = tylko przyszłość,
+  ARCHITECTURE = mapa + monorepo, historia = CHANGELOG); usunięte odhaczone day-0 z TODO.
+
 ### Naprawiono
 
 ### Usunięto

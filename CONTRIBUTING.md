@@ -1,6 +1,6 @@
 # StageSync — uwagi dla współtwórców
 
-## Język
+## Język (kanon)
 
 | Co | Język |
 |----|--------|
@@ -9,14 +9,10 @@
 
 ## Commity
 
-Akceptowane są wyłącznie [Conventional Commits](https://www.conventionalcommits.org/pl/v1.0.0/) (commitlint + husky `commit-msg`):
+[Conventional Commits](https://www.conventionalcommits.org/pl/v1.0.0/) — egzekwowane przez commitlint + husky (`commit-msg`):
 
-- `feat: …` — nowa możliwość
-- `fix: …` — poprawka błędu
-- `docs: …` — tylko dokumentacja
-- `chore: …` — tooling, zależności, scaffolding
-- `refactor: …` / `test: …` / `ci: …` w razie potrzeby
+- `feat:` / `fix:` / `docs:` / `chore:` / `refactor:` / `test:` / `ci:` …
+- Opis po angielsku; w normalnym workflow **bez** `--no-verify`
 
-W normalnym workflow **nie** używaj `--no-verify`.
-
-Pełna lista standardów zewnętrznych (linki, bez kopii w repo): [docs/STANDARDS.md](docs/STANDARDS.md).
+Linki do SemVer, Keep a Changelog, EditorConfig, ADR itd.: [docs/STANDARDS.md](docs/STANDARDS.md).  
+Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

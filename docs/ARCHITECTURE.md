@@ -1,29 +1,35 @@
 # StageSync v5 — Architektura
 
-## Przegląd
+## Mapa dokumentacji (jedno źródło prawdy)
 
-Monorepo pnpm + Turborepo:
+| Plik | Tylko to | Nie tu |
+|------|----------|--------|
+| [README](../README.md) | Uruchomienie | Historia, backlog, pełne reguły |
+| [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
+| [TODO](./TODO.md) | Przyszłe zadania | Odhaczone / „zrobione” |
+| [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
+| [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
+| [docs/adr/](./adr/) | Decyzje z kontekstem i konsekwencjami | Checklisty zadań |
+| `.cursor/rules/` | Reguły egzekwowane przez agenta | Długie tutoriale |
+
+## Monorepo
 
 | Paczka / app | Stack | Odpowiedzialność |
 |--------------|-------|------------------|
-| `apps/server` | Express (Node 20+) | API, persystencja, **transport SSOT** |
-| `apps/web` | Vite + React | UI klienta; wygładzanie playhead tylko między tickami |
+| `apps/server` | Express (Node 20+) | API, persystencja, transport SSOT |
+| `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
 | `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
-| `packages/ui` | React | Design system (`Button`, tokeny `--ss-*`) |
+| `packages/ui` | React | Design system (`Button`, `--ss-*`) |
 | `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi |
 
-**SSOT:** serwer jest właścicielem autorytatywnego czasu i stanu projektu; klient może jedynie wygładzać playhead między tickami serwera.
+Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 
-## ADR
+## SSOT i czas
 
-- [0001 — Układ storage](./adr/0001-storage-layout.md)
-- [0002 — Timebase SSOT](./adr/0002-timebase-ssot.md)
+Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładzać playhead wyłącznie między tickami. Pełna decyzja: [ADR 0002](./adr/0002-timebase-ssot.md).
 
-## Reguły agenta / produktu
-
-- [`.cursor/rules/constitution.mdc`](../.cursor/rules/constitution.mdc)
-- [`.cursor/rules/versioning.mdc`](../.cursor/rules/versioning.mdc)
+Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).
 
 ## Legacy
 
-StageSync **4.x** żyje w osobnym, zarchiwizowanym repo: **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x w tym drzewie v5. Przyszły migrator zaimportuje projekty legacy do `data/projects/<id>/`.
+**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → przyszły migrator (`data/projects/<id>/`).

@@ -1,73 +1,58 @@
 ---
-description: Konstytucja StageSync v5 — SSOT, granice monorepo, tokeny, commity, język docs
+description: Konstytucja StageSync v5 — SSOT, granice monorepo, tokeny, zakres alpha
 alwaysApply: true
 ---
 
 # StageSync v5 — Konstytucja
 
-## Język
-
-| Co | Język |
-|----|--------|
-| Docs produktowe, ADR, CHANGELOG, reguły agenta | **Polski** |
-| Conventional Commits, kod, nazwy paczek/API | **Angielski** |
+Reguły egzekwowane przy pracy w tym repo.  
+Język docs / workflow commitów → [CONTRIBUTING.md](../../CONTRIBUTING.md).  
+Mapa dokumentacji → [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).  
+Standardy zewnętrzne → [docs/STANDARDS.md](../../docs/STANDARDS.md).
 
 ## Jedno źródło prawdy (SSOT)
 
-- **Autorytet serwera**: transport, stan projektu i decyzje timingowe żyją w `apps/server`. Klienci nie inventują autorytatywnego zegara ani stanu utworu.
-- **Playhead klienta**: web może **wygładzać / interpolować playhead wyłącznie między tickami serwera**. Nie przesuwa autorytatywnego czasu muzycznego niezależnie od serwera.
+- **Autorytet serwera** (`apps/server`): transport, stan projektu, timing.
+- **Playhead klienta** (`apps/web`): wygładzanie **tylko między tickami serwera** — bez własnego zegara muzycznego.
+
+Szczegóły decyzji: `docs/adr/0002-timebase-ssot.md`.
 
 ## Granice monorepo
 
 | Ścieżka | Rola |
 |---------|------|
-| `apps/server` | API Express, persystencja, transport SSOT |
-| `apps/web` | Klient Vite + React (tylko UI; bez autorytatywnego czasu) |
-| `packages/shared` | Czysta domena: Zod, helpery czasu — bez DOM, bez Node FS |
-| `packages/ui` | Primitivy design system (`Button`, tokeny) — bez logiki biznesowej |
-| `packages/eslint-config` / `typescript-config` | Tylko tooling |
-| `data/` | Lokalny układ runtime (szablony + gitkeep; dane użytkownika w gitignore) |
+| `apps/server` | API, persystencja, transport SSOT |
+| `apps/web` | UI (bez autorytatywnego czasu) |
+| `packages/shared` | Zod + czysty czas — bez DOM, bez Node FS |
+| `packages/ui` | Design system — bez logiki biznesowej |
+| `packages/eslint-config` / `typescript-config` | Tooling |
+| `data/` | Runtime (szablony + gitkeep; treść użytkownika w gitignore) |
 
-Nie łam granic: UI nie importuje servera; shared zostaje czyste; apps zależą od packages, nie odwrotnie.
+UI nie importuje servera; shared zostaje czyste; apps → packages, nie odwrotnie.
+
+Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować drzewa tutaj).
 
 ## Czysty czas
 
-- Matematyka czasu muzycznego / beatów w `@stagesync/shared` jako **czyste funkcje** (deterministyczne, bez efektów ubocznych).
-- W shared helperach konwersji domenowej nie używaj `Date.now()` / `performance.now()` — caller przekazuje clock/ticki.
+- Helpery w `@stagesync/shared` = **czyste funkcje**.
+- Bez `Date.now()` / `performance.now()` wewnątrz konwersji domenowej — clock/ticki od callera.
 
 ## Walidacja (Zod)
 
-- Waliduj na **krawędziach** (body HTTP, odczyt pliku, IPC) Zodem z `@stagesync/shared`.
-- **Fail fast**: odrzucaj nieprawidłowe payloady; nie poprawiaj cicho wymaganego kształtu.
+- Na **krawędziach** (HTTP, plik, IPC).
+- **Fail fast** — bez cichej naprawy wymaganego kształtu.
 
 ## UI — Button i tokeny
 
-- Kanoniczny `Button` eksponuje **zamknięty zbiór 7 stanów interakcji**: default, hover, focus, active, disabled, loading, selected.
-- Kolory i odstępy tylko przez zmienne CSS **`--ss-*`** (tokeny w `packages/ui`). Bez ad-hoc HEX w komponentach.
+- `Button`: zamknięty zbiór 7 stanów (default, hover, focus, active, disabled, loading, selected).
+- Kolory / odstępy tylko `--ss-*` w `packages/ui` — bez HEX w komponentach.
 
-## Układ danych
+## Poza zakresem (alpha)
 
-```
-data/
-  library/          # indeks biblioteki (+ library.template.json)
-  projects/<id>/    # pliki per projekt
-  logs/             # logi runtime (treść gitignore)
-```
+Bez jawnej decyzji produktowej nie dodawaj:
 
-Zobacz `docs/adr/0001-storage-layout.md`.
-
-## Commity
-
-- Tylko [Conventional Commits](https://www.conventionalcommits.org/pl/v1.0.0/) (commitlint + husky).
-- Typy: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, …
-- W normalnym workflow nie używaj `--no-verify`. Zobacz `CONTRIBUTING.md` i `docs/STANDARDS.md`.
-
-## Poza zakresem (v5 day-0 / alpha)
-
-**Nie** dodawaj bez jawnej decyzji produktowej:
-
-- Admin / hygiene HTTP UI do scrubbingu storage
+- Admin / hygiene HTTP do scrubbingu storage
 - Dual-write do kształtów bazy legacy 4.x
-- Nowe warianty Button poza zamkniętym zbiorem
-- Transport lub MIDI clock z autorytetem klienta
-- Commit sekretów, lokalnej treści `data/projects/*` użytkownika ani `node_modules`
+- Wariantów Button poza zamkniętym zbiorem
+- Transportu / MIDI clock z autorytetem klienta
+- Sekretów, `data/projects/*` użytkownika, `node_modules` w gicie
