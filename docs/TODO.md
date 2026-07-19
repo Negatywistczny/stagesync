@@ -5,7 +5,6 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
 
 ## Następne
 
-- [ ] CRUD API projektów / biblioteki + persystencja w `data/`
 - [ ] Protokół transportu (play / pause / seek) z tickami SSOT na serwerze
 - [ ] Klient web podłączony do transportu + wygładzanie playhead
 - [ ] Shelle UI (Admin / Client / Timeline) w kierunku **Booth** — [ADR 0003](./adr/0003-ui-direction-booth.md)

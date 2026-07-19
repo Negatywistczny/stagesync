@@ -31,6 +31,19 @@ Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładz
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).  
 Kierunek UI (Booth): [ADR 0003](./adr/0003-ui-direction-booth.md).
 
+## API biblioteki (REST)
+
+| Metoda | Ścieżka | Opis |
+|--------|---------|------|
+| `GET` | `/api/health` | Healthcheck |
+| `GET` | `/api/library` | Indeks biblioteki (seed z template jeśli brak pliku) |
+| `POST` | `/api/projects` | Utwórz projekt (`{ name }`) |
+| `GET` | `/api/projects/:id` | Odczyt `project.json` |
+| `PUT` | `/api/projects/:id` | Aktualizacja (`{ name? }`) |
+| `DELETE` | `/api/projects/:id` | Usuń projekt + wpis w indeksie |
+
+Błędy: `400` / `404` / `500` → `{ ok: false, error }`. Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
+
 ## Legacy
 
 **4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → przyszły migrator (`data/projects/<id>/`).
