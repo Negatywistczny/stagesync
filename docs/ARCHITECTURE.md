@@ -32,10 +32,11 @@ Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładz
 
 Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); broadcast WS ~25 Hz gdy playing. Implementacja: REST + `/ws/transport`. Klient web: Vite proxy `/api` + `/ws`, soft playhead (`getDisplayTicks`) między tickami, `Button loading` na komendach.
 
-**UI Booth (szkielet):** `TransportProvider` owija aplikację **nad** `BrowserRouter` / `Routes`, żeby zmiana shella nie zrywała WS/rAF. Shelle: `/` Client, `/admin`, `/timeline` — layout w `*.module.css` (bez globalnych selektorów shelli); tokeny `--ss-*` w `@stagesync/ui`.
+**UI (szkielet):** `TransportProvider` owija aplikację **nad** `BrowserRouter` / `Routes` (WS + soft-clock rAF bez reconnect przy nawigacji). Shelle: `/` Client, `/admin`, `/timeline` — **IA = parity funkcji v4** (+ Audio 0…N); styl Booth tylko przez `--ss-*`; layout wyłącznie w `*.module.css`.
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).  
-Kierunek UI (Booth): [ADR 0003](./adr/0003-ui-direction-booth.md).
+Kierunek UI (Booth = skin): [ADR 0003](./adr/0003-ui-direction-booth.md).  
+Aktualizacje (Docker, bez git-apply): [ADR 0004](./adr/0004-updates-docker.md).
 
 ## API biblioteki (REST)
 

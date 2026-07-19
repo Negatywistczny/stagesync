@@ -23,9 +23,11 @@ pnpm dev
 | Web | http://localhost:3000 |
 | Server | http://localhost:4000 |
 
-Ścieżki web (Booth): `/` Client · `/admin` · `/timeline`.
+Ścieżki web: `/` Client · `/admin` · `/timeline` (IA v4 + styl Booth).
 
 W dev Vite proxy’uje `/api` i `/ws` na serwer `:4000` (soft playhead między tickami WS; `TransportProvider` żyje ponad routerem).
+
+Produkcja: aktualizacja przez **Docker** (bump tagu obrazu, `data/` na volume) — bez git-apply z Admina ([ADR 0004](docs/adr/0004-updates-docker.md)).
 
 ```sh
 pnpm dev      # web + server

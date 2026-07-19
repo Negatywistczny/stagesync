@@ -6,20 +6,7 @@ import { useTransport } from "../transport/useTransport.js";
 import { ShellNav } from "./ShellNav.js";
 import styles from "./AdminShell.module.css";
 
-type RailSection = "utwory" | "setlista" | "sesja" | "import" | "system";
-
-const RAIL: { id: RailSection; label: string }[] = [
-  { id: "utwory", label: "Utwory" },
-  { id: "setlista", label: "Setlista" },
-  { id: "sesja", label: "Sesja" },
-  { id: "import", label: "Import" },
-  { id: "system", label: "System" },
-];
-
 export function AdminShell() {
-  const [railCollapsed, setRailCollapsed] = useState(false);
-  const [detailCollapsed, setDetailCollapsed] = useState(false);
-  const [section, setSection] = useState<RailSection>("utwory");
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -51,170 +38,215 @@ export function AdminShell() {
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
 
   return (
-    <div
-      className={[
-        styles.shell,
-        railCollapsed ? styles.railCollapsed : "",
-        detailCollapsed ? styles.detailCollapsed : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <header className={styles.topbar}>
-        <div className={styles.brand}>
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <div className={styles.brandBlock}>
           <span className={styles.brandMark} aria-hidden="true" />
-          StageSync
-          <span className={styles.brandSub}>Admin</span>
+          <div>
+            <h1 className={styles.title}>StageSync Admin</h1>
+            <p className={styles.subtitle}>
+              Pulpit koncertowy · biblioteka · system
+            </p>
+          </div>
         </div>
         <ShellNav />
-        <div className={styles.context}>
-          <strong>{selected?.name ?? "Biblioteka"}</strong>
-          <span>
-            {state.bpm} BPM · {state.timeSignature.numerator}/
-            {state.timeSignature.denominator}
+        <div className={styles.headerActions}>
+          <Button variant="ghost" disabled title="Wkrótce">
+            Wygląd
+          </Button>
+          <Button variant="ghost" disabled title="Wkrótce">
+            Ustawienia
+          </Button>
+          <Button variant="ghost" disabled title="Wkrótce">
+            Restart
+          </Button>
+          <span className={styles.version} title="Wersja oprogramowania">
+            5.0.0-alpha.1
           </span>
-        </div>
-        <div className={styles.topbarActions}>
-          <Button
-            variant="ghost"
-            selected={railCollapsed}
-            onClick={() => setRailCollapsed((v) => !v)}
-            aria-expanded={!railCollapsed}
-            title="Zwiń rail"
-          >
-            ☰
-          </Button>
-          <Button
-            variant="ghost"
-            selected={!detailCollapsed}
-            onClick={() => setDetailCollapsed((v) => !v)}
-            aria-expanded={!detailCollapsed}
-          >
-            Szczegóły
-          </Button>
         </div>
       </header>
 
-      <nav className={styles.rail} aria-label="Sekcje">
-        {RAIL.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={[
-              styles.railItem,
-              section === item.id ? styles.railItemActive : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            aria-pressed={section === item.id}
-            onClick={() => setSection(item.id)}
-          >
-            <span className={styles.railLabel}>{item.label}</span>
-          </button>
-        ))}
-      </nav>
+      <div className={styles.stack}>
+        <section className={styles.panel} aria-label="Pulpit koncertowy">
+          <div className={styles.panelHead}>
+            <h2 className={styles.panelTitle}>Pulpit koncertowy</h2>
+          </div>
+          <div className={styles.deskGrid}>
+            <div className={styles.deskCard}>
+              <h3 className={styles.deskLabel}>Transport</h3>
+              <p className={styles.deskValue}>
+                {selected?.name ?? "—"} · takt {toDisplayBar(bbt.bar)}.{bbt.beat}
+              </p>
+              <p className={styles.muted}>
+                WS: {wsStatus}
+                {state.playing ? " · play" : " · pause"} · {state.bpm} BPM ·{" "}
+                {state.timeSignature.numerator}/{state.timeSignature.denominator}
+              </p>
+              <div className={styles.rowActions}>
+                <Button
+                  variant="primary"
+                  loading={commandPending}
+                  selected={state.playing}
+                  onClick={() => void play()}
+                >
+                  Play
+                </Button>
+                <Button
+                  variant="secondary"
+                  loading={commandPending}
+                  selected={!state.playing}
+                  onClick={() => void pause()}
+                >
+                  Pause
+                </Button>
+                <Button variant="ghost" disabled title="Wkrótce">
+                  Kontrola MIDI / Timeline
+                </Button>
+              </div>
+            </div>
+            <div className={styles.deskCard}>
+              <h3 className={styles.deskLabel}>Następny (setlista)</h3>
+              <p className={styles.muted}>Placeholder — gdy setlista włączona.</p>
+            </div>
+            <div className={styles.deskCard}>
+              <h3 className={styles.deskLabel}>Sieć i klienci</h3>
+              <p className={styles.muted}>
+                mDNS / IP · podłączeni klienci + role — wkrótce.
+              </p>
+            </div>
+            <div className={styles.deskCard}>
+              <h3 className={styles.deskLabel}>Korekta na scenie</h3>
+              <p className={styles.muted}>
+                Transpozycja · sync lead · edycja zdalna — placeholdery.
+              </p>
+              <div className={styles.rowActions}>
+                <Button variant="secondary" disabled>
+                  Transpozycja
+                </Button>
+                <Button variant="secondary" disabled>
+                  Sync lead
+                </Button>
+                <Button variant="ghost" disabled>
+                  Edycja zdalna
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <div className={styles.main}>
-        <section className={styles.panel} aria-label="Lista utworów">
-          <div className={styles.panelHeader}>
-            <h2>Utwory</h2>
-            <Button variant="secondary" disabled title="Wkrótce">
-              + Nowy
+        <section className={styles.panel} aria-label="Setlista koncertowa">
+          <div className={styles.panelHead}>
+            <h2 className={styles.panelTitle}>Setlista koncertowa</h2>
+            <div className={styles.rowActions}>
+              <Button variant="secondary" disabled>
+                Włącz setlistę
+              </Button>
+              <Button variant="ghost" disabled>
+                Auto-setlista
+              </Button>
+            </div>
+          </div>
+          <p className={styles.muted}>
+            Edycja kolejności, PC, zapis — jak w v4; UI w kolejnym PR.
+          </p>
+        </section>
+
+        <section className={styles.panel} aria-label="Komunikaty live">
+          <div className={styles.panelHead}>
+            <h2 className={styles.panelTitle}>Komunikaty live</h2>
+            <Button variant="secondary" disabled>
+              + Komunikat
             </Button>
           </div>
-          <div className={styles.panelBody}>
-            {libraryError ? (
-              <p className={styles.error} role="alert">
-                {libraryError}
-              </p>
-            ) : null}
-            {!library && !libraryError ? (
-              <p className={styles.muted}>Ładowanie…</p>
-            ) : null}
-            {library?.projects.length === 0 ? (
-              <p className={styles.muted}>Brak projektów w bibliotece.</p>
-            ) : null}
+          <p className={styles.muted}>
+            Tekst, role, priorytet, TTL — placeholder (parity v4).
+          </p>
+        </section>
+
+        <section className={styles.panel} aria-label="Biblioteka utworów">
+          <div className={styles.panelHead}>
+            <h2 className={styles.panelTitle}>Biblioteka</h2>
+            <div className={styles.rowActions}>
+              <Button variant="secondary" disabled title="Wkrótce">
+                Import projektu
+              </Button>
+              <Button variant="ghost" disabled title="Wkrótce">
+                Eksport
+              </Button>
+            </div>
+          </div>
+          {libraryError ? (
+            <p className={styles.error} role="alert">
+              {libraryError}
+            </p>
+          ) : null}
+          {!library && !libraryError ? (
+            <p className={styles.muted}>Ładowanie…</p>
+          ) : null}
+          {library?.projects.length === 0 ? (
+            <p className={styles.muted}>Brak projektów.</p>
+          ) : null}
+          <div className={styles.table}>
+            <div className={styles.tableHead}>
+              <span>Tytuł</span>
+              <span>PC</span>
+              <span>Assety</span>
+              <span>Akcje</span>
+            </div>
             {library?.projects.map((project) => (
               <button
                 key={project.id}
                 type="button"
                 className={[
-                  styles.listRow,
-                  selectedId === project.id ? styles.listRowSelected : "",
+                  styles.tableRow,
+                  selectedId === project.id ? styles.tableRowSelected : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                aria-pressed={selectedId === project.id}
                 onClick={() => setSelectedId(project.id)}
               >
-                <div>
-                  <div className={styles.listTitle}>{project.name}</div>
-                  <div className={styles.listMeta}>
-                    {project.updatedAt
-                      ? new Date(project.updatedAt).toLocaleString("pl-PL")
-                      : project.id}
-                  </div>
-                </div>
+                <span className={styles.tableTitle}>{project.name}</span>
+                <span className={styles.muted}>—</span>
+                <span className={styles.muted}>XML · audio · okładka</span>
+                <span className={styles.muted}>Edytuj → Timeline</span>
               </button>
             ))}
           </div>
+          {selected ? (
+            <p className={styles.detailLine}>
+              Wybrany: <strong>{selected.name}</strong> ({selected.id})
+            </p>
+          ) : null}
         </section>
 
-        {!detailCollapsed ? (
-          <aside className={styles.detail} aria-label="Szczegóły utworu">
-            <div className={styles.panelHeader}>
-              <h2>Szczegóły</h2>
-              <Button
-                variant="ghost"
-                onClick={() => setDetailCollapsed(true)}
-                aria-label="Zwiń szczegóły"
-              >
-                ×
-              </Button>
-            </div>
-            <div className={styles.panelBody}>
-              {selected ? (
-                <>
-                  <p className={styles.detailTitle}>{selected.name}</p>
-                  <p className={styles.muted}>id: {selected.id}</p>
-                  <p className={styles.muted}>
-                    CRUD UI w kolejnym PR — tu tylko odczyt listy.
-                  </p>
-                </>
-              ) : (
-                <p className={styles.muted}>Wybierz utwór z listy.</p>
-              )}
-            </div>
-          </aside>
-        ) : null}
-      </div>
+        <section className={styles.panel} aria-label="Logi i monitor">
+          <div className={styles.panelHead}>
+            <h2 className={styles.panelTitle}>Logi / Monitor MIDI</h2>
+          </div>
+          <p className={styles.muted}>
+            SSE logów · diagnostyka clock/SPP/PC — placeholdery (parity v4).
+          </p>
+        </section>
 
-      <footer className={styles.liveDesk} aria-label="Live Desk">
-        <span className={styles.deskLabel}>Live Desk</span>
-        <span className={styles.deskMeta}>
-          WS: {wsStatus}
-          {state.playing ? " · play" : " · pause"} · takt{" "}
-          {toDisplayBar(bbt.bar)}.{bbt.beat}
-        </span>
-        <div className={styles.deskActions}>
-          <Button
-            variant="primary"
-            loading={commandPending}
-            selected={state.playing}
-            onClick={() => void play()}
-          >
-            Play
-          </Button>
-          <Button
-            variant="secondary"
-            loading={commandPending}
-            selected={!state.playing}
-            onClick={() => void pause()}
-          >
-            Pause
-          </Button>
-        </div>
-      </footer>
+        <section className={styles.panel} aria-label="O aplikacji">
+          <div className={styles.panelHead}>
+            <h2 className={styles.panelTitle}>O aplikacji</h2>
+          </div>
+          <p className={styles.deskValue}>Wersja 5.0.0-alpha.1</p>
+          <p className={styles.muted}>
+            Aktualizacja produkcyjna: bump tagu obrazu Docker (`data/` na
+            volume). Brak git-apply z panelu — zob. ADR 0004.
+          </p>
+          <div className={styles.rowActions}>
+            <Button variant="secondary" disabled title="Tylko info — wkrótce">
+              Sprawdź aktualizacje
+            </Button>
+            <Button variant="ghost" disabled title="Wkrótce">
+              Kopie zapasowe
+            </Button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

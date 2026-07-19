@@ -5,16 +5,19 @@ import { useTransport } from "../transport/useTransport.js";
 import { ShellNav } from "./ShellNav.js";
 import styles from "./ClientShell.module.css";
 
-type RoleTab = "chords" | "lyrics" | "drums";
+type RoleId = "lyrics" | "chords" | "form" | "score";
 
-const TABS: { id: RoleTab; label: string }[] = [
-  { id: "chords", label: "Chords" },
-  { id: "lyrics", label: "Lyrics" },
-  { id: "drums", label: "Drums" },
+const ROLES: { id: RoleId; label: string; blurb: string }[] = [
+  { id: "lyrics", label: "Tekst", blurb: "Karaoke / linie tekstu" },
+  { id: "chords", label: "Akordy", blurb: "Siatka i frazy" },
+  { id: "form", label: "Forma", blurb: "Sekcje / cue perkusji" },
+  { id: "score", label: "Partytura", blurb: "MusicXML / OSMD" },
 ];
 
 export function ClientShell() {
-  const [tab, setTab] = useState<RoleTab>("chords");
+  const [name, setName] = useState("Tablet");
+  const [picked, setPicked] = useState<RoleId[]>([]);
+  const [started, setStarted] = useState(false);
   const {
     state,
     displayTicks,
@@ -28,19 +31,90 @@ export function ClientShell() {
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const connected = wsStatus === "connected";
 
+  function toggleRole(id: RoleId) {
+    setPicked((prev) => {
+      if (prev.includes(id)) return prev.filter((r) => r !== id);
+      if (prev.length >= 2) return [prev[1]!, id];
+      return [...prev, id];
+    });
+  }
+
+  function start() {
+    if (picked.length === 0) return;
+    setStarted(true);
+  }
+
+  if (!started) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.welcomeBar}>
+          <div className={styles.brand}>
+            <span className={styles.brandMark} aria-hidden="true" />
+            StageSync
+          </div>
+          <ShellNav />
+        </header>
+        <main className={styles.welcome}>
+          <p className={styles.eyebrow}>Klient</p>
+          <h1 className={styles.welcomeTitle}>Wybierz rolę</h1>
+          <label className={styles.nameField}>
+            Nazwa tabletu
+            <input
+              className={styles.nameInput}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <div className={styles.roleGrid}>
+            {ROLES.map((role) => {
+              const on = picked.includes(role.id);
+              return (
+                <button
+                  key={role.id}
+                  type="button"
+                  className={[styles.roleCard, on ? styles.roleOn : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                  aria-pressed={on}
+                  onClick={() => toggleRole(role.id)}
+                >
+                  <strong>{role.label}</strong>
+                  <span>{role.blurb}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className={styles.hint}>Wybierz 1 lub 2 role (widok dzielony).</p>
+          <Button
+            variant="primary"
+            disabled={picked.length === 0}
+            onClick={start}
+          >
+            {picked.length === 2 ? "Rozpocznij widok dzielony" : "Rozpocznij"}
+          </Button>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.shell}>
+    <div className={styles.page}>
       <header className={styles.hud}>
-        <div className={styles.brand}>
+        <button
+          type="button"
+          className={styles.brandBtn}
+          onClick={() => setStarted(false)}
+          title="Powrót do wyboru ról"
+        >
           <span className={styles.brandMark} aria-hidden="true" />
           StageSync
-        </div>
+        </button>
         <ShellNav />
         <div className={styles.context}>
-          <strong>Client</strong>
-          <span>HUD transportu</span>
+          <strong>{name}</strong>
+          <span>{picked.map((id) => ROLES.find((r) => r.id === id)?.label).join(" + ")}</span>
         </div>
-        <span className={styles.meter} title="Pozycja BBT">
+        <span className={styles.meter}>
           takt {toDisplayBar(bbt.bar)}.{bbt.beat}
         </span>
         <span
@@ -48,25 +122,6 @@ export function ClientShell() {
           title={`WS: ${wsStatus}`}
           aria-label={`WebSocket ${wsStatus}`}
         />
-        <div className={styles.segmented} role="tablist" aria-label="Rola">
-          {TABS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === item.id}
-              className={[
-                styles.segBtn,
-                tab === item.id ? styles.segActive : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => setTab(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
         <div className={styles.actions}>
           <Button
             variant="primary"
@@ -84,6 +139,9 @@ export function ClientShell() {
           >
             Pause
           </Button>
+          <Button variant="ghost" disabled title="Wkrótce">
+            Ustawienia
+          </Button>
         </div>
       </header>
 
@@ -93,63 +151,27 @@ export function ClientShell() {
         </p>
       ) : null}
 
-      <main className={styles.stage}>
-        {tab === "chords" ? (
-          <section className={styles.card} aria-label="Widok Chords">
-            <h2>Chords</h2>
-            <p className={styles.lede}>
-              Placeholder siatki akordów — layout Booth, bez synchronizacji.
-            </p>
-            <div className={styles.chordGrid}>
-              {["Am", "F", "C", "G", "Dm", "Em", "Am7", "G/B"].map((c, i) => (
-                <div
-                  key={c}
-                  className={[styles.chordCell, i === 0 ? styles.now : ""].join(
-                    " ",
-                  )}
-                >
-                  {c}
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {tab === "lyrics" ? (
-          <section className={styles.card} aria-label="Widok Lyrics">
-            <h2>Lyrics</h2>
-            <p className={styles.lede}>
-              Placeholder linii tekstu — highlight wizualny.
-            </p>
-            <div className={styles.lyrics}>
-              <div>Waiting on the platform light</div>
-              <div className={styles.nowLine}>
-                Midnight express, we ride tonight
-              </div>
-              <div>Steel and signal, pulse and wire</div>
-              <div>Hold the downbeat, lift the choir</div>
-            </div>
-          </section>
-        ) : null}
-
-        {tab === "drums" ? (
-          <section className={styles.card} aria-label="Widok Drums">
-            <h2>Drums</h2>
-            <p className={styles.lede}>Placeholder cue / metrum — bez MIDI.</p>
-            <div className={styles.chordGrid}>
-              {["1", "+", "2", "+", "3", "+", "4", "+"].map((c, i) => (
-                <div
-                  key={`${c}-${i}`}
-                  className={[styles.chordCell, i === 0 ? styles.now : ""].join(
-                    " ",
-                  )}
-                >
-                  {c}
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
+      <main
+        className={[
+          styles.stage,
+          picked.length === 2 ? styles.stageSplit : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {picked.map((id) => {
+          const role = ROLES.find((r) => r.id === id)!;
+          return (
+            <section key={id} className={styles.card} aria-label={role.label}>
+              <h2 className={styles.cardTitle}>{role.label}</h2>
+              <p className={styles.lede}>
+                Placeholder widoku „{role.label}” — parity v4, sync z transportem
+                SSOT w kolejnych PR.
+              </p>
+              <p className={styles.cueSlot}>Cue live — slot (jak w v4).</p>
+            </section>
+          );
+        })}
       </main>
     </div>
   );
