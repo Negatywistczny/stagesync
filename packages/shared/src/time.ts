@@ -1,47 +1,170 @@
 /**
  * Pure time helpers for StageSync.
  *
- * TRANSITIONAL: floating-point absBeat (0-based). Canonical engine timebase is
- * integer ticks + fixed PPQ; BBT is display-only — see docs/adr/0002-timebase-ssot.md.
+ * Canonical engine timebase: integer ticks + fixed PPQ.
+ * BBT is display/API only — see docs/adr/0002-timebase-ssot.md.
  * Never mutate inputs — return new values only.
+ *
+ * Axis math always uses floorDiv + euclidMod (never raw `%` / trunc) so
+ * negative pre-roll ticks stay correct.
  */
+
+export const DEFAULT_PPQ = 960;
 
 export type TimeSignature = {
   numerator: number;
   denominator: number;
 };
 
-/**
- * Converts an absolute beat position to a musical bar index (0-based)
- * and beat-within-bar (0-based, fractional).
- *
- * @example absBeatToBarBeat(5.5, { numerator: 5, denominator: 8 })
- * // → { bar: 1, beatInBar: 0.5 }  (5 beats per bar in 5/8)
- */
-export function absBeatToBarBeat(
-  absBeat: number,
-  timeSignature: TimeSignature,
-): { bar: number; beatInBar: number } {
-  const beatsPerBar = timeSignature.numerator;
-  if (!Number.isFinite(absBeat) || beatsPerBar <= 0) {
-    throw new RangeError("Invalid absBeat or time signature");
-  }
-  const bar = Math.floor(absBeat / beatsPerBar);
-  const beatInBar = absBeat - bar * beatsPerBar;
-  return { bar, beatInBar };
+/** Bar 0-based; beat is local meter beat 1..numerator; tick within that beat. */
+export type Bbt = {
+  bar: number;
+  beat: number;
+  tick: number;
+};
+
+/** Floor division toward −∞ (not trunc). */
+function floorDiv(n: number, d: number): number {
+  return Math.floor(n / d);
+}
+
+/** Euclidean remainder in [0, d). */
+function euclidMod(n: number, d: number): number {
+  return ((n % d) + d) % d;
+}
+
+function ticksPerBeat(ts: TimeSignature, ppq: number): number {
+  return (ppq * 4) / ts.denominator;
 }
 
 /**
- * Converts bar + beat-within-bar to absolute beat position.
+ * Validates a time signature for the given PPQ.
+ * Throws when numerator/denominator are invalid or ticks-per-bar is not an integer.
  */
-export function barBeatToAbsBeat(
-  bar: number,
-  beatInBar: number,
-  timeSignature: TimeSignature,
-): number {
-  const beatsPerBar = timeSignature.numerator;
-  if (beatsPerBar <= 0) {
-    throw new RangeError("Invalid time signature");
+export function assertValidTimeSignature(
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): void {
+  if (
+    !Number.isFinite(ts.numerator) ||
+    !Number.isFinite(ts.denominator) ||
+    !Number.isInteger(ts.numerator) ||
+    !Number.isInteger(ts.denominator) ||
+    ts.numerator <= 0 ||
+    ts.denominator <= 0 ||
+    !Number.isFinite(ppq) ||
+    !Number.isInteger(ppq) ||
+    ppq <= 0
+  ) {
+    throw new RangeError("Invalid time signature or PPQ");
   }
-  return bar * beatsPerBar + beatInBar;
+  const perBeat = ticksPerBeat(ts, ppq);
+  const perBar = ts.numerator * perBeat;
+  if (!Number.isInteger(perBeat) || !Number.isInteger(perBar)) {
+    throw new RangeError(
+      "ticksPerBar must be an integer for the given PPQ and meter",
+    );
+  }
+}
+
+/**
+ * Ticks in one bar: numerator * (PPQ * 4 / denominator).
+ * Throws when the result is not an integer.
+ */
+export function ticksPerBar(
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  assertValidTimeSignature(ts, ppq);
+  return ts.numerator * ticksPerBeat(ts, ppq);
+}
+
+/**
+ * Converts integer position ticks to BBT (bar 0-based; beat 1..numerator).
+ * Supports negative ticks (pre-roll).
+ */
+export function ticksToBbt(
+  ticks: number,
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): Bbt {
+  if (!Number.isFinite(ticks) || !Number.isInteger(ticks)) {
+    throw new RangeError("ticks must be a finite integer");
+  }
+  const perBar = ticksPerBar(ts, ppq);
+  const perBeat = ticksPerBeat(ts, ppq);
+  const bar = floorDiv(ticks, perBar);
+  const offsetInBar = euclidMod(ticks, perBar);
+  const beatIndex0 = floorDiv(offsetInBar, perBeat);
+  const tick = euclidMod(offsetInBar, perBeat);
+  return { bar, beat: beatIndex0 + 1, tick };
+}
+
+/**
+ * Converts BBT to integer ticks. Round-trips with ticksToBbt, including bar < 0.
+ */
+export function bbtToTicks(
+  bar: number,
+  beat: number,
+  tick: number,
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (
+    !Number.isFinite(bar) ||
+    !Number.isFinite(beat) ||
+    !Number.isFinite(tick) ||
+    !Number.isInteger(bar) ||
+    !Number.isInteger(beat) ||
+    !Number.isInteger(tick)
+  ) {
+    throw new RangeError("bar, beat, and tick must be finite integers");
+  }
+  const perBar = ticksPerBar(ts, ppq);
+  const perBeat = ticksPerBeat(ts, ppq);
+  return bar * perBar + (beat - 1) * perBeat + tick;
+}
+
+/** Math bar (0-based) → display bar (1-based; pre-roll ≤ 0). */
+export function toDisplayBar(bar: number): number {
+  return bar + 1;
+}
+
+/** Display bar (1-based) → math bar (0-based). */
+export function fromDisplayBar(displayBar: number): number {
+  return displayBar - 1;
+}
+
+/** Integer quarter notes → ticks (for future 4.x migrator). */
+export function quartersToTicks(
+  quarters: number,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (
+    !Number.isFinite(quarters) ||
+    !Number.isInteger(quarters) ||
+    !Number.isFinite(ppq) ||
+    !Number.isInteger(ppq) ||
+    ppq <= 0
+  ) {
+    throw new RangeError("quarters and ppq must be finite integers; ppq > 0");
+  }
+  return quarters * ppq;
+}
+
+/** Ticks → integer quarter notes (floor toward −∞). */
+export function ticksToQuarters(
+  ticks: number,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (
+    !Number.isFinite(ticks) ||
+    !Number.isInteger(ticks) ||
+    !Number.isFinite(ppq) ||
+    !Number.isInteger(ppq) ||
+    ppq <= 0
+  ) {
+    throw new RangeError("ticks and ppq must be finite integers; ppq > 0");
+  }
+  return floorDiv(ticks, ppq);
 }

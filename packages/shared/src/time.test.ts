@@ -1,35 +1,160 @@
 import { describe, expect, it } from "vitest";
-import { absBeatToBarBeat, barBeatToAbsBeat } from "./time.js";
+import {
+  DEFAULT_PPQ,
+  assertValidTimeSignature,
+  bbtToTicks,
+  fromDisplayBar,
+  quartersToTicks,
+  ticksPerBar,
+  ticksToBbt,
+  ticksToQuarters,
+  toDisplayBar,
+  type TimeSignature,
+} from "./time.js";
 
-describe("absBeatToBarBeat", () => {
-  it("handles 4/4", () => {
-    expect(absBeatToBarBeat(0, { numerator: 4, denominator: 4 })).toEqual({
-      bar: 0,
-      beatInBar: 0,
-    });
-    expect(absBeatToBarBeat(4, { numerator: 4, denominator: 4 })).toEqual({
-      bar: 1,
-      beatInBar: 0,
-    });
-  });
+const TS_4_4: TimeSignature = { numerator: 4, denominator: 4 };
+const TS_5_8: TimeSignature = { numerator: 5, denominator: 8 };
+const TS_7_8: TimeSignature = { numerator: 7, denominator: 8 };
 
-  it("handles odd meters without rounding", () => {
-    expect(absBeatToBarBeat(5.5, { numerator: 5, denominator: 8 })).toEqual({
-      bar: 1,
-      beatInBar: 0.5,
-    });
-    expect(absBeatToBarBeat(7, { numerator: 7, denominator: 8 })).toEqual({
-      bar: 1,
-      beatInBar: 0,
-    });
+describe("DEFAULT_PPQ", () => {
+  it("is 960", () => {
+    expect(DEFAULT_PPQ).toBe(960);
   });
 });
 
-describe("barBeatToAbsBeat", () => {
-  it("round-trips with absBeatToBarBeat", () => {
-    const ts = { numerator: 5, denominator: 8 };
-    const abs = 12.25;
-    const { bar, beatInBar } = absBeatToBarBeat(abs, ts);
-    expect(barBeatToAbsBeat(bar, beatInBar, ts)).toBe(abs);
+describe("ticksPerBar", () => {
+  it("computes integer ticks for 4/4, 5/8, 7/8", () => {
+    expect(ticksPerBar(TS_4_4)).toBe(4 * DEFAULT_PPQ); // 3840
+    expect(ticksPerBar(TS_5_8)).toBe(5 * ((DEFAULT_PPQ * 4) / 8)); // 2400
+    expect(ticksPerBar(TS_7_8)).toBe(7 * ((DEFAULT_PPQ * 4) / 8)); // 3360
+  });
+
+  it("throws when ticksPerBar would not be an integer", () => {
+    expect(() =>
+      ticksPerBar({ numerator: 4, denominator: 7 }, DEFAULT_PPQ),
+    ).toThrow(RangeError);
+  });
+
+  it("throws for invalid meters", () => {
+    expect(() => ticksPerBar({ numerator: 0, denominator: 4 })).toThrow(
+      RangeError,
+    );
+    expect(() => ticksPerBar({ numerator: 4, denominator: -4 })).toThrow(
+      RangeError,
+    );
+    expect(() =>
+      assertValidTimeSignature({ numerator: 1.5, denominator: 4 }),
+    ).toThrow(RangeError);
+  });
+});
+
+describe("ticksToBbt / bbtToTicks — 4/4", () => {
+  const perBar = ticksPerBar(TS_4_4);
+
+  it("maps bar boundaries", () => {
+    expect(ticksToBbt(0, TS_4_4)).toEqual({ bar: 0, beat: 1, tick: 0 });
+    expect(ticksToBbt(perBar, TS_4_4)).toEqual({ bar: 1, beat: 1, tick: 0 });
+    expect(ticksToBbt(perBar - 1, TS_4_4)).toEqual({
+      bar: 0,
+      beat: 4,
+      tick: DEFAULT_PPQ - 1,
+    });
+  });
+
+  it("round-trips across bar edges", () => {
+    for (const t of [0, 1, DEFAULT_PPQ, perBar - 1, perBar, perBar + 1]) {
+      const bbt = ticksToBbt(t, TS_4_4);
+      expect(bbtToTicks(bbt.bar, bbt.beat, bbt.tick, TS_4_4)).toBe(t);
+    }
+  });
+});
+
+describe("ticksToBbt / bbtToTicks — 5/8 and 7/8", () => {
+  it("5/8: ticksPerBar and round-trip without float drift", () => {
+    const perBar = ticksPerBar(TS_5_8);
+    expect(perBar).toBe(2400);
+    expect(Number.isInteger(perBar)).toBe(true);
+
+    const mid = perBar + 480 + 100; // bar 1, beat 2, tick 100
+    const bbt = ticksToBbt(mid, TS_5_8);
+    expect(bbt).toEqual({ bar: 1, beat: 2, tick: 100 });
+    expect(bbtToTicks(bbt.bar, bbt.beat, bbt.tick, TS_5_8)).toBe(mid);
+  });
+
+  it("7/8: round-trip at bar boundary", () => {
+    const perBar = ticksPerBar(TS_7_8);
+    expect(perBar).toBe(3360);
+    expect(ticksToBbt(perBar, TS_7_8)).toEqual({ bar: 1, beat: 1, tick: 0 });
+    expect(bbtToTicks(1, 1, 0, TS_7_8)).toBe(perBar);
+  });
+});
+
+describe("negative ticks (pre-roll) — floorDiv + euclidMod", () => {
+  const perBar = ticksPerBar(TS_4_4);
+  const perBeat = DEFAULT_PPQ;
+
+  it("last tick before bar 0 stays in bar -1 with positive beat/tick", () => {
+    const bbt = ticksToBbt(-1, TS_4_4);
+    expect(bbt.bar).toBe(-1);
+    expect(bbt.beat).toBe(4);
+    expect(bbt.tick).toBe(perBeat - 1);
+    expect(bbt.beat).toBeGreaterThan(0);
+    expect(bbt.tick).toBeGreaterThanOrEqual(0);
+  });
+
+  it("start of pre-roll bar maps to beat 1 tick 0", () => {
+    expect(ticksToBbt(-perBar, TS_4_4)).toEqual({
+      bar: -1,
+      beat: 1,
+      tick: 0,
+    });
+  });
+
+  it("round-trips for negative ticks", () => {
+    for (const t of [-1, -perBeat, -perBar, -perBar - 1, -2 * perBar + 3]) {
+      const bbt = ticksToBbt(t, TS_4_4);
+      expect(bbt.beat).toBeGreaterThan(0);
+      expect(bbt.tick).toBeGreaterThanOrEqual(0);
+      expect(bbtToTicks(bbt.bar, bbt.beat, bbt.tick, TS_4_4)).toBe(t);
+    }
+  });
+
+  it("euclidMod semantics: remainder never negative for axis offset", () => {
+    // If JS % were used raw, -5 % 4 === -1; we must land in [0, perBar).
+    const bbt = ticksToBbt(-5, TS_4_4);
+    expect(bbt.tick).toBeGreaterThanOrEqual(0);
+    expect(bbt.tick).toBeLessThan(perBeat);
+    expect(bbt.beat).toBeGreaterThanOrEqual(1);
+    expect(bbt.beat).toBeLessThanOrEqual(4);
+  });
+});
+
+describe("display bar", () => {
+  it("ticks 0 → display bar 1", () => {
+    const { bar } = ticksToBbt(0, TS_4_4);
+    expect(toDisplayBar(bar)).toBe(1);
+    expect(fromDisplayBar(1)).toBe(0);
+  });
+
+  it("last pre-roll tick → display bar 0", () => {
+    const { bar } = ticksToBbt(-1, TS_4_4);
+    expect(bar).toBe(-1);
+    expect(toDisplayBar(bar)).toBe(0);
+  });
+
+  it("tick in second pre-roll bar → display -1", () => {
+    const perBar = ticksPerBar(TS_4_4);
+    const { bar } = ticksToBbt(-perBar - 1, TS_4_4);
+    expect(bar).toBe(-2);
+    expect(toDisplayBar(bar)).toBe(-1);
+  });
+});
+
+describe("quartersToTicks / ticksToQuarters", () => {
+  it("converts integer quarters without float", () => {
+    expect(quartersToTicks(1)).toBe(DEFAULT_PPQ);
+    expect(quartersToTicks(4)).toBe(4 * DEFAULT_PPQ);
+    expect(ticksToQuarters(DEFAULT_PPQ)).toBe(1);
+    expect(ticksToQuarters(-1)).toBe(-1); // floor toward −∞
   });
 });

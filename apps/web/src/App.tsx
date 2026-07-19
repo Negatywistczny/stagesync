@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button } from "@stagesync/ui";
-import { absBeatToBarBeat } from "@stagesync/shared";
+import { ticksToBbt, toDisplayBar } from "@stagesync/shared";
 import "./App.css";
 
 export default function App() {
   const [selected, setSelected] = useState(false);
-  const sample = absBeatToBarBeat(5.5, { numerator: 5, denominator: 8 });
+  const sample = ticksToBbt(2500, { numerator: 5, denominator: 8 });
 
   return (
     <main className="page">
@@ -75,8 +75,8 @@ export default function App() {
       </section>
 
       <p className="meta">
-        Shared time stub: absBeat 5.5 @ 5/8 → bar {sample.bar}, beat{" "}
-        {sample.beatInBar}
+        Shared time: 2500 ticks @ 5/8 → display bar {toDisplayBar(sample.bar)},
+        beat {sample.beat}, tick {sample.tick}
       </p>
     </main>
   );
