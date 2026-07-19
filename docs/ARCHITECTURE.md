@@ -30,7 +30,7 @@ Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładz
 
 **Kanon pozycji:** integer **ticks** + stałe **PPQ** (nie float `absBeat`, nie sekundy). **BBT** = widok/API. Takt 1 = start utworu; pre-roll ≤ 0. API: `ticksToBbt` / `bbtToTicks` w shared. Pełna decyzja: [ADR 0002](./adr/0002-timebase-ssot.md).
 
-Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); broadcast WS ~25 Hz gdy playing. Implementacja: REST + `/ws/transport`.
+Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); broadcast WS ~25 Hz gdy playing. Implementacja: REST + `/ws/transport`. Klient web: Vite proxy `/api` + `/ws`, soft playhead (`getDisplayTicks`) między tickami, `Button loading` na komendach.
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).  
 Kierunek UI (Booth): [ADR 0003](./adr/0003-ui-direction-booth.md).

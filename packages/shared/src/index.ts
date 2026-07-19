@@ -45,3 +45,8 @@ export {
   type TransportPlayBody,
   type TransportTickMessage,
 } from "./transport.js";
+
+export {
+  getDisplayTicks,
+  type TransportAnchor,
+} from "./soft-clock.js";
