@@ -38,6 +38,50 @@ function ticksPerBeat(ts: TimeSignature, ppq: number): number {
 }
 
 /**
+ * Local meter beat length in ticks: PPQ * 4 / denominator.
+ * (4/4 → PPQ, 5/8 → PPQ/2.)
+ */
+export function localTicksPerBeat(
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  assertValidTimeSignature(ts, ppq);
+  return ticksPerBeat(ts, ppq);
+}
+
+/**
+ * Musical ticks advanced per wall-clock millisecond at the given BPM.
+ * Float only in this conversion; callers floor to integer position ticks.
+ */
+export function ticksPerMs(
+  bpm: number,
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (!Number.isFinite(bpm) || bpm <= 0) {
+    throw new RangeError("bpm must be a finite number > 0");
+  }
+  const perBeat = localTicksPerBeat(ts, ppq);
+  const msPerBeat = 60_000 / bpm;
+  return perBeat / msPerBeat;
+}
+
+/**
+ * Elapsed wall time → integer tick delta (floor toward −∞ for negative elapsed).
+ */
+export function elapsedToTicks(
+  elapsedMs: number,
+  bpm: number,
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (!Number.isFinite(elapsedMs)) {
+    throw new RangeError("elapsedMs must be finite");
+  }
+  return Math.floor(elapsedMs * ticksPerMs(bpm, ts, ppq));
+}
+
+/**
  * Validates a time signature for the given PPQ.
  * Throws when numerator/denominator are invalid or ticks-per-bar is not an integer.
  */

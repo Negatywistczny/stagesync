@@ -2,6 +2,9 @@ export {
   DEFAULT_PPQ,
   assertValidTimeSignature,
   ticksPerBar,
+  localTicksPerBeat,
+  ticksPerMs,
+  elapsedToTicks,
   ticksToBbt,
   bbtToTicks,
   toDisplayBar,
@@ -26,3 +29,19 @@ export {
   type HealthResponse,
   type ApiError,
 } from "./schema.js";
+
+export {
+  TimeSignatureSchema,
+  TransportStateSchema,
+  TransportSeekBodySchema,
+  TransportPlayBodySchema,
+  TransportTickMessageSchema,
+  DEFAULT_TRANSPORT_BPM,
+  DEFAULT_TRANSPORT_METER,
+  TRANSPORT_TICK_INTERVAL_MS,
+  defaultTransportState,
+  type TransportState,
+  type TransportSeekBody,
+  type TransportPlayBody,
+  type TransportTickMessage,
+} from "./transport.js";

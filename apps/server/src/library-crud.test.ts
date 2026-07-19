@@ -15,7 +15,7 @@ import {
 async function listen(
   dataDir: string,
 ): Promise<{ server: Server; baseUrl: string }> {
-  const app = createApp({ dataDir });
+  const { app } = createApp({ dataDir });
   const server = await new Promise<Server>((resolve) => {
     const s = app.listen(0, "127.0.0.1", () => resolve(s));
   });
