@@ -6,9 +6,11 @@ alwaysApply: true
 # StageSync v5 — Konstytucja
 
 Reguły egzekwowane przy pracy w tym repo.  
-Język docs / workflow commitów → [CONTRIBUTING.md](../../CONTRIBUTING.md).  
+Język docs / workflow commitów / gałęzie → [CONTRIBUTING.md](../../CONTRIBUTING.md).  
 Mapa dokumentacji → [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).  
 Standardy zewnętrzne → [docs/STANDARDS.md](../../docs/STANDARDS.md).
+
+Feature’y z `docs/TODO.md` → gałąź `feat/…` + PR (nie prosto na `main`). Docs/chore na `main` OK.
 
 ## Jedno źródło prawdy (SSOT)
 
