@@ -1,235 +1,623 @@
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@stagesync/ui";
-import { ShellNav } from "./ShellNav.js";
+import { ticksToBbt, toDisplayBar } from "@stagesync/shared";
+import { useTransport } from "../transport/useTransport.js";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconEraser,
+  IconEye,
+  IconHelp,
+  IconPause,
+  IconPencil,
+  IconPlay,
+  IconPointer,
+  IconRedo,
+  IconScissors,
+  IconStop,
+  IconSun,
+  IconTap,
+  IconUndo,
+  IconWand,
+  IconZoom,
+} from "./icons.js";
 import styles from "./TimelineShell.module.css";
 
-type Tool = "pointer" | "pencil" | "eraser" | "scissors" | "tap";
+type ToolId = "pointer" | "pencil" | "eraser" | "scissors" | "zoom" | "wand";
 
-const TOOLS: { id: Tool; label: string }[] = [
-  { id: "pointer", label: "Pointer" },
-  { id: "pencil", label: "Pencil" },
-  { id: "eraser", label: "Eraser" },
-  { id: "scissors", label: "Scissors" },
-  { id: "tap", label: "Tap" },
+const TOOLS: {
+  id: ToolId;
+  label: string;
+  title: string;
+  Icon: typeof IconPointer;
+}[] = [
+  {
+    id: "pointer",
+    label: "Pointer",
+    title: "Pointer — zaznacz, przesuń, zmień długość",
+    Icon: IconPointer,
+  },
+  {
+    id: "pencil",
+    label: "Pencil",
+    title: "Pencil — klik: 1 takt; przeciągnij: nadpisz",
+    Icon: IconPencil,
+  },
+  {
+    id: "eraser",
+    label: "Eraser",
+    title: "Eraser — usuń clip / zaznaczenie",
+    Icon: IconEraser,
+  },
+  {
+    id: "scissors",
+    label: "Scissors",
+    title: "Scissors — Forma: podsekcja; Tekst/Akordy: podział",
+    Icon: IconScissors,
+  },
+  {
+    id: "zoom",
+    label: "Zoom",
+    title: "Zoom — przeciągnij prostokąt; klik tła = reset",
+    Icon: IconZoom,
+  },
+  {
+    id: "wand",
+    label: "Różdżka",
+    title: "Różdżka — menu auto-akcji",
+    Icon: IconWand,
+  },
 ];
 
-const CONTENT_TRACKS = [
-  { id: "form", label: "Forma", clips: ["Intro", "Verse"] },
-  { id: "lyrics", label: "Tekst", clips: ["Waiting on the…"] },
-  { id: "chords", label: "Akordy", clips: ["Am — F — C"] },
-  { id: "cue", label: "Cue", clips: ["Fill → verse"] },
-] as const;
-
-const SPECIAL_TRACKS = [
-  { id: "tempo", label: "Tempo", clips: ["118"] },
-  { id: "key", label: "Tonacja", clips: ["Am"] },
-  { id: "meter", label: "Metrum", clips: ["4/4"] },
-  { id: "anchors", label: "Kotwice", clips: ["scoreBarMap"] },
+const WAND_ACTIONS = [
+  { id: "vocals-to-forma", label: "Tekst → Forma" },
+  { id: "chords-to-forma", label: "Akordy → Forma" },
+  { id: "both-to-forma", label: "Tekst + Akordy → Forma" },
 ] as const;
 
 type AudioTrack = { id: string; name: string };
 
 export function TimelineShell() {
   const idPrefix = useId();
-  const [tool, setTool] = useState<Tool>("pointer");
-  const [showSpecial, setShowSpecial] = useState(false);
-  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
-  const [selected, setSelected] = useState<string | null>("Intro");
+  const { state, displayTicks, wsStatus, commandPending, play, pause } =
+    useTransport();
+  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
 
-  function addAudioTrack() {
+  const [tool, setTool] = useState<ToolId>("pointer");
+  const [wandOpen, setWandOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [songScreenOpen, setSongScreenOpen] = useState(false);
+  const [showSpecial, setShowSpecial] = useState(false);
+  const [eyeOpen, setEyeOpen] = useState(false);
+  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
+  const [selected, setSelected] = useState("Countdown");
+  const [inspectorOpen, setInspectorOpen] = useState(true);
+
+  function addAudio() {
     const n = audioTracks.length + 1;
-    const id = `${idPrefix}-audio-${n}`;
-    setAudioTracks((prev) => [...prev, { id, name: `Audio ${n}` }]);
-    setSelected(`Audio ${n}`);
+    setAudioTracks((prev) => [
+      ...prev,
+      { id: `${idPrefix}-a-${n}`, name: `Audio ${n}` },
+    ]);
   }
 
-  function removeAudioTrack(id: string) {
-    setAudioTracks((prev) => prev.filter((t) => t.id !== id));
+  function onTool(id: ToolId) {
+    if (id === "wand") {
+      setWandOpen((v) => !v);
+      setTool("wand");
+      return;
+    }
+    setWandOpen(false);
+    setTool(id);
   }
 
   return (
     <div className={styles.shell}>
-      <header className={styles.topbar}>
+      <header className={styles.header}>
         <div className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden="true" />
-          Timeline
+          <span className={styles.brandMark} aria-hidden />
+          <div>
+            <h1 className={styles.title}>StageSync Timeline</h1>
+            <Link className={styles.adminLink} to="/admin">
+              Admin
+            </Link>
+          </div>
         </div>
-        <ShellNav />
-        <div className={styles.tools} aria-label="Narzędzia">
-          {TOOLS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={[
-                styles.tool,
-                tool === item.id ? styles.toolActive : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              aria-pressed={tool === item.id}
-              onClick={() => setTool(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <span className={styles.badge} title="Źródło transportu">
-          MIDI / Timeline
-        </span>
-        <div className={styles.actions}>
-          <Button variant="ghost" disabled title="Wkrótce">
-            ←
-          </Button>
-          <Button variant="ghost" disabled title="Wkrótce">
-            →
-          </Button>
-          <Button
-            variant="ghost"
-            selected={showSpecial}
-            onClick={() => setShowSpecial((v) => !v)}
+
+        <div className={styles.songCluster} role="group" aria-label="Setlista">
+          <IconBtn label="Metadane utworu" disabled>
+            ⓘ
+          </IconBtn>
+          <IconBtn label="Poprzedni utwór setlisty" disabled>
+            <IconChevronLeft />
+          </IconBtn>
+          <button
+            type="button"
+            className={styles.songPicker}
+            onClick={() => setSongScreenOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={songScreenOpen}
           >
-            Specjalne
+            Wybierz utwór
+          </button>
+          <IconBtn label="Następny utwór setlisty" disabled>
+            <IconChevronRight />
+          </IconBtn>
+          <IconBtn label="Auto-setlista" disabled pressed={false}>
+            ▶|
+          </IconBtn>
+        </div>
+
+        <div className={styles.headerActions}>
+          <IconBtn label="Cofnij" disabled>
+            <IconUndo />
+          </IconBtn>
+          <IconBtn label="Ponów" disabled>
+            <IconRedo />
+          </IconBtn>
+          <Button variant="ghost" disabled>
+            Odrzuć
           </Button>
-          <Button variant="primary" disabled title="Wkrótce">
+          <Button variant="primary" disabled>
             Zapisz
           </Button>
+          <IconBtn
+            label="Pomoc"
+            pressed={helpOpen}
+            onClick={() => setHelpOpen(true)}
+          >
+            <IconHelp />
+          </IconBtn>
+          <IconBtn
+            label="Wygląd"
+            pressed={appearanceOpen}
+            onClick={() => setAppearanceOpen((v) => !v)}
+          >
+            <IconSun />
+          </IconBtn>
+          <IconBtn label="Pełny ekran" disabled>
+            ⛶
+          </IconBtn>
         </div>
       </header>
 
-      <aside className={styles.sidebar} aria-label="Biblioteka">
-        <div className={styles.sideHead}>
-          <h2 className={styles.sideTitle}>Biblioteka</h2>
-        </div>
-        <p className={styles.muted}>Ze wzoru · Import UG — wkrótce.</p>
-        <div className={styles.listRow}>
-          <div className={styles.listTitle}>Midnight Express</div>
-          <div className={styles.listMeta}>placeholder</div>
-        </div>
-      </aside>
-
-      <div className={styles.canvas} aria-label="Canvas timeline">
-        <div className={styles.ruler}>
-          {Array.from({ length: 12 }, (_, i) => (
-            <span key={i}>{i + 1}</span>
+      <div className={styles.toolbar}>
+        <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
+          {TOOLS.map(({ id, title, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              className={[
+                styles.toolBtn,
+                tool === id ? styles.toolActive : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              title={title}
+              aria-label={title}
+              aria-pressed={tool === id}
+              onClick={() => onTool(id)}
+            >
+              <Icon />
+            </button>
           ))}
+          {wandOpen ? (
+            <div className={styles.wandMenu} role="menu">
+              {WAND_ACTIONS.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  role="menuitem"
+                  className={styles.wandItem}
+                  disabled
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
-        <div className={styles.tracks}>
-          <div className={styles.playhead} aria-hidden="true" />
 
-          <p className={styles.groupLabel}>Treść</p>
-          {CONTENT_TRACKS.map((track) => (
-            <TrackRow
-              key={track.id}
-              label={track.label}
-              clips={[...track.clips]}
-              selected={selected}
-              onSelect={setSelected}
-            />
-          ))}
+        <div className={styles.transport} role="group" aria-label="Transport">
+          <IconBtn label="Zatrzymaj" disabled>
+            <IconStop />
+          </IconBtn>
+          <button
+            type="button"
+            className={styles.playBtn}
+            aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
+            disabled={commandPending}
+            onClick={() => void (state.playing ? pause() : play())}
+          >
+            {state.playing ? <IconPause /> : <IconPlay />}
+          </button>
+          <IconBtn label="Pętla" disabled pressed={false}>
+            ↻
+          </IconBtn>
+          <span className={styles.bbt} aria-live="polite">
+            {toDisplayBar(bbt.bar)}.{bbt.beat}
+          </span>
+          <button type="button" className={styles.metaBtn} disabled title="Tempo">
+            {state.bpm} BPM
+          </button>
+          <span className={styles.metaRead}>
+            {state.timeSignature.numerator}/{state.timeSignature.denominator}
+          </span>
+          <span className={styles.metaRead}>—</span>
+          <IconBtn label="Metronom" disabled pressed={false}>
+            ♪
+          </IconBtn>
+          <IconBtn label="Podążaj za wskaźnikiem" disabled pressed={false}>
+            ◎
+          </IconBtn>
+        </div>
 
+        <span className={styles.dirty} hidden>
+          Niezapisane zmiany
+        </span>
+      </div>
+
+      <div className={styles.main}>
+        <aside className={styles.dock} aria-label="Ścieżki">
+          <div className={styles.dockHead}>
+            <button
+              type="button"
+              className={styles.eyeBtn}
+              aria-label="Widoczność ścieżek"
+              aria-expanded={eyeOpen}
+              onClick={() => setEyeOpen((v) => !v)}
+            >
+              <IconEye />
+            </button>
+            {eyeOpen ? (
+              <div className={styles.eyeMenu}>
+                <button
+                  type="button"
+                  className={styles.eyeItem}
+                  onClick={() => setShowSpecial((v) => !v)}
+                >
+                  Specjalne: {showSpecial ? "on" : "off"}
+                </button>
+              </div>
+            ) : null}
+          </div>
+          <DockLabel>Forma</DockLabel>
+          <DockLabel
+            action={
+              <button
+                type="button"
+                className={styles.tapBtn}
+                title="Tap — timing linii Tekstu"
+                aria-label="Tap"
+                disabled
+              >
+                <IconTap />
+              </button>
+            }
+          >
+            Tekst
+          </DockLabel>
+          <DockLabel>Akordy</DockLabel>
+          <DockLabel>Cue</DockLabel>
           {showSpecial ? (
             <>
-              <p className={styles.groupLabel}>Specjalne</p>
-              {SPECIAL_TRACKS.map((track) => (
-                <TrackRow
-                  key={track.id}
-                  label={track.label}
-                  clips={[...track.clips]}
-                  selected={selected}
+              <DockLabel muted>Tempo</DockLabel>
+              <DockLabel muted>Tonacja</DockLabel>
+              <DockLabel muted>Metrum</DockLabel>
+              <DockLabel muted>Kotwice</DockLabel>
+            </>
+          ) : null}
+          {audioTracks.map((t) => (
+            <DockLabel key={t.id}>{t.name}</DockLabel>
+          ))}
+          <Button variant="ghost" onClick={addAudio}>
+            + Audio
+          </Button>
+        </aside>
+
+        <div className={styles.canvas} aria-label="Canvas">
+          <div className={styles.ruler}>
+            {Array.from({ length: 12 }, (_, i) => (
+              <span key={i}>{i === 0 ? "CD" : i}</span>
+            ))}
+          </div>
+          <div className={styles.lanes}>
+            <div className={styles.playhead} aria-hidden />
+            <Lane>
+              <Clip
+                name="Countdown"
+                locked
+                selected={selected === "Countdown"}
+                onSelect={setSelected}
+              />
+              <Clip
+                name="Intro"
+                selected={selected === "Intro"}
+                onSelect={setSelected}
+              />
+            </Lane>
+            <Lane>
+              <Clip
+                name="Waiting on…"
+                selected={selected === "Waiting on…"}
+                onSelect={setSelected}
+              />
+            </Lane>
+            <Lane>
+              {["Am", "F", "C"].map((c) => (
+                <Clip
+                  key={c}
+                  name={c}
+                  selected={selected === c}
                   onSelect={setSelected}
                 />
               ))}
-            </>
-          ) : null}
-
-          <div className={styles.audioHead}>
-            <p className={styles.groupLabel}>Audio (0…N)</p>
-            <Button variant="secondary" onClick={addAudioTrack}>
-              Dodaj ścieżkę audio
-            </Button>
+            </Lane>
+            <Lane>
+              <Clip
+                name="Fill → verse"
+                selected={selected === "Fill → verse"}
+                onSelect={setSelected}
+              />
+            </Lane>
+            {showSpecial ? (
+              <>
+                <Lane>
+                  <Clip name="118" selected={selected === "118"} onSelect={setSelected} />
+                </Lane>
+                <Lane>
+                  <Clip name="Am" selected={false} onSelect={setSelected} />
+                </Lane>
+                <Lane>
+                  <Clip name="4/4" selected={false} onSelect={setSelected} />
+                </Lane>
+                <Lane>
+                  <Clip name="map" selected={false} onSelect={setSelected} />
+                </Lane>
+              </>
+            ) : null}
+            {audioTracks.length === 0 ? (
+              <p className={styles.audioEmpty}>Brak ścieżek audio (0…N).</p>
+            ) : (
+              audioTracks.map((t) => (
+                <Lane key={t.id}>
+                  <Clip
+                    name={`${t.name} clip`}
+                    selected={selected === `${t.name} clip`}
+                    onSelect={setSelected}
+                  />
+                </Lane>
+              ))
+            )}
           </div>
-          {audioTracks.length === 0 ? (
-            <p className={styles.muted}>Brak ścieżek audio — to normalny stan.</p>
-          ) : (
-            audioTracks.map((track) => (
-              <div key={track.id} className={styles.track}>
-                <div className={styles.trackLabelRow}>
-                  <span className={styles.trackLabel}>{track.name}</span>
-                  <button
-                    type="button"
-                    className={styles.removeAudio}
-                    onClick={() => removeAudioTrack(track.id)}
-                    aria-label={`Usuń ${track.name}`}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className={styles.trackLane}>
-                  <button
-                    type="button"
-                    className={[
-                      styles.clip,
-                      styles.clipAudio,
-                      selected === track.name ? styles.clipSelected : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    onClick={() => setSelected(track.name)}
-                  >
-                    clip (placeholder)
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
         </div>
+
+        {inspectorOpen ? (
+          <aside className={styles.inspector} aria-label="Właściwości">
+            <div className={styles.inspHead}>
+              <h2 className={styles.inspTitle}>Właściwości</h2>
+              <IconBtn
+                label="Ukryj właściwości"
+                onClick={() => setInspectorOpen(false)}
+              >
+                ×
+              </IconBtn>
+            </div>
+            <p className={styles.inspBody}>
+              {selected === "Countdown" ? (
+                <>
+                  <strong>Countdown</strong> — zablokowany; ustaw długość (pre-roll
+                  ≤ 0 w v5). Pole długości:
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    defaultValue={2}
+                    disabled
+                    aria-label="Długość Countdown (takty)"
+                  />
+                </>
+              ) : (
+                <>
+                  Zaznaczenie: <strong>{selected}</strong>. Bindingi draftu —
+                  później.
+                </>
+              )}
+            </p>
+          </aside>
+        ) : (
+          <button
+            type="button"
+            className={styles.showInsp}
+            onClick={() => setInspectorOpen(true)}
+          >
+            Właściwości
+          </button>
+        )}
       </div>
 
-      <aside className={styles.inspector} aria-label="Inspector">
-        <div className={styles.sideHead}>
-          <h2 className={styles.sideTitle}>Właściwości</h2>
+      <footer className={styles.status}>
+        <span
+          className={[
+            styles.connDot,
+            wsStatus === "connected" ? styles.connOn : "",
+          ].join(" ")}
+          title={`WS: ${wsStatus}`}
+        />
+        <span className={styles.badge}>MIDI / Timeline</span>
+        <div className={styles.zooms} role="group" aria-label="Zoom">
+          <label className={styles.zoomLab}>
+            UI
+            <input type="range" min={50} max={150} defaultValue={100} disabled />
+          </label>
+          <label className={styles.zoomLab}>
+            H
+            <input type="range" min={24} max={160} defaultValue={48} disabled />
+          </label>
+          <label className={styles.zoomLab}>
+            V
+            <input type="range" min={40} max={160} defaultValue={72} disabled />
+          </label>
         </div>
-        <p className={styles.detailTitle}>{selected ?? "Metadane utworu"}</p>
-        <p className={styles.muted}>
-          Narzędzie: {tool}. Drag / edycja / MIDI — kolejne PR. Audio: lokalny
-          szkielet 0…N bez API.
-        </p>
-      </aside>
+      </footer>
+
+      {helpOpen ? (
+        <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="tl-help-title">
+          <button
+            type="button"
+            className={styles.backdrop}
+            aria-label="Zamknij"
+            onClick={() => setHelpOpen(false)}
+          />
+          <div className={styles.overlayPanel}>
+            <div className={styles.overlayHead}>
+              <h2 id="tl-help-title">Pomoc</h2>
+              <IconBtn label="Zamknij" onClick={() => setHelpOpen(false)}>
+                ×
+              </IconBtn>
+            </div>
+            <div className={styles.overlayBody}>
+              <p>Skróty i opis narzędzi — treść jak w v4 (statyczny shell).</p>
+              <ul>
+                <li>Pointer / Pencil / Eraser / Scissors / Zoom / Różdżka</li>
+                <li>Tap na ścieżce Tekst</li>
+                <li>Countdown: tylko długość</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {appearanceOpen ? (
+        <div className={styles.appearPop} role="dialog" aria-label="Wygląd">
+          <p className={styles.appearTitle}>Wygląd</p>
+          <label className={styles.switchRow}>
+            <input type="checkbox" disabled /> Jasny motyw
+          </label>
+          <label className={styles.switchRow}>
+            <input type="checkbox" disabled /> Wysoki kontrast
+          </label>
+        </div>
+      ) : null}
+
+      {songScreenOpen ? (
+        <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="song-screen-title">
+          <button
+            type="button"
+            className={styles.backdrop}
+            aria-label="Zamknij"
+            onClick={() => setSongScreenOpen(false)}
+          />
+          <div className={styles.overlayPanel}>
+            <div className={styles.overlayHead}>
+              <h2 id="song-screen-title">Wybierz utwór</h2>
+              <IconBtn label="Zamknij" onClick={() => setSongScreenOpen(false)}>
+                ×
+              </IconBtn>
+            </div>
+            <div className={styles.overlayBody}>
+              <input
+                className={styles.search}
+                placeholder="Szukaj tytułu, artysty…"
+                disabled
+              />
+              <div className={styles.createRow}>
+                <Button variant="secondary" disabled>
+                  Ze wzoru
+                </Button>
+                <Button variant="secondary" disabled>
+                  Import Ultimate Guitar
+                </Button>
+              </div>
+              <p className={styles.muted}>Lista biblioteki — później.</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function TrackRow({
+function IconBtn({
   label,
-  clips,
-  selected,
-  onSelect,
+  children,
+  disabled,
+  pressed,
+  onClick,
 }: {
   label: string;
-  clips: string[];
-  selected: string | null;
-  onSelect: (name: string) => void;
+  children: ReactNode;
+  disabled?: boolean;
+  pressed?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className={styles.track}>
-      <div className={styles.trackLabel}>{label}</div>
-      <div className={styles.trackLane}>
-        {clips.map((name) => (
-          <button
-            key={name}
-            type="button"
-            className={[
-              styles.clip,
-              selected === name ? styles.clipSelected : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={() => onSelect(name)}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+    <button
+      type="button"
+      className={[
+        styles.iconBtn,
+        pressed ? styles.iconBtnOn : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      aria-label={label}
+      title={label}
+      aria-pressed={pressed}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+
+function DockLabel({
+  children,
+  action,
+  muted,
+}: {
+  children: ReactNode;
+  action?: ReactNode;
+  muted?: boolean;
+}) {
+  return (
+    <div className={[styles.dockLabel, muted ? styles.dockMuted : ""].join(" ")}>
+      <span>{children}</span>
+      {action}
     </div>
+  );
+}
+
+function Lane({ children }: { children: ReactNode }) {
+  return <div className={styles.lane}>{children}</div>;
+}
+
+function Clip({
+  name,
+  selected,
+  onSelect,
+  locked,
+}: {
+  name: string;
+  selected: boolean;
+  onSelect: (n: string) => void;
+  locked?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className={[
+        styles.clip,
+        selected ? styles.clipOn : "",
+        locked ? styles.clipLocked : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      onClick={() => onSelect(name)}
+    >
+      {locked ? "🔒 " : ""}
+      {name}
+    </button>
   );
 }

@@ -2,30 +2,25 @@
 
 - **Status:** Zaakceptowany (zaktualizowany)
 - **Data:** 2026-07-19
-- **Aktualizacja:** 2026-07-19 — Booth = skin/tokeny; IA = parity v4 (+ Audio 0…N)
+- **Aktualizacja:** 2026-07-19 — Booth = skin; **layout nowy**; **inventarz kontrolek = parity v4**
 
 ## Kontekst
 
-Przy wprowadzaniu shelli UI w v5 (Admin / Client / Timeline) potrzebny jest ustalony **kierunek wizualny**, żeby nie wracać do organicznego amber/zinc 4.x ani nie wymyślać klimatu od zera. W legacy powstał harness **UI Lab** z propozycją A — Booth (`a-booth`).
+Przy shellach v5 (Admin / Client / Timeline) potrzebny jest klimat wizualny bez powrotu do organicznego amber 4.x. Lab Booth (`a-booth`) jest referencją **koloru / klimatu**, nie mapą paneli.
 
-Pierwszy szkic shelli skopiował **układ paneli** z labu (left rail, Live Desk labowy, mock tracki). To było błędne względem intencji produktu: Booth ma być **skórką**, a informacja / funkcje — jak w v4 (z uwzględnieniem nowości v5).
+Błędy wcześniejszych szkiców: (1) kalka layoutu labu; (2) „placeholdery” przez **usuwanie** kontrolek v4 (np. wand, Pomoc). Redesign layoutu ≠ ucinanie powierzchni funkcji.
 
 ## Decyzja
 
-1. **Booth = DNA wizualne** — ink / teal („booth steel”), mapowane wyłącznie na tokeny `--ss-*` w `@stagesync/ui`. Lab (`a-booth`) to referencja **klimatu**, nie mapa IA.
-2. **IA shelli = parity funkcji v4** — jeśli informacja lub akcja była w Admin / Client / Timeline 4.x, ma mieć region w v5, chyba że świadomie usunięta (np. git-apply → [ADR 0004](./0004-updates-docker.md)).
-3. **Nowości v5 w IA od razu:** ścieżki **Audio 0…N** w Timeline (jak DAW; brak audio = OK); storage `projects/<id>/` (assety przy projekcie).
-4. **Layout Admina** może być przebudowany względem 4.x (nie kopiować collapsible 1:1 ani labu) — byle pokrywał checklistę funkcji.
-5. **Style shelli:** tylko `*.module.css` + `--ss-*`; bez globalnych reguł layoutu (`div` / `section` / `h1` poza resetem w `index.css`).
-6. Lab (Signal, Folio, Rack, Canon, Orbit) **nie** jest kierunkiem produktu.
-
-**Źródło klimatu (legacy, tylko mock):**
-
-- Repo: [STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY)
-- Ścieżka: `tests/harnesses/ui-lab/proposals/a-booth/`
+1. **Booth = DNA wizualne** — ink / teal na tokenach `--ss-*`. Lab nie dyktuje IA paneli.
+2. **Layout paneli = nowy** — świadomie zaprojektowany w v5 (nie 1:1 HTML 4.x, nie left-rail labu). Opis regionów: implementacja shelli + [ui-shell-inventory.md](../ui-shell-inventory.md).
+3. **Inventarz kontrolek = parity v4** — jeśli użytkownik mógł kliknąć X w 4.x, w shellu v5 musi być kontrolka (ikona + etykieta/`aria-label`); `disabled` / overlay bez API OK. Usunięcie tylko jako **świadoma delta** (np. git-apply → [ADR 0004](./0004-updates-docker.md)).
+4. **Model na Timeline:** 1 akord = 1 clip; **Countdown** widoczny na Formie; **Audio 0…N**.
+5. **Style shelli:** tylko `*.module.css` + `--ss-*`.
+6. Checklisty: [docs/ui-shell-inventory.md](../ui-shell-inventory.md).
 
 ## Konsekwencje
 
-- Implementacja shelli odnosi się do **dokumentacji v4** (regiony funkcji) + tokenów Booth — nie do HTML labu jako szablonu layoutu.
-- `TransportProvider` / soft-clock (WS + rAF) żyje ponad routerem i **nie** jest przedmiotem redesignu IA.
-- Motywy light/dark później nadpisują te same `--ss-*` (`data-theme`); shelle bez HEX.
+- Przy review UI: najpierw inventarz (czy jest wand / Pomoc / …), potem estetyka layoutu.
+- `TransportProvider` (WS + soft-clock rAF) poza redesignem chrome.
+- Motywy później: te same `--ss-*` pod `data-theme`.
