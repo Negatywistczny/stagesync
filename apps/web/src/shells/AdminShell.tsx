@@ -1,8 +1,13 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import { ticksToBbt, toDisplayBar, type Library } from "@stagesync/shared";
-import { fetchLibrary } from "../lib/libraryApi.js";
+import {
+  createProject,
+  deleteProject,
+  fetchLibrary,
+  updateProject,
+} from "../lib/libraryApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconSettings, IconSun } from "./icons.js";
 import styles from "./AdminShell.module.css";
@@ -17,6 +22,11 @@ const SECTIONS: { id: SectionId; label: string }[] = [
   { id: "host", label: "Host" },
 ];
 
+function errMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return "Operacja nie powiodła się";
+}
+
 export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -29,10 +39,31 @@ export function AdminShell() {
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
   const [batchPcOpen, setBatchPcOpen] = useState(false);
   const [pathPickerOpen, setPathPickerOpen] = useState(false);
+  const [commandPending, setCommandPending] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
 
   const { state, displayTicks, wsStatus } = useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
+
+  const refreshLibrary = useCallback(async (preferId?: string | null) => {
+    const data = await fetchLibrary();
+    setLibrary(data);
+    setLibraryError(null);
+    setSelectedId((prev) => {
+      const next =
+        preferId !== undefined
+          ? preferId
+          : prev && data.projects.some((p) => p.id === prev)
+            ? prev
+            : (data.projects[0]?.id ?? null);
+      return next && data.projects.some((p) => p.id === next)
+        ? next
+        : (data.projects[0]?.id ?? null);
+    });
+    return data;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,9 +75,7 @@ export function AdminShell() {
         setSelectedId(data.projects[0]?.id ?? null);
       } catch (err) {
         if (!cancelled) {
-          setLibraryError(
-            err instanceof Error ? err.message : "Nie udało się wczytać",
-          );
+          setLibraryError(errMessage(err));
         }
       }
     })();
@@ -54,6 +83,56 @@ export function AdminShell() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    setDraftName(selected?.name ?? "");
+  }, [selected?.id, selected?.name]);
+
+  const runMutation = useCallback(
+    async (op: () => Promise<void>) => {
+      if (commandPending) return;
+      setCommandPending(true);
+      setActionError(null);
+      try {
+        await op();
+      } catch (err) {
+        setActionError(errMessage(err));
+      } finally {
+        setCommandPending(false);
+      }
+    },
+    [commandPending],
+  );
+
+  const onCreate = () => {
+    const raw = window.prompt("Nazwa nowego projektu");
+    if (raw === null) return;
+    void runMutation(async () => {
+      const created = await createProject(raw);
+      await refreshLibrary(created.id);
+    });
+  };
+
+  const onDelete = () => {
+    if (!selectedId || !selected) return;
+    if (!window.confirm(`Usunąć „${selected.name}”?`)) return;
+    void runMutation(async () => {
+      await deleteProject(selectedId);
+      const data = await fetchLibrary();
+      setLibrary(data);
+      setLibraryError(null);
+      const nextId = data.projects[0]?.id ?? null;
+      setSelectedId(nextId);
+    });
+  };
+
+  const onRename = () => {
+    if (!selectedId) return;
+    void runMutation(async () => {
+      await updateProject(selectedId, { name: draftName });
+      await refreshLibrary(selectedId);
+    });
+  };
 
   return (
     <div className={styles.shell}>
@@ -122,14 +201,21 @@ export function AdminShell() {
           <SongsView
             library={library}
             libraryError={libraryError}
+            actionError={actionError}
+            commandPending={commandPending}
             selectedId={selectedId}
             selected={selected}
+            draftName={draftName}
             inspectorOpen={inspectorOpen}
+            onDraftNameChange={setDraftName}
             onSelect={setSelectedId}
             onToggleInspector={() => setInspectorOpen((v) => !v)}
             onImport={() => setImportModalOpen(true)}
             onXml={() => setXmlModalOpen(true)}
             onBatchPc={() => setBatchPcOpen(true)}
+            onCreate={onCreate}
+            onDelete={onDelete}
+            onRename={onRename}
           />
         ) : null}
         {section === "set" ? <SetView /> : null}
@@ -276,26 +362,43 @@ export function AdminShell() {
 function SongsView({
   library,
   libraryError,
+  actionError,
+  commandPending,
   selectedId,
   selected,
+  draftName,
   inspectorOpen,
+  onDraftNameChange,
   onSelect,
   onToggleInspector,
   onImport,
   onXml,
   onBatchPc,
+  onCreate,
+  onDelete,
+  onRename,
 }: {
   library: Library | null;
   libraryError: string | null;
+  actionError: string | null;
+  commandPending: boolean;
   selectedId: string | null;
   selected: Library["projects"][number] | null;
+  draftName: string;
   inspectorOpen: boolean;
+  onDraftNameChange: (name: string) => void;
   onSelect: (id: string) => void;
   onToggleInspector: () => void;
   onImport: () => void;
   onXml: () => void;
   onBatchPc: () => void;
+  onCreate: () => void;
+  onDelete: () => void;
+  onRename: () => void;
 }) {
+  const locked = commandPending;
+  const nameDirty = Boolean(selected && draftName !== selected.name);
+
   return (
     <div
       className={[styles.split, inspectorOpen ? "" : styles.splitSolo]
@@ -309,16 +412,25 @@ function SongsView({
             <p className={styles.cardHint}>Biblioteka projektów na tym hoście</p>
           </div>
           <div className={styles.actions}>
-            <Button variant="secondary" disabled>
+            <Button
+              variant="secondary"
+              loading={commandPending}
+              disabled={locked}
+              onClick={onCreate}
+            >
               Nowy
             </Button>
-            <Button variant="ghost" onClick={onToggleInspector}>
+            <Button
+              variant="ghost"
+              disabled={locked}
+              onClick={onToggleInspector}
+            >
               {inspectorOpen ? "Ukryj panel" : "Pokaż panel"}
             </Button>
             <Button variant="ghost" disabled>
               Eksport
             </Button>
-            <Button variant="ghost" onClick={onImport}>
+            <Button variant="ghost" disabled={locked} onClick={onImport}>
               Import
             </Button>
           </div>
@@ -352,6 +464,11 @@ function SongsView({
               {libraryError}
             </p>
           ) : null}
+          {actionError ? (
+            <p className={styles.error} role="alert">
+              {actionError}
+            </p>
+          ) : null}
 
           <div className={styles.list}>
             {library?.projects.map((p) => (
@@ -364,6 +481,7 @@ function SongsView({
                 ]
                   .filter(Boolean)
                   .join(" ")}
+                disabled={locked}
                 onClick={() => onSelect(p.id)}
               >
                 <span className={styles.songPc}>—</span>
@@ -389,6 +507,7 @@ function SongsView({
             <h2 className={styles.cardTitle}>Wybrany</h2>
             <Button
               variant="ghost"
+              disabled={locked}
               onClick={onToggleInspector}
               aria-label="Zamknij panel"
             >
@@ -398,19 +517,53 @@ function SongsView({
           <div className={styles.cardBody}>
             {selected ? (
               <>
-                <p className={styles.inspectorName}>{selected.name}</p>
+                <label className={styles.field}>
+                  Nazwa
+                  <input
+                    className={styles.input}
+                    value={draftName}
+                    disabled={locked}
+                    aria-label="Nazwa projektu"
+                    onChange={(e) => onDraftNameChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && nameDirty && !locked) {
+                        e.preventDefault();
+                        onRename();
+                      }
+                    }}
+                  />
+                </label>
                 <p className={styles.inspectorId}>{selected.id}</p>
                 <div className={styles.actions}>
-                  <Button variant="secondary" onClick={onXml}>
+                  <Button
+                    variant="primary"
+                    loading={commandPending}
+                    disabled={locked || !nameDirty}
+                    onClick={onRename}
+                  >
+                    Zapisz nazwę
+                  </Button>
+                  <Button variant="secondary" disabled={locked} onClick={onXml}>
                     XML
                   </Button>
                   <Button variant="ghost" disabled>
                     Partytura
                   </Button>
-                  <Link className={styles.editLink} to="/timeline">
-                    Otwórz w Timeline
-                  </Link>
-                  <Button variant="ghost" disabled>
+                  {locked ? (
+                    <span className={styles.editLinkMuted} aria-disabled>
+                      Otwórz w Timeline
+                    </span>
+                  ) : (
+                    <Link className={styles.editLink} to="/timeline">
+                      Otwórz w Timeline
+                    </Link>
+                  )}
+                  <Button
+                    variant="ghost"
+                    loading={commandPending}
+                    disabled={locked}
+                    onClick={onDelete}
+                  >
                     Usuń
                   </Button>
                 </div>

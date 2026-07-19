@@ -79,6 +79,7 @@ Kontrolki poniżej = inventarz funkcji. Timeline/Client: osobny redesign.
 - [ ] Chrome: brand, wersja, Timeline, Klient, Wygląd, zakładki sekcji
 - [ ] Status: utwór / sekcja / BBT / dalej / conn / Kontrola + korekta
 - [ ] Utwory: filtr, sort, filtry, lista+panel, XML/Partytura/Edytuj/Usuń, eksport, wzory
+  _(żywe: create / rename / delete)_
 - [ ] Set: włącz, auto, dodaj, zapisz, wyczyść
 - [ ] Scena: komunikat + klienci
 - [ ] Pliki: import/eksport + modal

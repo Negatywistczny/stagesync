@@ -275,9 +275,14 @@
   cursor: pointer;
 }
 
-.songRow:hover {
+.songRow:hover:not(:disabled) {
   border-color: var(--ss-color-border);
   background: var(--ss-color-ghost-hover);
+}
+
+.songRow:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .songRowOn {
@@ -333,6 +338,14 @@
 
 .editLink:hover {
   color: var(--ss-color-primary-hover);
+}
+
+.editLinkMuted {
+  color: var(--ss-color-disabled-text);
+  font-size: var(--ss-text-control);
+  font-weight: var(--ss-font-weight-semibold);
+  pointer-events: none;
+  user-select: none;
 }
 
 .templates {

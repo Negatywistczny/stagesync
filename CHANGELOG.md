@@ -14,6 +14,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
   ad-hoc wartości; Button = control + semibold + leading tight).
 - Paleta domyślna black / amber (jak v4) w `--ss-*`; `--ss-color-on-primary` pod
   tekst na amber CTA.
+- Admin — tworzenie / usuwanie / zmiana nazwy projektu z UI (Zod body przed
+  fetch; `commandPending` blokuje listę i panel).
 - Shelle UI: Admin — własny layout (chrome + sekcje + status), inventarz
   funkcji v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)); Client /
   Timeline — inventarz (osobny redesign); tokeny black/amber + CSS Modules;
