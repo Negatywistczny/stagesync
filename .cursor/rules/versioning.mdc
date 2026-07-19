@@ -1,0 +1,50 @@
+---
+description: StageSync versioning — v5 in this repo; legacy 4.x elsewhere
+alwaysApply: true
+---
+
+# Numeracja wersji StageSync (v5)
+
+## Repo
+
+| Linia | Repo |
+|-------|------|
+| **5.x** | Ten monorepo: `stagesync` |
+| **4.x legacy** | Tylko `STAGESYNC-APP-LEGACY` — nie mieszaj hotfixów 4.x tutaj |
+
+## Źródło prawdy
+
+- Wersja projektu: pole `"version"` w root `package.json` (SemVer: `MAJOR.MINOR.PATCH`).
+- **Alpha / pre-release OK** (np. `5.0.0-alpha.1`) podczas bootstrapa.
+- Tag git: `v{version}` przy release (np. `v5.0.0-alpha.1`, później `v5.0.0`).
+- Przed release sprawdź: `git tag -l 'v*'` i `package.json`.
+
+## Kiedy podbijać
+
+| Typ | Przykład | Kiedy |
+|-----|----------|-------|
+| **PATCH** | 5.0.0 → 5.0.1 | Bugfixy, drobne docs bez nowych funkcji |
+| **MINOR** | 5.0.0 → 5.1.0 | Nowe funkcje wstecznie kompatybilne |
+| **MAJOR** | 5.x → 6.0.0 | Breaking API / format / kontrakt klienta |
+
+Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o release / bump.
+
+## Przyjazna nazwa linii (`MAJOR.MINOR`)
+
+- Jedna hero-nazwa na linię `X.Y` (nie na każdy patch).
+- **5.0 hero name: deferred** until stable `5.0.0` (alpha bez finalnej nazwy w CHANGELOG header poza numerem SemVer).
+- Przy pierwszym stable `5.0.0`: ustal nazwę hero i dopisz do tabeli poniżej + nagłówek CHANGELOG `## [5.0.0] - RRRR-MM-DD — Nazwa`.
+
+### Linie 5.x
+
+| Linia | Nazwa |
+|-------|-------|
+| **5.0** | *(deferred until stable 5.0.0)* |
+
+## Release (gdy użytkownik prosi)
+
+1. Ustal bump z zakresu zmian.
+2. Zaktualizuj root `package.json` → `"version"`.
+3. Zsynchronizuj lockfile jeśli trzeba (`pnpm install`).
+4. Przenieś `[Unreleased]` w `CHANGELOG.md` do `## [X.Y.Z] - RRRR-MM-DD`.
+5. Commit + tag `v{version}`; push tylko na wyraźną prośbę.

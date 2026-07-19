@@ -1,0 +1,66 @@
+---
+description: StageSync v5 constitution — SSOT, monorepo boundaries, design tokens, commits
+alwaysApply: true
+---
+
+# StageSync v5 — Constitution
+
+## Single source of truth (SSOT)
+
+- **Server authority**: transport, project state, and timing decisions live on `@stagesync/server`. Clients must not invent authoritative clock or song state.
+- **Client playhead**: the web client may **smooth / interpolate the playhead between server ticks only**. It must not advance authoritative musical time independently of the server.
+
+## Monorepo boundaries
+
+| Path | Role |
+|------|------|
+| `apps/server` | Express API, persistence, transport SSOT |
+| `apps/web` | Vite + React client (UI only; no authoritative time) |
+| `packages/shared` | Pure domain: Zod schemas, time helpers — no DOM, no Node FS |
+| `packages/ui` | Design-system primitives (`Button`, tokens) — no business logic |
+| `packages/eslint-config` / `typescript-config` | Tooling only |
+| `data/` | Local runtime layout (templates + gitkeeps; user data gitignored) |
+
+Do not cross boundaries: UI must not import server; shared must stay pure; apps depend on packages, not the reverse.
+
+## Pure time
+
+- Musical / beat time math lives in `@stagesync/shared` as **pure functions** (deterministic, side-effect free).
+- No `Date.now()` / `performance.now()` inside shared time helpers for domain conversion — callers pass clocks/ticks in.
+
+## Validation (Zod)
+
+- Validate at **edges** (HTTP body, file load, IPC) with Zod from `@stagesync/shared`.
+- **Fail fast**: reject invalid payloads; do not silently coerce away required shape.
+
+## UI — Button & tokens
+
+- Canonical `Button` exposes a **closed set of 7 interaction states**: default, hover, focus, active, disabled, loading, selected.
+- Colors and spacing use **`--ss-*` CSS variables** only (`packages/ui` tokens). No ad-hoc HEX in components.
+
+## Data layout
+
+```
+data/
+  library/          # library index (+ library.template.json)
+  projects/<id>/    # per-project files
+  logs/             # runtime logs (gitignored content)
+```
+
+See `docs/adr/0001-storage-layout.md`.
+
+## Commits
+
+- [Conventional Commits](https://www.conventionalcommits.org/) only (commitlint + husky).
+- Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, …
+- Do not use `--no-verify` in normal workflow. See `CONTRIBUTING.md`.
+
+## Out of scope (v5 day-0 / alpha)
+
+Do **not** add without an explicit product decision:
+
+- Admin / hygiene HTTP UI for storage scrubbing
+- Dual write paths to legacy 4.x database shapes
+- New Button variants outside the closed set
+- Client-authoritative transport or MIDI clock
+- Pushing secrets, local `data/projects/*` user content, or `node_modules` to git
