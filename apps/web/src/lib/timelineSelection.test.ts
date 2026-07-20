@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   clearSelection,
+  isClipSelected,
   isMarqueeClick,
   isMultiSelectClick,
   marqueeSelectFromHits,
+  primaryLane,
   resolveMoveIds,
   selectRangeTo,
   selectSingle,
@@ -15,52 +17,81 @@ import {
 describe("timelineSelection", () => {
   it("selectSingle / setSelection primary fallback", () => {
     expect(selectSingle("a", "forma")).toEqual({
-      lane: "forma",
-      selectedIds: ["a"],
+      items: [{ id: "a", lane: "forma" }],
       primaryId: "a",
     });
-    expect(setSelection(["a", "b"], "missing", "tekst")).toEqual({
-      lane: "tekst",
-      selectedIds: ["a", "b"],
+    expect(
+      setSelection(
+        [
+          { id: "a", lane: "tekst" },
+          { id: "b", lane: "tekst" },
+        ],
+        "missing",
+      ),
+    ).toEqual({
+      items: [
+        { id: "a", lane: "tekst" },
+        { id: "b", lane: "tekst" },
+      ],
       primaryId: "b",
     });
   });
 
-  it("toggleSelected same-lane add/remove; cross-lane replaces", () => {
+  it("toggleSelected adds across lanes; removes same id+lane", () => {
     let s = selectSingle("a", "forma");
     s = toggleSelected(s, "b", "forma");
-    expect(s.selectedIds).toEqual(["a", "b"]);
+    expect(s.items.map((i) => i.id)).toEqual(["a", "b"]);
     expect(s.primaryId).toBe("b");
     s = toggleSelected(s, "a", "forma");
-    expect(s.selectedIds).toEqual(["b"]);
+    expect(s.items.map((i) => i.id)).toEqual(["b"]);
     expect(s.primaryId).toBe("b");
     s = toggleSelected(s, "x", "tekst");
-    expect(s).toEqual(selectSingle("x", "tekst"));
+    expect(s.items).toEqual([
+      { id: "b", lane: "forma" },
+      { id: "x", lane: "tekst" },
+    ]);
+    expect(primaryLane(s)).toBe("tekst");
     s = toggleSelected(s, "x", "tekst");
-    expect(s).toEqual(clearSelection());
+    expect(s.items).toEqual([{ id: "b", lane: "forma" }]);
   });
 
-  it("selectRangeTo on ordered lane clips", () => {
+  it("selectRangeTo on ordered lane clips keeps other lanes", () => {
     const lane = [
       { id: "a", startTicks: 0 },
       { id: "b", startTicks: 100 },
       { id: "c", startTicks: 200 },
     ];
-    const anchor = selectSingle("a", "forma");
-    const ranged = selectRangeTo(anchor, "c", "forma", lane);
-    expect(ranged.selectedIds).toEqual(["a", "b", "c"]);
+    let s = selectSingle("t1", "tekst");
+    s = toggleSelected(s, "a", "forma");
+    const ranged = selectRangeTo(s, "c", "forma", lane);
+    expect(ranged.items).toEqual([
+      { id: "t1", lane: "tekst" },
+      { id: "a", lane: "forma" },
+      { id: "b", lane: "forma" },
+      { id: "c", lane: "forma" },
+    ]);
     expect(ranged.primaryId).toBe("c");
-    expect(selectRangeTo(anchor, "c", "tekst", lane)).toEqual(
+    expect(selectRangeTo(selectSingle("a", "forma"), "c", "tekst", lane)).toEqual(
       selectSingle("c", "tekst"),
     );
   });
 
-  it("selectionSameLane + resolveMoveIds", () => {
-    const multi = setSelection(["a", "b", "c"], "b", "akordy");
+  it("selectionSameLane + resolveMoveIds (same-lane subset)", () => {
+    const multi = setSelection(
+      [
+        { id: "a", lane: "akordy" },
+        { id: "b", lane: "akordy" },
+        { id: "c", lane: "akordy" },
+        { id: "f", lane: "forma" },
+      ],
+      "b",
+    );
     expect(selectionSameLane(multi, "akordy")).toBe(true);
     expect(resolveMoveIds(multi, "b", "akordy")).toEqual(["a", "b", "c"]);
     expect(resolveMoveIds(multi, "z", "akordy")).toEqual(["z"]);
-    expect(resolveMoveIds(multi, "b", "forma")).toEqual(["b"]);
+    expect(resolveMoveIds(multi, "f", "forma")).toEqual(["f"]);
+    expect(isClipSelected(multi, "f", "forma")).toBe(true);
+    expect(isClipSelected(multi, "f", "akordy")).toBe(false);
   });
 
   it("isMultiSelectClick ignores Alt (temporary zoom in v4)", () => {
@@ -68,15 +99,19 @@ describe("timelineSelection", () => {
     expect(isMultiSelectClick({ ctrlKey: true, altKey: true })).toBe(false);
   });
 
-  it("marqueeSelectFromHits keeps last-hit lane only", () => {
+  it("marqueeSelectFromHits keeps all lanes", () => {
     const sel = marqueeSelectFromHits([
       { id: "f1", lane: "forma" },
       { id: "t1", lane: "tekst" },
       { id: "f2", lane: "forma" },
     ]);
-    expect(sel.lane).toBe("forma");
-    expect(sel.selectedIds).toEqual(["f1", "f2"]);
+    expect(sel.items).toEqual([
+      { id: "f1", lane: "forma" },
+      { id: "t1", lane: "tekst" },
+      { id: "f2", lane: "forma" },
+    ]);
     expect(sel.primaryId).toBe("f2");
+    expect(primaryLane(sel)).toBe("forma");
   });
 
   it("isMarqueeClick threshold", () => {

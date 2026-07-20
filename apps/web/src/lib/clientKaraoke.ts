@@ -3,8 +3,10 @@ import {
   resolveMeterAt,
   resolveTempoAt,
   syntheticCountdownDisplayFromProject,
+  ticksPerBar,
   ticksToBbt,
   toDisplayBar,
+  type FormaClip,
   type Project,
   type TekstClip,
   type TimeSignature,
@@ -22,6 +24,21 @@ export type KaraokeLine = {
   active: boolean;
 };
 
+/** Forma section card — v4 `.karaoke-section` with lines or progress bars. */
+export type KaraokeSectionGroup = {
+  id: string;
+  name: string;
+  kind: FormaClip["kind"];
+  active: boolean;
+  /**
+   * v4 `sectionUsesProgressBar`: no real lyric text → bar strip instead of lines.
+   * Countdown never uses progress (digits are lines).
+   */
+  useProgress: boolean;
+  bars: ClientBarCell[];
+  lines: KaraokeLine[];
+};
+
 export type KaraokeLiveContext = {
   songTitle: string;
   sectionName: string;
@@ -30,13 +47,22 @@ export type KaraokeLiveContext = {
   meterLabel: string;
   hasLyricLines: boolean;
   lyricLine: string | null;
-  /** Stage window: previous + current + upcoming lines. */
+  /** Flat lyric list (compat / tests). Prefer `sections` for render. */
   lines: KaraokeLine[];
-  /** Active section bar strip (CL-01). */
+  /** v4: one card per Forma section / Countdown. */
+  sections: KaraokeSectionGroup[];
+  /** Active section bar strip when that section uses progress (CL-01). */
   sectionBars: ClientBarCell[];
-  /** Current beat in bar (1-based) for pulse. */
+  /** Current beat in bar (1-based) — transport only; no line scale-pulse. */
   currentBeat: number;
 };
+
+/** v4 `isPlaceholderVocalLine` — empty or `[Label]` placeholders. */
+export function isPlaceholderLyric(text: string): boolean {
+  const t = String(text || "").trim();
+  if (!t) return true;
+  return /^\[[^\]]+\]$/i.test(t);
+}
 
 /** Persisted Tekst + synthetic CD digits (display-only) when playhead in/near CD. */
 export function mergeTekstWithCountdownDigits(
@@ -74,6 +100,171 @@ function resolveMergedTekstAt(
   return null;
 }
 
+function formaClipsForKaraoke(project: Project): FormaClip[] {
+  return project.forma.clips
+    .filter((c) => c.kind === "section" || c.kind === "countdown")
+    .slice()
+    .sort(
+      (a, b) =>
+        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+    );
+}
+
+function formaEndExclusive(
+  clip: FormaClip,
+  next: FormaClip | undefined,
+): number {
+  return next ? next.startTicks : clip.startTicks + clip.lengthTicks;
+}
+
+/**
+ * Containing Forma clip by onset only (no pickup promotion).
+ * @deprecated Prefer {@link resolveFormaClipForLyric} for karaoke affiliation.
+ */
+export function resolveFormaClipForLyricStart(
+  formaClips: FormaClip[],
+  startTicks: number,
+): FormaClip | null {
+  for (let i = 0; i < formaClips.length; i++) {
+    const clip = formaClips[i]!;
+    const end = formaEndExclusive(clip, formaClips[i + 1]);
+    if (startTicks >= clip.startTicks && startTicks < end) return clip;
+  }
+  // Past last section start with no next — keep on last.
+  if (formaClips.length > 0) {
+    const last = formaClips[formaClips.length - 1]!;
+    if (startTicks >= last.startTicks) return last;
+  }
+  return null;
+}
+
+/**
+ * Karaoke section affiliation (v4 `resolveVocalSectionId`).
+ *
+ * Przedtakt (“nachodzi na dwie części”): onset in the previous section’s
+ * last bar before the next Forma start → assign to **next** section.
+ * Countdown digit lines stay on Countdown even when a pickup overlaps.
+ */
+export function resolveFormaClipForLyric(
+  project: Project,
+  formaClips: FormaClip[],
+  lyric: Pick<TekstClip, "startTicks" | "text">,
+): FormaClip | null {
+  const t = lyric.startTicks;
+  const containing = resolveFormaClipForLyricStart(formaClips, t);
+  if (!containing) return null;
+
+  const containingIdx = formaClips.findIndex((c) => c.id === containing.id);
+  const next =
+    containingIdx >= 0 ? (formaClips[containingIdx + 1] ?? null) : null;
+
+  const text = String(lyric.text ?? "").trim();
+  const isCdDigit = /^\d+$/.test(text);
+  if (containing.kind === "countdown" && isCdDigit) {
+    return containing;
+  }
+
+  if (!next) return containing;
+
+  const nextStart = next.startTicks;
+  const meter = resolveMeterAt(project, nextStart);
+  const barTicks = ticksPerBar(meter, project.ppq);
+  // Last bar of previous section (and clip typically straddles the boundary).
+  if (t < nextStart && t >= nextStart - barTicks) {
+    return next;
+  }
+
+  return containing;
+}
+
+/**
+ * Group lyric lines under Forma sections (v4 `buildSectionLineMap` + render).
+ * Sections without real lyrics get progress bars (`useProgress`).
+ */
+export function groupKaraokeSections(
+  project: Project,
+  lyricClips: TekstClip[],
+  displayTicks: number,
+  activeLineId: string | null,
+): KaraokeSectionGroup[] {
+  const formaClips = formaClipsForKaraoke(project);
+  const activeForma = resolveFormaClipAt(project, displayTicks);
+
+  const buckets = new Map<string, KaraokeLine[]>();
+  for (const f of formaClips) buckets.set(f.id, []);
+
+  const orphanLines: KaraokeLine[] = [];
+
+  for (const c of lyricClips) {
+    const line: KaraokeLine = {
+      id: c.id,
+      text: c.text,
+      startTicks: c.startTicks,
+      active: activeLineId != null && c.id === activeLineId,
+    };
+    const host = resolveFormaClipForLyric(project, formaClips, c);
+    if (host) {
+      buckets.get(host.id)!.push(line);
+    } else {
+      orphanLines.push(line);
+    }
+  }
+
+  // Prefer section of the active lyric line (v4 findActiveVocalLine).
+  const activeClip =
+    activeLineId != null
+      ? (lyricClips.find((c) => c.id === activeLineId) ?? null)
+      : null;
+  const activeLineHostId = activeClip
+    ? (resolveFormaClipForLyric(project, formaClips, activeClip)?.id ?? null)
+    : null;
+  const activeSectionId = activeLineHostId ?? activeForma?.id ?? null;
+
+  const groups: KaraokeSectionGroup[] = formaClips.map((f) => {
+    const raw = buckets.get(f.id) ?? [];
+    const isCountdown = f.kind === "countdown";
+    const useProgress =
+      !isCountdown &&
+      (raw.length === 0 || raw.every((l) => isPlaceholderLyric(l.text)));
+    const lines = useProgress
+      ? raw.filter((l) => !isPlaceholderLyric(l.text))
+      : raw;
+    const bars = useProgress
+      ? buildBarCellsForClip(
+          project,
+          f.startTicks,
+          f.startTicks + f.lengthTicks,
+          displayTicks,
+        )
+      : [];
+
+    return {
+      id: f.id,
+      name: f.name,
+      kind: f.kind,
+      active: f.id === activeSectionId,
+      useProgress,
+      bars,
+      lines,
+    };
+  });
+
+  // Lyrics that fall outside any Forma span — rare; keep visible under a card.
+  if (orphanLines.length > 0) {
+    groups.push({
+      id: "__orphan__",
+      name: "—",
+      kind: "section",
+      active: orphanLines.some((l) => l.active),
+      useProgress: false,
+      bars: [],
+      lines: orphanLines,
+    });
+  }
+
+  return groups;
+}
+
 export function buildKaraokeLiveContext(
   project: Project | null,
   displayTicks: number,
@@ -103,24 +294,30 @@ export function buildKaraokeLiveContext(
     activeIdx = next >= 0 ? next : clips.length - 1;
   }
 
-  const windowStart = Math.max(0, activeIdx - 1);
-  const windowEnd = Math.min(clips.length, activeIdx + 3);
-  const lines: KaraokeLine[] = clips.slice(windowStart, windowEnd).map((c) => ({
+  const activeLineId =
+    activeIdx >= 0 ? (clips[activeIdx]?.id ?? null) : null;
+
+  const lines: KaraokeLine[] = clips.map((c) => ({
     id: c.id,
     text: c.text,
     startTicks: c.startTicks,
-    active: activeIdx >= 0 && c.id === clips[activeIdx]!.id,
+    active: activeLineId != null && c.id === activeLineId,
   }));
 
+  const sections = groupKaraokeSections(
+    project,
+    clips,
+    displayTicks,
+    activeLineId,
+  );
+
+  const activeGroup =
+    sections.find((s) => s.active) ??
+    sections.find((s) => s.id === section?.id) ??
+    null;
+
   const sectionBars =
-    section != null
-      ? buildBarCellsForClip(
-          project,
-          section.startTicks,
-          section.startTicks + section.lengthTicks,
-          displayTicks,
-        )
-      : [];
+    activeGroup?.useProgress === true ? activeGroup.bars : [];
 
   return {
     songTitle: project.name,
@@ -131,6 +328,7 @@ export function buildKaraokeLiveContext(
     hasLyricLines,
     lyricLine,
     lines,
+    sections,
     sectionBars,
     currentBeat: bbt.beat,
   };

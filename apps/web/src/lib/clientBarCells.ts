@@ -4,13 +4,12 @@
  */
 
 import {
-  resolveMeterAt,
-  ticksPerBar,
   type Project,
   type TimeSignature,
 } from "@stagesync/shared";
 import {
   iterBarBoundariesTicks,
+  iterPreRollBarBoundariesTicks,
   type BarBoundary,
   type MeterMapProject,
 } from "./formaCanvas.js";
@@ -60,28 +59,25 @@ export function barsInTickRange(
       }));
   }
 
-  // Pre-roll (Countdown): walk fixed bars with default / map meter.
-  const out: BarBoundary[] = [];
-  let t = start;
-  let bar = 0;
-  const maxBars = 10_000;
-  while (t < end && out.length < maxBars) {
-    const meter =
-      t < 0
-        ? project.defaultMeter
-        : resolveMeterAt(project as Project, t);
-    const len = ticksPerBar(meter, project.ppq);
-    const barEnd = Math.min(t + len, end);
-    out.push({
-      bar,
-      startTicks: t,
-      endTicks: barEnd,
-      meter,
-    });
-    t = barEnd;
-    bar += 1;
-  }
-  return out;
+  const pre = iterPreRollBarBoundariesTicks(project, start, Math.min(end, 0));
+  const body =
+    end > 0
+      ? iterBarBoundariesTicks(project, end).filter(
+          (b) => b.startTicks < end && b.endTicks > 0,
+        )
+      : [];
+  return [
+    ...pre.map((b) => ({
+      ...b,
+      startTicks: Math.max(b.startTicks, start),
+      endTicks: Math.min(b.endTicks, end),
+    })),
+    ...body.map((b) => ({
+      ...b,
+      startTicks: Math.max(b.startTicks, start),
+      endTicks: Math.min(b.endTicks, end),
+    })),
+  ];
 }
 
 export function buildBarCellsForClip(

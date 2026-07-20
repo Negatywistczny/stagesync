@@ -31,11 +31,23 @@ describe("clientForma / bar cells", () => {
     const ctx = buildFormaLiveContext(project, 100);
     expect(ctx).not.toBeNull();
     expect(ctx!.sectionName).toBe("Intro");
+    expect(ctx!.heroTitle).toBe("Intro");
+    expect(ctx!.heroEyebrow).toContain("Demo");
     expect(ctx!.barInSection).toBe(1);
     expect(ctx!.beatsPerBar).toBe(4);
+    expect(ctx!.isCountdown).toBe(false);
     expect(ctx!.segments.some((s) => s.kind === "countdown")).toBe(true);
     expect(ctx!.segments.some((s) => s.active && s.name === "Intro")).toBe(
       true,
     );
+  });
+
+  it("buildFormaLiveContext hero shows CD digit during countdown", () => {
+    const cd = project.forma.clips.find((c) => c.kind === "countdown")!;
+    const mid = cd.startTicks + Math.floor(cd.lengthTicks / 2);
+    const ctx = buildFormaLiveContext(project, mid);
+    expect(ctx!.isCountdown).toBe(true);
+    expect(ctx!.countdownNumber).toMatch(/^\d+$/);
+    expect(ctx!.heroTitle).toBe(ctx!.countdownNumber);
   });
 });

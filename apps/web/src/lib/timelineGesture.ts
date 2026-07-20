@@ -147,6 +147,8 @@ export type FormaGestureSession = {
   originBoundaryRel?: number;
   /** Multi-move same lane (v4 moveIds); resize ignores. */
   moveIds?: string[];
+  /** Alt/⌥+drag: copy at drop; originals stay (v4 optionCopy / TE-07). */
+  optionCopy?: boolean;
 };
 
 export type FormaGesturePreview = {

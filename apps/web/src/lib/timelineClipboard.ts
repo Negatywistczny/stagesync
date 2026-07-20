@@ -113,6 +113,20 @@ function mintId(prefix: string): string {
  * Uses insertSpanOverwrite per item (overwrite / no-overlap like pencil).
  * @returns new project + created ids (or null on empty)
  */
+/**
+ * Paste with rigid Δ from clipboard item starts (v4 optionCopy / Alt+drag).
+ * `deltaTicks` = primaryNewStart − primaryOriginStart.
+ */
+export function pasteClipboardWithDelta(
+  project: Project,
+  clipboard: TimelineClipboard,
+  deltaTicks: number,
+): { project: Project; newIds: string[] } | null {
+  if (!clipboard.items.length || deltaTicks === 0) return null;
+  const origin = clipboard.items[0]!.startTicks;
+  return pasteClipboardAt(project, clipboard, origin + deltaTicks);
+}
+
 export function pasteClipboardAt(
   project: Project,
   clipboard: TimelineClipboard,

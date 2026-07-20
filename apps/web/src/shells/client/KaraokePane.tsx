@@ -1,8 +1,11 @@
 import type { Project } from "@stagesync/shared";
-import { buildKaraokeLiveContext } from "../../lib/clientKaraoke.js";
+import {
+  buildKaraokeLiveContext,
+  type KaraokeSectionGroup,
+} from "../../lib/clientKaraoke.js";
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 
 type KaraokePaneProps = {
   project: Project | null;
@@ -22,6 +25,81 @@ function readAutoScroll(): boolean {
   }
 }
 
+function applyStoredTextScale(): void {
+  try {
+    const n = Number(localStorage.getItem("stagesync-client-text-scale"));
+    if (Number.isFinite(n) && n >= 80 && n <= 200) {
+      document.documentElement.style.setProperty(
+        "--ss-client-text-scale",
+        `${n / 100}`,
+      );
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Center active line — v4 `scrollToActiveLine` (smooth scrollTo, not scrollIntoView). */
+function scrollLineIntoCenter(
+  container: HTMLElement,
+  target: HTMLElement,
+): void {
+  const lineRect = target.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const lineTopInContainer =
+    lineRect.top - containerRect.top + container.scrollTop;
+  const idealScroll =
+    lineTopInContainer + lineRect.height / 2 - container.clientHeight / 2;
+  const maxScroll = Math.max(
+    0,
+    container.scrollHeight - container.clientHeight,
+  );
+  container.scrollTo({
+    top: Math.max(0, Math.min(idealScroll, maxScroll)),
+    behavior: "smooth",
+  });
+}
+
+function SectionProgressBars({
+  section,
+}: {
+  section: KaraokeSectionGroup;
+}) {
+  if (!section.useProgress || section.bars.length === 0) return null;
+  return (
+    <div
+      className={styles.karaokeSectionProgress}
+      aria-label={`Postęp sekcji ${section.name}`}
+    >
+      <div className={styles.karaokeProgressBars}>
+        {section.bars.map((cell, i) => {
+          const isLast = i === section.bars.length - 1;
+          return (
+            <div
+              key={cell.index}
+              className={[
+                styles.karaokeProgressCell,
+                cell.past ? styles.karaokeProgressCellPast : "",
+                cell.current ? styles.karaokeProgressCellCurrent : "",
+                isLast ? styles.karaokeProgressCellLast : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                cell.current
+                  ? ({
+                      ["--beat-progress" as string]: String(cell.beatProgress),
+                    } as CSSProperties)
+                  : undefined
+              }
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function KaraokePane({
   project,
   displayTicks,
@@ -31,9 +109,21 @@ export function KaraokePane({
   vocalTapIndex = 0,
   onVocalTap,
 }: KaraokePaneProps) {
-  const activeRef = useRef<HTMLParagraphElement | null>(null);
-  const [pulse, setPulse] = useState(false);
-  const prevBeat = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const activeRef = useRef<HTMLElement | null>(null);
+  /** v4 `karaokeScrollKey` — scroll only when the active line/section id changes. */
+  const scrollKeyRef = useRef<string | null>(null);
+
+  const bindActiveRef = (isTarget: boolean) =>
+    isTarget
+      ? (el: HTMLElement | null) => {
+          activeRef.current = el;
+        }
+      : undefined;
+
+  useEffect(() => {
+    applyStoredTextScale();
+  }, []);
 
   useEffect(() => {
     if (!vocalTapOn || !onVocalTap) return;
@@ -51,26 +141,41 @@ export function KaraokePane({
     project != null ? buildKaraokeLiveContext(project, displayTicks) : null;
 
   const activeLineId = ctx?.lines.find((l) => l.active)?.id ?? null;
-  const currentBeat = ctx?.currentBeat ?? null;
+  const activeSectionId = ctx?.sections.find((s) => s.active)?.id ?? null;
+  /** Prefer line scroll; fall back to section card (progress-only sections). */
+  const scrollKey =
+    activeLineId != null
+      ? `line-${activeLineId}`
+      : activeSectionId != null
+        ? `section-${activeSectionId}`
+        : null;
 
   useEffect(() => {
-    if (!activeLineId || !readAutoScroll()) return;
-    activeRef.current?.scrollIntoView({
-      block: "center",
-      behavior: "smooth",
+    scrollKeyRef.current = null;
+  }, [project?.id]);
+
+  // v4: scroll only when karaokeScrollKey changes (active line or section).
+  useEffect(() => {
+    if (!scrollKey || !readAutoScroll()) return;
+    if (scrollKeyRef.current === scrollKey) return;
+    scrollKeyRef.current = scrollKey;
+
+    const container = scrollRef.current;
+    const target = activeRef.current;
+    if (!container || !target) return;
+
+    let cancelled = false;
+    const outer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        scrollLineIntoCenter(container, target);
+      });
     });
-  }, [activeLineId, displayTicks, project?.id]);
-
-  useEffect(() => {
-    if (currentBeat == null) return;
-    if (prevBeat.current != null && prevBeat.current !== currentBeat) {
-      setPulse(true);
-      const t = window.setTimeout(() => setPulse(false), 120);
-      prevBeat.current = currentBeat;
-      return () => window.clearTimeout(t);
-    }
-    prevBeat.current = currentBeat;
-  }, [currentBeat]);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(outer);
+    };
+  }, [scrollKey, project?.id]);
 
   if (!hasActiveProjectId) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
@@ -88,6 +193,10 @@ export function KaraokePane({
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
 
+  const hasContent =
+    ctx.sections.length > 0 &&
+    (ctx.hasLyricLines || ctx.sections.some((s) => s.useProgress));
+
   return (
     <div className={styles.karaokePane}>
       {vocalTapOn ? (
@@ -100,46 +209,53 @@ export function KaraokePane({
           </Button>
         </div>
       ) : null}
-      {ctx.sectionBars.length > 0 ? (
-        <div className={styles.barStrip} aria-label="Postęp sekcji">
-          {ctx.sectionBars.map((cell) => (
-            <div
-              key={cell.index}
-              className={[
-                styles.barCell,
-                cell.past ? styles.barCellPast : "",
-                cell.current ? styles.barCellCurrent : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              style={
-                cell.current
-                  ? ({
-                      ["--beat-progress" as string]: String(cell.beatProgress),
-                    } as CSSProperties)
-                  : undefined
-              }
-            />
-          ))}
-        </div>
-      ) : null}
-      {ctx.hasLyricLines ? (
-        <div className={styles.karaokeLines} aria-label="Linie tekstu">
-          {ctx.lines.map((line) => (
-            <p
-              key={line.id}
-              ref={line.active ? activeRef : undefined}
-              className={[
-                styles.karaokeLine,
-                line.active ? styles.karaokeLineActive : styles.karaokeLineDim,
-                line.active && pulse ? styles.karaokeBeatPulse : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              {line.text}
-            </p>
-          ))}
+      {hasContent ? (
+        <div
+          ref={scrollRef}
+          className={styles.karaokeScroll}
+          aria-label="Tekst pogrupowany w sekcje Formy"
+        >
+          {ctx.sections.map((sec) => {
+            const isActive = sec.active;
+            const sectionRefTarget =
+              isActive && activeLineId == null ? true : false;
+            return (
+              <section
+                key={sec.id}
+                ref={bindActiveRef(sectionRefTarget)}
+                className={[
+                  styles.karaokeSection,
+                  isActive ? styles.karaokeSectionActive : "",
+                  sec.useProgress ? styles.karaokeSectionProgressMode : "",
+                  sec.kind === "countdown" ? styles.karaokeSectionCountdown : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                data-section-id={sec.id}
+              >
+                <h3 className={styles.karaokeSectionTitle}>{sec.name}</h3>
+                <SectionProgressBars section={sec} />
+                {sec.lines.length > 0 ? (
+                  <div className={styles.karaokeSectionLines}>
+                    {sec.lines.map((line) => (
+                      <p
+                        key={line.id}
+                        ref={bindActiveRef(line.active)}
+                        className={[
+                          styles.karaokeLine,
+                          line.active ? styles.karaokeLineActive : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      >
+                        {line.text}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            );
+          })}
         </div>
       ) : (
         <div className={styles.karaokePlaceholder}>

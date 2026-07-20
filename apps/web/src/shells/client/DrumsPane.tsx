@@ -1,8 +1,9 @@
 import {
-  resolveFormaClipAt,
-  type Project,
-} from "@stagesync/shared";
-import type { CSSProperties } from "react";
+  useEffect,
+  useRef,
+  type CSSProperties,
+} from "react";
+import { type Project } from "@stagesync/shared";
 import { buildFormaLiveContext } from "../../lib/clientForma.js";
 import styles from "../ClientShell.module.css";
 
@@ -13,6 +14,10 @@ type DrumsPaneProps = {
   onNoteChange?: (clipId: string, note: string) => void;
 };
 
+/**
+ * Forma / drums stage — v4 `drums-view.js` DOM hierarchy (hero + horizontal strip).
+ * Shell chrome (header / settings) stays v5.
+ */
 export function DrumsPane({
   project,
   displayTicks,
@@ -20,104 +25,167 @@ export function DrumsPane({
   onNoteChange,
 }: DrumsPaneProps) {
   const ctx = buildFormaLiveContext(project, displayTicks);
-  const section = resolveFormaClipAt(project, displayTicks);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const activeSegRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const scroll = scrollRef.current;
+    const active = activeSegRef.current;
+    if (!scroll || !active) return;
+    const targetLeft =
+      active.offsetLeft - (scroll.clientWidth - active.offsetWidth) / 2;
+    scroll.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+  }, [ctx?.activeClipId, ctx?.segments.length]);
 
   if (!ctx) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
 
   return (
-    <div className={styles.formaPane}>
-      <p className={styles.formaSection}>{ctx.sectionName}</p>
-      <p className={styles.formaMeta} aria-label="Pozycja">
-        takt {ctx.bbtLabel}
-        {ctx.barInSection != null
-          ? ` · ${ctx.barInSection}/${ctx.segments.find((s) => s.active)?.barCount ?? "—"} w sekcji`
-          : null}
-        {` · ${ctx.tempoBpm} BPM · ${ctx.meterLabel}`}
-      </p>
-      <div
-        className={styles.beatDots}
-        aria-label={`Beat ${ctx.currentBeat} / ${ctx.beatsPerBar}`}
+    <div
+      className={[
+        styles.drumsView,
+        notesEdit ? styles.drumsEditMode : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <header
+        className={[
+          styles.drumsHero,
+          ctx.isCountdown ? styles.drumsHeroCountdown : "",
+          ctx.countdownNumber ? styles.drumsHeroCountdownNumber : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
-        {Array.from({ length: ctx.beatsPerBar }, (_, i) => (
-          <span
-            key={i}
-            className={[
-              styles.beatDot,
-              i + 1 === ctx.currentBeat ? styles.beatDotActive : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          />
-        ))}
-      </div>
-      {notesEdit && section && section.kind === "section" && onNoteChange ? (
-        <label className={styles.field}>
-          Notatka sekcji
+        <p className={styles.drumsHeroEyebrow}>{ctx.heroEyebrow}</p>
+        <h2
+          className={styles.drumsHeroSection}
+          style={
+            {
+              ["--hero-name-ch" as string]: String(
+                Math.max(ctx.heroTitle.length, 4),
+              ),
+            } as CSSProperties
+          }
+        >
+          {ctx.heroTitle}
+        </h2>
+        <p className={styles.drumsHeroMeta}>{ctx.heroMeta}</p>
+        {notesEdit && ctx.activeClipId && onNoteChange ? (
           <textarea
-            className={styles.noteInput}
-            rows={3}
-            value={section.note ?? ""}
-            onChange={(e) => onNoteChange(section.id, e.target.value)}
+            className={`${styles.drumsNoteInput} ${styles.drumsHeroNoteInput}`}
+            rows={2}
+            placeholder="Notatka perkusji (fill, crash, ride…)"
+            aria-label="Notatka aktywnej sekcji"
+            value={ctx.activeNote ?? ""}
+            onChange={(e) => onNoteChange(ctx.activeClipId!, e.target.value)}
           />
-        </label>
-      ) : section?.note ? (
-        <p className={styles.formaNote}>{section.note}</p>
-      ) : (
-        <p className={styles.formaNoteMuted}>Brak notatki dla tej sekcji</p>
-      )}
-      <div className={styles.formaStrip} aria-label="Forma — takty">
-        {ctx.segments.map((seg) => (
-          <section
-            key={seg.id}
-            className={[
-              styles.formaSegment,
-              seg.active ? styles.formaSegmentActive : "",
-              seg.kind === "countdown" ? styles.formaSegmentCd : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            <header className={styles.formaSegmentHead}>
-              <span className={styles.formaListName}>{seg.name}</span>
-              <span className={styles.formaSegmentBars}>
-                {seg.barCount} takt{seg.barCount === 1 ? "" : "ów"}
+        ) : ctx.activeNote ? (
+          <p className={styles.drumsHeroNote}>{ctx.activeNote}</p>
+        ) : null}
+        <div
+          className={styles.drumsMetronome}
+          aria-label={`Metronom — beat ${ctx.currentBeat} / ${ctx.beatsPerBar}`}
+        >
+          {Array.from({ length: ctx.beatsPerBar }, (_, i) => {
+            const n = i + 1;
+            return (
+              <span
+                key={n}
+                className={[
+                  styles.drumsBeatDot,
+                  n === 1 ? styles.drumsBeatDotDownbeat : "",
+                  n < ctx.currentBeat ? styles.drumsBeatDotPassed : "",
+                  n === ctx.currentBeat ? styles.drumsBeatDotActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                data-beat={n}
+              >
+                <span className={styles.drumsBeatNum}>{n}</span>
               </span>
-            </header>
-            <div className={styles.barStrip}>
-              {seg.cells.map((cell) => (
-                <div
-                  key={`${seg.id}-${cell.index}`}
-                  className={[
-                    styles.barCell,
-                    cell.past ? styles.barCellPast : "",
-                    cell.current ? styles.barCellCurrent : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  style={
-                    cell.current
-                      ? ({
-                          ["--beat-progress" as string]: String(
-                            cell.beatProgress,
-                          ),
-                        } as CSSProperties)
-                      : undefined
-                  }
-                  title={
-                    cell.barDisplay > 0
-                      ? `Takt ${cell.barDisplay}`
-                      : `CD ${cell.index}`
-                  }
-                />
-              ))}
-            </div>
-            {seg.note && !notesEdit ? (
-              <p className={styles.formaSegmentNote}>{seg.note}</p>
-            ) : null}
-          </section>
-        ))}
+            );
+          })}
+        </div>
+      </header>
+
+      <div
+        ref={scrollRef}
+        className={styles.drumsFormScroll}
+        aria-label="Forma utworu"
+      >
+        <div className={styles.drumsFormStrip} role="list">
+          {ctx.segments.map((seg) => {
+            const isCd = seg.kind === "countdown";
+            return (
+              <section
+                key={seg.id}
+                ref={seg.active ? activeSegRef : undefined}
+                role="listitem"
+                className={[
+                  styles.drumsFormSeg,
+                  seg.active ? styles.drumsFormSegActive : "",
+                  seg.past ? styles.drumsFormSegPast : "",
+                  isCd ? styles.drumsFormSegCountdown : "",
+                  seg.note ? styles.drumsFormSegHasNote : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={
+                  {
+                    ["--seg-bars" as string]: String(Math.max(1, seg.barCount)),
+                  } as CSSProperties
+                }
+              >
+                <div className={styles.drumsFormSegHead}>
+                  <span className={styles.drumsFormSegName}>{seg.name}</span>
+                  <span className={styles.drumsFormSegMeta}>
+                    {seg.barCount} takt{seg.barCount === 1 ? "" : "ów"}
+                  </span>
+                </div>
+                <div className={styles.drumsFormSegBars}>
+                  {seg.cells.map((cell, i) => {
+                    const isLast = i === seg.cells.length - 1;
+                    return (
+                      <span
+                        key={`${seg.id}-${cell.index}`}
+                        className={[
+                          styles.drumsBarCell,
+                          cell.past ? styles.drumsBarCellPast : "",
+                          cell.current ? styles.drumsBarCellCurrent : "",
+                          isLast ? styles.drumsBarCellLast : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        title={
+                          cell.barDisplay > 0
+                            ? `Takt ${cell.barDisplay}`
+                            : `CD ${cell.index}`
+                        }
+                      />
+                    );
+                  })}
+                </div>
+                {notesEdit &&
+                seg.kind === "section" &&
+                onNoteChange ? (
+                  <textarea
+                    className={`${styles.drumsNoteInput} ${styles.drumsFormSegNoteInput}`}
+                    rows={2}
+                    placeholder="Notatka perkusji…"
+                    aria-label={`Notatka: ${seg.name}`}
+                    value={seg.note ?? ""}
+                    onChange={(e) => onNoteChange(seg.id, e.target.value)}
+                  />
+                ) : seg.note ? (
+                  <p className={styles.drumsFormSegNote}>{seg.note}</p>
+                ) : null}
+              </section>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

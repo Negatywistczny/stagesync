@@ -239,6 +239,8 @@ export function previewFromSession(
   ctrlKey: boolean,
   sectionName?: string,
   clientX?: number,
+  /** Effective px/bar — CD length drag uses clientX delta (scroll-independent). */
+  pxPerBar?: number,
 ): FormaGesturePreview {
   const mode = snapModeFromModifiers(metaKey, ctrlKey);
   const floor = contentFloorTicks(project.forma.clips);
@@ -334,10 +336,21 @@ export function previewFromSession(
     // v4 body/right-edge: newEnd = originEnd + delta. Do not use snapEditTicks —
     // that clamps to content floor and blocks shorten. Snap length in whole bars
     // from CD start; preview is end-pinned (left edge moves) for renorm @ 0.
+    // Prefer clientX→ticks when available so scroll-to-start during drag stays stable.
     const originEnd = session.originClipStart + session.originClipLength;
-    const delta = rawTicks - session.originTicks;
     const meter = resolveMeterAt(project, Math.max(0, originEnd));
     const barTicks = ticksPerBar(meter, project.ppq);
+    let delta: number;
+    if (
+      clientX != null &&
+      session.originClientX != null &&
+      pxPerBar != null &&
+      pxPerBar > 0
+    ) {
+      delta = Math.round(((clientX - session.originClientX) / pxPerBar) * barTicks);
+    } else {
+      delta = rawTicks - session.originTicks;
+    }
     const rawEnd = originEnd + delta;
     const rawLen = rawEnd - session.originClipStart;
     const bars =

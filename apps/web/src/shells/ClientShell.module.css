@@ -1,13 +1,15 @@
 .page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   color: var(--ss-color-text);
   background: var(--ss-color-bg);
 }
 
 .header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 10;
   flex: 0 0 auto;
   display: flex;
@@ -16,6 +18,7 @@
   align-items: center;
   gap: var(--ss-space-2);
   padding: var(--ss-space-1) var(--ss-space-3);
+  padding-top: max(var(--ss-space-1), env(safe-area-inset-top));
   border-bottom: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
   min-height: var(--ss-space-8);
@@ -365,175 +368,32 @@
 }
 
 .rolePane {
+  position: relative;
   padding: var(--ss-space-3);
-  min-height: 16rem;
+  min-height: 0;
+  flex: 1;
   border-right: 1px solid var(--ss-color-border);
   display: flex;
   flex-direction: column;
-}
-
-.rolePaneHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--ss-space-2);
-}
-
-.rolePaneHead h2 {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-medium);
-  color: var(--ss-color-text-muted);
-  letter-spacing: var(--ss-tracking-label);
-  text-transform: uppercase;
-}
-
-.formaPane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-3);
-  padding: var(--ss-space-2) 0;
-  min-height: 0;
-}
-
-.formaSection {
-  margin: 0;
-  font-size: var(--ss-text-3xl);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-  text-align: center;
-}
-
-.formaMeta {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  text-align: center;
-  color: var(--ss-color-text-muted);
-}
-
-.beatDots {
-  display: flex;
-  justify-content: center;
-  gap: var(--ss-space-2);
-}
-
-.beatDot {
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
-  background: var(--ss-color-border);
-}
-
-.beatDotActive {
-  background: var(--ss-color-primary);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--ss-color-primary) 28%, transparent);
-}
-
-.formaNote {
-  margin: 0;
-  font-size: var(--ss-text-xl);
-  font-weight: var(--ss-font-weight-medium);
-  text-align: center;
-  color: var(--ss-color-primary);
-  line-height: var(--ss-leading-normal);
-}
-
-.formaNoteMuted {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  text-align: center;
-  color: var(--ss-color-text-muted);
-}
-
-.formaStrip {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-3);
-  overflow: auto;
-  flex: 1;
-  min-height: 0;
-  padding: 0 var(--ss-space-2);
-}
-
-.formaSegment {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border: 1px solid var(--ss-color-border-muted);
-  border-radius: var(--ss-radius-sm);
-  opacity: 0.72;
-}
-
-.formaSegmentActive {
-  opacity: 1;
-  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-border));
-  background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
-}
-
-.formaSegmentCd {
-  border-style: dashed;
-}
-
-.formaSegmentHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--ss-space-2);
-}
-
-.formaSegmentBars {
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-}
-
-.formaSegmentNote {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text-muted);
-}
-
-.barStrip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  width: 100%;
-}
-
-.barCell {
-  flex: 1 1 1.25rem;
-  min-width: 0.75rem;
-  height: 0.85rem;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--ss-color-border) 70%, transparent);
-  position: relative;
   overflow: hidden;
 }
 
-.barCellPast {
-  background: color-mix(in srgb, var(--ss-color-primary) 35%, transparent);
-}
-
-.barCellCurrent {
-  background: color-mix(in srgb, var(--ss-color-primary) 18%, transparent);
-  outline: 1px solid var(--ss-color-primary);
-}
-
-.barCellCurrent::after {
-  content: "";
+/* Floating gear — v4 .view-settings-wrap (no title bar above stage content) */
+.roleSettings {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: calc(var(--beat-progress, 0) * 100%);
-  background: color-mix(in srgb, var(--ss-color-primary) 70%, transparent);
+  top: var(--ss-space-2);
+  right: var(--ss-space-2);
+  z-index: 5;
 }
 
-.formaListName {
-  font-size: var(--ss-text-md);
-  font-weight: var(--ss-font-weight-semibold);
-}
+/* ═══════════════════════════════════════════════════════════════
+ * Client STAGE CONTENT — visual port from v4 client.css
+ * (karaoke / grid / drums / score). Shell chrome stays v5.
+ * User override of ADR 0011: content panes only may clone v4 look.
+ * Local clamps / weight 800 mirror v4 stage sizes; colors → --ss-*.
+ * ═══════════════════════════════════════════════════════════════ */
 
+/* —— Karaoke (v4 .karaoke-scroll-pad / .karaoke-line / progress) —— */
 .karaokePane {
   flex: 1;
   display: flex;
@@ -541,6 +401,8 @@
   padding: var(--ss-space-2) 0;
   min-height: 0;
   gap: var(--ss-space-3);
+  --karaoke-hl-ms: 300ms;
+  --client-active: var(--ss-color-info);
 }
 
 .karaokePlaceholder {
@@ -558,39 +420,159 @@
   font-weight: var(--ss-font-weight-semibold);
 }
 
-.karaokeLines {
+/* v4 `.karaoke-scroll-pad` — sections stacked with center scroll room */
+.karaokeScroll {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: var(--ss-space-3);
+  gap: var(--ss-space-8);
   overflow: auto;
-  padding: var(--ss-space-4) var(--ss-space-2);
-  min-height: 40vh;
+  padding-block: 50vh;
+  padding-block: 50dvh;
+  padding-inline: var(--ss-space-2);
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  scrollbar-width: none;
+}
+
+.karaokeScroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* v4 `.karaoke-section` card */
+.karaokeSection {
+  padding: var(--ss-space-6);
+  border-radius: var(--ss-radius-lg);
+  border: 1px solid var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-elevated) 45%, transparent);
+  transition:
+    border-color var(--karaoke-hl-ms) ease-in-out,
+    background-color var(--karaoke-hl-ms) ease-in-out,
+    box-shadow var(--karaoke-hl-ms) ease-in-out;
+  scroll-margin-block: 50vh;
+  scroll-margin-block: 50dvh;
+}
+
+.karaokeSectionActive {
+  border-color: color-mix(in srgb, var(--client-active) 60%, transparent);
+  background: color-mix(in srgb, var(--client-active) 20%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--client-active) 15%, transparent);
+}
+
+.karaokeSectionCountdown.karaokeSectionActive {
+  background: color-mix(in srgb, var(--client-active) 15%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--client-active) 12%, transparent);
+}
+
+.karaokeSectionTitle {
+  margin: 0 0 var(--ss-space-4);
+  font-size: calc(var(--ss-text-xl) * var(--ss-client-text-scale, 1));
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-tight);
+  letter-spacing: var(--ss-tracking-label);
+  text-transform: uppercase;
+  color: var(--ss-color-primary);
+}
+
+.karaokeSectionProgressMode .karaokeSectionLines:empty {
+  display: none;
+}
+
+.karaokeSectionProgress {
+  margin-bottom: var(--ss-space-5);
+  flex-shrink: 0;
+}
+
+.karaokeProgressBars {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ss-space-1);
+  min-height: clamp(2.5rem, 8vh, 4rem);
+}
+
+.karaokeProgressCell {
+  position: relative;
+  flex: 1 1 0;
+  min-width: clamp(8px, 1.8vw, 18px);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-border-muted);
+  overflow: hidden;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.karaokeProgressCell::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--beat-progress, 0) * 100%);
+  background: color-mix(in srgb, var(--client-active) 35%, transparent);
+  pointer-events: none;
+}
+
+.karaokeProgressCellPast {
+  background: color-mix(in srgb, var(--client-active) 22%, transparent);
+}
+
+.karaokeProgressCellPast::after {
+  width: 100%;
+  background: transparent;
+}
+
+.karaokeProgressCellCurrent {
+  background: var(--ss-color-border-muted);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--client-active) 45%, transparent);
+}
+
+.karaokeProgressCellCurrent::after {
+  background: var(--client-active);
+}
+
+.karaokeProgressCellLast {
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--ss-color-text-muted) 45%, transparent);
+}
+
+.karaokeProgressCellCurrent.karaokeProgressCellLast {
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--client-active) 45%, transparent),
+    inset 0 -3px 0 color-mix(in srgb, var(--ss-color-text) 55%, transparent);
+}
+
+.karaokeSectionActive .karaokeProgressCellCurrent {
+  background: var(--ss-color-border-muted);
+}
+
+.karaokeSectionLines {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ss-space-6) * var(--ss-client-text-scale, 1));
 }
 
 .karaokeLine {
   margin: 0;
-  font-size: var(--ss-text-2xl);
+  font-size: calc(
+    clamp(2rem, 7vw, 3.75rem) * var(--ss-client-text-scale, 1)
+  );
   font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-normal);
+  line-height: var(--ss-leading-relaxed);
   text-align: center;
-}
-
-.karaokeLineActive {
-  color: var(--ss-color-text);
-  font-size: var(--ss-text-3xl);
-}
-
-.karaokeLineDim {
   color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-lg);
-  font-weight: var(--ss-font-weight-regular);
+  transition:
+    color var(--karaoke-hl-ms) ease-in-out,
+    text-shadow var(--karaoke-hl-ms) ease-in-out;
+  scroll-margin-block: 50vh;
+  scroll-margin-block: 50dvh;
 }
 
-.karaokeBeatPulse {
-  text-shadow: 0 0 0.6rem
-    color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+/* v4 `.line-beat-active` — color/glow only; no scale-every-beat pulse */
+.karaokeLineActive {
+  color: var(--ss-color-primary);
+  text-shadow: 0 0 20px
+    color-mix(in srgb, var(--ss-color-primary) 40%, transparent);
 }
 
 .empty {
@@ -599,89 +581,520 @@
   color: var(--ss-color-text-muted);
 }
 
+/* —— Grid / Akordy (v4 #grid-scroll / chord-hero / phrase slots) —— */
 .gridPane {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--ss-space-4);
+  gap: 1.25rem;
   min-height: 50vh;
-  padding: var(--ss-space-4);
+  padding: 1.5rem 1.25rem;
   flex: 1;
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+  --phrase-carousel-ms: 450ms;
+  --chord-hero-next-offset: clamp(5.75rem, 24vw, 9rem);
+  --phrase-bar-size: clamp(4.65rem, 24vw, 9.25rem);
+  --grid-scroll-pad-inline: 1.25rem;
 }
 
-.gridCurrent {
+.gridSectionLabel {
   margin: 0;
-  font-size: var(--ss-text-3xl);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-  color: var(--ss-color-text);
+  width: auto;
+  max-width: calc(100% - 1.5rem);
+  font-size: 0.875rem;
+  font-weight: var(--ss-font-weight-medium);
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ss-color-disabled-text);
   text-align: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
+}
+
+.chordHero {
+  width: 100%;
+}
+
+.chordHeroCountdown .heroName,
+.chordHeroCountdown .heroNextName,
+.chordHeroLayout.chordHeroCountdown .heroName,
+.chordHeroLayout.chordHeroCountdown .heroNextName {
+  color: var(--ss-color-info);
+}
+
+.chordHeroLayout {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.chordHeroMain {
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.heroNameWrap {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(3rem, 12vw, 6rem);
+  isolation: isolate;
+}
+
+.heroName {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ss-color-primary);
+  text-align: center;
+  white-space: nowrap;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.heroCountdownNumber {
+  color: var(--ss-color-info);
+  font-size: clamp(4rem, 18vw, 9rem);
+  text-shadow: 0 0 32px
+    color-mix(in srgb, var(--ss-color-info) 35%, transparent);
+}
+
+.heroSlotHidden {
+  visibility: hidden;
+}
+
+.heroChordExit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform, opacity;
+}
+
+.heroChordExit:global(.is-active) {
+  animation: chordHeroExitLeft 100ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.heroChordFly {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  transform-origin: center center;
+  will-change: transform;
+  margin: 0;
+  white-space: nowrap;
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ss-color-primary);
+}
+
+.heroFlySource {
+  visibility: hidden;
+}
+
+.heroEnterPrep {
+  animation: none !important;
+}
+
+.heroNext.heroEnterPrep {
+  opacity: 0;
+  visibility: visible;
+  transform: translateY(-50%) translateX(12%);
+}
+
+.heroNextName.heroEnterPrep {
+  opacity: 0;
+  transform: translateX(8%);
+}
+
+.heroName.heroEnterPrep {
+  opacity: 0;
+  transform: translateX(14%);
+}
+
+.heroName.heroEntering {
+  animation: chordHeroEnter 100ms cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+}
+
+.heroTransitioning .heroNext:not(.heroEntering):not(.heroEnterPrep):not(
+    .heroFlySource
+  ) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.heroNext.heroEntering {
+  animation: chordHeroNextPanelReveal 95ms cubic-bezier(0.15, 0.85, 0.25, 1)
+    forwards;
+}
+
+.heroNextName.heroEntering {
+  animation: chordHeroNextReveal 95ms cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+}
+
+@keyframes chordHeroExitLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-68%);
+    opacity: 0;
+  }
+}
+
+@keyframes chordHeroEnter {
+  from {
+    transform: translateX(14%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes chordHeroNextReveal {
+  from {
+    transform: translateX(8%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes chordHeroNextPanelReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(12%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.heroNext {
+  position: absolute;
+  left: calc(50% + var(--chord-hero-next-offset));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.12rem;
+  padding-left: 0.65rem;
+  border-left: 1px solid
+    color-mix(in srgb, var(--ss-color-border) 85%, transparent);
+  width: clamp(3rem, 14vw, 6.5rem);
+  max-width: 6.5rem;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.heroNextHidden {
+  visibility: hidden;
+}
+
+.heroNextLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ss-color-disabled-text);
+}
+
+.heroNextName {
+  font-size: clamp(1.25rem, 4.5vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: color-mix(in srgb, var(--ss-color-primary) 72%, transparent);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.heroNextName.heroCountdownNumber {
+  font-size: clamp(1.75rem, 6vw, 3rem);
+  color: color-mix(in srgb, var(--ss-color-info) 78%, transparent);
+}
+
+.phraseCarouselViewport {
+  width: calc(100% + 2 * var(--grid-scroll-pad-inline, 1.25rem));
+  max-width: min(
+    calc(100% + 2 * var(--grid-scroll-pad-inline, 1.25rem)),
+    calc(
+      4 * 9.25rem + 3 * 0.35rem + 2 * var(--grid-scroll-pad-inline, 1.25rem) +
+        1rem
+    )
+  );
+  margin-inline: calc(-1 * var(--grid-scroll-pad-inline, 1.25rem));
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.countdownPreviewViewport .phraseCarouselTrack {
+  gap: 0;
+}
+
+.countdownPreviewViewport .phraseRowNext:not(.phraseRowCollapsed) {
+  opacity: 0.78;
+}
+
+.phraseCarouselTrack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  will-change: transform;
+  transform: translateY(0);
+  transition: gap var(--phrase-carousel-ms, 450ms) ease-in-out;
+}
+
+.phraseCarouselTrackSingle {
+  gap: 0;
+}
+
+.phraseCarouselAnimating .phraseCarouselTrack {
+  transition: transform var(--phrase-carousel-ms, 450ms) ease-in-out;
+}
+
+.phraseCarouselAnimating .phraseRowWrap,
+.phraseCarouselAnimating .cycleCell {
+  transition: none !important;
+}
+
+.phraseRowWrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.5rem;
+  border-radius: 1rem;
+  border: 1px solid transparent;
+  overflow: hidden;
+  max-height: 16rem;
+  box-sizing: border-box;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    opacity var(--phrase-carousel-ms, 450ms) ease-in-out,
+    padding var(--phrase-carousel-ms, 450ms) ease-in-out,
+    max-height var(--phrase-carousel-ms, 450ms) ease-in-out;
+}
+
+.phraseRowCollapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  gap: 0;
+  border-color: transparent;
+  background: transparent;
+  pointer-events: none;
+}
+
+.phraseRowSpacer {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  border-color: transparent;
+  background: transparent;
+  min-height: var(--ss-space-16);
+}
+
+.phraseRowCurrent {
+  border-color: var(--ss-color-border-muted);
+  background: color-mix(in srgb, var(--ss-color-surface) 35%, transparent);
+}
+
+.phraseRowNext {
+  opacity: 0.62;
+  border-color: color-mix(in srgb, var(--ss-color-border-muted) 45%, transparent);
+  background: color-mix(in srgb, var(--ss-color-surface) 18%, transparent);
+}
+
+.phraseRowNext.phraseRowSpacer,
+.phraseRowNext.phraseRowCollapsed {
+  opacity: 0;
+}
+
+.phraseRowPromoting {
+  opacity: 1;
 }
 
 .cycleRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--ss-space-2);
+  flex-wrap: nowrap;
+  gap: 0.35rem;
   justify-content: center;
-  width: min(100%, 42rem);
+  align-items: flex-end;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .cycleCell {
+  box-sizing: border-box;
+  flex: 0 0 calc(var(--phrase-bar-size) * var(--slot-bar-units, 1));
+  width: calc(var(--phrase-bar-size) * var(--slot-bar-units, 1));
+  max-width: calc(var(--phrase-bar-size) * var(--slot-bar-units, 1));
+  height: var(--phrase-bar-size);
+  min-width: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--ss-space-1);
-  min-height: 3.25rem;
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border: 1px solid var(--ss-color-border-muted);
-  border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-surface) 85%, transparent);
-  color: var(--ss-color-text-muted);
+  padding: 0.5rem 0.25rem;
+  border: 2px solid var(--ss-color-border-muted);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--ss-color-surface) 75%, transparent);
+  color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
+  overflow: hidden;
+  text-align: center;
+  transition:
+    border-color 0.25s ease-in-out,
+    background-color 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out,
+    transform 0.25s ease-in-out;
 }
 
 .cycleCellActive {
-  color: var(--ss-color-text);
-  border-color: var(--ss-color-primary);
-  background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent);
-  box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--ss-color-primary) 35%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-primary) 85%, transparent) !important;
+  background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent) !important;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
+  transform: scale(1.02);
+  z-index: 1;
 }
 
-.cycleCellAnim {
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
+.cycleCellCountdown.cycleCellActive {
+  border-color: color-mix(in srgb, var(--ss-color-info) 85%, transparent) !important;
+  background: color-mix(in srgb, var(--ss-color-info) 14%, transparent) !important;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--ss-color-info) 22%, transparent);
 }
 
 .cycleCellSymbol {
-  font-size: var(--ss-text-xl);
-  font-weight: var(--ss-font-weight-semibold);
+  font-size: min(2.25rem, calc(var(--phrase-bar-size) * 0.32));
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-align: center;
+}
+
+.cycleCellCountdown .cycleCellSymbol {
+  color: var(--ss-color-info);
+  font-size: min(3.5rem, calc(var(--phrase-bar-size) * 0.45));
 }
 
 .cycleCellBars {
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
+  display: none;
 }
 
-.gridUpcomingRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ss-space-3);
-  justify-content: center;
+.gridAnimationsOff .heroName,
+.gridAnimationsOff .heroNext,
+.gridAnimationsOff .heroNextName,
+.gridAnimationsOff .heroChordFly,
+.gridAnimationsOff .heroChordExit,
+.gridAnimationsOff .cycleCell,
+.gridAnimationsOff .phraseRowWrap,
+.gridAnimationsOff .phraseCarouselTrack {
+  transition: none !important;
+  animation: none !important;
 }
 
-.gridUpcomingChord {
-  font-size: var(--ss-text-xl);
-  color: var(--ss-color-text-muted);
-  font-weight: var(--ss-font-weight-medium);
+.gridAnimationsOff .cycleCellActive {
+  transform: none;
 }
 
-.gridAnimationsOff .gridCurrent,
-.gridAnimationsOff .cycleCellAnim {
-  transition: none;
+@media (max-width: 767px) {
+  .gridPane {
+    --phrase-bar-size: clamp(3.5rem, 28vw, 6rem);
+    gap: 1rem;
+    padding: 1rem 0.75rem;
+  }
+
+  .chordHero {
+    --chord-hero-next-offset: 0;
+  }
+
+  .heroNext {
+    display: none !important;
+  }
+
+  .chordHeroLayout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .heroNameWrap {
+    min-height: clamp(4.5rem, 28vw, 8rem);
+  }
+
+  .heroName {
+    font-size: clamp(3.75rem, 22vw, 6.5rem);
+  }
+
+  .heroCountdownNumber {
+    font-size: clamp(5rem, 28vw, 8rem);
+  }
+
+  .phraseCarouselViewport {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .cycleCellActive {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroChordExit:global(.is-active),
+  .heroName.heroEntering,
+  .heroNext.heroEntering,
+  .heroNextName.heroEntering,
+  .heroChordFly {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .heroName.heroEnterPrep,
+  .heroNext.heroEnterPrep,
+  .heroNextName.heroEnterPrep {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .vocalTapBar {
@@ -704,16 +1117,480 @@
   padding: var(--ss-space-2);
 }
 
-.scorePane {
+/* —— Forma / Drums (v4 .drums-view) —— */
+.drumsView {
+  --client-drums: var(--ss-color-warning);
+  --client-active: var(--ss-color-info);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  padding-bottom: 2.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.drumsHero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--ss-space-3);
+  text-align: center;
+  gap: 0.6rem;
+  padding: 1.5rem 1rem 0.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(
+    to bottom,
+    var(--ss-color-bg) 70%,
+    transparent
+  );
+}
+
+.drumsHeroEyebrow {
+  margin: 0;
+  font-size: clamp(1rem, 2.5vw, 1.35rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ss-color-disabled-text);
+}
+
+.drumsHeroSection {
+  margin: 0;
+  font-size: clamp(2.75rem, 12vw, 5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--client-drums);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.drumsHeroCountdown .drumsHeroSection {
+  color: var(--client-active);
+}
+
+.drumsHeroCountdownNumber .drumsHeroSection {
+  font-size: clamp(5rem, 24vw, 10rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.drumsHeroMeta {
+  margin: 0;
+  font-size: clamp(1.35rem, 4.5vw, 2rem);
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.drumsHeroCountdown .drumsHeroMeta {
+  color: color-mix(in srgb, var(--client-active) 88%, white);
+}
+
+.drumsHeroNote {
+  margin: 0.35rem 0 0;
+  max-width: 42rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid color-mix(in srgb, var(--client-drums) 45%, transparent);
+  background: color-mix(in srgb, var(--client-drums) 8%, transparent);
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--client-drums) 92%, white);
+}
+
+.drumsHeroCountdown .drumsHeroNote {
+  border-color: color-mix(in srgb, var(--client-active) 45%, transparent);
+  background: color-mix(in srgb, var(--client-active) 8%, transparent);
+  color: color-mix(in srgb, var(--client-active) 88%, white);
+}
+
+.drumsNoteInput {
+  display: block;
+  width: 100%;
+  max-width: 42rem;
+  margin: 0.35rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-surface) 90%, transparent);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: clamp(1rem, 3.2vw, 1.35rem);
+  line-height: 1.35;
+  resize: vertical;
+  min-height: 2.75rem;
+}
+
+.drumsNoteInput:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--client-drums) 75%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--client-drums) 20%, transparent);
+}
+
+.drumsHeroNoteInput {
+  border-color: color-mix(in srgb, var(--client-drums) 55%, transparent);
+}
+
+.drumsFormSegNoteInput {
+  max-width: none;
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.85rem, 2.4vw, 1.1rem);
+  min-height: 2.25rem;
+}
+
+.drumsMetronome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+  margin-top: 1.25rem;
+  padding: 0.75rem 0;
+}
+
+.drumsBeatDot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2.25rem, 9vw, 3.5rem);
+  height: clamp(2.25rem, 9vw, 3.5rem);
+  border-radius: 50%;
+  background: var(--ss-color-border);
+  transition:
+    background-color 0.12s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.drumsBeatNum {
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ss-color-text-muted);
+  line-height: 1;
+}
+
+.drumsBeatDotDownbeat {
+  width: clamp(2.65rem, 10vw, 4rem);
+  height: clamp(2.65rem, 10vw, 4rem);
+}
+
+.drumsBeatDotDownbeat .drumsBeatNum {
+  font-size: clamp(1.15rem, 4.5vw, 1.65rem);
+}
+
+.drumsBeatDotPassed {
+  background: color-mix(in srgb, var(--client-drums) 35%, transparent);
+}
+
+.drumsBeatDotPassed .drumsBeatNum {
+  color: color-mix(in srgb, var(--client-drums) 70%, transparent);
+}
+
+.drumsBeatDotActive {
+  background: var(--client-drums);
+  transform: scale(1.2);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--client-drums) 85%, transparent);
+}
+
+.drumsBeatDotActive .drumsBeatNum {
+  color: var(--ss-color-on-primary);
+}
+
+.drumsHeroCountdown .drumsBeatDotPassed {
+  background: color-mix(in srgb, var(--client-active) 35%, transparent);
+}
+
+.drumsHeroCountdown .drumsBeatDotPassed .drumsBeatNum {
+  color: color-mix(in srgb, var(--client-active) 75%, transparent);
+}
+
+.drumsHeroCountdown .drumsBeatDotActive {
+  background: var(--client-active);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--client-active) 85%, transparent);
+}
+
+.drumsFormScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0 1rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.drumsFormScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.drumsFormStrip {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  min-height: clamp(8rem, 22vh, 12rem);
+  width: max-content;
+  min-width: 100%;
+  padding-inline: var(--ss-space-2);
+}
+
+.drumsFormSeg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: var(--seg-bars, 1) 1 0;
+  min-width: max(6rem, calc(var(--seg-bars, 1) * 1.75rem));
+  padding: 0.85rem 0.65rem 0.9rem;
+  border-radius: 1rem;
+  border: 3px solid var(--ss-color-border-muted);
+  background: color-mix(in srgb, var(--ss-color-surface) 55%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.drumsEditMode .drumsFormSeg,
+.drumsEditMode .drumsFormSegHasNote {
+  min-width: max(8rem, calc(var(--seg-bars, 1) * 1.75rem));
+}
+
+.drumsFormSegPast {
+  opacity: 0.55;
+}
+
+.drumsFormSegActive {
+  border-color: color-mix(in srgb, var(--client-drums) 85%, transparent);
+  background: color-mix(in srgb, var(--client-drums) 10%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--client-drums) 22%, transparent);
+}
+
+.drumsFormSegCountdown.drumsFormSegActive {
+  border-color: color-mix(in srgb, var(--client-active) 85%, transparent);
+  background: color-mix(in srgb, var(--client-active) 8%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--client-active) 18%, transparent);
+}
+
+.drumsFormSegHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.drumsFormSegName {
+  font-size: clamp(1rem, 2.8vw, 1.45rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ss-color-primary);
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drumsFormSegCountdown .drumsFormSegName {
+  color: var(--client-active);
+}
+
+.drumsFormSegCountdown.drumsFormSegActive .drumsFormSegName {
+  color: color-mix(in srgb, var(--client-active) 88%, white);
+}
+
+.drumsFormSegActive .drumsFormSegName {
+  color: color-mix(in srgb, var(--ss-color-primary) 88%, white);
+}
+
+.drumsFormSegMeta {
+  font-size: clamp(0.85rem, 2.2vw, 1.15rem);
+  color: var(--ss-color-disabled-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.drumsFormSegBars {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  gap: 4px;
+  min-height: clamp(4rem, 12vh, 6.5rem);
+}
+
+.drumsBarCell {
+  flex: 1 1 0;
+  min-width: clamp(10px, 2.2vw, 22px);
+  border-radius: 5px;
+  background: var(--ss-color-border-muted);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.drumsBarCellPast {
+  background: color-mix(in srgb, var(--client-drums) 22%, transparent);
+}
+
+.drumsBarCellCurrent {
+  background: var(--client-drums);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--client-drums) 65%, transparent);
+}
+
+.drumsFormSegCountdown .drumsBarCellPast {
+  background: color-mix(in srgb, var(--client-active) 20%, transparent);
+}
+
+.drumsFormSegCountdown .drumsBarCellCurrent {
+  background: var(--client-active);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--client-active) 65%, transparent);
+}
+
+.drumsBarCellLast {
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--ss-color-text-muted) 45%, transparent);
+}
+
+.drumsBarCellCurrent.drumsBarCellLast {
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--client-drums) 65%, transparent),
+    inset 0 -3px 0 color-mix(in srgb, var(--ss-color-text) 55%, transparent);
+}
+
+.drumsFormSegCountdown .drumsBarCellCurrent.drumsBarCellLast {
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--client-active) 65%, transparent),
+    inset 0 -3px 0 color-mix(in srgb, var(--ss-color-text) 55%, transparent);
+}
+
+.drumsFormSegNote {
+  margin: 0;
+  font-size: clamp(0.8rem, 2.2vw, 1rem);
+  line-height: 1.3;
+  color: var(--ss-color-text-muted);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.drumsFormSegActive .drumsFormSegNote {
+  color: color-mix(in srgb, var(--ss-color-primary) 88%, white);
+  font-weight: 600;
+}
+
+.drumsFormSegCountdown .drumsFormSegNote,
+.drumsFormSegCountdown.drumsFormSegActive .drumsFormSegNote {
+  color: color-mix(in srgb, var(--client-active) 88%, white);
+}
+
+@media (max-width: 767px) {
+  .drumsView {
+    gap: 1.25rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .drumsHero {
+    padding: 1rem 0.5rem 0.5rem;
+    gap: 0.45rem;
+  }
+
+  .drumsHeroEyebrow {
+    font-size: 0.85rem;
+  }
+
+  .drumsHeroSection {
+    font-size: clamp(2rem, 11vw, 3.25rem);
+  }
+
+  .drumsHeroCountdownNumber .drumsHeroSection {
+    font-size: clamp(3.5rem, 22vw, 6rem);
+  }
+
+  .drumsHeroMeta {
+    font-size: clamp(1rem, 3.5vw, 1.35rem);
+  }
+
+  .drumsHeroNote,
+  .drumsNoteInput {
+    font-size: clamp(0.95rem, 3vw, 1.15rem);
+    max-width: 100%;
+  }
+
+  .drumsMetronome {
+    gap: clamp(0.55rem, 3vw, 1rem);
+    margin-top: 0.75rem;
+  }
+
+  .drumsBeatDot {
+    width: clamp(1.75rem, 7vw, 2.5rem);
+    height: clamp(1.75rem, 7vw, 2.5rem);
+  }
+
+  .drumsFormScroll {
+    margin-inline: -0.25rem;
+  }
+
+  .drumsFormStrip {
+    min-height: clamp(6.5rem, 28vh, 9rem);
+    gap: 4px;
+  }
+
+  .drumsFormSeg {
+    padding: 0.65rem 0.45rem 0.7rem;
+    min-width: max(4.5rem, calc(var(--seg-bars, 1) * 1.35rem));
+  }
+
+  .drumsFormSegName {
+    font-size: clamp(0.85rem, 3vw, 1.1rem);
+  }
+
+  .drumsFormSegBars {
+    min-height: clamp(3rem, 14vh, 4.5rem);
+  }
+}
+
+/* —— Score stub (v4 .score-wrap empty chrome) —— */
+.scorePane {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  padding: var(--ss-space-4);
+}
+
+.scoreWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ss-color-surface);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-md);
+  min-height: 12rem;
+}
+
+.scoreEmptyCard {
+  max-width: 28rem;
   padding: var(--ss-space-6);
+  text-align: center;
+}
+
+.scoreEmptyTitle {
+  margin: 0 0 var(--ss-space-2);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text);
+}
+
+.scoreEmptyText {
+  margin: 0 0 var(--ss-space-3);
+  font-size: var(--ss-text-md);
+  color: var(--ss-color-text-muted);
 }
 
 .scoreFiles {
-  margin: 0;
+  margin: var(--ss-space-3) 0 0;
   padding: 0;
   list-style: none;
   font-size: var(--ss-text-sm);
@@ -745,14 +1622,6 @@
   border: 1px solid var(--ss-color-primary);
   background: var(--ss-color-surface);
   font-size: var(--ss-text-sm);
-}
-
-.transportNote {
-  margin: 0;
-  padding: var(--ss-space-1) var(--ss-space-3);
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-  border-top: 1px solid var(--ss-color-border);
 }
 
 .modal {

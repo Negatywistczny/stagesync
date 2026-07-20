@@ -305,37 +305,35 @@ export function ClientShell() {
           const role = ROLES.find((r) => r.id === id)!;
           return (
             <section key={id} className={styles.rolePane} aria-label={role.label}>
-              <div className={styles.rolePaneHead}>
-                <h2>{role.label}</h2>
-                <SettingsPopoverAnchor>
-                  <ShellIconButton
-                    label={`Ustawienia ${role.label}`}
-                    aria-expanded={roleSettings === id}
-                    aria-controls={`role-settings-${id}`}
-                    onClick={() => toggleRoleSettings(id)}
+              {/* Role settings float top-right like v4 view-settings-wrap — no title strip */}
+              <SettingsPopoverAnchor className={styles.roleSettings}>
+                <ShellIconButton
+                  label={`Ustawienia ${role.label}`}
+                  aria-expanded={roleSettings === id}
+                  aria-controls={`role-settings-${id}`}
+                  onClick={() => toggleRoleSettings(id)}
+                >
+                  <IconSettings />
+                </ShellIconButton>
+                {roleSettings === id ? (
+                  <SettingsPopover
+                    id={`role-settings-${id}`}
+                    title={role.label}
+                    onClose={() => setRoleSettings(null)}
                   >
-                    <IconSettings />
-                  </ShellIconButton>
-                  {roleSettings === id ? (
-                    <SettingsPopover
-                      id={`role-settings-${id}`}
-                      title={role.label}
-                      onClose={() => setRoleSettings(null)}
-                    >
-                      <RoleSettingsFields
-                        role={id}
-                        prefs={displayPrefs}
-                        onPrefsChange={setDisplayPrefs}
-                        vocalTapOn={vocalTapOn}
-                        onVocalTapToggle={(on) => {
-                          setVocalTapOn(on);
-                          setVocalTapIndex(0);
-                        }}
-                      />
-                    </SettingsPopover>
-                  ) : null}
-                </SettingsPopoverAnchor>
-              </div>
+                    <RoleSettingsFields
+                      role={id}
+                      prefs={displayPrefs}
+                      onPrefsChange={setDisplayPrefs}
+                      vocalTapOn={vocalTapOn}
+                      onVocalTapToggle={(on) => {
+                        setVocalTapOn(on);
+                        setVocalTapIndex(0);
+                      }}
+                    />
+                  </SettingsPopover>
+                ) : null}
+              </SettingsPopoverAnchor>
               {id === "drums" ? (
                 activeProject ? (
                   <DrumsPane
@@ -437,10 +435,6 @@ export function ClientShell() {
           {cueText || "TERAZ — cue"}
         </div>
       </div>
-
-      <p className={styles.transportNote}>
-        {state.playing ? "Play" : "Pause"} · {state.bpm} BPM
-      </p>
     </div>
   );
 }

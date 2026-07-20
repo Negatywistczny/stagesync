@@ -18,10 +18,17 @@ export type ViewSpan = { start: number; end: number };
 export const DEFAULT_PX_PER_BAR = 48;
 
 /**
- * v4 ruler: when px/bar ≥ 56, draw beat ticks 2…N (lane grid stays barlines only).
+ * v4 ruler + v5 lane densification: when effective px/bar ≥ 56, draw beat
+ * subdivisions (beats 2…N). Threshold uses **effective** px/bar (zoomH × UI
+ * scale), matching legacy `effectivePxPerBar()`.
  * @see STAGESYNC-APP-LEGACY timeline.js `renderRuler` (`pxb >= 56`)
  */
 export const RULER_BEAT_TICKS_MIN_PX = 56;
+
+/** True when zoom is dense enough for beat subdivision marks. */
+export function showsBeatSubdivisionMarks(pxPerBar: number): boolean {
+  return pxPerBar >= RULER_BEAT_TICKS_MIN_PX;
+}
 
 /** Trailing empty bars — scroll room past last clip (layout only). */
 const TRAILING_VIEW_BARS = 4;
@@ -163,6 +170,7 @@ function meterAtTicks(
 /**
  * Walk musical bar boundaries in ticks (v4 `iterBarBoundaries` semantics).
  * Meter changes mid-bar truncate the current bar; next bar starts at the change.
+ * Covers song body only (`startTicks ≥ 0`).
  */
 export function iterBarBoundariesTicks(
   project: MeterMapProject,
@@ -210,17 +218,55 @@ export function iterBarBoundariesTicks(
 }
 
 /**
+ * Pre-roll / Countdown bars (`start < 0` → 0) using default meter (seed @ 0).
+ * `bar` is 0 for all pre-roll cells (song bar 1 starts at tick 0).
+ */
+export function iterPreRollBarBoundariesTicks(
+  project: MeterMapProject,
+  fromTicks: number,
+  toTicks = 0,
+): BarBoundary[] {
+  const start = Math.trunc(fromTicks);
+  const end = Math.trunc(toTicks);
+  if (!(end > start) || start >= 0) return [];
+
+  const out: BarBoundary[] = [];
+  let t = start;
+  const maxBars = 10_000;
+  while (t < end && out.length < maxBars) {
+    const meter = t < 0 ? project.defaultMeter : meterAtTicks(project, t);
+    const len = ticksPerBar(meter, project.ppq);
+    const barEnd = Math.min(t + len, end);
+    out.push({
+      bar: 0,
+      startTicks: t,
+      endTicks: barEnd,
+      meter,
+    });
+    t = barEnd;
+  }
+  return out;
+}
+
+/**
  * Barline marks for ruler labels + lane grid.
- * Boundaries follow `meterMap` (variable bar length in ticks).
+ * Pre-roll (CD) gets full barlines; song body follows `meterMap`.
  */
 export function buildBarMarks(
   span: ViewSpan,
   project: MeterMapProject,
 ): BarMark[] {
   const marks: BarMark[] = [];
-  const countdownStart = -7680;
-  if (span.start <= countdownStart && countdownStart < span.end) {
-    marks.push({ ticks: countdownStart, label: "CD" });
+
+  if (span.start < 0) {
+    marks.push({ ticks: span.start, label: "CD" });
+    for (const b of iterPreRollBarBoundariesTicks(project, span.start, 0)) {
+      if (b.startTicks >= span.end || b.startTicks < span.start) continue;
+      if (b.startTicks === span.start) continue; // CD label already
+      if (!marks.some((m) => m.ticks === b.startTicks)) {
+        marks.push({ ticks: b.startTicks, label: "" });
+      }
+    }
   }
 
   const boundaries = iterBarBoundariesTicks(project, Math.max(span.end, 0));
@@ -236,18 +282,23 @@ export function buildBarMarks(
 }
 
 /**
- * Ruler-only beat ticks (beats 2…N) when zoom H ≥ {@link RULER_BEAT_TICKS_MIN_PX}.
- * Empty when below threshold — lane grid must not use these.
+ * Beat subdivision marks (beats 2…N) when {@link showsBeatSubdivisionMarks}.
+ * Includes Countdown / pre-roll bars.
  */
 export function buildRulerBeatMarks(
   span: ViewSpan,
   project: MeterMapProject,
   pxPerBar: number,
 ): BarMark[] {
-  if (!(pxPerBar >= RULER_BEAT_TICKS_MIN_PX)) return [];
+  if (!showsBeatSubdivisionMarks(pxPerBar)) return [];
 
   const marks: BarMark[] = [];
-  const boundaries = iterBarBoundariesTicks(project, Math.max(span.end, 0));
+  const boundaries = [
+    ...(span.start < 0
+      ? iterPreRollBarBoundariesTicks(project, span.start, 0)
+      : []),
+    ...iterBarBoundariesTicks(project, Math.max(span.end, 0)),
+  ];
   for (const b of boundaries) {
     if (b.startTicks >= span.end) break;
     if (b.endTicks <= span.start) continue;

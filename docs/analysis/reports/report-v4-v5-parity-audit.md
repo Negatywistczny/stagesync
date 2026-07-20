@@ -5,7 +5,7 @@
 **Polityka:** [ADR 0011](../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz / clone chrome  
 **SSOT luk:** [report-v4-v5-gap-audit.md](./report-v4-v5-gap-audit.md) — katalog TE/KB/AD/CL (P0/P1)  
 **Aneks UI-diff:** [report-v4-v5-ui-diff-inventory.md](./report-v4-v5-ui-diff-inventory.md)  
-**Bramka β:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md) — **open**; ten raport **nie** zamyka parity i **nie** uprawnia do `5.0.0-beta.*`
+**Bramka β:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md) — **P8 green 2026-07-21**; ten raport historyczny **nie** uprawnia sam do tagu `5.0.0-beta.*` (β1 na prośbę)
 
 ---
 
@@ -14,11 +14,11 @@
 | Metryka | Wartość |
 |---------|---------|
 | **Szacunek behawioru (bez jawnego OUT)** | **~35–45%** operacyjnie do green PO (zrewidowane); TE-P0/CD **code** w α8 freeze — nie window-dress inventarzem |
-| **Gotowość β** | **Nie** — zakaz β do green **PO smoke** + CL-P0 (ADR 0011; [α8 freeze](./report-alpha8-code-freeze.md)) |
-| **Największe ryzyka sceniczne** | CL-01/04/05 (α9), T-loc/T-gest PO smoke, Live Desk korekt (**β2**) |
+| **Gotowość β** | **P8 green** — wejście β1 **na prośbę** (Docker/Tauri); bez samowolnego `5.0.0-beta.*` |
+| **Największe ryzyka sceniczne** | Live Desk korekt (**β2**); residual P1 Timeline / Help / wand |
 | **Chrome / DS** | Delty tokenów `--ss-*` OK; **zakaz** disabled stubów inventarz-first (Admin footer Tr./Lead/Edycja **usunięte**) |
 
-**Werdykt:** v5 jest **rebuildem** (ADR 0011), nie portem HTML. α8 engineering = **code freeze**. **Sterowanie** Timeline czeka na PO; **Client P0** i **P8** blokują β. Inventarz `[x]` ≠ green.
+**Werdykt:** v5 jest **rebuildem** (ADR 0011), nie portem HTML. α8 = **code freeze**; α9 must (migrator + CL-P0 + **P8**) = **green 2026-07-21**. Inventarz `[x]` ≠ green.
 
 ### Zasady klasyfikacji matrycy
 
@@ -123,7 +123,7 @@
 | **Schema ADR 0009** | ADR tytuł/decyzja: `formatVersion: 3`; kod: kanon `formatVersion: 5` | **Nota w ADR 0009:** v3 = assets/setlist; kanon runtime = v5 |
 | **Inventarz ≠ smoke** | Historyczne `[x]` „wired” vs ADR 0011 | Done = PO smoke; inventarz wtórny |
 | **ADR 0007 status** | Status „Proponowany” przy wdrożonych fazach 0–3 | **→ Zaakceptowany** (picker UI → 5.0.0) |
-| **α8 vs β** | „Parity stage” vs open P8 | **α8 = code freeze**; β dopiero po α9 P8+CL |
+| **α8 vs β** | „Parity stage” vs open P8 | **α8 = code freeze**; **P8 green 2026-07-21** → β1 na prośbę |
 
 ---
 
@@ -136,4 +136,4 @@
 - Kontrakt UI: [ADR 0011](../../adr/0011-ui-parity-behavior.md)
 - Roadmapa / TODO: [ROADMAP.md](../../ROADMAP.md), [TODO.md](../../TODO.md)
 
-**Status parity:** **nieukończona** (α9). Zero bumpa β z tego raportu.
+**Status parity:** **P8 green (2026-07-21)** — α9 must domknięte. Tag `5.0.0-beta.*` tylko na prośbę.

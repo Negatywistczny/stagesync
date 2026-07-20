@@ -20,10 +20,8 @@ import {
   toDisplayBar,
   importUgText,
   projectEndTicks,
-  wandContentToForma,
   type FormaClip,
   type Project,
-  type WandMode,
 } from "@stagesync/shared";
 import {
   buildBarMarks,
@@ -34,7 +32,6 @@ import {
   DEFAULT_PX_PER_BAR,
   projectContentEqual,
   scrollCanvasToStart,
-  scrollLeftKeepTickAnchored,
   snapEditTicks,
   tickToPx,
   ticksFromPointer,
@@ -50,15 +47,19 @@ import {
   buildClipboardFromClips,
   deleteClipsOnLane,
   pasteClipboardAt,
+  pasteClipboardWithDelta,
   selectionMaxEndTicks,
   type TimelineClipboard,
 } from "../lib/timelineClipboard.js";
 import {
   clearSelection,
   EMPTY_CLIP_SELECTION,
+  idsOnLane,
+  isClipSelected,
   isMarqueeClick,
   isMultiSelectClick,
   marqueeSelectFromHits,
+  primaryLane,
   rectsIntersect,
   resolveMoveIds,
   selectRangeTo,
@@ -171,6 +172,7 @@ import {
   patchSetlistAutoAdvance,
 } from "../lib/setlistApi.js";
 import {
+  contentSnapModeFromModifiers,
   cursorForHitZone,
   hitTestClipZone,
   toolAllowsClipHitZones,
@@ -228,7 +230,6 @@ import {
   IconTap,
   IconUnchecked,
   IconUndo,
-  IconWand,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -245,6 +246,8 @@ const TOOLS: {
   id: ToolId;
   label: string;
   title: string;
+  /** Letter key while tool menu (T) is open — v4 Logic accelerators. */
+  key: string;
   Icon: typeof IconPointer;
   disabled?: boolean;
 }[] = [
@@ -252,24 +255,28 @@ const TOOLS: {
     id: "pointer",
     label: "Pointer",
     title: "Pointer — zaznacz, przesuń, zmień długość",
+    key: "t",
     Icon: IconPointer,
   },
   {
     id: "smart",
     label: "Smart",
     title: "Smart Tool — strefy move / trim (jak Pointer)",
+    key: "s",
     Icon: IconSmart,
   },
   {
     id: "pencil",
     label: "Pencil",
     title: "Pencil — klik: 1 takt; przeciągnij: zakres (nadpisz)",
+    key: "p",
     Icon: IconPencil,
   },
   {
     id: "eraser",
     label: "Eraser",
     title: "Eraser — usuń zaznaczony clip",
+    key: "e",
     Icon: IconEraser,
   },
   {
@@ -277,21 +284,13 @@ const TOOLS: {
     label: "Scissors",
     title:
       "Scissors — Forma: podsekcja; Tekst/Akordy/Cue: podział; Tempo/Tonacja/Metrum: zmiana mapy",
+    key: "c",
     Icon: IconScissors,
   },
-  {
-    id: "wand",
-    label: "Różdżka",
-    title: "Różdżka — Tekst/Akordy → Forma",
-    Icon: IconWand,
-  },
+  // Różdżka (wand) — ukryta do naprawy zachowania (PO smoke); core `wandContentToForma` zostaje.
 ];
 
-const WAND_ACTIONS: { id: WandMode; label: string }[] = [
-  { id: "tekst", label: "Tekst → Forma" },
-  { id: "akordy", label: "Akordy → Forma" },
-  { id: "both", label: "Tekst + Akordy → Forma" },
-];
+const TOOL_BY_KEY = Object.fromEntries(TOOLS.map((t) => [t.key, t]));
 
 export function TimelineShell() {
   const navigate = useNavigate();
@@ -332,7 +331,12 @@ export function TimelineShell() {
   const [autoAdvance, setAutoAdvance] = useState(false);
 
   const [tool, setTool] = useState<ToolId>("pointer");
-  const [wandOpen, setWandOpen] = useState(false);
+  const [toolMenu, setToolMenu] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
+  const toolMenuRef = useRef<HTMLDivElement>(null);
+  const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
@@ -434,9 +438,9 @@ export function TimelineShell() {
   /** Forma/content multi-select (v4 selectedIds + primaryId). */
   const [clipSelection, setClipSelection] =
     useState<ClipSelection>(EMPTY_CLIP_SELECTION);
-  const selectedIds = clipSelection.selectedIds;
+  const selectedIds = clipSelection.items.map((i) => i.id);
   const primaryId = clipSelection.primaryId;
-  const selectionLane = clipSelection.lane;
+  const selectionLane = primaryLane(clipSelection);
   const selectedClipId = selectionLane === "forma" ? primaryId : null;
   const selectedTekstClipId = selectionLane === "tekst" ? primaryId : null;
   const selectedAkordClipId = selectionLane === "akordy" ? primaryId : null;
@@ -677,55 +681,65 @@ export function TimelineShell() {
       }
       return;
     }
-    if (!selectionLane || !selectedIds.length) return;
-    if (selectionLane === "forma") {
-      const hasCountdown = selectedIds.some((id) => {
-        const c = draft.forma.clips.find((x) => x.id === id);
-        return c?.kind === "countdown";
-      });
-      if (hasCountdown && selectedIds.length === 1) return;
-      const ids = selectedIds.filter((id) => {
-        const c = draft.forma.clips.find((x) => x.id === id);
-        return c && c.kind !== "countdown";
-      });
-      if (!ids.length) return;
-      commitDraft(deleteClipsOnLane(draft, "forma", ids));
-      clearClipSelection();
-      return;
+    if (!clipSelection.items.length) return;
+    let next = draft;
+    const lanes: ClipSelectionLane[] = ["forma", "tekst", "akordy", "cue"];
+    for (const lane of lanes) {
+      const ids = idsOnLane(clipSelection, lane);
+      if (!ids.length) continue;
+      if (lane === "forma") {
+        const hasCountdown = ids.some((id) => {
+          const c = next.forma.clips.find((x) => x.id === id);
+          return c?.kind === "countdown";
+        });
+        if (hasCountdown && ids.length === 1 && clipSelection.items.length === 1) {
+          return;
+        }
+        const filtered = ids.filter((id) => {
+          const c = next.forma.clips.find((x) => x.id === id);
+          return c && c.kind !== "countdown";
+        });
+        if (!filtered.length) continue;
+        next = deleteClipsOnLane(next, "forma", filtered);
+      } else {
+        next = deleteClipsOnLane(next, lane, ids);
+      }
     }
-    commitDraft(deleteClipsOnLane(draft, selectionLane, selectedIds));
+    if (next !== draft) commitDraft(next);
     clearClipSelection();
   }, [
     clearClipSelection,
     clearMapSelection,
+    clipSelection,
     commitDraft,
-    selectedIds,
     selectedMapIds,
     selectedMapLane,
-    selectionLane,
   ]);
 
   const copyClipSelection = useCallback((): boolean => {
     const draft = draftRef.current;
-    if (!draft || !selectionLane || !selectedIds.length) return false;
-    const idSet = new Set(selectedIds);
+    if (!draft || !clipSelection.items.length) return false;
+    // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
+    const lane = primaryLane(clipSelection);
+    if (!lane) return false;
+    const idSet = new Set(idsOnLane(clipSelection, lane));
     let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
-    if (selectionLane === "forma") {
+    if (lane === "forma") {
       clips = draft.forma.clips.filter(
         (c) => idSet.has(c.id) && c.kind === "section",
       );
-    } else if (selectionLane === "tekst") {
+    } else if (lane === "tekst") {
       clips = draft.tekst.clips.filter((c) => idSet.has(c.id));
-    } else if (selectionLane === "akordy") {
+    } else if (lane === "akordy") {
       clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
     } else {
       clips = draft.cue.clips.filter((c) => idSet.has(c.id));
     }
-    const board = buildClipboardFromClips(selectionLane, clips);
+    const board = buildClipboardFromClips(lane, clips);
     if (!board) return false;
     clipboardRef.current = board;
     return true;
-  }, [selectedIds, selectionLane]);
+  }, [clipSelection]);
 
   const pasteClipClipboard = useCallback(
     (anchorTicks: number): boolean => {
@@ -736,7 +750,10 @@ export function TimelineShell() {
       if (!result) return false;
       commitDraft(result.project);
       setClipSelection(
-        setSelection(result.newIds, result.newIds[result.newIds.length - 1]!, board.lane),
+        setSelection(
+          result.newIds.map((id) => ({ id, lane: board.lane })),
+          result.newIds[result.newIds.length - 1]!,
+        ),
       );
       setSelectedSubsectionIdx(null);
       clearMapSelection();
@@ -757,19 +774,20 @@ export function TimelineShell() {
 
   const duplicateClipSelection = useCallback((): boolean => {
     const draft = draftRef.current;
-    if (!draft || !selectionLane || !selectedIds.length) return false;
+    const lane = primaryLane(clipSelection);
+    if (!draft || !lane || !clipSelection.items.length) return false;
     if (!copyClipSelection()) return false;
-    const idSet = new Set(selectedIds);
+    const idSet = new Set(idsOnLane(clipSelection, lane));
     const clips =
-      selectionLane === "forma"
+      lane === "forma"
         ? draft.forma.clips.filter((c) => idSet.has(c.id) && c.kind === "section")
-        : selectionLane === "tekst"
+        : lane === "tekst"
           ? draft.tekst.clips.filter((c) => idSet.has(c.id))
-          : selectionLane === "akordy"
+          : lane === "akordy"
             ? draft.akordy.clips.filter((c) => idSet.has(c.id))
             : draft.cue.clips.filter((c) => idSet.has(c.id));
     return pasteClipClipboard(selectionMaxEndTicks(clips));
-  }, [copyClipSelection, pasteClipClipboard, selectedIds, selectionLane]);
+  }, [clipSelection, copyClipSelection, pasteClipClipboard]);
 
   const cutClipSelection = useCallback((): boolean => {
     if (!copyClipSelection()) return false;
@@ -855,6 +873,32 @@ export function TimelineShell() {
         h.onPlayOrPause();
         return;
       }
+      if (!mod && !e.altKey && key === "t") {
+        e.preventDefault();
+        if (toolMenu) {
+          setToolMenu(null);
+          return;
+        }
+        const pt = lastPointerRef.current;
+        openToolMenuAt(
+          pt.x || window.innerWidth / 2,
+          pt.y || window.innerHeight / 2,
+        );
+        return;
+      }
+      if (toolMenu && !mod) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setToolMenu(null);
+          return;
+        }
+        const pick = TOOL_BY_KEY[key];
+        if (pick && !pick.disabled) {
+          e.preventDefault();
+          onTool(pick.id);
+          return;
+        }
+      }
       if (!mod && !e.altKey && key === "c") {
         e.preventDefault();
         h.onLoopToggle();
@@ -863,11 +907,6 @@ export function TimelineShell() {
       if (!mod && !e.altKey && key === "k") {
         e.preventDefault();
         void h.onMetronomeToggle();
-        return;
-      }
-      if (!mod && !e.altKey && key === "w") {
-        e.preventDefault();
-        h.onTool("wand");
         return;
       }
       if (!mod && !e.altKey && key === "z") {
@@ -908,6 +947,7 @@ export function TimelineShell() {
     locatorTicks,
     navigate,
     pasteClipClipboard,
+    toolMenu,
   ]);
 
   useEffect(() => {
@@ -1031,32 +1071,19 @@ export function TimelineShell() {
   zoomVBaseRef.current = zoomV;
   uiScaleRef.current = uiScale;
 
-  // Countdown length drag: keep tick 0 anchored so pointer deltas stay stable.
-  // After a real length change (gesture release / inspector): jump to timeline start.
+  // Countdown length drag: scroll to timeline start so new CD bars stay visible.
+  // Length delta uses clientX→ticks (not abs tick under cursor) so drag stays stable.
+  // After release / inspector: jump to start again if needed.
   useLayoutEffect(() => {
     const cdGesture =
       gestureSessionRef.current?.kind === "countdown-length" ||
       gesturePreview?.kind === "countdown-length";
     if (cdGesture) {
-      if (cdSpanStartRef.current == null) {
-        cdSpanStartRef.current = viewSpan.start;
-        return;
-      }
-      if (cdSpanStartRef.current === viewSpan.start) return;
       cdScrollToStartPendingRef.current = true;
-      const scroll = document.querySelector(
-        "[data-canvas-scroll]",
-      ) as HTMLElement | null;
-      if (scroll) {
-        scroll.scrollLeft = scrollLeftKeepTickAnchored(
-          cdSpanStartRef.current,
-          viewSpan.start,
-          scroll.scrollLeft,
-          barTicks,
-          effectiveZoomH,
-        );
-      }
       cdSpanStartRef.current = viewSpan.start;
+      scrollCanvasToStart(
+        document.querySelector("[data-canvas-scroll]") as HTMLElement | null,
+      );
       return;
     }
     if (cdSpanStartRef.current != null || cdScrollToStartPendingRef.current) {
@@ -1102,21 +1129,20 @@ export function TimelineShell() {
   // transport source. Alpha: server Timeline owns play → no separate MIDI overlay (β2).
   const showMidiPlayhead = false;
 
-  // Follow playhead: keep playhead in horizontal view while playing.
+  // Follow playhead: continuous center (v4 scrollFollowToX) while playing — not edge-only.
   useEffect(() => {
     if (!followPlayhead || !state.playing) return;
     const scrollEl = document.querySelector<HTMLElement>(
       "[data-canvas-scroll]",
     );
     if (!scrollEl) return;
-    const pad = 48;
-    const left = scrollEl.scrollLeft;
-    const right = left + scrollEl.clientWidth;
-    if (playheadPx < left + pad) {
-      scrollEl.scrollLeft = Math.max(0, playheadPx - pad);
-    } else if (playheadPx > right - pad) {
-      scrollEl.scrollLeft = playheadPx - scrollEl.clientWidth + pad;
-    }
+    const viewW = scrollEl.clientWidth;
+    if (viewW <= 0) return;
+    const maxScroll = Math.max(0, scrollEl.scrollWidth - viewW);
+    scrollEl.scrollLeft = Math.max(
+      0,
+      Math.min(maxScroll, playheadPx - viewW / 2),
+    );
   }, [followPlayhead, playheadPx, state.playing]);
 
   // After pause/stop: yellow locator stays at last transport position (v4).
@@ -1318,12 +1344,6 @@ export function TimelineShell() {
     commitDraft(applyTapBpm(draftProject, locatorTicks, bpm));
   }
 
-  function onWandAction(mode: WandMode) {
-    if (!draftProject) return;
-    commitDraft(wandContentToForma(draftProject, mode));
-    setWandOpen(false);
-  }
-
   function onImportUg() {
     if (!draftProject) return;
     const result = importUgText(ugText, {
@@ -1397,6 +1417,7 @@ export function TimelineShell() {
       ctrlKey,
       `Sekcja ${n}`,
       clientX,
+      zoomHRef.current,
     );
     gesturePreviewRef.current = preview;
     setGesturePreview(preview);
@@ -1412,6 +1433,45 @@ export function TimelineShell() {
     setGesturePreview(null);
     if (!session || !preview || !draft) return;
     const lane = session.lane ?? "forma";
+
+    // Alt/⌥+drag: copy at drop (v4 optionCopy) — originals stay.
+    if (
+      session.optionCopy &&
+      session.kind === "move" &&
+      session.clipId &&
+      preview.startTicks !== session.originClipStart
+    ) {
+      const moveIds = session.moveIds?.length
+        ? session.moveIds
+        : [session.clipId];
+      const idSet = new Set(moveIds);
+      const clips =
+        lane === "forma"
+          ? draft.forma.clips.filter(
+              (c) => idSet.has(c.id) && c.kind === "section",
+            )
+          : lane === "tekst"
+            ? draft.tekst.clips.filter((c) => idSet.has(c.id))
+            : lane === "akordy"
+              ? draft.akordy.clips.filter((c) => idSet.has(c.id))
+              : draft.cue.clips.filter((c) => idSet.has(c.id));
+      const board = buildClipboardFromClips(lane, clips);
+      if (!board) return;
+      const delta = preview.startTicks - session.originClipStart;
+      const result = pasteClipboardWithDelta(draft, board, delta);
+      if (!result) return;
+      commitDraft(result.project);
+      if (result.newIds.length) {
+        setClipSelection(
+          setSelection(
+            result.newIds.map((id) => ({ id, lane })),
+            result.newIds[0]!,
+          ),
+        );
+      }
+      return;
+    }
+
     if (lane !== "forma") {
       const next = commitContentGesture(
         draft,
@@ -1436,6 +1496,18 @@ export function TimelineShell() {
         );
         if (created?.id) selectLaneClip(lane, created.id);
         else clearClipSelection();
+        return;
+      }
+      if (session.kind === "move" && session.moveIds?.length) {
+        setClipSelection((prev) =>
+          setSelection(
+            [
+              ...prev.items.filter((i) => i.lane !== lane),
+              ...session.moveIds!.map((id) => ({ id, lane })),
+            ],
+            session.clipId,
+          ),
+        );
         return;
       }
       if (session.clipId) {
@@ -1475,6 +1547,16 @@ export function TimelineShell() {
           Math.max(0, Math.min(session.boundarySubIdx, maxIdx)),
         );
       }
+    } else if (session.kind === "move" && session.moveIds?.length) {
+      setClipSelection((prev) =>
+        setSelection(
+          [
+            ...prev.items.filter((i) => i.lane !== "forma"),
+            ...session.moveIds!.map((id) => ({ id, lane: "forma" as const })),
+          ],
+          session.clipId,
+        ),
+      );
     } else if (session.clipId) {
       selectLaneClip("forma", session.clipId);
     }
@@ -1562,7 +1644,7 @@ export function TimelineShell() {
         commitDraft(deleteCueClip(draftProject, clip.id));
       }
       setClipSelection((prev) =>
-        prev.selectedIds.includes(clip.id)
+        isClipSelected(prev, clip.id, lane)
           ? toggleSelected(prev, clip.id, lane)
           : prev,
       );
@@ -1614,15 +1696,14 @@ export function TimelineShell() {
       return;
     }
 
+    const onLaneIds = idsOnLane(clipSelection, lane);
     const inMulti =
-      selectionLane === lane &&
-      selectedIds.includes(clip.id) &&
-      selectedIds.length > 1;
+      isClipSelected(clipSelection, clip.id, lane) && onLaneIds.length > 1;
     if (!inMulti) {
       clearMapSelection();
       selectLaneClip(lane, clip.id);
     } else {
-      setClipSelection((prev) => setSelection(prev.selectedIds, clip.id, lane));
+      setClipSelection((prev) => setSelection(prev.items, clip.id));
       setSelectedSubsectionIdx(null);
     }
 
@@ -1640,13 +1721,9 @@ export function TimelineShell() {
           : "move";
     const moveIds =
       kind === "move"
-        ? resolveMoveIds(
-            inMulti
-              ? { lane, selectedIds, primaryId: clip.id }
-              : selectSingle(clip.id, lane),
-            clip.id,
-            lane,
-          )
+        ? inMulti
+          ? resolveMoveIds(clipSelection, clip.id, lane)
+          : [clip.id]
         : [clip.id];
     const session: FormaGestureSession = {
       kind,
@@ -1658,6 +1735,7 @@ export function TimelineShell() {
       lane,
       originClientX: e.clientX,
       moveIds: kind === "move" ? moveIds : undefined,
+      optionCopy: kind === "move" ? Boolean(e.altKey) : undefined,
     };
     const preview = previewContentFromSession(
       draftProject,
@@ -1752,7 +1830,7 @@ export function TimelineShell() {
       if (clip.kind === "countdown") return;
       commitDraft(deleteFormaClip(draftProject, clip.id));
       setClipSelection((prev) =>
-        prev.selectedIds.includes(clip.id)
+        isClipSelected(prev, clip.id, "forma")
           ? toggleSelected(prev, clip.id, "forma")
           : prev,
       );
@@ -1823,19 +1901,17 @@ export function TimelineShell() {
       return;
     }
 
+    const onLaneIds = idsOnLane(clipSelection, "forma");
     const inMulti =
       clip.kind !== "countdown" &&
-      selectionLane === "forma" &&
-      selectedIds.includes(clip.id) &&
-      selectedIds.length > 1;
+      isClipSelected(clipSelection, clip.id, "forma") &&
+      onLaneIds.length > 1;
 
     if (!inMulti) {
       clearMapSelection();
       selectLaneClip("forma", clip.id);
     } else {
-      setClipSelection((prev) =>
-        setSelection(prev.selectedIds, clip.id, "forma"),
-      );
+      setClipSelection((prev) => setSelection(prev.items, clip.id));
     }
     setSongMetaOpen(false);
     if (clip.kind === "countdown") {
@@ -1867,6 +1943,7 @@ export function TimelineShell() {
         originTicks: raw,
         originClipStart: clip.startTicks,
         originClipLength: clip.lengthTicks,
+        originClientX: e.clientX,
       };
       const preview = previewFromSession(
         draftProject,
@@ -1874,6 +1951,9 @@ export function TimelineShell() {
         raw,
         e.metaKey,
         e.ctrlKey,
+        undefined,
+        e.clientX,
+        effectiveZoomH,
       );
       beginFormaGesture(session, preview);
       return;
@@ -1947,13 +2027,9 @@ export function TimelineShell() {
           : "move";
     const moveIds =
       kind === "move"
-        ? resolveMoveIds(
-            inMulti
-              ? { lane: "forma", selectedIds, primaryId: clip.id }
-              : selectSingle(clip.id, "forma"),
-            clip.id,
-            "forma",
-          )
+        ? inMulti
+          ? resolveMoveIds(clipSelection, clip.id, "forma")
+          : [clip.id]
         : [clip.id];
     const session: FormaGestureSession = {
       kind,
@@ -1963,6 +2039,7 @@ export function TimelineShell() {
       originClipStart: clip.startTicks,
       originClipLength: clip.lengthTicks,
       moveIds: kind === "move" ? moveIds : undefined,
+      optionCopy: kind === "move" ? Boolean(e.altKey) : undefined,
     };
     const preview = previewFromSession(
       draftProject,
@@ -2110,6 +2187,25 @@ export function TimelineShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- marquee session gated by box
   }, [marqueeBox != null]);
 
+  useEffect(() => {
+    function onPointerMove(e: PointerEvent) {
+      lastPointerRef.current = { x: e.clientX, y: e.clientY };
+    }
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onPointerMove);
+  }, []);
+
+  useEffect(() => {
+    if (!toolMenu) return;
+    function onPointerDown(e: PointerEvent) {
+      const el = toolMenuRef.current;
+      if (el && e.target instanceof Node && el.contains(e.target)) return;
+      setToolMenu(null);
+    }
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [toolMenu]);
+
   function placeLocatorAtTicks(
     ticks: number,
     opts?: {
@@ -2186,10 +2282,12 @@ export function TimelineShell() {
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
     const dx = Math.abs(e.clientX - drag.originClientX);
-    if (dx >= 5) {
+    if (dx >= 5 && draftProject) {
       const a = Math.min(drag.originTicks, raw);
       const b = Math.max(drag.originTicks, raw);
-      setLoopDraft({ startTicks: a, endTicks: Math.max(a + 1, b) });
+      // Live snap on preview (v4 feel); Cmd/Ctrl = off.
+      const mode = contentSnapModeFromModifiers(e.metaKey, e.ctrlKey);
+      setLoopDraft(snapLoopRange(draftProject, a, b, mode));
     } else if (dx < 5) {
       setLocatorFromClientX(e.clientX, {
         seekTransport: true,
@@ -2212,6 +2310,7 @@ export function TimelineShell() {
         draftProject,
         draft.startTicks,
         draft.endTicks,
+        contentSnapModeFromModifiers(e.metaKey, e.ctrlKey),
       );
       void setLoop({
         enabled: true,
@@ -2687,13 +2786,28 @@ export function TimelineShell() {
   function onTool(id: ToolId) {
     const def = TOOLS.find((t) => t.id === id);
     if (def?.disabled) return;
-    if (id === "wand") {
-      setWandOpen((v) => !v);
-      setTool("wand");
-      return;
-    }
-    setWandOpen(false);
+    setToolMenu(null);
     setTool(id);
+  }
+
+  function openToolMenuAt(clientX: number, clientY: number) {
+    const pad = 8;
+    const approxW = 220;
+    const approxH = TOOLS.length * 40 + 16;
+    let left = clientX;
+    let top = clientY;
+    if (typeof window !== "undefined") {
+      if (left + approxW > window.innerWidth - pad) {
+        left = window.innerWidth - approxW - pad;
+      }
+      if (top + approxH > window.innerHeight - pad) {
+        top = window.innerHeight - approxH - pad;
+      }
+    }
+    setToolMenu({
+      left: Math.max(pad, left),
+      top: Math.max(pad, top),
+    });
   }
 
   keyHandlersRef.current = {
@@ -2871,19 +2985,46 @@ export function TimelineShell() {
         return (
           <>
             {draftProject.forma.clips.map((clip) => {
-              const previewing =
+              const moveIds =
+                gestureSession?.kind === "move" &&
+                (gestureSession.lane ?? "forma") === "forma"
+                  ? gestureSession.moveIds?.length
+                    ? gestureSession.moveIds
+                    : gestureSession.clipId
+                      ? [gestureSession.clipId]
+                      : []
+                  : [];
+              const moveDelta =
                 gesturePreview &&
-                gesturePreview.clipId === clip.id &&
-                gesturePreview.kind !== "pencil-draw";
+                gestureSession?.kind === "move" &&
+                moveIds.includes(clip.id)
+                  ? gesturePreview.startTicks - gestureSession.originClipStart
+                  : 0;
+              const optionCopyGhost =
+                Boolean(gestureSession?.optionCopy) && moveDelta !== 0;
+              const previewing =
+                !optionCopyGhost &&
+                gesturePreview &&
+                ((gestureSession?.kind === "move" &&
+                  moveIds.includes(clip.id)) ||
+                  (gesturePreview.clipId === clip.id &&
+                    gesturePreview.kind !== "pencil-draw" &&
+                    gesturePreview.kind !== "move"));
               const styleClip = previewing
                 ? {
                     ...clip,
-                    startTicks: gesturePreview.startTicks,
-                    lengthTicks: gesturePreview.lengthTicks,
+                    startTicks:
+                      gestureSession?.kind === "move"
+                        ? clip.startTicks + moveDelta
+                        : gesturePreview!.startTicks,
+                    lengthTicks:
+                      gestureSession?.kind === "move"
+                        ? clip.lengthTicks
+                        : gesturePreview!.lengthTicks,
                     subsections:
-                      gesturePreview.kind === "subsection-boundary" &&
-                      gesturePreview.subsections !== undefined
-                        ? gesturePreview.subsections
+                      gesturePreview!.kind === "subsection-boundary" &&
+                      gesturePreview!.subsections !== undefined
+                        ? gesturePreview!.subsections
                         : clip.subsections,
                   }
                 : clip;
@@ -2891,9 +3032,10 @@ export function TimelineShell() {
                 <FormaClipButton
                   key={clip.id}
                   clip={styleClip}
-                  selected={selectedClipId === clip.id}
+                  dataClipLane="forma"
+                  selected={isClipSelected(clipSelection, clip.id, "forma")}
                   selectedSubsectionIdx={
-                    selectedClipId === clip.id ? selectedSubsectionIdx : null
+                    primaryId === clip.id ? selectedSubsectionIdx : null
                   }
                   style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
                   pencilActive={toolIsPencilDraw(tool)}
@@ -2905,6 +3047,50 @@ export function TimelineShell() {
                 />
               );
             })}
+            {gestureSession?.optionCopy &&
+            gestureSession.kind === "move" &&
+            gesturePreview &&
+            (gestureSession.lane ?? "forma") === "forma"
+              ? (
+                  gestureSession.moveIds?.length
+                    ? gestureSession.moveIds
+                    : gestureSession.clipId
+                      ? [gestureSession.clipId]
+                      : []
+                ).map((id) => {
+                  const clip = draftProject.forma.clips.find((c) => c.id === id);
+                  if (!clip) return null;
+                  const delta =
+                    gesturePreview.startTicks - gestureSession.originClipStart;
+                  if (delta === 0) return null;
+                  const ghost = {
+                    ...clip,
+                    id: `ghost-${clip.id}`,
+                    startTicks: clip.startTicks + delta,
+                  };
+                  return (
+                    <div
+                      key={ghost.id}
+                      className={[
+                        styles.clip,
+                        styles.formaClip,
+                        styles.formaPreview,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      style={clipStylePx(
+                        ghost,
+                        viewSpan,
+                        barTicks,
+                        effectiveZoomH,
+                      )}
+                      aria-hidden
+                    >
+                      {clip.name}
+                    </div>
+                  );
+                })
+              : null}
             {gesturePreview?.kind === "pencil-draw" &&
             (gestureSession?.lane ?? "forma") === "forma" ? (
               <div
@@ -2940,12 +3126,6 @@ export function TimelineShell() {
             : lane === "akordy"
               ? (draftProject.akordy?.clips ?? [])
               : (draftProject.cue?.clips ?? []);
-        const selectedId =
-          lane === "tekst"
-            ? selectedTekstClipId
-            : lane === "akordy"
-              ? selectedAkordClipId
-              : selectedCueClipId;
         return (
           <>
             {clips.map((clip) => {
@@ -2955,27 +3135,53 @@ export function TimelineShell() {
                   : lane === "akordy"
                     ? (clip as { symbol: string }).symbol
                     : (clip as { label: string }).label;
+              const moveIds =
+                gestureSession?.kind === "move" &&
+                gestureSession.lane === lane
+                  ? gestureSession.moveIds?.length
+                    ? gestureSession.moveIds
+                    : gestureSession.clipId
+                      ? [gestureSession.clipId]
+                      : []
+                  : [];
+              const moveDelta =
+                gesturePreview &&
+                gestureSession?.kind === "move" &&
+                moveIds.includes(clip.id)
+                  ? gesturePreview.startTicks - gestureSession.originClipStart
+                  : 0;
+              const optionCopyGhost =
+                Boolean(gestureSession?.optionCopy) && moveDelta !== 0;
               const previewing =
+                !optionCopyGhost &&
                 gesturePreview &&
                 gestureSession?.lane === lane &&
-                gesturePreview.clipId === clip.id &&
-                gesturePreview.kind !== "pencil-draw";
+                ((gestureSession.kind === "move" &&
+                  moveIds.includes(clip.id)) ||
+                  (gesturePreview.clipId === clip.id &&
+                    gesturePreview.kind !== "pencil-draw" &&
+                    gesturePreview.kind !== "move"));
               const styleClip: FormaClip = {
                 id: clip.id,
                 name: label,
                 kind: "section",
                 startTicks: previewing
-                  ? gesturePreview!.startTicks
+                  ? gestureSession?.kind === "move"
+                    ? clip.startTicks + moveDelta
+                    : gesturePreview!.startTicks
                   : clip.startTicks,
                 lengthTicks: previewing
-                  ? gesturePreview!.lengthTicks
+                  ? gestureSession?.kind === "move"
+                    ? clip.lengthTicks
+                    : gesturePreview!.lengthTicks
                   : clip.lengthTicks,
               };
               return (
                 <FormaClipButton
                   key={clip.id}
                   clip={styleClip}
-                  selected={selectedId === clip.id}
+                  dataClipLane={lane}
+                  selected={isClipSelected(clipSelection, clip.id, lane)}
                   selectedSubsectionIdx={null}
                   style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
                   pencilActive={toolIsPencilDraw(tool)}
@@ -2989,6 +3195,58 @@ export function TimelineShell() {
                 />
               );
             })}
+            {gestureSession?.optionCopy &&
+            gestureSession.kind === "move" &&
+            gesturePreview &&
+            gestureSession.lane === lane
+              ? (
+                  gestureSession.moveIds?.length
+                    ? gestureSession.moveIds
+                    : gestureSession.clipId
+                      ? [gestureSession.clipId]
+                      : []
+                ).map((id) => {
+                  const clip = clips.find((c) => c.id === id);
+                  if (!clip) return null;
+                  const delta =
+                    gesturePreview.startTicks - gestureSession.originClipStart;
+                  if (delta === 0) return null;
+                  const label =
+                    lane === "tekst"
+                      ? (clip as { text: string }).text || "…"
+                      : lane === "akordy"
+                        ? (clip as { symbol: string }).symbol
+                        : (clip as { label: string }).label;
+                  const ghost: FormaClip = {
+                    id: `ghost-${clip.id}`,
+                    name: label,
+                    kind: "section",
+                    startTicks: clip.startTicks + delta,
+                    lengthTicks: clip.lengthTicks,
+                  };
+                  return (
+                    <div
+                      key={ghost.id}
+                      className={[
+                        styles.clip,
+                        styles.formaClip,
+                        styles.formaPreview,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      style={clipStylePx(
+                        ghost,
+                        viewSpan,
+                        barTicks,
+                        effectiveZoomH,
+                      )}
+                      aria-hidden
+                    >
+                      {label}
+                    </div>
+                  );
+                })
+              : null}
             {gesturePreview?.kind === "pencil-draw" &&
             gestureSession?.lane === lane ? (
               <div
@@ -3174,21 +3432,6 @@ export function TimelineShell() {
               <Icon />
             </ShellIconButton>
           ))}
-          {wandOpen ? (
-            <div className={styles.wandMenu} role="menu">
-              {WAND_ACTIONS.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  role="menuitem"
-                  className={styles.wandItem}
-                  onClick={() => onWandAction(a.id)}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          ) : null}
         </div>
 
         <div className={styles.toolbarCenter}>
@@ -3396,12 +3639,23 @@ export function TimelineShell() {
                 </div>
 
                 <div className={styles.trackRows}>
+                  {/* Continuous sticky dock paint (v4 `.timeline-dock`) — seals row seams. */}
+                  <div className={styles.dockColumnRail} aria-hidden />
                   <div className={styles.laneOverlay} ref={lanesCoordRef} aria-hidden>
                     <div className={styles.barGrid}>
                       {barMarks.map((mark) => (
                         <span
                           key={`grid-${mark.ticks}`}
                           className={styles.barLine}
+                          style={{
+                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                          }}
+                        />
+                      ))}
+                      {rulerBeatMarks.map((mark) => (
+                        <span
+                          key={`grid-beat-${mark.ticks}`}
+                          className={styles.beatLine}
                           style={{
                             left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
                           }}
@@ -3570,7 +3824,17 @@ export function TimelineShell() {
                     </div>
                   </div>
                 ))}
-                <div className={styles.dockColumnFill} aria-hidden />
+                <div className={styles.rowsFill}>
+                  <div className={styles.dockColumnFill} aria-hidden />
+                  <div
+                    className={styles.laneFillHit}
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      if (!toolAllowsClipHitZones(tool)) return;
+                      beginMarquee(e);
+                    }}
+                  />
+                </div>
               </div>
               </div>
             </div>
@@ -4452,6 +4716,39 @@ export function TimelineShell() {
                   </span>
                   {track.label}
                   {track.locked ? " (zawsze)" : ""}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {toolMenu
+        ? createPortal(
+            <div
+              ref={toolMenuRef}
+              className={styles.toolMenu}
+              style={{ top: toolMenu.top, left: toolMenu.left }}
+              role="menu"
+              aria-label="Wybór narzędzia"
+            >
+              {TOOLS.map(({ id, label, key, Icon, disabled }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="menuitem"
+                  disabled={disabled}
+                  className={[
+                    styles.toolMenuItem,
+                    tool === id ? styles.toolMenuItemActive : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => onTool(id)}
+                >
+                  <Icon />
+                  <span>{label}</span>
+                  <span className={styles.toolMenuKey}>{key}</span>
                 </button>
               ))}
             </div>,

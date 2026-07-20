@@ -4,6 +4,7 @@
 
 import type { TransportLoop } from "@stagesync/shared";
 import type { Project } from "@stagesync/shared";
+import type { SnapMode } from "@stagesync/shared";
 import { snapEditTicks } from "./formaCanvas.js";
 
 export type LoopRange = { startTicks: number; endTicks: number };
@@ -24,17 +25,18 @@ export function usableLoopRange(
   return { startTicks: loop.startTicks, endTicks: loop.endTicks };
 }
 
-/** Snap loop bounds to beat grid (v4 quantizeAbsBeat on cycle). */
+/** Snap loop bounds to beat grid (v4 quantizeAbsBeat on cycle). Cmd/Ctrl → mode `"off"`. */
 export function snapLoopRange(
   project: Project,
   a: number,
   b: number,
+  mode: SnapMode = "beat",
 ): LoopRange {
-  const start = snapEditTicks(project, Math.min(a, b), "beat");
-  let end = snapEditTicks(project, Math.max(a, b), "beat");
+  const start = snapEditTicks(project, Math.min(a, b), mode);
+  let end = snapEditTicks(project, Math.max(a, b), mode);
   if (end <= start) {
     // At least one beat past start when drag collapses under snap.
-    end = snapEditTicks(project, start + 1, "beat");
+    end = snapEditTicks(project, start + 1, mode === "off" ? "beat" : mode);
     if (end <= start) {
       end = start + project.ppq; // fallback: one quarter
     }

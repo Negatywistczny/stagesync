@@ -12,6 +12,7 @@ import {
   RULER_BEAT_TICKS_MIN_PX,
   scrollLeftKeepTickAnchored,
   scrollCanvasToStart,
+  showsBeatSubdivisionMarks,
   snapEditTicks,
   tickToPx,
   ticksFromCanvasPx,
@@ -103,11 +104,25 @@ describe("formaCanvas", () => {
     expect(clipStylePx(halfBar, span, barTicks, 48).width).toBe("24px");
   });
 
-  it("buildBarMarks includes CD and bar numbers", () => {
+  it("buildBarMarks includes CD label, pre-roll barlines, and song bar numbers", () => {
     const span = computeFormaViewSpan(project.forma.clips);
     const marks = buildBarMarks(span, project);
-    expect(marks.some((m) => m.label === "CD")).toBe(true);
-    expect(marks.some((m) => m.label === "1")).toBe(true);
+    expect(marks.some((m) => m.label === "CD" && m.ticks === span.start)).toBe(
+      true,
+    );
+    // Pre-roll interior barlines (empty labels) between CD start and 0
+    const preRoll = marks.filter((m) => m.ticks < 0 && m.label === "");
+    expect(preRoll.length).toBeGreaterThan(0);
+    expect(marks.some((m) => m.label === "1" && m.ticks === 0)).toBe(true);
+  });
+
+  it("buildRulerBeatMarks densifies Countdown pre-roll when zoomed", () => {
+    const span = { start: -7680, end: 3840 };
+    const beats = buildRulerBeatMarks(span, project, RULER_BEAT_TICKS_MIN_PX);
+    // First CD bar: -7680…-3840 → beats at -6720, -5760, -4800
+    expect(beats.map((m) => m.ticks).filter((t) => t < 0)).toEqual([
+      -6720, -5760, -4800, -2880, -1920, -960,
+    ]);
   });
 
   it("buildBarMarks follows meterMap 4/4 → 3/4 boundaries", () => {
@@ -142,6 +157,15 @@ describe("formaCanvas", () => {
     const marks = buildBarMarks(span, withMeter);
     expect(marks.map((m) => m.ticks)).toEqual([0, 3840, 7680, 10560]);
     expect(marks.map((m) => m.label)).toEqual(["1", "2", "3", "4"]);
+  });
+
+  it("showsBeatSubdivisionMarks at effective px/bar ≥ 56 (v4 effectivePxPerBar)", () => {
+    expect(showsBeatSubdivisionMarks(55)).toBe(false);
+    expect(showsBeatSubdivisionMarks(RULER_BEAT_TICKS_MIN_PX)).toBe(true);
+    // UI scale 80% × base 70 = 56
+    expect(showsBeatSubdivisionMarks(70 * 0.8)).toBe(true);
+    expect(showsBeatSubdivisionMarks(48 * 1.0)).toBe(false);
+    expect(showsBeatSubdivisionMarks(48 * 1.2)).toBe(true);
   });
 
   it("buildRulerBeatMarks only when pxPerBar >= 56; beats 2…N", () => {

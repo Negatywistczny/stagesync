@@ -50,7 +50,8 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 | Docker Compose | **β1** |
 | Tauri desktop shell | **β1** ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) |
 | Pełna renderacja OSMD (nawigacja nut, sync score) | β2+ / 5.0.0 |
-| Zoom tool + suwaki H/V UI | **5.0.0** |
+| Zoom tool (lupa) | **OUT** / świadomie usunięte (suwaki + Ctrl/Meta+wheel) |
+| Suwaki Zoom H/V/UI | **wchłonięte w rebuild α8** (code freeze) — nie 5.0.0 |
 | Snap UI picker | **5.0.0** |
 | Fade / Flex Time | OUT / 5.0.0 |
 | git-apply | nigdy ([ADR 0004](../../adr/0004-updates-docker.md)) |
@@ -75,8 +76,8 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 - [x] Smoke #1–#9 wired + CI (engineering; **PO P8** → α9)
 - [x] Rebuild TE-P0 / CD / chrome / Admin polish — **code freeze** ([report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md))
 - [x] CHANGELOG Unreleased + TODO→α9 + QA zaktualizowane (2026-07-20)
-- [ ] Tag git `v5.0.0-alpha.8` — tylko na prośbę
-- [ ] Brak regresji α6/α7 — potwierdzenie w PO smoke α9
+- [x] Tag git `v5.0.0-alpha.8` (na freeze `fb7720d`)
+- [x] Brak regresji α6/α7 — potwierdzenie w PO smoke α9 (P8 green 2026-07-21)
 
 **Uwaga:** „α8 gotowe” = engineering freeze, **nie** β-ready i **nie** green PO smoke.
 

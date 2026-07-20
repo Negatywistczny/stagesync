@@ -260,6 +260,55 @@
   box-shadow: 0 2px 0 color-mix(in srgb, var(--ss-color-bg) 40%, transparent);
 }
 
+.toolMenu {
+  position: fixed;
+  z-index: var(--ss-z-dropdown);
+  display: flex;
+  flex-direction: column;
+  min-width: 14rem;
+  padding: var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+}
+
+.toolMenuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: none;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-control);
+  font-weight: var(--ss-font-weight-medium);
+  text-align: left;
+  cursor: pointer;
+}
+
+.toolMenuItemActive {
+  color: var(--ss-color-text);
+  background: color-mix(in srgb, var(--ss-color-primary) 18%, transparent);
+}
+
+.toolMenuKey {
+  margin-left: auto;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  text-transform: uppercase;
+}
+
+@media (hover: hover) {
+  .toolMenuItem:hover {
+    color: var(--ss-color-text);
+    background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+  }
+}
+
 .wandItem {
   padding: var(--ss-space-2) var(--ss-space-3);
   border: none;
@@ -510,20 +559,26 @@
 
 .rulerMark {
   position: absolute;
-  top: calc(var(--ss-space-1) * var(--tl-zoom-ui));
-  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  /* left edge = barline (v4 `.timeline-ruler__tick`) — no translateX center. */
+  padding-left: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  padding-top: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  border-left: 1px solid var(--ss-color-border);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   font-weight: var(--ss-font-weight-semibold);
+  pointer-events: none;
 }
 
+/* v4 `.timeline-ruler__tick` — full-height beat stubs when px/bar ≥ 56. */
 .rulerBeatTick {
   position: absolute;
-  top: calc(var(--ss-space-3) * var(--tl-zoom-ui));
-  bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
-  width: 1px;
-  transform: translateX(-50%);
-  background: color-mix(in srgb, var(--ss-color-border) 55%, transparent);
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid
+    color-mix(in srgb, var(--ss-color-border) 70%, transparent);
   pointer-events: none;
 }
 
@@ -555,6 +610,8 @@
   flex: 1 1 auto;
   /* No row gap — v4 dock/lanes share abutting rows; gutters let scrolled bar-grid peek. */
   min-height: 0;
+  /* Isolate sticky dock rail; avoid subpixel bleed from ancestor transforms. */
+  isolation: isolate;
 }
 
 .laneOverlay {
@@ -569,6 +626,30 @@
 }
 
 /*
+ * Continuous sticky dock column (v4 `.timeline-dock` solid elevated rail).
+ * Per-cell `.dockCell` backgrounds alone leave hairline seams under H-scroll /
+ * fractional zoom where lanes peek through. Sticky + padding/neg-margin paints
+ * full content height without taking flex space (avoids scrollHeight blow-up
+ * vs a literal tall box). Bar-grid stays in `.laneOverlay` (left: dock-w).
+ */
+.dockColumnRail {
+  position: sticky;
+  left: 0;
+  z-index: calc(var(--ss-z-sticky) - 1);
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: var(--tl-dock-w);
+  height: 0;
+  margin: 0 0 -100000px;
+  padding: 0 0 100000px;
+  box-sizing: content-box;
+  pointer-events: none;
+  background-color: var(--ss-color-surface);
+  background-clip: padding-box;
+  border-right: 1px solid var(--ss-color-border);
+}
+
+/*
  * Sticky opaque dock rail for leftover height below the last track
  * (flex grow). Keeps H-scrolled bar-grid from showing in the dock column.
  */
@@ -576,12 +657,27 @@
   position: sticky;
   left: 0;
   z-index: calc(var(--ss-z-sticky) - 1);
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   width: var(--tl-dock-w);
   min-height: var(--ss-space-2);
   pointer-events: none;
   background-color: var(--ss-color-surface);
   border-right: 1px solid var(--ss-color-border);
+}
+
+/* Empty area under last track — marquee / clear+locator (v4 canvas empty). */
+.rowsFill {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
+  align-items: stretch;
+}
+
+.laneFillHit {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: inherit;
+  touch-action: none;
 }
 
 .marquee {
@@ -605,8 +701,17 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  /* Match v4 `.timeline-bar-grid__line` (~25% border) — was too faint / easy to miss. */
-  background: color-mix(in srgb, var(--ss-color-border) 45%, transparent);
+  /* Stronger than v4 ~25% — opaque lane cards need readable barlines. */
+  background: color-mix(in srgb, var(--ss-color-border) 55%, transparent);
+}
+
+/* Beat subdivisions in lane grid when effective px/bar ≥ 56 (same threshold as ruler). */
+.beatLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--ss-color-border) 28%, transparent);
 }
 
 .trackRow {
@@ -614,7 +719,18 @@
   display: grid;
   grid-template-columns: var(--tl-dock-w) 1fr;
   min-height: var(--tl-row-h);
+  /* Visible lane seam (dock uses inset edge; keep row border for canvas side). */
   border-bottom: 1px solid var(--ss-color-border-muted);
+  /*
+   * Opaque lane fill under the whole row (incl. border box). Without this,
+   * canvas bg shows in seam gutters between abutting rows.
+   * Dock column is covered by `.dockColumnRail` + `.dockCell` (surface).
+   */
+  background-color: color-mix(
+    in srgb,
+    var(--ss-color-bg) 45%,
+    var(--ss-color-surface)
+  );
 }
 
 .dockCell {
@@ -631,6 +747,12 @@
   border-right: 1px solid var(--ss-color-border);
   /* Opaque — no opacity on this node (see .dockMuted); v4 dock was solid. */
   background-color: var(--ss-color-surface);
+  /*
+   * Row edge like v4 `.timeline-dock__lane` border-bottom.
+   * Inset (not surface-colored outer shadow) so the seam stays visible;
+   * rail behind still seals H-scroll grid bleed.
+   */
+  box-shadow: inset 0 -1px 0 0 var(--ss-color-border-muted);
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
   color: var(--ss-color-text-muted);
 }
@@ -801,15 +923,17 @@
   gap: var(--ss-space-1);
   min-height: var(--tl-row-h);
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui));
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
+  /* Flush to row edges — radius/card chrome left gutters where grid peeked. */
+  border: 0;
+  border-radius: 0;
   /* Darker than clip fills so clips read as discrete blocks. */
   background: color-mix(in srgb, var(--ss-color-bg) 45%, var(--ss-color-surface));
   touch-action: pan-y;
 }
 
+/* Quieter special lanes without opacity (opacity punched grid through the row). */
 .laneCellMuted {
-  opacity: 0.75;
+  background: color-mix(in srgb, var(--ss-color-bg) 58%, var(--ss-color-surface));
 }
 
 .formaLaneCell {
@@ -835,9 +959,11 @@
   bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   display: flex;
   align-items: center;
-  /* No min-width floor — true px width from segmentStylePx (PO: no false overlap at Zoom-out). */
+  /* No min-width / padding floor — painted width = segmentStylePx (ticks→px). */
   box-sizing: border-box;
-  padding: 0 calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  min-width: 0;
+  /* Horizontal inset via text-indent would expand min-content; keep pad=0. */
+  padding: 0;
   border: 1px solid color-mix(in srgb, var(--ss-color-info) 40%, transparent);
   border-radius: var(--ss-radius-sm);
   background: color-mix(in srgb, var(--ss-color-info) 14%, transparent);
@@ -928,6 +1054,15 @@
 .formaClipLabel {
   position: relative;
   z-index: 2;
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  /* Inset text inside the clip box — must not live on .clip (would inflate width). */
+  padding: 0 calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   pointer-events: none;
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-compact);
@@ -1033,6 +1168,7 @@
   bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   /* No min-width floor — true px width from clipStylePx (PO: no false overlap at Zoom-out). */
   box-sizing: border-box;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   touch-action: none;
@@ -1072,8 +1208,13 @@
  */
 .clip {
   box-sizing: border-box;
-  padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
-    calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  /* min-width:0 + overflow:hidden: <button> must not grow to label min-content. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Vertical pad only — horizontal pad on the button floors width at ~18px
+     (space-2×2 + border 1+1) and overlaps neighbors when clipStylePx is narrower. */
+  padding: calc(var(--ss-space-1) * var(--tl-zoom-ui)) 0;
   border: 1px solid color-mix(in srgb, var(--ss-color-border) 45%, transparent);
   border-radius: var(--ss-radius-sm);
   background: color-mix(in srgb, var(--ss-color-primary) 16%, transparent);

@@ -6,7 +6,9 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 
 `[x]` poniżej = „kontrolka istnieje w shellu” — **nie** = green PO smoke. Usunięcie bez „Świadome delty” = blocker dopiero gdy zachowanie jest w scope.
 
-**β gate:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **zakaz β** do green PO smoke (świadome OUT poniżej).  
+**β gate:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **P8 green 2026-07-21**; β1 na prośbę (świadome OUT poniżej).  
+**PO smoke playbook:** [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).  
+**PO C1 / P8:** **PO verified 2026-07-21** (zachowanie; inventarz `[x]` = kontrolka, nie parity).  
 **SSOT luk:** [report-v4-v5-gap-audit.md](./analysis/reports/report-v4-v5-gap-audit.md).  
 **Audyt UI-diff:** [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 
@@ -46,8 +48,9 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 - [x] `smart` / `pointer` / `pencil` / `eraser` / `scissors` (Forma + Tekst/Akordy/Cue)
 - [x] Zoom — suwaki H/V/UI w statusie (+ Ctrl/Meta+wheel); **bez** narzędzia lupy na pasku
 - [ ] `gain` / `mute` — β2
-- [x] `wand` + menu
+- [ ] `wand` + menu — **ukryte** do naprawy (PO smoke 2026-07-21); core zostaje
 - [x] `tap` na docku Tekst (tempo)
+- [x] Panel narzędzi **T** (PO verified)
 
 ### Header / transport
 
@@ -88,6 +91,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 - [x] Grid: H zamiast B / litery / animacje
 - [x] Tap wokalu (Client → tekst startTicks)
 - [x] Edycja notatek Formy
-- [x] CL-01 Karaoke bar fill / beat pulse (kod α9; PO C1)
-- [x] CL-04 Grid cycle multi-bar (kod α9; PO C1)
-- [x] CL-05 Forma strip past/current (kod α9; PO C1)
+- [x] CL-01 Karaoke bar fill / beat pulse — **PO verified** (C1 / P8 2026-07-21)
+- [x] CL-04 Grid cycle multi-bar — **PO verified** (C1 / P8 2026-07-21)
+- [x] CL-05 Forma strip past/current — **PO verified** (C1 / P8 2026-07-21)
+- [x] **P8** Sign-off PO — **green 2026-07-21** (β1 na prośbę)

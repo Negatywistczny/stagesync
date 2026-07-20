@@ -175,10 +175,10 @@
 | CL-H-03 | Client | Header | Song title | `#song-title` | active project name | copy | keep-v5-ds | `client/index.html` L91 |
 | CL-H-04 | Client | Header | Section / BBT | `#section-label` + metronome header | BBT + section z transportu | layout | keep-v5-ds | `client/index.html` L82–94; ClientHeader |
 | CL-H-05 | Client | Header | vs treść | header gęsty | header wtórny wobec stage (ADR 0011) | spacing-density | keep-v5-ds | ADR 0011; ClientShell stage |
-| CL-R-01 | Client | Role | Karaoke treść | linie + beat highlight | karaoke pane + transport | gesture | keep-v5-ds | `client.js` karaoke; `ClientShell.tsx` L404+ |
-| CL-R-02 | Client | Role | Grid akordów | `grid-cycle.js` | grid pane + prefs | gesture | keep-v5-ds | `ClientShell.tsx` L439+ |
-| CL-R-03 | Client | Role | Forma / drums | `drums-view.js` | drums pane z forma clips | gesture | keep-v5-ds | `ClientShell.tsx` L368+ |
-| CL-R-04 | Client | Role | Score / OSMD | `score-view.js` + OSMD CDN | partial / stub sync | missing | deferred | `client/index.html` L45; ROADMAP |
+| CL-R-01 | Client | Role | Karaoke treść | linie + beat highlight | **visual port** v4 karaoke progress/lines (shell chrome v5) | layout | **ported** (2026-07-21) — PO override: clone content only | `client.css` karaoke-*; `KaraokePane.tsx` |
+| CL-R-02 | Client | Role | Grid akordów | `grid-cycle.js` | **visual port** v4 hero/phrase tiles + carousel | layout | **ported** (2026-07-21) — content clone; chrome v5 | `client.css` chord-*; `GridPane.tsx` |
+| CL-R-03 | Client | Role | Forma / drums | `drums-view.js` | **visual port** v4 hero + horizontal form strip | layout | **ported** (2026-07-21) — content clone; chrome v5 | `drums-view.js`; `DrumsPane.tsx` |
+| CL-R-04 | Client | Role | Score / OSMD | `score-view.js` + OSMD CDN | stub empty chrome ≈ v4 score-wrap; OSMD → β1+ | missing | deferred | `client/index.html` L45; ROADMAP |
 | CL-R-05 | Client | Role | Stage cue overlay | cue-display | `stageCue` filter po rolach | gesture | keep-v5-ds | `ClientShell.tsx` L118–120 |
 | CL-D-01 | Client | Settings | Karaoke: skala tekstu | range text scale | „Skala tekstu (%)” | copy | keep-v5-ds | `ClientShell.tsx` L614–634 |
 | CL-D-02 | Client | Settings | Karaoke: Auto-scroll | switch | `ShellSwitchRow` Auto-scroll | copy | keep-v5-ds | `ClientShell.tsx` L636–651 |

@@ -1,9 +1,11 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.8` (code freeze) → aktywny etap **α9** — [report-alpha8-code-freeze.md](./analysis/reports/report-alpha8-code-freeze.md).  
+**Stan:** `5.0.0-alpha.9` **wydane 2026-07-21** → aktywny etap **β1** (host / dystrybucja).  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
-**Zakaz β:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **bez** `beta.1` / tagu β, dopóki **PO smoke** (zachowanie) + **CL-01/04/05** + CI nie są green.
+**P8:** green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md).  
+**α9:** migrator M1–M9 + CL-P0 + P8 — [report-scope-alpha9.md](./analysis/reports/report-scope-alpha9.md).  
+Tag / bump `5.0.0-beta.*` — **tylko na prośbę** (bez samowolnego startu β).
 
 **Audyt v4↔v5:** [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) · gap: [report-v4-v5-gap-audit.md](./analysis/reports/report-v4-v5-gap-audit.md) · UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 
@@ -16,60 +18,39 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 3. Zastąp plik **wyłącznie** sekcją kolejnego etapu (nagłówek, link do scope report, must/should/release).
 4. Zaktualizuj `**Stan:**` na górze.
 
-## Alpha.9 — Migrator + dokończenie rebuild
+## Beta.1 — Host / dystrybucja
 
-Hero: migrator legacy 4.x → v5 + domknięcie residual parity (PO smoke + Client P0).  
-Scope: [report-scope-alpha9.md](./analysis/reports/report-scope-alpha9.md).  
-Kontrakt UI: [ADR 0011](./adr/0011-ui-parity-behavior.md).
+Hero: Docker + Tauri + stabilność hosta (**bez** audio/MIDI — β2).  
+Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [ADR 0004](./adr/0004-updates-docker.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).  
+Scope report: napisz `report-scope-beta1.md` tuż przed kodem etapu.
 
-> **α8:** engineering **code freeze** — nie claim β. Residual poniżej = must α9 / wejście β.
+### Must
 
-### Must — Migrator
-
-- [x] MVP `migrateLegacy*` + CLI `pnpm migrate:legacy` ([MIGRATION.md](./MIGRATION.md)) — scope M1–M8
-- [x] Fixtures / smoke migracji na typowej bazie 4.x + dry-run w CI lub docs
-- [x] Admin import legacy: regresje vs CLI (pack `.stagesync.json` + `database.json`)
-
-### Must — PO smoke (z α8 freeze)
-
-Checklisty: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) · [QA α8](./analysis/reports/report-qa-signoff-alpha8.md).
-
-- [ ] **T-gest / T-loc / T-zoom / T-maps / T-chrome / meta** — green PO
-- [ ] **A1** Admin Set + song pick w jednym flow — green PO
-- [ ] **C1** Client treść ról (po CL-P0) — green PO
-- [ ] **P8** Sign-off PO — blokuje β
-
-### Must — Client P0 (CL)
-
-- [x] **CL-01** Karaoke beat / bar highlight
-- [x] **CL-04** Grid: full cycle / multi-bar
-- [x] **CL-05** Forma / drums bar progress
-
-### Must — proces / bramka
-
-- [x] CI: `pnpm lint && check-types && test && build` na zmergowanym drzewie (+ dry-run M9 w workflow)
-- [ ] Inventarz aktualizowany **po** geście PO ([ui-shell-inventory.md](./ui-shell-inventory.md) — wtórny)
-- [ ] **Zakaz** bumpa / tagu `5.0.0-beta.*` do P8 green
-- [ ] Bump/tag `5.0.0-alpha.9` tylko na prośbę
-- [ ] **β1** (Docker/Tauri) — **nie startować** do green P8
+- [ ] Docker Compose: obraz + volume `data/`; update = bump tagu obrazu ([ADR 0004](./adr/0004-updates-docker.md))
+- [ ] **Tauri** desktop shell: thin WebView → lokalny API/WS; Win + mac; **bez** autorytetu czasu w shellu ([ADR 0010](./adr/0010-desktop-shell-tauri.md))
+- [ ] Stabilność hosta: shadow backup, OCC (`409`), polityka migracji schematu na volume
+- [ ] ESLint ACL shared + API `details` z Zod (jeśli nie domknięte)
+- [ ] CI: `pnpm lint && check-types && test && build` (+ smoke build Tauri / Compose wg scope)
 
 ### Should
 
-- [ ] E2E smoke: Forma drag + transport
-- [ ] P1 Timeline z gap-audit (TE-07 Alt+copy, TE-13 scissors empty, …) — nie bloker β jeśli PO uzna P0
-- [ ] Inspector podsekcji Formy — jeśli nie pokryte smoke
+- [ ] Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — jeśli nie w α9
+- [ ] E2E smoke: Forma drag + transport (carry z α9 should)
+- [ ] **Timeline Help:** overlay + skróty v4 (parity docs)
+- [ ] **Różdżka (wand):** przywrócić po naprawie zachowania
+- [ ] P1 Timeline z gap-audit (np. TE-13 scissors empty) — nie bloker β1 jeśli PO uzna P0
 
-### OUT (świadome — nie blokują α9 / nie są must β1)
+### OUT (świadome — nie must β1)
 
-- git-apply / „Zaktualizuj teraz” — [ADR 0004](./adr/0004-updates-docker.md)
-- Audio tracks / playback / gain / mute — **β2**
-- Docker / Tauri — **β1** (po P8 + migrator)
+- Audio playback / clip edit / gain / mute — **β2**
 - Host MIDI I/O — **β2**
-- **AD-01…03** Transpozycja / Lead / Edycja zdalna (API + Live Desk) — **β2** (brak atrap w chrome)
-- Pełny OSMD sync — stub OK
+- **AD-01…03** Transpozycja / Lead / Edycja zdalna — **β2**
+- git-apply / „Zaktualizuj teraz” — nigdy ([ADR 0004](./adr/0004-updates-docker.md))
+- Android shell / store auto-update — poza β1
 - Clone chrome v4 — **zakaz** ([ADR 0011](./adr/0011-ui-parity-behavior.md))
 
 ### Release
 
-- [ ] Tag / bump α9 tylko na prośbę; CHANGELOG z Unreleased
-- [ ] TODO → β1 **dopiero** po P8 + CL-P0 + migrator green
+- [ ] Scope report `report-scope-beta1.md` przed kodem
+- [ ] Tag / bump `5.0.0-beta.1` tylko na prośbę; CHANGELOG z Unreleased
+- [ ] TODO → β2 **na prośbę** po zamknięciu β1

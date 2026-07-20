@@ -61,21 +61,24 @@ Dead-controls restore + rebuild TE-P0/CD/Admin: **code freeze** 2026-07-20 ([rep
 | Engineering α8 (must + rebuild code) | **freeze** |
 | Client CL-01/04/05 (kod + Vitest) | **done** → α9 (2026-07-21) |
 | Migrator M9 fixtures / CI dry-run | **done** → α9 |
-| PO smoke (P8) | **open** — engineering ready; wymaga ludzkiego sign-off |
-| β ready | **nie** (do green P8) |
+| PO smoke (P8) | **green 2026-07-21** — [playbook](./report-po-smoke-p8.md) |
+| β ready | **wejście β1 na prośbę** (P8 green; bez samowolnego tagu β) |
 
-### PO smoke P8 — checklista (czeka na PO)
+### PO smoke P8 — checklista
 
-Uruchom lokalnie Admin / Timeline / Client na zmergowanym drzewie:
+**Playbook:** [report-po-smoke-p8.md](./report-po-smoke-p8.md).  
+**Status P8:** **green 2026-07-21**.
 
-1. **T-gest** — marquee, multi-select, multi-drag, ⌘C/X/V/D  
-2. **T-loc / T-zoom / T-maps / T-chrome** — locator, zoom H/V/UI, mapy, chrome  
-3. **meta / CD** — Countdown length + ephemeral digits  
-4. **A1** — Set + wybór utworu  
-5. **C1** — Karaoke bar fill, Grid cycle, Forma strip  
+| ID | Smoke | Pass |
+|----|-------|------|
+| T-gest | marquee, Cmd/Shift select, multi-drag, ⌘C/X/V/D | ☑ |
+| T-loc / zoom / maps / chrome | locator, suwaki H/V/UI, mapy, header | ☑ |
+| meta / CD | Countdown length + ephemeral digits | ☑ |
+| A1 | Set + wybór utworu | ☑ |
+| C1 | Karaoke fill, Grid cycle, Forma strip | ☑ |
+| P8 | Sign-off | ☑ |
 
-Po green: odhacz w [TODO.md](../../TODO.md) + zaktualizuj inventarz.
+Inventarz: [ui-shell-inventory.md](../../ui-shell-inventory.md) — **PO verified 2026-07-21**.
 
-Tag `v5.0.0-alpha.8` / bump `alpha.9` — **tylko na prośbę**.  
-**Zakaz** `5.0.0-beta.*` do green P8.  
-**Zakaz startu β1** (Docker/Tauri) do green P8 — [ROADMAP](../../ROADMAP.md).
+Tag `v5.0.0-alpha.8` (freeze) + bump/tag `v5.0.0-alpha.9` — **done 2026-07-21**.  
+**P8 green 2026-07-21** — tag `5.0.0-beta.*` / start β1 **na prośbę** — [ROADMAP](../../ROADMAP.md).

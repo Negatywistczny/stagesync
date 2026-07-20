@@ -1,5 +1,5 @@
 /**
- * OSMD / MusicXML score stub (α8 should) — wire without full render.
+ * OSMD / MusicXML score stub (α8 should) — empty/error chrome matches v4 score-wrap feel.
  */
 
 import type { Project } from "@stagesync/shared";
@@ -28,21 +28,26 @@ export function ScorePane({ project, loading, hasActiveProjectId }: Props) {
 
   return (
     <div className={styles.scorePane}>
-      <p className={styles.empty}>
-        Partytura — stub OSMD (α8). Pełna nawigacja nut → β1+.
-      </p>
-      {xmlAssets.length > 0 ? (
-        <ul className={styles.scoreFiles}>
-          {xmlAssets.map((a) => (
-            <li key={a.id}>{a.originalName}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className={styles.muted}>
-          Brak pliku MusicXML w projekcie — dodaj w Admin → Utwory → Wybrany
-          (XML / Pliki projektu).
-        </p>
-      )}
+      <div className={styles.scoreWrap}>
+        <div className={styles.scoreEmptyCard}>
+          <p className={styles.scoreEmptyTitle}>Partytura</p>
+          <p className={styles.scoreEmptyText}>
+            Stub OSMD (α8). Pełna nawigacja nut → β1+.
+          </p>
+          {xmlAssets.length > 0 ? (
+            <ul className={styles.scoreFiles}>
+              {xmlAssets.map((a) => (
+                <li key={a.id}>{a.originalName}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className={styles.muted}>
+              Brak pliku MusicXML w projekcie — dodaj w Admin → Utwory → Wybrany
+              (XML / Pliki projektu).
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
