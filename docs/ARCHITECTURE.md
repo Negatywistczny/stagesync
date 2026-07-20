@@ -7,6 +7,8 @@
 | [README](../README.md) | Uruchomienie | Historia, backlog, pełne reguły |
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
 | [TODO](./TODO.md) | Przyszłe zadania | Odhaczone / „zrobione” |
+| [ROADMAP](../ROADMAP.md) | Kierunek długoterminowy | Bieżąca checklista zadań |
+| [docs/ui/](./ui/README.md) | Design system (kolory, Button) | Implementacja w `packages/ui` |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
 | [docs/adr/](./adr/) | Decyzje z kontekstem i konsekwencjami | Checklisty zadań |

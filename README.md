@@ -45,7 +45,9 @@ Wersja: `"version"` w root `package.json`.
 | Plik | Zawartość |
 |------|-----------|
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | Mapa monorepo, SSOT, legacy |
+| [ROADMAP](ROADMAP.md) | Kierunek długoterminowy |
 | [TODO](docs/TODO.md) | Tylko przyszłe zadania |
 | [CHANGELOG](CHANGELOG.md) | Historia zmian |
+| [docs/ui/](docs/ui/README.md) | Design system (kolory, Button) |
 | [STANDARDS](docs/STANDARDS.md) | Linki do standardów zewnętrznych |
 | [CONTRIBUTING](CONTRIBUTING.md) | Język docs + Conventional Commits |

@@ -29,6 +29,9 @@
   --ss-color-disabled-bg: #09090b;
   --ss-color-disabled-text: #52525b;
   --ss-color-danger: #ef4444;
+  --ss-color-success: #22c55e;
+  --ss-color-warning: #fb923c;
+  --ss-color-info: #38bdf8;
 
   /* Radii */
   --ss-radius-sharp: 2px;
