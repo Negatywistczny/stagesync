@@ -137,95 +137,11 @@
   z-index: 1;
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: 7.5rem 1fr minmax(200px, 240px);
+  grid-template-columns: 1fr minmax(200px, 240px);
   min-height: 0;
 }
 
-.dock {
-  position: relative;
-  z-index: 20;
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-1);
-  padding: var(--ss-space-2);
-  border-right: 1px solid var(--ss-color-border);
-  background: var(--ss-color-surface);
-  overflow: auto;
-}
-
-.dockHead {
-  position: relative;
-  margin-bottom: var(--ss-space-1);
-}
-
-.eyeBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: pointer;
-}
-
-.eyeMenu {
-  position: absolute;
-  z-index: 10;
-  margin-top: var(--ss-space-1);
-  padding: var(--ss-space-1);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-elevated);
-}
-
-.eyeItem {
-  display: block;
-  width: 100%;
-  padding: var(--ss-space-2) var(--ss-space-2);
-  border: none;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: var(--ss-text-xs);
-  text-align: left;
-  cursor: pointer;
-}
-
-.dockLabel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-1);
-  min-height: var(--ss-space-10);
-  padding: 0 var(--ss-space-1);
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-}
-
-.dockMuted {
-  opacity: 0.65;
-}
-
-.tapBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--ss-space-6);
-  height: var(--ss-space-6);
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: not-allowed;
-}
-
-.canvas {
+.timelinePane {
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -239,14 +155,27 @@
 }
 
 .canvasInner {
-  /* Width set inline from tick span — do not stretch to viewport (misaligns grid). */
+  --tl-dock-w: 7.5rem;
   flex-shrink: 0;
+}
+
+.rulerRow {
+  display: grid;
+  grid-template-columns: var(--tl-dock-w) 1fr;
+  border-bottom: 1px solid var(--ss-color-border);
+}
+
+.rulerDock {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: var(--ss-color-surface);
+  border-right: 1px solid var(--ss-color-border);
 }
 
 .ruler {
   position: relative;
   height: calc(var(--ss-space-6) + var(--ss-space-1));
-  border-bottom: 1px solid var(--ss-color-border);
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
 }
@@ -258,7 +187,7 @@
   white-space: nowrap;
 }
 
-.lanes {
+.trackRows {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -266,11 +195,20 @@
   padding: var(--ss-space-2) 0;
 }
 
+.laneOverlay {
+  position: absolute;
+  left: var(--tl-dock-w);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .barGrid {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
 }
 
 .barLine {
@@ -291,12 +229,103 @@
   z-index: 2;
 }
 
-.lane {
+.trackRow {
+  display: grid;
+  grid-template-columns: var(--tl-dock-w) 1fr;
+  min-height: var(--ss-space-10);
+}
+
+.dockCell {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-1);
+  min-height: var(--ss-space-10);
+  padding: 0 var(--ss-space-2);
+  border-right: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+}
+
+.dockCellHead {
+  position: relative;
+}
+
+.dockMuted {
+  opacity: 0.65;
+}
+
+.eyeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ss-space-8);
+  height: var(--ss-space-8);
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  cursor: pointer;
+}
+
+.eyeMenu {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  margin-top: var(--ss-space-1);
+  min-width: 10rem;
+  padding: var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
+}
+
+.eyeItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  width: 100%;
+  padding: var(--ss-space-2);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.eyeItemLocked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.tapBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ss-space-6);
+  height: var(--ss-space-6);
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  cursor: not-allowed;
+}
+
+.laneCell {
   position: relative;
   z-index: 1;
   display: flex;
-  gap: var(--ss-space-1);
   align-items: center;
+  gap: var(--ss-space-1);
   min-height: var(--ss-space-10);
   padding: var(--ss-space-1);
   border: 1px solid var(--ss-color-border);
@@ -304,12 +333,13 @@
   background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
 }
 
-.formaLane {
-  position: relative;
+.laneCellMuted {
+  opacity: 0.75;
+}
+
+.formaLaneCell {
   display: block;
   min-height: calc(var(--ss-space-10) + var(--ss-space-2));
-  width: 100%;
-  /* Align clip X with bar grid / playhead (same origin as .lanes). */
   padding-left: 0;
   padding-right: 0;
 }
@@ -318,12 +348,26 @@
   cursor: crosshair;
 }
 
-.formaClipPencil {
-  cursor: crosshair;
+.mapLaneCell {
+  display: block;
+  padding: var(--ss-space-1) 0;
 }
 
-.laneMuted {
-  opacity: 0.75;
+.mapSegment {
+  position: absolute;
+  top: var(--ss-space-1);
+  bottom: var(--ss-space-1);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--ss-space-2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-primary) 14%, var(--ss-color-surface));
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .formaClip {
@@ -332,6 +376,14 @@
   bottom: var(--ss-space-1);
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.formaClipPencil {
+  cursor: crosshair;
+}
+
+.addAudioRow {
+  padding: var(--ss-space-1) var(--ss-space-2);
 }
 
 .songList {
@@ -373,12 +425,6 @@
   border-color: var(--ss-color-border);
 }
 
-.audioEmpty {
-  margin: var(--ss-space-1) 0;
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-}
-
 .inspector {
   position: relative;
   z-index: 20;
@@ -408,10 +454,17 @@
   line-height: var(--ss-leading-relaxed);
 }
 
-.lengthInput {
-  display: block;
-  width: 100%;
+.inspField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
   margin-top: var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+}
+
+.lengthInput,
+.nameInput {
+  width: 100%;
   padding: var(--ss-space-2);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
@@ -514,22 +567,11 @@
   color: var(--ss-color-text-muted);
 }
 
-.search {
-  width: 100%;
-  margin-bottom: var(--ss-space-3);
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: inherit;
-  font: inherit;
-}
-
-.createRow {
+.overlayActions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ss-space-2);
-  margin-bottom: var(--ss-space-3);
+  margin-top: var(--ss-space-4);
 }
 
 .muted {
@@ -549,13 +591,6 @@
 @media (max-width: 900px) {
   .main {
     grid-template-columns: 1fr;
-  }
-
-  .dock {
-    flex-direction: row;
-    flex-wrap: wrap;
-    border-right: none;
-    border-bottom: 1px solid var(--ss-color-border);
   }
 
   .inspector {

@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Link, useBlocker, useParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
   resolveMeterAt,
@@ -15,13 +22,31 @@ import {
   clipStylePx,
   computeCanvasWidthPx,
   computeFormaViewSpan,
+  DEFAULT_PX_PER_BAR,
   pencilFormaClick,
   projectContentEqual,
   tickToPx,
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
+import {
+  countdownBars,
+  renameFormaClip,
+  setCountdownBars,
+} from "../lib/formaInspector.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
+import {
+  meterMapSegments,
+  segmentStylePx,
+  tempoMapSegments,
+} from "../lib/mapSegments.js";
+import {
+  defaultTrackVisibility,
+  isCoreTrackVisible,
+  TRACKS,
+  type CoreTrackId,
+} from "../lib/timelineTracks.js";
+import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
   IconChevronLeft,
@@ -127,7 +152,10 @@ export function TimelineShell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [showSpecial, setShowSpecial] = useState(true);
+  const [trackVisibility, setTrackVisibility] = useState(defaultTrackVisibility);
+  const [audioTrackVisible, setAudioTrackVisible] = useState<
+    Record<string, boolean>
+  >({});
   const [eyeOpen, setEyeOpen] = useState(false);
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
@@ -138,6 +166,7 @@ export function TimelineShell() {
     setLoadError(null);
     try {
       const project = await fetchProject(id);
+      await loadTransport(id);
       setSavedProject(project);
       setDraftProject(project);
       setSelectedClipId(project.forma.clips[0]?.id ?? null);
@@ -172,6 +201,20 @@ export function TimelineShell() {
     draftProject !== null &&
     !projectContentEqual(savedProject, draftProject);
 
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      dirty && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
+
   const viewSpan = useMemo(
     () => computeFormaViewSpan(draftProject?.forma.clips ?? []),
     [draftProject?.forma.clips],
@@ -179,10 +222,7 @@ export function TimelineShell() {
 
   const barTicks = draftProject
     ? ticksPerBar(draftProject.defaultMeter, draftProject.ppq)
-    : ticksPerBar(
-        { numerator: 4, denominator: 4 },
-        960,
-      );
+    : ticksPerBar({ numerator: 4, denominator: 4 }, 960);
 
   const canvasWidthPx = useMemo(
     () => computeCanvasWidthPx(viewSpan, barTicks),
@@ -199,6 +239,16 @@ export function TimelineShell() {
   }, [draftProject, viewSpan]);
 
   const playheadPx = tickToPx(displayTicks, viewSpan, barTicks);
+
+  const tempoSegments = useMemo(() => {
+    if (!draftProject) return [];
+    return tempoMapSegments(draftProject, viewSpan);
+  }, [draftProject, viewSpan]);
+
+  const meterSegments = useMemo(() => {
+    if (!draftProject) return [];
+    return meterMapSegments(draftProject, viewSpan);
+  }, [draftProject, viewSpan]);
 
   const selectedClip =
     draftProject?.forma.clips.find((c) => c.id === selectedClipId) ?? null;
@@ -244,6 +294,28 @@ export function TimelineShell() {
     onFormaPencilAt(e.clientX);
   }
 
+  function toggleTrack(id: CoreTrackId) {
+    const def = TRACKS.find((t) => t.id === id);
+    if (def?.locked) return;
+    setTrackVisibility((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function onClipRename(name: string) {
+    if (!draftProject || !selectedClip) return;
+    setDraftProject(renameFormaClip(draftProject, selectedClip.id, name));
+  }
+
+  function onCountdownBarsChange(raw: string) {
+    if (!draftProject) return;
+    const bars = Number.parseInt(raw, 10);
+    if (!Number.isFinite(bars)) return;
+    try {
+      setDraftProject(setCountdownBars(draftProject, bars));
+    } catch {
+      /* invalid bar count */
+    }
+  }
+
   if (!projectId) {
     return (
       <div className={styles.shell}>
@@ -272,10 +344,9 @@ export function TimelineShell() {
 
   function addAudio() {
     const n = audioTracks.length + 1;
-    setAudioTracks((prev) => [
-      ...prev,
-      { id: `${idPrefix}-a-${n}`, name: `Audio ${n}` },
-    ]);
+    const id = `${idPrefix}-a-${n}`;
+    setAudioTracks((prev) => [...prev, { id, name: `Audio ${n}` }]);
+    setAudioTrackVisible((prev) => ({ ...prev, [id]: true }));
   }
 
   function onTool(id: ToolId) {
@@ -286,6 +357,72 @@ export function TimelineShell() {
     }
     setWandOpen(false);
     setTool(id);
+  }
+
+  const canvasInnerWidth = `calc(var(--tl-dock-w) + ${canvasWidthPx}px)`;
+
+  function renderLaneContent(trackId: CoreTrackId) {
+    if (!draftProject) return null;
+    switch (trackId) {
+      case "tempo":
+        return tempoSegments.map((seg, i) => (
+          <span
+            key={`tempo-${seg.startTicks}-${i}`}
+            className={styles.mapSegment}
+            style={segmentStylePx(
+              seg,
+              viewSpan,
+              barTicks,
+              DEFAULT_PX_PER_BAR,
+            )}
+          >
+            {seg.label}
+          </span>
+        ));
+      case "metrum":
+        return meterSegments.map((seg, i) => (
+          <span
+            key={`meter-${seg.startTicks}-${i}`}
+            className={styles.mapSegment}
+            style={segmentStylePx(
+              seg,
+              viewSpan,
+              barTicks,
+              DEFAULT_PX_PER_BAR,
+            )}
+          >
+            {seg.label}
+          </span>
+        ));
+      case "tonacja":
+        return (
+          <span className={styles.muted}>Tonacja — OUT α4</span>
+        );
+      case "kotwice":
+        return (
+          <span className={styles.muted}>Kotwice — OUT α4</span>
+        );
+      case "forma":
+        return draftProject.forma.clips.map((clip) => (
+          <FormaClipButton
+            key={clip.id}
+            clip={clip}
+            selected={selectedClipId === clip.id}
+            style={clipStylePx(clip, viewSpan, barTicks)}
+            pencilActive={tool === "pencil"}
+            onSelect={setSelectedClipId}
+            onPencilAt={(clientX) => onFormaPencilAt(clientX)}
+          />
+        ));
+      case "tekst":
+        return <span className={styles.muted}>Tekst — OUT α4</span>;
+      case "akordy":
+        return <span className={styles.muted}>Akordy — OUT α4</span>;
+      case "cue":
+        return <span className={styles.muted}>Cue — OUT α4</span>;
+      default:
+        return null;
+    }
   }
 
   return (
@@ -393,9 +530,7 @@ export function TimelineShell() {
             aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
             disabled={commandPending}
             onClick={() =>
-              void (state.playing
-                ? pause()
-                : play({ projectId }))
+              void (state.playing ? pause() : play({ projectId }))
             }
           >
             {state.playing ? <IconPause /> : <IconPlay />}
@@ -427,162 +562,188 @@ export function TimelineShell() {
       </div>
 
       <div className={styles.main}>
-        <aside className={styles.dock} aria-label="Ścieżki">
-          <div className={styles.dockHead}>
-            <button
-              type="button"
-              className={styles.eyeBtn}
-              aria-label="Widoczność ścieżek"
-              aria-expanded={eyeOpen}
-              onClick={() => setEyeOpen((v) => !v)}
-            >
-              <IconEye />
-            </button>
-            {eyeOpen ? (
-              <div className={styles.eyeMenu}>
-                <button
-                  type="button"
-                  className={styles.eyeItem}
-                  onClick={() => setShowSpecial((v) => !v)}
-                >
-                  Specjalne: {showSpecial ? "on" : "off"}
-                </button>
-              </div>
-            ) : null}
-          </div>
-          <DockLabel>Forma</DockLabel>
-          <DockLabel
-            action={
-              <button
-                type="button"
-                className={styles.tapBtn}
-                title="Tap — timing linii Tekstu"
-                aria-label="Tap"
-                disabled
-              >
-                <IconTap />
-              </button>
-            }
-          >
-            Tekst
-          </DockLabel>
-          <DockLabel>Akordy</DockLabel>
-          <DockLabel>Cue</DockLabel>
-          {showSpecial ? (
-            <>
-              <DockLabel muted>Tempo</DockLabel>
-              <DockLabel muted>Tonacja</DockLabel>
-              <DockLabel muted>Metrum</DockLabel>
-              <DockLabel muted>Kotwice</DockLabel>
-            </>
-          ) : null}
-          {audioTracks.map((t) => (
-            <DockLabel key={t.id}>{t.name}</DockLabel>
-          ))}
-          <Button variant="ghost" onClick={addAudio}>
-            + Audio
-          </Button>
-        </aside>
-
-        <div className={styles.canvas} aria-label="Canvas">
+        <div className={styles.timelinePane}>
           <div className={styles.canvasScroll} data-canvas-scroll>
             <div
               className={styles.canvasInner}
-              style={{ width: `${canvasWidthPx}px` }}
+              style={{ width: canvasInnerWidth }}
             >
-              <div className={styles.ruler} aria-hidden>
-                {barMarks.map((mark) => (
-                  <span
-                    key={mark.ticks}
-                    className={styles.rulerMark}
-                    style={{
-                      left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
-                    }}
-                  >
-                    {mark.label}
-                  </span>
-                ))}
-              </div>
-              <div className={styles.lanes} ref={lanesCoordRef}>
-                <div className={styles.barGrid} aria-hidden>
+              <div className={styles.rulerRow}>
+                <div className={styles.rulerDock} aria-hidden />
+                <div className={styles.ruler}>
                   {barMarks.map((mark) => (
                     <span
-                      key={`grid-${mark.ticks}`}
-                      className={styles.barLine}
+                      key={mark.ticks}
+                      className={styles.rulerMark}
                       style={{
                         left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
                       }}
-                    />
+                    >
+                      {mark.label}
+                    </span>
                   ))}
                 </div>
-                <div
-                  className={styles.playhead}
-                  style={{ left: `${playheadPx}px` }}
-                  aria-hidden
-                />
-                <div
-                  className={[
-                    styles.lane,
-                    styles.formaLane,
-                    tool === "pencil" ? styles.formaLanePencil : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={onFormaLaneClick}
-                  role="presentation"
-                >
-                  {draftProject?.forma.clips.map((clip) => (
-                    <FormaClipButton
-                      key={clip.id}
-                      clip={clip}
-                      selected={selectedClipId === clip.id}
-                      style={clipStylePx(clip, viewSpan, barTicks)}
-                      pencilActive={tool === "pencil"}
-                      onSelect={setSelectedClipId}
-                      onPencilAt={(clientX) => onFormaPencilAt(clientX)}
-                    />
-                  ))}
-                </div>
-            <Lane muted>
-              <span className={styles.muted}>Tekst — OUT α3</span>
-            </Lane>
-            <Lane muted>
-              <span className={styles.muted}>Akordy — OUT α3</span>
-            </Lane>
-            <Lane muted>
-              <span className={styles.muted}>Cue — OUT α3</span>
-            </Lane>
-            {showSpecial ? (
-              <>
-                <Lane muted>
-                  <span className={styles.muted}>
-                    Tempo {tempoAtPlayhead} (read-only)
-                  </span>
-                </Lane>
-                <Lane muted>
-                  <span className={styles.muted}>Tonacja — OUT α3</span>
-                </Lane>
-                <Lane muted>
-                  <span className={styles.muted}>
-                    Metrum {meterAtPlayhead.numerator}/
-                    {meterAtPlayhead.denominator} (read-only)
-                  </span>
-                </Lane>
-              </>
-            ) : null}
-            {audioTracks.length === 0 ? (
-              <p className={styles.audioEmpty}>Brak ścieżek audio (0…N).</p>
-            ) : (
-              audioTracks.map((t) => (
-                <Lane key={t.id}>
-                  <Clip
-                    name={`${t.name} clip`}
-                    selected={false}
-                    onSelect={() => undefined}
+              </div>
+
+              <div className={styles.trackRows}>
+                <div className={styles.laneOverlay} ref={lanesCoordRef} aria-hidden>
+                  <div className={styles.barGrid}>
+                    {barMarks.map((mark) => (
+                      <span
+                        key={`grid-${mark.ticks}`}
+                        className={styles.barLine}
+                        style={{
+                          left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div
+                    className={styles.playhead}
+                    style={{ left: `${playheadPx}px` }}
                   />
-                </Lane>
-              ))
-            )}
+                </div>
+
+                <div className={styles.trackRow}>
+                  <div className={[styles.dockCell, styles.dockCellHead].join(" ")}>
+                    <button
+                      type="button"
+                      className={styles.eyeBtn}
+                      aria-label="Widoczność ścieżek"
+                      aria-expanded={eyeOpen}
+                      onClick={() => setEyeOpen((v) => !v)}
+                    >
+                      <IconEye />
+                    </button>
+                    {eyeOpen ? (
+                      <div className={styles.eyeMenu} role="menu">
+                        {TRACKS.map((track) => (
+                          <button
+                            key={track.id}
+                            type="button"
+                            role="menuitemcheckbox"
+                            aria-checked={isCoreTrackVisible(
+                              trackVisibility,
+                              track.id,
+                            )}
+                            className={[
+                              styles.eyeItem,
+                              track.locked ? styles.eyeItemLocked : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            disabled={track.locked}
+                            onClick={() => toggleTrack(track.id)}
+                          >
+                            <span aria-hidden>
+                              {isCoreTrackVisible(trackVisibility, track.id)
+                                ? "☑"
+                                : "☐"}
+                            </span>
+                            {track.label}
+                            {track.locked ? " (zawsze)" : ""}
+                          </button>
+                        ))}
+                        {audioTracks.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            role="menuitemcheckbox"
+                            aria-checked={audioTrackVisible[t.id] !== false}
+                            className={styles.eyeItem}
+                            onClick={() =>
+                              setAudioTrackVisible((prev) => ({
+                                ...prev,
+                                [t.id]: !(prev[t.id] !== false),
+                              }))
+                            }
+                          >
+                            <span aria-hidden>
+                              {audioTrackVisible[t.id] !== false ? "☑" : "☐"}
+                            </span>
+                            {t.name}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className={styles.laneCell} aria-hidden />
+                </div>
+
+                {TRACKS.filter((t) =>
+                  isCoreTrackVisible(trackVisibility, t.id),
+                ).map((track) => (
+                  <div key={track.id} className={styles.trackRow}>
+                    <div
+                      className={[
+                        styles.dockCell,
+                        track.group === "special" ? styles.dockMuted : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <span>{track.label}</span>
+                      {track.id === "tekst" ? (
+                        <button
+                          type="button"
+                          className={styles.tapBtn}
+                          title="Tap — timing linii Tekstu"
+                          aria-label="Tap"
+                          disabled
+                        >
+                          <IconTap />
+                        </button>
+                      ) : null}
+                    </div>
+                    <div
+                      className={[
+                        styles.laneCell,
+                        track.group === "special" ? styles.laneCellMuted : "",
+                        track.id === "forma" ? styles.formaLaneCell : "",
+                        track.id === "forma" && tool === "pencil"
+                          ? styles.formaLanePencil
+                          : "",
+                        track.id === "tempo" || track.id === "metrum"
+                          ? styles.mapLaneCell
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={
+                        track.id === "forma" ? onFormaLaneClick : undefined
+                      }
+                      role={track.id === "forma" ? "presentation" : undefined}
+                    >
+                      {renderLaneContent(track.id)}
+                    </div>
+                  </div>
+                ))}
+
+                {audioTracks
+                  .filter((t) => audioTrackVisible[t.id] !== false)
+                  .map((t) => (
+                    <div key={t.id} className={styles.trackRow}>
+                      <div className={styles.dockCell}>
+                        <span>{t.name}</span>
+                      </div>
+                      <div className={styles.laneCell}>
+                        <Clip
+                          name={`${t.name} clip`}
+                          selected={false}
+                          onSelect={() => undefined}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                <div className={styles.trackRow}>
+                  <div className={styles.dockCell}>
+                    <Button variant="ghost" onClick={addAudio}>
+                      + Audio
+                    </Button>
+                  </div>
+                  <div className={styles.laneCell} aria-hidden />
+                </div>
               </div>
             </div>
           </div>
@@ -599,28 +760,47 @@ export function TimelineShell() {
                 ×
               </ShellIconButton>
             </div>
-            <p className={styles.inspBody}>
-              {selectedClip ? (
-                <>
-                  <strong>{selectedClip.name}</strong>
-                  {selectedClip.kind === "countdown" ? (
-                    <>
-                      {" "}
-                      — zablokowany; długość{" "}
-                      {selectedClip.lengthTicks} ticks (pre-roll ≤ 0).
-                    </>
-                  ) : (
-                    <>
-                      {" "}
-                      — start {selectedClip.startTicks}, długość{" "}
-                      {selectedClip.lengthTicks} ticks.
-                    </>
-                  )}
-                </>
-              ) : (
-                "Zaznacz clip na ścieżce Forma."
-              )}
-            </p>
+            {selectedClip ? (
+              <div className={styles.inspBody}>
+                {selectedClip.kind === "section" ? (
+                  <label className={styles.inspField}>
+                    Nazwa sekcji
+                    <input
+                      className={styles.nameInput}
+                      value={selectedClip.name}
+                      aria-label="Nazwa sekcji"
+                      onChange={(e) => onClipRename(e.target.value)}
+                    />
+                  </label>
+                ) : (
+                  <p>
+                    <strong>{selectedClip.name}</strong> — zablokowany
+                    Countdown
+                  </p>
+                )}
+                {selectedClip.kind === "countdown" ? (
+                  <label className={styles.inspField}>
+                    Długość (takty)
+                    <input
+                      className={styles.lengthInput}
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={countdownBars(draftProject!, selectedClip)}
+                      aria-label="Długość Countdown w taktach"
+                      onChange={(e) => onCountdownBarsChange(e.target.value)}
+                    />
+                  </label>
+                ) : (
+                  <p>
+                    start {selectedClip.startTicks}, długość{" "}
+                    {selectedClip.lengthTicks} ticks
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className={styles.inspBody}>Zaznacz clip na ścieżce Forma.</p>
+            )}
           </aside>
         ) : (
           <button
@@ -651,6 +831,62 @@ export function TimelineShell() {
           </label>
         </div>
       </footer>
+
+      {blocker.state === "blocked" ? (
+        <div
+          className={styles.overlay}
+          role="alertdialog"
+          aria-modal
+          aria-labelledby="dirty-guard-title"
+        >
+          <div className={styles.overlayPanel}>
+            <h2 id="dirty-guard-title">Niezapisane zmiany</h2>
+            <p className={styles.overlayBody}>
+              Masz niezapisane zmiany. Opuścić Timeline bez zapisu?
+            </p>
+            <div className={styles.overlayActions}>
+              <Button variant="ghost" onClick={() => blocker.reset?.()}>
+                Anuluj
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  onDiscard();
+                  blocker.proceed?.();
+                }}
+              >
+                Odrzuć i wyjdź
+              </Button>
+              <Button
+                variant="primary"
+                loading={savePending}
+                onClick={() => {
+                  void (async () => {
+                    if (!projectId || !draftProject) return;
+                    setSavePending(true);
+                    try {
+                      const next = await putProject(projectId, draftProject);
+                      setSavedProject(next);
+                      setDraftProject(next);
+                      blocker.proceed?.();
+                    } catch (err) {
+                      setLoadError(
+                        err instanceof Error
+                          ? err.message
+                          : "Zapis nie powiódł się",
+                      );
+                    } finally {
+                      setSavePending(false);
+                    }
+                  })();
+                }}
+              >
+                Zapisz i wyjdź
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {helpOpen ? (
         <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="tl-help-title">
@@ -724,37 +960,6 @@ export function TimelineShell() {
           </div>
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function DockLabel({
-  children,
-  action,
-  muted,
-}: {
-  children: ReactNode;
-  action?: ReactNode;
-  muted?: boolean;
-}) {
-  return (
-    <div className={[styles.dockLabel, muted ? styles.dockMuted : ""].join(" ")}>
-      <span>{children}</span>
-      {action}
-    </div>
-  );
-}
-
-function Lane({
-  children,
-  muted,
-}: {
-  children: ReactNode;
-  muted?: boolean;
-}) {
-  return (
-    <div className={[styles.lane, muted ? styles.laneMuted : ""].join(" ")}>
-      {children}
     </div>
   );
 }
