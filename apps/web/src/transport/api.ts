@@ -1,4 +1,7 @@
 import {
+  TransportLoadBodySchema,
+  TransportPlayBodySchema,
+  TransportSeekBodySchema,
   TransportStateSchema,
   type TransportPlayBody,
   type TransportState,
@@ -26,19 +29,21 @@ export async function getTransport(): Promise<TransportState> {
 export async function playTransport(
   body: TransportPlayBody = {},
 ): Promise<TransportState> {
+  const parsed = TransportPlayBodySchema.parse(body);
   const res = await fetch("/api/transport/play", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(parsed),
   });
   return parseState(res);
 }
 
 export async function loadTransport(projectId: string): Promise<TransportState> {
+  const body = TransportLoadBodySchema.parse({ projectId });
   const res = await fetch("/api/transport/load", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ projectId }),
+    body: JSON.stringify(body),
   });
   return parseState(res);
 }
@@ -51,10 +56,11 @@ export async function pauseTransport(): Promise<TransportState> {
 export async function seekTransport(
   positionTicks: number,
 ): Promise<TransportState> {
+  const body = TransportSeekBodySchema.parse({ positionTicks });
   const res = await fetch("/api/transport/seek", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ positionTicks }),
+    body: JSON.stringify(body),
   });
   return parseState(res);
 }

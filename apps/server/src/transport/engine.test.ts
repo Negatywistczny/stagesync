@@ -75,6 +75,18 @@ describe("TransportEngine", () => {
     engine.dispose();
   });
 
+  it("clamps negative elapsed on clock skew (M15)", () => {
+    let t = 2000;
+    const engine = createTransportEngine({ now: () => t });
+    engine.play();
+    t = 1000;
+    const p1 = engine.getState().positionTicks;
+    t = 2000;
+    const p2 = engine.getState().positionTicks;
+    expect(p2).toBeGreaterThanOrEqual(p1);
+    engine.dispose();
+  });
+
   it("mid-play bpm change does not jump position (H1)", () => {
     let t = 0;
     const engine = createTransportEngine({ now: () => t });

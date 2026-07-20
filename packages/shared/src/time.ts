@@ -186,6 +186,16 @@ export function bbtToTicks(
   }
   const perBar = ticksPerBar(ts, ppq);
   const perBeat = ticksPerBeat(ts, ppq);
+  if (beat < 1 || beat > ts.numerator) {
+    throw new RangeError(
+      `beat must be between 1 and ${ts.numerator}, got ${beat}`,
+    );
+  }
+  if (tick < 0 || tick >= perBeat) {
+    throw new RangeError(
+      `tick must be between 0 and ${perBeat - 1}, got ${tick}`,
+    );
+  }
   return bar * perBar + (beat - 1) * perBeat + tick;
 }
 

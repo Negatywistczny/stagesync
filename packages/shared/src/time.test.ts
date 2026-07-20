@@ -69,6 +69,12 @@ describe("ticksToBbt / bbtToTicks — 4/4", () => {
       expect(bbtToTicks(bbt.bar, bbt.beat, bbt.tick, TS_4_4)).toBe(t);
     }
   });
+
+  it("rejects beat outside meter (M3)", () => {
+    expect(() => bbtToTicks(0, 0, 0, TS_4_4)).toThrow(RangeError);
+    expect(() => bbtToTicks(0, 5, 0, TS_4_4)).toThrow(RangeError);
+    expect(() => bbtToTicks(0, 1, DEFAULT_PPQ, TS_4_4)).toThrow(RangeError);
+  });
 });
 
 describe("ticksToBbt / bbtToTicks — 5/8 and 7/8", () => {

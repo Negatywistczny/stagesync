@@ -45,6 +45,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const anchorRef = useRef<TransportAnchor>(toAnchor(defaultTransportState()));
   const receiptMsRef = useRef(0);
+  const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
   const rafIdRef = useRef(0);
 
@@ -56,7 +57,16 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const applyAnchor = useCallback(
-    (next: TransportState, receiptMs: number) => {
+    (next: TransportState, receiptMs: number, serverTimeMs?: number) => {
+      if (
+        serverTimeMs !== undefined &&
+        serverTimeMs < lastServerTimeMsRef.current
+      ) {
+        return;
+      }
+      if (serverTimeMs !== undefined) {
+        lastServerTimeMsRef.current = serverTimeMs;
+      }
       const anchor = toAnchor(next);
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
@@ -123,6 +133,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
               activeProjectId: msg.activeProjectId ?? null,
             },
             performance.now(),
+            msg.serverTimeMs,
           );
           if (msg.playing) {
             startRaf();

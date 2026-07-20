@@ -44,7 +44,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
   function samplePosition(): number {
     if (!playing) return positionTicks;
-    const elapsedMs = now() - originMs;
+    const elapsedMs = Math.max(0, now() - originMs);
     return originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
   }
 
