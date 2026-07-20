@@ -7,6 +7,7 @@ komponentów: [`packages/ui`](../../packages/ui/).
 |------|-----------|
 | [colors.md](./colors.md) | Tokeny `--ss-color-*` (semantyka, nie HEX w shellach) |
 | [button.md](./button.md) | `Button` — 7 stanów, props, PWA / touch |
+| *typography.md* / *spacing.md* | Planowane — zob. [TODO](../TODO.md) (Design System / docs) |
 
 ## Zasady
 

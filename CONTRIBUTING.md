@@ -33,6 +33,16 @@ Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` włącz w
 
 Konfiguracja w GitHub UI / API — nie w kodzie repozytorium.
 
+## Feature PR (produkt)
+
+Zadania z [TODO](docs/TODO.md) idą przez `feat/…` → PR. W opisie PR podaj
+**problem** (1–2 zdania) oraz zaznacz **Wpływ** (model / API / UI / Granica 0)
+w [szablonie PR](.github/PULL_REQUEST_TEMPLATE.md). Przy zmianie architektury
+lub Granicy 0 — link do ADR.
+
+**Bez** wymogu wireframe → makieta → kod. Docs / chore / kosmetyczny `fix` —
+bez tej ceremonii.
+
 ## Commity
 
 [Conventional Commits](https://www.conventionalcommits.org/pl/v1.0.0/) — egzekwowane przez commitlint + husky (`commit-msg`):

@@ -3,7 +3,7 @@
 **Stan:** `5.0.0-alpha.1` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycja znika stąd).
 
-## Następne
+## Następne (produkt)
 
 - [ ] Timeline editor / Live Desk / Client roles — pełna treść (szkielet IA v4 już w web)
 - [ ] Silnik ścieżek Audio (0…N) — upload, odtwarzanie, sync z transportem SSOT
@@ -20,3 +20,19 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
       **na fundamencie** tokenów space/elevation/`ui-density` (już w alphie);
       nie blokuje dalszego wiring funkcji w alphie
 - [ ] Stabilne wydanie `5.0.0` + nazwa hero (zob. [versioning](../.cursor/rules/versioning.mdc))
+
+## Design System / docs (luki ze standardów V5-PLAN)
+
+- [ ] [docs/ui/](./ui/README.md): `typography.md` + `spacing.md` (kiedy który
+      `--ss-text-*` / `--ss-space-*`; bez ad-hoc px)
+- [ ] Tokeny animacji `--ss-duration-fast|normal|slow` w `tokens.css` (+ Button /
+      shell bez ad-hoc `0.7s`)
+- [ ] Jedna biblioteka ikon (**Lucide**) zamiast rozrostu lokalnych SVG w shellach
+- [ ] `docs/api/` — krótki opis endpointów REST / WS (gdy kontrakt się
+      ustabilizuje; nie pełne OpenAPI na zapas)
+
+## Proces (właściciel repo)
+
+- [ ] GitHub: **Require status checks to pass** na `main` — job
+      `lint · types · test · build` (checklista w [CONTRIBUTING](../CONTRIBUTING.md));
+      bez wymuszania PR na docs/chore

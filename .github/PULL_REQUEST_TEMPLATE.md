@@ -1,6 +1,9 @@
 ## Summary
 
-<!-- Co i dlaczego (1–3 punkty). -->
+<!-- Problem (1–2 zdania) + co zmieniasz i dlaczego. -->
+
+Dla `feat/` z [TODO](docs/TODO.md): wypełnij **Wpływ** przed review
+(najlepiej już w pierwszym opisie PR).
 
 ## Wpływ
 
