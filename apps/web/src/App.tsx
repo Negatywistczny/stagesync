@@ -1,21 +1,21 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { TransportProvider } from "./transport/TransportProvider.js";
 import { AdminShell } from "./shells/AdminShell.js";
 import { ClientShell } from "./shells/ClientShell.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
 
+const router = createBrowserRouter([
+  { path: "/", element: <ClientShell /> },
+  { path: "/admin", element: <AdminShell /> },
+  { path: "/timeline/:projectId", element: <TimelineShell /> },
+  { path: "/timeline", element: <Navigate to="/admin" replace /> },
+  { path: "*", element: <Navigate to="/" replace /> },
+]);
+
 export default function App() {
   return (
     <TransportProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<ClientShell />} />
-          <Route path="/admin" element={<AdminShell />} />
-          <Route path="/timeline/:projectId" element={<TimelineShell />} />
-          <Route path="/timeline" element={<Navigate to="/admin" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </TransportProvider>
   );
 }
