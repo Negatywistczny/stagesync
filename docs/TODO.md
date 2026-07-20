@@ -1,11 +1,11 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-beta.1` — historia w [CHANGELOG.md](../CHANGELOG.md).  
+**Stan:** `5.0.0-alpha.8` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poniżej).
 
 Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
-**QA / sign-off α7:** [report-qa-signoff-alpha7.md](./analysis/reports/report-qa-signoff-alpha7.md).
+**Scope:** [report-scope-alpha8.md](./analysis/reports/report-scope-alpha8.md) · [plan](./analysis/reports/report-implementation-plan-alpha8.md).
 
 ## Procedura zamykania etapu
 
@@ -16,33 +16,39 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 3. Zastąp plik **wyłącznie** sekcją kolejnego etapu (nagłówek, link do scope report, must/should/release).
 4. Zaktualizuj `**Stan:**` na górze.
 
-## Beta 1 (`5.0.0-beta.1`)
+## Alpha 8 (`5.0.0-alpha.8`)
 
-Hero: **Feature complete pod docelowy 5.0.0** — audio playback + clip edit; migrator 4.x; MIDI; Docker.  
-Scope: *(przed startem — report-scope-beta1.md)*.  
+Hero: **Parity workflow z legacy 4.x** (Timeline treści + Admin/Client Live Desk).  
 Orientacja: [ROADMAP.md](./ROADMAP.md) · [ADR 0008](./adr/0008-timeline-clip-editing.md).
 
 ### Must
 
-- [ ] Scope report beta.1 przed kodem
-- [ ] Audio 0…N: silnik playback, clip na Timeline, sync transport (`ticksToMs`), trim/move, waveform peak/RMS
-- [ ] Gain clip + fader track + mute clip/track (bez pencil na audio, bez stretch poza plik)
-- [ ] Migrator legacy 4.x → v5
-- [ ] MIDI I/O (clock / urządzenia serwera) — wg scope
-- [ ] Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)) — wg scope
+- [ ] Scope + plan α8; ROADMAP α8/α9/β1
+- [ ] Lane Akordy: pencil / select / Delete / inspector `symbol` + Client grid
+- [ ] Lane Cue: pencil / select / Delete / inspector `label`
+- [ ] Scissors Forma (`splitClipAt` + Vitest); Countdown nietykalny
+- [ ] Tap (Tekst dock) — tempo / timing MVP
+- [ ] Różdżka: Tekst→Forma, Akordy→Forma, Tekst+Akordy→Forma
+- [ ] Import UG → draft Tekst/Akordy (Zod Result; broken = UI message)
+- [ ] Undo/Redo sesji (Zapisz: dirty off + stos zostaje; Odrzuć: server snapshot + clear stos)
+- [ ] Metronom Web Audio + `AudioContext.resume()` na Play / toggle
+- [ ] Client: grid z akordów; →następny setlisty
+- [ ] Admin: filtr/sort utworów; Scena filtr ról (MVP)
 
 ### Should
 
-- [ ] Undo/Redo sesji Timeline (jeśli nie w 5.0.0)
-- [ ] Shadow backup / OCC / polityka migracji schematu — wg ROADMAP
-- [ ] Edycja lane Akordy / Cue (pełniejsza) + Scissors Forma
+- [ ] OSMD / MusicXML stub wire (rola `score`)
+- [ ] Tekst move/resize (cut first przy presji)
+- [ ] Admin Pliki paczki / Host logi / Client presence (cut first)
 
-### OUT β1
+### OUT α8
 
-- Fade / crossfade / loop-region / overlap mode → 5.0.0
-- Snap UI picker → 5.0.0
-- Flex Time / time-stretch → poza produktem na start
+- Audio 0…N playback / MIDI / Docker → **β1**
+- Migrator 4.x → v5 → **α9**
+- Pełny OSMD sync, zoom polish, snap picker → 5.0.0 / β1+
+- git-apply — nigdy
 
-### Release β1
+### Release α8
 
-- [ ] Bump, CHANGELOG, CI, smoke przed tagiem
+- [ ] Bump `5.0.0-alpha.8`, CHANGELOG, CI, smoke, QA sign-off
+- [ ] TODO → wyłącznie **α9** (migrator)
