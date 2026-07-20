@@ -1,0 +1,62 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--ss-space-8);
+  text-align: center;
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+}
+
+.brand {
+  margin: 0 0 var(--ss-space-6);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+  letter-spacing: var(--ss-tracking-tight);
+}
+
+.brandMark {
+  color: var(--ss-color-primary);
+}
+
+.title {
+  margin: 0 0 var(--ss-space-3);
+  font-size: var(--ss-text-lg);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+}
+
+.message {
+  margin: 0 0 var(--ss-space-6);
+  max-width: 36rem;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-leading-relaxed);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-3);
+  justify-content: center;
+}
+
+.detail {
+  margin: var(--ss-space-8) 0 0;
+  max-width: 48rem;
+  width: 100%;
+  padding: var(--ss-space-4);
+  overflow: auto;
+  text-align: left;
+  color: var(--ss-color-danger);
+  background: var(--ss-color-elevated);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-relaxed);
+  white-space: pre-wrap;
+}
