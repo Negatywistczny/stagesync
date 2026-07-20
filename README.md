@@ -17,6 +17,7 @@ StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 pnpm install
+# opcjonalnie: cp .env.example .env  (PORT, STAGESYNC_DATA_DIR)
 pnpm dev
 ```
 
