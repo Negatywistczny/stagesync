@@ -6,6 +6,7 @@ import {
   toDisplayBar,
   type Project,
 } from "@stagesync/shared";
+import { APP_VERSION } from "../lib/appVersion.js";
 import { fetchProject } from "../lib/libraryApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
@@ -278,6 +279,7 @@ function ClientHeader({
   return (
     <header className={styles.header}>
       <ShellWordmark
+        version={APP_VERSION}
         onClick={started && onBack ? onBack : undefined}
         title={started && onBack ? "Powrót do wyboru ról" : undefined}
       />

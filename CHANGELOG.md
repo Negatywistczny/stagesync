@@ -9,9 +9,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- Dokumentacja DS: [typography](docs/ui/typography.md) / [spacing](docs/ui/spacing.md);
-  tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide;
-  krótki kontrakt [docs/api/](docs/api/README.md) (REST + WS) — rozszerzony w α3.
 - Branch protection na `main`: wymagany status check CI
   (`lint-types-test-build`) przed merge PR — bez wymuszania PR na
   docs/chore ([CONTRIBUTING](CONTRIBUTING.md)).
@@ -34,6 +31,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Snap grid (faza 1):** `quantizeTicks` @ shared, domyślnie takt; ADR [0007](docs/adr/0007-snap-grid.md).
 - **Stabilność storage/transport:** H1/H5 engine, H2–H4 library CRUD, `ProjectIdSchema` (UUID).
 - Dokumentacja: [docs/api/](docs/api/README.md) (PUT v2 + transport z map).
+- Dokumentacja DS: [typography](docs/ui/typography.md) / [spacing](docs/ui/spacing.md);
+  tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide.
 
 ## [5.0.0-alpha.2] - 2026-07-20
 
@@ -118,6 +117,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
 - Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.2...HEAD
+[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.3...HEAD
+[5.0.0-alpha.3]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3
 [5.0.0-alpha.2]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2
 [5.0.0-alpha.1]: https://github.com/Negatywistyczny/stagesync/releases/tag/v5.0.0-alpha.1

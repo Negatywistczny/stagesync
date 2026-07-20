@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.3` — historia w [CHANGELOG.md](../CHANGELOG.md).  
+**Stan:** `5.0.0-alpha.4` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poniżej).
 
 Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Scope bieżącego etapu →

@@ -70,7 +70,7 @@ Braki UX transportu / dirty badge / Admin „Teraz vs gra” = **should / α4**,
 |----|------|--------|---------|
 | C1 | Picker biblioteki | ⚠️ | Logika niejasna; **„Odtwórz”** ≠ v4 — α3 skrót do `play+projectId` (D-12) |
 | C2 | Inspector „Właściwości” | ✅ | Read-only — OK na α3; edycja → α4 must (D-08) |
-| F1 | Nawigacja Admin ↔ Timeline ↔ Client | — | Do sprawdzenia; **wersja ≠ stopka** — patrz niżej |
+| F1 | Nawigacja Admin ↔ Timeline ↔ Client | ✅ | Smoke release 2026-07-20; wersja w wordmarku wszystkich shelli |
 
 ---
 
@@ -123,7 +123,7 @@ await fetch('/api/transport/pause', { method: 'POST' });
 ## Zamknięcie α3
 
 - [x] Must treści: Forma pencil + PUT + route + resolver (manual B2–B4)
-- [ ] Should: dirty badge widoczny (D-11 — akceptacja cut na α3?)
-- [ ] `pnpm lint` zielone (D-10) — ✅ w tej sesji
-- [ ] CHANGELOG / wersja w shellach
-- [ ] Tag `v5.0.0-alpha.3` na prośbę właściciela
+- [x] Should: dirty badge widoczny (D-11 — cut na α4)
+- [x] `pnpm lint` zielone (D-10)
+- [x] CHANGELOG / wersja w shellach (Admin, Timeline, Client + server health fallback)
+- [x] Tag `v5.0.0-alpha.3` — 2026-07-20

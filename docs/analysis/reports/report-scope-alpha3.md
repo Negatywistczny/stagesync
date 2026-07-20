@@ -74,12 +74,12 @@ Po smoke α3 potwierdzono: wiring treści OK, **layout Timeline niedokończony**
 
 ## Definicja „alpha.3 gotowe”
 
-- [ ] Shared: Project v2 + strict + resolvery + testy (w tym strip→fail, CD@−7680, clip@0)
-- [ ] Server: CRUD treści, transport load/play/seek z map + activeProjectId
-- [ ] Web: route Timeline, Forma pencil+save, Admin link+sekcja; Client Forma jeśli timebox
-- [ ] `docs/api/README.md` zaktualizowane
-- [ ] CHANGELOG → alpha.3; wersja w shellach = package (dziś hardcoded α1 — `01`)
-- [ ] CI zielone
+- [x] Shared: Project v2 + strict + resolvery + testy (w tym strip→fail, CD@−7680, clip@0)
+- [x] Server: CRUD treści, transport load/play/seek z map + activeProjectId
+- [x] Web: route Timeline, Forma pencil+save, Admin link+sekcja; Client Forma jeśli timebox
+- [x] `docs/api/README.md` zaktualizowane
+- [x] CHANGELOG → alpha.3; wersja w shellach = package
+- [x] CI zielone
 
 ## Kolejność PR (bez zmiany względem planu, z naciskiem)
 

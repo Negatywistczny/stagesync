@@ -20,6 +20,7 @@ import {
   tickToPx,
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
+import { APP_VERSION } from "../lib/appVersion.js";
 import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -290,7 +291,7 @@ export function TimelineShell() {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <ShellWordmark suffix="Timeline" />
+        <ShellWordmark suffix="Timeline" version={APP_VERSION} />
 
         <div className={styles.songCluster} role="group" aria-label="Setlista">
           <ShellIconButton label="Metadane utworu" disabled>
