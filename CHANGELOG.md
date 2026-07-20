@@ -9,6 +9,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Higiena repo: [`.env.example`](.env.example) (`PORT`, `STAGESYNC_DATA_DIR`);
+  Dependabot (npm + github-actions, weekly); [CODEOWNERS](.github/CODEOWNERS).
 - DX: pin Node 20 (`.nvmrc`, `engines` `>=20 <21`, CI `node-version-file`);
   checklista branch protection (status checks) w CONTRIBUTING; JSDoc `@example`
   na helperach czasu / soft playhead (`@stagesync/shared`).
