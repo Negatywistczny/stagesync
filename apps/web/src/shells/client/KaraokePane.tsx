@@ -42,14 +42,16 @@ export function KaraokePane({
         {ctx.tempoBpm} BPM · {ctx.meterLabel}
       </p>
       {ctx.hasLyricLines ? (
-        <ul className={styles.karaokeLines} aria-label="Linie tekstu">
-          {/* α7: clipy Tekst */}
-        </ul>
+        <div className={styles.karaokeLines} aria-label="Linie tekstu">
+          <p className={styles.karaokeLine}>
+            {ctx.lyricLine ?? "—"}
+          </p>
+        </div>
       ) : (
         <div className={styles.karaokePlaceholder}>
           <p className={styles.karaokePlaceholderTitle}>Brak linii tekstu</p>
           <p className={styles.muted}>
-            Edycja i synchronizacja wokalu — alpha.7 (lane Tekst w schema).
+            Dodaj clipy na lane Tekst w Timeline (Pencil).
           </p>
           <ul className={styles.karaokeSkeleton} aria-hidden>
             <li>— — —</li>

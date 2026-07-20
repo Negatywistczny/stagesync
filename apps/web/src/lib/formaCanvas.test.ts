@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV3Seed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
+import { createProjectV4Seed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
   buildBarMarks,
   computeCanvasWidthPx,
@@ -12,7 +12,7 @@ import {
 } from "./formaCanvas.js";
 
 describe("formaCanvas", () => {
-  const project = createProjectV3Seed(
+  const project = createProjectV4Seed(
     "id",
     "Demo",
     "2026-07-20T00:00:00.000Z",

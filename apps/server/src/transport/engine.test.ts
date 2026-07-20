@@ -116,7 +116,7 @@ describe("TransportEngine", () => {
     const project = {
       id: "00000000-0000-4000-8000-000000000001",
       name: "P",
-      formatVersion: 3 as const,
+      formatVersion: 4 as const,
       updatedAt: "2026-07-20T00:00:00.000Z",
       ppq: DEFAULT_PPQ,
       defaultBpm: 90,
@@ -146,6 +146,9 @@ describe("TransportEngine", () => {
       assets: [],
       audioTracks: [],
       audioClips: [],
+      tekst: { clips: [] },
+      akordy: { clips: [] },
+      cue: { clips: [] },
     };
     const engine = createTransportEngine();
     const state = engine.loadProject(project.id, project);

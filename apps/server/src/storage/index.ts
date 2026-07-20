@@ -6,14 +6,16 @@ import {
   ProjectSchemaV1,
   ProjectSchemaV2,
   ProjectSchemaV3,
+  ProjectSchemaV4,
   SetlistSchema,
-  createProjectV3Seed,
+  createProjectV4Seed,
   defaultSetlist,
   mergePreserveById,
   normalizeSetlist,
   pruneSetlistToLibrary,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
+  upgradeProjectV3ToV4,
   type Library,
   type Project,
   type ProjectAsset,
@@ -76,6 +78,15 @@ function isProjectV2(raw: unknown): boolean {
     typeof raw === "object" &&
     "formatVersion" in raw &&
     (raw as { formatVersion: number }).formatVersion === 2
+  );
+}
+
+function isProjectV3(raw: unknown): boolean {
+  return (
+    raw !== null &&
+    typeof raw === "object" &&
+    "formatVersion" in raw &&
+    (raw as { formatVersion: number }).formatVersion === 3
   );
 }
 
@@ -145,14 +156,21 @@ export function createStores(dataDir?: string) {
     try {
       const raw = await readJsonFile(projectFile(paths, safeId));
       if (isProjectV1(raw)) {
-        return upgradeProjectV2ToV3(
-          upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw)),
+        return upgradeProjectV3ToV4(
+          upgradeProjectV2ToV3(
+            upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw)),
+          ),
         );
       }
       if (isProjectV2(raw)) {
-        return upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw));
+        return upgradeProjectV3ToV4(
+          upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw)),
+        );
       }
-      return ProjectSchemaV3.parse(raw);
+      if (isProjectV3(raw)) {
+        return upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw));
+      }
+      return ProjectSchemaV4.parse(raw);
     } catch (err) {
       if (errCode(err) === "ENOENT") {
         throw new NotFoundError(`Project not found: ${safeId}`);
@@ -165,7 +183,7 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV3.parse(project);
+    const parsed = ProjectSchemaV4.parse(project);
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
@@ -220,7 +238,7 @@ export function createStores(dataDir?: string) {
       return withLibraryLock(async () => {
         const id = randomUUID();
         const updatedAt = new Date().toISOString();
-        const project = createProjectV3Seed(id, name, updatedAt);
+        const project = createProjectV4Seed(id, name, updatedAt);
         const library = await ensureLibrary();
         library.projects.push({ id, name, updatedAt });
         await saveLibrary(library);
@@ -238,7 +256,7 @@ export function createStores(dataDir?: string) {
         const safeId = assertSafeProjectId(paths, id);
         const existing = await readProject(safeId);
         const updatedAt = new Date().toISOString();
-        const next = ProjectSchemaV3.parse({
+        const next = ProjectSchemaV4.parse({
           ...body,
           id: safeId,
           updatedAt,
@@ -347,7 +365,7 @@ export function createStores(dataDir?: string) {
           ];
         }
 
-        const next = ProjectSchemaV3.parse({
+        const next = ProjectSchemaV4.parse({
           ...project,
           updatedAt: new Date().toISOString(),
           assets,
@@ -377,7 +395,7 @@ export function createStores(dataDir?: string) {
             throw new StorageError(`Failed to delete asset file ${assetId}`, err);
           }
         }
-        const next = ProjectSchemaV3.parse({
+        const next = ProjectSchemaV4.parse({
           ...project,
           updatedAt: new Date().toISOString(),
           assets: project.assets.filter((a) => a.id !== assetId),
