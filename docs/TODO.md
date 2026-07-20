@@ -6,7 +6,8 @@ Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poni
 Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Scope bieżącego etapu →
 [report-scope-alpha4.md](./analysis/reports/report-scope-alpha4.md) (przed kodem α4).
 
-**QA / sign-off α3 (przed tagiem):** [report-qa-signoff-alpha3.md](./analysis/reports/report-qa-signoff-alpha3.md).
+**QA / sign-off α3 (przed tagiem):** [report-qa-signoff-alpha3.md](./analysis/reports/report-qa-signoff-alpha3.md).  
+**Audyt α4 (2026-07-20):** [report-audit-alpha4.md](./analysis/reports/report-audit-alpha4.md) · exec: [report-exec-summary-alpha4.md](./analysis/reports/report-exec-summary-alpha4.md).
 
 Plan implementacji α4: [report-implementation-plan-alpha4.md](./analysis/reports/report-implementation-plan-alpha4.md).
 
@@ -27,19 +28,21 @@ bieżącego TODO bez zmiany numeracji w ROADMAP — odnotuj w scope report bież
 Hero: **Timeline layout + operacyjne domknięcie Formy** (nie parity v4).  
 Dług UI po α3: [report-scope-alpha4.md](./analysis/reports/report-scope-alpha4.md) § „Kontekst”.
 
+**Stan po audycie 2026-07-20:** must pass **~21%** (1 PASS · 2 PARTIAL · 4 FAIL). Tag α4 **przedwczesny** — repo nadal `5.0.0-alpha.3`. Bloker release: PR **`feat/timeline-track-grid`** (osobne drzewa DOM dock vs lanes w `TimelineShell.tsx`). Song picker (#6) — PASS; reszta must layoutu + inspector — FAIL. Szczegóły: [report-audit-alpha4.md](./analysis/reports/report-audit-alpha4.md).
+
 ### Must (layout — pierwszy PR)
 
-- [ ] `feat/timeline-track-grid` — wspólna siatka nagłówek ścieżki ↔ lane; brak rozjeżdżania przy resize
-- [ ] Eye menu: ukrywanie **pojedynczych** śladów (min. Treść vs Specjalne; Forma zawsze on)
-- [ ] Kolejność lane’ów jak v4: **Tempo / Tonacja / Metrum / Kotwice nad** Formą/Tekstem/Akordami/Cue
+- [ ] `feat/timeline-track-grid` — wspólna siatka nagłówek ścieżki ↔ lane (`TimelineShell.tsx` 429–586, `TimelineShell.module.css` 135–315); brak rozjeżdżania przy resize (audyt: FAIL)
+- [ ] Eye menu: ukrywanie **pojedynczych** śladów (min. Treść vs Specjalne; Forma zawsze on) — audyt: tylko `showSpecial` (`TimelineShell.tsx` 442–449)
+- [ ] Kolejność lane’ów jak v4: **Tempo / Tonacja / Metrum / Kotwice nad** Formą/Tekstem/Akordami/Cue — audyt: odwrotna kolejność w dock i lanes
 
 ### Must (produkt α4)
 
-- [ ] Lane Tempo/Metrum read-only z `tempoMap` / `meterMap` (render, nie placeholder tekst)
-- [ ] Inspector: rename sekcji + długość Countdown → draft → Zapisz → PUT
-- [ ] Song picker Timeline ← `GET /api/library` (pełny flow, bez mock overlay)
-- [ ] Dirty guard — confirm przy wyjściu z niezapisanym draftem ([QA D-11](./analysis/reports/report-qa-signoff-alpha3.md))
-- [ ] `POST /api/transport/load` w UI — jeśli nie domknięte w α3
+- [ ] Lane Tempo/Metrum read-only z `tempoMap` / `meterMap` (render segmentów map, nie tekst `Tempo {n}` — audyt: PARTIAL)
+- [ ] Inspector: rename sekcji + długość Countdown → draft → Zapisz → PUT (`TimelineShell.tsx` 602–622 read-only; `.lengthInput` nieużywany)
+- [ ] Song picker Timeline ← `GET /api/library` (pełny flow, bez mock overlay) — audyt: **PASS** (modal + `Link` 692–716)
+- [ ] Dirty guard — confirm przy wyjściu z niezapisanym draftem ([QA D-08/D-11](./analysis/reports/report-qa-signoff-alpha3.md); audyt: brak `beforeunload`)
+- [ ] `POST /api/transport/load` w UI — jeśli nie domknięte w α3 (audyt: PARTIAL — play z `projectId`, `loadTransport` nieużywany w shellach)
 
 ### Should (α4 — cut first przy timebox)
 
@@ -51,7 +54,7 @@ Dług UI po α3: [report-scope-alpha4.md](./analysis/reports/report-scope-alpha4
 - [ ] Client partytura: ikony w wyborze instrumentu/partii (`score-parts-prompt` jak v4 — emoji z `score-instruments`)
 - [ ] Admin: „Teraz” vs `activeProjectId` / przycisk Odtwórz — UX ([QA D-12](./analysis/reports/report-qa-signoff-alpha3.md))
 - [ ] Transport UI: Stop (seek 0), clamp końca utworu, opcjonalnie seek ([QA D-14–D-16](./analysis/reports/report-qa-signoff-alpha3.md))
-- [ ] Walidacja transportu web + BBT (M1–M3 z audytu)
+- [ ] Walidacja transportu web + BBT (M1–M3 z audytu) + carry-over **M12** (race WS/REST, `TransportProvider.tsx`) + **M15** (monotoniczność playhead przy skew, `engine.ts`)
 
 ### OUT α4 (świadomie później)
 

@@ -96,3 +96,21 @@ Alpha.3 dostarczyła **pion treści** (Forma + mapy + PUT + transport + sekcja).
 6. `chore/release-alpha.4`
 
 Cut order przy sporze: **1 → 4 → 2 → 3 → 5 → 6**.
+
+## Stan po audycie (2026-07-20)
+
+Audyt read-only: [report-audit-alpha4.md](./report-audit-alpha4.md) · exec: [report-exec-summary-alpha4.md](./report-exec-summary-alpha4.md).
+
+**Werdykt:** tag `5.0.0-alpha.4` **przedwczesny** — repo gotowe jako **alpha.3**; bramka release α4 **ZAMKNIĘTA** do domknięcia must #1–#6.
+
+| # | Kryterium must | Status | Notatka audytu |
+|---|----------------|--------|----------------|
+| 1 | Track grid | **FAIL** | Osobne drzewa DOM dock vs lanes; rozjazd przy resize |
+| 2 | Eye per ślad | **FAIL** | Tylko „Specjalne on/off” |
+| 3 | Kolejność lane’ów = v4 | **FAIL** | Specjalne pod treścią |
+| 4 | Lane Tempo/Metrum z map | **PARTIAL** | Wartości OK; brak renderu segmentów |
+| 5 | Inspector Formy | **FAIL** | Read-only; brak rename / CD length UI |
+| 6 | Song picker | **PASS** | `GET /api/library` → `/timeline/:id` |
+| 7 | Dirty badge + load | **PARTIAL** | Badge OK; brak guard wyjścia; load przez play |
+
+**Must pass rate:** ~21% (1 PASS · 2 PARTIAL · 4 FAIL). **Bloker sprintu:** PR `feat/timeline-track-grid`.
