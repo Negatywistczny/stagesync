@@ -9,6 +9,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- CI GitHub Actions (lint, check-types, test, build) + szablony PR / Issues;
+  [LICENSE](LICENSE) (MIT); [SECURITY.md](SECURITY.md).
 - [ADR 0005](docs/adr/0005-domain-axioms.md) — Granica 0 (domain axioms: czas +
   foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
   audio.

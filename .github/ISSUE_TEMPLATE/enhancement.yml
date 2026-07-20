@@ -1,0 +1,37 @@
+name: Ulepszenie
+description: Propozycja nowej funkcji lub zmiany zachowania
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sprawdź najpierw [docs/TODO.md](../../docs/TODO.md). Duże zmiany domenowe
+        (czas, storage) → [ADR 0005](../../docs/adr/0005-domain-axioms.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / potrzeba
+      description: Jaki scenariusz sceniczny lub workflow blokuje brak tej funkcji?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propozycja
+      description: Jak to powinno działać (krótko).
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatywy
+      description: Co rozważano zamiast tego?
+  - type: checkboxes
+    id: layers
+    attributes:
+      label: Warstwa
+      options:
+        - label: UI / Stuff (shells, copy, motywy)
+        - label: API / transport (Skin)
+        - label: Domenowe (czas, foldery) — wymaga ADR / ACL

@@ -1,5 +1,7 @@
 # StageSync
 
+[![CI](https://github.com/Negatywistyczny/stagesync/actions/workflows/ci.yml/badge.svg)](https://github.com/Negatywistyczny/stagesync/actions/workflows/ci.yml)
+
 StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 
 > Legacy **4.x:** [STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY). Rozwój v5: [stagesync](https://github.com/Negatywistczny/stagesync).
