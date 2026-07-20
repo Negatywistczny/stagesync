@@ -1,5 +1,5 @@
 import { DEFAULT_PPQ } from "./time.js";
-import type { ProjectV2, ProjectV3 } from "./schema.js";
+import type { ProjectV2, ProjectV3, ProjectV4 } from "./schema.js";
 
 /** Alpha.3 seed: Countdown 2 bars @ PPQ 960, Intro from tick 0. */
 export function createProjectV2Seed(
@@ -49,13 +49,22 @@ export function createProjectV3Seed(
   return upgradeProjectV2ToV3(createProjectV2Seed(id, name, updatedAt));
 }
 
-/** @deprecated Prefer createProjectV3Seed. */
+/** Alpha.7 seed — v4 with empty content lanes. */
+export function createProjectV4Seed(
+  id: string,
+  name: string,
+  updatedAt: string,
+): ProjectV4 {
+  return upgradeProjectV3ToV4(createProjectV3Seed(id, name, updatedAt));
+}
+
+/** @deprecated Prefer createProjectV4Seed. */
 export function createProjectSeed(
   id: string,
   name: string,
   updatedAt: string,
-): ProjectV3 {
-  return createProjectV3Seed(id, name, updatedAt);
+): ProjectV4 {
+  return createProjectV4Seed(id, name, updatedAt);
 }
 
 export function upgradeProjectV1ToV2(v1: {
@@ -73,5 +82,15 @@ export function upgradeProjectV2ToV3(v2: ProjectV2): ProjectV3 {
     assets: [],
     audioTracks: [],
     audioClips: [],
+  };
+}
+
+export function upgradeProjectV3ToV4(v3: ProjectV3): ProjectV4 {
+  return {
+    ...v3,
+    formatVersion: 4,
+    tekst: { clips: [] },
+    akordy: { clips: [] },
+    cue: { clips: [] },
   };
 }

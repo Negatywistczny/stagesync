@@ -17,6 +17,7 @@ import {
   Scissors,
   Settings,
   Square,
+  SquareMousePointer,
   Sun,
   Undo2,
   Wand2,
@@ -64,6 +65,10 @@ export function IconZoom(p: IconProps) {
 
 export function IconWand(p: IconProps) {
   return withIcon(Wand2, p);
+}
+
+export function IconSmart(p: IconProps) {
+  return withIcon(SquareMousePointer, p);
 }
 
 export function IconTap(p: IconProps) {

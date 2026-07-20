@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV3Seed } from "@stagesync/shared";
+import { createProjectV4Seed } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
   formatKaraokeTransportLine,
 } from "./clientKaraoke.js";
 
 describe("clientKaraoke", () => {
-  const project = createProjectV3Seed(
+  const project = createProjectV4Seed(
     "id",
     "Demo Song",
     "2026-07-20T00:00:00.000Z",

@@ -6,7 +6,7 @@ import {
   elapsedToTicks,
   resolveMeterAt,
   resolveTempoAt,
-  type ProjectV3,
+  type Project,
   type TimeSignature,
   type TransportPlayBody,
   type TransportState,
@@ -48,7 +48,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     return originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
   }
 
-  function applyMapsFromProject(project: ProjectV3, atTicks?: number): void {
+  function applyMapsFromProject(project: Project, atTicks?: number): void {
     const ticks = atTicks ?? samplePosition();
     positionTicks = ticks;
     bpm = resolveTempoAt(project, ticks);
@@ -122,7 +122,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       };
     },
 
-    loadProject(projectId: string, project: ProjectV3): TransportState {
+    loadProject(projectId: string, project: Project): TransportState {
       activeProjectId = projectId;
       positionTicks = samplePosition();
       playing = false;
@@ -134,7 +134,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
     play(
       opts: TransportPlayBody = {},
-      project?: ProjectV3,
+      project?: Project,
     ): TransportState {
       if (opts.timeSignature !== undefined) {
         assertValidTimeSignature(opts.timeSignature, ppq);
@@ -173,7 +173,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     },
 
     /** Pause and seek to tick 0 (Stop). */
-    stop(project?: ProjectV3): TransportState {
+    stop(project?: Project): TransportState {
       playing = false;
       stopTimer();
       positionTicks = 0;
@@ -184,7 +184,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
-    seek(nextTicks: number, project?: ProjectV3): TransportState {
+    seek(nextTicks: number, project?: Project): TransportState {
       if (!Number.isInteger(nextTicks)) {
         throw new RangeError("positionTicks must be an integer");
       }
