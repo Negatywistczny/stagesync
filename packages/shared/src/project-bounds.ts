@@ -1,5 +1,5 @@
 import { ticksPerBar } from "./time.js";
-import type { ProjectV3 } from "./schema.js";
+import type { Project } from "./schema.js";
 
 const EMPTY_PROJECT_END_BARS = 2;
 
@@ -18,7 +18,7 @@ export function emptyProjectEndTicks(project: {
   );
 }
 
-export function projectEndTicks(project: ProjectV3): number {
+export function projectEndTicks(project: Project): number {
   let maxEnd = Number.NEGATIVE_INFINITY;
   for (const clip of project.forma.clips) {
     const end = clip.startTicks + clip.lengthTicks;

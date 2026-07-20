@@ -215,6 +215,18 @@
   font-weight: var(--ss-font-weight-semibold);
 }
 
+.karaokeLines {
+  margin-top: var(--ss-space-4);
+}
+
+.karaokeLine {
+  margin: 0;
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-normal);
+  text-align: center;
+}
+
 .karaokeSkeleton {
   margin: var(--ss-space-3) 0 0;
   padding: 0;

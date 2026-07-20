@@ -1,8 +1,9 @@
 # ADR 0008 — Edycja klipów Timeline (Forma, audio, Smart Tool)
 
-- **Status:** Proponowany
+- **Status:** Zaakceptowany
 - **Data:** 2026-07-20
 - **Podstawa:** synteza wymagań produktowych + wzorce z audytu Logic Pro (STAGESYNC-V5-PLAN)
+- **Zaakceptowany dla:** `5.0.0-alpha.7` (Forma editing); audio → β1
 
 ## Kontekst
 
