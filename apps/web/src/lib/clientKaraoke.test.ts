@@ -36,4 +36,11 @@ describe("clientKaraoke", () => {
   it("buildKaraokeLiveContext returns null without project", () => {
     expect(buildKaraokeLiveContext(null, 0)).toBeNull();
   });
+
+  it("merges synthetic CD digits into karaoke during Countdown", () => {
+    const ctx = buildKaraokeLiveContext(project, -5000);
+    expect(ctx?.hasLyricLines).toBe(true);
+    expect(ctx?.lyricLine).toBe("2");
+    expect(ctx?.lines.some((l) => l.text === "2" && l.active)).toBe(true);
+  });
 });

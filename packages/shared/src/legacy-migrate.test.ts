@@ -95,9 +95,49 @@ describe("migrateLegacySong", () => {
     expect(project.akordy.clips[0]?.startTicks).toBe(0);
     expect(project.tekst.clips.some((c) => c.text === "Hello")).toBe(true);
     expect(project.tekst.clips.every((c) => c.id !== "vl-rest")).toBe(true);
+    expect(project.tekst.clips.every((c) => !/^vl-cd-/i.test(c.id))).toBe(true);
     expect(project.cue.clips[0]?.label).toBe("Lights");
     expect(project.cue.clips[0]?.startTicks).toBe(8 * DEFAULT_PPQ);
     expect(project.isTemplate).toBe(true);
+  });
+
+  it("dense Money-style chords: no overlapping lengths (unsorted + sub-bar onsets)", () => {
+    const song: LegacySong = {
+      id: "money",
+      title: "Money, Money",
+      tempo: 120,
+      markers: [{ id: "mk-end", kind: "END", startAbs: 24 }],
+      sections: [
+        { id: 0, name: "Countdown", startAbs: 0 },
+        { id: 1, name: "Verse", startAbs: 8 },
+      ],
+      chords: {
+        timeSignature: "4/4",
+        // Unsorted + two chords sharing one bar (beats 1 and 3)
+        clips: [
+          { id: "c-f", chord: "F", startAbs: 10 },
+          { id: "c-am", chord: "Am", startAbs: 8 },
+          { id: "c-g", chord: "G", startAbs: 14 },
+          { id: "c-c", chord: "C", startAbs: 12 },
+        ],
+      },
+    };
+    const { project } = migrateLegacySong(song, {
+      projectId: PID,
+      updatedAt: FIXED_AT,
+    });
+    const chords = [...project.akordy.clips].sort(
+      (a, b) => a.startTicks - b.startTicks,
+    );
+    expect(chords.map((c) => c.symbol)).toEqual(["Am", "F", "C", "G"]);
+    for (let i = 0; i < chords.length; i++) {
+      const end = chords[i]!.startTicks + chords[i]!.lengthTicks;
+      if (i + 1 < chords.length) {
+        expect(end).toBeLessThanOrEqual(chords[i + 1]!.startTicks);
+      }
+    }
+    // Am@0 → F@2 quarters → length 2*ppq, not full bar
+    expect(chords[0]!.lengthTicks).toBe(2 * DEFAULT_PPQ);
   });
 
   it("fails fast on empty Forma when schema would be invalid", () => {

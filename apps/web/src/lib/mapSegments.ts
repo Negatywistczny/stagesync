@@ -1,5 +1,5 @@
 import type { KeySignature, Project } from "@stagesync/shared";
-import type { ViewSpan } from "./formaCanvas.js";
+import { clampClipWidthPx, type ViewSpan } from "./formaCanvas.js";
 
 export type MapSegment = {
   startTicks: number;
@@ -109,6 +109,6 @@ export function segmentStylePx(
     ((segment.endTicks - segment.startTicks) / barTicks) * pxPerBar;
   return {
     left: `${left}px`,
-    width: `${Math.max(width, 2)}px`,
+    width: `${clampClipWidthPx(width)}px`,
   };
 }

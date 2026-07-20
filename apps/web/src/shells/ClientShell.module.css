@@ -204,7 +204,8 @@
 .roleTile {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   gap: var(--ss-space-2);
   min-height: 11rem;
   padding: var(--ss-space-5);
@@ -213,7 +214,7 @@
   background: color-mix(in srgb, var(--ss-color-elevated) 88%, transparent);
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition:
     border-color var(--ss-duration-normal) ease,
@@ -227,7 +228,6 @@
 }
 
 .roleIcon {
-  margin-bottom: var(--ss-space-2);
   font-size: var(--ss-text-2xl);
   line-height: var(--ss-leading-compact);
 }
@@ -312,12 +312,12 @@
   }
 
   .roleTile {
+    gap: var(--ss-space-4);
     min-height: 14rem;
     padding: var(--ss-space-8);
   }
 
   .roleIcon {
-    margin-bottom: var(--ss-space-4);
     font-size: var(--ss-text-3xl);
   }
 
@@ -332,16 +332,12 @@
   }
 
   .roleTile {
-    align-items: center;
-    justify-content: center;
     gap: var(--ss-space-3);
     min-height: 8rem;
     padding: var(--ss-space-3) var(--ss-space-2);
-    text-align: center;
   }
 
   .roleIcon {
-    margin-bottom: 0;
     font-size: var(--ss-text-2xl);
   }
 

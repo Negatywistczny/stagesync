@@ -63,7 +63,13 @@ export type TransportLoadBody = z.infer<typeof TransportLoadBodySchema>;
 
 export const TransportTickMessageSchema = TransportStateSchema.extend({
   type: z.literal("transport_tick"),
+  /** Monotonic engine clock (ordering / staleness). */
   serverTimeMs: z.number(),
+  /**
+   * Wall-clock send time (`Date.now()` on host) for client one-way latency EMA.
+   * Optional for older payloads; new ticks always include it.
+   */
+  sentAtMs: z.number().optional(),
 });
 
 export type TransportTickMessage = z.infer<typeof TransportTickMessageSchema>;

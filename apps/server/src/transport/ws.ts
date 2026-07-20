@@ -18,6 +18,12 @@ export function attachTransportWs(
 ): WebSocketServer {
   const wss = new WebSocketServer({ server, path: TRANSPORT_WS_PATH });
 
+  // `ws` re-emits HTTP server listen errors onto WSS; without a listener Node
+  // treats them as unhandled and kills the process (tsx watch then sits idle).
+  wss.on("error", (err) => {
+    console.error("[stagesync-server] transport WS error", err);
+  });
+
   function send(ws: WebSocket, raw: unknown): void {
     if (ws.readyState !== ws.OPEN) return;
     const msg = TransportTickMessageSchema.parse(raw);
@@ -37,11 +43,13 @@ export function attachTransportWs(
           type?: string;
           displayName?: unknown;
           roles?: unknown;
+          latencyMs?: unknown;
         };
         if (raw?.type === "client_hello") {
           presence.upsert(id, {
             displayName: raw.displayName,
             roles: raw.roles,
+            latencyMs: raw.latencyMs,
           });
         }
       } catch {

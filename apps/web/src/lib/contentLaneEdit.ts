@@ -5,6 +5,7 @@
 import {
   insertSpanOverwrite,
   moveClipNoOverlap,
+  moveClipsRigidDelta,
   resizeClipNoOverlap,
   resolveMeterAt,
   splitClipAt,
@@ -63,6 +64,18 @@ export function contentAsForma(
   }));
 }
 
+/**
+ * `placeClipNoOverlap` may mint `${id}-r` for the right remnant of a split.
+ * Resolve payload from the parent id so symbols/text are not lost → default "C".
+ */
+export function resolveSplitParentId(id: string): string {
+  let cur = id;
+  while (cur.endsWith("-r")) {
+    cur = cur.slice(0, -2);
+  }
+  return cur;
+}
+
 function mapFormaBack(
   project: Project,
   lane: ContentLaneId,
@@ -73,7 +86,8 @@ function mapFormaBack(
     const clips = formaClips
       .filter((c) => c.kind === "section")
       .map((c) => {
-        const prev = byId.get(c.id);
+        const prev =
+          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return {
           id: c.id,
           startTicks: c.startTicks,
@@ -88,7 +102,8 @@ function mapFormaBack(
     const clips = formaClips
       .filter((c) => c.kind === "section")
       .map((c) => {
-        const prev = byId.get(c.id);
+        const prev =
+          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return {
           id: c.id,
           startTicks: c.startTicks,
@@ -102,7 +117,8 @@ function mapFormaBack(
   const clips = formaClips
     .filter((c) => c.kind === "section")
     .map((c) => {
-      const prev = byId.get(c.id);
+      const prev =
+        byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
       return {
         id: c.id,
         startTicks: c.startTicks,
@@ -144,6 +160,39 @@ export function commitMoveContentClip(
   const floor = contentFloorTicks(project.forma.clips);
   const snapped = Math.max(floor, snapEditTicks(project, newStartTicks, mode));
   const clips = moveClipNoOverlap(contentAsForma(project, lane), clipId, snapped, {
+    contentFloorTicks: floor,
+  });
+  return mapFormaBack(project, lane, clips);
+}
+
+export function commitMoveContentClips(
+  project: Project,
+  lane: ContentLaneId,
+  moveIds: string[],
+  primaryId: string,
+  primaryNewStartTicks: number,
+  mode: SnapMode,
+): Project {
+  if (moveIds.length <= 1) {
+    return commitMoveContentClip(
+      project,
+      lane,
+      primaryId,
+      primaryNewStartTicks,
+      mode,
+    );
+  }
+  const forma = contentAsForma(project, lane);
+  const primary = forma.find((c) => c.id === primaryId);
+  if (!primary) return project;
+  const floor = contentFloorTicks(project.forma.clips);
+  const snapped = Math.max(
+    floor,
+    snapEditTicks(project, primaryNewStartTicks, mode),
+  );
+  const delta = snapped - primary.startTicks;
+  if (delta === 0) return project;
+  const clips = moveClipsRigidDelta(forma, moveIds, delta, {
     contentFloorTicks: floor,
   });
   return mapFormaBack(project, lane, clips);
@@ -221,7 +270,8 @@ export function commitPencilContentSpan(
             text: "",
           };
         }
-        const prev = byId.get(c.id);
+        const prev =
+          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return {
           id: c.id,
           startTicks: c.startTicks,
@@ -244,7 +294,8 @@ export function commitPencilContentSpan(
             symbol: "C",
           };
         }
-        const prev = byId.get(c.id);
+        const prev =
+          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return {
           id: c.id,
           startTicks: c.startTicks,
@@ -266,7 +317,8 @@ export function commitPencilContentSpan(
           label: "Cue",
         };
       }
-      const prev = byId.get(c.id);
+      const prev =
+        byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
       return {
         id: c.id,
         startTicks: c.startTicks,
@@ -297,6 +349,16 @@ export function commitContentGesture(
       );
     case "move":
       if (!session.clipId) return project;
+      if (session.moveIds && session.moveIds.length > 1) {
+        return commitMoveContentClips(
+          project,
+          lane,
+          session.moveIds,
+          session.clipId,
+          preview.startTicks,
+          mode,
+        );
+      }
       return commitMoveContentClip(
         project,
         lane,

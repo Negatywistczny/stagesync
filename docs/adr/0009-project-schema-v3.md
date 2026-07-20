@@ -23,8 +23,21 @@ plików na dysku oraz osobny stan setlisty (Set ≠ Utwory).
    (merge-preserve). Mutacja assets wyłącznie przez asset endpoints.
 5. **Playback audio** — poza zakresem (β2).
 
+## Ewolucja formatVersion (nota 2026-07-20)
+
+Ten ADR utrwala **wprowadzenie** assets + setlisty jako **`formatVersion: 3`**.
+Kolejne linie schematu w `@stagesync/shared` (`ProjectSchemaV4`, **`ProjectSchemaV5`**)
+dodają m.in. lane’y treści / `keyMap` / metadata — bez unieważniania decyzji o
+izolacji `assets/` i `setlist.json`.
+
+**Kanon runtime dziś:** `ProjectSchema = ProjectSchemaV5` (`formatVersion: 5`)
+w `packages/shared/src/schema.ts`. Odczyt starszych v2/v3/v4 = upgrade path w
+storage / migratorze — nie osobny „powrót do v3” w UI.
+
+Audyt: [report-v4-v5-parity-audit.md](../analysis/reports/report-v4-v5-parity-audit.md) §5.
+
 ## Konsekwencje
 
-- Shared: `ProjectSchemaV3` jako kanoniczny `ProjectSchema`.
+- Shared: historycznie `ProjectSchemaV3`; **aktualnie** kanoniczny `ProjectSchemaV5`.
 - Serwer: ścieżki `projectAssetsDir`, `setlistFile`; multipart upload.
-- Timeline α6: read-only placeholdery lane’ów audio z v3.
+- Timeline α6: read-only placeholdery lane’ów audio z v3+ (UI audio → β2).

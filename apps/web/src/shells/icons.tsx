@@ -20,6 +20,10 @@ import {
   Play,
   Redo2,
   Repeat,
+  RotateCcw,
+  RotateCw,
+  Power,
+  Save,
   Scissors,
   Settings,
   Square,
@@ -29,7 +33,6 @@ import {
   Undo2,
   Wand2,
   X,
-  ZoomIn,
 } from "lucide-react";
 
 type IconProps = { className?: string; title?: string };
@@ -65,10 +68,6 @@ export function IconEraser(p: IconProps) {
 
 export function IconScissors(p: IconProps) {
   return withIcon(Scissors, p);
-}
-
-export function IconZoom(p: IconProps) {
-  return withIcon(ZoomIn, p);
 }
 
 export function IconWand(p: IconProps) {
@@ -123,6 +122,14 @@ export function IconSettings(p: IconProps) {
   return withIcon(Settings, p);
 }
 
+export function IconRestart(p: IconProps) {
+  return withIcon(RotateCw, p);
+}
+
+export function IconPower(p: IconProps) {
+  return withIcon(Power, p);
+}
+
 export function IconSun(p: IconProps) {
   return withIcon(Sun, p);
 }
@@ -149,6 +156,16 @@ export function IconMetronome(p: IconProps) {
 
 export function IconFollow(p: IconProps) {
   return withIcon(Crosshair, p);
+}
+
+/** v4 `#btn-discard` — restore/discard draft (not plain X). */
+export function IconDiscard(p: IconProps) {
+  return withIcon(RotateCcw, p);
+}
+
+/** v4 `#btn-save` — floppy/save glyph. */
+export function IconSave(p: IconProps) {
+  return withIcon(Save, p);
 }
 
 export function IconClose(p: IconProps) {

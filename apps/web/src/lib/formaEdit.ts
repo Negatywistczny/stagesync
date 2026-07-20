@@ -6,6 +6,7 @@ import {
   deleteClip,
   insertSpanOverwrite,
   moveClipNoOverlap,
+  moveClipsRigidDelta,
   resizeClipNoOverlap,
   resolveMeterAt,
   ticksPerBar,
@@ -14,6 +15,10 @@ import {
   type SnapMode,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
+import {
+  applyCountdownLengthFromBoundary,
+  setCountdownBars,
+} from "./formaInspector.js";
 import {
   fill4BarGapsFromLeft,
   moveSubsectionBoundary,
@@ -184,6 +189,29 @@ export function commitMoveClip(
   return { ...project, forma: { clips } };
 }
 
+/** Multi-move same Δ from primary preview start (v4 moveIds). */
+export function commitMoveClips(
+  project: Project,
+  moveIds: string[],
+  primaryId: string,
+  primaryNewStartTicks: number,
+  mode: SnapMode,
+): Project {
+  if (moveIds.length <= 1) {
+    return commitMoveClip(project, primaryId, primaryNewStartTicks, mode);
+  }
+  const primary = project.forma.clips.find((c) => c.id === primaryId);
+  if (!primary || primary.kind === "countdown") return project;
+  const floor = contentFloorTicks(project.forma.clips);
+  const snapped = snapEditTicksWithMode(project, primaryNewStartTicks, mode);
+  const delta = snapped - primary.startTicks;
+  if (delta === 0) return project;
+  const clips = moveClipsRigidDelta(project.forma.clips, moveIds, delta, {
+    contentFloorTicks: floor,
+  });
+  return { ...project, forma: { clips } };
+}
+
 export function commitResizeClip(
   project: Project,
   clipId: string,
@@ -302,6 +330,29 @@ export function previewFromSession(
     };
   }
 
+  if (session.kind === "countdown-length") {
+    // v4 body/right-edge: newEnd = originEnd + delta. Do not use snapEditTicks —
+    // that clamps to content floor and blocks shorten. Snap length in whole bars
+    // from CD start; preview is end-pinned (left edge moves) for renorm @ 0.
+    const originEnd = session.originClipStart + session.originClipLength;
+    const delta = rawTicks - session.originTicks;
+    const meter = resolveMeterAt(project, Math.max(0, originEnd));
+    const barTicks = ticksPerBar(meter, project.ppq);
+    const rawEnd = originEnd + delta;
+    const rawLen = rawEnd - session.originClipStart;
+    const bars =
+      mode === "off"
+        ? Math.max(1, Math.round(rawLen / barTicks) || 1)
+        : Math.max(1, Math.round(rawLen / barTicks));
+    const lengthTicks = bars * barTicks;
+    return {
+      kind: "countdown-length",
+      clipId: session.clipId,
+      startTicks: originEnd - lengthTicks,
+      lengthTicks,
+    };
+  }
+
   // resize-end
   let end = snapEditTicksWithMode(project, rawTicks, mode);
   const start = session.originClipStart;
@@ -336,6 +387,15 @@ export function commitGesture(
       );
     case "move":
       if (!session.clipId) return project;
+      if (session.moveIds && session.moveIds.length > 1) {
+        return commitMoveClips(
+          project,
+          session.moveIds,
+          session.clipId,
+          preview.startTicks,
+          mode,
+        );
+      }
       return commitMoveClip(project, session.clipId, preview.startTicks, mode);
     case "resize-start":
       if (!session.clipId) return project;
@@ -355,6 +415,18 @@ export function commitGesture(
         preview.startTicks + preview.lengthTicks,
         mode,
       );
+    case "countdown-length":
+      if (!session.clipId) return project;
+      {
+        // Desired end before renorm = originStart + preview length (v4 boundary).
+        const newEnd = session.originClipStart + preview.lengthTicks;
+        const next = applyCountdownLengthFromBoundary(project, newEnd);
+        if (next !== project) return next;
+        const meter = resolveMeterAt(project, 0);
+        const barTicks = ticksPerBar(meter, project.ppq);
+        const bars = Math.max(1, Math.round(preview.lengthTicks / barTicks));
+        return setCountdownBars(project, bars);
+      }
     case "subsection-boundary":
       if (!session.clipId) return project;
       {

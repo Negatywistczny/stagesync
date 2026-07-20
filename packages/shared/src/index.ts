@@ -188,6 +188,7 @@ export {
   deleteClip,
   insertSpanOverwrite,
   moveClipNoOverlap,
+  moveClipsRigidDelta,
   placeClipNoOverlap,
   resizeClipNoOverlap,
   splitClipAt,
@@ -198,6 +199,8 @@ export {
 
 export {
   importUgText,
+  sealAkordyLengths,
+  chordOnsetsInBar,
   type UgImportErr,
   type UgImportOk,
   type UgImportOptions,
@@ -208,6 +211,18 @@ export {
   wandContentToForma,
   type WandMode,
 } from "./wand.js";
+
+export {
+  isCountdownDigitClipId,
+  countdownDigitLabels,
+  syntheticCountdownTekstClips,
+  syntheticCountdownAkordClips,
+  syntheticCountdownDisplayFromProject,
+  scrubCountdownDigitClips,
+  regenerateCountdownContent,
+  buildCountdownDigitTekstClips,
+  type CountdownDigitLabel,
+} from "./countdown-content.js";
 
 export {
   migrateLegacySong,
@@ -222,3 +237,13 @@ export {
   type MigrateLegacySongResult,
   type MigrateLegacyDatabaseResult,
 } from "./legacy-migrate.js";
+
+export {
+  detectLibraryImportFormat,
+  normalizeLibraryImport,
+  looksLikeZipBytes,
+  ZIP_IMPORT_UNSUPPORTED_PL,
+  type LibraryImportFormat,
+  type DetectLibraryImportResult,
+  type NormalizeLibraryImportResult,
+} from "./library-import.js";

@@ -1,5 +1,6 @@
 import {
   resolveMeterAt,
+  scrubCountdownDigitClips,
   ticksPerBar,
   type FormaClip,
   type Project,
@@ -27,24 +28,192 @@ export function renameFormaClip(project: Project, clipId: string, name: string):
   };
 }
 
-/** Countdown length in full bars @ meter at tick 0; updates startTicks = -lengthTicks. */
+function shiftStartTicks<T extends { startTicks: number }>(
+  item: T,
+  fromTicks: number,
+  deltaTicks: number,
+): T {
+  if (item.startTicks < fromTicks) return item;
+  return { ...item, startTicks: item.startTicks + deltaTicks };
+}
+
+/**
+ * v4 `shiftSongContentFromAbs`: move every timeline item with startTicks ≥ from
+ * by delta. Countdown clip is skipped (caller updates it separately).
+ */
+export function shiftProjectContentFromTicks(
+  project: Project,
+  fromTicks: number,
+  deltaTicks: number,
+): Project {
+  if (!Number.isFinite(deltaTicks) || deltaTicks === 0) return project;
+  const delta = Math.trunc(deltaTicks);
+  if (delta === 0) return project;
+  const from = Math.trunc(fromTicks);
+
+  const formaClips = project.forma.clips.map((c) => {
+    if (c.kind === "countdown") return c;
+    return shiftStartTicks(c, from, delta);
+  });
+
+  const meter = resolveMeterAt(project, Math.max(0, from));
+  const barTicks = ticksPerBar(meter, project.ppq);
+  const deltaBars =
+    barTicks > 0 ? Math.round(delta / barTicks) : 0;
+  const fromBar = logicBarFromTicks(project, from);
+  const anchors =
+    deltaBars !== 0 && project.scoreBarMap?.anchors?.length
+      ? project.scoreBarMap.anchors.map((a) =>
+          a.logicBar >= fromBar
+            ? { ...a, logicBar: Math.max(1, a.logicBar + deltaBars) }
+            : a,
+        )
+      : project.scoreBarMap?.anchors;
+
+  return {
+    ...project,
+    forma: { clips: formaClips },
+    tekst: {
+      clips: project.tekst.clips.map((c) => shiftStartTicks(c, from, delta)),
+    },
+    akordy: {
+      clips: project.akordy.clips.map((c) => shiftStartTicks(c, from, delta)),
+    },
+    cue: {
+      clips: project.cue.clips.map((c) => shiftStartTicks(c, from, delta)),
+    },
+    audioClips: project.audioClips.map((c) => shiftStartTicks(c, from, delta)),
+    tempoMap: project.tempoMap.map((e) => shiftStartTicks(e, from, delta)),
+    meterMap: project.meterMap.map((e) => shiftStartTicks(e, from, delta)),
+    keyMap: (project.keyMap ?? []).map((e) => shiftStartTicks(e, from, delta)),
+    scoreBarMap: {
+      anchors: anchors ?? project.scoreBarMap?.anchors ?? [],
+    },
+  };
+}
+
+/** Drop content onsets in [rangeStart, rangeEnd) — vacated CD span on shrink. */
+function clearProjectContentInTickRange(
+  project: Project,
+  rangeStart: number,
+  rangeEnd: number,
+): Project {
+  const lo = Math.trunc(rangeStart);
+  const hi = Math.trunc(rangeEnd);
+  if (hi <= lo) return project;
+  const keep = <T extends { startTicks: number }>(c: T): boolean =>
+    c.startTicks < lo || c.startTicks >= hi;
+  return {
+    ...project,
+    tekst: { clips: project.tekst.clips.filter(keep) },
+    akordy: { clips: project.akordy.clips.filter(keep) },
+    cue: { clips: project.cue.clips.filter(keep) },
+  };
+}
+
+/**
+ * Shift every tick-positioned field (including Countdown) — axis renorm after
+ * v4-style length change so CD end lands on tick 0 ([ADR 0002](../../docs/adr/0002-timebase-ssot.md)).
+ */
+function shiftAllProjectTicks(project: Project, deltaTicks: number): Project {
+  if (!Number.isFinite(deltaTicks) || deltaTicks === 0) return project;
+  const delta = Math.trunc(deltaTicks);
+  if (delta === 0) return project;
+  const bump = <T extends { startTicks: number }>(c: T): T => ({
+    ...c,
+    startTicks: c.startTicks + delta,
+  });
+  const meter = resolveMeterAt(project, 0);
+  const barTicks = ticksPerBar(meter, project.ppq);
+  const deltaBars = barTicks > 0 ? Math.round(delta / barTicks) : 0;
+  return {
+    ...project,
+    forma: { clips: project.forma.clips.map(bump) },
+    tekst: { clips: project.tekst.clips.map(bump) },
+    akordy: { clips: project.akordy.clips.map(bump) },
+    cue: { clips: project.cue.clips.map(bump) },
+    audioClips: project.audioClips.map(bump),
+    tempoMap: project.tempoMap.map(bump),
+    meterMap: project.meterMap.map(bump),
+    keyMap: (project.keyMap ?? []).map(bump),
+    scoreBarMap: {
+      anchors: (project.scoreBarMap?.anchors ?? []).map((a) => ({
+        ...a,
+        logicBar: Math.max(1, a.logicBar + deltaBars),
+      })),
+    },
+  };
+}
+
+/**
+ * Countdown length in full bars @ meter at content floor.
+ * Mirrors v4 `setCountdownLengthBeats`: shift post-CD content by Δ, then renorm
+ * so CD ends at tick 0 (pre-roll ≤ 0).
+ */
 export function setCountdownBars(project: Project, bars: number): Project {
   if (!Number.isInteger(bars) || bars < 1) {
     throw new RangeError("Countdown length must be at least 1 bar");
   }
-  const meter = resolveMeterAt(project, 0);
+  const cd = project.forma.clips.find((c) => c.kind === "countdown");
+  if (!cd) return project;
+
+  const meter = resolveMeterAt(project, Math.max(0, cd.startTicks + cd.lengthTicks));
   const barTicks = ticksPerBar(meter, project.ppq);
   const lengthTicks = bars * barTicks;
-  return {
-    ...project,
+  if (lengthTicks === cd.lengthTicks && cd.startTicks + cd.lengthTicks === 0) {
+    return project;
+  }
+
+  const oldStart = cd.startTicks;
+  const oldEnd = cd.startTicks + cd.lengthTicks;
+  const newEnd = oldStart + lengthTicks;
+  const delta = newEnd - oldEnd;
+
+  let next = project;
+  if (delta < 0) {
+    next = clearProjectContentInTickRange(next, newEnd, oldEnd);
+  }
+  if (delta !== 0) {
+    next = shiftProjectContentFromTicks(next, oldEnd, delta);
+  }
+  next = {
+    ...next,
     forma: {
-      clips: project.forma.clips.map((c) =>
+      clips: next.forma.clips.map((c) =>
         c.kind === "countdown"
-          ? { ...c, lengthTicks, startTicks: -lengthTicks }
+          ? { ...c, startTicks: oldStart, lengthTicks }
           : c,
       ),
     },
   };
+  // Pin song start: CD end → tick 0.
+  if (newEnd !== 0) {
+    next = shiftAllProjectTicks(next, -newEnd);
+  }
+  // Drop any leftover persisted CD digits; Client synthesizes from CD length.
+  return scrubCountdownDigitClips(next);
+}
+
+/**
+ * Apply countdown length from canvas right-edge / body drag (v4
+ * `applyCountdownLengthFromBoundary`). `newEndTicks` is the desired CD end
+ * before axis renorm; length snapped to whole bars from CD start. Min = 1 bar.
+ */
+export function applyCountdownLengthFromBoundary(
+  project: Project,
+  newEndTicks: number,
+): Project {
+  const cd = project.forma.clips.find((c) => c.kind === "countdown");
+  if (!cd) return project;
+  const meter = resolveMeterAt(
+    project,
+    Math.max(0, cd.startTicks + cd.lengthTicks),
+  );
+  const barTicks = ticksPerBar(meter, project.ppq);
+  const rawLen = Number(newEndTicks) - cd.startTicks;
+  if (!Number.isFinite(rawLen)) return project;
+  const bars = Math.max(1, Math.round(rawLen / barTicks));
+  return setCountdownBars(project, bars);
 }
 
 export function countdownBars(project: Project, clip: FormaClip): number {

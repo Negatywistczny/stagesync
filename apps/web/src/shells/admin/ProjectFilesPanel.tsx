@@ -101,7 +101,10 @@ export function ProjectFilesPanel({
       ) : (
         <ul className={styles.list} aria-label="Pliki projektu">
           {assets.map((a) => (
-            <li key={a.id} className={styles.songRow}>
+            <li
+              key={a.id}
+              className={[styles.songRow, styles.songRowTrail].join(" ")}
+            >
               <span className={styles.songName}>{a.originalName}</span>
               <span className={styles.songMeta}>
                 {a.kind} · {formatBytes(a.sizeBytes)}

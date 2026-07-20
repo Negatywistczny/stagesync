@@ -1,3 +1,20 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-danger);
+  white-space: nowrap;
+}
+
+.status.on {
+  color: var(--ss-color-primary);
+}
+
+.statusText {
+  line-height: var(--ss-leading-compact);
+}
+
 .label {
   font-size: var(--ss-text-xs);
   color: var(--ss-color-danger);
@@ -18,4 +35,9 @@
 
 .dot.on {
   background: var(--ss-color-primary);
+}
+
+.latency {
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
 }

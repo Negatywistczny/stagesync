@@ -71,11 +71,14 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 
 ## Definicja „alpha.8 gotowe”
 
-- [ ] Must M1–M11
-- [ ] Smoke #1–#9 + CI
-- [ ] Inventarz: pozycje must odhaczone lub świadoma delta
-- [ ] CHANGELOG + TODO→α9 + QA
-- [ ] Brak regresji α6/α7 (setlista, Forma edit, Tekst karaoke)
+- [x] Must M1–M11 (kod + QA unit/UI — [report-qa-signoff-alpha8.md](./report-qa-signoff-alpha8.md))
+- [x] Smoke #1–#9 wired + CI (engineering; **PO P8** → α9)
+- [x] Rebuild TE-P0 / CD / chrome / Admin polish — **code freeze** ([report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md))
+- [x] CHANGELOG Unreleased + TODO→α9 + QA zaktualizowane (2026-07-20)
+- [ ] Tag git `v5.0.0-alpha.8` — tylko na prośbę
+- [ ] Brak regresji α6/α7 — potwierdzenie w PO smoke α9
+
+**Uwaga:** „α8 gotowe” = engineering freeze, **nie** β-ready i **nie** green PO smoke.
 
 ## Kolejność PR
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createProjectV5Seed } from "@stagesync/shared";
 import {
   addFormaSubsection,
+  applyCountdownLengthFromBoundary,
   countdownBars,
   deleteFormaSubsection,
   formaSubsectionRows,
@@ -32,6 +33,94 @@ describe("formaInspector", () => {
     expect(updated.lengthTicks).toBe(7680 * 1.5); // 3 bars @ 4/4
     expect(updated.startTicks).toBe(-updated.lengthTicks);
     expect(updated.startTicks + updated.lengthTicks).toBe(0);
+  });
+
+  it("setCountdownBars lengthen shifts then renorms so post-CD stays at song start", () => {
+    const intro = project.forma.clips.find((c) => c.kind === "section")!;
+    const withChord = {
+      ...project,
+      akordy: {
+        clips: [
+          {
+            id: "ch-1",
+            startTicks: 0,
+            lengthTicks: 960,
+            symbol: "C",
+          },
+          {
+            id: "ch-2",
+            startTicks: 3840,
+            lengthTicks: 960,
+            symbol: "G",
+          },
+        ],
+      },
+    };
+    const next = setCountdownBars(withChord, 4);
+    const cd = next.forma.clips.find((c) => c.kind === "countdown")!;
+    const section = next.forma.clips.find((c) => c.id === intro.id)!;
+    expect(cd.lengthTicks).toBe(3840 * 4);
+    expect(cd.startTicks + cd.lengthTicks).toBe(0);
+    expect(section.startTicks).toBe(0);
+    expect(next.akordy.clips.find((c) => c.id === "ch-1")?.startTicks).toBe(0);
+    expect(next.akordy.clips.find((c) => c.id === "ch-2")?.startTicks).toBe(
+      3840,
+    );
+    expect(next.tempoMap[0]?.startTicks).toBe(0);
+  });
+
+  it("setCountdownBars shorten pulls post-CD left after renorm", () => {
+    const next = setCountdownBars(project, 1);
+    const cd = next.forma.clips.find((c) => c.kind === "countdown")!;
+    const intro = next.forma.clips.find((c) => c.kind === "section")!;
+    expect(cd.lengthTicks).toBe(3840);
+    expect(cd.startTicks).toBe(-3840);
+    expect(intro.startTicks).toBe(0);
+  });
+
+  it("applyCountdownLengthFromBoundary snaps to bars", () => {
+    // CD [-7680, 0); desire end ≈ +2000 → length ~9680 → 3 bars after round.
+    const next = applyCountdownLengthFromBoundary(project, 2000);
+    const cd = next.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(countdownBars(next, cd)).toBe(3);
+    expect(cd.startTicks + cd.lengthTicks).toBe(0);
+  });
+
+  it("applyCountdownLengthFromBoundary shortens toward min 1 bar", () => {
+    const next = applyCountdownLengthFromBoundary(project, -5000);
+    const cd = next.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(countdownBars(next, cd)).toBe(1);
+    expect(cd.startTicks).toBe(-3840);
+  });
+
+  it("setCountdownBars scrubs countdown digits without persisting new ones", () => {
+    const withSpill = {
+      ...project,
+      tekst: {
+        clips: [
+          {
+            id: "vl-cd-1",
+            text: "1",
+            startTicks: -3840,
+            lengthTicks: 25920,
+          },
+          {
+            id: "vl-line",
+            text: "Hello",
+            startTicks: 3840,
+            lengthTicks: 3840,
+          },
+        ],
+      },
+    };
+    const next = setCountdownBars(withSpill, 3);
+    const digits = next.tekst.clips.filter((c) => /^vl-cd-/i.test(c.id));
+    expect(digits).toHaveLength(0);
+    const cd = next.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(countdownBars(next, cd)).toBe(3);
+    expect(next.tekst.clips.find((c) => c.id === "vl-line")?.startTicks).toBe(
+      3840,
+    );
   });
 
   it("countdownBars reads bar count from clip", () => {

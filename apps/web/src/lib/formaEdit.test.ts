@@ -149,4 +149,44 @@ describe("formaEdit", () => {
     const grown = previewFromSession(p, session, 15360, false, false);
     expect(grown.lengthTicks).toBe(15360);
   });
+
+  it("countdown-length gesture lengthens CD and keeps post-CD at tick 0", () => {
+    const p = seed();
+    const session: FormaGestureSession = {
+      kind: "countdown-length",
+      clipId: "forma-cd",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: -7680,
+      originClipLength: 7680,
+    };
+    const preview = previewFromSession(p, session, 3840, false, false);
+    expect(preview.kind).toBe("countdown-length");
+    expect(preview.lengthTicks).toBe(11520);
+    expect(preview.startTicks).toBe(-11520);
+    const next = commitGesture(p, session, preview, false, false);
+    const cd = next.forma.clips.find((c) => c.id === "forma-cd")!;
+    const intro = next.forma.clips.find((c) => c.id === "forma-intro")!;
+    expect(cd.lengthTicks).toBe(11520);
+    expect(cd.startTicks + cd.lengthTicks).toBe(0);
+    expect(intro.startTicks).toBe(0);
+  });
+
+  it("countdown-length gesture shortens to min 1 bar", () => {
+    const p = seed();
+    const session: FormaGestureSession = {
+      kind: "countdown-length",
+      clipId: "forma-cd",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: -7680,
+      originClipLength: 7680,
+    };
+    const preview = previewFromSession(p, session, -10000, false, false);
+    expect(preview.lengthTicks).toBe(3840);
+    const next = commitGesture(p, session, preview, false, false);
+    const cd = next.forma.clips.find((c) => c.id === "forma-cd")!;
+    expect(cd.lengthTicks).toBe(3840);
+    expect(cd.startTicks).toBe(-3840);
+  });
 });

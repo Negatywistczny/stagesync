@@ -13,13 +13,13 @@ Finalne dokumenty, do ktorych mozna linkowac z `TODO`, `ROADMAP` i PR.
 
 ### Indeks etapów (alpha)
 
-| Etap | Scope | Plan implementacji | Audyt | Exec |
-|------|-------|-------------------|-------|------|
-| α3 (zamknięty) | [report-scope-alpha3](./reports/report-scope-alpha3.md) | [report-implementation-plan-alpha3](./reports/report-implementation-plan-alpha3.md) | — | [report-exec-summary](./reports/report-exec-summary.md) |
-| **α4 (bieżący)** | [report-scope-alpha4](./reports/report-scope-alpha4.md) | [report-implementation-plan-alpha4](./reports/report-implementation-plan-alpha4.md) | [report-audit-alpha4](./reports/report-audit-alpha4.md) | [report-exec-summary-alpha4](./reports/report-exec-summary-alpha4.md) |
-| Inventarz UI | [report-inventory-delta-alpha3](./reports/report-inventory-delta-alpha3.md) | — | — | — |
+| Etap | Scope / freeze | Bramka / QA | Audyt parity |
+|------|----------------|-------------|--------------|
+| α3–α7 | `report-scope-alphaN` | `report-qa-signoff-alphaN` | — |
+| **α8 (code freeze)** | [report-alpha8-code-freeze](./reports/report-alpha8-code-freeze.md) · [scope](./reports/report-scope-alpha8.md) | [parity-blocker](./reports/report-parity-blocker-alpha8.md) · [QA](./reports/report-qa-signoff-alpha8.md) | [gap](./reports/report-v4-v5-gap-audit.md) · [parity A](./reports/report-v4-v5-parity-audit.md) · [ui-diff B](./reports/report-v4-v5-ui-diff-inventory.md) |
+| **α9 (aktywny)** | [report-scope-alpha9](./reports/report-scope-alpha9.md) | TODO + P8 z blocker | residual CL-P0 |
 
-Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0008](../adr/0008-timeline-clip-editing.md) (edycja klipów).
+Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0011](../adr/0011-ui-parity-behavior.md).
 
 ## working/
 

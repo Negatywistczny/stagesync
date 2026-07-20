@@ -3,12 +3,16 @@ import { createProjectV5Seed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
   buildBarMarks,
   buildRulerBeatMarks,
+  clampClipWidthPx,
+  clipStylePx,
   computeCanvasWidthPx,
   computeFormaViewSpan,
   contentFloorTicks,
   iterBarBoundariesTicks,
+  MIN_CLIP_WIDTH_PX,
   pencilFormaClick,
   RULER_BEAT_TICKS_MIN_PX,
+  scrollLeftKeepTickAnchored,
   snapEditTicks,
   tickToPx,
   ticksFromCanvasPx,
@@ -27,12 +31,52 @@ describe("formaCanvas", () => {
     expect(span.end).toBeGreaterThan(7680);
   });
 
+  it("scrollLeftKeepTickAnchored grows scroll when CD pre-roll lengthens", () => {
+    // CD 2→3 bars: span start -7680 → -11520; tick 0 shifts +48px at 48px/bar.
+    const barTicks = 3840;
+    const pxPerBar = 48;
+    expect(
+      scrollLeftKeepTickAnchored(-7680, -11520, 100, barTicks, pxPerBar),
+    ).toBe(100 + 48);
+  });
+
+  it("scrollLeftKeepTickAnchored shrinks scroll when CD shortens", () => {
+    const barTicks = 3840;
+    expect(scrollLeftKeepTickAnchored(-11520, -7680, 100, barTicks, 48)).toBe(
+      52,
+    );
+  });
+
   it("tickToPx aligns bar 1 at content floor", () => {
     const span = computeFormaViewSpan(project.forma.clips);
     const barTicks = 3840;
     expect(tickToPx(0, span, barTicks)).toBe(
       tickToPx(-7680, span, barTicks) + (7680 / barTicks) * 48,
     );
+  });
+
+  it("clipStylePx floors paint width at MIN_CLIP_WIDTH_PX when zoomed out", () => {
+    const span = { start: 0, end: 3840 * 64 };
+    const barTicks = 3840;
+    // 1/16 bar at 12 px/bar → 0.75px musical width → floor to 4px.
+    const short = {
+      id: "s",
+      name: "A",
+      kind: "section" as const,
+      startTicks: 0,
+      lengthTicks: barTicks / 16,
+    };
+    expect(clampClipWidthPx(0.75)).toBe(MIN_CLIP_WIDTH_PX);
+    expect(clipStylePx(short, span, barTicks, 12).width).toBe(
+      `${MIN_CLIP_WIDTH_PX}px`,
+    );
+    // Same clip at 48 px/bar → 3px musical → still floored to 4px.
+    expect(clipStylePx(short, span, barTicks, 48).width).toBe(
+      `${MIN_CLIP_WIDTH_PX}px`,
+    );
+    // Half bar at 48 px/bar → 24px (above floor).
+    const halfBar = { ...short, lengthTicks: barTicks / 2 };
+    expect(clipStylePx(halfBar, span, barTicks, 48).width).toBe("24px");
   });
 
   it("buildBarMarks includes CD and bar numbers", () => {

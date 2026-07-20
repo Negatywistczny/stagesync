@@ -15,6 +15,8 @@ export type PresenceClient = {
   id: string;
   displayName: string | null;
   roles: string[];
+  /** One-way latency reported by client (ms), or null. */
+  latencyMs: number | null;
   connectedAt: number;
   updatedAt: number;
 };
@@ -50,6 +52,7 @@ export function createClientPresence() {
         id,
         displayName: null,
         roles: [],
+        latencyMs: null,
         connectedAt: now,
         updatedAt: now,
       };
@@ -65,7 +68,11 @@ export function createClientPresence() {
 
     upsert(
       id: string,
-      payload: { displayName?: unknown; roles?: unknown } = {},
+      payload: {
+        displayName?: unknown;
+        roles?: unknown;
+        latencyMs?: unknown;
+      } = {},
     ): PresenceClient {
       const entry = ensure(id);
       if (Object.prototype.hasOwnProperty.call(payload, "displayName")) {
@@ -73,6 +80,11 @@ export function createClientPresence() {
       }
       if (Object.prototype.hasOwnProperty.call(payload, "roles")) {
         entry.roles = normalizeRoles(payload.roles);
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "latencyMs")) {
+        const n = Number(payload.latencyMs);
+        entry.latencyMs =
+          Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
       }
       entry.updatedAt = Date.now();
       return { ...entry, roles: [...entry.roles] };

@@ -47,7 +47,10 @@ export function pencilAkordyClick(
     .filter((c) => c.kind === "section")
     .map((c) => {
       if (c.id === newClip.id) return newClip;
-      const prev = project.akordy.clips.find((t) => t.id === c.id);
+      const parentId = c.id.endsWith("-r") ? c.id.replace(/(-r)+$/, "") : c.id;
+      const prev =
+        project.akordy.clips.find((t) => t.id === c.id) ??
+        project.akordy.clips.find((t) => t.id === parentId);
       return {
         id: c.id,
         startTicks: c.startTicks,

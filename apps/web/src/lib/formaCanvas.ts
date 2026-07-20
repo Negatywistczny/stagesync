@@ -18,6 +18,18 @@ export type ViewSpan = { start: number; end: number };
 export const DEFAULT_PX_PER_BAR = 48;
 
 /**
+ * Minimum rendered clip/segment width (px) when Zoom H is low.
+ * Tick geometry stays exact; only the paint box is floored so short clips stay visible.
+ * Matches v4 `.timeline-clip { min-width: 4px }`.
+ */
+export const MIN_CLIP_WIDTH_PX = 4;
+
+/** Floor paint width for clips / map segments (shared across all lanes). */
+export function clampClipWidthPx(widthPx: number): number {
+  return Math.max(widthPx, MIN_CLIP_WIDTH_PX);
+}
+
+/**
  * v4 ruler: when px/bar ≥ 56, draw beat ticks 2…N (lane grid stays barlines only).
  * @see STAGESYNC-APP-LEGACY timeline.js `renderRuler` (`pxb >= 56`)
  */
@@ -82,6 +94,25 @@ export function tickToPx(
   return ((ticks - span.start) / barTicks) * pxPerBar;
 }
 
+/**
+ * Keep a musical tick at the same viewport X when `viewSpan.start` changes
+ * (Countdown lengthen/shorten grows/shrinks the pre-roll on the left).
+ * Returns the new `scrollLeft`.
+ */
+export function scrollLeftKeepTickAnchored(
+  prevSpanStart: number,
+  nextSpanStart: number,
+  prevScrollLeft: number,
+  barTicks: number,
+  pxPerBar = DEFAULT_PX_PER_BAR,
+): number {
+  if (!(barTicks > 0) || prevSpanStart === nextSpanStart) {
+    return Math.max(0, prevScrollLeft);
+  }
+  const deltaPx = ((prevSpanStart - nextSpanStart) / barTicks) * pxPerBar;
+  return Math.max(0, prevScrollLeft + deltaPx);
+}
+
 export function clipStylePx(
   clip: FormaClip,
   span: ViewSpan,
@@ -92,7 +123,7 @@ export function clipStylePx(
   const width = (clip.lengthTicks / barTicks) * pxPerBar;
   return {
     left: `${left}px`,
-    width: `${Math.max(width, 2)}px`,
+    width: `${clampClipWidthPx(width)}px`,
   };
 }
 

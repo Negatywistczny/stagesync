@@ -67,6 +67,7 @@ export type PresenceClient = {
   id: string;
   displayName: string | null;
   roles: string[];
+  latencyMs: number | null;
   connectedAt: number;
   updatedAt: number;
 };

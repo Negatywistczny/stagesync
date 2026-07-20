@@ -1,7 +1,12 @@
 # ADR 0007 — Snap / edit grid (kwantyzacja edycji)
 
-- **Status:** Proponowany
+- **Status:** Zaakceptowany
 - **Data:** 2026-07-20
+- **Nota statusu (2026-07-20):** fazy **0–1** i rdzeń **3** (drag/mapy + Cmd/Ctrl = off)
+  wdrożone w `@stagesync/shared` + Timeline; faza **2** (UI picker beat/subdivision)
+  nadal → 5.0.0. Seek/locator/loop: parity v4 = siatka **beat** — lukę opisuje
+  [report-v4-v5-ui-diff-inventory.md](../analysis/reports/report-v4-v5-ui-diff-inventory.md)
+  (TL-R-03 / TL-R-04).
 
 ## Kontekst
 

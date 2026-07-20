@@ -12,6 +12,8 @@ import {
   type TimeSignature,
 } from "./time.js";
 import { ProjectSchema, type Project, type FormaClip } from "./schema.js";
+import { sealAkordyLengths } from "./ug-import.js";
+import { scrubCountdownDigitClips } from "./countdown-content.js";
 
 export type LegacySection = {
   id?: unknown;
@@ -36,7 +38,12 @@ export type LegacySong = {
   vocal?: { lines?: Array<{ id?: unknown; text?: unknown; startAbs?: unknown; rest?: unknown }> };
   chords?: {
     timeSignature?: unknown;
-    clips?: Array<{ id?: unknown; chord?: unknown; startAbs?: unknown }>;
+    clips?: Array<{
+      id?: unknown;
+      chord?: unknown;
+      startAbs?: unknown;
+      lengthBeats?: unknown;
+    }>;
   };
   cues?: Array<{
     id?: unknown;
@@ -168,16 +175,38 @@ function songEndAbs(song: LegacySong, sections: LegacySection[]): number {
   return max > 0 ? max + 8 : 32;
 }
 
-function onsetLengths(
+/**
+ * Length to the next distinct onset (same order as `startsAbs`).
+ * Uses exact span to next onset so dense chords never overlap
+ * (legacy `deriveClipLengths`); minLenBeats only when span ≤ 0 (duplicate start).
+ */
+export function onsetLengthsForStarts(
   startsAbs: number[],
   endAbs: number,
   minLenBeats: number,
 ): number[] {
   const sorted = [...startsAbs].sort((a, b) => a - b);
-  return sorted.map((start, i) => {
-    const next = i + 1 < sorted.length ? sorted[i + 1]! : endAbs;
-    return Math.max(minLenBeats, next - start);
+  return startsAbs.map((start) => {
+    let next: number | undefined;
+    for (const s of sorted) {
+      if (s > start + 1e-9) {
+        next = s;
+        break;
+      }
+    }
+    const span = (next ?? endAbs) - start;
+    if (!(span > 0)) return Math.max(minLenBeats, 1e-6);
+    return span;
   });
+}
+
+/** @deprecated index-aligned name — use onsetLengthsForStarts */
+function onsetLengths(
+  startsAbs: number[],
+  endAbs: number,
+  minLenBeats: number,
+): number[] {
+  return onsetLengthsForStarts(startsAbs, endAbs, minLenBeats);
 }
 
 /**
@@ -214,6 +243,8 @@ export function migrateLegacySong(
   const defaultBpm = Math.max(1, asFiniteNumber(song.tempo, 120));
   const minBarBeats =
     (defaultMeter.numerator * 4) / defaultMeter.denominator;
+  /** One beat in quarters — dense chords must not use min=full bar (legacy deriveClipLengths). */
+  const beatUnitQuarters = 4 / defaultMeter.denominator;
 
   // Forma clips
   const sectionStarts = sections.map((s) => asFiniteNumber(s.startAbs, 0));
@@ -295,28 +326,49 @@ export function migrateLegacySong(
     keyMap = [{ id: "key-0", startTicks: 0, key: keyFallback }];
   }
 
-  // Tekst (vocal lines — skip rest markers)
-  const vocalLines = (song.vocal?.lines ?? []).filter((l) => !l.rest);
-  const vocalStarts = vocalLines.map((l) => asFiniteNumber(l.startAbs, 0));
-  const vocalLens = onsetLengths(vocalStarts, endAbs, minBarBeats);
-  const tekstClips = vocalLines.map((line, i) => ({
+  // Tekst: skip rests in output but keep them as length boundaries (v4 gap seal).
+  // Drop legacy `vl-cd-*` digits — never persist; Client synthesizes from CD length
+  // (TE-21 / Money Money: skipped rest must not stretch digit "1" into the song).
+  const allVocalLines = song.vocal?.lines ?? [];
+  const vocalBoundaryStarts = allVocalLines.map((l) =>
+    asFiniteNumber(l.startAbs, 0),
+  );
+  const vocalBoundaryLens = onsetLengths(
+    vocalBoundaryStarts,
+    endAbs,
+    beatUnitQuarters,
+  );
+  const contentVocal = allVocalLines
+    .map((line, i) => ({ line, lengthBeats: vocalBoundaryLens[i]! }))
+    .filter(
+      ({ line }) =>
+        !line.rest && !/^vl-cd-/i.test(asString(line.id)),
+    );
+  const tekstClips = contentVocal.map(({ line, lengthBeats }, i) => ({
     id: asString(line.id, `tekst-${i}`),
     startTicks: toTicks(asFiniteNumber(line.startAbs, 0), shiftQuarters, ppq),
-    lengthTicks: Math.max(1, absBeatToTicks(vocalLens[i]!, ppq)),
+    lengthTicks: Math.max(1, absBeatToTicks(lengthBeats, ppq)),
     text: asString(line.text, ""),
   }));
 
-  // Akordy
+  // Akordy — length from onsets (or legacy lengthBeats); never min=bar for dense lines
   const chordClipsRaw = song.chords?.clips ?? [];
   const chordStarts = chordClipsRaw.map((c) => asFiniteNumber(c.startAbs, 0));
-  const chordLens = onsetLengths(chordStarts, endAbs, minBarBeats);
-  const akordyClips = chordClipsRaw.map((c, i) => ({
-    id: asString(c.id, `akord-${i}`),
-    startTicks: toTicks(asFiniteNumber(c.startAbs, 0), shiftQuarters, ppq),
-    lengthTicks: Math.max(1, absBeatToTicks(chordLens[i]!, ppq)),
-    symbol: asString(c.chord, "C") || "C",
-  }));
-
+  const chordLens = onsetLengths(chordStarts, endAbs, beatUnitQuarters);
+  const akordyClipsRaw = chordClipsRaw.map((c, i) => {
+    const derived = chordLens[i]!;
+    const fromLegacy =
+      c.lengthBeats != null && Number(c.lengthBeats) > 0
+        ? asFiniteNumber(c.lengthBeats, derived)
+        : derived;
+    return {
+      id: asString(c.id, `akord-${i}`),
+      startTicks: toTicks(asFiniteNumber(c.startAbs, 0), shiftQuarters, ppq),
+      lengthTicks: Math.max(1, absBeatToTicks(fromLegacy, ppq)),
+      symbol: asString(c.chord, "C") || "C",
+    };
+  });
+  const akordyClips = sealAkordyLengths(akordyClipsRaw);
   // Cue
   const cuesRaw = Array.isArray(song.cues) ? song.cues : [];
   const barTicks = ticksPerBar(defaultMeter, ppq);
@@ -385,8 +437,11 @@ export function migrateLegacySong(
     );
   }
 
+  // Scrub any leftover digit / CD-span clips — digits are display-only.
+  const project = scrubCountdownDigitClips(parsed.data);
+
   return {
-    project: parsed.data,
+    project,
     warnings,
     shiftQuarters,
     legacySongId,

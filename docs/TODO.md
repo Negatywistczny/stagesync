@@ -1,9 +1,11 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.8` (working tree) — **faza rebuild** wg [ADR 0011](./adr/0011-ui-parity-behavior.md).  
+**Stan:** `5.0.0-alpha.8` (code freeze) → aktywny etap **α9** — [report-alpha8-code-freeze.md](./analysis/reports/report-alpha8-code-freeze.md).  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
-**Zakaz β:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **bez** `beta.1` / tagu β, dopóki **PO smoke** (zachowanie, nie inventarz) + CI nie są green.
+**Zakaz β:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **bez** `beta.1` / tagu β, dopóki **PO smoke** (zachowanie) + **CL-01/04/05** + CI nie są green.
+
+**Audyt v4↔v5:** [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) · gap: [report-v4-v5-gap-audit.md](./analysis/reports/report-v4-v5-gap-audit.md) · UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 
 ## Procedura zamykania etapu
 
@@ -14,69 +16,59 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 3. Zastąp plik **wyłącznie** sekcją kolejnego etapu (nagłówek, link do scope report, must/should/release).
 4. Zaktualizuj `**Stan:**` na górze.
 
-## Rebuild alpha — parity behawioralna (przed β)
+## Alpha.9 — Migrator + dokończenie rebuild
 
-Hero: **przywrócić workflow v4 jako zachowanie** w spójnym UI v5 (nie clone chrome, nie odhaczanie inventarza).  
-Kontrakt: [ADR 0011](./adr/0011-ui-parity-behavior.md). Bramka: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md).
+Hero: migrator legacy 4.x → v5 + domknięcie residual parity (PO smoke + Client P0).  
+Scope: [report-scope-alpha9.md](./analysis/reports/report-scope-alpha9.md).  
+Kontrakt UI: [ADR 0011](./adr/0011-ui-parity-behavior.md).
 
-> **Reset statusu:** wcześniejsze `[x]` „engineering wired / inventarz done” **nie liczą się**. Done = green **PO smoke** na geście / flow.
+> **α8:** engineering **code freeze** — nie claim β. Residual poniżej = must α9 / wejście β.
 
-### Must — P0 Timeline (sterowanie + canvas)
+### Must — Migrator
 
-Referencja v4: `STAGESYNC-APP-LEGACY` `timeline.js` / `timeline.css` / `song-maps.js`.  
-Audyt luk: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md).
+- [x] MVP `migrateLegacy*` + CLI `pnpm migrate:legacy` ([MIGRATION.md](./MIGRATION.md)) — scope M1–M8
+- [ ] Fixtures / smoke migracji na typowej bazie 4.x + dry-run w CI lub docs
+- [ ] Admin import legacy: regresje vs CLI (pack `.stagesync.json` + `database.json`)
 
-- [x] **Grid:** barlines z `meterMap` (jak `iterBarBoundaries`); ruler **beat ticks** gdy px/bar ≥ 56
-- [x] **Zoom V + UI:** naprawdę zmieniają wysokość lane / skalę chrome (nie tylko H); `accent-color: primary` na range
-- [x] Forma: move / resize / pencil + **snap do miar taktu** — smoke (zoom ≠ default + scroll)
-- [x] Tekst / Akordy / Cue: move / resize / pencil + overwrite — j.w.
-- [x] **Mapy Tempo / Metrum / Tonacja** — poziom SongMaps v4
-- [ ] Locator / scrub / follow / loop region + transport SSOT
-- [x] Hit zones, gesturePreview, Cmd/Ctrl = snap off — smoke
-- [ ] Kotwice + scissors — smoke
-- [x] Header: song cluster **wyśrodkowany**; reguła wąskiego breakpointu (v4 ≤1100 — nie flex-only L/R)
-- [x] Help: proporcje jak v4 (szeroki panel, bez konfliktu min-width)
-- [x] Metadane: ścieżka ⓘ → sheet działa; pola jak v4 (title/artist/… w inspectorze)
-- [x] Playhead / loop: bez cyan/`info` jako „marki” — primary / selected
+### Must — PO smoke (z α8 freeze)
 
-### Must — P0 Client (treść ról)
+Checklisty: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) · [QA α8](./analysis/reports/report-qa-signoff-alpha8.md).
 
-- [x] Karaoke / grid akordów / Forma notes = **treść sceniczna**, nie suchy tekst
-- [x] Header wtórny wobec treści stage (nie odwrotnie)
-- [x] Role wired z transportem + kontekstem projektu (smoke na żywej roli)
+- [ ] **T-gest / T-loc / T-zoom / T-maps / T-chrome / meta** — green PO
+- [ ] **A1** Admin Set + song pick w jednym flow — green PO
+- [ ] **C1** Client treść ról (po CL-P0) — green PO
+- [ ] **P8** Sign-off PO — blokuje β
 
-### Must — P0 Admin (IA)
+### Must — Client P0 (CL)
 
-- [x] **Set + wybór utworów w jednym flow** (bez „zaznacz na innej zakładce”)
-- [x] Mniejsze powierzchnie ekranów (mniej „ścian” kontrolek)
-- [ ] Podział zakładek intuicyjny względem workflow live desk
+- [ ] **CL-01** Karaoke beat / bar highlight
+- [ ] **CL-04** Grid: full cycle / multi-bar
+- [ ] **CL-05** Forma / drums bar progress
 
 ### Must — proces / bramka
 
-- [ ] Inventarz aktualizowany **po** działającym geście ([ui-shell-inventory.md](./ui-shell-inventory.md) — wtórny)
-- [ ] Zakaz zamykania PR słowami *wired* / *partial* / *engineering ready* bez ścieżki PO smoke
-- [ ] CI: `pnpm lint && check-types && test && build`
-- [ ] **PO smoke** green ([report-qa-signoff-alpha8.md](./analysis/reports/report-qa-signoff-alpha8.md) + ADR 0011)
-- [ ] **Zakaz** bumpa / tagu `5.0.0-beta.*` do sign-off PO
+- [ ] CI: `pnpm lint && check-types && test && build` na zmergowanym drzewie
+- [ ] Inventarz aktualizowany **po** geście PO ([ui-shell-inventory.md](./ui-shell-inventory.md) — wtórny)
+- [ ] **Zakaz** bumpa / tagu `5.0.0-beta.*` do P8 + CL-P0 green
+- [ ] Bump/tag `5.0.0-alpha.9` tylko na prośbę
 
 ### Should
 
 - [ ] E2E smoke: Forma drag + transport
-- [x] Zoom tool drag-H (albo wyłączyć do czasu implementacji)
-- [x] Tablet/mobile tiers (`data-tl-tier` logika z v4 — RO mobile, nudge tablet)
-- [ ] Inspector podsekcji Formy — jeśli nie w P0 canvas
-- [ ] α9 migrator: utrzymanie MVP + fixtures (nie blokuje rebuild UI)
+- [ ] P1 Timeline z gap-audit (TE-07 Alt+copy, TE-13 scissors empty, …) — nie bloker β jeśli PO uzna P0
+- [ ] Inspector podsekcji Formy — jeśli nie pokryte smoke
 
-### OUT (świadome — nie blokują parity gate)
+### OUT (świadome — nie blokują α9 / nie są must β1)
 
 - git-apply / „Zaktualizuj teraz” — [ADR 0004](./adr/0004-updates-docker.md)
-- Audio tracks — lane UI ukryte; playback / gain / mute — **β2**
-- Docker-as-update / Tauri — **β1** (po parity + PO)
-- Host MIDI I/O — **β1**
+- Audio tracks / playback / gain / mute — **β2**
+- Docker / Tauri — **β1** (po P8 + migrator)
+- Host MIDI I/O — **β2**
+- **AD-01…03** Transpozycja / Lead / Edycja zdalna (API + Live Desk) — **β2** (brak atrap w chrome)
 - Pełny OSMD sync — stub OK
-- Clone chrome v4 „dla parity” — **zakaz** ([ADR 0011](./adr/0011-ui-parity-behavior.md))
+- Clone chrome v4 — **zakaz** ([ADR 0011](./adr/0011-ui-parity-behavior.md))
 
 ### Release
 
-- [ ] Tylko po PO smoke; bump/tag wyłącznie na prośbę
-- [ ] TODO → β1 **dopiero** po rebuild P0 + PO
+- [ ] Tag / bump α9 tylko na prośbę; CHANGELOG z Unreleased
+- [ ] TODO → β1 **dopiero** po P8 + CL-P0 + migrator green

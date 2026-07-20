@@ -61,7 +61,6 @@ export type FormaToolId =
   | "pencil"
   | "eraser"
   | "scissors"
-  | "zoom"
   | "wand";
 
 /** Hit zones only for Pointer / Smart — Pencil is exclusive draw. */
@@ -123,6 +122,7 @@ export type FormaGestureKind =
   | "move"
   | "resize-start"
   | "resize-end"
+  | "countdown-length"
   | "subsection-boundary";
 
 export type GestureLane = "forma" | "tekst" | "akordy" | "cue";
@@ -145,6 +145,8 @@ export type FormaGestureSession = {
   boundarySubIdx?: number;
   /** Relative boundary offset at gesture start. */
   originBoundaryRel?: number;
+  /** Multi-move same lane (v4 moveIds); resize ignores. */
+  moveIds?: string[];
 };
 
 export type FormaGesturePreview = {

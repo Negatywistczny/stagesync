@@ -157,6 +157,53 @@ export function moveClipNoOverlap(
 }
 
 /**
+ * Rigid multi-move (v4 moveIds + same Δ): translate selected clips together,
+ * then place into non-selected neighbors (cover-trim). Movers do not trim each other.
+ * Countdown ids in `moveIds` are ignored.
+ */
+export function moveClipsRigidDelta(
+  clips: FormaClip[],
+  moveIds: string[],
+  deltaTicks: number,
+  opts?: CollisionOpts,
+): FormaClip[] {
+  const idSet = new Set(moveIds.filter(Boolean));
+  if (!idSet.size || !Number.isFinite(deltaTicks) || deltaTicks === 0) {
+    return clips;
+  }
+  const floor = contentFloor(opts);
+  const delta = Math.trunc(deltaTicks);
+
+  const movers: FormaClip[] = [];
+  const nonMovers: FormaClip[] = [];
+  for (const clip of clips) {
+    if (!idSet.has(clip.id) || isCountdown(clip)) {
+      nonMovers.push(clip);
+      continue;
+    }
+    movers.push({
+      ...clip,
+      startTicks: Math.max(floor, clip.startTicks + delta),
+    });
+  }
+  if (!movers.length) return clips;
+
+  let result = nonMovers;
+  for (const m of sortClips(movers)) {
+    const countdown = result.find(isCountdown);
+    let placed = m;
+    if (countdown) {
+      const cdEnd = clipEnd(countdown);
+      if (placed.startTicks < cdEnd && clipEnd(placed) > countdown.startTicks) {
+        placed = { ...placed, startTicks: Math.max(floor, cdEnd) };
+      }
+    }
+    result = placeClipNoOverlap(result, placed);
+  }
+  return sortClips(result);
+}
+
+/**
  * Resize clip edge to `newEdgeTicks`. Auto-trims neighbors at contact.
  * Countdown → no-op. Start edge clamped to content floor; min length enforced.
  */

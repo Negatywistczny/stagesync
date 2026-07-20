@@ -39,8 +39,8 @@ export function ScorePane({ project, loading, hasActiveProjectId }: Props) {
         </ul>
       ) : (
         <p className={styles.muted}>
-          Brak pliku MusicXML w projekcie — dodaj w Admin → Pliki (kind
-          musicxml).
+          Brak pliku MusicXML w projekcie — dodaj w Admin → Utwory → Wybrany
+          (XML / Pliki projektu).
         </p>
       )}
     </div>

@@ -11,6 +11,8 @@ export type TransportContextValue = {
   state: TransportState;
   displayTicks: number;
   wsStatus: WsStatus;
+  /** Smoothed one-way transport latency from tick `sentAtMs` (null until first sample). */
+  latencyMs: number | null;
   commandPending: boolean;
   error: string | null;
   play: (body?: TransportPlayBody) => Promise<void>;

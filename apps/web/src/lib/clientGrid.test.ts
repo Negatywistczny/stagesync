@@ -11,4 +11,12 @@ describe("clientGrid", () => {
     expect(ctx.current?.symbol).toBe("Dm");
     expect(ctx.emptyReason).toBeNull();
   });
+
+  it("shows synthetic CD digits when playhead is in Countdown", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const ctx = buildGridLiveContext(p, -5000);
+    expect(ctx.emptyReason).toBeNull();
+    expect(ctx.current?.symbol).toBe("2");
+    expect(ctx.upcoming.map((c) => c.symbol)).toEqual(["1"]);
+  });
 });

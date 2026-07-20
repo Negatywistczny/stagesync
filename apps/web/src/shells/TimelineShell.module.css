@@ -36,18 +36,25 @@
   border-bottom: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
   backdrop-filter: blur(10px);
-  /* Wide: brand | centered song | actions (v4 ≤1100 swap). */
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /*
+   * Equal side tracks so songCluster shares the shell centerline with
+   * toolbarCenter (asymmetric brand vs actions must not shift the middle).
+   * Wide: brand | song | actions (≤1100 stacks controls).
+   */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas: "brand controls actions";
 }
 
 .headerBrand {
   grid-area: brand;
   justify-self: start;
+  min-width: 0;
 }
 
 .songCluster {
   grid-area: controls;
+  position: relative;
+  z-index: 1;
   justify-self: center;
   display: flex;
   flex-wrap: wrap;
@@ -63,10 +70,14 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--ss-space-2);
+  min-width: 0;
 }
 
 .toolBar,
+.toolbarCenter,
+.toolbarRight,
 .transport {
   display: flex;
   flex-wrap: wrap;
@@ -175,14 +186,63 @@
   position: relative;
   z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  /* Same equal-side template as .header — shared horizontal centerline. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: "tools center right";
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-5);
   padding: var(--ss-space-2) var(--ss-space-5);
   border-bottom: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
   backdrop-filter: blur(10px);
+}
+
+.toolBar {
+  grid-area: tools;
+  justify-self: start;
+  position: relative;
+  min-width: 0;
+}
+
+.toolbarCenter {
+  grid-area: center;
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.toolbarRight {
+  grid-area: right;
+  justify-self: end;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--ss-space-2) var(--ss-space-3);
+  }
+
+  .toolBar {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .toolbarCenter {
+    flex: 0 0 auto;
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+
+  .toolbarRight {
+    flex: 0 0 auto;
+  }
 }
 
 .wandMenu {
@@ -262,12 +322,29 @@
 }
 
 .dirty {
-  margin-left: auto;
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
   letter-spacing: var(--ss-tracking-label);
   text-transform: uppercase;
   color: var(--ss-color-primary);
+}
+
+.discardBtn {
+  color: var(--ss-color-danger);
+  border-color: color-mix(
+    in srgb,
+    var(--ss-color-danger) 55%,
+    var(--ss-color-border)
+  );
+}
+
+.saveBtn {
+  color: var(--ss-color-primary);
+  border-color: color-mix(
+    in srgb,
+    var(--ss-color-primary) 55%,
+    var(--ss-color-border)
+  );
 }
 
 .main {
@@ -299,10 +376,18 @@
 .canvasInner {
   --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
   flex-shrink: 0;
+  /* Fill scrollport when content is shorter/narrower (v4 `.timeline-canvas`). */
+  min-width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .canvasBody {
   position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .markerOverlay {
@@ -322,10 +407,11 @@
   bottom: 0;
   width: 2px;
   margin-left: -1px;
-  background: var(--ss-color-primary);
+  background: var(--ss-color-info);
   pointer-events: none;
   opacity: 0.9;
   z-index: 1;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ss-color-info) 35%, transparent);
 }
 
 .playheadMidi::before {
@@ -336,7 +422,7 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid var(--ss-color-primary);
+  border-top: 8px solid var(--ss-color-info);
 }
 
 .locator {
@@ -400,13 +486,15 @@
 .rulerDock {
   position: sticky;
   left: 0;
+  /* Above grid (--ss-z-grid) and playhead/locator (--ss-z-playhead). */
   z-index: var(--ss-z-sticky);
   display: flex;
   align-items: flex-start;
   min-height: calc((var(--ss-space-6) + var(--ss-space-1)) * var(--tl-zoom-ui));
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
     calc(var(--ss-space-2) * var(--tl-zoom-ui));
-  background: var(--ss-color-surface);
+  /* Opaque — scrolled barlines / locator must not show through the eye corner. */
+  background-color: var(--ss-color-surface);
   border-right: 1px solid var(--ss-color-border);
 }
 
@@ -455,22 +543,16 @@
 }
 
 .kotwiceClip {
-  background: color-mix(in srgb, var(--ss-color-success) 35%, transparent);
-  border: 1px solid var(--ss-color-success);
-  color: var(--ss-color-text);
+  /* Skin via [data-track="kotwice"]; keep compact type. */
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
-}
-
-.clipSelected {
-  outline: 2px solid var(--ss-color-primary);
-  outline-offset: 1px;
 }
 
 .trackRows {
   position: relative;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: var(--ss-space-1);
   padding: var(--ss-space-2) 0;
 }
@@ -485,6 +567,15 @@
   z-index: var(--ss-z-grid);
 }
 
+.marquee {
+  position: absolute;
+  z-index: var(--ss-z-overlay);
+  pointer-events: none;
+  border: 1px solid var(--ss-color-selected-border);
+  background: color-mix(in srgb, var(--ss-color-primary) 18%, transparent);
+  box-sizing: border-box;
+}
+
 .barGrid {
   position: absolute;
   inset: 0;
@@ -497,10 +588,12 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: color-mix(in srgb, var(--ss-color-border) 65%, transparent);
+  /* Match v4 `.timeline-bar-grid__line` (~25% border) — was too faint / easy to miss. */
+  background: color-mix(in srgb, var(--ss-color-border) 45%, transparent);
 }
 
 .trackRow {
+  position: relative;
   display: grid;
   grid-template-columns: var(--tl-dock-w) 1fr;
   min-height: var(--tl-row-h);
@@ -509,6 +602,7 @@
 .dockCell {
   position: sticky;
   left: 0;
+  /* Above grid (--ss-z-grid) and playhead/locator (--ss-z-playhead). */
   z-index: var(--ss-z-sticky);
   display: flex;
   align-items: center;
@@ -517,17 +611,82 @@
   min-height: var(--tl-row-h);
   padding: 0 calc(var(--ss-space-2) * var(--tl-zoom-ui));
   border-right: 1px solid var(--ss-color-border);
-  background: var(--ss-color-surface);
+  /* Opaque — no opacity on this node (see .dockMuted); v4 dock was solid. */
+  background-color: var(--ss-color-surface);
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
   color: var(--ss-color-text-muted);
 }
 
+/* Hit target stays on sticky dock; highlight spans full track row via :has(). */
+.laneResize {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--ss-space-1) * -1);
+  height: var(--ss-space-2);
+  z-index: calc(var(--ss-z-sticky) + 1);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: row-resize;
+  touch-action: none;
+  appearance: none;
+}
+
+.trackRow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: calc(var(--ss-z-sticky) + 2);
+  transform: translateY(50%);
+  transition:
+    background-color var(--ss-transition),
+    opacity var(--ss-transition);
+}
+
+@media (hover: hover) {
+  .trackRow:has(.laneResize:hover)::after {
+    background: color-mix(in srgb, var(--ss-color-primary) 85%, transparent);
+    opacity: 1;
+  }
+}
+
+.laneResize:focus-visible {
+  outline: none;
+}
+
+.trackRow:has(.laneResize:focus-visible)::after,
+.trackRow:has(.laneResizeActive)::after {
+  background: color-mix(in srgb, var(--ss-color-primary) 85%, transparent);
+  opacity: 1;
+}
+
+.laneResizing,
+.laneResizing * {
+  cursor: row-resize !important;
+  user-select: none !important;
+}
+
+.shell[data-tl-tier="mobile"] .laneResize {
+  display: none;
+}
+
+/* Mute label only — never opacity on .dockCell (would punch through surface). */
 .dockMuted {
-  opacity: 0.65;
+  color: color-mix(in srgb, var(--ss-color-text-muted) 65%, var(--ss-color-surface));
 }
 
 .eyeBtn {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: calc(var(--ss-space-8) * var(--tl-zoom-ui));
@@ -538,6 +697,13 @@
   background: var(--ss-color-bg);
   color: var(--ss-color-text-muted);
   cursor: pointer;
+}
+
+/* Lucide defaults to fixed 18px — scale glyph with Zoom UI (v4 lane-tool svg). */
+.eyeBtn svg,
+.tapBtn svg {
+  width: calc(18px * var(--tl-zoom-ui));
+  height: calc(18px * var(--tl-zoom-ui));
 }
 
 .eyeMenu {
@@ -577,10 +743,12 @@
 
 .tapBtn {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
+  width: calc(var(--ss-space-8) * var(--tl-zoom-ui));
+  height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
+  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
   padding: 0;
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
@@ -616,7 +784,8 @@
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
+  /* Darker than clip fills so clips read as discrete blocks. */
+  background: color-mix(in srgb, var(--ss-color-bg) 45%, var(--ss-color-surface));
   touch-action: pan-y;
 }
 
@@ -647,13 +816,16 @@
   bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   display: flex;
   align-items: center;
+  min-width: 4px;
+  box-sizing: border-box;
   padding: 0 calc(var(--ss-space-2) * var(--tl-zoom-ui));
-  border: 1px solid var(--ss-color-border);
+  border: 1px solid color-mix(in srgb, var(--ss-color-info) 40%, transparent);
   border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-primary) 14%, var(--ss-color-surface));
+  background: color-mix(in srgb, var(--ss-color-info) 14%, transparent);
   font: inherit;
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
-  color: var(--ss-color-text-muted);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-info);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -661,22 +833,27 @@
   text-align: left;
 }
 
-.mapSegment:hover {
-  color: var(--ss-color-text);
-  border-color: var(--ss-color-primary);
+@media (hover: hover) {
+  .mapSegment:hover:not(.mapSegmentSelected) {
+    background: color-mix(in srgb, var(--ss-color-info) 22%, transparent);
+  }
 }
 
 .mapSegmentSelected {
+  z-index: 2;
+  outline: 2px solid var(--ss-color-selected-border);
+  outline-offset: 1px;
   border-color: var(--ss-color-selected-border);
-  background: color-mix(in srgb, var(--ss-color-selected) 55%, var(--ss-color-surface));
-  color: var(--ss-color-text);
+  background: color-mix(in srgb, var(--ss-color-info) 24%, transparent);
+  color: var(--ss-color-info);
 }
 
 .mapSegmentDragging {
   cursor: grabbing;
   z-index: 2;
-  border-color: var(--ss-color-primary);
-  color: var(--ss-color-text);
+  border-color: var(--ss-color-selected-border);
+  background: color-mix(in srgb, var(--ss-color-info) 24%, transparent);
+  color: var(--ss-color-info);
 }
 
 .formaSubs {
@@ -694,13 +871,12 @@
 }
 
 .formaSubBandAlt {
-  background: color-mix(in srgb, var(--ss-color-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
 }
 
 .formaSubBandSelected {
   background: color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  box-shadow: inset 0 0 0 1px var(--ss-color-selected-border);
 }
 
 .formaSubBoundary {
@@ -723,12 +899,15 @@
   left: 50%;
   width: 2px;
   margin-left: -1px;
-  background: color-mix(in srgb, var(--ss-color-primary) 70%, transparent);
+  background: var(--ss-color-border);
 }
 
 .formaClipLabel {
   position: relative;
   z-index: 1;
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: inherit;
 }
 
 .helpBody {
@@ -828,6 +1007,9 @@
   position: absolute;
   top: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  /* Paint floor when Zoom H collapses short clips (<1–2px); ticks unchanged. */
+  min-width: 4px;
+  box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   touch-action: none;
@@ -840,12 +1022,6 @@
 
 .formaClipDim {
   opacity: 0.55;
-}
-
-.formaPreview {
-  pointer-events: none;
-  outline: 1px dashed var(--ss-color-primary);
-  background: color-mix(in srgb, var(--ss-color-primary) 28%, transparent);
 }
 
 .songList {
@@ -865,27 +1041,152 @@
   text-decoration: underline;
 }
 
+/*
+ * Clips — v4 intent: colorful translucent fills (~16–20%) + borders (~45%),
+ * via --ss-* + color-mix. Skins keyed off lane [data-track].
+ * Selected = stronger outline/border; fill stays same hue (slightly brighter),
+ * never solid amber flood.
+ */
 .clip {
+  box-sizing: border-box;
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
     calc(var(--ss-space-2) * var(--tl-zoom-ui));
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--ss-color-border) 45%, transparent);
   border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-primary) 22%, var(--ss-color-surface));
-  color: var(--ss-color-text);
+  background: color-mix(in srgb, var(--ss-color-primary) 16%, transparent);
+  color: var(--ss-color-primary);
   font: inherit;
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
   cursor: pointer;
   white-space: nowrap;
 }
 
-.clipOn {
-  outline: 1px solid var(--ss-color-primary);
+/* Forma / sections — primary ~20% */
+.laneCell[data-track="forma"] .clip:not(.clipLocked):not(.formaPreview) {
+  background: color-mix(in srgb, var(--ss-color-primary) 20%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  color: var(--ss-color-primary);
 }
 
+/* Tekst — info ~16% */
+.laneCell[data-track="tekst"] .clip {
+  background: color-mix(in srgb, var(--ss-color-info) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-info) 45%, transparent);
+  color: var(--ss-color-info);
+}
+
+/* Akordy — primary ~16% (distinct lane; same hue family as Forma) */
+.laneCell[data-track="akordy"] .clip {
+  background: color-mix(in srgb, var(--ss-color-primary) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  color: var(--ss-color-primary-hover);
+}
+
+/* Cue — warning ~16% */
+.laneCell[data-track="cue"] .clip {
+  background: color-mix(in srgb, var(--ss-color-warning) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-warning) 45%, transparent);
+  color: var(--ss-color-warning);
+}
+
+/* Kotwice — success ~16% */
+.laneCell[data-track="kotwice"] .clip {
+  background: color-mix(in srgb, var(--ss-color-success) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-success) 45%, transparent);
+  color: var(--ss-color-success);
+}
+
+@media (hover: hover) {
+  .laneCell[data-track="forma"]
+    .clip:hover:not(.clipOn):not(.clipSelected):not(.formaPreview):not(.clipLocked) {
+    background: color-mix(in srgb, var(--ss-color-primary) 28%, transparent);
+  }
+
+  .laneCell[data-track="tekst"]
+    .clip:hover:not(.clipOn):not(.clipSelected) {
+    background: color-mix(in srgb, var(--ss-color-info) 24%, transparent);
+  }
+
+  .laneCell[data-track="akordy"]
+    .clip:hover:not(.clipOn):not(.clipSelected) {
+    background: color-mix(in srgb, var(--ss-color-primary) 24%, transparent);
+  }
+
+  .laneCell[data-track="cue"]
+    .clip:hover:not(.clipOn):not(.clipSelected) {
+    background: color-mix(in srgb, var(--ss-color-warning) 24%, transparent);
+  }
+
+  .laneCell[data-track="kotwice"]
+    .clip:hover:not(.clipOn):not(.clipSelected) {
+    background: color-mix(in srgb, var(--ss-color-success) 24%, transparent);
+  }
+}
+
+/* Countdown — dashed + muted (not lane-colored). */
 .clipLocked {
-  opacity: 0.9;
+  opacity: 1;
   border-style: dashed;
-  border-color: var(--ss-color-border);
+  border-color: color-mix(in srgb, var(--ss-color-text-muted) 45%, transparent);
+  background: color-mix(in srgb, var(--ss-color-text-muted) 12%, transparent);
+  color: var(--ss-color-text-muted);
+}
+
+/* Selected — outline/border only; no amber fill flood. */
+.clip.clipSelected,
+.clip.clipOn {
+  z-index: 2;
+  outline: 2px solid var(--ss-color-selected-border);
+  outline-offset: 1px;
+  border-style: solid;
+  border-color: var(--ss-color-selected-border);
+}
+
+.laneCell[data-track="forma"] .clip.clipOn:not(.clipLocked),
+.laneCell[data-track="forma"] .clip.clipSelected:not(.clipLocked) {
+  background: color-mix(in srgb, var(--ss-color-primary) 28%, transparent);
+  color: var(--ss-color-primary);
+}
+
+.laneCell[data-track="tekst"] .clip.clipOn,
+.laneCell[data-track="tekst"] .clip.clipSelected {
+  background: color-mix(in srgb, var(--ss-color-info) 24%, transparent);
+  color: var(--ss-color-info);
+}
+
+.laneCell[data-track="akordy"] .clip.clipOn,
+.laneCell[data-track="akordy"] .clip.clipSelected {
+  background: color-mix(in srgb, var(--ss-color-primary) 24%, transparent);
+  color: var(--ss-color-primary-hover);
+}
+
+.laneCell[data-track="cue"] .clip.clipOn,
+.laneCell[data-track="cue"] .clip.clipSelected {
+  background: color-mix(in srgb, var(--ss-color-warning) 24%, transparent);
+  color: var(--ss-color-warning);
+}
+
+.laneCell[data-track="kotwice"] .clip.clipOn,
+.laneCell[data-track="kotwice"] .clip.clipSelected {
+  background: color-mix(in srgb, var(--ss-color-success) 24%, transparent);
+  color: var(--ss-color-success);
+}
+
+.clip.clipOn.clipLocked,
+.clip.clipSelected.clipLocked {
+  background: color-mix(in srgb, var(--ss-color-text-muted) 18%, transparent);
+  color: var(--ss-color-text-muted);
+}
+
+.clip.formaPreview {
+  pointer-events: none;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent);
+  color: var(--ss-color-primary);
+  outline: none;
 }
 
 .inspector {
@@ -924,6 +1225,48 @@
   gap: var(--ss-space-1);
   margin-top: var(--ss-space-2);
   font-size: var(--ss-text-sm);
+}
+
+.meterEditRow,
+.keyEditRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-2);
+}
+
+.meterEditRow .lengthInput,
+.meterEditRow .nameInput,
+.keyEditRow .nameInput {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.keyEditRow .nameInput:last-child {
+  width: 5.5rem;
+}
+
+.meterEditSlash {
+  font-size: var(--ss-text-lg);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text-muted);
+  user-select: none;
+}
+
+.metaKeyRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+  align-items: center;
+}
+
+.metaKeyRow .nameInput {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.metaKeyRow .nameInput:last-child {
+  width: 5.5rem;
 }
 
 .inspMulti {
@@ -1024,30 +1367,6 @@
   font: inherit;
 }
 
-.showInsp {
-  position: absolute;
-  right: var(--ss-space-2);
-  top: var(--ss-space-16);
-  writing-mode: vertical-rl;
-  padding: var(--ss-space-2) var(--ss-space-1);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-surface);
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-medium);
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .showInsp:hover {
-    transition: background-color var(--ss-transition), color var(--ss-transition);
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-  }
-}
-
 .status {
   position: relative;
   z-index: var(--ss-z-sticky);
@@ -1056,9 +1375,21 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-4);
-  padding: var(--ss-space-3) var(--ss-space-5);
+  padding: var(--ss-space-2) var(--ss-space-5);
   border-top: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
+}
+
+.statusLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.statusConnLab {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
 }
 
 .statusGroup {
@@ -1144,6 +1475,15 @@
   padding: var(--ss-space-2) var(--ss-space-4);
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
+  background: var(--ss-color-surface);
+  border-top: 1px solid var(--ss-color-border);
+}
+
+.canvasNotice {
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-4);
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text);
   background: var(--ss-color-surface);
   border-top: 1px solid var(--ss-color-border);
 }

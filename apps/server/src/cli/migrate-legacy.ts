@@ -12,6 +12,7 @@ import { readFile, writeFile, mkdir, copyFile, access } from "node:fs/promises";
 import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  detectLibraryImportFormat,
   migrateLegacyDatabase,
   SetlistSchema,
   LibrarySchema,
@@ -82,6 +83,17 @@ async function main(): Promise<void> {
 
   const inputPath = resolveUserPath(args.input);
   const raw: unknown = JSON.parse(await readFile(inputPath, "utf8"));
+  const detected = detectLibraryImportFormat(raw);
+  if (detected.format === "unknown") {
+    console.error(detected.reason);
+    process.exit(1);
+  }
+  if (detected.format === "v5-pack") {
+    console.error(
+      "To wygląda na pakiet v5 ({ projects }). CLI migrate:legacy obsługuje legacy database.json — użyj Admin → Utwory (Pliki) albo POST /api/library/import.",
+    );
+    process.exit(1);
+  }
   const result = migrateLegacyDatabase(raw as LegacyDatabase, {
     updatedAt: new Date().toISOString(),
   });

@@ -9,11 +9,13 @@ describe("client-presence", () => {
     presence.upsert("a", {
       displayName: "  Zosia  ",
       roles: ["drums", "drums", "nope", "karaoke"],
+      latencyMs: 18.7,
     });
     const list = presence.list();
     expect(list).toHaveLength(1);
     expect(list[0]?.displayName).toBe("Zosia");
     expect(list[0]?.roles).toEqual(["drums", "karaoke"]);
+    expect(list[0]?.latencyMs).toBe(19);
     presence.remove("a");
     expect(presence.list()).toHaveLength(0);
   });

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   BatchMidiPcBodySchema,
+  normalizeLibraryImport,
   ProjectSchemaV5,
   type PutProjectBody,
 } from "@stagesync/shared";
@@ -61,13 +62,21 @@ export function createLibraryRouter(stores: Stores): Router {
 
   router.post("/import", async (req, res) => {
     try {
-      const raw = req.body as { projects?: unknown };
-      if (!raw || !Array.isArray(raw.projects)) {
-        sendError(res, 400, "Invalid pack: expected { projects: Project[] }");
+      let normalized;
+      try {
+        normalized = normalizeLibraryImport(req.body, {
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        sendError(
+          res,
+          400,
+          err instanceof Error ? err.message : "Nieprawidłowy pakiet importu",
+        );
         return;
       }
       const created: string[] = [];
-      for (const item of raw.projects) {
+      for (const item of normalized.projects) {
         if (!item || typeof item !== "object") continue;
         const src = item as Record<string, unknown>;
         const name =
@@ -96,8 +105,18 @@ export function createLibraryRouter(stores: Stores): Router {
         await stores.putProject(project.id, body as PutProjectBody);
         created.push(project.id);
       }
+      if (created.length === 0) {
+        sendError(res, 400, "Import nie utworzył żadnego utworu");
+        return;
+      }
       const library = await stores.getLibrary();
-      res.status(201).json({ ok: true, created, library });
+      res.status(201).json({
+        ok: true,
+        created,
+        format: normalized.format,
+        warnings: normalized.warnings,
+        library,
+      });
     } catch (err) {
       handleRouteError(res, err);
     }

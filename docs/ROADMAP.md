@@ -12,8 +12,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.5** | Client roles poza Formą/`drums` | Karaoke wired z transportem + kontekstem projektu | [report-scope-alpha5](./analysis/reports/report-scope-alpha5.md) |
 | **5.0.0-alpha.6** | Admin Live Desk — setlista, scena, pliki | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze | [report-scope-alpha6](./analysis/reports/report-scope-alpha6.md) |
 | **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | [report-scope-alpha7](./analysis/reports/report-scope-alpha7.md) |
-| **5.0.0-alpha.8** | Parity workflow 4.x | **RESET / rebuild** — inventarz-first odrzucony; parity = zachowanie ([ADR 0011](./adr/0011-ui-parity-behavior.md)); [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) | QA: [report-qa-signoff-alpha8](./analysis/reports/report-qa-signoff-alpha8.md) |
-| **5.0.0-alpha.9** | Migrator + dokończenie rebuild | Migrator MVP ([MIGRATION.md](./MIGRATION.md)); **PO smoke** na P0 Timeline/Client/Admin | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) |
+| **5.0.0-alpha.8** | Parity workflow 4.x | **Code freeze 2026-07-20** — engineering must + rebuild TE-P0/CD/chrome/Admin; **nie** β ([freeze](./analysis/reports/report-alpha8-code-freeze.md)); residual PO + CL-P0 → α9 | QA: [report-qa-signoff-alpha8](./analysis/reports/report-qa-signoff-alpha8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) |
+| **5.0.0-alpha.9** | Migrator + dokończenie rebuild | Migrator MVP ([MIGRATION.md](./MIGRATION.md)); **PO smoke** P8; Client **CL-01/04/05** | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) · aktywny: [TODO.md](./TODO.md) |
 | **5.0.0-beta.1** | Host / dystrybucja | **ZAKAZ startu β** do green **PO smoke** (zachowanie, nie inventarz). Potem: Docker + Tauri + host (**bez** audio/MIDI — β2) | — |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
@@ -59,21 +59,20 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 - Tap, UG, Różdżka; edycja lane’ów Tekst/Akordy/Cue (ticks v2) — wg scope report
 - **OUT α7:** pełny stos Undo/Redo (draft + Zapisz/Odrzuć wystarczy); audio playback
 
-### Alpha 8 — zakres orientacyjny (+ rebuild)
+### Alpha 8 — zakres orientacyjny (+ rebuild) — **code freeze**
 
-- Pierwotny scope α8 (Akordy/Cue, scissors, Tap, UG, Undo, metronom…) = eksperyment w drzewie
-- **Rebuild (obowiązuje):** [ADR 0011](./adr/0011-ui-parity-behavior.md) —
-  Timeline sterowanie (zwłaszcza mapy Tempo/Metrum/Tonacja) → Client treść → Admin IA;
-  **zakaz** inventarz-first i clone chrome
-- Bramka: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) — open do PO smoke
-- **OUT α8:** audio/MIDI → β2; Docker / Tauri → β1; migrator → α9;
+- Pierwotny scope α8 (Akordy/Cue, scissors, Tap, UG, Undo, metronom…) = w kodzie
+- **Rebuild (ADR 0011):** Timeline TE-P0/CD/chrome + Admin polish = **code**; czeka PO smoke
+- Domknięcie: [report-alpha8-code-freeze.md](./analysis/reports/report-alpha8-code-freeze.md)
+- Bramka β: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) — **open** (P8 + CL)
+- **OUT α8:** audio/MIDI → β2; Docker / Tauri → β1; migrator hero → α9;
   git-apply (nigdy); Docker-as-update model
 
-### Alpha 9 — zakres orientacyjny
+### Alpha 9 — zakres orientacyjny (**aktywny**)
 
-- Migrator legacy 4.x → v5 (osobny etap; MVP może być wcześniej)
-- Dokończenie **rebuild** P0 jeśli TODO czerwone
-- **Przed β1:** PO smoke **green** (zachowanie) — nie wystarczy inventarz ani sam migrator
+- Migrator legacy 4.x → v5 (MVP już w drzewie — utrzymanie + fixtures)
+- **CL-01 / 04 / 05** Client P0 + **PO smoke** T/A/C (residual z α8 freeze)
+- **Przed β1:** PO smoke **green** (zachowanie) + migrator — nie wystarczy inventarz
 
 ### Beta 1 — zakres orientacyjny (host / dystrybucja)
 
@@ -127,6 +126,8 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 10. **Parity vs v4** ([ADR 0011](./adr/0011-ui-parity-behavior.md)): źródło = zachowanie w
     `STAGESYNC-APP-LEGACY`; **nie** clone chrome; inventarz wtórny; zakaz *engineering ready*
     bez PO smoke. Wyjątki tylko jako świadome OUT.
+    Audyt: [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) ·
+    UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 
 ## Granica 0
 

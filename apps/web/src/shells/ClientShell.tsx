@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@stagesync/ui";
 import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
-import { APP_VERSION } from "../lib/appVersion.js";
 import {
   loadClientDisplayPrefs,
   setFormNotesEdit,
@@ -34,31 +33,11 @@ import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
 
-const ROLES: { id: RoleId; label: string; blurb: string; icon: string }[] = [
-  {
-    id: "karaoke",
-    label: "Tekst",
-    blurb: "Tryb karaoke z liniami tekstu i podświetleniem beatów",
-    icon: "🎤",
-  },
-  {
-    id: "grid",
-    label: "Akordy",
-    blurb: "Akordy zsynchronizowane z utworem i sekcjami",
-    icon: "🎹",
-  },
-  {
-    id: "score",
-    label: "Partytura",
-    blurb: "Nuty MusicXML z podświetleniem taktu",
-    icon: "🎼",
-  },
-  {
-    id: "drums",
-    label: "Forma",
-    blurb: "Forma utworu — sekcje i takty bez tekstu",
-    icon: "🥁",
-  },
+const ROLES: { id: RoleId; label: string; icon: string }[] = [
+  { id: "karaoke", label: "Tekst", icon: "🎤" },
+  { id: "grid", label: "Akordy", icon: "🎹" },
+  { id: "score", label: "Partytura", icon: "🎼" },
+  { id: "drums", label: "Forma", icon: "🥁" },
 ];
 
 export function ClientShell() {
@@ -69,8 +48,15 @@ export function ClientShell() {
   const [started, setStarted] = useState(false);
   const [globalSettings, setGlobalSettings] = useState(false);
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
-  const { state, displayTicks, wsStatus, stageCue, play, announcePresence } =
-    useTransport();
+  const {
+    state,
+    displayTicks,
+    wsStatus,
+    latencyMs,
+    stageCue,
+    play,
+    announcePresence,
+  } = useTransport();
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const {
     activeProject,
@@ -186,6 +172,7 @@ export function ClientShell() {
 
   const headerProps = {
     wsStatus,
+    latencyMs,
     started,
     songTitle,
     bbt: headerBbt,
@@ -225,15 +212,6 @@ export function ClientShell() {
   }
 
   if (!started) {
-    const pickHint =
-      picked.length === 0
-        ? "Kliknij jedną lub dwie karty, potem Rozpocznij."
-        : picked.length === 1
-          ? `Wybrano: ${ROLES.find((r) => r.id === picked[0])!.label}. Dodaj drugą rolę lub kliknij Rozpocznij.`
-          : `Widok dzielony: ${picked
-              .map((id) => ROLES.find((r) => r.id === id)!.label)
-              .join(" + ")}`;
-
     return (
       <div className={styles.page}>
         <ClientHeader {...headerProps} started={false} />
@@ -270,11 +248,6 @@ export function ClientShell() {
             <h1 className={styles.welcomeTitle}>
               Wybierz <span className={styles.welcomeAccent}>rolę</span>
             </h1>
-            <p className={styles.welcomeHint}>
-              Połącz się z serwerem StageSync i wybierz widok dopasowany do
-              Twojego instrumentu. Możesz wybrać{" "}
-              <strong className={styles.welcomeEmph}>dwie role</strong>.
-            </p>
           </div>
 
           <div className={styles.roleGrid}>
@@ -294,14 +267,12 @@ export function ClientShell() {
                     {r.icon}
                   </span>
                   <strong className={styles.roleLabel}>{r.label}</strong>
-                  <span className={styles.roleBlurb}>{r.blurb}</span>
                 </button>
               );
             })}
           </div>
 
           <div className={styles.startBar}>
-            <p className={styles.pickHint}>{pickHint}</p>
             <Button
               variant="primary"
               className={styles.startBtn}
@@ -468,7 +439,7 @@ export function ClientShell() {
       </div>
 
       <p className={styles.transportNote}>
-        {state.playing ? "Play" : "Pause"} · {state.bpm} BPM · WS {wsStatus}
+        {state.playing ? "Play" : "Pause"} · {state.bpm} BPM
       </p>
     </div>
   );
@@ -476,6 +447,7 @@ export function ClientShell() {
 
 type ClientHeaderProps = {
   wsStatus: WsStatus;
+  latencyMs: number | null;
   started: boolean;
   songTitle: string;
   bbt: { bar: number; beat: number };
@@ -490,6 +462,7 @@ type ClientHeaderProps = {
 
 function ClientHeader({
   wsStatus,
+  latencyMs,
   started,
   songTitle,
   bbt,
@@ -504,7 +477,6 @@ function ClientHeader({
   return (
     <header className={styles.header}>
       <ShellWordmark
-        version={APP_VERSION}
         onClick={started && onBack ? onBack : undefined}
         title={started && onBack ? "Powrót do wyboru ról" : undefined}
       />
@@ -538,7 +510,7 @@ function ClientHeader({
       </span>
 
       <div className={styles.headerActions}>
-        <ConnectionIndicator status={wsStatus} />
+        <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
         <SettingsPopoverAnchor>
           <ShellIconButton
             label="Ustawienia globalne"

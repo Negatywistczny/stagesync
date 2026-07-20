@@ -3,6 +3,7 @@ import {
   deleteClip,
   insertSpanOverwrite,
   moveClipNoOverlap,
+  moveClipsRigidDelta,
   placeClipNoOverlap,
   resizeClipNoOverlap,
   splitClipAt,
@@ -140,6 +141,23 @@ describe("resizeClipNoOverlap", () => {
     expect(
       resizeClipNoOverlap(base(), "forma-cd", "end", -1000),
     ).toEqual(base());
+  });
+});
+
+describe("moveClipsRigidDelta", () => {
+  it("moves multiple sections by the same delta without trimming each other", () => {
+    const clips = base();
+    const next = moveClipsRigidDelta(
+      clips,
+      ["forma-intro", "forma-verse"],
+      3840,
+      { contentFloorTicks: 0 },
+    );
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(3840);
+    expect(next.find((c) => c.id === "forma-verse")?.startTicks).toBe(
+      VERSE.startTicks + 3840,
+    );
+    expect(next.find((c) => c.id === "forma-cd")).toEqual(CD);
   });
 });
 

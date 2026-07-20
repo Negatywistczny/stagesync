@@ -43,7 +43,7 @@ Zob. tabela w [ui-shell-inventory.md](../../ui-shell-inventory.md).
 | Batch PC / Ostrzeżenia / PC col | working | library fields + UI | **restored** |
 | MusicXML upload | working | asset kind musicxml | **restored** |
 | Wzory / Eksport lista | working | templates + `.stagesync.json` | **restored** |
-| Zoom H/V / tool | working | MVP sliders + tool | **restored** |
+| Zoom H/V / tool | working | suwaki H/V/UI (+ wheel); tool lupa **usunięte** | **restored** (bez tool) |
 | Wygląd light/contrast | working | `data-theme` tokens | **restored** |
 | Tempo BPM @ playhead | working | edit modal | **restored** |
 | Metadane PC/artist/genre | working | inspector | **restored** |
@@ -53,6 +53,15 @@ Zob. tabela w [ui-shell-inventory.md](../../ui-shell-inventory.md).
 
 ## Werdykt
 
-**Must M1–M11:** zaimplementowane; CI zielone.  
-Dead-controls restore (Restart first): wired w working tree — **nie commitowane automatycznie**.  
-Tag `v5.0.0-alpha.8` — **tylko na prośbę**.
+**Must M1–M11:** zaimplementowane; CI zielone (stan z sesji QA).  
+Dead-controls restore + rebuild TE-P0/CD/Admin: w working tree — **code freeze** 2026-07-20 ([report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md)).
+
+| Gate | Wynik |
+|------|-------|
+| Engineering α8 (must + rebuild code) | **freeze** |
+| PO smoke (P8) | **open** → α9 |
+| Client CL-01/04/05 | **open** → α9 |
+| β ready | **nie** |
+
+Tag `v5.0.0-alpha.8` / bump `alpha.9` — **tylko na prośbę** (osobny commit).  
+**Zakaz** `5.0.0-beta.*` do green P8 + CL-P0.

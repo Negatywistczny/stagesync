@@ -14,6 +14,7 @@ import {
   resolveTempoAt,
   resolveKeyAt,
   formatKeySignature,
+  parseLegacyMeter,
   ticksPerBar,
   ticksToBbt,
   toDisplayBar,
@@ -32,6 +33,7 @@ import {
   computeFormaViewSpan,
   DEFAULT_PX_PER_BAR,
   projectContentEqual,
+  scrollLeftKeepTickAnchored,
   snapEditTicks,
   tickToPx,
   ticksFromPointer,
@@ -43,6 +45,28 @@ import {
   previewFromSession,
   splitFormaClipAt,
 } from "../lib/formaEdit.js";
+import {
+  buildClipboardFromClips,
+  deleteClipsOnLane,
+  pasteClipboardAt,
+  selectionMaxEndTicks,
+  type TimelineClipboard,
+} from "../lib/timelineClipboard.js";
+import {
+  clearSelection,
+  EMPTY_CLIP_SELECTION,
+  isMarqueeClick,
+  isMultiSelectClick,
+  marqueeSelectFromHits,
+  rectsIntersect,
+  resolveMoveIds,
+  selectRangeTo,
+  selectSingle,
+  setSelection,
+  toggleSelected,
+  type ClipSelection,
+  type ClipSelectionLane,
+} from "../lib/timelineSelection.js";
 import {
   subsectionRanges,
 } from "../lib/formaSubsections.js";
@@ -105,6 +129,11 @@ import {
   updateScoreAnchor,
 } from "../lib/scoreBarEdit.js";
 import {
+  snapLoopRange,
+  ticksInLoopRegion,
+  usableLoopRange,
+} from "../lib/timelineLocator.js";
+import {
   canRedo,
   canUndo,
   createDraftHistory,
@@ -155,6 +184,19 @@ import {
   TRACKS,
   type CoreTrackId,
 } from "../lib/timelineTracks.js";
+import {
+  clearLaneHeightOverride,
+  DEFAULT_LANE_PX,
+  laneHeightBase,
+  laneHeightEffective,
+  loadLaneHeights,
+  MAX_LANE_PX,
+  MIN_LANE_PX,
+  saveLaneHeights,
+  scaleLaneHeights,
+  setLaneHeightOverride,
+  type LaneHeightsMap,
+} from "../lib/timelineLaneHeights.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -163,6 +205,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconClose,
+  IconDiscard,
   IconEraser,
   IconEye,
   IconFollow,
@@ -176,6 +219,7 @@ import {
   IconPlay,
   IconPointer,
   IconRedo,
+  IconSave,
   IconScissors,
   IconSmart,
   IconStop,
@@ -184,10 +228,9 @@ import {
   IconUnchecked,
   IconUndo,
   IconWand,
-  IconZoom,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
-import { connectionStatusLabel } from "./ConnectionIndicator.js";
+import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import {
   SettingsPopover,
   ShellAppearanceFields,
@@ -236,13 +279,6 @@ const TOOLS: {
     Icon: IconScissors,
   },
   {
-    id: "zoom",
-    label: "Zoom",
-    title: "Zoom — suwaki H / V / UI w statusie (drag na canvasie wkrótce)",
-    Icon: IconZoom,
-    disabled: true,
-  },
-  {
     id: "wand",
     label: "Różdżka",
     title: "Różdżka — Tekst/Akordy → Forma",
@@ -275,8 +311,10 @@ export function TimelineShell() {
     play,
     pause,
     stop,
+    seek,
     setLoop,
   } = useTransport();
+  const wasPlayingRef = useRef(state.playing);
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
 
   const [savedProject, setSavedProject] = useState<Project | null>(null);
@@ -309,8 +347,33 @@ export function TimelineShell() {
     }
   });
   const [zoomH, setZoomH] = useState(DEFAULT_PX_PER_BAR);
-  const [zoomV, setZoomV] = useState(72);
+  const [zoomV, setZoomV] = useState(DEFAULT_LANE_PX);
   const [zoomUi, setZoomUi] = useState(100);
+  const [laneHeights, setLaneHeights] = useState<LaneHeightsMap>(() =>
+    loadLaneHeights(),
+  );
+  const [laneResizeTrackId, setLaneResizeTrackId] = useState<string | null>(
+    null,
+  );
+  const laneResizeRef = useRef<{
+    trackId: string;
+    startY: number;
+    startHeightBase: number;
+    pointerId: number;
+  } | null>(null);
+  const laneHeightsRef = useRef(laneHeights);
+  laneHeightsRef.current = laneHeights;
+  const uiScale = zoomUi / 100;
+  /** v4 effectivePxPerBar / lane × UI scale. */
+  const effectiveZoomH = zoomH * uiScale;
+  const effectiveZoomV = Math.max(1, Math.round(zoomV * uiScale));
+  /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
+  const ZOOM_H_STEP = 4;
+  const ZOOM_H_MIN = 24;
+  const ZOOM_H_MAX = 160;
+  const ZOOM_V_STEP = 4;
+  const ZOOM_V_MIN = MIN_LANE_PX;
+  const ZOOM_V_MAX = MAX_LANE_PX;
   const [touchTier, setTouchTier] = useState<TimelineTouchTier>(() =>
     typeof window !== "undefined" ? detectTimelineTier() : "desktop",
   );
@@ -331,6 +394,8 @@ export function TimelineShell() {
     pointerId: number;
     originTicks: number;
     originClientX: number;
+    /** Ruler empty area vs locator handle (v4 click-in-loop toggles only on ruler). */
+    source: "ruler" | "locator";
   } | null>(null);
   const mapDragRef = useRef<{
     lane: MapLaneId;
@@ -365,31 +430,73 @@ export function TimelineShell() {
   const [trackVisibility, setTrackVisibility] = useState(defaultTrackVisibility);
   const [eyeOpen, setEyeOpen] = useState(false);
   const [locatorTicks, setLocatorTicks] = useState(0);
-  const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
+  /** Forma/content multi-select (v4 selectedIds + primaryId). */
+  const [clipSelection, setClipSelection] =
+    useState<ClipSelection>(EMPTY_CLIP_SELECTION);
+  const selectedIds = clipSelection.selectedIds;
+  const primaryId = clipSelection.primaryId;
+  const selectionLane = clipSelection.lane;
+  const selectedClipId = selectionLane === "forma" ? primaryId : null;
+  const selectedTekstClipId = selectionLane === "tekst" ? primaryId : null;
+  const selectedAkordClipId = selectionLane === "akordy" ? primaryId : null;
+  const selectedCueClipId = selectionLane === "cue" ? primaryId : null;
   /** Forma subsection band index when a section clip is selected (v4 selectedSubsectionIdx). */
   const [selectedSubsectionIdx, setSelectedSubsectionIdx] = useState<
     number | null
   >(null);
-  const [selectedTekstClipId, setSelectedTekstClipId] = useState<string | null>(
+  const clipboardRef = useRef<TimelineClipboard | null>(null);
+  const marqueeRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+  const [marqueeBox, setMarqueeBox] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
+  const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const [selectedAkordClipId, setSelectedAkordClipId] = useState<string | null>(
-    null,
-  );
-  const [selectedCueClipId, setSelectedCueClipId] = useState<string | null>(
-    null,
-  );
-  const [inspectorOpen, setInspectorOpen] = useState(true);
   const [gestureSession, setGestureSession] =
     useState<FormaGestureSession | null>(null);
   const [gesturePreview, setGesturePreview] =
     useState<FormaGesturePreview | null>(null);
   const gestureSessionRef = useRef<FormaGestureSession | null>(null);
   const gesturePreviewRef = useRef<FormaGesturePreview | null>(null);
+  /** Last viewSpan.start while CD length gesture adjusts scroll (v4). */
+  const cdSpanStartRef = useRef<number | null>(null);
   const draftRef = useRef<Project | null>(null);
   const viewSpanRef = useRef({ start: 0, end: 0 });
   const barTicksRef = useRef(3840);
   const zoomHRef = useRef(DEFAULT_PX_PER_BAR);
+  const zoomHBaseRef = useRef(DEFAULT_PX_PER_BAR);
+  const zoomVBaseRef = useRef(DEFAULT_LANE_PX);
+  const uiScaleRef = useRef(1);
+  const keyHandlersRef = useRef({
+    onSave: async () => {},
+    onDiscard: () => {},
+    onUndo: () => {},
+    onRedo: () => {},
+    onPlayOrPause: () => {},
+    onMetronomeToggle: async () => {},
+    onLoopToggle: () => {},
+    onTool: (_id: ToolId) => {},
+    nudgeLocator: (_dir: -1 | 1) => {},
+    fitZoom: () => {},
+    zoomHorizontalBySteps: (_steps: number, _anchorViewportX?: number) => {},
+    zoomVerticalBySteps: (_steps: number) => {},
+    dirty: false,
+    savePending: false,
+    playing: false,
+    tool: "pointer" as ToolId,
+    prevSetlistId: null as string | null,
+    nextSetlistId: null as string | null,
+  });
 
   const reloadProject = useCallback(async (id: string) => {
     setLoading(true);
@@ -400,10 +507,11 @@ export function TimelineShell() {
       setSavedProject(project);
       setDraftProject(project);
       setDraftHistory(createDraftHistory(project));
-      setSelectedClipId(project.forma.clips[0]?.id ?? null);
-      setSelectedTekstClipId(null);
-      setSelectedAkordClipId(null);
-      setSelectedCueClipId(null);
+      const first = project.forma.clips[0]?.id ?? null;
+      setClipSelection(
+        first ? selectSingle(first, "forma") : clearSelection(),
+      );
+      setSelectedSubsectionIdx(null);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Nie udało się wczytać");
       setSavedProject(null);
@@ -421,12 +529,20 @@ export function TimelineShell() {
     );
   }, []);
 
-  const clearContentSelection = useCallback(() => {
-    setSelectedTekstClipId(null);
-    setSelectedAkordClipId(null);
-    setSelectedCueClipId(null);
-    setSelectedAnchorId(null);
+  const clearClipSelection = useCallback(() => {
+    setClipSelection(clearSelection());
+    setSelectedSubsectionIdx(null);
   }, []);
+
+  const selectLaneClip = useCallback(
+    (lane: ClipSelectionLane, id: string) => {
+      setClipSelection(selectSingle(id, lane));
+      if (lane !== "forma") setSelectedSubsectionIdx(null);
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+    },
+    [],
+  );
 
   const clearMapSelection = useCallback(() => {
     setSelectedMapIds([]);
@@ -435,16 +551,15 @@ export function TimelineShell() {
   }, []);
 
   const setMapSelection = useCallback(
-    (lane: MapLaneId, ids: string[], primaryId: string | null) => {
+    (lane: MapLaneId, ids: string[], mapPrimaryId: string | null) => {
       setSelectedMapLane(lane);
       setSelectedMapIds(ids);
-      setPrimaryMapId(primaryId);
-      setSelectedClipId(null);
-      setSelectedSubsectionIdx(null);
-      clearContentSelection();
+      setPrimaryMapId(mapPrimaryId);
+      clearClipSelection();
+      setSelectedAnchorId(null);
       setSongMetaOpen(false);
     },
-    [clearContentSelection],
+    [clearClipSelection],
   );
 
   useEffect(() => {
@@ -550,36 +665,105 @@ export function TimelineShell() {
       }
       return;
     }
-    if (selectedTekstClipId) {
-      commitDraft(deleteTekstClip(draft, selectedTekstClipId));
-      setSelectedTekstClipId(null);
+    if (!selectionLane || !selectedIds.length) return;
+    if (selectionLane === "forma") {
+      const hasCountdown = selectedIds.some((id) => {
+        const c = draft.forma.clips.find((x) => x.id === id);
+        return c?.kind === "countdown";
+      });
+      if (hasCountdown && selectedIds.length === 1) return;
+      const ids = selectedIds.filter((id) => {
+        const c = draft.forma.clips.find((x) => x.id === id);
+        return c && c.kind !== "countdown";
+      });
+      if (!ids.length) return;
+      commitDraft(deleteClipsOnLane(draft, "forma", ids));
+      clearClipSelection();
       return;
     }
-    if (selectedAkordClipId) {
-      commitDraft(deleteAkordyClip(draft, selectedAkordClipId));
-      setSelectedAkordClipId(null);
-      return;
-    }
-    if (selectedCueClipId) {
-      commitDraft(deleteCueClip(draft, selectedCueClipId));
-      setSelectedCueClipId(null);
-      return;
-    }
-    if (!selectedClipId) return;
-    const clip = draft.forma.clips.find((c) => c.id === selectedClipId);
-    if (!clip || clip.kind === "countdown") return;
-    commitDraft(deleteFormaClip(draft, selectedClipId));
-    setSelectedClipId(null);
+    commitDraft(deleteClipsOnLane(draft, selectionLane, selectedIds));
+    clearClipSelection();
   }, [
+    clearClipSelection,
     clearMapSelection,
     commitDraft,
-    selectedClipId,
+    selectedIds,
     selectedMapIds,
     selectedMapLane,
-    selectedTekstClipId,
-    selectedAkordClipId,
-    selectedCueClipId,
+    selectionLane,
   ]);
+
+  const copyClipSelection = useCallback((): boolean => {
+    const draft = draftRef.current;
+    if (!draft || !selectionLane || !selectedIds.length) return false;
+    const idSet = new Set(selectedIds);
+    let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
+    if (selectionLane === "forma") {
+      clips = draft.forma.clips.filter(
+        (c) => idSet.has(c.id) && c.kind === "section",
+      );
+    } else if (selectionLane === "tekst") {
+      clips = draft.tekst.clips.filter((c) => idSet.has(c.id));
+    } else if (selectionLane === "akordy") {
+      clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
+    } else {
+      clips = draft.cue.clips.filter((c) => idSet.has(c.id));
+    }
+    const board = buildClipboardFromClips(selectionLane, clips);
+    if (!board) return false;
+    clipboardRef.current = board;
+    return true;
+  }, [selectedIds, selectionLane]);
+
+  const pasteClipClipboard = useCallback(
+    (anchorTicks: number): boolean => {
+      const draft = draftRef.current;
+      const board = clipboardRef.current;
+      if (!draft || !board) return false;
+      const result = pasteClipboardAt(draft, board, anchorTicks);
+      if (!result) return false;
+      commitDraft(result.project);
+      setClipSelection(
+        setSelection(result.newIds, result.newIds[result.newIds.length - 1]!, board.lane),
+      );
+      setSelectedSubsectionIdx(null);
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      const maxEnd = selectionMaxEndTicks(
+        board.items.map((it, i) => ({
+          id: result.newIds[i] ?? `n${i}`,
+          startTicks:
+            anchorTicks + (it.startTicks - board.items[0]!.startTicks),
+          lengthTicks: it.lengthTicks,
+        })),
+      );
+      setLocatorTicks(Math.max(0, maxEnd));
+      return true;
+    },
+    [clearMapSelection, commitDraft],
+  );
+
+  const duplicateClipSelection = useCallback((): boolean => {
+    const draft = draftRef.current;
+    if (!draft || !selectionLane || !selectedIds.length) return false;
+    if (!copyClipSelection()) return false;
+    const idSet = new Set(selectedIds);
+    const clips =
+      selectionLane === "forma"
+        ? draft.forma.clips.filter((c) => idSet.has(c.id) && c.kind === "section")
+        : selectionLane === "tekst"
+          ? draft.tekst.clips.filter((c) => idSet.has(c.id))
+          : selectionLane === "akordy"
+            ? draft.akordy.clips.filter((c) => idSet.has(c.id))
+            : draft.cue.clips.filter((c) => idSet.has(c.id));
+    return pasteClipClipboard(selectionMaxEndTicks(clips));
+  }, [copyClipSelection, pasteClipClipboard, selectedIds, selectionLane]);
+
+  const cutClipSelection = useCallback((): boolean => {
+    if (!copyClipSelection()) return false;
+    deleteSelectedFormaClip();
+    return true;
+  }, [copyClipSelection, deleteSelectedFormaClip]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -592,10 +776,110 @@ export function TimelineShell() {
       ) {
         return;
       }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+      const h = keyHandlersRef.current;
+      const mod = e.metaKey || e.ctrlKey;
+      const key = e.key.toLowerCase();
+
+      if (mod && key === "s") {
         e.preventDefault();
-        if (e.shiftKey) onRedo();
-        else onUndo();
+        if (h.dirty && !h.savePending) void h.onSave();
+        return;
+      }
+      if (mod && key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) h.onRedo();
+        else h.onUndo();
+        return;
+      }
+      if (mod && key === "y") {
+        e.preventDefault();
+        h.onRedo();
+        return;
+      }
+      if (mod && !e.altKey && key === "c") {
+        e.preventDefault();
+        copyClipSelection();
+        return;
+      }
+      if (mod && !e.altKey && key === "x") {
+        e.preventDefault();
+        cutClipSelection();
+        return;
+      }
+      if (mod && !e.altKey && key === "v") {
+        e.preventDefault();
+        pasteClipClipboard(locatorTicks);
+        return;
+      }
+      if (mod && !e.altKey && key === "d") {
+        e.preventDefault();
+        duplicateClipSelection();
+        return;
+      }
+      if (mod && !e.altKey) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          h.zoomHorizontalBySteps(-1);
+          return;
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          h.zoomHorizontalBySteps(1);
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          h.zoomVerticalBySteps(1);
+          return;
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          h.zoomVerticalBySteps(-1);
+          return;
+        }
+      }
+      if (!mod && !e.altKey && (e.key === " " || e.code === "Space")) {
+        e.preventDefault();
+        h.onPlayOrPause();
+        return;
+      }
+      if (!mod && !e.altKey && key === "c") {
+        e.preventDefault();
+        h.onLoopToggle();
+        return;
+      }
+      if (!mod && !e.altKey && key === "k") {
+        e.preventDefault();
+        void h.onMetronomeToggle();
+        return;
+      }
+      if (!mod && !e.altKey && key === "w") {
+        e.preventDefault();
+        h.onTool("wand");
+        return;
+      }
+      if (!mod && !e.altKey && key === "z") {
+        e.preventDefault();
+        h.fitZoom();
+        return;
+      }
+      if (!mod && !e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        e.preventDefault();
+        h.nudgeLocator(e.key === "ArrowLeft" ? -1 : 1);
+        return;
+      }
+      if (
+        !mod &&
+        e.altKey &&
+        !e.shiftKey &&
+        (e.key === "ArrowLeft" || e.key === "ArrowRight")
+      ) {
+        const id =
+          e.key === "ArrowRight" ? h.nextSetlistId : h.prevSetlistId;
+        if (id) {
+          e.preventDefault();
+          navigate(`/timeline/${id}`);
+        }
         return;
       }
       if (e.key !== "Delete" && e.key !== "Backspace") return;
@@ -604,7 +888,69 @@ export function TimelineShell() {
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [deleteSelectedFormaClip]);
+  }, [
+    copyClipSelection,
+    cutClipSelection,
+    deleteSelectedFormaClip,
+    duplicateClipSelection,
+    locatorTicks,
+    navigate,
+    pasteClipClipboard,
+  ]);
+
+  useEffect(() => {
+    const scrollEl = document.querySelector(
+      "[data-canvas-scroll]",
+    ) as HTMLElement | null;
+    if (!scrollEl) return;
+
+    function onWheel(e: WheelEvent) {
+      const t = document.activeElement as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.isContentEditable)
+      ) {
+        return;
+      }
+      const h = keyHandlersRef.current;
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const steps = e.deltaY < 0 ? 1 : e.deltaY > 0 ? -1 : 0;
+        const rect = scrollEl!.getBoundingClientRect();
+        h.zoomHorizontalBySteps(steps, e.clientX - rect.left);
+        return;
+      }
+      if (e.altKey) {
+        e.preventDefault();
+        const useHorizontal =
+          e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY);
+        if (useHorizontal) {
+          const delta =
+            Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+          const steps = delta < 0 ? 1 : delta > 0 ? -1 : 0;
+          const rect = scrollEl!.getBoundingClientRect();
+          h.zoomHorizontalBySteps(steps, e.clientX - rect.left);
+        } else {
+          const steps = e.deltaY < 0 ? 1 : e.deltaY > 0 ? -1 : 0;
+          h.zoomVerticalBySteps(steps);
+        }
+        return;
+      }
+      if (
+        e.shiftKey &&
+        Math.abs(e.deltaY) > Math.abs(e.deltaX) &&
+        e.deltaY !== 0
+      ) {
+        e.preventDefault();
+        scrollEl!.scrollLeft += e.deltaY;
+      }
+    }
+
+    scrollEl.addEventListener("wheel", onWheel, { passive: false });
+    return () => scrollEl.removeEventListener("wheel", onWheel);
+  }, [projectId, draftProject]);
 
   useLayoutEffect(() => {
     if (!eyeOpen) {
@@ -641,10 +987,26 @@ export function TimelineShell() {
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [eyeOpen]);
 
-  const viewSpan = useMemo(
-    () => computeFormaViewSpan(draftProject?.forma.clips ?? []),
-    [draftProject?.forma.clips],
-  );
+  const viewSpan = useMemo(() => {
+    const clips = draftProject?.forma.clips ?? [];
+    if (
+      gesturePreview?.kind === "countdown-length" &&
+      gesturePreview.clipId
+    ) {
+      return computeFormaViewSpan(
+        clips.map((c) =>
+          c.id === gesturePreview.clipId
+            ? {
+                ...c,
+                startTicks: gesturePreview.startTicks,
+                lengthTicks: gesturePreview.lengthTicks,
+              }
+            : c,
+        ),
+      );
+    }
+    return computeFormaViewSpan(clips);
+  }, [draftProject?.forma.clips, gesturePreview]);
 
   const barTicks = draftProject
     ? ticksPerBar(draftProject.defaultMeter, draftProject.ppq)
@@ -652,11 +1014,59 @@ export function TimelineShell() {
 
   viewSpanRef.current = viewSpan;
   barTicksRef.current = barTicks;
-  zoomHRef.current = zoomH;
+  zoomHRef.current = effectiveZoomH;
+  zoomHBaseRef.current = zoomH;
+  zoomVBaseRef.current = zoomV;
+  uiScaleRef.current = uiScale;
+
+  // Countdown length: keep song start (tick 0) anchored while pre-roll grows/shrinks.
+  useLayoutEffect(() => {
+    const cdGesture =
+      gestureSessionRef.current?.kind === "countdown-length" ||
+      gesturePreview?.kind === "countdown-length";
+    if (cdGesture) {
+      if (cdSpanStartRef.current == null) {
+        cdSpanStartRef.current = viewSpan.start;
+        return;
+      }
+      if (cdSpanStartRef.current === viewSpan.start) return;
+      const scroll = document.querySelector(
+        "[data-canvas-scroll]",
+      ) as HTMLElement | null;
+      if (scroll) {
+        scroll.scrollLeft = scrollLeftKeepTickAnchored(
+          cdSpanStartRef.current,
+          viewSpan.start,
+          scroll.scrollLeft,
+          barTicks,
+          effectiveZoomH,
+        );
+      }
+      cdSpanStartRef.current = viewSpan.start;
+      return;
+    }
+    if (cdSpanStartRef.current != null) {
+      if (cdSpanStartRef.current !== viewSpan.start) {
+        const scroll = document.querySelector(
+          "[data-canvas-scroll]",
+        ) as HTMLElement | null;
+        if (scroll) {
+          scroll.scrollLeft = scrollLeftKeepTickAnchored(
+            cdSpanStartRef.current,
+            viewSpan.start,
+            scroll.scrollLeft,
+            barTicks,
+            effectiveZoomH,
+          );
+        }
+      }
+      cdSpanStartRef.current = null;
+    }
+  }, [viewSpan.start, gesturePreview?.kind, barTicks, effectiveZoomH]);
 
   const canvasWidthPx = useMemo(
-    () => computeCanvasWidthPx(viewSpan, barTicks, zoomH),
-    [viewSpan, barTicks, zoomH],
+    () => computeCanvasWidthPx(viewSpan, barTicks, effectiveZoomH),
+    [viewSpan, barTicks, effectiveZoomH],
   );
 
   const barMarks = useMemo(() => {
@@ -666,13 +1076,13 @@ export function TimelineShell() {
 
   const rulerBeatMarks = useMemo(() => {
     if (!draftProject) return [];
-    return buildRulerBeatMarks(viewSpan, draftProject, zoomH);
-  }, [draftProject, viewSpan, zoomH]);
+    return buildRulerBeatMarks(viewSpan, draftProject, effectiveZoomH);
+  }, [draftProject, viewSpan, effectiveZoomH]);
 
-  const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, zoomH);
+  const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, effectiveZoomH);
 
   const effectiveLocatorTicks = state.playing ? displayTicks : locatorTicks;
-  const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, zoomH);
+  const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
     : state.timeSignature;
@@ -682,7 +1092,9 @@ export function TimelineShell() {
     draftProject?.ppq ?? state.ppq,
   );
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
-  const showMidiPlayhead = !state.playing;
+  // v4: cyan MIDI overlay only when external clock is live and Timeline is not the
+  // transport source. Alpha: server Timeline owns play → no separate MIDI overlay (β2).
+  const showMidiPlayhead = false;
 
   // Follow playhead: keep playhead in horizontal view while playing.
   useEffect(() => {
@@ -701,11 +1113,17 @@ export function TimelineShell() {
     }
   }, [followPlayhead, playheadPx, state.playing]);
 
+  // After pause/stop: yellow locator stays at last transport position (v4).
+  useEffect(() => {
+    if (wasPlayingRef.current && !state.playing) {
+      setLocatorTicks(state.positionTicks);
+    }
+    wasPlayingRef.current = state.playing;
+  }, [state.playing, state.positionTicks]);
+
   const loopOn = Boolean(state.loop?.enabled);
-  const loopRange = loopDraft ??
-    (state.loop && state.loop.endTicks > state.loop.startTicks
-      ? { startTicks: state.loop.startTicks, endTicks: state.loop.endTicks }
-      : null);
+  const loopRange =
+    loopDraft ?? usableLoopRange(state.loop);
 
   const mapPreviewProject = useMemo(() => {
     if (!draftProject || !mapDragPreview) return draftProject;
@@ -828,7 +1246,7 @@ export function TimelineShell() {
     }
     setDraftProject(savedProject);
     setDraftHistory(resetDraftHistory(savedProject));
-    clearContentSelection();
+    clearClipSelection();
   }
 
   function onUndo() {
@@ -851,12 +1269,22 @@ export function TimelineShell() {
 
   async function onPlayClick() {
     await resumeMetronomeAudio(getMetronomeAudioContext());
+    const startTicks = locatorTicks;
     metroBeatRef.current = metronomeBeatIndex(
-      displayTicks,
+      startTicks,
       state.timeSignature,
       state.ppq,
     );
+    // v4: play from locator bar/beat — seek SSOT then play.
+    if (startTicks !== state.positionTicks) {
+      await seek(startTicks);
+    }
     await play({ projectId });
+  }
+
+  async function onStopClick() {
+    await stop();
+    setLocatorTicks(0);
   }
 
   async function onMetronomeToggle() {
@@ -1000,26 +1428,12 @@ export function TimelineShell() {
             c.startTicks === preview.startTicks &&
             c.lengthTicks === preview.lengthTicks,
         );
-        setSelectedClipId(null);
-        if (lane === "tekst") {
-          setSelectedAkordClipId(null);
-          setSelectedCueClipId(null);
-          setSelectedTekstClipId(created?.id ?? null);
-        } else if (lane === "akordy") {
-          setSelectedTekstClipId(null);
-          setSelectedCueClipId(null);
-          setSelectedAkordClipId(created?.id ?? null);
-        } else {
-          setSelectedTekstClipId(null);
-          setSelectedAkordClipId(null);
-          setSelectedCueClipId(created?.id ?? null);
-        }
+        if (created?.id) selectLaneClip(lane, created.id);
+        else clearClipSelection();
         return;
       }
       if (session.clipId) {
-        if (lane === "tekst") setSelectedTekstClipId(session.clipId);
-        else if (lane === "akordy") setSelectedAkordClipId(session.clipId);
-        else setSelectedCueClipId(session.clipId);
+        selectLaneClip(lane, session.clipId);
       }
       return;
     }
@@ -1033,11 +1447,10 @@ export function TimelineShell() {
           c.lengthTicks === preview.lengthTicks,
       );
       if (created) {
-        setSelectedClipId(created.id);
-        setSelectedSubsectionIdx(null);
+        selectLaneClip("forma", created.id);
       }
     } else if (session.kind === "subsection-boundary" && session.clipId) {
-      setSelectedClipId(session.clipId);
+      selectLaneClip("forma", session.clipId);
       const clip = next.forma.clips.find((c) => c.id === session.clipId);
       const ranges = subsectionRanges(clip?.subsections, clip?.lengthTicks ?? 1);
       const maxIdx = Math.max(0, ranges.length - 1);
@@ -1057,7 +1470,7 @@ export function TimelineShell() {
         );
       }
     } else if (session.clipId) {
-      setSelectedClipId(session.clipId);
+      selectLaneClip("forma", session.clipId);
     }
   }
 
@@ -1137,14 +1550,16 @@ export function TimelineShell() {
     if (tool === "eraser") {
       if (lane === "tekst") {
         commitDraft(deleteTekstClip(draftProject, clip.id));
-        setSelectedTekstClipId(null);
       } else if (lane === "akordy") {
         commitDraft(deleteAkordyClip(draftProject, clip.id));
-        setSelectedAkordClipId(null);
       } else {
         commitDraft(deleteCueClip(draftProject, clip.id));
-        setSelectedCueClipId(null);
       }
+      setClipSelection((prev) =>
+        prev.selectedIds.includes(clip.id)
+          ? toggleSelected(prev, clip.id, lane)
+          : prev,
+      );
       return;
     }
 
@@ -1162,42 +1577,47 @@ export function TimelineShell() {
     }
 
     if (!toolAllowsClipHitZones(tool)) return;
-    if (!gesturePolicy.clipDragResize) {
-      // Tablet/mobile: select only (v4 — drag via nudge on tablet).
-      setSelectedClipId(null);
-      setSongMetaOpen(false);
+    // Multi-select modifiers (v4 Cmd toggle / Shift range)
+    if (isMultiSelectClick(e)) {
       clearMapSelection();
-      if (lane === "tekst") {
-        setSelectedAkordClipId(null);
-        setSelectedCueClipId(null);
-        setSelectedTekstClipId(clip.id);
-      } else if (lane === "akordy") {
-        setSelectedTekstClipId(null);
-        setSelectedCueClipId(null);
-        setSelectedAkordClipId(clip.id);
-      } else {
-        setSelectedTekstClipId(null);
-        setSelectedAkordClipId(null);
-        setSelectedCueClipId(clip.id);
-      }
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+      setClipSelection((prev) => toggleSelected(prev, clip.id, lane));
+      setSelectedSubsectionIdx(null);
+      return;
+    }
+    if (e.shiftKey) {
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+      const laneClips =
+        lane === "tekst"
+          ? draftProject.tekst.clips
+          : lane === "akordy"
+            ? draftProject.akordy.clips
+            : draftProject.cue.clips;
+      setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
+      setSelectedSubsectionIdx(null);
       return;
     }
 
-    setSelectedClipId(null);
-    setSongMetaOpen(false);
-    clearMapSelection();
-    if (lane === "tekst") {
-      setSelectedAkordClipId(null);
-      setSelectedCueClipId(null);
-      setSelectedTekstClipId(clip.id);
-    } else if (lane === "akordy") {
-      setSelectedTekstClipId(null);
-      setSelectedCueClipId(null);
-      setSelectedAkordClipId(clip.id);
+    if (!gesturePolicy.clipDragResize) {
+      // Tablet/mobile: select only (v4 — drag via nudge on tablet).
+      clearMapSelection();
+      selectLaneClip(lane, clip.id);
+      return;
+    }
+
+    const inMulti =
+      selectionLane === lane &&
+      selectedIds.includes(clip.id) &&
+      selectedIds.length > 1;
+    if (!inMulti) {
+      clearMapSelection();
+      selectLaneClip(lane, clip.id);
     } else {
-      setSelectedTekstClipId(null);
-      setSelectedAkordClipId(null);
-      setSelectedCueClipId(clip.id);
+      setClipSelection((prev) => setSelection(prev.selectedIds, clip.id, lane));
+      setSelectedSubsectionIdx(null);
     }
 
     const rect = e.currentTarget.getBoundingClientRect();
@@ -1212,6 +1632,16 @@ export function TimelineShell() {
         : zone === "end"
           ? "resize-end"
           : "move";
+    const moveIds =
+      kind === "move"
+        ? resolveMoveIds(
+            inMulti
+              ? { lane, selectedIds, primaryId: clip.id }
+              : selectSingle(clip.id, lane),
+            clip.id,
+            lane,
+          )
+        : [clip.id];
     const session: FormaGestureSession = {
       kind,
       clipId: clip.id,
@@ -1221,6 +1651,7 @@ export function TimelineShell() {
       originClipLength: clip.lengthTicks,
       lane,
       originClientX: e.clientX,
+      moveIds: kind === "move" ? moveIds : undefined,
     };
     const preview = previewContentFromSession(
       draftProject,
@@ -1251,8 +1682,7 @@ export function TimelineShell() {
     }
     if (!toolIsPencilDraw(tool)) {
       if (toolAllowsClipHitZones(tool)) {
-        setSelectedClipId(null);
-        clearContentSelection();
+        beginMarquee(e);
       }
       return;
     }
@@ -1315,10 +1745,11 @@ export function TimelineShell() {
     if (tool === "eraser") {
       if (clip.kind === "countdown") return;
       commitDraft(deleteFormaClip(draftProject, clip.id));
-      if (selectedClipId === clip.id) {
-        setSelectedClipId(null);
-        setSelectedSubsectionIdx(null);
-      }
+      setClipSelection((prev) =>
+        prev.selectedIds.includes(clip.id)
+          ? toggleSelected(prev, clip.id, "forma")
+          : prev,
+      );
       return;
     }
 
@@ -1326,10 +1757,8 @@ export function TimelineShell() {
       if (clip.kind === "countdown") return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      setSelectedClipId(clip.id);
-      setSelectedSubsectionIdx(null);
-      clearContentSelection();
       clearMapSelection();
+      selectLaneClip("forma", clip.id);
       const next = splitFormaClipAt(draftProject, clip.id, raw);
       if (next !== draftProject) commitDraft(next);
       return;
@@ -1365,12 +1794,82 @@ export function TimelineShell() {
 
     if (!toolAllowsClipHitZones(tool)) return;
 
-    setSelectedClipId(clip.id);
-    clearContentSelection();
-    clearMapSelection();
+    // Multi-select modifiers (v4)
+    if (clip.kind !== "countdown" && isMultiSelectClick(e)) {
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+      setClipSelection((prev) => toggleSelected(prev, clip.id, "forma"));
+      setSelectedSubsectionIdx(null);
+      return;
+    }
+    if (clip.kind !== "countdown" && e.shiftKey) {
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+      const laneClips = draftProject.forma.clips
+        .filter((c) => c.kind === "section" || c.kind === "countdown")
+        .map((c) => ({ id: c.id, startTicks: c.startTicks }));
+      setClipSelection((prev) =>
+        selectRangeTo(prev, clip.id, "forma", laneClips),
+      );
+      setSelectedSubsectionIdx(null);
+      return;
+    }
+
+    const inMulti =
+      clip.kind !== "countdown" &&
+      selectionLane === "forma" &&
+      selectedIds.includes(clip.id) &&
+      selectedIds.length > 1;
+
+    if (!inMulti) {
+      clearMapSelection();
+      selectLaneClip("forma", clip.id);
+    } else {
+      setClipSelection((prev) =>
+        setSelection(prev.selectedIds, clip.id, "forma"),
+      );
+    }
     setSongMetaOpen(false);
     if (clip.kind === "countdown") {
       setSelectedSubsectionIdx(null);
+      if (!gesturePolicy.clipDragResize) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const localX = e.clientX - rect.left;
+      const zone = hitTestClipZone(localX, rect.width, true);
+      if (zone === "start") {
+        if (canvasNoticeTimerRef.current) {
+          clearTimeout(canvasNoticeTimerRef.current);
+        }
+        setCanvasNotice(
+          "Countdown: tylko prawa krawędź lub przeciągnięcie (długość)",
+        );
+        canvasNoticeTimerRef.current = setTimeout(() => {
+          setCanvasNotice(null);
+          canvasNoticeTimerRef.current = null;
+        }, 2800);
+        return;
+      }
+      const raw = rawTicksAtClientX(e.clientX);
+      if (raw == null) return;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      const session: FormaGestureSession = {
+        kind: "countdown-length",
+        clipId: clip.id,
+        pointerId: e.pointerId,
+        originTicks: raw,
+        originClipStart: clip.startTicks,
+        originClipLength: clip.lengthTicks,
+      };
+      const preview = previewFromSession(
+        draftProject,
+        session,
+        raw,
+        e.metaKey,
+        e.ctrlKey,
+      );
+      beginFormaGesture(session, preview);
       return;
     }
 
@@ -1440,6 +1939,16 @@ export function TimelineShell() {
         : zone === "end"
           ? "resize-end"
           : "move";
+    const moveIds =
+      kind === "move"
+        ? resolveMoveIds(
+            inMulti
+              ? { lane: "forma", selectedIds, primaryId: clip.id }
+              : selectSingle(clip.id, "forma"),
+            clip.id,
+            "forma",
+          )
+        : [clip.id];
     const session: FormaGestureSession = {
       kind,
       clipId: clip.id,
@@ -1447,6 +1956,7 @@ export function TimelineShell() {
       originTicks: raw,
       originClipStart: clip.startTicks,
       originClipLength: clip.lengthTicks,
+      moveIds: kind === "move" ? moveIds : undefined,
     };
     const preview = previewFromSession(
       draftProject,
@@ -1474,8 +1984,151 @@ export function TimelineShell() {
     endFormaGesture(e.metaKey, e.ctrlKey);
   }
 
-  function setLocatorFromClientX(clientX: number) {
-    if (state.playing) return;
+  function clientToCanvasLocal(clientX: number, clientY: number) {
+    const root = lanesCoordRef.current;
+    if (!root) return { x: 0, y: 0 };
+    const rect = root.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  function updateMarqueeBoxFromPointer(clientX: number, clientY: number) {
+    const drag = marqueeRef.current;
+    if (!drag) return;
+    drag.currentX = clientX;
+    drag.currentY = clientY;
+    const a = clientToCanvasLocal(drag.startX, drag.startY);
+    const b = clientToCanvasLocal(clientX, clientY);
+    setMarqueeBox({
+      left: Math.min(a.x, b.x),
+      top: Math.min(a.y, b.y),
+      width: Math.abs(b.x - a.x),
+      height: Math.abs(b.y - a.y),
+    });
+  }
+
+  function finishMarquee(clientX: number, clientY: number) {
+    const drag = marqueeRef.current;
+    marqueeRef.current = null;
+    setMarqueeBox(null);
+    if (!drag) return;
+    const dx = clientX - drag.startX;
+    const dy = clientY - drag.startY;
+    if (isMarqueeClick(dx, dy)) {
+      clearClipSelection();
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      setLocatorFromClientX(clientX, { seekTransport: true });
+      return;
+    }
+    const a = clientToCanvasLocal(drag.startX, drag.startY);
+    const b = clientToCanvasLocal(clientX, clientY);
+    const box = {
+      left: Math.min(a.x, b.x),
+      right: Math.max(a.x, b.x),
+      top: Math.min(a.y, b.y),
+      bottom: Math.max(a.y, b.y),
+    };
+    const overlay = lanesCoordRef.current;
+    const root = overlay?.parentElement;
+    if (!overlay || !root) {
+      clearClipSelection();
+      return;
+    }
+    const rootRect = overlay.getBoundingClientRect();
+    const viewportBox = {
+      left: rootRect.left + box.left,
+      right: rootRect.left + box.right,
+      top: rootRect.top + box.top,
+      bottom: rootRect.top + box.bottom,
+    };
+    const hits: { id: string; lane: ClipSelectionLane }[] = [];
+    root
+      .querySelectorAll<HTMLElement>("[data-clip-id][data-clip-lane]")
+      .forEach((el) => {
+        const id = el.dataset.clipId;
+        const lane = el.dataset.clipLane as ClipSelectionLane | undefined;
+        if (!id || !lane) return;
+        if (
+          lane !== "forma" &&
+          lane !== "tekst" &&
+          lane !== "akordy" &&
+          lane !== "cue"
+        ) {
+          return;
+        }
+        const r = el.getBoundingClientRect();
+        if (rectsIntersect(viewportBox, r)) {
+          hits.push({ id, lane });
+        }
+      });
+    clearMapSelection();
+    setSelectedAnchorId(null);
+    setSongMetaOpen(false);
+    setSelectedSubsectionIdx(null);
+    setClipSelection(marqueeSelectFromHits(hits));
+  }
+
+  function beginMarquee(e: React.PointerEvent<HTMLElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    marqueeRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
+    };
+    updateMarqueeBoxFromPointer(e.clientX, e.clientY);
+  }
+
+  useEffect(() => {
+    if (!marqueeBox) return;
+    function onMove(e: PointerEvent) {
+      const drag = marqueeRef.current;
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      updateMarqueeBoxFromPointer(e.clientX, e.clientY);
+    }
+    function onUp(e: PointerEvent) {
+      const drag = marqueeRef.current;
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      finishMarquee(e.clientX, e.clientY);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- marquee session gated by box
+  }, [marqueeBox != null]);
+
+  function placeLocatorAtTicks(
+    ticks: number,
+    opts?: {
+      seekTransport?: boolean;
+      metaKey?: boolean;
+      ctrlKey?: boolean;
+    },
+  ) {
+    if (!draftRef.current) return;
+    const mode = mapSnapMode(opts?.metaKey ?? false, opts?.ctrlKey ?? false);
+    const snapped = snapEditTicks(draftRef.current, ticks, mode);
+    setLocatorTicks(snapped);
+    if (opts?.seekTransport !== false) {
+      void seek(snapped);
+    }
+  }
+
+  function setLocatorFromClientX(
+    clientX: number,
+    opts?: {
+      seekTransport?: boolean;
+      metaKey?: boolean;
+      ctrlKey?: boolean;
+    },
+  ) {
     const coordRoot = markerOverlayRef.current ?? lanesCoordRef.current;
     if (!coordRoot || !draftRef.current) return;
     const raw = ticksFromPointer(
@@ -1485,10 +2138,13 @@ export function TimelineShell() {
       barTicksRef.current,
       zoomHRef.current,
     );
-    setLocatorTicks(snapEditTicks(draftRef.current, raw));
+    placeLocatorAtTicks(raw, opts);
   }
 
-  function onLocatorPointerDown(e: React.PointerEvent<HTMLElement>) {
+  function onLocatorPointerDown(
+    e: React.PointerEvent<HTMLElement>,
+    source: "ruler" | "locator",
+  ) {
     if (e.button !== 0) return;
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
@@ -1497,10 +2153,16 @@ export function TimelineShell() {
       pointerId: e.pointerId,
       originTicks: raw,
       originClientX: e.clientX,
+      source,
     };
     setLoopDraft(null);
-    if (!state.playing) {
-      setLocatorFromClientX(e.clientX);
+    // Immediate seek/scrub (v4); loop-select only after 5px drag on ruler.
+    if (source === "locator" || !ticksInLoopRegion(raw, usableLoopRange(state.loop))) {
+      setLocatorFromClientX(e.clientX, {
+        seekTransport: true,
+        metaKey: e.metaKey,
+        ctrlKey: e.ctrlKey,
+      });
     }
   }
 
@@ -1508,7 +2170,11 @@ export function TimelineShell() {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
     const drag = loopDragRef.current;
     if (!drag || drag.pointerId !== e.pointerId) {
-      if (!state.playing) setLocatorFromClientX(e.clientX);
+      setLocatorFromClientX(e.clientX, {
+        seekTransport: true,
+        metaKey: e.metaKey,
+        ctrlKey: e.ctrlKey,
+      });
       return;
     }
     const raw = rawTicksAtClientX(e.clientX);
@@ -1518,9 +2184,12 @@ export function TimelineShell() {
       const a = Math.min(drag.originTicks, raw);
       const b = Math.max(drag.originTicks, raw);
       setLoopDraft({ startTicks: a, endTicks: Math.max(a + 1, b) });
-    }
-    if (!state.playing && dx < 5) {
-      setLocatorFromClientX(e.clientX);
+    } else if (dx < 5) {
+      setLocatorFromClientX(e.clientX, {
+        seekTransport: true,
+        metaKey: e.metaKey,
+        ctrlKey: e.ctrlKey,
+      });
     }
   }
 
@@ -1529,31 +2198,198 @@ export function TimelineShell() {
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
-    if (drag && drag.pointerId === e.pointerId) {
-      const draft = loopDraftRef.current;
-      loopDragRef.current = null;
-      if (draft && draft.endTicks > draft.startTicks) {
-        void setLoop({
-          enabled: true,
-          startTicks: draft.startTicks,
-          endTicks: draft.endTicks,
-        }).finally(() => setLoopDraft(null));
-      } else {
-        setLoopDraft(null);
-      }
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    const draft = loopDraftRef.current;
+    loopDragRef.current = null;
+    if (draft && draft.endTicks > draft.startTicks && draftProject) {
+      const snapped = snapLoopRange(
+        draftProject,
+        draft.startTicks,
+        draft.endTicks,
+      );
+      void setLoop({
+        enabled: true,
+        startTicks: snapped.startTicks,
+        endTicks: snapped.endTicks,
+      }).finally(() => setLoopDraft(null));
+      return;
     }
+    setLoopDraft(null);
+    // v4: click inside existing loop region on ruler toggles cycle on/off.
+    if (
+      drag.source === "ruler" &&
+      ticksInLoopRegion(drag.originTicks, usableLoopRange(state.loop))
+    ) {
+      const range = usableLoopRange(state.loop);
+      if (range) {
+        void setLoop({ enabled: !state.loop?.enabled });
+      }
+      return;
+    }
+    setLocatorFromClientX(e.clientX, {
+      seekTransport: true,
+      metaKey: e.metaKey,
+      ctrlKey: e.ctrlKey,
+    });
   }
 
   function onLoopToggle() {
-    const range = state.loop;
-    if (range && range.endTicks > range.startTicks) {
-      void setLoop({ enabled: !range.enabled });
+    const range = usableLoopRange(state.loop);
+    if (range) {
+      void setLoop({ enabled: !state.loop?.enabled });
       return;
     }
     if (!draftProject) return;
     const end = projectEndTicks(draftProject);
     if (end <= 0) return;
     void setLoop({ enabled: true, startTicks: 0, endTicks: end });
+  }
+
+  function zoomHorizontalBySteps(
+    steps: number,
+    anchorViewportX?: number,
+  ) {
+    if (!steps) return;
+    const scroll = document.querySelector(
+      "[data-canvas-scroll]",
+    ) as HTMLElement | null;
+    const oldEff = zoomHRef.current;
+    const nextBase = Math.min(
+      ZOOM_H_MAX,
+      Math.max(ZOOM_H_MIN, zoomHBaseRef.current + steps * ZOOM_H_STEP),
+    );
+    const newEff = nextBase * uiScaleRef.current;
+    if (nextBase === zoomHBaseRef.current || !(oldEff > 0) || !(newEff > 0)) {
+      return;
+    }
+    const ax =
+      anchorViewportX != null
+        ? anchorViewportX
+        : (scroll?.clientWidth ?? 0) / 2;
+    const prevScroll = scroll?.scrollLeft ?? 0;
+    const newScroll = ((prevScroll + ax) * newEff) / oldEff - ax;
+    setZoomH(nextBase);
+    if (scroll) {
+      requestAnimationFrame(() => {
+        scroll.scrollLeft = Math.max(0, newScroll);
+      });
+    }
+  }
+
+  function setVerticalZoom(nextLanePx: number) {
+    const oldBase = zoomVBaseRef.current;
+    const next = Math.min(
+      ZOOM_V_MAX,
+      Math.max(ZOOM_V_MIN, Math.round(nextLanePx)),
+    );
+    if (next === oldBase) return;
+    setZoomV(next);
+    // Keep relative proportions of per-track overrides (v4 setVerticalZoom).
+    const current = laneHeightsRef.current;
+    if (oldBase > 0 && Object.keys(current).length) {
+      const scaled = scaleLaneHeights(current, oldBase, next);
+      setLaneHeights(scaled);
+      saveLaneHeights(scaled);
+    }
+  }
+
+  function zoomVerticalBySteps(steps: number) {
+    if (!steps) return;
+    setVerticalZoom(zoomVBaseRef.current + steps * ZOOM_V_STEP);
+  }
+
+  function rowHeightStyle(trackId: string): React.CSSProperties {
+    const base = laneHeightBase(trackId, laneHeights, zoomV);
+    const eff = laneHeightEffective(base, uiScale);
+    return { ["--tl-row-h" as string]: `${eff}px` };
+  }
+
+  function beginLaneResize(
+    e: React.PointerEvent<HTMLButtonElement>,
+    trackId: string,
+  ) {
+    if (e.button !== 0 || touchTier === "mobile") return;
+    e.preventDefault();
+    e.stopPropagation();
+    const startHeightBase = laneHeightBase(trackId, laneHeights, zoomV);
+    laneResizeRef.current = {
+      trackId,
+      startY: e.clientY,
+      startHeightBase,
+      pointerId: e.pointerId,
+    };
+    setLaneResizeTrackId(trackId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function onLaneResizePointerMove(e: React.PointerEvent<HTMLButtonElement>) {
+    const drag = laneResizeRef.current;
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const scale = uiScaleRef.current || 1;
+    const dy = e.clientY - drag.startY;
+    const nextBase = drag.startHeightBase + dy / scale;
+    const next = setLaneHeightOverride(
+      laneHeightsRef.current,
+      drag.trackId,
+      nextBase,
+    );
+    setLaneHeights(next);
+  }
+
+  function endLaneResize(e: React.PointerEvent<HTMLButtonElement>) {
+    const drag = laneResizeRef.current;
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    laneResizeRef.current = null;
+    setLaneResizeTrackId(null);
+    saveLaneHeights(laneHeightsRef.current);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function onLaneResizeDblClick(
+    e: React.MouseEvent<HTMLButtonElement>,
+    trackId: string,
+  ) {
+    if (touchTier === "mobile") return;
+    e.preventDefault();
+    e.stopPropagation();
+    const next = clearLaneHeightOverride(laneHeightsRef.current, trackId);
+    setLaneHeights(next);
+    saveLaneHeights(next);
+  }
+
+  function fitZoom() {
+    const scroll = document.querySelector(
+      "[data-canvas-scroll]",
+    ) as HTMLElement | null;
+    if (!scroll) return;
+    const usable = Math.max(80, scroll.clientWidth - 48);
+    const bars = Math.max(1, viewSpanRef.current.end / Math.max(1, barTicksRef.current));
+    const next = Math.round(usable / bars / Math.max(0.01, uiScaleRef.current));
+    setZoomH(Math.min(ZOOM_H_MAX, Math.max(ZOOM_H_MIN, next)));
+    requestAnimationFrame(() => {
+      scroll.scrollLeft = 0;
+    });
+  }
+
+  function nudgeLocator(dir: -1 | 1) {
+    const draft = draftRef.current;
+    if (!draft) return;
+    const meter = resolveMeterAt(draft, locatorTicks);
+    const beatTicks = Math.max(
+      1,
+      Math.round((draft.ppq * 4) / Math.max(1, meter.denominator)),
+    );
+    placeLocatorAtTicks(locatorTicks + dir * beatTicks, {
+      seekTransport: true,
+    });
   }
 
   function toggleTrack(id: CoreTrackId) {
@@ -1572,7 +2408,25 @@ export function TimelineShell() {
     const bars = Number.parseInt(raw, 10);
     if (!Number.isFinite(bars)) return;
     try {
-      commitDraft(setCountdownBars(draftProject, bars));
+      const prevStart = viewSpanRef.current.start;
+      const next = setCountdownBars(draftProject, bars);
+      commitDraft(next);
+      const nextStart =
+        next.forma.clips.find((c) => c.kind === "countdown")?.startTicks ??
+        prevStart;
+      requestAnimationFrame(() => {
+        const scroll = document.querySelector(
+          "[data-canvas-scroll]",
+        ) as HTMLElement | null;
+        if (!scroll) return;
+        scroll.scrollLeft = scrollLeftKeepTickAnchored(
+          prevStart,
+          nextStart,
+          scroll.scrollLeft,
+          barTicksRef.current,
+          zoomHRef.current,
+        );
+      });
     } catch {
       /* invalid bar count */
     }
@@ -1846,6 +2700,29 @@ export function TimelineShell() {
     setTool(id);
   }
 
+  keyHandlersRef.current = {
+    onSave,
+    onDiscard,
+    onUndo,
+    onRedo,
+    onPlayOrPause: () => {
+      void (state.playing ? pause() : onPlayClick());
+    },
+    onMetronomeToggle,
+    onLoopToggle,
+    onTool,
+    nudgeLocator,
+    fitZoom,
+    zoomHorizontalBySteps,
+    zoomVerticalBySteps,
+    dirty,
+    savePending,
+    playing: state.playing,
+    tool,
+    prevSetlistId: prevSetlistId ?? null,
+    nextSetlistId: nextSetlistId ?? null,
+  };
+
   const canvasInnerWidth = `calc(var(--tl-dock-w) + ${canvasWidthPx}px)`;
 
   function renderLaneContent(trackId: CoreTrackId) {
@@ -1872,7 +2749,7 @@ export function TimelineShell() {
             ]
               .filter(Boolean)
               .join(" ")}
-            style={segmentStylePx(seg, viewSpan, barTicks, zoomH)}
+            style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tempo", seg)}
             onPointerMove={onMapSegmentPointerMove}
@@ -1894,7 +2771,7 @@ export function TimelineShell() {
             ]
               .filter(Boolean)
               .join(" ")}
-            style={segmentStylePx(seg, viewSpan, barTicks, zoomH)}
+            style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "metrum", seg)}
             onPointerMove={onMapSegmentPointerMove}
@@ -1919,7 +2796,7 @@ export function TimelineShell() {
             ]
               .filter(Boolean)
               .join(" ")}
-            style={segmentStylePx(seg, viewSpan, barTicks, zoomH)}
+            style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tonacja", seg)}
             onPointerMove={onMapSegmentPointerMove}
@@ -1953,10 +2830,10 @@ export function TimelineShell() {
                 .filter(Boolean)
                 .join(" ")}
               style={{
-                left: `${tickToPx(start, viewSpan, barTicks, zoomH)}px`,
+                left: `${tickToPx(start, viewSpan, barTicks, effectiveZoomH)}px`,
                 width: `${Math.max(
-                  tickToPx(start + width, viewSpan, barTicks, zoomH) -
-                    tickToPx(start, viewSpan, barTicks, zoomH),
+                  tickToPx(start + width, viewSpan, barTicks, effectiveZoomH) -
+                    tickToPx(start, viewSpan, barTicks, effectiveZoomH),
                   24,
                 )}px`,
               }}
@@ -1964,10 +2841,7 @@ export function TimelineShell() {
                 if (e.button !== 0) return;
                 e.preventDefault();
                 e.stopPropagation();
-                setSelectedClipId(null);
-                setSelectedTekstClipId(null);
-                setSelectedAkordClipId(null);
-                setSelectedCueClipId(null);
+                clearClipSelection();
                 clearMapSelection();
                 setSelectedAnchorId(anchor.id);
                 if (tool === "eraser") {
@@ -2025,7 +2899,7 @@ export function TimelineShell() {
                   selectedSubsectionIdx={
                     selectedClipId === clip.id ? selectedSubsectionIdx : null
                   }
-                  style={clipStylePx(styleClip, viewSpan, barTicks, zoomH)}
+                  style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
                   pencilActive={toolIsPencilDraw(tool)}
                   allowHitZones={toolAllowsClipHitZones(tool)}
                   dimmed={Boolean(previewing)}
@@ -2051,7 +2925,7 @@ export function TimelineShell() {
                   },
                   viewSpan,
                   barTicks,
-                  zoomH,
+                  effectiveZoomH,
                 )}
                 aria-hidden
               >
@@ -2107,7 +2981,7 @@ export function TimelineShell() {
                   clip={styleClip}
                   selected={selectedId === clip.id}
                   selectedSubsectionIdx={null}
-                  style={clipStylePx(styleClip, viewSpan, barTicks, zoomH)}
+                  style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
                   pencilActive={toolIsPencilDraw(tool)}
                   allowHitZones={toolAllowsClipHitZones(tool)}
                   dimmed={Boolean(previewing)}
@@ -2135,7 +3009,7 @@ export function TimelineShell() {
                   },
                   viewSpan,
                   barTicks,
-                  zoomH,
+                  effectiveZoomH,
                 )}
                 aria-hidden
               >
@@ -2151,7 +3025,15 @@ export function TimelineShell() {
   }
 
   return (
-    <div className={styles.shell} data-tl-tier={touchTier}>
+    <div
+      className={[
+        styles.shell,
+        laneResizeTrackId ? styles.laneResizing : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      data-tl-tier={touchTier}
+    >
       <header className={styles.header}>
         <div className={styles.headerBrand}>
           <ShellWordmark suffix="Timeline" version={APP_VERSION} />
@@ -2164,11 +3046,9 @@ export function TimelineShell() {
             pressed={songMetaOpen}
             onClick={() => {
               if (!draftProject) return;
-              setSelectedClipId(null);
-              clearContentSelection();
+              clearClipSelection();
               clearMapSelection();
               setSongMetaOpen(true);
-              setInspectorOpen(true);
             }}
           >
             <IconInfo />
@@ -2234,16 +3114,22 @@ export function TimelineShell() {
           >
             <IconRedo />
           </ShellIconButton>
-          <Button variant="ghost" disabled={!dirty || savePending} onClick={onDiscard}>
-            Odrzuć
-          </Button>
-          <Button
-            variant="primary"
+          <ShellIconButton
+            label="Odrzuć zmiany"
+            disabled={!dirty || savePending}
+            onClick={onDiscard}
+            className={styles.discardBtn}
+          >
+            <IconDiscard />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Zapisz (⌘/Ctrl+S)"
             disabled={!dirty || savePending}
             onClick={() => void onSave()}
+            className={styles.saveBtn}
           >
-            Zapisz
-          </Button>
+            <IconSave />
+          </ShellIconButton>
           <ShellIconButton
             label="Pomoc"
             pressed={helpOpen}
@@ -2309,105 +3195,109 @@ export function TimelineShell() {
           ) : null}
         </div>
 
-        <div className={styles.transport} role="group" aria-label="Transport">
-          <ShellIconButton
-            label="Zatrzymaj"
-            disabled={commandPending}
-            onClick={() => void stop()}
-          >
-            <IconStop />
-          </ShellIconButton>
-          <button
-            type="button"
-            className={styles.playBtn}
-            aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
-            disabled={commandPending}
-            onClick={() =>
-              void (state.playing ? pause() : onPlayClick())
-            }
-          >
-            {state.playing ? <IconPause /> : <IconPlay />}
-          </button>
-          <ShellIconButton
-            label="Pętla — przeciągnij zakres na linijce, potem włącz"
-            pressed={loopOn}
-            onClick={onLoopToggle}
-          >
-            <IconLoop />
-          </ShellIconButton>
-          <span className={styles.bbt} aria-live="polite">
-            {toDisplayBar(bbt.bar)}.{bbt.beat}
-          </span>
-          <button
-            type="button"
-            className={styles.metaBtn}
-            title="Tempo — kliknij, aby edytować @ playhead"
-            onClick={() => {
-              openMapEdit("tempo", displayTicks);
-            }}
-          >
-            {tempoAtPlayhead} BPM
-          </button>
-          <button
-            type="button"
-            className={styles.metaBtn}
-            title="Metrum — kliknij, aby edytować @ playhead"
-            onClick={() => {
-              openMapEdit("metrum", displayTicks);
-            }}
-          >
-            {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
-          </button>
-          <button
-            type="button"
-            className={styles.metaBtn}
-            title="Tonacja — kliknij, aby edytować"
-            onClick={() => openMapEdit("tonacja", displayTicks)}
-          >
-            {draftProject
-              ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
-              : "—"}
-          </button>
-          <ShellIconButton
-            label="Metronom"
-            pressed={metronomeOn}
-            onClick={() => void onMetronomeToggle()}
-          >
-            <IconMetronome />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Podążaj za wskaźnikiem"
-            pressed={followPlayhead}
-            onClick={() => {
-              setFollowPlayhead((v) => {
-                const next = !v;
-                try {
-                  localStorage.setItem(
-                    "stagesync-timeline-follow-playhead",
-                    next ? "1" : "0",
-                  );
-                } catch {
-                  /* ignore */
-                }
-                return next;
-              });
-            }}
-          >
-            <IconFollow />
-          </ShellIconButton>
+        <div className={styles.toolbarCenter}>
+          <div className={styles.transport} role="group" aria-label="Transport">
+            <ShellIconButton
+              label="Zatrzymaj"
+              disabled={commandPending}
+              onClick={() => void onStopClick()}
+            >
+              <IconStop />
+            </ShellIconButton>
+            <button
+              type="button"
+              className={styles.playBtn}
+              aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
+              disabled={commandPending}
+              onClick={() =>
+                void (state.playing ? pause() : onPlayClick())
+              }
+            >
+              {state.playing ? <IconPause /> : <IconPlay />}
+            </button>
+            <ShellIconButton
+              label="Pętla — przeciągnij zakres na linijce, potem włącz"
+              pressed={loopOn}
+              onClick={onLoopToggle}
+            >
+              <IconLoop />
+            </ShellIconButton>
+            <span className={styles.bbt} aria-live="polite">
+              {toDisplayBar(bbt.bar)}.{bbt.beat}
+            </span>
+            <button
+              type="button"
+              className={styles.metaBtn}
+              title="Tempo — kliknij, aby edytować @ playhead"
+              onClick={() => {
+                openMapEdit("tempo", displayTicks);
+              }}
+            >
+              {tempoAtPlayhead} BPM
+            </button>
+            <button
+              type="button"
+              className={styles.metaBtn}
+              title="Metrum — kliknij, aby edytować @ playhead"
+              onClick={() => {
+                openMapEdit("metrum", displayTicks);
+              }}
+            >
+              {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
+            </button>
+            <button
+              type="button"
+              className={styles.metaBtn}
+              title="Tonacja — kliknij, aby edytować"
+              onClick={() => openMapEdit("tonacja", displayTicks)}
+            >
+              {draftProject
+                ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
+                : "—"}
+            </button>
+            <ShellIconButton
+              label="Metronom (K)"
+              pressed={metronomeOn}
+              onClick={() => void onMetronomeToggle()}
+            >
+              <IconMetronome />
+            </ShellIconButton>
+            <ShellIconButton
+              label="Podążaj za wskaźnikiem"
+              pressed={followPlayhead}
+              onClick={() => {
+                setFollowPlayhead((v) => {
+                  const next = !v;
+                  try {
+                    localStorage.setItem(
+                      "stagesync-timeline-follow-playhead",
+                      next ? "1" : "0",
+                    );
+                  } catch {
+                    /* ignore */
+                  }
+                  return next;
+                });
+              }}
+            >
+              <IconFollow />
+            </ShellIconButton>
+          </div>
         </div>
 
-        <span className={styles.dirty} hidden={!dirty}>
-          Niezapisane zmiany
-        </span>
+        <div className={styles.toolbarRight}>
+          <span className={styles.dirty} hidden={!dirty}>
+            Niezapisane zmiany
+          </span>
+        </div>
       </div>
 
       <div
         className={styles.main}
         style={{
           /* Unitless scale like v4 `--tl-ui-scale` (not `%` — avoids calc % of parent). */
-          ["--tl-zoom-ui" as string]: String(zoomUi / 100),
-          ["--tl-row-h" as string]: `${zoomV}px`,
+          ["--tl-zoom-ui" as string]: String(uiScale),
+          ["--tl-row-h" as string]: `${effectiveZoomV}px`,
         }}
       >
         <div className={styles.timelinePane}>
@@ -2437,7 +3327,7 @@ export function TimelineShell() {
                     tabIndex={-1}
                     onPointerDown={(e) => {
                       e.stopPropagation();
-                      onLocatorPointerDown(e);
+                      onLocatorPointerDown(e, "locator");
                     }}
                     onPointerMove={onLocatorPointerMove}
                     onPointerUp={onLocatorPointerUp}
@@ -2462,7 +3352,7 @@ export function TimelineShell() {
                   </div>
                   <div
                     className={styles.ruler}
-                    onPointerDown={onLocatorPointerDown}
+                    onPointerDown={(e) => onLocatorPointerDown(e, "ruler")}
                     onPointerMove={onLocatorPointerMove}
                     onPointerUp={onLocatorPointerUp}
                   >
@@ -2475,10 +3365,10 @@ export function TimelineShell() {
                           .filter(Boolean)
                           .join(" ")}
                         style={{
-                          left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, zoomH)}px`,
+                          left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH)}px`,
                           width: `${Math.max(
-                            tickToPx(loopRange.endTicks, viewSpan, barTicks, zoomH) -
-                              tickToPx(loopRange.startTicks, viewSpan, barTicks, zoomH),
+                            tickToPx(loopRange.endTicks, viewSpan, barTicks, effectiveZoomH) -
+                              tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH),
                             2,
                           )}px`,
                         }}
@@ -2490,7 +3380,7 @@ export function TimelineShell() {
                         key={`bar-${mark.ticks}`}
                         className={styles.rulerMark}
                         style={{
-                          left: `${tickToPx(mark.ticks, viewSpan, barTicks, zoomH)}px`,
+                          left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
                         }}
                       >
                         {mark.label}
@@ -2501,7 +3391,7 @@ export function TimelineShell() {
                         key={`beat-${mark.ticks}`}
                         className={styles.rulerBeatTick}
                         style={{
-                          left: `${tickToPx(mark.ticks, viewSpan, barTicks, zoomH)}px`,
+                          left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
                         }}
                         aria-hidden
                       />
@@ -2517,17 +3407,33 @@ export function TimelineShell() {
                           key={`grid-${mark.ticks}`}
                           className={styles.barLine}
                           style={{
-                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, zoomH)}px`,
+                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
                           }}
                         />
                       ))}
                     </div>
+                    {marqueeBox ? (
+                      <div
+                        className={styles.marquee}
+                        style={{
+                          left: marqueeBox.left,
+                          top: marqueeBox.top,
+                          width: marqueeBox.width,
+                          height: marqueeBox.height,
+                        }}
+                      />
+                    ) : null}
                   </div>
 
                 {TRACKS.filter((t) =>
                   isCoreTrackVisible(trackVisibility, t.id),
                 ).map((track) => (
-                  <div key={track.id} className={styles.trackRow}>
+                  <div
+                    key={track.id}
+                    className={styles.trackRow}
+                    style={rowHeightStyle(track.id)}
+                    data-track={track.id}
+                  >
                     <div
                       className={[
                         styles.dockCell,
@@ -2551,6 +3457,28 @@ export function TimelineShell() {
                         >
                           <IconTap />
                         </button>
+                      ) : null}
+                      {touchTier !== "mobile" ? (
+                        <button
+                          type="button"
+                          className={[
+                            styles.laneResize,
+                            laneResizeTrackId === track.id
+                              ? styles.laneResizeActive
+                              : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          title="Przeciągnij — wysokość ścieżki (dwuklik = domyślna)"
+                          aria-label={`Zmień wysokość ścieżki ${track.label}`}
+                          onPointerDown={(e) => beginLaneResize(e, track.id)}
+                          onPointerMove={onLaneResizePointerMove}
+                          onPointerUp={endLaneResize}
+                          onPointerCancel={endLaneResize}
+                          onDoubleClick={(e) =>
+                            onLaneResizeDblClick(e, track.id)
+                          }
+                        />
                       ) : null}
                     </div>
                     <div
@@ -2584,12 +3512,7 @@ export function TimelineShell() {
                                   if (e.button !== 0 || !draftProject) return;
                                   if (!toolIsPencilDraw(tool)) {
                                     if (toolAllowsClipHitZones(tool)) {
-                                      if (track.id === "tekst")
-                                        setSelectedTekstClipId(null);
-                                      if (track.id === "akordy")
-                                        setSelectedAkordClipId(null);
-                                      if (track.id === "cue")
-                                        setSelectedCueClipId(null);
+                                      beginMarquee(e);
                                     }
                                     return;
                                   }
@@ -2645,6 +3568,7 @@ export function TimelineShell() {
                       ]
                         .filter(Boolean)
                         .join(" ")}
+                      data-track={track.id}
                     >
                       {renderLaneContent(track.id)}
                     </div>
@@ -2656,19 +3580,9 @@ export function TimelineShell() {
           </div>
         </div>
 
-        {inspectorOpen ? (
-          <aside className={styles.inspector} aria-label="Właściwości">
+        <aside className={styles.inspector} aria-label="Właściwości">
             <div className={styles.inspHead}>
               <h2 className={styles.inspTitle}>Właściwości</h2>
-              <ShellIconButton
-                label="Ukryj właściwości"
-                onClick={() => {
-                  setInspectorOpen(false);
-                  setSongMetaOpen(false);
-                }}
-              >
-                <IconClose />
-              </ShellIconButton>
             </div>
             {songMetaOpen && draftProject ? (
               <div className={styles.inspBody}>
@@ -2705,10 +3619,40 @@ export function TimelineShell() {
                 </label>
                 <label className={styles.inspField}>
                   Metrum domyślne
-                  <span className={styles.metaRead}>
-                    {draftProject.defaultMeter.numerator}/
-                    {draftProject.defaultMeter.denominator}
-                  </span>
+                  <input
+                    className={styles.lengthInput}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="4/4"
+                    defaultValue={`${draftProject.defaultMeter.numerator}/${draftProject.defaultMeter.denominator}`}
+                    key={`meter-${draftProject.defaultMeter.numerator}-${draftProject.defaultMeter.denominator}`}
+                    aria-label="Metrum domyślne"
+                    onBlur={(e) => {
+                      const parsed = parseLegacyMeter(
+                        e.target.value,
+                        draftProject.defaultMeter,
+                      );
+                      if (
+                        parsed.numerator === draftProject.defaultMeter.numerator &&
+                        parsed.denominator ===
+                          draftProject.defaultMeter.denominator
+                      ) {
+                        e.target.value = `${parsed.numerator}/${parsed.denominator}`;
+                        return;
+                      }
+                      commitDraft(
+                        upsertMeterAt(
+                          {
+                            ...draftProject,
+                            defaultMeter: parsed,
+                          },
+                          0,
+                          parsed.numerator,
+                          parsed.denominator,
+                        ),
+                      );
+                    }}
+                  />
                 </label>
                 <label className={styles.inspField}>
                   PC (MIDI)
@@ -2757,9 +3701,86 @@ export function TimelineShell() {
                   />
                 </label>
                 <label className={styles.inspField}>
+                  Rok wydania
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    min={1900}
+                    max={2100}
+                    placeholder="1978"
+                    value={draftProject.year ?? ""}
+                    aria-label="Rok wydania"
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        commitDraft({ ...draftProject, year: undefined });
+                        return;
+                      }
+                      const n = Number(raw);
+                      if (!Number.isFinite(n)) return;
+                      commitDraft({
+                        ...draftProject,
+                        year: Math.round(n),
+                      });
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
                   Tonacja (start)
-                  <span className={styles.metaRead}>
-                    {formatKeySignature(resolveKeyAt(draftProject, 0))}
+                  <span className={styles.metaKeyRow}>
+                    <select
+                      className={styles.nameInput}
+                      aria-label="Tonic start"
+                      value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
+                      onChange={(e) => {
+                        const mode =
+                          resolveKeyAt(draftProject, 0)?.mode ?? "major";
+                        commitDraft(
+                          upsertKeyAt(draftProject, 0, {
+                            tonic: e.target.value || "C",
+                            mode,
+                          }),
+                        );
+                      }}
+                    >
+                      {[
+                        "C",
+                        "C#",
+                        "Db",
+                        "D",
+                        "Eb",
+                        "E",
+                        "F",
+                        "F#",
+                        "Gb",
+                        "G",
+                        "Ab",
+                        "A",
+                        "Bb",
+                        "B",
+                      ].map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className={styles.nameInput}
+                      aria-label="Tryb tonacji start"
+                      value={resolveKeyAt(draftProject, 0)?.mode ?? "major"}
+                      onChange={(e) => {
+                        const tonic =
+                          resolveKeyAt(draftProject, 0)?.tonic ?? "C";
+                        const mode =
+                          e.target.value === "minor" ? "minor" : "major";
+                        commitDraft(
+                          upsertKeyAt(draftProject, 0, { tonic, mode }),
+                        );
+                      }}
+                    >
+                      <option value="major">Dur</option>
+                      <option value="minor">Moll</option>
+                    </select>
                   </span>
                 </label>
               </div>
@@ -3052,7 +4073,6 @@ export function TimelineShell() {
                           if (!result) return;
                           commitDraft(result.project);
                           setSelectedSubsectionIdx(result.selectIdx);
-                          setInspectorOpen(true);
                         }}
                       >
                         +
@@ -3087,48 +4107,17 @@ export function TimelineShell() {
               </p>
             )}
           </aside>
-        ) : (
-          <button
-            type="button"
-            className={styles.showInsp}
-            onClick={() => setInspectorOpen(true)}
-          >
-            Właściwości
-          </button>
-        )}
       </div>
 
       <footer className={styles.status} aria-label="Status Timeline">
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Utwór</span>
-          <span className={styles.statusVal}>
-            {draftProject?.name ?? "—"}
-          </span>
-        </div>
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Pozycja</span>
-          <span className={[styles.statusVal, styles.statusMono].join(" ")}>
-            {toDisplayBar(bbt.bar)}.{bbt.beat} · {tempoAtPlayhead} BPM ·{" "}
-            {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
-          </span>
-        </div>
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Połączenie</span>
-          <span className={styles.statusVal}>
-            {connectionStatusLabel(wsStatus)}
-          </span>
-        </div>
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Stan</span>
-          <span
-            className={[
-              styles.statusVal,
-              dirty ? "" : styles.statusMuted,
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {dirty ? "Niezapisane" : "Zapisane"}
+        <div className={styles.statusLeft}>
+          <ConnectionIndicator status={wsStatus} variant="dot" />
+          <span className={styles.statusConnLab}>
+            {wsStatus === "connected"
+              ? "Połączony"
+              : wsStatus === "connecting"
+                ? "Łączenie…"
+                : "Rozłączony"}
           </span>
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom">
@@ -3146,8 +4135,8 @@ export function TimelineShell() {
             H
             <input
               type="range"
-              min={24}
-              max={160}
+              min={ZOOM_H_MIN}
+              max={ZOOM_H_MAX}
               value={zoomH}
               onChange={(e) => setZoomH(Number(e.target.value))}
             />
@@ -3156,10 +4145,10 @@ export function TimelineShell() {
             V
             <input
               type="range"
-              min={40}
-              max={160}
+              min={ZOOM_V_MIN}
+              max={ZOOM_V_MAX}
               value={zoomV}
-              onChange={(e) => setZoomV(Number(e.target.value))}
+              onChange={(e) => setVerticalZoom(Number(e.target.value))}
             />
           </label>
         </div>
@@ -3215,6 +4204,12 @@ export function TimelineShell() {
             ▶
           </button>
         </div>
+      ) : null}
+
+      {canvasNotice ? (
+        <p className={styles.canvasNotice} role="status" aria-live="polite">
+          {canvasNotice}
+        </p>
       ) : null}
 
       {touchTier === "mobile" ? (
@@ -3506,22 +4501,27 @@ export function TimelineShell() {
         <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
             <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
-            <label className={styles.inspField}>
-              Licznik
+            <div
+              className={styles.meterEditRow}
+              role="group"
+              aria-label="Metrum"
+            >
               <input
                 className={styles.lengthInput}
                 type="number"
                 min={1}
                 max={32}
                 value={meterNumDraft}
+                aria-label="Metrum — górna liczba"
                 onChange={(e) => setMeterNumDraft(e.target.value)}
               />
-            </label>
-            <label className={styles.inspField}>
-              Mianownik
+              <span className={styles.meterEditSlash} aria-hidden>
+                /
+              </span>
               <select
                 className={styles.nameInput}
                 value={meterDenDraft}
+                aria-label="Metrum — dolna liczba"
                 onChange={(e) => setMeterDenDraft(e.target.value)}
               >
                 {[1, 2, 4, 8, 16].map((d) => (
@@ -3530,7 +4530,7 @@ export function TimelineShell() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
             <div className={styles.overlayActions}>
               <Button variant="ghost" onClick={() => setMeterEditOpen(false)}>
                 Anuluj
@@ -3570,11 +4570,15 @@ export function TimelineShell() {
         <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
             <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
-            <label className={styles.inspField}>
-              Tonic
+            <div
+              className={styles.keyEditRow}
+              role="group"
+              aria-label="Tonacja"
+            >
               <select
                 className={styles.nameInput}
                 id="key-tonic"
+                aria-label="Tonic"
                 defaultValue={
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }
@@ -3600,12 +4604,10 @@ export function TimelineShell() {
                   </option>
                 ))}
               </select>
-            </label>
-            <label className={styles.inspField}>
-              Tryb
               <select
                 className={styles.nameInput}
                 id="key-mode"
+                aria-label="Tryb"
                 defaultValue={
                   resolveKeyAt(draftProject, mapEditTicks)?.mode ?? "major"
                 }
@@ -3613,7 +4615,7 @@ export function TimelineShell() {
                 <option value="major">Dur</option>
                 <option value="minor">Moll</option>
               </select>
-            </label>
+            </div>
             <div className={styles.overlayActions}>
               <Button variant="ghost" onClick={() => setKeyEditOpen(false)}>
                 Anuluj
@@ -3656,6 +4658,7 @@ function FormaClipButton({
   pencilActive,
   allowHitZones,
   dimmed,
+  dataClipLane,
   onPointerDown,
   onPointerMove,
   onPointerUp,
@@ -3667,15 +4670,21 @@ function FormaClipButton({
   pencilActive: boolean;
   allowHitZones: boolean;
   dimmed?: boolean;
+  dataClipLane?: ClipSelectionLane;
   onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
   const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
+  const countdown = clip.kind === "countdown";
   const cursor = pencilActive
     ? "crosshair"
-    : allowHitZones && clip.kind !== "countdown"
-      ? cursorForHitZone(hoverZone, true)
+    : allowHitZones
+      ? countdown
+        ? hoverZone === "start"
+          ? "not-allowed"
+          : "ew-resize"
+        : cursorForHitZone(hoverZone, true)
       : "pointer";
 
   const ranges =
@@ -3686,11 +4695,13 @@ function FormaClipButton({
   return (
     <button
       type="button"
+      data-clip-id={clip.id}
+      data-clip-lane={dataClipLane}
       className={[
         styles.clip,
         styles.formaClip,
         selected ? styles.clipOn : "",
-        clip.kind === "countdown" ? styles.clipLocked : "",
+        countdown ? styles.clipLocked : "",
         pencilActive ? styles.formaClipPencil : "",
         dimmed ? styles.formaClipDim : "",
       ]
@@ -3699,7 +4710,7 @@ function FormaClipButton({
       style={{ ...style, cursor }}
       onPointerDown={onPointerDown}
       onPointerMove={(e) => {
-        if (allowHitZones && clip.kind !== "countdown") {
+        if (allowHitZones) {
           const rect = e.currentTarget.getBoundingClientRect();
           setHoverZone(hitTestClipZone(e.clientX - rect.left, rect.width, true));
         }

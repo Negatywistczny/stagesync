@@ -74,6 +74,10 @@ Referencja zachowania: `STAGESYNC-APP-LEGACY`
 - Zakaz zamykania zadania słowami: *wired*, *partial*, *parity done* bez
   ścieżki smoke PO.
 - „Bliżej v4” = **feel + workflow**, nigdy = „te same przyciski”.
+- **Zakaz disabled-for-inventory:** nie wstawiać `disabled` kontrolek w
+  status/toolbar „na zapas” (np. Tr./Lead/Edycja, MIDI bridge), gdy API /
+  flow jeszcze nie istnieje. Brak funkcji = **brak UI**; slot wraca z prawdziwym
+  zachowaniem (Live Desk / β2), nie jako atrapa inventarza.
 
 ### 4a. Zakaz automatycznego redesignu (kolory / wskaźniki / IA)
 
@@ -110,6 +114,6 @@ PO smoke wg tej decyzji + [parity-blocker](../analysis/reports/report-parity-blo
 
 - [ADR 0003](./0003-ui-direction-booth.md) zaktualizowany: inventarz nie rządzi review.
 - Reguła agenta `.cursor/rules/ui-parity.mdc` + konstytucja.
-- TODO = faza **rebuild** (Timeline / Client treść / Admin IA), nie „odhacz inventarz”.
+- TODO = aktywny etap (**α9** po α8 code freeze): residual PO smoke + Client CL-P0 + migrator — nie „odhacz inventarz”.
 - Kod clone-chrome i atrapy mogą zostać usunięte / przebudowane w kolejnych PR —
   ten ADR ustala **kontrakt**, nie wymusza jednego mega-diffu.

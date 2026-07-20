@@ -1,14 +1,15 @@
-# Scope alpha.9 — Migrator legacy 4.x → v5
+# Scope alpha.9 — Migrator + dokończenie rebuild
 
-**Wersja docelowa:** `5.0.0-alpha.9` (kod może wejść przed tagiem; **β1** wymaga tego MVP + green parity)  
-**Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md)  
+**Wersja docelowa:** `5.0.0-alpha.9` (kod MVP migratora już w drzewie; bump/tag na prośbę)  
+**Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [α8 freeze](./report-alpha8-code-freeze.md)  
 **Fixture:** [docs/examples/legacy/database.sample.json](../../examples/legacy/database.sample.json)
 
 ## Cel
 
-Użytkownik z `database.json` (4.x) może **zaimportować utwory** do układu v5 (`data/projects/<id>/project.json` + library/setlist) bez dual-write i bez cichej naprawy.
+1. Użytkownik z `database.json` (4.x) może **zaimportować utwory** do układu v5 bez dual-write i bez cichej naprawy.
+2. Domknięcie residual z α8 freeze: **PO smoke** + Client **CL-01/04/05**.
 
-## IN (must)
+## IN (must) — Migrator
 
 | # | Wycinek | Done |
 |---|---------|------|
@@ -20,6 +21,17 @@ Użytkownik z `database.json` (4.x) może **zaimportować utwory** do układu v5
 | M6 | Vitest happy + broken path | ✓ |
 | M7 | CLI `--dry-run` / `--apply` + shadow `.bak` | ✓ |
 | M8 | Docs użytkownika [MIGRATION.md](../../MIGRATION.md) | ✓ |
+| M9 | Fixtures / smoke na typowej bazie 4.x + regresja Admin import | ☐ |
+
+## IN (must) — Residual parity (z α8 freeze)
+
+| # | Wycinek | Done |
+|---|---------|------|
+| R1 | PO smoke T-gest / T-loc / T-zoom / T-maps / T-chrome / A1 | ☐ |
+| R2 | **CL-01** Karaoke beat / bar highlight | ☐ |
+| R3 | **CL-04** Grid full cycle / multi-bar | ☐ |
+| R4 | **CL-05** Forma / drums bar progress | ☐ |
+| R5 | **P8** Sign-off PO (blokuje β) | ☐ |
 
 ## OUT (świadome)
 
@@ -27,9 +39,10 @@ Użytkownik z `database.json` (4.x) może **zaimportować utwory** do układu v5
 |-------|--------|
 | MusicXML / cover file copy | Tylko refs w JSON jeśli kiedyś; pliki ręcznie |
 | Audio tracks / playback | β2 |
+| AD-01…03 Live Desk korekt | β2 |
 | Dual-write do `database.json` | Nigdy |
 | Pełny round-trip v5→4.x | OUT |
-| UI wizard w Admin | CLI wystarczy na α9; Admin UI optional później |
+| UI wizard w Admin | CLI + import pack wystarczy; pełny wizard optional |
 
 ## Reguła osi (kontrakt)
 
@@ -42,4 +55,5 @@ Countdown → `kind: countdown`, `startTicks ≤ 0`.
 
 ## Bramka względem β1
 
-Parity UI ([report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md)) **oraz** ten migrator MVP muszą być green przed tagiem `5.0.0-beta.*`. Sign-off PO nadal wymagany dla Timeline smoke.
+[parity-blocker](./report-parity-blocker-alpha8.md) (P8 + CL-P0 + CI) **oraz** migrator MVP (M1–M9) muszą być green przed tagiem `5.0.0-beta.*`.  
+α8 code freeze **nie** uprawnia do β.

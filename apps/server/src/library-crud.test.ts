@@ -218,4 +218,59 @@ describe("library / projects CRUD", () => {
     const ids = new Set(library.projects.map((p) => p.id));
     expect(ids.size).toBe(5);
   });
+
+  it("POST /api/library/import auto-detects legacy database.json", async () => {
+    const legacy = {
+      schemaVersion: 4,
+      songs: [
+        {
+          id: "song-legacy-1",
+          title: "Legacy Import",
+          tempo: 120,
+          markers: [{ id: "mk-end", kind: "END", startAbs: 16 }],
+          sections: [
+            { id: 0, name: "Countdown", startAbs: 0 },
+            { id: 1, name: "Verse", startAbs: 8 },
+          ],
+          chords: { timeSignature: "4/4", clips: [] },
+        },
+      ],
+    };
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(legacy),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      ok: boolean;
+      format: string;
+      created: string[];
+      library: unknown;
+    };
+    expect(body.ok).toBe(true);
+    expect(body.format).toBe("legacy-database");
+    expect(body.created).toHaveLength(1);
+    const library = LibrarySchema.parse(body.library);
+    expect(library.projects.some((p) => p.name === "Legacy Import")).toBe(true);
+
+    const project = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
+      ).json(),
+    );
+    expect(project.formatVersion).toBe(5);
+    expect(project.forma.clips.length).toBeGreaterThan(0);
+  });
+
+  it("POST /api/library/import rejects unknown JSON", async () => {
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ foo: 1 }),
+    });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toMatch(/Nieznany format|projects|songs/);
+  });
 });

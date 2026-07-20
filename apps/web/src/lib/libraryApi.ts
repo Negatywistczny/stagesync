@@ -87,7 +87,16 @@ export async function exportLibraryPack(
   return res.blob();
 }
 
-export async function importLibraryPack(pack: unknown): Promise<Library> {
+export type ImportLibraryResult = {
+  library: Library;
+  created: string[];
+  format?: string;
+  warnings: string[];
+};
+
+export async function importLibraryPack(
+  pack: unknown,
+): Promise<ImportLibraryResult> {
   const res = await fetch("/api/library/import", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -96,8 +105,22 @@ export async function importLibraryPack(pack: unknown): Promise<Library> {
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
-  const body = (await res.json()) as { library: unknown };
-  return LibrarySchema.parse(body.library);
+  const body = (await res.json()) as {
+    library: unknown;
+    created?: unknown;
+    format?: unknown;
+    warnings?: unknown;
+  };
+  return {
+    library: LibrarySchema.parse(body.library),
+    created: Array.isArray(body.created)
+      ? body.created.filter((id): id is string => typeof id === "string")
+      : [],
+    format: typeof body.format === "string" ? body.format : undefined,
+    warnings: Array.isArray(body.warnings)
+      ? body.warnings.filter((w): w is string => typeof w === "string")
+      : [],
+  };
 }
 
 function toPutBody(project: Project): PutProjectBody {

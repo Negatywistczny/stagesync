@@ -157,12 +157,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
   return (
     <section className={styles.card} aria-label="Set">
       <div className={styles.cardHead}>
-        <div>
-          <h1 className={styles.cardTitle}>Set</h1>
-          <p className={styles.cardHint}>
-            Wybierz utwory i ułóż kolejność — w jednym widoku
-          </p>
-        </div>
+        <h1 className={styles.cardTitle}>Set</h1>
       </div>
       <div className={styles.cardBody}>
         {error ? (
@@ -263,11 +258,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 </Button>
               </div>
             </div>
-            {draftIds.length === 0 ? (
-              <p className={styles.muted}>
-                Zaznacz utwory po lewej i dodaj do setu.
-              </p>
-            ) : (
+            {draftIds.length === 0 ? null : (
               <ul className={styles.list} aria-label="Pozycje setu">
                 {draftIds.map((id, index) => (
                   <li

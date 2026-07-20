@@ -92,6 +92,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       type: "transport_tick",
       ...state,
       serverTimeMs: now(),
+      sentAtMs: Date.now(),
     };
   }
 

@@ -5,6 +5,9 @@
  */
 
 :root {
+  /* Native controls follow booth dark (avoids white UA checkbox bleed) */
+  color-scheme: dark;
+
   /* Elevation + scenic borders (black / amber, APCA-safe) */
   --ss-color-bg: #000000;
   --ss-color-surface: #09090b;
@@ -96,6 +99,8 @@
 
 /* Light theme — v4 parity via data-theme */
 :root[data-theme="light"] {
+  color-scheme: light;
+
   --ss-color-bg: #f4f4f5;
   --ss-color-surface: #ffffff;
   --ss-color-elevated: #fafafa;
