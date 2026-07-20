@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
+  [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [ROADMAP.md](ROADMAP.md);
+  checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.
 - CI GitHub Actions (lint, check-types, test, build) + szablony PR / Issues;
   [LICENSE](LICENSE) (MIT); [SECURITY.md](SECURITY.md).
 - [ADR 0005](docs/adr/0005-domain-axioms.md) — Granica 0 (domain axioms: czas +

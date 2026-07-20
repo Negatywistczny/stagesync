@@ -25,4 +25,14 @@
 - Opis po angielsku; w normalnym workflow **bez** `--no-verify`
 
 Linki do SemVer, Keep a Changelog, EditorConfig, ADR itd.: [docs/STANDARDS.md](docs/STANDARDS.md).  
-Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).  
+Roadmapa (kierunek): [ROADMAP.md](ROADMAP.md). Design UI: [docs/ui/](docs/ui/README.md).
+
+## Checklista przed release
+
+- [ ] [CHANGELOG.md](CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione
+- [ ] [README.md](README.md) — uruchomienie i wersja nadal zgodne z rzeczywistością
+- [ ] Design System — brak ad-hoc HEX / drugiego Buttona; tokeny `--ss-*` ([docs/ui/](docs/ui/README.md))
+- [ ] Brak orphan `TODO` / `FIXME` / `TEMP` w kodzie bez pozycji w [docs/TODO.md](docs/TODO.md)
+- [ ] `pnpm lint` / `pnpm check-types` / `pnpm test` / `pnpm build`
+- [ ] Zmiana architektury → ADR (status + konsekwencje); Granica 0 → [ADR 0005](docs/adr/0005-domain-axioms.md)
