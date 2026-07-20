@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.1` — historia w [CHANGELOG.md](../CHANGELOG.md).  
+**Stan:** `5.0.0-alpha.2` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycja znika stąd).
 
 ## Następne (produkt)

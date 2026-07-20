@@ -7,6 +7,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+## [5.0.0-alpha.2] - 2026-07-20
+
 ### Dodano
 
 - Higiena repo: [`.env.example`](.env.example) (`PORT`, `STAGESYNC_DATA_DIR`);
@@ -22,6 +24,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - [ADR 0005](docs/adr/0005-domain-axioms.md) — Granica 0 (domain axioms: czas +
   foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
   audio.
+- [ADR 0006](docs/adr/0006-no-json-api.md) — świadome odrzucenie JSON:API;
+  indeks ADR + słownik statusów ([docs/adr/README.md](docs/adr/README.md)).
 - Fundament gęstości UI: skala `--ss-space-1…16`, elevation
   (`surface` / `elevated`), `border-muted`, scenic scrollbary, reguła
   [`ui-density.mdc`](.cursor/rules/ui-density.mdc); Button `iconOnly` +
@@ -47,8 +51,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
   `+=` na timerze); schematy Zod w shared.
 - Kanon timebase w `@stagesync/shared`: integer ticks + `DEFAULT_PPQ` (960),
   helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
-  (oraz `quartersToTicks` / `ticksToQuarters` pod migrator); usunięty
-  przejściowy float `absBeat`.
+  (oraz `quartersToTicks` / `ticksToQuarters` pod migrator).
 - CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
   `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
   `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
@@ -64,15 +67,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 - [ADR 0002](docs/adr/0002-timebase-ssot.md) — kanon timebase: integer ticks + PPQ;
-  BBT tylko jako widok (float `absBeat` usunięty w shared).
+  BBT tylko jako widok.
 - [ADR 0003](docs/adr/0003-ui-direction-booth.md) — layout ≠ inventarz; zakaz
   ucinania kontrolek v4 „bo placeholder”.
 - Podział dokumentacji bez dublowania (README = start, TODO = tylko przyszłość,
   ARCHITECTURE = mapa + monorepo, historia = CHANGELOG); usunięte odhaczone day-0 z TODO.
 
-### Naprawiono
-
 ### Usunięto
+
+- Float `absBeat` z `@stagesync/shared` (kanon pozycji = ticks + PPQ).
 
 ## [5.0.0-alpha.1] - 2026-07-19
 
@@ -87,5 +90,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
 - Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.1...HEAD
-[5.0.0-alpha.1]: https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-alpha.1
+[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.2...HEAD
+[5.0.0-alpha.2]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2
+[5.0.0-alpha.1]: https://github.com/Negatywistyczny/stagesync/releases/tag/v5.0.0-alpha.1

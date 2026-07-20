@@ -2,7 +2,7 @@
 
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-19
-- **Aktualizacja:** 2026-07-19 — kanon: integer ticks + PPQ; BBT tylko jako widok
+- **Aktualizacja:** 2026-07-20 — float `absBeat` usunięty; kanon: ticks + PPQ
 
 ## Kontekst
 
@@ -28,7 +28,8 @@ Pełny „model BBT w silniku” bywa mylony z bezpieczeństwem całkowitym: **B
    - **Takt 1** = pierwszy takt właściwego utworu (partytura / Logic).  
    - Countdown / pre-roll / count-in → pozycje **≤ 0** (ujemne ticki albo BBT ≤ 0).  
    - Sekundy / sample tylko na krawędzi audio (`tempoMap` → ms → sample), nigdy jako kanon Formy / Tekstu / Cue.
-7. **Float `absBeat`** w early `packages/shared` — **przejściowy** szkic; transport i model projektu mają przejść na ticks + PPQ (z helperami BBT), nie utrwalać float jako kanonu.
+7. **Float `absBeat`** — **usunięty** z `@stagesync/shared`. Nie przywracać jako
+   kanonu pozycji; legacy `startAbs` tylko na granicy migratora → ticks.
 
 ## Konsekwencje
 

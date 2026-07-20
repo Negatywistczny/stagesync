@@ -49,6 +49,8 @@ bez tej ceremonii.
 
 - `feat:` / `fix:` / `docs:` / `chore:` / `refactor:` / `test:` / `ci:` …
 - Opis po angielsku; w normalnym workflow **bez** `--no-verify`
+- Merge commits GitHuba (`Merge pull request #…`) nie przechodzą przez lokalny
+  hook — to akceptowany wyjątek; treść PR / squash title powinna być CC
 
 Linki do SemVer, Keep a Changelog, EditorConfig, ADR itd.: [docs/STANDARDS.md](docs/STANDARDS.md).  
 Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).  

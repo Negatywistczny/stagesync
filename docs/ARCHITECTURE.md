@@ -11,7 +11,7 @@
 | [docs/ui/](./ui/README.md) | Design system (kolory, Button) | Implementacja w `packages/ui` |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
-| [docs/adr/](./adr/) | Decyzje z kontekstem i konsekwencjami | Checklisty zadań |
+| [docs/adr/](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
 | `.cursor/rules/` | Reguły egzekwowane przez agenta | Długie tutoriale |
 
 ## Monorepo
