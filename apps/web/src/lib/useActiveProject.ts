@@ -1,10 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Project } from "@stagesync/shared";
 import { fetchProject } from "./libraryApi.js";
 
 export function useActiveProject(activeProjectId: string | null | undefined) {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const reload = useCallback(async () => {
+    if (!activeProjectId) {
+      setActiveProject(null);
+      return;
+    }
+    const project = await fetchProject(activeProjectId);
+    setActiveProject(project);
+  }, [activeProjectId]);
 
   useEffect(() => {
     if (!activeProjectId) {
@@ -29,5 +38,5 @@ export function useActiveProject(activeProjectId: string | null | undefined) {
     };
   }, [activeProjectId]);
 
-  return { activeProject, loading };
+  return { activeProject, setActiveProject, loading, reload };
 }

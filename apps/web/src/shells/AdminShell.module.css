@@ -121,47 +121,53 @@
 .workspace {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: var(--ss-space-4) var(--ss-space-5) var(--ss-space-5);
+}
+
+/* Booth desk: cards/panels never edge-to-edge on wide viewports.
+   Chrome tabs + status footer stay full-bleed (outside .workspace).
+   Children fill the row; scroll lives inside cards / list regions. */
+.workspace > * {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: calc(var(--ss-space-16) * 20); /* 1280px */
+  min-height: 0;
+  margin-inline: auto;
 }
 
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) auto minmax(16rem, 0.9fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.9fr);
   gap: var(--ss-space-2);
-  min-height: 100%;
+  height: 100%;
+  min-height: 0;
   align-items: stretch;
 }
 
-.splitSolo {
-  grid-template-columns: 1fr auto;
+.splitAside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-.splitToggle,
-.splitToggleSolo {
-  align-self: stretch;
-  flex-shrink: 0;
-  width: var(--ss-space-6);
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-surface);
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-lg);
-  cursor: pointer;
+.splitAside > .card {
+  min-height: 0;
 }
 
-.splitToggle:disabled,
-.splitToggleSolo:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.splitAside > .card:first-child {
+  flex: 1 1 auto;
 }
 
-.splitToggleSolo {
-  justify-self: end;
+.splitAside > .card:last-child {
+  flex: 0 1 auto;
+  max-height: 48%;
 }
 
 .card {
@@ -179,14 +185,15 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ss-space-3);
-  padding: var(--ss-space-3) var(--ss-space-4);
+  gap: var(--ss-space-2);
+  flex-shrink: 0;
+  padding: var(--ss-space-2) var(--ss-space-3);
   border-bottom: 1px solid var(--ss-color-border);
 }
 
 .cardTitle {
   margin: 0;
-  font-size: var(--ss-text-lg);
+  font-size: var(--ss-text-md);
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-tight);
 }
@@ -200,10 +207,11 @@
 .cardBody {
   display: flex;
   flex-direction: column;
-  gap: var(--ss-space-3);
-  padding: var(--ss-space-4);
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-3);
   min-height: 0;
   flex: 1;
+  overflow: auto;
 }
 
 .toolbar {
@@ -211,6 +219,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--ss-space-2);
+  flex-shrink: 0;
 }
 
 .actions {
@@ -224,10 +233,158 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-1);
-  min-height: 12rem;
-  max-height: min(52dvh, 36rem);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   padding-right: var(--ss-space-1);
+}
+
+.setControls {
+  display: grid;
+  grid-template-columns: max-content;
+  align-items: center;
+  gap: var(--ss-space-1);
+  width: fit-content;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.setControls > * {
+  width: 100%;
+  max-width: none;
+}
+
+.setSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ss-space-3);
+  min-height: 0;
+  flex: 1;
+}
+
+.setCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  padding: var(--ss-space-2);
+  background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
+}
+
+.setColHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+  flex-shrink: 0;
+}
+
+.setColTitle {
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.filterInput {
+  min-width: 8rem;
+  max-width: 14rem;
+  padding: var(--ss-space-1) var(--ss-space-2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-sm);
+}
+
+.setPickList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.setPickRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-1) 0;
+  border-bottom: 1px solid var(--ss-color-border-muted);
+}
+
+.setPickLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  flex: 1;
+  min-width: 0;
+  font-size: var(--ss-text-sm);
+  cursor: pointer;
+}
+
+/* Multi-select: square booth checkbox (--ss-*), not native light UA */
+.setPickLabel input[type="checkbox"] {
+  box-sizing: border-box;
+  width: var(--ss-space-4);
+  height: var(--ss-space-4);
+  flex-shrink: 0;
+  margin: 0;
+  appearance: none;
+  border: 2px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sharp);
+  background: var(--ss-color-elevated);
+  cursor: pointer;
+  accent-color: var(--ss-color-primary);
+  transition:
+    background-color var(--ss-transition),
+    border-color var(--ss-transition);
+}
+
+.setPickLabel input[type="checkbox"]:checked {
+  border-color: var(--ss-color-primary);
+  background-color: var(--ss-color-primary);
+}
+
+.setPickLabel input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.setPickLabel input[type="checkbox"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.setPickLabel:has(input:disabled) {
+  cursor: not-allowed;
+  color: var(--ss-color-disabled-text);
+}
+
+@media (max-width: 900px) {
+  .setSplit {
+    grid-template-columns: 1fr;
+  }
+
+  .twoUp {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  }
+
+  .splitAside > .card:last-child {
+    max-height: none;
+    flex: 1 1 auto;
+  }
 }
 
 .songRow {
@@ -244,6 +401,16 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+/* Name + action/meta only (no PC column). Prevents Button eating 1fr. */
+.songRowPair {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* Name + meta + action (e.g. project files). */
+.songRowTrail {
+  grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
 @media (hover: hover) {
@@ -276,6 +443,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.songArtist {
+  font-weight: var(--ss-font-weight-regular);
+  color: var(--ss-color-text-muted);
 }
 
 .songMeta {
@@ -325,6 +497,7 @@
 }
 
 .templates {
+  flex-shrink: 0;
   padding-top: var(--ss-space-1);
   border-top: 1px solid var(--ss-color-border);
 }
@@ -339,12 +512,105 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-4);
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+
+.stack > .card {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.stack > .twoUp {
+  flex: 1 1 auto;
+  min-height: 8rem;
+  overflow: hidden;
+}
+
+.stack > .twoUp > .card {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stack > .twoUp > .card:has(.terminal) {
+  display: flex;
+  flex-direction: column;
 }
 
 .twoUp {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  /* Logi flexes; MIDI column sized for readable 2×2 meters. */
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
   gap: var(--ss-space-4);
+  height: 100%;
+  min-height: 0;
+  align-items: stretch;
+}
+
+/* Scena: Komunikat + Klienci — clients list needs usable width (not Host MIDI cap). */
+.twoUpStage {
+  grid-template-columns: minmax(0, 0.95fr) minmax(18rem, 1.2fr);
+}
+
+/* Presence status dots (v4 live-state-conn-dot parity). */
+.clientsHeadLead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.clientsHeadCount {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.clientMain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.presenceDot {
+  width: var(--ss-space-2);
+  height: var(--ss-space-2);
+  border-radius: 50%;
+  background: var(--ss-color-text-muted);
+  flex-shrink: 0;
+  transition:
+    background-color var(--ss-transition),
+    box-shadow var(--ss-transition),
+    opacity var(--ss-transition);
+}
+
+.presenceDotOn {
+  background: var(--ss-color-success);
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--ss-color-success) 55%, transparent);
+}
+
+.presenceDotPending {
+  background: var(--ss-color-warning);
+  animation: presenceDotPulse 1.2s ease-in-out infinite;
+}
+
+.presenceDotOff {
+  background: var(--ss-color-danger);
+}
+
+@keyframes presenceDotPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
 }
 
 .dropZone {
@@ -363,7 +629,8 @@
 .terminal {
   margin: 0;
   padding: var(--ss-space-3) var(--ss-space-4);
-  min-height: 7rem;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   border-top: 1px solid var(--ss-color-border);
   background: var(--ss-color-bg);
@@ -373,19 +640,49 @@
   line-height: var(--ss-leading-relaxed);
 }
 
+.midiBody {
+  overflow: hidden;
+}
+
 .midiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: var(--ss-space-2);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .midiCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  min-height: 0;
   padding: var(--ss-space-3);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-bg);
   border: 1px solid var(--ss-color-border);
-  font-size: var(--ss-text-sm);
+  text-align: center;
+}
+
+.midiLabel {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-tight);
+}
+
+.midiValue {
+  margin: 0;
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-bold);
   font-variant-numeric: tabular-nums;
+  line-height: var(--ss-leading-tight);
 }
 
 /* —— Status bar (always on) —— */
@@ -432,26 +729,6 @@
 .statusMuted {
   color: var(--ss-color-text-muted);
   font-weight: var(--ss-font-weight-regular);
-}
-
-.statusCorrect {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-3) var(--ss-space-4);
-  margin-left: auto;
-}
-
-.statusField {
-  display: flex;
-  align-items: center;
-  gap: var(--ss-space-1);
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-}
-
-.statusField input[type="range"] {
-  width: 5.5rem;
 }
 
 /* —— Form bits —— */
@@ -526,6 +803,24 @@
   color: var(--ss-color-text-muted);
 }
 
+.nameRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+}
+
+.nameRow .input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+}
+
+.nameRow > :last-child {
+  flex-shrink: 0;
+}
+
 .muted {
   margin: 0;
   font-size: var(--ss-text-sm);
@@ -592,15 +887,4 @@
 .chipOn:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
-}
-
-@media (max-width: 900px) {
-  .split {
-    grid-template-columns: 1fr;
-  }
-
-  .statusCorrect {
-    margin-left: 0;
-    width: 100%;
-  }
 }

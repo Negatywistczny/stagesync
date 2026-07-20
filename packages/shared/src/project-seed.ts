@@ -1,5 +1,10 @@
 import { DEFAULT_PPQ } from "./time.js";
-import type { ProjectV2, ProjectV3, ProjectV4 } from "./schema.js";
+import type {
+  ProjectV2,
+  ProjectV3,
+  ProjectV4,
+  ProjectV5,
+} from "./schema.js";
 
 /** Alpha.3 seed: Countdown 2 bars @ PPQ 960, Intro from tick 0. */
 export function createProjectV2Seed(
@@ -58,13 +63,23 @@ export function createProjectV4Seed(
   return upgradeProjectV3ToV4(createProjectV3Seed(id, name, updatedAt));
 }
 
-/** @deprecated Prefer createProjectV4Seed. */
+/** Alpha.8 seed — v5 with keyMap + optional metadata. */
+export function createProjectV5Seed(
+  id: string,
+  name: string,
+  updatedAt: string,
+  opts?: { midiProgramId?: number; isTemplate?: boolean },
+): ProjectV5 {
+  return upgradeProjectV4ToV5(createProjectV4Seed(id, name, updatedAt), opts);
+}
+
+/** @deprecated Prefer createProjectV5Seed. */
 export function createProjectSeed(
   id: string,
   name: string,
   updatedAt: string,
-): ProjectV4 {
-  return createProjectV4Seed(id, name, updatedAt);
+): ProjectV5 {
+  return createProjectV5Seed(id, name, updatedAt);
 }
 
 export function upgradeProjectV1ToV2(v1: {
@@ -93,4 +108,44 @@ export function upgradeProjectV3ToV4(v3: ProjectV3): ProjectV4 {
     akordy: { clips: [] },
     cue: { clips: [] },
   };
+}
+
+export function upgradeProjectV4ToV5(
+  v4: ProjectV4,
+  opts?: { midiProgramId?: number; isTemplate?: boolean },
+): ProjectV5 {
+  const isTemplate = opts?.isTemplate === true;
+  return {
+    ...v4,
+    formatVersion: 5,
+    keyMap: [
+      {
+        id: "key-0",
+        startTicks: 0,
+        key: { tonic: "C", mode: "major" },
+      },
+    ],
+    scoreBarMap: { anchors: [] },
+    ...(isTemplate
+      ? { isTemplate: true as const }
+      : {
+          midiProgramId:
+            opts?.midiProgramId != null ? opts.midiProgramId : 0,
+        }),
+  };
+}
+
+/** Next free MIDI PC in 0–127 among library entries (non-templates). */
+export function nextMidiProgramId(
+  entries: { midiProgramId?: number; isTemplate?: boolean }[],
+): number | null {
+  const used = new Set(
+    entries
+      .filter((e) => e.isTemplate !== true && e.midiProgramId != null)
+      .map((e) => e.midiProgramId as number),
+  );
+  for (let i = 0; i <= 127; i++) {
+    if (!used.has(i)) return i;
+  }
+  return null;
 }

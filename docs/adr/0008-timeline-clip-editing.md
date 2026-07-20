@@ -3,7 +3,7 @@
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-20
 - **Podstawa:** synteza wymagań produktowych + wzorce z audytu Logic Pro (STAGESYNC-V5-PLAN)
-- **Zaakceptowany dla:** `5.0.0-alpha.7` (Forma editing); audio → β1
+- **Zaakceptowany dla:** `5.0.0-alpha.7` (Forma editing); audio → β2
 
 ## Kontekst
 
@@ -60,7 +60,7 @@ Kolizje **między różnymi ścieżkami** (audio 0…N) — dozwolone (niezależ
 
 Countdown (`kind: countdown`) — **zablokowany** do edycji geometrycznej (jak α3).
 
-### 4. Audio — narzędzia β1
+### 4. Audio — narzędzia β2
 
 | Dozwolone | Zakazane |
 |-----------|----------|
@@ -107,7 +107,7 @@ Brak krzywych automatyzacji w alpha/beta. Wartości persist w `project.json` (sc
 |-------|---------|
 | **Alpha (α4–α7)** | **Draft** w React (`draftProject`) + **Zapisz / Odrzuć** → PUT |
 | **Gest drag** | Snapshot na pointerdown → preview w overlay → commit do draft na pointerup |
-| **Pełny Undo/Redo** (stos sesji) | **β1 lub 5.0.0** — nie blocker α7 |
+| **Pełny Undo/Redo** (stos sesji) | **α8** (done); utrzymanie w β2 przy audio |
 
 **Zakaz:** mutacja `draftProject` na każdy `pointermove` bez warstwy preview (antywzorzec DAW).
 
@@ -118,24 +118,25 @@ Brak krzywych automatyzacji w alpha/beta. Wartości persist w `project.json` (sc
 | **α4** | Layout track grid; lane Audio **placeholder**; snap faza 1 (pencil) |
 | **α6** | Import plików do folderu projektu; metadata; schema clip refs (bez silnika lub stub) |
 | **α7** | Forma: pencil drag, pointer move/resize, Smart Tool FSM, Delete; snap + Cmd-off |
-| **β1** | Silnik audio; clip na Timeline; sync; trim/move; waveform; gain/mute/fader |
-| **5.0.0 / β.x** | fade, crossfade, loop-region; overlap mode; snap picker UI; Undo/Redo opcjonalnie |
+| **β1** | Docker + Tauri ([ADR 0010](./0010-desktop-shell-tauri.md)); stabilność hosta — **bez** silnika audio |
+| **β2** | Silnik audio; clip na Timeline; sync; trim/move; waveform; gain/mute/fader; MIDI I/O |
+| **5.0.0** | fade, crossfade, loop-region; overlap mode; snap picker UI |
 
-Szczegóły checklist → [ROADMAP.md](../ROADMAP.md). Scope per alpha → `report-scope-alphaN.md`.
+Szczegóły checklist → [ROADMAP.md](../ROADMAP.md). Scope per etap → `report-scope-*.md`.
 
 ### 10. Poza zakresem (jawnie OUT)
 
 - Flex Time, transient snap, Tab-to-transient
-- Time-stretch audio (β1)
+- Time-stretch audio (poza β2 MVP)
 - Overlap / X-Fade / Shuffle drag modes (do czasu osobnej decyzji)
-- MIDI I/O i nagrywanie nakładające się regionów
+- MIDI nagrywanie nakładających się regionów (MIDI clock I/O = β2; recording = później)
 - Join regions (audio bounce)
 - Interval tree (wystarczy posortowana lista clipów per lane przy N < 100)
 - Walidacja geometrii clipów na serwerze przy PUT (fail fast Zod shape only)
 
 ## Konsekwencje
 
-- Nowy **ProjectSchema v3** (β1): `audioTracks[]`, clipy z `fileRef`, trim, gain, mute — osobny PR / ADR rozszerzenia schema gdy implementacja.
+- **ProjectSchema v3** ([ADR 0009](./0009-project-schema-v3.md)): refs plików α6; pola trim/gain/mute silnika → β2.
 - Shared: helpery kolizji no-overlap (Forma + generyczne dla lane) — czyste funkcje, testy Vitest.
 - [ui-shell-inventory.md](../ui-shell-inventory.md): Smart Tool, Gain Tool, Mute Tool, fader ścieżki.
 - Logic Pro spec (STAGESYNC-V5-PLAN): referencja algorytmiczna, nie checklista implementacji.

@@ -46,5 +46,10 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Migrate legacy dry-run (M9)
+        run: |
+          pnpm migrate:legacy -- --input docs/examples/legacy/database.sample.json --dry-run
+          pnpm migrate:legacy -- --input docs/examples/legacy/database.typical.json --dry-run
+
       - name: Build
         run: pnpm build

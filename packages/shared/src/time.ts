@@ -85,6 +85,22 @@ export function elapsedToTicks(
 }
 
 /**
+ * Integer tick delta → wall-clock milliseconds (float; inverse of ticksPerMs).
+ * Pure — no Date.now(). Callers schedule audio from transport ticks.
+ */
+export function ticksToMs(
+  ticks: number,
+  bpm: number,
+  ts: TimeSignature,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (!Number.isFinite(ticks)) {
+    throw new RangeError("ticks must be finite");
+  }
+  return ticks / ticksPerMs(bpm, ts, ppq);
+}
+
+/**
  * Validates a time signature for the given PPQ.
  * Throws when numerator/denominator are invalid or ticks-per-bar is not an integer.
  */
@@ -236,6 +252,23 @@ export function quartersToTicks(
     throw new RangeError("quarters and ppq must be finite integers; ppq > 0");
   }
   return quarters * ppq;
+}
+
+/**
+ * Legacy 4.x `startAbs` (float quarter notes) → integer ticks.
+ * Single ACL rounding rule for the migrator ([ADR 0002](../../docs/adr/0002-timebase-ssot.md)).
+ */
+export function absBeatToTicks(
+  absBeat: number,
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (!Number.isFinite(absBeat)) {
+    throw new RangeError("absBeat must be finite");
+  }
+  if (!Number.isFinite(ppq) || !Number.isInteger(ppq) || ppq <= 0) {
+    throw new RangeError("ppq must be a positive integer");
+  }
+  return Math.round(absBeat * ppq);
 }
 
 /** Ticks → integer quarter notes (floor toward −∞). */

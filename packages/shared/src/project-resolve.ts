@@ -1,4 +1,4 @@
-import type { FormaClip, Project } from "./schema.js";
+import type { FormaClip, KeySignature, Project } from "./schema.js";
 import type { TimeSignature } from "./time.js";
 
 function lastEventAt<T extends { startTicks: number }>(
@@ -34,6 +34,20 @@ export function resolveMeterAt(
     return { numerator: ev.numerator, denominator: ev.denominator };
   }
   return { ...project.defaultMeter };
+}
+
+export function resolveKeyAt(
+  project: Project,
+  positionTicks: number,
+): KeySignature | null {
+  const ev = lastEventAt(project.keyMap ?? [], positionTicks);
+  return ev?.key ?? null;
+}
+
+export function formatKeySignature(key: KeySignature | null): string {
+  if (!key) return "—";
+  const mode = key.mode === "minor" ? "m" : "";
+  return `${key.tonic}${mode}`;
 }
 
 export function resolveFormaClipAt(

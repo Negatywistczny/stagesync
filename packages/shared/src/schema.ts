@@ -1,16 +1,24 @@
 import { z } from "zod";
 import { DEFAULT_PPQ } from "./time.js";
 
+/** Catalog entry — denormalized fields for Admin list / Batch PC / Ostrzeżenia. */
+export const LibraryProjectEntrySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  updatedAt: z.string().datetime().optional(),
+  midiProgramId: z.number().int().min(0).max(127).optional(),
+  isTemplate: z.boolean().optional(),
+  artist: z.string().optional(),
+  genre: z.string().optional(),
+  hasMusicXml: z.boolean().optional(),
+});
+
+export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;
+
 /** Skeleton library catalog — validated at every edge (API / disk). */
 export const LibrarySchema = z.object({
   version: z.literal(1),
-  projects: z.array(
-    z.object({
-      id: z.string().min(1),
-      name: z.string().min(1),
-      updatedAt: z.string().datetime().optional(),
-    }),
-  ),
+  projects: z.array(LibraryProjectEntrySchema),
 });
 
 export type Library = z.infer<typeof LibrarySchema>;
@@ -25,9 +33,31 @@ export const FormaClipSchema = z.object({
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   kind: FormaClipKindSchema.default("section"),
+  /** Optional per-section note (Client Forma / drums). */
+  note: z.string().optional(),
+  /**
+   * Interior subsection boundaries as offsets from clip.startTicks (v4 scissors).
+   * Relative so move keeps cuts; resize clamps via helpers.
+   */
+  subsections: z.array(z.number().int().positive()).optional(),
 });
 
 export type FormaClip = z.infer<typeof FormaClipSchema>;
+
+/** MusicXML measure map — Kotwice (logicBar → scoreBar). */
+export const ScoreBarAnchorSchema = z.object({
+  id: z.string().min(1),
+  logicBar: z.number().int().positive(),
+  scoreBar: z.number().int().positive(),
+});
+
+export type ScoreBarAnchor = z.infer<typeof ScoreBarAnchorSchema>;
+
+export const ScoreBarMapSchema = z.object({
+  anchors: z.array(ScoreBarAnchorSchema),
+});
+
+export type ScoreBarMap = z.infer<typeof ScoreBarMapSchema>;
 
 export const TempoEventSchema = z.object({
   id: z.string().min(1),
@@ -223,12 +253,80 @@ export const ProjectSchemaV4 = z
   .strict();
 
 export type ProjectV4 = z.infer<typeof ProjectSchemaV4>;
-export type Project = ProjectV4;
 
-/** Canonical project schema (v4). */
-export const ProjectSchema = ProjectSchemaV4;
+export const KeySignatureSchema = z.object({
+  tonic: z.string().min(1),
+  mode: z.enum(["major", "minor"]),
+});
 
-export const PutProjectBodySchema = ProjectSchemaV4.omit({
+export type KeySignature = z.infer<typeof KeySignatureSchema>;
+
+export const KeyEventSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  key: KeySignatureSchema,
+});
+
+export type KeyEvent = z.infer<typeof KeyEventSchema>;
+
+/**
+ * Alpha.8+ parity — keyMap, MIDI PC, metadata, templates (v4 lanes kept).
+ */
+const ProjectSchemaV5Object = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    formatVersion: z.literal(5),
+    updatedAt: z.string().datetime(),
+    ppq: z.literal(DEFAULT_PPQ),
+    defaultBpm: z.number().positive().finite(),
+    defaultMeter: DefaultMeterSchema,
+    forma: z.object({
+      clips: z.array(FormaClipSchema),
+    }),
+    tempoMap: z.array(TempoEventSchema),
+    meterMap: z.array(MeterEventSchema),
+    keyMap: z.array(KeyEventSchema),
+    assets: z.array(ProjectAssetSchema),
+    audioTracks: z.array(AudioTrackSchema),
+    audioClips: z.array(AudioClipSchema),
+    tekst: z.object({
+      clips: z.array(TekstClipSchema),
+    }),
+    akordy: z.object({
+      clips: z.array(AkordClipSchema),
+    }),
+    cue: z.object({
+      clips: z.array(CueClipSchema),
+    }),
+    scoreBarMap: ScoreBarMapSchema.default({ anchors: [] }),
+    midiProgramId: z.number().int().min(0).max(127).optional(),
+    isTemplate: z.boolean().optional(),
+    artist: z.string().optional(),
+    genre: z.string().optional(),
+    year: z.number().int().optional(),
+  })
+  .strict();
+
+export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
+  (project, ctx) => {
+    if (project.isTemplate === true && project.midiProgramId != null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Template must not have midiProgramId",
+        path: ["midiProgramId"],
+      });
+    }
+  },
+);
+
+export type ProjectV5 = z.infer<typeof ProjectSchemaV5>;
+export type Project = ProjectV5;
+
+/** Canonical project schema (v5). */
+export const ProjectSchema = ProjectSchemaV5;
+
+export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
   id: true,
   updatedAt: true,
 }).strict();
@@ -237,9 +335,22 @@ export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 
 export const CreateProjectBodySchema = z.object({
   name: z.string().min(1),
+  fromTemplateId: z.string().min(1).optional(),
+  isTemplate: z.boolean().optional(),
 });
 
 export type CreateProjectBody = z.infer<typeof CreateProjectBodySchema>;
+
+export const BatchMidiPcBodySchema = z.object({
+  assignments: z.array(
+    z.object({
+      id: z.string().min(1),
+      midiProgramId: z.number().int().min(0).max(127),
+    }),
+  ),
+});
+
+export type BatchMidiPcBody = z.infer<typeof BatchMidiPcBodySchema>;
 
 /** @deprecated Use PutProjectBodySchema for full-document PUT. */
 export const UpdateProjectBodySchema = PutProjectBodySchema;

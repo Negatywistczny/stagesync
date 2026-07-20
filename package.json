@@ -1,6 +1,6 @@
 {
   "name": "stagesync",
-  "version": "5.0.0-alpha.7",
+  "version": "5.0.0-alpha.9",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -9,6 +9,7 @@
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
+    "migrate:legacy": "pnpm --filter @stagesync/server migrate:legacy",
     "prepare": "husky"
   },
   "devDependencies": {

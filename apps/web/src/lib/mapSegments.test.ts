@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV4Seed } from "@stagesync/shared";
+import { createProjectV5Seed } from "@stagesync/shared";
 import { computeFormaViewSpan } from "./formaCanvas.js";
-import { meterMapSegments, tempoMapSegments } from "./mapSegments.js";
+import {
+  meterMapSegments,
+  segmentStylePx,
+  tempoMapSegments,
+} from "./mapSegments.js";
 
 describe("mapSegments", () => {
   it("tempoMapSegments covers span with default when map empty at start", () => {
-    const project = createProjectV4Seed(
+    const project = createProjectV5Seed(
       "id",
       "Demo",
       "2026-07-20T00:00:00.000Z",
@@ -16,8 +20,22 @@ describe("mapSegments", () => {
     expect(segments[0]?.label).toContain("120");
   });
 
+  it("segmentStylePx uses true proportional width (no paint floor)", () => {
+    const seg = {
+      startTicks: 0,
+      endTicks: 240,
+      label: "120",
+      eventId: "t0",
+      eventStartTicks: 0,
+    };
+    // 240/3840 * 12 = 0.75px
+    expect(segmentStylePx(seg, { start: 0, end: 3840 * 8 }, 3840, 12).width).toBe(
+      "0.75px",
+    );
+  });
+
   it("meterMapSegments splits at meter change", () => {
-    const project = createProjectV4Seed(
+    const project = createProjectV5Seed(
       "id",
       "Demo",
       "2026-07-20T00:00:00.000Z",

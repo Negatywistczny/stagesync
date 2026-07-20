@@ -21,5 +21,8 @@ Decision log StageSync v5. Spec / praktyka: [adr.github.io](https://adr.github.i
 | [0004](./0004-updates-docker.md) | Aktualizacje przez Docker | Zaakceptowany |
 | [0005](./0005-domain-axioms.md) | Granica 0 (Domain Axioms) | Zaakceptowany |
 | [0006](./0006-no-json-api.md) | Bez JSON:API | Zaakceptowany |
-| [0007](./0007-snap-grid.md) | Snap / edit grid (kwantyzacja edycji) | Proponowany |
-| [0008](./0008-timeline-clip-editing.md) | Edycja klipów Timeline (Forma, audio, Smart Tool) | Proponowany |
+| [0007](./0007-snap-grid.md) | Snap / edit grid (kwantyzacja edycji) | Zaakceptowany |
+| [0008](./0008-timeline-clip-editing.md) | Edycja klipów Timeline (Forma, audio, Smart Tool) | Zaakceptowany |
+| [0009](./0009-project-schema-v3.md) | Project schema v3 (pliki / audio refs) | Zaakceptowany |
+| [0010](./0010-desktop-shell-tauri.md) | Desktop shell (Tauri) | Zaakceptowany |
+| [0011](./0011-ui-parity-behavior.md) | Parity behawioralna + IA (rebuild alpha) | Zaakceptowany |

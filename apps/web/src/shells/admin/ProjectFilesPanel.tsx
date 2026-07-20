@@ -101,7 +101,10 @@ export function ProjectFilesPanel({
       ) : (
         <ul className={styles.list} aria-label="Pliki projektu">
           {assets.map((a) => (
-            <li key={a.id} className={styles.songRow}>
+            <li
+              key={a.id}
+              className={[styles.songRow, styles.songRowTrail].join(" ")}
+            >
               <span className={styles.songName}>{a.originalName}</span>
               <span className={styles.songMeta}>
                 {a.kind} · {formatBytes(a.sizeBytes)}
@@ -121,7 +124,7 @@ export function ProjectFilesPanel({
         <input
           ref={inputRef}
           type="file"
-          accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
+          accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg,.musicxml,.xml,.mxl"
           hidden
           onChange={(e) => void onUpload(e.target.files?.[0])}
         />
@@ -131,7 +134,7 @@ export function ProjectFilesPanel({
           loading={busy}
           onClick={() => inputRef.current?.click()}
         >
-          Import audio…
+          Import audio / MusicXML…
         </Button>
       </div>
     </div>

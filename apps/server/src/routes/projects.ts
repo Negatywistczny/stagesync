@@ -13,7 +13,10 @@ export function createProjectsRouter(stores: Stores): Router {
   router.post("/", async (req, res) => {
     try {
       const body = CreateProjectBodySchema.parse(req.body);
-      const project = await stores.createProject(body.name);
+      const project = await stores.createProject(body.name, {
+        fromTemplateId: body.fromTemplateId,
+        isTemplate: body.isTemplate,
+      });
       res.status(201).json(project);
     } catch (err) {
       handleRouteError(res, err);

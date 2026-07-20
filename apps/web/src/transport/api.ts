@@ -1,12 +1,13 @@
 import {
   TransportLoadBodySchema,
+  TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
   TransportStateSchema,
+  type TransportLoopBody,
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
-
 async function parseState(res: Response): Promise<TransportState> {
   if (!res.ok) {
     let message = `HTTP ${res.status}`;
@@ -66,6 +67,18 @@ export async function seekTransport(
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
+  });
+  return parseState(res);
+}
+
+export async function setTransportLoop(
+  body: TransportLoopBody,
+): Promise<TransportState> {
+  const parsed = TransportLoopBodySchema.parse(body);
+  const res = await fetch("/api/transport/loop", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(parsed),
   });
   return parseState(res);
 }

@@ -7,16 +7,21 @@ import {
   ProjectSchemaV2,
   ProjectSchemaV3,
   ProjectSchemaV4,
+  ProjectSchemaV5,
   SetlistSchema,
-  createProjectV4Seed,
+  createProjectV5Seed,
   defaultSetlist,
+  ensureFormaSubsections,
   mergePreserveById,
+  nextMidiProgramId,
   normalizeSetlist,
   pruneSetlistToLibrary,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
+  upgradeProjectV4ToV5,
   type Library,
+  type LibraryProjectEntry,
   type Project,
   type ProjectAsset,
   type PutProjectBody,
@@ -90,6 +95,56 @@ function isProjectV3(raw: unknown): boolean {
   );
 }
 
+function isProjectV4(raw: unknown): boolean {
+  return (
+    raw !== null &&
+    typeof raw === "object" &&
+    "formatVersion" in raw &&
+    (raw as { formatVersion: number }).formatVersion === 4
+  );
+}
+
+function libraryEntryFromProject(project: Project): LibraryProjectEntry {
+  return {
+    id: project.id,
+    name: project.name,
+    updatedAt: project.updatedAt,
+    ...(project.isTemplate === true
+      ? { isTemplate: true }
+      : project.midiProgramId != null
+        ? { midiProgramId: project.midiProgramId }
+        : {}),
+    ...(project.artist ? { artist: project.artist } : {}),
+    ...(project.genre ? { genre: project.genre } : {}),
+    hasMusicXml: project.assets.some((a) => a.kind === "musicxml"),
+  };
+}
+
+function upgradeToV5(raw: unknown): Project {
+  let project: Project;
+  if (isProjectV1(raw)) {
+    project = upgradeProjectV4ToV5(
+      upgradeProjectV3ToV4(
+        upgradeProjectV2ToV3(upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw))),
+      ),
+    );
+  } else if (isProjectV2(raw)) {
+    project = upgradeProjectV4ToV5(
+      upgradeProjectV3ToV4(upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw))),
+    );
+  } else if (isProjectV3(raw)) {
+    project = upgradeProjectV4ToV5(
+      upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw)),
+    );
+  } else if (isProjectV4(raw)) {
+    project = upgradeProjectV4ToV5(ProjectSchemaV4.parse(raw));
+  } else {
+    project = ProjectSchemaV5.parse(raw);
+  }
+  // Migrated / early-α projects often lack Forma subsections — recompute v4 4-bar.
+  return ensureFormaSubsections(project);
+}
+
 export function createStores(dataDir?: string) {
   const paths: DataPaths = resolveDataPaths(dataDir);
   let libraryChain: Promise<void> = Promise.resolve();
@@ -155,22 +210,7 @@ export function createStores(dataDir?: string) {
     const safeId = assertSafeProjectId(paths, id);
     try {
       const raw = await readJsonFile(projectFile(paths, safeId));
-      if (isProjectV1(raw)) {
-        return upgradeProjectV3ToV4(
-          upgradeProjectV2ToV3(
-            upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw)),
-          ),
-        );
-      }
-      if (isProjectV2(raw)) {
-        return upgradeProjectV3ToV4(
-          upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw)),
-        );
-      }
-      if (isProjectV3(raw)) {
-        return upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw));
-      }
-      return ProjectSchemaV4.parse(raw);
+      return upgradeToV5(raw);
     } catch (err) {
       if (errCode(err) === "ENOENT") {
         throw new NotFoundError(`Project not found: ${safeId}`);
@@ -183,7 +223,7 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV4.parse(project);
+    const parsed = ProjectSchemaV5.parse(ensureFormaSubsections(project));
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
@@ -234,13 +274,49 @@ export function createStores(dataDir?: string) {
       });
     },
 
-    async createProject(name: string): Promise<Project> {
+    async createProject(
+      name: string,
+      opts?: { fromTemplateId?: string; isTemplate?: boolean },
+    ): Promise<Project> {
       return withLibraryLock(async () => {
         const id = randomUUID();
         const updatedAt = new Date().toISOString();
-        const project = createProjectV4Seed(id, name, updatedAt);
         const library = await ensureLibrary();
-        library.projects.push({ id, name, updatedAt });
+        const isTemplate = opts?.isTemplate === true;
+
+        let project: Project;
+        if (opts?.fromTemplateId) {
+          const tpl = await readProject(opts.fromTemplateId);
+          if (tpl.isTemplate !== true) {
+            throw new StorageError("fromTemplateId must point to a template");
+          }
+          const pc = nextMidiProgramId(library.projects);
+          if (pc == null) {
+            throw new StorageError("No free MIDI Program Change (0–127)");
+          }
+          project = ProjectSchemaV5.parse({
+            ...tpl,
+            id,
+            name,
+            updatedAt,
+            isTemplate: undefined,
+            midiProgramId: pc,
+            assets: [],
+            audioTracks: [],
+            audioClips: [],
+          });
+        } else if (isTemplate) {
+          project = createProjectV5Seed(id, name, updatedAt, {
+            isTemplate: true,
+          });
+        } else {
+          const pc = nextMidiProgramId(library.projects) ?? 0;
+          project = createProjectV5Seed(id, name, updatedAt, {
+            midiProgramId: pc,
+          });
+        }
+
+        library.projects.push(libraryEntryFromProject(project));
         await saveLibrary(library);
         await writeProject(project);
         return project;
@@ -256,7 +332,7 @@ export function createStores(dataDir?: string) {
         const safeId = assertSafeProjectId(paths, id);
         const existing = await readProject(safeId);
         const updatedAt = new Date().toISOString();
-        const next = ProjectSchemaV4.parse({
+        const next = ProjectSchemaV5.parse({
           ...body,
           id: safeId,
           updatedAt,
@@ -269,19 +345,55 @@ export function createStores(dataDir?: string) {
         });
         await writeProject(next);
         const library = await ensureLibrary();
-        const entry = library.projects.find((p) => p.id === safeId);
-        if (entry) {
-          entry.name = next.name;
-          entry.updatedAt = updatedAt;
+        const entryIdx = library.projects.findIndex((p) => p.id === safeId);
+        const entry = libraryEntryFromProject(next);
+        if (entryIdx >= 0) {
+          library.projects[entryIdx] = entry;
         } else {
-          library.projects.push({
-            id: safeId,
-            name: next.name,
-            updatedAt,
-          });
+          library.projects.push(entry);
         }
         await saveLibrary(library);
         return next;
+      });
+    },
+
+    async batchMidiProgramIds(
+      assignments: { id: string; midiProgramId: number }[],
+    ): Promise<Library> {
+      return withLibraryLock(async () => {
+        const library = await ensureLibrary();
+        const used = new Map<number, string>();
+        for (const p of library.projects) {
+          if (p.isTemplate === true || p.midiProgramId == null) continue;
+          used.set(p.midiProgramId, p.id);
+        }
+        for (const a of assignments) {
+          const owner = used.get(a.midiProgramId);
+          if (owner && owner !== a.id) {
+            throw new StorageError(
+              `MIDI PC ${a.midiProgramId} already used by ${owner}`,
+            );
+          }
+        }
+        for (const a of assignments) {
+          const project = await readProject(a.id);
+          if (project.isTemplate === true) {
+            throw new StorageError(`Cannot assign PC to template ${a.id}`);
+          }
+          const next = ProjectSchemaV5.parse({
+            ...project,
+            midiProgramId: a.midiProgramId,
+            updatedAt: new Date().toISOString(),
+          });
+          await writeProject(next);
+          const idx = library.projects.findIndex((p) => p.id === a.id);
+          if (idx >= 0) {
+            library.projects[idx] = libraryEntryFromProject(next);
+          }
+          used.set(a.midiProgramId, a.id);
+        }
+        await saveLibrary(library);
+        return library;
       });
     },
 
@@ -365,7 +477,7 @@ export function createStores(dataDir?: string) {
           ];
         }
 
-        const next = ProjectSchemaV4.parse({
+        const next = ProjectSchemaV5.parse({
           ...project,
           updatedAt: new Date().toISOString(),
           assets,
@@ -373,6 +485,12 @@ export function createStores(dataDir?: string) {
           audioClips,
         });
         await writeProject(next);
+        const library = await ensureLibrary();
+        const idx = library.projects.findIndex((p) => p.id === safeId);
+        if (idx >= 0) {
+          library.projects[idx] = libraryEntryFromProject(next);
+          await saveLibrary(library);
+        }
         return next;
       });
     },
@@ -395,13 +513,19 @@ export function createStores(dataDir?: string) {
             throw new StorageError(`Failed to delete asset file ${assetId}`, err);
           }
         }
-        const next = ProjectSchemaV4.parse({
+        const next = ProjectSchemaV5.parse({
           ...project,
           updatedAt: new Date().toISOString(),
           assets: project.assets.filter((a) => a.id !== assetId),
           audioClips: project.audioClips.filter((c) => c.assetId !== assetId),
         });
         await writeProject(next);
+        const library = await ensureLibrary();
+        const idx = library.projects.findIndex((p) => p.id === safeId);
+        if (idx >= 0) {
+          library.projects[idx] = libraryEntryFromProject(next);
+          await saveLibrary(library);
+        }
         return next;
       });
     },

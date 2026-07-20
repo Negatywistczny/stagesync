@@ -3,6 +3,7 @@ import {
   createProjectV2Seed,
   createProjectV3Seed,
   createProjectV4Seed,
+  createProjectV5Seed,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
@@ -47,6 +48,19 @@ describe("createProjectV4Seed", () => {
     expect(p.tekst.clips).toEqual([]);
     expect(p.akordy.clips).toEqual([]);
     expect(p.cue.clips).toEqual([]);
+  });
+});
+
+describe("createProjectV5Seed", () => {
+  it("includes keyMap and midiProgramId", () => {
+    const p = createProjectV5Seed(
+      "id-1",
+      "Demo",
+      "2026-07-20T00:00:00.000Z",
+    );
+    expect(p.formatVersion).toBe(5);
+    expect(p.keyMap[0]?.key).toEqual({ tonic: "C", mode: "major" });
+    expect(p.midiProgramId).toBe(0);
   });
 });
 

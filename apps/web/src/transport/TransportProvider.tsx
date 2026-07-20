@@ -14,14 +14,17 @@ import {
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
+import { transportStateFromTick } from "../lib/timelineLocator.js";
 import {
   getTransport,
   pauseTransport,
   playTransport,
   seekTransport,
+  setTransportLoop,
   stopTransport,
 } from "./api.js";
 import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
+import type { TransportLoopBody } from "@stagesync/shared";
 
 function toAnchor(state: TransportState): TransportAnchor {
   return {
@@ -37,10 +40,18 @@ function transportWsUrl(): string {
   return `${proto}//${window.location.host}/ws/transport`;
 }
 
+/** v4-style EMA of one-way delay from wall-clock `sentAtMs`. */
+function noteLatencySample(prev: number, sentAtMs: number): number {
+  const sample = Math.max(0, Date.now() - sentAtMs);
+  if (!prev) return sample;
+  return Math.round(prev * 0.82 + sample * 0.18);
+}
+
 export function TransportProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<TransportState>(defaultTransportState);
   const [displayTicks, setDisplayTicks] = useState(0);
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [commandPending, setCommandPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
@@ -50,6 +61,12 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
   const rafIdRef = useRef(0);
+  const wsRef = useRef<WebSocket | null>(null);
+  const latencyEmaRef = useRef(0);
+  const pendingHelloRef = useRef<{
+    displayName: string | null;
+    roles: string[];
+  } | null>(null);
 
   const stopRaf = useCallback(() => {
     if (rafIdRef.current !== 0) {
@@ -99,24 +116,54 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     rafIdRef.current = requestAnimationFrame(loop);
   }, [stopRaf]);
 
+  const sendHello = useCallback(() => {
+    const hello = pendingHelloRef.current;
+    const ws = wsRef.current;
+    if (!hello || !ws || ws.readyState !== WebSocket.OPEN) return;
+    const latency =
+      latencyEmaRef.current > 0 ? Math.round(latencyEmaRef.current) : null;
+    ws.send(
+      JSON.stringify({
+        type: "client_hello",
+        displayName: hello.displayName,
+        roles: hello.roles,
+        latencyMs: latency,
+      }),
+    );
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let helloTimer: ReturnType<typeof setInterval> | null = null;
 
     const connect = () => {
       if (cancelled) return;
       stopRaf();
+      if (helloTimer !== null) {
+        clearInterval(helloTimer);
+        helloTimer = null;
+      }
       if (ws) {
         ws.onclose = null;
         ws.close();
         ws = null;
+        wsRef.current = null;
       }
       setWsStatus("connecting");
+      latencyEmaRef.current = 0;
+      setLatencyMs(null);
       ws = new WebSocket(transportWsUrl());
+      wsRef.current = ws;
 
       ws.onopen = () => {
         if (!cancelled) setWsStatus("connected");
+        sendHello();
+        // Keep Admin presence latency fresh while connected (v4 interval).
+        helloTimer = setInterval(() => {
+          if (!cancelled) sendHello();
+        }, 3000);
       };
 
       ws.onmessage = (event) => {
@@ -127,25 +174,25 @@ export function TransportProvider({ children }: { children: ReactNode }) {
             text?: string;
             ttlMs?: number;
             sentAtMs?: number;
+            roles?: Array<"karaoke" | "grid" | "score" | "drums">;
           };
           if (raw.type === "stage_cue" && typeof raw.text === "string") {
             setStageCue({
               text: raw.text,
               ttlMs: raw.ttlMs ?? 6000,
               sentAtMs: raw.sentAtMs ?? Date.now(),
+              roles: raw.roles,
             });
             return;
           }
           const msg = TransportTickMessageSchema.parse(raw);
+          if (msg.sentAtMs != null && Number.isFinite(msg.sentAtMs)) {
+            const next = noteLatencySample(latencyEmaRef.current, msg.sentAtMs);
+            latencyEmaRef.current = next;
+            setLatencyMs((prev) => (prev === next ? prev : next));
+          }
           applyAnchor(
-            {
-              playing: msg.playing,
-              positionTicks: msg.positionTicks,
-              bpm: msg.bpm,
-              timeSignature: msg.timeSignature,
-              ppq: msg.ppq,
-              activeProjectId: msg.activeProjectId ?? null,
-            },
+            transportStateFromTick(msg),
             performance.now(),
             msg.serverTimeMs,
           );
@@ -161,7 +208,13 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
       ws.onclose = () => {
         if (cancelled) return;
+        if (helloTimer !== null) {
+          clearInterval(helloTimer);
+          helloTimer = null;
+        }
         setWsStatus("disconnected");
+        latencyEmaRef.current = 0;
+        setLatencyMs(null);
         stopRaf();
         reconnectTimer = setTimeout(connect, 1000);
       };
@@ -188,12 +241,22 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       stopRaf();
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
+      if (helloTimer !== null) clearInterval(helloTimer);
       if (ws) {
         ws.onclose = null;
         ws.close();
+        wsRef.current = null;
       }
     };
-  }, [applyAnchor, startRaf, stopRaf]);
+  }, [applyAnchor, sendHello, startRaf, stopRaf]);
+
+  const announcePresence = useCallback(
+    (payload: { displayName: string | null; roles: string[] }) => {
+      pendingHelloRef.current = payload;
+      sendHello();
+    },
+    [sendHello],
+  );
 
   const runCommand = useCallback(
     async (fn: () => Promise<TransportState>) => {
@@ -238,30 +301,43 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     [runCommand],
   );
 
+  const setLoop = useCallback(
+    async (body: TransportLoopBody) => {
+      await runCommand(() => setTransportLoop(body));
+    },
+    [runCommand],
+  );
+
   const value = useMemo(
     () => ({
       state,
       displayTicks,
       wsStatus,
+      latencyMs,
       commandPending,
       error,
       play,
       pause,
       stop,
       seek,
+      setLoop,
       stageCue,
+      announcePresence,
     }),
     [
       state,
       displayTicks,
       wsStatus,
+      latencyMs,
       commandPending,
       error,
       play,
       pause,
       stop,
       seek,
+      setLoop,
       stageCue,
+      announcePresence,
     ],
   );
 

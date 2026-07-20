@@ -21,6 +21,8 @@ const AUDIO_EXT = new Set([
   ".ogg",
 ]);
 
+const MUSICXML_EXT = new Set([".musicxml", ".xml", ".mxl"]);
+
 function extFromName(name: string): string {
   const ext = extname(name).toLowerCase();
   return ext || ".bin";
@@ -41,6 +43,11 @@ function mimeForExt(ext: string): string {
       return "audio/flac";
     case ".ogg":
       return "audio/ogg";
+    case ".musicxml":
+    case ".xml":
+      return "application/vnd.recordare.musicxml+xml";
+    case ".mxl":
+      return "application/vnd.recordare.musicxml";
     default:
       return "application/octet-stream";
   }
@@ -86,11 +93,13 @@ export function createAssetsRouter(stores: Stores): Router {
       }
       const originalName = file.originalname || "audio.bin";
       const ext = extFromName(originalName);
-      if (!AUDIO_EXT.has(ext)) {
+      const isMusicXml = MUSICXML_EXT.has(ext);
+      const isAudio = AUDIO_EXT.has(ext);
+      if (!isAudio && !isMusicXml) {
         sendError(
           res,
           400,
-          `Unsupported audio type: ${ext}. Allowed: mp3, wav, aiff, m4a, flac, ogg`,
+          `Unsupported type: ${ext}. Allowed: audio (mp3/wav/…) or MusicXML (.musicxml/.xml/.mxl)`,
         );
         return;
       }
@@ -102,12 +111,12 @@ export function createAssetsRouter(stores: Stores): Router {
           id: assetId,
           storageName,
           originalName,
-          kind: "audio",
+          kind: isMusicXml ? "musicxml" : "audio",
           mimeType: file.mimetype || mimeForExt(ext),
           sizeBytes: file.size,
         },
         file.buffer,
-        { createAudioClip: true },
+        { createAudioClip: isAudio },
       );
       res.status(201).json(project);
     } catch (err) {

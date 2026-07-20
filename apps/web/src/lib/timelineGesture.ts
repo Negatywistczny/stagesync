@@ -9,7 +9,49 @@ import {
 } from "@stagesync/shared";
 
 /** Edge hit zone width in CSS px (Logic-style trim handles). */
-export const CLIP_EDGE_HIT_PX = 8;
+export const CLIP_EDGE_HIT_PX = 12;
+
+/** v4 pencil click-vs-drag threshold (px). Below → 1-bar click insert. */
+export const PENCIL_DRAG_THRESHOLD_PX = 5;
+
+/** Content lanes (Tekst/Akordy/Cue): default snap = local beat (v4 quantizeAbsBeat). */
+export const CONTENT_DEFAULT_SNAP_MODE: SnapMode = "beat";
+
+/**
+ * Resolve pencil gesture range (v4 `resolvePencilRange` in ticks).
+ * Tiny pointer movement → click (1 bar at down); otherwise [min, max] span.
+ */
+export function resolvePencilRangeTicks(
+  downTicks: number,
+  upTicks: number,
+  options: {
+    barTicks: number;
+    dxPx: number;
+    thresholdPx?: number;
+    /** Floor for start (e.g. after countdown). */
+    floorTicks?: number;
+  },
+): { startTicks: number; lengthTicks: number; isClick: boolean } {
+  const barTicks = Math.max(1, Math.floor(options.barTicks));
+  const thresholdPx = Math.max(0, options.thresholdPx ?? PENCIL_DRAG_THRESHOLD_PX);
+  const floor = Math.max(0, options.floorTicks ?? 0);
+  const a = Math.max(floor, downTicks);
+  const b = Math.max(floor, upTicks);
+  const dxPx = Math.abs(options.dxPx);
+  const tickDelta = Math.abs(b - a);
+  const isClick = dxPx < thresholdPx && tickDelta < barTicks / 8;
+  if (isClick) {
+    return { startTicks: a, lengthTicks: barTicks, isClick: true };
+  }
+  const startTicks = Math.min(a, b);
+  let endTicks = Math.max(a, b);
+  if (endTicks - startTicks < 1) endTicks = startTicks + barTicks;
+  return {
+    startTicks,
+    lengthTicks: Math.max(1, endTicks - startTicks),
+    isClick: false,
+  };
+}
 
 export type ClipHitZone = "body" | "start" | "end";
 
@@ -19,7 +61,6 @@ export type FormaToolId =
   | "pencil"
   | "eraser"
   | "scissors"
-  | "zoom"
   | "wand";
 
 /** Hit zones only for Pointer / Smart — Pencil is exclusive draw. */
@@ -40,6 +81,16 @@ export function snapModeFromModifiers(
   ctrlKey: boolean,
 ): SnapMode {
   return metaKey || ctrlKey ? "off" : DEFAULT_SNAP_MODE;
+}
+
+/**
+ * Content / map lanes: beat grid when snap on; Cmd/Ctrl = off (v4 snapDragDelta).
+ */
+export function contentSnapModeFromModifiers(
+  metaKey: boolean,
+  ctrlKey: boolean,
+): SnapMode {
+  return metaKey || ctrlKey ? "off" : CONTENT_DEFAULT_SNAP_MODE;
 }
 
 export function snapModeFromPointerEvent(e: {
@@ -70,7 +121,11 @@ export type FormaGestureKind =
   | "pencil-draw"
   | "move"
   | "resize-start"
-  | "resize-end";
+  | "resize-end"
+  | "countdown-length"
+  | "subsection-boundary";
+
+export type GestureLane = "forma" | "tekst" | "akordy" | "cue";
 
 export type FormaGestureSession = {
   kind: FormaGestureKind;
@@ -82,6 +137,18 @@ export type FormaGestureSession = {
   originClipStart: number;
   /** Clip length at gesture start. */
   originClipLength: number;
+  /** Lane owning the gesture (default forma). */
+  lane?: GestureLane;
+  /** clientX at pointerdown — pencil click-vs-drag threshold (v4). */
+  originClientX?: number;
+  /** Band index ≥ 1 whose start is the dragged boundary. */
+  boundarySubIdx?: number;
+  /** Relative boundary offset at gesture start. */
+  originBoundaryRel?: number;
+  /** Multi-move same lane (v4 moveIds); resize ignores. */
+  moveIds?: string[];
+  /** Alt/⌥+drag: copy at drop; originals stay (v4 optionCopy / TE-07). */
+  optionCopy?: boolean;
 };
 
 export type FormaGesturePreview = {
@@ -93,6 +160,8 @@ export type FormaGesturePreview = {
   lengthTicks: number;
   /** For pencil: ephemeral name. */
   name?: string;
+  /** Live subsection offsets during boundary drag. */
+  subsections?: number[];
 };
 
 export function cursorForHitZone(

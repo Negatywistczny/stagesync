@@ -46,10 +46,12 @@ Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładz
 
 Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); broadcast WS ~25 Hz gdy playing. Implementacja: REST + `/ws/transport`. Klient web: Vite proxy `/api` + `/ws`, soft playhead (`getDisplayTicks`) między tickami, `Button loading` na komendach.
 
-**UI (szkielet):** nowy layout paneli + pełny inventarz kontrolek v4 (`disabled` OK);
-tokeny black/amber `--ss-*` / CSS Modules; `TransportProvider` nad routerem. Checklist:
-[ui-shell-inventory.md](./ui-shell-inventory.md). Kierunek: [ADR 0003](./adr/0003-ui-direction-booth.md).
-Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).
+**UI:** nowy layout paneli; tokeny black/amber `--ss-*` / CSS Modules; `TransportProvider`
+nad routerem. Parity = **zachowanie** v4 (nie inventarz-first, nie clone chrome) —
+[ADR 0011](./adr/0011-ui-parity-behavior.md); kierunek wizualny [ADR 0003](./adr/0003-ui-direction-booth.md);
+checklista wtórna [ui-shell-inventory.md](./ui-shell-inventory.md).
+Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).  
+Desktop shell (Tauri, β1): [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).
 
@@ -64,4 +66,4 @@ Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 
 ## Legacy
 
-**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → przyszły migrator (`data/projects/<id>/`).
+**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → [MIGRATION.md](./MIGRATION.md) (`pnpm migrate:legacy`).

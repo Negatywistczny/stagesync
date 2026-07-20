@@ -54,8 +54,18 @@ Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować dr
 
 - `Button`: zamknięty zbiór 7 stanów (default, hover, focus, active, disabled, loading, selected).
 - Kolory / odstępy / **typografia** tylko `--ss-*` w `packages/ui` — bez HEX i bez ad-hoc wartości typograficznych (`font-size` / `font-weight` / `line-height` / `letter-spacing`) w komponentach i shellach.
-- Typografia: `--ss-text-xs|sm|control|md|lg|xl`, `--ss-font-weight-*`, `--ss-leading-*`, `--ss-tracking-*` (Button: `--ss-font-size` = control, weight semibold, leading compact).
+- Typografia: `--ss-text-xs|sm|control|md|lg|xl|2xl|3xl`, `--ss-font-weight-*`, `--ss-leading-*`, `--ss-tracking-*` (Button: `--ss-font-size` = control, weight semibold, leading compact).
 - Gęstość / spacing / kontrast dark → [`.cursor/rules/ui-density.mdc`](ui-density.mdc).
+
+## UI — parity i redesign (alpha rebuild)
+
+- **Parity = zachowanie v4**, nie lista ikon / clone toolbara.
+- **Zakaz** kopiowania chrome HTML/CSS z legacy; tylko `@stagesync/ui` + Modules + `--ss-*`.
+- Review: gest / workflow → gęstość → inventarz (wtórny).
+- Admin: IA (Set + wybór utworów w jednym flow); Client: treść roli > dekoracyjny header.
+- Minimalizm: jedna barwa akcentu (`primary`/`selected`); **zakaz** tęczy ról z tokenów statusu.
+- Szczegóły: `docs/adr/0011-ui-parity-behavior.md`, reguła `ui-parity.mdc`, `docs/ui/colors.md`.
+- **Zakaz β** do green PO smoke wg ADR 0011.
 
 ## Poza zakresem (alpha)
 
@@ -66,3 +76,4 @@ Bez jawnej decyzji produktowej nie dodawaj:
 - Wariantów Button poza zamkniętym zbiorem
 - Transportu / MIDI clock z autorytetem klienta
 - Sekretów, `data/projects/*` użytkownika, `node_modules` w gicie
+- Klonowania paska narzędzi / chrome z 4.x „dla parity”

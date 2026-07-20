@@ -57,7 +57,7 @@ describe("library / projects CRUD", () => {
     expect(createRes.status).toBe(201);
     const created = ProjectSchema.parse(await createRes.json());
     expect(created.name).toBe("First Song");
-    expect(created.formatVersion).toBe(4);
+    expect(created.formatVersion).toBe(5);
     expect(created.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
     expect(
       created.forma.clips.find((c) => c.kind === "countdown")?.startTicks,
@@ -196,7 +196,7 @@ describe("library / projects CRUD", () => {
     const getRes = await fetch(`${baseUrl}/api/projects/${id}`);
     expect(getRes.status).toBe(200);
     const upgraded = ProjectSchema.parse(await getRes.json());
-    expect(upgraded.formatVersion).toBe(4);
+    expect(upgraded.formatVersion).toBe(5);
     expect(upgraded.forma.clips.length).toBeGreaterThan(0);
   });
 
@@ -217,5 +217,129 @@ describe("library / projects CRUD", () => {
     expect(library.projects).toHaveLength(5);
     const ids = new Set(library.projects.map((p) => p.id));
     expect(ids.size).toBe(5);
+  });
+
+  it("POST /api/library/import auto-detects legacy database.json", async () => {
+    const legacy = {
+      schemaVersion: 4,
+      songs: [
+        {
+          id: "song-legacy-1",
+          title: "Legacy Import",
+          tempo: 120,
+          markers: [{ id: "mk-end", kind: "END", startAbs: 16 }],
+          sections: [
+            { id: 0, name: "Countdown", startAbs: 0 },
+            { id: 1, name: "Verse", startAbs: 8 },
+          ],
+          chords: { timeSignature: "4/4", clips: [] },
+        },
+      ],
+    };
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(legacy),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      ok: boolean;
+      format: string;
+      created: string[];
+      library: unknown;
+    };
+    expect(body.ok).toBe(true);
+    expect(body.format).toBe("legacy-database");
+    expect(body.created).toHaveLength(1);
+    const library = LibrarySchema.parse(body.library);
+    expect(library.projects.some((p) => p.name === "Legacy Import")).toBe(true);
+
+    const project = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
+      ).json(),
+    );
+    expect(project.formatVersion).toBe(5);
+    expect(project.forma.clips.length).toBeGreaterThan(0);
+  });
+
+  it("POST /api/library/import rejects unknown JSON", async () => {
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ foo: 1 }),
+    });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toMatch(/Nieznany format|projects|songs/);
+  });
+
+  it("POST /api/library/import accepts docs typical legacy fixture", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { resolve, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const repoRoot = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "../../..",
+    );
+    const raw = JSON.parse(
+      await readFile(
+        join(repoRoot, "docs/examples/legacy/database.typical.json"),
+        "utf8",
+      ),
+    );
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(raw),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      ok: boolean;
+      format: string;
+      created: string[];
+    };
+    expect(body.ok).toBe(true);
+    expect(body.format).toBe("legacy-database");
+    expect(body.created).toHaveLength(2);
+  });
+
+  it("POST /api/library/import accepts v5 pack fixture", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { resolve, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const repoRoot = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "../../..",
+    );
+    const raw = JSON.parse(
+      await readFile(
+        join(
+          repoRoot,
+          "docs/examples/v5/library.pack.sample.stagesync.json",
+        ),
+        "utf8",
+      ),
+    );
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(raw),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      ok: boolean;
+      format: string;
+      created: string[];
+    };
+    expect(body.ok).toBe(true);
+    expect(body.format).toBe("v5-pack");
+    expect(body.created).toHaveLength(1);
+    const project = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
+      ).json(),
+    );
+    expect(project.name).toBe("Pack Sample");
   });
 });

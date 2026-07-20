@@ -32,6 +32,20 @@ function isCountdown(clip: FormaClip): boolean {
   return clip.kind === "countdown";
 }
 
+/** Drop subsection offsets at/after lengthTicks (after resize / overwrite). */
+export function clampFormaSubsections(clip: FormaClip): FormaClip {
+  const subs = clip.subsections;
+  if (!subs?.length) return clip;
+  const next = subs.filter((s) => s > 0 && s < clip.lengthTicks);
+  if (next.length === subs.length) return clip;
+  if (next.length === 0) {
+    const { subsections: _drop, ...rest } = clip;
+    void _drop;
+    return rest;
+  }
+  return { ...clip, subsections: next };
+}
+
 function sortClips(clips: FormaClip[]): FormaClip[] {
   return [...clips].sort((a, b) => a.startTicks - b.startTicks);
 }
@@ -68,24 +82,33 @@ export function placeClipNoOverlap(
     const keepRight = cEnd > end;
 
     if (keepLeft) {
-      kept.push({
-        ...clip,
-        lengthTicks: start - clip.startTicks,
-      });
+      kept.push(
+        clampFormaSubsections({
+          ...clip,
+          lengthTicks: start - clip.startTicks,
+        }),
+      );
     }
 
     if (keepRight) {
-      kept.push({
-        ...clip,
-        // Split: left keeps id; right gets a fresh suffix. Trim-from-left: same id.
-        id: keepLeft ? `${clip.id}-r` : clip.id,
-        startTicks: end,
-        lengthTicks: cEnd - end,
-      });
+      const offset = end - clip.startTicks;
+      const remapped = (clip.subsections ?? [])
+        .map((s) => s - offset)
+        .filter((s) => s > 0);
+      kept.push(
+        clampFormaSubsections({
+          ...clip,
+          // Split: left keeps id; right gets a fresh suffix. Trim-from-left: same id.
+          id: keepLeft ? `${clip.id}-r` : clip.id,
+          startTicks: end,
+          lengthTicks: cEnd - end,
+          subsections: remapped.length ? remapped : undefined,
+        }),
+      );
     }
   }
 
-  return sortClips([...kept, placed]);
+  return sortClips([...kept, clampFormaSubsections(placed)]);
 }
 
 /**
@@ -131,6 +154,53 @@ export function moveClipNoOverlap(
   }
 
   return placeClipNoOverlap(clips, placed);
+}
+
+/**
+ * Rigid multi-move (v4 moveIds + same Δ): translate selected clips together,
+ * then place into non-selected neighbors (cover-trim). Movers do not trim each other.
+ * Countdown ids in `moveIds` are ignored.
+ */
+export function moveClipsRigidDelta(
+  clips: FormaClip[],
+  moveIds: string[],
+  deltaTicks: number,
+  opts?: CollisionOpts,
+): FormaClip[] {
+  const idSet = new Set(moveIds.filter(Boolean));
+  if (!idSet.size || !Number.isFinite(deltaTicks) || deltaTicks === 0) {
+    return clips;
+  }
+  const floor = contentFloor(opts);
+  const delta = Math.trunc(deltaTicks);
+
+  const movers: FormaClip[] = [];
+  const nonMovers: FormaClip[] = [];
+  for (const clip of clips) {
+    if (!idSet.has(clip.id) || isCountdown(clip)) {
+      nonMovers.push(clip);
+      continue;
+    }
+    movers.push({
+      ...clip,
+      startTicks: Math.max(floor, clip.startTicks + delta),
+    });
+  }
+  if (!movers.length) return clips;
+
+  let result = nonMovers;
+  for (const m of sortClips(movers)) {
+    const countdown = result.find(isCountdown);
+    let placed = m;
+    if (countdown) {
+      const cdEnd = clipEnd(countdown);
+      if (placed.startTicks < cdEnd && clipEnd(placed) > countdown.startTicks) {
+        placed = { ...placed, startTicks: Math.max(floor, cdEnd) };
+      }
+    }
+    result = placeClipNoOverlap(result, placed);
+  }
+  return sortClips(result);
 }
 
 /**
@@ -224,4 +294,48 @@ export function insertSpanOverwrite(
     lengthTicks: length,
   };
   return placeClipNoOverlap(clips, placed);
+}
+
+export type SplitClipOpts = CollisionOpts & {
+  /** Id for the right half (default `${id}-r`). */
+  rightId?: string;
+};
+
+/**
+ * Split section clip `id` at `atTicks` (exclusive left / inclusive right start).
+ * Rejects countdown, edges that would yield length &lt; minLength, and hits outside clip.
+ */
+export function splitClipAt(
+  clips: FormaClip[],
+  id: string,
+  atTicks: number,
+  opts?: SplitClipOpts,
+): FormaClip[] {
+  const target = clips.find((c) => c.id === id);
+  if (!target || isCountdown(target)) return clips;
+
+  const minLen = minLength(opts);
+  const at = Math.trunc(atTicks);
+  if (!Number.isFinite(at)) return clips;
+
+  const end = clipEnd(target);
+  if (at <= target.startTicks || at >= end) return clips;
+
+  const leftLen = at - target.startTicks;
+  const rightLen = end - at;
+  if (leftLen < minLen || rightLen < minLen) return clips;
+
+  const left: FormaClip = {
+    ...target,
+    lengthTicks: leftLen,
+  };
+  const right: FormaClip = {
+    ...target,
+    id: opts?.rightId ?? `${target.id}-r`,
+    startTicks: at,
+    lengthTicks: rightLen,
+  };
+
+  const without = clips.filter((c) => c.id !== id);
+  return sortClips([...without, left, right]);
 }

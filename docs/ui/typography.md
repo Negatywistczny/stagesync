@@ -15,7 +15,9 @@ Font stack: `--ss-font-sans` (Sora / IBM Plex Sans).
 | `--ss-text-control` | 0.875rem | **Button**, inputy, główny chrome toolbarów |
 | `--ss-text-md` | 0.9375rem | Treść paneli / listy |
 | `--ss-text-lg` | 1.125rem | Nagłówki sekcji shelli |
-| `--ss-text-xl` | 1.5rem | Hero / tytuł widoku (rzadko) |
+| `--ss-text-xl` | 1.5rem | Tytuł widoku / duże etykiety |
+| `--ss-text-2xl` | 2rem | Hero mobile / duże kafle |
+| `--ss-text-3xl` | 3rem | Display hero (np. wybór roli Client) |
 
 Alias: `--ss-font-size` → `var(--ss-text-control)` (domyślny rozmiar UI).
 
@@ -44,6 +46,7 @@ Alias: `--ss-line-height` → `var(--ss-leading-normal)`.
 | Token | Wartość | Kiedy |
 |-------|---------|--------|
 | `--ss-tracking-normal` | 0 | Domyślnie |
+| `--ss-tracking-tight` | −0.02em | Display / hero titles |
 | `--ss-tracking-label` | 0.06em | Małe etykiety ALL CAPS / section labels |
 
 ## Button (kanon)

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 4,
+  "songFormatMigrationRev": 8,
+  "songs": [
+    {
+      "id": "song-1784238808727",
+      "title": "Template",
+      "isTemplate": true,
+      "isDefaultTemplate": true,
+      "formatVersion": 4,
+      "key": {
+        "tonic": "C",
+        "mode": "major"
+      },
+      "tempo": 120,
+      "markers": [
+        {
+          "id": "mk-end",
+          "kind": "END",
+          "startAbs": 24
+        }
+      ],
+      "sections": [
+        {
+          "id": 0,
+          "name": "Countdown",
+          "startAbs": 0
+        },
+        {
+          "id": 1,
+          "name": "Intro",
+          "startAbs": 8
+        }
+      ],
+      "vocal": {
+        "lines": [
+          {
+            "id": "vl-cd-2",
+            "text": "2",
+            "startAbs": 0
+          },
+          {
+            "id": "vl-cd-1",
+            "text": "1",
+            "startAbs": 4
+          },
+          {
+            "id": "vl-rest-1784238926110-5who",
+            "text": "",
+            "startAbs": 8,
+            "rest": true
+          }
+        ]
+      },
+      "chords": {
+        "timeSignature": "4/4",
+        "clips": [
+          {
+            "id": "cc-mro1t4ao-bcan",
+            "chord": "C",
+            "startAbs": 8
+          },
+          {
+            "id": "cc-mro1t6mf-q5si",
+            "chord": "Am",
+            "startAbs": 12
+          },
+          {
+            "id": "cc-mro1tax5-trnx",
+            "chord": "F",
+            "startAbs": 16
+          },
+          {
+            "id": "cc-mro1tgte-y7n6",
+            "chord": "G",
+            "startAbs": 20
+          }
+        ]
+      }
+    }
+  ],
+  "setlist": {
+    "enabled": false,
+    "songIds": []
+  },
+  "settings": {
+    "clientEditsEnabled": true,
+    "syncLeadMs": 200,
+    "setlistAutoAdvance": false
+  }
+}

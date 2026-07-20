@@ -9,7 +9,8 @@
     "start": "node dist/index.js",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate:legacy": "tsx src/cli/migrate-legacy.ts"
   },
   "dependencies": {
     "@stagesync/shared": "workspace:*",

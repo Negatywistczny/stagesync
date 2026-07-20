@@ -1,11 +1,13 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-beta.1` — historia w [CHANGELOG.md](../CHANGELOG.md).  
-Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poniżej).
+**Stan:** `5.0.0-alpha.9` **wydane 2026-07-21** → aktywny etap **β1** (host / dystrybucja).  
+Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
-Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
+**P8:** green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md).  
+**α9:** migrator M1–M9 + CL-P0 + P8 — [report-scope-alpha9.md](./analysis/reports/report-scope-alpha9.md).  
+Tag / bump `5.0.0-beta.*` — **tylko na prośbę** (bez samowolnego startu β).
 
-**QA / sign-off α7:** [report-qa-signoff-alpha7.md](./analysis/reports/report-qa-signoff-alpha7.md).
+**Audyt v4↔v5:** [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) · gap: [report-v4-v5-gap-audit.md](./analysis/reports/report-v4-v5-gap-audit.md) · UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 
 ## Procedura zamykania etapu
 
@@ -16,33 +18,39 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 3. Zastąp plik **wyłącznie** sekcją kolejnego etapu (nagłówek, link do scope report, must/should/release).
 4. Zaktualizuj `**Stan:**` na górze.
 
-## Beta 1 (`5.0.0-beta.1`)
+## Beta.1 — Host / dystrybucja
 
-Hero: **Feature complete pod docelowy 5.0.0** — audio playback + clip edit; migrator 4.x; MIDI; Docker.  
-Scope: *(przed startem — report-scope-beta1.md)*.  
-Orientacja: [ROADMAP.md](./ROADMAP.md) · [ADR 0008](./adr/0008-timeline-clip-editing.md).
+Hero: Docker + Tauri + stabilność hosta (**bez** audio/MIDI — β2).  
+Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [ADR 0004](./adr/0004-updates-docker.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).  
+Scope report: napisz `report-scope-beta1.md` tuż przed kodem etapu.
 
 ### Must
 
-- [ ] Scope report beta.1 przed kodem
-- [ ] Audio 0…N: silnik playback, clip na Timeline, sync transport (`ticksToMs`), trim/move, waveform peak/RMS
-- [ ] Gain clip + fader track + mute clip/track (bez pencil na audio, bez stretch poza plik)
-- [ ] Migrator legacy 4.x → v5
-- [ ] MIDI I/O (clock / urządzenia serwera) — wg scope
-- [ ] Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)) — wg scope
+- [ ] Docker Compose: obraz + volume `data/`; update = bump tagu obrazu ([ADR 0004](./adr/0004-updates-docker.md))
+- [ ] **Tauri** desktop shell: thin WebView → lokalny API/WS; Win + mac; **bez** autorytetu czasu w shellu ([ADR 0010](./adr/0010-desktop-shell-tauri.md))
+- [ ] Stabilność hosta: shadow backup, OCC (`409`), polityka migracji schematu na volume
+- [ ] ESLint ACL shared + API `details` z Zod (jeśli nie domknięte)
+- [ ] CI: `pnpm lint && check-types && test && build` (+ smoke build Tauri / Compose wg scope)
 
 ### Should
 
-- [ ] Undo/Redo sesji Timeline (jeśli nie w 5.0.0)
-- [ ] Shadow backup / OCC / polityka migracji schematu — wg ROADMAP
-- [ ] Edycja lane Akordy / Cue (pełniejsza) + Scissors Forma
+- [ ] Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — jeśli nie w α9
+- [ ] E2E smoke: Forma drag + transport (carry z α9 should)
+- [ ] **Timeline Help:** overlay + skróty v4 (parity docs)
+- [ ] **Różdżka (wand):** przywrócić po naprawie zachowania
+- [ ] P1 Timeline z gap-audit (np. TE-13 scissors empty) — nie bloker β1 jeśli PO uzna P0
 
-### OUT β1
+### OUT (świadome — nie must β1)
 
-- Fade / crossfade / loop-region / overlap mode → 5.0.0
-- Snap UI picker → 5.0.0
-- Flex Time / time-stretch → poza produktem na start
+- Audio playback / clip edit / gain / mute — **β2**
+- Host MIDI I/O — **β2**
+- **AD-01…03** Transpozycja / Lead / Edycja zdalna — **β2**
+- git-apply / „Zaktualizuj teraz” — nigdy ([ADR 0004](./adr/0004-updates-docker.md))
+- Android shell / store auto-update — poza β1
+- Clone chrome v4 — **zakaz** ([ADR 0011](./adr/0011-ui-parity-behavior.md))
 
-### Release β1
+### Release
 
-- [ ] Bump, CHANGELOG, CI, smoke przed tagiem
+- [ ] Scope report `report-scope-beta1.md` przed kodem
+- [ ] Tag / bump `5.0.0-beta.1` tylko na prośbę; CHANGELOG z Unreleased
+- [ ] TODO → β2 **na prośbę** po zamknięciu β1

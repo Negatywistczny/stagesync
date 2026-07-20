@@ -1,9 +1,13 @@
 import { Router } from "express";
 import { StageMessageBodySchema } from "@stagesync/shared";
+import type { ClientPresence } from "../client-presence.js";
 import type { StageHub } from "../transport/stage-hub.js";
 import { handleRouteError } from "./errors.js";
 
-export function createStageRouter(stageHub: StageHub): Router {
+export function createStageRouter(
+  stageHub: StageHub,
+  presence: ClientPresence,
+): Router {
   const router = Router();
 
   router.post("/message", (req, res) => {
@@ -19,6 +23,10 @@ export function createStageRouter(stageHub: StageHub): Router {
     } catch (err) {
       handleRouteError(res, err);
     }
+  });
+
+  router.get("/clients", (_req, res) => {
+    res.json({ clients: presence.list() });
   });
 
   return router;

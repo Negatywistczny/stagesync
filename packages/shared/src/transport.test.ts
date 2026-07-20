@@ -60,4 +60,14 @@ describe("TransportTickMessageSchema", () => {
     };
     expect(TransportTickMessageSchema.parse(msg)).toEqual(msg);
   });
+
+  it("accepts optional sentAtMs for latency", () => {
+    const msg = {
+      ...defaultTransportState(),
+      type: "transport_tick" as const,
+      serverTimeMs: 12.5,
+      sentAtMs: 1_700_000_000_000,
+    };
+    expect(TransportTickMessageSchema.parse(msg)).toEqual(msg);
+  });
 });

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV4Seed } from "@stagesync/shared";
+import { createProjectV5Seed } from "@stagesync/shared";
 import {
   createProject,
   deleteProject,
   updateProject,
 } from "./libraryApi.js";
 
-const v4Project = createProjectV4Seed(
+const v4Project = createProjectV5Seed(
   "00000000-0000-4000-8000-000000000001",
   "Demo",
   "2026-07-19T12:00:00.000Z",
@@ -64,7 +64,7 @@ describe("libraryApi mutations", () => {
       formatVersion: number;
     };
     expect(body.name).toBe("Renamed");
-    expect(body.formatVersion).toBe(4);
+    expect(body.formatVersion).toBe(5);
   });
 
   it("updateProject does not fetch when name is empty", async () => {

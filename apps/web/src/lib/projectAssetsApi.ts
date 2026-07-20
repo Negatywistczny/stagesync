@@ -27,6 +27,9 @@ export async function uploadProjectAudio(
   return ProjectSchema.parse(await res.json());
 }
 
+/** Alias — server accepts MusicXML via same multipart endpoint. */
+export const uploadProjectMusicXml = uploadProjectAudio;
+
 export async function deleteProjectAsset(
   projectId: string,
   assetId: string,
