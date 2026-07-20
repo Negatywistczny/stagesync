@@ -10,4 +10,4 @@ Nie kopiujemy pełnych specyfikacji do repo — **linki** + egzekucja narzędzia
 | ADR | [Indeks](./adr/README.md) (`docs/adr/`) | [adr.github.io](https://adr.github.io/) |
 | EditorConfig | [`.editorconfig`](../.editorconfig) | [editorconfig.org](https://editorconfig.org/) |
 | TSDoc | Publiczne API w `@stagesync/shared` (gdy dojrzeje) | [tsdoc.org](https://tsdoc.org/) |
-| JSON:API | **Nie** — [ADR 0006](./adr/0006-no-json-api.md) | [jsonapi.org/format](https://jsonapi.org/format/) |
+| JSON:API | **Nie** — [ADR 0006](./adr/0006-no-json-api.md); kształt: [docs/api/](./api/README.md) | [jsonapi.org/format](https://jsonapi.org/format/) |

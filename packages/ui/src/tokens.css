@@ -72,5 +72,10 @@
   --ss-line-height: var(--ss-leading-normal);
   --ss-tracking-normal: 0;
   --ss-tracking-label: 0.06em;
-  --ss-transition: 120ms ease;
+
+  /* Motion */
+  --ss-duration-fast: 120ms;
+  --ss-duration-normal: 200ms;
+  --ss-duration-slow: 700ms;
+  --ss-transition: var(--ss-duration-fast) ease;
 }

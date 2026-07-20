@@ -8,7 +8,8 @@
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
 | [TODO](./TODO.md) | Przyszłe zadania | Odhaczone / „zrobione” |
 | [ROADMAP](../ROADMAP.md) | Kierunek długoterminowy | Bieżąca checklista zadań |
-| [docs/ui/](./ui/README.md) | Design system (kolory, Button) | Implementacja w `packages/ui` |
+| [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
+| [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
 | [docs/adr/](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
@@ -51,23 +52,11 @@ Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).
 
-## API biblioteki (REST)
+## API biblioteki (REST + WS)
 
-| Metoda | Ścieżka | Opis |
-|--------|---------|------|
-| `GET` | `/api/health` | Healthcheck |
-| `GET` | `/api/library` | Indeks biblioteki (seed z template jeśli brak pliku) |
-| `POST` | `/api/projects` | Utwórz projekt (`{ name }`) |
-| `GET` | `/api/projects/:id` | Odczyt `project.json` |
-| `PUT` | `/api/projects/:id` | Aktualizacja (`{ name? }`) |
-| `DELETE` | `/api/projects/:id` | Usuń projekt + wpis w indeksie |
-| `GET` | `/api/transport` | Snapshot transportu SSOT |
-| `POST` | `/api/transport/play` | Play (+ opcjonalne `bpm` / `timeSignature`) |
-| `POST` | `/api/transport/pause` | Pause |
-| `POST` | `/api/transport/seek` | Seek `{ positionTicks }` |
-| WS | `/ws/transport` | `transport_tick` (~25 Hz gdy playing; snapshot przy zmianie) |
-
-Błędy: `400` / `404` / `500` → `{ ok: false, error }`. Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
+Kontrakt endpointów, kształt błędów i ticków WS: [docs/api/](./api/README.md).
+Schematy Zod: `@stagesync/shared`. Nie JSON:API — [ADR 0006](./adr/0006-no-json-api.md).
+Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 
 ## Legacy
 

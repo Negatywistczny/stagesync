@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Dokumentacja DS: [typography](docs/ui/typography.md) / [spacing](docs/ui/spacing.md);
+  tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide;
+  krótki kontrakt [docs/api/](docs/api/README.md) (REST + WS).
 - Branch protection na `main`: wymagany status check CI
   (`lint-types-test-build`) przed merge PR — bez wymuszania PR na
   docs/chore ([CONTRIBUTING](CONTRIBUTING.md)).
