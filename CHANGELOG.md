@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- DX: pin Node 20 (`.nvmrc`, `engines` `>=20 <21`, CI `node-version-file`);
+  checklista branch protection (status checks) w CONTRIBUTING; JSDoc `@example`
+  na helperach czasu / soft playhead (`@stagesync/shared`).
 - Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
   [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [ROADMAP.md](ROADMAP.md);
   checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.

@@ -18,7 +18,7 @@
 
 | Paczka / app | Stack | Odpowiedzialność |
 |--------------|-------|------------------|
-| `apps/server` | Express (Node 20+) | API, persystencja, transport SSOT |
+| `apps/server` | Express (Node 20, `.nvmrc`) | API, persystencja, transport SSOT |
 | `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
 | `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
 | `packages/ui` | React | Design system (`Button`, `--ss-*`) |
