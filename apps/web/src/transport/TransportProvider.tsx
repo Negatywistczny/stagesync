@@ -19,8 +19,9 @@ import {
   pauseTransport,
   playTransport,
   seekTransport,
+  stopTransport,
 } from "./api.js";
-import { TransportContext, type WsStatus } from "./transportContext.js";
+import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
 
 function toAnchor(state: TransportState): TransportAnchor {
   return {
@@ -42,6 +43,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
   const [commandPending, setCommandPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stageCue, setStageCue] = useState<StageCue | null>(null);
 
   const anchorRef = useRef<TransportAnchor>(toAnchor(defaultTransportState()));
   const receiptMsRef = useRef(0);
@@ -120,9 +122,21 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       ws.onmessage = (event) => {
         if (cancelled) return;
         try {
-          const msg = TransportTickMessageSchema.parse(
-            JSON.parse(String(event.data)),
-          );
+          const raw = JSON.parse(String(event.data)) as {
+            type?: string;
+            text?: string;
+            ttlMs?: number;
+            sentAtMs?: number;
+          };
+          if (raw.type === "stage_cue" && typeof raw.text === "string") {
+            setStageCue({
+              text: raw.text,
+              ttlMs: raw.ttlMs ?? 6000,
+              sentAtMs: raw.sentAtMs ?? Date.now(),
+            });
+            return;
+          }
+          const msg = TransportTickMessageSchema.parse(raw);
           applyAnchor(
             {
               playing: msg.playing,
@@ -213,6 +227,10 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     await runCommand(() => pauseTransport());
   }, [runCommand]);
 
+  const stop = useCallback(async () => {
+    await runCommand(() => stopTransport());
+  }, [runCommand]);
+
   const seek = useCallback(
     async (positionTicks: number) => {
       await runCommand(() => seekTransport(positionTicks));
@@ -229,7 +247,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       error,
       play,
       pause,
+      stop,
       seek,
+      stageCue,
     }),
     [
       state,
@@ -239,7 +259,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       error,
       play,
       pause,
+      stop,
       seek,
+      stageCue,
     ],
   );
 

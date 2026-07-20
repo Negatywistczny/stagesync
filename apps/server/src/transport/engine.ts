@@ -6,7 +6,7 @@ import {
   elapsedToTicks,
   resolveMeterAt,
   resolveTempoAt,
-  type ProjectV2,
+  type ProjectV3,
   type TimeSignature,
   type TransportPlayBody,
   type TransportState,
@@ -48,7 +48,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     return originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
   }
 
-  function applyMapsFromProject(project: ProjectV2, atTicks?: number): void {
+  function applyMapsFromProject(project: ProjectV3, atTicks?: number): void {
     const ticks = atTicks ?? samplePosition();
     positionTicks = ticks;
     bpm = resolveTempoAt(project, ticks);
@@ -122,7 +122,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       };
     },
 
-    loadProject(projectId: string, project: ProjectV2): TransportState {
+    loadProject(projectId: string, project: ProjectV3): TransportState {
       activeProjectId = projectId;
       positionTicks = samplePosition();
       playing = false;
@@ -134,7 +134,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
     play(
       opts: TransportPlayBody = {},
-      project?: ProjectV2,
+      project?: ProjectV3,
     ): TransportState {
       if (opts.timeSignature !== undefined) {
         assertValidTimeSignature(opts.timeSignature, ppq);
@@ -172,7 +172,19 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
-    seek(nextTicks: number, project?: ProjectV2): TransportState {
+    /** Pause and seek to tick 0 (Stop). */
+    stop(project?: ProjectV3): TransportState {
+      playing = false;
+      stopTimer();
+      positionTicks = 0;
+      if (project) {
+        applyMapsFromProject(project, 0);
+      }
+      notify();
+      return snapshot();
+    },
+
+    seek(nextTicks: number, project?: ProjectV3): TransportState {
       if (!Number.isInteger(nextTicks)) {
         throw new RangeError("positionTicks must be an integer");
       }

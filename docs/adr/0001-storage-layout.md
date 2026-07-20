@@ -15,16 +15,21 @@ Dane runtime / szablony żyją pod `data/` w repo:
 data/
   library/
     library.template.json   # seed / szablon indeksu biblioteki
-    …                       # runtime indeks (użytkownik; gitignore tam gdzie trzeba)
+    library.json            # runtime indeks (gitignore)
+    setlist.json            # setlista koncertowa (α6+; niezależna od library.json)
   projects/
-    <projectId>/            # jeden katalog na projekt
+    <projectId>/
+      project.json          # dokument projektu (formatVersion 2+)
+      assets/               # pliki mediów per projekt (α6+; izolacja folderu)
   logs/                     # logi serwera / aplikacji
 ```
 
 - Puste katalogi utrzymujemy w gicie przez `.gitkeep`.
 - **Schematy Zod** z `@stagesync/shared` walidują na krawędziach (load/save, HTTP). Nieprawidłowe dane są odrzucane — bez cichej naprawy w day-0.
+- Szczegóły schema v3 (assets, setlist ownership): [ADR 0009](./0009-project-schema-v3.md).
 
 ## Konsekwencje
 
 - Migratory i CRUD celują w ścieżki po id projektu, bez monolitycznego pliku DB.
 - Import legacy 4.x należy do osobnego migratora później; nie dual-write starych kształtów do tego układu.
+- Usunięcie katalogu projektu usuwa też `assets/` — brak globalnego katalogu uploadów.

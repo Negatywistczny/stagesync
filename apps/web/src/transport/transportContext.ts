@@ -11,7 +11,15 @@ export type TransportContextValue = {
   error: string | null;
   play: (body?: TransportPlayBody) => Promise<void>;
   pause: () => Promise<void>;
+  stop: () => Promise<void>;
   seek: (positionTicks: number) => Promise<void>;
+  stageCue: StageCue | null;
+};
+
+export type StageCue = {
+  text: string;
+  ttlMs: number;
+  sentAtMs: number;
 };
 
 export const TransportContext = createContext<TransportContextValue | null>(

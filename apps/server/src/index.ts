@@ -4,9 +4,9 @@ import { attachTransportWs } from "./transport/ws.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
 
-const { app, transport } = createApp();
+const { app, transport, stageHub } = createApp();
 const server = createServer(app);
-attachTransportWs(server, transport);
+attachTransportWs(server, transport, stageHub);
 
 server.listen(PORT, () => {
   console.log(`[stagesync-server] listening on http://localhost:${PORT}`);

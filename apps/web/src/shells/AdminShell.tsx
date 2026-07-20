@@ -7,6 +7,7 @@ import {
   toDisplayBar,
   type Library,
   type Project,
+  type SetlistView,
 } from "@stagesync/shared";
 import {
   createProject,
@@ -15,6 +16,7 @@ import {
   fetchProject,
   updateProject,
 } from "../lib/libraryApi.js";
+import { fetchSetlist } from "../lib/setlistApi.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconSettings, IconSun } from "./icons.js";
@@ -28,6 +30,9 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { ShellWordmark } from "./ShellWordmark.js";
+import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
+import { SetView } from "./admin/SetView.js";
+import { StageView } from "./admin/StageView.js";
 import styles from "./AdminShell.module.css";
 
 type SectionId = "songs" | "set" | "stage" | "files" | "host";
@@ -65,11 +70,33 @@ export function AdminShell() {
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [setlistView, setSetlistView] = useState<SetlistView | null>(null);
 
   const sectionProjectId = state.activeProjectId ?? selectedId;
   const activeSection = activeProject
     ? resolveFormaClipAt(activeProject, displayTicks)
     : null;
+  const nowProject =
+    library?.projects.find((p) => p.id === state.activeProjectId) ?? null;
+  const nowName = nowProject?.name ?? "—";
+  const nextName = setlistView?.enabled
+    ? (setlistView.next?.name ?? (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
+    : "z setu";
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const view = await fetchSetlist();
+        if (!cancelled) setSetlistView(view);
+      } catch {
+        if (!cancelled) setSetlistView(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.activeProjectId, section]);
 
   useEffect(() => {
     if (!sectionProjectId) {
@@ -253,7 +280,9 @@ export function AdminShell() {
             onPlay={(id) => void play({ projectId: id })}
           />
         ) : null}
-        {section === "set" ? <SetView /> : null}
+        {section === "set" ? (
+          <SetView library={library} selectedId={selectedId} />
+        ) : null}
         {section === "stage" ? <StageView /> : null}
         {section === "files" ? (
           <FilesView onOpenImport={() => setImportModalOpen(true)} />
@@ -269,7 +298,18 @@ export function AdminShell() {
       <footer className={styles.status} aria-label="Status koncertu">
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Teraz</span>
-          <span className={styles.statusVal}>{selected?.name ?? "—"}</span>
+          <span
+            className={styles.statusVal}
+            title={
+              selectedId &&
+              state.activeProjectId &&
+              selectedId !== state.activeProjectId
+                ? `Zaznaczony: ${selected?.name ?? "—"}`
+                : undefined
+            }
+          >
+            {nowName}
+          </span>
         </div>
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Sekcja</span>
@@ -287,7 +327,7 @@ export function AdminShell() {
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Dalej</span>
           <span className={[styles.statusVal, styles.statusMuted].join(" ")}>
-            z setu
+            {nextName}
           </span>
         </div>
         <div className={styles.statusGroup}>
@@ -520,7 +560,7 @@ function SongsView({
               >
                 <span className={styles.songPc}>—</span>
                 <span className={styles.songName}>{p.name}</span>
-                <span className={styles.songMeta}>XML · audio</span>
+                <span className={styles.songMeta} />
               </button>
             ))}
             {!library && !libraryError ? (
@@ -623,11 +663,10 @@ function SongsView({
                     </Button>
                   </div>
                   <div>
-                    <h3 className={styles.subTitle}>Pliki projektu</h3>
-                    <p className={styles.muted}>
-                      Brak plików w projekcie. Import audio, MusicXML i okładek
-                      — α6.
-                    </p>
+                    <ProjectFilesPanel
+                      projectId={selectedId}
+                      locked={locked}
+                    />
                   </div>
                 </>
               ) : (
@@ -647,94 +686,6 @@ function SongsView({
           ›
         </button>
       )}
-    </div>
-  );
-}
-
-function SetView() {
-  return (
-    <section className={styles.card} aria-label="Set">
-      <div className={styles.cardHead}>
-        <div>
-          <h1 className={styles.cardTitle}>Set</h1>
-          <p className={styles.cardHint}>Kolejność utworów na koncert</p>
-        </div>
-      </div>
-      <div className={styles.cardBody}>
-        <ShellSwitchRow disabled>Aktywny set</ShellSwitchRow>
-        <ShellSwitchRow disabled>Auto z biblioteki</ShellSwitchRow>
-        <div className={styles.actions}>
-          <Button variant="secondary" disabled>
-            Dodaj zaznaczone
-          </Button>
-          <Button variant="primary" disabled>
-            Zapisz
-          </Button>
-          <Button variant="ghost" disabled>
-            Wyczyść
-          </Button>
-        </div>
-        <p className={styles.muted}>Lista pozycji (przeciąganie) — shell.</p>
-      </div>
-    </section>
-  );
-}
-
-function StageView() {
-  return (
-    <div className={styles.twoUp}>
-      <section className={styles.card} aria-label="Komunikat">
-        <div className={styles.cardHead}>
-          <div>
-            <h1 className={styles.cardTitle}>Komunikat</h1>
-            <p className={styles.cardHint}>Na ekrany klientów</p>
-          </div>
-        </div>
-        <div className={styles.cardBody}>
-          <textarea
-            className={styles.textarea}
-            maxLength={200}
-            placeholder="Treść…"
-            disabled
-          />
-          <div className={styles.chips}>
-            {["Tekst", "Akordy", "Partytura", "Forma"].map((r) => (
-              <button key={r} type="button" className={styles.chip} disabled>
-                {r}
-              </button>
-            ))}
-          </div>
-          <div className={styles.actions}>
-            <select className={styles.select} disabled>
-              <option>TTL 6 s</option>
-              <option>10 s</option>
-              <option>∞</option>
-            </select>
-            <Button variant="primary" disabled>
-              Wyślij
-            </Button>
-            <Button variant="ghost" disabled>
-              Wyczyść
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.card} aria-label="Klienci">
-        <div className={styles.cardHead}>
-          <div>
-            <h1 className={styles.cardTitle}>Klienci</h1>
-            <p className={styles.cardHint}>Sieć i role</p>
-          </div>
-        </div>
-        <div className={styles.cardBody}>
-          <p className={styles.muted}>mDNS / IP</p>
-          <p className={styles.muted}>Lista urządzeń i ról — shell.</p>
-          <Button variant="ghost" disabled>
-            Odśwież
-          </Button>
-        </div>
-      </section>
     </div>
   );
 }

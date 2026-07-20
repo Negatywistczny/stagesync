@@ -1,11 +1,11 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.6` — historia w [CHANGELOG.md](../CHANGELOG.md).  
+**Stan:** `5.0.0-alpha.7` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poniżej).
 
 Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
-**QA / sign-off α5:** [report-qa-signoff-alpha5.md](./analysis/reports/report-qa-signoff-alpha5.md).
+**QA / sign-off α6:** [report-qa-signoff-alpha6.md](./analysis/reports/report-qa-signoff-alpha6.md).
 
 ## Procedura zamykania etapu
 
@@ -16,29 +16,28 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 3. Zastąp plik **wyłącznie** sekcją alpha.N+1 (nagłówek, link do scope report, must/should/release).
 4. Zaktualizuj `**Stan:**` na górze (`5.0.0-alpha.N+1`).
 
-## Alpha 6 (`5.0.0-alpha.6`)
+## Alpha 7 (`5.0.0-alpha.7`)
 
-Hero: **Admin Live Desk — setlista, scena, pliki**.  
-Scope: *(przed startem — report-scope-alpha6.md)*.
+Hero: **Edycja Timeline (Forma + lane’y treści)**.  
+Scope: *(przed startem — report-scope-alpha7.md)*.
 
 ### Must
 
-- [ ] Scope report alpha.6 przed kodem
-- [ ] Import audio do projektu (refs w schema v3)
-- [ ] Setlista + pliki w inspectorze (wiring IA v5)
+- [ ] Scope report alpha.7 przed kodem
+- [ ] Forma: pencil drag, pointer move/resize, select+Delete, Smart Tool FSM ([ADR 0008](./adr/0008-timeline-clip-editing.md))
+- [ ] Snap: Cmd/Ctrl = chwilowy snap off (faza 3 [ADR 0007](./adr/0007-snap-grid.md))
 
 ### Should
 
-- [ ] Admin: „Teraz” vs `activeProjectId` / Odtwórz UX
-- [ ] Transport UI: Stop, clamp końca, opcjonalnie seek
-- [ ] Client `grid` / `score` shell polish
+- [ ] Tap / UG / Różdżka — wg cut w scope
+- [ ] Lane’y Tekst / Akordy / Cue (start ticks v2+)
 
-### OUT α6
+### OUT α7
 
-- Silnik odtwarzania audio → **β1**
-- Edycja geometryczna Forma → **α7**
-- Pełna partytura OSMD → **α7**
+- Pełny Undo/Redo sesji → β1 / 5.0.0
+- Audio playback → **β1**
+- Pełna partytura OSMD → wg scope (ew. tu lub później)
 
-### Release α6
+### Release α7
 
 - [ ] Bump, CHANGELOG, CI, smoke przed tagiem

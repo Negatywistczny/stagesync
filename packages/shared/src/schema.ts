@@ -47,6 +47,68 @@ export const DefaultMeterSchema = z.object({
   denominator: z.number().int().positive(),
 });
 
+export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
+
+export const ProjectAssetSchema = z.object({
+  id: z.string().min(1),
+  storageName: z.string().min(1),
+  originalName: z.string().min(1),
+  kind: ProjectAssetKindSchema,
+  mimeType: z.string().min(1),
+  sizeBytes: z.number().int().nonnegative(),
+  durationMs: z.number().positive().finite().optional(),
+});
+
+export type ProjectAsset = z.infer<typeof ProjectAssetSchema>;
+
+export const AudioTrackSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  muted: z.boolean().optional(),
+  gainDb: z.number().finite().optional(),
+});
+
+export type AudioTrack = z.infer<typeof AudioTrackSchema>;
+
+export const AudioClipSchema = z.object({
+  id: z.string().min(1),
+  trackId: z.string().min(1),
+  assetId: z.string().min(1),
+  startTicks: z.number().int(),
+  lengthTicks: z.number().int().positive(),
+  trimInMs: z.number().nonnegative().finite().optional(),
+  muted: z.boolean().optional(),
+});
+
+export type AudioClip = z.infer<typeof AudioClipSchema>;
+
+/** Concert setlist — independent of library order (ADR 0009). */
+export const SetlistSchema = z.object({
+  version: z.literal(1),
+  enabled: z.boolean(),
+  projectIds: z.array(z.string().uuid()),
+  autoAdvance: z.object({
+    enabled: z.boolean(),
+  }),
+});
+
+export type Setlist = z.infer<typeof SetlistSchema>;
+
+export const PutSetlistBodySchema = z.object({
+  enabled: z.boolean(),
+  projectIds: z.array(z.string().uuid()),
+});
+
+export type PutSetlistBody = z.infer<typeof PutSetlistBodySchema>;
+
+export const PatchSetlistAutoAdvanceBodySchema = z.object({
+  enabled: z.boolean(),
+});
+
+export type PatchSetlistAutoAdvanceBody = z.infer<
+  typeof PatchSetlistAutoAdvanceBodySchema
+>;
+
 /** Legacy alpha.2 project document (name only). */
 export const ProjectSchemaV1 = z.object({
   id: z.string().min(1),
@@ -57,7 +119,7 @@ export const ProjectSchemaV1 = z.object({
 
 export type ProjectV1 = z.infer<typeof ProjectSchemaV1>;
 
-/** Alpha.3 project document — strict at HTTP edges. */
+/** Alpha.3–α5 project document. */
 export const ProjectSchemaV2 = z
   .object({
     id: z.string().min(1),
@@ -76,12 +138,35 @@ export const ProjectSchemaV2 = z
   .strict();
 
 export type ProjectV2 = z.infer<typeof ProjectSchemaV2>;
-export type Project = ProjectV2;
 
-/** Canonical project schema (v2). */
-export const ProjectSchema = ProjectSchemaV2;
+/** Alpha.6+ project document — assets + audio refs (no playback engine). */
+export const ProjectSchemaV3 = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    formatVersion: z.literal(3),
+    updatedAt: z.string().datetime(),
+    ppq: z.literal(DEFAULT_PPQ),
+    defaultBpm: z.number().positive().finite(),
+    defaultMeter: DefaultMeterSchema,
+    forma: z.object({
+      clips: z.array(FormaClipSchema),
+    }),
+    tempoMap: z.array(TempoEventSchema),
+    meterMap: z.array(MeterEventSchema),
+    assets: z.array(ProjectAssetSchema),
+    audioTracks: z.array(AudioTrackSchema),
+    audioClips: z.array(AudioClipSchema),
+  })
+  .strict();
 
-export const PutProjectBodySchema = ProjectSchemaV2.omit({
+export type ProjectV3 = z.infer<typeof ProjectSchemaV3>;
+export type Project = ProjectV3;
+
+/** Canonical project schema (v3). */
+export const ProjectSchema = ProjectSchemaV3;
+
+export const PutProjectBodySchema = ProjectSchemaV3.omit({
   id: true,
   updatedAt: true,
 }).strict();
@@ -113,3 +198,11 @@ export const ApiErrorSchema = z.object({
 });
 
 export type ApiError = z.infer<typeof ApiErrorSchema>;
+
+export const StageMessageBodySchema = z.object({
+  text: z.string().min(1).max(200),
+  roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
+  ttlMs: z.number().int().positive().optional(),
+});
+
+export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
