@@ -39,7 +39,10 @@ function ticksPerBeat(ts: TimeSignature, ppq: number): number {
 
 /**
  * Local meter beat length in ticks: PPQ * 4 / denominator.
- * (4/4 → PPQ, 5/8 → PPQ/2.)
+ *
+ * @example
+ * localTicksPerBeat({ numerator: 4, denominator: 4 }) // 960
+ * localTicksPerBeat({ numerator: 5, denominator: 8 }) // 480
  */
 export function localTicksPerBeat(
   ts: TimeSignature,
@@ -114,6 +117,10 @@ export function assertValidTimeSignature(
 /**
  * Ticks in one bar: numerator * (PPQ * 4 / denominator).
  * Throws when the result is not an integer.
+ *
+ * @example
+ * ticksPerBar({ numerator: 4, denominator: 4 }) // 3840
+ * ticksPerBar({ numerator: 5, denominator: 8 }) // 2400
  */
 export function ticksPerBar(
   ts: TimeSignature,
@@ -126,6 +133,15 @@ export function ticksPerBar(
 /**
  * Converts integer position ticks to BBT (bar 0-based; beat 1..numerator).
  * Supports negative ticks (pre-roll).
+ *
+ * @example
+ * // 5/8, PPQ 960: one local beat = 480 ticks
+ * ticksToBbt(480, { numerator: 5, denominator: 8 })
+ * // → { bar: 0, beat: 2, tick: 0 }
+ *
+ * // Pre-roll: last tick of display bar 0 (math bar −1) in 4/4
+ * ticksToBbt(-1, { numerator: 4, denominator: 4 })
+ * // → { bar: -1, beat: 4, tick: 959 }
  */
 export function ticksToBbt(
   ticks: number,
@@ -146,6 +162,10 @@ export function ticksToBbt(
 
 /**
  * Converts BBT to integer ticks. Round-trips with ticksToBbt, including bar < 0.
+ *
+ * @example
+ * bbtToTicks(0, 2, 0, { numerator: 5, denominator: 8 }) // 480
+ * bbtToTicks(-1, 4, 959, { numerator: 4, denominator: 4 }) // -1
  */
 export function bbtToTicks(
   bar: number,
@@ -169,12 +189,24 @@ export function bbtToTicks(
   return bar * perBar + (beat - 1) * perBeat + tick;
 }
 
-/** Math bar (0-based) → display bar (1-based; pre-roll ≤ 0). */
+/**
+ * Math bar (0-based) → display bar (1-based; pre-roll ≤ 0).
+ *
+ * @example
+ * toDisplayBar(0) // 1  — song start
+ * toDisplayBar(-1) // 0 — count-in / pre-roll
+ */
 export function toDisplayBar(bar: number): number {
   return bar + 1;
 }
 
-/** Display bar (1-based) → math bar (0-based). */
+/**
+ * Display bar (1-based) → math bar (0-based).
+ *
+ * @example
+ * fromDisplayBar(1) // 0
+ * fromDisplayBar(0) // -1
+ */
 export function fromDisplayBar(displayBar: number): number {
   return displayBar - 1;
 }

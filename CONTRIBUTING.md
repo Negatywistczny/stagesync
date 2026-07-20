@@ -1,5 +1,10 @@
 # StageSync — uwagi dla współtwórców
 
+## Środowisko
+
+- **Node.js 20** — [`.nvmrc`](.nvmrc) (`nvm use`); root `engines`: `>=20 <21`.
+- **pnpm 9** — `packageManager` w root `package.json`.
+
 ## Język (kanon)
 
 | Co | Język |
@@ -14,8 +19,19 @@
 - **Zadania produktowe z [TODO](docs/TODO.md)** (CRUD, transport, MIDI, …) — tylko krótkie gałęzie `feat/<nazwa>` (ew. `fix/…`) → **Pull Request** → merge do `main`.
 - **Bez** Git Flow: nie używamy `develop` ani `release/*`.
 - CI: workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) na `push` /
-  PR do `main`. Wymaganie zielonego CI przy merge (branch protection) —
-  konfiguracja w ustawieniach repozytorium, nie w kodzie.
+  PR do `main`.
+
+### Branch protection (właściciel repo)
+
+Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` włącz w
+*Settings → Branches → Branch protection rule* (lub Rulesets):
+
+- [ ] **Require status checks to pass before merging**
+- [ ] Status check: `lint · types · test · build` (job z `ci.yml`)
+- [ ] **Nie** wymagaj „Require a pull request before merging”, jeśli chcesz
+      nadal pushować docs/chore prosto na `main`
+
+Konfiguracja w GitHub UI / API — nie w kodzie repozytorium.
 
 ## Commity
 

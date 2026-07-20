@@ -8,7 +8,7 @@ StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 
 ## Wymagania
 
-- Node.js ≥ 20
+- Node.js 20 (`nvm use` / [`.nvmrc`](.nvmrc); `engines`: `>=20 <21`)
 - [pnpm](https://pnpm.io/) 9
 
 ## Szybki start
