@@ -5,14 +5,18 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: lint · types · test · build
+    name: lint-types-test-build
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
