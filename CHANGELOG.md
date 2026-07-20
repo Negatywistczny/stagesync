@@ -10,7 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - Branch protection na `main`: wymagany status check CI
-  (`lint · types · test · build`) przed merge PR — bez wymuszania PR na
+  (`lint-types-test-build`) przed merge PR — bez wymuszania PR na
   docs/chore ([CONTRIBUTING](CONTRIBUTING.md)).
 
 ## [5.0.0-alpha.2] - 2026-07-20

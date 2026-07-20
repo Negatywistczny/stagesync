@@ -28,8 +28,9 @@ Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` — ruleset
 (Settings → Rules → Rulesets):
 
 - [x] **Require status checks to pass before merging**
-- [x] Status check: `lint · types · test · build` (job w
-      `continuous-integration.yml`)
+- [x] Status check: `lint-types-test-build` (job `name:` w
+      `continuous-integration.yml`; bez unicode — inaczej Actions
+      `startup_failure`)
 - [x] **Nie** wymagaj „Require a pull request before merging”
 - [x] Bypass: rola **Admin** (`always`) — docs/chore można pushować prosto
       na `main` (ruleset inaczej blokuje też bezpośredni push bez checka)
