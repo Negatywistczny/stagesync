@@ -56,9 +56,12 @@ Referencja zachowania: `STAGESYNC-APP-LEGACY`
 1. **Timeline — sterowanie + canvas** (P0):
    - Forma + content + **mapy** (SongMaps) + locator/loop;
    - **grid** meterMap + beat ticks @ zoom (jak v4 `pxb≥56`);
-   - **zoom H/V/UI** naprawdę skalujące; suwaki `accent-color: primary` (nie native blue);
+   - **zoom H/V/UI** naprawdę skalujące; suwaki `accent-color: primary` (nie native blue
+     na range — to kontrast kontrolek, nie decyzja o kolorze playhead);
    - snap Forma do **miar taktu**; overwrite jak v4;
-   - header: song **center** + breakpoint; help proporcje; bez cyan drift na playhead.
+   - header: song **center** + breakpoint; help proporcje;
+   - wskaźniki Timeline: **nie** scalaj locatora i playheadu bez decyzji PO
+     (w v4 to dwa sygnały — żółty locator vs cyjan/`info` MIDI playhead).
 2. **Client — treść ról** (P0): karaoke / grid / Forma — nie suchy tekst.
 3. **Admin — IA** (P0): mniejsze powierzchnie; Set + wybór utworów w jednym flow.
 4. Inventarz — **wtórny**; po geście.
@@ -72,14 +75,31 @@ Referencja zachowania: `STAGESYNC-APP-LEGACY`
   ścieżki smoke PO.
 - „Bliżej v4” = **feel + workflow**, nigdy = „te same przyciski”.
 
+### 4a. Zakaz automatycznego redesignu (kolory / wskaźniki / IA)
+
+**Hard rule:** agent **nie** wprowadza przy okazji zmian wizualnych ani semantycznych
+(kolory, affordances, collapsowanie dwóch sygnałów v4 w jeden, rename chrome)
+bez uzasadnienia.
+
+| Wymagane | Zakazane |
+|----------|----------|
+| Uzasadnienie: referencja zachowania v4 **lub** jawna prośba PO | „Bo black/amber / minimalizm / spójność DS” bez pytania |
+| Zostaw jak jest / zapytaj przy wątpliwości | Ciche „ulepszenia” wskaźników (np. playhead → `primary`) |
+| Minimalizm CTA (`primary`/`selected`) | Scalanie **odrębnych** sygnałów operacyjnych (locator ≠ playhead) |
+
+Revert koloru playhead/locator — **tylko** po potwierdzeniu PO (stan obecny może
+być regresją względem v4; nie cofaj automatycznie w tej samej sesji bez prośby).
+
 ### 5. Co zostaje z ADR 0003
 
 - Paleta black / amber; layout paneli **nowy** (nie HTML 4.x 1:1).
 - Model: 1 akord = 1 clip; Countdown; Audio 0…N (lane UI ukryte; playback → β2).
 - CSS Modules + `--ss-*`.
-- **Minimalizm:** jedna barwa akcentu (`primary` / `selected`). Role / kategorie =
-  etykieta + ikona + treść — **nie** tęcza z `success`/`warning`/`info`/`focus-ring`
-  ([colors.md](../ui/colors.md)).
+- **Minimalizm:** jedna barwa akcentu **interakcji** (`primary` / `selected`) —
+  nie „wszystkie markery timeline = amber”. Role / kategorie = etykieta + ikona +
+  treść — **nie** tęcza z tokenów statusu na kafelkach ról
+  ([colors.md](../ui/colors.md)). Wskaźniki transportowe (locator / playhead)
+  zostają **odrębnymi** sygnałami, dopóki PO nie zdecyduje inaczej.
 
 ### 6. Bramka β
 
