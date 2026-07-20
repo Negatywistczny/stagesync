@@ -1,6 +1,6 @@
 # StageSync
 
-[![CI](https://github.com/Negatywistyczny/stagesync/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/Negatywistyczny/stagesync/actions/workflows/continuous-integration.yml)
+[![CI](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml/badge.svg)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
 
 StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 
