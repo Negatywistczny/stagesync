@@ -14,6 +14,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 - ROADMAP: β1 = host (Docker + Tauri + stabilność); β2 = audio + MIDI (rozbicie „feature complete”).
+- **Timeline:** ukryte lane’y audio / `+ Audio` / eye-toggle audio do β2 (schema v3 refs bez zmian).
 
 ## [5.0.0-alpha.7] - 2026-07-20
 

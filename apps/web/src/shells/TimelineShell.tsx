@@ -163,8 +163,6 @@ const WAND_ACTIONS = [
   { id: "both-to-forma", label: "Tekst + Akordy → Forma" },
 ] as const;
 
-type AudioTrack = { id: string; name: string };
-
 export function TimelineShell() {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
@@ -198,9 +196,6 @@ export function TimelineShell() {
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
   const [trackVisibility, setTrackVisibility] = useState(defaultTrackVisibility);
-  const [audioTrackVisible, setAudioTrackVisible] = useState<
-    Record<string, boolean>
-  >({});
   const [eyeOpen, setEyeOpen] = useState(false);
   const [locatorTicks, setLocatorTicks] = useState(0);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
@@ -215,14 +210,6 @@ export function TimelineShell() {
   const gestureSessionRef = useRef<FormaGestureSession | null>(null);
   const gesturePreviewRef = useRef<FormaGesturePreview | null>(null);
   const draftRef = useRef<Project | null>(null);
-
-  const audioTracks: AudioTrack[] = (draftProject?.audioTracks ?? []).map(
-    (t) => ({ id: t.id, name: t.name }),
-  );
-  const audioClips = draftProject?.audioClips ?? [];
-  const assetsById = new Map(
-    (draftProject?.assets ?? []).map((a) => [a.id, a]),
-  );
 
   const reloadProject = useCallback(async (id: string) => {
     setLoading(true);
@@ -749,12 +736,6 @@ export function TimelineShell() {
     );
   }
 
-  function addAudio() {
-    window.alert(
-      "Import audio — Admin → Utwory → Pliki projektu (playback β1).",
-    );
-  }
-
   function onTool(id: ToolId) {
     const def = TOOLS.find((t) => t.id === id);
     if (def?.disabled) return;
@@ -1268,50 +1249,6 @@ export function TimelineShell() {
                     </div>
                   </div>
                 ))}
-
-                {audioTracks
-                  .filter((t) => audioTrackVisible[t.id] !== false)
-                  .map((t) => {
-                    const clips = audioClips.filter((c) => c.trackId === t.id);
-                    return (
-                      <div key={t.id} className={styles.trackRow}>
-                        <div className={styles.dockCell}>
-                          <span>{t.name}</span>
-                        </div>
-                        <div className={styles.laneCell}>
-                          {clips.length === 0 ? (
-                            <span className={styles.muted}>
-                              Brak clipów — β1 playback
-                            </span>
-                          ) : (
-                            clips.map((c) => {
-                              const asset = assetsById.get(c.assetId);
-                              return (
-                                <Clip
-                                  key={c.id}
-                                  name={
-                                    asset?.originalName ??
-                                    `${t.name} (β1)`
-                                  }
-                                  selected={false}
-                                  onSelect={() => undefined}
-                                />
-                              );
-                            })
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                <div className={styles.trackRow}>
-                  <div className={styles.dockCell}>
-                    <Button variant="ghost" onClick={addAudio}>
-                      + Audio
-                    </Button>
-                  </div>
-                  <div className={styles.laneCell} aria-hidden />
-                </div>
               </div>
               </div>
             </div>
@@ -1590,26 +1527,6 @@ export function TimelineShell() {
                   {track.locked ? " (zawsze)" : ""}
                 </button>
               ))}
-              {audioTracks.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="menuitemcheckbox"
-                  aria-checked={audioTrackVisible[t.id] !== false}
-                  className={styles.eyeItem}
-                  onClick={() =>
-                    setAudioTrackVisible((prev) => ({
-                      ...prev,
-                      [t.id]: !(prev[t.id] !== false),
-                    }))
-                  }
-                >
-                  <span aria-hidden>
-                    {audioTrackVisible[t.id] !== false ? "☑" : "☐"}
-                  </span>
-                  {t.name}
-                </button>
-              ))}
             </div>,
             document.body,
           )
@@ -1673,35 +1590,6 @@ function FormaClipButton({
     >
       {clip.kind === "countdown" ? "🔒 " : ""}
       {clip.name}
-    </button>
-  );
-}
-
-function Clip({
-  name,
-  selected,
-  onSelect,
-  locked,
-}: {
-  name: string;
-  selected: boolean;
-  onSelect: (n: string) => void;
-  locked?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      className={[
-        styles.clip,
-        selected ? styles.clipOn : "",
-        locked ? styles.clipLocked : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      onClick={() => onSelect(name)}
-    >
-      {locked ? "🔒 " : ""}
-      {name}
     </button>
   );
 }

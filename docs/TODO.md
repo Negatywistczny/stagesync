@@ -43,7 +43,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) · [ADR 0008](./adr/0008-timeline-clip-ed
 
 ### OUT α8
 
-- Audio 0…N playback / MIDI / Docker → **β1**
+- Audio tracks — lane UI ukryte; playback / gain / mute → **β2**; MIDI / Docker → **β1**
 - Migrator 4.x → v5 → **α9**
 - Pełny OSMD sync, zoom polish, snap picker → 5.0.0 / β1+
 - git-apply — nigdy

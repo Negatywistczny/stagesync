@@ -8,7 +8,7 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 
 | Delta | Uwagi |
 |-------|--------|
-| + Audio 0…N w Timeline | Brak ścieżek = OK |
+| Audio lane / + Audio w Timeline | **Ukryte** do β2 (schema v3 refs zostają); playback / gain / mute → **β2** |
 | Countdown widoczny; długość = pre-roll ≤ 0 | Semantyka v5 |
 | − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
@@ -22,7 +22,7 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 **Nie** wchodzi w inventarz kontrolek — to kontrakt **układu** obowiązujący od α4:
 
 1. **Jedna siatka wierszy:** nagłówek ścieżki (dock) i lane canvas w **tym samym wierszu** (zsynchronizowana wysokość).
-2. **Kolejność pionowa (od góry):** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue → Audio (specjalne domyślnie ukryte eye).
+2. **Kolejność pionowa (od góry):** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue (Audio → β2; specjalne domyślnie ukryte eye).
 3. **Eye menu:** ukrywanie **pojedynczych** śladów (min. grupa Treść vs Specjalne); Forma zawsze widoczna.
 4. **Responsywność:** węższe okno nie rozdziela nagłówków od lane’ów (brak „pływania” etykiet osobno od treści).
 
@@ -71,7 +71,7 @@ Placeholdery (disabled, skróty UI/H/V, pomoc-szkielet) = OK do **5.0.0 polish**
 - [ ] Forma z **Countdown** + sekcje (osobne clipy)
 - [ ] Tekst, Akordy (**1 akord = 1 clip**), Cue
 - [ ] Tempo / Tonacja / Metrum / Kotwice (domyślnie ukryte)
-- [ ] Audio 0…N — clipy per projekt; fader ścieżki + mute track ([ADR 0008](./adr/0008-timeline-clip-editing.md))
+- [ ] Audio lane + playback 0…N — **β2** (lane UI ukryte; schema v3 refs OK)
 - [ ] Inspector (Właściwości)
 - [ ] Song screen: Ze wzoru / Import UG (**przyciski**, nie goły tekst)
 

@@ -9,7 +9,7 @@ export type CoreTrackId =
   | "akordy"
   | "cue";
 
-export type TrackId = CoreTrackId | `audio-${string}`;
+export type TrackId = CoreTrackId;
 
 export type TrackDef = {
   id: CoreTrackId;
