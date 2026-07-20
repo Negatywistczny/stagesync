@@ -116,7 +116,7 @@ describe("TransportEngine", () => {
     const project = {
       id: "00000000-0000-4000-8000-000000000001",
       name: "P",
-      formatVersion: 2 as const,
+      formatVersion: 3 as const,
       updatedAt: "2026-07-20T00:00:00.000Z",
       ppq: DEFAULT_PPQ,
       defaultBpm: 90,
@@ -143,12 +143,26 @@ describe("TransportEngine", () => {
       meterMap: [
         { id: "m", startTicks: 0, numerator: 4, denominator: 4 },
       ],
+      assets: [],
+      audioTracks: [],
+      audioClips: [],
     };
     const engine = createTransportEngine();
     const state = engine.loadProject(project.id, project);
     expect(state.playing).toBe(false);
     expect(state.activeProjectId).toBe(project.id);
     expect(state.bpm).toBe(90);
+    engine.dispose();
+  });
+
+  it("stop seeks to 0 and pauses", () => {
+    let t = 0;
+    const engine = createTransportEngine({ now: () => t });
+    engine.play();
+    t = 1000;
+    const stopped = engine.stop();
+    expect(stopped.playing).toBe(false);
+    expect(stopped.positionTicks).toBe(0);
     engine.dispose();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV2Seed } from "@stagesync/shared";
+import { createProjectV3Seed } from "@stagesync/shared";
 import {
   countdownBars,
   renameFormaClip,
@@ -7,7 +7,7 @@ import {
 } from "./formaInspector.js";
 
 describe("formaInspector", () => {
-  const project = createProjectV2Seed(
+  const project = createProjectV3Seed(
     "id",
     "Demo",
     "2026-07-20T00:00:00.000Z",

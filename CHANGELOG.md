@@ -7,13 +7,20 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+## [5.0.0-alpha.6] - 2026-07-20
+
 ### Dodano
 
-- Branch protection na `main`: wymagany status check CI
-  (`lint-types-test-build`) przed merge PR — bez wymuszania PR na
-  docs/chore ([CONTRIBUTING](CONTRIBUTING.md)).
+- **Schema v3:** `assets[]`, `audioTracks[]`, `audioClips[]`; upgrade v2→v3 przy odczycie; `projectEndTicks` (fallback 2 takty).
+- **Pliki projektu:** import audio (multipart) do `data/projects/<id>/assets/`; lista/usuń w inspectorze Admin; merge-preserve przy PUT (race z uploadem).
+- **Setlista:** `data/library/setlist.json`; API GET/PUT + auto-advance; zakładka Set (dodaj, drag, zapisz); footer **Dalej** / **Teraz** z transportu.
+- **Timeline:** lane’y audio read-only z v3 (placeholder bez playback); Stop; prev/next / auto-setlista w headerze.
+- **Scena (minimal):** `POST /api/stage/message` + cue na Client przez WS.
+- **Client:** empty states `grid` / `score` (α7); toast komunikatu sceny.
+- ADR [0009](docs/adr/0009-project-schema-v3.md); uzupełnienie [ADR 0001](docs/adr/0001-storage-layout.md) (`assets/`, `setlist.json`).
 - ADR [0008](docs/adr/0008-timeline-clip-editing.md) — edycja klipów Timeline (Forma α7, audio β1, Smart Tool, no overlap).
 - ADR [0007](docs/adr/0007-snap-grid.md) — uzupełnienie: Cmd/Ctrl = chwilowy snap off.
+- Branch protection na `main`: wymagany status check CI (`lint-types-test-build`) przed merge PR.
 
 ## [5.0.0-alpha.5] - 2026-07-20
 

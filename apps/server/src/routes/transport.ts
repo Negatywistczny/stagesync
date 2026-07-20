@@ -55,6 +55,19 @@ export function createTransportRouter(
     }
   });
 
+  router.post("/stop", async (_req, res) => {
+    try {
+      let project;
+      const activeId = transport.getActiveProjectId();
+      if (activeId) {
+        project = await stores.getProject(activeId);
+      }
+      res.json(transport.stop(project));
+    } catch (err) {
+      handleRouteError(res, err);
+    }
+  });
+
   router.post("/seek", async (req, res) => {
     try {
       const body = TransportSeekBodySchema.parse(req.body);

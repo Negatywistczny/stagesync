@@ -59,7 +59,7 @@ function toPutBody(project: Project): PutProjectBody {
   return PutProjectBodySchema.parse(body);
 }
 
-/** Full-document PUT (strict v2). */
+/** Full-document PUT (strict v3). */
 export async function putProject(id: string, project: Project): Promise<Project> {
   if (!id.trim()) {
     throw new Error("Missing project id");

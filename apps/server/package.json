@@ -14,12 +14,14 @@
   "dependencies": {
     "@stagesync/shared": "workspace:*",
     "express": "^5.1.0",
+    "multer": "^2.2.0",
     "ws": "^8.21.1"
   },
   "devDependencies": {
     "@stagesync/eslint-config": "workspace:*",
     "@stagesync/typescript-config": "workspace:*",
     "@types/express": "^5.0.3",
+    "@types/multer": "^2.2.0",
     "@types/node": "^22.15.3",
     "@types/ws": "^8.18.1",
     "eslint": "^9.39.1",

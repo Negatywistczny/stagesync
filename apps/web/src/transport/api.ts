@@ -53,6 +53,11 @@ export async function pauseTransport(): Promise<TransportState> {
   return parseState(res);
 }
 
+export async function stopTransport(): Promise<TransportState> {
+  const res = await fetch("/api/transport/stop", { method: "POST" });
+  return parseState(res);
+}
+
 export async function seekTransport(
   positionTicks: number,
 ): Promise<TransportState> {

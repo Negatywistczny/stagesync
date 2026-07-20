@@ -4,6 +4,7 @@ import {
   PutProjectBodySchema,
 } from "@stagesync/shared";
 import type { Stores } from "../storage/index.js";
+import { createAssetsRouter } from "./assets.js";
 import { handleRouteError } from "./errors.js";
 
 export function createProjectsRouter(stores: Stores): Router {
@@ -18,6 +19,8 @@ export function createProjectsRouter(stores: Stores): Router {
       handleRouteError(res, err);
     }
   });
+
+  router.use("/:id/assets", createAssetsRouter(stores));
 
   router.get("/:id", async (req, res) => {
     try {

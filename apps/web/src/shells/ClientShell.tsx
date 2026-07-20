@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@stagesync/ui";
 import { toDisplayBar, ticksToBbt } from "@stagesync/shared";
 import { APP_VERSION } from "../lib/appVersion.js";
@@ -55,11 +55,22 @@ export function ClientShell() {
   const [started, setStarted] = useState(false);
   const [globalSettings, setGlobalSettings] = useState(false);
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
-  const { state, displayTicks, wsStatus } = useTransport();
+  const { state, displayTicks, wsStatus, stageCue } = useTransport();
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const { activeProject, loading: projectLoading } = useActiveProject(
     state.activeProjectId,
   );
+  const [cueVisible, setCueVisible] = useState(false);
+  const [cueText, setCueText] = useState("");
+
+  useEffect(() => {
+    if (!stageCue) return;
+    setCueText(stageCue.text);
+    setCueVisible(true);
+    if (stageCue.ttlMs <= 0) return;
+    const t = window.setTimeout(() => setCueVisible(false), stageCue.ttlMs);
+    return () => window.clearTimeout(t);
+  }, [stageCue]);
 
   const songTitle = activeProject?.name ?? "Brak utworu";
 
@@ -238,6 +249,18 @@ export function ClientShell() {
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
                 />
+              ) : id === "grid" ? (
+                <p className={styles.empty}>
+                  {state.activeProjectId
+                    ? "Brak siatki akordów — edycja α7 (lane Akordy)."
+                    : "Oczekiwanie na utwór…"}
+                </p>
+              ) : id === "score" ? (
+                <p className={styles.empty}>
+                  {state.activeProjectId
+                    ? "Brak partytury — OSMD / MusicXML w α7."
+                    : "Oczekiwanie na utwór…"}
+                </p>
               ) : (
                 <p className={styles.empty}>Oczekiwanie na utwór…</p>
               )}
@@ -250,8 +273,8 @@ export function ClientShell() {
       </div>
 
       <div className={styles.cueHost} aria-live="polite">
-        <div className={styles.cueToast} hidden>
-          TERAZ — cue
+        <div className={styles.cueToast} hidden={!cueVisible}>
+          {cueText || "TERAZ — cue"}
         </div>
       </div>
 

@@ -1,14 +1,13 @@
 import {
   useCallback,
   useEffect,
-  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Link, useBlocker, useParams } from "react-router-dom";
+import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
   resolveMeterAt,
@@ -38,6 +37,10 @@ import {
 } from "../lib/formaInspector.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
+import {
+  fetchSetlist,
+  patchSetlistAutoAdvance,
+} from "../lib/setlistApi.js";
 import {
   meterMapSegments,
   segmentStylePx,
@@ -134,8 +137,8 @@ const WAND_ACTIONS = [
 type AudioTrack = { id: string; name: string };
 
 export function TimelineShell() {
+  const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
-  const idPrefix = useId();
   const lanesCoordRef = useRef<HTMLDivElement>(null);
   const markerOverlayRef = useRef<HTMLDivElement>(null);
   const eyeBtnRef = useRef<HTMLButtonElement>(null);
@@ -144,7 +147,7 @@ export function TimelineShell() {
     top: number;
     left: number;
   } | null>(null);
-  const { state, displayTicks, wsStatus, commandPending, play, pause } =
+  const { state, displayTicks, wsStatus, commandPending, play, pause, stop } =
     useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
 
@@ -156,6 +159,9 @@ export function TimelineShell() {
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
+  const [setlistIds, setSetlistIds] = useState<string[]>([]);
+  const [setlistEnabled, setSetlistEnabled] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(false);
 
   const [tool, setTool] = useState<ToolId>("pointer");
   const [wandOpen, setWandOpen] = useState(false);
@@ -168,9 +174,16 @@ export function TimelineShell() {
   >({});
   const [eyeOpen, setEyeOpen] = useState(false);
   const [locatorTicks, setLocatorTicks] = useState(0);
-  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
+
+  const audioTracks: AudioTrack[] = (draftProject?.audioTracks ?? []).map(
+    (t) => ({ id: t.id, name: t.name }),
+  );
+  const audioClips = draftProject?.audioClips ?? [];
+  const assetsById = new Map(
+    (draftProject?.assets ?? []).map((a) => [a.id, a]),
+  );
 
   const reloadProject = useCallback(async (id: string) => {
     setLoading(true);
@@ -206,6 +219,35 @@ export function TimelineShell() {
       }
     })();
   }, [songScreenOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const view = await fetchSetlist();
+        if (cancelled) return;
+        setSetlistIds(view.projectIds);
+        setSetlistEnabled(view.enabled);
+        setAutoAdvance(view.autoAdvance.enabled);
+      } catch {
+        if (!cancelled) {
+          setSetlistIds([]);
+          setSetlistEnabled(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
+
+  const setlistIndex = projectId ? setlistIds.indexOf(projectId) : -1;
+  const prevSetlistId =
+    setlistEnabled && setlistIndex > 0 ? setlistIds[setlistIndex - 1] : null;
+  const nextSetlistId =
+    setlistEnabled && setlistIndex >= 0 && setlistIndex < setlistIds.length - 1
+      ? setlistIds[setlistIndex + 1]
+      : null;
 
   const dirty =
     savedProject !== null &&
@@ -427,10 +469,9 @@ export function TimelineShell() {
   }
 
   function addAudio() {
-    const n = audioTracks.length + 1;
-    const id = `${idPrefix}-a-${n}`;
-    setAudioTracks((prev) => [...prev, { id, name: `Audio ${n}` }]);
-    setAudioTrackVisible((prev) => ({ ...prev, [id]: true }));
+    window.alert(
+      "Import audio — Admin → Utwory → Pliki projektu (playback β1).",
+    );
   }
 
   function onTool(id: ToolId) {
@@ -518,7 +559,11 @@ export function TimelineShell() {
           <ShellIconButton label="Metadane utworu" disabled>
             ⓘ
           </ShellIconButton>
-          <ShellIconButton label="Poprzedni utwór setlisty" disabled>
+          <ShellIconButton
+            label="Poprzedni utwór setlisty"
+            disabled={!prevSetlistId}
+            onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
+          >
             <IconChevronLeft />
           </ShellIconButton>
           <button
@@ -530,10 +575,28 @@ export function TimelineShell() {
           >
             {draftProject?.name ?? "Wybierz utwór"}
           </button>
-          <ShellIconButton label="Następny utwór setlisty" disabled>
+          <ShellIconButton
+            label="Następny utwór setlisty"
+            disabled={!nextSetlistId}
+            onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
+          >
             <IconChevronRight />
           </ShellIconButton>
-          <ShellIconButton label="Auto-setlista" disabled pressed={false}>
+          <ShellIconButton
+            label="Auto-setlista"
+            disabled={!setlistEnabled || commandPending}
+            pressed={autoAdvance}
+            onClick={() => {
+              void (async () => {
+                try {
+                  const v = await patchSetlistAutoAdvance(!autoAdvance);
+                  setAutoAdvance(v.autoAdvance.enabled);
+                } catch {
+                  /* ignore */
+                }
+              })();
+            }}
+          >
             ▶|
           </ShellIconButton>
         </div>
@@ -605,7 +668,11 @@ export function TimelineShell() {
         </div>
 
         <div className={styles.transport} role="group" aria-label="Transport">
-          <ShellIconButton label="Zatrzymaj" disabled>
+          <ShellIconButton
+            label="Zatrzymaj"
+            disabled={commandPending}
+            onClick={() => void stop()}
+          >
             <IconStop />
           </ShellIconButton>
           <button
@@ -782,20 +849,38 @@ export function TimelineShell() {
 
                 {audioTracks
                   .filter((t) => audioTrackVisible[t.id] !== false)
-                  .map((t) => (
-                    <div key={t.id} className={styles.trackRow}>
-                      <div className={styles.dockCell}>
-                        <span>{t.name}</span>
+                  .map((t) => {
+                    const clips = audioClips.filter((c) => c.trackId === t.id);
+                    return (
+                      <div key={t.id} className={styles.trackRow}>
+                        <div className={styles.dockCell}>
+                          <span>{t.name}</span>
+                        </div>
+                        <div className={styles.laneCell}>
+                          {clips.length === 0 ? (
+                            <span className={styles.muted}>
+                              Brak clipów — β1 playback
+                            </span>
+                          ) : (
+                            clips.map((c) => {
+                              const asset = assetsById.get(c.assetId);
+                              return (
+                                <Clip
+                                  key={c.id}
+                                  name={
+                                    asset?.originalName ??
+                                    `${t.name} (β1)`
+                                  }
+                                  selected={false}
+                                  onSelect={() => undefined}
+                                />
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
-                      <div className={styles.laneCell}>
-                        <Clip
-                          name={`${t.name} clip`}
-                          selected={false}
-                          onSelect={() => undefined}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                 <div className={styles.trackRow}>
                   <div className={styles.dockCell}>

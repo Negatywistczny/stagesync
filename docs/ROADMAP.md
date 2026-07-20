@@ -10,7 +10,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.3** | Pion treści w ticks: Forma + mapy + zapis + transport + sekcja | Create → Timeline → pencil → save → play → Admin „Sekcja” | [report-scope-alpha3](./analysis/reports/report-scope-alpha3.md) |
 | **5.0.0-alpha.4** | Timeline layout + operacyjne domknięcie Formy | Track grid (nagłówek↔lane); eye per ślad; specjalne nad treścią; picker; inspector; mapy read-only | [report-scope-alpha4](./analysis/reports/report-scope-alpha4.md) — *audyt 2026-07-20: bramka zamknięta do `feat/timeline-track-grid`* |
 | **5.0.0-alpha.5** | Client roles poza Formą/`drums` | Karaoke wired z transportem + kontekstem projektu | [report-scope-alpha5](./analysis/reports/report-scope-alpha5.md) |
-| **5.0.0-alpha.6** | Admin Live Desk — setlista, scena, pliki | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze | *(przed startem)* |
+| **5.0.0-alpha.6** | Admin Live Desk — setlista, scena, pliki | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze | [report-scope-alpha6](./analysis/reports/report-scope-alpha6.md) |
 | **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | *(przed startem)* |
 | **5.0.0-beta.1** | Feature complete pod docelowy 5.0.0 | Audio playback + clip edit; migrator 4.x; MIDI I/O; Docker; stabilność | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |

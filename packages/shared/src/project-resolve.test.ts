@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV2Seed } from "./project-seed.js";
+import { createProjectV3Seed } from "./project-seed.js";
 import {
   resolveFormaClipAt,
   resolveMeterAt,
@@ -7,7 +7,7 @@ import {
 } from "./project-resolve.js";
 
 describe("project resolvers", () => {
-  const project = createProjectV2Seed(
+  const project = createProjectV3Seed(
     "id",
     "Demo",
     "2026-07-20T00:00:00.000Z",
