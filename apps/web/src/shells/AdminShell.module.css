@@ -41,38 +41,6 @@
   backdrop-filter: blur(10px);
 }
 
-.identity {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.product {
-  font-size: var(--ss-text-lg);
-  font-weight: var(--ss-font-weight-bold);
-  letter-spacing: var(--ss-tracking-normal);
-  line-height: var(--ss-leading-tight);
-}
-
-.productMark {
-  color: var(--ss-color-primary);
-}
-
-.productRole {
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-medium);
-  color: var(--ss-color-text-muted);
-  letter-spacing: var(--ss-tracking-label);
-  text-transform: uppercase;
-}
-
-.productVer {
-  font-size: var(--ss-text-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--ss-color-text-muted);
-}
-
 .sections {
   display: flex;
   flex-wrap: wrap;
@@ -142,46 +110,6 @@
     color: var(--ss-color-primary);
     background: var(--ss-color-ghost-hover);
   }
-}
-
-.iconBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .iconBtn:hover {
-    transition: background-color var(--ss-transition), border-color var(--ss-transition);
-    color: var(--ss-color-text);
-    border-color: var(--ss-color-primary);
-  }
-}
-
-.appearPop {
-  position: absolute;
-  top: var(--ss-space-12);
-  right: var(--ss-space-4);
-  z-index: 40;
-  width: min(16rem, calc(100vw - var(--ss-space-8)));
-  padding: var(--ss-space-4);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-elevated);
-  box-shadow: 0 12px 40px color-mix(in srgb, var(--ss-color-bg) 70%, transparent);
-}
-
-.appearTitle {
-  margin: 0 0 var(--ss-space-3);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
 }
 
 .chromeWrap {
@@ -551,14 +479,6 @@
   gap: var(--ss-space-1);
 }
 
-.switchRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ss-space-2);
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text-muted);
-}
-
 .fieldset {
   margin: 0 0 var(--ss-space-3);
   padding: var(--ss-space-3);
@@ -641,7 +561,6 @@
 /* Focus inside overflow:hidden chrome/cards — inset ring */
 .sectionTab:focus-visible,
 .songRow:focus-visible,
-.iconBtn:focus-visible,
 .appJump a:focus-visible,
 .chip:focus-visible,
 .chipOn:focus-visible {

@@ -1,8 +1,23 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@stagesync/ui";
-import { ticksToBbt, toDisplayBar } from "@stagesync/shared";
+import {
+  resolveFormaClipAt,
+  ticksToBbt,
+  toDisplayBar,
+  type Project,
+} from "@stagesync/shared";
+import { fetchProject } from "../lib/libraryApi.js";
 import { useTransport } from "../transport/useTransport.js";
+import type { WsStatus } from "../transport/transportContext.js";
+import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { IconSettings } from "./icons.js";
+import {
+  SettingsPopover,
+  SettingsPopoverAnchor,
+} from "./SettingsPopover.js";
+import { ShellIconButton } from "./ShellIconButton.js";
+import { ShellSwitchRow } from "./ShellSwitchRow.js";
+import { ShellWordmark } from "./ShellWordmark.js";
 import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
@@ -24,7 +39,32 @@ export function ClientShell() {
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
   const { state, displayTicks, wsStatus } = useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
-  const connected = wsStatus === "connected";
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+
+  useEffect(() => {
+    const id = state.activeProjectId;
+    if (!id) {
+      setActiveProject(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const project = await fetchProject(id);
+        if (!cancelled) setActiveProject(project);
+      } catch {
+        if (!cancelled) setActiveProject(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.activeProjectId]);
+
+  const activeSection = activeProject
+    ? resolveFormaClipAt(activeProject, displayTicks)
+    : null;
+  const songTitle = activeProject?.name ?? "Brak utworu";
 
   function toggleRole(id: RoleId) {
     setPicked((prev) => {
@@ -40,6 +80,27 @@ export function ClientShell() {
     setName(n);
     setNameModal(false);
   }
+
+  function toggleGlobalSettings() {
+    setRoleSettings(null);
+    setGlobalSettings((open) => !open);
+  }
+
+  function toggleRoleSettings(id: RoleId) {
+    setGlobalSettings(false);
+    setRoleSettings((current) => (current === id ? null : id));
+  }
+
+  const headerProps = {
+    wsStatus,
+    started,
+    songTitle,
+    bbt,
+    globalSettingsOpen: globalSettings,
+    onToggleGlobalSettings: toggleGlobalSettings,
+    onCloseGlobalSettings: () => setGlobalSettings(false),
+    onBack: started ? () => setStarted(false) : undefined,
+  };
 
   if (nameModal) {
     return (
@@ -70,25 +131,7 @@ export function ClientShell() {
   if (!started) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.brand}>
-            <span className={styles.brandMark} aria-hidden />
-            StageSync
-          </div>
-          <span
-            className={[styles.conn, connected ? styles.connOn : ""].join(" ")}
-          >
-            {connected ? "Połączony" : "Rozłączony"}
-          </span>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Ustawienia globalne"
-            onClick={() => setGlobalSettings(true)}
-          >
-            <IconSettings />
-          </button>
-        </header>
+        <ClientHeader {...headerProps} started={false} />
         <main className={styles.welcome}>
           <p className={styles.greeting}>
             Cześć, {name}{" "}
@@ -134,74 +177,13 @@ export function ClientShell() {
               : "Rozpocznij"}
           </Button>
         </main>
-        {globalSettings ? (
-          <SettingsDrawer
-            title="Globalne"
-            onClose={() => setGlobalSettings(false)}
-          >
-            <GlobalSettingsFields />
-          </SettingsDrawer>
-        ) : null}
       </div>
     );
   }
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerPrimary}>
-          <button
-            type="button"
-            className={styles.brandBtn}
-            onClick={() => setStarted(false)}
-            title="Powrót do wyboru ról"
-          >
-            <span className={styles.brandMark} aria-hidden />
-            StageSync
-          </button>
-          <div className={styles.metronome} aria-hidden>
-            {[1, 2, 3, 4].map((i) => (
-              <span
-                key={i}
-                className={[
-                  styles.dot,
-                  i === bbt.beat ? styles.dotActive : "",
-                ].join(" ")}
-              />
-            ))}
-          </div>
-          <span
-            className={[styles.conn, connected ? styles.connOn : ""].join(" ")}
-          >
-            {connected ? "Połączony" : "Rozłączony"}
-          </span>
-        </div>
-        <div className={styles.headerSecondary}>
-          <strong className={styles.songTitle}>Brak utworu</strong>
-          <span className={styles.setlistNext} hidden>
-            → następny
-          </span>
-          <span className={styles.takt}>
-            takt {toDisplayBar(bbt.bar)}.{bbt.beat}
-          </span>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Ustawienia globalne"
-            onClick={() => setGlobalSettings(true)}
-          >
-            <IconSettings />
-          </button>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Pełny ekran"
-            disabled
-          >
-            ⛶
-          </button>
-        </div>
-      </header>
+      <ClientHeader {...headerProps} started />
 
       <div
         className={[
@@ -213,20 +195,44 @@ export function ClientShell() {
       >
         {picked.map((id) => {
           const role = ROLES.find((r) => r.id === id)!;
+          const isDrums = id === "drums";
           return (
             <section key={id} className={styles.rolePane} aria-label={role.label}>
               <div className={styles.rolePaneHead}>
                 <h2>{role.label}</h2>
-                <button
-                  type="button"
-                  className={styles.iconBtn}
-                  aria-label={`Ustawienia ${role.label}`}
-                  onClick={() => setRoleSettings(id)}
-                >
-                  <IconSettings />
-                </button>
+                <SettingsPopoverAnchor>
+                  <ShellIconButton
+                    label={`Ustawienia ${role.label}`}
+                    aria-expanded={roleSettings === id}
+                    aria-controls={`role-settings-${id}`}
+                    onClick={() => toggleRoleSettings(id)}
+                  >
+                    <IconSettings />
+                  </ShellIconButton>
+                  {roleSettings === id ? (
+                    <SettingsPopover
+                      id={`role-settings-${id}`}
+                      title={role.label}
+                      onClose={() => setRoleSettings(null)}
+                    >
+                      <RoleSettingsFields role={id} />
+                    </SettingsPopover>
+                  ) : null}
+                </SettingsPopoverAnchor>
               </div>
-              <p className={styles.empty}>Oczekiwanie na utwór…</p>
+              {isDrums && activeProject ? (
+                <div className={styles.formaPane}>
+                  <p className={styles.formaTitle}>{activeProject.name}</p>
+                  <p className={styles.formaSection}>
+                    {activeSection?.name ?? "—"}
+                  </p>
+                  <p className={styles.muted}>
+                    takt {toDisplayBar(bbt.bar)}.{bbt.beat}
+                  </p>
+                </div>
+              ) : (
+                <p className={styles.empty}>Oczekiwanie na utwór…</p>
+              )}
             </section>
           );
         })}
@@ -241,28 +247,84 @@ export function ClientShell() {
         </div>
       </div>
 
-      {globalSettings ? (
-        <SettingsDrawer
-          title="Globalne"
-          onClose={() => setGlobalSettings(false)}
-        >
-          <GlobalSettingsFields />
-        </SettingsDrawer>
-      ) : null}
-
-      {roleSettings ? (
-        <SettingsDrawer
-          title={ROLES.find((r) => r.id === roleSettings)?.label ?? ""}
-          onClose={() => setRoleSettings(null)}
-        >
-          <RoleSettingsFields role={roleSettings} />
-        </SettingsDrawer>
-      ) : null}
-
       <p className={styles.transportNote}>
         {state.playing ? "Play" : "Pause"} · {state.bpm} BPM · WS {wsStatus}
       </p>
     </div>
+  );
+}
+
+type ClientHeaderProps = {
+  wsStatus: WsStatus;
+  started: boolean;
+  songTitle: string;
+  bbt: { bar: number; beat: number };
+  globalSettingsOpen: boolean;
+  onToggleGlobalSettings: () => void;
+  onCloseGlobalSettings: () => void;
+  onBack?: () => void;
+};
+
+function ClientHeader({
+  wsStatus,
+  started,
+  songTitle,
+  bbt,
+  globalSettingsOpen,
+  onToggleGlobalSettings,
+  onCloseGlobalSettings,
+  onBack,
+}: ClientHeaderProps) {
+  return (
+    <header className={styles.header}>
+      <ShellWordmark
+        onClick={started && onBack ? onBack : undefined}
+        title={started && onBack ? "Powrót do wyboru ról" : undefined}
+      />
+
+      <div className={styles.metronome} aria-hidden>
+        {[1, 2, 3, 4].map((i) => (
+          <span
+            key={i}
+            className={[
+              styles.dot,
+              i === bbt.beat ? styles.dotActive : "",
+            ].join(" ")}
+          />
+        ))}
+      </div>
+
+      <strong className={styles.songTitle}>{songTitle}</strong>
+      <span className={styles.takt}>
+        takt {toDisplayBar(bbt.bar)}.{bbt.beat}
+      </span>
+
+      <div className={styles.headerActions}>
+        <ConnectionIndicator status={wsStatus} />
+        <SettingsPopoverAnchor>
+          <ShellIconButton
+            label="Ustawienia globalne"
+            aria-expanded={globalSettingsOpen}
+            aria-controls="global-settings-panel"
+            onClick={onToggleGlobalSettings}
+          >
+            <IconSettings />
+          </ShellIconButton>
+          {globalSettingsOpen ? (
+            <SettingsPopover
+              id="global-settings-panel"
+              title="Globalne"
+              onClose={onCloseGlobalSettings}
+            >
+              <GlobalSettingsFields />
+            </SettingsPopover>
+          ) : null}
+        </SettingsPopoverAnchor>
+        <ShellIconButton label="Pełny ekran" disabled>
+          ⛶
+        </ShellIconButton>
+      </div>
+    </header>
   );
 }
 
@@ -277,15 +339,9 @@ function GlobalSettingsFields() {
           </button>
         ))}
       </div>
-      <label className={styles.switchRow}>
-        <input type="checkbox" disabled /> Polskie nazwy sekcji
-      </label>
-      <label className={styles.switchRow}>
-        <input type="checkbox" disabled /> Tryb jasny
-      </label>
-      <label className={styles.switchRow}>
-        <input type="checkbox" disabled /> Wysoki kontrast
-      </label>
+      <ShellSwitchRow disabled>Polskie nazwy sekcji</ShellSwitchRow>
+      <ShellSwitchRow disabled>Tryb jasny</ShellSwitchRow>
+      <ShellSwitchRow disabled>Wysoki kontrast</ShellSwitchRow>
     </>
   );
 }
@@ -298,9 +354,9 @@ function RoleSettingsFields({ role }: { role: RoleId }) {
           Skala tekstu
           <input type="range" min={80} max={200} defaultValue={100} disabled />
         </label>
-        <label className={styles.switchRow}>
-          <input type="checkbox" defaultChecked disabled /> Auto-scroll
-        </label>
+        <ShellSwitchRow defaultChecked disabled>
+          Auto-scroll
+        </ShellSwitchRow>
         <Button variant="secondary" disabled>
           Tap wokalu
         </Button>
@@ -310,15 +366,11 @@ function RoleSettingsFields({ role }: { role: RoleId }) {
   if (role === "grid") {
     return (
       <>
-        <label className={styles.switchRow}>
-          <input type="checkbox" disabled /> H zamiast B
-        </label>
-        <label className={styles.switchRow}>
-          <input type="checkbox" disabled /> Litery zamiast symboli
-        </label>
-        <label className={styles.switchRow}>
-          <input type="checkbox" defaultChecked disabled /> Animacje
-        </label>
+        <ShellSwitchRow disabled>H zamiast B</ShellSwitchRow>
+        <ShellSwitchRow disabled>Litery zamiast symboli</ShellSwitchRow>
+        <ShellSwitchRow defaultChecked disabled>
+          Animacje
+        </ShellSwitchRow>
       </>
     );
   }
@@ -341,39 +393,5 @@ function RoleSettingsFields({ role }: { role: RoleId }) {
       </>
     );
   }
-  return (
-    <label className={styles.switchRow}>
-      <input type="checkbox" disabled /> Edycja notatek Formy
-    </label>
-  );
-}
-
-function SettingsDrawer({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div className={styles.drawerWrap} role="dialog" aria-modal>
-      <button
-        type="button"
-        className={styles.drawerBackdrop}
-        aria-label="Zamknij"
-        onClick={onClose}
-      />
-      <div className={styles.drawer}>
-        <div className={styles.drawerHead}>
-          <h2>{title}</h2>
-          <button type="button" className={styles.iconBtn} onClick={onClose}>
-            ×
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
+  return <ShellSwitchRow disabled>Edycja notatek Formy</ShellSwitchRow>;
 }

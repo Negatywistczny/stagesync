@@ -1,0 +1,16 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  margin: var(--ss-space-2) 0;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.row:first-child {
+  margin-top: 0;
+}
+
+.row:last-child {
+  margin-bottom: 0;
+}

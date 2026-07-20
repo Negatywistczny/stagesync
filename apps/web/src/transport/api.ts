@@ -34,6 +34,15 @@ export async function playTransport(
   return parseState(res);
 }
 
+export async function loadTransport(projectId: string): Promise<TransportState> {
+  const res = await fetch("/api/transport/load", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ projectId }),
+  });
+  return parseState(res);
+}
+
 export async function pauseTransport(): Promise<TransportState> {
   const res = await fetch("/api/transport/pause", { method: "POST" });
   return parseState(res);

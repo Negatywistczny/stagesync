@@ -1,7 +1,26 @@
-import { useId, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
-import { ticksToBbt, toDisplayBar } from "@stagesync/shared";
+import {
+  resolveMeterAt,
+  resolveTempoAt,
+  ticksPerBar,
+  ticksToBbt,
+  toDisplayBar,
+  type FormaClip,
+  type Project,
+} from "@stagesync/shared";
+import {
+  buildBarMarks,
+  clipStylePx,
+  computeCanvasWidthPx,
+  computeFormaViewSpan,
+  pencilFormaClick,
+  projectContentEqual,
+  tickToPx,
+  ticksFromPointer,
+} from "../lib/formaCanvas.js";
+import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
   IconChevronLeft,
@@ -22,6 +41,13 @@ import {
   IconWand,
   IconZoom,
 } from "./icons.js";
+import { ShellWordmark } from "./ShellWordmark.js";
+import { ConnectionIndicator } from "./ConnectionIndicator.js";
+import {
+  SettingsPopover,
+  ShellAppearanceFields,
+} from "./SettingsPopover.js";
+import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./TimelineShell.module.css";
 
 type ToolId = "pointer" | "pencil" | "eraser" | "scissors" | "zoom" | "wand";
@@ -79,21 +105,169 @@ const WAND_ACTIONS = [
 type AudioTrack = { id: string; name: string };
 
 export function TimelineShell() {
+  const { projectId } = useParams<{ projectId: string }>();
   const idPrefix = useId();
+  const lanesCoordRef = useRef<HTMLDivElement>(null);
   const { state, displayTicks, wsStatus, commandPending, play, pause } =
     useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+
+  const [savedProject, setSavedProject] = useState<Project | null>(null);
+  const [draftProject, setDraftProject] = useState<Project | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [savePending, setSavePending] = useState(false);
+  const [libraryNames, setLibraryNames] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   const [tool, setTool] = useState<ToolId>("pointer");
   const [wandOpen, setWandOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [showSpecial, setShowSpecial] = useState(false);
+  const [showSpecial, setShowSpecial] = useState(true);
   const [eyeOpen, setEyeOpen] = useState(false);
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
-  const [selected, setSelected] = useState("Countdown");
+  const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
+
+  const reloadProject = useCallback(async (id: string) => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const project = await fetchProject(id);
+      setSavedProject(project);
+      setDraftProject(project);
+      setSelectedClipId(project.forma.clips[0]?.id ?? null);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Nie udało się wczytać");
+      setSavedProject(null);
+      setDraftProject(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!projectId) return;
+    void reloadProject(projectId);
+  }, [projectId, reloadProject]);
+
+  useEffect(() => {
+    if (!songScreenOpen) return;
+    void (async () => {
+      try {
+        const lib = await fetchLibrary();
+        setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
+      } catch {
+        setLibraryNames([]);
+      }
+    })();
+  }, [songScreenOpen]);
+
+  const dirty =
+    savedProject !== null &&
+    draftProject !== null &&
+    !projectContentEqual(savedProject, draftProject);
+
+  const viewSpan = useMemo(
+    () => computeFormaViewSpan(draftProject?.forma.clips ?? []),
+    [draftProject?.forma.clips],
+  );
+
+  const barTicks = draftProject
+    ? ticksPerBar(draftProject.defaultMeter, draftProject.ppq)
+    : ticksPerBar(
+        { numerator: 4, denominator: 4 },
+        960,
+      );
+
+  const canvasWidthPx = useMemo(
+    () => computeCanvasWidthPx(viewSpan, barTicks),
+    [viewSpan, barTicks],
+  );
+
+  const barMarks = useMemo(() => {
+    if (!draftProject) return [];
+    return buildBarMarks(
+      viewSpan,
+      draftProject.defaultMeter,
+      draftProject.ppq,
+    );
+  }, [draftProject, viewSpan]);
+
+  const playheadPx = tickToPx(displayTicks, viewSpan, barTicks);
+
+  const selectedClip =
+    draftProject?.forma.clips.find((c) => c.id === selectedClipId) ?? null;
+
+  const meterAtPlayhead = draftProject
+    ? resolveMeterAt(draftProject, displayTicks)
+    : state.timeSignature;
+  const tempoAtPlayhead = draftProject
+    ? resolveTempoAt(draftProject, displayTicks)
+    : state.bpm;
+
+  async function onSave() {
+    if (!projectId || !draftProject) return;
+    setSavePending(true);
+    try {
+      const next = await putProject(projectId, draftProject);
+      setSavedProject(next);
+      setDraftProject(next);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Zapis nie powiódł się");
+    } finally {
+      setSavePending(false);
+    }
+  }
+
+  function onDiscard() {
+    if (!projectId) return;
+    void reloadProject(projectId);
+  }
+
+  function onFormaPencilAt(clientX: number) {
+    const coordRoot = lanesCoordRef.current;
+    if (!coordRoot || !draftProject || tool !== "pencil") return;
+    const ticks = ticksFromPointer(clientX, coordRoot, viewSpan, barTicks);
+    const n =
+      draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
+    setDraftProject(
+      pencilFormaClick(draftProject, ticks, `Sekcja ${n}`),
+    );
+  }
+
+  function onFormaLaneClick(e: React.MouseEvent<HTMLDivElement>) {
+    onFormaPencilAt(e.clientX);
+  }
+
+  if (!projectId) {
+    return (
+      <div className={styles.shell}>
+        <p className={styles.muted}>Brak identyfikatora projektu.</p>
+        <Link to="/admin">Admin</Link>
+      </div>
+    );
+  }
+
+  if (loading && !draftProject) {
+    return (
+      <div className={styles.shell}>
+        <p className={styles.muted}>Wczytywanie projektu…</p>
+      </div>
+    );
+  }
+
+  if (loadError && !draftProject) {
+    return (
+      <div className={styles.shell}>
+        <p className={styles.muted}>{loadError}</p>
+        <Link to="/admin">Admin</Link>
+      </div>
+    );
+  }
 
   function addAudio() {
     const n = audioTracks.length + 1;
@@ -116,23 +290,15 @@ export function TimelineShell() {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <div className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden />
-          <div>
-            <h1 className={styles.title}>StageSync Timeline</h1>
-            <Link className={styles.adminLink} to="/admin">
-              Admin
-            </Link>
-          </div>
-        </div>
+        <ShellWordmark suffix="Timeline" />
 
         <div className={styles.songCluster} role="group" aria-label="Setlista">
-          <IconBtn label="Metadane utworu" disabled>
+          <ShellIconButton label="Metadane utworu" disabled>
             ⓘ
-          </IconBtn>
-          <IconBtn label="Poprzedni utwór setlisty" disabled>
+          </ShellIconButton>
+          <ShellIconButton label="Poprzedni utwór setlisty" disabled>
             <IconChevronLeft />
-          </IconBtn>
+          </ShellIconButton>
           <button
             type="button"
             className={styles.songPicker}
@@ -140,68 +306,64 @@ export function TimelineShell() {
             aria-haspopup="dialog"
             aria-expanded={songScreenOpen}
           >
-            Wybierz utwór
+            {draftProject?.name ?? "Wybierz utwór"}
           </button>
-          <IconBtn label="Następny utwór setlisty" disabled>
+          <ShellIconButton label="Następny utwór setlisty" disabled>
             <IconChevronRight />
-          </IconBtn>
-          <IconBtn label="Auto-setlista" disabled pressed={false}>
+          </ShellIconButton>
+          <ShellIconButton label="Auto-setlista" disabled pressed={false}>
             ▶|
-          </IconBtn>
+          </ShellIconButton>
         </div>
 
         <div className={styles.headerActions}>
-          <IconBtn label="Cofnij" disabled>
+          <ShellIconButton label="Cofnij" disabled>
             <IconUndo />
-          </IconBtn>
-          <IconBtn label="Ponów" disabled>
+          </ShellIconButton>
+          <ShellIconButton label="Ponów" disabled>
             <IconRedo />
-          </IconBtn>
-          <Button variant="ghost" disabled>
+          </ShellIconButton>
+          <Button variant="ghost" disabled={!dirty || savePending} onClick={onDiscard}>
             Odrzuć
           </Button>
-          <Button variant="primary" disabled>
+          <Button
+            variant="primary"
+            disabled={!dirty || savePending}
+            onClick={() => void onSave()}
+          >
             Zapisz
           </Button>
-          <IconBtn
+          <ShellIconButton
             label="Pomoc"
             pressed={helpOpen}
             onClick={() => setHelpOpen(true)}
           >
             <IconHelp />
-          </IconBtn>
-          <IconBtn
+          </ShellIconButton>
+          <ShellIconButton
             label="Wygląd"
             pressed={appearanceOpen}
             onClick={() => setAppearanceOpen((v) => !v)}
           >
             <IconSun />
-          </IconBtn>
-          <IconBtn label="Pełny ekran" disabled>
+          </ShellIconButton>
+          <ShellIconButton label="Pełny ekran" disabled>
             ⛶
-          </IconBtn>
+          </ShellIconButton>
         </div>
       </header>
 
       <div className={styles.toolbar}>
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
           {TOOLS.map(({ id, title, Icon }) => (
-            <button
+            <ShellIconButton
               key={id}
-              type="button"
-              className={[
-                styles.toolBtn,
-                tool === id ? styles.toolActive : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              title={title}
-              aria-label={title}
-              aria-pressed={tool === id}
+              label={title}
+              pressed={tool === id}
               onClick={() => onTool(id)}
             >
               <Icon />
-            </button>
+            </ShellIconButton>
           ))}
           {wandOpen ? (
             <div className={styles.wandMenu} role="menu">
@@ -221,40 +383,44 @@ export function TimelineShell() {
         </div>
 
         <div className={styles.transport} role="group" aria-label="Transport">
-          <IconBtn label="Zatrzymaj" disabled>
+          <ShellIconButton label="Zatrzymaj" disabled>
             <IconStop />
-          </IconBtn>
+          </ShellIconButton>
           <button
             type="button"
             className={styles.playBtn}
             aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
             disabled={commandPending}
-            onClick={() => void (state.playing ? pause() : play())}
+            onClick={() =>
+              void (state.playing
+                ? pause()
+                : play({ projectId }))
+            }
           >
             {state.playing ? <IconPause /> : <IconPlay />}
           </button>
-          <IconBtn label="Pętla" disabled pressed={false}>
+          <ShellIconButton label="Pętla" disabled pressed={false}>
             ↻
-          </IconBtn>
+          </ShellIconButton>
           <span className={styles.bbt} aria-live="polite">
             {toDisplayBar(bbt.bar)}.{bbt.beat}
           </span>
           <button type="button" className={styles.metaBtn} disabled title="Tempo">
-            {state.bpm} BPM
+            {tempoAtPlayhead} BPM
           </button>
           <span className={styles.metaRead}>
-            {state.timeSignature.numerator}/{state.timeSignature.denominator}
+            {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
           </span>
           <span className={styles.metaRead}>—</span>
-          <IconBtn label="Metronom" disabled pressed={false}>
+          <ShellIconButton label="Metronom" disabled pressed={false}>
             ♪
-          </IconBtn>
-          <IconBtn label="Podążaj za wskaźnikiem" disabled pressed={false}>
+          </ShellIconButton>
+          <ShellIconButton label="Podążaj za wskaźnikiem" disabled pressed={false}>
             ◎
-          </IconBtn>
+          </ShellIconButton>
         </div>
 
-        <span className={styles.dirty} hidden>
+        <span className={styles.dirty} hidden={!dirty}>
           Niezapisane zmiany
         </span>
       </div>
@@ -318,63 +484,88 @@ export function TimelineShell() {
         </aside>
 
         <div className={styles.canvas} aria-label="Canvas">
-          <div className={styles.ruler}>
-            {Array.from({ length: 12 }, (_, i) => (
-              <span key={i}>{i === 0 ? "CD" : i}</span>
-            ))}
-          </div>
-          <div className={styles.lanes}>
-            <div className={styles.playhead} aria-hidden />
-            <Lane>
-              <Clip
-                name="Countdown"
-                locked
-                selected={selected === "Countdown"}
-                onSelect={setSelected}
-              />
-              <Clip
-                name="Intro"
-                selected={selected === "Intro"}
-                onSelect={setSelected}
-              />
-            </Lane>
-            <Lane>
-              <Clip
-                name="Waiting on…"
-                selected={selected === "Waiting on…"}
-                onSelect={setSelected}
-              />
-            </Lane>
-            <Lane>
-              {["Am", "F", "C"].map((c) => (
-                <Clip
-                  key={c}
-                  name={c}
-                  selected={selected === c}
-                  onSelect={setSelected}
+          <div className={styles.canvasScroll} data-canvas-scroll>
+            <div
+              className={styles.canvasInner}
+              style={{ width: `${canvasWidthPx}px` }}
+            >
+              <div className={styles.ruler} aria-hidden>
+                {barMarks.map((mark) => (
+                  <span
+                    key={mark.ticks}
+                    className={styles.rulerMark}
+                    style={{
+                      left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
+                    }}
+                  >
+                    {mark.label}
+                  </span>
+                ))}
+              </div>
+              <div className={styles.lanes} ref={lanesCoordRef}>
+                <div className={styles.barGrid} aria-hidden>
+                  {barMarks.map((mark) => (
+                    <span
+                      key={`grid-${mark.ticks}`}
+                      className={styles.barLine}
+                      style={{
+                        left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
+                      }}
+                    />
+                  ))}
+                </div>
+                <div
+                  className={styles.playhead}
+                  style={{ left: `${playheadPx}px` }}
+                  aria-hidden
                 />
-              ))}
+                <div
+                  className={[
+                    styles.lane,
+                    styles.formaLane,
+                    tool === "pencil" ? styles.formaLanePencil : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={onFormaLaneClick}
+                  role="presentation"
+                >
+                  {draftProject?.forma.clips.map((clip) => (
+                    <FormaClipButton
+                      key={clip.id}
+                      clip={clip}
+                      selected={selectedClipId === clip.id}
+                      style={clipStylePx(clip, viewSpan, barTicks)}
+                      pencilActive={tool === "pencil"}
+                      onSelect={setSelectedClipId}
+                      onPencilAt={(clientX) => onFormaPencilAt(clientX)}
+                    />
+                  ))}
+                </div>
+            <Lane muted>
+              <span className={styles.muted}>Tekst — OUT α3</span>
             </Lane>
-            <Lane>
-              <Clip
-                name="Fill → verse"
-                selected={selected === "Fill → verse"}
-                onSelect={setSelected}
-              />
+            <Lane muted>
+              <span className={styles.muted}>Akordy — OUT α3</span>
+            </Lane>
+            <Lane muted>
+              <span className={styles.muted}>Cue — OUT α3</span>
             </Lane>
             {showSpecial ? (
               <>
-                <Lane>
-                  <Clip name="118" selected={selected === "118"} onSelect={setSelected} />
+                <Lane muted>
+                  <span className={styles.muted}>
+                    Tempo {tempoAtPlayhead} (read-only)
+                  </span>
                 </Lane>
-                <Lane>
-                  <Clip name="Am" selected={false} onSelect={setSelected} />
+                <Lane muted>
+                  <span className={styles.muted}>Tonacja — OUT α3</span>
                 </Lane>
-                <Lane>
-                  <Clip name="4/4" selected={false} onSelect={setSelected} />
-                </Lane>
-                <Lane>
-                  <Clip name="map" selected={false} onSelect={setSelected} />
+                <Lane muted>
+                  <span className={styles.muted}>
+                    Metrum {meterAtPlayhead.numerator}/
+                    {meterAtPlayhead.denominator} (read-only)
+                  </span>
                 </Lane>
               </>
             ) : null}
@@ -385,12 +576,14 @@ export function TimelineShell() {
                 <Lane key={t.id}>
                   <Clip
                     name={`${t.name} clip`}
-                    selected={selected === `${t.name} clip`}
-                    onSelect={setSelected}
+                    selected={false}
+                    onSelect={() => undefined}
                   />
                 </Lane>
               ))
             )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -398,31 +591,33 @@ export function TimelineShell() {
           <aside className={styles.inspector} aria-label="Właściwości">
             <div className={styles.inspHead}>
               <h2 className={styles.inspTitle}>Właściwości</h2>
-              <IconBtn
+              <ShellIconButton
                 label="Ukryj właściwości"
                 onClick={() => setInspectorOpen(false)}
               >
                 ×
-              </IconBtn>
+              </ShellIconButton>
             </div>
             <p className={styles.inspBody}>
-              {selected === "Countdown" ? (
+              {selectedClip ? (
                 <>
-                  <strong>Countdown</strong> — zablokowany; ustaw długość (pre-roll
-                  ≤ 0 w v5). Pole długości:
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    defaultValue={2}
-                    disabled
-                    aria-label="Długość Countdown (takty)"
-                  />
+                  <strong>{selectedClip.name}</strong>
+                  {selectedClip.kind === "countdown" ? (
+                    <>
+                      {" "}
+                      — zablokowany; długość{" "}
+                      {selectedClip.lengthTicks} ticks (pre-roll ≤ 0).
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      — start {selectedClip.startTicks}, długość{" "}
+                      {selectedClip.lengthTicks} ticks.
+                    </>
+                  )}
                 </>
               ) : (
-                <>
-                  Zaznaczenie: <strong>{selected}</strong>. Bindingi draftu —
-                  później.
-                </>
+                "Zaznacz clip na ścieżce Forma."
               )}
             </p>
           </aside>
@@ -438,13 +633,7 @@ export function TimelineShell() {
       </div>
 
       <footer className={styles.status}>
-        <span
-          className={[
-            styles.connDot,
-            wsStatus === "connected" ? styles.connOn : "",
-          ].join(" ")}
-          title={`WS: ${wsStatus}`}
-        />
+        <ConnectionIndicator status={wsStatus} variant="dot" />
         <span className={styles.badge}>MIDI / Timeline</span>
         <div className={styles.zooms} role="group" aria-label="Zoom">
           <label className={styles.zoomLab}>
@@ -473,9 +662,9 @@ export function TimelineShell() {
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
               <h2 id="tl-help-title">Pomoc</h2>
-              <IconBtn label="Zamknij" onClick={() => setHelpOpen(false)}>
+              <ShellIconButton label="Zamknij" onClick={() => setHelpOpen(false)}>
                 ×
-              </IconBtn>
+              </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
               <p>Skróty i opis narzędzi — treść jak w v4 (statyczny shell).</p>
@@ -490,15 +679,13 @@ export function TimelineShell() {
       ) : null}
 
       {appearanceOpen ? (
-        <div className={styles.appearPop} role="dialog" aria-label="Wygląd">
-          <p className={styles.appearTitle}>Wygląd</p>
-          <label className={styles.switchRow}>
-            <input type="checkbox" disabled /> Jasny motyw
-          </label>
-          <label className={styles.switchRow}>
-            <input type="checkbox" disabled /> Wysoki kontrast
-          </label>
-        </div>
+        <SettingsPopover
+          title="Wygląd"
+          placement="fixed-top-right"
+          onClose={() => setAppearanceOpen(false)}
+        >
+          <ShellAppearanceFields />
+        </SettingsPopover>
       ) : null}
 
       {songScreenOpen ? (
@@ -512,63 +699,31 @@ export function TimelineShell() {
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
               <h2 id="song-screen-title">Wybierz utwór</h2>
-              <IconBtn label="Zamknij" onClick={() => setSongScreenOpen(false)}>
+              <ShellIconButton label="Zamknij" onClick={() => setSongScreenOpen(false)}>
                 ×
-              </IconBtn>
+              </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
-              <input
-                className={styles.search}
-                placeholder="Szukaj tytułu, artysty…"
-                disabled
-              />
-              <div className={styles.createRow}>
-                <Button variant="secondary" disabled>
-                  Ze wzoru
-                </Button>
-                <Button variant="secondary" disabled>
-                  Import Ultimate Guitar
-                </Button>
-              </div>
-              <p className={styles.muted}>Lista biblioteki — później.</p>
+              <ul className={styles.songList}>
+                {libraryNames.map((p) => (
+                  <li key={p.id}>
+                    <Link
+                      to={`/timeline/${p.id}`}
+                      onClick={() => setSongScreenOpen(false)}
+                    >
+                      {p.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {libraryNames.length === 0 ? (
+                <p className={styles.muted}>Brak utworów w bibliotece.</p>
+              ) : null}
             </div>
           </div>
         </div>
       ) : null}
     </div>
-  );
-}
-
-function IconBtn({
-  label,
-  children,
-  disabled,
-  pressed,
-  onClick,
-}: {
-  label: string;
-  children: ReactNode;
-  disabled?: boolean;
-  pressed?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className={[
-        styles.iconBtn,
-        pressed ? styles.iconBtnOn : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      aria-label={label}
-      title={label}
-      aria-pressed={pressed}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -589,8 +744,61 @@ function DockLabel({
   );
 }
 
-function Lane({ children }: { children: ReactNode }) {
-  return <div className={styles.lane}>{children}</div>;
+function Lane({
+  children,
+  muted,
+}: {
+  children: ReactNode;
+  muted?: boolean;
+}) {
+  return (
+    <div className={[styles.lane, muted ? styles.laneMuted : ""].join(" ")}>
+      {children}
+    </div>
+  );
+}
+
+function FormaClipButton({
+  clip,
+  selected,
+  style,
+  pencilActive,
+  onSelect,
+  onPencilAt,
+}: {
+  clip: FormaClip;
+  selected: boolean;
+  style: { left: string; width: string };
+  pencilActive: boolean;
+  onSelect: (id: string) => void;
+  onPencilAt: (clientX: number) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={[
+        styles.clip,
+        styles.formaClip,
+        selected ? styles.clipOn : "",
+        clip.kind === "countdown" ? styles.clipLocked : "",
+        pencilActive ? styles.formaClipPencil : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={style}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (pencilActive) {
+          onPencilAt(e.clientX);
+          return;
+        }
+        onSelect(clip.id);
+      }}
+    >
+      {clip.kind === "countdown" ? "🔒 " : ""}
+      {clip.name}
+    </button>
+  );
 }
 
 function Clip({

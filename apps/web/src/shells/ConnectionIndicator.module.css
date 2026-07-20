@@ -1,0 +1,21 @@
+.label {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-danger);
+  white-space: nowrap;
+}
+
+.label.on {
+  color: var(--ss-color-primary);
+}
+
+.dot {
+  width: var(--ss-space-2);
+  height: var(--ss-space-2);
+  border-radius: 50%;
+  background: var(--ss-color-danger);
+  flex-shrink: 0;
+}
+
+.dot.on {
+  background: var(--ss-color-primary);
+}

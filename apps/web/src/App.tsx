@@ -11,7 +11,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<ClientShell />} />
           <Route path="/admin" element={<AdminShell />} />
-          <Route path="/timeline" element={<TimelineShell />} />
+          <Route path="/timeline/:projectId" element={<TimelineShell />} />
+          <Route path="/timeline" element={<Navigate to="/admin" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -19,37 +19,6 @@
   background: var(--ss-color-surface);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--ss-space-2);
-}
-
-.brandMark {
-  width: var(--ss-space-2);
-  height: var(--ss-space-2);
-  border-radius: var(--ss-radius-sharp);
-  background: var(--ss-color-primary);
-}
-
-.title {
-  margin: 0;
-  font-size: var(--ss-text-md);
-  font-weight: var(--ss-font-weight-bold);
-}
-
-.adminLink {
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-  text-decoration: none;
-}
-
-@media (hover: hover) {
-  .adminLink:hover {
-    color: var(--ss-color-primary);
-  }
-}
-
 .songCluster,
 .headerActions,
 .toolBar,
@@ -76,8 +45,6 @@
   cursor: pointer;
 }
 
-.iconBtn,
-.toolBtn,
 .playBtn {
   display: inline-flex;
   align-items: center;
@@ -85,41 +52,16 @@
   width: var(--ss-space-8);
   height: var(--ss-space-8);
   padding: 0;
-  border: 1px solid var(--ss-color-border);
+  border: 1px solid var(--ss-color-primary);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
+  color: var(--ss-color-primary);
   cursor: pointer;
 }
 
-.iconBtn:disabled,
-.toolBtn:disabled,
 .playBtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-@media (hover: hover) {
-  .iconBtn:hover:not(:disabled),
-  .toolBtn:hover:not(:disabled) {
-    transition: background-color var(--ss-transition), border-color var(--ss-transition);
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-  }
-}
-
-.iconBtnOn,
-.toolActive {
-  color: var(--ss-color-text);
-  border-color: var(--ss-color-selected-border);
-  background: var(--ss-color-selected);
-}
-
-.playBtn {
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
-  color: var(--ss-color-primary);
-  border-color: var(--ss-color-primary);
 }
 
 .toolbar {
@@ -287,16 +229,33 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+}
+
+.canvasScroll {
   overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.canvasInner {
+  /* Width set inline from tick span — do not stretch to viewport (misaligns grid). */
+  flex-shrink: 0;
 }
 
 .ruler {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(36px, 1fr));
-  padding: var(--ss-space-1) var(--ss-space-2);
+  position: relative;
+  height: calc(var(--ss-space-6) + var(--ss-space-1));
   border-bottom: 1px solid var(--ss-color-border);
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
+}
+
+.rulerMark {
+  position: absolute;
+  top: var(--ss-space-1);
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .lanes {
@@ -304,14 +263,28 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-1);
-  padding: var(--ss-space-2);
+  padding: var(--ss-space-2) 0;
+}
+
+.barGrid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.barLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--ss-color-border) 65%, transparent);
 }
 
 .playhead {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 18%;
   width: 2px;
   background: var(--ss-color-primary);
   pointer-events: none;
@@ -319,6 +292,8 @@
 }
 
 .lane {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: var(--ss-space-1);
   align-items: center;
@@ -327,6 +302,53 @@
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
+}
+
+.formaLane {
+  position: relative;
+  display: block;
+  min-height: calc(var(--ss-space-10) + var(--ss-space-2));
+  width: 100%;
+  /* Align clip X with bar grid / playhead (same origin as .lanes). */
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.formaLanePencil {
+  cursor: crosshair;
+}
+
+.formaClipPencil {
+  cursor: crosshair;
+}
+
+.laneMuted {
+  opacity: 0.75;
+}
+
+.formaClip {
+  position: absolute;
+  top: var(--ss-space-1);
+  bottom: var(--ss-space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.songList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.songList a {
+  display: block;
+  padding: var(--ss-space-2);
+  color: var(--ss-color-primary);
+  text-decoration: none;
+}
+
+.songList a:hover {
+  text-decoration: underline;
 }
 
 .clip {
@@ -426,17 +448,6 @@
   font-size: var(--ss-text-xs);
 }
 
-.connDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ss-color-disabled-text);
-}
-
-.connOn {
-  background: var(--ss-color-primary);
-}
-
 .badge {
   padding: var(--ss-space-1) var(--ss-space-2);
   border: 1px solid var(--ss-color-border);
@@ -527,35 +538,6 @@
   color: var(--ss-color-text-muted);
 }
 
-.appearPop {
-  position: fixed;
-  top: var(--ss-space-12);
-  right: var(--ss-space-4);
-  z-index: 30;
-  min-width: 12rem;
-  padding: var(--ss-space-3);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-elevated);
-}
-
-.appearTitle {
-  margin: 0 0 var(--ss-space-2);
-  font-weight: var(--ss-font-weight-semibold);
-  font-size: var(--ss-text-sm);
-}
-
-.switchRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ss-space-2);
-  margin: var(--ss-space-1) 0;
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text-muted);
-}
-
-.iconBtn:focus-visible,
-.toolBtn:focus-visible,
 .playBtn:focus-visible,
 .eyeBtn:focus-visible,
 .clip:focus-visible,

@@ -1,15 +1,33 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@stagesync/ui";
-import { ticksToBbt, toDisplayBar, type Library } from "@stagesync/shared";
+import {
+  resolveFormaClipAt,
+  ticksToBbt,
+  toDisplayBar,
+  type Library,
+  type Project,
+} from "@stagesync/shared";
 import {
   createProject,
   deleteProject,
   fetchLibrary,
+  fetchProject,
   updateProject,
 } from "../lib/libraryApi.js";
+import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconSettings, IconSun } from "./icons.js";
+import {
+  connectionStatusLabel,
+} from "./ConnectionIndicator.js";
+import {
+  SettingsPopover,
+  ShellAppearanceFields,
+} from "./SettingsPopover.js";
+import { ShellIconButton } from "./ShellIconButton.js";
+import { ShellSwitchRow } from "./ShellSwitchRow.js";
+import { ShellWordmark } from "./ShellWordmark.js";
 import styles from "./AdminShell.module.css";
 
 type SectionId = "songs" | "set" | "stage" | "files" | "host";
@@ -43,9 +61,34 @@ export function AdminShell() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
 
-  const { state, displayTicks, wsStatus } = useTransport();
+  const { state, displayTicks, wsStatus, play } = useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+
+  const sectionProjectId = state.activeProjectId ?? selectedId;
+  const activeSection = activeProject
+    ? resolveFormaClipAt(activeProject, displayTicks)
+    : null;
+
+  useEffect(() => {
+    if (!sectionProjectId) {
+      setActiveProject(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const project = await fetchProject(sectionProjectId);
+        if (!cancelled) setActiveProject(project);
+      } catch {
+        if (!cancelled) setActiveProject(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sectionProjectId, state.activeProjectId, displayTicks]);
 
   const refreshLibrary = useCallback(async (preferId?: string | null) => {
     const data = await fetchLibrary();
@@ -138,13 +181,7 @@ export function AdminShell() {
     <div className={styles.shell}>
       <div className={styles.chromeWrap}>
         <header className={styles.chrome}>
-          <div className={styles.identity}>
-            <span className={styles.product}>
-              Stage<span className={styles.productMark}>Sync</span>
-            </span>
-            <span className={styles.productRole}>Admin</span>
-            <span className={styles.productVer}>5.0.0-alpha.1</span>
-          </div>
+          <ShellWordmark suffix="Admin" version={APP_VERSION} />
 
           <nav className={styles.sections} aria-label="Sekcje">
             {SECTIONS.map((item) => (
@@ -167,32 +204,29 @@ export function AdminShell() {
 
           <div className={styles.chromeAside}>
             <nav className={styles.appJump} aria-label="Aplikacje">
-              <Link to="/timeline">Timeline</Link>
+              <Link to={selectedId ? `/timeline/${selectedId}` : "#"} aria-disabled={!selectedId}>
+                Timeline
+              </Link>
               <Link to="/">Klient</Link>
             </nav>
-            <button
-              type="button"
-              className={styles.iconBtn}
-              aria-label="Wygląd"
+            <ShellIconButton
+              label="Wygląd"
               aria-expanded={appearanceOpen}
-              title="Wygląd"
               onClick={() => setAppearanceOpen((v) => !v)}
             >
               <IconSun />
-            </button>
+            </ShellIconButton>
           </div>
         </header>
 
         {appearanceOpen ? (
-          <div className={styles.appearPop} role="dialog" aria-label="Wygląd">
-            <p className={styles.appearTitle}>Wygląd</p>
-            <label className={styles.switchRow}>
-              <input type="checkbox" disabled /> Jasny motyw
-            </label>
-            <label className={styles.switchRow}>
-              <input type="checkbox" disabled /> Wysoki kontrast
-            </label>
-          </div>
+          <SettingsPopover
+            title="Wygląd"
+            placement="fixed-top-right"
+            onClose={() => setAppearanceOpen(false)}
+          >
+            <ShellAppearanceFields />
+          </SettingsPopover>
         ) : null}
       </div>
 
@@ -216,6 +250,7 @@ export function AdminShell() {
             onCreate={onCreate}
             onDelete={onDelete}
             onRename={onRename}
+            onPlay={(id) => void play({ projectId: id })}
           />
         ) : null}
         {section === "set" ? <SetView /> : null}
@@ -238,7 +273,9 @@ export function AdminShell() {
         </div>
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Sekcja</span>
-          <span className={styles.statusVal}>—</span>
+          <span className={styles.statusVal}>
+            {activeSection?.name ?? "—"}
+          </span>
         </div>
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Pozycja</span>
@@ -255,7 +292,9 @@ export function AdminShell() {
         </div>
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Połączenie</span>
-          <span className={styles.statusVal}>{wsStatus}</span>
+          <span className={styles.statusVal}>
+            {connectionStatusLabel(wsStatus)}
+          </span>
         </div>
         <Button variant="secondary" disabled>
           MIDI / Timeline
@@ -276,9 +315,9 @@ export function AdminShell() {
               disabled
             />
           </label>
-          <label className={styles.switchRow}>
-            <input type="checkbox" defaultChecked disabled /> Edycja zdalna
-          </label>
+          <ShellSwitchRow defaultChecked disabled>
+            Edycja zdalna
+          </ShellSwitchRow>
         </div>
       </footer>
 
@@ -377,6 +416,7 @@ function SongsView({
   onCreate,
   onDelete,
   onRename,
+  onPlay,
 }: {
   library: Library | null;
   libraryError: string | null;
@@ -395,6 +435,7 @@ function SongsView({
   onCreate: () => void;
   onDelete: () => void;
   onRename: () => void;
+  onPlay: (id: string) => void;
 }) {
   const locked = commandPending;
   const nameDirty = Boolean(selected && draftName !== selected.name);
@@ -554,10 +595,21 @@ function SongsView({
                       Otwórz w Timeline
                     </span>
                   ) : (
-                    <Link className={styles.editLink} to="/timeline">
+                    <Link
+                      className={styles.editLink}
+                      to={selectedId ? `/timeline/${selectedId}` : "#"}
+                      aria-disabled={!selectedId}
+                    >
                       Otwórz w Timeline
                     </Link>
                   )}
+                  <Button
+                    variant="secondary"
+                    disabled={!selectedId || commandPending}
+                    onClick={() => selectedId && onPlay(selectedId)}
+                  >
+                    Odtwórz
+                  </Button>
                   <Button
                     variant="ghost"
                     loading={commandPending}
@@ -596,12 +648,8 @@ function SetView() {
         </div>
       </div>
       <div className={styles.cardBody}>
-        <label className={styles.switchRow}>
-          <input type="checkbox" disabled /> Aktywny set
-        </label>
-        <label className={styles.switchRow}>
-          <input type="checkbox" disabled /> Auto z biblioteki
-        </label>
+        <ShellSwitchRow disabled>Aktywny set</ShellSwitchRow>
+        <ShellSwitchRow disabled>Auto z biblioteki</ShellSwitchRow>
         <div className={styles.actions}>
           <Button variant="secondary" disabled>
             Dodaj zaznaczone
@@ -766,7 +814,7 @@ function HostView({
         </div>
         <div className={styles.cardBody}>
           <p>
-            Wersja <strong>5.0.0-alpha.1</strong>
+            Wersja <strong>{APP_VERSION}</strong>
           </p>
           <p className={styles.muted}>
             Aktualizacje przez Docker (bump tagu) — bez Apply z UI.
@@ -817,9 +865,9 @@ function Modal({
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
           <h2>{title}</h2>
-          <button type="button" className={styles.iconBtn} onClick={onClose}>
+          <ShellIconButton label="Zamknij" onClick={onClose}>
             ×
-          </button>
+          </ShellIconButton>
         </div>
         {children}
       </div>

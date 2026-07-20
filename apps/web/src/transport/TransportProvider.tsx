@@ -120,6 +120,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
               bpm: msg.bpm,
               timeSignature: msg.timeSignature,
               ppq: msg.ppq,
+              activeProjectId: msg.activeProjectId ?? null,
             },
             performance.now(),
           );
