@@ -13,7 +13,9 @@
 - **Docs / chore / drobne poprawki** — wolno commitować i pushować prosto na `main`.
 - **Zadania produktowe z [TODO](docs/TODO.md)** (CRUD, transport, MIDI, …) — tylko krótkie gałęzie `feat/<nazwa>` (ew. `fix/…`) → **Pull Request** → merge do `main`.
 - **Bez** Git Flow: nie używamy `develop` ani `release/*`.
-- Branch protection + wymagany CI — gdy pojawi się workflow CI z TODO.
+- CI: workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) na `push` /
+  PR do `main`. Wymaganie zielonego CI przy merge (branch protection) —
+  konfiguracja w ustawieniach repozytorium, nie w kodzie.
 
 ## Commity
 

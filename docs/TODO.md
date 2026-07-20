@@ -14,7 +14,6 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
 - [ ] Migrator legacy 4.x → v5
       (ACL → [ADR 0005](./adr/0005-domain-axioms.md))
 - [ ] Docker Compose pod lokalny stack ([ADR 0004](./adr/0004-updates-docker.md))
-- [ ] CI (lint, test, build) w GitHub Actions
 - [ ] Auth / multi-user (jeśli produkt tego wymaga)
 - [ ] **Przed `5.0.0`:** polish UI (typografia, proporcje okien/kart, gęstość
       toolbarów, copy) na żywych kontrolkach — Admin / Client / Timeline —

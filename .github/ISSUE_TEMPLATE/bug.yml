@@ -1,0 +1,42 @@
+name: Błąd
+description: Zgłoszenie błędu w StageSync v5
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Opisz problem możliwie precyzyjnie. Nie wklejaj tu tajnych danych ani exploitów —
+        podatności → [SECURITY.md](../../SECURITY.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: Co się stało?
+      description: Oczekiwane vs faktyczne zachowanie.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Kroki reprodukcji
+      placeholder: |
+        1. …
+        2. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Wersja
+      description: Pole version w package.json lub tag.
+      placeholder: 5.0.0-alpha.1
+  - type: textarea
+    id: env
+    attributes:
+      label: Środowisko
+      description: OS, przeglądarka / Node, web vs server.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logi / zrzuty
+      description: Fragmenty logów (bez sekretów).
