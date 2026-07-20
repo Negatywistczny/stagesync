@@ -15,6 +15,19 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - ADR [0008](docs/adr/0008-timeline-clip-editing.md) — edycja klipów Timeline (Forma α7, audio β1, Smart Tool, no overlap).
 - ADR [0007](docs/adr/0007-snap-grid.md) — uzupełnienie: Cmd/Ctrl = chwilowy snap off.
 
+## [5.0.0-alpha.5] - 2026-07-20
+
+### Dodano
+
+- **Client karaoke:** rola Tekst z live kontekstem projektu (sekcja Formy, BBT, tempo/metrum @ transport); placeholder braku linii wokalu (`KaraokePane`, `clientKaraoke.ts`).
+- **Client shell:** `useActiveProject`, `DrumsPane`; ikony kart ról na ekranie welcome (parity v4).
+- **Timeline:** tokeny warstw `--ss-z-*`; locator (bursztynowy) + playhead MIDI (cyjan) na linijce w stylu v4.
+
+### Naprawiono
+
+- Timeline: warstwy z-index (playhead nad clipami); eye w ruler dock (bez pustego wiersza ścieżki); menu widoczności przez portal (bez clipu scroll).
+- Timeline: przeciąganie locatora po linijce; typografia numerów taktów (`tabular-nums`, semibold).
+
 ## [5.0.0-alpha.4] - 2026-07-20
 
 ### Dodano
@@ -137,7 +150,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
 - Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.4...HEAD
+[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.5...HEAD
+[5.0.0-alpha.5]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.4...v5.0.0-alpha.5
 [5.0.0-alpha.4]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.3...v5.0.0-alpha.4
 [5.0.0-alpha.3]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3
 [5.0.0-alpha.2]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2

@@ -354,15 +354,28 @@ export function TimelineShell() {
   }
 
   function setLocatorFromClientX(clientX: number) {
+    if (state.playing) return;
     const coordRoot = markerOverlayRef.current ?? lanesCoordRef.current;
     if (!coordRoot || !draftProject) return;
     const raw = ticksFromPointer(clientX, coordRoot, viewSpan, barTicks);
     setLocatorTicks(snapEditTicks(draftProject, raw));
   }
 
-  function onRulerPointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.button !== 0) return;
+  function onLocatorPointerDown(e: React.PointerEvent<HTMLElement>) {
+    if (e.button !== 0 || state.playing) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
     setLocatorFromClientX(e.clientX);
+  }
+
+  function onLocatorPointerMove(e: React.PointerEvent<HTMLElement>) {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    setLocatorFromClientX(e.clientX);
+  }
+
+  function onLocatorPointerUp(e: React.PointerEvent<HTMLElement>) {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   }
 
   function toggleTrack(id: CoreTrackId) {
@@ -660,9 +673,10 @@ export function TimelineShell() {
                     tabIndex={-1}
                     onPointerDown={(e) => {
                       e.stopPropagation();
-                      if (e.button !== 0) return;
-                      setLocatorFromClientX(e.clientX);
+                      onLocatorPointerDown(e);
                     }}
+                    onPointerMove={onLocatorPointerMove}
+                    onPointerUp={onLocatorPointerUp}
                   >
                     <span className={styles.locatorLabel}>{locatorLabel}</span>
                   </div>
@@ -684,7 +698,9 @@ export function TimelineShell() {
                   </div>
                   <div
                     className={styles.ruler}
-                    onPointerDown={onRulerPointerDown}
+                    onPointerDown={onLocatorPointerDown}
+                    onPointerMove={onLocatorPointerMove}
+                    onPointerUp={onLocatorPointerUp}
                   >
                     {barMarks.map((mark) => (
                       <span

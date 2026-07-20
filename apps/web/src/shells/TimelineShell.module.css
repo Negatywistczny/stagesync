@@ -241,7 +241,7 @@
   left: 50%;
   transform: translateX(6px);
   font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: var(--ss-font-weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--ss-color-primary);
   white-space: nowrap;
@@ -282,6 +282,8 @@
   top: var(--ss-space-1);
   transform: translateX(-50%);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ss-font-weight-semibold);
 }
 
 .trackRows {

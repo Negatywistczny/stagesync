@@ -122,6 +122,11 @@
   cursor: pointer;
 }
 
+.roleIcon {
+  font-size: var(--ss-text-xl);
+  line-height: var(--ss-leading-compact);
+}
+
 .roleTile span {
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
@@ -177,6 +182,50 @@
   margin: 0 0 var(--ss-space-2);
   font-size: var(--ss-text-md);
   font-weight: var(--ss-font-weight-semibold);
+}
+
+.karaokePane {
+  padding: var(--ss-space-3);
+}
+
+.karaokeTitle {
+  margin: 0 0 var(--ss-space-2);
+  font-size: var(--ss-text-lg);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.karaokeMeta {
+  margin: 0 0 var(--ss-space-1);
+  font-size: var(--ss-text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ss-color-text-muted);
+}
+
+.karaokePlaceholder {
+  margin-top: var(--ss-space-4);
+  padding: var(--ss-space-3);
+  border: 1px dashed var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-surface) 80%, transparent);
+}
+
+.karaokePlaceholderTitle {
+  margin: 0 0 var(--ss-space-2);
+  font-size: var(--ss-text-md);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.karaokeSkeleton {
+  margin: var(--ss-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.karaokeSkeleton li {
+  padding: var(--ss-space-1) 0;
+  border-bottom: 1px solid var(--ss-color-border-muted);
 }
 
 .empty {

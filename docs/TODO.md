@@ -1,11 +1,11 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.5` — historia w [CHANGELOG.md](../CHANGELOG.md).  
+**Stan:** `5.0.0-alpha.6` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poniżej).
 
 Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
-**QA / sign-off α4:** [report-qa-signoff-alpha4.md](./analysis/reports/report-qa-signoff-alpha4.md).
+**QA / sign-off α5:** [report-qa-signoff-alpha5.md](./analysis/reports/report-qa-signoff-alpha5.md).
 
 ## Procedura zamykania etapu
 
@@ -16,29 +16,29 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 3. Zastąp plik **wyłącznie** sekcją alpha.N+1 (nagłówek, link do scope report, must/should/release).
 4. Zaktualizuj `**Stan:**` na górze (`5.0.0-alpha.N+1`).
 
-## Alpha 5 (`5.0.0-alpha.5`)
+## Alpha 6 (`5.0.0-alpha.6`)
 
-Hero: **Client roles poza Formą/`drums`** — co najmniej jedna dodatkowa rola Client z transportem + danymi projektu.  
-Scope: *(przed startem — report-scope-alpha5.md)*.
+Hero: **Admin Live Desk — setlista, scena, pliki**.  
+Scope: *(przed startem — report-scope-alpha6.md)*.
 
 ### Must
 
-- [ ] Client: co najmniej jedna rola poza `drums` działa z transportem i danymi projektu
-- [ ] Scope report alpha.5 przed kodem
+- [ ] Scope report alpha.6 przed kodem
+- [ ] Import audio do projektu (refs w schema v3)
+- [ ] Setlista + pliki w inspectorze (wiring IA v5)
 
 ### Should
 
-- [ ] Client rola `drums` polish (layout roli)
-- [ ] Client welcome: ikony kart ról + chipów tonacji/stróju
 - [ ] Admin: „Teraz” vs `activeProjectId` / Odtwórz UX
 - [ ] Transport UI: Stop, clamp końca, opcjonalnie seek
+- [ ] Client `grid` / `score` shell polish
 
-### OUT α5
+### OUT α6
 
+- Silnik odtwarzania audio → **β1**
 - Edycja geometryczna Forma → **α7**
-- Audio playback → **α6** import, **β1** silnik
-- Zoom UI/H/V, pełna Pomoc → **5.0.0 polish**
+- Pełna partytura OSMD → **α7**
 
-### Release α5
+### Release α6
 
 - [ ] Bump, CHANGELOG, CI, smoke przed tagiem

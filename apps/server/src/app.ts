@@ -10,7 +10,7 @@ import {
   type TransportEngine,
 } from "./transport/engine.js";
 
-const VERSION = process.env.npm_package_version ?? "5.0.0-alpha.4";
+const VERSION = process.env.npm_package_version ?? "5.0.0-alpha.5";
 
 export type CreateAppOptions = {
   /** Override data root (defaults to STAGESYNC_DATA_DIR or repo data/). */

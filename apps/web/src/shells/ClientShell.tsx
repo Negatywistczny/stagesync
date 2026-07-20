@@ -1,16 +1,13 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Button } from "@stagesync/ui";
-import {
-  resolveFormaClipAt,
-  ticksToBbt,
-  toDisplayBar,
-  type Project,
-} from "@stagesync/shared";
+import { toDisplayBar, ticksToBbt } from "@stagesync/shared";
 import { APP_VERSION } from "../lib/appVersion.js";
-import { fetchProject } from "../lib/libraryApi.js";
+import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
+import { DrumsPane } from "./client/DrumsPane.js";
+import { KaraokePane } from "./client/KaraokePane.js";
 import { IconSettings } from "./icons.js";
 import {
   SettingsPopover,
@@ -23,11 +20,31 @@ import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
 
-const ROLES: { id: RoleId; label: string; blurb: string }[] = [
-  { id: "karaoke", label: "Tekst", blurb: "Karaoke z liniami i beatami" },
-  { id: "grid", label: "Akordy", blurb: "Siatka zsynchronizowana z utworem" },
-  { id: "score", label: "Partytura", blurb: "MusicXML / podświetlenie taktu" },
-  { id: "drums", label: "Forma", blurb: "Sekcje i takty bez tekstu" },
+const ROLES: { id: RoleId; label: string; blurb: string; icon: string }[] = [
+  {
+    id: "karaoke",
+    label: "Tekst",
+    blurb: "Karaoke z liniami i beatami",
+    icon: "🎤",
+  },
+  {
+    id: "grid",
+    label: "Akordy",
+    blurb: "Siatka zsynchronizowana z utworem",
+    icon: "🎹",
+  },
+  {
+    id: "score",
+    label: "Partytura",
+    blurb: "MusicXML / podświetlenie taktu",
+    icon: "🎼",
+  },
+  {
+    id: "drums",
+    label: "Forma",
+    blurb: "Sekcje i takty bez tekstu",
+    icon: "🥁",
+  },
 ];
 
 export function ClientShell() {
@@ -39,32 +56,11 @@ export function ClientShell() {
   const [globalSettings, setGlobalSettings] = useState(false);
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
   const { state, displayTicks, wsStatus } = useTransport();
-  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+  const { activeProject, loading: projectLoading } = useActiveProject(
+    state.activeProjectId,
+  );
 
-  useEffect(() => {
-    const id = state.activeProjectId;
-    if (!id) {
-      setActiveProject(null);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        const project = await fetchProject(id);
-        if (!cancelled) setActiveProject(project);
-      } catch {
-        if (!cancelled) setActiveProject(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [state.activeProjectId]);
-
-  const activeSection = activeProject
-    ? resolveFormaClipAt(activeProject, displayTicks)
-    : null;
   const songTitle = activeProject?.name ?? "Brak utworu";
 
   function toggleRole(id: RoleId) {
@@ -96,7 +92,7 @@ export function ClientShell() {
     wsStatus,
     started,
     songTitle,
-    bbt,
+    bbt: headerBbt,
     globalSettingsOpen: globalSettings,
     onToggleGlobalSettings: toggleGlobalSettings,
     onCloseGlobalSettings: () => setGlobalSettings(false),
@@ -162,6 +158,9 @@ export function ClientShell() {
                   aria-pressed={on}
                   onClick={() => toggleRole(r.id)}
                 >
+                  <span className={styles.roleIcon} aria-hidden>
+                    {r.icon}
+                  </span>
                   <strong>{r.label}</strong>
                   <span>{r.blurb}</span>
                 </button>
@@ -196,7 +195,6 @@ export function ClientShell() {
       >
         {picked.map((id) => {
           const role = ROLES.find((r) => r.id === id)!;
-          const isDrums = id === "drums";
           return (
             <section key={id} className={styles.rolePane} aria-label={role.label}>
               <div className={styles.rolePaneHead}>
@@ -221,16 +219,25 @@ export function ClientShell() {
                   ) : null}
                 </SettingsPopoverAnchor>
               </div>
-              {isDrums && activeProject ? (
-                <div className={styles.formaPane}>
-                  <p className={styles.formaTitle}>{activeProject.name}</p>
-                  <p className={styles.formaSection}>
-                    {activeSection?.name ?? "—"}
+              {id === "drums" ? (
+                activeProject ? (
+                  <DrumsPane project={activeProject} displayTicks={displayTicks} />
+                ) : (
+                  <p className={styles.empty}>
+                    {state.activeProjectId
+                      ? projectLoading
+                        ? "Wczytywanie utworu…"
+                        : "Nie udało się wczytać utworu."
+                      : "Oczekiwanie na utwór…"}
                   </p>
-                  <p className={styles.muted}>
-                    takt {toDisplayBar(bbt.bar)}.{bbt.beat}
-                  </p>
-                </div>
+                )
+              ) : id === "karaoke" ? (
+                <KaraokePane
+                  project={activeProject}
+                  displayTicks={displayTicks}
+                  loading={projectLoading}
+                  hasActiveProjectId={Boolean(state.activeProjectId)}
+                />
               ) : (
                 <p className={styles.empty}>Oczekiwanie na utwór…</p>
               )}
