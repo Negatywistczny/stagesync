@@ -30,8 +30,9 @@ Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` — ruleset
 - [x] **Require status checks to pass before merging**
 - [x] Status check: `lint · types · test · build` (job w
       `continuous-integration.yml`)
-- [x] **Nie** wymagaj „Require a pull request before merging” — docs/chore
-      wolno pushować prosto na `main`
+- [x] **Nie** wymagaj „Require a pull request before merging”
+- [x] Bypass: rola **Admin** (`always`) — docs/chore można pushować prosto
+      na `main` (ruleset inaczej blokuje też bezpośredni push bez checka)
 
 Konfiguracja w GitHub UI / API — nie w kodzie repozytorium.
 
