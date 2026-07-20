@@ -1,14 +1,14 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.2` — historia w [CHANGELOG.md](../CHANGELOG.md).  
+**Stan:** `5.0.0-alpha.3` — historia w [CHANGELOG.md](../CHANGELOG.md).  
 Ten plik: **tylko bieżący etap** (po tagu release → procedura zamykania poniżej).
 
-Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Scope następnej alfy →
-`docs/analysis/reports/report-scope-alphaN.md` przed kodem.
+Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Scope bieżącego etapu →
+[report-scope-alpha4.md](./analysis/reports/report-scope-alpha4.md) (przed kodem α4).
 
-Scope i plan α3: [report-scope-alpha3.md](./analysis/reports/report-scope-alpha3.md),
-[report-implementation-plan-alpha3.md](./analysis/reports/report-implementation-plan-alpha3.md).
-Audyt kodu: [report-overnight-audit.md](./analysis/reports/report-overnight-audit.md).
+**QA / sign-off α3 (przed tagiem):** [report-qa-signoff-alpha3.md](./analysis/reports/report-qa-signoff-alpha3.md).
+
+Plan implementacji α4: [report-implementation-plan-alpha4.md](./analysis/reports/report-implementation-plan-alpha4.md).
 
 ## Procedura zamykania etapu
 
@@ -22,43 +22,45 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 **Pull-forward:** drobne zadania z kolejnego etapu (alpha.N+1) można wciągnąć do
 bieżącego TODO bez zmiany numeracji w ROADMAP — odnotuj w scope report bieżącej alfy.
 
-## Alpha 3 (`5.0.0-alpha.3`)
+## Alpha 4 (`5.0.0-alpha.4`)
 
-Wąski pion treści w ticks — **nie** pełna parity v4. Szczegóły OUT: ROADMAP.
+Hero: **Timeline layout + operacyjne domknięcie Formy** (nie parity v4).  
+Dług UI po α3: [report-scope-alpha4.md](./analysis/reports/report-scope-alpha4.md) § „Kontekst”.
 
-### Stabilność (audyt — przed / równolegle z α3)
+### Must (layout — pierwszy PR)
 
-- [ ] Transport `play()`: `samplePosition()` przy starych bpm/meter, potem mutate +
-      reanchor (H1 — skok pozycji mid-play)
-- [ ] Transport `play()`: walidacja całego body **przed** mutacją stanu; BPM
-      `.finite()`; błędne metrum → 400 bez zmiany SSOT (H5)
-- [ ] `ProjectIdSchema` (UUID) + containment ścieżki przed `join` w storage (H3)
-- [ ] Mutex / serializacja RMW na `library.json` (create / update / delete) (H2)
-- [ ] Spójność create/delete: brak sierot projekt↔biblioteka (H4)
+- [ ] `feat/timeline-track-grid` — wspólna siatka nagłówek ścieżki ↔ lane; brak rozjeżdżania przy resize
+- [ ] Eye menu: ukrywanie **pojedynczych** śladów (min. Treść vs Specjalne; Forma zawsze on)
+- [ ] Kolejność lane’ów jak v4: **Tempo / Tonacja / Metrum / Kotwice nad** Formą/Tekstem/Akordami/Cue
 
-### Must (produkt α3)
+### Must (produkt α4)
 
-- [ ] `feat/project-schema-v2` — ProjectSchema v2 + `.strict()`; `forma.clips` +
-      `tempoMap` / `meterMap`; seed Countdown **−7680** (2 takty @ PPQ 960);
-      auto-upgrade v1→v2; `resolveFormaClipAt`; test unknown keys → fail
-- [ ] `feat/project-content-api` — GET/PUT pełny dokument `project.json`
-- [ ] `feat/timeline-project-route` — `/timeline/:projectId`; link Admin z
-      `selected.id`
-- [ ] `feat/timeline-forma-pencil` — canvas Formy z GET; pencil; Zapisz → PUT;
-      Odrzuć = reload
-- [ ] `feat/transport-active-project` — `activeProjectId`; play/seek resolve
-      bpm/meter z map + reanchor przy zmianie tempa
-- [ ] Admin „Sekcja” via `resolveFormaClipAt` (status nie `—`)
+- [ ] Lane Tempo/Metrum read-only z `tempoMap` / `meterMap` (render, nie placeholder tekst)
+- [ ] Inspector: rename sekcji + długość Countdown → draft → Zapisz → PUT
+- [ ] Song picker Timeline ← `GET /api/library` (pełny flow, bez mock overlay)
+- [ ] Dirty guard — confirm przy wyjściu z niezapisanym draftem ([QA D-11](./analysis/reports/report-qa-signoff-alpha3.md))
+- [ ] `POST /api/transport/load` w UI — jeśli nie domknięte w α3
 
-### Should (α3 — cut first przy timebox)
+### Should (α4 — cut first przy timebox)
 
-- [ ] Client rola `drums` (Forma): tytuł + aktywna sekcja
-- [ ] `POST /api/transport/load` (jawny load bez play)
-- [ ] Dirty badge Timeline; lane Tempo/Metrum read-only; inspector rename / CD
-      length; song picker z `GET /api/library`
+- [ ] Admin: „Ukryj panel” na krawędzi splitu (nie w toolbarze Utwory)
+- [ ] Admin „Pliki projektu”: empty state zamiast statycznej listy (bez wiring storage — α6)
+- [x] Client nagłówek: jedna linia, spójny przed/po wyborze roli, ustawienia po prawej ([QA D-18](./analysis/reports/report-qa-signoff-alpha3.md))
+- [ ] Client rola `drums` polish (layout roli, nie tylko tekst — [QA D-13](./analysis/reports/report-qa-signoff-alpha3.md))
+- [ ] Client welcome: ikony kart ról (🎤/🎹/🎼/🥁 jak v4) + ikony chipów tonacji/stróju w ustawieniach globalnych
+- [ ] Client partytura: ikony w wyborze instrumentu/partii (`score-parts-prompt` jak v4 — emoji z `score-instruments`)
+- [ ] Admin: „Teraz” vs `activeProjectId` / przycisk Odtwórz — UX ([QA D-12](./analysis/reports/report-qa-signoff-alpha3.md))
+- [ ] Transport UI: Stop (seek 0), clamp końca utworu, opcjonalnie seek ([QA D-14–D-16](./analysis/reports/report-qa-signoff-alpha3.md))
+- [ ] Walidacja transportu web + BBT (M1–M3 z audytu)
 
-### Release α3
+### OUT α4 (świadomie później)
 
-- [ ] `docs/api/README.md` — kontrakt PUT full v2 + transport z map
-- [ ] Bump `5.0.0-alpha.3`, CHANGELOG, wersja w shellach = `package.json`
-- [ ] CI zielone; ręczny smoke: create → Timeline → pencil → save → play → sekcja
+- Zoom UI/H/V (ikony, działające suwaki) → **5.0.0 polish**
+- Pełna treść Pomocy Timeline → **5.0.0 polish**
+- Setlista / auto-setlista wiring → **α6**
+- Tap, UG, Różdżka, edycja Tekst/Akordy/Cue → **α7**
+
+### Release α4
+
+- [ ] Bump `5.0.0-alpha.4`, CHANGELOG, wersja w shellach = `package.json`
+- [ ] CI zielone; smoke: picker → eye → edycja → save → play → sekcja

@@ -117,6 +117,19 @@ Nie usuwamy kontrolek z DOM. Alpha.3 **nie** odhacza inventarza do parity — ty
 
 Pozostałe pozycje inventarza: **disabled/local bez blocker status** — OK do późniejszych alph.
 
+## Addendum po release α3 (2026-07-20)
+
+Alpha.3 zamknęła **treść** (must w tabelach powyżej). Review UI wykazało **dług layoutu Timeline** — nie wymieniony jako blocker α3, planowany jako **α4 must #1**:
+
+| Obszar | Status po α3 | Następny etap |
+|--------|--------------|---------------|
+| Track grid (dock ↔ lane) | rozjazd layoutu | [report-scope-alpha4](./report-scope-alpha4.md) |
+| Eye per-ślad | tylko „Specjalne on/off” | α4 |
+| Kolejność specjalnych | pod treścią | α4 (nad treścią, jak v4) |
+| Zoom / Pomoc | placeholder | 5.0.0 |
+| Admin pliki projektu | statyczna lista | α4 empty state / α6 wiring |
+| Set vs Utwory | osobne zakładki (IA v5) | α6 |
+
 ## Blokery alpha.3 (skrót)
 
 1. Schema + GET/PUT treści (dziś tylko `name`).

@@ -3,8 +3,9 @@
 Cienkie API wewnętrzne StageSync v5 — **własny JSON** + Zod na krawędziach,
 nie JSON:API ([ADR 0006](../adr/0006-no-json-api.md)).
 
-Schematy: `@stagesync/shared` (`TransportState`, `TransportPlayBody`,
-`TransportSeekBody`, `TransportTickMessage`, …).  
+Schematy: `@stagesync/shared` (`ProjectSchema` v2, `TransportState`,
+`TransportPlayBody`, `TransportLoadBody`, `TransportSeekBody`,
+`TransportTickMessage`, …).  
 Runtime data: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 
 ## REST
@@ -13,25 +14,32 @@ Runtime data: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 |--------|---------|------|
 | `GET` | `/api/health` | Healthcheck |
 | `GET` | `/api/library` | Indeks biblioteki (seed z template jeśli brak pliku) |
-| `POST` | `/api/projects` | Utwórz projekt (`{ name }`) |
-| `GET` | `/api/projects/:id` | Odczyt `project.json` |
-| `PUT` | `/api/projects/:id` | Aktualizacja (`{ name? }`) |
+| `POST` | `/api/projects` | Utwórz projekt v2 seed (`{ name }`) |
+| `GET` | `/api/projects/:id` | Odczyt pełnego `project.json` (v2; auto-upgrade v1→v2) |
+| `PUT` | `/api/projects/:id` | **Pełny dokument v2** (bez `id`; strict — unknown keys → 400) |
 | `DELETE` | `/api/projects/:id` | Usuń projekt + wpis w indeksie |
 | `GET` | `/api/transport` | Snapshot transportu SSOT |
-| `POST` | `/api/transport/play` | Play (+ opcjonalne `bpm` / `timeSignature`) |
+| `POST` | `/api/transport/play` | Play (+ opcjonalne `projectId`, `bpm`, `timeSignature`) |
+| `POST` | `/api/transport/load` | Ustaw `activeProjectId`, apply mapy, bez play |
 | `POST` | `/api/transport/pause` | Pause |
-| `POST` | `/api/transport/seek` | Seek `{ positionTicks }` |
+| `POST` | `/api/transport/seek` | Seek `{ positionTicks }`; po seek resolve map aktywnego projektu |
 
 Sukces = dokument domenowy (library / project / transport state).  
 Błędy `400` / `404` / `500` → `{ ok: false, error }`.
 
-### Transport (body)
+### Project v2 (`ProjectSchema`)
 
-- **Play** (`TransportPlayBody`): opcjonalne `bpm`, `timeSignature` (`numerator` /
-  `denominator`).
+Pola m.in.: `formatVersion: 2`, `ppq: 960`, `defaultBpm`, `defaultMeter`,
+`forma.clips[]` (ticks), `tempoMap[]`, `meterMap[]`.  
+Create seed: Countdown `startTicks: -7680`, Intro @ `0`.
+
+### Transport (body / snapshot)
+
+- **Play** (`TransportPlayBody`): opcjonalne `projectId`, `bpm`, `timeSignature`.
+- **Load** (`TransportLoadBody`): wymagane `projectId`.
 - **Seek** (`TransportSeekBody`): wymagane `positionTicks` (int).
 - **Snapshot** (`TransportState`): `playing`, `positionTicks`, `bpm`,
-  `timeSignature`, `ppq`.
+  `timeSignature`, `ppq`, `activeProjectId` (`null` gdy brak).
 
 ## WebSocket
 
@@ -43,7 +51,7 @@ Wiadomość (`TransportTickMessage`): pola `TransportState` +
 `type: "transport_tick"` + `serverTimeMs`.
 
 Częstotliwość: ~25 Hz (`TRANSPORT_TICK_INTERVAL_MS` = 40) gdy `playing`;
-snapshot także przy zmianie stanu (play / pause / seek).
+snapshot także przy zmianie stanu (play / pause / seek / load).
 
 Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera
 ([ADR 0002](../adr/0002-timebase-ssot.md)).

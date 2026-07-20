@@ -18,5 +18,8 @@ komponentów: [`packages/ui`](../../packages/ui/).
   hover przez `--ss-transition` (= fast + ease). Bez ad-hoc `0.7s` itd.
 - Ikony shelli: **Lucide** przez [`apps/web/src/shells/icons.tsx`](../../apps/web/src/shells/icons.tsx)
   — bez nowych lokalnych SVG w shellach.
+- Wordmark: [`apps/web/src/shells/ShellWordmark.tsx`](../../apps/web/src/shells/ShellWordmark.tsx)
+  (`Stage` + amber `Sync`; opcjonalnie suffix roli i wersja).
+- Chrome shelli (współdzielone): `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`, `ShellSwitchRow` w [`apps/web/src/shells/`](../../apps/web/src/shells/).
 - Paleta domyślna: black / amber; motywy `data-theme` — osobne zadanie (TODO).
 - Nie twórz równoległych komponentów UI poza `@stagesync/ui`.

@@ -38,3 +38,4 @@ Pełny „model BBT w silniku” bywa mylony z bezpieczeństwem całkowitym: **B
 - Integracja MIDI / zewnętrznego clocka podłącza się do serwera (mapowanie ticków ↔ 24 PPQN / SPP), nie do wygładzacza playhead w kliencie.
 - Migrator 4.x → v5: `startAbs * PPQ` z **jedną** regułą zaokrąglenia na granicy importu + przesunięcie osi (countdown dodatni w 4.x → pre-roll ≤ 0 w v5).
 - Odrzucone jako kanon silnika: same sekundy, same ułamkowe „takty” float bez PPQ, oraz „BBT-only storage” bez stałej siatki ticków.
+- **Kwantyzacja edycji Timeline** (snap bar/beat/subdivision): [ADR 0007](./0007-snap-grid.md) — osobna warstwa od storage ticków.

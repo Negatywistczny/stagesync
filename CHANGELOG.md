@@ -11,10 +11,27 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - Dokumentacja DS: [typography](docs/ui/typography.md) / [spacing](docs/ui/spacing.md);
   tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide;
-  krótki kontrakt [docs/api/](docs/api/README.md) (REST + WS).
+  krótki kontrakt [docs/api/](docs/api/README.md) (REST + WS) — rozszerzony w α3.
 - Branch protection na `main`: wymagany status check CI
   (`lint-types-test-build`) przed merge PR — bez wymuszania PR na
   docs/chore ([CONTRIBUTING](CONTRIBUTING.md)).
+
+## [5.0.0-alpha.3] - 2026-07-20
+
+### Dodano
+
+- **ProjectSchema v2** (strict): `forma.clips`, `tempoMap`, `meterMap`, seed Countdown
+  −7680; resolvery `resolveTempoAt` / `resolveMeterAt` / `resolveFormaClipAt`; auto-upgrade v1→v2.
+- **API treści:** GET/PUT pełny `project.json`; transport z `activeProjectId`, play/seek z map
+  projektu; `POST /api/transport/load`.
+- **Timeline α3:** route `/timeline/:projectId`, Forma z danych, pencil, Zapisz/Odrzuć;
+  song picker z biblioteki; read-only lane Tempo/Metrum.
+- **Admin / Client:** link Timeline z wybranym id; status „Sekcja”; rola Client `drums` (Forma).
+- **Chrome shelli:** wspólny `ShellWordmark`; `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`;
+  Client — jednolinijkowy nagłówek, popovery ustawień (v4-style).
+- **Snap grid (faza 1):** `quantizeTicks` @ shared, domyślnie takt; ADR [0007](docs/adr/0007-snap-grid.md).
+- **Stabilność storage/transport:** H1/H5 engine, H2–H4 library CRUD, `ProjectIdSchema` (UUID).
+- Dokumentacja: [docs/api/](docs/api/README.md) (PUT v2 + transport z map).
 
 ## [5.0.0-alpha.2] - 2026-07-20
 

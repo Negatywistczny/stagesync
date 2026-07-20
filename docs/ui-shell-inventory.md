@@ -13,6 +13,19 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 | − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
 | React + CSS Modules + `--ss-*` | Stack v5 |
+| Admin: Utwory · Set · Scena · Pliki · Host (osobne sekcje) | IA v5; Set ≠ biblioteka — wiring setu α6 |
+| Timeline α3: treść Formy wired, **layout track grid niedokończony** | Dług UI → **α4 must** ([report-scope-alpha4](../analysis/reports/report-scope-alpha4.md)) |
+
+## Timeline — wymagania layoutu (parity v4, α4+)
+
+**Nie** wchodzi w inventarz kontrolek — to kontrakt **układu** obowiązujący od α4:
+
+1. **Jedna siatka wierszy:** nagłówek ścieżki (dock) i lane canvas w **tym samym wierszu** (zsynchronizowana wysokość).
+2. **Kolejność pionowa (od góry):** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue → Audio (specjalne domyślnie ukryte eye).
+3. **Eye menu:** ukrywanie **pojedynczych** śladów (min. grupa Treść vs Specjalne); Forma zawsze widoczna.
+4. **Responsywność:** węższe okno nie rozdziela nagłówków od lane’ów (brak „pływania” etykiet osobno od treści).
+
+Placeholdery (disabled, skróty UI/H/V, pomoc-szkielet) = OK do **5.0.0 polish** — patrz scope α4 OUT.
 
 ## Timeline
 
@@ -49,7 +62,8 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 
 ### Canvas / dock / inspector
 
-- [ ] Eye menu ścieżek (Treść / Specjalne)
+- [ ] Eye menu ścieżek (Treść / Specjalne) — **α4:** per-ślad, nie tylko grupa Specjalne
+- [ ] **Layout track grid** (nagłówek ↔ lane) — **α4 must**; patrz sekcja „wymagania layoutu”
 - [ ] Forma z **Countdown** + sekcje (osobne clipy)
 - [ ] Tekst, Akordy (**1 akord = 1 clip**), Cue
 - [ ] Tempo / Tonacja / Metrum / Kotwice (domyślnie ukryte)
@@ -68,6 +82,7 @@ Kontrolki poniżej = inventarz funkcji. Timeline/Client: osobny redesign.
 |--------|-----------|
 | **Chrome** | Brand + wersja; zakładki Utwory · Set · Scena · Pliki · Host; linki Timeline · Klient; Wygląd |
 | **Utwory** | Filtr, sort, filtry ostrzeżeń; lista (PC, tytuł); panel wybranego; XML / Partytura / Timeline / Usuń; eksport; import; wzory; Batch PC |
+| **Wybrany (inspector)** | Nazwa, akcje, **Pliki projektu** — α6 wiring; do α4: empty state zamiast fake listy |
 | **Set** | Aktywny, auto, dodaj zaznaczone, zapisz, wyczyść, wiersze |
 | **Scena** | Komunikat (tekst, role, TTL, wyślij, wyczyść); klienci / sieć |
 | **Pliki** | Import / eksport paczki; drop zone; modal |
