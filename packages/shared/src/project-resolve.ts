@@ -1,4 +1,4 @@
-import type { FormaClip, ProjectV3 } from "./schema.js";
+import type { FormaClip, Project } from "./schema.js";
 import type { TimeSignature } from "./time.js";
 
 function lastEventAt<T extends { startTicks: number }>(
@@ -18,7 +18,7 @@ function lastEventAt<T extends { startTicks: number }>(
 }
 
 export function resolveTempoAt(
-  project: ProjectV3,
+  project: Project,
   positionTicks: number,
 ): number {
   const ev = lastEventAt(project.tempoMap, positionTicks);
@@ -26,7 +26,7 @@ export function resolveTempoAt(
 }
 
 export function resolveMeterAt(
-  project: ProjectV3,
+  project: Project,
   positionTicks: number,
 ): TimeSignature {
   const ev = lastEventAt(project.meterMap, positionTicks);
@@ -37,8 +37,14 @@ export function resolveMeterAt(
 }
 
 export function resolveFormaClipAt(
-  project: ProjectV3,
+  project: Project,
   positionTicks: number,
 ): FormaClip | null {
-  return lastEventAt(project.forma.clips, positionTicks);
+  return (
+    project.forma.clips.find(
+      (c) =>
+        positionTicks >= c.startTicks &&
+        positionTicks < c.startTicks + c.lengthTicks,
+    ) ?? null
+  );
 }

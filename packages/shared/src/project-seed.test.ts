@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   createProjectV2Seed,
   createProjectV3Seed,
+  createProjectV4Seed,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
+  upgradeProjectV3ToV4,
 } from "./project-seed.js";
 
 describe("createProjectV2Seed", () => {
@@ -34,6 +36,20 @@ describe("createProjectV3Seed", () => {
   });
 });
 
+describe("createProjectV4Seed", () => {
+  it("includes empty content lanes", () => {
+    const p = createProjectV4Seed(
+      "id-1",
+      "Demo",
+      "2026-07-20T00:00:00.000Z",
+    );
+    expect(p.formatVersion).toBe(4);
+    expect(p.tekst.clips).toEqual([]);
+    expect(p.akordy.clips).toEqual([]);
+    expect(p.cue.clips).toEqual([]);
+  });
+});
+
 describe("upgradeProjectV1ToV2", () => {
   it("preserves id and name from v1", () => {
     const v2 = upgradeProjectV1ToV2({
@@ -55,5 +71,15 @@ describe("upgradeProjectV2ToV3", () => {
     );
     expect(v3.formatVersion).toBe(3);
     expect(v3.assets).toEqual([]);
+  });
+});
+
+describe("upgradeProjectV3ToV4", () => {
+  it("adds empty content lane arrays", () => {
+    const v4 = upgradeProjectV3ToV4(
+      createProjectV3Seed("abc", "Old", "2026-07-19T12:00:00.000Z"),
+    );
+    expect(v4.formatVersion).toBe(4);
+    expect(v4.tekst.clips).toEqual([]);
   });
 });

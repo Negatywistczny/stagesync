@@ -1,6 +1,7 @@
 import {
   DEFAULT_PPQ,
   DEFAULT_SNAP_MODE,
+  insertSpanOverwrite,
   quantizeTicks,
   resolveMeterAt,
   ticksPerBar,
@@ -8,6 +9,7 @@ import {
   toDisplayBar,
   type FormaClip,
   type Project,
+  type SnapMode,
   type TimeSignature,
 } from "@stagesync/shared";
 
@@ -100,9 +102,13 @@ export function buildBarMarks(
   return marks.sort((a, b) => a.ticks - b.ticks);
 }
 
-export function snapEditTicks(project: Project, atTicks: number): number {
+export function snapEditTicks(
+  project: Project,
+  atTicks: number,
+  mode: SnapMode = DEFAULT_SNAP_MODE,
+): number {
   const meter = resolveMeterAt(project, atTicks);
-  return quantizeTicks(atTicks, DEFAULT_SNAP_MODE, {
+  return quantizeTicks(atTicks, mode, {
     meter,
     ppq: project.ppq,
     contentFloorTicks: contentFloorTicks(project.forma.clips),
@@ -150,26 +156,18 @@ export function ticksFromPointer(
 }
 
 /**
- * v4 Forma pencil click: 1 bar at snapped barline, overwrite occupied span.
+ * Forma pencil click: 1 bar at snapped barline, overwrite occupied span.
  * Countdown span is protected; clicks before content floor clamp to floor.
  */
 export function pencilFormaClick(
   project: Project,
   atTicks: number,
   sectionName: string,
+  mode: SnapMode = DEFAULT_SNAP_MODE,
 ): Project {
-  const startTicks = snapEditTicks(project, atTicks);
+  const startTicks = snapEditTicks(project, atTicks, mode);
   const meter = resolveMeterAt(project, startTicks);
   const barTicks = ticksPerBar(meter, project.ppq);
-  const endTicks = startTicks + barTicks;
-
-  const countdown = project.forma.clips.find((c) => c.kind === "countdown");
-  if (countdown) {
-    const cdEnd = countdown.startTicks + countdown.lengthTicks;
-    if (startTicks < cdEnd && endTicks > countdown.startTicks) {
-      return project;
-    }
-  }
 
   const newSection: FormaClip = {
     id: `forma-${crypto.randomUUID()}`,
@@ -179,40 +177,11 @@ export function pencilFormaClick(
     lengthTicks: barTicks,
   };
 
-  const kept: FormaClip[] = [];
-  for (const clip of project.forma.clips) {
-    if (clip.kind === "countdown") {
-      kept.push(clip);
-      continue;
-    }
-
-    const clipEnd = clip.startTicks + clip.lengthTicks;
-
-    if (clipEnd <= startTicks || clip.startTicks >= endTicks) {
-      kept.push(clip);
-      continue;
-    }
-
-    if (clip.startTicks < startTicks) {
-      kept.push({
-        ...clip,
-        lengthTicks: startTicks - clip.startTicks,
-      });
-    }
-
-    if (clipEnd > endTicks) {
-      kept.push({
-        ...clip,
-        id: `forma-${crypto.randomUUID()}`,
-        startTicks: endTicks,
-        lengthTicks: clipEnd - endTicks,
-      });
-    }
-  }
-
-  const clips = [...kept, newSection].sort(
-    (a, b) => a.startTicks - b.startTicks,
-  );
+  const floor = contentFloorTicks(project.forma.clips);
+  const clips = insertSpanOverwrite(project.forma.clips, newSection, {
+    contentFloorTicks: floor,
+  });
+  if (clips === project.forma.clips) return project;
   return { ...project, forma: { clips } };
 }
 

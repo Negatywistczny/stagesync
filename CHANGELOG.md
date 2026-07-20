@@ -7,6 +7,21 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+## [5.0.0-alpha.7] - 2026-07-20
+
+### Dodano
+
+- **Timeline Forma:** pencil drag (zakres taktów), pointer/Smart move + resize brzegów, Delete/Backspace + eraser; transakcyjny `gesturePreview` (commit na pointerup); no-overlap w `@stagesync/shared` (`clip-collision`); Countdown nietykalny; sekcje `startTicks >= 0` ([ADR 0008](docs/adr/0008-timeline-clip-editing.md)).
+- **Smart Tool** w toolbarze; strefy trim/move tylko przy Pointer/Smart — Pencil = exclusive draw.
+- **Snap:** Cmd/Ctrl = chwilowy snap off, ewaluacja `metaKey`/`ctrlKey` na każdym `pointermove` ([ADR 0007](docs/adr/0007-snap-grid.md) faza 3).
+- **Schema v4:** lane’y `tekst` / `akordy` / `cue`; upgrade v3→v4; seed puste tablice.
+- **Lane Tekst MVP:** pencil click, select, Delete, inspector tekst; Client karaoke czyta linię z clipu.
+- Scope + plan + QA: [report-scope-alpha7](docs/analysis/reports/report-scope-alpha7.md); ADR 0008 → Zaakceptowany.
+
+### Zmieniono
+
+- Canonical `Project` = v4; Tap / UG / Różdżka / Scissors / Zoom pozostają disabled (cut α7).
+
 ## [5.0.0-alpha.6] - 2026-07-20
 
 ### Dodano
@@ -157,7 +172,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
 - Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.5...HEAD
+[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.7...HEAD
+[5.0.0-alpha.7]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.6...v5.0.0-alpha.7
+[5.0.0-alpha.6]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.5...v5.0.0-alpha.6
 [5.0.0-alpha.5]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.4...v5.0.0-alpha.5
 [5.0.0-alpha.4]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.3...v5.0.0-alpha.4
 [5.0.0-alpha.3]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3

@@ -24,17 +24,26 @@ import {
   computeCanvasWidthPx,
   computeFormaViewSpan,
   DEFAULT_PX_PER_BAR,
-  pencilFormaClick,
   projectContentEqual,
   snapEditTicks,
   tickToPx,
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
 import {
+  commitGesture,
+  deleteFormaClip,
+  previewFromSession,
+} from "../lib/formaEdit.js";
+import {
   countdownBars,
   renameFormaClip,
   setCountdownBars,
 } from "../lib/formaInspector.js";
+import {
+  deleteTekstClip,
+  pencilTekstClick,
+  setTekstClipText,
+} from "../lib/tekstEdit.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
 import {
@@ -46,6 +55,15 @@ import {
   segmentStylePx,
   tempoMapSegments,
 } from "../lib/mapSegments.js";
+import {
+  cursorForHitZone,
+  hitTestClipZone,
+  toolAllowsClipHitZones,
+  toolIsPencilDraw,
+  type FormaGesturePreview,
+  type FormaGestureSession,
+  type FormaToolId,
+} from "../lib/timelineGesture.js";
 import {
   defaultTrackVisibility,
   isCoreTrackVisible,
@@ -66,6 +84,7 @@ import {
   IconPointer,
   IconRedo,
   IconScissors,
+  IconSmart,
   IconStop,
   IconSun,
   IconTap,
@@ -82,13 +101,14 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./TimelineShell.module.css";
 
-type ToolId = "pointer" | "pencil" | "eraser" | "scissors" | "zoom" | "wand";
+type ToolId = FormaToolId;
 
 const TOOLS: {
   id: ToolId;
   label: string;
   title: string;
   Icon: typeof IconPointer;
+  disabled?: boolean;
 }[] = [
   {
     id: "pointer",
@@ -97,34 +117,43 @@ const TOOLS: {
     Icon: IconPointer,
   },
   {
+    id: "smart",
+    label: "Smart",
+    title: "Smart Tool — strefy move / trim (jak Pointer)",
+    Icon: IconSmart,
+  },
+  {
     id: "pencil",
     label: "Pencil",
-    title: "Pencil — klik: 1 takt; przeciągnij: nadpisz",
+    title: "Pencil — klik: 1 takt; przeciągnij: zakres (nadpisz)",
     Icon: IconPencil,
   },
   {
     id: "eraser",
     label: "Eraser",
-    title: "Eraser — usuń clip / zaznaczenie",
+    title: "Eraser — usuń zaznaczony clip",
     Icon: IconEraser,
   },
   {
     id: "scissors",
     label: "Scissors",
-    title: "Scissors — Forma: podsekcja; Tekst/Akordy: podział",
+    title: "Scissors — OUT α7 (timebox)",
     Icon: IconScissors,
+    disabled: true,
   },
   {
     id: "zoom",
     label: "Zoom",
-    title: "Zoom — przeciągnij prostokąt; klik tła = reset",
+    title: "Zoom — OUT α7",
     Icon: IconZoom,
+    disabled: true,
   },
   {
     id: "wand",
     label: "Różdżka",
-    title: "Różdżka — menu auto-akcji",
+    title: "Różdżka — cut α7 (disabled)",
     Icon: IconWand,
+    disabled: true,
   },
 ];
 
@@ -175,7 +204,17 @@ export function TimelineShell() {
   const [eyeOpen, setEyeOpen] = useState(false);
   const [locatorTicks, setLocatorTicks] = useState(0);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
+  const [selectedTekstClipId, setSelectedTekstClipId] = useState<string | null>(
+    null,
+  );
   const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [gestureSession, setGestureSession] =
+    useState<FormaGestureSession | null>(null);
+  const [gesturePreview, setGesturePreview] =
+    useState<FormaGesturePreview | null>(null);
+  const gestureSessionRef = useRef<FormaGestureSession | null>(null);
+  const gesturePreviewRef = useRef<FormaGesturePreview | null>(null);
+  const draftRef = useRef<Project | null>(null);
 
   const audioTracks: AudioTrack[] = (draftProject?.audioTracks ?? []).map(
     (t) => ({ id: t.id, name: t.name }),
@@ -268,6 +307,54 @@ export function TimelineShell() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [dirty]);
 
+  useEffect(() => {
+    draftRef.current = draftProject;
+  }, [draftProject]);
+
+  useEffect(() => {
+    gestureSessionRef.current = gestureSession;
+  }, [gestureSession]);
+
+  useEffect(() => {
+    gesturePreviewRef.current = gesturePreview;
+  }, [gesturePreview]);
+
+  const deleteSelectedFormaClip = useCallback(() => {
+    const draft = draftRef.current;
+    if (!draft) return;
+    if (selectedTekstClipId) {
+      const next = deleteTekstClip(draft, selectedTekstClipId);
+      setDraftProject(next);
+      setSelectedTekstClipId(null);
+      return;
+    }
+    if (!selectedClipId) return;
+    const clip = draft.forma.clips.find((c) => c.id === selectedClipId);
+    if (!clip || clip.kind === "countdown") return;
+    const next = deleteFormaClip(draft, selectedClipId);
+    setDraftProject(next);
+    setSelectedClipId(null);
+  }, [selectedClipId, selectedTekstClipId]);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      deleteSelectedFormaClip();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [deleteSelectedFormaClip]);
+
   useLayoutEffect(() => {
     if (!eyeOpen) {
       setEyeMenuPos(null);
@@ -353,6 +440,8 @@ export function TimelineShell() {
 
   const selectedClip =
     draftProject?.forma.clips.find((c) => c.id === selectedClipId) ?? null;
+  const selectedTekstClip =
+    draftProject?.tekst.clips.find((c) => c.id === selectedTekstClipId) ?? null;
 
   const meterAtPlayhead = draftProject
     ? resolveMeterAt(draftProject, displayTicks)
@@ -380,19 +469,211 @@ export function TimelineShell() {
     void reloadProject(projectId);
   }
 
-  function onFormaPencilAt(clientX: number) {
+  function rawTicksAtClientX(clientX: number): number | null {
     const coordRoot = lanesCoordRef.current;
-    if (!coordRoot || !draftProject || tool !== "pencil") return;
-    const ticks = ticksFromPointer(clientX, coordRoot, viewSpan, barTicks);
-    const n =
-      draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
-    setDraftProject(
-      pencilFormaClick(draftProject, ticks, `Sekcja ${n}`),
-    );
+    if (!coordRoot || !draftProject) return null;
+    return ticksFromPointer(clientX, coordRoot, viewSpan, barTicks);
   }
 
-  function onFormaLaneClick(e: React.MouseEvent<HTMLDivElement>) {
-    onFormaPencilAt(e.clientX);
+  function beginFormaGesture(session: FormaGestureSession, preview: FormaGesturePreview) {
+    gestureSessionRef.current = session;
+    gesturePreviewRef.current = preview;
+    setGestureSession(session);
+    setGesturePreview(preview);
+  }
+
+  function updateFormaGesturePreview(
+    rawTicks: number,
+    metaKey: boolean,
+    ctrlKey: boolean,
+  ) {
+    const session = gestureSessionRef.current;
+    const draft = draftRef.current;
+    if (!session || !draft) return;
+    const n =
+      draft.forma.clips.filter((c) => c.kind === "section").length + 1;
+    const preview = previewFromSession(
+      draft,
+      session,
+      rawTicks,
+      metaKey,
+      ctrlKey,
+      `Sekcja ${n}`,
+    );
+    gesturePreviewRef.current = preview;
+    setGesturePreview(preview);
+  }
+
+  function endFormaGesture(metaKey: boolean, ctrlKey: boolean) {
+    const session = gestureSessionRef.current;
+    const preview = gesturePreviewRef.current;
+    const draft = draftRef.current;
+    gestureSessionRef.current = null;
+    gesturePreviewRef.current = null;
+    setGestureSession(null);
+    setGesturePreview(null);
+    if (!session || !preview || !draft) return;
+    const next = commitGesture(draft, session, preview, metaKey, ctrlKey);
+    setDraftProject(next);
+    if (session.kind === "pencil-draw") {
+      const created = next.forma.clips.find(
+        (c) =>
+          c.kind === "section" &&
+          c.startTicks === preview.startTicks &&
+          c.lengthTicks === preview.lengthTicks,
+      );
+      if (created) setSelectedClipId(created.id);
+    } else if (session.clipId) {
+      setSelectedClipId(session.clipId);
+    }
+  }
+
+  function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.button !== 0 || !draftProject) return;
+    if (tool === "eraser") {
+      e.preventDefault();
+      deleteSelectedFormaClip();
+      return;
+    }
+    if (!toolIsPencilDraw(tool)) {
+      if (toolAllowsClipHitZones(tool)) {
+        setSelectedClipId(null);
+      }
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    const raw = rawTicksAtClientX(e.clientX);
+    if (raw == null) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const n =
+      draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
+    const session: FormaGestureSession = {
+      kind: "pencil-draw",
+      clipId: null,
+      pointerId: e.pointerId,
+      originTicks: raw,
+      originClipStart: 0,
+      originClipLength: 0,
+    };
+    const preview = previewFromSession(
+      draftProject,
+      session,
+      raw,
+      e.metaKey,
+      e.ctrlKey,
+      `Sekcja ${n}`,
+    );
+    beginFormaGesture(session, preview);
+  }
+
+  function onFormaLanePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!gestureSessionRef.current) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    const raw = rawTicksAtClientX(e.clientX);
+    if (raw == null) return;
+    updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey);
+  }
+
+  function onFormaLanePointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (!gestureSessionRef.current) return;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    endFormaGesture(e.metaKey, e.ctrlKey);
+  }
+
+  function onFormaClipPointerDown(
+    e: React.PointerEvent<HTMLButtonElement>,
+    clip: FormaClip,
+  ) {
+    if (e.button !== 0 || !draftProject) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (tool === "eraser") {
+      if (clip.kind === "countdown") return;
+      setDraftProject(deleteFormaClip(draftProject, clip.id));
+      if (selectedClipId === clip.id) setSelectedClipId(null);
+      return;
+    }
+
+    if (toolIsPencilDraw(tool)) {
+      const raw = rawTicksAtClientX(e.clientX);
+      if (raw == null) return;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      const n =
+        draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
+      const session: FormaGestureSession = {
+        kind: "pencil-draw",
+        clipId: null,
+        pointerId: e.pointerId,
+        originTicks: raw,
+        originClipStart: 0,
+        originClipLength: 0,
+      };
+      const preview = previewFromSession(
+        draftProject,
+        session,
+        raw,
+        e.metaKey,
+        e.ctrlKey,
+        `Sekcja ${n}`,
+      );
+      beginFormaGesture(session, preview);
+      return;
+    }
+
+    if (!toolAllowsClipHitZones(tool)) return;
+
+    setSelectedClipId(clip.id);
+    if (clip.kind === "countdown") return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const localX = e.clientX - rect.left;
+    const zone = hitTestClipZone(localX, rect.width, true);
+    const raw = rawTicksAtClientX(e.clientX);
+    if (raw == null) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+
+    const kind =
+      zone === "start"
+        ? "resize-start"
+        : zone === "end"
+          ? "resize-end"
+          : "move";
+    const session: FormaGestureSession = {
+      kind,
+      clipId: clip.id,
+      pointerId: e.pointerId,
+      originTicks: raw,
+      originClipStart: clip.startTicks,
+      originClipLength: clip.lengthTicks,
+    };
+    const preview = previewFromSession(
+      draftProject,
+      session,
+      raw,
+      e.metaKey,
+      e.ctrlKey,
+    );
+    beginFormaGesture(session, preview);
+  }
+
+  function onFormaClipPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
+    if (!gestureSessionRef.current) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    const raw = rawTicksAtClientX(e.clientX);
+    if (raw == null) return;
+    updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey);
+  }
+
+  function onFormaClipPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
+    if (!gestureSessionRef.current) return;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    endFormaGesture(e.metaKey, e.ctrlKey);
   }
 
   function setLocatorFromClientX(clientX: number) {
@@ -475,6 +756,8 @@ export function TimelineShell() {
   }
 
   function onTool(id: ToolId) {
+    const def = TOOLS.find((t) => t.id === id);
+    if (def?.disabled) return;
     if (id === "wand") {
       setWandOpen((v) => !v);
       setTool("wand");
@@ -528,23 +811,120 @@ export function TimelineShell() {
           <span className={styles.muted}>Kotwice — OUT α4</span>
         );
       case "forma":
-        return draftProject.forma.clips.map((clip) => (
-          <FormaClipButton
-            key={clip.id}
-            clip={clip}
-            selected={selectedClipId === clip.id}
-            style={clipStylePx(clip, viewSpan, barTicks)}
-            pencilActive={tool === "pencil"}
-            onSelect={setSelectedClipId}
-            onPencilAt={(clientX) => onFormaPencilAt(clientX)}
-          />
-        ));
+        return (
+          <>
+            {draftProject.forma.clips.map((clip) => {
+              const previewing =
+                gesturePreview &&
+                gesturePreview.clipId === clip.id &&
+                gesturePreview.kind !== "pencil-draw";
+              const styleClip = previewing
+                ? {
+                    ...clip,
+                    startTicks: gesturePreview.startTicks,
+                    lengthTicks: gesturePreview.lengthTicks,
+                  }
+                : clip;
+              return (
+                <FormaClipButton
+                  key={clip.id}
+                  clip={clip}
+                  selected={selectedClipId === clip.id}
+                  style={clipStylePx(styleClip, viewSpan, barTicks)}
+                  pencilActive={toolIsPencilDraw(tool)}
+                  allowHitZones={toolAllowsClipHitZones(tool)}
+                  dimmed={Boolean(previewing)}
+                  onPointerDown={(e) => onFormaClipPointerDown(e, clip)}
+                  onPointerMove={onFormaClipPointerMove}
+                  onPointerUp={onFormaClipPointerUp}
+                />
+              );
+            })}
+            {gesturePreview?.kind === "pencil-draw" ? (
+              <div
+                className={[styles.clip, styles.formaClip, styles.formaPreview]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={clipStylePx(
+                  {
+                    id: "preview",
+                    name: gesturePreview.name ?? "Sekcja",
+                    kind: "section",
+                    startTicks: gesturePreview.startTicks,
+                    lengthTicks: gesturePreview.lengthTicks,
+                  },
+                  viewSpan,
+                  barTicks,
+                )}
+                aria-hidden
+              >
+                {gesturePreview.name ?? "Sekcja"}
+              </div>
+            ) : null}
+          </>
+        );
       case "tekst":
-        return <span className={styles.muted}>Tekst — OUT α4</span>;
+        return (
+          <>
+            {(draftProject.tekst?.clips ?? []).map((clip) => (
+              <button
+                key={clip.id}
+                type="button"
+                className={[
+                  styles.clip,
+                  styles.formaClip,
+                  selectedTekstClipId === clip.id ? styles.clipOn : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={clipStylePx(
+                  {
+                    id: clip.id,
+                    name: clip.text || "…",
+                    kind: "section",
+                    startTicks: clip.startTicks,
+                    lengthTicks: clip.lengthTicks,
+                  },
+                  viewSpan,
+                  barTicks,
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (toolIsPencilDraw(tool)) {
+                    setDraftProject(
+                      pencilTekstClick(draftProject, ticksFromPointer(
+                        e.clientX,
+                        lanesCoordRef.current!,
+                        viewSpan,
+                        barTicks,
+                      )),
+                    );
+                    return;
+                  }
+                  if (tool === "eraser") {
+                    setDraftProject(deleteTekstClip(draftProject, clip.id));
+                    setSelectedTekstClipId(null);
+                    return;
+                  }
+                  setSelectedClipId(null);
+                  setSelectedTekstClipId(clip.id);
+                }}
+              >
+                {clip.text || "…"}
+              </button>
+            ))}
+          </>
+        );
       case "akordy":
-        return <span className={styles.muted}>Akordy — OUT α4</span>;
+        return (
+          <span className={styles.muted}>
+            Akordy — schema v4 (edycja cut α7)
+          </span>
+        );
       case "cue":
-        return <span className={styles.muted}>Cue — OUT α4</span>;
+        return (
+          <span className={styles.muted}>Cue — schema v4 (edycja cut α7)</span>
+        );
       default:
         return null;
     }
@@ -640,11 +1020,12 @@ export function TimelineShell() {
 
       <div className={styles.toolbar}>
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
-          {TOOLS.map(({ id, title, Icon }) => (
+          {TOOLS.map(({ id, title, Icon, disabled }) => (
             <ShellIconButton
               key={id}
               label={title}
               pressed={tool === id}
+              disabled={disabled}
               onClick={() => onTool(id)}
             >
               <Icon />
@@ -824,11 +1205,56 @@ export function TimelineShell() {
                       ) : null}
                     </div>
                     <div
+                      onPointerDown={
+                        track.id === "forma"
+                          ? onFormaLanePointerDown
+                          : track.id === "tekst"
+                            ? (e) => {
+                                if (e.button !== 0 || !draftProject) return;
+                                if (!toolIsPencilDraw(tool)) {
+                                  if (toolAllowsClipHitZones(tool)) {
+                                    setSelectedTekstClipId(null);
+                                  }
+                                  return;
+                                }
+                                e.preventDefault();
+                                const raw = rawTicksAtClientX(e.clientX);
+                                if (raw == null) return;
+                                const next = pencilTekstClick(
+                                  draftProject,
+                                  raw,
+                                );
+                                setDraftProject(next);
+                                const last =
+                                  next.tekst.clips[next.tekst.clips.length - 1];
+                                if (last) {
+                                  setSelectedClipId(null);
+                                  setSelectedTekstClipId(last.id);
+                                }
+                              }
+                            : undefined
+                      }
+                      onPointerMove={
+                        track.id === "forma"
+                          ? onFormaLanePointerMove
+                          : undefined
+                      }
+                      onPointerUp={
+                        track.id === "forma" ? onFormaLanePointerUp : undefined
+                      }
+                      role={
+                        track.id === "forma" || track.id === "tekst"
+                          ? "presentation"
+                          : undefined
+                      }
                       className={[
                         styles.laneCell,
                         track.group === "special" ? styles.laneCellMuted : "",
                         track.id === "forma" ? styles.formaLaneCell : "",
-                        track.id === "forma" && tool === "pencil"
+                        track.id === "forma" && toolIsPencilDraw(tool)
+                          ? styles.formaLanePencil
+                          : "",
+                        track.id === "tekst" && toolIsPencilDraw(tool)
                           ? styles.formaLanePencil
                           : "",
                         track.id === "tempo" || track.id === "metrum"
@@ -837,10 +1263,6 @@ export function TimelineShell() {
                       ]
                         .filter(Boolean)
                         .join(" ")}
-                      onClick={
-                        track.id === "forma" ? onFormaLaneClick : undefined
-                      }
-                      role={track.id === "forma" ? "presentation" : undefined}
                     >
                       {renderLaneContent(track.id)}
                     </div>
@@ -907,7 +1329,33 @@ export function TimelineShell() {
                 ×
               </ShellIconButton>
             </div>
-            {selectedClip ? (
+            {selectedTekstClip ? (
+              <div className={styles.inspBody}>
+                <label className={styles.inspField}>
+                  Tekst linii
+                  <textarea
+                    className={styles.nameInput}
+                    value={selectedTekstClip.text}
+                    aria-label="Tekst linii"
+                    rows={3}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      setDraftProject(
+                        setTekstClipText(
+                          draftProject,
+                          selectedTekstClip.id,
+                          e.target.value,
+                        ),
+                      );
+                    }}
+                  />
+                </label>
+                <p>
+                  start {selectedTekstClip.startTicks}, długość{" "}
+                  {selectedTekstClip.lengthTicks} ticks
+                </p>
+              </div>
+            ) : selectedClip ? (
               <div className={styles.inspBody}>
                 {selectedClip.kind === "section" ? (
                   <label className={styles.inspField}>
@@ -946,7 +1394,9 @@ export function TimelineShell() {
                 )}
               </div>
             ) : (
-              <p className={styles.inspBody}>Zaznacz clip na ścieżce Forma.</p>
+              <p className={styles.inspBody}>
+                Zaznacz clip na ścieżce Forma lub Tekst.
+              </p>
             )}
           </aside>
         ) : (
@@ -1173,16 +1623,29 @@ function FormaClipButton({
   selected,
   style,
   pencilActive,
-  onSelect,
-  onPencilAt,
+  allowHitZones,
+  dimmed,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
 }: {
   clip: FormaClip;
   selected: boolean;
   style: { left: string; width: string };
   pencilActive: boolean;
-  onSelect: (id: string) => void;
-  onPencilAt: (clientX: number) => void;
+  allowHitZones: boolean;
+  dimmed?: boolean;
+  onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => void;
+  onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
+  onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
+  const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
+  const cursor = pencilActive
+    ? "crosshair"
+    : allowHitZones && clip.kind !== "countdown"
+      ? cursorForHitZone(hoverZone, true)
+      : "pointer";
+
   return (
     <button
       type="button"
@@ -1192,18 +1655,21 @@ function FormaClipButton({
         selected ? styles.clipOn : "",
         clip.kind === "countdown" ? styles.clipLocked : "",
         pencilActive ? styles.formaClipPencil : "",
+        dimmed ? styles.formaClipDim : "",
       ]
         .filter(Boolean)
         .join(" ")}
-      style={style}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (pencilActive) {
-          onPencilAt(e.clientX);
-          return;
+      style={{ ...style, cursor }}
+      onPointerDown={onPointerDown}
+      onPointerMove={(e) => {
+        if (allowHitZones && clip.kind !== "countdown") {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setHoverZone(hitTestClipZone(e.clientX - rect.left, rect.width, true));
         }
-        onSelect(clip.id);
+        onPointerMove(e);
       }}
+      onPointerUp={onPointerUp}
+      onPointerLeave={() => setHoverZone("body")}
     >
       {clip.kind === "countdown" ? "🔒 " : ""}
       {clip.name}

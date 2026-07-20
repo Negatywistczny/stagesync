@@ -161,12 +161,74 @@ export const ProjectSchemaV3 = z
   .strict();
 
 export type ProjectV3 = z.infer<typeof ProjectSchemaV3>;
-export type Project = ProjectV3;
 
-/** Canonical project schema (v3). */
-export const ProjectSchema = ProjectSchemaV3;
+/** Content lane clip — Tekst (α7). */
+export const TekstClipSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  lengthTicks: z.number().int().positive(),
+  text: z.string(),
+});
 
-export const PutProjectBodySchema = ProjectSchemaV3.omit({
+export type TekstClip = z.infer<typeof TekstClipSchema>;
+
+/** Content lane clip — Akordy (α7 schema; edit optional). */
+export const AkordClipSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  lengthTicks: z.number().int().positive(),
+  symbol: z.string().min(1),
+});
+
+export type AkordClip = z.infer<typeof AkordClipSchema>;
+
+/** Content lane clip — Cue (α7 schema; edit optional). */
+export const CueClipSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  lengthTicks: z.number().int().positive(),
+  label: z.string().min(1),
+});
+
+export type CueClip = z.infer<typeof CueClipSchema>;
+
+/** Alpha.7+ — content lanes Tekst / Akordy / Cue. */
+export const ProjectSchemaV4 = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    formatVersion: z.literal(4),
+    updatedAt: z.string().datetime(),
+    ppq: z.literal(DEFAULT_PPQ),
+    defaultBpm: z.number().positive().finite(),
+    defaultMeter: DefaultMeterSchema,
+    forma: z.object({
+      clips: z.array(FormaClipSchema),
+    }),
+    tempoMap: z.array(TempoEventSchema),
+    meterMap: z.array(MeterEventSchema),
+    assets: z.array(ProjectAssetSchema),
+    audioTracks: z.array(AudioTrackSchema),
+    audioClips: z.array(AudioClipSchema),
+    tekst: z.object({
+      clips: z.array(TekstClipSchema),
+    }),
+    akordy: z.object({
+      clips: z.array(AkordClipSchema),
+    }),
+    cue: z.object({
+      clips: z.array(CueClipSchema),
+    }),
+  })
+  .strict();
+
+export type ProjectV4 = z.infer<typeof ProjectSchemaV4>;
+export type Project = ProjectV4;
+
+/** Canonical project schema (v4). */
+export const ProjectSchema = ProjectSchemaV4;
+
+export const PutProjectBodySchema = ProjectSchemaV4.omit({
   id: true,
   updatedAt: true,
 }).strict();
