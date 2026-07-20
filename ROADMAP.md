@@ -8,15 +8,13 @@ Historia wydań: [CHANGELOG.md](CHANGELOG.md).
 | Linia | Cel |
 |-------|-----|
 | **5.0.0-alpha.*** | Wiring funkcji na szkielecie shelli; transport SSOT; biblioteka CRUD |
-| **Przed 5.0.0** | Polish UI na żywych kontrolkach; uzupełnienie DS docs (`typography` / `spacing`), tokeny duration, Lucide; fundament density już w alphie |
+| **Przed 5.0.0** | Polish UI na żywych kontrolkach; fundament DS (density, typography/spacing docs, duration, Lucide) już w alphie |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii |
 | **Audio 0…N** | Upload, odtwarzanie, sync z transportem (ACL → [ADR 0005](docs/adr/0005-domain-axioms.md)) |
 | **MIDI I/O** | Clock / urządzenia po stronie serwera (ACL → ADR 0005) |
 | **Migrator 4.x → v5** | Import legacy do `data/projects/<id>/` (ACL → ADR 0005) |
 | **Docker Compose** | Lokalny / produkcyjny stack ([ADR 0004](docs/adr/0004-updates-docker.md)) |
 | **Motywy** | `data-theme` na tokenach `--ss-*` + switcher |
-| **docs/api** | Krótka dokumentacja kontraktu REST / WS (po ustabilizowaniu API) |
-
 ## Granica 0
 
 Zmiana aksjomatów czasu (takt 1 / pre-roll ≤ 0 / ticks) lub izolacji folderów

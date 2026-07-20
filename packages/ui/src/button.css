@@ -106,7 +106,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ss-btn-spin 0.7s linear infinite;
+  animation: ss-btn-spin var(--ss-duration-slow) linear infinite;
 }
 
 @keyframes ss-btn-spin {
