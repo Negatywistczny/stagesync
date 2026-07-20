@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    name: lint-types-test-build
+    name: lint · types · test · build
     runs-on: ubuntu-latest
     timeout-minutes: 15
 

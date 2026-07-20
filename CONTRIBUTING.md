@@ -23,13 +23,15 @@
 
 ### Branch protection (właściciel repo)
 
-Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` włącz w
-*Settings → Branches → Branch protection rule* (lub Rulesets):
+Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` — ruleset
+[main — require CI](https://github.com/Negatywistczny/stagesync/rules/19185142)
+(Settings → Rules → Rulesets):
 
-- [ ] **Require status checks to pass before merging**
-- [ ] Status check: `lint · types · test · build` (job z `ci.yml`)
-- [ ] **Nie** wymagaj „Require a pull request before merging”, jeśli chcesz
-      nadal pushować docs/chore prosto na `main`
+- [x] **Require status checks to pass before merging**
+- [x] Status check: `lint · types · test · build` (job w
+      `continuous-integration.yml`)
+- [x] **Nie** wymagaj „Require a pull request before merging” — docs/chore
+      wolno pushować prosto na `main`
 
 Konfiguracja w GitHub UI / API — nie w kodzie repozytorium.
 

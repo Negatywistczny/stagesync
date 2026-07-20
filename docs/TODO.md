@@ -30,9 +30,3 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
 - [ ] Jedna biblioteka ikon (**Lucide**) zamiast rozrostu lokalnych SVG w shellach
 - [ ] `docs/api/` — krótki opis endpointów REST / WS (gdy kontrakt się
       ustabilizuje; nie pełne OpenAPI na zapas)
-
-## Proces (właściciel repo)
-
-- [ ] GitHub: **Require status checks to pass** na `main` — job
-      `lint · types · test · build` (checklista w [CONTRIBUTING](../CONTRIBUTING.md));
-      bez wymuszania PR na docs/chore
