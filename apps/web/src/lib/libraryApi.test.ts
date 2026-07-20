@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV3Seed } from "@stagesync/shared";
+import { createProjectV4Seed } from "@stagesync/shared";
 import {
   createProject,
   deleteProject,
   updateProject,
 } from "./libraryApi.js";
 
-const v3Project = createProjectV3Seed(
+const v4Project = createProjectV4Seed(
   "00000000-0000-4000-8000-000000000001",
   "Demo",
   "2026-07-19T12:00:00.000Z",
@@ -21,7 +21,7 @@ describe("libraryApi mutations", () => {
   it("createProject parses CreateProjectBodySchema before fetch", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => v3Project,
+      json: async () => v4Project,
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -41,12 +41,12 @@ describe("libraryApi mutations", () => {
   });
 
   it("updateProject fetches then PUTs full v3 document", async () => {
-    const renamed = { ...v3Project, name: "Renamed" };
+    const renamed = { ...v4Project, name: "Renamed" };
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => v3Project,
+        json: async () => v4Project,
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -54,7 +54,7 @@ describe("libraryApi mutations", () => {
       });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await updateProject(v3Project.id, { name: "  Renamed  " });
+    const result = await updateProject(v4Project.id, { name: "  Renamed  " });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result.name).toBe("Renamed");
@@ -64,7 +64,7 @@ describe("libraryApi mutations", () => {
       formatVersion: number;
     };
     expect(body.name).toBe("Renamed");
-    expect(body.formatVersion).toBe(3);
+    expect(body.formatVersion).toBe(4);
   });
 
   it("updateProject does not fetch when name is empty", async () => {

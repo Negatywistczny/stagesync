@@ -470,6 +470,16 @@
   cursor: crosshair;
 }
 
+.formaClipDim {
+  opacity: 0.55;
+}
+
+.formaPreview {
+  pointer-events: none;
+  outline: 1px dashed var(--ss-color-primary);
+  background: color-mix(in srgb, var(--ss-color-primary) 28%, transparent);
+}
+
 .addAudioRow {
   padding: var(--ss-space-1) var(--ss-space-2);
 }

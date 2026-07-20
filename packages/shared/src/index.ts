@@ -32,6 +32,7 @@ export {
   ProjectSchemaV1,
   ProjectSchemaV2,
   ProjectSchemaV3,
+  ProjectSchemaV4,
   ProjectSchema,
   PutProjectBodySchema,
   CreateProjectBodySchema,
@@ -39,8 +40,14 @@ export {
   HealthResponseSchema,
   ApiErrorSchema,
   StageMessageBodySchema,
+  TekstClipSchema,
+  AkordClipSchema,
+  CueClipSchema,
   type Library,
   type FormaClip,
+  type TekstClip,
+  type AkordClip,
+  type CueClip,
   type ProjectAsset,
   type AudioTrack,
   type AudioClip,
@@ -50,6 +57,7 @@ export {
   type ProjectV1,
   type ProjectV2,
   type ProjectV3,
+  type ProjectV4,
   type Project,
   type PutProjectBody,
   type CreateProjectBody,
@@ -62,9 +70,11 @@ export {
 export {
   createProjectV2Seed,
   createProjectV3Seed,
+  createProjectV4Seed,
   createProjectSeed,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
+  upgradeProjectV3ToV4,
 } from "./project-seed.js";
 
 export {
@@ -123,3 +133,13 @@ export {
   type SnapContext,
   type SnapSubdivisionParts,
 } from "./snap-grid.js";
+
+export {
+  deleteClip,
+  insertSpanOverwrite,
+  moveClipNoOverlap,
+  placeClipNoOverlap,
+  resizeClipNoOverlap,
+  type ClipEdge,
+  type CollisionOpts,
+} from "./clip-collision.js";

@@ -7,6 +7,7 @@ import {
   type Project,
   type TimeSignature,
 } from "@stagesync/shared";
+import { resolveTekstClipAt } from "./tekstEdit.js";
 
 export type KaraokeLiveContext = {
   songTitle: string;
@@ -15,6 +16,7 @@ export type KaraokeLiveContext = {
   tempoBpm: number;
   meterLabel: string;
   hasLyricLines: boolean;
+  lyricLine: string | null;
 };
 
 export function buildKaraokeLiveContext(
@@ -26,13 +28,19 @@ export function buildKaraokeLiveContext(
   const meter = resolveMeterAt(project, displayTicks);
   const tempo = resolveTempoAt(project, displayTicks);
   const bbt = ticksToBbt(displayTicks, meter, project.ppq);
+  const tekst = resolveTekstClipAt(project, displayTicks);
+  const lyricLine = tekst?.text?.trim() ? tekst.text : null;
+  const hasLyricLines = (project.tekst?.clips ?? []).some((c) =>
+    c.text.trim().length > 0,
+  );
   return {
     songTitle: project.name,
     sectionName: section?.name ?? "—",
     bbtLabel: `${toDisplayBar(bbt.bar)}.${bbt.beat}`,
     tempoBpm: tempo,
     meterLabel: `${meter.numerator}/${meter.denominator}`,
-    hasLyricLines: false,
+    hasLyricLines,
+    lyricLine,
   };
 }
 
