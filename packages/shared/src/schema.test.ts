@@ -3,8 +3,10 @@ import {
   CreateProjectBodySchema,
   LibrarySchema,
   ProjectSchema,
-  UpdateProjectBodySchema,
+  ProjectSchemaV2,
+  PutProjectBodySchema,
 } from "./schema.js";
+import { createProjectV2Seed } from "./project-seed.js";
 
 describe("LibrarySchema", () => {
   it("parses a valid catalog", () => {
@@ -24,34 +26,29 @@ describe("LibrarySchema", () => {
   });
 });
 
-describe("ProjectSchema", () => {
-  it("parses a minimal v5 project", () => {
-    const raw = {
-      id: "abc",
-      name: "Song",
-      formatVersion: 1,
-      updatedAt: "2026-07-19T12:00:00.000Z",
-    };
+describe("ProjectSchemaV2", () => {
+  it("parses a v2 project seed", () => {
+    const raw = createProjectV2Seed(
+      "abc",
+      "Song",
+      "2026-07-19T12:00:00.000Z",
+    );
     expect(ProjectSchema.parse(raw)).toEqual(raw);
   });
 
-  it("rejects missing formatVersion", () => {
-    expect(() =>
-      ProjectSchema.parse({
-        id: "abc",
-        name: "Song",
-        updatedAt: "2026-07-19T12:00:00.000Z",
-      }),
-    ).toThrow();
+  it("rejects unknown keys (strict)", () => {
+    const raw = {
+      ...createProjectV2Seed("abc", "Song", "2026-07-19T12:00:00.000Z"),
+      legacyField: true,
+    };
+    expect(() => ProjectSchemaV2.parse(raw)).toThrow();
   });
 
   it("rejects empty name", () => {
     expect(() =>
       ProjectSchema.parse({
-        id: "abc",
+        ...createProjectV2Seed("abc", "X", "2026-07-19T12:00:00.000Z"),
         name: "",
-        formatVersion: 1,
-        updatedAt: "2026-07-19T12:00:00.000Z",
       }),
     ).toThrow();
   });
@@ -67,15 +64,22 @@ describe("CreateProjectBodySchema", () => {
   });
 });
 
-describe("UpdateProjectBodySchema", () => {
-  it("allows empty object or optional name", () => {
-    expect(UpdateProjectBodySchema.parse({})).toEqual({});
-    expect(UpdateProjectBodySchema.parse({ name: "Renamed" })).toEqual({
-      name: "Renamed",
-    });
+describe("PutProjectBodySchema", () => {
+  it("parses full v2 body without id/updatedAt", () => {
+    const full = createProjectV2Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const { id, updatedAt, ...body } = full;
+    void id;
+    void updatedAt;
+    expect(PutProjectBodySchema.parse(body).name).toBe("Song");
   });
 
-  it("rejects empty name when provided", () => {
-    expect(() => UpdateProjectBodySchema.parse({ name: "" })).toThrow();
+  it("rejects unknown keys", () => {
+    const full = createProjectV2Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const { id, updatedAt, ...body } = full;
+    void id;
+    void updatedAt;
+    expect(() =>
+      PutProjectBodySchema.parse({ ...body, extra: 1 }),
+    ).toThrow();
   });
 });

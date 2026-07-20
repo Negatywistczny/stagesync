@@ -43,7 +43,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
 
   app.use("/api/library", createLibraryRouter(stores));
   app.use("/api/projects", createProjectsRouter(stores));
-  app.use("/api/transport", createTransportRouter(transport));
+  app.use("/api/transport", createTransportRouter(transport, stores));
 
   return { app, transport };
 }

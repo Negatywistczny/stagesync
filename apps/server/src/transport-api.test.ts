@@ -1,4 +1,7 @@
 import { createServer, type Server } from "node:http";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
@@ -82,6 +85,40 @@ describe("transport REST + WS", () => {
       body: JSON.stringify({ positionTicks: 1.5 }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it("play with projectId sets activeProjectId and resolves bpm", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "stagesync-transport-"));
+    const { app } = createApp({ dataDir });
+    const localServer = createServer(app);
+    await new Promise<void>((resolve) => {
+      localServer.listen(0, "127.0.0.1", () => resolve());
+    });
+    const port = (localServer.address() as AddressInfo).port;
+    const url = `http://127.0.0.1:${port}`;
+
+    try {
+      const createRes = await fetch(`${url}/api/projects`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "Transport Song" }),
+      });
+      const project = (await createRes.json()) as { id: string };
+
+      const playRes = await fetch(`${url}/api/transport/play`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ projectId: project.id }),
+      });
+      expect(playRes.status).toBe(200);
+      const state = TransportStateSchema.parse(await playRes.json());
+      expect(state.activeProjectId).toBe(project.id);
+      expect(state.bpm).toBe(120);
+      expect(state.playing).toBe(true);
+    } finally {
+      await new Promise<void>((resolve) => localServer.close(() => resolve()));
+      await rm(dataDir, { recursive: true, force: true });
+    }
   });
 
   it("WS sends transport_tick on connect and after seek", async () => {

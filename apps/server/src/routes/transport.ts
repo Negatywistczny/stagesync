@@ -1,12 +1,17 @@
 import { Router } from "express";
 import {
+  TransportLoadBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
 } from "@stagesync/shared";
+import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "../transport/engine.js";
 import { handleRouteError } from "./errors.js";
 
-export function createTransportRouter(transport: TransportEngine): Router {
+export function createTransportRouter(
+  transport: TransportEngine,
+  stores: Stores,
+): Router {
   const router = Router();
 
   router.get("/", (_req, res) => {
@@ -17,10 +22,26 @@ export function createTransportRouter(transport: TransportEngine): Router {
     }
   });
 
-  router.post("/play", (req, res) => {
+  router.post("/play", async (req, res) => {
     try {
       const body = TransportPlayBodySchema.parse(req.body ?? {});
-      res.json(transport.play(body));
+      let project;
+      const projectId =
+        body.projectId ?? transport.getActiveProjectId() ?? undefined;
+      if (projectId) {
+        project = await stores.getProject(projectId);
+      }
+      res.json(transport.play(body, project));
+    } catch (err) {
+      handleRouteError(res, err);
+    }
+  });
+
+  router.post("/load", async (req, res) => {
+    try {
+      const body = TransportLoadBodySchema.parse(req.body ?? {});
+      const project = await stores.getProject(body.projectId);
+      res.json(transport.loadProject(body.projectId, project));
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -34,10 +55,15 @@ export function createTransportRouter(transport: TransportEngine): Router {
     }
   });
 
-  router.post("/seek", (req, res) => {
+  router.post("/seek", async (req, res) => {
     try {
       const body = TransportSeekBodySchema.parse(req.body);
-      res.json(transport.seek(body.positionTicks));
+      let project;
+      const activeId = transport.getActiveProjectId();
+      if (activeId) {
+        project = await stores.getProject(activeId);
+      }
+      res.json(transport.seek(body.positionTicks, project));
     } catch (err) {
       handleRouteError(res, err);
     }

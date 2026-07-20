@@ -1,5 +1,9 @@
 import type { Response } from "express";
-import { NotFoundError, StorageError } from "../storage/index.js";
+import {
+  InvalidProjectIdError,
+  NotFoundError,
+  StorageError,
+} from "../storage/index.js";
 
 export function sendError(
   res: Response,
@@ -29,6 +33,14 @@ export function handleRouteError(res: Response, err: unknown): void {
   const zodMsg = zodMessage(err);
   if (zodMsg !== null) {
     sendError(res, 400, zodMsg);
+    return;
+  }
+  if (err instanceof RangeError) {
+    sendError(res, 400, err.message);
+    return;
+  }
+  if (err instanceof InvalidProjectIdError) {
+    sendError(res, 400, err.message);
     return;
   }
   if (err instanceof NotFoundError) {

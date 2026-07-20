@@ -1,10 +1,10 @@
 import { Router } from "express";
 import {
   CreateProjectBodySchema,
-  UpdateProjectBodySchema,
+  PutProjectBodySchema,
 } from "@stagesync/shared";
 import type { Stores } from "../storage/index.js";
-import { handleRouteError, sendError } from "./errors.js";
+import { handleRouteError } from "./errors.js";
 
 export function createProjectsRouter(stores: Stores): Router {
   const router = Router();
@@ -30,12 +30,8 @@ export function createProjectsRouter(stores: Stores): Router {
 
   router.put("/:id", async (req, res) => {
     try {
-      const body = UpdateProjectBodySchema.parse(req.body);
-      if (body.name === undefined) {
-        sendError(res, 400, "At least one field is required (name)");
-        return;
-      }
-      const project = await stores.updateProject(req.params.id, body);
+      const body = PutProjectBodySchema.parse(req.body);
+      const project = await stores.putProject(req.params.id, body);
       res.json(project);
     } catch (err) {
       handleRouteError(res, err);

@@ -4,6 +4,9 @@ import {
   assertValidTimeSignature,
   defaultTransportState,
   elapsedToTicks,
+  resolveMeterAt,
+  resolveTempoAt,
+  type ProjectV2,
   type TimeSignature,
   type TransportPlayBody,
   type TransportState,
@@ -31,6 +34,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   let timeSignature: TimeSignature = {
     ...defaultTransportState().timeSignature,
   };
+  let activeProjectId: string | null = null;
   const ppq = DEFAULT_PPQ;
 
   let originMs = 0;
@@ -44,6 +48,13 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     return originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
   }
 
+  function applyMapsFromProject(project: ProjectV2, atTicks?: number): void {
+    const ticks = atTicks ?? samplePosition();
+    positionTicks = ticks;
+    bpm = resolveTempoAt(project, ticks);
+    timeSignature = { ...resolveMeterAt(project, ticks) };
+  }
+
   function snapshot(): TransportState {
     positionTicks = samplePosition();
     return {
@@ -52,6 +63,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       bpm,
       timeSignature: { ...timeSignature },
       ppq,
+      activeProjectId,
     };
   }
 
@@ -95,6 +107,10 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
+    getActiveProjectId(): string | null {
+      return activeProjectId;
+    },
+
     toTickMessage(): TransportTickMessage {
       return tickMessage();
     },
@@ -106,15 +122,41 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       };
     },
 
-    play(opts: TransportPlayBody = {}): TransportState {
-      if (opts.bpm !== undefined) {
-        bpm = opts.bpm;
-      }
+    loadProject(projectId: string, project: ProjectV2): TransportState {
+      activeProjectId = projectId;
+      positionTicks = samplePosition();
+      playing = false;
+      stopTimer();
+      applyMapsFromProject(project, 0);
+      notify();
+      return snapshot();
+    },
+
+    play(
+      opts: TransportPlayBody = {},
+      project?: ProjectV2,
+    ): TransportState {
       if (opts.timeSignature !== undefined) {
         assertValidTimeSignature(opts.timeSignature, ppq);
-        timeSignature = { ...opts.timeSignature };
       }
+
       positionTicks = samplePosition();
+
+      if (opts.projectId !== undefined) {
+        activeProjectId = opts.projectId;
+      }
+
+      if (project && opts.bpm === undefined && opts.timeSignature === undefined) {
+        applyMapsFromProject(project, positionTicks);
+      } else {
+        if (opts.bpm !== undefined) {
+          bpm = opts.bpm;
+        }
+        if (opts.timeSignature !== undefined) {
+          timeSignature = { ...opts.timeSignature };
+        }
+      }
+
       playing = true;
       reanchor();
       startTimer();
@@ -130,11 +172,15 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
-    seek(nextTicks: number): TransportState {
+    seek(nextTicks: number, project?: ProjectV2): TransportState {
       if (!Number.isInteger(nextTicks)) {
         throw new RangeError("positionTicks must be an integer");
       }
       positionTicks = nextTicks;
+      if (project) {
+        bpm = resolveTempoAt(project, positionTicks);
+        timeSignature = { ...resolveMeterAt(project, positionTicks) };
+      }
       if (playing) {
         reanchor();
       }

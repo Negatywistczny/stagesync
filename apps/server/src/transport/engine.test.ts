@@ -74,4 +74,69 @@ describe("TransportEngine", () => {
     expect(engine.getState().positionTicks).toBe(DEFAULT_PPQ);
     engine.dispose();
   });
+
+  it("mid-play bpm change does not jump position (H1)", () => {
+    let t = 0;
+    const engine = createTransportEngine({ now: () => t });
+    engine.play({ bpm: 120 });
+    t = 1000;
+    const before = engine.getState().positionTicks;
+    expect(before).toBe(2 * DEFAULT_PPQ);
+    engine.play({ bpm: 60 });
+    expect(engine.getState().positionTicks).toBe(before);
+    engine.dispose();
+  });
+
+  it("invalid meter on play does not mutate bpm (H5)", () => {
+    const engine = createTransportEngine();
+    engine.play({ bpm: 100 });
+    expect(() =>
+      engine.play({
+        bpm: 80,
+        timeSignature: { numerator: 4, denominator: 0 },
+      }),
+    ).toThrow(RangeError);
+    expect(engine.getState().bpm).toBe(100);
+    engine.dispose();
+  });
+
+  it("loadProject sets activeProjectId without playing", () => {
+    const project = {
+      id: "00000000-0000-4000-8000-000000000001",
+      name: "P",
+      formatVersion: 2 as const,
+      updatedAt: "2026-07-20T00:00:00.000Z",
+      ppq: DEFAULT_PPQ,
+      defaultBpm: 90,
+      defaultMeter: { numerator: 4, denominator: 4 },
+      forma: {
+        clips: [
+          {
+            id: "cd",
+            name: "CD",
+            kind: "countdown" as const,
+            startTicks: -7680,
+            lengthTicks: 7680,
+          },
+          {
+            id: "i",
+            name: "Intro",
+            kind: "section" as const,
+            startTicks: 0,
+            lengthTicks: 7680,
+          },
+        ],
+      },
+      tempoMap: [{ id: "t", startTicks: 0, bpm: 90 }],
+      meterMap: [
+        { id: "m", startTicks: 0, numerator: 4, denominator: 4 },
+      ],
+    };
+    const engine = createTransportEngine();
+    const state = engine.loadProject(project.id, project);
+    expect(state.playing).toBe(false);
+    expect(state.activeProjectId).toBe(project.id);
+    expect(state.bpm).toBe(90);
+    engine.dispose();
+  });
 });

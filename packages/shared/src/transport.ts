@@ -9,9 +9,10 @@ export const TimeSignatureSchema = z.object({
 export const TransportStateSchema = z.object({
   playing: z.boolean(),
   positionTicks: z.number().int(),
-  bpm: z.number().positive(),
+  bpm: z.number().positive().finite(),
   timeSignature: TimeSignatureSchema,
   ppq: z.number().int().positive(),
+  activeProjectId: z.string().uuid().nullable().optional(),
 });
 
 export type TransportState = z.infer<typeof TransportStateSchema>;
@@ -22,12 +23,23 @@ export const TransportSeekBodySchema = z.object({
 
 export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
 
-export const TransportPlayBodySchema = z.object({
-  bpm: z.number().positive().optional(),
-  timeSignature: TimeSignatureSchema.optional(),
-});
+export const TransportPlayBodySchema = z
+  .object({
+    bpm: z.number().positive().finite().optional(),
+    timeSignature: TimeSignatureSchema.optional(),
+    projectId: z.string().uuid().optional(),
+  })
+  .strict();
 
 export type TransportPlayBody = z.infer<typeof TransportPlayBodySchema>;
+
+export const TransportLoadBodySchema = z
+  .object({
+    projectId: z.string().uuid(),
+  })
+  .strict();
+
+export type TransportLoadBody = z.infer<typeof TransportLoadBodySchema>;
 
 export const TransportTickMessageSchema = TransportStateSchema.extend({
   type: z.literal("transport_tick"),
@@ -50,5 +62,6 @@ export function defaultTransportState(): TransportState {
     bpm: DEFAULT_TRANSPORT_BPM,
     timeSignature: { ...DEFAULT_TRANSPORT_METER },
     ppq: DEFAULT_PPQ,
+    activeProjectId: null,
   };
 }
