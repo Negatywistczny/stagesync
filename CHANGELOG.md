@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- [ADR 0005](docs/adr/0005-domain-axioms.md) — Granica 0 (domain axioms: czas +
+  foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
+  audio.
 - Fundament gęstości UI: skala `--ss-space-1…16`, elevation
   (`surface` / `elevated`), `border-muted`, scenic scrollbary, reguła
   [`ui-density.mdc`](.cursor/rules/ui-density.mdc); Button `iconOnly` +

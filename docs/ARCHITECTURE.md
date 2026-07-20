@@ -24,6 +24,16 @@
 
 Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 
+## Granica 0 (Domain Axioms)
+
+Niezmienniki domenowe — zmiana = rewrite / nowa edycja, nie zwykły feature:
+
+- **Czas:** takt 1 = start utworu; pre-roll ≤ 0; ticks + PPQ → [ADR 0002](./adr/0002-timebase-ssot.md)
+- **Storage:** izolowane foldery `projects/<id>/` → [ADR 0001](./adr/0001-storage-layout.md)
+
+Nazwa warstwy, pace layers, ACL przy migratorze / MIDI / audio:
+[ADR 0005](./adr/0005-domain-axioms.md).
+
 ## SSOT i czas
 
 Serwer jest źródłem prawdy transportu i stanu projektu; klient może wygładzać playhead wyłącznie między tickami serwera.

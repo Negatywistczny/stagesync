@@ -19,6 +19,9 @@ Feature’y z `docs/TODO.md` → gałąź `feat/…` + PR (nie prosto na `main`)
 
 Szczegóły decyzji: `docs/adr/0002-timebase-ssot.md`.
 
+**Granica 0** (aksjomaty domenowe: czas + foldery projektów; ACL na krawędziach):
+`docs/adr/0005-domain-axioms.md`.
+
 ## Granice monorepo
 
 | Ścieżka | Rola |
@@ -40,6 +43,7 @@ Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować dr
 - Bez `Date.now()` / `performance.now()` wewnątrz konwersji domenowej — clock/ticki od callera.
 - **Kanon pozycji:** integer **ticks** + stałe **PPQ**; **BBT** tylko jako widok/API (nie storage silnika). Float `absBeat` = przejściowy szkic.
 - Semantyka: takt 1 = start utworu; pre-roll ≤ 0. Szczegóły: `docs/adr/0002-timebase-ssot.md`.
+- Aksjomaty / Granica 0 (immutable core + ACL checklist): `docs/adr/0005-domain-axioms.md`.
 
 ## Walidacja (Zod)
 
