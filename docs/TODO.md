@@ -14,6 +14,7 @@ Ten plik: **tylko przyszłe zadania** (po zrobieniu → wpis w CHANGELOG, pozycj
 - [ ] CI (lint, test, build) w GitHub Actions
 - [ ] Auth / multi-user (jeśli produkt tego wymaga)
 - [ ] **Przed `5.0.0`:** polish UI (typografia, proporcje okien/kart, gęstość
-      toolbarów, copy) na żywych kontrolkach — Admin / Client / Timeline;
+      toolbarów, copy) na żywych kontrolkach — Admin / Client / Timeline —
+      **na fundamencie** tokenów space/elevation/`ui-density` (już w alphie);
       nie blokuje dalszego wiring funkcji w alphie
 - [ ] Stabilne wydanie `5.0.0` + nazwa hero (zob. [versioning](../.cursor/rules/versioning.mdc))

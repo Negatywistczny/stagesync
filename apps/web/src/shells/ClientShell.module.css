@@ -7,10 +7,13 @@
 }
 
 .header {
+  position: relative;
+  z-index: 10;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.55rem 0.85rem;
+  gap: var(--ss-space-1);
+  padding: var(--ss-space-2) var(--ss-space-3);
   border-bottom: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
 }
@@ -20,14 +23,14 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem;
+  gap: var(--ss-space-3);
 }
 
 .brand,
 .brandBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: var(--ss-space-2);
   font-weight: var(--ss-font-weight-semibold);
   color: inherit;
 }
@@ -41,15 +44,15 @@
 }
 
 .brandMark {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
+  width: var(--ss-space-2);
+  height: var(--ss-space-2);
+  border-radius: var(--ss-radius-sharp);
   background: var(--ss-color-primary);
 }
 
 .metronome {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--ss-space-1);
 }
 
 .dot {
@@ -77,8 +80,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: var(--ss-space-8);
+  height: var(--ss-space-8);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-bg);
@@ -104,11 +107,11 @@
 .welcome {
   width: min(640px, 100%);
   margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
+  padding: var(--ss-space-8) var(--ss-space-5) var(--ss-space-12);
 }
 
 .greeting {
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--ss-space-3);
   color: var(--ss-color-text-muted);
   font-size: var(--ss-text-md);
 }
@@ -123,12 +126,12 @@
 }
 
 .welcomeTitle {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--ss-space-2);
   font-size: var(--ss-text-xl);
 }
 
 .muted {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--ss-space-4);
   color: var(--ss-color-text-muted);
   font-size: var(--ss-text-sm);
 }
@@ -136,18 +139,18 @@
 .roleGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin: 1rem 0 1.25rem;
+  gap: var(--ss-space-3);
+  margin: var(--ss-space-4) 0 var(--ss-space-5);
 }
 
 .roleTile {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 1rem;
+  gap: var(--ss-space-1);
+  padding: var(--ss-space-4);
   border: 1px solid var(--ss-color-border);
-  border-radius: 10px;
-  background: var(--ss-color-surface);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -165,11 +168,12 @@
 }
 
 .stage {
-  flex: 1;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
   position: relative;
+  z-index: 1;
   min-height: 0;
 }
 
@@ -178,7 +182,7 @@
 }
 
 .rolePane {
-  padding: 1rem;
+  padding: var(--ss-space-4);
   min-height: 12rem;
   border-right: 1px solid var(--ss-color-border);
 }
@@ -187,7 +191,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--ss-space-3);
 }
 
 .rolePaneHead h2 {
@@ -196,7 +200,7 @@
 }
 
 .empty {
-  margin: 2rem 0;
+  margin: var(--ss-space-8) 0;
   text-align: center;
   color: var(--ss-color-text-muted);
 }
@@ -208,14 +212,14 @@
 .cueHost {
   position: fixed;
   left: 50%;
-  bottom: 1.5rem;
+  bottom: var(--ss-space-6);
   transform: translateX(-50%);
   z-index: 15;
   pointer-events: none;
 }
 
 .cueToast {
-  padding: 0.65rem 1rem;
+  padding: var(--ss-space-3) var(--ss-space-4);
   border-radius: var(--ss-radius-sm);
   border: 1px solid var(--ss-color-primary);
   background: var(--ss-color-surface);
@@ -224,31 +228,31 @@
 
 .transportNote {
   margin: 0;
-  padding: 0.35rem 0.85rem;
+  padding: var(--ss-space-1) var(--ss-space-3);
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
   border-top: 1px solid var(--ss-color-border);
 }
 
 .modal {
-  width: min(400px, calc(100vw - 2rem));
+  width: min(400px, calc(100vw - var(--ss-space-8)));
   margin: 20vh auto 0;
-  padding: 1.5rem;
+  padding: var(--ss-space-6);
   border: 1px solid var(--ss-color-border);
-  border-radius: 12px;
-  background: var(--ss-color-surface);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
 }
 
 .modalTitle {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--ss-space-2);
   font-size: var(--ss-text-xl);
 }
 
 .input {
   display: block;
   width: 100%;
-  margin: 0.75rem 0 1rem;
-  padding: 0.55rem 0.75rem;
+  margin: var(--ss-space-3) 0 var(--ss-space-4);
+  padding: var(--ss-space-2) var(--ss-space-3);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-bg);
@@ -276,9 +280,9 @@
   right: 0;
   width: min(320px, 100%);
   height: 100%;
-  padding: 1rem;
+  padding: var(--ss-space-4);
   border-left: 1px solid var(--ss-color-border);
-  background: var(--ss-color-surface);
+  background: var(--ss-color-elevated);
   overflow: auto;
 }
 
@@ -286,7 +290,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ss-space-4);
 }
 
 .drawerHead h2 {
@@ -298,8 +302,8 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin: 0.65rem 0;
+  gap: var(--ss-space-1);
+  margin: var(--ss-space-3) 0;
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
 }
@@ -307,12 +311,12 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.75rem;
+  gap: var(--ss-space-1);
+  margin-bottom: var(--ss-space-3);
 }
 
 .chip {
-  padding: 0.3rem 0.55rem;
+  padding: var(--ss-space-1) var(--ss-space-2);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-bg);
@@ -325,8 +329,8 @@
 .switchRow {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 0.45rem 0;
+  gap: var(--ss-space-2);
+  margin: var(--ss-space-2) 0;
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
 }
@@ -334,8 +338,15 @@
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: var(--ss-space-2);
   align-items: center;
+}
+
+.iconBtn:focus-visible,
+.roleTile:focus-visible,
+.brandBtn:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
 }
 
 @media (max-width: 720px) {
