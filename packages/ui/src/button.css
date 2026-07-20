@@ -2,20 +2,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--ss-space-2);
   padding: var(--ss-space-y) var(--ss-space-x);
   border: 1px solid transparent;
   border-radius: var(--ss-radius-sm);
   font-family: var(--ss-font-sans);
   font-size: var(--ss-font-size);
-  line-height: var(--ss-leading-tight);
+  line-height: var(--ss-leading-compact);
   font-weight: var(--ss-font-weight-semibold);
   cursor: pointer;
   transition:
     background-color var(--ss-transition),
     border-color var(--ss-transition),
-    color var(--ss-transition),
-    box-shadow var(--ss-transition);
+    color var(--ss-transition);
   user-select: none;
 }
 
@@ -23,9 +22,11 @@
   outline: none;
 }
 
-/* focus (keyboard) */
+/* focus (keyboard) — soft-px outline; focus-ring token */
 .ss-btn:focus-visible {
-  box-shadow: 0 0 0 3px var(--ss-color-focus-ring);
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 /* disabled */
@@ -43,10 +44,6 @@
   color: var(--ss-color-on-primary);
 }
 
-.ss-btn--primary:hover:not(:disabled) {
-  background: var(--ss-color-primary-hover);
-}
-
 .ss-btn--primary:active:not(:disabled) {
   background: var(--ss-color-primary-active);
 }
@@ -55,10 +52,6 @@
   background: var(--ss-color-secondary);
   color: var(--ss-color-text);
   border-color: var(--ss-color-border);
-}
-
-.ss-btn--secondary:hover:not(:disabled) {
-  background: var(--ss-color-secondary-hover);
 }
 
 .ss-btn--secondary:active:not(:disabled) {
@@ -70,12 +63,22 @@
   color: var(--ss-color-text);
 }
 
-.ss-btn--ghost:hover:not(:disabled) {
-  background: var(--ss-color-ghost-hover);
-}
-
 .ss-btn--ghost:active:not(:disabled) {
   background: var(--ss-color-ghost-active);
+}
+
+@media (hover: hover) {
+  .ss-btn--primary:hover:not(:disabled) {
+    background: var(--ss-color-primary-hover);
+  }
+
+  .ss-btn--secondary:hover:not(:disabled) {
+    background: var(--ss-color-secondary-hover);
+  }
+
+  .ss-btn--ghost:hover:not(:disabled) {
+    background: var(--ss-color-ghost-hover);
+  }
 }
 
 /* selected */
@@ -83,6 +86,13 @@
   background: var(--ss-color-selected);
   border-color: var(--ss-color-selected-border);
   color: var(--ss-color-text);
+}
+
+/* icon-only — dense 36×36 hit target */
+.ss-btn--icon {
+  padding: var(--ss-space-2);
+  width: 36px;
+  height: 36px;
 }
 
 /* loading */

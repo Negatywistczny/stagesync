@@ -9,9 +9,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- Fundament gęstości UI: skala `--ss-space-1…16`, elevation
+  (`surface` / `elevated`), `border-muted`, scenic scrollbary, reguła
+  [`ui-density.mdc`](.cursor/rules/ui-density.mdc); Button `iconOnly` +
+  focus outline / `@media (hover: hover)`; remap shelli Admin / Client /
+  Timeline na tokeny spacingu.
 - Tokeny typografii: `--ss-text-*` (w tym `control` pod Button/inputy),
   `--ss-font-weight-*`, `--ss-leading-*`, `--ss-tracking-*` (shells/`Button` bez
-  ad-hoc wartości; Button = control + semibold + leading tight).
+  ad-hoc wartości; Button = control + semibold + leading compact).
 - Paleta domyślna black / amber (jak v4) w `--ss-*`; `--ss-color-on-primary` pod
   tekst na amber CTA.
 - Admin — tworzenie / usuwanie / zmiana nazwy projektu z UI (Zod body przed

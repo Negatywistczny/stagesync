@@ -2,6 +2,26 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ss-color-border-muted) var(--ss-color-bg);
+}
+
+::-webkit-scrollbar {
+  width: var(--ss-scrollbar-width);
+  height: var(--ss-scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ss-color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sharp);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ss-color-border);
 }
 
 html,

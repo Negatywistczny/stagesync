@@ -1,0 +1,54 @@
+---
+description: UI Density — siatka 4/8pt, anti-dead-space, scenic ergonomics (CSS Modules)
+globs: apps/web/**/*.{css,tsx}, packages/ui/**/*.{css,tsx}
+alwaysApply: false
+---
+
+# Standardy Gęstości UI i Ergonomii StageSync v5
+
+Projektujesz interfejsy o wysokim nasyceniu informacją (systemy estradowe i stacje robocze DAW). Kod musi charakteryzować się spójnością przestrzenną i bezbłędną obsługą dotykową.
+
+## 1. Wykluczenie Tailwind CSS i Inline-Styles
+
+* **Kategoryczny zakaz stosowania klas Tailwind CSS** i inline-styles w warstwie prezentacyjnej (wyjątkiem są wartości wyliczane dynamicznie, np. playhead %). Używaj wyłącznie CSS Modules (`*.module.css`).
+* Wszystkie tokeny przestrzenne, kolory i zaokrąglenia przypisuj wyłącznie za pomocą zmiennych `--ss-*` zdefiniowanych w `tokens.css`.
+
+## 2. Siatka Przestrzenna 4pt/8pt (Strict Spacing)
+
+* Wszystkie marginesy, paddingi, gapy oraz wymiary elementów muszą być zmapowane do skali `--ss-space-1` do `--ss-space-16`.
+* **Zasada zaokrąglania:** Luźne i ułamkowe jednostki `rem` (np. `0.35rem` lub `1.75rem`) zaokrąglaj do najbliższego stopnia siatki 4px/8px.
+* **Wyjątek Soft-px:** Bezpośrednie wartości `1px` i `2px` są dozwolone wyłącznie dla właściwości: `border`, `border-width`, `outline`, `outline-width`, pozycji linii dividerów (`top`/`bottom`/`left`/`right`) oraz krawędzi uniesienia w `box-shadow`.
+
+## 3. Standardy Focus i Obsługa Overflow
+
+* Domyślny stan focusa: `outline: 2px solid var(--ss-color-focus-ring); outline-offset: 2px;`.
+* **Focus Clip Prevention:** Jeśli element lub jego rodzic posiada `overflow: hidden`, bezwzględnie użyj ujemnego offsetu `outline-offset: -2px;` lub emuluj focus cieniem wewnętrznym `box-shadow: inset 0 0 0 2px var(--ss-color-focus-ring);`, aby zapobiec ucięciu ramki focusa.
+
+## 4. Algorytmy Anty-„Dead Space” i Układu
+
+* **Zapobieganie Stretchowaniu:** Zawsze jawnie deklaruj `align-items: center` lub `align-items: flex-start` na kontenerach flex. Unikaj domyślnego `align-items: stretch` dla kontrolek i przycisków.
+* **Icon + Text Gap:** Odległość między ikoną a tekstem wewnątrz kontrolek musi wynosić dokładnie `var(--ss-space-2)` (lub `var(--ss-space-1)` w ekstremalnie ciasnych sekcjach).
+* **Icon-Only Buttons:** Przyciski zawierające tylko ikonę muszą wykorzystywać właściwość `iconOnly` (klasa `ss-btn--icon`), co ogranicza padding do `var(--ss-space-2)` ze wszystkich stron, dając kwadrat 36×36px. Bez `!important`.
+* **Condensed Rows:** Przy małej, sztywnej wysokości rzędu (np. `space-6`) tekst wewnątrz pozycjonuj wyłącznie za pomocą `display: flex; align-items: center;`, aby uniknąć ucinania wydłużeń dolnych liter ("g", "j", "y") przez gęsty leading.
+* **Intrinsic Size:** Krótkie odznaki i chipy nie mogą rozszerzać się do `100%` szerokości. Stosuj `width: fit-content;` lub `max-width: max-content;` + `white-space: nowrap;`.
+* **Chrome vs Main Content:** Paski narzędzi i panele boczne muszą mieć zablokowane wymiary (`flex: 0 0 auto;` o stałej szerokości/wysokości). Główny obszar roboczy asymiluje wolne miejsce przez `flex: 1 1 auto;`.
+* **Hierarchia Warstw (Z-index):** Stały chrome: Toolbar `z-index: 10`, Sidebar `z-index: 20`. Przewijana zawartość Main Content pod nimi (`z-index: 1` lub `auto` z `position: relative`). Overlaye / modale / docki **nie obniżać** do tych poziomów.
+
+## 5. Ergonomia Sceniczna i Kontrast (Zasady APCA)
+
+* **Anti-halation:** Bezwzględny zakaz stosowania tekstu `#ffffff` bezpośrednio na czarnym tle `#000000`. Tekst główny musi używać `--ss-color-text` (#fafafa), a pomocniczy `--ss-color-text-muted` (#a3a3a3).
+* **Strefy Dotykowe:** Minimalna bezpieczna powierzchnia kliku na desktopie to 36×36px. Dla widoków klienckich PWA na ekrany dotykowe minimalny bezpieczny cel dotykowy to 44×44px. Sąsiednie elementy dotykowe muszą zachowywać przerwę minimum `--ss-space-2` (8px).
+* **Sticky-Hover Prevention:** Zmiana tła / krawędzi w stanie hover musi być owinięta w `@media (hover: hover)`:
+
+```css
+@media (hover: hover) {
+  .element:hover {
+    background-color: var(--ss-color-elevated);
+    border-color: var(--ss-color-border);
+    transition: background-color var(--ss-transition), border-color var(--ss-transition);
+  }
+}
+```
+
+* **Brak Hover-only Actions:** Krytyczne akcje operacyjne (Play, Mute, Delete) muszą być stale widoczne; zakaz uzależniania ich dostępności wyłącznie od stanu `:hover`.
+* **Scenic Scrollbars:** Listy i panele muszą korzystać z globalnego stylu scrollbarów opartego o `--ss-scrollbar-width`. Zakaz redefiniowania ad-hoc szerokości suwaków w shellach.

@@ -10,6 +10,8 @@ export type ButtonProps = {
   loading?: boolean;
   /** Toggle / selected state — sets aria-pressed. */
   selected?: boolean;
+  /** Square icon-only geometry (ss-btn--icon). */
+  iconOnly?: boolean;
   className?: string;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
@@ -22,6 +24,7 @@ export function Button({
   variant = "primary",
   loading = false,
   selected,
+  iconOnly = false,
   disabled,
   className = "",
   type = "button",
@@ -33,6 +36,7 @@ export function Button({
     `ss-btn--${variant}`,
     loading ? "ss-btn--loading" : "",
     selected ? "ss-btn--selected" : "",
+    iconOnly ? "ss-btn--icon" : "",
     className,
   ]
     .filter(Boolean)
