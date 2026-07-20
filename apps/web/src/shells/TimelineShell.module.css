@@ -8,7 +8,7 @@
 
 .header {
   position: relative;
-  z-index: 10;
+  z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -66,7 +66,7 @@
 
 .toolbar {
   position: relative;
-  z-index: 10;
+  z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -81,7 +81,7 @@
   position: absolute;
   top: 100%;
   left: var(--ss-space-3);
-  z-index: 20;
+  z-index: var(--ss-z-dropdown);
   display: flex;
   flex-direction: column;
   min-width: 12rem;
@@ -159,6 +159,96 @@
   flex-shrink: 0;
 }
 
+.canvasBody {
+  position: relative;
+}
+
+.markerOverlay {
+  position: absolute;
+  left: var(--tl-dock-w);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: var(--ss-z-playhead);
+}
+
+.playheadMidi {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ss-color-info);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ss-color-info) 55%, transparent);
+  pointer-events: none;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.playheadMidi::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--ss-color-info);
+}
+
+.locator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  margin-left: -6px;
+  background: transparent;
+  pointer-events: auto;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 2;
+}
+
+.locator::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ss-color-primary);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--ss-color-primary) 40%, transparent);
+  pointer-events: none;
+}
+
+.locator::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid var(--ss-color-primary);
+  pointer-events: none;
+}
+
+.locatorLabel {
+  position: absolute;
+  top: var(--ss-space-2);
+  left: 50%;
+  transform: translateX(6px);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ss-color-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 4px var(--ss-color-bg);
+}
+
 .rulerRow {
   display: grid;
   grid-template-columns: var(--tl-dock-w) 1fr;
@@ -168,7 +258,11 @@
 .rulerDock {
   position: sticky;
   left: 0;
-  z-index: 10;
+  z-index: var(--ss-z-sticky);
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(var(--ss-space-6) + var(--ss-space-1));
+  padding: var(--ss-space-1) var(--ss-space-2);
   background: var(--ss-color-surface);
   border-right: 1px solid var(--ss-color-border);
 }
@@ -178,6 +272,9 @@
   height: calc(var(--ss-space-6) + var(--ss-space-1));
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
 }
 
 .rulerMark {
@@ -202,13 +299,14 @@
   top: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: var(--ss-z-grid);
 }
 
 .barGrid {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: var(--ss-z-grid);
 }
 
 .barLine {
@@ -217,16 +315,6 @@
   bottom: 0;
   width: 1px;
   background: color-mix(in srgb, var(--ss-color-border) 65%, transparent);
-}
-
-.playhead {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--ss-color-primary);
-  pointer-events: none;
-  z-index: 2;
 }
 
 .trackRow {
@@ -238,7 +326,7 @@
 .dockCell {
   position: sticky;
   left: 0;
-  z-index: 10;
+  z-index: var(--ss-z-sticky);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -249,10 +337,6 @@
   background: var(--ss-color-surface);
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
-}
-
-.dockCellHead {
-  position: relative;
 }
 
 .dockMuted {
@@ -274,16 +358,18 @@
 }
 
 .eyeMenu {
-  position: absolute;
-  z-index: 20;
-  top: 100%;
-  left: 0;
-  margin-top: var(--ss-space-1);
   min-width: 10rem;
   padding: var(--ss-space-1);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-elevated);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ss-color-bg) 80%, transparent);
+}
+
+.eyeMenuFixed {
+  position: fixed;
+  z-index: var(--ss-z-dropdown);
+  margin-top: var(--ss-space-1);
 }
 
 .eyeItem {
@@ -322,7 +408,7 @@
 
 .laneCell {
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   display: flex;
   align-items: center;
   gap: var(--ss-space-1);
@@ -427,7 +513,7 @@
 
 .inspector {
   position: relative;
-  z-index: 20;
+  z-index: var(--ss-z-panel);
   flex: 0 0 auto;
   border-left: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
@@ -489,7 +575,7 @@
 
 .status {
   position: relative;
-  z-index: 10;
+  z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -525,7 +611,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: var(--ss-z-overlay);
   display: grid;
   place-items: center;
 }

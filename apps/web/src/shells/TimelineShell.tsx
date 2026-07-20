@@ -2,10 +2,12 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { Link, useBlocker, useParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
@@ -25,6 +27,7 @@ import {
   DEFAULT_PX_PER_BAR,
   pencilFormaClick,
   projectContentEqual,
+  snapEditTicks,
   tickToPx,
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
@@ -134,6 +137,13 @@ export function TimelineShell() {
   const { projectId } = useParams<{ projectId: string }>();
   const idPrefix = useId();
   const lanesCoordRef = useRef<HTMLDivElement>(null);
+  const markerOverlayRef = useRef<HTMLDivElement>(null);
+  const eyeBtnRef = useRef<HTMLButtonElement>(null);
+  const eyeMenuRef = useRef<HTMLDivElement>(null);
+  const [eyeMenuPos, setEyeMenuPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const { state, displayTicks, wsStatus, commandPending, play, pause } =
     useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
@@ -157,6 +167,7 @@ export function TimelineShell() {
     Record<string, boolean>
   >({});
   const [eyeOpen, setEyeOpen] = useState(false);
+  const [locatorTicks, setLocatorTicks] = useState(0);
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
@@ -215,6 +226,41 @@ export function TimelineShell() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [dirty]);
 
+  useLayoutEffect(() => {
+    if (!eyeOpen) {
+      setEyeMenuPos(null);
+      return;
+    }
+
+    function updateEyeMenuPos() {
+      const btn = eyeBtnRef.current;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      setEyeMenuPos({ top: rect.bottom, left: rect.left });
+    }
+
+    updateEyeMenuPos();
+    window.addEventListener("resize", updateEyeMenuPos);
+    const scrollEl = document.querySelector("[data-canvas-scroll]");
+    scrollEl?.addEventListener("scroll", updateEyeMenuPos, true);
+    return () => {
+      window.removeEventListener("resize", updateEyeMenuPos);
+      scrollEl?.removeEventListener("scroll", updateEyeMenuPos, true);
+    };
+  }, [eyeOpen]);
+
+  useEffect(() => {
+    if (!eyeOpen) return;
+    function onPointerDown(e: MouseEvent) {
+      const target = e.target as Node;
+      if (eyeBtnRef.current?.contains(target)) return;
+      if (eyeMenuRef.current?.contains(target)) return;
+      setEyeOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [eyeOpen]);
+
   const viewSpan = useMemo(
     () => computeFormaViewSpan(draftProject?.forma.clips ?? []),
     [draftProject?.forma.clips],
@@ -239,6 +285,19 @@ export function TimelineShell() {
   }, [draftProject, viewSpan]);
 
   const playheadPx = tickToPx(displayTicks, viewSpan, barTicks);
+
+  const effectiveLocatorTicks = state.playing ? displayTicks : locatorTicks;
+  const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks);
+  const locatorMeter = draftProject
+    ? resolveMeterAt(draftProject, effectiveLocatorTicks)
+    : state.timeSignature;
+  const locatorBbt = ticksToBbt(
+    effectiveLocatorTicks,
+    locatorMeter,
+    draftProject?.ppq ?? state.ppq,
+  );
+  const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
+  const showMidiPlayhead = !state.playing;
 
   const tempoSegments = useMemo(() => {
     if (!draftProject) return [];
@@ -292,6 +351,18 @@ export function TimelineShell() {
 
   function onFormaLaneClick(e: React.MouseEvent<HTMLDivElement>) {
     onFormaPencilAt(e.clientX);
+  }
+
+  function setLocatorFromClientX(clientX: number) {
+    const coordRoot = markerOverlayRef.current ?? lanesCoordRef.current;
+    if (!coordRoot || !draftProject) return;
+    const raw = ticksFromPointer(clientX, coordRoot, viewSpan, barTicks);
+    setLocatorTicks(snapEditTicks(draftProject, raw));
+  }
+
+  function onRulerPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.button !== 0) return;
+    setLocatorFromClientX(e.clientX);
   }
 
   function toggleTrack(id: CoreTrackId) {
@@ -568,107 +639,81 @@ export function TimelineShell() {
               className={styles.canvasInner}
               style={{ width: canvasInnerWidth }}
             >
-              <div className={styles.rulerRow}>
-                <div className={styles.rulerDock} aria-hidden />
-                <div className={styles.ruler}>
-                  {barMarks.map((mark) => (
-                    <span
-                      key={mark.ticks}
-                      className={styles.rulerMark}
-                      style={{
-                        left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
-                      }}
-                    >
-                      {mark.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.trackRows}>
-                <div className={styles.laneOverlay} ref={lanesCoordRef} aria-hidden>
-                  <div className={styles.barGrid}>
-                    {barMarks.map((mark) => (
-                      <span
-                        key={`grid-${mark.ticks}`}
-                        className={styles.barLine}
-                        style={{
-                          left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
-                        }}
-                      />
-                    ))}
-                  </div>
+              <div className={styles.canvasBody}>
+                <div ref={markerOverlayRef} className={styles.markerOverlay}>
+                  {showMidiPlayhead ? (
+                    <div
+                      className={styles.playheadMidi}
+                      style={{ left: `${playheadPx}px` }}
+                      aria-hidden
+                    />
+                  ) : null}
                   <div
-                    className={styles.playhead}
-                    style={{ left: `${playheadPx}px` }}
-                  />
+                    className={styles.locator}
+                    style={{ left: `${locatorPx}px` }}
+                    role="slider"
+                    aria-label="Locator wklejania"
+                    aria-valuemin={viewSpan.start}
+                    aria-valuemax={viewSpan.end}
+                    aria-valuenow={effectiveLocatorTicks}
+                    aria-valuetext={locatorLabel}
+                    tabIndex={-1}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      if (e.button !== 0) return;
+                      setLocatorFromClientX(e.clientX);
+                    }}
+                  >
+                    <span className={styles.locatorLabel}>{locatorLabel}</span>
+                  </div>
                 </div>
 
-                <div className={styles.trackRow}>
-                  <div className={[styles.dockCell, styles.dockCellHead].join(" ")}>
+                <div className={styles.rulerRow}>
+                  <div className={styles.rulerDock}>
                     <button
+                      ref={eyeBtnRef}
                       type="button"
                       className={styles.eyeBtn}
                       aria-label="Widoczność ścieżek"
                       aria-expanded={eyeOpen}
+                      aria-haspopup="menu"
                       onClick={() => setEyeOpen((v) => !v)}
                     >
                       <IconEye />
                     </button>
-                    {eyeOpen ? (
-                      <div className={styles.eyeMenu} role="menu">
-                        {TRACKS.map((track) => (
-                          <button
-                            key={track.id}
-                            type="button"
-                            role="menuitemcheckbox"
-                            aria-checked={isCoreTrackVisible(
-                              trackVisibility,
-                              track.id,
-                            )}
-                            className={[
-                              styles.eyeItem,
-                              track.locked ? styles.eyeItemLocked : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            disabled={track.locked}
-                            onClick={() => toggleTrack(track.id)}
-                          >
-                            <span aria-hidden>
-                              {isCoreTrackVisible(trackVisibility, track.id)
-                                ? "☑"
-                                : "☐"}
-                            </span>
-                            {track.label}
-                            {track.locked ? " (zawsze)" : ""}
-                          </button>
-                        ))}
-                        {audioTracks.map((t) => (
-                          <button
-                            key={t.id}
-                            type="button"
-                            role="menuitemcheckbox"
-                            aria-checked={audioTrackVisible[t.id] !== false}
-                            className={styles.eyeItem}
-                            onClick={() =>
-                              setAudioTrackVisible((prev) => ({
-                                ...prev,
-                                [t.id]: !(prev[t.id] !== false),
-                              }))
-                            }
-                          >
-                            <span aria-hidden>
-                              {audioTrackVisible[t.id] !== false ? "☑" : "☐"}
-                            </span>
-                            {t.name}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
                   </div>
-                  <div className={styles.laneCell} aria-hidden />
+                  <div
+                    className={styles.ruler}
+                    onPointerDown={onRulerPointerDown}
+                  >
+                    {barMarks.map((mark) => (
+                      <span
+                        key={mark.ticks}
+                        className={styles.rulerMark}
+                        style={{
+                          left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
+                        }}
+                      >
+                        {mark.label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
+
+                <div className={styles.trackRows}>
+                  <div className={styles.laneOverlay} ref={lanesCoordRef} aria-hidden>
+                    <div className={styles.barGrid}>
+                      {barMarks.map((mark) => (
+                        <span
+                          key={`grid-${mark.ticks}`}
+                          className={styles.barLine}
+                          style={{
+                            left: `${tickToPx(mark.ticks, viewSpan, barTicks)}px`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
                 {TRACKS.filter((t) =>
                   isCoreTrackVisible(trackVisibility, t.id),
@@ -744,6 +789,7 @@ export function TimelineShell() {
                   </div>
                   <div className={styles.laneCell} aria-hidden />
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -960,6 +1006,63 @@ export function TimelineShell() {
           </div>
         </div>
       ) : null}
+
+      {eyeOpen && eyeMenuPos
+        ? createPortal(
+            <div
+              ref={eyeMenuRef}
+              className={[styles.eyeMenu, styles.eyeMenuFixed]
+                .filter(Boolean)
+                .join(" ")}
+              style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
+              role="menu"
+            >
+              {TRACKS.map((track) => (
+                <button
+                  key={track.id}
+                  type="button"
+                  role="menuitemcheckbox"
+                  aria-checked={isCoreTrackVisible(trackVisibility, track.id)}
+                  className={[
+                    styles.eyeItem,
+                    track.locked ? styles.eyeItemLocked : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  disabled={track.locked}
+                  onClick={() => toggleTrack(track.id)}
+                >
+                  <span aria-hidden>
+                    {isCoreTrackVisible(trackVisibility, track.id) ? "☑" : "☐"}
+                  </span>
+                  {track.label}
+                  {track.locked ? " (zawsze)" : ""}
+                </button>
+              ))}
+              {audioTracks.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="menuitemcheckbox"
+                  aria-checked={audioTrackVisible[t.id] !== false}
+                  className={styles.eyeItem}
+                  onClick={() =>
+                    setAudioTrackVisible((prev) => ({
+                      ...prev,
+                      [t.id]: !(prev[t.id] !== false),
+                    }))
+                  }
+                >
+                  <span aria-hidden>
+                    {audioTrackVisible[t.id] !== false ? "☑" : "☐"}
+                  </span>
+                  {t.name}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

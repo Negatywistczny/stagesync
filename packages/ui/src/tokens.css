@@ -78,4 +78,13 @@
   --ss-duration-normal: 200ms;
   --ss-duration-slow: 700ms;
   --ss-transition: var(--ss-duration-fast) ease;
+
+  /* Stacking — timeline canvas + chrome (low → high) */
+  --ss-z-lane: 1;
+  --ss-z-grid: 2;
+  --ss-z-playhead: 3;
+  --ss-z-sticky: 10;
+  --ss-z-dropdown: 20;
+  --ss-z-panel: 20;
+  --ss-z-overlay: 40;
 }
