@@ -57,7 +57,7 @@ bez tej ceremonii.
 
 Linki do SemVer, Keep a Changelog, EditorConfig, ADR itd.: [docs/STANDARDS.md](docs/STANDARDS.md).  
 Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).  
-Roadmapa (kierunek): [ROADMAP.md](ROADMAP.md). Design UI: [docs/ui/](docs/ui/README.md).
+Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](docs/ui/README.md).
 
 ## Checklista przed release
 

@@ -6,10 +6,11 @@
 |------|----------|--------|
 | [README](../README.md) | Uruchomienie | Historia, backlog, pełne reguły |
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
-| [TODO](./TODO.md) | Przyszłe zadania | Odhaczone / „zrobione” |
-| [ROADMAP](../ROADMAP.md) | Kierunek długoterminowy | Bieżąca checklista zadań |
+| [TODO](./TODO.md) | Checklista bieżącego etapu (alpha / beta) | Odhaczone / kolejne etapy |
+| [ROADMAP](./ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) | Bieżąca checklista (→ TODO) |
 | [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
+| [docs/analysis/](./analysis/README.md) | `reports/` (kanon) + `working/` (scratch) dla audytów release/alpha | Scratch-notes jako SSOT |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
 | [docs/adr/](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |

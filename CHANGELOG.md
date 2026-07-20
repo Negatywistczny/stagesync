@@ -26,7 +26,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
   checklista branch protection (status checks) w CONTRIBUTING; JSDoc `@example`
   na helperach czasu / soft playhead (`@stagesync/shared`).
 - Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
-  [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [ROADMAP.md](ROADMAP.md);
+  [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [docs/ROADMAP.md](docs/ROADMAP.md);
   checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.
 - CI GitHub Actions (lint, check-types, test, build) + szablony PR / Issues;
   [LICENSE](LICENSE) (MIT); [SECURITY.md](SECURITY.md).

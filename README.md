@@ -46,8 +46,8 @@ Wersja: `"version"` w root `package.json`.
 | Plik | Zawartość |
 |------|-----------|
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | Mapa monorepo, SSOT, legacy |
-| [ROADMAP](ROADMAP.md) | Kierunek długoterminowy |
-| [TODO](docs/TODO.md) | Tylko przyszłe zadania |
+| [ROADMAP](docs/ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) |
+| [TODO](docs/TODO.md) | Checklista bieżącego etapu |
 | [CHANGELOG](CHANGELOG.md) | Historia zmian |
 | [docs/ui/](docs/ui/README.md) | Design system (kolory, Button) |
 | [STANDARDS](docs/STANDARDS.md) | Linki do standardów zewnętrznych |

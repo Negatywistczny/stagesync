@@ -1,0 +1,29 @@
+---
+description: Nazewnictwo i struktura docs/analysis/ — 2 typy artefaktow
+globs: docs/analysis/**/*.md
+alwaysApply: false
+---
+
+# docs/analysis — 2 typy, 2 katalogi
+
+| Typ | Katalog | Commitowane | Wzorzec nazwy |
+|-----|---------|-------------|---------------|
+| Raport kanoniczny | `docs/analysis/reports/` | tak | `report-<temat>.md` |
+| Notatka robocza | `docs/analysis/working/` | nie | `working-<temat>.md` |
+
+## Raporty (`reports/`)
+
+- Lowercase `kebab-case`, prefiks `report-`.
+- Jeden plik = jeden temat / decyzja.
+- Linki wzgledne miedzy raportami: `./report-<temat>.md`.
+
+## Notatki robocze (`working/`)
+
+- Lowercase `kebab-case`, prefiks `working-` (opcjonalnie z data: `working-20260720-<temat>.md`).
+- Ignorowane przez git.
+- Po zakonczeniu pracy: wnioski do `../reports/report-<temat>.md`.
+
+## Zakazy
+
+- Nie tworzono plikow bezposrednio w `docs/analysis/` (tylko `README.md`).
+- Nie linkuj do `working/` z zewnatrz katalogu.
