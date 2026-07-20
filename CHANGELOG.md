@@ -15,6 +15,26 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - ADR [0008](docs/adr/0008-timeline-clip-editing.md) — edycja klipów Timeline (Forma α7, audio β1, Smart Tool, no overlap).
 - ADR [0007](docs/adr/0007-snap-grid.md) — uzupełnienie: Cmd/Ctrl = chwilowy snap off.
 
+## [5.0.0-alpha.4] - 2026-07-20
+
+### Dodano
+
+- **Timeline track grid:** wspólna siatka wierszy dock ↔ lane (`trackRow`, sticky dock); kolejność v4 (Specjalne nad treścią); eye menu per ślad (`timelineTracks.ts`).
+- **Lane Tempo/Metrum:** read-only segmenty z `tempoMap` / `meterMap` (`mapSegments.ts`).
+- **Inspector Formy:** rename sekcji + długość Countdown (takty) → draft → PUT (`formaInspector.ts`).
+- **Dirty guard:** `beforeunload` + React Router `useBlocker` przy nawigacji z niezapisanym draftem.
+- **`loadTransport` w Timeline:** jawne ładowanie map przy otwarciu projektu.
+- **Admin:** przycisk ukrycia panelu na krawędzi splitu; empty state „Pliki projektu”.
+
+### Naprawiono
+
+- Transport: clamp ujemnego elapsed przy skew zegara (M15); ignorowanie starszych ticków WS po `serverTimeMs` (M12).
+- Walidacja klienta transportu Zod przed fetch (M1); zakres beat/tick w `bbtToTicks` (M3).
+
+### Zmieniono
+
+- Router web: `createBrowserRouter` (wymóg `useBlocker`).
+
 ## [5.0.0-alpha.3] - 2026-07-20
 
 ### Dodano
@@ -117,7 +137,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
 - Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.3...HEAD
+[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.4...HEAD
+[5.0.0-alpha.4]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.3...v5.0.0-alpha.4
 [5.0.0-alpha.3]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3
 [5.0.0-alpha.2]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2
 [5.0.0-alpha.1]: https://github.com/Negatywistyczny/stagesync/releases/tag/v5.0.0-alpha.1
