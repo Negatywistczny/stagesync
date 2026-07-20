@@ -33,6 +33,7 @@ import {
   computeFormaViewSpan,
   DEFAULT_PX_PER_BAR,
   projectContentEqual,
+  scrollCanvasToStart,
   scrollLeftKeepTickAnchored,
   snapEditTicks,
   tickToPx,
@@ -468,8 +469,10 @@ export function TimelineShell() {
     useState<FormaGesturePreview | null>(null);
   const gestureSessionRef = useRef<FormaGestureSession | null>(null);
   const gesturePreviewRef = useRef<FormaGesturePreview | null>(null);
-  /** Last viewSpan.start while CD length gesture adjusts scroll (v4). */
+  /** Last viewSpan.start while CD length gesture keeps tick-0 anchored. */
   const cdSpanStartRef = useRef<number | null>(null);
+  /** After CD-length gesture ends → jump viewport to timeline start. */
+  const cdScrollToStartPendingRef = useRef(false);
   const draftRef = useRef<Project | null>(null);
   const viewSpanRef = useRef({ start: 0, end: 0 });
   const barTicksRef = useRef(3840);
@@ -485,11 +488,20 @@ export function TimelineShell() {
     onPlayOrPause: () => {},
     onMetronomeToggle: async () => {},
     onLoopToggle: () => {},
-    onTool: (_id: ToolId) => {},
-    nudgeLocator: (_dir: -1 | 1) => {},
+    onTool: (id: ToolId) => {
+      void id;
+    },
+    nudgeLocator: (dir: -1 | 1) => {
+      void dir;
+    },
     fitZoom: () => {},
-    zoomHorizontalBySteps: (_steps: number, _anchorViewportX?: number) => {},
-    zoomVerticalBySteps: (_steps: number) => {},
+    zoomHorizontalBySteps: (steps: number, anchorViewportX?: number) => {
+      void steps;
+      void anchorViewportX;
+    },
+    zoomVerticalBySteps: (steps: number) => {
+      void steps;
+    },
     dirty: false,
     savePending: false,
     playing: false,
@@ -1019,7 +1031,8 @@ export function TimelineShell() {
   zoomVBaseRef.current = zoomV;
   uiScaleRef.current = uiScale;
 
-  // Countdown length: keep song start (tick 0) anchored while pre-roll grows/shrinks.
+  // Countdown length drag: keep tick 0 anchored so pointer deltas stay stable.
+  // After a real length change (gesture release / inspector): jump to timeline start.
   useLayoutEffect(() => {
     const cdGesture =
       gestureSessionRef.current?.kind === "countdown-length" ||
@@ -1030,6 +1043,7 @@ export function TimelineShell() {
         return;
       }
       if (cdSpanStartRef.current === viewSpan.start) return;
+      cdScrollToStartPendingRef.current = true;
       const scroll = document.querySelector(
         "[data-canvas-scroll]",
       ) as HTMLElement | null;
@@ -1045,22 +1059,14 @@ export function TimelineShell() {
       cdSpanStartRef.current = viewSpan.start;
       return;
     }
-    if (cdSpanStartRef.current != null) {
-      if (cdSpanStartRef.current !== viewSpan.start) {
-        const scroll = document.querySelector(
-          "[data-canvas-scroll]",
-        ) as HTMLElement | null;
-        if (scroll) {
-          scroll.scrollLeft = scrollLeftKeepTickAnchored(
-            cdSpanStartRef.current,
-            viewSpan.start,
-            scroll.scrollLeft,
-            barTicks,
-            effectiveZoomH,
-          );
-        }
-      }
+    if (cdSpanStartRef.current != null || cdScrollToStartPendingRef.current) {
       cdSpanStartRef.current = null;
+      if (cdScrollToStartPendingRef.current) {
+        cdScrollToStartPendingRef.current = false;
+        scrollCanvasToStart(
+          document.querySelector("[data-canvas-scroll]") as HTMLElement | null,
+        );
+      }
     }
   }, [viewSpan.start, gesturePreview?.kind, barTicks, effectiveZoomH]);
 
@@ -2408,23 +2414,13 @@ export function TimelineShell() {
     const bars = Number.parseInt(raw, 10);
     if (!Number.isFinite(bars)) return;
     try {
-      const prevStart = viewSpanRef.current.start;
       const next = setCountdownBars(draftProject, bars);
+      if (next === draftProject) return;
       commitDraft(next);
-      const nextStart =
-        next.forma.clips.find((c) => c.kind === "countdown")?.startTicks ??
-        prevStart;
+      // Length change shifts pre-roll — show CD / song start immediately (v4).
       requestAnimationFrame(() => {
-        const scroll = document.querySelector(
-          "[data-canvas-scroll]",
-        ) as HTMLElement | null;
-        if (!scroll) return;
-        scroll.scrollLeft = scrollLeftKeepTickAnchored(
-          prevStart,
-          nextStart,
-          scroll.scrollLeft,
-          barTicksRef.current,
-          zoomHRef.current,
+        scrollCanvasToStart(
+          document.querySelector("[data-canvas-scroll]") as HTMLElement | null,
         );
       });
     } catch {
@@ -3574,6 +3570,7 @@ export function TimelineShell() {
                     </div>
                   </div>
                 ))}
+                <div className={styles.dockColumnFill} aria-hidden />
               </div>
               </div>
             </div>

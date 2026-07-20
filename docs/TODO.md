@@ -27,8 +27,8 @@ Kontrakt UI: [ADR 0011](./adr/0011-ui-parity-behavior.md).
 ### Must — Migrator
 
 - [x] MVP `migrateLegacy*` + CLI `pnpm migrate:legacy` ([MIGRATION.md](./MIGRATION.md)) — scope M1–M8
-- [ ] Fixtures / smoke migracji na typowej bazie 4.x + dry-run w CI lub docs
-- [ ] Admin import legacy: regresje vs CLI (pack `.stagesync.json` + `database.json`)
+- [x] Fixtures / smoke migracji na typowej bazie 4.x + dry-run w CI lub docs
+- [x] Admin import legacy: regresje vs CLI (pack `.stagesync.json` + `database.json`)
 
 ### Must — PO smoke (z α8 freeze)
 
@@ -41,16 +41,17 @@ Checklisty: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md)
 
 ### Must — Client P0 (CL)
 
-- [ ] **CL-01** Karaoke beat / bar highlight
-- [ ] **CL-04** Grid: full cycle / multi-bar
-- [ ] **CL-05** Forma / drums bar progress
+- [x] **CL-01** Karaoke beat / bar highlight
+- [x] **CL-04** Grid: full cycle / multi-bar
+- [x] **CL-05** Forma / drums bar progress
 
 ### Must — proces / bramka
 
-- [ ] CI: `pnpm lint && check-types && test && build` na zmergowanym drzewie
+- [x] CI: `pnpm lint && check-types && test && build` na zmergowanym drzewie (+ dry-run M9 w workflow)
 - [ ] Inventarz aktualizowany **po** geście PO ([ui-shell-inventory.md](./ui-shell-inventory.md) — wtórny)
-- [ ] **Zakaz** bumpa / tagu `5.0.0-beta.*` do P8 + CL-P0 green
+- [ ] **Zakaz** bumpa / tagu `5.0.0-beta.*` do P8 green
 - [ ] Bump/tag `5.0.0-alpha.9` tylko na prośbę
+- [ ] **β1** (Docker/Tauri) — **nie startować** do green P8
 
 ### Should
 

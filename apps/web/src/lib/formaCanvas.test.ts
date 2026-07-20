@@ -3,16 +3,15 @@ import { createProjectV5Seed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
   buildBarMarks,
   buildRulerBeatMarks,
-  clampClipWidthPx,
   clipStylePx,
   computeCanvasWidthPx,
   computeFormaViewSpan,
   contentFloorTicks,
   iterBarBoundariesTicks,
-  MIN_CLIP_WIDTH_PX,
   pencilFormaClick,
   RULER_BEAT_TICKS_MIN_PX,
   scrollLeftKeepTickAnchored,
+  scrollCanvasToStart,
   snapEditTicks,
   tickToPx,
   ticksFromCanvasPx,
@@ -47,6 +46,36 @@ describe("formaCanvas", () => {
     );
   });
 
+  it("scrollCanvasToStart zeros scrollLeft (sync + rAF)", () => {
+    const frames: FrameRequestCallback[] = [];
+    const prevRaf = globalThis.requestAnimationFrame;
+    globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+      frames.push(cb);
+      return 1;
+    }) as typeof requestAnimationFrame;
+    const scroll = { scrollLeft: 240 } as HTMLElement;
+    scrollCanvasToStart(scroll);
+    expect(scroll.scrollLeft).toBe(0);
+    scroll.scrollLeft = 99;
+    frames.forEach((cb) => cb(0));
+    expect(scroll.scrollLeft).toBe(0);
+    globalThis.requestAnimationFrame = prevRaf;
+  });
+
+  it("scrollCanvasToStart no-ops on null", () => {
+    expect(() => scrollCanvasToStart(null)).not.toThrow();
+  });
+
+  it("scrollCanvasToStart works without rAF", () => {
+    const prevRaf = globalThis.requestAnimationFrame;
+    // @ts-expect-error intentional missing rAF
+    delete globalThis.requestAnimationFrame;
+    const scroll = { scrollLeft: 40 } as HTMLElement;
+    scrollCanvasToStart(scroll);
+    expect(scroll.scrollLeft).toBe(0);
+    globalThis.requestAnimationFrame = prevRaf;
+  });
+
   it("tickToPx aligns bar 1 at content floor", () => {
     const span = computeFormaViewSpan(project.forma.clips);
     const barTicks = 3840;
@@ -55,10 +84,10 @@ describe("formaCanvas", () => {
     );
   });
 
-  it("clipStylePx floors paint width at MIN_CLIP_WIDTH_PX when zoomed out", () => {
+  it("clipStylePx uses true proportional width (no paint floor at Zoom-out)", () => {
     const span = { start: 0, end: 3840 * 64 };
     const barTicks = 3840;
-    // 1/16 bar at 12 px/bar → 0.75px musical width → floor to 4px.
+    // 1/16 bar at 12 px/bar → 0.75px musical width (keep sub-pixel; no 4px floor).
     const short = {
       id: "s",
       name: "A",
@@ -66,15 +95,10 @@ describe("formaCanvas", () => {
       startTicks: 0,
       lengthTicks: barTicks / 16,
     };
-    expect(clampClipWidthPx(0.75)).toBe(MIN_CLIP_WIDTH_PX);
-    expect(clipStylePx(short, span, barTicks, 12).width).toBe(
-      `${MIN_CLIP_WIDTH_PX}px`,
-    );
-    // Same clip at 48 px/bar → 3px musical → still floored to 4px.
-    expect(clipStylePx(short, span, barTicks, 48).width).toBe(
-      `${MIN_CLIP_WIDTH_PX}px`,
-    );
-    // Half bar at 48 px/bar → 24px (above floor).
+    expect(clipStylePx(short, span, barTicks, 12).width).toBe("0.75px");
+    // Same clip at 48 px/bar → 3px musical.
+    expect(clipStylePx(short, span, barTicks, 48).width).toBe("3px");
+    // Half bar at 48 px/bar → 24px.
     const halfBar = { ...short, lengthTicks: barTicks / 2 };
     expect(clipStylePx(halfBar, span, barTicks, 48).width).toBe("24px");
   });

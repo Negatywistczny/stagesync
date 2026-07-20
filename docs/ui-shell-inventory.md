@@ -88,3 +88,6 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 - [x] Grid: H zamiast B / litery / animacje
 - [x] Tap wokalu (Client → tekst startTicks)
 - [x] Edycja notatek Formy
+- [x] CL-01 Karaoke bar fill / beat pulse (kod α9; PO C1)
+- [x] CL-04 Grid cycle multi-bar (kod α9; PO C1)
+- [x] CL-05 Forma strip past/current (kod α9; PO C1)

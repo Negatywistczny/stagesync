@@ -18,18 +18,6 @@ export type ViewSpan = { start: number; end: number };
 export const DEFAULT_PX_PER_BAR = 48;
 
 /**
- * Minimum rendered clip/segment width (px) when Zoom H is low.
- * Tick geometry stays exact; only the paint box is floored so short clips stay visible.
- * Matches v4 `.timeline-clip { min-width: 4px }`.
- */
-export const MIN_CLIP_WIDTH_PX = 4;
-
-/** Floor paint width for clips / map segments (shared across all lanes). */
-export function clampClipWidthPx(widthPx: number): number {
-  return Math.max(widthPx, MIN_CLIP_WIDTH_PX);
-}
-
-/**
  * v4 ruler: when px/bar ≥ 56, draw beat ticks 2…N (lane grid stays barlines only).
  * @see STAGESYNC-APP-LEGACY timeline.js `renderRuler` (`pxb >= 56`)
  */
@@ -97,6 +85,7 @@ export function tickToPx(
 /**
  * Keep a musical tick at the same viewport X when `viewSpan.start` changes
  * (Countdown lengthen/shorten grows/shrinks the pre-roll on the left).
+ * Used **during** CD-length drag so pointer→tick deltas stay stable.
  * Returns the new `scrollLeft`.
  */
 export function scrollLeftKeepTickAnchored(
@@ -113,6 +102,32 @@ export function scrollLeftKeepTickAnchored(
   return Math.max(0, prevScrollLeft + deltaPx);
 }
 
+/**
+ * Jump timeline canvas to the beginning (CD / song start at left) — v4
+ * `scrollToTimelineStart` feel after Countdown length change.
+ */
+export function scrollCanvasToStart(scroll: HTMLElement | null | undefined): void {
+  if (!scroll) return;
+  const apply = () => {
+    scroll.scrollLeft = 0;
+  };
+  apply();
+  const raf =
+    typeof globalThis.requestAnimationFrame === "function"
+      ? globalThis.requestAnimationFrame.bind(globalThis)
+      : null;
+  if (raf) raf(apply);
+}
+
+/**
+ * Paint box = true tick→px geometry (sub-pixel OK).
+ *
+ * PO (α9): do **not** floor to a min px width at Zoom-out — v4
+ * `Layout.clipRect` / `.timeline-clip { min-width: 4px }` and the former
+ * `MIN_CLIP_WIDTH_PX` made dense short onsets (Akordy/Tekst) invade the next
+ * clip's start even when tick ranges are disjoint. Hit targets stay the paint
+ * box; collision / storage unchanged.
+ */
 export function clipStylePx(
   clip: FormaClip,
   span: ViewSpan,
@@ -123,7 +138,7 @@ export function clipStylePx(
   const width = (clip.lengthTicks / barTicks) * pxPerBar;
   return {
     left: `${left}px`,
-    width: `${clampClipWidthPx(width)}px`,
+    width: `${Math.max(0, width)}px`,
   };
 }
 

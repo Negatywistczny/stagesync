@@ -1,5 +1,5 @@
 import type { KeySignature, Project } from "@stagesync/shared";
-import { clampClipWidthPx, type ViewSpan } from "./formaCanvas.js";
+import { type ViewSpan } from "./formaCanvas.js";
 
 export type MapSegment = {
   startTicks: number;
@@ -97,6 +97,7 @@ export function keyMapSegments(
   return [];
 }
 
+/** Same rule as {@link clipStylePx}: proportional width, no paint-floor at Zoom-out. */
 export function segmentStylePx(
   segment: MapSegment,
   span: ViewSpan,
@@ -109,6 +110,6 @@ export function segmentStylePx(
     ((segment.endTicks - segment.startTicks) / barTicks) * pxPerBar;
   return {
     left: `${left}px`,
-    width: `${clampClipWidthPx(width)}px`,
+    width: `${Math.max(0, width)}px`,
   };
 }

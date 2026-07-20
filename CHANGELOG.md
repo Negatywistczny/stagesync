@@ -22,6 +22,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- **Client CL-P0:** Karaoke — pasek taktów sekcji + fill `--beat-progress` + pulse na zmianie beatu; Grid — cykl akordów (compress + detectCycle z barChords); Forma — strip segmentów z komórkami past/current + meta takt/beat.
+- **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` + pack v5 `docs/examples/v5/library.pack.sample.stagesync.json`; smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
 - **Admin Utwory (pod Wybrany):** import legacy `database.json` z auto-detect (v5 pack vs 4.x `songs[]`) + migracja `migrateLegacy*` przy `POST /api/library/import`; ZIP odroczony (komunikat PL).
 - **Timeline:** marquee + multi-select (`selectedIds` / `primaryId`) + multi-drag same lane + clipboard ⌘C/X/V/D (Forma/Tekst/Akordy/Cue; paste @ locator) — parity zachowania v4, nie clone CSS.
@@ -71,12 +73,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Timeline dock:** szczeliny między wierszami etykiet — usunięty `gap` (abutting jak v4) + sticky fill pod ścieżkami; bar-grid nie prześwituje w kolumnie docka; canvas czasu od `--tl-dock-w`.
+- **Timeline Forma:** znaki podziału podsekcji za etykietą sekcji (z-index jak v4), nie przed tekstem.
+- **Migracja / Forma podsekcje:** sekcje z legacy (i już zmigrowane projekty bez `subsections`) dostają domyślne granice 4-taktowe jak v4 (`defaultSubsections4Bar`); Countdown bez podsekcji; istniejące niepuste `subsections` bez nadpisania; `ensureFormaSubsections` przy odczycie/zapisie projektu.
 - **Timeline dock:** kolumna etykiet ścieżek / narożnik ruler nieprzeźroczysta (`--ss-color-surface`) — grid i locator/playhead nie prześwitują (bez `opacity` na sticky cell).
-- **Timeline Zoom H:** krótkie clipy / segmenty map przy oddaleniu — min. szerokość renderu 4px (`MIN_CLIP_WIDTH_PX`; Forma/Tekst/Akordy/Cue + mapy), żeby nie wyglądały na nachodzące mimo rozłącznych ticków.
+- **Timeline Zoom H:** krótkie clipy / segmenty map przy mocnym oddaleniu — szerokość paint = prawdziwa geometria tick→px (sub-pixel OK), bez flooru 4px (`MIN_CLIP_WIDTH_PX` / CSS `min-width`); gęste Akordy/Tekst nie nachodzą wizualnie mimo rozłącznych ticków (PO; v4 też miało `Math.max(4, …)` w `clipRect`).
 - **Client:** wskaźnik połączenia w headerze (kropka + Połączony/Rozłączony) oraz opóźnienie sieci (`N ms`) z ticków transportu (`sentAtMs`) — regresja vs v4 `#connection-indicator`.
 - **Import UG / Akordy:** linia akordów + tekst = jeden takt jak w v4 (onsets w takcie, długość do następnego) — bez nachodzenia; przy move/split zachowany symbol remnantu (`-r`).
 - **Migrator legacy → akordy:** długość = do następnego onsetu (nie min=takt) + poprawne mapowanie indeksów po sortowaniu — gęste utwory typu Money bez nachodzenia; `sealAkordyLengths` na wyjściu.
-- **Timeline Countdown:** rozciąganie długości gestem (body / prawa krawędź, snap do taktów) + shift treści jak v4; lewa krawędź zablokowana (komunikat); inspector `setCountdownBars` z renormem końca CD @ tick 0; po zmianie długości — regeneracja cyfr CD w regionie Countdown + kotwiczenie scrolla (song start w tym samym miejscu viewportu).
+- **Timeline Countdown:** rozciąganie długości gestem (body / prawa krawędź, snap do taktów) + shift treści jak v4; lewa krawędź zablokowana (komunikat); inspector `setCountdownBars` z renormem końca CD @ tick 0; po zmianie długości — regeneracja cyfr CD w regionie Countdown; podczas gestu kotwiczenie tick 0 (stabilny drag), po puścieniu / w inspectorze — natychmiastowy scroll na początek timeline (region CD).
 - Admin — wiersze wzorów / Batch PC / Scena / Pliki: siatka bez fałszywej kolumny PC, żeby przycisk „Nowy z wzoru” nie zasłaniał nazwy.
 - **Timeline parity vs v4:** locator/loop snap @ beat (Cmd/Ctrl = off); locator `primary` vs playhead `info`; playhead nie jako linia przy pause; toolbar transport/BBT wyśrodkowany; Zoom UI mnoży H+V; meta year + editable metrum/tonacja @ 0.
 - **Timeline chrome (korekta bez decyzji PO):** Odrzuć/Zapisz z powrotem jako **ikony**; metronom + follow w **center** przy transporcie; footer bez dublowania Utwór/Pozycja/Połączenie/Stan (conn-dot + zoom jak v4).

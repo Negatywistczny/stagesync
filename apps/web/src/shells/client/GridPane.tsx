@@ -39,6 +39,10 @@ export function GridPane({
       hybridPolishB: prefs.hybridPolishB,
     });
 
+  const hero =
+    ctx.cycle.find((s) => s.active)?.symbol ??
+    (ctx.current ? ctx.current.symbol : "—");
+
   return (
     <div
       className={[
@@ -49,10 +53,34 @@ export function GridPane({
         .join(" ")}
       aria-live="polite"
     >
-      <p className={styles.gridCurrent}>
-        {ctx.current ? fmt(ctx.current.symbol) : "—"}
-      </p>
-      {ctx.upcoming.length > 0 ? (
+      <p className={styles.gridCurrent}>{fmt(hero)}</p>
+      {ctx.cycle.length > 0 ? (
+        <div className={styles.cycleRow} aria-label="Cykl akordów">
+          {ctx.cycle.map((step, i) => (
+            <div
+              key={`${step.symbol}-${i}`}
+              className={[
+                styles.cycleCell,
+                step.active ? styles.cycleCellActive : "",
+                prefs.gridAnimations ? styles.cycleCellAnim : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={{ flexGrow: step.bars, flexBasis: `${step.bars * 2.5}rem` }}
+              title={
+                step.bars > 1
+                  ? `${fmt(step.symbol)} · ${step.bars} takty`
+                  : fmt(step.symbol)
+              }
+            >
+              <span className={styles.cycleCellSymbol}>{fmt(step.symbol)}</span>
+              {step.bars > 1 ? (
+                <span className={styles.cycleCellBars}>{step.bars}</span>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : ctx.upcoming.length > 0 ? (
         <div className={styles.gridUpcomingRow} aria-label="Następne akordy">
           {ctx.upcoming.map((c) => (
             <span key={c.id} className={styles.gridUpcomingChord}>

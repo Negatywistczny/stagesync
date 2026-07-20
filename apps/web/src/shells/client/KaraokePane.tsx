@@ -2,7 +2,7 @@ import type { Project } from "@stagesync/shared";
 import { buildKaraokeLiveContext } from "../../lib/clientKaraoke.js";
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 type KaraokePaneProps = {
   project: Project | null;
@@ -14,6 +14,14 @@ type KaraokePaneProps = {
   onVocalTap?: () => void;
 };
 
+function readAutoScroll(): boolean {
+  try {
+    return localStorage.getItem("stagesync-client-autoscroll") !== "0";
+  } catch {
+    return true;
+  }
+}
+
 export function KaraokePane({
   project,
   displayTicks,
@@ -24,6 +32,8 @@ export function KaraokePane({
   onVocalTap,
 }: KaraokePaneProps) {
   const activeRef = useRef<HTMLParagraphElement | null>(null);
+  const [pulse, setPulse] = useState(false);
+  const prevBeat = useRef<number | null>(null);
 
   useEffect(() => {
     if (!vocalTapOn || !onVocalTap) return;
@@ -37,12 +47,30 @@ export function KaraokePane({
     return () => window.removeEventListener("keydown", onKey);
   }, [vocalTapOn, onVocalTap]);
 
+  const ctx =
+    project != null ? buildKaraokeLiveContext(project, displayTicks) : null;
+
+  const activeLineId = ctx?.lines.find((l) => l.active)?.id ?? null;
+  const currentBeat = ctx?.currentBeat ?? null;
+
   useEffect(() => {
+    if (!activeLineId || !readAutoScroll()) return;
     activeRef.current?.scrollIntoView({
       block: "center",
       behavior: "smooth",
     });
-  }, [displayTicks, project?.id]);
+  }, [activeLineId, displayTicks, project?.id]);
+
+  useEffect(() => {
+    if (currentBeat == null) return;
+    if (prevBeat.current != null && prevBeat.current !== currentBeat) {
+      setPulse(true);
+      const t = window.setTimeout(() => setPulse(false), 120);
+      prevBeat.current = currentBeat;
+      return () => window.clearTimeout(t);
+    }
+    prevBeat.current = currentBeat;
+  }, [currentBeat]);
 
   if (!hasActiveProjectId) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
@@ -56,7 +84,6 @@ export function KaraokePane({
     return <p className={styles.empty}>Nie udało się wczytać utworu.</p>;
   }
 
-  const ctx = buildKaraokeLiveContext(project, displayTicks);
   if (!ctx) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
@@ -73,6 +100,29 @@ export function KaraokePane({
           </Button>
         </div>
       ) : null}
+      {ctx.sectionBars.length > 0 ? (
+        <div className={styles.barStrip} aria-label="Postęp sekcji">
+          {ctx.sectionBars.map((cell) => (
+            <div
+              key={cell.index}
+              className={[
+                styles.barCell,
+                cell.past ? styles.barCellPast : "",
+                cell.current ? styles.barCellCurrent : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                cell.current
+                  ? ({
+                      ["--beat-progress" as string]: String(cell.beatProgress),
+                    } as CSSProperties)
+                  : undefined
+              }
+            />
+          ))}
+        </div>
+      ) : null}
       {ctx.hasLyricLines ? (
         <div className={styles.karaokeLines} aria-label="Linie tekstu">
           {ctx.lines.map((line) => (
@@ -82,6 +132,7 @@ export function KaraokePane({
               className={[
                 styles.karaokeLine,
                 line.active ? styles.karaokeLineActive : styles.karaokeLineDim,
+                line.active && pulse ? styles.karaokeBeatPulse : "",
               ]
                 .filter(Boolean)
                 .join(" ")}

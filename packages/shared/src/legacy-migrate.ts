@@ -14,6 +14,10 @@ import {
 import { ProjectSchema, type Project, type FormaClip } from "./schema.js";
 import { sealAkordyLengths } from "./ug-import.js";
 import { scrubCountdownDigitClips } from "./countdown-content.js";
+import {
+  ensureFormaSubsections,
+  normalizeSubsectionOffsets,
+} from "./forma-subsections.js";
 
 export type LegacySection = {
   id?: unknown;
@@ -21,6 +25,8 @@ export type LegacySection = {
   startAbs?: unknown;
   lengthBeats?: unknown;
   drumsNote?: unknown;
+  /** Absolute-beat subsection starts (`{ startAbs }` or bare number). */
+  subsections?: unknown;
 };
 
 export type LegacySong = {
@@ -210,6 +216,36 @@ function onsetLengths(
 }
 
 /**
+ * Map legacy absolute-beat subsections → relative tick offsets (v5 Forma).
+ * Returns undefined when legacy has no usable interiors (caller defaults via ensure).
+ */
+export function mapLegacySubsectionOffsets(
+  sec: LegacySection,
+  sectionStartAbs: number,
+  lengthTicks: number,
+  ppq: number,
+): number[] | undefined {
+  const raw = sec.subsections;
+  if (!Array.isArray(raw) || raw.length === 0) return undefined;
+  const offsets: number[] = [];
+  for (const item of raw) {
+    let abs: number;
+    if (typeof item === "number") {
+      abs = item;
+    } else if (item && typeof item === "object" && !Array.isArray(item)) {
+      abs = asFiniteNumber((item as { startAbs?: unknown }).startAbs, NaN);
+    } else {
+      continue;
+    }
+    if (!Number.isFinite(abs)) continue;
+    const relTicks = absBeatToTicks(abs - sectionStartAbs, ppq);
+    if (Number.isFinite(relTicks)) offsets.push(Math.round(relTicks));
+  }
+  const normalized = normalizeSubsectionOffsets(offsets, lengthTicks);
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+/**
  * Migrate one legacy 4.x song object → Project formatVersion 5.
  * Fail-fast via Zod at the end ([ADR 0005] ACL).
  */
@@ -256,6 +292,9 @@ export function migrateLegacySong(
     const lengthTicks = Math.max(1, absBeatToTicks(lengthBeats, ppq));
     const countdown = isLegacyCountdownSection(sec);
     const note = asString(sec.drumsNote);
+    const mappedSubs = countdown
+      ? undefined
+      : mapLegacySubsectionOffsets(sec, startAbs, lengthTicks, ppq);
     return {
       id: countdown
         ? `forma-cd-${i}`
@@ -265,6 +304,7 @@ export function migrateLegacySong(
       startTicks,
       lengthTicks,
       ...(note && !countdown ? { note } : {}),
+      ...(mappedSubs ? { subsections: mappedSubs } : {}),
     };
   });
 
@@ -437,8 +477,10 @@ export function migrateLegacySong(
     );
   }
 
-  // Scrub any leftover digit / CD-span clips — digits are display-only.
-  const project = scrubCountdownDigitClips(parsed.data);
+  // Scrub leftover digit / CD-span clips; fill missing Forma 4-bar subsections (v4).
+  const project = ensureFormaSubsections(
+    scrubCountdownDigitClips(parsed.data),
+  );
 
   return {
     project,

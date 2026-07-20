@@ -43,4 +43,14 @@ describe("clientKaraoke", () => {
     expect(ctx?.lyricLine).toBe("2");
     expect(ctx?.lines.some((l) => l.text === "2" && l.active)).toBe(true);
   });
+
+  it("exposes section bar strip with beat progress (CL-01)", () => {
+    const ctx = buildKaraokeLiveContext(project, 500);
+    expect(ctx?.sectionBars.length).toBe(2);
+    expect(ctx?.sectionBars.some((b) => b.current)).toBe(true);
+    expect(ctx?.sectionBars.find((b) => b.current)?.beatProgress).toBeGreaterThan(
+      0,
+    );
+    expect(ctx?.currentBeat).toBeGreaterThanOrEqual(1);
+  });
 });

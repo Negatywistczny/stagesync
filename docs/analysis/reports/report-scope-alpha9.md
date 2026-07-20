@@ -21,16 +21,16 @@
 | M6 | Vitest happy + broken path | ✓ |
 | M7 | CLI `--dry-run` / `--apply` + shadow `.bak` | ✓ |
 | M8 | Docs użytkownika [MIGRATION.md](../../MIGRATION.md) | ✓ |
-| M9 | Fixtures / smoke na typowej bazie 4.x + regresja Admin import | ☐ |
+| M9 | Fixtures / smoke na typowej bazie 4.x + regresja Admin import | ✓ |
 
 ## IN (must) — Residual parity (z α8 freeze)
 
 | # | Wycinek | Done |
 |---|---------|------|
 | R1 | PO smoke T-gest / T-loc / T-zoom / T-maps / T-chrome / A1 | ☐ |
-| R2 | **CL-01** Karaoke beat / bar highlight | ☐ |
-| R3 | **CL-04** Grid full cycle / multi-bar | ☐ |
-| R4 | **CL-05** Forma / drums bar progress | ☐ |
+| R2 | **CL-01** Karaoke beat / bar highlight | ✓ |
+| R3 | **CL-04** Grid full cycle / multi-bar | ✓ |
+| R4 | **CL-05** Forma / drums bar progress | ✓ |
 | R5 | **P8** Sign-off PO (blokuje β) | ☐ |
 
 ## OUT (świadome)

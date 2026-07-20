@@ -9,6 +9,10 @@ import {
   type TekstClip,
   type TimeSignature,
 } from "@stagesync/shared";
+import {
+  buildBarCellsForClip,
+  type ClientBarCell,
+} from "./clientBarCells.js";
 import { resolveTekstClipAt } from "./tekstEdit.js";
 
 export type KaraokeLine = {
@@ -28,6 +32,10 @@ export type KaraokeLiveContext = {
   lyricLine: string | null;
   /** Stage window: previous + current + upcoming lines. */
   lines: KaraokeLine[];
+  /** Active section bar strip (CL-01). */
+  sectionBars: ClientBarCell[];
+  /** Current beat in bar (1-based) for pulse. */
+  currentBeat: number;
 };
 
 /** Persisted Tekst + synthetic CD digits (display-only) when playhead in/near CD. */
@@ -104,6 +112,16 @@ export function buildKaraokeLiveContext(
     active: activeIdx >= 0 && c.id === clips[activeIdx]!.id,
   }));
 
+  const sectionBars =
+    section != null
+      ? buildBarCellsForClip(
+          project,
+          section.startTicks,
+          section.startTicks + section.lengthTicks,
+          displayTicks,
+        )
+      : [];
+
   return {
     songTitle: project.name,
     sectionName: section?.name ?? "—",
@@ -113,6 +131,8 @@ export function buildKaraokeLiveContext(
     hasLyricLines,
     lyricLine,
     lines,
+    sectionBars,
+    currentBeat: bbt.beat,
   };
 }
 

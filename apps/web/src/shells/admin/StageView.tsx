@@ -32,8 +32,8 @@ function resolveClientPhase(
 }
 
 function presenceDotClass(phase: ClientPhase): string {
-  if (phase === "ready") return styles.presenceDotOn;
-  return styles.presenceDotPending;
+  if (phase === "ready") return styles.presenceDotOn ?? "";
+  return styles.presenceDotPending ?? "";
 }
 
 function presenceTitle(phase: ClientPhase): string {
@@ -117,10 +117,10 @@ export function StageView() {
       : "empty";
   const headerDotClass =
     headerPresence === "online"
-      ? styles.presenceDotOn
+      ? (styles.presenceDotOn ?? "")
       : headerPresence === "error"
-        ? styles.presenceDotPending
-        : styles.presenceDotOff;
+        ? (styles.presenceDotPending ?? "")
+        : (styles.presenceDotOff ?? "");
   const headerCountLabel =
     headerPresence === "online"
       ? clients.length === 1

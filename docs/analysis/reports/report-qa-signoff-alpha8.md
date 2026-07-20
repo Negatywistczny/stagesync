@@ -54,14 +54,28 @@ Zob. tabela w [ui-shell-inventory.md](../../ui-shell-inventory.md).
 ## Werdykt
 
 **Must M1–M11:** zaimplementowane; CI zielone (stan z sesji QA).  
-Dead-controls restore + rebuild TE-P0/CD/Admin: w working tree — **code freeze** 2026-07-20 ([report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md)).
+Dead-controls restore + rebuild TE-P0/CD/Admin: **code freeze** 2026-07-20 ([report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md)).
 
 | Gate | Wynik |
 |------|-------|
 | Engineering α8 (must + rebuild code) | **freeze** |
-| PO smoke (P8) | **open** → α9 |
-| Client CL-01/04/05 | **open** → α9 |
-| β ready | **nie** |
+| Client CL-01/04/05 (kod + Vitest) | **done** → α9 (2026-07-21) |
+| Migrator M9 fixtures / CI dry-run | **done** → α9 |
+| PO smoke (P8) | **open** — engineering ready; wymaga ludzkiego sign-off |
+| β ready | **nie** (do green P8) |
 
-Tag `v5.0.0-alpha.8` / bump `alpha.9` — **tylko na prośbę** (osobny commit).  
-**Zakaz** `5.0.0-beta.*` do green P8 + CL-P0.
+### PO smoke P8 — checklista (czeka na PO)
+
+Uruchom lokalnie Admin / Timeline / Client na zmergowanym drzewie:
+
+1. **T-gest** — marquee, multi-select, multi-drag, ⌘C/X/V/D  
+2. **T-loc / T-zoom / T-maps / T-chrome** — locator, zoom H/V/UI, mapy, chrome  
+3. **meta / CD** — Countdown length + ephemeral digits  
+4. **A1** — Set + wybór utworu  
+5. **C1** — Karaoke bar fill, Grid cycle, Forma strip  
+
+Po green: odhacz w [TODO.md](../../TODO.md) + zaktualizuj inventarz.
+
+Tag `v5.0.0-alpha.8` / bump `alpha.9` — **tylko na prośbę**.  
+**Zakaz** `5.0.0-beta.*` do green P8.  
+**Zakaz startu β1** (Docker/Tauri) do green P8 — [ROADMAP](../../ROADMAP.md).

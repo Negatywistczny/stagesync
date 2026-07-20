@@ -136,11 +136,11 @@ Szacunek behawioru **~55–65%** w [report-v4-v5-parity-audit.md](./report-v4-v5
 
 | ID | Gap | v4 (fakt) | v5 (fakt) | Sev | Class |
 |----|-----|-----------|-----------|-----|-------|
-| CL-01 | Karaoke beat / bar highlight | `highlightKaraokeBeat` | Line-level active only — **bez** beat fill | **P0** | port-behavior |
+| CL-01 | Karaoke beat / bar highlight | `highlightKaraokeBeat` | Section bar strip + `--beat-progress` + beat pulse | **P0 done** (α9) | port-behavior |
 | CL-02 | Karaoke remote line edit | Textareas + shift gdy client-edit | Brak (zależne AD-03) | **P1** | port-behavior |
 | CL-03 | Instrument pitch (C/B♭/E♭) | Global pitch toggle | **ABSENT** | **P1** | port-behavior |
-| CL-04 | Grid: full cycle / multi-bar | `grid-cycle.js` | `GridPane` = current + upcoming strip | **P0** | port-behavior |
-| CL-05 | Forma/drums bar progress | `drums-view.js` cells current/past | Section + notes — **bez** bar grid | **P0** | port-behavior |
+| CL-04 | Grid: full cycle / multi-bar | `grid-cycle.js` | Cycle cells from barChords (compress + detect) | **P0 done** (α9) | port-behavior |
+| CL-05 | Forma/drums bar progress | `drums-view.js` cells current/past | Forma strip past/current + beat dots | **P0 done** (α9) | port-behavior |
 | CL-06 | Score / OSMD sync | Pełniejszy sync | Stub lista MusicXML | **P1** | deferred / **OUT**(β+) |
 | CL-07 | Score octave / part pitch | Score settings | **ABSENT** | **P2** | deferred |
 | CL-08 | Stage cue overlay | cue-display | Present | — | present |
@@ -155,7 +155,7 @@ Szacunek behawioru **~55–65%** w [report-v4-v5-parity-audit.md](./report-v4-v5
 
 1. ~~**TE-01 / 03–06 / 08** + **KB-20** — marquee, multi-select, multi-drag, clipboard~~ **code** (α8 freeze; PO smoke α9)
 2. ~~**TE-19 / 22** — Countdown canvas length + shift treści~~ **code** (α8 freeze; PO smoke α9)
-3. **CL-01 / 04 / 05** — karaoke beat; grid cycle; Forma bar progress — **α9 must**
+3. ~~**CL-01 / 04 / 05** — karaoke beat; grid cycle; Forma bar progress~~ **code** (α9; PO smoke C1)
 4. **AD-01–03** — Transpozycja / Lead / Edycja — **β2** (API + Live Desk; **nie** footer stub; **nie** bloker α9)
 
 ### Świadome OUT (nie liczyć do bramki)

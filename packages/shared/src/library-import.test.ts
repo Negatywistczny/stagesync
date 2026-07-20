@@ -97,6 +97,19 @@ describe("normalizeLibraryImport", () => {
     expect(first.forma.clips.length).toBeGreaterThan(0);
   });
 
+  it("migrates docs/examples typical legacy fixture", () => {
+    const typical = join(
+      dirname(fileURLToPath(import.meta.url)),
+      "../../../docs/examples/legacy/database.typical.json",
+    );
+    const raw = JSON.parse(readFileSync(typical, "utf8")) as unknown;
+    const result = normalizeLibraryImport(raw, {
+      updatedAt: "2026-07-20T18:00:00.000Z",
+    });
+    expect(result.format).toBe("legacy-database");
+    expect(result.projects).toHaveLength(2);
+  });
+
   it("throws on unknown format", () => {
     expect(() => normalizeLibraryImport({})).toThrow(/Nieznany format/);
   });

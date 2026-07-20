@@ -405,6 +405,32 @@
   text-align: center;
 }
 
+.formaMeta {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  text-align: center;
+  color: var(--ss-color-text-muted);
+}
+
+.beatDots {
+  display: flex;
+  justify-content: center;
+  gap: var(--ss-space-2);
+}
+
+.beatDot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--ss-color-border);
+}
+
+.beatDotActive {
+  background: var(--ss-color-primary);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--ss-color-primary) 28%, transparent);
+}
+
 .formaNote {
   margin: 0;
   font-size: var(--ss-text-xl);
@@ -421,38 +447,91 @@
   color: var(--ss-color-text-muted);
 }
 
-.formaList {
-  margin: var(--ss-space-2) 0 0;
-  padding: 0;
-  list-style: none;
+.formaStrip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
   overflow: auto;
   flex: 1;
   min-height: 0;
+  padding: 0 var(--ss-space-2);
 }
 
-.formaListItem {
+.formaSegment {
   display: flex;
   flex-direction: column;
-  gap: var(--ss-space-1);
+  gap: var(--ss-space-2);
   padding: var(--ss-space-2) var(--ss-space-3);
-  border-bottom: 1px solid var(--ss-color-border-muted);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sm);
+  opacity: 0.72;
+}
+
+.formaSegmentActive {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-border));
+  background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
+}
+
+.formaSegmentCd {
+  border-style: dashed;
+}
+
+.formaSegmentHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+}
+
+.formaSegmentBars {
+  font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
 }
 
-.formaListItemActive {
-  color: var(--ss-color-text);
-  background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
-  border-left: 3px solid var(--ss-color-primary);
+.formaSegmentNote {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.barStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: 100%;
+}
+
+.barCell {
+  flex: 1 1 1.25rem;
+  min-width: 0.75rem;
+  height: 0.85rem;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ss-color-border) 70%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.barCellPast {
+  background: color-mix(in srgb, var(--ss-color-primary) 35%, transparent);
+}
+
+.barCellCurrent {
+  background: color-mix(in srgb, var(--ss-color-primary) 18%, transparent);
+  outline: 1px solid var(--ss-color-primary);
+}
+
+.barCellCurrent::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--beat-progress, 0) * 100%);
+  background: color-mix(in srgb, var(--ss-color-primary) 70%, transparent);
 }
 
 .formaListName {
   font-size: var(--ss-text-md);
   font-weight: var(--ss-font-weight-semibold);
-}
-
-.formaListNote {
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text-muted);
 }
 
 .karaokePane {
@@ -461,6 +540,7 @@
   flex-direction: column;
   padding: var(--ss-space-2) 0;
   min-height: 0;
+  gap: var(--ss-space-3);
 }
 
 .karaokePlaceholder {
@@ -508,6 +588,11 @@
   font-weight: var(--ss-font-weight-regular);
 }
 
+.karaokeBeatPulse {
+  text-shadow: 0 0 0.6rem
+    color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+}
+
 .empty {
   margin: var(--ss-space-8) 0;
   text-align: center;
@@ -534,6 +619,53 @@
   text-align: center;
 }
 
+.cycleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+  justify-content: center;
+  width: min(100%, 42rem);
+}
+
+.cycleCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ss-space-1);
+  min-height: 3.25rem;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-surface) 85%, transparent);
+  color: var(--ss-color-text-muted);
+}
+
+.cycleCellActive {
+  color: var(--ss-color-text);
+  border-color: var(--ss-color-primary);
+  background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--ss-color-primary) 35%, transparent);
+}
+
+.cycleCellAnim {
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.cycleCellSymbol {
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.cycleCellBars {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+}
+
 .gridUpcomingRow {
   display: flex;
   flex-wrap: wrap;
@@ -547,7 +679,8 @@
   font-weight: var(--ss-font-weight-medium);
 }
 
-.gridAnimationsOff .gridCurrent {
+.gridAnimationsOff .gridCurrent,
+.gridAnimationsOff .cycleCellAnim {
   transition: none;
 }
 

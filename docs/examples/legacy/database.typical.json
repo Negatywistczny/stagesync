@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 4,
+  "songFormatMigrationRev": 8,
+  "songs": [
+    {
+      "id": "song-typical-a",
+      "title": "Money, Money, Money",
+      "artist": "ABBA",
+      "tempo": 120,
+      "key": { "tonic": "A", "mode": "minor" },
+      "markers": [{ "id": "mk-end-a", "kind": "END", "startAbs": 40 }],
+      "sections": [
+        { "id": 0, "name": "Countdown", "startAbs": 0 },
+        {
+          "id": 1,
+          "name": "Verse",
+          "startAbs": 8,
+          "drumsNote": "Kick soft",
+          "subsections": [{ "startAbs": 16 }]
+        },
+        { "id": 2, "name": "Chorus", "startAbs": 24 }
+      ],
+      "tempoMap": [
+        { "id": "tm-0", "startAbs": 8, "bpm": 120 },
+        { "id": "tm-1", "startAbs": 24, "bpm": 128 }
+      ],
+      "meterMap": [
+        { "id": "mm-0", "startAbs": 8, "meter": "4/4" },
+        { "id": "mm-1", "startAbs": 24, "meter": "5/8" }
+      ],
+      "keyMap": [
+        {
+          "id": "km-0",
+          "startAbs": 8,
+          "key": { "tonic": "A", "mode": "minor" }
+        }
+      ],
+      "cues": [
+        {
+          "id": "cue-1",
+          "label": "Lights",
+          "startAbs": 12,
+          "lengthBeats": 4
+        }
+      ],
+      "scoreBarMap": {
+        "anchors": [{ "songBar": 1, "scoreBar": 1 }]
+      },
+      "vocal": {
+        "lines": [
+          { "id": "vl-cd-2", "text": "2", "startAbs": 0 },
+          { "id": "vl-cd-1", "text": "1", "startAbs": 4 },
+          {
+            "id": "vl-v1",
+            "text": "I work all night",
+            "startAbs": 8,
+            "lengthBeats": 8
+          }
+        ]
+      },
+      "chords": {
+        "timeSignature": "4/4",
+        "clips": [
+          { "id": "cc-a1", "chord": "Am", "startAbs": 8 },
+          { "id": "cc-a2", "chord": "Dm", "startAbs": 12 },
+          { "id": "cc-a3", "chord": "E", "startAbs": 16 },
+          { "id": "cc-a4", "chord": "Am", "startAbs": 20 },
+          { "id": "cc-a5", "chord": "F", "startAbs": 24 }
+        ]
+      }
+    },
+    {
+      "id": "song-typical-b",
+      "title": "Template B",
+      "isTemplate": true,
+      "tempo": 100,
+      "markers": [{ "id": "mk-end-b", "kind": "END", "startAbs": 16 }],
+      "sections": [
+        { "id": 0, "name": "Countdown", "startAbs": 0 },
+        { "id": 1, "name": "Intro", "startAbs": 8 }
+      ],
+      "chords": {
+        "timeSignature": "4/4",
+        "clips": [{ "id": "cc-b1", "chord": "C", "startAbs": 8 }]
+      }
+    }
+  ],
+  "setlist": {
+    "enabled": true,
+    "songIds": ["song-typical-a", "song-typical-b"]
+  },
+  "settings": {
+    "clientEditsEnabled": true,
+    "syncLeadMs": 200,
+    "setlistAutoAdvance": false
+  }
+}

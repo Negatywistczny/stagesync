@@ -273,4 +273,73 @@ describe("library / projects CRUD", () => {
     const body = (await res.json()) as { error: string };
     expect(body.error).toMatch(/Nieznany format|projects|songs/);
   });
+
+  it("POST /api/library/import accepts docs typical legacy fixture", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { resolve, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const repoRoot = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "../../..",
+    );
+    const raw = JSON.parse(
+      await readFile(
+        join(repoRoot, "docs/examples/legacy/database.typical.json"),
+        "utf8",
+      ),
+    );
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(raw),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      ok: boolean;
+      format: string;
+      created: string[];
+    };
+    expect(body.ok).toBe(true);
+    expect(body.format).toBe("legacy-database");
+    expect(body.created).toHaveLength(2);
+  });
+
+  it("POST /api/library/import accepts v5 pack fixture", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { resolve, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const repoRoot = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "../../..",
+    );
+    const raw = JSON.parse(
+      await readFile(
+        join(
+          repoRoot,
+          "docs/examples/v5/library.pack.sample.stagesync.json",
+        ),
+        "utf8",
+      ),
+    );
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(raw),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      ok: boolean;
+      format: string;
+      created: string[];
+    };
+    expect(body.ok).toBe(true);
+    expect(body.format).toBe("v5-pack");
+    expect(body.created).toHaveLength(1);
+    const project = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
+      ).json(),
+    );
+    expect(project.name).toBe("Pack Sample");
+  });
 });

@@ -11,6 +11,7 @@ import {
   SetlistSchema,
   createProjectV5Seed,
   defaultSetlist,
+  ensureFormaSubsections,
   mergePreserveById,
   nextMidiProgramId,
   normalizeSetlist,
@@ -120,27 +121,28 @@ function libraryEntryFromProject(project: Project): LibraryProjectEntry {
 }
 
 function upgradeToV5(raw: unknown): Project {
+  let project: Project;
   if (isProjectV1(raw)) {
-    return upgradeProjectV4ToV5(
+    project = upgradeProjectV4ToV5(
       upgradeProjectV3ToV4(
         upgradeProjectV2ToV3(upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw))),
       ),
     );
-  }
-  if (isProjectV2(raw)) {
-    return upgradeProjectV4ToV5(
+  } else if (isProjectV2(raw)) {
+    project = upgradeProjectV4ToV5(
       upgradeProjectV3ToV4(upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw))),
     );
-  }
-  if (isProjectV3(raw)) {
-    return upgradeProjectV4ToV5(
+  } else if (isProjectV3(raw)) {
+    project = upgradeProjectV4ToV5(
       upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw)),
     );
+  } else if (isProjectV4(raw)) {
+    project = upgradeProjectV4ToV5(ProjectSchemaV4.parse(raw));
+  } else {
+    project = ProjectSchemaV5.parse(raw);
   }
-  if (isProjectV4(raw)) {
-    return upgradeProjectV4ToV5(ProjectSchemaV4.parse(raw));
-  }
-  return ProjectSchemaV5.parse(raw);
+  // Migrated / early-α projects often lack Forma subsections — recompute v4 4-bar.
+  return ensureFormaSubsections(project);
 }
 
 export function createStores(dataDir?: string) {
@@ -221,7 +223,7 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV5.parse(project);
+    const parsed = ProjectSchemaV5.parse(ensureFormaSubsections(project));
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);

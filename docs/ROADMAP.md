@@ -13,8 +13,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.6** | Admin Live Desk — setlista, scena, pliki | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze | [report-scope-alpha6](./analysis/reports/report-scope-alpha6.md) |
 | **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | [report-scope-alpha7](./analysis/reports/report-scope-alpha7.md) |
 | **5.0.0-alpha.8** | Parity workflow 4.x | **Code freeze 2026-07-20** — engineering must + rebuild TE-P0/CD/chrome/Admin; **nie** β ([freeze](./analysis/reports/report-alpha8-code-freeze.md)); residual PO + CL-P0 → α9 | QA: [report-qa-signoff-alpha8](./analysis/reports/report-qa-signoff-alpha8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) |
-| **5.0.0-alpha.9** | Migrator + dokończenie rebuild | Migrator MVP ([MIGRATION.md](./MIGRATION.md)); **PO smoke** P8; Client **CL-01/04/05** | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) · aktywny: [TODO.md](./TODO.md) |
-| **5.0.0-beta.1** | Host / dystrybucja | **ZAKAZ startu β** do green **PO smoke** (zachowanie, nie inventarz). Potem: Docker + Tauri + host (**bez** audio/MIDI — β2) | — |
+| **5.0.0-alpha.9** | Migrator + dokończenie rebuild | Migrator M1–M9 ✓; Client CL-01/04/05 ✓; **PO smoke P8** open (blokuje β) | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) · aktywny: [TODO.md](./TODO.md) |
+| **5.0.0-beta.1** | Host / dystrybucja | **ZAKAZ startu** do green **P8**. Potem: Docker + Tauri + host (**bez** audio/MIDI — β2) | — |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |

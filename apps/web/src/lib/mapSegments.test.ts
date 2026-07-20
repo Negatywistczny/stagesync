@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createProjectV5Seed } from "@stagesync/shared";
-import {
-  computeFormaViewSpan,
-  MIN_CLIP_WIDTH_PX,
-} from "./formaCanvas.js";
+import { computeFormaViewSpan } from "./formaCanvas.js";
 import {
   meterMapSegments,
   segmentStylePx,
@@ -23,7 +20,7 @@ describe("mapSegments", () => {
     expect(segments[0]?.label).toContain("120");
   });
 
-  it("segmentStylePx floors paint width at MIN_CLIP_WIDTH_PX", () => {
+  it("segmentStylePx uses true proportional width (no paint floor)", () => {
     const seg = {
       startTicks: 0,
       endTicks: 240,
@@ -31,8 +28,9 @@ describe("mapSegments", () => {
       eventId: "t0",
       eventStartTicks: 0,
     };
+    // 240/3840 * 12 = 0.75px
     expect(segmentStylePx(seg, { start: 0, end: 3840 * 8 }, 3840, 12).width).toBe(
-      `${MIN_CLIP_WIDTH_PX}px`,
+      "0.75px",
     );
   });
 

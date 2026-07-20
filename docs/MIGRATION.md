@@ -29,7 +29,15 @@ pnpm migrate:legacy -- \
   --dry-run
 ```
 
-CLI wypisze: mapowanie `legacyId → projectId`, liczby clipów, `shiftQuarters`, ostrzeżenia.
+Typowa baza (multi-song, maps, cues, setlista) — **M9 smoke / CI**:
+
+```bash
+pnpm migrate:legacy -- \
+  --input docs/examples/legacy/database.typical.json \
+  --dry-run
+```
+
+CI (`.github/workflows/ci.yml`) uruchamia oba dry-run po `pnpm test`.
 
 ## Apply (zapis do data/)
 

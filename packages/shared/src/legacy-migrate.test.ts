@@ -140,6 +140,58 @@ describe("migrateLegacySong", () => {
     expect(chords[0]!.lengthTicks).toBe(2 * DEFAULT_PPQ);
   });
 
+  it("defaults Forma subsections to v4 4-bar offsets on dense sections", () => {
+    const song: LegacySong = {
+      id: "dense-form",
+      title: "Dense Form",
+      tempo: 120,
+      markers: [{ id: "mk-end", kind: "END", startAbs: 56 }],
+      sections: [
+        { id: 0, name: "Countdown", startAbs: 0 },
+        { id: 1, name: "Verse", startAbs: 8 },
+      ],
+      chords: { timeSignature: "4/4", clips: [] },
+    };
+    const { project } = migrateLegacySong(song, {
+      projectId: PID,
+      updatedAt: FIXED_AT,
+    });
+    const cd = project.forma.clips.find((c) => c.kind === "countdown");
+    const verse = project.forma.clips.find((c) => c.name === "Verse");
+    const bar = 4 * DEFAULT_PPQ;
+    const chunk4 = 4 * bar;
+    // Verse: 8→56 = 48 beats = 12 bars → interiors at 4 and 8 bars
+    expect(verse?.lengthTicks).toBe(12 * bar);
+    expect(verse?.subsections).toEqual([chunk4, 2 * chunk4]);
+    expect(cd?.subsections).toBeUndefined();
+  });
+
+  it("maps legacy subsections when present; does not overwrite", () => {
+    const song: LegacySong = {
+      id: "with-subs",
+      title: "With Subs",
+      tempo: 120,
+      markers: [{ id: "mk-end", kind: "END", startAbs: 40 }],
+      sections: [
+        { id: 0, name: "Countdown", startAbs: 0 },
+        {
+          id: 1,
+          name: "Verse",
+          startAbs: 8,
+          subsections: [{ startAbs: 8 }, { startAbs: 12 }, { startAbs: 24 }],
+        },
+      ],
+      chords: { timeSignature: "4/4", clips: [] },
+    };
+    const { project } = migrateLegacySong(song, {
+      projectId: PID,
+      updatedAt: FIXED_AT,
+    });
+    const verse = project.forma.clips.find((c) => c.name === "Verse");
+    // Relative: 12-8=4 beats, 24-8=16 beats
+    expect(verse?.subsections).toEqual([4 * DEFAULT_PPQ, 16 * DEFAULT_PPQ]);
+  });
+
   it("fails fast on empty Forma when schema would be invalid", () => {
     // Empty sections → empty forma.clips — ProjectSchema requires clips array but allows empty.
     // Force invalid with bad id:

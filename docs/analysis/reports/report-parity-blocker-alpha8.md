@@ -19,7 +19,7 @@ P1: **TL-T-05**, **TL-Z-01…03**, **TL-M-04/07/08** — czeka PO smoke).
 | **TE-01 / 03–06** | Marquee + multi-select + multi-drag | **code** — czeka PO smoke | α8 freeze → α9 P8 |
 | **TE-08 / KB-20** | Clipboard ⌘C/X/V/D | **code** — czeka PO smoke | α8 freeze → α9 P8 |
 | **TE-19 / 22** | Countdown canvas length + shift treści | **code** — czeka PO smoke | α8 freeze → α9 P8 |
-| **CL-01 / 04 / 05** | Karaoke beat; grid cycle; Forma bar progress | **open** (brak w kodzie) | **α9 must** |
+| **CL-01 / 04 / 05** | Karaoke beat; grid cycle; Forma bar progress | **code** — czeka PO smoke C1 | **α9** |
 | **AD-01…03** | Transpozycja / Lead / Edycja — API + Live Desk | **deferred** (footer stuby usunięte; brak atrapy) | **β2** — nie bloker α9 |
 
 **T-gest** = code awaiting PO smoke. Nie claim β.
@@ -55,7 +55,7 @@ P1: **TL-T-05**, **TL-Z-01…03**, **TL-M-04/07/08** — czeka PO smoke).
 | **T-maps** | Tempo/Metrum/Tonacja SongMaps depth | **code** — czeka PO smoke (α9) |
 | **T-loc** | Locator/loop snap @ **beat**; follow; transport; wskaźniki primary/info | **code** — czeka PO smoke (α9) |
 | **T-chrome** | Header + toolbar center + help size; bez cyan-as-brand | **code** — czeka PO smoke (α9) |
-| **C1** | Client treść ról | **blocked** na CL-01/04/05 (α9 must) |
+| **C1** | Client treść ról | **open** — kod CL-P0 ✓; czeka PO |
 | **A1** | Admin Set + song pick w jednym flow | **code** — czeka PO smoke (α9) |
 | **P8** | Sign-off PO | **open** — blokuje β |
 | **Migrator** | α9 MVP | **code** (scope M1–M8) — fixtures/smoke w α9 |

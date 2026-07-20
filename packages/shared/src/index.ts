@@ -230,6 +230,7 @@ export {
   isLegacyCountdownSection,
   parseLegacyMeter,
   legacySongIdToProjectId,
+  mapLegacySubsectionOffsets,
   type LegacySong,
   type LegacyDatabase,
   type LegacySection,
@@ -237,6 +238,14 @@ export {
   type MigrateLegacySongResult,
   type MigrateLegacyDatabaseResult,
 } from "./legacy-migrate.js";
+
+export {
+  normalizeSubsectionOffsets,
+  subsectionMaxChunkTicks,
+  defaultSubsections4Bar,
+  hasUsableFormaSubsections,
+  ensureFormaSubsections,
+} from "./forma-subsections.js";
 
 export {
   detectLibraryImportFormat,
