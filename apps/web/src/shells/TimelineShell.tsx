@@ -438,7 +438,6 @@ export function TimelineShell() {
   /** Forma/content multi-select (v4 selectedIds + primaryId). */
   const [clipSelection, setClipSelection] =
     useState<ClipSelection>(EMPTY_CLIP_SELECTION);
-  const selectedIds = clipSelection.items.map((i) => i.id);
   const primaryId = clipSelection.primaryId;
   const selectionLane = primaryLane(clipSelection);
   const selectedClipId = selectionLane === "forma" ? primaryId : null;
