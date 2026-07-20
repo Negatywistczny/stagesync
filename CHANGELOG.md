@@ -7,6 +7,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+- [ADR 0010](docs/adr/0010-desktop-shell-tauri.md) — desktop shell Tauri (thin WebView, SSOT na serwerze).
+
+### Zmieniono
+
+- ROADMAP: β1 = host (Docker + Tauri + stabilność); β2 = audio + MIDI (rozbicie „feature complete”).
+
 ## [5.0.0-alpha.7] - 2026-07-20
 
 ### Dodano

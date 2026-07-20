@@ -44,11 +44,12 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 
 | Temat | Etap |
 |-------|------|
-| Audio 0…N playback / trim / waveform / gain / mute | **β1** |
-| MIDI tracks + Host MIDI I/O | **β1** |
+| Audio 0…N playback / trim / waveform / gain / mute | **β2** |
+| MIDI tracks + Host MIDI I/O | **β2** |
 | Migrator legacy 4.x → v5 | **α9** |
 | Docker Compose | **β1** |
-| Pełna renderacja OSMD (nawigacja nut, sync score) | β1+ / 5.0.0 |
+| Tauri desktop shell | **β1** ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) |
+| Pełna renderacja OSMD (nawigacja nut, sync score) | β2+ / 5.0.0 |
 | Zoom tool + suwaki H/V UI | **5.0.0** |
 | Snap UI picker | **5.0.0** |
 | Fade / Flex Time | OUT / 5.0.0 |

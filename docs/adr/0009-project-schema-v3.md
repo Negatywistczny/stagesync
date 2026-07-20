@@ -21,7 +21,7 @@ plików na dysku oraz osobny stan setlisty (Set ≠ Utwory).
 4. **Ownership PUT:** pełny `PUT /api/projects/:id` **nie kasuje** `assets` /
    `audioTracks` / `audioClips` obecnych na serwerze, jeśli body ich nie zawiera
    (merge-preserve). Mutacja assets wyłącznie przez asset endpoints.
-5. **Playback audio** — poza zakresem (β1).
+5. **Playback audio** — poza zakresem (β2).
 
 ## Konsekwencje
 

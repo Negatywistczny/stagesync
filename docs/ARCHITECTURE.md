@@ -49,7 +49,8 @@ Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); b
 **UI (szkielet):** nowy layout paneli + pełny inventarz kontrolek v4 (`disabled` OK);
 tokeny black/amber `--ss-*` / CSS Modules; `TransportProvider` nad routerem. Checklist:
 [ui-shell-inventory.md](./ui-shell-inventory.md). Kierunek: [ADR 0003](./adr/0003-ui-direction-booth.md).
-Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).
+Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).  
+Desktop shell (Tauri, β1): [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).
 
