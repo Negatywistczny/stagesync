@@ -19,7 +19,7 @@ Finalne dokumenty, do ktorych mozna linkowac z `TODO`, `ROADMAP` i PR.
 | **α4 (bieżący)** | [report-scope-alpha4](./reports/report-scope-alpha4.md) | [report-implementation-plan-alpha4](./reports/report-implementation-plan-alpha4.md) |
 | Inventarz UI | [report-inventory-delta-alpha3](./reports/report-inventory-delta-alpha3.md) | — |
 
-Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md).
+Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0008](../adr/0008-timeline-clip-editing.md) (edycja klipów).
 
 ## working/
 

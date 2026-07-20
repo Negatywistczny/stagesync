@@ -53,6 +53,9 @@ Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).
 
 Układ na dysku: [ADR 0001](./adr/0001-storage-layout.md).
 
+Edycja klipów Timeline (Forma, audio, kolizje, Smart Tool): [ADR 0008](./adr/0008-timeline-clip-editing.md).
+Snap / kwantyzacja: [ADR 0007](./adr/0007-snap-grid.md).
+
 ## API biblioteki (REST + WS)
 
 Kontrakt endpointów, kształt błędów i ticków WS: [docs/api/](./api/README.md).

@@ -22,3 +22,4 @@ Decision log StageSync v5. Spec / praktyka: [adr.github.io](https://adr.github.i
 | [0005](./0005-domain-axioms.md) | Granica 0 (Domain Axioms) | Zaakceptowany |
 | [0006](./0006-no-json-api.md) | Bez JSON:API | Zaakceptowany |
 | [0007](./0007-snap-grid.md) | Snap / edit grid (kwantyzacja edycji) | Proponowany |
+| [0008](./0008-timeline-clip-editing.md) | Edycja klipów Timeline (Forma, audio, Smart Tool) | Proponowany |

@@ -15,6 +15,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Branch protection na `main`: wymagany status check CI
   (`lint-types-test-build`) przed merge PR — bez wymuszania PR na
   docs/chore ([CONTRIBUTING](CONTRIBUTING.md)).
+- ADR [0008](docs/adr/0008-timeline-clip-editing.md) — edycja klipów Timeline (Forma α7, audio β1, Smart Tool, no overlap).
+- ADR [0007](docs/adr/0007-snap-grid.md) — uzupełnienie: Cmd/Ctrl = chwilowy snap off.
 
 ## [5.0.0-alpha.3] - 2026-07-20
 

@@ -62,18 +62,30 @@ Publiczne typy i funkcje — patrz `packages/shared/src/snap-grid.ts`:
 **Zakaz:** shell Timeline / `formaCanvas` nie implementuje własnego snapu poza
 wywołaniem shared (do czasu migracji istniejącego kodu).
 
-### 5. Narzędzia (kolejność wdrożenia)
+### 5. Modyfikator klawiaturowy (α7+)
+
+Przy drag / pencil / trim: **Cmd (macOS) / Ctrl (Windows/Linux) wciśnięty** =
+chwilowy tryb **`off`** (brak kwantyzacji do siatki).
+
+- Dotyczy tylko bieżącego gestu (pointer down → up).
+- Domyślny tryb sesji (`bar`) **nie** zmienia się po puszczeniu klawisza.
+- Semantyka: [ADR 0008](./0008-timeline-clip-editing.md) §7.
+
+**OUT na start:** pełna tabela modyfikatorów Logic (Control = finer grid, Control+Shift = ticks/samples).
+
+### 6. Narzędzia (kolejność wdrożenia)
 
 | Narzędzie | Snap |
 |-----------|------|
 | Pencil (Forma) | must — przez `quantizeTicks` |
-| Drag resize / move | should |
-| Scissors, mapy Tempo/Metrum | should |
+| Drag resize / move | should (α7 Forma; β1 audio) |
+| Scissors, mapy Tempo/Metrum | should (α7) |
 | Transport seek (UI) | opcjonalnie; SSOT seek = dokładne ticks |
 
 ## Poza zakresem (jawnie OUT na teraz)
 
-- UI picker snap (dropdown Logic-style) i skróty klawiszowe
+- UI picker snap (dropdown Logic-style) — faza 2 → 5.0.0
+- Relative snap (zachowanie offsetu względem siatki) — rozważenie po 5.0.0
 - Snap per-ścieżka (Forma vs Tekst osobno)
 - Walidacja snap na serwerze przy PUT
 - Snap przy imporcie MIDI / audio / migratorze (ACL — [ADR 0005](./0005-domain-axioms.md))
@@ -92,4 +104,4 @@ wywołaniem shared (do czasu migracji istniejącego kodu).
 | **0** | Ten ADR + szkic API w `@stagesync/shared` |
 | **1** | Pencil Forma → `quantizeTicks`; domyślnie `bar` |
 | **2** | Toggle UI + tryby beat / subdivision |
-| **3** | Drag, scissors, mapy |
+| **3** | Drag, scissors, mapy; Cmd/Ctrl = snap off ([ADR 0008](./0008-timeline-clip-editing.md)) |

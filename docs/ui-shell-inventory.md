@@ -15,6 +15,7 @@ Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK).
 | React + CSS Modules + `--ss-*` | Stack v5 |
 | Admin: Utwory · Set · Scena · Pliki · Host (osobne sekcje) | IA v5; Set ≠ biblioteka — wiring setu α6 |
 | Timeline α3: treść Formy wired, **layout track grid niedokończony** | Dług UI → **α4 must** ([report-scope-alpha4](../analysis/reports/report-scope-alpha4.md)) |
+| Edycja klipów: no overlap, draft+PUT, Smart Tool | [ADR 0008](../adr/0008-timeline-clip-editing.md); Forma α7, audio β1 |
 
 ## Timeline — wymagania layoutu (parity v4, α4+)
 
@@ -31,11 +32,14 @@ Placeholdery (disabled, skróty UI/H/V, pomoc-szkielet) = OK do **5.0.0 polish**
 
 ### Tools (pasek)
 
+- [ ] `smart` — Smart Tool (strefy select/move/trim; obok toolbara — [ADR 0008](./adr/0008-timeline-clip-editing.md))
 - [ ] `pointer` (ikona)
 - [ ] `pencil`
 - [ ] `eraser`
 - [ ] `scissors`
 - [ ] `zoom`
+- [ ] `gain` — Gain Tool (clip audio; β1)
+- [ ] `mute` — Mute Tool (clip / ścieżka; β1)
 - [ ] `wand` + menu: Tekst→Forma, Akordy→Forma, Tekst+Akordy→Forma
 - [ ] `tap` na docku ścieżki Tekst (nie na głównym pasku)
 
@@ -67,7 +71,7 @@ Placeholdery (disabled, skróty UI/H/V, pomoc-szkielet) = OK do **5.0.0 polish**
 - [ ] Forma z **Countdown** + sekcje (osobne clipy)
 - [ ] Tekst, Akordy (**1 akord = 1 clip**), Cue
 - [ ] Tempo / Tonacja / Metrum / Kotwice (domyślnie ukryte)
-- [ ] Audio 0…N
+- [ ] Audio 0…N — clipy per projekt; fader ścieżki + mute track ([ADR 0008](./adr/0008-timeline-clip-editing.md))
 - [ ] Inspector (Właściwości)
 - [ ] Song screen: Ze wzoru / Import UG (**przyciski**, nie goły tekst)
 

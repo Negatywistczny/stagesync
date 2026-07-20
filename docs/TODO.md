@@ -55,6 +55,8 @@ Dług UI po α3: [report-scope-alpha4.md](./analysis/reports/report-scope-alpha4
 
 ### OUT α4 (świadomie później)
 
+- Edycja geometryczna Forma (drag, Smart Tool) → **α7** ([ADR 0008](./adr/0008-timeline-clip-editing.md))
+- Audio playback / clip edit → **α6** import, **β1** silnik
 - Zoom UI/H/V (ikony, działające suwaki) → **5.0.0 polish**
 - Pełna treść Pomocy Timeline → **5.0.0 polish**
 - Setlista / auto-setlista wiring → **α6**
