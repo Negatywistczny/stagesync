@@ -1,12 +1,17 @@
 import type { Project } from "@stagesync/shared";
 import { buildKaraokeLiveContext } from "../../lib/clientKaraoke.js";
 import styles from "../ClientShell.module.css";
+import { Button } from "@stagesync/ui";
+import { useEffect, useRef } from "react";
 
 type KaraokePaneProps = {
   project: Project | null;
   displayTicks: number;
   loading: boolean;
   hasActiveProjectId: boolean;
+  vocalTapOn?: boolean;
+  vocalTapIndex?: number;
+  onVocalTap?: () => void;
 };
 
 export function KaraokePane({
@@ -14,7 +19,31 @@ export function KaraokePane({
   displayTicks,
   loading,
   hasActiveProjectId,
+  vocalTapOn = false,
+  vocalTapIndex = 0,
+  onVocalTap,
 }: KaraokePaneProps) {
+  const activeRef = useRef<HTMLParagraphElement | null>(null);
+
+  useEffect(() => {
+    if (!vocalTapOn || !onVocalTap) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.key === " ") {
+        e.preventDefault();
+        onVocalTap();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [vocalTapOn, onVocalTap]);
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({
+      block: "center",
+      behavior: "smooth",
+    });
+  }, [displayTicks, project?.id]);
+
   if (!hasActiveProjectId) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
@@ -34,18 +63,32 @@ export function KaraokePane({
 
   return (
     <div className={styles.karaokePane}>
-      <p className={styles.karaokeTitle}>{ctx.songTitle}</p>
-      <p className={styles.karaokeMeta}>
-        {ctx.sectionName} · takt {ctx.bbtLabel}
-      </p>
-      <p className={styles.karaokeMeta}>
-        {ctx.tempoBpm} BPM · {ctx.meterLabel}
-      </p>
+      {vocalTapOn ? (
+        <div className={styles.vocalTapBar}>
+          <span className={styles.muted}>
+            Tap wokalu · linia {vocalTapIndex + 1}
+          </span>
+          <Button variant="primary" onClick={() => onVocalTap?.()}>
+            Tap
+          </Button>
+        </div>
+      ) : null}
       {ctx.hasLyricLines ? (
         <div className={styles.karaokeLines} aria-label="Linie tekstu">
-          <p className={styles.karaokeLine}>
-            {ctx.lyricLine ?? "—"}
-          </p>
+          {ctx.lines.map((line) => (
+            <p
+              key={line.id}
+              ref={line.active ? activeRef : undefined}
+              className={[
+                styles.karaokeLine,
+                line.active ? styles.karaokeLineActive : styles.karaokeLineDim,
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {line.text}
+            </p>
+          ))}
         </div>
       ) : (
         <div className={styles.karaokePlaceholder}>
@@ -53,11 +96,6 @@ export function KaraokePane({
           <p className={styles.muted}>
             Dodaj clipy na lane Tekst w Timeline (Pencil).
           </p>
-          <ul className={styles.karaokeSkeleton} aria-hidden>
-            <li>— — —</li>
-            <li>— — —</li>
-            <li>— — —</li>
-          </ul>
         </div>
       )}
     </div>

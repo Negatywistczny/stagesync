@@ -1,13 +1,23 @@
+/**
+ * In-memory transport SSOT: position from originMs + elapsed (never += on timer).
+ * Loop wrap is server-authoritative (inclusive start / exclusive end).
+ */
+
 import {
   DEFAULT_PPQ,
   TRANSPORT_TICK_INTERVAL_MS,
   assertValidTimeSignature,
   defaultTransportState,
   elapsedToTicks,
+  isUsableLoop,
+  loopWrapTicks,
+  normalizeLoop,
   resolveMeterAt,
   resolveTempoAt,
   type Project,
   type TimeSignature,
+  type TransportLoop,
+  type TransportLoopBody,
   type TransportPlayBody,
   type TransportState,
   type TransportTickMessage,
@@ -35,6 +45,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     ...defaultTransportState().timeSignature,
   };
   let activeProjectId: string | null = null;
+  let loop: TransportLoop | null = null;
   const ppq = DEFAULT_PPQ;
 
   let originMs = 0;
@@ -45,7 +56,14 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   function samplePosition(): number {
     if (!playing) return positionTicks;
     const elapsedMs = Math.max(0, now() - originMs);
-    return originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
+    let ticks = originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
+    const wrap = loopWrapTicks(ticks, loop);
+    if (wrap != null) {
+      ticks = wrap;
+      positionTicks = wrap;
+      reanchor();
+    }
+    return ticks;
   }
 
   function applyMapsFromProject(project: Project, atTicks?: number): void {
@@ -64,6 +82,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       timeSignature: { ...timeSignature },
       ppq,
       activeProjectId,
+      loop: loop ? { ...loop } : null,
     };
   }
 
@@ -109,6 +128,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
     getActiveProjectId(): string | null {
       return activeProjectId;
+    },
+
+    /** True when a usable loop is enabled (blocks auto-setlist advance). */
+    isLooping(): boolean {
+      return Boolean(loop?.enabled && isUsableLoop(loop));
     },
 
     toTickMessage(): TransportTickMessage {
@@ -195,6 +219,38 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       }
       if (playing) {
         reanchor();
+      }
+      notify();
+      return snapshot();
+    },
+
+    setLoop(body: TransportLoopBody): TransportState {
+      const prev = loop;
+      const startTicks =
+        body.startTicks !== undefined
+          ? body.startTicks
+          : (prev?.startTicks ?? 0);
+      const endTicks =
+        body.endTicks !== undefined
+          ? body.endTicks
+          : (prev?.endTicks ?? startTicks);
+      const next = normalizeLoop({
+        enabled: body.enabled,
+        startTicks,
+        endTicks,
+      });
+      if (body.enabled && !next) {
+        throw new RangeError(
+          "loop requires endTicks > startTicks when enabling",
+        );
+      }
+      // Keep last usable range when disabling without new bounds.
+      if (!body.enabled && prev && isUsableLoop(prev)) {
+        loop = { ...prev, enabled: false };
+      } else {
+        loop = next
+          ? { ...next, enabled: body.enabled && isUsableLoop(next) }
+          : null;
       }
       notify();
       return snapshot();

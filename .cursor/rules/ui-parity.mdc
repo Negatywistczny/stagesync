@@ -1,0 +1,39 @@
+---
+description: UI parity — zachowanie v4, zakaz clone chrome, IA Admin/Client
+globs: apps/web/**/*.{tsx,css}, packages/ui/**/*.{tsx,css}, docs/ui-shell-inventory.md, docs/adr/0003*.md, docs/adr/0011*.md
+alwaysApply: false
+---
+
+# StageSync v5 — Parity UI (dla agentów)
+
+Źródło prawdy: [ADR 0011](../../docs/adr/0011-ui-parity-behavior.md).
+
+## Twarde zakazy
+
+1. **Nie** kopiuj paska narzędzi / chrome / HTML z `STAGESYNC-APP-LEGACY` 1:1.
+2. **Nie** zamykaj zadania samym „jest kontrolka w inventarzu” / `disabled` overlay.
+3. **Nie** używaj sformułowań *engineering ready* / *parity done* bez ścieżki **PO smoke**.
+4. **Nie** traktuj „bliżej v4” jako „te same przyciski / ikony”.
+
+## Co wolno z legacy
+
+- Czytać `timeline.js` / Client / Admin jako **spec zachowania** (gesty, mapy, grid).
+- Portować **logikę domenową** do `@stagesync/shared` (czyste funkcje + testy).
+- Porównywać workflow: „w v4 robię X → w v5 muszę móc X”.
+
+## Priorytet pracy
+
+1. Timeline: sterowanie (Forma, content, **metrum/tempo/tonacja**, locator/loop).
+2. Client: **treść** roli (nie sam header).
+3. Admin: IA (Set + wybór utworów w jednym flow; mniejsze ekrany).
+4. Inventarz — aktualizacja **po** działającym geście.
+
+## UI stack
+
+Tylko `@stagesync/ui` + CSS Modules + `--ss-*` (konstytucja + `ui-density.mdc`).
+
+## Minimalizm black / amber
+
+- Jedna barwa akcentu interakcji: `primary` / `selected`.
+- **Nie** maluj ról / kafli / kategorii kolorami statusu (`success`/`warning`/`info`) ani `focus-ring`.
+- Różnicowanie ról = etykieta + ikona + treść widoku.

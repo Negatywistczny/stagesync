@@ -14,8 +14,18 @@ import {
   type SnapMode,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
+import {
+  fill4BarGapsFromLeft,
+  moveSubsectionBoundary,
+  subsectionMaxChunkForClip,
+  withFormaSubsections,
+} from "./formaSubsections.js";
 import type { FormaGesturePreview, FormaGestureSession } from "./timelineGesture.js";
-import { snapModeFromModifiers } from "./timelineGesture.js";
+import {
+  PENCIL_DRAG_THRESHOLD_PX,
+  resolvePencilRangeTicks,
+  snapModeFromModifiers,
+} from "./timelineGesture.js";
 
 export function snapEditTicksWithMode(
   project: Project,
@@ -29,6 +39,97 @@ export function deleteFormaClip(project: Project, clipId: string): Project {
   const clips = deleteClip(project.forma.clips, clipId);
   if (clips === project.forma.clips) return project;
   return { ...project, forma: { clips } };
+}
+
+/**
+ * Scissors on Forma — insert subsection boundary (v4 insertSubsectionBoundary).
+ * Does **not** split into two section clips (legacy parity).
+ */
+export function insertFormaSubsectionAt(
+  project: Project,
+  clipId: string,
+  atTicks: number,
+  mode: SnapMode = "bar",
+): Project {
+  const floor = contentFloorTicks(project.forma.clips);
+  const snapped = Math.max(floor, snapEditTicksWithMode(project, atTicks, mode));
+  const clip = project.forma.clips.find((c) => c.id === clipId);
+  if (!clip || clip.kind === "countdown") return project;
+
+  const rel = snapped - clip.startTicks;
+  const meter = resolveMeterAt(project, snapped);
+  const barTicks = ticksPerBar(meter, project.ppq);
+  if (rel < barTicks || rel > clip.lengthTicks - barTicks) return project;
+
+  const existing = clip.subsections ?? [];
+  if (existing.some((s) => s === rel)) return project;
+  const maxChunk = subsectionMaxChunkForClip(project, clip);
+  const subsections = fill4BarGapsFromLeft(
+    [...existing, rel],
+    clip.lengthTicks,
+    maxChunk,
+  );
+  return {
+    ...project,
+    forma: {
+      clips: project.forma.clips.map((c) =>
+        c.id === clipId ? withFormaSubsections(c, subsections) : c,
+      ),
+    },
+  };
+}
+
+/**
+ * Drag interior subsection boundary (v4 moveSubsectionBoundary + 4-bar fill).
+ * `boundarySubIdx` ≥ 1 (band index whose start is the boundary).
+ */
+export function commitSubsectionBoundaryMove(
+  project: Project,
+  clipId: string,
+  boundarySubIdx: number,
+  newAbsTicks: number,
+  mode: SnapMode = "bar",
+): Project {
+  const floor = contentFloorTicks(project.forma.clips);
+  const snapped = Math.max(floor, snapEditTicksWithMode(project, newAbsTicks, mode));
+  const clip = project.forma.clips.find((c) => c.id === clipId);
+  if (!clip || clip.kind === "countdown") return project;
+
+  const maxChunk = subsectionMaxChunkForClip(project, clip);
+  const next = moveSubsectionBoundary(
+    clip.subsections ?? [],
+    clip.lengthTicks,
+    boundarySubIdx,
+    snapped - clip.startTicks,
+    maxChunk,
+  );
+  if (next == null) return project;
+  const prev = normalizeOffsetsKey(clip.subsections);
+  const after = normalizeOffsetsKey(next);
+  if (prev === after) return project;
+
+  return {
+    ...project,
+    forma: {
+      clips: project.forma.clips.map((c) =>
+        c.id === clipId ? withFormaSubsections(c, next) : c,
+      ),
+    },
+  };
+}
+
+function normalizeOffsetsKey(offsets: readonly number[] | undefined): string {
+  return (offsets ?? []).join(",");
+}
+
+/** @deprecated Prefer insertFormaSubsectionAt (v4 scissors = podsekcja). Kept for content-lane split helpers. */
+export function splitFormaClipAt(
+  project: Project,
+  clipId: string,
+  atTicks: number,
+  mode: SnapMode = "bar",
+): Project {
+  return insertFormaSubsectionAt(project, clipId, atTicks, mode);
 }
 
 export function commitPencilSpan(
@@ -109,28 +210,32 @@ export function previewFromSession(
   metaKey: boolean,
   ctrlKey: boolean,
   sectionName?: string,
+  clientX?: number,
 ): FormaGesturePreview {
   const mode = snapModeFromModifiers(metaKey, ctrlKey);
   const floor = contentFloorTicks(project.forma.clips);
 
   if (session.kind === "pencil-draw") {
-    let a = snapEditTicksWithMode(project, session.originTicks, mode);
-    let b = snapEditTicksWithMode(project, rawTicks, mode);
-    if (b < a) {
-      const t = a;
-      a = b;
-      b = t;
-    }
-    a = Math.max(floor, a);
-    const meter = resolveMeterAt(project, a);
+    const a = snapEditTicksWithMode(project, session.originTicks, mode);
+    const b = snapEditTicksWithMode(project, rawTicks, mode);
+    const meter = resolveMeterAt(project, Math.max(floor, Math.min(a, b)));
     const barTicks = ticksPerBar(meter, project.ppq);
-    let length = Math.max(b - a, 0);
-    if (length < 1) length = barTicks;
+    const dxPx =
+      clientX != null && session.originClientX != null
+        ? Math.abs(clientX - session.originClientX)
+        : a !== b
+          ? PENCIL_DRAG_THRESHOLD_PX
+          : 0;
+    const range = resolvePencilRangeTicks(a, b, {
+      barTicks,
+      dxPx,
+      floorTicks: floor,
+    });
     return {
       kind: "pencil-draw",
       clipId: null,
-      startTicks: a,
-      lengthTicks: length,
+      startTicks: range.startTicks,
+      lengthTicks: range.lengthTicks,
       name: sectionName ?? "Sekcja",
     };
   }
@@ -166,6 +271,34 @@ export function previewFromSession(
       clipId: session.clipId,
       startTicks: start,
       lengthTicks: Math.max(1, end - start),
+    };
+  }
+
+  if (session.kind === "subsection-boundary") {
+    const clip = project.forma.clips.find((c) => c.id === session.clipId);
+    const length = session.originClipLength;
+    const start = session.originClipStart;
+    const idx = session.boundarySubIdx ?? 1;
+    const maxChunk = clip
+      ? subsectionMaxChunkForClip(project, clip)
+      : ticksPerBar(resolveMeterAt(project, start), project.ppq) * 4;
+    const snappedAbs = Math.max(
+      floor,
+      snapEditTicksWithMode(project, rawTicks, mode),
+    );
+    const next = moveSubsectionBoundary(
+      clip?.subsections ?? [],
+      length,
+      idx,
+      snappedAbs - start,
+      maxChunk,
+    );
+    return {
+      kind: "subsection-boundary",
+      clipId: session.clipId,
+      startTicks: start,
+      lengthTicks: length,
+      subsections: next ?? clip?.subsections,
     };
   }
 
@@ -222,6 +355,26 @@ export function commitGesture(
         preview.startTicks + preview.lengthTicks,
         mode,
       );
+    case "subsection-boundary":
+      if (!session.clipId) return project;
+      {
+        const clip = project.forma.clips.find((c) => c.id === session.clipId);
+        if (!clip) return project;
+        const next = preview.subsections ?? null;
+        const prevKey = (clip.subsections ?? []).join(",");
+        const nextKey = (next ?? []).join(",");
+        if (prevKey === nextKey) return project;
+        return {
+          ...project,
+          forma: {
+            clips: project.forma.clips.map((c) =>
+              c.id === session.clipId
+                ? withFormaSubsections(c, next?.length ? next : undefined)
+                : c,
+            ),
+          },
+        };
+      }
     default:
       return project;
   }

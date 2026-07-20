@@ -1,116 +1,83 @@
 # Inventarz kontrolek UI (v4 → v5 shelle)
 
-**Cel:** checklista **funkcji / kontrolek**, nie layoutu.  
-Layout paneli w v5 jest **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta domyślna black/amber.  
-Każda pozycja musi mieć kontrolkę w shellu (`disabled` / overlay lokalny OK). Usunięcie bez wpisu w „Świadome delty” = blocker.
+**Rola:** checklista **wtórna** — aktualizuj **po** działającym geście / flow, nie przed.  
+Parity = **zachowanie** ([ADR 0011](./adr/0011-ui-parity-behavior.md)), nie „jest przycisk”.  
+Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta black/amber; **zakaz** clone chrome z 4.x.
 
-## Świadome delty v5
+`[x]` poniżej = „kontrolka istnieje w shellu” — **nie** = green PO smoke. Usunięcie bez „Świadome delty” = blocker dopiero gdy zachowanie jest w scope.
+
+**β gate:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **zakaz β** do green PO smoke (świadome OUT poniżej).
+
+## Świadome delty v5 (pozostałe OUT)
 
 | Delta | Uwagi |
 |-------|--------|
-| Audio lane / + Audio w Timeline | **Ukryte** do β2 (schema v3 refs zostają); playback / gain / mute → **β2** |
+| Audio lane / + Audio w Timeline | **Ukryte** do β2 (schema v3 `audioTracks`/`audioClips` zostaje); playback / gain / mute → **β2** |
 | Countdown widoczny; długość = pre-roll ≤ 0 | Semantyka v5 |
-| − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) |
+| − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) — **nigdy** |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
 | React + CSS Modules + `--ss-*` | Stack v5 |
-| Admin: Utwory · Set · Scena · Pliki · Host (osobne sekcje) | IA v5; Set ≠ biblioteka — wiring setu α6 |
-| Timeline α3: treść Formy wired, **layout track grid niedokończony** | Dług UI → **α4 must** ([report-scope-alpha4](../analysis/reports/report-scope-alpha4.md)) |
-| Edycja klipów: no overlap, draft+PUT, Smart Tool | [ADR 0008](../adr/0008-timeline-clip-editing.md); Forma α7, audio β1 |
+| Admin: Utwory · Set · Scena · Pliki · Host | IA v5 — **Set + wybór utworów w jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)); bez „zaznacz na innej zakładce” |
+| Host MIDI I/O + meters + Tr./Lead/Edycja zdalna | **β1** (MIDI stack) |
+| Pełny OSMD sync playhead→nuty | Stub OK; upload MusicXML = wired |
+| Client: tonacja koncertowa / polskie nazwy sekcji | Should (później) |
+| Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
+| Backup restore / path picker FS | Placeholder (path picker shell) |
+| Forma scissors = subsections v4 | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×** |
 
 ## Timeline — wymagania layoutu (parity v4, α4+)
 
-**Nie** wchodzi w inventarz kontrolek — to kontrakt **układu** obowiązujący od α4:
-
-1. **Jedna siatka wierszy:** nagłówek ścieżki (dock) i lane canvas w **tym samym wierszu** (zsynchronizowana wysokość).
-2. **Kolejność pionowa (od góry):** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue (Audio → β2; specjalne domyślnie ukryte eye).
-3. **Eye menu:** ukrywanie **pojedynczych** śladów (min. grupa Treść vs Specjalne); Forma zawsze widoczna.
-4. **Responsywność:** węższe okno nie rozdziela nagłówków od lane’ów (brak „pływania” etykiet osobno od treści).
-
-Placeholdery (disabled, skróty UI/H/V, pomoc-szkielet) = OK do **5.0.0 polish** — patrz scope α4 OUT.
+1. **Jedna siatka wierszy:** nagłówek ścieżki (dock) i lane canvas w **tym samym wierszu**.
+2. **Kolejność pionowa:** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue (Audio → β2).
+3. **Eye menu:** ukrywanie pojedynczych śladów; Forma zawsze widoczna.
+4. **Responsywność:** węższe okno nie rozdziela nagłówków od lane’ów.
 
 ## Timeline
 
-### Tools (pasek)
+### Tools
 
-- [ ] `smart` — Smart Tool (strefy select/move/trim; obok toolbara — [ADR 0008](./adr/0008-timeline-clip-editing.md))
-- [ ] `pointer` (ikona)
-- [ ] `pencil`
-- [ ] `eraser`
-- [ ] `scissors`
-- [ ] `zoom`
-- [ ] `gain` — Gain Tool (clip audio; β1)
-- [ ] `mute` — Mute Tool (clip / ścieżka; β1)
-- [ ] `wand` + menu: Tekst→Forma, Akordy→Forma, Tekst+Akordy→Forma
-- [ ] `tap` na docku ścieżki Tekst (nie na głównym pasku)
+- [x] `smart` / `pointer` / `pencil` / `eraser` / `scissors` (Forma + Tekst/Akordy/Cue)
+- [x] `zoom` — tool + suwaki H/V/UI (MVP)
+- [ ] `gain` / `mute` — β2
+- [x] `wand` + menu
+- [x] `tap` na docku Tekst (tempo)
 
-### Header
+### Header / transport
 
-- [ ] Brand (+ link Admin)
-- [ ] Metadane utworu
-- [ ] Setlista ← / picker / →
-- [ ] Auto-setlista
-- [ ] Undo / Redo / Odrzuć / Zapisz
-- [ ] Pomoc `?` (overlay w DOM)
-- [ ] Wygląd (overlay)
-- [ ] Pełny ekran
+- [x] Brand, Metadane (tytuł, defaultBpm, PC, artysta, gatunek, tonacja)
+- [x] Setlista ← / picker / → · Auto-setlista
+- [x] Undo / Redo / Odrzuć / Zapisz · Pomoc · Wygląd · Pełny ekran
+- [x] Stop / Play · Loop (region + server SSOT) · BBT · Tempo / Metrum / Tonacja edit @ playhead
+- [x] Metronom · Follow playhead · Dirty · Zoom UI/H/V
+- [x] Chrome booth language aligned with Admin (tokens / ShellIconButton / status groups)
 
-### Transport / status
+### Canvas
 
-- [ ] Stop / Play / Loop
-- [ ] BBT readout
-- [ ] Tempo / Metrum / Tonacja
-- [ ] Metronom / Follow playhead
-- [ ] Dirty badge
-- [ ] Conn + badge MIDI/Timeline
-- [ ] Zoom UI / H / V
-
-### Canvas / dock / inspector
-
-- [ ] Eye menu ścieżek (Treść / Specjalne) — **α4:** per-ślad, nie tylko grupa Specjalne
-- [ ] **Layout track grid** (nagłówek ↔ lane) — **α4 must**; patrz sekcja „wymagania layoutu”
-- [ ] Forma z **Countdown** + sekcje (osobne clipy)
-- [ ] Tekst, Akordy (**1 akord = 1 clip**), Cue
-- [ ] Tempo / Tonacja / Metrum / Kotwice (domyślnie ukryte)
-- [ ] Audio lane + playback 0…N — **β2** (lane UI ukryte; schema v3 refs OK)
-- [ ] Inspector (Właściwości)
-- [ ] Song screen: Ze wzoru / Import UG (**przyciski**, nie goły tekst)
+- [x] Eye menu · track grid · Forma + Countdown
+- [x] Forma / Tekst / Akordy / Cue move/resize/pencil drag-range — wired (QA PO)
+- [x] Tempo / Metrum / Tonacja (keyMap) readout + pencil/scissors/eraser + drag-move + multi-select (⌘/⇧)
+- [ ] Audio lane + playback — β2 (lane UI ukryte do czasu silnika)
+- [x] Inspector + song screen UG
+- [x] Kotwice — edit (scoreBarMap)
+- [x] Scissors — Forma (subsections) + content lanes
+- [x] Forma subsections — select + boundary drag + 4-bar fill + inspector Podsekcje (list / + / ×)
 
 ## Admin
 
-**Layout v5:** własny (sekcje w chrome + workspace + pasek statusu) — nie Booth rail/desk, nie accordion v4.  
-Kontrolki poniżej = inventarz funkcji. Timeline/Client: osobny redesign.
-
-### Sekcja → kontrolki
-
-| Sekcja | Kontrolki |
-|--------|-----------|
-| **Chrome** | Brand + wersja; zakładki Utwory · Set · Scena · Pliki · Host; linki Timeline · Klient; Wygląd |
-| **Utwory** | Filtr, sort, filtry ostrzeżeń; lista (PC, tytuł); panel wybranego; XML / Partytura / Timeline / Usuń; eksport; import; wzory; Batch PC |
-| **Wybrany (inspector)** | Nazwa, akcje, **Pliki projektu** — α6 wiring; do α4: empty state zamiast fake listy |
-| **Set** | Aktywny, auto, dodaj zaznaczone, zapisz, wyczyść, wiersze |
-| **Scena** | Komunikat (tekst, role, TTL, wyślij, wyczyść); klienci / sieć |
-| **Pliki** | Import / eksport paczki; drop zone; modal |
-| **Host** | Ustawienia; Logi; MIDI; O aplikacji (wersja, sprawdź aktualizacje **bez** Apply, kanał, backupy); Restart / Wyłącz |
-| **Status** (zawsze) | Teraz · sekcja · pozycja/BBT · dalej · conn · MIDI/Timeline; Tr. / Lead / edycja zdalna |
-
-### Checklist (parity)
-
-- [ ] Chrome: brand, wersja, Timeline, Klient, Wygląd, zakładki sekcji
-- [ ] Status: utwór / sekcja / BBT / dalej / conn / Kontrola + korekta
-- [ ] Utwory: filtr, sort, filtry, lista+panel, XML/Partytura/Edytuj/Usuń, eksport, wzory
-  _(żywe: create / rename / delete)_
-- [ ] Set: włącz, auto, dodaj, zapisz, wyczyść
-- [ ] Scena: komunikat + klienci
-- [ ] Pliki: import/eksport + modal
-- [ ] Host: ustawienia, logi, MIDI, o aplikacji (bez Apply), restart/wyłącz
-- [ ] Modale w DOM: Wygląd, Ustawienia, import, MusicXML, path picker, batch PC
+- [x] Chrome, status, Utwory (filtr/sort/PC/Ostrzeżenia/Batch PC/Wzory/Eksport)
+- [x] MusicXML upload (XML / Partytura)
+- [x] Set / Scena presence
+- [x] Pliki: import/export `.stagesync.json`
+- [x] Host: logi SSE · **Restart / Wyłącz (2×)** · sieć (readout) · MIDI → β1
+- [x] Wygląd: jasny / wysoki kontrast (`data-theme` / `data-contrast`)
+- [ ] Sprawdź aktualizacje / Apply — ADR 0004
+- [ ] Backup Przywróć — później
 
 ## Client
 
-- [ ] Name modal
-- [ ] 4 role: `karaoke` | `grid` | `score` | `drums`
-- [ ] Rozpocznij / widok dzielony
-- [ ] Header: brand→welcome, metronom, conn, tytuł, →następny, takt, ustawienia, fullscreen
-- [ ] Panele ról + empty states + split
-- [ ] Cue toast host
-- [ ] Drawery: global + per-rola (Tekst / Akordy / Partytura / Forma)
+- [x] Role + →następny + fullscreen + presence hello
+- [x] Grid live · score stub (lista MusicXML)
+- [x] Wygląd (jasny / kontrast) · karaoke skala tekstu / auto-scroll · score ± zoom lokalny
+- [x] Grid: H zamiast B / litery / animacje
+- [x] Tap wokalu (Client → tekst startTicks)
+- [x] Edycja notatek Formy

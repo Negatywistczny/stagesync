@@ -1,24 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV4Seed } from "@stagesync/shared";
+import { createProjectV5Seed } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
   formatKaraokeTransportLine,
 } from "./clientKaraoke.js";
 
 describe("clientKaraoke", () => {
-  const project = createProjectV4Seed(
+  const project = createProjectV5Seed(
     "id",
     "Demo Song",
     "2026-07-20T00:00:00.000Z",
   );
 
-  it("buildKaraokeLiveContext returns section and BBT from project", () => {
+  it("buildKaraokeLiveContext returns section and lyric window", () => {
     const ctx = buildKaraokeLiveContext(project, 0);
     expect(ctx).not.toBeNull();
     expect(ctx?.songTitle).toBe("Demo Song");
     expect(ctx?.sectionName).toBe("Intro");
     expect(ctx?.bbtLabel).toBe("1.1");
     expect(ctx?.hasLyricLines).toBe(false);
+    expect(ctx?.lines).toEqual([]);
   });
 
   it("formatKaraokeTransportLine includes section and tempo", () => {

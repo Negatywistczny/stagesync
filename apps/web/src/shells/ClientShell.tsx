@@ -1,17 +1,31 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@stagesync/ui";
-import { toDisplayBar, ticksToBbt } from "@stagesync/shared";
+import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
 import { APP_VERSION } from "../lib/appVersion.js";
+import {
+  loadClientDisplayPrefs,
+  setFormNotesEdit,
+  setGridAnimations,
+  setHybridPolishB,
+  setLiteralQuality,
+  type ClientDisplayPrefs,
+} from "../lib/clientDisplayPrefs.js";
+import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
+import { putProject } from "../lib/libraryApi.js";
+import { fetchSetlist } from "../lib/setlistApi.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { DrumsPane } from "./client/DrumsPane.js";
+import { GridPane } from "./client/GridPane.js";
 import { KaraokePane } from "./client/KaraokePane.js";
-import { IconSettings } from "./icons.js";
+import { ScorePane } from "./client/ScorePane.js";
+import { IconFullscreen, IconSettings } from "./icons.js";
 import {
   SettingsPopover,
   SettingsPopoverAnchor,
+  ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
@@ -24,25 +38,25 @@ const ROLES: { id: RoleId; label: string; blurb: string; icon: string }[] = [
   {
     id: "karaoke",
     label: "Tekst",
-    blurb: "Karaoke z liniami i beatami",
+    blurb: "Tryb karaoke z liniami tekstu i podświetleniem beatów",
     icon: "🎤",
   },
   {
     id: "grid",
     label: "Akordy",
-    blurb: "Siatka zsynchronizowana z utworem",
+    blurb: "Akordy zsynchronizowane z utworem i sekcjami",
     icon: "🎹",
   },
   {
     id: "score",
     label: "Partytura",
-    blurb: "MusicXML / podświetlenie taktu",
+    blurb: "Nuty MusicXML z podświetleniem taktu",
     icon: "🎼",
   },
   {
     id: "drums",
     label: "Forma",
-    blurb: "Sekcje i takty bez tekstu",
+    blurb: "Forma utworu — sekcje i takty bez tekstu",
     icon: "🥁",
   },
 ];
@@ -55,24 +69,95 @@ export function ClientShell() {
   const [started, setStarted] = useState(false);
   const [globalSettings, setGlobalSettings] = useState(false);
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
-  const { state, displayTicks, wsStatus, stageCue } = useTransport();
+  const { state, displayTicks, wsStatus, stageCue, play, announcePresence } =
+    useTransport();
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
-  const { activeProject, loading: projectLoading } = useActiveProject(
-    state.activeProjectId,
-  );
+  const {
+    activeProject,
+    setActiveProject,
+    loading: projectLoading,
+  } = useActiveProject(state.activeProjectId);
+  const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
+  const [vocalTapOn, setVocalTapOn] = useState(false);
+  const [vocalTapIndex, setVocalTapIndex] = useState(0);
   const [cueVisible, setCueVisible] = useState(false);
   const [cueText, setCueText] = useState("");
+  const [setlistIds, setSetlistIds] = useState<string[]>([]);
+  const [setlistEnabled, setSetlistEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!started) return;
+    announcePresence({
+      displayName: name.trim() || null,
+      roles: picked,
+    });
+  }, [started, name, picked, announcePresence]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const view = await fetchSetlist();
+        if (cancelled) return;
+        setSetlistIds(view.projectIds);
+        setSetlistEnabled(view.enabled);
+      } catch {
+        if (!cancelled) {
+          setSetlistIds([]);
+          setSetlistEnabled(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.activeProjectId]);
 
   useEffect(() => {
     if (!stageCue) return;
+    // Role filter: if roles listed, only show when client has that role picked
+    if (stageCue.roles && stageCue.roles.length > 0) {
+      const match = stageCue.roles.some((r) => picked.includes(r as RoleId));
+      if (!match) return;
+    }
     setCueText(stageCue.text);
     setCueVisible(true);
     if (stageCue.ttlMs <= 0) return;
     const t = window.setTimeout(() => setCueVisible(false), stageCue.ttlMs);
     return () => window.clearTimeout(t);
-  }, [stageCue]);
+  }, [stageCue, picked]);
 
   const songTitle = activeProject?.name ?? "Brak utworu";
+  const setlistIndex = state.activeProjectId
+    ? setlistIds.indexOf(state.activeProjectId)
+    : -1;
+  const nextSetlistId: string | null =
+    setlistEnabled &&
+    setlistIndex >= 0 &&
+    setlistIndex < setlistIds.length - 1
+      ? (setlistIds[setlistIndex + 1] ?? null)
+      : null;
+
+  async function onFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function onNextSong() {
+    if (!nextSetlistId) return;
+    try {
+      await play({ projectId: nextSetlistId });
+    } catch {
+      /* ignore */
+    }
+  }
 
   function toggleRole(id: RoleId) {
     setPicked((prev) => {
@@ -104,6 +189,9 @@ export function ClientShell() {
     started,
     songTitle,
     bbt: headerBbt,
+    nextSetlistId,
+    onNextSong: () => void onNextSong(),
+    onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
     onToggleGlobalSettings: toggleGlobalSettings,
     onCloseGlobalSettings: () => setGlobalSettings(false),
@@ -137,25 +225,58 @@ export function ClientShell() {
   }
 
   if (!started) {
+    const pickHint =
+      picked.length === 0
+        ? "Kliknij jedną lub dwie karty, potem Rozpocznij."
+        : picked.length === 1
+          ? `Wybrano: ${ROLES.find((r) => r.id === picked[0])!.label}. Dodaj drugą rolę lub kliknij Rozpocznij.`
+          : `Widok dzielony: ${picked
+              .map((id) => ROLES.find((r) => r.id === id)!.label)
+              .join(" + ")}`;
+
     return (
       <div className={styles.page}>
         <ClientHeader {...headerProps} started={false} />
         <main className={styles.welcome}>
-          <p className={styles.greeting}>
-            Cześć, {name}{" "}
-            <button
-              type="button"
-              className={styles.linkBtn}
-              onClick={() => {
-                setNameDraft(name);
-                setNameModal(true);
-              }}
-            >
-              Zmień nazwę
-            </button>
-          </p>
-          <h1 className={styles.welcomeTitle}>Wybierz rolę</h1>
-          <p className={styles.muted}>Możesz wybrać jedną lub dwie role.</p>
+          <div className={styles.welcomeHero}>
+            <ShellWordmark className={styles.welcomeBrand} />
+            <div className={styles.greetingRow}>
+              <p className={styles.greeting}>Cześć, {name}</p>
+              <button
+                type="button"
+                className={styles.changeNameBtn}
+                aria-label="Zmień nazwę"
+                title="Zmień nazwę"
+                onClick={() => {
+                  setNameDraft(name);
+                  setNameModal(true);
+                }}
+              >
+                <svg
+                  className={styles.changeNameIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              </button>
+            </div>
+            <h1 className={styles.welcomeTitle}>
+              Wybierz <span className={styles.welcomeAccent}>rolę</span>
+            </h1>
+            <p className={styles.welcomeHint}>
+              Połącz się z serwerem StageSync i wybierz widok dopasowany do
+              Twojego instrumentu. Możesz wybrać{" "}
+              <strong className={styles.welcomeEmph}>dwie role</strong>.
+            </p>
+          </div>
+
           <div className={styles.roleGrid}>
             {ROLES.map((r) => {
               const on = picked.includes(r.id);
@@ -172,21 +293,26 @@ export function ClientShell() {
                   <span className={styles.roleIcon} aria-hidden>
                     {r.icon}
                   </span>
-                  <strong>{r.label}</strong>
-                  <span>{r.blurb}</span>
+                  <strong className={styles.roleLabel}>{r.label}</strong>
+                  <span className={styles.roleBlurb}>{r.blurb}</span>
                 </button>
               );
             })}
           </div>
-          <Button
-            variant="primary"
-            disabled={picked.length === 0}
-            onClick={() => setStarted(true)}
-          >
-            {picked.length === 2
-              ? "Rozpocznij widok dzielony"
-              : "Rozpocznij"}
-          </Button>
+
+          <div className={styles.startBar}>
+            <p className={styles.pickHint}>{pickHint}</p>
+            <Button
+              variant="primary"
+              className={styles.startBtn}
+              disabled={picked.length === 0}
+              onClick={() => setStarted(true)}
+            >
+              {picked.length === 2
+                ? "Rozpocznij widok dzielony"
+                : "Rozpocznij"}
+            </Button>
+          </div>
         </main>
       </div>
     );
@@ -225,14 +351,47 @@ export function ClientShell() {
                       title={role.label}
                       onClose={() => setRoleSettings(null)}
                     >
-                      <RoleSettingsFields role={id} />
+                      <RoleSettingsFields
+                        role={id}
+                        prefs={displayPrefs}
+                        onPrefsChange={setDisplayPrefs}
+                        vocalTapOn={vocalTapOn}
+                        onVocalTapToggle={(on) => {
+                          setVocalTapOn(on);
+                          setVocalTapIndex(0);
+                        }}
+                      />
                     </SettingsPopover>
                   ) : null}
                 </SettingsPopoverAnchor>
               </div>
               {id === "drums" ? (
                 activeProject ? (
-                  <DrumsPane project={activeProject} displayTicks={displayTicks} />
+                  <DrumsPane
+                    project={activeProject}
+                    displayTicks={displayTicks}
+                    notesEdit={displayPrefs.formNotesEdit}
+                    onNoteChange={(clipId, note) => {
+                      if (!state.activeProjectId) return;
+                      const next: Project = {
+                        ...activeProject,
+                        forma: {
+                          clips: activeProject.forma.clips.map((c) =>
+                            c.id === clipId
+                              ? {
+                                  ...c,
+                                  note: note.length > 0 ? note : undefined,
+                                }
+                              : c,
+                          ),
+                        },
+                      };
+                      setActiveProject(next);
+                      void putProject(state.activeProjectId, next).catch(
+                        () => undefined,
+                      );
+                    }}
+                  />
                 ) : (
                   <p className={styles.empty}>
                     {state.activeProjectId
@@ -248,19 +407,49 @@ export function ClientShell() {
                   displayTicks={displayTicks}
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
+                  vocalTapOn={vocalTapOn}
+                  vocalTapIndex={vocalTapIndex}
+                  onVocalTap={() => {
+                    if (!activeProject || !state.activeProjectId) return;
+                    const queue = vocalTapQueue(activeProject);
+                    const clip = queue[vocalTapIndex];
+                    if (!clip) {
+                      setVocalTapOn(false);
+                      return;
+                    }
+                    const next = applyVocalTap(
+                      activeProject,
+                      clip.id,
+                      displayTicks,
+                    );
+                    setActiveProject(next);
+                    void putProject(state.activeProjectId, next)
+                      .then(() => {
+                        const qi = vocalTapIndex + 1;
+                        if (qi >= queue.length) {
+                          setVocalTapOn(false);
+                          setVocalTapIndex(0);
+                        } else {
+                          setVocalTapIndex(qi);
+                        }
+                      })
+                      .catch(() => undefined);
+                  }}
                 />
               ) : id === "grid" ? (
-                <p className={styles.empty}>
-                  {state.activeProjectId
-                    ? "Brak siatki akordów — edycja α7 (lane Akordy)."
-                    : "Oczekiwanie na utwór…"}
-                </p>
+                <GridPane
+                  project={activeProject}
+                  displayTicks={displayTicks}
+                  loading={projectLoading}
+                  hasActiveProjectId={Boolean(state.activeProjectId)}
+                  prefs={displayPrefs}
+                />
               ) : id === "score" ? (
-                <p className={styles.empty}>
-                  {state.activeProjectId
-                    ? "Brak partytury — OSMD / MusicXML w α7."
-                    : "Oczekiwanie na utwór…"}
-                </p>
+                <ScorePane
+                  project={activeProject}
+                  loading={projectLoading}
+                  hasActiveProjectId={Boolean(state.activeProjectId)}
+                />
               ) : (
                 <p className={styles.empty}>Oczekiwanie na utwór…</p>
               )}
@@ -290,6 +479,9 @@ type ClientHeaderProps = {
   started: boolean;
   songTitle: string;
   bbt: { bar: number; beat: number };
+  nextSetlistId: string | null;
+  onNextSong: () => void;
+  onFullscreen: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
   onCloseGlobalSettings: () => void;
@@ -301,6 +493,9 @@ function ClientHeader({
   started,
   songTitle,
   bbt,
+  nextSetlistId,
+  onNextSong,
+  onFullscreen,
   globalSettingsOpen,
   onToggleGlobalSettings,
   onCloseGlobalSettings,
@@ -327,6 +522,17 @@ function ClientHeader({
       </div>
 
       <strong className={styles.songTitle}>{songTitle}</strong>
+      {started ? (
+        <button
+          type="button"
+          className={styles.setlistNext}
+          disabled={!nextSetlistId}
+          onClick={onNextSong}
+          title="Następny utwór setlisty"
+        >
+          →następny
+        </button>
+      ) : null}
       <span className={styles.takt}>
         takt {toDisplayBar(bbt.bar)}.{bbt.beat}
       </span>
@@ -352,8 +558,8 @@ function ClientHeader({
             </SettingsPopover>
           ) : null}
         </SettingsPopoverAnchor>
-        <ShellIconButton label="Pełny ekran" disabled>
-          ⛶
+        <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
+          <IconFullscreen />
         </ShellIconButton>
       </div>
     </header>
@@ -363,44 +569,132 @@ function ClientHeader({
 function GlobalSettingsFields() {
   return (
     <>
-      <p className={styles.fieldLab}>Tonacja / strój</p>
-      <div className={styles.chips}>
-        {["C", "B♭", "E♭", "Ręczna"].map((x) => (
-          <button key={x} type="button" className={styles.chip} disabled>
-            {x}
-          </button>
-        ))}
-      </div>
-      <ShellSwitchRow disabled>Polskie nazwy sekcji</ShellSwitchRow>
-      <ShellSwitchRow disabled>Tryb jasny</ShellSwitchRow>
-      <ShellSwitchRow disabled>Wysoki kontrast</ShellSwitchRow>
+      <p className={styles.fieldLab}>Wygląd</p>
+      <ShellAppearanceFields />
+      <p className={styles.muted}>
+        Tonacja koncertowa / polskie nazwy — później (β).
+      </p>
     </>
   );
 }
 
-function RoleSettingsFields({ role }: { role: RoleId }) {
+function RoleSettingsFields({
+  role,
+  prefs,
+  onPrefsChange,
+  vocalTapOn,
+  onVocalTapToggle,
+}: {
+  role: RoleId;
+  prefs: ClientDisplayPrefs;
+  onPrefsChange: (prefs: ClientDisplayPrefs) => void;
+  vocalTapOn: boolean;
+  onVocalTapToggle: (on: boolean) => void;
+}) {
+  const [textScale, setTextScale] = useState(() => {
+    try {
+      const n = Number(localStorage.getItem("stagesync-client-text-scale"));
+      return Number.isFinite(n) && n >= 80 && n <= 200 ? n : 100;
+    } catch {
+      return 100;
+    }
+  });
+  const [autoScroll, setAutoScroll] = useState(() => {
+    try {
+      return localStorage.getItem("stagesync-client-autoscroll") !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const [scoreZoom, setScoreZoom] = useState(100);
+
   if (role === "karaoke") {
     return (
       <>
         <label className={styles.field}>
-          Skala tekstu
-          <input type="range" min={80} max={200} defaultValue={100} disabled />
+          Skala tekstu ({textScale}%)
+          <input
+            type="range"
+            min={80}
+            max={200}
+            value={textScale}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              setTextScale(n);
+              try {
+                localStorage.setItem("stagesync-client-text-scale", String(n));
+              } catch {
+                /* ignore */
+              }
+              document.documentElement.style.setProperty(
+                "--ss-client-text-scale",
+                `${n / 100}`,
+              );
+            }}
+          />
         </label>
-        <ShellSwitchRow defaultChecked disabled>
+        <ShellSwitchRow
+          checked={autoScroll}
+          onChange={(e) => {
+            const next = e.target.checked;
+            setAutoScroll(next);
+            try {
+              localStorage.setItem(
+                "stagesync-client-autoscroll",
+                next ? "1" : "0",
+              );
+            } catch {
+              /* ignore */
+            }
+          }}
+        >
           Auto-scroll
         </ShellSwitchRow>
-        <Button variant="secondary" disabled>
+        <ShellSwitchRow
+          checked={vocalTapOn}
+          onChange={(e) => onVocalTapToggle(e.target.checked)}
+        >
           Tap wokalu
-        </Button>
+        </ShellSwitchRow>
+        {vocalTapOn ? (
+          <p className={styles.muted}>
+            Space / Tap na pane — zapis startu linii z playhead.
+          </p>
+        ) : null}
       </>
     );
   }
   if (role === "grid") {
     return (
       <>
-        <ShellSwitchRow disabled>H zamiast B</ShellSwitchRow>
-        <ShellSwitchRow disabled>Litery zamiast symboli</ShellSwitchRow>
-        <ShellSwitchRow defaultChecked disabled>
+        <ShellSwitchRow
+          checked={prefs.hybridPolishB}
+          onChange={(e) => {
+            const next = e.target.checked;
+            setHybridPolishB(next);
+            onPrefsChange({ ...prefs, hybridPolishB: next });
+          }}
+        >
+          H zamiast B
+        </ShellSwitchRow>
+        <ShellSwitchRow
+          checked={prefs.literalQuality}
+          onChange={(e) => {
+            const next = e.target.checked;
+            setLiteralQuality(next);
+            onPrefsChange({ ...prefs, literalQuality: next });
+          }}
+        >
+          Litery zamiast symboli
+        </ShellSwitchRow>
+        <ShellSwitchRow
+          checked={prefs.gridAnimations}
+          onChange={(e) => {
+            const next = e.target.checked;
+            setGridAnimations(next);
+            onPrefsChange({ ...prefs, gridAnimations: next });
+          }}
+        >
           Animacje
         </ShellSwitchRow>
       </>
@@ -410,20 +704,39 @@ function RoleSettingsFields({ role }: { role: RoleId }) {
     return (
       <>
         <div className={styles.row}>
-          <Button variant="ghost" disabled>
+          <Button
+            variant="ghost"
+            onClick={() => setScoreZoom((z) => Math.max(50, z - 10))}
+          >
             −
           </Button>
-          <span>100%</span>
-          <Button variant="ghost" disabled>
+          <span>{scoreZoom}%</span>
+          <Button
+            variant="ghost"
+            onClick={() => setScoreZoom((z) => Math.min(200, z + 10))}
+          >
             +
           </Button>
-          <Button variant="ghost" disabled>
+          <Button variant="ghost" onClick={() => setScoreZoom(100)}>
             Fit
           </Button>
         </div>
-        <p className={styles.muted}>Partie / oktawa — shell.</p>
+        <p className={styles.muted}>
+          Zoom lokalny (stub OSMD). Partie / oktawa — później.
+        </p>
       </>
     );
   }
-  return <ShellSwitchRow disabled>Edycja notatek Formy</ShellSwitchRow>;
+  return (
+    <ShellSwitchRow
+      checked={prefs.formNotesEdit}
+      onChange={(e) => {
+        const next = e.target.checked;
+        setFormNotesEdit(next);
+        onPrefsChange({ ...prefs, formNotesEdit: next });
+      }}
+    >
+      Edycja notatek Formy
+    </ShellSwitchRow>
+  );
 }

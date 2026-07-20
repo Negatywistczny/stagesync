@@ -9,12 +9,52 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- [ADR 0011](docs/adr/0011-ui-parity-behavior.md) — parity = zachowanie v4; zakaz clone chrome; priorytet rebuild Timeline → Client treść → Admin IA; inventarz wtórny.
+- **Host Restart / Wyłącz:** `POST /api/system/restart|shutdown` + potwierdzenie 2× (jak v4); sieć `GET /api/system/network`.
+- **Schema v5:** `keyMap`, `midiProgramId`, `isTemplate`, `artist` / `genre` / `year`; katalog biblioteki z PC / wzorami / `hasMusicXml`.
+- **Admin parity:** Batch PC, Ostrzeżenia, kolumna PC, Wzory (nowy z wzoru), Eksport/Import `.stagesync.json`, MusicXML upload.
+- **Timeline:** Tonacja (keyMap) edit/readout, Tempo BPM @ playhead, Zoom tool + suwaki H/V/UI, metadane PC/artysta/gatunek.
+- **Wygląd:** jasny motyw + wysoki kontrast (`data-theme` / `data-contrast`) w Admin / Timeline / Client.
+- **Client:** skala tekstu karaoke, auto-scroll, score zoom lokalny; appearance w drawerze globalnym.
+- **Timeline parity follow-up:** Metadane (tytuł / defaultBpm), Loop (region na linijce + `POST /api/transport/loop` SSOT), Follow playhead, Tekst/Akordy/Cue move/resize/pencil, Kotwice (`scoreBarMap`), scissors content, Client H/B + Tap wokalu + notatki Formy.
+- **Migrator α9 MVP:** `migrateLegacy*` + CLI `pnpm migrate:legacy` ([MIGRATION.md](docs/MIGRATION.md)).
+- **Admin:** Host logi SSE (`/api/system/logs/stream` + Pauza/Wyczyść); Scena **presence** (`GET /api/stage/clients` + WS `client_hello`).
 - [ADR 0010](docs/adr/0010-desktop-shell-tauri.md) — desktop shell Tauri (thin WebView, SSOT na serwerze).
 
 ### Zmieniono
 
-- ROADMAP: β1 = host (Docker + Tauri + stabilność); β2 = audio + MIDI (rozbicie „feature complete”).
+- **Timeline canvas:** Zoom V (`--tl-row-h`) / Zoom UI (`--tl-zoom-ui`) skalują lane + ruler chrome; suwaki zoom `accent-color: primary`; barlines z `meterMap`; beat ticks na ruler gdy px/bar ≥ 56.
+- **Timeline gesty:** Forma snap do musical barlines (meterMap); Tekst/Akordy/Cue snap do beatu; szersze hit zones trim (12px); Cmd/Ctrl = snap off.
+- **Timeline mapy:** Tempo/Metrum/Tonacja — snap beat; eraser nie rusza seed @ 0.
+- **Timeline chrome:** header grid (song center, ≤1100); help ~72rem; playhead `primary`; Zoom tool `disabled` + Help uczciwy; metadane ⓘ close clears sheet.
+- **Client stage:** karaoke window linii, hero akord + next, Forma sekcja/notatka/lista; header wtórny.
+- **Admin Set:** biblioteka + kolejność w jednym flow; gęstsze karty.
+- **Timeline touch:** `data-tl-tier` (mobile RO / tablet nudge).
+- Client — wybór roli: hover/selected tylko black/amber (`selected`); usunięte tęczowe `--ss-color-role-*` (mapowanie na success/warning/focus-ring).
+- **Rebuild alpha:** ADR 0003 + konstytucja + TODO / parity-blocker / inventarz — inventarz-first i „engineering READY” **odrzucone**; done = PO smoke zachowania; Admin Set + wybór utworów w jednym flow.
+- Client — ekran wyboru roli: duże kafle z ikonami (układ jak v4), hero „Wybierz rolę”, dynamiczny hint i pasek Rozpocznij.
+- ROADMAP: β1 = host (Docker + Tauri + stabilność); β2 = audio + MIDI; α8 = reset/rebuild wg ADR 0011.
 - **Timeline:** ukryte lane’y audio / `+ Audio` / eye-toggle audio do β2 (schema v3 refs bez zmian).
+
+## [5.0.0-alpha.8] - 2026-07-20
+
+### Dodano
+
+- **Lane Akordy / Cue:** pencil, select, Delete/eraser, inspector (`symbol` / `label`); no-overlap; Client **grid** czyta `akordy.clips`.
+- **Scissors Forma:** `splitClipAt` + tool; Countdown nietykalny.
+- **Tap** (dock Tekst): tap tempo → `tempoMap` @ locator.
+- **Różdżka:** Tekst→Forma, Akordy→Forma, Tekst+Akordy→Forma (`wandContentToForma`).
+- **Import UG:** Timeline song screen + Admin; parser Zod Result (`importUgText`); zły input = komunikat UI.
+- **Undo/Redo sesji:** stos draftu; po Zapisz `dirty=false` i stos zostaje; Odrzuć = snapshot serwera + clear stos; ⌘/Ctrl+Z.
+- **Metronom:** Web Audio klik sync z transportem; `AudioContext.resume()` na Play / toggle.
+- **Client:** →następny (setlista), fullscreen; **score** stub MusicXML (OSMD wire).
+- **Admin:** filtr + sort utworów; Scena filtr ról w cue; Import UG do zaznaczonego utworu.
+- Scope + plan + QA: [report-scope-alpha8](docs/analysis/reports/report-scope-alpha8.md).
+
+### Zmieniono
+
+- ROADMAP: α8 parity / α9 migrator / β1 bez migratora.
+- Inventarz UI: odhaczone must α8; świadome delty (zoom, Host MIDI, audio tracks, Batch PC bez schematu).
 
 ## [5.0.0-alpha.7] - 2026-07-20
 
@@ -181,7 +221,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
 - Conventional Commits przez commitlint + husky
 
-[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.7...HEAD
+[Unreleased]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.8...HEAD
+[5.0.0-alpha.8]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.7...v5.0.0-alpha.8
 [5.0.0-alpha.7]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.6...v5.0.0-alpha.7
 [5.0.0-alpha.6]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.5...v5.0.0-alpha.6
 [5.0.0-alpha.5]: https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.4...v5.0.0-alpha.5

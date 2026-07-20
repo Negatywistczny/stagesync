@@ -1,13 +1,17 @@
-import type { Project } from "@stagesync/shared";
+import type { KeySignature, Project } from "@stagesync/shared";
 import type { ViewSpan } from "./formaCanvas.js";
 
 export type MapSegment = {
   startTicks: number;
   endTicks: number;
   label: string;
+  /** Source map event id (for click-edit / eraser). */
+  eventId: string;
+  /** True start of the map event (may be before view span). */
+  eventStartTicks: number;
 };
 
-function mapSegmentsForSpan<T extends { startTicks: number }>(
+function mapSegmentsForSpan<T extends { id: string; startTicks: number }>(
   events: T[],
   span: ViewSpan,
   labelOf: (ev: T) => string,
@@ -24,6 +28,8 @@ function mapSegmentsForSpan<T extends { startTicks: number }>(
         startTicks: segStart,
         endTicks: segEnd,
         label: labelOf(ev),
+        eventId: ev.id,
+        eventStartTicks: ev.startTicks,
       });
     }
   }
@@ -46,6 +52,8 @@ export function tempoMapSegments(
         startTicks: span.start,
         endTicks: span.end,
         label: `${project.defaultBpm} BPM`,
+        eventId: "tempo-default",
+        eventStartTicks: 0,
       },
     ];
   }
@@ -69,9 +77,23 @@ export function meterMapSegments(
         startTicks: span.start,
         endTicks: span.end,
         label: `${m.numerator}/${m.denominator}`,
+        eventId: "meter-default",
+        eventStartTicks: 0,
       },
     ];
   }
+  return [];
+}
+
+export function keyMapSegments(
+  project: Project,
+  span: ViewSpan,
+  formatKey: (key: KeySignature) => string,
+): MapSegment[] {
+  const fromMap = mapSegmentsForSpan(project.keyMap ?? [], span, (ev) =>
+    formatKey(ev.key),
+  );
+  if (fromMap.length > 0) return fromMap;
   return [];
 }
 

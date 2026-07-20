@@ -3,18 +3,18 @@ import {
   emptyProjectEndTicks,
   projectEndTicks,
 } from "./project-bounds.js";
-import { createProjectV4Seed } from "./project-seed.js";
+import { createProjectV5Seed } from "./project-seed.js";
 import { DEFAULT_PPQ } from "./time.js";
 
 describe("projectEndTicks", () => {
   it("returns max forma clip end for seeded project", () => {
-    const p = createProjectV4Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
     // Intro: 0 + 7680
     expect(projectEndTicks(p)).toBe(7680);
   });
 
   it("falls back to 2 bars when no positive forma end", () => {
-    const p = createProjectV4Seed("a", "Empty", "2026-07-20T00:00:00.000Z");
+    const p = createProjectV5Seed("a", "Empty", "2026-07-20T00:00:00.000Z");
     p.forma.clips = [];
     expect(projectEndTicks(p)).toBe(
       emptyProjectEndTicks({

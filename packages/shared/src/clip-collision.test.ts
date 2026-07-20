@@ -5,6 +5,7 @@ import {
   moveClipNoOverlap,
   placeClipNoOverlap,
   resizeClipNoOverlap,
+  splitClipAt,
 } from "./clip-collision.js";
 import type { FormaClip } from "./schema.js";
 
@@ -153,5 +154,23 @@ describe("placeClipNoOverlap", () => {
     };
     const next = placeClipNoOverlap([CD, INTRO], placed);
     expect(next.find((c) => c.id === "forma-cd")).toEqual(CD);
+  });
+});
+
+describe("splitClipAt", () => {
+  it("splits a section into two positive halves", () => {
+    const next = splitClipAt(base(), "forma-intro", 3840);
+    const left = next.find((c) => c.id === "forma-intro");
+    const right = next.find((c) => c.id === "forma-intro-r");
+    expect(left?.lengthTicks).toBe(3840);
+    expect(right?.startTicks).toBe(3840);
+    expect(right?.lengthTicks).toBe(3840);
+    expect(next.find((c) => c.id === "forma-cd")).toEqual(CD);
+  });
+
+  it("rejects countdown and edge hits", () => {
+    expect(splitClipAt(base(), "forma-cd", -3840)).toEqual(base());
+    expect(splitClipAt(base(), "forma-intro", 0)).toEqual(base());
+    expect(splitClipAt(base(), "forma-intro", 7680)).toEqual(base());
   });
 });

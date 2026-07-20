@@ -57,7 +57,7 @@ describe("library / projects CRUD", () => {
     expect(createRes.status).toBe(201);
     const created = ProjectSchema.parse(await createRes.json());
     expect(created.name).toBe("First Song");
-    expect(created.formatVersion).toBe(4);
+    expect(created.formatVersion).toBe(5);
     expect(created.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
     expect(
       created.forma.clips.find((c) => c.kind === "countdown")?.startTicks,
@@ -196,7 +196,7 @@ describe("library / projects CRUD", () => {
     const getRes = await fetch(`${baseUrl}/api/projects/${id}`);
     expect(getRes.status).toBe(200);
     const upgraded = ProjectSchema.parse(await getRes.json());
-    expect(upgraded.formatVersion).toBe(4);
+    expect(upgraded.formatVersion).toBe(5);
     expect(upgraded.forma.clips.length).toBeGreaterThan(0);
   });
 

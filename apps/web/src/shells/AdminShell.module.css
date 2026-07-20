@@ -179,14 +179,14 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ss-space-3);
-  padding: var(--ss-space-3) var(--ss-space-4);
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-2) var(--ss-space-3);
   border-bottom: 1px solid var(--ss-color-border);
 }
 
 .cardTitle {
   margin: 0;
-  font-size: var(--ss-text-lg);
+  font-size: var(--ss-text-md);
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-tight);
 }
@@ -200,8 +200,8 @@
 .cardBody {
   display: flex;
   flex-direction: column;
-  gap: var(--ss-space-3);
-  padding: var(--ss-space-4);
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-3);
   min-height: 0;
   flex: 1;
 }
@@ -228,6 +228,91 @@
   max-height: min(52dvh, 36rem);
   overflow: auto;
   padding-right: var(--ss-space-1);
+}
+
+.setControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-3) var(--ss-space-5);
+}
+
+.setSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ss-space-3);
+  min-height: 0;
+  flex: 1;
+}
+
+.setCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  padding: var(--ss-space-2);
+  background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
+}
+
+.setColHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+}
+
+.setColTitle {
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.filterInput {
+  min-width: 8rem;
+  max-width: 14rem;
+  padding: var(--ss-space-1) var(--ss-space-2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-sm);
+}
+
+.setPickList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  min-height: 10rem;
+  max-height: min(48dvh, 28rem);
+  flex: 1;
+}
+
+.setPickRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-1) 0;
+  border-bottom: 1px solid var(--ss-color-border-muted);
+}
+
+.setPickLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  flex: 1;
+  min-width: 0;
+  font-size: var(--ss-text-sm);
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .setSplit {
+    grid-template-columns: 1fr;
+  }
 }
 
 .songRow {

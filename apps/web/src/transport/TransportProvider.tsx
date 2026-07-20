@@ -19,10 +19,11 @@ import {
   pauseTransport,
   playTransport,
   seekTransport,
+  setTransportLoop,
   stopTransport,
 } from "./api.js";
 import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
-
+import type { TransportLoopBody } from "@stagesync/shared";
 function toAnchor(state: TransportState): TransportAnchor {
   return {
     positionTicks: state.positionTicks,
@@ -50,6 +51,11 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
   const rafIdRef = useRef(0);
+  const wsRef = useRef<WebSocket | null>(null);
+  const pendingHelloRef = useRef<{
+    displayName: string | null;
+    roles: string[];
+  } | null>(null);
 
   const stopRaf = useCallback(() => {
     if (rafIdRef.current !== 0) {
@@ -111,12 +117,24 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         ws.onclose = null;
         ws.close();
         ws = null;
+        wsRef.current = null;
       }
       setWsStatus("connecting");
       ws = new WebSocket(transportWsUrl());
+      wsRef.current = ws;
 
       ws.onopen = () => {
         if (!cancelled) setWsStatus("connected");
+        const hello = pendingHelloRef.current;
+        if (hello && ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "client_hello",
+              displayName: hello.displayName,
+              roles: hello.roles,
+            }),
+          );
+        }
       };
 
       ws.onmessage = (event) => {
@@ -127,12 +145,14 @@ export function TransportProvider({ children }: { children: ReactNode }) {
             text?: string;
             ttlMs?: number;
             sentAtMs?: number;
+            roles?: Array<"karaoke" | "grid" | "score" | "drums">;
           };
           if (raw.type === "stage_cue" && typeof raw.text === "string") {
             setStageCue({
               text: raw.text,
               ttlMs: raw.ttlMs ?? 6000,
               sentAtMs: raw.sentAtMs ?? Date.now(),
+              roles: raw.roles,
             });
             return;
           }
@@ -191,9 +211,27 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       if (ws) {
         ws.onclose = null;
         ws.close();
+        wsRef.current = null;
       }
     };
   }, [applyAnchor, startRaf, stopRaf]);
+
+  const announcePresence = useCallback(
+    (payload: { displayName: string | null; roles: string[] }) => {
+      pendingHelloRef.current = payload;
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(
+          JSON.stringify({
+            type: "client_hello",
+            displayName: payload.displayName,
+            roles: payload.roles,
+          }),
+        );
+      }
+    },
+    [],
+  );
 
   const runCommand = useCallback(
     async (fn: () => Promise<TransportState>) => {
@@ -238,6 +276,13 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     [runCommand],
   );
 
+  const setLoop = useCallback(
+    async (body: TransportLoopBody) => {
+      await runCommand(() => setTransportLoop(body));
+    },
+    [runCommand],
+  );
+
   const value = useMemo(
     () => ({
       state,
@@ -249,7 +294,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       pause,
       stop,
       seek,
+      setLoop,
       stageCue,
+      announcePresence,
     }),
     [
       state,
@@ -261,7 +308,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       pause,
       stop,
       seek,
+      setLoop,
       stageCue,
+      announcePresence,
     ],
   );
 

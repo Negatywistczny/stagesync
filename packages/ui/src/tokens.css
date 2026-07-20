@@ -36,6 +36,8 @@
   /* Radii */
   --ss-radius-sharp: 2px;
   --ss-radius-sm: 6px;
+  --ss-radius-md: 12px;
+  --ss-radius-lg: 16px;
 
   /* Spacing — strict 4pt/8pt grid */
   --ss-space-1: 4px;
@@ -60,6 +62,8 @@
   --ss-text-md: 0.9375rem;
   --ss-text-lg: 1.125rem;
   --ss-text-xl: 1.5rem;
+  --ss-text-2xl: 2rem;
+  --ss-text-3xl: 3rem;
   --ss-font-size: var(--ss-text-control);
   --ss-font-weight-regular: 400;
   --ss-font-weight-medium: 500;
@@ -71,6 +75,7 @@
   --ss-leading-relaxed: 1.5;
   --ss-line-height: var(--ss-leading-normal);
   --ss-tracking-normal: 0;
+  --ss-tracking-tight: -0.02em;
   --ss-tracking-label: 0.06em;
 
   /* Motion */
@@ -87,4 +92,48 @@
   --ss-z-dropdown: 20;
   --ss-z-panel: 20;
   --ss-z-overlay: 40;
+}
+
+/* Light theme — v4 parity via data-theme */
+:root[data-theme="light"] {
+  --ss-color-bg: #f4f4f5;
+  --ss-color-surface: #ffffff;
+  --ss-color-elevated: #fafafa;
+  --ss-color-text: #18181b;
+  --ss-color-text-muted: #52525b;
+  --ss-color-primary: #d97706;
+  --ss-color-primary-hover: #f59e0b;
+  --ss-color-primary-active: #b45309;
+  --ss-color-on-primary: #ffffff;
+  --ss-color-secondary: #e4e4e7;
+  --ss-color-secondary-hover: #d4d4d8;
+  --ss-color-secondary-active: #a1a1aa;
+  --ss-color-ghost-hover: rgba(24, 24, 27, 0.06);
+  --ss-color-ghost-active: rgba(24, 24, 27, 0.12);
+  --ss-color-border-muted: #e4e4e7;
+  --ss-color-border: #a1a1aa;
+  --ss-color-border-active: var(--ss-color-border);
+  --ss-color-focus-ring: #0891b2;
+  --ss-color-selected: rgba(217, 119, 6, 0.14);
+  --ss-color-selected-border: #d97706;
+  --ss-color-disabled-bg: #f4f4f5;
+  --ss-color-disabled-text: #a1a1aa;
+}
+
+/* High contrast — dark */
+html[data-contrast="high"]:not([data-theme="light"]) {
+  --ss-color-text: #ffffff;
+  --ss-color-text-muted: #e4e4e7;
+  --ss-color-border: #a1a1aa;
+  --ss-color-border-muted: #52525b;
+  --ss-color-focus-ring: #67e8f9;
+}
+
+/* High contrast — light */
+html[data-theme="light"][data-contrast="high"] {
+  --ss-color-text: #000000;
+  --ss-color-text-muted: #27272a;
+  --ss-color-border: #52525b;
+  --ss-color-border-muted: #71717a;
+  --ss-color-focus-ring: #0e7490;
 }

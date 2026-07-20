@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV4Seed } from "@stagesync/shared";
+import { createProjectV5Seed } from "@stagesync/shared";
 import { computeFormaViewSpan } from "./formaCanvas.js";
 import { meterMapSegments, tempoMapSegments } from "./mapSegments.js";
 
 describe("mapSegments", () => {
   it("tempoMapSegments covers span with default when map empty at start", () => {
-    const project = createProjectV4Seed(
+    const project = createProjectV5Seed(
       "id",
       "Demo",
       "2026-07-20T00:00:00.000Z",
@@ -17,7 +17,7 @@ describe("mapSegments", () => {
   });
 
   it("meterMapSegments splits at meter change", () => {
-    const project = createProjectV4Seed(
+    const project = createProjectV5Seed(
       "id",
       "Demo",
       "2026-07-20T00:00:00.000Z",

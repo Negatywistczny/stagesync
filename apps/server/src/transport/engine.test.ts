@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_PPQ, elapsedToTicks } from "@stagesync/shared";
+import {
+  createProjectV5Seed,
+  DEFAULT_PPQ,
+  elapsedToTicks,
+} from "@stagesync/shared";
 import { createTransportEngine } from "./engine.js";
 
 describe("TransportEngine", () => {
@@ -113,43 +117,14 @@ describe("TransportEngine", () => {
   });
 
   it("loadProject sets activeProjectId without playing", () => {
-    const project = {
-      id: "00000000-0000-4000-8000-000000000001",
-      name: "P",
-      formatVersion: 4 as const,
-      updatedAt: "2026-07-20T00:00:00.000Z",
-      ppq: DEFAULT_PPQ,
-      defaultBpm: 90,
-      defaultMeter: { numerator: 4, denominator: 4 },
-      forma: {
-        clips: [
-          {
-            id: "cd",
-            name: "CD",
-            kind: "countdown" as const,
-            startTicks: -7680,
-            lengthTicks: 7680,
-          },
-          {
-            id: "i",
-            name: "Intro",
-            kind: "section" as const,
-            startTicks: 0,
-            lengthTicks: 7680,
-          },
-        ],
-      },
-      tempoMap: [{ id: "t", startTicks: 0, bpm: 90 }],
-      meterMap: [
-        { id: "m", startTicks: 0, numerator: 4, denominator: 4 },
-      ],
-      assets: [],
-      audioTracks: [],
-      audioClips: [],
-      tekst: { clips: [] },
-      akordy: { clips: [] },
-      cue: { clips: [] },
-    };
+    const project = createProjectV5Seed(
+      "00000000-0000-4000-8000-000000000001",
+      "P",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 1 },
+    );
+    project.defaultBpm = 90;
+    project.tempoMap = [{ id: "t", startTicks: 0, bpm: 90 }];
     const engine = createTransportEngine();
     const state = engine.loadProject(project.id, project);
     expect(state.playing).toBe(false);

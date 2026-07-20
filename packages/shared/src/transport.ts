@@ -6,6 +6,14 @@ export const TimeSignatureSchema = z.object({
   denominator: z.number().int().positive(),
 });
 
+export const TransportLoopSchema = z.object({
+  enabled: z.boolean(),
+  startTicks: z.number().int(),
+  endTicks: z.number().int(),
+});
+
+export type TransportLoop = z.infer<typeof TransportLoopSchema>;
+
 export const TransportStateSchema = z.object({
   playing: z.boolean(),
   positionTicks: z.number().int(),
@@ -13,6 +21,7 @@ export const TransportStateSchema = z.object({
   timeSignature: TimeSignatureSchema,
   ppq: z.number().int().positive(),
   activeProjectId: z.string().uuid().nullable().optional(),
+  loop: TransportLoopSchema.nullable().optional(),
 });
 
 export type TransportState = z.infer<typeof TransportStateSchema>;
@@ -22,6 +31,17 @@ export const TransportSeekBodySchema = z.object({
 });
 
 export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
+
+/** POST /api/transport/loop — set range and/or toggle. */
+export const TransportLoopBodySchema = z
+  .object({
+    enabled: z.boolean(),
+    startTicks: z.number().int().optional(),
+    endTicks: z.number().int().optional(),
+  })
+  .strict();
+
+export type TransportLoopBody = z.infer<typeof TransportLoopBodySchema>;
 
 export const TransportPlayBodySchema = z
   .object({
@@ -63,5 +83,6 @@ export function defaultTransportState(): TransportState {
     timeSignature: { ...DEFAULT_TRANSPORT_METER },
     ppq: DEFAULT_PPQ,
     activeProjectId: null,
+    loop: null,
   };
 }

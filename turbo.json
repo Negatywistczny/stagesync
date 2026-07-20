@@ -1,7 +1,14 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": ["PORT", "STAGESYNC_DATA_DIR", "npm_package_version"],
+  "globalEnv": [
+    "PORT",
+    "STAGESYNC_DATA_DIR",
+    "npm_package_version",
+    "HOSTNAME",
+    "pm_id",
+    "PM2_HOME"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

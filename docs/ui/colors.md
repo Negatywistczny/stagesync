@@ -27,3 +27,10 @@
 | `--ss-color-info` | Informacja / neutralny akcent |
 
 Status (`success` / `warning` / `info` / `danger`) — pod wskaźniki, toast, status bar; nie zastępują `primary` jako głównego CTA.
+
+## Minimalizm marki (black / amber)
+
+- **Jedna** barwa akcentu interakcji: `--ss-color-primary` / `--ss-color-selected*`.
+- Role Client (karaoke / grid / score / drums) różnicuj **etykietą / ikoną / treścią**, nie tęczą hoverów.
+- **Zakaz** mapowania ról na `success` / `warning` / `info` / `focus-ring` „dla kolorów kafli”.
+- `focus-ring` = wyłącznie a11y outline, nie dekoracja marki.

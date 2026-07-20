@@ -12,9 +12,9 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.5** | Client roles poza Formą/`drums` | Karaoke wired z transportem + kontekstem projektu | [report-scope-alpha5](./analysis/reports/report-scope-alpha5.md) |
 | **5.0.0-alpha.6** | Admin Live Desk — setlista, scena, pliki | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze | [report-scope-alpha6](./analysis/reports/report-scope-alpha6.md) |
 | **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | [report-scope-alpha7](./analysis/reports/report-scope-alpha7.md) |
-| **5.0.0-alpha.8** | Parity workflow 4.x (treść + Live Desk) | **Done** — Akordy/Cue; Scissors; Tap/UG/Różdżka; Undo; metronom; Client grid + →następny; Admin filtr/sort | [report-scope-alpha8](./analysis/reports/report-scope-alpha8.md) · [QA](./analysis/reports/report-qa-signoff-alpha8.md) |
-| **5.0.0-alpha.9** | Migrator legacy | Import / migracja projektu 4.x → v5 | — |
-| **5.0.0-beta.1** | Host / dystrybucja | Docker Compose + volume; Tauri shell (Win/mac); stabilność hosta (**bez** audio/MIDI — β2; **bez** migratora — α9) | — |
+| **5.0.0-alpha.8** | Parity workflow 4.x | **RESET / rebuild** — inventarz-first odrzucony; parity = zachowanie ([ADR 0011](./adr/0011-ui-parity-behavior.md)); [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) | QA: [report-qa-signoff-alpha8](./analysis/reports/report-qa-signoff-alpha8.md) |
+| **5.0.0-alpha.9** | Migrator + dokończenie rebuild | Migrator MVP ([MIGRATION.md](./MIGRATION.md)); **PO smoke** na P0 Timeline/Client/Admin | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) |
+| **5.0.0-beta.1** | Host / dystrybucja | **ZAKAZ startu β** do green **PO smoke** (zachowanie, nie inventarz). Potem: Docker + Tauri + host (**bez** audio/MIDI — β2) | — |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
@@ -49,7 +49,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - Setlista, auto-setlista, host settings/logs
 - **Pliki projektu:** import audio do `data/projects/<id>/`; lista w inspectorze; **schema v3** (refs clipów) — bez pełnego silnika lub ze stubem
-- **Świadoma IA v5:** Set ≠ Utwory (osobne zakładki) — wiring setu tutaj
+- IA Admin: Set / Utwory — **korekta** w rebuild: Set + wybór utworów w **jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)); osobne zakładki nie mogą łamać „dodaj zaznaczone”
 - **OUT:** silnik odtwarzania, edycja geometryczna audio na Timeline (→ β2)
 
 ### Alpha 7 — zakres orientacyjny
@@ -59,20 +59,29 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 - Tap, UG, Różdżka; edycja lane’ów Tekst/Akordy/Cue (ticks v2) — wg scope report
 - **OUT α7:** pełny stos Undo/Redo (draft + Zapisz/Odrzuć wystarczy); audio playback
 
-### Alpha 8 — zakres orientacyjny
+### Alpha 8 — zakres orientacyjny (+ rebuild)
 
-- Domknięcie parity 4.x **bez** audio/MIDI tracks i **bez** migratora
-- Lane Akordy / Cue (edit + Client grid); Scissors Forma; Tap; Różdżka; Import UG (Zod Result)
-- Undo/Redo sesji Timeline (Zapisz: stos zostaje; Odrzuć: server snapshot)
-- Metronom Web Audio + `AudioContext.resume()` na user gesture
-- Admin filtr/sort; Client →następny; OSMD stub *(should)*
-- **OUT α8:** audio/MIDI → β2; Docker / Tauri → β1; migrator → α9
+- Pierwotny scope α8 (Akordy/Cue, scissors, Tap, UG, Undo, metronom…) = eksperyment w drzewie
+- **Rebuild (obowiązuje):** [ADR 0011](./adr/0011-ui-parity-behavior.md) —
+  Timeline sterowanie (zwłaszcza mapy Tempo/Metrum/Tonacja) → Client treść → Admin IA;
+  **zakaz** inventarz-first i clone chrome
+- Bramka: [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) — open do PO smoke
+- **OUT α8:** audio/MIDI → β2; Docker / Tauri → β1; migrator → α9;
+  git-apply (nigdy); Docker-as-update model
 
 ### Alpha 9 — zakres orientacyjny
 
-- Migrator legacy 4.x → v5 (osobny etap; przed β1)
+- Migrator legacy 4.x → v5 (osobny etap; MVP może być wcześniej)
+- Dokończenie **rebuild** P0 jeśli TODO czerwone
+- **Przed β1:** PO smoke **green** (zachowanie) — nie wystarczy inventarz ani sam migrator
 
 ### Beta 1 — zakres orientacyjny (host / dystrybucja)
+
+> **ZAKAZ β:** żadnego `5.0.0-beta.*` / tagu β, dopóki **PO smoke** zachowania v4
+> nie jest green ([ADR 0011](./adr/0011-ui-parity-behavior.md),
+> [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md)).
+> Świadome OUT nie liczą się jako braki: git-apply; audio playback (→ β2);
+> Docker-as-update. Inventarz `[x]` ≠ green.
 
 - Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu
 - **Tauri** desktop shell ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): thin WebView → lokalny API/WS; Win + mac; **bez** autorytetu czasu w shellu
@@ -108,12 +117,16 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
    tuż przed kodem danego etapu; ROADMAP trzyma hero + done na wysokim poziomie.
 3. **Pull-forward** (alpha.4–7): drobne zadania z alpha.N+1 można wciągnąć do
    bieżącego TODO bez zmiany numeracji etapów w ROADMAP.
-4. **Beta:** α9 (migrator) → β1 (host) → β2 (audio/MIDI) → 5.0.0; jasne OUT na każdym etapie.
+4. **Beta:** **dopiero po green PO smoke** (zachowanie v4) + α9 migrator → β1 (host) →
+   β2 (audio/MIDI) → 5.0.0. **Zakaz β** przy regresjach Timeline / Client / Admin IA.
 5. **Fundament** przypisany do etapu (α4, β1 host, β2 audio), nie osobny work bucket.
 6. **Dług layoutu shelli** (α3): nie blokuje release α3; domknięcie w α4 must PR #1.
 7. **Snap / edit grid** ([ADR 0007](./adr/0007-snap-grid.md)): faza 0 (API shared) — done; faza 1 → α4; UI picker → 5.0.0; drag/scissors → α7; Cmd-off → α7.
 8. **Edycja klipów** ([ADR 0008](./adr/0008-timeline-clip-editing.md)): Forma α7; audio β2; fade/crossfade → 5.0.0.
 9. **Desktop** ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): Tauri w β1; audio/MIDI nie w procesie shella.
+10. **Parity vs v4** ([ADR 0011](./adr/0011-ui-parity-behavior.md)): źródło = zachowanie w
+    `STAGESYNC-APP-LEGACY`; **nie** clone chrome; inventarz wtórny; zakaz *engineering ready*
+    bez PO smoke. Wyjątki tylko jako świadome OUT.
 
 ## Granica 0
 

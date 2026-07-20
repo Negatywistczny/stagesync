@@ -1,16 +1,9 @@
 import type { ReactNode } from "react";
 import { ShellIconButton } from "./ShellIconButton.js";
-import { ShellSwitchRow } from "./ShellSwitchRow.js";
+import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
 import styles from "./SettingsPopover.module.css";
 
-export function ShellAppearanceFields() {
-  return (
-    <>
-      <ShellSwitchRow disabled>Jasny motyw</ShellSwitchRow>
-      <ShellSwitchRow disabled>Wysoki kontrast</ShellSwitchRow>
-    </>
-  );
-}
+export { ShellAppearanceFields };
 
 export function SettingsPopoverAnchor({
   children,

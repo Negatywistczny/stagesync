@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
+  absBeatToTicks,
   assertValidTimeSignature,
   bbtToTicks,
   elapsedToTicks,
@@ -9,6 +10,7 @@ import {
   ticksPerBar,
   ticksPerMs,
   ticksToBbt,
+  ticksToMs,
   ticksToQuarters,
   toDisplayBar,
   type TimeSignature,
@@ -179,5 +181,18 @@ describe("elapsedToTicks / ticksPerMs", () => {
     expect(elapsedToTicks(499, 120, TS_4_4)).toBe(
       Math.floor(499 * (DEFAULT_PPQ / 500)),
     );
+  });
+
+  it("ticksToMs is inverse of ticksPerMs", () => {
+    expect(ticksToMs(DEFAULT_PPQ, 120, TS_4_4)).toBe(500);
+    expect(ticksToMs(0, 120, TS_4_4)).toBe(0);
+  });
+});
+
+describe("absBeatToTicks", () => {
+  it("rounds float startAbs * PPQ (migrator ACL)", () => {
+    expect(absBeatToTicks(8)).toBe(8 * DEFAULT_PPQ);
+    expect(absBeatToTicks(8.4)).toBe(Math.round(8.4 * DEFAULT_PPQ));
+    expect(absBeatToTicks(-2)).toBe(-2 * DEFAULT_PPQ);
   });
 });

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
+  importUgText,
   resolveFormaClipAt,
+  resolveMeterAt,
   ticksToBbt,
   toDisplayBar,
   type Library,
@@ -10,13 +12,18 @@ import {
   type SetlistView,
 } from "@stagesync/shared";
 import {
+  batchMidiProgramIds,
   createProject,
   deleteProject,
+  exportLibraryPack,
   fetchLibrary,
   fetchProject,
+  importLibraryPack,
+  putProject,
   updateProject,
 } from "../lib/libraryApi.js";
-import { fetchSetlist } from "../lib/setlistApi.js";
+import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
+import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, type HostLogLine, type NetworkInfo } from "../lib/setlistApi.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconSettings, IconSun } from "./icons.js";
@@ -59,6 +66,8 @@ export function AdminShell() {
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [ugText, setUgText] = useState("");
+  const [ugError, setUgError] = useState<string | null>(null);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
   const [batchPcOpen, setBatchPcOpen] = useState(false);
   const [pathPickerOpen, setPathPickerOpen] = useState(false);
@@ -275,6 +284,35 @@ export function AdminShell() {
             onXml={() => setXmlModalOpen(true)}
             onBatchPc={() => setBatchPcOpen(true)}
             onCreate={onCreate}
+            onCreateTemplate={() =>
+              void runMutation(async () => {
+                const p = await createProject(`Wzór ${new Date().toLocaleTimeString("pl")}`, {
+                  isTemplate: true,
+                });
+                await refreshLibrary(p.id);
+              })
+            }
+            onCreateFromTemplate={(templateId) =>
+              void runMutation(async () => {
+                const p = await createProject(`Utwór ${new Date().toLocaleTimeString("pl")}`, {
+                  fromTemplateId: templateId,
+                });
+                await refreshLibrary(p.id);
+              })
+            }
+            onExport={() =>
+              void runMutation(async () => {
+                const blob = await exportLibraryPack(
+                  selectedId ? [selectedId] : undefined,
+                );
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `stagesync-export-${Date.now()}.stagesync.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              })
+            }
             onDelete={onDelete}
             onRename={onRename}
             onPlay={(id) => void play({ projectId: id })}
@@ -285,7 +323,29 @@ export function AdminShell() {
         ) : null}
         {section === "stage" ? <StageView /> : null}
         {section === "files" ? (
-          <FilesView onOpenImport={() => setImportModalOpen(true)} />
+          <FilesView
+            locked={commandPending}
+            onOpenImport={() => setImportModalOpen(true)}
+            onExport={() =>
+              void runMutation(async () => {
+                const blob = await exportLibraryPack();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `stagesync-export-${Date.now()}.stagesync.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              })
+            }
+            onImportFile={(file) =>
+              void runMutation(async () => {
+                const textPack = await file.text();
+                const pack = JSON.parse(textPack) as unknown;
+                const next = await importLibraryPack(pack);
+                setLibrary(next);
+              })
+            }
+          />
         ) : null}
         {section === "host" ? (
           <HostView
@@ -362,68 +422,114 @@ export function AdminShell() {
       </footer>
 
       {settingsOpen ? (
-        <Modal title="Ustawienia hosta" onClose={() => setSettingsOpen(false)}>
-          <fieldset className={styles.fieldset} disabled>
-            <legend>MIDI</legend>
-            <label className={styles.field}>
-              Port
-              <input className={styles.input} />
-            </label>
-          </fieldset>
-          <fieldset className={styles.fieldset} disabled>
-            <legend>Sieć, logi, ścieżki</legend>
-            <p className={styles.muted}>
-              Wartości z konfiguracji serwera — shell pod przyszłe API.
-            </p>
-            <Button variant="ghost" onClick={() => setPathPickerOpen(true)}>
-              Wybierz ścieżkę…
-            </Button>
-          </fieldset>
-          <div className={styles.actions}>
-            <Button variant="ghost" onClick={() => setSettingsOpen(false)}>
-              Anuluj
-            </Button>
-            <Button variant="primary" disabled>
-              Zapisz
-            </Button>
-          </div>
-        </Modal>
+        <HostSettingsModal
+          onClose={() => setSettingsOpen(false)}
+          onPathPicker={() => setPathPickerOpen(true)}
+        />
       ) : null}
 
       {importModalOpen ? (
-        <Modal title="Import" onClose={() => setImportModalOpen(false)}>
-          <p className={styles.muted}>
-            Podgląd konfliktów i wybór nadpisania albo kopii — shell.
-          </p>
+        <Modal
+          title="Import Ultimate Guitar"
+          onClose={() => {
+            setImportModalOpen(false);
+            setUgError(null);
+          }}
+        >
+          {!selectedId ? (
+            <p className={styles.muted}>
+              Zaznacz utwór na liście, potem wklej tekst UG / ChordPro.
+            </p>
+          ) : (
+            <>
+              <p className={styles.muted}>
+                Nadpisze lane Tekst i Akordy w „{selected?.name ?? selectedId}”.
+              </p>
+              {ugError ? (
+                <p className={styles.error} role="alert">
+                  {ugError}
+                </p>
+              ) : null}
+              <textarea
+                className={styles.textarea}
+                rows={10}
+                value={ugText}
+                aria-label="Tekst UG"
+                placeholder={"[C]Hello [G]world"}
+                disabled={commandPending}
+                onChange={(e) => setUgText(e.target.value)}
+              />
+            </>
+          )}
           <div className={styles.actions}>
-            <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setImportModalOpen(false);
+                setUgError(null);
+              }}
+            >
               Anuluj
             </Button>
-            <Button variant="primary" disabled>
-              Importuj
+            <Button
+              variant="primary"
+              disabled={!selectedId || commandPending || !ugText.trim()}
+              loading={commandPending}
+              onClick={() => {
+                void (async () => {
+                  if (!selectedId) return;
+                  setCommandPending(true);
+                  setUgError(null);
+                  try {
+                    const project = await fetchProject(selectedId);
+                    const result = importUgText(ugText, {
+                      ppq: project.ppq,
+                      meter: resolveMeterAt(project, 0),
+                    });
+                    if (!result.ok) {
+                      setUgError(result.message);
+                      return;
+                    }
+                    await putProject(selectedId, {
+                      ...project,
+                      tekst: result.tekst,
+                      akordy: result.akordy,
+                    });
+                    setImportModalOpen(false);
+                    setUgText("");
+                    await refreshLibrary(selectedId);
+                  } catch (err) {
+                    setUgError(errMessage(err));
+                  } finally {
+                    setCommandPending(false);
+                  }
+                })();
+              }}
+            >
+              Importuj do utworu
             </Button>
           </div>
         </Modal>
       ) : null}
 
       {xmlModalOpen ? (
-        <Modal title="MusicXML" onClose={() => setXmlModalOpen(false)}>
-          <p className={styles.muted}>Wgranie i podgląd partytury — shell.</p>
-          <Button variant="ghost" onClick={() => setXmlModalOpen(false)}>
-            Zamknij
-          </Button>
-        </Modal>
+        <MusicXmlModal
+          projectId={selectedId}
+          projectName={selected?.name ?? null}
+          onClose={() => setXmlModalOpen(false)}
+          onUploaded={() => void refreshLibrary(selectedId)}
+        />
       ) : null}
 
       {batchPcOpen ? (
-        <Modal title="Batch PC" onClose={() => setBatchPcOpen(false)}>
-          <p className={styles.muted}>
-            Numeracja Program Change dla zaznaczonych — shell.
-          </p>
-          <Button variant="ghost" onClick={() => setBatchPcOpen(false)}>
-            Zamknij
-          </Button>
-        </Modal>
+        <BatchPcModal
+          library={library}
+          onClose={() => setBatchPcOpen(false)}
+          onSaved={async (next) => {
+            setLibrary(next);
+            setBatchPcOpen(false);
+          }}
+        />
       ) : null}
 
       {pathPickerOpen ? (
@@ -436,6 +542,24 @@ export function AdminShell() {
       ) : null}
     </div>
   );
+}
+
+function projectHasWarning(
+  p: Library["projects"][number],
+  all: Library["projects"],
+): boolean {
+  if (p.isTemplate) return false;
+  const dupPc =
+    p.midiProgramId != null &&
+    all.some(
+      (o) =>
+        o.id !== p.id &&
+        o.isTemplate !== true &&
+        o.midiProgramId === p.midiProgramId,
+    );
+  const missingMeta = !p.artist;
+  const missingXml = !p.hasMusicXml;
+  return Boolean(dupPc || missingMeta || missingXml);
 }
 
 function SongsView({
@@ -454,6 +578,9 @@ function SongsView({
   onXml,
   onBatchPc,
   onCreate,
+  onCreateTemplate,
+  onCreateFromTemplate,
+  onExport,
   onDelete,
   onRename,
   onPlay,
@@ -473,12 +600,48 @@ function SongsView({
   onXml: () => void;
   onBatchPc: () => void;
   onCreate: () => void;
+  onCreateTemplate: () => void;
+  onCreateFromTemplate: (templateId: string) => void;
+  onExport: () => void;
   onDelete: () => void;
   onRename: () => void;
   onPlay: (id: string) => void;
 }) {
   const locked = commandPending;
   const nameDirty = Boolean(selected && draftName !== selected.name);
+  const [filter, setFilter] = useState("");
+  const [sort, setSort] = useState<"library" | "title" | "pc">("library");
+  const [issueFilter, setIssueFilter] = useState<"all" | "warnings">("all");
+
+  const visibleProjects = useMemo(() => {
+    const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
+    const q = filter.trim().toLowerCase();
+    let list = q
+      ? projects.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            (p.artist ?? "").toLowerCase().includes(q) ||
+            (p.genre ?? "").toLowerCase().includes(q) ||
+            String(p.midiProgramId ?? "").includes(q),
+        )
+      : [...projects];
+    if (issueFilter === "warnings") {
+      const all = library?.projects ?? [];
+      list = list.filter((p) => projectHasWarning(p, all));
+    }
+    if (sort === "title") {
+      list = [...list].sort((a, b) =>
+        a.name.localeCompare(b.name, "pl", { sensitivity: "base" }),
+      );
+    } else if (sort === "pc") {
+      list = [...list].sort(
+        (a, b) =>
+          (a.midiProgramId ?? 0) - (b.midiProgramId ?? 0) ||
+          a.name.localeCompare(b.name, "pl", { sensitivity: "base" }),
+      );
+    }
+    return list;
+  }, [library?.projects, filter, sort, issueFilter]);
 
   return (
     <div
@@ -501,11 +664,11 @@ function SongsView({
             >
               Nowy
             </Button>
-            <Button variant="ghost" disabled>
+            <Button variant="ghost" disabled={locked} onClick={onExport}>
               Eksport
             </Button>
             <Button variant="ghost" disabled={locked} onClick={onImport}>
-              Import
+              Import UG
             </Button>
           </div>
         </div>
@@ -514,21 +677,39 @@ function SongsView({
             <input
               className={styles.input}
               placeholder="Filtruj…"
-              disabled
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
               aria-label="Filtruj utwory"
             />
-            <select className={styles.select} disabled aria-label="Sortowanie">
-              <option>Kolejność bazy</option>
-              <option>Tytuł A–Z</option>
-              <option>PC ↑</option>
+            <select
+              className={styles.select}
+              value={sort}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSort(v === "title" || v === "pc" ? v : "library");
+              }}
+              aria-label="Sortowanie"
+            >
+              <option value="library">Kolejność bazy</option>
+              <option value="title">Tytuł A–Z</option>
+              <option value="pc">PC</option>
             </select>
-            <button type="button" className={styles.chipOn} disabled>
+            <button
+              type="button"
+              className={issueFilter === "all" ? styles.chipOn : styles.chip}
+              onClick={() => setIssueFilter("all")}
+            >
               Wszystkie
             </button>
-            <button type="button" className={styles.chip} disabled>
+            <button
+              type="button"
+              className={issueFilter === "warnings" ? styles.chipOn : styles.chip}
+              onClick={() => setIssueFilter("warnings")}
+              title="Duplikat PC / brak MusicXML / brak artysty"
+            >
               Ostrzeżenia
             </button>
-            <Button variant="ghost" disabled onClick={onBatchPc}>
+            <Button variant="ghost" disabled={locked} onClick={onBatchPc}>
               Batch PC
             </Button>
           </div>
@@ -545,7 +726,7 @@ function SongsView({
           ) : null}
 
           <div className={styles.list}>
-            {library?.projects.map((p) => (
+            {visibleProjects.map((p) => (
               <button
                 key={p.id}
                 type="button"
@@ -558,7 +739,9 @@ function SongsView({
                 disabled={locked}
                 onClick={() => onSelect(p.id)}
               >
-                <span className={styles.songPc}>—</span>
+                <span className={styles.songPc}>
+                  {p.isTemplate ? "wzór" : (p.midiProgramId ?? "—")}
+                </span>
                 <span className={styles.songName}>{p.name}</span>
                 <span className={styles.songMeta} />
               </button>
@@ -566,11 +749,38 @@ function SongsView({
             {!library && !libraryError ? (
               <p className={styles.muted}>Wczytywanie…</p>
             ) : null}
+            {library && visibleProjects.length === 0 ? (
+              <p className={styles.muted}>Brak utworów dla filtra.</p>
+            ) : null}
           </div>
 
           <div className={styles.templates}>
             <h2 className={styles.subTitle}>Wzory</h2>
-            <p className={styles.muted}>Szablony startowe — edycja później.</p>
+            {(library?.projects ?? []).filter((p) => p.isTemplate).length === 0 ? (
+              <p className={styles.muted}>
+                Brak wzorów.{" "}
+                <button type="button" className={styles.editLink} disabled={locked} onClick={onCreateTemplate}>
+                  Utwórz wzór
+                </button>
+              </p>
+            ) : (
+              <ul className={styles.list}>
+                {(library?.projects ?? [])
+                  .filter((p) => p.isTemplate)
+                  .map((t) => (
+                    <li key={t.id} className={styles.songRow}>
+                      <span className={styles.songName}>{t.name}</span>
+                      <Button
+                        variant="secondary"
+                        disabled={locked}
+                        onClick={() => onCreateFromTemplate(t.id)}
+                      >
+                        Nowy z wzoru
+                      </Button>
+                    </li>
+                  ))}
+              </ul>
+            )}
           </div>
         </div>
       </section>
@@ -630,7 +840,12 @@ function SongsView({
                     <Button variant="secondary" disabled={locked} onClick={onXml}>
                       XML
                     </Button>
-                    <Button variant="ghost" disabled>
+                    <Button
+                      variant="ghost"
+                      disabled={locked || !selected?.hasMusicXml}
+                      title={selected?.hasMusicXml ? "Ma MusicXML" : "Brak MusicXML — użyj XML"}
+                      onClick={onXml}
+                    >
                       Partytura
                     </Button>
                     {locked ? (
@@ -690,28 +905,88 @@ function SongsView({
   );
 }
 
-function FilesView({ onOpenImport }: { onOpenImport: () => void }) {
+function FilesView({
+  onOpenImport,
+  onExport,
+  onImportFile,
+  locked,
+}: {
+  onOpenImport: () => void;
+  onExport: () => void;
+  onImportFile: (file: File) => void;
+  locked?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <section className={styles.card} aria-label="Pliki">
       <div className={styles.cardHead}>
         <div>
           <h1 className={styles.cardTitle}>Pliki</h1>
-          <p className={styles.cardHint}>Paczki projektów</p>
+          <p className={styles.cardHint}>Paczki projektów (.stagesync.json)</p>
         </div>
       </div>
       <div className={styles.cardBody}>
-        <div className={styles.dropZone}>Upuść .stagesync lub .zip</div>
+        <div
+          className={styles.dropZone}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const f = e.dataTransfer.files?.[0];
+            if (f) onImportFile(f);
+          }}
+        >
+          Upuść .stagesync.json
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".json,.stagesync,application/json"
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onImportFile(f);
+          }}
+        />
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={onOpenImport}>
+          <Button
+            variant="secondary"
+            disabled={locked}
+            onClick={() => inputRef.current?.click()}
+          >
             Z pliku…
           </Button>
-          <Button variant="ghost" disabled>
-            Eksport zaznaczonych
+          <Button variant="ghost" disabled={locked} onClick={onOpenImport}>
+            Import UG
+          </Button>
+          <Button variant="ghost" disabled={locked} onClick={onExport}>
+            Eksport biblioteki
           </Button>
         </div>
       </div>
     </section>
   );
+}
+
+function useDoubleConfirm(action: () => Promise<void>, label: string) {
+  const [pending, setPending] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const arm = useCallback(() => {
+    if (pending) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setPending(false);
+      void action();
+      return;
+    }
+    setPending(true);
+    timerRef.current = setTimeout(() => setPending(false), 4000);
+  }, [action, pending]);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
+  return { pending, arm, label: pending ? `Potwierdź ${label}` : label };
 }
 
 function HostView({
@@ -721,6 +996,47 @@ function HostView({
   onSettings: () => void;
   onPathPicker: () => void;
 }) {
+  const [lines, setLines] = useState<HostLogLine[]>([]);
+  const [paused, setPaused] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
+
+  const restart = useDoubleConfirm(async () => {
+    setStatusMsg("Restart serwera…");
+    try {
+      await postSystemRestart();
+    } catch (err) {
+      setStatusMsg(err instanceof Error ? err.message : "Restart nieudany");
+    }
+  }, "Restart");
+
+  const shutdown = useDoubleConfirm(async () => {
+    setStatusMsg("Wyłączanie serwera…");
+    try {
+      await postSystemShutdown();
+    } catch (err) {
+      setStatusMsg(err instanceof Error ? err.message : "Wyłączenie nieudane");
+    }
+  }, "Wyłącz");
+
+  useEffect(() => {
+    const es = new EventSource("/api/system/logs/stream");
+    es.onmessage = (ev) => {
+      if (pausedRef.current) return;
+      try {
+        const line = JSON.parse(ev.data) as HostLogLine;
+        setLines((prev) => [...prev.slice(-199), line]);
+      } catch {
+        /* ignore */
+      }
+    };
+    es.addEventListener("clear", () => {
+      if (!pausedRef.current) setLines([]);
+    });
+    return () => es.close();
+  }, []);
+
   return (
     <div className={styles.stack}>
       <section className={styles.card}>
@@ -733,29 +1049,65 @@ function HostView({
             <Button variant="secondary" onClick={onSettings}>
               <IconSettings /> Ustawienia
             </Button>
-            <Button variant="ghost" disabled title="Restart (2×)">
-              Restart
+            <Button
+              variant="ghost"
+              selected={restart.pending}
+              title="Restart (2× kliknięcie)"
+              onClick={restart.arm}
+            >
+              {restart.label}
             </Button>
-            <Button variant="ghost" disabled title="Wyłącz (2×)">
-              Wyłącz
+            <Button
+              variant="ghost"
+              selected={shutdown.pending}
+              title="Wyłącz (2× kliknięcie)"
+              onClick={shutdown.arm}
+            >
+              {shutdown.label}
             </Button>
           </div>
         </div>
+        {statusMsg ? <p className={styles.muted}>{statusMsg}</p> : null}
       </section>
 
       <section className={styles.card} aria-label="Logi">
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>Logi</h2>
           <div className={styles.actions}>
-            <Button variant="ghost" disabled>
-              Pauza
+            <Button
+              variant="ghost"
+              selected={paused}
+              onClick={() => setPaused((v) => !v)}
+            >
+              {paused ? "Wznów" : "Pauza"}
             </Button>
-            <Button variant="ghost" disabled>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                void (async () => {
+                  try {
+                    await clearHostLogs();
+                    setLines([]);
+                  } catch {
+                    /* ignore */
+                  }
+                })();
+              }}
+            >
               Wyczyść
             </Button>
           </div>
         </div>
-        <pre className={styles.terminal}>Strumień logów — shell</pre>
+        <pre className={styles.terminal} aria-live="polite">
+          {lines.length === 0
+            ? "Oczekiwanie na logi…"
+            : lines
+                .map(
+                  (l) =>
+                    `${new Date(l.t).toISOString().slice(11, 19)} [${l.level}] ${l.msg}`,
+                )
+                .join("\n")}
+        </pre>
       </section>
 
       <section className={styles.card} aria-label="MIDI">
@@ -763,6 +1115,7 @@ function HostView({
           <h2 className={styles.cardTitle}>MIDI</h2>
         </div>
         <div className={styles.cardBody}>
+          <p className={styles.muted}>Host MIDI I/O — β1</p>
           <div className={styles.midiGrid}>
             <div className={styles.midiCard}>Clock/s —</div>
             <div className={styles.midiCard}>SPP/s —</div>
@@ -784,7 +1137,7 @@ function HostView({
             Aktualizacje przez Docker (bump tagu) — bez Apply z UI.
           </p>
           <div className={styles.actions}>
-            <Button variant="secondary" disabled>
+            <Button variant="secondary" disabled title="ADR 0004 — Docker">
               Sprawdź aktualizacje
             </Button>
             <select className={styles.select} disabled aria-label="Kanał">
@@ -808,6 +1161,261 @@ function HostView({
     </div>
   );
 }
+
+
+function HostSettingsModal({
+  onClose,
+  onPathPicker,
+}: {
+  onClose: () => void;
+  onPathPicker: () => void;
+}) {
+  const [info, setInfo] = useState<NetworkInfo | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const n = await fetchNetworkInfo();
+        if (!cancelled) setInfo(n);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Błąd sieci");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <Modal title="Ustawienia hosta" onClose={onClose}>
+      <fieldset className={styles.fieldset} disabled>
+        <legend>MIDI</legend>
+        <p className={styles.muted}>Host MIDI I/O — β1</p>
+      </fieldset>
+      <fieldset className={styles.fieldset}>
+        <legend>Sieć</legend>
+        {error ? (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        ) : null}
+        {info ? (
+          <>
+            <p className={styles.muted}>
+              Port <strong>{info.port}</strong> · {info.hostname} · v{info.version}
+            </p>
+            <ul className={styles.list}>
+              {info.urls.map((u) => (
+                <li key={u} className={styles.songMeta}>
+                  {u}
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className={styles.muted}>Wczytywanie…</p>
+        )}
+        <Button variant="ghost" onClick={onPathPicker}>
+          Wybierz ścieżkę…
+        </Button>
+      </fieldset>
+      <div className={styles.actions}>
+        <Button variant="ghost" onClick={onClose}>
+          Zamknij
+        </Button>
+        <Button variant="primary" onClick={onClose}>
+          OK
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+function MusicXmlModal({
+  projectId,
+  projectName,
+  onClose,
+  onUploaded,
+}: {
+  projectId: string | null;
+  projectName: string | null;
+  onClose: () => void;
+  onUploaded: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <Modal title="MusicXML" onClose={onClose}>
+      {!projectId ? (
+        <p className={styles.muted}>Zaznacz utwór, potem wgraj plik.</p>
+      ) : (
+        <>
+          <p className={styles.muted}>
+            Przypisz partyturę do „{projectName ?? projectId}”.
+          </p>
+          {error ? (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          ) : null}
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".musicxml,.xml,.mxl,application/xml,text/xml"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file || !projectId) return;
+              void (async () => {
+                setBusy(true);
+                setError(null);
+                try {
+                  await uploadProjectMusicXml(projectId, file);
+                  onUploaded();
+                  onClose();
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Upload nieudany");
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          />
+        </>
+      )}
+      <div className={styles.actions}>
+        <Button variant="ghost" onClick={onClose}>
+          Anuluj
+        </Button>
+        <Button
+          variant="primary"
+          disabled={!projectId || busy}
+          loading={busy}
+          onClick={() => inputRef.current?.click()}
+        >
+          Wybierz plik…
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+function BatchPcModal({
+  library,
+  onClose,
+  onSaved,
+}: {
+  library: Library | null;
+  onClose: () => void;
+  onSaved: (library: Library) => void | Promise<void>;
+}) {
+  const playable = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
+  const [draft, setDraft] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    for (const p of playable) {
+      init[p.id] = p.midiProgramId ?? 0;
+    }
+    return init;
+  });
+  const [start, setStart] = useState(playable[0]?.midiProgramId ?? 0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const renumber = () => {
+    const next = { ...draft };
+    let pc = Math.max(0, Math.min(127, Math.round(start)));
+    for (const p of playable) {
+      next[p.id] = pc;
+      pc = Math.min(127, pc + 1);
+    }
+    setDraft(next);
+  };
+
+  return (
+    <Modal title="Batch PC" onClose={onClose}>
+      <p className={styles.muted}>
+        Numeracja Program Change (0–127) dla utworów (bez wzorów).
+      </p>
+      {error ? (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      ) : null}
+      <label className={styles.field}>
+        Start PC
+        <input
+          className={styles.input}
+          type="number"
+          min={0}
+          max={127}
+          value={start}
+          onChange={(e) => setStart(Number(e.target.value))}
+        />
+      </label>
+      <Button variant="secondary" onClick={renumber}>
+        Numeruj od startu
+      </Button>
+      <ul className={styles.list}>
+        {playable.map((p) => (
+          <li key={p.id} className={styles.songRow}>
+            <span className={styles.songName}>{p.name}</span>
+            <input
+              className={styles.input}
+              type="number"
+              min={0}
+              max={127}
+              value={draft[p.id] ?? 0}
+              aria-label={`PC ${p.name}`}
+              onChange={(e) =>
+                setDraft((d) => ({
+                  ...d,
+                  [p.id]: Math.max(0, Math.min(127, Number(e.target.value))),
+                }))
+              }
+            />
+          </li>
+        ))}
+      </ul>
+      <div className={styles.actions}>
+        <Button variant="ghost" onClick={onClose}>
+          Anuluj
+        </Button>
+        <Button
+          variant="primary"
+          loading={busy}
+          disabled={busy || playable.length === 0}
+          onClick={() => {
+            void (async () => {
+              setBusy(true);
+              setError(null);
+              try {
+                const assignments = playable.map((p) => ({
+                  id: p.id,
+                  midiProgramId: draft[p.id] ?? 0,
+                }));
+                const next = await batchMidiProgramIds(assignments);
+                await onSaved(next);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Zapis PC nieudany");
+              } finally {
+                setBusy(false);
+              }
+            })();
+          }}
+        >
+          Zapisz
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
 
 function Modal({
   title,

@@ -2,11 +2,10 @@ import {
   DEFAULT_PPQ,
   DEFAULT_SNAP_MODE,
   insertSpanOverwrite,
+  localTicksPerBeat,
   quantizeTicks,
   resolveMeterAt,
   ticksPerBar,
-  ticksToBbt,
-  toDisplayBar,
   type FormaClip,
   type Project,
   type SnapMode,
@@ -18,11 +17,31 @@ export type ViewSpan = { start: number; end: number };
 /** Match v4 default horizontal scale (`DEFAULT_PX_PER_BAR` in legacy Timeline). */
 export const DEFAULT_PX_PER_BAR = 48;
 
+/**
+ * v4 ruler: when px/bar ≥ 56, draw beat ticks 2…N (lane grid stays barlines only).
+ * @see STAGESYNC-APP-LEGACY timeline.js `renderRuler` (`pxb >= 56`)
+ */
+export const RULER_BEAT_TICKS_MIN_PX = 56;
+
 /** Trailing empty bars — scroll room past last clip (layout only). */
 const TRAILING_VIEW_BARS = 4;
 const DEFAULT_VIEW_METER: TimeSignature = { numerator: 4, denominator: 4 };
 
 export type BarMark = { ticks: number; label: string };
+
+/** Project fields needed to walk musical bars under meterMap. */
+export type MeterMapProject = Pick<
+  Project,
+  "defaultMeter" | "meterMap" | "ppq"
+>;
+
+export type BarBoundary = {
+  /** 1-based musical bar index (song start = 1). */
+  bar: number;
+  startTicks: number;
+  endTicks: number;
+  meter: TimeSignature;
+};
 
 export function contentFloorTicks(clips: FormaClip[]): number {
   const countdown = clips.find((c) => c.kind === "countdown");
@@ -77,29 +96,126 @@ export function clipStylePx(
   };
 }
 
+function meterAtTicks(
+  project: MeterMapProject,
+  positionTicks: number,
+): TimeSignature {
+  const sorted = [...project.meterMap].sort(
+    (a, b) => a.startTicks - b.startTicks,
+  );
+  let active: TimeSignature = { ...project.defaultMeter };
+  for (const ev of sorted) {
+    if (ev.startTicks <= positionTicks) {
+      active = { numerator: ev.numerator, denominator: ev.denominator };
+    } else {
+      break;
+    }
+  }
+  return active;
+}
+
+/**
+ * Walk musical bar boundaries in ticks (v4 `iterBarBoundaries` semantics).
+ * Meter changes mid-bar truncate the current bar; next bar starts at the change.
+ */
+export function iterBarBoundariesTicks(
+  project: MeterMapProject,
+  endTicks: number,
+): BarBoundary[] {
+  const end = Math.max(0, Math.trunc(endTicks));
+  if (end <= 0) return [];
+
+  const changePoints = [
+    ...new Set(
+      project.meterMap
+        .map((ev) => ev.startTicks)
+        .filter((t) => Number.isInteger(t) && t > 0),
+    ),
+  ].sort((a, b) => a - b);
+
+  const bars: BarBoundary[] = [];
+  let startTicks = 0;
+  let bar = 1;
+  const maxBars = 100_000;
+
+  while (startTicks < end && bar <= maxBars) {
+    const meter = meterAtTicks(project, startTicks);
+    const naturalBar = ticksPerBar(meter, project.ppq);
+    let naturalEnd = startTicks + naturalBar;
+
+    for (const changeAt of changePoints) {
+      if (changeAt > startTicks && changeAt < naturalEnd) {
+        naturalEnd = changeAt;
+        break;
+      }
+    }
+
+    bars.push({
+      bar,
+      startTicks,
+      endTicks: naturalEnd,
+      meter,
+    });
+    startTicks = naturalEnd;
+    bar += 1;
+  }
+
+  return bars;
+}
+
+/**
+ * Barline marks for ruler labels + lane grid.
+ * Boundaries follow `meterMap` (variable bar length in ticks).
+ */
 export function buildBarMarks(
   span: ViewSpan,
-  meter: TimeSignature,
-  ppq: number,
+  project: MeterMapProject,
 ): BarMark[] {
-  const barTicks = ticksPerBar(meter, ppq);
   const marks: BarMark[] = [];
   const countdownStart = -7680;
   if (span.start <= countdownStart && countdownStart < span.end) {
     marks.push({ ticks: countdownStart, label: "CD" });
   }
-  let t = Math.max(0, Math.ceil(span.start / barTicks) * barTicks);
-  if (span.start <= 0 && 0 < span.end && !marks.some((m) => m.ticks === 0)) {
-    t = 0;
-  }
-  for (; t < span.end; t += barTicks) {
-    if (t < 0) continue;
-    const label = String(toDisplayBar(ticksToBbt(t, meter, ppq).bar));
-    if (!marks.some((m) => m.ticks === t)) {
-      marks.push({ ticks: t, label });
+
+  const boundaries = iterBarBoundariesTicks(project, Math.max(span.end, 0));
+  for (const b of boundaries) {
+    if (b.startTicks >= span.end) break;
+    if (b.startTicks < span.start) continue;
+    if (!marks.some((m) => m.ticks === b.startTicks)) {
+      marks.push({ ticks: b.startTicks, label: String(b.bar) });
     }
   }
+
   return marks.sort((a, b) => a.ticks - b.ticks);
+}
+
+/**
+ * Ruler-only beat ticks (beats 2…N) when zoom H ≥ {@link RULER_BEAT_TICKS_MIN_PX}.
+ * Empty when below threshold — lane grid must not use these.
+ */
+export function buildRulerBeatMarks(
+  span: ViewSpan,
+  project: MeterMapProject,
+  pxPerBar: number,
+): BarMark[] {
+  if (!(pxPerBar >= RULER_BEAT_TICKS_MIN_PX)) return [];
+
+  const marks: BarMark[] = [];
+  const boundaries = iterBarBoundariesTicks(project, Math.max(span.end, 0));
+  for (const b of boundaries) {
+    if (b.startTicks >= span.end) break;
+    if (b.endTicks <= span.start) continue;
+
+    const beatTicks = localTicksPerBeat(b.meter, project.ppq);
+    const localBpb = Math.max(1, b.meter.numerator);
+    for (let beat = 2; beat <= localBpb; beat++) {
+      const t = b.startTicks + (beat - 1) * beatTicks;
+      if (t >= b.endTicks) break;
+      if (t < span.start || t >= span.end) continue;
+      marks.push({ ticks: t, label: "" });
+    }
+  }
+  return marks;
 }
 
 export function snapEditTicks(
@@ -107,12 +223,76 @@ export function snapEditTicks(
   atTicks: number,
   mode: SnapMode = DEFAULT_SNAP_MODE,
 ): number {
+  const floor = contentFloorTicks(project.forma.clips);
+
+  if (mode === "off") {
+    return atTicks < floor ? floor : atTicks;
+  }
+
+  // Forma / bar mode: musical barlines via meterMap (v4 snapAbsToBarStart),
+  // not floorDiv on a single resolveMeterAt length (breaks after mid-song meter change).
+  if (mode === "bar") {
+    return snapToMusicalBarStart(project, atTicks, floor);
+  }
+
   const meter = resolveMeterAt(project, atTicks);
   return quantizeTicks(atTicks, mode, {
     meter,
     ppq: project.ppq,
-    contentFloorTicks: contentFloorTicks(project.forma.clips),
+    contentFloorTicks: floor,
   });
+}
+
+/**
+ * Snap to nearest musical barline under meterMap (midpoint → earlier).
+ * Pre-roll (< 0) clamps to content floor like v4 `Math.max(0, …)`.
+ */
+function snapToMusicalBarStart(
+  project: MeterMapProject,
+  atTicks: number,
+  floor: number,
+): number {
+  const t = Math.max(0, atTicks);
+  const meterHere = meterAtTicks(project, t);
+  let searchEnd = Math.max(
+    t + 1,
+    t + ticksPerBar(meterHere, project.ppq) * 2,
+  );
+  let bars = iterBarBoundariesTicks(project, searchEnd);
+  let guard = 0;
+  while (
+    bars.length > 0 &&
+    bars[bars.length - 1]!.endTicks <= t &&
+    guard < 32
+  ) {
+    const last = bars[bars.length - 1]!;
+    const nextMeter = meterAtTicks(project, last.endTicks);
+    searchEnd =
+      last.endTicks + ticksPerBar(nextMeter, project.ppq) * 4;
+    bars = iterBarBoundariesTicks(project, searchEnd);
+    guard += 1;
+  }
+
+  const containing = bars.find(
+    (b) => t >= b.startTicks && t < b.endTicks,
+  );
+  if (!containing) {
+    // Exact end of last walked bar, or empty map — fall back to constant meter.
+    if (bars.length > 0 && t === bars[bars.length - 1]!.endTicks) {
+      return Math.max(floor, bars[bars.length - 1]!.endTicks);
+    }
+    return quantizeTicks(t, "bar", {
+      meter: project.defaultMeter,
+      ppq: project.ppq,
+      contentFloorTicks: floor,
+    });
+  }
+
+  const { startTicks, endTicks } = containing;
+  if (t - startTicks <= endTicks - t) {
+    return Math.max(floor, startTicks);
+  }
+  return Math.max(floor, endTicks);
 }
 
 /**
@@ -135,9 +315,10 @@ export function ticksFromCanvasPx(
 ): number {
   const canvasWidth = computeCanvasWidthPx(span, barTicks, pxPerBar);
   const x = Math.min(canvasWidth, Math.max(0, canvasPx));
-  // Inverse of tickToPx: one px column = one bar (no ratio round-up).
-  const barIndex = Math.floor(x / pxPerBar);
-  return span.start + barIndex * barTicks;
+  // Continuous inverse of tickToPx (v4 clientXToAbsBeat with round:false),
+  // then round to integer ticks (quantizeTicks requires integers).
+  const pxb = pxPerBar > 0 ? pxPerBar : DEFAULT_PX_PER_BAR;
+  return Math.round(span.start + (x / pxb) * barTicks);
 }
 
 export function ticksFromPointer(

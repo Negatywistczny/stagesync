@@ -7,20 +7,28 @@ import {
   ChevronRight,
   CircleDot,
   CircleHelp,
+  Crosshair,
   Eraser,
   Eye,
+  Info,
+  ListEnd,
+  Maximize2,
   MousePointer2,
+  Music2,
   Pause,
   Pencil,
   Play,
   Redo2,
+  Repeat,
   Scissors,
   Settings,
   Square,
+  SquareCheck,
   SquareMousePointer,
   Sun,
   Undo2,
   Wand2,
+  X,
   ZoomIn,
 } from "lucide-react";
 
@@ -117,4 +125,40 @@ export function IconSettings(p: IconProps) {
 
 export function IconSun(p: IconProps) {
   return withIcon(Sun, p);
+}
+
+export function IconInfo(p: IconProps) {
+  return withIcon(Info, p);
+}
+
+export function IconAutoAdvance(p: IconProps) {
+  return withIcon(ListEnd, p);
+}
+
+export function IconFullscreen(p: IconProps) {
+  return withIcon(Maximize2, p);
+}
+
+export function IconLoop(p: IconProps) {
+  return withIcon(Repeat, p);
+}
+
+export function IconMetronome(p: IconProps) {
+  return withIcon(Music2, p);
+}
+
+export function IconFollow(p: IconProps) {
+  return withIcon(Crosshair, p);
+}
+
+export function IconClose(p: IconProps) {
+  return withIcon(X, p);
+}
+
+export function IconChecked(p: IconProps) {
+  return withIcon(SquareCheck, p);
+}
+
+export function IconUnchecked(p: IconProps) {
+  return withIcon(Square, p);
 }

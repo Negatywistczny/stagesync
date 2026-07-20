@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   TransportLoadBodySchema,
+  TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
 } from "@stagesync/shared";
@@ -77,6 +78,15 @@ export function createTransportRouter(
         project = await stores.getProject(activeId);
       }
       res.json(transport.seek(body.positionTicks, project));
+    } catch (err) {
+      handleRouteError(res, err);
+    }
+  });
+
+  router.post("/loop", (req, res) => {
+    try {
+      const body = TransportLoopBodySchema.parse(req.body ?? {});
+      res.json(transport.setLoop(body));
     } catch (err) {
       handleRouteError(res, err);
     }
