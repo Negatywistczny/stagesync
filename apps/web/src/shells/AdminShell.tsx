@@ -461,13 +461,6 @@ function SongsView({
             >
               Nowy
             </Button>
-            <Button
-              variant="ghost"
-              disabled={locked}
-              onClick={onToggleInspector}
-            >
-              {inspectorOpen ? "Ukryj panel" : "Pokaż panel"}
-            </Button>
             <Button variant="ghost" disabled>
               Eksport
             </Button>
@@ -543,97 +536,117 @@ function SongsView({
       </section>
 
       {inspectorOpen ? (
-        <aside className={styles.card} aria-label="Wybrany utwór">
-          <div className={styles.cardHead}>
-            <h2 className={styles.cardTitle}>Wybrany</h2>
-            <Button
-              variant="ghost"
-              disabled={locked}
-              onClick={onToggleInspector}
-              aria-label="Zamknij panel"
-            >
-              ×
-            </Button>
-          </div>
-          <div className={styles.cardBody}>
-            {selected ? (
-              <>
-                <label className={styles.field}>
-                  Nazwa
-                  <input
-                    className={styles.input}
-                    value={draftName}
-                    disabled={locked}
-                    aria-label="Nazwa projektu"
-                    onChange={(e) => onDraftNameChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && nameDirty && !locked) {
-                        e.preventDefault();
-                        onRename();
-                      }
-                    }}
-                  />
-                </label>
-                <p className={styles.inspectorId}>{selected.id}</p>
-                <div className={styles.actions}>
-                  <Button
-                    variant="primary"
-                    loading={commandPending}
-                    disabled={locked || !nameDirty}
-                    onClick={onRename}
-                  >
-                    Zapisz nazwę
-                  </Button>
-                  <Button variant="secondary" disabled={locked} onClick={onXml}>
-                    XML
-                  </Button>
-                  <Button variant="ghost" disabled>
-                    Partytura
-                  </Button>
-                  {locked ? (
-                    <span className={styles.editLinkMuted} aria-disabled>
-                      Otwórz w Timeline
-                    </span>
-                  ) : (
-                    <Link
-                      className={styles.editLink}
-                      to={selectedId ? `/timeline/${selectedId}` : "#"}
-                      aria-disabled={!selectedId}
+        <>
+          <button
+            type="button"
+            className={styles.splitToggle}
+            aria-label="Ukryj panel"
+            disabled={locked}
+            onClick={onToggleInspector}
+          >
+            ‹
+          </button>
+          <aside className={styles.card} aria-label="Wybrany utwór">
+            <div className={styles.cardHead}>
+              <h2 className={styles.cardTitle}>Wybrany</h2>
+              <Button
+                variant="ghost"
+                disabled={locked}
+                onClick={onToggleInspector}
+                aria-label="Zamknij panel"
+              >
+                ×
+              </Button>
+            </div>
+            <div className={styles.cardBody}>
+              {selected ? (
+                <>
+                  <label className={styles.field}>
+                    Nazwa
+                    <input
+                      className={styles.input}
+                      value={draftName}
+                      disabled={locked}
+                      aria-label="Nazwa projektu"
+                      onChange={(e) => onDraftNameChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && nameDirty && !locked) {
+                          e.preventDefault();
+                          onRename();
+                        }
+                      }}
+                    />
+                  </label>
+                  <p className={styles.inspectorId}>{selected.id}</p>
+                  <div className={styles.actions}>
+                    <Button
+                      variant="primary"
+                      loading={commandPending}
+                      disabled={locked || !nameDirty}
+                      onClick={onRename}
                     >
-                      Otwórz w Timeline
-                    </Link>
-                  )}
-                  <Button
-                    variant="secondary"
-                    disabled={!selectedId || commandPending}
-                    onClick={() => selectedId && onPlay(selectedId)}
-                  >
-                    Odtwórz
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    loading={commandPending}
-                    disabled={locked}
-                    onClick={onDelete}
-                  >
-                    Usuń
-                  </Button>
-                </div>
-                <div>
-                  <h3 className={styles.subTitle}>Pliki projektu</h3>
-                  <ul className={styles.assetList}>
-                    <li>MusicXML</li>
-                    <li>Audio (0…N)</li>
-                    <li>Okładka</li>
-                  </ul>
-                </div>
-              </>
-            ) : (
-              <p className={styles.muted}>Wybierz utwór z listy.</p>
-            )}
-          </div>
-        </aside>
-      ) : null}
+                      Zapisz nazwę
+                    </Button>
+                    <Button variant="secondary" disabled={locked} onClick={onXml}>
+                      XML
+                    </Button>
+                    <Button variant="ghost" disabled>
+                      Partytura
+                    </Button>
+                    {locked ? (
+                      <span className={styles.editLinkMuted} aria-disabled>
+                        Otwórz w Timeline
+                      </span>
+                    ) : (
+                      <Link
+                        className={styles.editLink}
+                        to={selectedId ? `/timeline/${selectedId}` : "#"}
+                        aria-disabled={!selectedId}
+                      >
+                        Otwórz w Timeline
+                      </Link>
+                    )}
+                    <Button
+                      variant="secondary"
+                      disabled={!selectedId || commandPending}
+                      onClick={() => selectedId && onPlay(selectedId)}
+                    >
+                      Odtwórz
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      loading={commandPending}
+                      disabled={locked}
+                      onClick={onDelete}
+                    >
+                      Usuń
+                    </Button>
+                  </div>
+                  <div>
+                    <h3 className={styles.subTitle}>Pliki projektu</h3>
+                    <p className={styles.muted}>
+                      Brak plików w projekcie. Import audio, MusicXML i okładek
+                      — α6.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className={styles.muted}>Wybierz utwór z listy.</p>
+              )}
+            </div>
+          </aside>
+        </>
+      ) : (
+        <button
+          type="button"
+          className={styles.splitToggleSolo}
+          aria-label="Pokaż panel"
+          disabled={locked}
+          onClick={onToggleInspector}
+        >
+          ›
+        </button>
+      )}
     </div>
   );
 }

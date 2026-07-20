@@ -128,14 +128,40 @@
 
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.9fr);
-  gap: var(--ss-space-4);
+  grid-template-columns: minmax(0, 1.35fr) auto minmax(16rem, 0.9fr);
+  gap: var(--ss-space-2);
   min-height: 100%;
   align-items: stretch;
 }
 
 .splitSolo {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr auto;
+}
+
+.splitToggle,
+.splitToggleSolo {
+  align-self: stretch;
+  flex-shrink: 0;
+  width: var(--ss-space-6);
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-surface);
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-lg);
+  cursor: pointer;
+}
+
+.splitToggle:disabled,
+.splitToggleSolo:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.splitToggleSolo {
+  justify-self: end;
 }
 
 .card {
