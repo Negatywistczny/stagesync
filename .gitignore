@@ -35,6 +35,8 @@ data/logs/*
 data/library/*
 !data/library/.gitkeep
 !data/library/library.template.json
+!data/library/seed-projects/
+!data/library/seed-projects/**/*
 
 # Tauri
 apps/desktop/src-tauri/target

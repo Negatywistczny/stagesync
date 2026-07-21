@@ -30,6 +30,10 @@ function putBody(project: Project) {
   return PutProjectBodySchema.parse(body);
 }
 
+function playableProjects(library: Library) {
+  return library.projects.filter((p) => p.isTemplate !== true);
+}
+
 describe("library / projects CRUD", () => {
   let dataDir: string;
   let server: Server;
@@ -74,9 +78,10 @@ describe("library / projects CRUD", () => {
     expect(listRes.status).toBe(200);
     const library = LibrarySchema.parse(await listRes.json()) as Library;
     expect(library.version).toBe(1);
-    expect(library.projects).toHaveLength(1);
-    expect(library.projects[0]?.id).toBe(created.id);
-    expect(library.projects[0]?.name).toBe("First Song");
+    expect(playableProjects(library)).toHaveLength(1);
+    expect(library.projects.find((p) => p.id === created.id)?.name).toBe(
+      "First Song",
+    );
 
     const renamed = {
       ...created,
@@ -109,7 +114,9 @@ describe("library / projects CRUD", () => {
     const listAfter = LibrarySchema.parse(
       await (await fetch(`${baseUrl}/api/library`)).json(),
     );
-    expect(listAfter.projects[0]?.name).toBe("Renamed Song");
+    expect(
+      listAfter.projects.find((p) => p.id === created.id)?.name,
+    ).toBe("Renamed Song");
 
     const delRes = await fetch(`${baseUrl}/api/projects/${created.id}`, {
       method: "DELETE",
@@ -122,7 +129,8 @@ describe("library / projects CRUD", () => {
     const emptyLib = LibrarySchema.parse(
       await (await fetch(`${baseUrl}/api/library`)).json(),
     );
-    expect(emptyLib.projects).toEqual([]);
+    expect(playableProjects(emptyLib)).toHaveLength(0);
+    expect(emptyLib.projects.some((p) => p.isTemplate === true)).toBe(true);
   });
 
   it("returns 400 for invalid create body", async () => {
@@ -193,11 +201,22 @@ describe("library / projects CRUD", () => {
     expect(res.status).toBe(400);
   });
 
-  it("seeds library.json into STAGESYNC_DATA_DIR on first read", async () => {
+  it("seeds library.json with default Template on first read", async () => {
     const res = await fetch(`${baseUrl}/api/library`);
     expect(res.status).toBe(200);
     const library = LibrarySchema.parse(await res.json());
-    expect(library).toEqual({ version: 1, projects: [] });
+    expect(library.version).toBe(1);
+    expect(library.projects).toHaveLength(1);
+    expect(library.projects[0]?.name).toBe("Template");
+    expect(library.projects[0]?.isTemplate).toBe(true);
+
+    const id = library.projects[0]!.id;
+    const getRes = await fetch(`${baseUrl}/api/projects/${id}`);
+    expect(getRes.status).toBe(200);
+    const project = ProjectSchema.parse(await getRes.json());
+    expect(project.isTemplate).toBe(true);
+    expect(project.midiProgramId).toBeUndefined();
+    expect(project.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
   });
 
   it("upgrades v1 project on GET", async () => {
@@ -240,9 +259,10 @@ describe("library / projects CRUD", () => {
     const library = LibrarySchema.parse(
       await (await fetch(`${baseUrl}/api/library`)).json(),
     );
-    expect(library.projects).toHaveLength(5);
+    expect(library.projects).toHaveLength(6);
+    expect(playableProjects(library)).toHaveLength(5);
     const ids = new Set(library.projects.map((p) => p.id));
-    expect(ids.size).toBe(5);
+    expect(ids.size).toBe(6);
   });
 
   it("POST /api/library/import auto-detects legacy database.json", async () => {

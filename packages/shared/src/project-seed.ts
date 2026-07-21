@@ -63,6 +63,22 @@ export function createProjectV4Seed(
   return upgradeProjectV3ToV4(createProjectV3Seed(id, name, updatedAt));
 }
 
+/** Stable id for the bundled default library template (legacy v4 parity). */
+export const DEFAULT_TEMPLATE_PROJECT_ID =
+  "00000000-0000-4000-8000-000000000001";
+
+/** Bundled wzór „Template” — Countdown + Intro, bez MIDI PC. */
+export function createDefaultTemplateProject(
+  updatedAt: string,
+): ProjectV5 {
+  return createProjectV5Seed(
+    DEFAULT_TEMPLATE_PROJECT_ID,
+    "Template",
+    updatedAt,
+    { isTemplate: true },
+  );
+}
+
 /** Alpha.8 seed — v5 with keyMap + optional metadata. */
 export function createProjectV5Seed(
   id: string,

@@ -4,6 +4,8 @@ import {
   createProjectV3Seed,
   createProjectV4Seed,
   createProjectV5Seed,
+  createDefaultTemplateProject,
+  DEFAULT_TEMPLATE_PROJECT_ID,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
@@ -48,6 +50,16 @@ describe("createProjectV4Seed", () => {
     expect(p.tekst.clips).toEqual([]);
     expect(p.akordy.clips).toEqual([]);
     expect(p.cue.clips).toEqual([]);
+  });
+});
+
+describe("createDefaultTemplateProject", () => {
+  it("uses stable id and isTemplate without midiProgramId", () => {
+    const p = createDefaultTemplateProject("2026-07-21T00:00:00.000Z");
+    expect(p.id).toBe(DEFAULT_TEMPLATE_PROJECT_ID);
+    expect(p.name).toBe("Template");
+    expect(p.isTemplate).toBe(true);
+    expect(p.midiProgramId).toBeUndefined();
   });
 });
 

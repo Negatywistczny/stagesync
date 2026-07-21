@@ -94,6 +94,8 @@ export {
   createProjectV3Seed,
   createProjectV4Seed,
   createProjectV5Seed,
+  createDefaultTemplateProject,
+  DEFAULT_TEMPLATE_PROJECT_ID,
   createProjectSeed,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,

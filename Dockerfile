@@ -12,6 +12,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps ./apps
 COPY packages ./packages
 COPY data/library/library.template.json data/library/library.template.json
+COPY data/library/seed-projects data/library/seed-projects
 
 RUN pnpm install --frozen-lockfile \
  && pnpm --filter @stagesync/shared build \

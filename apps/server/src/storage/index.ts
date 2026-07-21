@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { access, mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import {
   LibrarySchema,
   ProjectSchemaV1,
@@ -10,6 +11,8 @@ import {
   ProjectSchemaV5,
   SetlistSchema,
   createProjectV5Seed,
+  createDefaultTemplateProject,
+  DEFAULT_TEMPLATE_PROJECT_ID,
   defaultSetlist,
   ensureFormaSubsections,
   mergePreserveById,
@@ -167,10 +170,58 @@ export function createStores(dataDir?: string) {
     return run;
   }
 
+  async function materializeSeedProjects(library: Library): Promise<void> {
+    for (const entry of library.projects) {
+      const dest = projectFile(paths, entry.id);
+      try {
+        await access(dest, constants.F_OK);
+        continue;
+      } catch (err) {
+        if (errCode(err) !== "ENOENT") {
+          throw new StorageError(
+            `Failed to check project file for ${entry.id}`,
+            err,
+          );
+        }
+      }
+
+      const seedPath = join(paths.seedProjectsDir, entry.id, "project.json");
+      try {
+        const raw = await readJsonFile(seedPath);
+        await writeProject(upgradeToV5(raw));
+      } catch (err) {
+        if (errCode(err) === "ENOENT") continue;
+        throw new StorageError(
+          `Failed to materialize seed project ${entry.id}`,
+          err,
+        );
+      }
+    }
+  }
+
+  async function ensureDefaultTemplate(library: Library): Promise<Library> {
+    const hasTemplate = library.projects.some((p) => p.isTemplate === true);
+    if (hasTemplate) {
+      await materializeSeedProjects(library);
+      return library;
+    }
+
+    const updatedAt = new Date().toISOString();
+    const project = createDefaultTemplateProject(updatedAt);
+    await writeProject(project);
+    const next: Library = {
+      ...library,
+      projects: [...library.projects, libraryEntryFromProject(project)],
+    };
+    await saveLibrary(next);
+    return next;
+  }
+
   async function ensureLibrary(): Promise<Library> {
+    let library: Library;
     try {
       const raw = await readJsonFile(paths.libraryFile);
-      return LibrarySchema.parse(raw);
+      library = LibrarySchema.parse(raw);
     } catch (err) {
       if (errCode(err) !== "ENOENT") {
         if (err instanceof Error && err.name === "ZodError") {
@@ -178,16 +229,17 @@ export function createStores(dataDir?: string) {
         }
         throw new StorageError("Failed to read library.json", err);
       }
+
+      try {
+        const raw = await readJsonFile(paths.libraryTemplate);
+        library = LibrarySchema.parse(raw);
+        await writeJsonAtomic(paths.libraryFile, library);
+      } catch (seedErr) {
+        throw new StorageError("Failed to seed library from template", seedErr);
+      }
     }
 
-    try {
-      const raw = await readJsonFile(paths.libraryTemplate);
-      const library = LibrarySchema.parse(raw);
-      await writeJsonAtomic(paths.libraryFile, library);
-      return library;
-    } catch (err) {
-      throw new StorageError("Failed to seed library from template", err);
-    }
+    return ensureDefaultTemplate(library);
   }
 
   async function saveLibrary(library: Library): Promise<void> {

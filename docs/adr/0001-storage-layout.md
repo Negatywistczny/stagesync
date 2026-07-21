@@ -15,6 +15,7 @@ Dane runtime / szablony żyją pod `data/` w repo:
 data/
   library/
     library.template.json   # seed / szablon indeksu biblioteki
+    seed-projects/          # bundled project.json per seed entry (e.g. Template wzór)
     library.json            # runtime indeks (gitignore)
     setlist.json            # setlista koncertowa (α6+; niezależna od library.json)
   projects/

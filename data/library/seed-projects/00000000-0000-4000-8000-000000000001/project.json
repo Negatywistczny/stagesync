@@ -1,0 +1,71 @@
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "name": "Template",
+  "formatVersion": 5,
+  "updatedAt": "2026-07-21T00:00:00.000Z",
+  "ppq": 960,
+  "defaultBpm": 120,
+  "defaultMeter": {
+    "numerator": 4,
+    "denominator": 4
+  },
+  "forma": {
+    "clips": [
+      {
+        "id": "forma-cd",
+        "name": "Countdown",
+        "kind": "countdown",
+        "startTicks": -7680,
+        "lengthTicks": 7680
+      },
+      {
+        "id": "forma-intro",
+        "name": "Intro",
+        "kind": "section",
+        "startTicks": 0,
+        "lengthTicks": 7680
+      }
+    ]
+  },
+  "tempoMap": [
+    {
+      "id": "tempo-0",
+      "startTicks": 0,
+      "bpm": 120
+    }
+  ],
+  "meterMap": [
+    {
+      "id": "meter-0",
+      "startTicks": 0,
+      "numerator": 4,
+      "denominator": 4
+    }
+  ],
+  "assets": [],
+  "audioTracks": [],
+  "audioClips": [],
+  "tekst": {
+    "clips": []
+  },
+  "akordy": {
+    "clips": []
+  },
+  "cue": {
+    "clips": []
+  },
+  "keyMap": [
+    {
+      "id": "key-0",
+      "startTicks": 0,
+      "key": {
+        "tonic": "C",
+        "mode": "major"
+      }
+    }
+  ],
+  "scoreBarMap": {
+    "anchors": []
+  },
+  "isTemplate": true
+}

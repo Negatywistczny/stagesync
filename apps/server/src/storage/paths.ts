@@ -12,6 +12,7 @@ export type DataPaths = {
   dataDir: string;
   libraryFile: string;
   libraryTemplate: string;
+  seedProjectsDir: string;
   setlistFile: string;
   projectsDir: string;
 };
@@ -22,6 +23,7 @@ export function resolveDataPaths(dataDir = defaultDataDir()): DataPaths {
     dataDir,
     libraryFile: join(dataDir, "library", "library.json"),
     libraryTemplate: join(seedDir, "library.template.json"),
+    seedProjectsDir: join(seedDir, "seed-projects"),
     setlistFile: join(dataDir, "library", "setlist.json"),
     projectsDir: join(dataDir, "projects"),
   };
