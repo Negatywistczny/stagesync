@@ -1,0 +1,22 @@
+# Ignore build junk (source is copied; dist built inside image)
+node_modules
+**/node_modules
+.turbo
+**/dist
+.git
+.github
+.cursor
+docs/analysis/working
+data/projects/*
+!data/projects/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+data/library/library.json
+data/library/setlist.json
+**/*.bak
+.env
+.env.*
+coverage
+apps/desktop/src-tauri/target
+*.md
+!README.md
