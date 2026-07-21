@@ -105,13 +105,14 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Stub sidecar externalBin (cargo check only)
+      - name: Stub sidecar bundle inputs (cargo check only)
         working-directory: apps/desktop/src-tauri
         run: |
           triple=$(rustc --print host-tuple)
-          mkdir -p bin
+          mkdir -p bin resources/sidecar/web resources/sidecar/seed resources/sidecar/server/dist lib share
           printf '#!/bin/sh\nexit 0\n' > "bin/stagesync-host-${triple}"
           chmod +x "bin/stagesync-host-${triple}"
+          touch resources/sidecar/server/dist/index.js lib/.keep share/.keep
 
       - name: Cargo check (desktop shell)
         working-directory: apps/desktop/src-tauri
