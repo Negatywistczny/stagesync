@@ -509,12 +509,13 @@ async function buildAndPrepareSidecarResources() {
   console.log("[sidecar] preparing Node runtime in tauri bundle (externalBin support)");
   await prepareNodeRuntimeIntoTauriBundle(target);
 
-  await pruneRuntimeBundle(sidecarDir);
   await assertNoRepoDocsInSidecar(sidecarDir);
 
   if (process.argv.includes("--smoke")) {
     await smokeTestSidecarServer(sidecarServerDir, sidecarSeedDir);
   }
+
+  await pruneRuntimeBundle(sidecarDir);
 
   console.log("[sidecar] done");
   console.log(
