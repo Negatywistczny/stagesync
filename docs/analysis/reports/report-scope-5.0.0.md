@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:35 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:40 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -203,6 +203,9 @@ flowchart LR
 | [#97](https://github.com/Negatywistyczny/stagesync/pull/97) | Audio inspector PL labels | https://github.com/Negatywistyczny/stagesync/pull/97 | pending |
 | [#98](https://github.com/Negatywistyczny/stagesync/pull/98) | Meter-map-aware ticks↔BBT (Timeline display) | https://github.com/Negatywistyczny/stagesync/pull/98 | fix pushed (was TDZ red) |
 | [#99](https://github.com/Negatywistyczny/stagesync/pull/99) | Aktywny set live persist | https://github.com/Negatywistyczny/stagesync/pull/99 | pending |
+| [#100](https://github.com/Negatywistyczny/stagesync/pull/100) | Meter-map bar snap (Kotwice); base #98 | https://github.com/Negatywistyczny/stagesync/pull/100 | stacked/#98 |
+| [#101](https://github.com/Negatywistyczny/stagesync/pull/101) | Audio lane clipboard C/V/D | https://github.com/Negatywistyczny/stagesync/pull/101 | pending |
+| [#102](https://github.com/Negatywistyczny/stagesync/pull/102) | Restore wand + selection scope | https://github.com/Negatywistyczny/stagesync/pull/102 | pending |
 
 ### Parallel (other agents)
 
@@ -215,16 +218,14 @@ flowchart LR
 
 ### Remaining backlog (ranked)
 
-1. Meter-map-aware **snap** (`quantizeTicks` / bar snap) — follow-up to #79/#98
-2. Re-enable Timeline wand with selection scope (after Help honesty #92)
-3. Audio lane clipboard copy/paste
-4. Admin density deep-pass beyond #82/#95
-5. docs: INSTALL lifecycle token note once #83 merges (`STAGESYNC_HOST_TOKEN` / `STAGESYNC_ALLOW_REMOTE_LIFECYCLE`)
-6. Playwright Forma drag matrix — defer
-7. Overlap drag / Flex Time — OUT
-8. AD-01…03 — skip
-9. PDF setlist / archive — OUT
-10. Full auth / multi-user — 5.1+
+1. Prefer merge **#102** over **#92** for wand Help (restore > hide).
+2. Admin density deep-pass beyond #82/#95
+3. Retarget/CI for stacked PRs (#84 on #63, #100 on #98)
+4. Playwright Forma drag matrix — defer
+5. Overlap drag / Flex Time — OUT
+6. AD-01…03 — skip
+7. PDF setlist / archive — OUT
+8. Full auth / multi-user — 5.1+
 
 ### Blokery
 
