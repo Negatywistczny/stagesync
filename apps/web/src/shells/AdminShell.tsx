@@ -745,7 +745,7 @@ function SongsView({
         <div className={styles.cardBody}>
           <div className={styles.toolbar}>
             <input
-              className={styles.input}
+              className={styles.filterInput}
               placeholder="Filtruj…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
