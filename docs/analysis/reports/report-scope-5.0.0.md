@@ -176,15 +176,34 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~01:54 CEST)
 
-**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
+**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2** — musts A–E (#53–#60) **nie** kończą pracy.
 
-### Must A–E (#53–#60) — CI green
+### Must A–E (#53–#60) — CI green (open, not merged)
 
 | # | Temat | URL |
 |---|--------|-----|
 | [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) | A→E musts | merge order: #53→#54; #57→#58 |
+
+### Wave 7 — post-must continuation (~01:36–01:54 CEST)
+
+| # | Temat | URL | CI |
+|---|--------|-----|-----|
+| [#156](https://github.com/Negatywistyczny/stagesync/pull/156) | ticksToMs along tempoMap (audio offsets) | https://github.com/Negatywistyczny/stagesync/pull/156 | green |
+| [#157](https://github.com/Negatywistyczny/stagesync/pull/157) | C=scissors, L=loop | https://github.com/Negatywistyczny/stagesync/pull/157 | green |
+| [#158](https://github.com/Negatywistyczny/stagesync/pull/158) | surface transport errors banner | https://github.com/Negatywistyczny/stagesync/pull/158 | green |
+| [#159](https://github.com/Negatywistyczny/stagesync/pull/159) | JSON 404 for unknown `/api` | https://github.com/Negatywistyczny/stagesync/pull/159 | green |
+| [#160](https://github.com/Negatywistyczny/stagesync/pull/160) | bound seek ticks (safe int) | https://github.com/Negatywistyczny/stagesync/pull/160 | green |
+| [#161](https://github.com/Negatywistyczny/stagesync/pull/161) | content-lane scissors under pointer | https://github.com/Negatywistyczny/stagesync/pull/161 | green |
+| [#162](https://github.com/Negatywistyczny/stagesync/pull/162) | honest Client deferred-score copy | https://github.com/Negatywistyczny/stagesync/pull/162 | green |
+| [#163](https://github.com/Negatywistyczny/stagesync/pull/163) | JSON body limit + 413 | https://github.com/Negatywistyczny/stagesync/pull/163 | green |
+| [#164](https://github.com/Negatywistyczny/stagesync/pull/164) | undo/redo restores clip selection | https://github.com/Negatywistyczny/stagesync/pull/164 | green |
+| [#165](https://github.com/Negatywistyczny/stagesync/pull/165) | desktop Save noop feedback | https://github.com/Negatywistyczny/stagesync/pull/165 | pending |
+| [#166](https://github.com/Negatywistyczny/stagesync/pull/166) | CI compose health + apt retries | https://github.com/Negatywistyczny/stagesync/pull/166 | pending |
+| [#167](https://github.com/Negatywistyczny/stagesync/pull/167) | bound loop ticks (safe int) | https://github.com/Negatywistyczny/stagesync/pull/167 | pending |
+
+Earlier overnight waves: [#120](https://github.com/Negatywistyczny/stagesync/pull/120)–[#155](https://github.com/Negatywistyczny/stagesync/pull/155) (mostly green). Fade/crossfade/help/snap/menu already open: [#55](https://github.com/Negatywistyczny/stagesync/pull/55)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60), [#64](https://github.com/Negatywistyczny/stagesync/pull/64)/[#66](https://github.com/Negatywistyczny/stagesync/pull/66), [#65](https://github.com/Negatywistyczny/stagesync/pull/65), [#67](https://github.com/Negatywistyczny/stagesync/pull/67).
 
 ### Wave 2+ open PRs (CI ~00:50)
 
@@ -257,14 +276,19 @@ flowchart LR
 
 Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116) (MIDI status strict / UpdateStatus strict / Client role no-emoji).
 
-### Remaining backlog (ranked)
+- Pair **#73** (setlist AA) with **#121** (pause-at-end when AA off); **#151** for audio-past-Forma end.
+- **#160** + **#167** (safe ticks seek/loop) — rebase if both land.
 
-1. Admin density deep-pass beyond #82/#95
-2. Playwright Forma drag matrix — defer
-3. Overlap drag / Flex Time — OUT
-4. AD-01…03 — skip
-5. PDF setlist / archive — OUT
-6. Full auth / multi-user — 5.1+
+### Remaining backlog (ranked) — ~01:54
+
+1. **Merge train** — land musts A–E + fade stack when ready; keep CI green (no overnight merge by agent).
+2. **Forma scissors under pointer** — [#75](https://github.com/Negatywistyczny/stagesync/pull/75) (pairs with content #161).
+3. **Admin density deep-pass** beyond #82/#95 (panel UX).
+4. **Playwright / E2E** Forma drag + transport — [#67](https://github.com/Negatywistyczny/stagesync/pull/67) smoke exists; full matrix defer.
+5. **TE-16 content gap-seal** (rest/N.C. after move) — S shared helper.
+6. **Asset upload** disk/stream vs 100MB memory multer — S.
+7. Overlap drag / Flex Time / AD-01…03 — OUT / skip.
+8. G1–G10 HW — soft-gate only.
 
 ### Blokery
 
