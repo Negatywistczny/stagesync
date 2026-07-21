@@ -169,6 +169,7 @@ export function ClientShell() {
     started,
     songTitle,
     bbt: headerBbt,
+    beatsPerBar: state.timeSignature.numerator,
     nextSetlistId,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
@@ -438,6 +439,8 @@ type ClientHeaderProps = {
   started: boolean;
   songTitle: string;
   bbt: { bar: number; beat: number };
+  /** Live meter beat count from transport SSOT. */
+  beatsPerBar: number;
   nextSetlistId: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
@@ -453,6 +456,7 @@ function ClientHeader({
   started,
   songTitle,
   bbt,
+  beatsPerBar,
   nextSetlistId,
   onNextSong,
   onFullscreen,
@@ -461,6 +465,7 @@ function ClientHeader({
   onCloseGlobalSettings,
   onBack,
 }: ClientHeaderProps) {
+  const beatCount = Math.max(1, Math.min(16, Math.floor(beatsPerBar) || 4));
   return (
     <header className={styles.header}>
       <ShellWordmark
@@ -469,7 +474,7 @@ function ClientHeader({
       />
 
       <div className={styles.metronome} aria-hidden>
-        {[1, 2, 3, 4].map((i) => (
+        {Array.from({ length: beatCount }, (_, i) => i + 1).map((i) => (
           <span
             key={i}
             className={[
