@@ -10,6 +10,7 @@ export type SystemRouterDeps = {
   lifecycle?: Lifecycle;
   port?: number;
   version?: string;
+  dataDir?: string;
 };
 
 const GITHUB_REPO = "Negatywistczny/stagesync";
@@ -103,6 +104,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
   const { logBuffer, lifecycle } = deps;
   const port = deps.port ?? Number(process.env.PORT ?? 4000);
   const version = deps.version ?? process.env.npm_package_version ?? "0.0.0";
+  const dataDir = deps.dataDir ?? null;
   const router = Router();
 
   router.get("/logs", (_req, res) => {
@@ -128,6 +130,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     res.json({
       ...buildNetworkInfo(port),
       version,
+      ...(dataDir ? { dataDir } : {}),
     });
   });
 

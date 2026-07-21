@@ -79,6 +79,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
       lifecycle: options.lifecycle,
       port: options.port,
       version: VERSION,
+      dataDir,
     }),
   );
   app.use("/api/transport", createTransportRouter(transport, stores));
