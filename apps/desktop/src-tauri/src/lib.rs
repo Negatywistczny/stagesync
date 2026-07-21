@@ -435,7 +435,10 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "transport_stop" => dispatch_menu_action(&app, "transport-stop"),
             "transport_prev" => dispatch_menu_action(&app, "transport-prev"),
             "transport_next" => dispatch_menu_action(&app, "transport-next"),
-            "host_status" | "host_settings" => navigate_main(&app, "/admin?section=host"),
+            "host_status" => navigate_main(&app, "/admin?section=host"),
+            "host_settings" => {
+                navigate_main(&app, "/admin?section=host&action=host-settings")
+            }
             "host_clients" => navigate_main(&app, "/admin?section=stage"),
             "host_qr" => dispatch_menu_action(&app, "host-qr"),
             "host_restart" => dispatch_menu_action(&app, "host-restart"),
