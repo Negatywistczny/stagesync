@@ -24,7 +24,7 @@ const SECTIONS: HelpSection[] = [
     title: "Utwory i setlista",
     items: [
       "Tytuł utworu — biblioteka / setlista.",
-      "[ / ] lub Alt+← / Alt+→ — poprzedni / następny utwór setlisty (gdy setlista włączona).",
+      "Alt+← / Alt+→ — poprzedni / następny utwór setlisty (gdy setlista włączona).",
       "Auto-setlista — serwer po końcu utworu wczytuje następny (zatrzymany, home Countdown); stan współdzielony z Adminem.",
     ],
   },
@@ -82,7 +82,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       heading: "Locator i utwory",
       rows: [
         { keys: "← / →", action: "Locator ±1 beat" },
-        { keys: "[ / ]", action: "Poprzedni / następny utwór setlisty" },
+        { keys: "Alt+← / Alt+→", action: "Poprzedni / następny utwór setlisty" },
       ],
     },
     {
