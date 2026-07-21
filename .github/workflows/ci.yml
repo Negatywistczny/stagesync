@@ -88,8 +88,9 @@ jobs:
 
   tauri-smoke:
     name: tauri-cargo-check
-    # Dependabot only bumps npm / Actions — cargo check adds little signal, high cost.
-    if: github.actor != 'dependabot[bot]'
+    # Skip Dependabot PRs (npm/Actions only). Use head_ref — github.actor is the human
+    # after "Update branch", not dependabot[bot].
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
