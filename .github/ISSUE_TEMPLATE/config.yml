@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Dokumentacja StageSync
+    url: https://github.com/Negatywistczny/stagesync/tree/main/docs
+    about: Zapoznaj się z dokumentacją i architekturą projektu przed zgłoszeniem.

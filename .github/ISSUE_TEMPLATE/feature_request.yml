@@ -1,0 +1,29 @@
+name: "💡 Propozycja nowej funkcji"
+description: "Propozycja nowej możliwości lub zmiany w UI/UX"
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Potrzeba sceniczna / Przypadek użycia"
+      description: "Jaki problem rozwiązuje ta funkcja lub jaki scenariusz sceniczny usprawnia?"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proponowane rozwiązanie"
+      description: "Opisz, jak Twoim zdaniem powinna działać ta funkcja."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Obszar aplikacji"
+      options:
+        - "Timeline / Edycja audio"
+        - "Admin / Host / Sieć"
+        - "Client Shell (Podgląd dla muzyka)"
+        - "OS Native Menu / Desktop"
+        - "Dokumentacja / CI"

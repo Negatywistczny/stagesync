@@ -1,0 +1,52 @@
+name: "🐛 Zgłoś błąd"
+description: "Zgłoszenie problemu lub awarii w StageSync v5"
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dziękujemy za zgłoszenie błędu! Wypełnij poniższe pola, abyśmy mogli szybko go zreplikować.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Co się stało?"
+      description: "Opisz krótko nieprawidłowe zachowanie aplikacji."
+      placeholder: "Oczekiwano X, a stało się Y..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Kroki do odtworzenia"
+      description: "Jak wywołać ten błąd krok po kroku?"
+      placeholder: |
+        1. Otwórz widok Timeline
+        2. Kliknij przycisk X
+        3. Zobacz błąd...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: "Wersja aplikacji"
+      description: "Wersja z package.json lub tagu release"
+      placeholder: "np. 5.0.0-alpha.13"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Środowisko"
+      options:
+        - "macOS (Aplikacja Desktop / Tauri)"
+        - "Windows (Aplikacja Desktop / Tauri)"
+        - "Przeglądarka Web (Client / iPad / Tablet)"
+        - "Inne / Server Node.js"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logi / Zrzuty ekranu"
+      description: "Wklej logi z konsoli lub zrzut ekranu (opcjonalnie)."
