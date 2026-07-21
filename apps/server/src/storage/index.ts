@@ -453,12 +453,10 @@ export function createStores(dataDir?: string) {
           ...body,
           id: safeId,
           updatedAt,
+          // Assets: preserve server-only uploads mid-OCC; clips/tracks: client list is SSOT (deletes stick).
           assets: mergePreserveById(existing.assets, body.assets),
-          audioTracks: mergePreserveById(
-            existing.audioTracks,
-            body.audioTracks,
-          ),
-          audioClips: mergePreserveById(existing.audioClips, body.audioClips),
+          audioTracks: body.audioTracks,
+          audioClips: body.audioClips,
         });
         await writeProject(next);
         const library = await ensureLibrary();
