@@ -17,6 +17,7 @@ import {
   createTransportEngine,
   type TransportEngine,
 } from "./transport/engine.js";
+import { wirePauseAtSongEnd } from "./transport/pause-at-end.js";
 import { createStageHub, type StageHub } from "./transport/stage-hub.js";
 
 const VERSION = process.env.npm_package_version ?? "5.0.0-beta.2";
@@ -55,6 +56,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const logBuffer = options.logBuffer ?? createLogBuffer();
   const presence = options.presence ?? createClientPresence();
   const midi = options.midi ?? createMidiHost(transport);
+  wirePauseAtSongEnd(transport, stores);
   const app: Express = express();
 
   app.use(express.json());
