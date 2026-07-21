@@ -7,6 +7,7 @@ import {
   DEFAULT_SNAP_MODE,
   type SnapMode,
 } from "@stagesync/shared";
+import type { AudioLaneId } from "./timelineTracks.js";
 
 /** Edge hit zone width in CSS px (Logic-style trim handles). */
 export const CLIP_EDGE_HIT_PX = 12;
@@ -125,7 +126,12 @@ export type FormaGestureKind =
   | "countdown-length"
   | "subsection-boundary";
 
-export type GestureLane = "forma" | "tekst" | "akordy" | "cue";
+export type GestureLane =
+  | "forma"
+  | "tekst"
+  | "akordy"
+  | "cue"
+  | AudioLaneId;
 
 export type FormaGestureSession = {
   kind: FormaGestureKind;

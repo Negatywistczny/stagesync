@@ -56,6 +56,7 @@ import {
   clearSelection,
   EMPTY_CLIP_SELECTION,
   idsOnLane,
+  isAudioSelectionLane,
   isClipSelected,
   isMarqueeClick,
   isMultiSelectClick,
@@ -154,6 +155,28 @@ import {
   resumeMetronomeAudio,
 } from "../lib/metronome.js";
 import {
+  addAudioTrack,
+  applyDecodedAudioMeta,
+  commitAudioGesture,
+  previewAudioFromSession,
+  setAudioClipGainDb,
+  setAudioClipMuted,
+  setAudioTrackGainDb,
+  setAudioTrackMuted,
+} from "../lib/audioLaneEdit.js";
+import {
+  clearAudioBufferCache,
+  loadAudioBuffer,
+  restartAudioPlayback,
+  stopAudioPlayback,
+  syncAudioPlayback,
+} from "../lib/audioPlayback.js";
+import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
+import {
+  computeWaveformFromAudioBuffer,
+  peaksToPolylinePoints,
+} from "../lib/waveformPeaks.js";
+import {
   applyTapBpm,
   createTapTempoState,
   recordTap,
@@ -183,10 +206,14 @@ import {
   type FormaToolId,
 } from "../lib/timelineGesture.js";
 import {
+  audioTrackIdFromLane,
+  buildTrackList,
   defaultTrackVisibility,
-  isCoreTrackVisible,
-  TRACKS,
-  type CoreTrackId,
+  ensureAudioTrackVisibility,
+  isAudioLaneId,
+  isTrackVisible,
+  type AudioLaneId,
+  type TrackVisibilityMap,
 } from "../lib/timelineTracks.js";
 import {
   clearLaneHeightOverride,
@@ -445,7 +472,7 @@ export function TimelineShell() {
   const loopDraftRef = useRef(loopDraft);
   loopDraftRef.current = loopDraft;
   const [selectedAnchorId, setSelectedAnchorId] = useState<string | null>(null);
-  const [trackVisibility, setTrackVisibility] = useState(defaultTrackVisibility);
+  const [trackVisibility, setTrackVisibility] = useState<TrackVisibilityMap>(() => defaultTrackVisibility());
   const [eyeOpen, setEyeOpen] = useState(false);
   const [locatorTicks, setLocatorTicks] = useState(0);
   /** Forma/content multi-select (v4 selectedIds + primaryId). */
@@ -457,6 +484,9 @@ export function TimelineShell() {
   const selectedTekstClipId = selectionLane === "tekst" ? primaryId : null;
   const selectedAkordClipId = selectionLane === "akordy" ? primaryId : null;
   const selectedCueClipId = selectionLane === "cue" ? primaryId : null;
+  const selectedAudioClipId = isAudioSelectionLane(selectionLane)
+    ? primaryId
+    : null;
   /** Forma subsection band index when a section clip is selected (v4 selectedSubsectionIdx). */
   const [selectedSubsectionIdx, setSelectedSubsectionIdx] = useState<
     number | null
@@ -535,6 +565,13 @@ export function TimelineShell() {
       setSavedProject(project);
       setDraftProject(project);
       setDraftHistory(createDraftHistory(project));
+      setTrackVisibility(
+        ensureAudioTrackVisibility(
+          defaultTrackVisibility(project.audioTracks),
+          project.audioTracks,
+        ),
+      );
+      clearAudioBufferCache(id);
       const first = project.forma.clips[0]?.id ?? null;
       setClipSelection(
         first ? selectSingle(first, "forma") : clearSelection(),
@@ -552,6 +589,9 @@ export function TimelineShell() {
 
   const commitDraft = useCallback((next: Project) => {
     setDraftProject(next);
+    setTrackVisibility((prev) =>
+      ensureAudioTrackVisibility(prev, next.audioTracks),
+    );
     setDraftHistory((h) =>
       h ? pushDraftHistory(h, next) : createDraftHistory(next),
     );
@@ -703,7 +743,9 @@ export function TimelineShell() {
     }
     if (!clipSelection.items.length) return;
     let next = draft;
-    const lanes: ClipSelectionLane[] = ["forma", "tekst", "akordy", "cue"];
+    const lanes = [
+      ...new Set(clipSelection.items.map((i) => i.lane)),
+    ] as ClipSelectionLane[];
     for (const lane of lanes) {
       const ids = idsOnLane(clipSelection, lane);
       if (!ids.length) continue;
@@ -741,7 +783,7 @@ export function TimelineShell() {
     if (!draft || !clipSelection.items.length) return false;
     // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
     const lane = primaryLane(clipSelection);
-    if (!lane) return false;
+    if (!lane || isAudioSelectionLane(lane)) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
     let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
     if (lane === "forma") {
@@ -752,8 +794,10 @@ export function TimelineShell() {
       clips = draft.tekst.clips.filter((c) => idSet.has(c.id));
     } else if (lane === "akordy") {
       clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
-    } else {
+    } else if (lane === "cue") {
       clips = draft.cue.clips.filter((c) => idSet.has(c.id));
+    } else {
+      return false;
     }
     const board = buildClipboardFromClips(lane, clips);
     if (!board) return false;
@@ -1248,6 +1292,15 @@ export function TimelineShell() {
     null;
   const selectedCueClip =
     draftProject?.cue.clips.find((c) => c.id === selectedCueClipId) ?? null;
+  const selectedAudioClip =
+    draftProject && selectedAudioClipId
+      ? draftProject.audioClips.find((c) => c.id === selectedAudioClipId) ?? null
+      : null;
+  const selectedAudioTrack =
+    draftProject && selectedAudioClip
+      ? draftProject.audioTracks.find((tr) => tr.id === selectedAudioClip.trackId) ??
+        null
+      : null;
   const selectedAnchor =
     draftProject && selectedAnchorId
       ? scoreAnchors(draftProject).find((a) => a.id === selectedAnchorId) ??
@@ -1289,6 +1342,77 @@ export function TimelineShell() {
     state.ppq,
     state.timeSignature,
   ]);
+
+  // WebAudio clip playback — sync to server ticks (ADR 0008 / 0002).
+  useEffect(() => {
+    if (!projectId || !draftProject) {
+      stopAudioPlayback();
+      return;
+    }
+    const input = {
+      project: draftProject,
+      playing: state.playing,
+      displayTicks,
+    };
+    if (!state.playing) {
+      stopAudioPlayback();
+      return;
+    }
+    syncAudioPlayback(projectId, input);
+  }, [
+    projectId,
+    draftProject,
+    state.playing,
+    displayTicks,
+  ]);
+
+  useEffect(() => {
+    return () => stopAudioPlayback();
+  }, []);
+
+  const audioAssetDecodeKey =
+    draftProject?.assets
+      .filter((a) => a.kind === "audio")
+      .map((a) => `${a.id}:${a.durationMs ?? 0}:${a.waveformPeaks?.length ?? 0}`)
+      .join("|") ?? "";
+
+  // Decode assets missing duration/peaks (on-demand waveform).
+  useEffect(() => {
+    if (!projectId || !draftProject) return;
+    let cancelled = false;
+    const missing = draftProject.assets.filter(
+      (a) =>
+        a.kind === "audio" &&
+        (a.durationMs == null || !a.waveformPeaks?.length),
+    );
+    if (!missing.length) return;
+    const snapshot = draftProject;
+    void (async () => {
+      let project = snapshot;
+      let changed = false;
+      for (const asset of missing) {
+        if (cancelled) return;
+        const buf = await loadAudioBuffer(projectId, asset.id);
+        if (!buf || cancelled) continue;
+        const meta = computeWaveformFromAudioBuffer(buf);
+        project = applyDecodedAudioMeta(project, asset.id, {
+          durationMs: meta.durationMs,
+          waveformPeaks: meta.peaks,
+          waveformRms: meta.rms,
+        });
+        changed = true;
+      }
+      if (cancelled || !changed) return;
+      setDraftProject(project);
+      setTrackVisibility((prev) =>
+        ensureAudioTrackVisibility(prev, project.audioTracks),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // audioAssetDecodeKey tracks which audio assets still need meta.
+  }, [projectId, audioAssetDecodeKey, draftProject]);
 
   async function onSave() {
     if (!projectId || !draftProject) return;
@@ -1348,6 +1472,13 @@ export function TimelineShell() {
 
   async function onPlayClick() {
     await resumeMetronomeAudio(getMetronomeAudioContext());
+    if (projectId && draftProject) {
+      restartAudioPlayback(projectId, {
+        project: draftProject,
+        playing: true,
+        displayTicks: locatorTicks,
+      });
+    }
     const startTicks = locatorTicks;
     metroBeatRef.current = metronomeBeatIndex(
       startTicks,
@@ -1442,6 +1573,18 @@ export function TimelineShell() {
     const draft = draftRef.current;
     if (!session || !draft) return;
     const lane = session.lane ?? "forma";
+    if (isAudioLaneId(lane)) {
+      const preview = previewAudioFromSession(
+        draft,
+        session,
+        rawTicks,
+        metaKey,
+        ctrlKey,
+      );
+      gesturePreviewRef.current = preview;
+      setGesturePreview(preview);
+      return;
+    }
     if (lane !== "forma") {
       const preview = previewContentFromSession(
         draft,
@@ -1489,6 +1632,7 @@ export function TimelineShell() {
       session.clipId &&
       preview.startTicks !== session.originClipStart
     ) {
+      if (isAudioLaneId(lane)) return;
       const moveIds = session.moveIds?.length
         ? session.moveIds
         : [session.clipId];
@@ -1517,6 +1661,32 @@ export function TimelineShell() {
           ),
         );
       }
+      return;
+    }
+
+    if (isAudioLaneId(lane)) {
+      const next = commitAudioGesture(
+        draft,
+        lane,
+        session,
+        preview,
+        metaKey,
+        ctrlKey,
+      );
+      commitDraft(next);
+      if (session.kind === "move" && session.moveIds?.length) {
+        setClipSelection((prev) =>
+          setSelection(
+            [
+              ...prev.items.filter((i) => i.lane !== lane),
+              ...session.moveIds!.map((id) => ({ id, lane })),
+            ],
+            session.clipId,
+          ),
+        );
+        return;
+      }
+      if (session.clipId) selectLaneClip(lane, session.clipId);
       return;
     }
 
@@ -1796,7 +1966,87 @@ export function TimelineShell() {
     beginFormaGesture(session, preview);
   }
 
-  function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  
+  function onAudioClipPointerDown(
+    e: React.PointerEvent<HTMLButtonElement>,
+    lane: AudioLaneId,
+    clip: { id: string; startTicks: number; lengthTicks: number },
+  ) {
+    if (e.button !== 0 || !draftProject) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (tool === "eraser") {
+      commitDraft(deleteClipsOnLane(draftProject, lane, [clip.id]));
+      setClipSelection((prev) =>
+        isClipSelected(prev, clip.id, lane)
+          ? toggleSelected(prev, clip.id, lane)
+          : prev,
+      );
+      return;
+    }
+    if (toolIsPencilDraw(tool) || tool === "scissors") return;
+    if (!toolAllowsClipHitZones(tool)) return;
+    if (isMultiSelectClick(e)) {
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+      setClipSelection((prev) => toggleSelected(prev, clip.id, lane));
+      return;
+    }
+    if (e.shiftKey) {
+      clearMapSelection();
+      setSelectedAnchorId(null);
+      setSongMetaOpen(false);
+      const trackId = audioTrackIdFromLane(lane);
+      const laneClips = draftProject.audioClips.filter((c) => c.trackId === trackId);
+      setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
+      return;
+    }
+    if (!gesturePolicy.clipDragResize) {
+      clearMapSelection();
+      selectLaneClip(lane, clip.id);
+      return;
+    }
+    const onLaneIds = idsOnLane(clipSelection, lane);
+    const inMulti =
+      isClipSelected(clipSelection, clip.id, lane) && onLaneIds.length > 1;
+    if (!inMulti) {
+      clearMapSelection();
+      selectLaneClip(lane, clip.id);
+    } else {
+      setClipSelection((prev) => setSelection(prev.items, clip.id));
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const zone = hitTestClipZone(e.clientX - rect.left, rect.width, true);
+    const raw = rawTicksAtClientX(e.clientX);
+    if (raw == null) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const kind =
+      zone === "start" ? "resize-start" : zone === "end" ? "resize-end" : "move";
+    const moveIds =
+      kind === "move"
+        ? inMulti
+          ? resolveMoveIds(clipSelection, clip.id, lane)
+          : [clip.id]
+        : [clip.id];
+    const session: FormaGestureSession = {
+      kind,
+      clipId: clip.id,
+      pointerId: e.pointerId,
+      originTicks: raw,
+      originClipStart: clip.startTicks,
+      originClipLength: clip.lengthTicks,
+      lane,
+      originClientX: e.clientX,
+      moveIds: kind === "move" ? moveIds : undefined,
+    };
+    beginFormaGesture(
+      session,
+      previewAudioFromSession(draftProject, session, raw, e.metaKey, e.ctrlKey),
+    );
+  }
+
+function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (e.button !== 0 || !draftProject) return;
     if (tool === "eraser") {
       e.preventDefault();
@@ -2545,10 +2795,49 @@ export function TimelineShell() {
     });
   }
 
-  function toggleTrack(id: CoreTrackId) {
-    const def = TRACKS.find((t) => t.id === id);
+  function toggleTrack(id: string) {
+    const def = buildTrackList(draftProject?.audioTracks ?? []).find(
+      (t) => t.id === id,
+    );
     if (def?.locked) return;
     setTrackVisibility((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function onAddAudioTrack() {
+    if (!draftProject) return;
+    const { project } = addAudioTrack(draftProject);
+    commitDraft(project);
+    setEyeOpen(false);
+  }
+
+  async function onUploadAudioToTrack(trackId: string, file: File) {
+    if (!projectId || !draftProject) return;
+    try {
+      const next = await uploadProjectAudio(projectId, file);
+      // Prefer the uploaded clip on the chosen track when server put it on track 0
+      let project = next;
+      if (trackId && next.audioClips.length) {
+        const last = next.audioClips[next.audioClips.length - 1]!;
+        if (last.trackId !== trackId) {
+          project = {
+            ...next,
+            audioClips: next.audioClips.map((c) =>
+              c.id === last.id ? { ...c, trackId } : c,
+            ),
+          };
+        }
+      }
+      setSavedProject(project);
+      setDraftProject(project);
+      setDraftHistory((h) =>
+        h ? syncPresentAfterSave(h, project) : createDraftHistory(project),
+      );
+      setTrackVisibility((prev) =>
+        ensureAudioTrackVisibility(prev, project.audioTracks),
+      );
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Upload audio failed");
+    }
   }
 
   function onClipRename(name: string) {
@@ -2883,8 +3172,106 @@ export function TimelineShell() {
 
   const canvasInnerWidth = `calc(var(--tl-dock-w) + ${canvasWidthPx}px)`;
 
-  function renderLaneContent(trackId: CoreTrackId) {
+  function renderLaneContent(trackId: string) {
     if (!draftProject) return null;
+    if (isAudioLaneId(trackId)) {
+      const lane = trackId;
+      const trackUuid = audioTrackIdFromLane(lane);
+      const clips = draftProject.audioClips.filter((c) => c.trackId === trackUuid);
+      const assetById = new Map(draftProject.assets.map((a) => [a.id, a]));
+      return (
+        <>
+          {clips.map((clip) => {
+            const asset = assetById.get(clip.assetId);
+            const moveIds =
+              gestureSession?.kind === "move" && gestureSession.lane === lane
+                ? gestureSession.moveIds?.length
+                  ? gestureSession.moveIds
+                  : gestureSession.clipId
+                    ? [gestureSession.clipId]
+                    : []
+                : [];
+            const moveDelta =
+              gesturePreview &&
+              gestureSession?.kind === "move" &&
+              moveIds.includes(clip.id)
+                ? gesturePreview.startTicks - gestureSession.originClipStart
+                : 0;
+            const previewing =
+              Boolean(gesturePreview) &&
+              gestureSession?.lane === lane &&
+              ((gestureSession.kind === "move" && moveIds.includes(clip.id)) ||
+                (gesturePreview!.clipId === clip.id &&
+                  gesturePreview!.kind !== "move"));
+            const styleClip: FormaClip = {
+              id: clip.id,
+              name: asset?.originalName ?? "Audio",
+              kind: "section",
+              startTicks: previewing
+                ? gestureSession?.kind === "move"
+                  ? clip.startTicks + moveDelta
+                  : gesturePreview!.startTicks
+                : clip.startTicks,
+              lengthTicks: previewing
+                ? gestureSession?.kind === "move"
+                  ? clip.lengthTicks
+                  : gesturePreview!.lengthTicks
+                : clip.lengthTicks,
+            };
+            const style = clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH);
+            const widthPx = Number.parseFloat(String(style.width)) || 0;
+            const peaks = asset?.waveformPeaks;
+            const poly =
+              peaks && peaks.length
+                ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
+                : "";
+            return (
+              <button
+                key={clip.id}
+                type="button"
+                data-clip-id={clip.id}
+                data-clip-lane={lane}
+                className={[
+                  styles.clip,
+                  styles.audioClip,
+                  isClipSelected(clipSelection, clip.id, lane)
+                    ? styles.clipSelected
+                    : "",
+                  clip.muted ? styles.audioClipMuted : "",
+                  previewing ? styles.formaClipDim : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={style}
+                title={`${asset?.originalName ?? "Audio"} — move/trim`}
+                onPointerDown={(e) => onAudioClipPointerDown(e, lane, clip)}
+                onPointerMove={onFormaClipPointerMove}
+                onPointerUp={onFormaClipPointerUp}
+              >
+                {poly ? (
+                  <svg
+                    className={styles.audioWaveform}
+                    viewBox={`0 0 ${Math.max(8, widthPx)} 28`}
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <polygon points={poly} />
+                  </svg>
+                ) : null}
+                <span className={styles.audioClipLabel}>
+                  {asset?.originalName ?? "Audio"}
+                </span>
+              </button>
+            );
+          })}
+          {clips.length === 0 ? (
+            <span className={styles.muted}>
+              + Audio w docku lub menu oka — dodaj plik
+            </span>
+          ) : null}
+        </>
+      );
+    }
     const mapSelectedClass = (eventId: string, lane: MapLaneId) =>
       selectedMapLane === lane && selectedMapIds.includes(eventId)
         ? styles.mapSegmentSelected
@@ -3711,9 +4098,9 @@ export function TimelineShell() {
                     ) : null}
                   </div>
 
-                {TRACKS.filter((t) =>
-                  isCoreTrackVisible(trackVisibility, t.id),
-                ).map((track) => (
+                {buildTrackList(draftProject?.audioTracks ?? [])
+                  .filter((t) => isTrackVisible(trackVisibility, t))
+                  .map((track) => (
                   <div
                     key={track.id}
                     className={styles.trackRow}
@@ -3729,6 +4116,54 @@ export function TimelineShell() {
                         .join(" ")}
                     >
                       <span>{track.label}</span>
+                      {track.group === "audio" && track.audioTrackId ? (
+                        <>
+                          <button
+                            type="button"
+                            className={styles.tapBtn}
+                            title={
+                              draftProject?.audioTracks.find(
+                                (a) => a.id === track.audioTrackId,
+                              )?.muted
+                                ? "Włącz ścieżkę"
+                                : "Wycisz ścieżkę"
+                            }
+                            onClick={() => {
+                              if (!draftProject || !track.audioTrackId) return;
+                              const muted = !draftProject.audioTracks.find(
+                                (a) => a.id === track.audioTrackId,
+                              )?.muted;
+                              commitDraft(
+                                setAudioTrackMuted(
+                                  draftProject,
+                                  track.audioTrackId,
+                                  muted,
+                                ),
+                              );
+                            }}
+                          >
+                            M
+                          </button>
+                          <label className={styles.tapBtn} title="Dodaj plik audio">
+                            +
+                            <input
+                              type="file"
+                              accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
+                              hidden
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                e.target.value = "";
+                                if (f && track.audioTrackId) {
+                                  void onUploadAudioToTrack(
+                                    track.audioTrackId,
+                                    f,
+                                  );
+                                }
+                              }}
+                            />
+                          </label>
+                        </>
+                      ) : null}
                       {track.id === "tekst" ? (
                         <button
                           type="button"
@@ -3807,7 +4242,14 @@ export function TimelineShell() {
                                     track.id as ContentLaneId,
                                   );
                                 }
-                              : undefined
+                              : isAudioLaneId(track.id)
+                                ? (e) => {
+                                    if (e.button !== 0) return;
+                                    if (toolAllowsClipHitZones(tool)) {
+                                      beginMarquee(e);
+                                    }
+                                  }
+                                : undefined
                       }
                       onPointerMove={
                         track.id === "forma" ||
@@ -4216,6 +4658,85 @@ export function TimelineShell() {
                         updateScoreAnchor(draftProject, selectedAnchor.id, {
                           scoreBar: n,
                         }),
+                      );
+                    }}
+                  />
+                </label>
+              </div>
+            ) : selectedAudioClip && selectedAudioTrack ? (
+              <div className={styles.inspBody}>
+                <p className={styles.muted}>
+                  {draftProject?.assets.find((a) => a.id === selectedAudioClip.assetId)
+                    ?.originalName ?? "Audio"}
+                </p>
+                <label className={styles.inspField}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(selectedAudioClip.muted)}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioClipMuted(
+                          draftProject,
+                          selectedAudioClip.id,
+                          e.target.checked,
+                        ),
+                      );
+                    }}
+                  />{" "}
+                  Mute clip
+                </label>
+                <label className={styles.inspField}>
+                  Gain clip (dB)
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    step={0.5}
+                    value={selectedAudioClip.gainDb ?? 0}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n)) return;
+                      commitDraft(
+                        setAudioClipGainDb(draftProject, selectedAudioClip.id, n),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(selectedAudioTrack.muted)}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioTrackMuted(
+                          draftProject,
+                          selectedAudioTrack.id,
+                          e.target.checked,
+                        ),
+                      );
+                    }}
+                  />{" "}
+                  Mute track
+                </label>
+                <label className={styles.inspField}>
+                  Fader track (dB)
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    step={0.5}
+                    value={selectedAudioTrack.gainDb ?? 0}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n)) return;
+                      commitDraft(
+                        setAudioTrackGainDb(
+                          draftProject,
+                          selectedAudioTrack.id,
+                          n,
+                        ),
                       );
                     }}
                   />
@@ -4728,12 +5249,12 @@ export function TimelineShell() {
               style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
               role="menu"
             >
-              {TRACKS.map((track) => (
+              {buildTrackList(draftProject?.audioTracks ?? []).map((track) => (
                 <button
                   key={track.id}
                   type="button"
                   role="menuitemcheckbox"
-                  aria-checked={isCoreTrackVisible(trackVisibility, track.id)}
+                  aria-checked={isTrackVisible(trackVisibility, track)}
                   className={[
                     styles.eyeItem,
                     track.locked ? styles.eyeItemLocked : "",
@@ -4744,7 +5265,7 @@ export function TimelineShell() {
                   onClick={() => toggleTrack(track.id)}
                 >
                   <span aria-hidden>
-                    {isCoreTrackVisible(trackVisibility, track.id) ? (
+                    {isTrackVisible(trackVisibility, track) ? (
                       <IconChecked />
                     ) : (
                       <IconUnchecked />
@@ -4754,6 +5275,14 @@ export function TimelineShell() {
                   {track.locked ? " (zawsze)" : ""}
                 </button>
               ))}
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.eyeItem}
+                onClick={onAddAudioTrack}
+              >
+                + Ścieżka Audio
+              </button>
             </div>,
             document.body,
           )

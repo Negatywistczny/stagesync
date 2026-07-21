@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   TRACKS,
+  audioLaneId,
+  audioTrackIdFromLane,
+  buildTrackList,
   defaultTrackVisibility,
+  ensureAudioTrackVisibility,
+  isAudioLaneId,
   isCoreTrackVisible,
+  isTrackVisible,
   type CoreTrackId,
 } from "./timelineTracks.js";
 
@@ -50,5 +56,28 @@ describe("timelineTracks", () => {
       "cue",
     ];
     expect(TRACKS.map((t) => t.id)).toEqual(expected);
+  });
+
+  it("buildTrackList appends audio lanes after Cue", () => {
+    const list = buildTrackList([
+      { id: "at-1", name: "Backing" },
+      { id: "at-2", name: "Click" },
+    ]);
+    expect(list.map((t) => t.id)).toEqual([
+      ...TRACKS.map((t) => t.id),
+      "audio:at-1",
+      "audio:at-2",
+    ]);
+    expect(list.at(-1)?.group).toBe("audio");
+    expect(isAudioLaneId("audio:at-1")).toBe(true);
+    expect(audioTrackIdFromLane(audioLaneId("at-1"))).toBe("at-1");
+  });
+
+  it("ensureAudioTrackVisibility defaults new audio lanes on", () => {
+    const vis = defaultTrackVisibility();
+    const next = ensureAudioTrackVisibility(vis, [{ id: "x", name: "A" }]);
+    expect(
+      isTrackVisible(next, buildTrackList([{ id: "x", name: "A" }])[8]!),
+    ).toBe(true);
   });
 });

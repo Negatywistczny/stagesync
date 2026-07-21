@@ -26,7 +26,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 2 · [report-scope-beta2.md](./an
 
 ### Must
 
-- [ ] **Audio 0…N:** clip na Timeline, sync transport (`ticksToMs`), trim/move, waveform peak/RMS, gain clip + fader track + mute clip/track (bez pencil; bez stretch poza plik) — [ADR 0008](./adr/0008-timeline-clip-editing.md)
 - [ ] **Host MIDI I/O** po stronie serwera (clock / urządzenia) — nie w procesie Tauri
 - [ ] Bramka beta-gate **G1–G10** green na instalatorach β2 ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — weryfikacja ręczna operatora **przed** tagiem `v5.0.0-beta.2`
 

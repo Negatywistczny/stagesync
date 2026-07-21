@@ -1746,3 +1746,45 @@
     border-top: 1px solid var(--ss-color-border);
   }
 }
+
+.audioClip {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0;
+  background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-surface));
+  border-color: color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
+}
+
+.audioClipMuted {
+  opacity: 0.45;
+}
+
+.audioWaveform {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.audioWaveform polygon {
+  fill: var(--ss-color-fg);
+}
+
+.audioClipLabel {
+  position: relative;
+  z-index: 1;
+  margin: auto 0 auto var(--ss-space-2);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.laneCell[data-track^="audio:"] .clip.clipSelected {
+  outline: 2px solid var(--ss-color-primary);
+}
