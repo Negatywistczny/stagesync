@@ -14,7 +14,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | [report-scope-alpha7](./analysis/reports/report-scope-alpha7.md) |
 | **5.0.0-alpha.8** | Parity workflow 4.x | **Code freeze 2026-07-20** — engineering must + rebuild TE-P0/CD/chrome/Admin; **nie** β ([freeze](./analysis/reports/report-alpha8-code-freeze.md)); residual PO + CL-P0 → α9 | QA: [report-qa-signoff-alpha8](./analysis/reports/report-qa-signoff-alpha8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) |
 | **5.0.0-alpha.9** | Migrator + dokończenie rebuild | **Wydane 2026-07-21** — Migrator M1–M9 ✓; Client CL-01/04/05 ✓; **PO smoke P8 green**; tag `v5.0.0-alpha.9` | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) |
-| **5.0.0-beta.1** | Host / dystrybucja | P8 green — start **na prośbę**: Docker + Tauri + host (**bez** audio/MIDI — β2) | — |
+| **5.0.0-beta.1** | Host / dystrybucja | P8 green — start **na prośbę**: Docker + Tauri + host (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
@@ -79,14 +79,15 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 > **P8 green 2026-07-21.** Start β1 / tag `5.0.0-beta.*` — **tylko na prośbę**
 > ([ADR 0011](./adr/0011-ui-parity-behavior.md),
 > [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md)).
-> Świadome OUT: git-apply; audio playback (→ β2); Docker-as-update.
+> Scope: [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md).
+> Świadome OUT: git-apply; audio/MIDI/Live Desk/wand/Help feature/P1 Timeline (→ β2 / 5.0.0).
 > Inventarz `[x]` ≠ parity.
 
-- Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu
-- **Tauri** desktop shell ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): thin WebView → lokalny API/WS; Win + mac; **bez** autorytetu czasu w shellu
-- Stabilność hosta: shadow backup, OCC (`409`), polityka migracji schematu na volume, ESLint ACL shared, API `details` z Zod
-- Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — jeśli nie w α9
-- **OUT β1:** audio playback / clip edit, MIDI I/O, Android shell, store auto-update
+- Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu; [INSTALL.md](./INSTALL.md)
+- **Tauri** desktop shell ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): thin WebView → URL lokalnego serwera; Win + mac; **bez** sidecar / autorytetu czasu w shellu
+- Stabilność hosta: shadow backup, OCC (`409`), migracja schematu na volume przy starcie, ESLint ACL shared, API `details` z Zod
+- Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — should, nie bloker hosta
+- **OUT β1:** audio / MIDI / AD-01…03 / wand / Timeline Help feature / P1 Timeline → β2 lub 5.0.0; Android; store auto-update
 - **Migrator:** α9 (done)
 
 ### Beta 2 — zakres orientacyjny (audio + MIDI)

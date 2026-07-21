@@ -26,7 +26,9 @@ Przyjmujemy **Tauri** jako desktop shell w β1:
    URL do kontenera Docker na localhost). Shell **nie** implementuje transportu
    muzycznego ani playhead autorytetu.
 3. **Update aplikacji** — jak [ADR 0004](./0004-updates-docker.md): bump obrazu /
-   wersji hosta; **bez** git-apply z UI. Auto-update Tauri / sklepy = OUT β1.
+   wersji hosta; **bez** git-apply z UI.
+   - **Amendement β1:** Tauri updater (`tauri-plugin-updater`) na żądanie z Admin — operator klika „Sprawdź aktualizacje", shell pobiera podpisany bundle (minisign) i restartuje się. **Bez** auto-poll w tle i bez sklepów OS.
+   - Auto-update w tle / sklepy = OUT β1 (β2+).
 4. **Android** — OUT β1 (PWA / Capacitor później).
 
 ## Konsekwencje

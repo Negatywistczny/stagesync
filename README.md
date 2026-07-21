@@ -1,42 +1,62 @@
 # StageSync
 
 [![CI](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml/badge.svg)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
+[![version](https://img.shields.io/github/package-json/v/Negatywistczny/stagesync?label=version&style=flat-square)](https://github.com/Negatywistczny/stagesync/releases)
+[![license](https://img.shields.io/github/license/Negatywistczny/stagesync?style=flat-square)](LICENSE)
 
 StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 
 > Legacy **4.x:** [STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY). Rozwój v5: [stagesync](https://github.com/Negatywistczny/stagesync).
 
-## Wymagania
+## Szybki start — scena / produkcja
 
-- Node.js 20 (`nvm use` / [`.nvmrc`](.nvmrc); `engines`: `>=20 <21`)
-- [pnpm](https://pnpm.io/) 9
+### Serwer (Docker)
 
-## Szybki start
+```sh
+docker login ghcr.io          # PAT read:packages — jednorazowo
+cp .env.example .env          # ustaw STAGESYNC_VERSION, tokeny
+docker compose -f compose.prod.yml up -d
+```
+
+| URL | Opis |
+|-----|------|
+| http://localhost:4000/admin | Admin (operacje, ustawienia) |
+| http://localhost:4000/ | Client (role sceniczne) |
+| http://localhost:4000/timeline | Timeline (edytor) |
+
+Pełna instrukcja: [docs/INSTALL.md](docs/INSTALL.md).
+
+### Aplikacja desktop (Tauri — opcjonalnie)
+
+Pobierz `.dmg` (macOS) lub `.msi` (Windows) z [Releases](https://github.com/Negatywistczny/stagesync/releases) i zainstaluj.
+Shell otwiera okno Admin/Timeline podłączone do lokalnego serwera.
+
+Instrukcja (unsigned install, update z Admina): [docs/DESKTOP.md](docs/DESKTOP.md).
+
+### Aktualizacja
+
+Admin → **Sprawdź aktualizacje** → Aktualizuj host / Aktualizuj aplikację.
+Ręcznie: zmień `STAGESYNC_VERSION` w `.env` → `docker compose -f compose.prod.yml up -d`.
+Bez git-apply ([ADR 0004](docs/adr/0004-updates-docker.md)).
+
+---
+
+## Dev (ze źródeł)
+
+**Wymagania:** Node.js 20 (`nvm use`), [pnpm](https://pnpm.io/) 9.
 
 ```sh
 git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 pnpm install
-# opcjonalnie: cp .env.example .env  (PORT, STAGESYNC_DATA_DIR)
-pnpm dev
+pnpm dev       # web :3000 + server :4000
 ```
 
-| Aplikacja | URL (dev) |
-|-----------|-----------|
-| Web | http://localhost:3000 |
-| Server | http://localhost:4000 |
-
-Ścieżki web: `/` Client · `/admin` · `/timeline` (nowy layout + inventarz v4; black/amber).
-
-W dev Vite proxy’uje `/api` i `/ws` na serwer `:4000` (soft playhead między tickami WS; `TransportProvider` żyje ponad routerem).
-
-Produkcja: aktualizacja przez **Docker** (bump tagu obrazu, `data/` na volume) — bez git-apply z Admina ([ADR 0004](docs/adr/0004-updates-docker.md)).
-
 ```sh
-pnpm dev      # web + server
 pnpm test
 pnpm build
 pnpm lint
+docker compose up --build -d   # dev z Dockerem (lokalny build)
 ```
 
 Wersja: `"version"` w root `package.json`.
@@ -45,10 +65,11 @@ Wersja: `"version"` w root `package.json`.
 
 | Plik | Zawartość |
 |------|-----------|
+| [INSTALL](docs/INSTALL.md) | Docker Compose — scena, GHCR, update/rollback |
+| [DESKTOP](docs/DESKTOP.md) | Tauri thin shell — operator |
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | Mapa monorepo, SSOT, legacy |
 | [ROADMAP](docs/ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) |
 | [TODO](docs/TODO.md) | Checklista bieżącego etapu |
 | [CHANGELOG](CHANGELOG.md) | Historia zmian |
 | [docs/ui/](docs/ui/README.md) | Design system (kolory, Button) |
-| [STANDARDS](docs/STANDARDS.md) | Linki do standardów zewnętrznych |
 | [CONTRIBUTING](CONTRIBUTING.md) | Język docs + Conventional Commits |

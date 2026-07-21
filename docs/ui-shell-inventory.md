@@ -80,7 +80,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 - [x] Utwory: import/export `.stagesync.json` (kafelek Pliki pod Wybrany)
 - [x] Host: logi SSE · **Restart / Wyłącz (2×)** · sieć (readout) · MIDI → β2
 - [x] Wygląd: jasny / wysoki kontrast (`data-theme` / `data-contrast`)
-- [ ] Sprawdź aktualizacje / Apply — ADR 0004
+- [ ] Sprawdź aktualizacje / Aktualizuj host (Watchtower) + Aktualizuj aplikację (Tauri updater) — ADR 0004 amendement β1
 - [ ] Backup Przywróć — później
 
 ## Client
