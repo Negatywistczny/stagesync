@@ -1434,13 +1434,56 @@ export function TimelineShell() {
   useEffect(() => {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
-      if (detail?.action !== "save") return;
+      if (!detail) return;
       const h = keyHandlersRef.current;
-      if (h.dirty && !h.savePending) void h.onSave();
+      switch (detail.action) {
+        case "save":
+          if (h.dirty && !h.savePending) void h.onSave();
+          break;
+        case "edit-undo":
+          h.onUndo();
+          break;
+        case "edit-redo":
+          h.onRedo();
+          break;
+        case "edit-cut":
+          cutClipSelection();
+          break;
+        case "edit-copy":
+          copyClipSelection();
+          break;
+        case "edit-paste":
+          pasteClipClipboard(locatorTicks);
+          break;
+        case "edit-delete":
+          deleteSelectedFormaClip();
+          break;
+        case "view-zoom-in":
+          h.zoomHorizontalBySteps(1);
+          break;
+        case "view-zoom-out":
+          h.zoomHorizontalBySteps(-1);
+          break;
+        case "view-zoom-reset":
+          h.fitZoom();
+          setZoomUi(100);
+          break;
+        case "help-shortcuts":
+          setHelpOpen(true);
+          break;
+        default:
+          break;
+      }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, []);
+  }, [
+    copyClipSelection,
+    cutClipSelection,
+    deleteSelectedFormaClip,
+    locatorTicks,
+    pasteClipClipboard,
+  ]);
 
   function onDiscard() {
     if (!savedProject) {

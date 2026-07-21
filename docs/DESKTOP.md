@@ -15,7 +15,17 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 | **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
 | **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
 
-**Faza A** = StageSync / Widok / Pomoc (**α12**). **Faza B+C** = Plik / Host / Transport (**β2**). **Faza D** → 5.0.0 — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
+**Faza A** = StageSync / Widok / Pomoc (**α12**). **Faza B+C** = Plik / Host / Transport (**β2**). **Faza D** = Edycja + zoom w Widok + skróty w Pomoc (**5.0.0**) — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.
+
+### Faza D (menu Edycja / zoom / Pomoc)
+
+| Menu | Pozycje | Mostek |
+|------|---------|--------|
+| **Edycja** | Cofnij / Ponów / Wytnij / Kopiuj / Wklej / Usuń | `edit-*` → Timeline draft / clipboard |
+| **Widok** | Powiększ / Pomniejsz / Resetuj zoom (+ istniejące nawigacja / fullscreen) | `view-zoom-*` → Timeline zoom H + UI 100% |
+| **Pomoc** | Skróty i pomoc Timeline… (+ docs / issues) | `help-shortcuts` → overlay Pomoc (`?`) |
+
+Akcje bez sensownego kontekstu (np. Edycja poza Timeline) są no-op po stronie WebView — bez disabled „na zapas”.
 **Bez** MIDI / zegara muzycznego w procesie Tauri — Host MIDI I/O + clock żyje wyłącznie w `apps/server` (`GET/PUT /api/midi`, [ADR 0010](./adr/0010-desktop-shell-tauri.md) / [ADR 0002](./adr/0002-timebase-ssot.md)). Akcje menu → `navigate` albo `CustomEvent` w WebView (shell nie jest autorytetem czasu); Admin → Host pokazuje status MIDI.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —
