@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to build (e.g. 5.0.0-alpha.11) — no git commit"
+        description: "Version to build (e.g. 5.0.0-alpha.12) — no git commit"
         required: true
-        default: "5.0.0-alpha.11"
+        default: "5.0.0-alpha.12"
       publish:
         description: "Create/publish GitHub Release (false = build artifacts only)"
         type: boolean
@@ -67,7 +67,7 @@ jobs:
         uses: docker/setup-buildx-action@v4
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
@@ -144,7 +144,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build Tauri (macOS — dmg + updater)
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -155,7 +155,7 @@ jobs:
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
       - name: Upload dmg artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-dmg
           path: apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
@@ -202,7 +202,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build Tauri (Windows — msi + updater)
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -216,7 +216,7 @@ jobs:
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
       - name: Upload msi artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-msi
           path: apps/desktop/src-tauri/target/release/bundle/msi/*.msi
@@ -232,13 +232,13 @@ jobs:
       VERSION: ${{ needs.resolve-version.outputs.version }}
     steps:
       - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-dmg
           path: dist/
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-msi
           path: dist/
