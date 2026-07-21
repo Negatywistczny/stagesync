@@ -1,0 +1,120 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--ss-space-4);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--ss-color-bg) 72%, transparent);
+  cursor: pointer;
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  width: min(28rem, 100%);
+  max-height: min(80dvh, 40rem);
+  overflow: auto;
+  padding: var(--ss-space-4);
+  border: 1px solid var(--ss-color-border);
+  border-radius: calc(var(--ss-radius-sm) + 2px);
+  background: var(--ss-color-elevated);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-3);
+  margin-bottom: var(--ss-space-3);
+}
+
+.head h2 {
+  margin: 0;
+  font-size: var(--ss-text-lg);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+}
+
+.muted {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}
+
+.error {
+  margin: 0;
+  color: var(--ss-color-danger);
+  font-size: var(--ss-text-sm);
+}
+
+.qrWrap {
+  display: grid;
+  place-items: center;
+  padding: var(--ss-space-3);
+  background: var(--ss-color-bg);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+}
+
+.qrWrap :global(svg) {
+  width: min(14rem, 100%);
+  height: auto;
+  display: block;
+}
+
+.urlList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+}
+
+.urlBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-sm);
+  cursor: pointer;
+}
+
+.urlBtn:hover {
+  border-color: var(--ss-color-primary);
+}
+
+.urlBtnSelected {
+  border-color: var(--ss-color-primary);
+  background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+}
+
+.urlBtn:focus-visible {
+  outline: 2px solid var(--ss-color-primary);
+  outline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+  justify-content: flex-end;
+}

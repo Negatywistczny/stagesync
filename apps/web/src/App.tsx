@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom"
 import { TransportProvider } from "./transport/TransportProvider.js";
 import { AdminShell } from "./shells/AdminShell.js";
 import { ClientShell } from "./shells/ClientShell.js";
+import { DesktopMenuBridge } from "./shells/DesktopMenuBridge.js";
 import { DesktopRootRedirect } from "./shells/DesktopRootRedirect.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
@@ -9,6 +10,7 @@ import { TimelineShell } from "./shells/TimelineShell.js";
 const router = createBrowserRouter([
   {
     errorElement: <RouteErrorPage />,
+    element: <DesktopMenuBridge />,
     children: [
       { path: "/", element: <DesktopRootRedirect /> },
       { path: "/client", element: <ClientShell /> },

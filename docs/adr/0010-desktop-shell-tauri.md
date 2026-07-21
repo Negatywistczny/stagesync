@@ -30,12 +30,15 @@ Przyjmujemy **Tauri** jako desktop shell w β1:
    - **Amendement β1:** Tauri updater (`tauri-plugin-updater`) na żądanie z Admin — operator klika „Sprawdź aktualizacje", shell pobiera podpisany bundle (minisign) i restartuje się. **Bez** auto-poll w tle i bez sklepów OS.
    - Auto-update w tle / sklepy = OUT β1 (β2+).
 4. **Android** — OUT β1 (PWA / Capacitor później).
-5. **Nawigacja desktop (amendement):** chrome HTML bez zmian względem przeglądarki (`appJump` Admin/Timeline). Natywne menu OS — **Faza A** (**α12**):
+5. **Nawigacja desktop (amendement):** chrome HTML bez zmian względem przeglądarki (`appJump` Admin/Timeline). Natywne menu OS — **Faza A** (**α12**) + **Faza B+C** (**β2**):
    - **StageSync:** O programie → `/admin?section=host`; Sprawdź aktualizacje… → `?action=check-update`; Zakończ
+   - **Plik (B):** Otwórz ostatnie (localStorage → menu); Zapisz → event WebView → Timeline draft; Zamknij projekt → `/admin`
    - **Widok:** Admin / Timeline / Klient (`CmdOrCtrl+1…3`); Zakładki Admina (Utwory / Setlista / Scena / Host, `Alt+1…4`); Pełny ekran
+   - **Transport (C):** Odtwórz / Stop / Poprzedni / Następny → eventy WebView → `/api/transport/*` + setlista (SSOT serwer; **zero** MIDI/audio clock w Rust)
+   - **Host (B):** Status / Ustawienia… → Host; Klienci → Scena; Kod QR… (LAN URL z `GET /api/system/network`); Restart hosta
    - **Pomoc:** Dokumentacja online; Zgłoś problem; O programie (Windows/Linux — na macOS w StageSync)
-   - Ostatni utwór Timeline w `localStorage` + sync do menu natywnego
-   - **Faza B+** (Plik, Host top-level, …) → **β1**; C/D → β2 / 5.0.0 — [ROADMAP.md](../ROADMAP.md) § Desktop OS menu. Bez gray-out „na zapas” w Fazie A.
+   - Ostatnie utwory Timeline w `localStorage` + sync do menu natywnego
+   - **Faza D** → **5.0.0** — [ROADMAP.md](../ROADMAP.md) § Desktop OS menu. Bez gray-out „na zapas”.
 
 ## Konsekwencje
 

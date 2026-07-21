@@ -26,8 +26,8 @@ import {
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
-import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavTimelineProjectId, toggleAppFullscreen, formatUnknownError, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
-import { setLastTimelineProjectId } from "../lib/lastTimelineProject.js";
+import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen, formatUnknownError, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
+import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import {
   DOCS_INSTALL_URL,
   DOCS_ISSUES_URL,
@@ -280,9 +280,13 @@ export function AdminShell() {
 
   useEffect(() => {
     if (!timelineProjectId) return;
-    setLastTimelineProjectId(timelineProjectId);
+    const name =
+      library?.projects.find((p) => p.id === timelineProjectId)?.name ??
+      timelineProjectId;
+    const recent = pushRecentTimelineProject(timelineProjectId, name);
     void syncNavTimelineProjectId(timelineProjectId);
-  }, [timelineProjectId]);
+    void syncNavRecentProjects(recent);
+  }, [timelineProjectId, library]);
 
   return (
     <div className={styles.shell}>

@@ -205,6 +205,14 @@ export function syncNavTimelineProjectId(projectId: string | null): Promise<void
   });
 }
 
+/** Sync Open Recent list to the native Plik menu (desktop only, Faza B). */
+export function syncNavRecentProjects(
+  projects: Array<{ id: string; name: string }>,
+): Promise<void> {
+  if (!isDesktopShell()) return Promise.resolve();
+  return tauriInvoke<void>("set_nav_recent_projects", { projects });
+}
+
 /** Open a URL in the system browser (Tauri) or a new tab (web). */
 export function openExternalUrl(url: string): Promise<void> {
   if (isDesktopShell()) {

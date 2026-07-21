@@ -200,8 +200,16 @@ import {
   setLaneHeightOverride,
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
-import { toggleAppFullscreen, syncNavTimelineProjectId } from "../lib/desktopBridge.js";
-import { setLastTimelineProjectId } from "../lib/lastTimelineProject.js";
+import {
+  toggleAppFullscreen,
+  syncNavRecentProjects,
+  syncNavTimelineProjectId,
+} from "../lib/desktopBridge.js";
+import {
+  DESKTOP_MENU_EVENT,
+  parseDesktopMenuDetail,
+} from "../lib/desktopMenuEvents.js";
+import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -588,9 +596,11 @@ export function TimelineShell() {
 
   useEffect(() => {
     if (!projectId) return;
-    setLastTimelineProjectId(projectId);
+    const name = draftProject?.name ?? projectId;
+    const recent = pushRecentTimelineProject(projectId, name);
     void syncNavTimelineProjectId(projectId);
-  }, [projectId]);
+    void syncNavRecentProjects(recent);
+  }, [projectId, draftProject?.name]);
 
   useEffect(() => {
     if (!songScreenOpen) return;
@@ -1295,6 +1305,17 @@ export function TimelineShell() {
       setSavePending(false);
     }
   }
+
+  useEffect(() => {
+    function onMenu(ev: Event) {
+      const detail = parseDesktopMenuDetail(ev);
+      if (detail?.action !== "save") return;
+      const h = keyHandlersRef.current;
+      if (h.dirty && !h.savePending) void h.onSave();
+    }
+    window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
+    return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
+  }, []);
 
   function onDiscard() {
     if (!savedProject) {
