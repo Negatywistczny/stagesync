@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CreateProjectBodySchema,
   LibrarySchema,
+  SetlistSchema,
   ProjectSchema,
   ProjectSchemaV2,
   ProjectSchemaV3,
@@ -38,6 +39,26 @@ describe("LibrarySchema", () => {
   it("rejects wrong version", () => {
     expect(() =>
       LibrarySchema.parse({ version: 2, projects: [] }),
+    ).toThrow();
+  });
+
+  it("rejects unknown library keys", () => {
+    expect(() =>
+      LibrarySchema.parse({ version: 1, projects: [], extra: true }),
+    ).toThrow();
+  });
+});
+
+describe("SetlistSchema", () => {
+  it("rejects unknown keys", () => {
+    expect(() =>
+      SetlistSchema.parse({
+        version: 1,
+        enabled: false,
+        projectIds: [],
+        autoAdvance: { enabled: false },
+        extra: 1,
+      }),
     ).toThrow();
   });
 });

@@ -16,10 +16,12 @@ export const LibraryProjectEntrySchema = z.object({
 export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;
 
 /** Skeleton library catalog — validated at every edge (API / disk). */
-export const LibrarySchema = z.object({
-  version: z.literal(1),
-  projects: z.array(LibraryProjectEntrySchema),
-});
+export const LibrarySchema = z
+  .object({
+    version: z.literal(1),
+    projects: z.array(LibraryProjectEntrySchema),
+  })
+  .strict();
 
 export type Library = z.infer<typeof LibrarySchema>;
 
@@ -120,14 +122,18 @@ export const AudioClipSchema = z.object({
 export type AudioClip = z.infer<typeof AudioClipSchema>;
 
 /** Concert setlist — independent of library order (ADR 0009). */
-export const SetlistSchema = z.object({
-  version: z.literal(1),
-  enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()),
-  autoAdvance: z.object({
+export const SetlistSchema = z
+  .object({
+    version: z.literal(1),
     enabled: z.boolean(),
-  }),
-});
+    projectIds: z.array(z.string().uuid()),
+    autoAdvance: z
+      .object({
+        enabled: z.boolean(),
+      })
+      .strict(),
+  })
+  .strict();
 
 export type Setlist = z.infer<typeof SetlistSchema>;
 
