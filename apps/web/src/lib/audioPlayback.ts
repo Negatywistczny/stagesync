@@ -3,8 +3,8 @@
  */
 
 import {
-  audioClipBufferOffsetSec,
-  audioClipRemainingSec,
+  audioClipBufferOffsetSecAlongMaps,
+  audioClipRemainingSecAlongMaps,
   gainDbToLinear,
   resolveMeterAt,
   resolveTempoAt,
@@ -122,7 +122,7 @@ function startClip(
     meter: resolveMeterAt(project, clip.startTicks),
     ppq: project.ppq,
   };
-  const offset = audioClipBufferOffsetSec(clip, displayTicks, ctxTempo);
+  const offset = audioClipBufferOffsetSecAlongMaps(clip, displayTicks, project);
   if (offset == null) return;
 
   const buf = bufferCache.get(cacheKey(projectId, clip.assetId));
@@ -131,10 +131,11 @@ function startClip(
     return;
   }
 
-  const remaining = audioClipRemainingSec(
+  const remaining = audioClipRemainingSecAlongMaps(
     clip,
     project.assets.find((a) => a.id === clip.assetId),
     displayTicks,
+    project,
     ctxTempo,
   );
   if (remaining <= 0.005) return;
@@ -186,11 +187,11 @@ export function syncAudioPlayback(
   for (const clip of input.project.audioClips) {
     const track = trackById.get(clip.trackId);
     if (track?.muted || clip.muted) continue;
-    const offset = audioClipBufferOffsetSec(clip, input.displayTicks, {
-      bpm: resolveTempoAt(input.project, clip.startTicks),
-      meter: resolveMeterAt(input.project, clip.startTicks),
-      ppq: input.project.ppq,
-    });
+    const offset = audioClipBufferOffsetSecAlongMaps(
+      clip,
+      input.displayTicks,
+      input.project,
+    );
     if (offset == null) continue;
     stillNeeded.add(clip.id);
     if (active.some((a) => a.clipId === clip.id)) continue;

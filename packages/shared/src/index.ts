@@ -134,7 +134,7 @@ export {
   resolveFormaClipAt,
 } from "./project-resolve.js";
 
-
+export { ticksToMsAlongTempoMap } from "./tempo-map-ms.js";
 export {
   projectEndTicks,
   emptyProjectEndTicks,
@@ -231,8 +231,10 @@ export {
 
 export {
   audioClipBufferOffsetSec,
+  audioClipBufferOffsetSecAlongMaps,
   audioClipPlayableMs,
   audioClipRemainingSec,
+  audioClipRemainingSecAlongMaps,
   clampAudioClipToAsset,
   gainDbToLinear,
   lengthTicksFromAssetWindow,
