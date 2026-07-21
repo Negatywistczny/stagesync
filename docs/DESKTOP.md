@@ -3,7 +3,8 @@
 Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
 **β1:** aplikacja uruchamia wbudowany serwer w postaci **Node sidecar**, wystawia lokalny API na `http://127.0.0.1:4000`, a shell ładuje UI z tego adresu.  
-**Domyślny widok desktop:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/`) pozostaje domyślny w przeglądarce / Dockerze.  
+**Domyślny widok desktop:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/client`) w shellu; w przeglądarce / Dockerze root `/` nadal to Client.  
+**Nawigacja desktop:** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ** — bez osobnego chrome `ShellModeNav` (ADR 0010).  
 **Bez** MIDI / zegara muzycznego w procesie Tauri.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —

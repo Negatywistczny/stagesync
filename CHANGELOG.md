@@ -5,13 +5,21 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...HEAD)
+## [Unreleased](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.11...HEAD)
+
+## [5.0.0-alpha.11](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
+
+> **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.
+
+
 
 ### Dodano
 
 - **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ**; ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
 - **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed `library.template.json` + `seed-projects/`; parity z legacy v4).
 - **Admin → O aplikacji:** przycisk „Zgłoś błąd lub pomysł” (GitHub Issues).
+
+
 
 ### Zmieniono
 
@@ -21,16 +29,20 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Shell:** modalne dialogi in-app zamiast `window.prompt` / `confirm` / `alert` (Admin, Timeline, pliki projektu).
 - **Admin → O aplikacji:** układ dwukolumnowy (wersja / kopie zapasowe | dokumentacja / zgłoszenia / aktualizacje).
 
+
+
 ### Naprawiono
 
 - **Desktop:** wykrywanie shella Tauri na `http://127.0.0.1:4000` (fallback hostname/port, meta `stagesync-shell`, marker na początku `<head>`, `Cache-Control: no-store` na HTML) — fullscreen / updater / `openExternalUrl` przy cache WebView bez injectu.
-
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
+
+
 
 ## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
 
-> **α10:** standalone desktop (Tauri + Node sidecar) — pierwszy build β1 host.  
-> Nazwa hero linii 5.0 odłożona do stabilnego `5.0.0`.
+> **α10:** standalone desktop (Tauri + Node sidecar) — pierwszy build β1 host.
+
+
 
 ### Dodano
 
@@ -46,16 +58,19 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Scope: [report-scope-beta1.md](docs/analysis/reports/report-scope-beta1.md) · bramka release: [report-beta-gate.md](docs/analysis/reports/report-beta-gate.md).
 - **Dokumentacja in-app vs GitHub ([ADR 0013](docs/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w `build-desktop-sidecar.mjs`.
 
+
+
 ### Zmieniono
 
 - Shell headers (Admin / Timeline / Client): wordmark tekstowy → SVG logo (`/brand/stagesync-logo*.svg`, wariant light przy `data-theme`).
 - `PUT /api/projects/:id`: body wymaga `updatedAt` (token OCC); mismatch → 409.
 - `@stagesync/shared` package exports → `dist/` (Node runtime / Docker).
 
+
+
 ## [5.0.0-alpha.9](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.8...v5.0.0-alpha.9) - 2026-07-21
 
-> **α9:** migrator M1–M9 + **PO smoke P8 green** ([playbook](docs/analysis/reports/report-po-smoke-p8.md)).  
-> Nazwa hero linii 5.0 odłożona do stabilnego `5.0.0`.
+> **α9:** migrator M1–M9 + **PO smoke P8 green** ([playbook](docs/analysis/reports/report-po-smoke-p8.md)).
 
 
 
@@ -92,7 +107,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Wygląd:** jasny motyw + wysoki kontrast (`data-theme` / `data-contrast`) w Admin / Timeline / Client.
 - **Client:** skala tekstu karaoke, auto-scroll, score zoom lokalny; appearance w drawerze globalnym.
 - **Timeline parity follow-up:** Metadane (tytuł / defaultBpm), Loop (region na linijce + `POST /api/transport/loop` SSOT), Follow playhead, Tekst/Akordy/Cue move/resize/pencil, Kotwice (`scoreBarMap`), scissors content, Client H/B + Tap wokalu + notatki Formy.
-- **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` ([MIGRATION.md](docs/MIGRATION.md)); drop legacy `vl-cd-*` (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
+- **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` ([MIGRATION.md](docs/MIGRATION.md)); drop legacy `vl-cd-`* (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
 - **Admin:** Host logi SSE (`/api/system/logs/stream` + Pauza/Wyczyść); Scena **presence** (`GET /api/stage/clients` + WS `client_hello`).
 - [ADR 0010](docs/adr/0010-desktop-shell-tauri.md) — desktop shell Tauri (thin WebView, SSOT na serwerze).
 
