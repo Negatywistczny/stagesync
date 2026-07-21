@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:45 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:46 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -212,6 +212,7 @@ flowchart LR
 | [#106](https://github.com/Negatywistyczny/stagesync/pull/106) | Desktop Host→Ustawienia modal | https://github.com/Negatywistyczny/stagesync/pull/106 | pending |
 | [#107](https://github.com/Negatywistyczny/stagesync/pull/107) | StageMessageBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/107 | pending |
 | [#108](https://github.com/Negatywistyczny/stagesync/pull/108) | Zod-validate WS client_hello | https://github.com/Negatywistyczny/stagesync/pull/108 | pending |
+| [#109](https://github.com/Negatywistyczny/stagesync/pull/109) | Admin Plik→Zapisz dirty setlist | https://github.com/Negatywistyczny/stagesync/pull/109 | pending |
 
 ### Parallel (other agents)
 
