@@ -38,6 +38,15 @@ async function downloadFile(url, destPath) {
   await writeFile(destPath, buf);
 }
 
+
+function externalBinDestPath(binDir, target) {
+  const base = `stagesync-host-${target}`;
+  if (target.endsWith("-pc-windows-msvc")) {
+    return join(binDir, `${base}.exe`);
+  }
+  return join(binDir, base);
+}
+
 function normalizeTargetTriple(target) {
   // Keep the CLI contract explicit; Tauri uses its own "target" strings.
   // We only implement the ones we currently test/build in CI.
@@ -155,10 +164,10 @@ async function prepareNodeRuntimeIntoTauriBundle(target) {
     process.platform === "win32" ? "node.exe" : "node",
   );
 
-  // Tauri externalBin expects an executable in bundle's /bin.
-  const destStagesyncHost = join(binDir, "stagesync-host");
+  // Tauri externalBin expects per-target triple name under bundle /bin.
+  const destStagesyncHost = externalBinDestPath(binDir, target);
   await cp(extractedNodeBin, destStagesyncHost);
-  if (process.platform !== "win32") {
+  if (!destStagesyncHost.endsWith(".exe")) {
     await chmod(destStagesyncHost, 0o755);
   }
 
@@ -389,7 +398,7 @@ async function buildAndPrepareSidecarResources() {
   console.log(
     [
       `- sidecar resources: ${sidecarDir}`,
-      `- externalBin: ${join(srcTauriDir, "bin/stagesync-host")}`,
+      `- externalBin: ${externalBinDestPath(join(srcTauriDir, "bin"), target)}`,
     ].join("\n"),
   );
 }

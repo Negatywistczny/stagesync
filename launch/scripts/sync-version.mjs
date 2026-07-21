@@ -17,9 +17,10 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
-const ROOT = new URL("../../", import.meta.url).pathname;
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function arg(flag) {
   const idx = process.argv.indexOf(flag);
