@@ -1,0 +1,30 @@
+---
+description: Root layout guardrails for StageSync v5
+alwaysApply: true
+---
+
+# Root Layout (StageSync v5)
+
+Nie dodawaj nowych plików/folderów w root bez wcześniejszej zgody użytkownika.
+
+## Dozwolone w root bez pytania
+
+- Repo/tooling: `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, `.nvmrc`, `.npmrc`, `.editorconfig`, `.gitignore`, `.env.example`.
+- Dokumenty repo: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `SECURITY.md`.
+- CI/GitHub: `.github/`.
+- Kontenery/deploy: `Dockerfile`, `compose.yml`, `compose.prod.yml`, `.dockerignore`.
+- Skrypty operacyjne: `launch/scripts/*` (release/host tooling).
+- Główne katalogi monorepo: `apps/`, `packages/`, `docs/`, `data/`, `.cursor/`.
+
+## Wymóg zgody (przed utworzeniem)
+
+Gdy chcesz dodać nowy element w root spoza listy powyżej:
+
+1. Napisz 1-2 zdania: **co** dodajesz i **dlaczego** musi być w root.
+2. Podaj krótką alternatywę i czemu odpada.
+3. Czekaj na akceptację użytkownika, dopiero potem twórz.
+
+## Higiena lokalna
+
+- Nie traktuj lokalnych artefaktów (`.DS_Store`, `.turbo/`, `node_modules/`) jako elementów struktury repo.
+- Nie commituj lokalnych plików systemowych/cachy.
