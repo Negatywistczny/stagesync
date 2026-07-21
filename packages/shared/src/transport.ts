@@ -8,8 +8,16 @@ export const TimeSignatureSchema = z.object({
 
 export const TransportLoopSchema = z.object({
   enabled: z.boolean(),
-  startTicks: z.number().int(),
-  endTicks: z.number().int(),
+  startTicks: z
+    .number()
+    .int()
+    .min(Number.MIN_SAFE_INTEGER)
+    .max(Number.MAX_SAFE_INTEGER),
+  endTicks: z
+    .number()
+    .int()
+    .min(Number.MIN_SAFE_INTEGER)
+    .max(Number.MAX_SAFE_INTEGER),
 });
 
 export type TransportLoop = z.infer<typeof TransportLoopSchema>;
@@ -36,8 +44,18 @@ export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
 export const TransportLoopBodySchema = z
   .object({
     enabled: z.boolean(),
-    startTicks: z.number().int().optional(),
-    endTicks: z.number().int().optional(),
+    startTicks: z
+      .number()
+      .int()
+      .min(Number.MIN_SAFE_INTEGER)
+      .max(Number.MAX_SAFE_INTEGER)
+      .optional(),
+    endTicks: z
+      .number()
+      .int()
+      .min(Number.MIN_SAFE_INTEGER)
+      .max(Number.MAX_SAFE_INTEGER)
+      .optional(),
   })
   .strict();
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
+  TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
   TransportStateSchema,
@@ -32,6 +33,17 @@ describe("TransportSeekBodySchema", () => {
     expect(TransportSeekBodySchema.parse({ positionTicks: -100 })).toEqual({
       positionTicks: -100,
     });
+  });
+});
+
+describe("TransportLoopBodySchema", () => {
+  it("rejects loop ticks outside safe integer range", () => {
+    expect(() =>
+      TransportLoopBodySchema.parse({
+        enabled: true,
+        startTicks: Number.MAX_SAFE_INTEGER + 1,
+      }),
+    ).toThrow();
   });
 });
 
