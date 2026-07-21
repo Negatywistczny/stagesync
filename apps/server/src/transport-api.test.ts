@@ -121,6 +121,56 @@ describe("transport REST + WS", () => {
     }
   });
 
+  it("stop with active project seeks to Countdown start (#41)", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "stagesync-transport-stop-"));
+    const transport = createTransportEngine();
+    const { app } = createApp({ dataDir, transport });
+    const localServer = createServer(app);
+    await new Promise<void>((resolve) => {
+      localServer.listen(0, "127.0.0.1", () => resolve());
+    });
+    const port = (localServer.address() as AddressInfo).port;
+    const url = `http://127.0.0.1:${port}`;
+
+    try {
+      const createRes = await fetch(`${url}/api/projects`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "Stop Home" }),
+      });
+      const project = (await createRes.json()) as {
+        id: string;
+        forma: { clips: Array<{ kind: string; startTicks: number }> };
+      };
+      const cdStart = project.forma.clips.find((c) => c.kind === "countdown")
+        ?.startTicks;
+      expect(cdStart).toBeLessThan(0);
+
+      await fetch(`${url}/api/transport/play`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ projectId: project.id }),
+      });
+      await fetch(`${url}/api/transport/seek`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ positionTicks: 1920 }),
+      });
+
+      const stopRes = await fetch(`${url}/api/transport/stop`, {
+        method: "POST",
+      });
+      expect(stopRes.status).toBe(200);
+      const stopped = TransportStateSchema.parse(await stopRes.json());
+      expect(stopped.playing).toBe(false);
+      expect(stopped.positionTicks).toBe(cdStart);
+    } finally {
+      transport.dispose();
+      await new Promise<void>((resolve) => localServer.close(() => resolve()));
+      await rm(dataDir, { recursive: true, force: true });
+    }
+  });
+
   it("WS sends transport_tick on connect and after seek", async () => {
     const ws = new WebSocket(wsUrl);
     const firstRaw = await new Promise<unknown>((resolve, reject) => {

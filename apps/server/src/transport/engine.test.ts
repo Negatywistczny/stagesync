@@ -133,7 +133,7 @@ describe("TransportEngine", () => {
     engine.dispose();
   });
 
-  it("stop seeks to 0 and pauses", () => {
+  it("stop without project seeks to 0 and pauses", () => {
     let t = 0;
     const engine = createTransportEngine({ now: () => t });
     engine.play();
@@ -141,6 +141,28 @@ describe("TransportEngine", () => {
     const stopped = engine.stop();
     expect(stopped.playing).toBe(false);
     expect(stopped.positionTicks).toBe(0);
+    engine.dispose();
+  });
+
+  it("stop with project seeks to Countdown start (pre-roll), not tick 0", () => {
+    let t = 0;
+    const project = createProjectV5Seed(
+      "00000000-0000-4000-8000-000000000002",
+      "P",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 1 },
+    );
+    const cd = project.forma.clips.find((c) => c.kind === "countdown");
+    expect(cd?.startTicks).toBeLessThan(0);
+
+    const engine = createTransportEngine({ now: () => t });
+    engine.loadProject(project.id, project);
+    engine.seek(0, project);
+    engine.play({}, project);
+    t = 1000;
+    const stopped = engine.stop(project);
+    expect(stopped.playing).toBe(false);
+    expect(stopped.positionTicks).toBe(cd!.startTicks);
     engine.dispose();
   });
 });
