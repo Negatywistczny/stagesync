@@ -1,18 +1,11 @@
-## Summary
+## 📝 Opis zmian
+<!-- Zwięzłe podsumowanie: co dokładnie zostało zmienione i w jakim celu? -->
 
-<!-- Problem (1–2 zdania) + co zmieniasz i dlaczego. -->
+## 🔗 Powiązane zgłoszenia (Issues)
+- Fixes #
 
-Dla `feat/` z [TODO](docs/TODO.md): wypełnij **Wpływ** przed review
-(najlepiej już w pierwszym opisie PR).
-
-## Wpływ
-
-- [ ] Model danych / storage
-- [ ] API / transport
-- [ ] UI / design tokens
-- [ ] Granica 0 (czas / foldery) — ACL; cytuj [ADR 0005](docs/adr/0005-domain-axioms.md) (+ 0001 / 0002)
-
-## Test plan
-
-- [ ] `pnpm lint` / `pnpm check-types` / `pnpm test` / `pnpm build`
-- [ ] …
+## 📋 Checklista jakościowa (Definition of Done)
+- [ ] Kod kompiluje się bez błędów (`pnpm build` / `cargo check`)
+- [ ] Testy jednostkowe i e2e przechodzą na zielono (`pnpm test`)
+- [ ] Linter i formatowanie bez uwag (`pnpm lint`)
+- [ ] Zaktualizowano dokumentację (`docs/`, `TODO.md` lub `CHANGELOG.md` – jeśli dotyczy)
