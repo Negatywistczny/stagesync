@@ -4,6 +4,7 @@ import {
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
+  moveSectionsFromId,
   placeClipNoOverlap,
   resizeClipNoOverlap,
   splitClipAt,
@@ -115,6 +116,29 @@ describe("moveClipNoOverlap", () => {
       contentFloorTicks: 0,
     });
     expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(0);
+  });
+});
+
+describe("moveSectionsFromId", () => {
+  it("moves target and all later sections by the same delta", () => {
+    const next = moveSectionsFromId(base(), "forma-intro", 1920, {
+      contentFloorTicks: 0,
+    });
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(1920);
+    expect(next.find((c) => c.id === "forma-verse")?.startTicks).toBe(
+      7680 + 1920,
+    );
+    expect(next.find((c) => c.id === "forma-cd")?.startTicks).toBe(-7680);
+  });
+
+  it("does not move earlier sections when dragging a later one", () => {
+    const next = moveSectionsFromId(base(), "forma-verse", 7680 + 960, {
+      contentFloorTicks: 0,
+    });
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(0);
+    expect(next.find((c) => c.id === "forma-verse")?.startTicks).toBe(
+      7680 + 960,
+    );
   });
 });
 

@@ -221,6 +221,7 @@ export {
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
+  moveSectionsFromId,
   placeClipNoOverlap,
   resizeClipNoOverlap,
   splitClipAt,

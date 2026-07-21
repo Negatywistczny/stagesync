@@ -5,8 +5,8 @@
 import {
   deleteClip,
   insertSpanOverwrite,
-  moveClipNoOverlap,
   moveClipsRigidDelta,
+  moveSectionsFromId,
   resizeClipNoOverlap,
   resolveMeterAt,
   ticksPerBar,
@@ -183,7 +183,8 @@ export function commitMoveClip(
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
   const snapped = snapEditTicksWithMode(project, newStartTicks, mode);
-  const clips = moveClipNoOverlap(project.forma.clips, clipId, snapped, {
+  // TE-24: single-section drag cascades to all later sections (v4 parity).
+  const clips = moveSectionsFromId(project.forma.clips, clipId, snapped, {
     contentFloorTicks: floor,
   });
   return { ...project, forma: { clips } };
