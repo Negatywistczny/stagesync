@@ -117,6 +117,7 @@ import {
 } from "../lib/cueEdit.js";
 import {
   commitContentGesture,
+  contentClipCoveringTicks,
   defaultPencilLabel,
   previewContentFromSession,
   splitContentClipAt,
@@ -4231,16 +4232,33 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                                 track.id === "cue"
                               ? (e) => {
                                   if (e.button !== 0 || !draftProject) return;
+                                  const lane = track.id as ContentLaneId;
+                                  if (tool === "scissors") {
+                                    e.preventDefault();
+                                    const raw = rawTicksAtClientX(e.clientX);
+                                    if (raw == null) return;
+                                    const hit = contentClipCoveringTicks(
+                                      draftProject,
+                                      lane,
+                                      raw,
+                                    );
+                                    if (!hit) return;
+                                    const next = splitContentClipAt(
+                                      draftProject,
+                                      lane,
+                                      hit.id,
+                                      raw,
+                                    );
+                                    if (next !== draftProject) commitDraft(next);
+                                    return;
+                                  }
                                   if (!toolIsPencilDraw(tool)) {
                                     if (toolAllowsClipHitZones(tool)) {
                                       beginMarquee(e);
                                     }
                                     return;
                                   }
-                                  beginContentPencilDraw(
-                                    e,
-                                    track.id as ContentLaneId,
-                                  );
+                                  beginContentPencilDraw(e, lane);
                                 }
                               : isAudioLaneId(track.id)
                                 ? (e) => {

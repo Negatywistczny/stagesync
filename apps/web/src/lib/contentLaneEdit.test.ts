@@ -5,6 +5,7 @@ import {
   commitMoveContentClip,
   commitPencilContentSpan,
   commitResizeContentClip,
+  contentClipCoveringTicks,
   previewContentFromSession,
 } from "./contentLaneEdit.js";
 import { pencilTekstClick } from "./tekstEdit.js";
@@ -13,6 +14,17 @@ import { pencilCueClick } from "./cueEdit.js";
 import type { FormaGestureSession } from "./timelineGesture.js";
 
 describe("contentLaneEdit", () => {
+  it("finds content clip covering ticks for scissors hit-test", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = pencilTekstClick(p, 0, "A");
+    p = pencilTekstClick(p, 3840, "B");
+    const a = p.tekst.clips.find((c) => c.text === "A")!;
+    expect(contentClipCoveringTicks(p, "tekst", a.startTicks + 1)?.id).toBe(
+      a.id,
+    );
+    expect(contentClipCoveringTicks(p, "tekst", a.startTicks + a.lengthTicks)).toBeNull();
+  });
+
   it("moves tekst clip without overlap", () => {
     let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilTekstClick(p, 0, "A");
