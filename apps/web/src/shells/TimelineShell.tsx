@@ -17,6 +17,7 @@ import {
   parseLegacyMeter,
   ticksPerBar,
   ticksToBbt,
+  ticksToMs,
   toDisplayBar,
   importUgText,
   projectEndTicks,
@@ -200,12 +201,14 @@ import {
 import {
   contentSnapModeFromModifiers,
   cursorForHitZone,
+  hitTestAudioClipZone,
   hitTestClipZone,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
+  type ClipHitZone,
 } from "../lib/timelineGesture.js";
 import {
   audioTrackIdFromLane,
@@ -2019,18 +2022,34 @@ export function TimelineShell() {
       setClipSelection((prev) => setSelection(prev.items, clip.id));
     }
     const rect = e.currentTarget.getBoundingClientRect();
-    const zone = hitTestClipZone(e.clientX - rect.left, rect.width, true);
+    const zone = hitTestAudioClipZone(
+      e.clientX - rect.left,
+      e.clientY - rect.top,
+      rect.width,
+      rect.height,
+      true,
+      tool === "smart",
+    );
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     const kind =
-      zone === "start" ? "resize-start" : zone === "end" ? "resize-end" : "move";
+      zone === "fade-in"
+        ? "fade-in"
+        : zone === "fade-out"
+          ? "fade-out"
+          : zone === "start"
+            ? "resize-start"
+            : zone === "end"
+              ? "resize-end"
+              : "move";
     const moveIds =
       kind === "move"
         ? inMulti
           ? resolveMoveIds(clipSelection, clip.id, lane)
           : [clip.id]
         : [clip.id];
+    const fullClip = draftProject.audioClips.find((c) => c.id === clip.id);
     const session: FormaGestureSession = {
       kind,
       clipId: clip.id,
@@ -2041,6 +2060,12 @@ export function TimelineShell() {
       lane,
       originClientX: e.clientX,
       moveIds: kind === "move" ? moveIds : undefined,
+      originFadeMs:
+        kind === "fade-in"
+          ? fullClip?.fadeInMs ?? 0
+          : kind === "fade-out"
+            ? fullClip?.fadeOutMs ?? 0
+            : undefined,
     };
     beginFormaGesture(
       session,
@@ -3227,6 +3252,33 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               peaks && peaks.length
                 ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
                 : "";
+            const fadeInMs =
+              previewing &&
+              gesturePreview &&
+              (gesturePreview.kind === "fade-in" ||
+                gesturePreview.kind === "fade-out") &&
+              gesturePreview.clipId === clip.id
+                ? (gesturePreview.fadeInMs ?? clip.fadeInMs ?? 0)
+                : (clip.fadeInMs ?? 0);
+            const fadeOutMs =
+              previewing &&
+              gesturePreview &&
+              (gesturePreview.kind === "fade-in" ||
+                gesturePreview.kind === "fade-out") &&
+              gesturePreview.clipId === clip.id
+                ? (gesturePreview.fadeOutMs ?? clip.fadeOutMs ?? 0)
+                : (clip.fadeOutMs ?? 0);
+            const clipMs = Math.max(
+              1,
+              ticksToMs(
+                styleClip.lengthTicks,
+                resolveTempoAt(draftProject, styleClip.startTicks),
+                resolveMeterAt(draftProject, styleClip.startTicks),
+                draftProject.ppq,
+              ),
+            );
+            const fadeInPct = Math.min(50, (fadeInMs / clipMs) * 100);
+            const fadeOutPct = Math.min(50, (fadeOutMs / clipMs) * 100);
             return (
               <button
                 key={clip.id}
@@ -3240,16 +3292,31 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     ? styles.clipSelected
                     : "",
                   clip.muted ? styles.audioClipMuted : "",
+                  clip.loop ? styles.audioClipLoop : "",
                   previewing ? styles.formaClipDim : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
                 style={style}
-                title={`${asset?.originalName ?? "Audio"} — move/trim`}
+                title={`${asset?.originalName ?? "Audio"} — move/trim; Smart: fade corners`}
                 onPointerDown={(e) => onAudioClipPointerDown(e, lane, clip)}
                 onPointerMove={onFormaClipPointerMove}
                 onPointerUp={onFormaClipPointerUp}
               >
+                {fadeInPct > 0 ? (
+                  <span
+                    className={styles.audioFadeIn}
+                    style={{ width: `${fadeInPct}%` }}
+                    aria-hidden
+                  />
+                ) : null}
+                {fadeOutPct > 0 ? (
+                  <span
+                    className={styles.audioFadeOut}
+                    style={{ width: `${fadeOutPct}%` }}
+                    aria-hidden
+                  />
+                ) : null}
                 {poly ? (
                   <svg
                     className={styles.audioWaveform}
@@ -5600,7 +5667,7 @@ function FormaClipButton({
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
-  const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
+  const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
   const countdown = clip.kind === "countdown";
   const cursor = pencilActive
     ? "crosshair"

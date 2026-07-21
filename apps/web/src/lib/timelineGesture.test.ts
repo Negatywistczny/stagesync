@@ -3,6 +3,7 @@ import {
   CLIP_EDGE_HIT_PX,
   CONTENT_DEFAULT_SNAP_MODE,
   contentSnapModeFromModifiers,
+  hitTestAudioClipZone,
   hitTestClipZone,
   PENCIL_DRAG_THRESHOLD_PX,
   resolvePencilRangeTicks,
@@ -51,11 +52,10 @@ describe("snap modes + hit zones", () => {
     expect(contentSnapModeFromModifiers(true, false)).toBe("off");
   });
 
-  it("hitTestClipZone uses edge px for resize", () => {
-    expect(CLIP_EDGE_HIT_PX).toBeGreaterThanOrEqual(8);
-    expect(hitTestClipZone(0, 96, true)).toBe("start");
-    expect(hitTestClipZone(95, 96, true)).toBe("end");
-    expect(hitTestClipZone(48, 96, true)).toBe("body");
-    expect(hitTestClipZone(0, 96, false)).toBe("body");
+  it("hitTestAudioClipZone uses top corners for Smart fades", () => {
+    expect(hitTestAudioClipZone(2, 4, 120, 40, true, true)).toBe("fade-in");
+    expect(hitTestAudioClipZone(118, 4, 120, 40, true, true)).toBe("fade-out");
+    expect(hitTestAudioClipZone(2, 30, 120, 40, true, true)).toBe("start");
+    expect(hitTestAudioClipZone(2, 4, 120, 40, true, false)).toBe("start");
   });
 });

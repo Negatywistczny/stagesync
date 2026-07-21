@@ -54,7 +54,7 @@ export function resolvePencilRangeTicks(
   };
 }
 
-export type ClipHitZone = "body" | "start" | "end";
+export type ClipHitZone = "body" | "start" | "end" | "fade-in" | "fade-out";
 
 export type FormaToolId =
   | "pointer"
@@ -118,11 +118,36 @@ export function hitTestClipZone(
   return "body";
 }
 
+/**
+ * Audio Smart Tool zones ([ADR 0008] §6): top corners = fade; lower edges = trim.
+ * Pointer tool keeps classic start/end/body (no fade corners).
+ */
+export function hitTestAudioClipZone(
+  localX: number,
+  localY: number,
+  widthPx: number,
+  heightPx: number,
+  allowZones: boolean,
+  smartFades: boolean,
+  edgePx: number = CLIP_EDGE_HIT_PX,
+): ClipHitZone {
+  if (!allowZones || widthPx <= 0) return "body";
+  const edge = Math.min(edgePx, Math.max(1, Math.floor(widthPx / 3)));
+  const topBand = Math.max(8, heightPx * 0.45);
+  if (smartFades && localY <= topBand) {
+    if (localX <= edge) return "fade-in";
+    if (localX >= widthPx - edge) return "fade-out";
+  }
+  return hitTestClipZone(localX, widthPx, true, edgePx);
+}
+
 export type FormaGestureKind =
   | "pencil-draw"
   | "move"
   | "resize-start"
   | "resize-end"
+  | "fade-in"
+  | "fade-out"
   | "countdown-length"
   | "subsection-boundary";
 
@@ -155,6 +180,8 @@ export type FormaGestureSession = {
   moveIds?: string[];
   /** Alt/⌥+drag: copy at drop; originals stay (v4 optionCopy / TE-07). */
   optionCopy?: boolean;
+  /** Fade gesture: fade ms at pointerdown. */
+  originFadeMs?: number;
 };
 
 export type FormaGesturePreview = {
@@ -168,6 +195,9 @@ export type FormaGesturePreview = {
   name?: string;
   /** Live subsection offsets during boundary drag. */
   subsections?: number[];
+  /** Live fade ms while dragging Smart fade handles. */
+  fadeInMs?: number;
+  fadeOutMs?: number;
 };
 
 export function cursorForHitZone(
@@ -175,6 +205,7 @@ export function cursorForHitZone(
   allowZones: boolean,
 ): string {
   if (!allowZones) return "crosshair";
+  if (zone === "fade-in" || zone === "fade-out") return "col-resize";
   if (zone === "start" || zone === "end") return "ew-resize";
   return "grab";
 }
