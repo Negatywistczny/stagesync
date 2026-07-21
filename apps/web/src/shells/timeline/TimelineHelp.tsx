@@ -44,7 +44,7 @@ const SECTIONS: HelpSection[] = [
     title: "Transport i pętla",
     items: [
       "Play / Pause i Stop — pasek transportu.",
-      "Pętla — przeciągnij zakres na linijce taktów, potem włącz przyciskiem.",
+      "Pętla (L) — przeciągnij zakres na linijce taktów, potem włącz przyciskiem.",
       "Metronom — włącz/wyłącz podczas odtwarzania.",
       "Podążaj za wskaźnikiem — podczas Play przewija widok.",
       "Tempo / Metrum / Tonacja na toolbarze — edycja @ playhead; na lane’ach — Pencil / klik segmentu / Scissors.",
@@ -74,7 +74,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       heading: "Transport",
       rows: [
         { keys: "Spacja", action: "Play / Pause" },
-        { keys: "C", action: "Pętla on/off" },
+        { keys: "L", action: "Pętla on/off" },
         { keys: "K", action: "Metronom on/off" },
       ],
     },
@@ -88,6 +88,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
     {
       heading: "Narzędzia",
       rows: [
+        { keys: "C", action: "Scissors" },
         { keys: "W", action: "Różdżka — menu" },
         { keys: "?", action: "Ta pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },
