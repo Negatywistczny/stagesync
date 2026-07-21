@@ -7,6 +7,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+- **Docs / scope β2:** [#41](https://github.com/Negatywistyczny/stagesync/issues/41) Countdown Play/Stop oraz [#42](https://github.com/Negatywistyczny/stagesync/issues/42) Audio lane — **must** w strumieniu `5.0.0-beta.2` (nie defer); [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md).
+
 ### Dodano
 
 - **Desktop OS menu — Faza B + C ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **Plik** (Otwórz ostatnie / Zapisz / Zamknij), **Host** (status, klienci, QR z LAN URL, restart, ustawienia), **Transport** (Play/Stop/prev/next → SSOT serwera). Mostek WebView: `CustomEvent` + dialog QR (`uqr`).
