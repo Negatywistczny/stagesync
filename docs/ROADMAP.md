@@ -16,7 +16,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.9** | Migrator + dokończenie rebuild | **Wydane 2026-07-21** — Migrator M1–M9 ✓; Client CL-01/04/05 ✓; **PO smoke P8 green**; tag `v5.0.0-alpha.9` | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) |
 | **5.0.0-alpha.10** | Standalone desktop (β1 spike) | **Wydane 2026-07-21** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi` standalone | [report-standalone-spike-beta1](./analysis/reports/report-standalone-spike-beta1.md) |
 | **5.0.0-alpha.11** | Desktop shell polish | **Wydane 2026-07-21** — menu OS Widok, shell detect, draft updater pipeline; bramka G1–G10 (G6: α10→α11) | [report-beta-gate](./analysis/reports/report-beta-gate.md) |
-| **5.0.0-beta.1** | Host / dystrybucja | P8 green — start **na prośbę**: Docker + Tauri + host (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
+| **5.0.0-alpha.12** | Desktop OS menu Phase A + shell polish | **Aktywny** — StageSync \| Widok \| Pomoc; fazy B–D w ROADMAP; bramka hosta | [TODO.md](./TODO.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
+| **5.0.0-beta.1** | Host / dystrybucja | Start **na prośbę** po green gate: Docker + Tauri + host (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
@@ -74,7 +75,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - Migrator legacy 4.x → v5 (MVP + fixtures M1–M9)
 - **CL-01 / 04 / 05** Client P0 + **PO smoke P8 green** (zachowanie)
-- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10` / `v5.0.0-alpha.11` desktop — wydane; aktywny etap → **β1** ([TODO.md](./TODO.md))
+- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10` / `v5.0.0-alpha.11` desktop — wydane; aktywny etap → **α12** ([TODO.md](./TODO.md))
 
 ### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja)
 
@@ -99,8 +100,8 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 
 | Faza | Top-level | Enabled (plan) | Etap |
 |------|-----------|----------------|------|
-| **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **β1** (wdrożone) |
-| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | β1 polish |
+| **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (w toku) |
+| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | α12+ / β1 polish |
 | **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** |
 | **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Undo gdy stack; PDF setlisty; archiwum projektu; overlay skrótów; motyw sceniczny | **5.0.0** |
 

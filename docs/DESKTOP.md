@@ -46,6 +46,16 @@ Alternatywy: prawy klik na `.app` → **Otwórz** → **Otwórz**; albo System S
 1. Kliknij **Więcej informacji** w ostrzeżeniu SmartScreen.
 2. Kliknij **Uruchom mimo to**.
 
+### Windows — host nie startuje („port zajęty”)
+
+Komunikat o zajętym porcie `4000` bywał **mylący**: shell czekał na `GET /api/health`, a prawdziwy błąd (crash sidecara Node, `ERR_MODULE_NOT_FOUND`, blokada Defendera) był ignorowany.
+
+Od najnowszego builda:
+- przy awarii hosta UI pokazuje **log sidecara** (nie zakładaj od razu zajętego portu);
+- pierwsze uruchomienie na Windows może potrwać dłużej (skan Defendera) — timeout startu to ~2 min.
+
+Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy `ERR_MODULE_NOT_FOUND` / braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistyczny/stagesync/releases).
+
 ## Aktualizacja desktop shell
 
 Gdy jest dostępna nowa wersja:

@@ -11,6 +11,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop OS menu — Faza A ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **StageSync** | **Widok** | **Pomoc** — O programie / Sprawdź aktualizacje…; Admin·Timeline·Klient (`CmdOrCtrl+1…3`); zakładki Admina (`Alt+1…4`); pełny ekran; docs + Issues. Fazy B–D: [ROADMAP.md](docs/ROADMAP.md).
 
+### Naprawiono
+
+- **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](docs/DESKTOP.md).
+
 ## [5.0.0-alpha.11](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
 > **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.
