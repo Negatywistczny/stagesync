@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CreateProjectBodySchema,
+  StageMessageBodySchema,
   LibrarySchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -153,6 +154,14 @@ describe("PutProjectBodySchema", () => {
     void id;
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
+    ).toThrow();
+  });
+});
+
+describe("StageMessageBodySchema", () => {
+  it("rejects unknown keys", () => {
+    expect(() =>
+      StageMessageBodySchema.parse({ text: "Hi", extra: 1 }),
     ).toThrow();
   });
 });
