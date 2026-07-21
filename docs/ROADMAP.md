@@ -16,8 +16,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.9** | Migrator + dokończenie rebuild | **Wydane 2026-07-21** — Migrator M1–M9 ✓; Client CL-01/04/05 ✓; **PO smoke P8 green**; tag `v5.0.0-alpha.9` | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) |
 | **5.0.0-alpha.10** | Standalone desktop (β1 spike) | **Wydane 2026-07-21** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi` standalone | [report-standalone-spike-beta1](./analysis/reports/report-standalone-spike-beta1.md) |
 | **5.0.0-alpha.11** | Desktop shell polish | **Wydane 2026-07-21** — menu OS Widok, shell detect, draft updater pipeline; bramka G1–G10 (G6: α10→α11) | [report-beta-gate](./analysis/reports/report-beta-gate.md) |
-| **5.0.0-alpha.12** | Desktop OS menu Phase A + shell polish | **Aktywny** — StageSync \| Widok \| Pomoc; fazy B–D w ROADMAP; bramka hosta | [TODO.md](./TODO.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
-| **5.0.0-beta.1** | Host / dystrybucja | Start **na prośbę** po green gate: Docker + Tauri + host (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
+| **5.0.0-alpha.12** | Domknięcie: OS menu Faza A + hotfixy shelła | **Aktywny (domknięcie)** — bez dużych feature’ów; Faza B+ i bramka hosta → β1 | [TODO.md](./TODO.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
+| **5.0.0-beta.1** | Host / dystrybucja | Start **na prośbę** po α12: Docker + Tauri + host; **menu Faza B+**; bramka G1–G10 (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
@@ -75,11 +75,17 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - Migrator legacy 4.x → v5 (MVP + fixtures M1–M9)
 - **CL-01 / 04 / 05** Client P0 + **PO smoke P8 green** (zachowanie)
-- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10` / `v5.0.0-alpha.11` desktop — wydane; aktywny etap → **α12** ([TODO.md](./TODO.md))
+- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10` / `v5.0.0-alpha.11` desktop — wydane; **α12 = domknięcie** (menu Faza A); większe zmiany → **β1** ([TODO.md](./TODO.md))
+
+### Alpha 12 — zakres orientacyjny (domknięcie)
+
+- **Must:** merge + tag Fazy A menu OS (StageSync | Widok | Pomoc); drobne hotfixy shelła / CI już w Unreleased
+- **OUT α12:** menu Faza B+; pełna bramka G1–G10 jako hero; nowe powierzchnie produktu → **β1**
+- Po tagu `v5.0.0-alpha.12`: aktywny etap w TODO = β1 (start kodu na prośbę)
 
 ### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja)
 
-> **P8 green 2026-07-21.** Start β1 / tag `5.0.0-beta.*` — **tylko na prośbę**
+> **P8 green 2026-07-21.** Po domknięciu **α12** — start β1 / tag `5.0.0-beta.*` **tylko na prośbę**
 > ([ADR 0011](./adr/0011-ui-parity-behavior.md),
 > [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md)).
 > Scope: [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md).
@@ -87,12 +93,13 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 > Inventarz `[x]` ≠ parity.
 
 - Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu — **ścieżka drugorzędna** dla rack/server; [INSTALL.md](./INSTALL.md)
-- **Tauri** desktop standalone ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): shell uruchamia wbudowany **Node sidecar** (lokalny host), czeka na health-check i dopiero potem ładuje UI; Win + mac; **bez** autorytetu czasu w shellu
-- Stabilność hosta: shadow backup, OCC (`409`), migracja schematu na volume przy starcie, ESLint ACL shared, API `details` z Zod
-- Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — should, nie bloker hosta
+- **Tauri** desktop standalone ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): shell + Node sidecar; Win + mac; **bez** autorytetu czasu w shellu
+- Stabilność hosta: shadow backup, OCC (`409`), migracja schematu, ESLint ACL, API Zod `details` (bazowo w α10/α11)
+- **Bramka G1–G10** green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — must zamknięcia β1
+- **Desktop OS menu — Faza B** (i dalszy polish menubara bez Audio/MIDI): Plik, Host, Open Recent, Zapisz, status/QR/klienci — § poniżej
+- Doprecyzowanie ADR 0002 (tempo/metrum pre-roll); E2E Forma + transport — should
 - **OUT β1:** audio / MIDI / AD-01…03 / wand / Timeline Help feature / P1 Timeline → β2 lub 5.0.0; Android; store auto-update
 - **Migrator:** α9 (done)
-- **Desktop OS menu** — fazy poniżej (Faza A = StageSync / Widok / Pomoc)
 
 ### Desktop OS menu (natywny menubar Tauri)
 
@@ -100,8 +107,8 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 
 | Faza | Top-level | Enabled (plan) | Etap |
 |------|-----------|----------------|------|
-| **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (w toku) |
-| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | α12+ / β1 polish |
+| **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (domknięcie) |
+| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β1** |
 | **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** |
 | **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Undo gdy stack; PDF setlisty; archiwum projektu; overlay skrótów; motyw sceniczny | **5.0.0** |
 

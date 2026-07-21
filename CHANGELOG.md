@@ -9,7 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Desktop OS menu — Faza A ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **StageSync** | **Widok** | **Pomoc** — O programie / Sprawdź aktualizacje…; Admin·Timeline·Klient (`CmdOrCtrl+1…3`); zakładki Admina (`Alt+1…4`); pełny ekran; docs + Issues. Fazy B–D: [ROADMAP.md](docs/ROADMAP.md).
+- **Desktop OS menu — Faza A ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **StageSync** | **Widok** | **Pomoc** — O programie / Sprawdź aktualizacje…; Admin·Timeline·Klient (`CmdOrCtrl+1…3`); zakładki Admina (`Alt+1…4`); pełny ekran; docs + Issues. Faza B+ → β1 ([ROADMAP.md](docs/ROADMAP.md)).
 
 ### Naprawiono
 
