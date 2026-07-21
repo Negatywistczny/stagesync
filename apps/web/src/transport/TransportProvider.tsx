@@ -24,6 +24,7 @@ import {
   stopTransport,
 } from "./api.js";
 import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
+import { TransportErrorBanner } from "./TransportErrorBanner.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 
 function toAnchor(state: TransportState): TransportAnchor {
@@ -343,6 +344,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   return (
     <TransportContext.Provider value={value}>
+      <TransportErrorBanner />
       {children}
     </TransportContext.Provider>
   );
