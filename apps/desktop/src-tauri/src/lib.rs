@@ -1,12 +1,68 @@
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::Manager;
 use tauri_plugin_shell::process::CommandChild;
 use tauri_plugin_shell::ShellExt;
 use tauri_plugin_updater::UpdaterExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+
+const UI_PORT: u16 = 4000;
+
+#[derive(Clone)]
+struct NavState {
+    timeline_project_id: Arc<Mutex<Option<String>>>,
+}
+
+fn nav_url(path: &str) -> String {
+    format!("http://127.0.0.1:{UI_PORT}{path}")
+}
+
+fn timeline_nav_url(state: &NavState) -> String {
+    let id = state
+        .timeline_project_id
+        .lock()
+        .ok()
+        .and_then(|g| g.clone());
+    match id {
+        Some(id) if !id.is_empty() => nav_url(&format!("/timeline/{id}")),
+        _ => nav_url("/admin"),
+    }
+}
+
+fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::Result<()> {
+    let quit = PredefinedMenuItem::quit(app, Some("Zakończ"))?;
+    let app_submenu = Submenu::with_items(app, "StageSync", true, &[&quit])?;
+
+    let nav_admin = MenuItem::with_id(app, "nav_admin", "Admin", true, None::<&str>)?;
+    let nav_timeline = MenuItem::with_id(app, "nav_timeline", "Timeline", true, None::<&str>)?;
+    let nav_client = MenuItem::with_id(app, "nav_client", "Klient", true, None::<&str>)?;
+    let view_submenu =
+        Submenu::with_items(app, "Widok", true, &[&nav_admin, &nav_timeline, &nav_client])?;
+
+    let menu = Menu::with_items(app, &[&app_submenu, &view_submenu])?;
+    app.set_menu(menu)?;
+
+    let nav_for_events = nav_state;
+    app.on_menu_event(move |app, event| {
+        let Some(window) = app.get_webview_window("main") else {
+            return;
+        };
+        let url = match event.id().0.as_str() {
+            "nav_admin" => nav_url("/admin"),
+            "nav_timeline" => timeline_nav_url(&nav_for_events),
+            "nav_client" => nav_url("/client"),
+            _ => return,
+        };
+        if let Ok(parsed) = url.parse() {
+            let _ = window.navigate(parsed);
+        }
+    });
+
+    Ok(())
+}
 
 fn escape_html(input: &str) -> String {
     input
@@ -61,18 +117,24 @@ async fn check_health(port: u16) -> Result<bool, String> {
 /// No musical clock / MIDI in this process (ADR 0010).
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    const PORT: u16 = 4000;
     const STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
     const HEALTHCHECK_INTERVAL: Duration = Duration::from_millis(250);
 
     let sidecar_child: Arc<Mutex<Option<CommandChild>>> = Arc::new(Mutex::new(None));
     let sidecar_child_setup = sidecar_child.clone();
     let sidecar_child_run = sidecar_child.clone();
+    let nav_state = NavState {
+        timeline_project_id: Arc::new(Mutex::new(None)),
+    };
+    let nav_state_setup = nav_state.clone();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(nav_state)
         .setup(move |app| {
+            let _ = install_desktop_menu(app.handle(), nav_state_setup.clone());
+
             let Some(window) = app.get_webview_window("main") else {
                 return Ok(());
             };
@@ -97,7 +159,7 @@ pub fn run() {
             // Dev fallback: if sidecar resources aren't bundled, keep the old thin-shell flow.
             if !server_entry.exists() {
                 let url = std::env::var("STAGESYNC_URL")
-                    .unwrap_or_else(|_| format!("http://127.0.0.1:{PORT}/admin"));
+                    .unwrap_or_else(|_| nav_url("/admin"));
                 if let Ok(parsed) = url.parse() {
                     let _ = window.navigate(parsed);
                 }
@@ -121,7 +183,7 @@ pub fn run() {
                 .sidecar("stagesync-host")
                 .and_then(|cmd| {
                     cmd.args([server_entry_arg.as_str()])
-                        .env("PORT", PORT.to_string())
+                        .env("PORT", UI_PORT.to_string())
                         .env(
                             "STAGESYNC_STATIC_DIR",
                             static_dir.to_string_lossy().to_string(),
@@ -143,7 +205,7 @@ pub fn run() {
                 })
                 .map_err(|err| {
                     format!(
-                        "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy port {PORT} jest wolny."
+                        "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy port {UI_PORT} jest wolny."
                     )
                 });
 
@@ -164,10 +226,10 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 let deadline = Instant::now() + STARTUP_TIMEOUT;
                 loop {
-                    match check_health(PORT).await {
+                    match check_health(UI_PORT).await {
                         Ok(true) => {
                             // Desktop = okno operatora (ADR 0010) — domyślnie Admin, nie Klient.
-                            let url = format!("http://127.0.0.1:{PORT}/admin");
+                            let url = nav_url("/admin");
                             let _ = window_for_poll.navigate(url.parse().unwrap());
                             return;
                         }
@@ -177,7 +239,7 @@ pub fn run() {
 
                     if Instant::now() >= deadline {
                         let msg = format!(
-                            "StageSync nie wystartował na http://127.0.0.1:{PORT}.\nPort może być zajęty — zamknij inne instancje StageSync."
+                            "StageSync nie wystartował na http://127.0.0.1:{UI_PORT}.\nPort może być zajęty — zamknij inne instancje StageSync."
                         );
                         let err_url =
                             to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
@@ -202,6 +264,7 @@ pub fn run() {
             install_desktop_update,
             open_external_url,
             toggle_window_fullscreen,
+            set_nav_timeline_project_id,
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
@@ -222,6 +285,17 @@ pub struct UpdateInfo {
     pub version: Option<String>,
     pub current: String,
     pub notes: Option<String>,
+}
+
+/// Sync last Timeline project id from web UI (native menu navigation).
+#[tauri::command]
+fn set_nav_timeline_project_id(
+    state: tauri::State<'_, NavState>,
+    project_id: Option<String>,
+) -> Result<(), String> {
+    let mut guard = state.timeline_project_id.lock().map_err(|e| e.to_string())?;
+    *guard = project_id.filter(|id| !id.is_empty());
+    Ok(())
 }
 
 /// Check for a desktop update via tauri-plugin-updater.

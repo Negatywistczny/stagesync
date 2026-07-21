@@ -39,11 +39,15 @@ import {
   ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
-import { ShellModeNav } from "./ShellModeNav.js";
 import { ShellWordmark } from "./ShellWordmark.js";
+import {
+  ShellConfirmDialog,
+  ShellPromptDialog,
+} from "./ShellBlockingDialog.js";
 import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
+import { ShellModeNav } from "./ShellModeNav.js";
 import styles from "./AdminShell.module.css";
 
 type SectionId = "songs" | "set" | "stage" | "host";
@@ -60,18 +64,14 @@ function errMessage(err: unknown): string {
   return "Operacja nie powiodła się";
 }
 
+const ADMIN_SECTIONS = new Set<SectionId>(["songs", "set", "stage", "host"]);
+
 export function AdminShell() {
+  const [searchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<SectionId>(() => {
-    if (typeof window === "undefined") return "songs";
-    return new URLSearchParams(window.location.search).get("section") === "host"
-      ? "host"
-      : "songs";
-  });
-  const desktop = isDesktopShell();
+  const [section, setSection] = useState<SectionId>("songs");
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -85,6 +85,8 @@ export function AdminShell() {
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
   const [hostStatusMsg, setHostStatusMsg] = useState<string | null>(null);
+  const [createPromptOpen, setCreatePromptOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const restart = useDoubleConfirm(async () => {
     setHostStatusMsg("Restart serwera…");
@@ -124,8 +126,9 @@ export function AdminShell() {
     : "z setu";
 
   useEffect(() => {
-    if (searchParams.get("section") === "host") {
-      setSection("host");
+    const sectionParam = searchParams.get("section");
+    if (sectionParam && ADMIN_SECTIONS.has(sectionParam as SectionId)) {
+      setSection(sectionParam as SectionId);
     }
   }, [searchParams]);
 
@@ -222,17 +225,25 @@ export function AdminShell() {
   );
 
   const onCreate = () => {
-    const raw = window.prompt("Nazwa nowego projektu");
-    if (raw === null) return;
+    setCreatePromptOpen(true);
+  };
+
+  const onDelete = () => {
+    if (!selectedId || !selected) return;
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmCreate = (raw: string) => {
+    setCreatePromptOpen(false);
     void runMutation(async () => {
       const created = await createProject(raw);
       await refreshLibrary(created.id);
     });
   };
 
-  const onDelete = () => {
-    if (!selectedId || !selected) return;
-    if (!window.confirm(`Usunąć „${selected.name}”?`)) return;
+  const confirmDelete = () => {
+    if (!selectedId) return;
+    setDeleteConfirmOpen(false);
     void runMutation(async () => {
       await deleteProject(selectedId);
       const data = await fetchLibrary();
@@ -279,7 +290,7 @@ export function AdminShell() {
           </nav>
 
           <div className={styles.chromeAside}>
-            {desktop ? (
+            {isDesktopShell() ? (
               <ShellModeNav
                 active="admin"
                 timelineProjectId={timelineProjectId}
@@ -303,7 +314,7 @@ export function AdminShell() {
             >
               <IconSun />
             </ShellIconButton>
-            {!desktop ? (
+            {!isDesktopShell() ? (
               <>
                 <ShellIconButton
                   label="Ustawienia hosta"
@@ -439,10 +450,27 @@ export function AdminShell() {
           <HostView
             statusMsg={hostStatusMsg}
             onPathPicker={() => setPathPickerOpen(true)}
-            showHeaderOps={desktop}
-            onOpenSettings={() => setSettingsOpen(true)}
-            restart={restart}
-            shutdown={shutdown}
+            onOpenSettings={
+              isDesktopShell() ? () => setSettingsOpen(true) : undefined
+            }
+            hostRestart={
+              isDesktopShell()
+                ? {
+                    label: restart.label,
+                    pending: restart.pending,
+                    onArm: restart.arm,
+                  }
+                : undefined
+            }
+            hostShutdown={
+              isDesktopShell()
+                ? {
+                    label: shutdown.label,
+                    pending: shutdown.pending,
+                    onArm: shutdown.arm,
+                  }
+                : undefined
+            }
           />
         ) : null}
       </main>
@@ -607,6 +635,23 @@ export function AdminShell() {
           </Button>
         </Modal>
       ) : null}
+
+      <ShellPromptDialog
+        open={createPromptOpen}
+        title="Nowy utwór"
+        label="Nazwa projektu"
+        defaultValue="Nowy utwór"
+        onConfirm={confirmCreate}
+        onCancel={() => setCreatePromptOpen(false)}
+      />
+      <ShellConfirmDialog
+        open={deleteConfirmOpen}
+        title="Usuń utwór"
+        message={selected ? `Usunąć „${selected.name}”? Tej operacji nie można cofnąć.` : ""}
+        confirmLabel="Usuń"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </div>
   );
 }
@@ -1018,17 +1063,23 @@ function useDoubleConfirm(action: () => Promise<void>, label: string) {
 function HostView({
   statusMsg,
   onPathPicker,
-  showHeaderOps,
   onOpenSettings,
-  restart,
-  shutdown,
+  hostRestart,
+  hostShutdown,
 }: {
   statusMsg: string | null;
   onPathPicker: () => void;
-  showHeaderOps: boolean;
-  onOpenSettings: () => void;
-  restart: { label: string; pending: boolean; arm: () => void };
-  shutdown: { label: string; pending: boolean; arm: () => void };
+  onOpenSettings?: () => void;
+  hostRestart?: {
+    label: string;
+    pending: boolean;
+    onArm: () => void;
+  };
+  hostShutdown?: {
+    label: string;
+    pending: boolean;
+    onArm: () => void;
+  };
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
@@ -1073,21 +1124,37 @@ function HostView({
 
   return (
     <div className={styles.stack}>
-      {showHeaderOps ? (
+      {hostRestart || hostShutdown || onOpenSettings ? (
         <section className={styles.card} aria-label="Operacje hosta">
           <div className={styles.cardHead}>
             <h2 className={styles.cardTitle}>Operacje hosta</h2>
           </div>
-          <div className={`${styles.cardBody} ${styles.actions}`}>
-            <Button variant="secondary" onClick={onOpenSettings}>
-              Ustawienia hosta
-            </Button>
-            <Button variant="ghost" onClick={restart.arm}>
-              {restart.label}
-            </Button>
-            <Button variant="ghost" onClick={shutdown.arm}>
-              {shutdown.label}
-            </Button>
+          <div className={styles.cardBody}>
+            <div className={styles.actions}>
+              {onOpenSettings ? (
+                <Button variant="ghost" onClick={onOpenSettings}>
+                  Ustawienia hosta
+                </Button>
+              ) : null}
+              {hostRestart ? (
+                <Button
+                  variant="ghost"
+                  selected={hostRestart.pending}
+                  onClick={hostRestart.onArm}
+                >
+                  {hostRestart.label}
+                </Button>
+              ) : null}
+              {hostShutdown ? (
+                <Button
+                  variant="ghost"
+                  selected={hostShutdown.pending}
+                  onClick={hostShutdown.onArm}
+                >
+                  {hostShutdown.label}
+                </Button>
+              ) : null}
+            </div>
           </div>
         </section>
       ) : null}
@@ -1246,6 +1313,8 @@ function UpdatePanel() {
   const [desktopStatus, setDesktopStatus] = useState<DesktopUpdateInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [confirmHostUpdate, setConfirmHostUpdate] = useState(false);
+  const [confirmDesktopUpdate, setConfirmDesktopUpdate] = useState(false);
   const inTauri = isDesktopShell();
 
   const handleCheck = useCallback(async () => {
@@ -1268,7 +1337,6 @@ function UpdatePanel() {
   }, [inTauri]);
 
   const handleApplyHost = useCallback(async () => {
-    if (!confirm("Aktualizacja hosta spowoduje ~30s przerwę połączenia WS. Kontynuować?")) return;
     setApplying(true);
     setError(null);
     try {
@@ -1282,7 +1350,6 @@ function UpdatePanel() {
   }, []);
 
   const handleApplyDesktop = useCallback(async () => {
-    if (!confirm("Aplikacja zostanie zamknięta i zaktualizowana. Kontynuować?")) return;
     setApplying(true);
     setError(null);
     try {
@@ -1313,7 +1380,7 @@ function UpdatePanel() {
             {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
           </span>
           {hostStatus.updateAvailable && (
-            <Button variant="primary" onClick={handleApplyHost} disabled={applying}>
+            <Button variant="primary" onClick={() => setConfirmHostUpdate(true)} disabled={applying}>
               {applying ? "Aktualizuję…" : "Aktualizuj host"}
             </Button>
           )}
@@ -1326,7 +1393,7 @@ function UpdatePanel() {
             {!desktopStatus.available && "(aktualna)"}
           </span>
           {desktopStatus.available && (
-            <Button variant="primary" onClick={handleApplyDesktop} disabled={applying}>
+            <Button variant="primary" onClick={() => setConfirmDesktopUpdate(true)} disabled={applying}>
               {applying ? "Aktualizuję…" : "Aktualizuj aplikację"}
             </Button>
           )}
@@ -1349,6 +1416,28 @@ function UpdatePanel() {
           .
         </p>
       )}
+      <ShellConfirmDialog
+        open={confirmHostUpdate}
+        title="Aktualizacja hosta"
+        message="Aktualizacja hosta spowoduje ~30s przerwę połączenia WS. Kontynuować?"
+        confirmLabel="Aktualizuj"
+        onConfirm={() => {
+          setConfirmHostUpdate(false);
+          void handleApplyHost();
+        }}
+        onCancel={() => setConfirmHostUpdate(false)}
+      />
+      <ShellConfirmDialog
+        open={confirmDesktopUpdate}
+        title="Aktualizacja aplikacji"
+        message="Aplikacja zostanie zamknięta i zaktualizowana. Kontynuować?"
+        confirmLabel="Aktualizuj"
+        onConfirm={() => {
+          setConfirmDesktopUpdate(false);
+          void handleApplyDesktop();
+        }}
+        onCancel={() => setConfirmDesktopUpdate(false)}
+      />
     </div>
   );
 }

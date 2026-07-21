@@ -12,3 +12,8 @@ commands.allow = ["toggle_window_fullscreen"]
 identifier = "allow-open-external-url"
 description = "Open documentation links in the system browser."
 commands.allow = ["open_external_url"]
+
+[[permission]]
+identifier = "allow-nav-timeline-sync"
+description = "Sync last Timeline project id for native menu navigation."
+commands.allow = ["set_nav_timeline_project_id"]

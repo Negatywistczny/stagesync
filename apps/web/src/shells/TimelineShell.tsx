@@ -200,7 +200,8 @@ import {
   setLaneHeightOverride,
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
-import { isDesktopShell, toggleAppFullscreen } from "../lib/desktopBridge.js";
+import { toggleAppFullscreen, isDesktopShell } from "../lib/desktopBridge.js";
+import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -232,8 +233,8 @@ import {
   IconUnchecked,
   IconUndo,
 } from "./icons.js";
-import { ShellModeNav } from "./ShellModeNav.js";
 import { ShellWordmark } from "./ShellWordmark.js";
+import { ShellModeNav } from "./ShellModeNav.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import {
   SettingsPopover,
@@ -396,6 +397,7 @@ export function TimelineShell() {
   const [songMetaOpen, setSongMetaOpen] = useState(false);
   const [tapState, setTapState] = useState(createTapTempoState);
   const [tapBpmHint, setTapBpmHint] = useState<number | null>(null);
+  const [touchAlertOpen, setTouchAlertOpen] = useState(false);
   const metroBeatRef = useRef(0);
   const loopDragRef = useRef<{
     pointerId: number;
@@ -1613,7 +1615,7 @@ export function TimelineShell() {
     lane: ContentLaneId,
   ) {
     if (!gesturePolicy.pencilDraw) {
-      window.alert(TOUCH_FULL_EDIT_MSG);
+      setTouchAlertOpen(true);
       return;
     }
     if (!draftProject) return;
@@ -1788,7 +1790,7 @@ export function TimelineShell() {
       return;
     }
     if (!gesturePolicy.pencilDraw) {
-      window.alert(TOUCH_FULL_EDIT_MSG);
+      setTouchAlertOpen(true);
       return;
     }
     e.preventDefault();
@@ -2601,7 +2603,7 @@ export function TimelineShell() {
 
     if (tool === "scissors" || toolIsPencilDraw(tool)) {
       if (!gesturePolicy.mapEdit) {
-        window.alert(TOUCH_FULL_EDIT_MSG);
+        setTouchAlertOpen(true);
         return;
       }
       const mode = mapSnapMode(e.metaKey, e.ctrlKey);
@@ -4952,6 +4954,13 @@ export function TimelineShell() {
           </div>
         </div>
       ) : null}
+
+      <ShellAlertDialog
+        open={touchAlertOpen}
+        title="Edycja na tym urządzeniu"
+        message={TOUCH_FULL_EDIT_MSG}
+        onClose={() => setTouchAlertOpen(false)}
+      />
     </div>
   );
 }

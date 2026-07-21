@@ -30,6 +30,7 @@ Przyjmujemy **Tauri** jako desktop shell w β1:
    - **Amendement β1:** Tauri updater (`tauri-plugin-updater`) na żądanie z Admin — operator klika „Sprawdź aktualizacje", shell pobiera podpisany bundle (minisign) i restartuje się. **Bez** auto-poll w tle i bez sklepów OS.
    - Auto-update w tle / sklepy = OUT β1 (β2+).
 4. **Android** — OUT β1 (PWA / Capacitor później).
+5. **Nawigacja desktop (amendement):** w shellu Tauri jeden poziom **Admin | Timeline | Klient** (`ShellModeNav`, tylko `isDesktopShell()`); sekcje Admin (Utwory / Set / Scena / Host) pozostają drugim rzędem. Przeglądarka / Docker — bez zmian (`appJump`). Natywne menu OS: minimalne **StageSync** (Zakończ) + **Widok** (Admin / Timeline / Klient); operacje hosta (restart / wyłącz / ustawienia) tylko w zakładce **Host**, nie w headerze desktop.
 
 ## Konsekwencje
 

@@ -150,6 +150,14 @@ export async function toggleAppFullscreen(): Promise<void> {
   }
 }
 
+/** Sync last Timeline project id to the native menu (desktop only). */
+export function syncNavTimelineProjectId(projectId: string | null): Promise<void> {
+  if (!isDesktopShell()) return Promise.resolve();
+  return tauriInvoke<void>("set_nav_timeline_project_id", {
+    projectId,
+  });
+}
+
 /** Open a URL in the system browser (Tauri) or a new tab (web). */
 export function openExternalUrl(url: string): Promise<void> {
   if (isDesktopShell()) {

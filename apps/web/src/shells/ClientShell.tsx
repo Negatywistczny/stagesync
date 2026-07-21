@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { isDesktopShell, toggleAppFullscreen } from "../lib/desktopBridge.js";
+import { toggleAppFullscreen, isDesktopShell } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
 import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
 import {
@@ -29,8 +29,8 @@ import {
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
-import { ShellModeNav } from "./ShellModeNav.js";
 import { ShellWordmark } from "./ShellWordmark.js";
+import { ShellModeNav } from "./ShellModeNav.js";
 import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
@@ -171,7 +171,7 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
-    timelineProjectId: state.activeProjectId,
+    timelineProjectId: state.activeProjectId ?? null,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -502,7 +502,10 @@ function ClientHeader({
 
       <div className={styles.headerActions}>
         {isDesktopShell() ? (
-          <ShellModeNav active="client" timelineProjectId={timelineProjectId} />
+          <ShellModeNav
+            active="client"
+            timelineProjectId={timelineProjectId}
+          />
         ) : null}
         <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
         <SettingsPopoverAnchor>

@@ -7,6 +7,7 @@ import {
   uploadProjectAudio,
 } from "../../lib/projectAssetsApi.js";
 import styles from "../AdminShell.module.css";
+import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -26,6 +27,7 @@ export function ProjectFilesPanel({
   const [assets, setAssets] = useState<ProjectAsset[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const reload = useCallback(async (id: string) => {
@@ -69,9 +71,15 @@ export function ProjectFilesPanel({
     }
   };
 
-  const onDelete = async (assetId: string) => {
+  const onDelete = (assetId: string) => {
     if (!projectId || busy || locked) return;
-    if (!window.confirm("Usunąć plik z projektu?")) return;
+    setDeleteAssetId(assetId);
+  };
+
+  const confirmDelete = async () => {
+    if (!projectId || !deleteAssetId || busy || locked) return;
+    const assetId = deleteAssetId;
+    setDeleteAssetId(null);
     setBusy(true);
     setError(null);
     try {
@@ -112,7 +120,7 @@ export function ProjectFilesPanel({
               <Button
                 variant="ghost"
                 disabled={busy || locked}
-                onClick={() => void onDelete(a.id)}
+                onClick={() => onDelete(a.id)}
               >
                 Usuń
               </Button>
@@ -137,6 +145,14 @@ export function ProjectFilesPanel({
           Import audio / MusicXML…
         </Button>
       </div>
+      <ShellConfirmDialog
+        open={deleteAssetId != null}
+        title="Usuń plik"
+        message="Usunąć plik z projektu?"
+        confirmLabel="Usuń"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteAssetId(null)}
+      />
     </div>
   );
 }

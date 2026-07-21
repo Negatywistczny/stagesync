@@ -22,6 +22,7 @@
     "core:window:allow-unmaximize",
     "allow-toggle-window-fullscreen",
     "allow-open-external-url",
+    "allow-nav-timeline-sync",
     "allow-desktop-update",
     "shell:allow-kill",
     {
