@@ -47,6 +47,7 @@ export {
   BatchMidiPcBodySchema,
   UpdateProjectBodySchema,
   HealthResponseSchema,
+  ApiErrorDetailSchema,
   ApiErrorSchema,
   StageMessageBodySchema,
   TekstClipSchema,
@@ -79,8 +80,13 @@ export {
   type BatchMidiPcBody,
   type UpdateProjectBody,
   type HealthResponse,
+  type ApiErrorDetail,
   type ApiError,
   type StageMessageBody,
+  UpdateStatusSchema,
+  ApplyUpdateBodySchema,
+  type UpdateStatus,
+  type ApplyUpdateBody,
 } from "./schema.js";
 
 export {

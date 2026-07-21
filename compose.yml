@@ -1,0 +1,20 @@
+# StageSync v5 — scene host (ADR 0004)
+# Usage: docker compose up --build -d
+# Data persists in ./data on the host.
+
+services:
+  stagesync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stagesync:local
+    ports:
+      - "${PORT:-4000}:4000"
+    environment:
+      PORT: "4000"
+      STAGESYNC_DATA_DIR: /app/data
+      STAGESYNC_STATIC_DIR: /app/web
+      npm_package_version: ${STAGESYNC_VERSION:-5.0.0-alpha.9}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

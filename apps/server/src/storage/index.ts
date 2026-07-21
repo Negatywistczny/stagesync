@@ -28,6 +28,7 @@ import {
   type Setlist,
 } from "@stagesync/shared";
 import { writeJsonAtomic } from "./atomic-write.js";
+import { shadowBackup } from "./shadow-backup.js";
 import {
   type DataPaths,
   assertSafeProjectId,
@@ -52,6 +53,14 @@ export class NotFoundError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "NotFoundError";
+  }
+}
+
+/** OCC conflict — client's base `updatedAt` does not match disk. */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
   }
 }
 
@@ -206,6 +215,18 @@ export function createStores(dataDir?: string) {
     await writeJsonAtomic(paths.setlistFile, SetlistSchema.parse(setlist));
   }
 
+  async function readProjectRaw(id: string): Promise<unknown> {
+    const safeId = assertSafeProjectId(paths, id);
+    try {
+      return await readJsonFile(projectFile(paths, safeId));
+    } catch (err) {
+      if (errCode(err) === "ENOENT") {
+        throw new NotFoundError(`Project not found: ${safeId}`);
+      }
+      throw new StorageError(`Failed to read project ${safeId}`, err);
+    }
+  }
+
   async function readProject(id: string): Promise<Project> {
     const safeId = assertSafeProjectId(paths, id);
     try {
@@ -229,6 +250,12 @@ export function createStores(dataDir?: string) {
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
   }
 
+  function needsSchemaRewrite(raw: unknown): boolean {
+    if (raw === null || typeof raw !== "object") return true;
+    const fv = (raw as { formatVersion?: unknown }).formatVersion;
+    return fv !== 5;
+  }
+
   return {
     paths,
 
@@ -238,6 +265,40 @@ export function createStores(dataDir?: string) {
 
     async getSetlist(): Promise<Setlist> {
       return withLibraryLock(() => readSetlist());
+    },
+
+    /**
+     * Upgrade on-disk project to v5 when `formatVersion !== 5`.
+     * Shadow-backs up before overwrite. Returns true if rewritten.
+     */
+    async migrateProjectOnDisk(
+      id: string,
+      opts?: { onBackup?: (bakPath: string) => void },
+    ): Promise<boolean> {
+      return withLibraryLock(async () => {
+        const safeId = assertSafeProjectId(paths, id);
+        const file = projectFile(paths, safeId);
+        const raw = await readProjectRaw(safeId);
+        if (!needsSchemaRewrite(raw)) {
+          // Validate shape on boot; leave v5 files untouched.
+          upgradeToV5(raw);
+          return false;
+        }
+        const upgraded = upgradeToV5(raw);
+        const bak = await shadowBackup(file, "schema");
+        if (bak) opts?.onBackup?.(bak);
+        await writeProject(upgraded);
+        const library = await ensureLibrary();
+        const entryIdx = library.projects.findIndex((p) => p.id === safeId);
+        const entry = libraryEntryFromProject(upgraded);
+        if (entryIdx >= 0) {
+          library.projects[entryIdx] = entry;
+        } else {
+          library.projects.push(entry);
+        }
+        await saveLibrary(library);
+        return true;
+      });
     },
 
     async putSetlist(body: {
@@ -331,6 +392,11 @@ export function createStores(dataDir?: string) {
       return withLibraryLock(async () => {
         const safeId = assertSafeProjectId(paths, id);
         const existing = await readProject(safeId);
+        if (body.updatedAt !== existing.updatedAt) {
+          throw new ConflictError(
+            `Project ${safeId} was modified (stale updatedAt)`,
+          );
+        }
         const updatedAt = new Date().toISOString();
         const next = ProjectSchemaV5.parse({
           ...body,

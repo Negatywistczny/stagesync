@@ -326,9 +326,12 @@ export type Project = ProjectV5;
 /** Canonical project schema (v5). */
 export const ProjectSchema = ProjectSchemaV5;
 
+/**
+ * Full-document PUT. `updatedAt` is the client's known version (OCC token);
+ * server compares to disk and returns 409 on mismatch, then assigns a new stamp.
+ */
 export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
   id: true,
-  updatedAt: true,
 }).strict();
 
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
@@ -365,9 +368,18 @@ export const HealthResponseSchema = z.object({
 
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
+export const ApiErrorDetailSchema = z.object({
+  path: z.string(),
+  message: z.string(),
+  code: z.string().optional(),
+});
+
+export type ApiErrorDetail = z.infer<typeof ApiErrorDetailSchema>;
+
 export const ApiErrorSchema = z.object({
   ok: z.literal(false),
   error: z.string(),
+  details: z.array(ApiErrorDetailSchema).optional(),
 });
 
 export type ApiError = z.infer<typeof ApiErrorSchema>;
@@ -379,3 +391,21 @@ export const StageMessageBodySchema = z.object({
 });
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
+
+/** GET /api/system/update-status response */
+export const UpdateStatusSchema = z.object({
+  current: z.string(),
+  latest: z.string().nullable(),
+  updateAvailable: z.boolean(),
+  /** null when STAGESYNC_GITHUB_TOKEN not configured or network unreachable */
+  error: z.string().nullable().optional(),
+});
+
+export type UpdateStatus = z.infer<typeof UpdateStatusSchema>;
+
+/** POST /api/system/apply-update body */
+export const ApplyUpdateBodySchema = z.object({
+  target: z.enum(["host"]),
+});
+
+export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;

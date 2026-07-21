@@ -1,0 +1,53 @@
+# StageSync v5 — production host (ADR 0004 amendement β1)
+# Usage: docker compose -f compose.prod.yml up -d
+#
+# Prerequisites:
+#   docker login ghcr.io   # PAT with read:packages scope
+#   cp .env.example .env   # set STAGESYNC_VERSION, WATCHTOWER_TOKEN, GHCR_TOKEN
+#
+# Update host via Admin → Sprawdź aktualizacje → Aktualizuj host
+# (Watchtower HTTP-only; no auto-poll in background)
+#
+# Rollback: change STAGESYNC_VERSION to previous tag + docker compose -f compose.prod.yml up -d
+
+services:
+  stagesync:
+    image: ghcr.io/negatywistczny/stagesync:${STAGESYNC_VERSION}
+    ports:
+      - "${PORT:-4000}:4000"
+    environment:
+      PORT: "4000"
+      STAGESYNC_DATA_DIR: /app/data
+      STAGESYNC_STATIC_DIR: /app/web
+      npm_package_version: ${STAGESYNC_VERSION}
+      # Watchtower integration (update on demand from Admin)
+      STAGESYNC_UPDATER_URL: "http://watchtower:8080"
+      STAGESYNC_UPDATER_TOKEN: ${WATCHTOWER_TOKEN}
+      # GitHub Releases API (update-status endpoint)
+      STAGESYNC_GITHUB_TOKEN: ${STAGESYNC_GITHUB_TOKEN:-}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - stagesync
+
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_HTTP_API_UPDATE: "true"
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_TOKEN}
+      # No background polling — update only on HTTP request from Admin
+      WATCHTOWER_POLL_INTERVAL: "0"
+      WATCHTOWER_CLEANUP: "true"
+      REPO_USER: ${GHCR_USER}
+      REPO_PASS: ${GHCR_TOKEN}
+    networks:
+      - stagesync
+    restart: unless-stopped
+
+networks:
+  stagesync:

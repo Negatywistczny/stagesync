@@ -138,19 +138,19 @@ describe("CreateProjectBodySchema", () => {
 });
 
 describe("PutProjectBodySchema", () => {
-  it("parses full v5 body without id/updatedAt", () => {
+  it("parses full v5 body without id (keeps updatedAt for OCC)", () => {
     const full = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    const { id, updatedAt, ...body } = full;
+    const { id, ...body } = full;
     void id;
-    void updatedAt;
-    expect(PutProjectBodySchema.parse(body).name).toBe("Song");
+    const parsed = PutProjectBodySchema.parse(body);
+    expect(parsed.name).toBe("Song");
+    expect(parsed.updatedAt).toBe("2026-07-19T12:00:00.000Z");
   });
 
   it("rejects unknown keys", () => {
     const full = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    const { id, updatedAt, ...body } = full;
+    const { id, ...body } = full;
     void id;
-    void updatedAt;
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
     ).toThrow();
