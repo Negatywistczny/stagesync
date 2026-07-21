@@ -1,0 +1,19 @@
+{
+  "name": "@stagesync/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StageSync Tauri thin shell — WebView to local server (ADR 0010)",
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "node -e \"console.log('@stagesync/desktop: skip turbo build — use pnpm tauri build')\"",
+    "tauri": "tauri",
+    "tauri:build": "tauri build",
+    "check-types": "node -e \"process.exit(0)\"",
+    "lint": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\""
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0"
+  }
+}
