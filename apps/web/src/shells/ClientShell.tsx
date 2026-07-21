@@ -67,6 +67,7 @@ export function ClientShell() {
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
+  const [vocalTapError, setVocalTapError] = useState<string | null>(null);
   const [cueVisible, setCueVisible] = useState(false);
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
@@ -364,7 +365,13 @@ export function ClientShell() {
                   </p>
                 )
               ) : id === "karaoke" ? (
-                <KaraokePane
+                <>
+                  {vocalTapError ? (
+                    <p className={styles.error} role="alert">
+                      {vocalTapError}
+                    </p>
+                  ) : null}
+                  <KaraokePane
                   project={activeProject}
                   displayTicks={displayTicks}
                   loading={projectLoading}
@@ -379,6 +386,7 @@ export function ClientShell() {
                       setVocalTapOn(false);
                       return;
                     }
+                    setVocalTapError(null);
                     const next = applyVocalTap(
                       activeProject,
                       clip.id,
@@ -395,9 +403,17 @@ export function ClientShell() {
                           setVocalTapIndex(qi);
                         }
                       })
-                      .catch(() => undefined);
+                      .catch((err) => {
+                        setActiveProject(activeProject);
+                        setVocalTapError(
+                          err instanceof Error
+                            ? err.message
+                            : "Zapis tap nieudany (konflikt?)",
+                        );
+                      });
                   }}
                 />
+                </>
               ) : id === "grid" ? (
                 <GridPane
                   project={activeProject}
