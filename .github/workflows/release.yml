@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to build (e.g. 5.0.0-alpha.11) — no git commit"
+        description: "Version to build (e.g. 5.0.0-alpha.12) — no git commit"
         required: true
-        default: "5.0.0-alpha.11"
+        default: "5.0.0-alpha.12"
       publish:
         description: "Create/publish GitHub Release (false = build artifacts only)"
         type: boolean
