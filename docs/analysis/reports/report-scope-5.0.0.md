@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:48 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:50 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -186,65 +186,89 @@ flowchart LR
 |---|--------|-----|
 | [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) | A→E musts | merge order: #53→#54; #57→#58 |
 
-### Wave 2+ feature / fix PRs (#64–#99)
+### Wave 2+ open PRs (CI ~00:50)
 
-| # | Temat | URL | CI (~00:34) |
-|---|--------|-----|-------------|
-| [#64](https://github.com/Negatywistyczny/stagesync/pull/64)–[#83](https://github.com/Negatywistyczny/stagesync/pull/83) | Earlier wave-2 (fade, ADR0002, crossfade, smoke, touch, keys, soft-clock, locks, OCC, auto-advance, Admin honesty, scissors, Client tokens, create order, REST time, Kotwice, scrub CD, health ver, inspector collapse, lifecycle guard) | see GitHub | green |
-| [#84](https://github.com/Negatywistyczny/stagesync/pull/84) | Help lane no status rainbow | https://github.com/Negatywistyczny/stagesync/pull/84 | no-checks (base [#63](https://github.com/Negatywistyczny/stagesync/pull/63)) |
-| [#85](https://github.com/Negatywistyczny/stagesync/pull/85)–[#89](https://github.com/Negatywistyczny/stagesync/pull/89) | PUT clips / transport guard / meter Zod / unique split ids / MIDI seek SPP | https://github.com/Negatywistyczny/stagesync/pull/85 | green |
-| [#90](https://github.com/Negatywistyczny/stagesync/pull/90) | Client `--ss-text-stage-*` tokens | https://github.com/Negatywistyczny/stagesync/pull/90 | green |
-| [#91](https://github.com/Negatywistyczny/stagesync/pull/91) | `placeClipNoOverlap` rejects Countdown overlap | https://github.com/Negatywistyczny/stagesync/pull/91 | green |
-| [#92](https://github.com/Negatywistyczny/stagesync/pull/92) | Honest Help for hidden wand + `[`/`]` copy | https://github.com/Negatywistyczny/stagesync/pull/92 | green |
-| [#93](https://github.com/Negatywistyczny/stagesync/pull/93) | BPM Zod clamp 20…400 | https://github.com/Negatywistyczny/stagesync/pull/93 | pending |
-| [#94](https://github.com/Negatywistyczny/stagesync/pull/94) | Atomic write unique temp nonce | https://github.com/Negatywistyczny/stagesync/pull/94 | pending |
-| [#95](https://github.com/Negatywistyczny/stagesync/pull/95) | Admin Folder danych readout (`dataDir` on `/network`) | https://github.com/Negatywistyczny/stagesync/pull/95 | pending |
-| [#96](https://github.com/Negatywistyczny/stagesync/pull/96) | Library/Setlist `.strict()` | https://github.com/Negatywistyczny/stagesync/pull/96 | pending |
-| [#97](https://github.com/Negatywistyczny/stagesync/pull/97) | Audio inspector PL labels | https://github.com/Negatywistyczny/stagesync/pull/97 | pending |
-| [#98](https://github.com/Negatywistyczny/stagesync/pull/98) | Meter-map-aware ticks↔BBT (Timeline display) | https://github.com/Negatywistyczny/stagesync/pull/98 | fix pushed (was TDZ red) |
-| [#99](https://github.com/Negatywistyczny/stagesync/pull/99) | Aktywny set live persist | https://github.com/Negatywistyczny/stagesync/pull/99 | pending |
-| [#100](https://github.com/Negatywistyczny/stagesync/pull/100) | Meter-map bar snap (Kotwice); base #98 | https://github.com/Negatywistyczny/stagesync/pull/100 | stacked/#98 |
-| [#101](https://github.com/Negatywistyczny/stagesync/pull/101) | Audio lane clipboard C/V/D | https://github.com/Negatywistyczny/stagesync/pull/101 | pending |
-| [#102](https://github.com/Negatywistyczny/stagesync/pull/102) | Restore wand + selection scope | https://github.com/Negatywistyczny/stagesync/pull/102 | pending |
-| [#103](https://github.com/Negatywistyczny/stagesync/pull/103) | loadProject → Countdown home | https://github.com/Negatywistyczny/stagesync/pull/103 | pending |
-| [#104](https://github.com/Negatywistyczny/stagesync/pull/104) | Client cue hide on role mismatch | https://github.com/Negatywistyczny/stagesync/pull/104 | pending |
-| [#105](https://github.com/Negatywistyczny/stagesync/pull/105) | CreateProjectBody trim/strict | https://github.com/Negatywistyczny/stagesync/pull/105 | pending |
-| [#106](https://github.com/Negatywistyczny/stagesync/pull/106) | Desktop Host→Ustawienia modal | https://github.com/Negatywistyczny/stagesync/pull/106 | pending |
-| [#107](https://github.com/Negatywistyczny/stagesync/pull/107) | StageMessageBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/107 | pending |
-| [#108](https://github.com/Negatywistyczny/stagesync/pull/108) | Zod-validate WS client_hello | https://github.com/Negatywistyczny/stagesync/pull/108 | pending |
-| [#110](https://github.com/Negatywistyczny/stagesync/pull/110) | Setlist write bodies strict | https://github.com/Negatywistyczny/stagesync/pull/110 | pending |
-| [#111](https://github.com/Negatywistyczny/stagesync/pull/111) | BatchMidiPcBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/111 | pending |
-| [#112](https://github.com/Negatywistyczny/stagesync/pull/112) | ApplyUpdateBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/112 | pending |
-| [#113](https://github.com/Negatywistyczny/stagesync/pull/113) | HealthResponseSchema.strict | https://github.com/Negatywistyczny/stagesync/pull/113 | pending |
-| [#110](https://github.com/Negatywistyczny/stagesync/pull/110) | Setlist write bodies strict | https://github.com/Negatywistyczny/stagesync/pull/110 | pending |
+| # | Temat | URL | CI | base |
+|---|--------|-----|----|------|
+| [#64](https://github.com/Negatywistczny/stagesync/pull/64) | feat(web): add smart-tool audio fade handles on timeline | https://github.com/Negatywistczny/stagesync/pull/64 | green | `main` |
+| [#65](https://github.com/Negatywistczny/stagesync/pull/65) | docs(adr): clarify tempo and meter resolution during pre-roll | https://github.com/Negatywistczny/stagesync/pull/65 | green | `main` |
+| [#66](https://github.com/Negatywistczny/stagesync/pull/66) | feat(audio): abut crossfade helper and inspector action | https://github.com/Negatywistczny/stagesync/pull/66 | green | `main` |
+| [#67](https://github.com/Negatywistczny/stagesync/pull/67) | test(server): smoke Forma put + seek + transport | https://github.com/Negatywistczny/stagesync/pull/67 | green | `main` |
+| [#68](https://github.com/Negatywistczny/stagesync/pull/68) | fix(ui): touch targets 36/44 via density tokens | https://github.com/Negatywistczny/stagesync/pull/68 | green | `main` |
+| [#69](https://github.com/Negatywistczny/stagesync/pull/69) | fix(web): wire [ / ] setlist navigation keys | https://github.com/Negatywistczny/stagesync/pull/69 | green | `main` |
+| [#70](https://github.com/Negatywistczny/stagesync/pull/70) | fix(shared): soft-clock loop wrap between ticks | https://github.com/Negatywistczny/stagesync/pull/70 | green | `main` |
+| [#71](https://github.com/Negatywistczny/stagesync/pull/71) | fix(server): lock getLibrary cold seed path | https://github.com/Negatywistczny/stagesync/pull/71 | green | `main` |
+| [#72](https://github.com/Negatywistczny/stagesync/pull/72) | fix(web): clearer OCC 409 save conflict message | https://github.com/Negatywistczny/stagesync/pull/72 | green | `main` |
+| [#73](https://github.com/Negatywistczny/stagesync/pull/73) | feat(server): setlist auto-advance at song end | https://github.com/Negatywistczny/stagesync/pull/73 | green | `main` |
+| [#74](https://github.com/Negatywistczny/stagesync/pull/74) | fix(admin): honest Partytura link and backup copy | https://github.com/Negatywistczny/stagesync/pull/74 | green | `main` |
+| [#75](https://github.com/Negatywistczny/stagesync/pull/75) | fix(web): Forma scissors split under pointer on lane | https://github.com/Negatywistczny/stagesync/pull/75 | green | `main` |
+| [#76](https://github.com/Negatywistczny/stagesync/pull/76) | fix(web): ClientShell font-weight and pill token hygiene | https://github.com/Negatywistczny/stagesync/pull/76 | green | `main` |
+| [#77](https://github.com/Negatywistczny/stagesync/pull/77) | fix(server): write project file before library on create | https://github.com/Negatywistczny/stagesync/pull/77 | green | `main` |
+| [#78](https://github.com/Negatywistczny/stagesync/pull/78) | fix(transport): REST responses include serverTimeMs | https://github.com/Negatywistczny/stagesync/pull/78 | green | `main` |
+| [#79](https://github.com/Negatywistczny/stagesync/pull/79) | fix(web): Kotwice bar↔ticks walks meter map | https://github.com/Negatywistczny/stagesync/pull/79 | green | `main` |
+| [#80](https://github.com/Negatywistczny/stagesync/pull/80) | fix(server): scrub countdown digits on project write | https://github.com/Negatywistczny/stagesync/pull/80 | green | `main` |
+| [#81](https://github.com/Negatywistczny/stagesync/pull/81) | fix(server): health version ignores workspace 0.0.0 | https://github.com/Negatywistczny/stagesync/pull/81 | green | `main` |
+| [#82](https://github.com/Negatywistczny/stagesync/pull/82) | feat(admin): collapse Utwory inspector panel | https://github.com/Negatywistczny/stagesync/pull/82 | green | `main` |
+| [#83](https://github.com/Negatywistczny/stagesync/pull/83) | feat(server): guard LAN restart/shutdown endpoints | https://github.com/Negatywistczny/stagesync/pull/83 | green | `main` |
+| [#84](https://github.com/Negatywistczny/stagesync/pull/84) | fix(web): help lane chips without status rainbow | https://github.com/Negatywistczny/stagesync/pull/84 | no-checks | `feat/timeline-help-visual` |
+| [#85](https://github.com/Negatywistczny/stagesync/pull/85) | fix(server): PUT must not resurrect deleted audio clips | https://github.com/Negatywistczny/stagesync/pull/85 | green | `main` |
+| [#86](https://github.com/Negatywistczny/stagesync/pull/86) | fix(web): guard overlapping transport commands | https://github.com/Negatywistczny/stagesync/pull/86 | green | `main` |
+| [#87](https://github.com/Negatywistczny/stagesync/pull/87) | fix(shared): reject invalid meters like 4/7 at Zod edge | https://github.com/Negatywistczny/stagesync/pull/87 | green | `main` |
+| [#88](https://github.com/Negatywistczny/stagesync/pull/88) | fix(shared): unique clip ids for split remnants | https://github.com/Negatywistczny/stagesync/pull/88 | green | `main` |
+| [#89](https://github.com/Negatywistczny/stagesync/pull/89) | fix(midi): SPP + Continue on seek while playing | https://github.com/Negatywistczny/stagesync/pull/89 | green | `main` |
+| [#90](https://github.com/Negatywistczny/stagesync/pull/90) | fix(ui): add client stage typography tokens | https://github.com/Negatywistczny/stagesync/pull/90 | green | `main` |
+| [#91](https://github.com/Negatywistczny/stagesync/pull/91) | fix(shared): reject placeClipNoOverlap into Countdown | https://github.com/Negatywistczny/stagesync/pull/91 | green | `main` |
+| [#92](https://github.com/Negatywistczny/stagesync/pull/92) | fix(web): honest Timeline Help for hidden wand | https://github.com/Negatywistczny/stagesync/pull/92 | green | `main` |
+| [#93](https://github.com/Negatywistczny/stagesync/pull/93) | fix(shared): clamp BPM to 20–400 at Zod edge | https://github.com/Negatywistczny/stagesync/pull/93 | green | `main` |
+| [#94](https://github.com/Negatywistczny/stagesync/pull/94) | fix(server): unique temp names for atomic JSON writes | https://github.com/Negatywistczny/stagesync/pull/94 | green | `main` |
+| [#95](https://github.com/Negatywistczny/stagesync/pull/95) | fix(admin): replace path picker stub with data-dir readout | https://github.com/Negatywistczny/stagesync/pull/95 | green | `main` |
+| [#96](https://github.com/Negatywistczny/stagesync/pull/96) | fix(shared): make Library and Setlist schemas strict | https://github.com/Negatywistczny/stagesync/pull/96 | green | `main` |
+| [#97](https://github.com/Negatywistczny/stagesync/pull/97) | fix(web): polish audio inspector control labels | https://github.com/Negatywistczny/stagesync/pull/97 | green | `main` |
+| [#98](https://github.com/Negatywistczny/stagesync/pull/98) | fix(shared): meter-map-aware ticks↔BBT for Timeline | https://github.com/Negatywistczny/stagesync/pull/98 | green | `main` |
+| [#99](https://github.com/Negatywistczny/stagesync/pull/99) | fix(admin): persist Aktywny set immediately like auto-advance | https://github.com/Negatywistczny/stagesync/pull/99 | green | `main` |
+| [#100](https://github.com/Negatywistczny/stagesync/pull/100) | fix(shared): meter-map-aware bar snap for Kotwice | https://github.com/Negatywistczny/stagesync/pull/100 | no-checks | `fix/meter-map-bbt` |
+| [#101](https://github.com/Negatywistczny/stagesync/pull/101) | feat(web): enable audio lane clipboard copy/paste | https://github.com/Negatywistczny/stagesync/pull/101 | green | `main` |
+| [#102](https://github.com/Negatywistczny/stagesync/pull/102) | feat(web): restore Timeline wand with selection scope | https://github.com/Negatywistczny/stagesync/pull/102 | green | `main` |
+| [#103](https://github.com/Negatywistczny/stagesync/pull/103) | fix(transport): seek loadProject to Countdown home | https://github.com/Negatywistczny/stagesync/pull/103 | green | `main` |
+| [#104](https://github.com/Negatywistczny/stagesync/pull/104) | fix(client): hide stage cue when roles do not match | https://github.com/Negatywistczny/stagesync/pull/104 | green | `main` |
+| [#105](https://github.com/Negatywistczny/stagesync/pull/105) | fix(shared): tighten CreateProjectBodySchema | https://github.com/Negatywistczny/stagesync/pull/105 | green | `main` |
+| [#106](https://github.com/Negatywistczny/stagesync/pull/106) | fix(desktop): open host settings modal from native menu | https://github.com/Negatywistczny/stagesync/pull/106 | green | `main` |
+| [#107](https://github.com/Negatywistczny/stagesync/pull/107) | fix(shared): make StageMessageBodySchema strict | https://github.com/Negatywistczny/stagesync/pull/107 | green | `main` |
+| [#108](https://github.com/Negatywistczny/stagesync/pull/108) | fix(server): zod-validate ws client_hello | https://github.com/Negatywistczny/stagesync/pull/108 | green | `main` |
+| [#109](https://github.com/Negatywistczny/stagesync/pull/109) | fix(admin): wire Plik→Zapisz to dirty setlist | https://github.com/Negatywistczny/stagesync/pull/109 | green | `main` |
+| [#110](https://github.com/Negatywistczny/stagesync/pull/110) | fix(shared): make setlist write body schemas strict | https://github.com/Negatywistczny/stagesync/pull/110 | green | `main` |
+| [#111](https://github.com/Negatywistczny/stagesync/pull/111) | fix(shared): make BatchMidiPcBodySchema strict | https://github.com/Negatywistczny/stagesync/pull/111 | pending | `main` |
+| [#112](https://github.com/Negatywistczny/stagesync/pull/112) | fix(shared): make ApplyUpdateBodySchema strict | https://github.com/Negatywistczny/stagesync/pull/112 | pending | `main` |
+| [#113](https://github.com/Negatywistczny/stagesync/pull/113) | fix(shared): make HealthResponseSchema strict | https://github.com/Negatywistczny/stagesync/pull/113 | pending | `main` |
+| [#114](https://github.com/Negatywistczny/stagesync/pull/114) | fix(shared): make MIDI host status schemas strict | https://github.com/Negatywistczny/stagesync/pull/114 | pending | `main` |
 
 ### Parallel (other agents)
 
-| # | Temat | Note |
-|---|--------|------|
-| [#50](https://github.com/Negatywistyczny/stagesync/pull/50)–[#52](https://github.com/Negatywistyczny/stagesync/pull/52) | fullscreen / docs | green |
-| [#61](https://github.com/Negatywistyczny/stagesync/pull/61) | ruler lanes | green |
-| [#62](https://github.com/Negatywistyczny/stagesync/pull/62) | Cmd/Ctrl+C | green |
-| [#63](https://github.com/Negatywistyczny/stagesync/pull/63) | visual Timeline help | merge with [#84](https://github.com/Negatywistyczny/stagesync/pull/84) for ADR 0011 |
+| # | Note |
+|---|------|
+| [#50](https://github.com/Negatywistyczny/stagesync/pull/50)–[#52](https://github.com/Negatywistyczny/stagesync/pull/52) | fullscreen / docs |
+| [#61](https://github.com/Negatywistyczny/stagesync/pull/61)–[#63](https://github.com/Negatywistyczny/stagesync/pull/63) | ruler / Cmd+C / visual help — merge #63 with #84 |
+
+### Merge guidance
+
+- Prefer **#102** over **#92** (wand restore supersedes “wand hidden” Help).
+- Stack: **#100** after **#98**; **#84** after/with **#63**.
+- C-fade stack: #57→#58 before #64/#66.
 
 ### Remaining backlog (ranked)
 
-1. Prefer merge **#102** over **#92** for wand Help (restore > hide).
-2. Admin density deep-pass beyond #82/#95
-3. Retarget/CI for stacked PRs (#84 on #63, #100 on #98)
-4. Playwright Forma drag matrix — defer
-5. Overlap drag / Flex Time — OUT
-6. AD-01…03 — skip
-7. PDF setlist / archive — OUT
-8. Full auth / multi-user — 5.1+
+1. Admin density deep-pass beyond #82/#95
+2. Playwright Forma drag matrix — defer
+3. Overlap drag / Flex Time — OUT
+4. AD-01…03 — skip
+5. PDF setlist / archive — OUT
+6. Full auth / multi-user — 5.1+
 
 ### Blokery
 
 - G1–G10 soft-gate only — **nie** claim green bez HW.
-- Stacks: merge C (#57→#58) before #64/#66; #84 after/with #63; TimelineShell rebases likely.
-- #83: Docker/LAN Host restart needs `STAGESYNC_HOST_TOKEN` or `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`.
-- #84: CI may not run until base `feat/timeline-help-visual` is default or PR retargeted after #63 merge.
-
+- #83: LAN Host restart needs `STAGESYNC_HOST_TOKEN` or `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`.
+- TimelineShell rebases likely across open PRs.
 ## Wave 2 backlog (historical ranking at start of cont.)
 
 | Rank | Temat | Outcome |
