@@ -7,7 +7,7 @@ import {
   resolveMeterAt,
   resolveTempoAt,
   syntheticCountdownDisplayFromProject,
-  ticksToBbt,
+  ticksToBbtAlongMeterMap,
   toDisplayBar,
   type FormaClip,
   type Project,
@@ -77,7 +77,12 @@ export function buildFormaLiveContext(
   const active = resolveFormaClipAt(project, displayTicks);
   const meter = resolveMeterAt(project, Math.max(0, displayTicks));
   const tempo = resolveTempoAt(project, Math.max(0, displayTicks));
-  const bbt = ticksToBbt(Math.max(0, displayTicks), meter, project.ppq);
+  const bbt = ticksToBbtAlongMeterMap(
+    Math.max(0, displayTicks),
+    project.defaultMeter,
+    project.meterMap,
+    project.ppq,
+  );
 
   const clips = project.forma.clips.filter(
     (c) => c.kind === "section" || c.kind === "countdown",
