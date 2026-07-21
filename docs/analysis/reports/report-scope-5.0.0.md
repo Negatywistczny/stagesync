@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:18 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:24 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -209,8 +209,12 @@ flowchart LR
 | [#80](https://github.com/Negatywistyczny/stagesync/pull/80) | Scrub countdown on write | https://github.com/Negatywistyczny/stagesync/pull/80 | green |
 | [#81](https://github.com/Negatywistyczny/stagesync/pull/81) | Health version ≠ 0.0.0 | https://github.com/Negatywistyczny/stagesync/pull/81 | green |
 | [#82](https://github.com/Negatywistyczny/stagesync/pull/82) | Admin inspector collapse | https://github.com/Negatywistyczny/stagesync/pull/82 | green |
-| [#83](https://github.com/Negatywistyczny/stagesync/pull/83) | Guard LAN restart/shutdown | https://github.com/Negatywistyczny/stagesync/pull/83 | pending |
+| [#83](https://github.com/Negatywistyczny/stagesync/pull/83) | Guard LAN restart/shutdown | https://github.com/Negatywistyczny/stagesync/pull/83 | green |
 | [#84](https://github.com/Negatywistyczny/stagesync/pull/84) | Help lane no status rainbow | https://github.com/Negatywistyczny/stagesync/pull/84 | pending (base #63) |
+| [#85](https://github.com/Negatywistyczny/stagesync/pull/85) | PUT must not resurrect audio clips | https://github.com/Negatywistyczny/stagesync/pull/85 | pending |
+| [#86](https://github.com/Negatywistyczny/stagesync/pull/86) | Guard overlapping transport cmds | https://github.com/Negatywistyczny/stagesync/pull/86 | pending |
+| [#87](https://github.com/Negatywistyczny/stagesync/pull/87) | Reject invalid meters (4/7) | https://github.com/Negatywistyczny/stagesync/pull/87 | pending |
+| [#88](https://github.com/Negatywistyczny/stagesync/pull/88) | Unique split remnant clip ids | https://github.com/Negatywistyczny/stagesync/pull/88 | pending |
 
 ### Parallel (other agents)
 
