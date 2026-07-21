@@ -879,6 +879,11 @@ export function TimelineShell() {
         setHelpOpen(false);
         return;
       }
+      if (eyeOpen && e.key === "Escape") {
+        e.preventDefault();
+        setEyeOpen(false);
+        return;
+      }
       if (
         !mod &&
         !e.altKey &&
@@ -1027,6 +1032,7 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
+    eyeOpen,
     toolMenu,
   ]);
 
