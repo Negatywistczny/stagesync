@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:24 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:25 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -215,6 +215,7 @@ flowchart LR
 | [#86](https://github.com/Negatywistyczny/stagesync/pull/86) | Guard overlapping transport cmds | https://github.com/Negatywistyczny/stagesync/pull/86 | pending |
 | [#87](https://github.com/Negatywistyczny/stagesync/pull/87) | Reject invalid meters (4/7) | https://github.com/Negatywistyczny/stagesync/pull/87 | pending |
 | [#88](https://github.com/Negatywistyczny/stagesync/pull/88) | Unique split remnant clip ids | https://github.com/Negatywistyczny/stagesync/pull/88 | pending |
+| [#89](https://github.com/Negatywistyczny/stagesync/pull/89) | MIDI SPP on seek while playing | https://github.com/Negatywistyczny/stagesync/pull/89 | pending |
 
 ### Parallel (other agents)
 
