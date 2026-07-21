@@ -5,7 +5,9 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.0.0-alpha.13](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.12...v5.0.0-alpha.13) - 2026-07-21
+
+> **α13:** hotfix Windows sidecar — `EISDIR` / `lstat 'C:'` przy starcie z MSI; następny etap → β1.
 
 ### Naprawiono
 

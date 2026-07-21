@@ -84,7 +84,7 @@ Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WAT
 
 ```sh
 # Przywróć poprzednią wersję w .env, np.:
-# STAGESYNC_VERSION=5.0.0-alpha.12
+# STAGESYNC_VERSION=5.0.0-alpha.13
 docker compose -f compose.prod.yml up -d
 ```
 

@@ -17,7 +17,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.10** | Standalone desktop (β1 spike) | **Wydane 2026-07-21** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi` standalone | [report-standalone-spike-beta1](./analysis/reports/report-standalone-spike-beta1.md) |
 | **5.0.0-alpha.11** | Desktop shell polish | **Wydane 2026-07-21** — menu OS Widok, shell detect, draft updater pipeline; bramka G1–G10 (G6: α10→α11) | [report-beta-gate](./analysis/reports/report-beta-gate.md) |
 | **5.0.0-alpha.12** | Domknięcie: OS menu Faza A + hotfixy shelła | **Wydane 2026-07-21** — menu StageSync/Widok/Pomoc; sidecar fail-fast; Faza B+ → β1 | [TODO.md](./TODO.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
-| **5.0.0-alpha.13** | Hotfix: Windows sidecar `EISDIR` / `C:` | Aktywny — MSI: Node nie dostaje ścieżek `\\?\…` jako main module; tag **tylko na prośbę** | [TODO.md](./TODO.md) · [DESKTOP.md](./DESKTOP.md) |
+| **5.0.0-alpha.13** | Hotfix: Windows sidecar `EISDIR` / `C:` | **Wydane 2026-07-21** — MSI: Node bez ścieżek `\\?\…` jako main module; spawn względny + cwd | [TODO.md](./TODO.md) · [DESKTOP.md](./DESKTOP.md) |
 | **5.0.0-beta.1** | Host / dystrybucja | Start **na prośbę** po α13: Docker + Tauri + host; **menu Faza B+**; bramka G1–G10 (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
@@ -76,7 +76,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - Migrator legacy 4.x → v5 (MVP + fixtures M1–M9)
 - **CL-01 / 04 / 05** Client P0 + **PO smoke P8 green** (zachowanie)
-- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10`…`v5.0.0-alpha.12` desktop — wydane; **α13** hotfix Windows sidecar → potem **β1** ([TODO.md](./TODO.md))
+- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10`…`v5.0.0-alpha.13` desktop — wydane; aktywny etap → **β1** ([TODO.md](./TODO.md))
 
 ### Alpha 12 — zakres orientacyjny (**wydane 2026-07-21**)
 
@@ -84,11 +84,11 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 - **OUT α12:** menu Faza B+; pełna bramka G1–G10 jako hero; nowe powierzchnie produktu → **β1**
 - Tag `v5.0.0-alpha.12` — done
 
-### Alpha 13 — hotfix Windows sidecar (**aktywny**)
+### Alpha 13 — hotfix Windows sidecar (**wydane 2026-07-21**)
 
 - **Must:** naprawa `EISDIR` / `lstat 'C:'` przy starcie sidecara z MSI (ścieżki Win32 `\\?\…` vs Node main module)
 - **OUT α13:** menu Faza B+; bramka G1–G10; reszta host/dystrybucja → **β1**
-- Tag `v5.0.0-alpha.13` — **tylko na prośbę** po weryfikacji na Windows
+- Tag `v5.0.0-alpha.13` — done; aktywny etap w TODO = β1 (start kodu na prośbę)
 
 ### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja)
 
