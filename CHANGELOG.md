@@ -7,6 +7,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+- **Docs / scope β2:** [#41](https://github.com/Negatywistyczny/stagesync/issues/41) Countdown Play/Stop oraz [#42](https://github.com/Negatywistyczny/stagesync/issues/42) Audio lane — **must** w strumieniu `5.0.0-beta.2` (nie defer); [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md).
+
 ### Dodano
 
 - **Host MIDI I/O + clock (`apps/server`):** lista / wybór urządzeń, clock OUT zsynchronizowany z transportem SSOT (Start/Continue/Stop/SPP/Clock), metryki Admin → Host (Clock/SPP/PC/Beat→WS); API `GET /api/midi`, `PUT /api/midi/config`. Bez MIDI w procesie Tauri ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md) / [ADR 0002](docs/adr/0002-timebase-ssot.md)).
