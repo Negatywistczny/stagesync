@@ -157,6 +157,40 @@ export function moveClipNoOverlap(
 }
 
 /**
+ * TE-23: after moving the first post-Countdown section to the right, fill the
+ * empty span (Countdown end → section start) with a new "Intro" section.
+ * No-op when gap is missing / too small / moved clip is not first section.
+ */
+export function insertGapSectionAfterCountdown(
+  clips: FormaClip[],
+  movedId: string,
+  opts?: CollisionOpts,
+): FormaClip[] {
+  const countdown = clips.find(isCountdown);
+  if (!countdown) return clips;
+  const cdEnd = clipEnd(countdown);
+  const sections = sortClips(clips.filter((c) => !isCountdown(c)));
+  const first = sections[0];
+  if (!first || first.id !== movedId) return clips;
+  if (first.startTicks <= cdEnd) return clips;
+
+  const gapLen = first.startTicks - cdEnd;
+  if (gapLen < minLength(opts)) return clips;
+
+  // Avoid duplicate if a section already occupies the gap start.
+  if (sections.some((c) => c.startTicks === cdEnd)) return clips;
+
+  const gap: FormaClip = {
+    id: `forma-gap-${cdEnd}-${gapLen}`,
+    name: "Intro",
+    kind: "section",
+    startTicks: cdEnd,
+    lengthTicks: gapLen,
+  };
+  return sortClips([...clips, gap]);
+}
+
+/**
  * Rigid multi-move (v4 moveIds + same Δ): translate selected clips together,
  * then place into non-selected neighbors (cover-trim). Movers do not trim each other.
  * Countdown ids in `moveIds` are ignored.

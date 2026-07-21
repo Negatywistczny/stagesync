@@ -4,6 +4,7 @@
 
 import {
   deleteClip,
+  insertGapSectionAfterCountdown,
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
@@ -183,7 +184,11 @@ export function commitMoveClip(
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
   const snapped = snapEditTicksWithMode(project, newStartTicks, mode);
-  const clips = moveClipNoOverlap(project.forma.clips, clipId, snapped, {
+  let clips = moveClipNoOverlap(project.forma.clips, clipId, snapped, {
+    contentFloorTicks: floor,
+  });
+  // TE-23: fill Intro gap when first post-CD section leaves space after Countdown.
+  clips = insertGapSectionAfterCountdown(clips, clipId, {
     contentFloorTicks: floor,
   });
   return { ...project, forma: { clips } };
