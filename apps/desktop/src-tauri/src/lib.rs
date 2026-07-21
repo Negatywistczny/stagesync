@@ -83,7 +83,7 @@ pub fn run() {
             );
             let _ = window.navigate(start_url.parse().unwrap());
 
-            let Some(resource_dir) = app.path_resolver().resource_dir() else {
+            let Ok(resource_dir) = app.handle().path().resource_dir() else {
                 let msg = "Brak katalogu resources (bundle misconfigured)".to_string();
                 let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
                 let _ = window.navigate(err_url.parse().unwrap());
@@ -104,7 +104,7 @@ pub fn run() {
                 return Ok(());
             }
 
-            let Some(app_data_dir) = app.path_resolver().app_data_dir() else {
+            let Ok(app_data_dir) = app.handle().path().app_data_dir() else {
                 let msg = "Brak katalogu aplikacji (app_data_dir)".to_string();
                 let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
                 let _ = window.navigate(err_url.parse().unwrap());
@@ -200,7 +200,9 @@ pub fn run() {
             install_desktop_update,
             open_external_url,
         ])
-        .run(tauri::generate_context!(), move |_app_handle, event| {
+        .build(tauri::generate_context!())
+        .expect("error while building StageSync desktop")
+        .run(move |_app_handle, event| {
             if let tauri::RunEvent::ExitRequested { .. } = event {
                 if let Ok(mut guard) = sidecar_child_run.lock() {
                     if let Some(child) = guard.take() {
@@ -208,8 +210,7 @@ pub fn run() {
                     }
                 }
             }
-        })
-        .expect("error while running StageSync desktop");
+        });
 }
 
 #[derive(serde::Serialize)]

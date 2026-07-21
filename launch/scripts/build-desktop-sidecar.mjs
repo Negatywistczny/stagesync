@@ -21,7 +21,8 @@ function run(cmd, args, { cwd = repoRoot } = {}) {
   const res = spawnSync(cmd, args, {
     cwd,
     stdio: "inherit",
-    shell: false,
+    // Windows runners resolve pnpm/tar via cmd when shell is enabled.
+    shell: process.platform === "win32",
   });
   if (res.status !== 0) {
     throw new Error(`Command failed: ${cmd} ${args.join(" ")}`);
