@@ -214,6 +214,7 @@ export {
 export {
   quantizeTicks,
   snapTicksToBarStart,
+  snapTicksToBarStartAlongMeterMap,
   snapTicksToBeatGrid,
   snapTicksToSubdivision,
   DEFAULT_SNAP_MODE,

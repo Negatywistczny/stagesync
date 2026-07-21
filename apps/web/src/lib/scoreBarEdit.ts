@@ -7,7 +7,7 @@ import {
   fromDisplayBar,
   normalizeAnchors,
   resolveMeterAt,
-  snapTicksToBarStart,
+  snapTicksToBarStartAlongMeterMap,
   ticksPerBar,
   ticksToBbt,
   toDisplayBar,
@@ -41,8 +41,12 @@ export function insertScoreAnchor(
   scoreBar = 1,
 ): Project {
   if (!canEditKotwice(project)) return project;
-  const meter = resolveMeterAt(project, atTicks);
-  const snapped = snapTicksToBarStart(atTicks, meter, project.ppq);
+  const snapped = snapTicksToBarStartAlongMeterMap(
+    atTicks,
+    project.defaultMeter,
+    project.meterMap,
+    project.ppq,
+  );
   const logicBar = logicBarFromTicks(project, snapped);
   const existing = scoreAnchors(project);
   if (existing.some((a) => a.logicBar === logicBar)) {
@@ -66,8 +70,12 @@ export function moveScoreAnchor(
   anchorId: string,
   atTicks: number,
 ): Project {
-  const meter = resolveMeterAt(project, atTicks);
-  const snapped = snapTicksToBarStart(atTicks, meter, project.ppq);
+  const snapped = snapTicksToBarStartAlongMeterMap(
+    atTicks,
+    project.defaultMeter,
+    project.meterMap,
+    project.ppq,
+  );
   const logicBar = logicBarFromTicks(project, snapped);
   const anchors = scoreAnchors(project).map((a) =>
     a.id === anchorId ? { ...a, logicBar } : a,
