@@ -26,8 +26,22 @@ export function resolveDataPaths(dataDir = defaultDataDir()): DataPaths {
   };
 }
 
+/**
+ * Resolve the data root used at runtime.
+ *
+ * Priority:
+ * 1. `STAGESYNC_DATA_DIR` env — explicit override (Docker, CI, custom installs).
+ * 2. Dev mode (`STAGESYNC_REPO_DEV=1`) — keep data under repo `data/` so
+ *    developers don't accidentally write to ~/Documents.
+ * 3. Desktop / user host — `~/Documents/StageSync` (MuseScore-style; macOS + Win).
+ * 4. Fallback — repo `data/` (no HOME detected; server-less environments).
+ */
 export function defaultDataDir(): string {
-  return process.env.STAGESYNC_DATA_DIR ?? join(REPO_ROOT, "data");
+  if (process.env.STAGESYNC_DATA_DIR) return process.env.STAGESYNC_DATA_DIR;
+  if (process.env.STAGESYNC_REPO_DEV) return join(REPO_ROOT, "data");
+  const home = process.env.HOME ?? process.env.USERPROFILE ?? null;
+  if (home) return join(home, "Documents", "StageSync");
+  return join(REPO_ROOT, "data");
 }
 
 export class InvalidProjectIdError extends Error {

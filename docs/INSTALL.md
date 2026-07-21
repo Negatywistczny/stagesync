@@ -99,12 +99,58 @@ pnpm dev   # web :3000 + server :4000
 
 Zob. [README.md](../README.md).
 
+## Folder danych użytkownika
+
+Projekty, biblioteka i setlista są przechowywane w **`~/Documents/StageSync`** —
+analogicznie do MuseScore / aplikacji kreatywnych. Możesz je kopiować, backupować
+i przeglądać ręcznie w Finderze (macOS) lub Eksploratorze (Windows).
+
+```
+~/Documents/StageSync/
+  library/
+    library.json        # indeks biblioteki
+    setlist.json
+  projects/
+    <uuid>/
+      project.json
+      assets/
+```
+
+**Windows:** `C:\Users\<nazwa>\Documents\StageSync`
+
+### Zmiana lokalizacji
+
+Ustaw `STAGESYNC_DATA_DIR` przed uruchomieniem serwera:
+
+```sh
+# macOS / Linux
+STAGESYNC_DATA_DIR=/Volumes/Dysk/StageSync pnpm dev
+
+# lub w .env
+STAGESYNC_DATA_DIR=/Users/ja/Muzyka/StageSync
+```
+
+### Migracja istniejących danych (jeśli miałeś dane w `repo/data`)
+
+```sh
+cp -a data ~/Documents/StageSync
+```
+
+Potem uruchom serwer bez `STAGESYNC_REPO_DEV=1` (wykomentuj w `.env`) —
+serwer automatycznie użyje `~/Documents/StageSync`.
+
+### Dev — dane w repo (domyślne)
+
+Lokalne środowisko dev trzyma dane w `<repo>/data` dzięki `STAGESYNC_REPO_DEV=1`
+w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
+
 ## Zmienne środowiskowe
 
 | Zmienna | Domyślnie | Opis |
 |---------|-----------|------|
 | `PORT` | `4000` | HTTP + WS |
-| `STAGESYNC_DATA_DIR` | `/app/data` (Compose) | Library + projects |
+| `STAGESYNC_DATA_DIR` | `~/Documents/StageSync` (desktop) · `/app/data` (Compose) | Library + projects |
+| `STAGESYNC_REPO_DEV` | `1` (z `.env.example`) | Wymusza `<repo>/data` w trybie dev |
 | `STAGESYNC_STATIC_DIR` | `/app/web` (obraz) | Vite `dist` serwowany przez Node |
 | `STAGESYNC_URL` | `http://127.0.0.1:4000` | URL dla shella Tauri |
 | `STAGESYNC_VERSION` | — | Tag obrazu GHCR (`compose.prod.yml`) |
@@ -114,4 +160,4 @@ Zob. [README.md](../README.md).
 | `STAGESYNC_UPDATER_TOKEN` | — | = `WATCHTOWER_TOKEN` (używany przez serwer) |
 | `STAGESYNC_GITHUB_TOKEN` | — | PAT do GitHub Releases API (update-status) |
 
-Wzór: [`.env.example`](../.env.example).
+Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).

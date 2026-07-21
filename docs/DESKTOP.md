@@ -5,6 +5,9 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 **β1:** shell ładuje URL lokalnego serwera (`STAGESYNC_URL`, domyślnie `http://127.0.0.1:4000`).  
 **Bez** sidecar Node w bundlu; **bez** MIDI / zegara muzycznego w procesie Tauri.
 
+> **Dane projektów** są przechowywane przez serwer w `~/Documents/StageSync` —
+> shell nie trzyma żadnych danych. Szczegóły: [INSTALL.md](./INSTALL.md) § Folder danych użytkownika · [ADR 0012](./adr/0012-user-data-location.md).
+
 ## Instalacja (gotowe instalatory)
 
 Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases):
