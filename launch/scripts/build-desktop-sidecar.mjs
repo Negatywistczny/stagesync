@@ -243,7 +243,6 @@ async function assertNoRepoDocsInSidecar(sidecarDir) {
 }
 
 const NODE_MODULES_PRUNE_DIRS = new Set([
-  "src",
   "test",
   "tests",
   "__tests__",
@@ -257,7 +256,32 @@ const NODE_MODULES_PRUNE_DIRS = new Set([
 ]);
 
 const NODE_MODULES_PRUNE_FILE_RE =
-  /\.(md|ts|cts|mts|map|markdown|yml|yaml)$/i;
+  /\.(md|cts|mts|map|markdown|yml|yaml)$/i;
+
+/** Drop TypeScript sources where compiled JS exists alongside (e.g. zod/src). */
+async function pruneTypescriptSourceTrees(nodeModulesDir) {
+  if (!existsSync(nodeModulesDir)) return;
+  const stack = [nodeModulesDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const ent of entries) {
+      if (!ent.isDirectory()) continue;
+      const full = join(dir, ent.name);
+      if (ent.name !== "src") {
+        stack.push(full);
+        continue;
+      }
+      const srcEntries = await readdir(full, { withFileTypes: true });
+      const hasRuntimeJs = srcEntries.some(
+        (e) => e.isFile() && /\.(js|cjs|mjs)$/i.test(e.name),
+      );
+      if (!hasRuntimeJs) {
+        await rm(full, { recursive: true, force: true });
+      }
+    }
+  }
+}
 
 /** Shrink sidecar node_modules for MSI/WiX (Windows path limits). */
 async function pruneDeployedNodeModules(nodeModulesDir) {
@@ -311,6 +335,7 @@ async function pruneServerDistTypes(distDir) {
 async function pruneRuntimeBundle(sidecarDir) {
   await pruneServerDistTypes(join(sidecarDir, "server", "dist"));
   await pruneDeployedNodeModules(join(sidecarDir, "server", "node_modules"));
+  await pruneTypescriptSourceTrees(join(sidecarDir, "server", "node_modules"));
   console.log("[sidecar] runtime bundle pruned (dist types + node_modules dev paths)");
 }
 
