@@ -176,66 +176,63 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:05 CEST interim)
+## Handoff morning (2026-07-22 — overnight; update ~00:10 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
-### Must A–E (#53–#60)
+### Must A–E (#53–#60) — CI green
 
-| # | Temat | URL | CI (ostatnio) |
-|---|--------|-----|----------------|
-| — | Scope + soft-gate | `main` | — |
-| [#53](https://github.com/Negatywistyczny/stagesync/pull/53) | A1 polish live controls | https://github.com/Negatywistyczny/stagesync/pull/53 | green |
-| [#54](https://github.com/Negatywistyczny/stagesync/pull/54) | B1 zoom icons (stack #53) | https://github.com/Negatywistyczny/stagesync/pull/54 | green |
-| [#55](https://github.com/Negatywistyczny/stagesync/pull/55) | B2 snap picker | https://github.com/Negatywistyczny/stagesync/pull/55 | green |
-| [#56](https://github.com/Negatywistyczny/stagesync/pull/56) | B3 help full | https://github.com/Negatywistyczny/stagesync/pull/56 | green |
-| [#57](https://github.com/Negatywistyczny/stagesync/pull/57) | C1 fade schema+playback | https://github.com/Negatywistyczny/stagesync/pull/57 | green |
-| [#58](https://github.com/Negatywistyczny/stagesync/pull/58) | C2 fade/loop inspector (stack #57) | https://github.com/Negatywistyczny/stagesync/pull/58 | green |
-| [#59](https://github.com/Negatywistyczny/stagesync/pull/59) | D menu Faza D | https://github.com/Negatywistyczny/stagesync/pull/59 | green |
-| [#60](https://github.com/Negatywistyczny/stagesync/pull/60) | E docs/api + smoke e2e | https://github.com/Negatywistyczny/stagesync/pull/60 | green |
+| # | Temat | URL |
+|---|--------|-----|
+| [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) | A→E musts | merge order: #53→#54; #57→#58 |
 
-**Merge order:** #53→#54; #57→#58. Rebase TimelineShell conflicts rano jeśli trzeba.
+### Wave 2+ feature / fix PRs
 
-### Wave 2+ (po must; otwarte)
-
-| # | Temat | URL | CI |
-|---|--------|-----|-----|
-| [#64](https://github.com/Negatywistyczny/stagesync/pull/64) | Smart fade handles | https://github.com/Negatywistyczny/stagesync/pull/64 | green (lint fix) |
+| # | Temat | URL | CI (~00:10) |
+|---|--------|-----|-------------|
+| [#64](https://github.com/Negatywistyczny/stagesync/pull/64) | Smart fade handles | https://github.com/Negatywistyczny/stagesync/pull/64 | green |
 | [#65](https://github.com/Negatywistyczny/stagesync/pull/65) | ADR 0002 pre-roll tempo/meter | https://github.com/Negatywistyczny/stagesync/pull/65 | green |
-| [#66](https://github.com/Negatywistyczny/stagesync/pull/66) | Abut crossfade helper + inspector | https://github.com/Negatywistyczny/stagesync/pull/66 | green |
-| [#67](https://github.com/Negatywistyczny/stagesync/pull/67) | Smoke Forma put+seek+transport | https://github.com/Negatywistyczny/stagesync/pull/67 | green |
-| [#68](https://github.com/Negatywistyczny/stagesync/pull/68) | Touch targets 36/44 tokens | https://github.com/Negatywistyczny/stagesync/pull/68 | green |
-| [#69](https://github.com/Negatywistyczny/stagesync/pull/69) | Wire `[`/`]` setlist keys + Help | https://github.com/Negatywistyczny/stagesync/pull/69 | pending |
-| [#70](https://github.com/Negatywistyczny/stagesync/pull/70) | Soft-clock loop wrap | https://github.com/Negatywistyczny/stagesync/pull/70 | pending |
-| [#71](https://github.com/Negatywistyczny/stagesync/pull/71) | Lock `getLibrary` cold seed | https://github.com/Negatywistyczny/stagesync/pull/71 | pending |
-| [#72](https://github.com/Negatywistyczny/stagesync/pull/72) | OCC 409 PL save message | https://github.com/Negatywistyczny/stagesync/pull/72 | pending |
-| [#73](https://github.com/Negatywistyczny/stagesync/pull/73) | Setlist auto-advance @ song end | https://github.com/Negatywistyczny/stagesync/pull/73 | pending |
-| [#74](https://github.com/Negatywistyczny/stagesync/pull/74) | Admin Partytura + backup honesty | https://github.com/Negatywistyczny/stagesync/pull/74 | pending |
-| [#75](https://github.com/Negatywistyczny/stagesync/pull/75) | Forma scissors lane hit | https://github.com/Negatywistyczny/stagesync/pull/75 | pending |
+| [#66](https://github.com/Negatywistyczny/stagesync/pull/66) | Abut crossfade | https://github.com/Negatywistyczny/stagesync/pull/66 | green |
+| [#67](https://github.com/Negatywistyczny/stagesync/pull/67) | Smoke Forma + transport | https://github.com/Negatywistyczny/stagesync/pull/67 | green |
+| [#68](https://github.com/Negatywistyczny/stagesync/pull/68) | Touch targets 36/44 | https://github.com/Negatywistyczny/stagesync/pull/68 | green |
+| [#69](https://github.com/Negatywistyczny/stagesync/pull/69) | `[`/`]` setlist keys | https://github.com/Negatywistyczny/stagesync/pull/69 | green |
+| [#70](https://github.com/Negatywistyczny/stagesync/pull/70) | Soft-clock loop wrap | https://github.com/Negatywistyczny/stagesync/pull/70 | green |
+| [#71](https://github.com/Negatywistyczny/stagesync/pull/71) | Lock `getLibrary` | https://github.com/Negatywistyczny/stagesync/pull/71 | green |
+| [#72](https://github.com/Negatywistyczny/stagesync/pull/72) | OCC 409 message | https://github.com/Negatywistyczny/stagesync/pull/72 | green |
+| [#73](https://github.com/Negatywistyczny/stagesync/pull/73) | Setlist auto-advance | https://github.com/Negatywistyczny/stagesync/pull/73 | green |
+| [#74](https://github.com/Negatywistyczny/stagesync/pull/74) | Admin Partytura honesty | https://github.com/Negatywistyczny/stagesync/pull/74 | green |
+| [#75](https://github.com/Negatywistyczny/stagesync/pull/75) | Forma scissors lane hit | https://github.com/Negatywistyczny/stagesync/pull/75 | green |
+| [#76](https://github.com/Negatywistyczny/stagesync/pull/76) | Client font-weight tokens | https://github.com/Negatywistyczny/stagesync/pull/76 | green |
+| [#77](https://github.com/Negatywistyczny/stagesync/pull/77) | createProject write order | https://github.com/Negatywistyczny/stagesync/pull/77 | pending |
+| [#78](https://github.com/Negatywistyczny/stagesync/pull/78) | REST `serverTimeMs` | https://github.com/Negatywistyczny/stagesync/pull/78 | pending |
+| [#79](https://github.com/Negatywistyczny/stagesync/pull/79) | Kotwice meterMap walk | https://github.com/Negatywistyczny/stagesync/pull/79 | pending |
+| [#80](https://github.com/Negatywistyczny/stagesync/pull/80) | Scrub countdown on write | https://github.com/Negatywistyczny/stagesync/pull/80 | pending |
+| [#81](https://github.com/Negatywistyczny/stagesync/pull/81) | Health version ≠ 0.0.0 | https://github.com/Negatywistyczny/stagesync/pull/81 | pending |
 
 ### Parallel (other agents)
 
 | # | Temat | Note |
 |---|--------|------|
 | [#50](https://github.com/Negatywistyczny/stagesync/pull/50)–[#52](https://github.com/Negatywistyczny/stagesync/pull/52) | fullscreen / docs | green |
-| [#61](https://github.com/Negatywistyczny/stagesync/pull/61) | ruler loop/playhead lanes | green |
-| [#62](https://github.com/Negatywistyczny/stagesync/pull/62) | Cmd/Ctrl+C Edit menu | green |
-| [#63](https://github.com/Negatywistyczny/stagesync/pull/63) | visual Timeline help | green CI; **ADR 0011** — status-token lane chips (comment left) |
+| [#61](https://github.com/Negatywistyczny/stagesync/pull/61) | ruler lanes | green |
+| [#62](https://github.com/Negatywistyczny/stagesync/pull/62) | Cmd/Ctrl+C | green |
+| [#63](https://github.com/Negatywistyczny/stagesync/pull/63) | visual Timeline help | ADR 0011 status-token chips — comment left |
 
 ### Remaining backlog (ranked)
 
-1. ClientShell token hygiene (ad-hoc font-weight / clamp / pill radii)
+1. ClientShell fluid `clamp()` → `--ss-text-stage-*` tokens (follow-up to #76)
 2. Admin songs↔inspector collapse / density deep-pass
-3. Playwright Forma drag matrix — defer
-4. Overlap drag / Flex Time — OUT
-5. AD-01…03 — skip unless tiny
-6. PDF setlist / project archive — no API; OUT menu D extras
+3. Host restart/shutdown LAN auth (A21-H02) — product decision; M
+4. Playwright Forma drag matrix — defer
+5. Overlap drag / Flex Time — OUT
+6. AD-01…03 — skip
+7. PDF setlist / archive — no API; OUT
 
 ### Blokery
 
-- G1–G10: soft-gate only — **nie** claim green bez HW ([report-beta-gate.md](./report-beta-gate.md)).
-- #63 review: prefer primary/muted for help lane previews (nie tęcza status).
-- Stacks: #64/#66 assume fade PRs; merge C stack before handles/crossfade.
+- G1–G10 soft-gate only — **nie** claim green bez HW.
+- Stacks: merge C (#57→#58) before #64/#66; TimelineShell rebases likely across B/D/help.
+- #78 may need docs/api note after merge (tick-shaped REST).
 
 ## Wave 2 backlog (historical ranking at start of cont.)
 
@@ -245,6 +242,6 @@ flowchart LR
 | 2 | Crossfade at abut | → [#66](https://github.com/Negatywistyczny/stagesync/pull/66) |
 | 3 | ADR 0002 pre-roll | → [#65](https://github.com/Negatywistyczny/stagesync/pull/65) |
 | 4 | Smoke Forma + transport | → [#67](https://github.com/Negatywistyczny/stagesync/pull/67) |
-| 5 | Admin density | partial → [#74](https://github.com/Negatywistyczny/stagesync/pull/74); deep-pass still open |
-| 6 | Client token hygiene | still open |
+| 5 | Admin density | partial → [#74](https://github.com/Negatywistyczny/stagesync/pull/74) |
+| 6 | Client token hygiene | partial → [#76](https://github.com/Negatywistyczny/stagesync/pull/76); clamps remain |
 | 7 | AD-01…03 | skipped |
