@@ -71,11 +71,12 @@ function errMessage(err: unknown): string {
 const ADMIN_SECTIONS = new Set<SectionId>(["songs", "set", "stage", "host"]);
 
 export function AdminShell() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [section, setSection] = useState<SectionId>("songs");
+  const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -134,7 +135,16 @@ export function AdminShell() {
     if (sectionParam && ADMIN_SECTIONS.has(sectionParam as SectionId)) {
       setSection(sectionParam as SectionId);
     }
-  }, [searchParams]);
+    // Native menu: StageSync → Sprawdź aktualizacje… (ADR 0010 Phase A)
+    if (searchParams.get("action") === "check-update") {
+      setSection("host");
+      setMenuCheckUpdate(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("action");
+      if (!next.get("section")) next.set("section", "host");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -449,6 +459,8 @@ export function AdminShell() {
           <HostView
             statusMsg={hostStatusMsg}
             onPathPicker={() => setPathPickerOpen(true)}
+            autoCheckUpdate={menuCheckUpdate}
+            onAutoCheckUpdateConsumed={() => setMenuCheckUpdate(false)}
           />
         ) : null}
       </main>
@@ -1041,9 +1053,13 @@ function useDoubleConfirm(action: () => Promise<void>, label: string) {
 function HostView({
   statusMsg,
   onPathPicker,
+  autoCheckUpdate = false,
+  onAutoCheckUpdateConsumed,
 }: {
   statusMsg: string | null;
   onPathPicker: () => void;
+  autoCheckUpdate?: boolean;
+  onAutoCheckUpdateConsumed?: () => void;
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
@@ -1228,7 +1244,10 @@ function HostView({
                 Zgłoś błąd lub pomysł ↗
               </Button>
             </div>
-            <UpdatePanel />
+            <UpdatePanel
+              autoCheck={autoCheckUpdate}
+              onAutoCheckConsumed={onAutoCheckUpdateConsumed}
+            />
           </div>
         </div>
       </section>
@@ -1238,7 +1257,13 @@ function HostView({
 
 
 /** Update panel — Sprawdź / Aktualizuj host + desktop (ADR 0004 amendement β1). */
-function UpdatePanel() {
+function UpdatePanel({
+  autoCheck = false,
+  onAutoCheckConsumed,
+}: {
+  autoCheck?: boolean;
+  onAutoCheckConsumed?: () => void;
+}) {
   const [checking, setChecking] = useState(false);
   const [applying, setApplying] = useState(false);
   const [hostStatus, setHostStatus] = useState<HostUpdateStatus | null>(null);
@@ -1276,6 +1301,19 @@ function UpdatePanel() {
       setChecking(false);
     }
   }, [inTauri]);
+
+  useEffect(() => {
+    if (!autoCheck) return;
+    let cancelled = false;
+    void handleCheck().finally(() => {
+      if (!cancelled) onAutoCheckConsumed?.();
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Intentional: run once when native menu requests a check (autoCheck rising edge).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onAutoCheckConsumed is unstable identity from parent
+  }, [autoCheck, handleCheck]);
 
   const handleApplyHost = useCallback(async () => {
     setApplying(true);
