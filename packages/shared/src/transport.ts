@@ -16,7 +16,11 @@ export type TransportLoop = z.infer<typeof TransportLoopSchema>;
 
 export const TransportStateSchema = z.object({
   playing: z.boolean(),
-  positionTicks: z.number().int(),
+  positionTicks: z
+    .number()
+    .int()
+    .min(Number.MIN_SAFE_INTEGER)
+    .max(Number.MAX_SAFE_INTEGER),
   bpm: z.number().positive().finite(),
   timeSignature: TimeSignatureSchema,
   ppq: z.number().int().positive(),
