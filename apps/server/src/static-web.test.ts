@@ -74,4 +74,15 @@ describe("static web SPA", () => {
     expect(res.status).toBe(200);
     expect(await res.text()).toContain("spa");
   });
+
+  it("returns JSON 404 for unknown /api paths (not SPA HTML)", async () => {
+    ({ server, baseUrl } = await listenStatic(staticDir));
+    const res = await fetch(`${baseUrl}/api/does-not-exist`);
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toMatch(/json/);
+    await expect(res.json()).resolves.toEqual({
+      ok: false,
+      error: "Not found",
+    });
+  });
 });
