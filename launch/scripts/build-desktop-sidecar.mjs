@@ -52,14 +52,14 @@ function resolveExtractedNodeBin(extractedRoot) {
 
 async function ensureTauriResourceGlobDir(srcTauriDir, sub) {
   const dir = join(srcTauriDir, sub);
-  if (!existsSync(dir)) {
-    await mkdir(dir, { recursive: true });
-  }
-  const entries = await readdir(dir);
-  if (entries.length === 0) {
-    // Tauri 2 fails the build when a resources glob matches zero files (Windows Node zip has no lib/share).
-    await writeFile(join(dir, ".stagesync-empty"), "");
-  }
+  const hasRealContent = existsSync(dir) && (await readdir(dir)).length > 0;
+  if (hasRealContent) return;
+
+  // Tauri 2 fails when `lib/**/*` matches zero files (Windows Node zip has no lib/share).
+  // Stub must sit under a subdirectory so `**/*` globs match.
+  const stubFile = join(dir, ".stagesync-stub", "keep");
+  await mkdir(dirname(stubFile), { recursive: true });
+  await writeFile(stubFile, "");
 }
 
 function externalBinDestPath(binDir, target) {
