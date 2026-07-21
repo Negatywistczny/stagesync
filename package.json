@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "migrate:legacy": "pnpm --filter @stagesync/server migrate:legacy",
+    "sync-version": "node launch/scripts/sync-version.mjs",
     "prepare": "husky"
   },
   "devDependencies": {

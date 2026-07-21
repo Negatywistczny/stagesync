@@ -4,11 +4,18 @@
   "globalEnv": [
     "PORT",
     "STAGESYNC_DATA_DIR",
+    "STAGESYNC_STATIC_DIR",
+    "STAGESYNC_URL",
+    "STAGESYNC_VERSION",
+    "STAGESYNC_GITHUB_TOKEN",
+    "STAGESYNC_UPDATER_URL",
+    "STAGESYNC_UPDATER_TOKEN",
     "npm_package_version",
     "HOSTNAME",
     "pm_id",
     "PM2_HOME",
-    "DEV"
+    "DEV",
+    "NODE_ENV"
   ],
   "tasks": {
     "build": {
