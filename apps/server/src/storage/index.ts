@@ -311,7 +311,7 @@ export function createStores(dataDir?: string) {
     paths,
 
     async getLibrary(): Promise<Library> {
-      return ensureLibrary();
+      return withLibraryLock(() => ensureLibrary());
     },
 
     async getSetlist(): Promise<Setlist> {
