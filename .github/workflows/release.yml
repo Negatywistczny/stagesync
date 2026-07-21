@@ -99,7 +99,7 @@ jobs:
         run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
 
       - name: Build desktop sidecar (Node + server + web)
-        run: node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin
+        run: node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin --smoke
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -147,7 +147,7 @@ jobs:
         run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
 
       - name: Build desktop sidecar (Node + server + web)
-        run: node launch/scripts/build-desktop-sidecar.mjs --target x86_64-pc-windows-msvc
+        run: node launch/scripts/build-desktop-sidecar.mjs --target x86_64-pc-windows-msvc --smoke
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

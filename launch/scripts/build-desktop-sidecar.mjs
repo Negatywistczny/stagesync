@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawnSync } from "node:child_process";
+import { spawnSync, spawn } from "node:child_process";
 import { cp, mkdir, readdir, rm, chmod, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 // (no node:fs stream usage; download uses arrayBuffer -> writeFile)
@@ -209,6 +209,135 @@ async function assertNoRepoDocsInSidecar(sidecarDir) {
   console.log("[sidecar] docs hygiene check passed (web/dist, server/dist, seed)");
 }
 
+const SHARED_RUNTIME_STRIP = [
+  "src",
+  ".turbo",
+  "eslint.config.js",
+  "vitest.config.ts",
+  "tsconfig.json",
+  "README.md",
+];
+
+/** Remove dev-only files from workspace packages inside deployed node_modules. */
+async function pruneWorkspacePackageSources(nodeModulesDir, scopedName) {
+  const [scope, name] = scopedName.split("/");
+  const targets = new Set();
+
+  const direct = join(nodeModulesDir, scope, name);
+  if (existsSync(direct)) targets.add(direct);
+
+  const pnpmDir = join(nodeModulesDir, ".pnpm");
+  if (existsSync(pnpmDir)) {
+    const needle = `${scope.replace("@", "")}+${name}@`;
+    const entries = await readdir(pnpmDir, { withFileTypes: true });
+    for (const ent of entries) {
+      if (!ent.isDirectory() || !ent.name.includes(needle)) continue;
+      const nested = join(pnpmDir, ent.name, "node_modules", scope, name);
+      if (existsSync(nested)) targets.add(nested);
+    }
+  }
+
+  for (const pkgDir of targets) {
+    for (const rel of SHARED_RUNTIME_STRIP) {
+      await rm(join(pkgDir, rel), { recursive: true, force: true });
+    }
+  }
+}
+
+/** Production-only node_modules via pnpm deploy (ADR 0013; PR2 bundle size). */
+async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
+  const serverDevArtifacts = [
+    "src",
+    ".turbo",
+    "eslint.config.js",
+    "vitest.config.ts",
+    "tsconfig.json",
+    "package.json",
+  ];
+
+  console.log("[sidecar] pnpm deploy --prod @stagesync/server");
+  await rm(sidecarServerDir, { recursive: true, force: true });
+  await mkdir(sidecarServerDir, { recursive: true });
+
+  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", sidecarServerDir]);
+
+  // Use the compiled dist from the monorepo build (not deploy's copied sources).
+  await rm(join(sidecarServerDir, "dist"), { recursive: true, force: true });
+  await cp(serverDistDir, join(sidecarServerDir, "dist"), { recursive: true, force: true });
+
+  for (const rel of serverDevArtifacts) {
+    await rm(join(sidecarServerDir, rel), { recursive: true, force: true });
+  }
+
+  await pruneWorkspacePackageSources(
+    join(sidecarServerDir, "node_modules"),
+    "@stagesync/shared",
+  );
+}
+
+async function smokeTestSidecarServer(sidecarServerDir, seedDir) {
+  const dataDir = join(tmpdir(), `stagesync-sidecar-smoke-${Date.now()}`);
+  await mkdir(dataDir, { recursive: true });
+
+  const port = 14000 + Math.floor(Math.random() * 1000);
+  const entry = join(sidecarServerDir, "dist/index.js");
+  if (!existsSync(entry)) {
+    throw new Error(`[sidecar] smoke: missing server entry ${entry}`);
+  }
+
+  console.log(`[sidecar] smoke: starting server on :${port}`);
+  const child = spawn(process.execPath, [entry], {
+    env: {
+      ...process.env,
+      PORT: String(port),
+      STAGESYNC_DATA_DIR: dataDir,
+      STAGESYNC_SEED_DIR: seedDir,
+      NODE_ENV: "production",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  const deadline = Date.now() + 15_000;
+  let lastErr = "timeout";
+  try {
+    while (Date.now() < deadline) {
+      if (child.exitCode != null) {
+        const stderr = await readStream(child.stderr);
+        throw new Error(`[sidecar] smoke: server exited early: ${stderr}`);
+      }
+      try {
+        const res = await fetch(`http://127.0.0.1:${port}/api/health`);
+        if (res.ok) {
+          const body = await res.json();
+          if (body?.ok === true) {
+            console.log("[sidecar] smoke: health OK");
+            return;
+          }
+          lastErr = `unexpected body: ${JSON.stringify(body)}`;
+        } else {
+          lastErr = `HTTP ${res.status}`;
+        }
+      } catch (err) {
+        lastErr = err instanceof Error ? err.message : String(err);
+      }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    throw new Error(`[sidecar] smoke failed: ${lastErr}`);
+  } finally {
+    child.kill("SIGTERM");
+    await new Promise((r) => setTimeout(r, 200));
+    if (child.exitCode == null) child.kill("SIGKILL");
+    await rm(dataDir, { recursive: true, force: true });
+  }
+}
+
+async function readStream(stream) {
+  if (!stream) return "";
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf8").trim();
+}
+
 async function buildAndPrepareSidecarResources() {
   const target = normalizeTargetTriple(getArg("--target"));
   const srcTauriDir = join(repoRoot, "apps/desktop/src-tauri");
@@ -221,9 +350,7 @@ async function buildAndPrepareSidecarResources() {
   const serverDistDir = join(serverPackageRoot, "dist");
   const webPackageRoot = join(repoRoot, "apps/web");
   const webDistDir = join(webPackageRoot, "dist");
-  const sharedPackageRoot = join(repoRoot, "packages/shared");
 
-  const serverNodeModules = join(repoRoot, "apps/server/node_modules");
   const seedTemplate = join(repoRoot, "data/library/library.template.json");
 
   // Build JS outputs first (and shared, because server runtime imports it).
@@ -234,13 +361,8 @@ async function buildAndPrepareSidecarResources() {
 
   console.log("[sidecar] preparing resources");
   await rm(join(srcTauriDir, "resources"), { recursive: true, force: true });
-  await mkdir(sidecarServerDir, { recursive: true });
   await mkdir(sidecarWebDir, { recursive: true });
   await mkdir(sidecarSeedDir, { recursive: true });
-
-  // Server JS
-  await rm(join(sidecarServerDir, "dist"), { recursive: true, force: true });
-  await cp(serverDistDir, join(sidecarServerDir, "dist"), { recursive: true, force: true });
 
   // Seed (read-only)
   await cp(seedTemplate, join(sidecarSeedDir, "library.template.json"));
@@ -250,29 +372,18 @@ async function buildAndPrepareSidecarResources() {
   await mkdir(sidecarWebDir, { recursive: true });
   await copyDirContents(webDistDir, sidecarWebDir);
 
-  // Node dependencies:
-  // For a PoC we copy the root node_modules and then overwrite the workspace package(s)
-  // with a real copy (so we don't ship pnpm symlinks back to the repo).
-  console.log("[sidecar] copying node_modules (PoC size/quality tradeoff)");
-  await rm(join(sidecarServerDir, "node_modules"), { recursive: true, force: true });
-  await cp(serverNodeModules, join(sidecarServerDir, "node_modules"), {
-    recursive: true,
-    force: true,
-  });
-
-  // Replace workspace symlink for @stagesync/shared with a real directory copy.
-  const sharedTargetInNodeModules = join(
-    sidecarServerDir,
-    "node_modules/@stagesync/shared",
-  );
-  await rm(sharedTargetInNodeModules, { recursive: true, force: true });
-  await cp(sharedPackageRoot, sharedTargetInNodeModules, { recursive: true, force: true });
+  console.log("[sidecar] preparing production node_modules (pnpm deploy --prod)");
+  await prepareProductionNodeModules(sidecarServerDir, serverDistDir);
 
   // Finally, prepare Node runtime executable + support files.
   console.log("[sidecar] preparing Node runtime in tauri bundle (externalBin support)");
   await prepareNodeRuntimeIntoTauriBundle(target);
 
   await assertNoRepoDocsInSidecar(sidecarDir);
+
+  if (process.argv.includes("--smoke")) {
+    await smokeTestSidecarServer(sidecarServerDir, sidecarSeedDir);
+  }
 
   console.log("[sidecar] done");
   console.log(

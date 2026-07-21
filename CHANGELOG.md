@@ -23,6 +23,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
+- **Desktop sidecar:** `build-desktop-sidecar.mjs` — produkcyjne `node_modules` przez `pnpm deploy --prod` zamiast kopiowania root `node_modules`; strip `src`/testów z `@stagesync/shared`; opcjonalny `--smoke` (health) w release CI.
 - Shell headers (Admin / Timeline / Client): wordmark tekstowy → SVG logo (`/brand/stagesync-logo*.svg`, wariant light przy `data-theme`).
 - `PUT /api/projects/:id`: body wymaga `updatedAt` (token OCC); mismatch → 409.
 - `@stagesync/shared` package exports → `dist/` (Node runtime / Docker).

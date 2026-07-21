@@ -41,7 +41,7 @@ Dozwolone w `resources/sidecar/`:
 - `web/` — Vite `dist`
 - `server/dist/` — skompilowany host
 - `seed/` — `library.template.json`
-- `server/node_modules/` — zależności runtime (optymalizacja rozmiaru → osobny PR)
+- `server/node_modules/` — zależności runtime (optymalizacja rozmiaru → `pnpm deploy --prod` w [`build-desktop-sidecar.mjs`](../../launch/scripts/build-desktop-sidecar.mjs); bez `src`/testów workspace)
 
 **Zakaz:** katalog `docs/` repo, ADR-y, raporty audytowe, `README.md` produktowy w `web/` lub `server/dist/`.
 Build: [`launch/scripts/build-desktop-sidecar.mjs`](../../launch/scripts/build-desktop-sidecar.mjs) — assert po pakowaniu.
