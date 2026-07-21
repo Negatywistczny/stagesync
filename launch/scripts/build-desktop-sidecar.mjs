@@ -389,7 +389,7 @@ async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
   await rm(sidecarServerDir, { recursive: true, force: true });
   await mkdir(sidecarServerDir, { recursive: true });
 
-  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", sidecarServerDir]);
+  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", "--config.node-linker=hoisted", sidecarServerDir]);
 
   // Use the compiled dist from the monorepo build (not deploy's copied sources).
   await rm(join(sidecarServerDir, "dist"), { recursive: true, force: true });

@@ -64,8 +64,7 @@ const updates = [
     path: "apps/desktop/src-tauri/tauri.conf.json",
     transform: (c) => {
       const obj = JSON.parse(c);
-      const desktopVersion = wixCompat && wixVersion !== version ? wixVersion : version;
-      obj.version = desktopVersion;
+      obj.version = version;
       obj.bundle.windows ??= {};
       if (wixVersion !== version) {
         obj.bundle.windows.wix = { ...(obj.bundle.windows.wix ?? {}), version: wixVersion };
@@ -79,10 +78,7 @@ const updates = [
   },
   {
     path: "apps/desktop/src-tauri/Cargo.toml",
-    transform: (c) => {
-      const cargoVersion = wixCompat && wixVersion !== version ? wixVersion : version;
-      return c.replace(/^version = "[^"]+"/m, `version = "${cargoVersion}"`);
-    },
+    transform: (c) => c.replace(/^version = "[^"]+"/m, `version = "${version}"`),
   },
 ];
 
