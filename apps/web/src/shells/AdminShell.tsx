@@ -6,7 +6,7 @@ import {
   looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
-  ticksToBbt,
+  ticksToBbtAlongMeterMap,
   toDisplayBar,
   ZIP_IMPORT_UNSUPPORTED_PL,
   type Library,
@@ -114,10 +114,22 @@ export function AdminShell() {
   }, "Wyłącz");
 
   const { state, displayTicks, wsStatus, play } = useTransport();
-  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [setlistView, setSetlistView] = useState<SetlistView | null>(null);
+  const bbt = activeProject
+    ? ticksToBbtAlongMeterMap(
+        displayTicks,
+        activeProject.defaultMeter,
+        activeProject.meterMap,
+        activeProject.ppq,
+      )
+    : ticksToBbtAlongMeterMap(
+        displayTicks,
+        state.timeSignature,
+        [],
+        state.ppq,
+      );
 
   const sectionProjectId = state.activeProjectId ?? selectedId;
   const activeSection = activeProject
