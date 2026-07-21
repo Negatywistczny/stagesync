@@ -47,3 +47,5 @@ Przyjmujemy **Tauri** jako desktop shell w β1:
 - CI β1: build Windows + macOS (przynajmniej jeden target smoke).
 - Dokumentacja: „Docker = serwer na scenie”; „Tauri = okno operatora”. Podział in-app vs GitHub: [ADR 0013](./0013-in-app-vs-github-docs.md).
 - Zakaz: MIDI device I/O wyłącznie w procesie Tauri z pominięciem `apps/server`.
+  Host MIDI (lista urządzeń, clock OUT z transportu SSOT, metryki Admin) żyje w
+  `apps/server` (`/api/midi`) — shell tylko wyświetla / konfiguruje przez HTTP.

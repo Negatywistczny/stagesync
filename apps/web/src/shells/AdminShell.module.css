@@ -717,6 +717,22 @@
   line-height: var(--ss-leading-tight);
 }
 
+.midiPorts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-3);
+  min-width: 0;
+}
+
+.midiPortRow {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
 /* —— Status bar (always on) —— */
 
 .status {

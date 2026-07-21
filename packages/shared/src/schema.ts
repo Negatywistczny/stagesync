@@ -416,3 +416,58 @@ export const ApplyUpdateBodySchema = z.object({
 });
 
 export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;
+
+
+/** MIDI port listed by the host (apps/server). */
+export const MidiPortSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  direction: z.enum(["input", "output"]),
+});
+
+export type MidiPort = z.infer<typeof MidiPortSchema>;
+
+/** Runtime selection + feature flags for Host MIDI. */
+export const MidiHostConfigSchema = z.object({
+  inputId: z.string().min(1).nullable(),
+  outputId: z.string().min(1).nullable(),
+  /** Emit MIDI clock / start / stop / SPP on the selected output from transport SSOT. */
+  clockOutEnabled: z.boolean(),
+});
+
+export type MidiHostConfig = z.infer<typeof MidiHostConfigSchema>;
+
+export const PutMidiHostConfigBodySchema = z
+  .object({
+    inputId: z.string().min(1).nullable().optional(),
+    outputId: z.string().min(1).nullable().optional(),
+    clockOutEnabled: z.boolean().optional(),
+  })
+  .strict();
+
+export type PutMidiHostConfigBody = z.infer<typeof PutMidiHostConfigBodySchema>;
+
+/** Rates are approximate messages (or beats) in the last ~1s. */
+export const MidiHostRatesSchema = z.object({
+  clockPerSec: z.number().nonnegative(),
+  sppPerSec: z.number().nonnegative(),
+  pcPerSec: z.number().nonnegative(),
+  beatToWsPerSec: z.number().nonnegative(),
+});
+
+export type MidiHostRates = z.infer<typeof MidiHostRatesSchema>;
+
+/** GET /api/midi — Admin Host status. */
+export const MidiHostStatusSchema = z.object({
+  available: z.boolean(),
+  backend: z.enum(["native", "mock", "none"]),
+  config: MidiHostConfigSchema,
+  inputs: z.array(MidiPortSchema),
+  outputs: z.array(MidiPortSchema),
+  rates: MidiHostRatesSchema,
+  /** True while transport is playing and clock-out timer is armed. */
+  clockOutActive: z.boolean(),
+  lastError: z.string().nullable(),
+});
+
+export type MidiHostStatus = z.infer<typeof MidiHostStatusSchema>;

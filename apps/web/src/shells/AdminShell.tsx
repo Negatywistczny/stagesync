@@ -25,9 +25,9 @@ import {
   updateProject,
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
-import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
+import { fetchSetlist, clearHostLogs, fetchNetworkInfo, fetchMidiHostStatus, putMidiHostConfig, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus, type MidiHostStatus } from "../lib/setlistApi.js";
 import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen, formatUnknownError, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
-import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
+import { pushRecentTimelineProject, setLastTimelineProjectId } from "../lib/lastTimelineProject.js";
 import {
   DOCS_INSTALL_URL,
   DOCS_ISSUES_URL,
@@ -1069,8 +1069,21 @@ function HostView({
   const [paused, setPaused] = useState(false);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
+  const [midi, setMidi] = useState<MidiHostStatus | null>(null);
+  const [midiError, setMidiError] = useState<string | null>(null);
+  const [midiBusy, setMidiBusy] = useState(false);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+
+  const refreshMidi = useCallback(async () => {
+    try {
+      const status = await fetchMidiHostStatus();
+      setMidi(status);
+      setMidiError(null);
+    } catch (err) {
+      setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -1090,6 +1103,14 @@ function HostView({
   }, []);
 
   useEffect(() => {
+    void refreshMidi();
+    const id = window.setInterval(() => {
+      void refreshMidi();
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [refreshMidi]);
+
+  useEffect(() => {
     const es = new EventSource("/api/system/logs/stream");
     es.onmessage = (ev) => {
       if (pausedRef.current) return;
@@ -1105,6 +1126,29 @@ function HostView({
     });
     return () => es.close();
   }, []);
+
+  const applyMidiConfig = useCallback(
+    async (patch: {
+      inputId?: string | null;
+      outputId?: string | null;
+      clockOutEnabled?: boolean;
+    }) => {
+      setMidiBusy(true);
+      try {
+        const status = await putMidiHostConfig(patch);
+        setMidi(status);
+        setMidiError(null);
+      } catch (err) {
+        setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
+      } finally {
+        setMidiBusy(false);
+      }
+    },
+    [],
+  );
+
+  const rateLabel = (n: number | undefined) =>
+    n == null ? "—" : String(Math.round(n));
 
   return (
     <div className={styles.stack}>
@@ -1189,25 +1233,110 @@ function HostView({
             <h2 className={styles.cardTitle}>MIDI</h2>
           </div>
           <div className={`${styles.cardBody} ${styles.midiBody}`}>
-            <p className={styles.muted}>Host MIDI I/O — β2</p>
-            <div className={styles.midiGrid}>
-              <div className={styles.midiCard}>
-                <span className={styles.midiLabel}>Clock/s</span>
-                <span className={styles.midiValue}>—</span>
-              </div>
-              <div className={styles.midiCard}>
-                <span className={styles.midiLabel}>SPP/s</span>
-                <span className={styles.midiValue}>—</span>
-              </div>
-              <div className={styles.midiCard}>
-                <span className={styles.midiLabel}>PC/s</span>
-                <span className={styles.midiValue}>—</span>
-              </div>
-              <div className={styles.midiCard}>
-                <span className={styles.midiLabel}>Beat→WS</span>
-                <span className={styles.midiValue}>—</span>
-              </div>
-            </div>
+            {midiError ? (
+              <p className={styles.error} role="alert">
+                {midiError}
+              </p>
+            ) : null}
+            {midi ? (
+              <>
+                <p className={styles.muted}>
+                  Backend <strong>{midi.backend}</strong>
+                  {midi.clockOutActive ? " · clock OUT" : ""}
+                  {midi.lastError ? ` · ${midi.lastError}` : ""}
+                </p>
+                <div className={styles.midiGrid}>
+                  <div className={styles.midiCard}>
+                    <span className={styles.midiLabel}>Clock/s</span>
+                    <span className={styles.midiValue}>
+                      {rateLabel(midi.rates.clockPerSec)}
+                    </span>
+                  </div>
+                  <div className={styles.midiCard}>
+                    <span className={styles.midiLabel}>SPP/s</span>
+                    <span className={styles.midiValue}>
+                      {rateLabel(midi.rates.sppPerSec)}
+                    </span>
+                  </div>
+                  <div className={styles.midiCard}>
+                    <span className={styles.midiLabel}>PC/s</span>
+                    <span className={styles.midiValue}>
+                      {rateLabel(midi.rates.pcPerSec)}
+                    </span>
+                  </div>
+                  <div className={styles.midiCard}>
+                    <span className={styles.midiLabel}>Beat→WS</span>
+                    <span className={styles.midiValue}>
+                      {rateLabel(midi.rates.beatToWsPerSec)}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.midiPorts}>
+                  <label className={styles.midiPortRow}>
+                    <span className={styles.midiLabel}>Wejście</span>
+                    <select
+                      className={styles.select}
+                      disabled={midiBusy || !midi.available}
+                      value={midi.config.inputId ?? ""}
+                      aria-label="MIDI input"
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        void applyMidiConfig({ inputId: v === "" ? null : v });
+                      }}
+                    >
+                      <option value="">—</option>
+                      {midi.inputs.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={styles.midiPortRow}>
+                    <span className={styles.midiLabel}>Wyjście</span>
+                    <select
+                      className={styles.select}
+                      disabled={midiBusy || !midi.available}
+                      value={midi.config.outputId ?? ""}
+                      aria-label="MIDI output"
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        void applyMidiConfig({ outputId: v === "" ? null : v });
+                      }}
+                    >
+                      <option value="">—</option>
+                      {midi.outputs.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={styles.midiPortRow}>
+                    <span className={styles.midiLabel}>Clock OUT</span>
+                    <input
+                      type="checkbox"
+                      checked={midi.config.clockOutEnabled}
+                      disabled={midiBusy || !midi.available}
+                      aria-label="MIDI clock out"
+                      onChange={(e) => {
+                        void applyMidiConfig({
+                          clockOutEnabled: e.target.checked,
+                        });
+                      }}
+                    />
+                  </label>
+                </div>
+                {!midi.available ? (
+                  <p className={styles.muted}>
+                    Brak natywnego MIDI w tym środowisku (Docker / CI). Desktop
+                    sidecar ładuje urządzenia hosta.
+                  </p>
+                ) : null}
+              </>
+            ) : midiError ? null : (
+              <p className={styles.muted}>Wczytywanie…</p>
+            )}
           </div>
         </section>
       </div>
@@ -1453,11 +1582,116 @@ function HostSettingsModal({
   onClose: () => void;
   onPathPicker: () => void;
 }) {
+  const [midi, setMidi] = useState<MidiHostStatus | null>(null);
+  const [midiError, setMidiError] = useState<string | null>(null);
+  const [midiBusy, setMidiBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const status = await fetchMidiHostStatus();
+        if (!cancelled) setMidi(status);
+      } catch (err) {
+        if (!cancelled) {
+          setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const applyMidiConfig = async (patch: {
+    inputId?: string | null;
+    outputId?: string | null;
+    clockOutEnabled?: boolean;
+  }) => {
+    setMidiBusy(true);
+    try {
+      const status = await putMidiHostConfig(patch);
+      setMidi(status);
+      setMidiError(null);
+    } catch (err) {
+      setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
+    } finally {
+      setMidiBusy(false);
+    }
+  };
+
   return (
     <Modal title="Ustawienia hosta" onClose={onClose}>
-      <fieldset className={styles.fieldset} disabled>
+      <fieldset className={styles.fieldset}>
         <legend>MIDI</legend>
-        <p className={styles.muted}>Host MIDI I/O — β2</p>
+        {midiError ? (
+          <p className={styles.error} role="alert">
+            {midiError}
+          </p>
+        ) : null}
+        {midi ? (
+          <div className={styles.midiPorts}>
+            <label className={styles.midiPortRow}>
+              <span className={styles.midiLabel}>Wejście</span>
+              <select
+                className={styles.select}
+                disabled={midiBusy || !midi.available}
+                value={midi.config.inputId ?? ""}
+                aria-label="MIDI input"
+                onChange={(e) => {
+                  const v = e.target.value;
+                  void applyMidiConfig({ inputId: v === "" ? null : v });
+                }}
+              >
+                <option value="">—</option>
+                {midi.inputs.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.midiPortRow}>
+              <span className={styles.midiLabel}>Wyjście</span>
+              <select
+                className={styles.select}
+                disabled={midiBusy || !midi.available}
+                value={midi.config.outputId ?? ""}
+                aria-label="MIDI output"
+                onChange={(e) => {
+                  const v = e.target.value;
+                  void applyMidiConfig({ outputId: v === "" ? null : v });
+                }}
+              >
+                <option value="">—</option>
+                {midi.outputs.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.midiPortRow}>
+              <span className={styles.midiLabel}>Clock OUT</span>
+              <input
+                type="checkbox"
+                checked={midi.config.clockOutEnabled}
+                disabled={midiBusy || !midi.available}
+                aria-label="MIDI clock out"
+                onChange={(e) => {
+                  void applyMidiConfig({ clockOutEnabled: e.target.checked });
+                }}
+              />
+            </label>
+            <p className={styles.muted}>
+              Env: <code>STAGESYNC_MIDI_INPUT</code> /{" "}
+              <code>STAGESYNC_MIDI_OUTPUT</code> (boot). I/O tylko w{" "}
+              <code>apps/server</code> — nie w Tauri.
+            </p>
+          </div>
+        ) : midiError ? null : (
+          <p className={styles.muted}>Wczytywanie…</p>
+        )}
       </fieldset>
       <fieldset className={styles.fieldset}>
         <legend>Sieć</legend>

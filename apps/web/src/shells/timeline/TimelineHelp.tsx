@@ -109,7 +109,8 @@ export function TimelineHelpBody() {
     <div className={styles.helpBody}>
       <p className={styles.helpLead}>
         StageSync Timeline — skróty i narzędzia (v5). Treść jak w v4; bez funkcji
-        świadomie OUT (fade/stretch audio, Host MIDI I/O do osobnego PR).
+        świadomie OUT (fade/stretch audio). Host MIDI I/O = serwer (`/api/midi`),
+        nie Timeline.
       </p>
       <div className={styles.helpGrid}>
         {SECTIONS.map((section) => (
