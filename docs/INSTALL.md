@@ -1,9 +1,9 @@
-# StageSync — instalacja produkcyjna (Docker)
+# StageSync — instalacja produkcyjna (Docker — ścieżka drugorzędna)
 
-Kanoniczny host na scenie: **Docker Compose** + volume `data/`.
+Host na scenie (rack/server): **Docker Compose** + volume `data/`.
 Aktualizacja bez git-apply — [ADR 0004](./adr/0004-updates-docker.md).
 
-Desktop operatora (thin WebView): [DESKTOP.md](./DESKTOP.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).
+Desktop operatora (standalone): [DESKTOP.md](./DESKTOP.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
 ## Wymagania
 

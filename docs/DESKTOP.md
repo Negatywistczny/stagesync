@@ -2,11 +2,11 @@
 
 Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
-**β1:** shell ładuje URL lokalnego serwera (`STAGESYNC_URL`, domyślnie `http://127.0.0.1:4000`).  
-**Bez** sidecar Node w bundlu; **bez** MIDI / zegara muzycznego w procesie Tauri.
+**β1:** aplikacja uruchamia wbudowany serwer w postaci **Node sidecar**, wystawia lokalny API na `http://127.0.0.1:4000`, a shell ładuje UI z tego adresu.  
+**Bez** MIDI / zegara muzycznego w procesie Tauri.
 
-> **Dane projektów** są przechowywane przez serwer w `~/Documents/StageSync` —
-> shell nie trzyma żadnych danych. Szczegóły: [INSTALL.md](./INSTALL.md) § Folder danych użytkownika · [ADR 0012](./adr/0012-user-data-location.md).
+> **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —
+> shell nie trzyma żadnych danych. Szczegóły: [ADR 0012](./adr/0012-user-data-location.md).
 
 ## Instalacja (gotowe instalatory)
 
@@ -33,7 +33,7 @@ Instalatory beta nie są podpisane certyfikatem OS. Obejście:
 
 Gdy jest dostępna nowa wersja:
 
-1. Uruchom host StageSync (Docker / `pnpm dev`).
+1. Uruchom aplikację StageSync.
 2. W Adminie → sekcja **O aplikacji** → **Sprawdź aktualizacje**.
 3. Jeśli jest nowsza wersja shella: **Aktualizuj aplikację**.
 4. Shell pobierze podpisany bundle (minisign), zamknie się i zainstaluje nową wersję.
@@ -44,12 +44,13 @@ Gdy jest dostępna nowa wersja:
 
 - Rust toolchain (`rustup`) + platform deps Tauri 2  
   — https://v2.tauri.app/start/prerequisites/
-- Działający host StageSync na `:4000` ([INSTALL.md](./INSTALL.md))
+- W β1 host jest uruchamiany automatycznie przez aplikację (sidecar Node).
+- W dev / thin-shell możesz użyć zewnętrznego hosta przez `STAGESYNC_URL`.
 
 ## Dev
 
 ```sh
-# Terminal A — host
+# Terminal A — opcjonalny zewnętrzny host (thin-shell)
 docker compose up --build
 # albo: pnpm dev
 
@@ -58,7 +59,7 @@ pnpm install
 pnpm --filter @stagesync/desktop tauri dev
 ```
 
-Opcjonalnie: `STAGESYNC_URL=http://127.0.0.1:4000 pnpm --filter @stagesync/desktop tauri dev`
+Opcjonalnie (dev / thin-shell): `STAGESYNC_URL=http://127.0.0.1:4000 pnpm --filter @stagesync/desktop tauri dev`
 
 ## Build lokalny (macOS / Windows)
 

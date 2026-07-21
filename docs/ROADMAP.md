@@ -74,7 +74,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 - **CL-01 / 04 / 05** Client P0 + **PO smoke P8 green** (zachowanie)
 - Tag `v5.0.0-alpha.9` — done; aktywny etap → **β1** ([TODO.md](./TODO.md))
 
-### Beta 1 — zakres orientacyjny (host / dystrybucja)
+### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja)
 
 > **P8 green 2026-07-21.** Start β1 / tag `5.0.0-beta.*` — **tylko na prośbę**
 > ([ADR 0011](./adr/0011-ui-parity-behavior.md),
@@ -83,8 +83,8 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 > Świadome OUT: git-apply; audio/MIDI/Live Desk/wand/Help feature/P1 Timeline (→ β2 / 5.0.0).
 > Inventarz `[x]` ≠ parity.
 
-- Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu; [INSTALL.md](./INSTALL.md)
-- **Tauri** desktop shell ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): thin WebView → URL lokalnego serwera; Win + mac; **bez** sidecar / autorytetu czasu w shellu
+- Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu — **ścieżka drugorzędna** dla rack/server; [INSTALL.md](./INSTALL.md)
+- **Tauri** desktop standalone ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): shell uruchamia wbudowany **Node sidecar** (lokalny host), czeka na health-check i dopiero potem ładuje UI; Win + mac; **bez** autorytetu czasu w shellu
 - Stabilność hosta: shadow backup, OCC (`409`), migracja schematu na volume przy starcie, ESLint ACL shared, API `details` z Zod
 - Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — should, nie bloker hosta
 - **OUT β1:** audio / MIDI / AD-01…03 / wand / Timeline Help feature / P1 Timeline → β2 lub 5.0.0; Android; store auto-update

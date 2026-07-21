@@ -21,16 +21,16 @@ Przy tagu `v5.0.0-alpha.N` (analogicznie `beta.N`, `5.0.0`):
 
 ## Beta.1 — Host / dystrybucja
 
-Hero: Docker + Tauri + stabilność hosta (**bez** audio/MIDI / feature product — β2).  
+Hero: Desktop standalone (Tauri + Node sidecar) + stabilność hosta (+ Docker jako ścieżka drugorzędna) (**bez** audio/MIDI / feature product — β2).  
 Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md) · [ADR 0004](./adr/0004-updates-docker.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
 ### Must
 
-- [x] Docker Compose: obraz + volume `data/`; update = bump tagu obrazu ([ADR 0004](./adr/0004-updates-docker.md)); docs [INSTALL.md](./INSTALL.md)
-- [x] **Tauri** desktop shell: thin WebView → lokalny API/WS (URL do Compose / `:4000`); Win + mac; **bez** autorytetu czasu w shellu ([ADR 0010](./adr/0010-desktop-shell-tauri.md)) · [DESKTOP.md](./DESKTOP.md)
+- [x] Docker Compose: obraz + volume `data/`; update = bump tagu obrazu — ścieżka drugorzędna dla rack/server ([ADR 0004](./adr/0004-updates-docker.md)); docs [INSTALL.md](./INSTALL.md)
+- [ ] **Tauri** desktop standalone: shell uruchamia wbudowany **Node sidecar**, czeka na health-check i dopiero potem ładuje UI; Win + mac; **bez** autorytetu czasu w procesie Tauri ([ADR 0010](./adr/0010-desktop-shell-tauri.md)) · [DESKTOP.md](./DESKTOP.md)
 - [x] Stabilność hosta: shadow backup, OCC (`409` na stale `updatedAt`), migracja schematu na volume przy starcie
 - [x] ESLint ACL shared + API `details` z Zod
-- [x] CI: `pnpm lint && check-types && test && build` + Compose build (+ Tauri `cargo check` / manual Win)
+- [ ] CI: `pnpm lint && check-types && test && build` + build/packaging sidecara + Compose/Tauri smoke (zgodnie z bramką beta)
 
 ### Should (host only)
 
@@ -43,7 +43,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./an
 - Host MIDI I/O — **β2**
 - **AD-01…03** Transpozycja / Lead / Edycja zdalna — **β2**
 - Timeline Help (feature), Różdżka (wand), P1 Timeline gaps — **β2 / 5.0.0**
-- Sidecar Node w bundlu desktop — OUT β1 (prefer URL do lokalnego serwera)
+- Tauri thin-shell przez `STAGESYNC_URL` — OUT β1 (dev/thin-shell tylko)
 - git-apply — nigdy ([ADR 0004](./adr/0004-updates-docker.md)); update na żądanie z Admina (Watchtower + Tauri updater) = IN β1
 - Android shell / store auto-update — poza β1
 - Clone chrome v4 — **zakaz** ([ADR 0011](./adr/0011-ui-parity-behavior.md))
@@ -51,15 +51,16 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./an
 ### Release
 
 - [x] Scope report [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md)
-- [ ] Bramka beta-gate G1–G9 green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
-  - [ ] G1: GHCR image po `workflow_dispatch`
-  - [ ] G2: compose.prod.yml health
-  - [ ] G3: .dmg działa
-  - [ ] G4: .msi działa
-  - [ ] G5: host update z Admina
-  - [ ] G6: rollback obrazu
-  - [ ] G7: desktop update z Admina (Tauri)
-  - [ ] G8: przeglądarka — brak przycisku desktop, jest link
-  - [ ] G9: docs kompletne
+- [ ] Bramka beta-gate G1–G10 green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
+  - [ ] G1: `.dmg` działa bez Dockera/Node u użytkownika
+  - [ ] G2: `.msi` działa bez Dockera/Node u użytkownika
+  - [ ] G3: dane w katalogu użytkownika (nie w `.app` / Program Files)
+  - [ ] G4: zamknięcie okna zabija proces Node sidecara
+  - [ ] G5: konflikt portu 4000 → czytelny komunikat błędu
+  - [ ] G6: desktop update z Admina (Tauri) działa
+  - [ ] G7: compose.prod.yml health
+  - [ ] G8: host update z Admina (Docker secondary) i `data/` bez zmian
+  - [ ] G9: rollback obrazu
+  - [ ] G10: docs INSTALL + DESKTOP zgodne z faktycznym flow
 - [ ] Tag / bump `5.0.0-beta.1` tylko na prośbę po green gate; CHANGELOG z Unreleased
 - [ ] TODO → β2 **na prośbę** po zamknięciu β1

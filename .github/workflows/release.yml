@@ -98,6 +98,9 @@ jobs:
       - name: Sync version into files
         run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
 
+      - name: Build desktop sidecar (Node + server + web)
+        run: node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -142,6 +145,9 @@ jobs:
 
       - name: Sync version into files
         run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
+
+      - name: Build desktop sidecar (Node + server + web)
+        run: node launch/scripts/build-desktop-sidecar.mjs --target x86_64-pc-windows-msvc
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -201,19 +207,20 @@ jobs:
           body: |
             ## StageSync v${{ env.VERSION }}
 
-            ### Docker (serwer / scena)
+            ### Desktop standalone (operator)
+            Pobierz instalator dla swojej platformy poniżej.
+            Instalacja bez podpisu: [DESKTOP.md](https://github.com/Negatywistczny/stagesync/blob/main/docs/DESKTOP.md).
+            Po uruchomieniu aplikacja startuje lokalny serwer wbudowanym Node sidecarem (bez potrzeby Dockera/Node u użytkownika).
+
+            ---
+            Pełna instrukcja: [INSTALL.md](https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md)
+
+            ### Docker (serwer / scena — ścieżka drugorzędna)
             ```sh
             docker login ghcr.io
             STAGESYNC_VERSION=${{ env.VERSION }} docker compose -f compose.prod.yml up -d
             ```
             Obraz: `ghcr.io/negatywistczny/stagesync:${{ env.VERSION }}`
-
-            ### Desktop shell (operator)
-            Pobierz instalator dla swojej platformy poniżej.
-            Instalacja bez podpisu: [DESKTOP.md](https://github.com/Negatywistczny/stagesync/blob/main/docs/DESKTOP.md).
-
-            ---
-            Pełna instrukcja: [INSTALL.md](https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md)
           files: |
             dist/*.dmg
             dist/*.msi

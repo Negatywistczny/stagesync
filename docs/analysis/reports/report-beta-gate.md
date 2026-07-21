@@ -5,48 +5,50 @@
 
 ## Zasada
 
-Tag i bump `5.0.0-beta.1` **dopiero po** green G1–G9 i jawnej prośbie operatora.  
+Tag i bump `5.0.0-beta.1` **dopiero po** green G1–G10 i jawnej prośbie operatora.  
 Weryfikacja: uruchomić `workflow_dispatch` na `5.0.0-alpha.9` i przejść przez checklistę.
 
-## Checklista G1–G9
+## Checklista G1–G10
 
 | ID | Kryterium | Status |
 |----|-----------|--------|
-| G1 | `workflow_dispatch` na `alpha.9`: obraz w GHCR (`ghcr.io/negatywistczny/stagesync:5.0.0-alpha.9`) | ⬜ |
-| G2 | `compose.prod.yml up` + `GET /api/health` zwraca 200 | ⬜ |
-| G3 | `.dmg` pobrane z GitHub Release asset: otwiera WebView → Admin przy działającym hoście `:4000` | ⬜ |
-| G4 | `.msi` pobrane z GitHub Release asset: instaluje i łączy z `:4000` | ⬜ |
-| G5 | Host update: starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian | ⬜ |
-| G6 | Rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ |
-| G7 | Desktop update (macOS): Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ |
-| G8 | Przeglądarka (bez Tauri): host update działa; zamiast „Aktualizuj aplikację" widać link do Releases | ⬜ |
-| G9 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow | ⬜ |
+| G1 | `.dmg` pobrane z GitHub Release asset: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ |
+| G2 | `.msi` pobrane z GitHub Release asset: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ |
+| G3 | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files) | ⬜ |
+| G4 | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot) | ⬜ |
+| G5 | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView) | ⬜ |
+| G6 | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ |
+| G7 | Docker secondary: `compose.prod.yml up` + `GET /api/health` zwraca 200 | ⬜ |
+| G8 | Host update (Docker secondary): starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian; w przeglądarce bez Tauri desktop update nie jest przyciskiem | ⬜ |
+| G9 | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ |
+| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow | ⬜ |
 
 ## Sekwencja weryfikacji
 
 1. Push kodu (bez bumpu wersji) → CI zielone.
 2. GitHub Actions → Release workflow → `workflow_dispatch` → `version: 5.0.0-alpha.9`.
-3. Sprawdź GHCR: czy obraz dostępny po `docker login ghcr.io`. → **G1**
-4. Uruchom `compose.prod.yml` z STAGESYNC_VERSION=5.0.0-alpha.9 → `/api/health`. → **G2**
-5. Pobierz `.dmg` z Release assets → otwórz na macOS (unsigned, prawy klik → Otwórz). → **G3**
-6. Pobierz `.msi` z Release assets → zainstaluj na Windows. → **G4**
-7. Zbuduj kolejny testowy obraz z wersją `5.0.0-alpha.9-test2` (lub dispatch ponownie):
-   - Ustaw starszy obraz w `.env` → uruchom Compose → otwórz Admin.
-   - Kliknij Sprawdź → Aktualizuj host → obserwuj restart.
-   - Sprawdź wersję po restarcie + `data/`. → **G5**
-8. Rollback do starszego tagu → sprawdź. → **G6**
-9. Zainstaluj starszą wersję `.dmg` (Tauri) → Sprawdź → Aktualizuj aplikację. → **G7**
-10. Otwórz Admin w przeglądarce (http://localhost:4000/admin) → Sprawdź aktualizacje → brak przycisku desktop, jest link do Releases. → **G8**
-11. Przeczytaj INSTALL/DESKTOP — czy odpowiadają faktycznemu flow. → **G9**
+3. Pobierz `.dmg` z Release assets → otwórz na macOS (unsigned, prawy klik → Otwórz). → **G1**
+4. Pobierz `.msi` z Release assets → zainstaluj na Windows. → **G2**
+5. Weryfikuj:
+   - lokalne zapisanie do katalogu użytkownika → **G3**
+   - zamknięcie okna Tauri usuwa Node sidecar → **G4**
+   - konflikt portu `4000` daje czytelny komunikat → **G5**
+6. Zbuduj kolejny testowy build desktop (testowa wersja z tego samego `dispatch` lub `alpha.9-test2`) i sprawdź:
+   - Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch → **G6**
+7. Docker secondary:
+   - `compose.prod.yml` z STAGESYNC_VERSION=5.0.0-alpha.9 → `/api/health` → **G7**
+   - host update: starszy obraz → Admin → Aktualizuj host → `data/` bez zmian → **G8**
+   - rollback do poprzedniego tagu → **G9**
+8. Przeczytaj INSTALL/DESKTOP — czy odpowiadają faktycznemu flow. → **G10**
 
 ## Ograniczenia beta
 
 - Instalatory **unsigned** (brak notaryzacji Apple / cert EV Windows) — obejście w [DESKTOP.md](../../docs/DESKTOP.md).
 - GHCR **prywatny** — operator potrzebuje PAT `read:packages` — instrukcja w [INSTALL.md](../../docs/INSTALL.md).
-- Windows G4/G7: wymaga ręcznej maszyny Win (CI nie builduje msi w compose health jobie).
-- Desktop update (G7) wymaga dwóch różnych wersji buildów Tauri — przy pierwszym `alpha.9` test G7 jest N/A lub wymaga alpha.10.
+- Windows G2/G6: wymaga ręcznej maszyny Win (CI nie weryfikuje instalacji/relauch w środowisku operatora).
+- Desktop update (G6) wymaga dwóch różnych wersji buildów Tauri — przy pierwszym `alpha.9` test G6 jest N/A lub wymaga alpha.10.
 
-## Po green G1–G9
+## Po green G1–G10
 
 ```sh
 # 1. Sync wersji

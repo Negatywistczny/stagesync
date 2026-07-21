@@ -1,8 +1,8 @@
 # StageSync
 
-[![CI](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml/badge.svg)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
-[![version](https://img.shields.io/github/package-json/v/Negatywistczny/stagesync?label=version&style=flat-square)](https://github.com/Negatywistczny/stagesync/releases)
-[![license](https://img.shields.io/github/license/Negatywistczny/stagesync?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
+[![version](https://img.shields.io/badge/version-5.0.0--alpha.9-blue)](https://github.com/Negatywistczny/stagesync/releases)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 
@@ -10,7 +10,16 @@ StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
 
 ## Szybki start — scena / produkcja
 
-### Serwer (Docker)
+### Aplikacja desktop (Tauri — standalone, primary)
+
+Pobierz `.dmg` (macOS) lub `.msi` (Windows) z [Releases](https://github.com/Negatywistczny/stagesync/releases) i zainstaluj.
+W β1 aplikacja uruchamia lokalny serwer (sidecar Node) automatycznie i otwiera okno Admin/Timeline.
+
+Instrukcja: [docs/DESKTOP.md](docs/DESKTOP.md).
+
+> Uwaga (PoC v1): serwer startuje na `http://127.0.0.1:4000`. Jeśli port `4000` jest zajęty, zobaczysz czytelny błąd zamiast pustego ekranu.
+
+### Serwer sceniczny (Docker — secondary)
 
 ```sh
 docker login ghcr.io          # PAT read:packages — jednorazowo
@@ -25,13 +34,6 @@ docker compose -f compose.prod.yml up -d
 | http://localhost:4000/timeline | Timeline (edytor) |
 
 Pełna instrukcja: [docs/INSTALL.md](docs/INSTALL.md).
-
-### Aplikacja desktop (Tauri — opcjonalnie)
-
-Pobierz `.dmg` (macOS) lub `.msi` (Windows) z [Releases](https://github.com/Negatywistczny/stagesync/releases) i zainstaluj.
-Shell otwiera okno Admin/Timeline podłączone do lokalnego serwera.
-
-Instrukcja (unsigned install, update z Admina): [docs/DESKTOP.md](docs/DESKTOP.md).
 
 ### Aktualizacja
 
@@ -66,7 +68,7 @@ Wersja: `"version"` w root `package.json`.
 | Plik | Zawartość |
 |------|-----------|
 | [INSTALL](docs/INSTALL.md) | Docker Compose — scena, GHCR, update/rollback |
-| [DESKTOP](docs/DESKTOP.md) | Tauri thin shell — operator |
+| [DESKTOP](docs/DESKTOP.md) | Tauri standalone (sidecar) — operator |
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | Mapa monorepo, SSOT, legacy |
 | [ROADMAP](docs/ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) |
 | [TODO](docs/TODO.md) | Checklista bieżącego etapu |

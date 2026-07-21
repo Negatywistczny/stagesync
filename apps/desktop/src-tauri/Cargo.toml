@@ -14,11 +14,12 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["process"] }
 tauri-plugin-updater = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tokio = { version = "1", features = ["rt"] }
+tokio = { version = "1", features = ["rt", "net", "time", "io-util"] }
+open = "5"
 
 [profile.release]
 panic = "abort"

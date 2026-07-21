@@ -17,10 +17,11 @@ export type DataPaths = {
 };
 
 export function resolveDataPaths(dataDir = defaultDataDir()): DataPaths {
+  const seedDir = defaultSeedDir();
   return {
     dataDir,
     libraryFile: join(dataDir, "library", "library.json"),
-    libraryTemplate: join(REPO_ROOT, "data/library/library.template.json"),
+    libraryTemplate: join(seedDir, "library.template.json"),
     setlistFile: join(dataDir, "library", "setlist.json"),
     projectsDir: join(dataDir, "projects"),
   };
@@ -42,6 +43,17 @@ export function defaultDataDir(): string {
   const home = process.env.HOME ?? process.env.USERPROFILE ?? null;
   if (home) return join(home, "Documents", "StageSync");
   return join(REPO_ROOT, "data");
+}
+
+/**
+ * Resolve the bundled/seed directory for a first-run library template.
+ *
+ * - Docker/dev: falls back to repo `data/library/`.
+ * - Standalone desktop: can be overridden to point at bundled resources
+ *   inside the application package.
+ */
+export function defaultSeedDir(): string {
+  return process.env.STAGESYNC_SEED_DIR ?? join(REPO_ROOT, "data/library");
 }
 
 export class InvalidProjectIdError extends Error {
