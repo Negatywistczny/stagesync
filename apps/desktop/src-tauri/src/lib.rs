@@ -241,6 +241,21 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         &[&open_recent, &file_sep, &file_save, &file_close],
     )?;
 
+    // macOS routes ⌘C/X/V/A through the app menu First Responder chain.
+    // Without these PredefinedMenuItems, WebView text selection only copies via
+    // context menu — keyboard shortcuts are silent. (Full Undo/Redo → Timeline
+    // stays Faza D; do not steal ⌘Z with PredefinedMenuItem::undo here.)
+    let edit_cut = PredefinedMenuItem::cut(app, Some("Wytnij"))?;
+    let edit_copy = PredefinedMenuItem::copy(app, Some("Kopiuj"))?;
+    let edit_paste = PredefinedMenuItem::paste(app, Some("Wklej"))?;
+    let edit_select_all = PredefinedMenuItem::select_all(app, Some("Zaznacz wszystko"))?;
+    let edit_submenu = Submenu::with_items(
+        app,
+        "Edycja",
+        true,
+        &[&edit_cut, &edit_copy, &edit_paste, &edit_select_all],
+    )?;
+
     let nav_admin = MenuItem::with_id(app, "nav_admin", "Admin", true, Some("CmdOrCtrl+1"))?;
     let nav_timeline =
         MenuItem::with_id(app, "nav_timeline", "Timeline", true, Some("CmdOrCtrl+2"))?;
@@ -387,6 +402,7 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         &[
             &app_submenu,
             &file_submenu,
+            &edit_submenu,
             &view_submenu,
             &transport_submenu,
             &host_submenu,

@@ -4,18 +4,19 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 
 **β1:** aplikacja uruchamia wbudowany serwer w postaci **Node sidecar**, wystawia lokalny API na `http://127.0.0.1:4000`, a shell ładuje UI z tego adresu.  
 **Domyślny widok desktop:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/client`) w shellu; w przeglądarce / Dockerze root `/` nadal to Client.  
-**Nawigacja desktop ([ADR 0010](./adr/0010-desktop-shell-tauri.md)):** menu OS **StageSync** | **Plik** | **Widok** | **Transport** | **Host** | **Pomoc** — bez osobnego chrome `ShellModeNav`.
+**Nawigacja desktop ([ADR 0010](./adr/0010-desktop-shell-tauri.md)):** menu OS **StageSync** | **Plik** | **Edycja** | **Widok** | **Transport** | **Host** | **Pomoc** — bez osobnego chrome `ShellModeNav`.
 
 | Menu | Pozycje |
 |------|---------|
 | **StageSync** | O programie; Sprawdź aktualizacje…; Zakończ |
 | **Plik** | Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zamknij projekt |
+| **Edycja** | Wytnij / Kopiuj / Wklej / Zaznacz wszystko (`⌘/Ctrl+X/C/V/A`) — `PredefinedMenuItem` (macOS First Responder; skróty w polach tekstowych WebView) |
 | **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Pełny ekran |
 | **Transport** | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`) — SSOT `/api/transport/*` |
 | **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
 | **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
 
-**Faza A** = StageSync / Widok / Pomoc (**α12**). **Faza B+C** = Plik / Host / Transport (**β2**). **Faza D** → 5.0.0 — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
+**Faza A** = StageSync / Widok / Pomoc (**α12**). **Faza B+C** = Plik / Host / Transport (**β2**). **Edycja** (cut/copy/paste/select-all) = hotfix skrótów WebView; pełne Undo/Redo / Delete → Timeline = **Faza D** → 5.0.0 — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
 **Bez** MIDI / zegara muzycznego w procesie Tauri — Host MIDI I/O + clock żyje wyłącznie w `apps/server` (`GET/PUT /api/midi`, [ADR 0010](./adr/0010-desktop-shell-tauri.md) / [ADR 0002](./adr/0002-timebase-ssot.md)). Akcje menu → `navigate` albo `CustomEvent` w WebView (shell nie jest autorytetem czasu); Admin → Host pokazuje status MIDI.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —
