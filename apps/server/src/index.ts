@@ -10,14 +10,25 @@ const LISTEN_RETRY_MS = 250;
 const LISTEN_RETRY_MAX = 40;
 
 const server = createServer();
+
+let disposeMidi: (() => void) | null = null;
 const lifecycle = createLifecycle(server, {
   log: (msg) => console.log(`[stagesync-server] ${msg}`),
+  onBeforeClose: () => {
+    try {
+      disposeMidi?.();
+    } catch {
+      /* ignore */
+    }
+  },
 });
 
-const { app, transport, stageHub, presence, logBuffer, stores } = createApp({
-  lifecycle,
-  port: PORT,
-});
+const { app, transport, stageHub, presence, logBuffer, stores, midi } =
+  createApp({
+    lifecycle,
+    port: PORT,
+  });
+disposeMidi = () => midi.dispose();
 
 server.on("request", app);
 attachTransportWs(server, transport, stageHub, presence);

@@ -26,7 +26,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 2 · [report-scope-beta2.md](./an
 
 ### Must
 
-- [ ] **Host MIDI I/O** po stronie serwera (clock / urządzenia) — nie w procesie Tauri
 - [ ] **Desktop OS menu — Faza B:** Plik + Host (Open Recent; Zapisz Timeline draft; status hosta / klienci WS / QR; restart wg istniejącego API; Ustawienia… → Host)
 - [ ] **Desktop OS menu — Faza C:** Transport (Play/Stop/next/prev przez SSOT serwera; bez MIDI/audio clock w Rust)
 - [ ] Bramka beta-gate **G1–G10** green na instalatorach β2 ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — weryfikacja ręczna operatora **przed** tagiem `v5.0.0-beta.2`

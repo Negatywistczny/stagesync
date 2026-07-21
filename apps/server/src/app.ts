@@ -2,7 +2,9 @@ import express, { type Express } from "express";
 import type { HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
+import { createMidiHost, type MidiHost } from "./midi/host.js";
 import { createLibraryRouter } from "./routes/library.js";
+import { createMidiRouter } from "./routes/midi.js";
 import { createProjectsRouter } from "./routes/projects.js";
 import { createSetlistRouter } from "./routes/setlist.js";
 import { createStageRouter } from "./routes/stage.js";
@@ -27,6 +29,7 @@ export type CreateAppOptions = {
   stageHub?: StageHub;
   logBuffer?: LogBuffer;
   presence?: ClientPresence;
+  midi?: MidiHost;
   /** When set, enables POST /api/system/restart|shutdown. Omitted in unit tests. */
   lifecycle?: import("./lifecycle.js").Lifecycle;
   port?: number;
@@ -41,6 +44,7 @@ export type AppBundle = {
   stores: Stores;
   logBuffer: LogBuffer;
   presence: ClientPresence;
+  midi: MidiHost;
 };
 
 export function createApp(options: CreateAppOptions = {}): AppBundle {
@@ -50,6 +54,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const stageHub = options.stageHub ?? createStageHub();
   const logBuffer = options.logBuffer ?? createLogBuffer();
   const presence = options.presence ?? createClientPresence();
+  const midi = options.midi ?? createMidiHost(transport);
   const app: Express = express();
 
   app.use(express.json());
@@ -77,6 +82,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     }),
   );
   app.use("/api/transport", createTransportRouter(transport, stores));
+  app.use("/api/midi", createMidiRouter(midi));
 
   const staticDir =
     options.staticDir === undefined ? resolveStaticDir() : options.staticDir;
@@ -85,7 +91,13 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     logBuffer.push("info", `static web: ${staticDir}`);
   }
 
+  const midiStatus = midi.getStatus();
+  logBuffer.push(
+    "info",
+    `MIDI backend: ${midiStatus.backend}` +
+      (midiStatus.available ? "" : " (no device I/O)"),
+  );
   logBuffer.push("info", `StageSync server ready (${VERSION})`);
 
-  return { app, transport, stageHub, stores, logBuffer, presence };
+  return { app, transport, stageHub, stores, logBuffer, presence, midi };
 }
