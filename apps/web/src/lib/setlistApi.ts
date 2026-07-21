@@ -170,17 +170,35 @@ export async function putMidiHostConfig(body: {
 }
 
 export async function postSystemRestart(): Promise<void> {
-  const res = await fetch("/api/system/restart", { method: "POST" });
+  const res = await fetch("/api/system/restart", {
+    method: "POST",
+    headers: hostLifecycleHeaders(),
+  });
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
 }
 
 export async function postSystemShutdown(): Promise<void> {
-  const res = await fetch("/api/system/shutdown", { method: "POST" });
+  const res = await fetch("/api/system/shutdown", {
+    method: "POST",
+    headers: hostLifecycleHeaders(),
+  });
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
+}
+
+function hostLifecycleHeaders(): HeadersInit {
+  try {
+    const token = localStorage.getItem("stagesync.hostToken")?.trim();
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+  } catch {
+    /* ignore */
+  }
+  return {};
 }
 
 export type HostUpdateStatus = {
