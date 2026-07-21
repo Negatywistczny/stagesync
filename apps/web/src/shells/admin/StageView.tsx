@@ -95,7 +95,7 @@ export function StageView() {
     try {
       await sendStageMessage({
         text: trimmed,
-        ttlMs: ttlMs > 0 ? ttlMs : undefined,
+        ttlMs,
         roles: roles.length > 0 ? roles : undefined,
       });
       setStatus(
@@ -184,7 +184,7 @@ export function StageView() {
             >
               <option value="6000">TTL 6 s</option>
               <option value="10000">10 s</option>
-              <option value="0">∞ (UI)</option>
+              <option value="0">∞ (bez limitu)</option>
             </select>
             <Button
               variant="primary"
