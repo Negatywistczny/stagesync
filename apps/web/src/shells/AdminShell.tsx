@@ -891,14 +891,27 @@ function SongsView({
                   <Button variant="secondary" disabled={locked} onClick={onXml}>
                     XML
                   </Button>
-                  <Button
-                    variant="ghost"
-                    disabled={locked || !selected?.hasMusicXml}
-                    title={selected?.hasMusicXml ? "Ma MusicXML" : "Brak MusicXML — użyj XML"}
-                    onClick={onXml}
-                  >
-                    Partytura
-                  </Button>
+                  {selected?.hasMusicXml && selectedId && !locked ? (
+                    <Link
+                      className={styles.editLink}
+                      to={`/timeline/${selectedId}`}
+                      title="Otwórz utwór w Timeline (partytura / OSMD)"
+                    >
+                      Partytura
+                    </Link>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      disabled
+                      title={
+                        selected?.hasMusicXml
+                          ? "Otwórz w Timeline"
+                          : "Brak MusicXML — użyj XML"
+                      }
+                    >
+                      Partytura
+                    </Button>
+                  )}
                   {locked ? (
                     <span className={styles.editLinkMuted} aria-disabled>
                       Otwórz w Timeline
@@ -1352,10 +1365,10 @@ function HostView({
             </p>
             <div>
               <h3 className={styles.subTitle}>Kopie zapasowe</h3>
+              <p className={styles.muted}>
+                Przywracanie z kopii — poza 5.0.0 (shadow backup po stronie hosta).
+              </p>
               <div className={styles.actions}>
-                <Button variant="ghost" disabled>
-                  Przywróć…
-                </Button>
                 <Button variant="ghost" onClick={onPathPicker}>
                   Path picker
                 </Button>
