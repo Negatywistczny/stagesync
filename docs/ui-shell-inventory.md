@@ -21,7 +21,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 
 | Delta | Uwagi |
 |-------|--------|
-| Audio lane / + Audio w Timeline | **Ukryte** do β2 (schema v3 `audioTracks`/`audioClips` zostaje); playback / gain / mute → **β2** |
+| Audio lane / + Audio w Timeline | **β2** — eye menu + lane 0…N; WebAudio sync ticks; gain/mute/fader; waveform peaks |
 | Countdown widoczny; długość = pre-roll ≤ 0 | Semantyka v5 |
 | − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) — **nigdy** |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
@@ -37,7 +37,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 ## Timeline — wymagania layoutu (parity v4, α4+)
 
 1. **Jedna siatka wierszy:** nagłówek ścieżki (dock) i lane canvas w **tym samym wierszu**.
-2. **Kolejność pionowa:** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue (Audio → β2).
+2. **Kolejność pionowa:** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue → Audio 0…N.
 3. **Eye menu:** ukrywanie pojedynczych śladów; Forma zawsze widoczna.
 4. **Responsywność:** węższe okno nie rozdziela nagłówków od lane’ów.
 

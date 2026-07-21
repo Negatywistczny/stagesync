@@ -87,6 +87,10 @@ export const ProjectAssetSchema = z.object({
   mimeType: z.string().min(1),
   sizeBytes: z.number().int().nonnegative(),
   durationMs: z.number().positive().finite().optional(),
+  /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
+  waveformPeaks: z.array(z.number().min(0).max(1)).max(512).optional(),
+  /** Optional mean RMS of the full file (0…1). */
+  waveformRms: z.number().min(0).max(1).optional(),
 });
 
 export type ProjectAsset = z.infer<typeof ProjectAssetSchema>;
@@ -107,7 +111,10 @@ export const AudioClipSchema = z.object({
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   trimInMs: z.number().nonnegative().finite().optional(),
+  /** Trim from source file end (ms); with trimInMs bounds playable window. */
+  trimOutMs: z.number().nonnegative().finite().optional(),
   muted: z.boolean().optional(),
+  gainDb: z.number().finite().optional(),
 });
 
 export type AudioClip = z.infer<typeof AudioClipSchema>;
