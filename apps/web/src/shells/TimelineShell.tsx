@@ -21,8 +21,10 @@ import {
   importUgText,
   projectEndTicks,
   transportHomeTicks,
+  wandContentToForma,
   type FormaClip,
   type Project,
+  type WandMode,
 } from "@stagesync/shared";
 import {
   buildBarMarks,
@@ -269,6 +271,7 @@ import {
   IconTap,
   IconUnchecked,
   IconUndo,
+  IconWand,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -326,7 +329,14 @@ const TOOLS: {
     key: "c",
     Icon: IconScissors,
   },
-  // Różdżka (wand) — ukryta do naprawy zachowania (PO smoke); core `wandContentToForma` zostaje.
+  {
+    id: "wand",
+    label: "Różdżka",
+    title:
+      "Różdżka — Tekst / Akordy → Forma (zaznaczenie sekcji = zakres; bez — cały utwór)",
+    key: "w",
+    Icon: IconWand,
+  },
 ];
 
 const TOOL_BY_KEY = Object.fromEntries(TOOLS.map((t) => [t.key, t]));
@@ -374,7 +384,12 @@ export function TimelineShell() {
     left: number;
     top: number;
   } | null>(null);
+  const [wandMenu, setWandMenu] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
   const toolMenuRef = useRef<HTMLDivElement>(null);
+  const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
@@ -2504,6 +2519,18 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [toolMenu]);
 
+  useEffect(() => {
+    if (!wandMenu) return;
+    function onPointerDown(e: PointerEvent) {
+      const el = wandMenuRef.current;
+      if (el && e.target instanceof Node && el.contains(e.target)) return;
+      setWandMenu(null);
+      setTool((t) => (t === "wand" ? "pointer" : t));
+    }
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [wandMenu]);
+
   function placeLocatorAtTicks(
     ticks: number,
     opts?: {
@@ -3124,7 +3151,39 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const def = TOOLS.find((t) => t.id === id);
     if (def?.disabled) return;
     setToolMenu(null);
+    if (id === "wand") {
+      setTool("wand");
+      const { x, y } = lastPointerRef.current;
+      setWandMenu({
+        left: Math.max(8, x),
+        top: Math.max(8, y),
+      });
+      return;
+    }
+    setWandMenu(null);
     setTool(id);
+  }
+
+  function applyWand(mode: WandMode) {
+    const draft = draftRef.current;
+    if (!draft) return;
+    const formaIds = idsOnLane(clipSelection, "forma");
+    const ranges = formaIds.length
+      ? draft.forma.clips
+          .filter((c) => formaIds.includes(c.id) && c.kind === "section")
+          .map((c) => ({
+            startTicks: c.startTicks,
+            endTicks: c.startTicks + c.lengthTicks,
+          }))
+      : undefined;
+    const next = wandContentToForma(
+      draft,
+      mode,
+      ranges?.length ? { ranges } : {},
+    );
+    if (next !== draft) commitDraft(next);
+    setWandMenu(null);
+    setTool("pointer");
   }
 
   function openToolMenuAt(clientX: number, clientY: number) {
@@ -5314,6 +5373,37 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <Icon />
                   <span>{label}</span>
                   <span className={styles.toolMenuKey}>{key}</span>
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {wandMenu
+        ? createPortal(
+            <div
+              ref={wandMenuRef}
+              className={styles.toolMenu}
+              style={{ top: wandMenu.top, left: wandMenu.left }}
+              role="menu"
+              aria-label="Różdżka — źródło"
+            >
+              {(
+                [
+                  ["tekst", "Tekst → Forma"],
+                  ["akordy", "Akordy → Forma"],
+                  ["both", "Tekst + Akordy → Forma"],
+                ] as const
+              ).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  role="menuitem"
+                  className={styles.toolMenuItem}
+                  onClick={() => applyWand(mode)}
+                >
+                  <span>{label}</span>
                 </button>
               ))}
             </div>,

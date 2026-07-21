@@ -8,6 +8,11 @@ import type { AkordClip, FormaClip, Project, TekstClip } from "./schema.js";
 
 export type WandMode = "tekst" | "akordy" | "both";
 
+/** Absolute tick ranges (selected Forma sections). Empty / omitted = whole song. */
+export type WandScope = {
+  ranges?: { startTicks: number; endTicks: number }[];
+};
+
 type ContentSpan = {
   startTicks: number;
   lengthTicks: number;
@@ -41,11 +46,9 @@ function mergeSpans(a: ContentSpan[], b: ContentSpan[]): ContentSpan[] {
       span.startTicks <= last.startTicks + last.lengthTicks &&
       span.startTicks + span.lengthTicks <= last.startTicks + last.lengthTicks
     ) {
-      // fully covered — skip
       continue;
     }
     if (last && span.startTicks < last.startTicks + last.lengthTicks) {
-      // overlap — extend name lightly
       last.lengthTicks = Math.max(
         last.lengthTicks,
         span.startTicks + span.lengthTicks - last.startTicks,
@@ -60,11 +63,36 @@ function mergeSpans(a: ContentSpan[], b: ContentSpan[]): ContentSpan[] {
   return out;
 }
 
+function overlapsRange(
+  startTicks: number,
+  lengthTicks: number,
+  range: { startTicks: number; endTicks: number },
+): boolean {
+  const end = startTicks + lengthTicks;
+  return startTicks < range.endTicks && end > range.startTicks;
+}
+
+function filterSpansToScope(
+  spans: ContentSpan[],
+  ranges: { startTicks: number; endTicks: number }[] | undefined,
+): ContentSpan[] {
+  if (!ranges?.length) return spans;
+  return spans.filter((s) =>
+    ranges.some((r) => overlapsRange(s.startTicks, s.lengthTicks, r)),
+  );
+}
+
 /**
  * Replace Forma section clips with spans derived from content lanes.
- * Countdown clips are kept; existing sections are dropped then rebuilt.
+ * Countdown clips are kept. With `scope.ranges`, only sections overlapping
+ * those ranges are replaced; content outside the ranges is ignored.
  */
-export function wandContentToForma(project: Project, mode: WandMode): Project {
+export function wandContentToForma(
+  project: Project,
+  mode: WandMode,
+  scope: WandScope = {},
+): Project {
+  const ranges = scope.ranges?.filter((r) => r.endTicks > r.startTicks);
   const tekstSpans =
     mode === "tekst" || mode === "both"
       ? spansFromTekst(project.tekst.clips)
@@ -74,12 +102,14 @@ export function wandContentToForma(project: Project, mode: WandMode): Project {
       ? spansFromAkordy(project.akordy.clips)
       : [];
 
-  const spans =
+  const spans = filterSpansToScope(
     mode === "both"
       ? mergeSpans(tekstSpans, akordSpans)
       : mode === "tekst"
         ? tekstSpans
-        : akordSpans;
+        : akordSpans,
+    ranges,
+  );
 
   const countdown = project.forma.clips.filter((c) => c.kind === "countdown");
   const floor =
@@ -90,7 +120,17 @@ export function wandContentToForma(project: Project, mode: WandMode): Project {
         )
       : 0;
 
-  let clips: FormaClip[] = [...countdown];
+  const keptSections = ranges?.length
+    ? project.forma.clips.filter(
+        (c) =>
+          c.kind === "section" &&
+          !ranges.some((r) =>
+            overlapsRange(c.startTicks, c.lengthTicks, r),
+          ),
+      )
+    : [];
+
+  let clips: FormaClip[] = [...countdown, ...keptSections];
   let n = 0;
   for (const span of spans) {
     if (span.lengthTicks < 1) continue;

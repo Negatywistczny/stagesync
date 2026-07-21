@@ -257,6 +257,7 @@ export {
 export {
   wandContentToForma,
   type WandMode,
+  type WandScope,
 } from "./wand.js";
 
 export {
