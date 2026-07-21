@@ -96,4 +96,18 @@ Wykonane (2026-07-21):
 
 ## Po tagu β2 / przed 5.0.0
 
-Aktywny etap w [TODO.md](../../TODO.md) = **5.0.0** (polish + Faza D + fade + G1–G10 green).
+Aktywny etap w [TODO.md](../../TODO.md) = **5.0.0** (polish + Faza D + fade + G1–G10 green).  
+Scope kodu: [report-scope-5.0.0.md](./report-scope-5.0.0.md).
+
+### Soft-gate overnight (2026-07-21→22) — bez HW
+
+Agent / CI **nie** mają dostępu do mac/Win HW w oknie overnight. Dlatego:
+
+| Reguła | Status |
+|--------|--------|
+| G1–G10 w tabeli powyżej | nadal **⬜** — **zakaz** odhaczania bez weryfikacji operatora |
+| Must kodu 5.0.0 (A–E) | PR-y + CI green; merge / tag = **user rano** |
+| Claim „G green” w CHANGELOG / release notes | **Zakaz** do czasu sekwencji operatora poniżej |
+| Artefakty do weryfikacji | Release [`v5.0.0-beta.2`](https://github.com/Negatywistyczny/stagesync/releases/tag/v5.0.0-beta.2) (`.dmg` / `.msi` / `latest.json`) |
+
+**Operator rano:** wykonaj „Sekwencja weryfikacji” powyżej na β2 (lub RC 5.0.0 jeśli już zbudowany). Dopiero wtedy G1–G10 → green przed / przy tagu `v5.0.0`.

@@ -22,7 +22,7 @@ W trakcie etapu: odhaczone = usuń z listy (historia tylko w CHANGELOG), nie trz
 ## 5.0.0 — Stabilne wydanie + nazwa hero
 
 Hero: **stabilne 5.0.0** + polish UI / Timeline / audio fade; tag **tylko na prośbę**.  
-Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [ADR 0007](./adr/0007-snap-grid.md) · [ADR 0008](./adr/0008-timeline-clip-editing.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).
+Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md) · [ADR 0007](./adr/0007-snap-grid.md) · [ADR 0008](./adr/0008-timeline-clip-editing.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
 ### Must
 
@@ -31,8 +31,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [ADR 0007](./adr/0007-snap-gr
 - [ ] Audio polish: fade, crossfade, loop-region (ewent. overlap mode) — [ADR 0008](./adr/0008-timeline-clip-editing.md)
 - [ ] **Desktop OS menu — Faza D:** pełna Edycja; zoom w Widok; rozbudowa Pomoc — [ROADMAP](./ROADMAP.md)
 - [ ] `docs/api` domknięte; CI + smoke E2E
-- [ ] Operator: domknięcie residual **G1–G10** na instalatorach β2 → green przed / przy stable ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
-- [ ] Scope report `report-scope-5.0.0.md` (lub równoważny) przed startem kodu
+- [ ] Operator: domknięcie residual **G1–G10** na instalatorach β2 → green przed / przy stable ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — soft-gate overnight: **nie** claim green bez HW
 
 ### Should
 

@@ -21,7 +21,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — H1–H12 (α10–α13); residual (menu Faza B, G1–G10) → **must β2** (docs cut `5.0.0-beta.1.1`) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
-| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny** — polish UI (zoom, help, copy, gęstość); fade/Faza D; `docs/api`; CI + smoke E2E; G1–G10 green | [TODO.md](./TODO.md) |
+| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny** — polish UI (zoom, help, copy, gęstość); fade/Faza D; `docs/api`; CI + smoke E2E; G1–G10 green | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
 
 ### Alpha 4 — zakres orientacyjny
@@ -134,14 +134,14 @@ Tag `v5.0.0-beta.2`. Scope: [report-scope-beta2.md](./analysis/reports/report-sc
 
 ### 5.0.0 — zakres orientacyjny — **aktywny**
 
-Checklista: [TODO.md](./TODO.md).
+Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md).
 
 - Polish UI na żywych kontrolkach (typografia, proporcje, copy, gęstość)
 - Timeline: zoom UI/H/V z ikonami; Pomoc z pełną treścią; **snap picker** (beat/subdivision)
 - Audio polish: fade, crossfade, loop-region; ewent. overlap mode
 - **Desktop OS menu — Faza D**
 - Admin: drobne UX (np. panel toggle) jeśli nie w α4
-- Operator: G1–G10 green na instalatorach
+- Operator: G1–G10 green na instalatorach (soft-gate bez HW w overnight — [report-beta-gate](./analysis/reports/report-beta-gate.md))
 
 ### Po 5.0.0
 
