@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { toggleAppFullscreen, isDesktopShell } from "../lib/desktopBridge.js";
+import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
 import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
 import {
@@ -30,7 +30,6 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { ShellWordmark } from "./ShellWordmark.js";
-import { ShellModeNav } from "./ShellModeNav.js";
 import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
@@ -171,7 +170,6 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
-    timelineProjectId: state.activeProjectId ?? null,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -441,7 +439,6 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   nextSetlistId: string | null;
-  timelineProjectId: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -457,7 +454,6 @@ function ClientHeader({
   songTitle,
   bbt,
   nextSetlistId,
-  timelineProjectId,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -501,12 +497,6 @@ function ClientHeader({
       </span>
 
       <div className={styles.headerActions}>
-        {isDesktopShell() ? (
-          <ShellModeNav
-            active="client"
-            timelineProjectId={timelineProjectId}
-          />
-        ) : null}
         <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
         <SettingsPopoverAnchor>
           <ShellIconButton

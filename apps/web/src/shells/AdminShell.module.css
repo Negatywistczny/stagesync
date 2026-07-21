@@ -224,6 +224,28 @@
   overflow: auto;
 }
 
+/* Host → O aplikacji: info | actions + updates */
+.aboutGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ss-space-4);
+  align-items: start;
+}
+
+.aboutCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  min-width: 0;
+  align-items: flex-start;
+}
+
+@media (max-width: 40rem) {
+  .aboutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;

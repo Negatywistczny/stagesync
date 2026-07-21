@@ -258,7 +258,7 @@ async function patchInstalledApp(appPath) {
     await cp(join(srcSidecar, sub), join(destSidecar, sub), { recursive: true, force: true });
   }
   await ensureBundleSidecarSymlink(resourcesDir);
-  await smokeTestSidecarServer(destSidecar, join(destSidecar, "../seed"));
+  await smokeTestSidecarServer(join(destSidecar, "server"), join(destSidecar, "seed"));
   console.log("[sidecar] patch complete");
 }
 

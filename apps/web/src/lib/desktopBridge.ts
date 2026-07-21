@@ -47,9 +47,31 @@ function tauriInternals(): TauriInternals | undefined {
   return internals && typeof internals === "object" ? (internals as TauriInternals) : undefined;
 }
 
+/**
+ * Sidecar desktop serves UI from http://127.0.0.1 — Tauri does not inject
+ * `window.__TAURI__` on that origin. Server sets this marker via STAGESYNC_SHELL.
+ */
+function sidecarDesktopShell(): boolean {
+  if (typeof window === "undefined") return false;
+  const w = window as unknown as Record<string, unknown>;
+  if (w["__STAGESYNC_SHELL__"] === "desktop") return true;
+  if (typeof document !== "undefined") {
+    const meta = document.querySelector('meta[name="stagesync-shell"]');
+    if (meta?.getAttribute("content") === "desktop") return true;
+  }
+  // Tauri WebView loads http://127.0.0.1:4000 without __TAURI__; cached index.html may omit the inject script.
+  const loc = window.location;
+  if (loc) {
+    const localHost = loc.hostname === "127.0.0.1" || loc.hostname === "localhost";
+    if (localHost && loc.port === "4000") return true;
+  }
+  return false;
+}
+
 /** Returns true when running inside the Tauri desktop shell. */
 export function isDesktopShell(): boolean {
   if (typeof window === "undefined") return false;
+  if (sidecarDesktopShell()) return true;
   const w = window as unknown as Record<string, unknown>;
   if (w["isTauri"] === true) return true;
   if (tauriGlobal()?.core?.invoke) return true;

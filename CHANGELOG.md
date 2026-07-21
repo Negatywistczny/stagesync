@@ -9,13 +9,22 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** nawigacja **Admin | Timeline | Klient** (`ShellModeNav` w chrome Tauri; menu OS **Widok** + **Zakończ**); ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
+- **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ**; ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
 - **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed `library.template.json` + `seed-projects/`; parity z legacy v4).
+- **Admin → O aplikacji:** przycisk „Zgłoś błąd lub pomysł” (GitHub Issues).
 
 ### Zmieniono
 
-- **Desktop:** domyślne wejście `/admin` (Klient pod `/client`); natywny pełny ekran okna w shellu Tauri zamiast HTML Fullscreen API; layout bundla sidecara (`resources/sidecar` + symlink compat); operacje hosta (restart / wyłącz / ustawienia) tylko w zakładce **Host**, nie w headerze desktop.
+- **Release pipeline:** draft release przed buildem Tauri; upload `latest.json` + podpisanych artefaktów updatera (`createUpdaterArtifacts`); publikacja release z SHA256SUMS (bez duplikatu dmg/msi).
+- **Admin → aktualizacje (desktop):** błędy sprawdzania aplikacji widoczne w UI; „Aktualizuj host” ukryte w standalone (Watchtower = Docker).
+- **Desktop:** domyślne wejście `/admin` (Klient pod `/client`); natywny pełny ekran okna w shellu Tauri zamiast HTML Fullscreen API; layout bundla sidecara (`resources/sidecar` + symlink compat).
 - **Shell:** modalne dialogi in-app zamiast `window.prompt` / `confirm` / `alert` (Admin, Timeline, pliki projektu).
+- **Admin → O aplikacji:** układ dwukolumnowy (wersja / kopie zapasowe | dokumentacja / zgłoszenia / aktualizacje).
+
+### Naprawiono
+
+- **Desktop:** wykrywanie shella Tauri na `http://127.0.0.1:4000` (fallback hostname/port, meta `stagesync-shell`, marker na początku `<head>`, `Cache-Control: no-store` na HTML) — fullscreen / updater / `openExternalUrl` przy cache WebView bez injectu.
+
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
 
 ## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21

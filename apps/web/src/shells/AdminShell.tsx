@@ -26,8 +26,13 @@ import {
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
-import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, toggleAppFullscreen, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
-import { DOCS_INSTALL_URL, DOCS_RELEASES_URL } from "../lib/docsLinks.js";
+import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavTimelineProjectId, toggleAppFullscreen, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
+import { setLastTimelineProjectId } from "../lib/lastTimelineProject.js";
+import {
+  DOCS_INSTALL_URL,
+  DOCS_ISSUES_URL,
+  DOCS_RELEASES_URL,
+} from "../lib/docsLinks.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconFullscreen, IconPower, IconRestart, IconSettings, IconSun } from "./icons.js";
@@ -47,7 +52,6 @@ import {
 import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
-import { ShellModeNav } from "./ShellModeNav.js";
 import styles from "./AdminShell.module.css";
 
 type SectionId = "songs" | "set" | "stage" | "host";
@@ -264,6 +268,12 @@ export function AdminShell() {
 
   const timelineProjectId = selectedId ?? state.activeProjectId ?? null;
 
+  useEffect(() => {
+    if (!timelineProjectId) return;
+    setLastTimelineProjectId(timelineProjectId);
+    void syncNavTimelineProjectId(timelineProjectId);
+  }, [timelineProjectId]);
+
   return (
     <div className={styles.shell}>
       <div className={styles.chromeWrap}>
@@ -290,23 +300,16 @@ export function AdminShell() {
           </nav>
 
           <div className={styles.chromeAside}>
-            {isDesktopShell() ? (
-              <ShellModeNav
-                active="admin"
-                timelineProjectId={timelineProjectId}
-              />
-            ) : (
-              <nav className={styles.appJump} aria-label="Aplikacje">
-                {timelineProjectId ? (
-                  <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
-                ) : (
-                  <span className={styles.appJumpMuted} aria-disabled>
-                    Timeline
-                  </span>
-                )}
-                <Link to="/client">Klient</Link>
-              </nav>
-            )}
+            <nav className={styles.appJump} aria-label="Aplikacje">
+              {timelineProjectId ? (
+                <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
+              ) : (
+                <span className={styles.appJumpMuted} aria-disabled>
+                  Timeline
+                </span>
+              )}
+              <Link to="/client">Klient</Link>
+            </nav>
             <ShellIconButton
               label="Wygląd"
               aria-expanded={appearanceOpen}
@@ -314,30 +317,26 @@ export function AdminShell() {
             >
               <IconSun />
             </ShellIconButton>
-            {!isDesktopShell() ? (
-              <>
-                <ShellIconButton
-                  label="Ustawienia hosta"
-                  onClick={() => setSettingsOpen(true)}
-                >
-                  <IconSettings />
-                </ShellIconButton>
-                <ShellIconButton
-                  label={restart.label}
-                  pressed={restart.pending}
-                  onClick={restart.arm}
-                >
-                  <IconRestart />
-                </ShellIconButton>
-                <ShellIconButton
-                  label={shutdown.label}
-                  pressed={shutdown.pending}
-                  onClick={shutdown.arm}
-                >
-                  <IconPower />
-                </ShellIconButton>
-              </>
-            ) : null}
+            <ShellIconButton
+              label="Ustawienia hosta"
+              onClick={() => setSettingsOpen(true)}
+            >
+              <IconSettings />
+            </ShellIconButton>
+            <ShellIconButton
+              label={restart.label}
+              pressed={restart.pending}
+              onClick={restart.arm}
+            >
+              <IconRestart />
+            </ShellIconButton>
+            <ShellIconButton
+              label={shutdown.label}
+              pressed={shutdown.pending}
+              onClick={shutdown.arm}
+            >
+              <IconPower />
+            </ShellIconButton>
             <ShellIconButton
               label="Pełny ekran"
               onClick={() => void toggleAppFullscreen()}
@@ -450,27 +449,6 @@ export function AdminShell() {
           <HostView
             statusMsg={hostStatusMsg}
             onPathPicker={() => setPathPickerOpen(true)}
-            onOpenSettings={
-              isDesktopShell() ? () => setSettingsOpen(true) : undefined
-            }
-            hostRestart={
-              isDesktopShell()
-                ? {
-                    label: restart.label,
-                    pending: restart.pending,
-                    onArm: restart.arm,
-                  }
-                : undefined
-            }
-            hostShutdown={
-              isDesktopShell()
-                ? {
-                    label: shutdown.label,
-                    pending: shutdown.pending,
-                    onArm: shutdown.arm,
-                  }
-                : undefined
-            }
           />
         ) : null}
       </main>
@@ -1063,23 +1041,9 @@ function useDoubleConfirm(action: () => Promise<void>, label: string) {
 function HostView({
   statusMsg,
   onPathPicker,
-  onOpenSettings,
-  hostRestart,
-  hostShutdown,
 }: {
   statusMsg: string | null;
   onPathPicker: () => void;
-  onOpenSettings?: () => void;
-  hostRestart?: {
-    label: string;
-    pending: boolean;
-    onArm: () => void;
-  };
-  hostShutdown?: {
-    label: string;
-    pending: boolean;
-    onArm: () => void;
-  };
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
@@ -1124,41 +1088,6 @@ function HostView({
 
   return (
     <div className={styles.stack}>
-      {hostRestart || hostShutdown || onOpenSettings ? (
-        <section className={styles.card} aria-label="Operacje hosta">
-          <div className={styles.cardHead}>
-            <h2 className={styles.cardTitle}>Operacje hosta</h2>
-          </div>
-          <div className={styles.cardBody}>
-            <div className={styles.actions}>
-              {onOpenSettings ? (
-                <Button variant="ghost" onClick={onOpenSettings}>
-                  Ustawienia hosta
-                </Button>
-              ) : null}
-              {hostRestart ? (
-                <Button
-                  variant="ghost"
-                  selected={hostRestart.pending}
-                  onClick={hostRestart.onArm}
-                >
-                  {hostRestart.label}
-                </Button>
-              ) : null}
-              {hostShutdown ? (
-                <Button
-                  variant="ghost"
-                  selected={hostShutdown.pending}
-                  onClick={hostShutdown.onArm}
-                >
-                  {hostShutdown.label}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       <section className={styles.card} aria-label="Sieć">
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>Sieć</h2>
@@ -1267,36 +1196,39 @@ function HostView({
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>O aplikacji</h2>
         </div>
-        <div className={styles.cardBody}>
-          <p>
-            Wersja <strong>{APP_VERSION}</strong>
-          </p>
-          {network ? (
-            <p className={styles.muted}>
-              Host: v{network.version} · port <strong>{network.port}</strong>
+        <div className={`${styles.cardBody} ${styles.aboutGrid}`}>
+          <div className={styles.aboutCol}>
+            <p>
+              Wersja <strong>{APP_VERSION}</strong>
             </p>
-          ) : networkError ? null : (
-            <p className={styles.muted}>Wczytywanie stanu hosta…</p>
-          )}
-          <p className={styles.actions}>
-            <Button
-              variant="ghost"
-              onClick={() => void openExternalUrl(DOCS_INSTALL_URL)}
-            >
-              Pełna instrukcja na GitHubie ↗
-            </Button>
-          </p>
-          <UpdatePanel />
-          <div>
-            <h3 className={styles.subTitle}>Kopie zapasowe</h3>
+            <div>
+              <h3 className={styles.subTitle}>Kopie zapasowe</h3>
+              <div className={styles.actions}>
+                <Button variant="ghost" disabled>
+                  Przywróć…
+                </Button>
+                <Button variant="ghost" onClick={onPathPicker}>
+                  Path picker
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className={styles.aboutCol}>
             <div className={styles.actions}>
-              <Button variant="ghost" disabled>
-                Przywróć…
+              <Button
+                variant="ghost"
+                onClick={() => void openExternalUrl(DOCS_INSTALL_URL)}
+              >
+                Pełna instrukcja na GitHubie ↗
               </Button>
-              <Button variant="ghost" onClick={onPathPicker}>
-                Path picker
+              <Button
+                variant="ghost"
+                onClick={() => void openExternalUrl(DOCS_ISSUES_URL)}
+              >
+                Zgłoś błąd lub pomysł ↗
               </Button>
             </div>
+            <UpdatePanel />
           </div>
         </div>
       </section>
@@ -1328,9 +1260,18 @@ function UpdatePanel() {
         fetchHostUpdateStatus(),
         inTauri ? checkDesktopUpdate() : Promise.reject(new Error("browser")),
       ]);
-      if (host.status === "fulfilled") setHostStatus(host.value);
-      else setError((host.reason as Error).message);
-      if (desktop.status === "fulfilled") setDesktopStatus(desktop.value);
+      const messages: string[] = [];
+      if (host.status === "fulfilled") {
+        setHostStatus(host.value);
+        if (host.value.error) messages.push(`Host: ${host.value.error}`);
+      } else {
+        messages.push(`Host: ${(host.reason as Error).message}`);
+      }
+      if (inTauri) {
+        if (desktop.status === "fulfilled") setDesktopStatus(desktop.value);
+        else messages.push(`Aplikacja: ${(desktop.reason as Error).message}`);
+      }
+      setError(messages.length ? messages.join(" · ") : null);
     } finally {
       setChecking(false);
     }
@@ -1376,15 +1317,21 @@ function UpdatePanel() {
       {hostStatus && (
         <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
           <span className={styles.muted}>
-            Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
+            {inTauri ? "Sidecar" : "Host"}: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
             {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
           </span>
-          {hostStatus.updateAvailable && (
+          {hostStatus.updateAvailable && !inTauri && (
             <Button variant="primary" onClick={() => setConfirmHostUpdate(true)} disabled={applying}>
               {applying ? "Aktualizuję…" : "Aktualizuj host"}
             </Button>
           )}
         </div>
+      )}
+      {inTauri && hostStatus && (
+        <p className={styles.muted}>
+          W aplikacji desktop sidecar aktualizuje się razem z instalatorem (przycisk poniżej).
+          Aktualizacja hosta przez Watchtower dotyczy wdrożeń Docker.
+        </p>
       )}
       {inTauri && desktopStatus && (
         <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>

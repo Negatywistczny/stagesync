@@ -1,4 +1,4 @@
-/** localStorage key for last opened Timeline project (desktop nav + OS menu). */
+/** localStorage key for last opened Timeline project (native OS menu). */
 export const LAST_TIMELINE_PROJECT_KEY = "stagesync:lastTimelineProjectId";
 
 export function getLastTimelineProjectId(): string | null {

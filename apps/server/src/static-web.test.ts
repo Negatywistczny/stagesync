@@ -45,6 +45,20 @@ describe("static web SPA", () => {
     expect(await res.text()).toContain("spa");
   });
 
+  it("injects desktop shell marker for SPA routes when STAGESYNC_SHELL=desktop", async () => {
+    process.env.STAGESYNC_SHELL = "desktop";
+    await writeFile(
+      join(staticDir, "index.html"),
+      "<!doctype html><head></head><body>spa</body>",
+    );
+    ({ server, baseUrl } = await listenStatic(staticDir));
+    const res = await fetch(`${baseUrl}/admin`);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain('window.__STAGESYNC_SHELL__="desktop"');
+    expect(html).toContain("spa");
+  });
+
   it("redirects / to /admin when STAGESYNC_SHELL=desktop", async () => {
     process.env.STAGESYNC_SHELL = "desktop";
     ({ server, baseUrl } = await listenStatic(staticDir));

@@ -3,30 +3,7 @@ import {
   getLastTimelineProjectId,
   LAST_TIMELINE_PROJECT_KEY,
   setLastTimelineProjectId,
-} from "../lib/lastTimelineProject.js";
-import { buildShellModeNavItems } from "./shellModeNavItems.js";
-
-describe("buildShellModeNavItems", () => {
-  it("marks active mode as non-link", () => {
-    const items = buildShellModeNavItems("admin", "proj-1");
-    expect(items.find((i) => i.id === "admin")).toEqual({
-      id: "admin",
-      label: "Admin",
-      href: null,
-    });
-    expect(items.find((i) => i.id === "timeline")?.href).toBe(
-      "/timeline/proj-1",
-    );
-    expect(items.find((i) => i.id === "client")?.href).toBe("/client");
-  });
-
-  it("disables Timeline without project id", () => {
-    const items = buildShellModeNavItems("client", null);
-    expect(items.find((i) => i.id === "timeline")?.href).toBeNull();
-    expect(items.find((i) => i.id === "client")?.href).toBeNull();
-    expect(items.find((i) => i.id === "admin")?.href).toBe("/admin");
-  });
-});
+} from "./lastTimelineProject.js";
 
 describe("lastTimelineProject", () => {
   afterEach(() => {

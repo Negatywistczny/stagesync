@@ -200,7 +200,8 @@ import {
   setLaneHeightOverride,
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
-import { toggleAppFullscreen, isDesktopShell } from "../lib/desktopBridge.js";
+import { toggleAppFullscreen, syncNavTimelineProjectId } from "../lib/desktopBridge.js";
+import { setLastTimelineProjectId } from "../lib/lastTimelineProject.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -234,7 +235,6 @@ import {
   IconUndo,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
-import { ShellModeNav } from "./ShellModeNav.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import {
   SettingsPopover,
@@ -585,6 +585,12 @@ export function TimelineShell() {
     if (!projectId) return;
     void reloadProject(projectId);
   }, [projectId, reloadProject]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    setLastTimelineProjectId(projectId);
+    void syncNavTimelineProjectId(projectId);
+  }, [projectId]);
 
   useEffect(() => {
     if (!songScreenOpen) return;
@@ -3369,17 +3375,10 @@ export function TimelineShell() {
         </div>
 
         <div className={styles.headerActions}>
-          {isDesktopShell() ? (
-            <ShellModeNav
-              active="timeline"
-              timelineProjectId={draftProject?.id ?? projectId ?? null}
-            />
-          ) : (
-            <nav className={styles.appJump} aria-label="Aplikacje">
-              <Link to="/admin">Admin</Link>
-              <Link to="/client">Klient</Link>
-            </nav>
-          )}
+          <nav className={styles.appJump} aria-label="Aplikacje">
+            <Link to="/admin">Admin</Link>
+            <Link to="/client">Klient</Link>
+          </nav>
           <ShellIconButton
             label="Cofnij"
             disabled={!draftHistory || !canUndo(draftHistory)}
