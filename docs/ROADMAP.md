@@ -91,6 +91,22 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 - Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — should, nie bloker hosta
 - **OUT β1:** audio / MIDI / AD-01…03 / wand / Timeline Help feature / P1 Timeline → β2 lub 5.0.0; Android; store auto-update
 - **Migrator:** α9 (done)
+- **Desktop OS menu** — fazy poniżej (Faza A = StageSync / Widok / Pomoc)
+
+### Desktop OS menu (natywny menubar Tauri)
+
+Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na zapas”. Akcje → `navigate` / istniejące commandy shella (SSOT w `apps/server`, nie MIDI w procesie Tauri).
+
+| Faza | Top-level | Enabled (plan) | Etap |
+|------|-----------|----------------|------|
+| **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **β1** (wdrożone) |
+| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | β1 polish |
+| **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** |
+| **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Undo gdy stack; PDF setlisty; archiwum projektu; overlay skrótów; motyw sceniczny | **5.0.0** |
+
+**OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; MUTE ALL / PANIC; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik).
+
+Propozycja pełnej struktury (referencja produktowa): StageSync · Plik · Edycja · Widok · Setlista · Transport · Host · Pomoc — realizowana przez fazy A→D, nie jednym PR.
 
 ### Beta 2 — zakres orientacyjny (audio + MIDI)
 

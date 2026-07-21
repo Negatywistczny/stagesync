@@ -36,6 +36,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./an
 
 - [ ] Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) — jeśli nadal otwarte
 - [ ] E2E smoke: Forma drag + transport (carry)
+- [x] **Desktop OS menu — Faza A** ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): StageSync (O programie, Sprawdź aktualizacje, Zakończ) + Widok (Admin/Timeline/Klient, zakładki Admina, fullscreen) + Pomoc (docs, issues) — bez gray-out
+- [ ] **Desktop OS menu — Faza B** (β1 polish): top-level Plik (Open Recent, Zapisz) + Host (status / QR / klienci gdy API) — szczegóły [ROADMAP.md](./ROADMAP.md) § Desktop OS menu
 
 ### OUT (świadome — nie must β1)
 
@@ -43,6 +45,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./an
 - Host MIDI I/O — **β2**
 - **AD-01…03** Transpozycja / Lead / Edycja zdalna — **β2**
 - Timeline Help (feature), Różdżka (wand), P1 Timeline gaps — **β2 / 5.0.0**
+- **Desktop OS menu — Faza C** (Transport + audio/MIDI w menu) — **β2** ([ROADMAP.md](./ROADMAP.md))
+- **Desktop OS menu — Faza D** (pełna Edycja, zoom menu, PDF, archiwum, Help shortcuts) — **5.0.0**
 - Tauri thin-shell przez `STAGESYNC_URL` — OUT β1 (dev/thin-shell tylko)
 - git-apply — nigdy ([ADR 0004](./adr/0004-updates-docker.md)); update na żądanie z Admina (Watchtower + Tauri updater) = IN β1
 - Android shell / store auto-update — poza β1
