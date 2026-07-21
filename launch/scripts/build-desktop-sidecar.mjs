@@ -605,18 +605,66 @@ async function assertDeployHasRuntimeDeps(sidecarServerDir) {
   }
 }
 
+/**
+ * Paths passed to Node as argv/cwd/env must not be Win32 verbatim (`\\?\…`) or a bare drive.
+ * Mirrors `path_for_node` / `assert_node_path_usable` in apps/desktop/src-tauri/src/lib.rs.
+ * @param {string} p
+ * @param {string} label
+ */
+function assertNodeSpawnPathSafe(p, label) {
+  if (typeof p !== "string" || p.length === 0) {
+    throw new Error(`[sidecar] ${label}: empty path`);
+  }
+  if (p.startsWith("\\\\?\\")) {
+    throw new Error(
+      `[sidecar] ${label}: Win32 verbatim path is unsafe as Node main/cwd/env (EISDIR on 'C:'): ${p}`,
+    );
+  }
+  const trimmed = p.replace(/[/\\]+$/, "");
+  if (/^[A-Za-z]:$/.test(trimmed)) {
+    throw new Error(`[sidecar] ${label}: bare drive path is unsafe for Node: ${p}`);
+  }
+}
+
+/** Regression checks for Windows Node spawn path rules (runs on every sidecar build). */
+function selfTestNodeSpawnPathGuards() {
+  const bad = [
+    ["\\\\?\\C:\\Program Files\\StageSync\\server", "verbatim"],
+    ["C:", "bare drive"],
+    ["C:\\", "bare drive root"],
+  ];
+  for (const [p, kind] of bad) {
+    let threw = false;
+    try {
+      assertNodeSpawnPathSafe(p, "self-test");
+    } catch {
+      threw = true;
+    }
+    if (!threw) {
+      throw new Error(`[sidecar] self-test expected reject (${kind}): ${p}`);
+    }
+  }
+  assertNodeSpawnPathSafe("C:\\Program Files\\StageSync\\resources\\sidecar\\server", "self-test ok");
+  assertNodeSpawnPathSafe("/Applications/StageSync.app/Contents/Resources/resources/sidecar/server", "self-test ok");
+  console.log("[sidecar] node spawn path guards self-test passed");
+}
+
 async function smokeTestSidecarServer(sidecarServerDir, seedDir) {
   const dataDir = join(tmpdir(), `stagesync-sidecar-smoke-${Date.now()}`);
   await mkdir(dataDir, { recursive: true });
 
   const port = 14000 + Math.floor(Math.random() * 1000);
-  const entry = join(sidecarServerDir, "dist/index.js");
+  // Relative entry + cwd — mirrors desktop shell (avoids Win32 `\\?\` main-module paths).
+  const entryRel = "dist/index.js";
+  const entry = join(sidecarServerDir, entryRel);
   if (!existsSync(entry)) {
     throw new Error(`[sidecar] smoke: missing server entry ${entry}`);
   }
+  assertNodeSpawnPathSafe(sidecarServerDir, "smoke cwd");
+  assertNodeSpawnPathSafe(entry, "smoke entry");
 
-  console.log(`[sidecar] smoke: starting server on :${port} (cwd=${sidecarServerDir})`);
-  const child = spawn(process.execPath, [entry], {
+  console.log(`[sidecar] smoke: starting server on :${port} (cwd=${sidecarServerDir} entry=${entryRel})`);
+  const child = spawn(process.execPath, [entryRel], {
     cwd: sidecarServerDir,
     env: {
       ...process.env,
@@ -738,6 +786,11 @@ async function main() {
   const materializeNm = getArg("--materialize-node-modules");
   const target = getArg("--target");
 
+  selfTestNodeSpawnPathGuards();
+  if (process.argv.includes("--self-test")) {
+    return;
+  }
+
   if (materializeNm) {
     console.log(`[sidecar] materializing pnpm layout: ${materializeNm}`);
     await materializePnpmLayoutForTauriBundle(materializeNm);
@@ -786,7 +839,8 @@ async function main() {
   if (!target) {
     console.error(
       "Usage: node launch/scripts/build-desktop-sidecar.mjs --target <tauri-target-triple>\n" +
-        "       node launch/scripts/build-desktop-sidecar.mjs --fix-app </path/StageSync.app>",
+        "       node launch/scripts/build-desktop-sidecar.mjs --fix-app </path/StageSync.app>\n" +
+        "       node launch/scripts/build-desktop-sidecar.mjs --self-test",
     );
     process.exit(2);
   }
