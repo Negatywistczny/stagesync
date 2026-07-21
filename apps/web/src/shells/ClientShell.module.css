@@ -551,7 +551,7 @@
 .karaokeLine {
   margin: 0;
   font-size: calc(
-    clamp(2rem, 7vw, 3.75rem) * var(--ss-client-text-scale, 1)
+    var(--ss-text-stage-xl) * var(--ss-client-text-scale, 1)
   );
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-relaxed);
@@ -600,10 +600,10 @@
   margin: 0;
   width: auto;
   max-width: calc(100% - 1.5rem);
-  font-size: 0.875rem;
+  font-size: var(--ss-text-control);
   font-weight: var(--ss-font-weight-medium);
-  line-height: 1.2;
-  letter-spacing: 0.1em;
+  line-height: var(--ss-leading-snug);
+  letter-spacing: var(--ss-tracking-wide);
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
   text-align: center;
@@ -651,9 +651,9 @@
   position: relative;
   z-index: 1;
   margin: 0;
-  font-size: clamp(3rem, 12vw, 6rem);
-  font-weight: 800;
-  line-height: 1.1;
+  font-size: var(--ss-text-stage-3xl);
+  font-weight: var(--ss-font-weight-black);
+  line-height: var(--ss-leading-display);
   color: var(--ss-color-primary);
   text-align: center;
   white-space: nowrap;
@@ -663,7 +663,7 @@
 
 .heroCountdownNumber {
   color: var(--ss-color-info);
-  font-size: clamp(4rem, 18vw, 9rem);
+  font-size: var(--ss-text-stage-4xl);
   text-shadow: 0 0 32px
     color-mix(in srgb, var(--ss-color-info) 35%, transparent);
 }
@@ -695,9 +695,9 @@
   will-change: transform;
   margin: 0;
   white-space: nowrap;
-  font-size: clamp(3rem, 12vw, 6rem);
-  font-weight: 800;
-  line-height: 1.1;
+  font-size: var(--ss-text-stage-3xl);
+  font-weight: var(--ss-font-weight-black);
+  line-height: var(--ss-leading-display);
   color: var(--ss-color-primary);
 }
 
@@ -813,17 +813,17 @@
 }
 
 .heroNextLabel {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: var(--ss-text-stage-micro);
+  font-weight: var(--ss-font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--ss-tracking-wide);
   color: var(--ss-color-disabled-text);
 }
 
 .heroNextName {
-  font-size: clamp(1.25rem, 4.5vw, 2.25rem);
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: var(--ss-text-stage-md);
+  font-weight: var(--ss-font-weight-heavy);
+  line-height: var(--ss-leading-display);
   color: color-mix(in srgb, var(--ss-color-primary) 72%, transparent);
   max-width: 100%;
   overflow: hidden;
@@ -834,7 +834,7 @@
 }
 
 .heroNextName.heroCountdownNumber {
-  font-size: clamp(1.75rem, 6vw, 3rem);
+  font-size: var(--ss-text-stage-lg);
   color: color-mix(in srgb, var(--ss-color-info) 78%, transparent);
 }
 
@@ -996,8 +996,8 @@
 
 .cycleCellSymbol {
   font-size: min(2.25rem, calc(var(--phrase-bar-size) * 0.32));
-  font-weight: 800;
-  line-height: 1.1;
+  font-weight: var(--ss-font-weight-black);
+  line-height: var(--ss-leading-display);
   letter-spacing: -0.02em;
   color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
   white-space: nowrap;
@@ -1057,11 +1057,11 @@
   }
 
   .heroName {
-    font-size: clamp(3.75rem, 22vw, 6.5rem);
+    font-size: var(--ss-text-stage-hero-sm);
   }
 
   .heroCountdownNumber {
-    font-size: clamp(5rem, 28vw, 8rem);
+    font-size: var(--ss-text-stage-hero-lg);
   }
 
   .phraseCarouselViewport {
@@ -1147,7 +1147,7 @@
 
 .drumsHeroEyebrow {
   margin: 0;
-  font-size: clamp(1rem, 2.5vw, 1.35rem);
+  font-size: var(--ss-text-stage-sm);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
@@ -1155,8 +1155,8 @@
 
 .drumsHeroSection {
   margin: 0;
-  font-size: clamp(2.75rem, 12vw, 5rem);
-  font-weight: 800;
+  font-size: var(--ss-text-stage-2xl);
+  font-weight: var(--ss-font-weight-black);
   line-height: 1.05;
   color: var(--client-drums);
   text-transform: uppercase;
@@ -1168,7 +1168,7 @@
 }
 
 .drumsHeroCountdownNumber .drumsHeroSection {
-  font-size: clamp(5rem, 24vw, 10rem);
+  font-size: var(--ss-text-stage-5xl);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   text-transform: none;
@@ -1176,7 +1176,7 @@
 
 .drumsHeroMeta {
   margin: 0;
-  font-size: clamp(1.35rem, 4.5vw, 2rem);
+  font-size: var(--ss-text-stage-md);
   color: var(--ss-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -1192,8 +1192,8 @@
   border-radius: 0.75rem;
   border: 2px solid color-mix(in srgb, var(--client-drums) 45%, transparent);
   background: color-mix(in srgb, var(--client-drums) 8%, transparent);
-  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
-  font-weight: 600;
+  font-size: var(--ss-text-stage-sm);
+  font-weight: var(--ss-font-weight-semibold);
   line-height: 1.35;
   color: color-mix(in srgb, var(--client-drums) 92%, white);
 }
@@ -1215,7 +1215,7 @@
   background: color-mix(in srgb, var(--ss-color-surface) 90%, transparent);
   color: var(--ss-color-text);
   font: inherit;
-  font-size: clamp(1rem, 3.2vw, 1.35rem);
+  font-size: var(--ss-text-stage-sm);
   line-height: 1.35;
   resize: vertical;
   min-height: 2.75rem;
@@ -1234,7 +1234,7 @@
 .drumsFormSegNoteInput {
   max-width: none;
   margin: 0.35rem 0 0;
-  font-size: clamp(0.85rem, 2.4vw, 1.1rem);
+  font-size: var(--ss-text-stage-xs);
   min-height: 2.25rem;
 }
 
@@ -1262,8 +1262,8 @@
 }
 
 .drumsBeatNum {
-  font-size: clamp(1rem, 4vw, 1.5rem);
-  font-weight: 800;
+  font-size: var(--ss-text-stage-sm);
+  font-weight: var(--ss-font-weight-black);
   font-variant-numeric: tabular-nums;
   color: var(--ss-color-text-muted);
   line-height: 1;
@@ -1275,7 +1275,7 @@
 }
 
 .drumsBeatDotDownbeat .drumsBeatNum {
-  font-size: clamp(1.15rem, 4.5vw, 1.65rem);
+  font-size: var(--ss-text-stage-md);
 }
 
 .drumsBeatDotPassed {
@@ -1376,8 +1376,8 @@
 }
 
 .drumsFormSegName {
-  font-size: clamp(1rem, 2.8vw, 1.45rem);
-  font-weight: 700;
+  font-size: var(--ss-text-stage-sm);
+  font-weight: var(--ss-font-weight-heavy);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ss-color-primary);
@@ -1400,7 +1400,7 @@
 }
 
 .drumsFormSegMeta {
-  font-size: clamp(0.85rem, 2.2vw, 1.15rem);
+  font-size: var(--ss-text-stage-xs);
   color: var(--ss-color-disabled-text);
   font-variant-numeric: tabular-nums;
 }
@@ -1459,7 +1459,7 @@
 
 .drumsFormSegNote {
   margin: 0;
-  font-size: clamp(0.8rem, 2.2vw, 1rem);
+  font-size: var(--ss-text-stage-xs);
   line-height: 1.3;
   color: var(--ss-color-text-muted);
   overflow: hidden;
@@ -1470,7 +1470,7 @@
 
 .drumsFormSegActive .drumsFormSegNote {
   color: color-mix(in srgb, var(--ss-color-primary) 88%, white);
-  font-weight: 600;
+  font-weight: var(--ss-font-weight-semibold);
 }
 
 .drumsFormSegCountdown .drumsFormSegNote,
@@ -1490,24 +1490,24 @@
   }
 
   .drumsHeroEyebrow {
-    font-size: 0.85rem;
+    font-size: var(--ss-text-sm);
   }
 
   .drumsHeroSection {
-    font-size: clamp(2rem, 11vw, 3.25rem);
+    font-size: var(--ss-text-stage-xl);
   }
 
   .drumsHeroCountdownNumber .drumsHeroSection {
-    font-size: clamp(3.5rem, 22vw, 6rem);
+    font-size: var(--ss-text-stage-3xl);
   }
 
   .drumsHeroMeta {
-    font-size: clamp(1rem, 3.5vw, 1.35rem);
+    font-size: var(--ss-text-stage-sm);
   }
 
   .drumsHeroNote,
   .drumsNoteInput {
-    font-size: clamp(0.95rem, 3vw, 1.15rem);
+    font-size: var(--ss-text-stage-xs);
     max-width: 100%;
   }
 
@@ -1536,7 +1536,7 @@
   }
 
   .drumsFormSegName {
-    font-size: clamp(0.85rem, 3vw, 1.1rem);
+    font-size: var(--ss-text-stage-xs);
   }
 
   .drumsFormSegBars {
