@@ -4684,10 +4684,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Mute clip
+                  Wycisz clip
                 </label>
                 <label className={styles.inspField}>
-                  Gain clip (dB)
+                  Wzmocnienie clipu (dB)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -4718,10 +4718,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Mute track
+                  Wycisz ścieżkę
                 </label>
                 <label className={styles.inspField}>
-                  Fader track (dB)
+                  Fader ścieżki (dB)
                   <input
                     className={styles.lengthInput}
                     type="number"
