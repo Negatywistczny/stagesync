@@ -115,11 +115,7 @@
 
 .welcomeBrand {
   justify-content: center;
-}
-
-.welcomeBrand > span:first-of-type,
-.welcomeBrand > button > span {
-  font-size: var(--ss-text-xl);
+  --ss-wordmark-height: 1.75rem;
 }
 
 .greetingRow {

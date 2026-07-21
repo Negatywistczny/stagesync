@@ -1,5 +1,8 @@
 import styles from "./ShellWordmark.module.css";
 
+const LOGO_DARK = "/brand/stagesync-logo.svg";
+const LOGO_LIGHT = "/brand/stagesync-logo-light.svg";
+
 export type ShellWordmarkProps = {
   /** Rola / kontekst shella (np. Admin, Timeline). */
   suffix?: string;
@@ -18,9 +21,25 @@ export function ShellWordmark({
   onClick,
   title,
 }: ShellWordmarkProps) {
-  const wordmark = (
-    <span className={styles.wordmark}>
-      Stage<span className={styles.mark}>Sync</span>
+  const logo = (
+    <span
+      className={styles.logo}
+      {...(onClick
+        ? { "aria-hidden": true as const }
+        : { role: "img" as const, "aria-label": "StageSync" })}
+    >
+      <img
+        className={`${styles.logoImg} ${styles.logoDark}`}
+        src={LOGO_DARK}
+        alt=""
+        decoding="async"
+      />
+      <img
+        className={`${styles.logoImg} ${styles.logoLight}`}
+        src={LOGO_LIGHT}
+        alt=""
+        decoding="async"
+      />
     </span>
   );
 
@@ -32,11 +51,12 @@ export function ShellWordmark({
           className={styles.wordmarkBtn}
           onClick={onClick}
           title={title}
+          aria-label={title ?? "StageSync"}
         >
-          {wordmark}
+          {logo}
         </button>
       ) : (
-        wordmark
+        logo
       )}
       {suffix ? <span className={styles.suffix}>{suffix}</span> : null}
       {version ? <span className={styles.version}>{version}</span> : null}

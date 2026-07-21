@@ -1,21 +1,37 @@
 .identity {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--ss-space-2);
   min-width: 0;
   flex-shrink: 0;
 }
 
-.wordmark {
-  font-size: var(--ss-text-lg);
-  font-weight: var(--ss-font-weight-bold);
-  letter-spacing: var(--ss-tracking-normal);
-  line-height: var(--ss-leading-tight);
-  color: inherit;
+.logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
 }
 
-.mark {
-  color: var(--ss-color-primary);
+.logoImg {
+  display: block;
+  height: var(--ss-wordmark-height, 1.25rem);
+  width: auto;
+}
+
+.logoDark {
+  display: block;
+}
+
+.logoLight {
+  display: none;
+}
+
+:global([data-theme="light"]) .logoDark {
+  display: none;
+}
+
+:global([data-theme="light"]) .logoLight {
+  display: block;
 }
 
 .wordmarkBtn {
@@ -27,6 +43,7 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
+  line-height: 0;
 }
 
 .suffix {

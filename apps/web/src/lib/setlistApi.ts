@@ -132,3 +132,29 @@ export async function postSystemShutdown(): Promise<void> {
     throw new Error(await readApiError(res));
   }
 }
+
+export type HostUpdateStatus = {
+  current: string;
+  latest: string | null;
+  updateAvailable: boolean;
+  error?: string | null;
+};
+
+export async function fetchHostUpdateStatus(): Promise<HostUpdateStatus> {
+  const res = await fetch("/api/system/update-status", { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as HostUpdateStatus;
+}
+
+export async function postApplyHostUpdate(): Promise<void> {
+  const res = await fetch("/api/system/apply-update", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ target: "host" }),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+}

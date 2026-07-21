@@ -25,7 +25,8 @@ import {
   updateProject,
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
-import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, type HostLogLine, type NetworkInfo } from "../lib/setlistApi.js";
+import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
+import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconFullscreen, IconPower, IconRestart, IconSettings, IconSun } from "./icons.js";
@@ -1152,15 +1153,7 @@ function HostView({
           <p>
             Wersja <strong>{APP_VERSION}</strong>
           </p>
-          <div className={styles.actions}>
-            <Button variant="secondary" disabled title="ADR 0004 — Docker">
-              Sprawdź aktualizacje
-            </Button>
-            <select className={styles.select} disabled aria-label="Kanał">
-              <option>Oficjalne</option>
-              <option>Testowe</option>
-            </select>
-          </div>
+          <UpdatePanel />
           <div>
             <h3 className={styles.subTitle}>Kopie zapasowe</h3>
             <div className={styles.actions}>
@@ -1178,6 +1171,109 @@ function HostView({
   );
 }
 
+
+/** Update panel — Sprawdź / Aktualizuj host + desktop (ADR 0004 amendement β1). */
+function UpdatePanel() {
+  const [checking, setChecking] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [hostStatus, setHostStatus] = useState<HostUpdateStatus | null>(null);
+  const [desktopStatus, setDesktopStatus] = useState<DesktopUpdateInfo | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const inTauri = isDesktopShell();
+
+  const handleCheck = useCallback(async () => {
+    setChecking(true);
+    setError(null);
+    setHostStatus(null);
+    setDesktopStatus(null);
+    setDone(false);
+    try {
+      const [host, desktop] = await Promise.allSettled([
+        fetchHostUpdateStatus(),
+        inTauri ? checkDesktopUpdate() : Promise.reject(new Error("browser")),
+      ]);
+      if (host.status === "fulfilled") setHostStatus(host.value);
+      else setError((host.reason as Error).message);
+      if (desktop.status === "fulfilled") setDesktopStatus(desktop.value);
+    } finally {
+      setChecking(false);
+    }
+  }, [inTauri]);
+
+  const handleApplyHost = useCallback(async () => {
+    if (!confirm("Aktualizacja hosta spowoduje ~30s przerwę połączenia WS. Kontynuować?")) return;
+    setApplying(true);
+    setError(null);
+    try {
+      await postApplyHostUpdate();
+      setDone(true);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setApplying(false);
+    }
+  }, []);
+
+  const handleApplyDesktop = useCallback(async () => {
+    if (!confirm("Aplikacja zostanie zamknięta i zaktualizowana. Kontynuować?")) return;
+    setApplying(true);
+    setError(null);
+    try {
+      await installDesktopUpdate();
+    } catch (e) {
+      setError((e as Error).message);
+      setApplying(false);
+    }
+  }, []);
+
+  return (
+    <div>
+      <div className={styles.actions}>
+        <Button variant="secondary" onClick={handleCheck} disabled={checking || applying}>
+          {checking ? "Sprawdzam…" : "Sprawdź aktualizacje"}
+        </Button>
+        <select className={styles.select} disabled aria-label="Kanał">
+          <option>Oficjalne</option>
+          <option disabled>Testowe (β2)</option>
+        </select>
+      </div>
+      {error && <p className={styles.muted} style={{ color: "var(--ss-color-danger, red)" }}>{error}</p>}
+      {done && <p className={styles.muted}>Aktualizacja hosta uruchomiona — połączenie wróci za chwilę.</p>}
+      {hostStatus && (
+        <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
+          <span className={styles.muted}>
+            Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
+            {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
+          </span>
+          {hostStatus.updateAvailable && (
+            <Button variant="primary" onClick={handleApplyHost} disabled={applying}>
+              {applying ? "Aktualizuję…" : "Aktualizuj host"}
+            </Button>
+          )}
+        </div>
+      )}
+      {inTauri && desktopStatus && (
+        <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
+          <span className={styles.muted}>
+            Aplikacja: {desktopStatus.current} → {desktopStatus.version ?? "?"}{" "}
+            {!desktopStatus.available && "(aktualna)"}
+          </span>
+          {desktopStatus.available && (
+            <Button variant="primary" onClick={handleApplyDesktop} disabled={applying}>
+              {applying ? "Aktualizuję…" : "Aktualizuj aplikację"}
+            </Button>
+          )}
+        </div>
+      )}
+      {!inTauri && hostStatus && (
+        <p className={styles.muted}>
+          Desktop: użyj instalatora StageSync Desktop — <a href="https://github.com/Negatywistczny/stagesync/releases" target="_blank" rel="noreferrer">Releases</a>.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HostSettingsModal({
   onClose,
