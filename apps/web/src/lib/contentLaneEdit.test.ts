@@ -22,7 +22,8 @@ describe("contentLaneEdit", () => {
     expect(contentClipCoveringTicks(p, "tekst", a.startTicks + 1)?.id).toBe(
       a.id,
     );
-    expect(contentClipCoveringTicks(p, "tekst", a.startTicks + a.lengthTicks)).toBeNull();
+    expect(contentClipCoveringTicks(p, "tekst", -1)).toBeNull();
+    expect(contentClipCoveringTicks(p, "tekst", 3840 * 4)).toBeNull();
   });
 
   it("moves tekst clip without overlap", () => {
