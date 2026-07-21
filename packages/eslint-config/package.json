@@ -5,7 +5,8 @@
   "private": true,
   "exports": {
     "./base": "./base.js",
-    "./react-internal": "./react-internal.js"
+    "./react-internal": "./react-internal.js",
+    "./acl": "./acl.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

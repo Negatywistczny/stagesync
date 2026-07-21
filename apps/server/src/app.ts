@@ -10,6 +10,7 @@ import { createSystemRouter } from "./routes/system.js";
 import { createTransportRouter } from "./routes/transport.js";
 import { createStores, type Stores } from "./storage/index.js";
 import { defaultDataDir } from "./storage/paths.js";
+import { mountStaticWeb, resolveStaticDir } from "./static-web.js";
 import {
   createTransportEngine,
   type TransportEngine,
@@ -29,6 +30,8 @@ export type CreateAppOptions = {
   /** When set, enables POST /api/system/restart|shutdown. Omitted in unit tests. */
   lifecycle?: import("./lifecycle.js").Lifecycle;
   port?: number;
+  /** Serve Vite `dist` (Docker / prod). Default: STAGESYNC_STATIC_DIR. */
+  staticDir?: string | null;
 };
 
 export type AppBundle = {
@@ -74,6 +77,13 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     }),
   );
   app.use("/api/transport", createTransportRouter(transport, stores));
+
+  const staticDir =
+    options.staticDir === undefined ? resolveStaticDir() : options.staticDir;
+  if (staticDir) {
+    mountStaticWeb(app, staticDir);
+    logBuffer.push("info", `static web: ${staticDir}`);
+  }
 
   logBuffer.push("info", `StageSync server ready (${VERSION})`);
 

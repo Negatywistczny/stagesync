@@ -99,9 +99,8 @@ export function createLibraryRouter(stores: Stores): Router {
           audioClips: [],
         };
         const parsed = ProjectSchemaV5.parse(candidate);
-        const { id: _id, updatedAt: _u, ...body } = parsed;
+        const { id: _id, ...body } = parsed;
         void _id;
-        void _u;
         await stores.putProject(project.id, body as PutProjectBody);
         created.push(project.id);
       }

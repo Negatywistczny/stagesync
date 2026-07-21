@@ -25,9 +25,8 @@ async function listen(
 }
 
 function putBody(project: Project) {
-  const { id, updatedAt, ...body } = project;
+  const { id, ...body } = project;
   void id;
-  void updatedAt;
   return PutProjectBodySchema.parse(body);
 }
 
@@ -151,6 +150,33 @@ describe("library / projects CRUD", () => {
       body: JSON.stringify({ ...putBody(created), legacy: true }),
     });
     expect(res.status).toBe(400);
+    const errBody = await res.json();
+    expect(errBody.ok).toBe(false);
+    expect(Array.isArray(errBody.details)).toBe(true);
+  });
+
+  it("returns 409 on stale updatedAt (OCC)", async () => {
+    const createRes = await fetch(`${baseUrl}/api/projects`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "OCC" }),
+    });
+    const created = ProjectSchema.parse(await createRes.json());
+    const first = await fetch(`${baseUrl}/api/projects/${created.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(putBody({ ...created, name: "OCC-1" })),
+    });
+    expect(first.status).toBe(200);
+    const stale = await fetch(`${baseUrl}/api/projects/${created.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(putBody({ ...created, name: "OCC-stale" })),
+    });
+    expect(stale.status).toBe(409);
+    const body = await stale.json();
+    expect(body.ok).toBe(false);
+    expect(typeof body.error).toBe("string");
   });
 
   it("returns 404 for unknown project", async () => {

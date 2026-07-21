@@ -1,5 +1,7 @@
 import type { Response } from "express";
+import type { ApiErrorDetail } from "@stagesync/shared";
 import {
+  ConflictError,
   InvalidProjectIdError,
   NotFoundError,
   StorageError,
@@ -9,30 +11,51 @@ export function sendError(
   res: Response,
   status: number,
   error: string,
+  details?: ApiErrorDetail[],
 ): void {
-  res.status(status).json({ ok: false, error });
+  res.status(status).json(
+    details && details.length > 0
+      ? { ok: false, error, details }
+      : { ok: false, error },
+  );
 }
 
-function zodMessage(err: unknown): string | null {
+function zodDetails(err: unknown): {
+  message: string;
+  details: ApiErrorDetail[];
+} | null {
   if (
-    err &&
-    typeof err === "object" &&
-    "name" in err &&
-    (err as { name: string }).name === "ZodError" &&
-    "errors" in err &&
-    Array.isArray((err as { errors: unknown }).errors)
+    !err ||
+    typeof err !== "object" ||
+    !("name" in err) ||
+    (err as { name: string }).name !== "ZodError" ||
+    !("issues" in err) ||
+    !Array.isArray((err as { issues: unknown }).issues)
   ) {
-    return (err as { errors: Array<{ message: string }> }).errors
-      .map((e) => e.message)
-      .join("; ");
+    return null;
   }
-  return null;
+  const issues = (
+    err as {
+      issues: Array<{
+        message: string;
+        path: (string | number)[];
+        code?: string;
+      }>;
+    }
+  ).issues;
+  const details: ApiErrorDetail[] = issues.map((issue) => ({
+    path: issue.path.map(String).join(".") || "(root)",
+    message: issue.message,
+    ...(issue.code ? { code: issue.code } : {}),
+  }));
+  const message = details.map((d) => d.message).join("; ");
+  return { message, details };
 }
 
 export function handleRouteError(res: Response, err: unknown): void {
-  const zodMsg = zodMessage(err);
-  if (zodMsg !== null) {
-    sendError(res, 400, zodMsg);
+  const zod = zodDetails(err);
+  if (zod !== null) {
+    sendError(res, 400, zod.message, zod.details);
     return;
   }
   if (err instanceof RangeError) {
@@ -45,6 +68,10 @@ export function handleRouteError(res: Response, err: unknown): void {
   }
   if (err instanceof NotFoundError) {
     sendError(res, 404, err.message);
+    return;
+  }
+  if (err instanceof ConflictError) {
+    sendError(res, 409, err.message);
     return;
   }
   if (err instanceof StorageError) {

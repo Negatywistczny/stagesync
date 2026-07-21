@@ -23,9 +23,8 @@ async function listen(
 }
 
 function putBody(project: Project) {
-  const { id, updatedAt, ...body } = project;
+  const { id, ...body } = project;
   void id;
-  void updatedAt;
   return PutProjectBodySchema.parse(body);
 }
 

@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { createLifecycle } from "./lifecycle.js";
+import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { attachTransportWs } from "./transport/ws.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
@@ -13,7 +14,7 @@ const lifecycle = createLifecycle(server, {
   log: (msg) => console.log(`[stagesync-server] ${msg}`),
 });
 
-const { app, transport, stageHub, presence, logBuffer } = createApp({
+const { app, transport, stageHub, presence, logBuffer, stores } = createApp({
   lifecycle,
   port: PORT,
 });
@@ -46,8 +47,22 @@ function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
   });
 }
 
-startListening();
+async function main(): Promise<void> {
+  try {
+    const mig = await migrateVolumeOnBoot(stores);
+    if (mig.projectsRewritten > 0) {
+      console.log(
+        `[stagesync-server] volume migrate: rewrote ${mig.projectsRewritten}/${mig.projectsScanned} project(s); backups: ${mig.backups.length}`,
+      );
+    }
+  } catch (err) {
+    console.error("[stagesync-server] volume migrate failed", err);
+    process.exit(1);
+  }
+  startListening();
+}
+
+void main();
 
 process.on("SIGINT", () => lifecycle.gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => lifecycle.gracefulShutdown("SIGTERM"));
-
