@@ -51,6 +51,11 @@ describe("TransportPlayBodySchema", () => {
       timeSignature: { numerator: 5, denominator: 8 },
     });
   });
+
+  it("rejects bpm outside 20…400", () => {
+    expect(() => TransportPlayBodySchema.parse({ bpm: 10 })).toThrow();
+    expect(() => TransportPlayBodySchema.parse({ bpm: 500 })).toThrow();
+  });
 });
 
 describe("TransportTickMessageSchema", () => {

@@ -20,6 +20,9 @@ export {
 export {
   LibrarySchema,
   LibraryProjectEntrySchema,
+  BPM_MIN,
+  BPM_MAX,
+  BpmSchema,
   ProjectIdSchema,
   FormaClipKindSchema,
   FormaClipSchema,
