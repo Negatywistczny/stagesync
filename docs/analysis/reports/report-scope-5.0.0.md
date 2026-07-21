@@ -176,11 +176,40 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (szablon)
+## Handoff morning (2026-07-22 ~ overnight close)
 
-Wypełnić pod koniec okna:
+**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green.
 
-- PR-y otwarte (URL) + status CI
-- Ukończone vs odłożone (C4 overlap? AD-01?)
-- Blokery review
-- G1–G10: nadal ⬜ — ścieżka weryfikacji w report-beta-gate
+### PR-y (kolejność review A→E)
+
+| # | Temat | URL | Uwagi |
+|---|--------|-----|--------|
+| — | Scope + soft-gate G1–G10 | na `main` (`6926d11`) | `report-scope-5.0.0.md` |
+| [#53](https://github.com/Negatywistyczny/stagesync/pull/53) | A1 polish live controls | https://github.com/Negatywistyczny/stagesync/pull/53 | base `main` |
+| [#54](https://github.com/Negatywistyczny/stagesync/pull/54) | B1 zoom icons | https://github.com/Negatywistyczny/stagesync/pull/54 | zawiera też #53 (stack) |
+| [#55](https://github.com/Negatywistyczny/stagesync/pull/55) | B2 snap picker | https://github.com/Negatywistyczny/stagesync/pull/55 | |
+| [#56](https://github.com/Negatywistyczny/stagesync/pull/56) | B3 help full | https://github.com/Negatywistyczny/stagesync/pull/56 | |
+| [#57](https://github.com/Negatywistyczny/stagesync/pull/57) | C1 fade schema+playback | https://github.com/Negatywistyczny/stagesync/pull/57 | |
+| [#58](https://github.com/Negatywistyczny/stagesync/pull/58) | C2 fade/loop inspector | https://github.com/Negatywistyczny/stagesync/pull/58 | zawiera też #57 (stack) |
+| [#59](https://github.com/Negatywistyczny/stagesync/pull/59) | D menu Faza D | https://github.com/Negatywistyczny/stagesync/pull/59 | |
+| [#60](https://github.com/Negatywistyczny/stagesync/pull/60) | E docs/api + smoke e2e | https://github.com/Negatywistyczny/stagesync/pull/60 | E1+E2 w jednym PR |
+
+Sprawdź CI: `gh pr checks <n>` przed merge.
+
+### Ukończone vs odłożone
+
+| Done | Deferred |
+|------|----------|
+| A polish transport/status + client label tokens | Pełny audit Admin Live Desk density |
+| B zoom icons; snap picker; help full | — |
+| C fadeIn/Out + loop schema/playback + inspector | Crossfade / overlap mode (C4); Smart fade handles on canvas |
+| D Edycja + zoom Widok + Pomoc shortcuts | PDF setlisty / archiwum projektu (ROADMAP Faza D extras) |
+| E `docs/api` + smoke e2e in `pnpm test` | Playwright Forma drag browser matrix |
+| Soft-gate G1–G10 docs | **Operator HW** G1–G10 |
+
+### Blokery / kolejność merge
+
+1. Merge #53 przed lub razem z #54 (stack).
+2. Merge #57 przed lub razem z #58 (stack).
+3. #55/#56/#59/#60 niezależne od siebie względem A/C (możliwe konflikty w `TimelineShell` / Help — rebase rano jeśli trzeba).
+4. G1–G10: [report-beta-gate.md](./report-beta-gate.md) soft-gate — **nie** claim green bez HW.
