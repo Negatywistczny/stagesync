@@ -92,3 +92,21 @@ export function defaultTransportState(): TransportState {
     loop: null,
   };
 }
+
+
+/**
+ * Home tick for Stop / return-to-start (ADR 0002).
+ * Countdown / pre-roll start when present; otherwise song start (0).
+ */
+export type TransportHomeSource = {
+  forma: {
+    clips: ReadonlyArray<{ kind: string; startTicks: number }>;
+  };
+};
+
+export function transportHomeTicks(
+  project: TransportHomeSource | null | undefined,
+): number {
+  const cd = project?.forma.clips.find((c) => c.kind === "countdown");
+  return cd?.startTicks ?? 0;
+}
