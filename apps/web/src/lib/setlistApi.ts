@@ -119,6 +119,56 @@ export async function fetchNetworkInfo(): Promise<NetworkInfo> {
   return (await res.json()) as NetworkInfo;
 }
 
+export type MidiPortInfo = {
+  id: string;
+  name: string;
+  direction: "input" | "output";
+};
+
+export type MidiHostStatus = {
+  available: boolean;
+  backend: "native" | "mock" | "none";
+  config: {
+    inputId: string | null;
+    outputId: string | null;
+    clockOutEnabled: boolean;
+  };
+  inputs: MidiPortInfo[];
+  outputs: MidiPortInfo[];
+  rates: {
+    clockPerSec: number;
+    sppPerSec: number;
+    pcPerSec: number;
+    beatToWsPerSec: number;
+  };
+  clockOutActive: boolean;
+  lastError: string | null;
+};
+
+export async function fetchMidiHostStatus(): Promise<MidiHostStatus> {
+  const res = await fetch("/api/midi", { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as MidiHostStatus;
+}
+
+export async function putMidiHostConfig(body: {
+  inputId?: string | null;
+  outputId?: string | null;
+  clockOutEnabled?: boolean;
+}): Promise<MidiHostStatus> {
+  const res = await fetch("/api/midi/config", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as MidiHostStatus;
+}
+
 export async function postSystemRestart(): Promise<void> {
   const res = await fetch("/api/system/restart", { method: "POST" });
   if (!res.ok) {

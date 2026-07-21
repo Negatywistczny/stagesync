@@ -13,7 +13,7 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 | **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
 
 Kolejne fazy menu: **Faza B** (Plik / Host) + **Faza C** (Transport) → **must β2**; Faza D → 5.0.0 — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
-**Bez** MIDI / zegara muzycznego w procesie Tauri.
+**Bez** MIDI / zegara muzycznego w procesie Tauri — Host MIDI I/O + clock żyje wyłącznie w `apps/server` (`GET/PUT /api/midi`, [ADR 0010](./adr/0010-desktop-shell-tauri.md) / [ADR 0002](./adr/0002-timebase-ssot.md)). Shell tylko wyświetla status Admin → Host.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —
 > shell nie trzyma żadnych danych. Szczegóły: [ADR 0012](./adr/0012-user-data-location.md).
@@ -106,5 +106,5 @@ pnpm --filter @stagesync/desktop tauri build
 ## Zakazy (ADR 0010)
 
 - Transport SSOT tylko w `apps/server`
-- Brak device MIDI I/O wyłącznie w procesie Tauri
+- Brak device MIDI I/O wyłącznie w procesie Tauri — MIDI = `apps/server` (`/api/midi`); Tauri nie otwiera portów MIDI
 - Auto-update w tle / sklepy OS — OUT β1 (β2+)

@@ -85,9 +85,31 @@ export {
   type StageMessageBody,
   UpdateStatusSchema,
   ApplyUpdateBodySchema,
+  MidiPortSchema,
+  MidiHostConfigSchema,
+  PutMidiHostConfigBodySchema,
+  MidiHostRatesSchema,
+  MidiHostStatusSchema,
   type UpdateStatus,
   type ApplyUpdateBody,
+  type MidiPort,
+  type MidiHostConfig,
+  type PutMidiHostConfigBody,
+  type MidiHostRates,
+  type MidiHostStatus,
 } from "./schema.js";
+
+export {
+  MIDI_CLOCK_PPQN,
+  MIDI_SPP_PER_QUARTER,
+  ticksPerMidiClock,
+  ticksToMidiClockIndex,
+  midiClockIndexToTicks,
+  ticksToSpp,
+  sppToTicks,
+  midiClockIntervalMs,
+  elapsedMsToMidiClocks,
+} from "./midi-clock.js";
 
 export {
   createProjectV2Seed,
