@@ -88,6 +88,26 @@ mod path_for_node_tests {
         assert!(assert_node_path_usable(Path::new(r"C:\"), "entry").is_err());
         assert!(assert_node_path_usable(Path::new(r"C:\StageSync"), "entry").is_ok());
     }
+
+    #[test]
+    fn parses_health_version_from_http_response() {
+        let resp = concat!(
+            "HTTP/1.1 200 OK\r\n",
+            "Content-Type: application/json\r\n",
+            "\r\n",
+            r#"{"ok":true,"service":"stagesync-server","version":"5.0.0-beta.1"}"#,
+        );
+        assert_eq!(
+            parse_health_version(resp).as_deref(),
+            Some("5.0.0-beta.1")
+        );
+    }
+
+    #[test]
+    fn rejects_health_body_without_version() {
+        let resp = "HTTP/1.1 200 OK\r\n\r\n{\"ok\":true}";
+        assert_eq!(parse_health_version(resp), None);
+    }
 }
 
 #[derive(Clone)]
@@ -343,7 +363,23 @@ fn startup_failure_message(log_tail: &str, last_health_err: Option<&str>) -> Str
     )
 }
 
-async fn check_health(port: u16) -> Result<bool, String> {
+#[derive(Debug, PartialEq, Eq)]
+struct HealthOk {
+    version: String,
+}
+
+/// Parse `version` from an HTTP response to `GET /api/health` (body after headers).
+fn parse_health_version(resp: &str) -> Option<String> {
+    let body = resp.split("\r\n\r\n").nth(1).or_else(|| resp.split("\n\n").nth(1))?;
+    let value: serde_json::Value = serde_json::from_str(body.trim()).ok()?;
+    value
+        .get("version")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+}
+
+/// `Ok(None)` = TCP up but not HTTP 200 yet; `Ok(Some)` = healthy StageSync.
+async fn check_health(port: u16) -> Result<Option<HealthOk>, String> {
     let addr = format!("127.0.0.1:{port}");
     let mut stream = TcpStream::connect(addr)
         .await
@@ -364,7 +400,14 @@ async fn check_health(port: u16) -> Result<bool, String> {
         .map_err(|e| format!("read failed: {e}"))?;
 
     let resp = String::from_utf8_lossy(&buf);
-    Ok(resp.starts_with("HTTP/1.1 200") || resp.starts_with("HTTP/1.0 200"))
+    let ok = resp.starts_with("HTTP/1.1 200") || resp.starts_with("HTTP/1.0 200");
+    if !ok {
+        return Ok(None);
+    }
+    let version = parse_health_version(&resp).ok_or_else(|| {
+        "odpowiedź /api/health bez pola version (obcy proces na porcie 4000?)".to_string()
+    })?;
+    Ok(Some(HealthOk { version }))
 }
 
 fn show_startup_error(
@@ -470,6 +513,7 @@ pub fn run() {
             }
 
             // Relative entry + cwd: Node never sees a `\\?\C:\…` absolute main path.
+            let expected_version = app.package_info().version.to_string();
             let sidecar = app
                 .handle()
                 .shell()
@@ -490,10 +534,7 @@ pub fn run() {
                             "STAGESYNC_SEED_DIR",
                             seed_dir.to_string_lossy().to_string(),
                         )
-                        .env(
-                            "npm_package_version",
-                            app.package_info().version.to_string(),
-                        )
+                        .env("npm_package_version", expected_version.clone())
                         .env("STAGESYNC_SHELL", "desktop")
                         .spawn()
                 })
@@ -577,7 +618,7 @@ pub fn run() {
                     }
 
                     match check_health(UI_PORT).await {
-                        Ok(true) => {
+                        Ok(Some(health)) if health.version == expected_version => {
                             // Desktop = okno operatora (ADR 0010) — domyślnie Admin.
                             let url = nav_url("/admin");
                             let _ = window_for_poll.navigate(url.parse().unwrap());
@@ -587,7 +628,27 @@ pub fn run() {
                             });
                             return;
                         }
-                        Ok(false) => {
+                        Ok(Some(health)) => {
+                            // Stale host on :4000 (e.g. orphaned alpha sidecar after upgrade).
+                            // Do not adopt it — health would otherwise race ahead of our
+                            // child's EADDRINUSE exit and show the wrong version in logs/UI.
+                            let msg = format_sidecar_failure(
+                                "port 4000 jest zajęty przez inną wersję StageSync",
+                                &format!(
+                                    "Działa host {found}, a ta aplikacja to {expected}.\nZamknij stare procesy StageSync (Activity Monitor → stagesync-host) i uruchom ponownie.",
+                                    found = health.version,
+                                    expected = expected_version,
+                                ),
+                                &log_tail,
+                            );
+                            show_startup_error(
+                                &window_for_poll,
+                                &sidecar_child_for_poll,
+                                msg,
+                            );
+                            return;
+                        }
+                        Ok(None) => {
                             last_health_err = "odpowiedź HTTP bez statusu 200".into();
                         }
                         Err(e) => {
