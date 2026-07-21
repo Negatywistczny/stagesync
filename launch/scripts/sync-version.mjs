@@ -38,6 +38,22 @@ if (!version || !/^\d+\.\d+\.\d+/.test(version)) {
 
 console.log(`sync-version: ${version}${dryRun ? " (dry-run)" : ""}`);
 
+/** MSI/WiX requires numeric major.minor.patch[.build]; map SemVer pre-release to 4th field. */
+function toWixVersion(semver) {
+  const match = semver.match(/^(\d+)\.(\d+)\.(\d+)(?:-([^.]+)\.(\d+))?$/);
+  if (!match) return semver.replace(/-.*$/, "");
+  const [, major, minor, patch, prereleaseTag, prereleaseNum] = match;
+  if (!prereleaseTag) return `${major}.${minor}.${patch}`;
+  const n = Number(prereleaseNum);
+  if (prereleaseTag === "beta") return `${major}.${minor}.${patch}.${10000 + n}`;
+  return `${major}.${minor}.${patch}.${n}`;
+}
+
+const wixVersion = toWixVersion(version);
+if (wixVersion !== version) {
+  console.log(`  wix msi:   ${wixVersion}`);
+}
+
 const updates = [
   {
     path: "apps/web/src/lib/appVersion.ts",
@@ -48,6 +64,14 @@ const updates = [
     transform: (c) => {
       const obj = JSON.parse(c);
       obj.version = version;
+      obj.bundle.windows ??= {};
+      if (wixVersion !== version) {
+        obj.bundle.windows.wix = { ...(obj.bundle.windows.wix ?? {}), version: wixVersion };
+      } else if (obj.bundle.windows.wix?.version) {
+        const { version: _drop, ...rest } = obj.bundle.windows.wix;
+        if (Object.keys(rest).length === 0) delete obj.bundle.windows.wix;
+        else obj.bundle.windows.wix = rest;
+      }
       return JSON.stringify(obj, null, 2) + "\n";
     },
   },

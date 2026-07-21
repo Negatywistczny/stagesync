@@ -51,7 +51,10 @@
       "minimumSystemVersion": "10.15"
     },
     "windows": {
-      "digestAlgorithm": "sha256"
+      "digestAlgorithm": "sha256",
+      "wix": {
+        "version": "5.0.0.10"
+      }
     }
   },
   "plugins": {
