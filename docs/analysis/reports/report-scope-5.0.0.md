@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:50 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -254,6 +254,8 @@ flowchart LR
 - Prefer **#102** over **#92** (wand restore supersedes “wand hidden” Help).
 - Stack: **#100** after **#98**; **#84** after/with **#63**.
 - C-fade stack: #57→#58 before #64/#66.
+
+Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116) (MIDI status strict / UpdateStatus strict / Client role no-emoji).
 
 ### Remaining backlog (ranked)
 
