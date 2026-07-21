@@ -1482,15 +1482,16 @@ function UpdatePanel({
         <Button variant="secondary" onClick={handleCheck} disabled={checking || applying}>
           {checking ? "Sprawdzam…" : "Sprawdź aktualizacje"}
         </Button>
-        <select className={styles.select} disabled aria-label="Kanał">
-          <option>Oficjalne</option>
-          <option disabled>Testowe (β2)</option>
-        </select>
+        <span className={styles.muted}>Kanał: oficjalne (β2)</span>
       </div>
-      {error && <p className={styles.muted} style={{ color: "var(--ss-color-danger, red)" }}>{error}</p>}
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
       {done && <p className={styles.muted}>Aktualizacja hosta uruchomiona — połączenie wróci za chwilę.</p>}
       {hostStatus && (
-        <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
+        <div className={[styles.actions, styles.actionsFollow].join(" ")}>
           <span className={styles.muted}>
             {inTauri ? (
               <>Sidecar: {hostStatus.current}</>
@@ -1515,7 +1516,7 @@ function UpdatePanel({
         </p>
       )}
       {inTauri && desktopStatus && (
-        <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
+        <div className={[styles.actions, styles.actionsFollow].join(" ")}>
           <span className={styles.muted}>
             {desktopStatus.available ? (
               <>
