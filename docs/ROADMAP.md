@@ -18,8 +18,9 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.11** | Desktop shell polish | **Wydane 2026-07-21** — menu OS Widok, shell detect, draft updater pipeline; bramka G1–G10 (G6: α10→α11) | [report-beta-gate](./analysis/reports/report-beta-gate.md) |
 | **5.0.0-alpha.12** | Domknięcie: OS menu Faza A + hotfixy shelła | **Wydane 2026-07-21** — menu StageSync/Widok/Pomoc; sidecar fail-fast; Faza B+ → β1 | [TODO.md](./TODO.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
 | **5.0.0-alpha.13** | Hotfix: Windows sidecar `EISDIR` / `C:` | **Wydane 2026-07-21** — MSI: Node bez ścieżek `\\?\…` jako main module; spawn względny + cwd | [TODO.md](./TODO.md) · [DESKTOP.md](./DESKTOP.md) |
-| **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — milestone dystrybucyjny (H1–H12 w α10–α13); menu Faza B + ręczna G1–G10 → carry β2 | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
-| **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport; carry menu Faza B | [TODO.md](./TODO.md) |
+| **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — H1–H12 (α10–α13); residual (menu Faza B, G1–G10) → **must β2** (docs cut `5.0.0-beta.1.1`) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
+| **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
+| **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Aktywny** — playback 0…N; MIDI I/O serwera; menu Faza B+C; G1–G10 przed tagiem | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
 
@@ -88,20 +89,20 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - **Must:** naprawa `EISDIR` / `lstat 'C:'` przy starcie sidecara z MSI (ścieżki Win32 `\\?\…` vs Node main module)
 - **OUT α13:** menu Faza B+; bramka G1–G10; reszta host/dystrybucja → **β1**
-- Tag `v5.0.0-alpha.13` — done; **β1** wydane 2026-07-21; aktywny etap w TODO = β2 (start kodu na prośbę)
+- Tag `v5.0.0-alpha.13` — done; **β1** / **β1.1** wydane 2026-07-21; aktywny etap w TODO = β2 (start kodu na prośbę)
 
 ### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja) — **wydane 2026-07-21**
 
 > **P8 green 2026-07-21.** Tag `v5.0.0-beta.1` = **milestone dystrybucyjny** (H1–H12 w α10–α13 + closeout docs).
 > Scope: [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md).
-> Residual: **menu Faza B**, ręczna **G1–G10** → carry β2 / operator ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)).
-> Świadome OUT: git-apply; audio/MIDI/Live Desk/wand/Help feature/P1 Timeline (→ β2 / 5.0.0).
+> Docs cut `v5.0.0-beta.1.1` (2026-07-21): residual **menu Faza B** + ręczna **G1–G10** = **must β2** (nie soft carry) — [report-beta-gate.md](./analysis/reports/report-beta-gate.md) · [report-scope-beta2.md](./analysis/reports/report-scope-beta2.md).
+> Świadome OUT β1: git-apply; audio/MIDI/Live Desk/wand/Help feature/P1 Timeline (→ β2 / 5.0.0).
 
 - Docker Compose ([ADR 0004](./adr/0004-updates-docker.md)): obraz + volume `data/`; update = bump tagu — **ścieżka drugorzędna** dla rack/server; [INSTALL.md](./INSTALL.md)
 - **Tauri** desktop standalone ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): shell + Node sidecar; Win + mac; **bez** autorytetu czasu w shellu
 - Stabilność hosta: shadow backup, OCC (`409`), migracja schematu, ESLint ACL, API Zod `details` (bazowo w α10/α11)
-- **Bramka G1–G10** — weryfikacja ręczna operatora (nie zautomatyzowana przy tagu β1)
-- **Desktop OS menu — Faza B** — carry → β2 (Plik, Host, Open Recent, Zapisz, status/QR/klienci) — § poniżej
+- **Bramka G1–G10** — nie zamknięta przy β1; **must weryfikacji przed tagiem β2**
+- **Desktop OS menu — Faza B** — nie wdrożona w β1; **must β2** (Plik, Host, Open Recent, Zapisz, status/QR/klienci) — § poniżej
 - Doprecyzowanie ADR 0002 (tempo/metrum pre-roll); E2E Forma + transport — should (carry)
 - **OUT β1:** audio / MIDI / AD-01…03 / wand / Timeline Help feature / P1 Timeline → β2 lub 5.0.0; Android; store auto-update
 - **Migrator:** α9 (done)
@@ -113,19 +114,23 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 | Faza | Top-level | Enabled (plan) | Etap |
 |------|-----------|----------------|------|
 | **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (wydane) |
-| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β2** (carry z β1) |
-| **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** |
+| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β2** (must; residual z β1) |
+| **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** (must) |
 | **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Undo gdy stack; PDF setlisty; archiwum projektu; overlay skrótów; motyw sceniczny | **5.0.0** |
 
 **OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; MUTE ALL / PANIC; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik).
 
 Propozycja pełnej struktury (referencja produktowa): StageSync · Plik · Edycja · Widok · Setlista · Transport · Host · Pomoc — realizowana przez fazy A→D, nie jednym PR.
 
-### Beta 2 — zakres orientacyjny (audio + MIDI)
+### Beta 2 — zakres orientacyjny (audio + MIDI + menu B/C) — **aktywny**
+
+Scope: [report-scope-beta2.md](./analysis/reports/report-scope-beta2.md) · checklista [TODO.md](./TODO.md).
 
 - **Audio 0…N** ([ADR 0008](./adr/0008-timeline-clip-editing.md)): clip na Timeline, sync transport (`ticksToMs`), trim/move, waveform peak/RMS, gain clip + fader track + mute clip/track; **bez** pencil, **bez** stretch poza plik
-- MIDI I/O (clock / urządzenia po stronie **serwera**)
-- **OUT β2:** fade/crossfade/loop-region (→ 5.0.0); Android native
+- MIDI I/O (clock / urządzenia po stronie **serwera**) — nie w Tauri ([ADR 0010](./adr/0010-desktop-shell-tauri.md))
+- **Desktop OS menu — Faza B + C** (must; residual β1 + Transport)
+- **G1–G10** green na instalatorach przed tagiem `v5.0.0-beta.2` ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
+- **OUT β2:** fade/crossfade/loop-region; Faza D menu; Android native; MIDI w procesie Tauri; Flex Time
 
 ### 5.0.0 — zakres orientacyjny
 
