@@ -24,7 +24,7 @@ const SECTIONS: HelpSection[] = [
     title: "Utwory i setlista",
     items: [
       "Tytuł utworu — biblioteka / setlista.",
-      "← / → — poprzedni / następny utwór setlisty (gdy setlista włączona).",
+      "[ / ] — poprzedni / następny utwór setlisty (gdy setlista włączona).",
       "Auto-setlista — serwer po końcu utworu wczytuje następny (zatrzymany, takt 1.1); stan współdzielony z Adminem.",
     ],
   },
@@ -35,7 +35,7 @@ const SECTIONS: HelpSection[] = [
       "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
       "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
-      "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji = zakres; bez zaznaczenia — cały utwór.",
+      "Różdżka — ukryta do naprawy zachowania; core API zostaje (nie ma skrótu W).",
       "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
       "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
     ],
@@ -88,7 +88,6 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
     {
       heading: "Narzędzia",
       rows: [
-        { keys: "W", action: "Różdżka — menu" },
         { keys: "?", action: "Ta pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },
         { keys: "⌘/Ctrl przy drag", action: "Snap off" },
