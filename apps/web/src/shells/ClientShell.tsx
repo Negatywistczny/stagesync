@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { isDesktopShell, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
 import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
 import {
@@ -28,6 +29,7 @@ import {
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
+import { ShellModeNav } from "./ShellModeNav.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import styles from "./ClientShell.module.css";
 
@@ -125,15 +127,7 @@ export function ClientShell() {
       : null;
 
   async function onFullscreen() {
-    try {
-      if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
-      } else {
-        await document.exitFullscreen();
-      }
-    } catch {
-      /* ignore */
-    }
+    await toggleAppFullscreen();
   }
 
   async function onNextSong() {
@@ -177,6 +171,7 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
+    timelineProjectId: state.activeProjectId,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -446,6 +441,7 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   nextSetlistId: string | null;
+  timelineProjectId: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -461,6 +457,7 @@ function ClientHeader({
   songTitle,
   bbt,
   nextSetlistId,
+  timelineProjectId,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -504,6 +501,9 @@ function ClientHeader({
       </span>
 
       <div className={styles.headerActions}>
+        {isDesktopShell() ? (
+          <ShellModeNav active="client" timelineProjectId={timelineProjectId} />
+        ) : null}
         <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
         <SettingsPopoverAnchor>
           <ShellIconButton

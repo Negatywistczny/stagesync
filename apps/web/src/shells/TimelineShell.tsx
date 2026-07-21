@@ -200,6 +200,7 @@ import {
   setLaneHeightOverride,
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
+import { isDesktopShell, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -231,6 +232,7 @@ import {
   IconUnchecked,
   IconUndo,
 } from "./icons.js";
+import { ShellModeNav } from "./ShellModeNav.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import {
@@ -3365,10 +3367,17 @@ export function TimelineShell() {
         </div>
 
         <div className={styles.headerActions}>
-          <nav className={styles.appJump} aria-label="Aplikacje">
-            <Link to="/admin">Admin</Link>
-            <Link to="/">Klient</Link>
-          </nav>
+          {isDesktopShell() ? (
+            <ShellModeNav
+              active="timeline"
+              timelineProjectId={draftProject?.id ?? projectId ?? null}
+            />
+          ) : (
+            <nav className={styles.appJump} aria-label="Aplikacje">
+              <Link to="/admin">Admin</Link>
+              <Link to="/client">Klient</Link>
+            </nav>
+          )}
           <ShellIconButton
             label="Cofnij"
             disabled={!draftHistory || !canUndo(draftHistory)}
@@ -3415,19 +3424,7 @@ export function TimelineShell() {
           </ShellIconButton>
           <ShellIconButton
             label="Pełny ekran"
-            onClick={() => {
-              void (async () => {
-                try {
-                  if (!document.fullscreenElement) {
-                    await document.documentElement.requestFullscreen();
-                  } else {
-                    await document.exitFullscreen();
-                  }
-                } catch {
-                  /* ignore */
-                }
-              })();
-            }}
+            onClick={() => void toggleAppFullscreen()}
           >
             <IconFullscreen />
           </ShellIconButton>

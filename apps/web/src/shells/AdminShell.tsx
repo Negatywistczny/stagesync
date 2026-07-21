@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
   importUgText,
@@ -26,7 +26,7 @@ import {
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
-import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
+import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, toggleAppFullscreen, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
 import { DOCS_INSTALL_URL, DOCS_RELEASES_URL } from "../lib/docsLinks.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -39,6 +39,7 @@ import {
   ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
+import { ShellModeNav } from "./ShellModeNav.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
 import { SetView } from "./admin/SetView.js";
@@ -63,7 +64,14 @@ export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [section, setSection] = useState<SectionId>("songs");
+  const [searchParams] = useSearchParams();
+  const [section, setSection] = useState<SectionId>(() => {
+    if (typeof window === "undefined") return "songs";
+    return new URLSearchParams(window.location.search).get("section") === "host"
+      ? "host"
+      : "songs";
+  });
+  const desktop = isDesktopShell();
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -114,6 +122,12 @@ export function AdminShell() {
   const nextName = setlistView?.enabled
     ? (setlistView.next?.name ?? (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
     : "z setu";
+
+  useEffect(() => {
+    if (searchParams.get("section") === "host") {
+      setSection("host");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -237,6 +251,8 @@ export function AdminShell() {
     });
   };
 
+  const timelineProjectId = selectedId ?? state.activeProjectId ?? null;
+
   return (
     <div className={styles.shell}>
       <div className={styles.chromeWrap}>
@@ -263,12 +279,23 @@ export function AdminShell() {
           </nav>
 
           <div className={styles.chromeAside}>
-            <nav className={styles.appJump} aria-label="Aplikacje">
-              <Link to={selectedId ? `/timeline/${selectedId}` : "#"} aria-disabled={!selectedId}>
-                Timeline
-              </Link>
-              <Link to="/">Klient</Link>
-            </nav>
+            {desktop ? (
+              <ShellModeNav
+                active="admin"
+                timelineProjectId={timelineProjectId}
+              />
+            ) : (
+              <nav className={styles.appJump} aria-label="Aplikacje">
+                {timelineProjectId ? (
+                  <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
+                ) : (
+                  <span className={styles.appJumpMuted} aria-disabled>
+                    Timeline
+                  </span>
+                )}
+                <Link to="/client">Klient</Link>
+              </nav>
+            )}
             <ShellIconButton
               label="Wygląd"
               aria-expanded={appearanceOpen}
@@ -276,41 +303,33 @@ export function AdminShell() {
             >
               <IconSun />
             </ShellIconButton>
-            <ShellIconButton
-              label="Ustawienia hosta"
-              onClick={() => setSettingsOpen(true)}
-            >
-              <IconSettings />
-            </ShellIconButton>
-            <ShellIconButton
-              label={restart.label}
-              pressed={restart.pending}
-              onClick={restart.arm}
-            >
-              <IconRestart />
-            </ShellIconButton>
-            <ShellIconButton
-              label={shutdown.label}
-              pressed={shutdown.pending}
-              onClick={shutdown.arm}
-            >
-              <IconPower />
-            </ShellIconButton>
+            {!desktop ? (
+              <>
+                <ShellIconButton
+                  label="Ustawienia hosta"
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <IconSettings />
+                </ShellIconButton>
+                <ShellIconButton
+                  label={restart.label}
+                  pressed={restart.pending}
+                  onClick={restart.arm}
+                >
+                  <IconRestart />
+                </ShellIconButton>
+                <ShellIconButton
+                  label={shutdown.label}
+                  pressed={shutdown.pending}
+                  onClick={shutdown.arm}
+                >
+                  <IconPower />
+                </ShellIconButton>
+              </>
+            ) : null}
             <ShellIconButton
               label="Pełny ekran"
-              onClick={() => {
-                void (async () => {
-                  try {
-                    if (!document.fullscreenElement) {
-                      await document.documentElement.requestFullscreen();
-                    } else {
-                      await document.exitFullscreen();
-                    }
-                  } catch {
-                    /* ignore */
-                  }
-                })();
-              }}
+              onClick={() => void toggleAppFullscreen()}
             >
               <IconFullscreen />
             </ShellIconButton>
@@ -420,6 +439,10 @@ export function AdminShell() {
           <HostView
             statusMsg={hostStatusMsg}
             onPathPicker={() => setPathPickerOpen(true)}
+            showHeaderOps={desktop}
+            onOpenSettings={() => setSettingsOpen(true)}
+            restart={restart}
+            shutdown={shutdown}
           />
         ) : null}
       </main>
@@ -844,8 +867,8 @@ function SongsView({
                   ) : (
                     <Link
                       className={styles.editLink}
-                      to={selectedId ? `/timeline/${selectedId}` : "#"}
-                      aria-disabled={!selectedId}
+                      to={selected ? `/timeline/${selected.id}` : "#"}
+                      aria-disabled={!selected}
                     >
                       Otwórz w Timeline
                     </Link>
@@ -995,9 +1018,17 @@ function useDoubleConfirm(action: () => Promise<void>, label: string) {
 function HostView({
   statusMsg,
   onPathPicker,
+  showHeaderOps,
+  onOpenSettings,
+  restart,
+  shutdown,
 }: {
   statusMsg: string | null;
   onPathPicker: () => void;
+  showHeaderOps: boolean;
+  onOpenSettings: () => void;
+  restart: { label: string; pending: boolean; arm: () => void };
+  shutdown: { label: string; pending: boolean; arm: () => void };
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
@@ -1042,6 +1073,25 @@ function HostView({
 
   return (
     <div className={styles.stack}>
+      {showHeaderOps ? (
+        <section className={styles.card} aria-label="Operacje hosta">
+          <div className={styles.cardHead}>
+            <h2 className={styles.cardTitle}>Operacje hosta</h2>
+          </div>
+          <div className={`${styles.cardBody} ${styles.actions}`}>
+            <Button variant="secondary" onClick={onOpenSettings}>
+              Ustawienia hosta
+            </Button>
+            <Button variant="ghost" onClick={restart.arm}>
+              {restart.label}
+            </Button>
+            <Button variant="ghost" onClick={shutdown.arm}>
+              {shutdown.label}
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
       <section className={styles.card} aria-label="Sieć">
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>Sieć</h2>

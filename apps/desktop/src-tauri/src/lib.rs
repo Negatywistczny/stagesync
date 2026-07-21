@@ -90,14 +90,14 @@ pub fn run() {
                 return Ok(());
             };
 
-            let static_dir = resource_dir.join("sidecar/web");
-            let seed_dir = resource_dir.join("sidecar/seed");
-            let server_entry = resource_dir.join("sidecar/server/dist/index.js");
+            let static_dir = resource_dir.join("resources/sidecar/web");
+            let seed_dir = resource_dir.join("resources/sidecar/seed");
+            let server_entry = resource_dir.join("resources/sidecar/server/dist/index.js");
 
             // Dev fallback: if sidecar resources aren't bundled, keep the old thin-shell flow.
             if !server_entry.exists() {
                 let url = std::env::var("STAGESYNC_URL")
-                    .unwrap_or_else(|_| format!("http://127.0.0.1:{PORT}"));
+                    .unwrap_or_else(|_| format!("http://127.0.0.1:{PORT}/admin"));
                 if let Ok(parsed) = url.parse() {
                     let _ = window.navigate(parsed);
                 }
@@ -138,6 +138,7 @@ pub fn run() {
                             "npm_package_version",
                             app.package_info().version.to_string(),
                         )
+                        .env("STAGESYNC_SHELL", "desktop")
                         .spawn()
                 })
                 .map_err(|err| {
@@ -165,7 +166,8 @@ pub fn run() {
                 loop {
                     match check_health(PORT).await {
                         Ok(true) => {
-                            let url = format!("http://127.0.0.1:{PORT}");
+                            // Desktop = okno operatora (ADR 0010) — domyślnie Admin, nie Klient.
+                            let url = format!("http://127.0.0.1:{PORT}/admin");
                             let _ = window_for_poll.navigate(url.parse().unwrap());
                             return;
                         }
@@ -199,6 +201,7 @@ pub fn run() {
             check_desktop_update,
             install_desktop_update,
             open_external_url,
+            toggle_window_fullscreen,
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
@@ -241,6 +244,27 @@ async fn check_desktop_update(app: tauri::AppHandle) -> Result<UpdateInfo, Strin
             notes: None,
         }),
         Err(e) => Err(e.to_string()),
+    }
+}
+
+/// Toggle native window expand (desktop shell — not HTML document fullscreen).
+/// macOS: maximize/unmaximize (green-button UX). Other platforms: true fullscreen.
+#[tauri::command]
+async fn toggle_window_fullscreen(window: tauri::WebviewWindow) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        if window.is_maximized().map_err(|e| e.to_string())? {
+            window.unmaximize().map_err(|e| e.to_string())
+        } else {
+            window.maximize().map_err(|e| e.to_string())
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let is_fullscreen = window.is_fullscreen().map_err(|e| e.to_string())?;
+        window
+            .set_fullscreen(!is_fullscreen)
+            .map_err(|e| e.to_string())
     }
 }
 

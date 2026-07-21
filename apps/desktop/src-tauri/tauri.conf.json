@@ -5,12 +5,12 @@
   "identifier": "com.stagesync.app",
   "build": {
     "frontendDist": "../ui-placeholder",
-    "devUrl": "http://127.0.0.1:4000",
+    "devUrl": "http://127.0.0.1:4000/admin",
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
   },
   "app": {
-    "withGlobalTauri": false,
+    "withGlobalTauri": true,
     "windows": [
       {
         "label": "main",
@@ -19,7 +19,7 @@
         "height": 800,
         "resizable": true,
         "fullscreen": false,
-        "url": "http://127.0.0.1:4000"
+        "url": "http://127.0.0.1:4000/admin"
       }
     ],
     "security": {

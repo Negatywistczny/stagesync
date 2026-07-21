@@ -1,10 +1,28 @@
 {
   "$schema": "https://schema.tauri.app/config/2/capability",
   "identifier": "default",
-  "description": "Default StageSync desktop capability (thin shell)",
+  "description": "Default StageSync desktop capability (thin shell + sidecar UI at localhost)",
   "windows": ["main"],
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:4000",
+      "http://127.0.0.1:4000/*",
+      "http://localhost:4000",
+      "http://localhost:4000/*"
+    ]
+  },
   "permissions": [
     "core:default",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-fullscreen",
+    "core:window:allow-set-simple-fullscreen",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-is-maximized",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "allow-toggle-window-fullscreen",
+    "allow-open-external-url",
+    "allow-desktop-update",
     "shell:allow-kill",
     {
       "identifier": "shell:allow-spawn",

@@ -10,9 +10,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed `library.template.json` + `seed-projects/`; parity z legacy v4).
+- **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** wspólna nawigacja **Admin | Timeline | Klient** (`ShellModeNav`, tylko shell Tauri); minimalne menu OS **Widok** + **Zakończ**; ostatni utwór Timeline w `localStorage` i sync do menu natywnego; deep link `/admin?section=host`.
 
 ### Zmieniono
 
+- **Desktop:** domyślne wejście `/admin` (Klient pod `/client`); natywny pełny ekran okna w shellu Tauri zamiast HTML Fullscreen API; layout bundla sidecara (`resources/sidecar` + symlink compat); operacje hosta (restart / wyłącz / ustawienia) tylko w zakładce **Host**, nie w headerze desktop.
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
 
 ## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21

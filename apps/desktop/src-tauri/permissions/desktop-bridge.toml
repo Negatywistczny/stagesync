@@ -1,0 +1,14 @@
+[[permission]]
+identifier = "allow-desktop-update"
+description = "Check and install desktop shell updates."
+commands.allow = ["check_desktop_update", "install_desktop_update"]
+
+[[permission]]
+identifier = "allow-toggle-window-fullscreen"
+description = "Toggle native window expand/fullscreen from shell UI."
+commands.allow = ["toggle_window_fullscreen"]
+
+[[permission]]
+identifier = "allow-open-external-url"
+description = "Open documentation links in the system browser."
+commands.allow = ["open_external_url"]

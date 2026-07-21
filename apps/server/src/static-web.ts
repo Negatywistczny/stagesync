@@ -27,6 +27,14 @@ export function mountStaticWeb(app: Express, staticDir: string): void {
       next();
       return;
     }
+    // Desktop sidecar (ADR 0010): operator window defaults to Admin, not Client.
+    if (
+      process.env.STAGESYNC_SHELL === "desktop" &&
+      (req.path === "/" || req.path === "")
+    ) {
+      res.redirect(302, "/admin");
+      return;
+    }
     res.sendFile(join(staticDir, "index.html"));
   });
 }

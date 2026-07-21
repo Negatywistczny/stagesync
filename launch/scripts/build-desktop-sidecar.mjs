@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync, spawn } from "node:child_process";
-import { cp, mkdir, readdir, rm, chmod, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdir, readdir, rm, chmod, symlink, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 // (no node:fs stream usage; download uses arrayBuffer -> writeFile)
 import { tmpdir } from "node:os";
@@ -208,6 +208,60 @@ async function copyDirContents(srcDir, destDir) {
   }
 }
 
+/**
+ * Tauri bundle layout: `Contents/Resources/resources/sidecar/…`
+ * Legacy patch paths used `Contents/Resources/sidecar/…` — keep a symlink for tools / manual patches.
+ */
+async function ensureBundleSidecarSymlink(resourcesDir) {
+  const canonical = join(resourcesDir, "resources", "sidecar");
+  const linkPath = join(resourcesDir, "sidecar");
+  const indexHtml = join(canonical, "web", "index.html");
+  if (!existsSync(indexHtml)) {
+    throw new Error(`[sidecar] missing bundled web root: ${indexHtml}`);
+  }
+
+  try {
+    const st = await lstat(linkPath);
+    if (st.isSymbolicLink()) {
+      await rm(linkPath);
+    } else if (st.isDirectory()) {
+      await rm(linkPath, { recursive: true, force: true });
+    } else {
+      await rm(linkPath, { force: true });
+    }
+  } catch (err) {
+    if (/** @type {NodeJS.ErrnoException} */ (err).code !== "ENOENT") throw err;
+  }
+
+  await symlink("resources/sidecar", linkPath);
+  console.log(`[sidecar] compat symlink: ${linkPath} → resources/sidecar`);
+}
+
+/** Copy freshly built sidecar into an installed .app and refresh the compat symlink. */
+async function patchInstalledApp(appPath) {
+  const resourcesDir = join(appPath, "Contents", "Resources");
+  const destSidecar = join(resourcesDir, "resources", "sidecar");
+  const srcSidecar = join(repoRoot, "apps/desktop/src-tauri/resources/sidecar");
+
+  if (!existsSync(join(appPath, "Contents", "MacOS"))) {
+    throw new Error(`[sidecar] not a macOS .app bundle: ${appPath}`);
+  }
+  if (!existsSync(join(srcSidecar, "web", "index.html"))) {
+    throw new Error(
+      `[sidecar] run build first — missing ${join(srcSidecar, "web", "index.html")}`,
+    );
+  }
+
+  console.log(`[sidecar] patching installed app: ${appPath}`);
+  for (const sub of ["web", "server"]) {
+    await rm(join(destSidecar, sub), { recursive: true, force: true });
+    await cp(join(srcSidecar, sub), join(destSidecar, sub), { recursive: true, force: true });
+  }
+  await ensureBundleSidecarSymlink(resourcesDir);
+  await smokeTestSidecarServer(destSidecar, join(destSidecar, "../seed"));
+  console.log("[sidecar] patch complete");
+}
+
 /** Fail build if repo docs or stray .md leak into runtime bundles (ADR 0013). */
 async function assertNoRepoDocsInSidecar(sidecarDir) {
   const forbiddenDirs = [
@@ -389,7 +443,8 @@ async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
   await rm(sidecarServerDir, { recursive: true, force: true });
   await mkdir(sidecarServerDir, { recursive: true });
 
-  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", "--config.node-linker=hoisted", sidecarServerDir]);
+  // Default isolated linker — hoisted deploy leaves an empty node_modules (no express).
+  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", sidecarServerDir]);
 
   // Use the compiled dist from the monorepo build (not deploy's copied sources).
   await rm(join(sidecarServerDir, "dist"), { recursive: true, force: true });
@@ -403,6 +458,21 @@ async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
     join(sidecarServerDir, "node_modules"),
     "@stagesync/shared",
   );
+
+  await assertDeployHasRuntimeDeps(sidecarServerDir);
+}
+
+async function assertDeployHasRuntimeDeps(sidecarServerDir) {
+  const nodeModules = join(sidecarServerDir, "node_modules");
+  const required = ["express", "@stagesync/shared"];
+  for (const pkg of required) {
+    const pkgJson = join(nodeModules, ...pkg.split("/"), "package.json");
+    if (!existsSync(pkgJson)) {
+      throw new Error(
+        `[sidecar] deploy missing runtime dep ${pkg} (expected ${pkgJson}); pnpm deploy output is incomplete`,
+      );
+    }
+  }
 }
 
 async function smokeTestSidecarServer(sidecarServerDir, seedDir) {
@@ -415,8 +485,9 @@ async function smokeTestSidecarServer(sidecarServerDir, seedDir) {
     throw new Error(`[sidecar] smoke: missing server entry ${entry}`);
   }
 
-  console.log(`[sidecar] smoke: starting server on :${port}`);
+  console.log(`[sidecar] smoke: starting server on :${port} (cwd=${sidecarServerDir})`);
   const child = spawn(process.execPath, [entry], {
+    cwd: sidecarServerDir,
     env: {
       ...process.env,
       PORT: String(port),
@@ -482,6 +553,7 @@ async function buildAndPrepareSidecarResources() {
   const webDistDir = join(webPackageRoot, "dist");
 
   const seedTemplate = join(repoRoot, "data/library/library.template.json");
+  const seedProjects = join(repoRoot, "data/library/seed-projects");
 
   // Build JS outputs first (and shared, because server runtime imports it).
   console.log("[sidecar] building JS outputs (shared/server/web)");
@@ -496,6 +568,7 @@ async function buildAndPrepareSidecarResources() {
 
   // Seed (read-only)
   await cp(seedTemplate, join(sidecarSeedDir, "library.template.json"));
+  await cp(seedProjects, join(sidecarSeedDir, "seed-projects"), { recursive: true });
 
   // Static web (read-only)
   await rm(sidecarWebDir, { recursive: true, force: true });
@@ -511,11 +584,11 @@ async function buildAndPrepareSidecarResources() {
 
   await assertNoRepoDocsInSidecar(sidecarDir);
 
+  await pruneRuntimeBundle(sidecarDir);
+
   if (process.argv.includes("--smoke")) {
     await smokeTestSidecarServer(sidecarServerDir, sidecarSeedDir);
   }
-
-  await pruneRuntimeBundle(sidecarDir);
 
   console.log("[sidecar] done");
   console.log(
@@ -527,7 +600,21 @@ async function buildAndPrepareSidecarResources() {
 }
 
 async function main() {
+  const patchApp = getArg("--patch-app");
   const target = getArg("--target");
+
+  if (patchApp) {
+    if (!target) {
+      console.error(
+        "Usage: node launch/scripts/build-desktop-sidecar.mjs --target <triple> --patch-app </path/StageSync.app>",
+      );
+      process.exit(2);
+    }
+    await buildAndPrepareSidecarResources();
+    await patchInstalledApp(patchApp);
+    return;
+  }
+
   if (!target) {
     console.error("Usage: node launch/scripts/build-desktop-sidecar.mjs --target <tauri-target-triple>");
     process.exit(2);
