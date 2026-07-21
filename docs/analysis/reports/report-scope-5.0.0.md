@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:47 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:48 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -214,6 +214,8 @@ flowchart LR
 | [#108](https://github.com/Negatywistyczny/stagesync/pull/108) | Zod-validate WS client_hello | https://github.com/Negatywistyczny/stagesync/pull/108 | pending |
 | [#110](https://github.com/Negatywistyczny/stagesync/pull/110) | Setlist write bodies strict | https://github.com/Negatywistyczny/stagesync/pull/110 | pending |
 | [#111](https://github.com/Negatywistyczny/stagesync/pull/111) | BatchMidiPcBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/111 | pending |
+| [#112](https://github.com/Negatywistyczny/stagesync/pull/112) | ApplyUpdateBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/112 | pending |
+| [#113](https://github.com/Negatywistyczny/stagesync/pull/113) | HealthResponseSchema.strict | https://github.com/Negatywistyczny/stagesync/pull/113 | pending |
 | [#110](https://github.com/Negatywistyczny/stagesync/pull/110) | Setlist write bodies strict | https://github.com/Negatywistyczny/stagesync/pull/110 | pending |
 
 ### Parallel (other agents)
