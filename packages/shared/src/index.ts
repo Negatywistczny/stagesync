@@ -156,6 +156,7 @@ export {
   TimeSignatureSchema,
   TransportStateSchema,
   TransportSeekBodySchema,
+  SafeTicksSchema,
   TransportPlayBodySchema,
   TransportLoadBodySchema,
   TransportLoopSchema,
