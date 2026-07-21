@@ -28,10 +28,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 2 · [report-scope-beta2.md](./an
 
 ### Must
 
-- [ ] **Desktop OS menu — Faza B:** Plik + Host (Open Recent; Zapisz Timeline draft; status hosta / klienci WS / QR; restart wg istniejącego API; Ustawienia… → Host)
-- [ ] **Desktop OS menu — Faza C:** Transport (Play/Stop/next/prev przez SSOT serwera; bez MIDI/audio clock w Rust)
-- [ ] Bramka beta-gate **G1–G10** green na instalatorach β2 ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — weryfikacja ręczna operatora **przed** tagiem `v5.0.0-beta.2`
 - [ ] Docs INSTALL + DESKTOP: Faza B/C + update paths po domknięciu menu
+- [ ] Bramka beta-gate **G1–G10** green na instalatorach β2 ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — weryfikacja ręczna operatora **przed** tagiem `v5.0.0-beta.2`
 
 ### Should
 

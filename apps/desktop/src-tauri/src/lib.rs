@@ -110,9 +110,16 @@ mod path_for_node_tests {
     }
 }
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+struct RecentProject {
+    id: String,
+    name: String,
+}
+
 #[derive(Clone)]
 struct NavState {
     timeline_project_id: Arc<Mutex<Option<String>>>,
+    recent_projects: Arc<Mutex<Vec<RecentProject>>>,
 }
 
 fn nav_url(path: &str) -> String {
@@ -145,8 +152,33 @@ fn navigate_main(app: &tauri::AppHandle, path: &str) {
     }
 }
 
-/// Phase A native menu: StageSync | Widok | Pomoc (ADR 0010 amendement).
-fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::Result<()> {
+/// Desktop OS menu Faza A+B+C: StageSync | Plik | Widok | Transport | Host | Pomoc (ADR 0010).
+fn dispatch_menu_action(app: &tauri::AppHandle, action: &str) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    let action_json = serde_json::to_string(action).unwrap_or_else(|_| "\"\"".into());
+    let js = format!(
+        r#"(function(){{try{{window.dispatchEvent(new CustomEvent("stagesync:desktop-menu",{{detail:{{action:{action_json}}}}}));}}catch(_e){{}}}})();"#
+    );
+    let _ = window.eval(js);
+}
+
+fn truncate_menu_label(name: &str, max_chars: usize) -> String {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return "Bez nazwy".into();
+    }
+    let mut chars = trimmed.chars();
+    let head: String = chars.by_ref().take(max_chars).collect();
+    if chars.next().is_some() {
+        format!("{head}…")
+    } else {
+        head
+    }
+}
+
+fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Result<Menu<tauri::Wry>> {
     let about = MenuItem::with_id(app, "about", "O programie StageSync", true, None::<&str>)?;
     let check_updates = MenuItem::with_id(
         app,
@@ -162,6 +194,51 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
         "StageSync",
         true,
         &[&about, &check_updates, &app_sep, &quit],
+    )?;
+
+    let recent = nav_state
+        .recent_projects
+        .lock()
+        .ok()
+        .map(|g| g.clone())
+        .unwrap_or_default();
+    let recent_items: Vec<MenuItem<tauri::Wry>> = if recent.is_empty() {
+        vec![MenuItem::with_id(
+            app,
+            "recent_empty",
+            "Brak ostatnich",
+            false,
+            None::<&str>,
+        )?]
+    } else {
+        recent
+            .iter()
+            .map(|p| {
+                let id = format!("recent:{}", p.id);
+                let label = truncate_menu_label(&p.name, 40);
+                MenuItem::with_id(app, id, label, true, None::<&str>)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
+    let recent_refs: Vec<&dyn tauri::menu::IsMenuItem<tauri::Wry>> = recent_items
+        .iter()
+        .map(|i| i as &dyn tauri::menu::IsMenuItem<tauri::Wry>)
+        .collect();
+    let open_recent = Submenu::with_items(app, "Otwórz ostatnie", true, &recent_refs)?;
+    let file_save = MenuItem::with_id(app, "file_save", "Zapisz", true, Some("CmdOrCtrl+S"))?;
+    let file_close = MenuItem::with_id(
+        app,
+        "file_close",
+        "Zamknij projekt",
+        true,
+        None::<&str>,
+    )?;
+    let file_sep = PredefinedMenuItem::separator(app)?;
+    let file_submenu = Submenu::with_items(
+        app,
+        "Plik",
+        true,
+        &[&open_recent, &file_sep, &file_save, &file_close],
     )?;
 
     let nav_admin = MenuItem::with_id(app, "nav_admin", "Admin", true, Some("CmdOrCtrl+1"))?;
@@ -205,6 +282,72 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
         ],
     )?;
 
+    let transport_play =
+        MenuItem::with_id(app, "transport_play", "Odtwórz", true, None::<&str>)?;
+    let transport_stop =
+        MenuItem::with_id(app, "transport_stop", "Stop", true, None::<&str>)?;
+    let transport_sep = PredefinedMenuItem::separator(app)?;
+    let transport_prev = MenuItem::with_id(
+        app,
+        "transport_prev",
+        "Poprzedni utwór",
+        true,
+        Some("Alt+Left"),
+    )?;
+    let transport_next = MenuItem::with_id(
+        app,
+        "transport_next",
+        "Następny utwór",
+        true,
+        Some("Alt+Right"),
+    )?;
+    let transport_submenu = Submenu::with_items(
+        app,
+        "Transport",
+        true,
+        &[
+            &transport_play,
+            &transport_stop,
+            &transport_sep,
+            &transport_prev,
+            &transport_next,
+        ],
+    )?;
+
+    let host_status =
+        MenuItem::with_id(app, "host_status", "Status", true, None::<&str>)?;
+    let host_clients = MenuItem::with_id(
+        app,
+        "host_clients",
+        "Klienci / urządzenia",
+        true,
+        None::<&str>,
+    )?;
+    let host_qr = MenuItem::with_id(app, "host_qr", "Kod QR…", true, None::<&str>)?;
+    let host_restart =
+        MenuItem::with_id(app, "host_restart", "Restart hosta", true, None::<&str>)?;
+    let host_settings = MenuItem::with_id(
+        app,
+        "host_settings",
+        "Ustawienia…",
+        true,
+        None::<&str>,
+    )?;
+    let host_sep = PredefinedMenuItem::separator(app)?;
+    let host_submenu = Submenu::with_items(
+        app,
+        "Host",
+        true,
+        &[
+            &host_status,
+            &host_clients,
+            &host_qr,
+            &host_sep,
+            &host_restart,
+            &host_settings,
+        ],
+    )?;
+
     let help_docs = MenuItem::with_id(
         app,
         "help_docs",
@@ -219,7 +362,6 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
         true,
         None::<&str>,
     )?;
-    // Windows/Linux: duplicate About under Help (macOS keeps it in the app menu only).
     #[cfg(not(target_os = "macos"))]
     let help_about = MenuItem::with_id(
         app,
@@ -240,14 +382,41 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
     #[cfg(target_os = "macos")]
     let help_submenu = Submenu::with_items(app, "Pomoc", true, &[&help_docs, &help_issues])?;
 
-    let menu = Menu::with_items(app, &[&app_submenu, &view_submenu, &help_submenu])?;
+    Menu::with_items(
+        app,
+        &[
+            &app_submenu,
+            &file_submenu,
+            &view_submenu,
+            &transport_submenu,
+            &host_submenu,
+            &help_submenu,
+        ],
+    )
+}
+
+fn refresh_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) {
+    if let Ok(menu) = build_desktop_menu(app, nav_state) {
+        let _ = app.set_menu(menu);
+    }
+}
+
+fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::Result<()> {
+    let menu = build_desktop_menu(app, &nav_state)?;
     app.set_menu(menu)?;
 
     let nav_for_events = nav_state;
     app.on_menu_event(move |app, event| {
-        match event.id().0.as_str() {
+        let id = event.id().0.as_str();
+        if let Some(project_id) = id.strip_prefix("recent:") {
+            navigate_main(&app, &format!("/timeline/{project_id}"));
+            return;
+        }
+        match id {
             "about" | "help_about" => navigate_main(&app, "/admin?section=host"),
             "check_updates" => navigate_main(&app, "/admin?section=host&action=check-update"),
+            "file_save" => dispatch_menu_action(&app, "save"),
+            "file_close" => navigate_main(&app, "/admin"),
             "nav_admin" => navigate_main(&app, "/admin"),
             "nav_timeline" => {
                 let Some(window) = app.get_webview_window("main") else {
@@ -262,6 +431,14 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "admin_set" => navigate_main(&app, "/admin?section=set"),
             "admin_stage" => navigate_main(&app, "/admin?section=stage"),
             "admin_host" => navigate_main(&app, "/admin?section=host"),
+            "transport_play" => dispatch_menu_action(&app, "transport-play"),
+            "transport_stop" => dispatch_menu_action(&app, "transport-stop"),
+            "transport_prev" => dispatch_menu_action(&app, "transport-prev"),
+            "transport_next" => dispatch_menu_action(&app, "transport-next"),
+            "host_status" | "host_settings" => navigate_main(&app, "/admin?section=host"),
+            "host_clients" => navigate_main(&app, "/admin?section=stage"),
+            "host_qr" => dispatch_menu_action(&app, "host-qr"),
+            "host_restart" => dispatch_menu_action(&app, "host-restart"),
             "fullscreen" => {
                 if let Some(window) = app.get_webview_window("main") {
                     tauri::async_runtime::spawn(async move {
@@ -433,6 +610,7 @@ pub fn run() {
     let sidecar_child_run = sidecar_child.clone();
     let nav_state = NavState {
         timeline_project_id: Arc::new(Mutex::new(None)),
+        recent_projects: Arc::new(Mutex::new(Vec::new())),
     };
     let nav_state_setup = nav_state.clone();
 
@@ -677,6 +855,7 @@ pub fn run() {
             open_external_url,
             toggle_window_fullscreen,
             set_nav_timeline_project_id,
+            set_nav_recent_projects,
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
@@ -707,6 +886,25 @@ fn set_nav_timeline_project_id(
 ) -> Result<(), String> {
     let mut guard = state.timeline_project_id.lock().map_err(|e| e.to_string())?;
     *guard = project_id.filter(|id| !id.is_empty());
+    Ok(())
+}
+
+/// Sync Open Recent list for Plik menu (Faza B).
+#[tauri::command]
+fn set_nav_recent_projects(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, NavState>,
+    projects: Vec<RecentProject>,
+) -> Result<(), String> {
+    {
+        let mut guard = state.recent_projects.lock().map_err(|e| e.to_string())?;
+        *guard = projects
+            .into_iter()
+            .filter(|p| !p.id.is_empty())
+            .take(8)
+            .collect();
+    }
+    refresh_desktop_menu(&app, &state);
     Ok(())
 }
 
