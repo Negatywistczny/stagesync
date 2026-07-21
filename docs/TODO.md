@@ -51,9 +51,9 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./an
 ### Release
 
 - [x] Scope report [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md)
-- [ ] Bramka beta-gate G1–G10 green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
-  - [ ] G1: `.dmg` działa bez Dockera/Node u użytkownika
-  - [ ] G2: `.msi` działa bez Dockera/Node u użytkownika
+- [ ] Bramka beta-gate G1–G10 green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — lokalny prep (sidecar `--smoke` + monorepo build) **green**; artefakty CI po push + `workflow_dispatch`
+  - [ ] G1: `.dmg` (artifact Actions lub Release) działa bez Dockera/Node u użytkownika
+  - [ ] G2: `.msi` (artifact Actions lub Release) działa bez Dockera/Node u użytkownika
   - [ ] G3: dane w katalogu użytkownika (nie w `.app` / Program Files)
   - [ ] G4: zamknięcie okna zabija proces Node sidecara
   - [ ] G5: konflikt portu 4000 → czytelny komunikat błędu
