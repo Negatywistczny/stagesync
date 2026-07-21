@@ -26,7 +26,7 @@ import {
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
-import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavTimelineProjectId, toggleAppFullscreen, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
+import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavTimelineProjectId, toggleAppFullscreen, formatUnknownError, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
 import { setLastTimelineProjectId } from "../lib/lastTimelineProject.js";
 import {
   DOCS_INSTALL_URL,
@@ -1288,13 +1288,17 @@ function UpdatePanel({
       const messages: string[] = [];
       if (host.status === "fulfilled") {
         setHostStatus(host.value);
-        if (host.value.error) messages.push(`Host: ${host.value.error}`);
-      } else {
-        messages.push(`Host: ${(host.reason as Error).message}`);
+        // Desktop: sidecar version is informational; GitHub/Watchtower host
+        // check is Docker-only and must not surface as a hard red failure.
+        if (host.value.error && !inTauri) {
+          messages.push(`Host: ${host.value.error}`);
+        }
+      } else if (!inTauri) {
+        messages.push(`Host: ${formatUnknownError(host.reason)}`);
       }
       if (inTauri) {
         if (desktop.status === "fulfilled") setDesktopStatus(desktop.value);
-        else messages.push(`Aplikacja: ${(desktop.reason as Error).message}`);
+        else messages.push(`Aplikacja: ${formatUnknownError(desktop.reason)}`);
       }
       setError(messages.length ? messages.join(" · ") : null);
     } finally {
@@ -1322,7 +1326,7 @@ function UpdatePanel({
       await postApplyHostUpdate();
       setDone(true);
     } catch (e) {
-      setError((e as Error).message);
+      setError(formatUnknownError(e));
     } finally {
       setApplying(false);
     }
@@ -1334,7 +1338,7 @@ function UpdatePanel({
     try {
       await installDesktopUpdate();
     } catch (e) {
-      setError((e as Error).message);
+      setError(formatUnknownError(e));
       setApplying(false);
     }
   }, []);
@@ -1355,8 +1359,14 @@ function UpdatePanel({
       {hostStatus && (
         <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
           <span className={styles.muted}>
-            {inTauri ? "Sidecar" : "Host"}: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
-            {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
+            {inTauri ? (
+              <>Sidecar: {hostStatus.current}</>
+            ) : (
+              <>
+                Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
+                {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
+              </>
+            )}
           </span>
           {hostStatus.updateAvailable && !inTauri && (
             <Button variant="primary" onClick={() => setConfirmHostUpdate(true)} disabled={applying}>
@@ -1367,15 +1377,20 @@ function UpdatePanel({
       )}
       {inTauri && hostStatus && (
         <p className={styles.muted}>
-          W aplikacji desktop sidecar aktualizuje się razem z instalatorem (przycisk poniżej).
-          Aktualizacja hosta przez Watchtower dotyczy wdrożeń Docker.
+          Sidecar aktualizuje się razem z instalatorem aplikacji (przycisk poniżej).
+          Porównanie hosta / Watchtower dotyczy wyłącznie wdrożeń Docker — nie jest to błąd aktualizacji desktop.
         </p>
       )}
       {inTauri && desktopStatus && (
         <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
           <span className={styles.muted}>
-            Aplikacja: {desktopStatus.current} → {desktopStatus.version ?? "?"}{" "}
-            {!desktopStatus.available && "(aktualna)"}
+            {desktopStatus.available ? (
+              <>
+                Aplikacja: {desktopStatus.current} → {desktopStatus.version ?? "?"}
+              </>
+            ) : (
+              <>Aplikacja: {desktopStatus.current} (aktualna)</>
+            )}
           </span>
           {desktopStatus.available && (
             <Button variant="primary" onClick={() => setConfirmDesktopUpdate(true)} disabled={applying}>

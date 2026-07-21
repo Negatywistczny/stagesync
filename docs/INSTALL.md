@@ -158,6 +158,6 @@ w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
 | `WATCHTOWER_TOKEN` | — | Shared secret Watchtower HTTP API |
 | `STAGESYNC_UPDATER_URL` | — | URL Watchtower (`http://watchtower:8080`) |
 | `STAGESYNC_UPDATER_TOKEN` | — | = `WATCHTOWER_TOKEN` (używany przez serwer) |
-| `STAGESYNC_GITHUB_TOKEN` | — | PAT do GitHub Releases API (update-status) |
+| `STAGESYNC_GITHUB_TOKEN` | — | PAT do GitHub Releases API (update-status na Docker/host; desktop sidecar pomija) |
 
 Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).

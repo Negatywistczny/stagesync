@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isDesktopShell } from "./desktopBridge.js";
+import { formatUnknownError, isDesktopShell } from "./desktopBridge.js";
 
 describe("isDesktopShell", () => {
   afterEach(() => {
@@ -26,5 +26,25 @@ describe("isDesktopShell", () => {
   it("returns false in a plain browser context", () => {
     vi.stubGlobal("window", {});
     expect(isDesktopShell()).toBe(false);
+  });
+});
+
+describe("formatUnknownError", () => {
+  it("reads Error.message", () => {
+    expect(formatUnknownError(new Error("boom"))).toBe("boom");
+  });
+
+  it("reads bare string rejections (Tauri Result Err)", () => {
+    expect(formatUnknownError("updater endpoint failed")).toBe(
+      "updater endpoint failed",
+    );
+  });
+
+  it("reads { message } objects without casting to Error", () => {
+    expect(formatUnknownError({ message: "no update url" })).toBe("no update url");
+  });
+
+  it("does not render literal undefined", () => {
+    expect(formatUnknownError(undefined)).toBe("Unknown error");
   });
 });
