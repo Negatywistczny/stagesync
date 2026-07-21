@@ -379,10 +379,16 @@ export function ClientShell() {
                       setVocalTapOn(false);
                       return;
                     }
+                    const prev =
+                      vocalTapIndex > 0 ? queue[vocalTapIndex - 1] : null;
+                    const minStart = prev
+                      ? prev.startTicks + Math.max(1, prev.lengthTicks)
+                      : undefined;
                     const next = applyVocalTap(
                       activeProject,
                       clip.id,
                       displayTicks,
+                      minStart,
                     );
                     setActiveProject(next);
                     void putProject(state.activeProjectId, next)
