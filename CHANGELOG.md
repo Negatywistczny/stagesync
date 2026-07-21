@@ -18,6 +18,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Web fullscreen:** przycisk Pełny ekran w przeglądarce na `http://127.0.0.1:4000` — hostname/port heurystyka `isDesktopShell` nie blokuje już HTML Fullscreen API (ścieżka natywna tylko gdy Tauri invoke jest dostępne).
 - **Transport Stop / Countdown (#41):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
 
 ## [5.0.0-beta.1.1](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
