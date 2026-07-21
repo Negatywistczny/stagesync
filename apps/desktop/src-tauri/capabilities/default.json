@@ -23,6 +23,7 @@
     "allow-toggle-window-fullscreen",
     "allow-open-external-url",
     "allow-nav-timeline-sync",
+    "allow-nav-recent-sync",
     "allow-desktop-update",
     "shell:allow-kill",
     {
