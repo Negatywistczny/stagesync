@@ -36,9 +36,9 @@
       "bin/stagesync-host"
     ],
     "resources": [
-      "resources/sidecar/**",
-      "lib/**",
-      "share/**"
+      "resources/sidecar/**/*",
+      "lib/**/*",
+      "share/**/*"
     ],
     "icon": [
       "icons/32x32.png",
