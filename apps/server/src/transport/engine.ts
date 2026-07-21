@@ -153,6 +153,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       positionTicks = samplePosition();
       playing = false;
       stopTimer();
+      loop = null; // loop is per-song — never carry into the next project
       applyMapsFromProject(project, 0);
       notify();
       return snapshot();
@@ -166,10 +167,14 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
         assertValidTimeSignature(opts.timeSignature, ppq);
       }
 
+      const prevProjectId = activeProjectId;
       positionTicks = samplePosition();
 
       if (opts.projectId !== undefined) {
         activeProjectId = opts.projectId;
+        if (opts.projectId !== prevProjectId) {
+          loop = null;
+        }
       }
 
       if (project && opts.bpm === undefined && opts.timeSignature === undefined) {

@@ -165,4 +165,26 @@ describe("TransportEngine", () => {
     expect(stopped.positionTicks).toBe(cd!.startTicks);
     engine.dispose();
   });
+
+  it("loadProject clears transport loop from the previous song", () => {
+    const a = createProjectV5Seed(
+      "00000000-0000-4000-8000-00000000000a",
+      "A",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 1 },
+    );
+    const b = createProjectV5Seed(
+      "00000000-0000-4000-8000-00000000000b",
+      "B",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 2 },
+    );
+    const engine = createTransportEngine();
+    engine.loadProject(a.id, a);
+    engine.setLoop({ enabled: true, startTicks: 0, endTicks: 1920 });
+    expect(engine.getState().loop?.enabled).toBe(true);
+    engine.loadProject(b.id, b);
+    expect(engine.getState().loop).toBeNull();
+    engine.dispose();
+  });
 });
