@@ -61,7 +61,7 @@ Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](d
 
 ## Checklista przed release
 
-- [ ] [CHANGELOG.md](CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione
+- [ ] [CHANGELOG.md](CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione; **bez** sekcji `[Unreleased]` w trakcie cut release (dopiero po pierwszych zmianach post-release)
 - [ ] [README.md](README.md) — uruchomienie i wersja nadal zgodne z rzeczywistością
 - [ ] Design System — brak ad-hoc HEX / drugiego Buttona; tokeny `--ss-*` ([docs/ui/](docs/ui/README.md))
 - [ ] Brak orphan `TODO` / `FIXME` / `TEMP` w kodzie bez pozycji w [docs/TODO.md](docs/TODO.md)

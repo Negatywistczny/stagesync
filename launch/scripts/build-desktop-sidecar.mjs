@@ -1,10 +1,20 @@
 #!/usr/bin/env node
 import { spawnSync, spawn } from "node:child_process";
-import { cp, lstat, mkdir, readdir, rm, chmod, symlink, writeFile } from "node:fs/promises";
+import {
+  cp,
+  lstat,
+  mkdir,
+  readdir,
+  realpath,
+  rm,
+  chmod,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { existsSync } from "node:fs";
 // (no node:fs stream usage; download uses arrayBuffer -> writeFile)
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -459,18 +469,138 @@ async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
     "@stagesync/shared",
   );
 
+  // Tauri resource bundling dereferences symlinks (tauri#13219). pnpm's
+  // isolated layout keeps transitive deps only as .pnpm store siblings — after
+  // dereference the host dies with ERR_MODULE_NOT_FOUND (zod etc.) and the UI
+  // falsely blames port 4000. Flatten to real top-level packages (no .pnpm,
+  // short paths for WiX MSI).
+  await materializePnpmLayoutForTauriBundle(join(sidecarServerDir, "node_modules"));
+
   await assertDeployHasRuntimeDeps(sidecarServerDir);
+}
+
+/**
+ * Collect package dirs from a node_modules-like folder into `out` (name → path).
+ * @param {string} dir
+ * @param {Map<string, string>} out
+ */
+async function collectPackageDirs(dir, out) {
+  if (!existsSync(dir)) return;
+  for (const ent of await readdir(dir, { withFileTypes: true })) {
+    if (ent.name.startsWith(".")) continue;
+    if (ent.name.startsWith("@")) {
+      const scopeDir = join(dir, ent.name);
+      for (const scoped of await readdir(scopeDir, { withFileTypes: true })) {
+        if (!scoped.isDirectory() && !scoped.isSymbolicLink()) continue;
+        const name = `${ent.name}/${scoped.name}`;
+        const p = join(scopeDir, scoped.name);
+        if (existsSync(join(p, "package.json")) || (await lstat(p)).isSymbolicLink()) {
+          out.set(name, p);
+        }
+      }
+      continue;
+    }
+    const p = join(dir, ent.name);
+    if (existsSync(join(p, "package.json")) || (await lstat(p)).isSymbolicLink()) {
+      out.set(ent.name, p);
+    }
+  }
+}
+
+/**
+ * Convert pnpm symlink→.pnpm layout into a flat real node_modules (npm-hoist
+ * style). Survives Tauri dereference and keeps WiX paths under MAX_PATH.
+ */
+async function materializePnpmLayoutForTauriBundle(nodeModulesDir) {
+  if (!existsSync(nodeModulesDir)) return;
+
+  const pnpmDir = join(nodeModulesDir, ".pnpm");
+  /** @type {Map<string, string>} */
+  const packages = new Map();
+
+  if (existsSync(pnpmDir)) {
+    for (const ent of await readdir(pnpmDir, { withFileTypes: true })) {
+      if (!ent.isDirectory() || ent.name === "node_modules") continue;
+      await collectPackageDirs(join(pnpmDir, ent.name, "node_modules"), packages);
+    }
+  } else {
+    // Already flattened or Tauri-dereferenced without a usable store — keep as-is.
+    await collectPackageDirs(nodeModulesDir, packages);
+    let anySymlink = false;
+    for (const p of packages.values()) {
+      if ((await lstat(p)).isSymbolicLink()) {
+        anySymlink = true;
+        break;
+      }
+    }
+    if (!anySymlink) {
+      console.log("[sidecar] node_modules already materialized (no .pnpm / no symlinks)");
+      return;
+    }
+  }
+
+  if (packages.size === 0) {
+    throw new Error(`[sidecar] materialize found no packages under ${nodeModulesDir}`);
+  }
+
+  // Staging must live outside node_modules — we wipe that directory next.
+  const staging = join(dirname(nodeModulesDir), ".ss-materialize-staging");
+  await rm(staging, { recursive: true, force: true });
+  await mkdir(staging, { recursive: true });
+
+  for (const [name, src] of packages) {
+    const st = await lstat(src);
+    const realSrc = st.isSymbolicLink() ? await realpath(src) : src;
+    const dest = join(staging, ...name.split("/"));
+    await mkdir(dirname(dest), { recursive: true });
+    await cp(realSrc, dest, { recursive: true, dereference: true });
+  }
+
+  await rm(nodeModulesDir, { recursive: true, force: true });
+  await mkdir(nodeModulesDir, { recursive: true });
+  await copyDirContents(staging, nodeModulesDir);
+  await rm(staging, { recursive: true, force: true });
+
+  console.log(
+    `[sidecar] materialized ${packages.size} flat packages for Tauri (no pnpm symlinks)`,
+  );
 }
 
 async function assertDeployHasRuntimeDeps(sidecarServerDir) {
   const nodeModules = join(sidecarServerDir, "node_modules");
-  const required = ["express", "@stagesync/shared"];
+  // Flat layout: zod is hoisted next to @stagesync/shared (not nested under it).
+  const required = ["express", "@stagesync/shared", "zod"];
   for (const pkg of required) {
     const pkgJson = join(nodeModules, ...pkg.split("/"), "package.json");
     if (!existsSync(pkgJson)) {
       throw new Error(
         `[sidecar] deploy missing runtime dep ${pkg} (expected ${pkgJson}); pnpm deploy output is incomplete`,
       );
+    }
+  }
+
+  if (existsSync(join(nodeModules, ".pnpm"))) {
+    throw new Error("[sidecar] .pnpm store still present after materialize (Tauri/WiX-unsafe)");
+  }
+
+  // Fail closed if any top-level package is still a symlink (Tauri would break it).
+  for (const ent of await readdir(nodeModules, { withFileTypes: true })) {
+    if (ent.name.startsWith(".")) continue;
+    if (ent.name.startsWith("@")) {
+      const scopeDir = join(nodeModules, ent.name);
+      for (const scoped of await readdir(scopeDir, { withFileTypes: true })) {
+        const p = join(scopeDir, scoped.name);
+        if ((await lstat(p)).isSymbolicLink()) {
+          throw new Error(
+            `[sidecar] top-level package still a symlink (Tauri-unsafe): ${ent.name}/${scoped.name}`,
+          );
+        }
+      }
+      continue;
+    }
+    const p = join(nodeModules, ent.name);
+    if ((await lstat(p)).isSymbolicLink()) {
+      throw new Error(`[sidecar] top-level package still a symlink (Tauri-unsafe): ${ent.name}`);
     }
   }
 }
@@ -504,7 +634,10 @@ async function smokeTestSidecarServer(sidecarServerDir, seedDir) {
     while (Date.now() < deadline) {
       if (child.exitCode != null) {
         const stderr = await readStream(child.stderr);
-        throw new Error(`[sidecar] smoke: server exited early: ${stderr}`);
+        const stdout = await readStream(child.stdout);
+        throw new Error(
+          `[sidecar] smoke: server exited early: ${stderr || stdout || `(exit ${child.exitCode})`}`,
+        );
       }
       try {
         const res = await fetch(`http://127.0.0.1:${port}/api/health`);
@@ -601,7 +734,42 @@ async function buildAndPrepareSidecarResources() {
 
 async function main() {
   const patchApp = getArg("--patch-app");
+  const fixApp = getArg("--fix-app");
+  const materializeNm = getArg("--materialize-node-modules");
   const target = getArg("--target");
+
+  if (materializeNm) {
+    console.log(`[sidecar] materializing pnpm layout: ${materializeNm}`);
+    await materializePnpmLayoutForTauriBundle(materializeNm);
+    await assertDeployHasRuntimeDeps(dirname(materializeNm));
+    console.log("[sidecar] materialize-node-modules complete");
+    return;
+  }
+
+  if (fixApp) {
+    const serverNm = join(
+      fixApp,
+      "Contents/Resources/resources/sidecar/server/node_modules",
+    );
+    if (!existsSync(serverNm)) {
+      throw new Error(`[sidecar] missing node_modules in app: ${serverNm}`);
+    }
+    console.log(`[sidecar] materializing pnpm layout in installed app: ${fixApp}`);
+    await materializePnpmLayoutForTauriBundle(serverNm);
+    await assertDeployHasRuntimeDeps(
+      join(fixApp, "Contents/Resources/resources/sidecar/server"),
+    );
+    const seedDir = join(
+      fixApp,
+      "Contents/Resources/resources/sidecar/seed",
+    );
+    await smokeTestSidecarServer(
+      join(fixApp, "Contents/Resources/resources/sidecar/server"),
+      seedDir,
+    );
+    console.log("[sidecar] fix-app complete");
+    return;
+  }
 
   if (patchApp) {
     if (!target) {
@@ -616,7 +784,10 @@ async function main() {
   }
 
   if (!target) {
-    console.error("Usage: node launch/scripts/build-desktop-sidecar.mjs --target <tauri-target-triple>");
+    console.error(
+      "Usage: node launch/scripts/build-desktop-sidecar.mjs --target <tauri-target-triple>\n" +
+        "       node launch/scripts/build-desktop-sidecar.mjs --fix-app </path/StageSync.app>",
+    );
     process.exit(2);
   }
   await buildAndPrepareSidecarResources();

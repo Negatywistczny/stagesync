@@ -364,8 +364,7 @@ async fn install_desktop_update(app: tauri::AppHandle) -> Result<(), String> {
                 .map_err(|e| e.to_string())?;
             app.restart();
         }
-        Ok(None) => return Err("No update available".into()),
-        Err(e) => return Err(e.to_string()),
+        Ok(None) => Err("No update available".into()),
+        Err(e) => Err(e.to_string()),
     }
-    Ok(())
 }

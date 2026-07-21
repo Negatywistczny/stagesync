@@ -5,12 +5,6 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.11...HEAD)
-
-### Naprawiono
-
-- **CI / Release:** nieużywane importy + `STAGESYNC_SHELL` w `turbo.json` globalEnv; `gh -R` w `create-draft-release` / publish (bez checkout); ID draftu przez `gh release view` (API `/releases/tags` nie widzi draftów); test migrate z `isTemplate` (bez drugiego seedu).
-
 ## [5.0.0-alpha.11](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
 > **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.
@@ -38,6 +32,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 - **Desktop:** wykrywanie shella Tauri na `http://127.0.0.1:4000` (fallback hostname/port, meta `stagesync-shell`, marker na początku `<head>`, `Cache-Control: no-store` na HTML) — fullscreen / updater / `openExternalUrl` przy cache WebView bez injectu.
+- **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle (`tauri#13219`) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. `build-desktop-sidecar.mjs` spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
+- **CI / Release:** nieużywane importy + `STAGESYNC_SHELL` w `turbo.json` globalEnv; `gh -R` w `create-draft-release` / publish (bez checkout); ID draftu przez `gh release view` (API `/releases/tags` nie widzi draftów); test migrate z `isTemplate` (bez drugiego seedu).
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
 
 

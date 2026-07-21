@@ -47,4 +47,5 @@ Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o r
 2. Zaktualizuj root `package.json` → `"version"`.
 3. Zsynchronizuj lockfile jeśli trzeba (`pnpm install`).
 4. Przenieś `[Unreleased]` w `CHANGELOG.md` do `## [X.Y.Z] - RRRR-MM-DD`.
-5. Commit + tag `v{version}`; push tylko na wyraźną prośbę.
+5. **Podczas/po cut release:** sekcja `[Unreleased]` ma zniknąć (brak pustego nagłówka) — wraca dopiero z pierwszymi zmianami post-release.
+6. Commit + tag `v{version}`; push tylko na wyraźną prośbę.
