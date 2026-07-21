@@ -990,7 +990,7 @@ function LibraryFilesCard({
         <input
           ref={inputRef}
           type="file"
-          accept=".json,.stagesync.json,application/json,.zip,.stagesync"
+          accept=".json,.stagesync.json,application/json"
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];
