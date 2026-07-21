@@ -10,7 +10,12 @@ import {
 import { pencilTekstClick } from "./tekstEdit.js";
 import { pencilAkordyClick } from "./akordyEdit.js";
 import { pencilCueClick } from "./cueEdit.js";
-import type { FormaGestureSession } from "./timelineGesture.js";
+import type {
+  FormaGestureSession,
+} from "./timelineGesture.js";
+import {
+  setSessionSnapMode,
+} from "./timelineGesture.js";
 
 describe("contentLaneEdit", () => {
   it("moves tekst clip without overlap", () => {
@@ -51,6 +56,7 @@ describe("contentLaneEdit", () => {
   });
 
   it("pencil-draw gesture preview snaps content to beat grid", () => {
+    setSessionSnapMode("beat");
     const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const session: FormaGestureSession = {
       kind: "move",
@@ -61,9 +67,10 @@ describe("contentLaneEdit", () => {
       originClipLength: 3840,
       lane: "tekst",
     };
-    // 500 ticks → nearest beat 960 (not barline 0)
+    // 500 ticks → nearest beat 960 (not barline 0) when session snap = beat
     const preview = previewContentFromSession(p, session, 500, false, false);
     expect(preview.startTicks).toBe(960);
+    setSessionSnapMode("bar");
   });
 
   it("pencil-draw gesture preview + commit (akordy) matches Forma path", () => {
