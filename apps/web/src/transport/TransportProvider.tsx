@@ -53,6 +53,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [commandPending, setCommandPending] = useState(false);
+  const commandPendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
 
@@ -260,6 +261,8 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const runCommand = useCallback(
     async (fn: () => Promise<TransportState>) => {
+      if (commandPendingRef.current) return;
+      commandPendingRef.current = true;
       setCommandPending(true);
       setError(null);
       try {
@@ -273,6 +276,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         setError(err instanceof Error ? err.message : "Command failed");
       } finally {
+        commandPendingRef.current = false;
         setCommandPending(false);
       }
     },
