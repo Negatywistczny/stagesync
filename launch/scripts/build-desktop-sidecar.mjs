@@ -49,6 +49,19 @@ function resolveExtractedNodeBin(extractedRoot) {
   throw new Error(`Could not locate node binary under ${extractedRoot}`);
 }
 
+
+async function ensureTauriResourceGlobDir(srcTauriDir, sub) {
+  const dir = join(srcTauriDir, sub);
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
+  const entries = await readdir(dir);
+  if (entries.length === 0) {
+    // Tauri 2 fails the build when a resources glob matches zero files (Windows Node zip has no lib/share).
+    await writeFile(join(dir, ".stagesync-empty"), "");
+  }
+}
+
 function externalBinDestPath(binDir, target) {
   const base = `stagesync-host-${target}`;
   if (target.endsWith("-pc-windows-msvc")) {
@@ -183,6 +196,7 @@ async function prepareNodeRuntimeIntoTauriBundle(target) {
     if (existsSync(src)) {
       await cp(src, join(srcTauriDir, sub), { recursive: true, force: true });
     }
+    await ensureTauriResourceGlobDir(srcTauriDir, sub);
   }
 }
 
