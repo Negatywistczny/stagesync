@@ -5,11 +5,18 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...HEAD)
+## [Unreleased](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...HEAD)
+
+## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
+
+> **α10:** standalone desktop (Tauri + Node sidecar) — pierwszy build β1 host.  
+> Nazwa hero linii 5.0 odłożona do stabilnego `5.0.0`.
 
 ### Dodano
 
-- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](docs/INSTALL.md) / [DESKTOP.md](docs/DESKTOP.md); Tauri thin shell `apps/desktop` (URL → lokalny serwer); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
+- **Standalone desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** Tauri spawnuje wbudowany Node sidecar (`stagesync-host`), czeka na `GET /api/health`, ładuje UI; shutdown przy zamknięciu okna; czytelny ekran błędu przy konflikcie portu `4000`; dev fallback przez `STAGESYNC_URL` gdy brak bundla sidecara.
+- **Desktop sidecar packaging:** `launch/scripts/build-desktop-sidecar.mjs` — Node runtime per architektura, `pnpm deploy --prod @stagesync/server`, web `dist`, seed `library.template.json`; `bundle.externalBin` + `bundle.resources` w Tauri; `STAGESYNC_SEED_DIR` w serwerze; CI `--smoke` (health + higiena docs).
+- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](docs/INSTALL.md) / [DESKTOP.md](docs/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
 - **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/adr/0012-user-data-location.md)).
 - **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); `compose.prod.yml` + Watchtower HTTP-only (update na żądanie, bez auto-poll).
 - **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; `desktopBridge.ts` + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
@@ -19,20 +26,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Scope: [report-scope-beta1.md](docs/analysis/reports/report-scope-beta1.md) · bramka release: [report-beta-gate.md](docs/analysis/reports/report-beta-gate.md).
 - **Dokumentacja in-app vs GitHub ([ADR 0013](docs/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w `build-desktop-sidecar.mjs`.
 
-
-
 ### Zmieniono
 
-- **Desktop sidecar:** `build-desktop-sidecar.mjs` — produkcyjne `node_modules` przez `pnpm deploy --prod` zamiast kopiowania root `node_modules`; strip `src`/testów z `@stagesync/shared`; opcjonalny `--smoke` (health) w release CI.
 - Shell headers (Admin / Timeline / Client): wordmark tekstowy → SVG logo (`/brand/stagesync-logo*.svg`, wariant light przy `data-theme`).
 - `PUT /api/projects/:id`: body wymaga `updatedAt` (token OCC); mismatch → 409.
 - `@stagesync/shared` package exports → `dist/` (Node runtime / Docker).
-
-
-
-### Naprawiono
-
-
 
 ## [5.0.0-alpha.9](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.8...v5.0.0-alpha.9) - 2026-07-21
 

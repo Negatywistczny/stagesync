@@ -93,8 +93,8 @@ Bazując na [report-beta-gate.md](./report-beta-gate.md), poniższe punkty nadal
 ## Następny krok (operator — po push)
 
 1. `git push origin main` → CI green.
-2. Release workflow `workflow_dispatch` → `version: 5.0.0-alpha.9`.
-3. Pobierz artefakty `.dmg`/`.msi` z Actions (dispatch nie tworzy GitHub Release).
-4. Przejdź checklistę G1–G10 w [report-beta-gate.md](./report-beta-gate.md).
+2. `git tag v5.0.0-alpha.10 && git push origin v5.0.0-alpha.10` → GitHub Release + `.dmg`/`.msi`.
+3. Przejdź checklistę G1–G10 w [report-beta-gate.md](./report-beta-gate.md).
+4. G6: po zainstalowaniu alpha.10 — tag `v5.0.0-alpha.11` jako cel updatu.
 5. Bump `5.0.0-beta.1` **tylko na prośbę** po green gate.
 

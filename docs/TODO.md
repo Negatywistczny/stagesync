@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.9` **wydane 2026-07-21** → aktywny etap **β1** (host / dystrybucja).  
+**Stan:** `5.0.0-alpha.10` **przygotowane lokalnie 2026-07-21** (pending push/tag) → aktywny etap **β1** (host / dystrybucja).  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
 **P8:** green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md).  

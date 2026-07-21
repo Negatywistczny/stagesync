@@ -14,6 +14,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | [report-scope-alpha7](./analysis/reports/report-scope-alpha7.md) |
 | **5.0.0-alpha.8** | Parity workflow 4.x | **Code freeze 2026-07-20** — engineering must + rebuild TE-P0/CD/chrome/Admin; **nie** β ([freeze](./analysis/reports/report-alpha8-code-freeze.md)); residual PO + CL-P0 → α9 | QA: [report-qa-signoff-alpha8](./analysis/reports/report-qa-signoff-alpha8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md) |
 | **5.0.0-alpha.9** | Migrator + dokończenie rebuild | **Wydane 2026-07-21** — Migrator M1–M9 ✓; Client CL-01/04/05 ✓; **PO smoke P8 green**; tag `v5.0.0-alpha.9` | [report-scope-alpha9](./analysis/reports/report-scope-alpha9.md) |
+| **5.0.0-alpha.10** | Standalone desktop (β1 spike) | **Przygotowane 2026-07-21** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi` standalone; bramka G1–G10 pending push/tag | [report-standalone-spike-beta1](./analysis/reports/report-standalone-spike-beta1.md) |
 | **5.0.0-beta.1** | Host / dystrybucja | P8 green — start **na prośbę**: Docker + Tauri + host (**bez** audio/MIDI — β2) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.2** | Audio + MIDI | Playback 0…N + clip edit; MIDI I/O serwera; sync transport | — |
 | **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
@@ -72,7 +73,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - Migrator legacy 4.x → v5 (MVP + fixtures M1–M9)
 - **CL-01 / 04 / 05** Client P0 + **PO smoke P8 green** (zachowanie)
-- Tag `v5.0.0-alpha.9` — done; aktywny etap → **β1** ([TODO.md](./TODO.md))
+- Tag `v5.0.0-alpha.9` — done; `5.0.0-alpha.10` standalone desktop — przygotowane lokalnie (pending push/tag); aktywny etap → **β1** ([TODO.md](./TODO.md))
 
 ### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja)
 

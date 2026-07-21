@@ -6,14 +6,14 @@
 ## Zasada
 
 Tag i bump `5.0.0-beta.1` **dopiero po** green G1–G10 i jawnej prośbie operatora.  
-Weryfikacja: uruchomić `workflow_dispatch` na `5.0.0-alpha.9` i przejść przez checklistę.
+Weryfikacja: push tag `v5.0.0-alpha.10` i przejście przez checklistę na artefaktach Release.
 
 ## Checklista G1–G10
 
 | ID | Kryterium | Status |
 |----|-----------|--------|
-| G1 | `.dmg` (artifact `macos-dmg` z Actions przy `workflow_dispatch`, lub Release asset po tag push): uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ |
-| G2 | `.msi` (artifact `windows-msi` z Actions przy `workflow_dispatch`, lub Release asset po tag push): instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ |
+| G1 | `.dmg` z GitHub Release `v5.0.0-alpha.10`: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ |
+| G2 | `.msi` z GitHub Release `v5.0.0-alpha.10`: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ |
 | G3 | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files) | ⬜ |
 | G4 | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot) | ⬜ |
 | G5 | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView) | ⬜ |
@@ -23,30 +23,30 @@ Weryfikacja: uruchomić `workflow_dispatch` na `5.0.0-alpha.9` i przejść przez
 | G9 | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ |
 | G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow | ⬜ |
 
-## Przygotowanie lokalne (przed push / dispatch)
+## Przygotowanie lokalne (przed push / tag)
 
 Wykonane lokalnie (2026-07-21):
 
 - `node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin --smoke` → **green** (health OK, docs hygiene OK)
 - `pnpm lint && pnpm check-types && pnpm test && pnpm build` → **green**
+- Release `5.0.0-alpha.10` — commit lokalny (pending push/tag)
 
-Pełna bramka G1–G10 wymaga artefaktów z CI (`.dmg`/`.msi`) — patrz sekcja poniżej.
+Pełna bramka G1–G10 wymaga artefaktów z CI po tag push — patrz sekcja poniżej.
 
 ## Sekwencja weryfikacji
 
-1. Push kodu (bez bumpu wersji) → CI zielone.
-2. GitHub Actions → Release workflow → `workflow_dispatch` → `version: 5.0.0-alpha.9`.
-3. Pobierz artefakty z jobów Actions (dispatch **nie** tworzy GitHub Release):
-   - `tauri-macos-dmg` → artifact `macos-dmg` → otwórz na macOS (unsigned, prawy klik → Otwórz). → **G1**
-   - `tauri-windows-msi` → artifact `windows-msi` → zainstaluj na Windows. → **G2**
+1. `git push origin main` → CI zielone.
+2. `git tag v5.0.0-alpha.10 && git push origin v5.0.0-alpha.10` → Release workflow (GHCR + GitHub Release + `.dmg`/`.msi`).
+3. Pobierz instalatory z GitHub Release `v5.0.0-alpha.10`:
+   - `.dmg` → otwórz na macOS (unsigned, prawy klik → Otwórz). → **G1**
+   - `.msi` → zainstaluj na Windows. → **G2**
 4. Weryfikuj:
    - lokalne zapisanie do katalogu użytkownika → **G3**
    - zamknięcie okna Tauri usuwa Node sidecar → **G4**
    - konflikt portu `4000` daje czytelny komunikat → **G5**
-5. Zbuduj kolejny testowy build desktop (testowa wersja z tego samego `dispatch` lub `alpha.9-test2`) i sprawdź:
-   - Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch → **G6**
+5. **G6 (desktop update):** zainstaluj alpha.10, następnie tag `v5.0.0-alpha.11` z `latest.json` → Admin → Aktualizuj aplikację → relaunch.
 6. Docker secondary:
-   - `compose.prod.yml` z STAGESYNC_VERSION=5.0.0-alpha.9 → `/api/health` → **G7**
+   - `compose.prod.yml` z `STAGESYNC_VERSION=5.0.0-alpha.10` → `/api/health` → **G7**
    - host update: starszy obraz → Admin → Aktualizuj host → `data/` bez zmian → **G8**
    - rollback do poprzedniego tagu → **G9**
 7. Przeczytaj INSTALL/DESKTOP — czy odpowiadają faktycznemu flow. → **G10**
@@ -56,13 +56,13 @@ Pełna bramka G1–G10 wymaga artefaktów z CI (`.dmg`/`.msi`) — patrz sekcja 
 - Instalatory **unsigned** (brak notaryzacji Apple / cert EV Windows) — obejście w [DESKTOP.md](../../docs/DESKTOP.md).
 - GHCR **prywatny** — operator potrzebuje PAT `read:packages` — instrukcja w [INSTALL.md](../../docs/INSTALL.md).
 - Windows G2/G6: wymaga ręcznej maszyny Win (CI nie weryfikuje instalacji/relauch w środowisku operatora).
-- Desktop update (G6) wymaga dwóch różnych wersji buildów Tauri — przy pierwszym `alpha.9` test G6 jest N/A lub wymaga alpha.10.
-- `workflow_dispatch` nie publikuje `latest.json` — pełny test G6 wymaga tag push (`v*`) z `includeUpdaterJson`.
+- Desktop update (G6): baseline **alpha.10** zainstalowane → pełny test updater wymaga tagu **alpha.11** (dwa buildy z `latest.json` na GitHub Releases).
+- `workflow_dispatch` nie publikuje `latest.json` — pełny test G6 wymaga tag push (`v*`), nie dispatch.
 
 ## Następny krok operatora (po decyzji o push)
 
-1. `git push origin main` (gdy gotowy).
-2. Uruchom Release `workflow_dispatch` na `5.0.0-alpha.9`.
+1. `git push origin main`.
+2. `git tag v5.0.0-alpha.10 && git push origin v5.0.0-alpha.10`.
 3. Przejdź checklistę G1–G10 powyżej; po green — bump `5.0.0-beta.1` **tylko na prośbę**.
 
 ## Po green G1–G10

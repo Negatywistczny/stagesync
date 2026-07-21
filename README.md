@@ -1,7 +1,7 @@
 # StageSync
 
 [![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
-[![version](https://img.shields.io/badge/version-5.0.0--alpha.9-blue)](https://github.com/Negatywistczny/stagesync/releases)
+[![version](https://img.shields.io/badge/version-5.0.0--alpha.10-blue)](https://github.com/Negatywistczny/stagesync/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 StageSync **v5** — synchronizacja sceniczna / timeline (monorepo).
