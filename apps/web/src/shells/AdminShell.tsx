@@ -178,7 +178,7 @@ export function AdminShell() {
     return () => {
       cancelled = true;
     };
-  }, [sectionProjectId, state.activeProjectId, displayTicks]);
+  }, [sectionProjectId, state.activeProjectId]);
 
   const refreshLibrary = useCallback(async (preferId?: string | null) => {
     const data = await fetchLibrary();
