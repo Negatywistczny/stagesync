@@ -74,6 +74,14 @@ export function createNativeMidiBackend(): MidiBackend {
     return createNoneMidiBackend();
   }
 
+  // Module can load while RtMidi still fails (CI / headless hosts).
+  try {
+    easymidi.getInputs();
+    easymidi.getOutputs();
+  } catch {
+    return createNoneMidiBackend();
+  }
+
   let input: InstanceType<EasyMidiModule["Input"]> | null = null;
   let output: InstanceType<EasyMidiModule["Output"]> | null = null;
 
@@ -81,19 +89,27 @@ export function createNativeMidiBackend(): MidiBackend {
     kind: "native",
 
     listInputs(): MidiPortInfo[] {
-      return easymidi.getInputs().map((name) => ({
-        id: portId("input", name),
-        name,
-        direction: "input" as const,
-      }));
+      try {
+        return easymidi.getInputs().map((name) => ({
+          id: portId("input", name),
+          name,
+          direction: "input" as const,
+        }));
+      } catch {
+        return [];
+      }
     },
 
     listOutputs(): MidiPortInfo[] {
-      return easymidi.getOutputs().map((name) => ({
-        id: portId("output", name),
-        name,
-        direction: "output" as const,
-      }));
+      try {
+        return easymidi.getOutputs().map((name) => ({
+          id: portId("output", name),
+          name,
+          direction: "output" as const,
+        }));
+      } catch {
+        return [];
+      }
     },
 
     openInput(id, onMessage) {
