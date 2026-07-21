@@ -38,6 +38,7 @@ import {
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
 import {
+  cascadeFormaMoveIds,
   commitGesture,
   commitMoveClip,
   deleteFormaClip,
@@ -3420,7 +3421,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         return (
           <>
             {draftProject.forma.clips.map((clip) => {
-              const moveIds =
+              const rawMoveIds =
                 gestureSession?.kind === "move" &&
                 (gestureSession.lane ?? "forma") === "forma"
                   ? gestureSession.moveIds?.length
@@ -3429,6 +3430,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ? [gestureSession.clipId]
                       : []
                   : [];
+              // TE-24: single-id drag previews cascade; multi-select keeps explicit ids.
+              const moveIds =
+                rawMoveIds.length === 1
+                  ? cascadeFormaMoveIds(
+                      draftProject.forma.clips,
+                      rawMoveIds[0]!,
+                    )
+                  : rawMoveIds;
               const moveDelta =
                 gesturePreview &&
                 gestureSession?.kind === "move" &&
