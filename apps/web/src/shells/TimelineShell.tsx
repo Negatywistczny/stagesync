@@ -16,7 +16,7 @@ import {
   formatKeySignature,
   parseLegacyMeter,
   ticksPerBar,
-  ticksToBbt,
+  ticksToBbtAlongMeterMap,
   toDisplayBar,
   importUgText,
   projectEndTicks,
@@ -354,7 +354,19 @@ export function TimelineShell() {
     setLoop,
   } = useTransport();
   const wasPlayingRef = useRef(state.playing);
-  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+  const bbt = draftProject
+    ? ticksToBbtAlongMeterMap(
+        displayTicks,
+        draftProject.defaultMeter,
+        draftProject.meterMap,
+        draftProject.ppq,
+      )
+    : ticksToBbtAlongMeterMap(
+        displayTicks,
+        state.timeSignature,
+        [],
+        state.ppq,
+      );
 
   const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [draftProject, setDraftProject] = useState<Project | null>(null);
@@ -1199,11 +1211,19 @@ export function TimelineShell() {
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
     : state.timeSignature;
-  const locatorBbt = ticksToBbt(
-    effectiveLocatorTicks,
-    locatorMeter,
-    draftProject?.ppq ?? state.ppq,
-  );
+  const locatorBbt = draftProject
+    ? ticksToBbtAlongMeterMap(
+        effectiveLocatorTicks,
+        draftProject.defaultMeter,
+        draftProject.meterMap,
+        draftProject.ppq,
+      )
+    : ticksToBbtAlongMeterMap(
+        effectiveLocatorTicks,
+        locatorMeter,
+        [],
+        state.ppq,
+      );
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
   // v4: cyan MIDI overlay only when external clock is live and Timeline is not the
   // transport source. Alpha: server Timeline owns play → no separate MIDI overlay (β2).
