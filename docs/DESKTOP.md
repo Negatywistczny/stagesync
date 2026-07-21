@@ -4,7 +4,15 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 
 **β1:** aplikacja uruchamia wbudowany serwer w postaci **Node sidecar**, wystawia lokalny API na `http://127.0.0.1:4000`, a shell ładuje UI z tego adresu.  
 **Domyślny widok desktop:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/client`) w shellu; w przeglądarce / Dockerze root `/` nadal to Client.  
-**Nawigacja desktop:** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ** — bez osobnego chrome `ShellModeNav` (ADR 0010).  
+**Nawigacja desktop (Faza A, [ADR 0010](./adr/0010-desktop-shell-tauri.md)):** menu OS **StageSync** | **Widok** | **Pomoc** — bez osobnego chrome `ShellModeNav`.
+
+| Menu | Pozycje |
+|------|---------|
+| **StageSync** | O programie; Sprawdź aktualizacje…; Zakończ |
+| **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Pełny ekran |
+| **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
+
+Kolejne fazy menu (Plik / Host / Transport / …): **β1+** — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
 **Bez** MIDI / zegara muzycznego w procesie Tauri.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —
@@ -21,15 +29,32 @@ Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/N
 
 ### Instalacja bez podpisu cyfrowego (beta)
 
-Instalatory beta nie są podpisane certyfikatem OS. Obejście:
+Instalatory beta nie są podpisane certyfikatem Apple / SmartScreen. Na nowszym macOS Gatekeeper często pokazuje mylący komunikat **„Rzecz … jest uszkodzona”** zamiast „nieznany deweloper”.
 
-**macOS — Gatekeeper:**
-1. Prawym klikiem na `.dmg` → **Otwórz** → **Otwórz** (potwierdzenie).
-2. Alternatywnie: System Settings → Privacy & Security → **Otwórz mimo to**.
+**macOS — po skopiowaniu StageSync do `/Applications`:**
+
+```sh
+xattr -cr /Applications/StageSync.app
+open /Applications/StageSync.app
+```
+
+To zdejmuje flagę kwarantanny (Chrome / Safari). Trzeba powtórzyć **po każdej świeżej instalacji** z `.dmg`.
+
+Alternatywy: prawy klik na `.app` → **Otwórz** → **Otwórz**; albo System Settings → Privacy & Security → **Otwórz mimo to**.
 
 **Windows — SmartScreen:**
 1. Kliknij **Więcej informacji** w ostrzeżeniu SmartScreen.
 2. Kliknij **Uruchom mimo to**.
+
+### Windows — host nie startuje („port zajęty”)
+
+Komunikat o zajętym porcie `4000` bywał **mylący**: shell czekał na `GET /api/health`, a prawdziwy błąd (crash sidecara Node, `ERR_MODULE_NOT_FOUND`, blokada Defendera) był ignorowany.
+
+Od najnowszego builda:
+- przy awarii hosta UI pokazuje **log sidecara** (nie zakładaj od razu zajętego portu);
+- pierwsze uruchomienie na Windows może potrwać dłużej (skan Defendera) — timeout startu to ~2 min.
+
+Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy `ERR_MODULE_NOT_FOUND` / braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistyczny/stagesync/releases).
 
 ## Aktualizacja desktop shell
 
