@@ -531,7 +531,7 @@ function GlobalSettingsFields() {
       <p className={styles.fieldLab}>Wygląd</p>
       <ShellAppearanceFields />
       <p className={styles.muted}>
-        Tonacja koncertowa / polskie nazwy — później (β).
+        Tonacja koncertowa / polskie nazwy — poza 5.0.0 (kolejne etapy).
       </p>
     </>
   );
@@ -681,7 +681,7 @@ function RoleSettingsFields({
           </Button>
         </div>
         <p className={styles.muted}>
-          Zoom lokalny (stub OSMD). Partie / oktawa — później.
+          Zoom lokalny (stub OSMD). Partie / oktawa — poza 5.0.0.
         </p>
       </>
     );
