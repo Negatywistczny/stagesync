@@ -40,6 +40,15 @@ async function downloadFile(url, destPath) {
 }
 
 
+
+function resolveExtractedNodeBin(extractedRoot) {
+  const winRoot = join(extractedRoot, "node.exe");
+  if (existsSync(winRoot)) return winRoot;
+  const unixBin = join(extractedRoot, "bin", "node");
+  if (existsSync(unixBin)) return unixBin;
+  throw new Error(`Could not locate node binary under ${extractedRoot}`);
+}
+
 function externalBinDestPath(binDir, target) {
   const base = `stagesync-host-${target}`;
   if (target.endsWith("-pc-windows-msvc")) {
@@ -159,11 +168,7 @@ async function prepareNodeRuntimeIntoTauriBundle(target) {
   }
   const extractedRoot = join(extractDest, extractedDir.name);
 
-  const extractedNodeBin = join(
-    extractedRoot,
-    "bin",
-    process.platform === "win32" ? "node.exe" : "node",
-  );
+  const extractedNodeBin = resolveExtractedNodeBin(extractedRoot);
 
   // Tauri externalBin expects per-target triple name under bundle /bin.
   const destStagesyncHost = externalBinDestPath(binDir, target);
@@ -172,9 +177,13 @@ async function prepareNodeRuntimeIntoTauriBundle(target) {
     await chmod(destStagesyncHost, 0o755);
   }
 
-  // Node expects its runtime support files to live next to /bin/../lib and /bin/../share.
-  await cp(join(extractedRoot, "lib"), join(srcTauriDir, "lib"), { recursive: true, force: true });
-  await cp(join(extractedRoot, "share"), join(srcTauriDir, "share"), { recursive: true, force: true });
+  // Unix Node builds ship lib/ + share/ beside bin/; Windows zip is node.exe-centric.
+  for (const sub of ["lib", "share"]) {
+    const src = join(extractedRoot, sub);
+    if (existsSync(src)) {
+      await cp(src, join(srcTauriDir, sub), { recursive: true, force: true });
+    }
+  }
 }
 
 async function copyDirContents(srcDir, destDir) {
