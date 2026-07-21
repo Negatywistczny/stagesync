@@ -104,7 +104,12 @@ jobs:
               --title "StageSync $TAG" \
               --notes "Release build in progress."
           fi
-          ID=$(gh api "repos/$REPO/releases/tags/$TAG" --jq .id)
+          # drafts are invisible to /releases/tags/{tag}; use gh view (works for draft + published)
+          ID=$(gh release view "$TAG" -R "$REPO" --json databaseId --jq .databaseId)
+          if [ -z "$ID" ] || [ "$ID" = "null" ]; then
+            echo "Failed to resolve release id for $TAG" >&2
+            exit 1
+          fi
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
 
   tauri-macos:

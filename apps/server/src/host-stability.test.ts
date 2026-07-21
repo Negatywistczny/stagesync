@@ -43,7 +43,15 @@ describe("host stability — volume migrate / shadow backup", () => {
       join(dataDir, "library", "library.json"),
       JSON.stringify({
         version: 1,
-        projects: [{ id, name: "Legacy", updatedAt: "2026-07-19T12:00:00.000Z" }],
+        // Mark as template so ensureDefaultTemplate does not seed a second project.
+        projects: [
+          {
+            id,
+            name: "Legacy",
+            updatedAt: "2026-07-19T12:00:00.000Z",
+            isTemplate: true,
+          },
+        ],
       }),
     );
 
