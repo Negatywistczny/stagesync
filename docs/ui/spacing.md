@@ -28,6 +28,8 @@ kontrolek — tylko siatka poniżej.
 | `--ss-space-x` | `space-3` | Poziomy rytm formularzy / list |
 | `--ss-space-y` | `space-2` | Pionowy rytm |
 | `--ss-scrollbar-width` | `space-2` | Scenic scrollbary — nie redefiniuj w shellach |
+| `--ss-touch-min` | `36px` | Min. hit desktop (icon / Play) — ui-density §5 |
+| `--ss-touch-min-client` | `44px` | Min. hit Client PWA |
 
 ## Soft-px (wyjątek)
 

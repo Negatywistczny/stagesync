@@ -56,6 +56,10 @@
   --ss-space-x: var(--ss-space-3);
   --ss-space-y: var(--ss-space-2);
   --ss-scrollbar-width: var(--ss-space-2);
+  /** Desktop min hit target (ui-density §5) — 36 on 4pt grid. */
+  --ss-touch-min: 36px;
+  /** Client PWA min hit target (ui-density §5). */
+  --ss-touch-min-client: 44px;
 
   --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
   /* Type scale — size / weight / leading / tracking (no ad-hoc values in UI). */

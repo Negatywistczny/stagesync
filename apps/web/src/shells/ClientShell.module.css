@@ -136,8 +136,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
+  width: var(--ss-touch-min-client);
+  height: var(--ss-touch-min-client);
   margin: 0;
   padding: 0;
   border: none;
