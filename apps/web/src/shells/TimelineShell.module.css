@@ -642,7 +642,8 @@
   z-index: var(--ss-z-sticky);
   display: flex;
   align-items: flex-start;
-  min-height: calc((var(--ss-space-6) + var(--ss-space-1)) * var(--tl-zoom-ui));
+  /* Two equal ruler lanes (loop / beat) — Logic-style split. */
+  min-height: calc((var(--ss-space-6) + var(--ss-space-1)) * 2 * var(--tl-zoom-ui));
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
     calc(var(--ss-space-2) * var(--tl-zoom-ui));
   /* Opaque — scrolled barlines / locator must not show through the eye corner. */
@@ -652,12 +653,30 @@
 
 .ruler {
   position: relative;
-  height: calc((var(--ss-space-6) + var(--ss-space-1)) * var(--tl-zoom-ui));
+  display: flex;
+  flex-direction: column;
+  height: calc((var(--ss-space-6) + var(--ss-space-1)) * 2 * var(--tl-zoom-ui));
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
   color: var(--ss-color-text-muted);
-  cursor: ew-resize;
   touch-action: none;
   user-select: none;
+}
+
+.rulerLoopLane,
+.rulerBeatLane {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.rulerLoopLane {
+  cursor: default;
+}
+
+.rulerBeatLane {
+  cursor: ew-resize;
+  border-top: 1px solid
+    color-mix(in srgb, var(--ss-color-border) 70%, transparent);
 }
 
 .rulerMark {
@@ -672,9 +691,20 @@
   font-variant-numeric: tabular-nums;
   font-weight: var(--ss-font-weight-semibold);
   pointer-events: none;
+  line-height: var(--ss-leading-compact);
 }
 
-/* v4 `.timeline-ruler__tick` — full-height beat stubs when px/bar ≥ 56. */
+/* Bar stubs in the beat lane (numbers live in the loop lane above). */
+.rulerBarTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid var(--ss-color-border);
+  pointer-events: none;
+}
+
+/* Beat stubs when px/bar ≥ 56 — confined to lower lane. */
 .rulerBeatTick {
   position: absolute;
   top: 0;

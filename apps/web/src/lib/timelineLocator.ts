@@ -59,6 +59,38 @@ export function snapLoopRange(
   return { startTicks: start, endTicks: end };
 }
 
+/**
+ * Translate a loop range by delta ticks (Logic-style cycle body drag).
+ * Duration is preserved; caller snaps via {@link snapMovedLoopRange}.
+ */
+export function moveLoopRange(
+  range: LoopRange,
+  deltaTicks: number,
+): LoopRange {
+  return {
+    startTicks: range.startTicks + deltaTicks,
+    endTicks: range.endTicks + deltaTicks,
+  };
+}
+
+/**
+ * Move + snap a loop while keeping duration (snap start; end = start + length).
+ */
+export function snapMovedLoopRange(
+  project: Project,
+  range: LoopRange,
+  deltaTicks: number,
+  mode: SnapMode = "beat",
+): LoopRange {
+  const length = range.endTicks - range.startTicks;
+  const moved = moveLoopRange(range, deltaTicks);
+  if (mode === "off") {
+    return moved;
+  }
+  const start = snapEditTicks(project, moved.startTicks, mode);
+  return { startTicks: start, endTicks: start + length };
+}
+
 /** Map WS / HTTP transport payload → state shape (preserve loop). */
 export function transportStateFromTick(msg: {
   playing: boolean;
