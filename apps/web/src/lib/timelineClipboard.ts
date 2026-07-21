@@ -13,6 +13,7 @@ import {
   type ContentLaneId,
 } from "./contentLaneEdit.js";
 import type { ClipSelectionLane } from "./timelineSelection.js";
+import { isAudioSelectionLane } from "./timelineSelection.js";
 
 export type ClipboardPayload = {
   name?: string;
@@ -285,7 +286,15 @@ export function deleteClipsOnLane(
     if (clips.length === project.akordy.clips.length) return project;
     return { ...project, akordy: { clips } };
   }
-  const clips = project.cue.clips.filter((c) => !idSet.has(c.id));
-  if (clips.length === project.cue.clips.length) return project;
-  return { ...project, cue: { clips } };
+  if (lane === "cue") {
+    const clips = project.cue.clips.filter((c) => !idSet.has(c.id));
+    if (clips.length === project.cue.clips.length) return project;
+    return { ...project, cue: { clips } };
+  }
+  if (isAudioSelectionLane(lane)) {
+    const clips = project.audioClips.filter((c) => !idSet.has(c.id));
+    if (clips.length === project.audioClips.length) return project;
+    return { ...project, audioClips: clips };
+  }
+  return project;
 }

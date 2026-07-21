@@ -63,7 +63,7 @@ const SECTIONS: HelpSection[] = [
       "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
       "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi.",
       "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
-      "Ścieżki audio na Timeline — ukryte do β2; import plików: Admin → Utwory → Pliki projektu.",
+      "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; bez pencil; playback sync z transportem.",
     ],
   },
 ];
@@ -109,7 +109,7 @@ export function TimelineHelpBody() {
     <div className={styles.helpBody}>
       <p className={styles.helpLead}>
         StageSync Timeline — skróty i narzędzia (v5). Treść jak w v4; bez funkcji
-        świadomie OUT (lane audio, playback audio, Host MIDI I/O).
+        świadomie OUT (fade/stretch audio, Host MIDI I/O do osobnego PR).
       </p>
       <div className={styles.helpGrid}>
         {SECTIONS.map((section) => (

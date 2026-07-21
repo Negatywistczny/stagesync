@@ -26,7 +26,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 2 · [report-scope-beta2.md](./an
 
 ### Must
 
-- [ ] **Audio 0…N:** clip na Timeline, sync transport (`ticksToMs`), trim/move, waveform peak/RMS, gain clip + fader track + mute clip/track (bez pencil; bez stretch poza plik) — [ADR 0008](./adr/0008-timeline-clip-editing.md)
 - [ ] **Host MIDI I/O** po stronie serwera (clock / urządzenia) — nie w procesie Tauri
 - [ ] **Desktop OS menu — Faza B:** Plik + Host (Open Recent; Zapisz Timeline draft; status hosta / klienci WS / QR; restart wg istniejącego API; Ustawienia… → Host)
 - [ ] **Desktop OS menu — Faza C:** Transport (Play/Stop/next/prev przez SSOT serwera; bez MIDI/audio clock w Rust)
