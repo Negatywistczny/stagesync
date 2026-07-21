@@ -191,4 +191,21 @@ describe("splitClipAt", () => {
     expect(splitClipAt(base(), "forma-intro", 0)).toEqual(base());
     expect(splitClipAt(base(), "forma-intro", 7680)).toEqual(base());
   });
+
+  it("avoids colliding with an existing -r id", () => {
+    const withRight: FormaClip[] = [
+      ...base(),
+      {
+        id: "forma-intro-r",
+        name: "Old right",
+        kind: "section",
+        startTicks: 20_000,
+        lengthTicks: 960,
+      },
+    ];
+    const next = splitClipAt(withRight, "forma-intro", 3840);
+    const ids = next.map((c) => c.id);
+    expect(ids.filter((id) => id === "forma-intro-r")).toHaveLength(1);
+    expect(ids).toContain("forma-intro-r-2");
+  });
 });
