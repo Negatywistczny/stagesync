@@ -151,7 +151,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Sync version into files
-        run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
+        run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }} --wix-compat
 
       - name: Build desktop sidecar (Node + server + web)
         run: node launch/scripts/build-desktop-sidecar.mjs --target x86_64-pc-windows-msvc --smoke

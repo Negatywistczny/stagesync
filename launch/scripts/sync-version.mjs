@@ -28,6 +28,7 @@ function arg(flag) {
 }
 
 const dryRun = process.argv.includes("--dry-run");
+const wixCompat = process.argv.includes("--wix-compat");
 const root_pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
 const version = arg("--version") ?? root_pkg.version;
 
@@ -63,7 +64,8 @@ const updates = [
     path: "apps/desktop/src-tauri/tauri.conf.json",
     transform: (c) => {
       const obj = JSON.parse(c);
-      obj.version = version;
+      const desktopVersion = wixCompat && wixVersion !== version ? wixVersion : version;
+      obj.version = desktopVersion;
       obj.bundle.windows ??= {};
       if (wixVersion !== version) {
         obj.bundle.windows.wix = { ...(obj.bundle.windows.wix ?? {}), version: wixVersion };
@@ -77,7 +79,10 @@ const updates = [
   },
   {
     path: "apps/desktop/src-tauri/Cargo.toml",
-    transform: (c) => c.replace(/^version = "[^"]+"/m, `version = "${version}"`),
+    transform: (c) => {
+      const cargoVersion = wixCompat && wixVersion !== version ? wixVersion : version;
+      return c.replace(/^version = "[^"]+"/m, `version = "${cargoVersion}"`);
+    },
   },
 ];
 
