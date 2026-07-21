@@ -78,16 +78,41 @@ export function isDesktopShell(): boolean {
   return Boolean(tauriInternals()?.invoke);
 }
 
+/** Normalize Tauri / Promise rejection reasons into a readable message. */
+export function formatUnknownError(err: unknown): string {
+  if (err instanceof Error) {
+    return err.message || err.name || "Unknown error";
+  }
+  if (typeof err === "string") {
+    return err || "Unknown error";
+  }
+  if (err && typeof err === "object" && "message" in err) {
+    const message = (err as { message: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  try {
+    const json = JSON.stringify(err);
+    if (json && json !== "{}") return json;
+  } catch {
+    /* ignore */
+  }
+  const fallback = String(err);
+  return fallback === "undefined" || fallback === "null" ? "Unknown error" : fallback;
+}
+
+function asError(err: unknown): Error {
+  return err instanceof Error ? err : new Error(formatUnknownError(err));
+}
+
 function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   const fromGlobal = tauriGlobal()?.core?.invoke;
-  if (fromGlobal) {
-    return fromGlobal(cmd, args) as Promise<T>;
+  const invoke = fromGlobal ?? tauriInternals()?.invoke;
+  if (!invoke) {
+    return Promise.reject(new Error("Tauri invoke not available"));
   }
-  const fromInternals = tauriInternals()?.invoke;
-  if (fromInternals) {
-    return fromInternals(cmd, args) as Promise<T>;
-  }
-  return Promise.reject(new Error("Tauri invoke not available"));
+  return (invoke(cmd, args) as Promise<T>).catch((err: unknown) => {
+    throw asError(err);
+  });
 }
 
 /** Check for a desktop update via tauri-plugin-updater. */

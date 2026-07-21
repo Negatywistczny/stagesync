@@ -397,7 +397,7 @@ export const UpdateStatusSchema = z.object({
   current: z.string(),
   latest: z.string().nullable(),
   updateAvailable: z.boolean(),
-  /** null when STAGESYNC_GITHUB_TOKEN not configured or network unreachable */
+  /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
   error: z.string().nullable().optional(),
 });
 
