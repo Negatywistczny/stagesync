@@ -70,6 +70,7 @@ Gdy jest dostępna nowa wersja:
 > Aktualizacja shella wymaga połączenia z internetem. Dane projektów są w serwerze — shell ich nie przechowuje.
 >
 > Manifest updatera: `…/releases/latest/download/latest.json`. Release na GitHub **nie może** być oznaczony jako prerelease (semver `-beta` w tagu jest OK) — inaczej `/releases/latest` zwraca 404.
+> `latest.json` musi zawierać **darwin-aarch64** i **windows-x86_64** — macOS buduje target `app` (`.app.tar.gz` + `.sig`) obok `dmg`; bez `app` bundler pomija updater artifacts i zostaje tylko Windows (last-writer).
 
 ## Wymagania (dev / build)
 

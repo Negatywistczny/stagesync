@@ -20,23 +20,35 @@ Uczciwy cut docs: residual β1 (**menu Faza B**, **G1–G10**) oraz **menu Faza 
 
 ## Checklista G1–G10
 
-| ID | Kryterium | Status |
-|----|-----------|--------|
-| G1 | `.dmg` z GitHub Release: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ |
-| G2 | `.msi` z GitHub Release: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ |
-| G3 | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files) | ⬜ |
-| G4 | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot) | ⬜ |
-| G5 | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView) | ⬜ |
-| G6 | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ |
-| G7 | Docker secondary: `compose.prod.yml up` + `GET /api/health` zwraca 200 | ⬜ |
-| G8 | Host update (Docker secondary): starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian; w przeglądarce bez Tauri desktop update nie jest przyciskiem | ⬜ |
-| G9 | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ |
-| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow (Faza A + update paths; Faza B/C po wdrożeniu w β2) | ⬜ |
+| ID | Kryterium | Status | Weryfikacja |
+|----|-----------|--------|-------------|
+| G1 | `.dmg` z GitHub Release: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ | **Operator** (macHW) |
+| G2 | `.msi` z GitHub Release: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ | **Operator** (WinHW) |
+| G3 | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files) | ⬜ | **Operator** |
+| G4 | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot) | ⬜ | **Operator** |
+| G5 | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView) | ⬜ | **Operator** |
+| G6 | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ | **Operator** (pełny flow); **CI/Release** = prerequisites poniżej |
+| G7 | Docker secondary: `compose.prod.yml up` + `GET /api/health` zwraca 200 | ⬜ | **CI** częściowo (`compose-build`); pełny `up` + health = **Operator** / host |
+| G8 | Host update (Docker secondary): starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian; w przeglądarce bez Tauri desktop update nie jest przyciskiem | ⬜ | **Operator** |
+| G9 | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ | **Operator** |
+| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow (Faza A + B/C + update paths) | ⬜ | **Review** docs w PR; smoke flow = **Operator** |
 
-**Must przed tagiem `v5.0.0-beta.2`:** G1–G5, G7 krytyczne green; G6/G8/G9 wg dostępności środowiska; G10 po docs menu B/C.
+### Co CI / Release może zweryfikować (nie zastępuje G1–G10 na HW)
+
+| Check | Gdzie |
+|-------|--------|
+| lint / types / unit tests / web+server build | workflow `CI` → `lint-types-test-build` |
+| `cargo check` desktop | workflow `CI` → `tauri-cargo-check` |
+| obraz Compose buduje się | workflow `CI` → `compose-build` |
+| instalatory `.dmg` / `.msi` + sidecar smoke w Release | workflow `Release` (`tauri-macos` / `tauri-windows`) |
+| `latest.json` zawiera **darwin-aarch64** + **windows-x86_64** | po publish: asset Release (target `app` + `dmg` na mac; `msi` na Win; Release zawsze `--latest`) |
+| Release **nie** jest GitHub prerelease | `gh release view` → `isPrerelease: false` |
+
+**Must kodu przed tagiem `v5.0.0-beta.2`:** feature must (Audio / MIDI / menu B+C) + CI green na `main` + fix updater (`app` target + `--latest`).  
+**Residual operatorskie:** G1–G6, G8–G10 na HW po artefaktach β2 — uczciwie ⬜ przy cutcie jeśli brak maszyny; G7 smoke Compose na CI nie zastępuje pełnego `compose.prod.yml up` na hoście.
 
 **Baseline installers:** `v5.0.0-beta.1` / `v5.0.0-beta.1.1` (G1–G5, G7–G10).  
-**G6 updater (ścieżka β2):** β1.1 → β2; **must:** `latest.json` zawiera **darwin + windows** (merge updater JSON, nie last-writer) — [report-scope-beta2.md](./report-scope-beta2.md).
+**G6 updater (ścieżka β2):** β1.1 → β2; **must kodu:** `latest.json` z **darwin + windows** (mac target `app` → `.app.tar.gz`/`.sig`; tauri-action merge platform; nie Windows-only).
 
 ## Przygotowanie lokalne / CI
 
