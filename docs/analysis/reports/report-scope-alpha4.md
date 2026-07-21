@@ -99,9 +99,7 @@ Cut order przy sporze: **1 → 4 → 2 → 3 → 5 → 6**.
 
 ## Stan po audycie (2026-07-20)
 
-Audyt read-only: [report-audit-alpha4.md](./report-audit-alpha4.md) · exec: [report-exec-summary-alpha4.md](./report-exec-summary-alpha4.md).
-
-**Werdykt:** tag `5.0.0-alpha.4` **przedwczesny** — repo gotowe jako **alpha.3**; bramka release α4 **ZAMKNIĘTA** do domknięcia must #1–#6.
+**Werdykt (historyczny):** tag `5.0.0-alpha.4` był **przedwczesny** w momencie audytu — repo gotowe jako **alpha.3**; bramka release α4 zamknięta do must #1–#6. Etap α4 później **wydany** — szczegóły w [CHANGELOG.md](../../../CHANGELOG.md).
 
 | # | Kryterium must | Status | Notatka audytu |
 |---|----------------|--------|----------------|

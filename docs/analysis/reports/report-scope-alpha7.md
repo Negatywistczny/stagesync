@@ -12,7 +12,7 @@ Na Timeline można **edytować geometrię Formy** (pencil drag, move/resize, Del
 
 | # | Wycinek | Kryterium done |
 |---|---------|----------------|
-| M1 | **Scope + plan** | Ten raport + [report-implementation-plan-alpha7.md](./report-implementation-plan-alpha7.md); ADR 0008 → Zaakceptowany |
+| M1 | **Scope + plan** | Ten raport; ADR 0008 → Zaakceptowany |
 | M2 | **Shared no-overlap** | `clip-collision.ts`: move/resize/insert/delete; Countdown nietykalny; section `startTicks >= 0`; Vitest |
 | M3 | **Pencil drag Forma** | Pointerdown→move→up: sekcja na zakres taktów; snap; overwrite; preview; clamp ≥ 0 |
 | M4 | **Pointer move/resize** | Body → `startTicks`; brzeg → `lengthTicks`; no-overlap; Countdown locked |
@@ -65,4 +65,4 @@ Na Timeline można **edytować geometrię Formy** (pencil drag, move/resize, Del
 
 ## Kolejność PR
 
-Zob. [report-implementation-plan-alpha7.md](./report-implementation-plan-alpha7.md).
+Zamknięte — historia w [CHANGELOG.md](../../../CHANGELOG.md).
