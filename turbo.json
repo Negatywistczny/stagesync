@@ -4,6 +4,8 @@
   "globalEnv": [
     "PORT",
     "STAGESYNC_DATA_DIR",
+    "STAGESYNC_SEED_DIR",
+    "STAGESYNC_REPO_DEV",
     "STAGESYNC_STATIC_DIR",
     "STAGESYNC_URL",
     "STAGESYNC_VERSION",
@@ -12,6 +14,8 @@
     "STAGESYNC_UPDATER_TOKEN",
     "npm_package_version",
     "HOSTNAME",
+    "HOME",
+    "USERPROFILE",
     "pm_id",
     "PM2_HOME",
     "DEV",
