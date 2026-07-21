@@ -201,6 +201,7 @@ export {
 
 export {
   getDisplayTicks,
+  wrapDisplayTicks,
   type TransportAnchor,
 } from "./soft-clock.js";
 

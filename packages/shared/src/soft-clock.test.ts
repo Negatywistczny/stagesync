@@ -25,4 +25,23 @@ describe("getDisplayTicks", () => {
   it("clamps negative elapsed to zero", () => {
     expect(getDisplayTicks(anchor, 900, 1000, true)).toBe(1000);
   });
+
+  it("wraps extrapolated ticks into an enabled loop", () => {
+    const loop = { enabled: true, startTicks: 1920, endTicks: 7680 };
+    const nearEnd: TransportAnchor = {
+      ...anchor,
+      positionTicks: 7600,
+    };
+    // 500ms @ 120 → +960 ticks → 8560 → wrap into [1920, 7680)
+    expect(getDisplayTicks(nearEnd, 1500, 1000, true, loop)).toBe(
+      1920 + ((8560 - 1920) % (7680 - 1920)),
+    );
+  });
+
+  it("ignores disabled loop", () => {
+    const loop = { enabled: false, startTicks: 0, endTicks: 100 };
+    expect(getDisplayTicks(anchor, 1500, 1000, true, loop)).toBe(
+      1000 + DEFAULT_PPQ,
+    );
+  });
 });
