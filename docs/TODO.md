@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-alpha.10` **przygotowane lokalnie 2026-07-21** (pending push/tag) → aktywny etap **β1** (host / dystrybucja).  
+**Stan:** `5.0.0-alpha.10` **wydane 2026-07-21** ([Release](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-alpha.10), tag @ `58c2998`) → aktywny etap **β1** (host / dystrybucja).  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
 **P8:** green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md) · [parity-blocker](./analysis/reports/report-parity-blocker-alpha8.md).  
@@ -51,7 +51,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 1 · [report-scope-beta1.md](./an
 ### Release
 
 - [x] Scope report [report-scope-beta1.md](./analysis/reports/report-scope-beta1.md)
-- [ ] Bramka beta-gate G1–G10 green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — lokalny prep (sidecar `--smoke` + monorepo build) **green**; artefakty CI po push + `workflow_dispatch`
+- [ ] Bramka beta-gate G1–G10 green ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — lokalny prep **green**; Release CI **green** (tag push [run](https://github.com/Negatywistczny/stagesync/actions/runs/29835599723)); `.dmg`/`.msi` na Release — **ręczna** weryfikacja G1–G10
   - [ ] G1: `.dmg` (artifact Actions lub Release) działa bez Dockera/Node u użytkownika
   - [ ] G2: `.msi` (artifact Actions lub Release) działa bez Dockera/Node u użytkownika
   - [ ] G3: dane w katalogu użytkownika (nie w `.app` / Program Files)

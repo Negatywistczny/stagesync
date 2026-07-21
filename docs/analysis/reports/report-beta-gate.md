@@ -29,9 +29,9 @@ Wykonane lokalnie (2026-07-21):
 
 - `node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin --smoke` → **green** (health OK, docs hygiene OK)
 - `pnpm lint && pnpm check-types && pnpm test && pnpm build` → **green**
-- Release `5.0.0-alpha.10` — commit lokalny (pending push/tag)
+- Release `5.0.0-alpha.10` — tag @ `58c2998`, GitHub Release opublikowany 2026-07-21
 
-Pełna bramka G1–G10 wymaga artefaktów z CI po tag push — patrz sekcja poniżej.
+**CI Release (tag push):** [workflow run](https://github.com/Negatywistczny/stagesync/actions/runs/29835599723) — `docker-ghcr`, `tauri-macos-dmg`, `tauri-windows-msi`, `github-release` **green**. Artefakty: `StageSync_5.0.0-alpha.10_aarch64.dmg`, `StageSync_5.0.0-alpha.10_x64_en-US.msi` (+ `SHA256SUMS.txt`). Checklista G1–G10 pozostaje **do ręcznej** weryfikacji operatora (⬜ w tabeli).
 
 ## Sekwencja weryfikacji
 
@@ -59,11 +59,10 @@ Pełna bramka G1–G10 wymaga artefaktów z CI po tag push — patrz sekcja poni
 - Desktop update (G6): baseline **alpha.10** zainstalowane → pełny test updater wymaga tagu **alpha.11** (dwa buildy z `latest.json` na GitHub Releases).
 - `workflow_dispatch` nie publikuje `latest.json` — pełny test G6 wymaga tag push (`v*`), nie dispatch.
 
-## Następny krok operatora (po decyzji o push)
+## Następny krok operatora
 
-1. `git push origin main`.
-2. `git tag v5.0.0-alpha.10 && git push origin v5.0.0-alpha.10`.
-3. Przejdź checklistę G1–G10 powyżej; po green — bump `5.0.0-beta.1` **tylko na prośbę**.
+1. Pobierz instalatory z [GitHub Release `v5.0.0-alpha.10`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-alpha.10).
+2. Przejdź checklistę G1–G10 powyżej (oznacz status w tabeli); po green — bump `5.0.0-beta.1` **tylko na prośbę**.
 
 ## Po green G1–G10
 
