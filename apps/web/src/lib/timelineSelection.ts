@@ -1,10 +1,24 @@
 /**
- * Timeline Forma/content multi-select helpers (v4 selectedIds / primaryId).
+ * Timeline Forma/content/audio multi-select helpers (v4 selectedIds / primaryId).
  * Pure — no DOM. Maps keep their own multi-select in TimelineShell.
  * Selection may span lanes (v4 marquee / Cmd+click); move/copy stay same-lane.
  */
 
-export type ClipSelectionLane = "forma" | "tekst" | "akordy" | "cue";
+import type { AudioLaneId } from "./timelineTracks.js";
+import { isAudioLaneId } from "./timelineTracks.js";
+
+export type ClipSelectionLane =
+  | "forma"
+  | "tekst"
+  | "akordy"
+  | "cue"
+  | AudioLaneId;
+
+export function isAudioSelectionLane(
+  lane: ClipSelectionLane | null | undefined,
+): lane is AudioLaneId {
+  return lane != null && isAudioLaneId(lane);
+}
 
 export type SelectedClip = {
   id: string;

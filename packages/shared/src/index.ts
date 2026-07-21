@@ -208,6 +208,21 @@ export {
 } from "./clip-collision.js";
 
 export {
+  audioClipBufferOffsetSec,
+  audioClipPlayableMs,
+  audioClipRemainingSec,
+  clampAudioClipToAsset,
+  gainDbToLinear,
+  lengthTicksFromAssetWindow,
+  maxAudioLengthTicks,
+  resizeAudioClipEnd,
+  resizeAudioClipStart,
+  trimInMsOf,
+  trimOutMsOf,
+  type AudioTempoCtx,
+} from "./audio-clip.js";
+
+export {
   importUgText,
   sealAkordyLengths,
   chordOnsetsInBar,
