@@ -5,6 +5,12 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+- **Transport Stop / Countdown (#41):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
+
 ## [5.0.0-beta.1.1](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
 
 > **β1.1:** docs cut — residual β1 (menu OS Faza B, ręczna bramka G1–G10) oraz menu Faza C przeniesione jako **must β2**; scope report β2. Bez nowych features produktowych.

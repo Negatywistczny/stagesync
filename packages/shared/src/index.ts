@@ -143,6 +143,8 @@ export {
   DEFAULT_TRANSPORT_METER,
   TRANSPORT_TICK_INTERVAL_MS,
   defaultTransportState,
+  transportHomeTicks,
+  type TransportHomeSource,
   type TransportState,
   type TransportSeekBody,
   type TransportPlayBody,

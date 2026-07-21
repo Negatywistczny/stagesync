@@ -14,6 +14,7 @@ import {
   normalizeLoop,
   resolveMeterAt,
   resolveTempoAt,
+  transportHomeTicks,
   type Project,
   type TimeSignature,
   type TransportLoop,
@@ -197,13 +198,17 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
-    /** Pause and seek to tick 0 (Stop). */
+    /**
+     * Pause and seek to transport home (Stop).
+     * Home = Countdown / pre-roll start when present; else tick 0 (ADR 0002 / #41).
+     */
     stop(project?: Project): TransportState {
       playing = false;
       stopTimer();
-      positionTicks = 0;
+      const home = transportHomeTicks(project);
+      positionTicks = home;
       if (project) {
-        applyMapsFromProject(project, 0);
+        applyMapsFromProject(project, home);
       }
       notify();
       return snapshot();

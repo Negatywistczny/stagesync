@@ -20,6 +20,7 @@ import {
   toDisplayBar,
   importUgText,
   projectEndTicks,
+  transportHomeTicks,
   type FormaClip,
   type Project,
 } from "@stagesync/shared";
@@ -1341,7 +1342,8 @@ export function TimelineShell() {
 
   async function onStopClick() {
     await stop();
-    setLocatorTicks(0);
+    // Match server home (Countdown start / pre-roll), not tick 0 past CD (#41).
+    setLocatorTicks(transportHomeTicks(draftRef.current));
   }
 
   async function onMetronomeToggle() {
