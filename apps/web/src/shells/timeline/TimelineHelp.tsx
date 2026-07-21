@@ -89,7 +89,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       heading: "Narzędzia",
       rows: [
         { keys: "W", action: "Różdżka — menu" },
-        { keys: "?", action: "Ta pomoc" },
+        { keys: "?", action: "Przełącz tę pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },
         { keys: "⌘/Ctrl przy drag", action: "Snap off" },
       ],
