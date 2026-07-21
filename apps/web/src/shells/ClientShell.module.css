@@ -226,13 +226,8 @@
   transform: scale(0.98);
 }
 
-.roleIcon {
-  font-size: var(--ss-text-2xl);
-  line-height: var(--ss-leading-compact);
-}
-
 .roleLabel {
-  font-size: var(--ss-text-lg);
+  font-size: var(--ss-text-xl);
   font-weight: var(--ss-font-weight-bold);
   line-height: var(--ss-leading-tight);
 }
@@ -316,12 +311,8 @@
     padding: var(--ss-space-8);
   }
 
-  .roleIcon {
-    font-size: var(--ss-text-3xl);
-  }
-
   .roleLabel {
-    font-size: var(--ss-text-xl);
+    font-size: var(--ss-text-2xl);
   }
 }
 
@@ -334,10 +325,6 @@
     gap: var(--ss-space-3);
     min-height: 8rem;
     padding: var(--ss-space-3) var(--ss-space-2);
-  }
-
-  .roleIcon {
-    font-size: var(--ss-text-2xl);
   }
 
   .roleLabel {
