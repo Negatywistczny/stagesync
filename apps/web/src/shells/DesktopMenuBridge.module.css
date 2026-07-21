@@ -118,3 +118,22 @@
   gap: var(--ss-space-2);
   justify-content: flex-end;
 }
+
+.toast {
+  position: fixed;
+  bottom: var(--ss-space-4);
+  left: 50%;
+  z-index: 70;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-4);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  max-width: min(36rem, calc(100vw - var(--ss-space-8)));
+  text-align: center;
+}

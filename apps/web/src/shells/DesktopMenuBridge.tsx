@@ -195,6 +195,7 @@ export function DesktopMenuBridge() {
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
   const [restartError, setRestartError] = useState<string | null>(null);
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -285,17 +286,35 @@ export function DesktopMenuBridge() {
           setRestartError(null);
           setRestartOpen(true);
           break;
+        case "save":
+          if (!location.pathname.startsWith("/timeline/")) {
+            setSaveNotice(
+              "Zapisz (⌘/Ctrl+S) działa w Timeline — otwórz utwór do edycji.",
+            );
+          }
+          break;
         default:
           break;
       }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [goSetlistNeighbor, onTransportPlay, onTransportStop]);
+  }, [goSetlistNeighbor, location.pathname, onTransportPlay, onTransportStop]);
+
+  useEffect(() => {
+    if (!saveNotice) return;
+    const t = window.setTimeout(() => setSaveNotice(null), 2800);
+    return () => window.clearTimeout(t);
+  }, [saveNotice]);
 
   return (
     <>
       <Outlet />
+      {saveNotice ? (
+        <p className={styles.toast} role="status" aria-live="polite">
+          {saveNotice}
+        </p>
+      ) : null}
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
         <RestartConfirmModal
