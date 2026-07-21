@@ -16,22 +16,32 @@ Tag = closeout hosta na jawną prośbę operatora:
 
 ### `v5.0.0-beta.1.1` (2026-07-21) — docs cut
 
-Uczciwy cut docs: residual β1 (**menu Faza B**, **G1–G10**) oraz **menu Faza C** = **must β2** przed tagiem `v5.0.0-beta.2` — nie soft carry. Scope: [report-scope-beta2.md](./report-scope-beta2.md) · [TODO.md](../../TODO.md).
+Uczciwy cut docs: residual β1 (**menu Faza B**, **G1–G10**) oraz **menu Faza C** = **must β2** przed tagiem `v5.0.0-beta.2` — nie soft carry. Scope: [report-scope-beta2.md](./report-scope-beta2.md).
+
+### `v5.0.0-beta.2` (2026-07-21) — feature cut
+
+Tag na jawną prośbę po merge feature PR (#44 Countdown, #45 MIDI, #47 menu B+C, #48 audio, #49 G6/`latest.json`+sidecar health, #46 docs):
+
+- **Must kodu β2:** Audio 0…N, MIDI I/O serwera, menu Faza B+C, Countdown Stop, updater darwin+windows — **dostarczone**.
+- **G1–G10:** nadal **⬜** — residual **operatorski** na HW przy cutcie (brak pełnego green na mac/Win przy tagu). Nie udajemy green.
+- Krytyczne G1–G5 / G7: brak czerwonego raportu z HW; CI green na `main` + Release buduje instalatory.
+- G6 ścieżka kodowa: `latest.json` z **darwin-aarch64 + windows-x86_64** (target `app` + merge platform) — weryfikacja flow relaunch = **Operator** po artefaktach β2 (baseline β1.1 → β2).
+- Następny etap: **5.0.0** — [TODO.md](../../TODO.md); G1–G10 green = must przed / przy stable.
 
 ## Checklista G1–G10
 
 | ID | Kryterium | Status | Weryfikacja |
 |----|-----------|--------|-------------|
-| G1 | `.dmg` z GitHub Release: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ | **Operator** (macHW) |
-| G2 | `.msi` z GitHub Release: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ | **Operator** (WinHW) |
+| G1 | `.dmg` z GitHub Release: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ | **Operator** (macHW) — residual po β2 |
+| G2 | `.msi` z GitHub Release: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ | **Operator** (WinHW) — residual po β2 |
 | G3 | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files) | ⬜ | **Operator** |
 | G4 | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot) | ⬜ | **Operator** |
 | G5 | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView) | ⬜ | **Operator** |
-| G6 | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ | **Operator** (pełny flow); **CI/Release** = prerequisites poniżej |
+| G6 | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ | **Operator** (pełny flow β1.1→β2); **CI/Release** = prerequisites poniżej |
 | G7 | Docker secondary: `compose.prod.yml up` + `GET /api/health` zwraca 200 | ⬜ | **CI** częściowo (`compose-build`); pełny `up` + health = **Operator** / host |
 | G8 | Host update (Docker secondary): starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian; w przeglądarce bez Tauri desktop update nie jest przyciskiem | ⬜ | **Operator** |
 | G9 | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ | **Operator** |
-| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow (Faza A + B/C + update paths) | ⬜ | **Review** docs w PR; smoke flow = **Operator** |
+| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow (Faza A + B/C + update paths) | ⬜ | Docs B/C w DESKTOP — **Review**; smoke flow = **Operator** |
 
 ### Co CI / Release może zweryfikować (nie zastępuje G1–G10 na HW)
 
@@ -44,11 +54,11 @@ Uczciwy cut docs: residual β1 (**menu Faza B**, **G1–G10**) oraz **menu Faza 
 | `latest.json` zawiera **darwin-aarch64** + **windows-x86_64** | po publish: asset Release (target `app` + `dmg` na mac; `msi` na Win; Release zawsze `--latest`) |
 | Release **nie** jest GitHub prerelease | `gh release view` → `isPrerelease: false` |
 
-**Must kodu przed tagiem `v5.0.0-beta.2`:** feature must (Audio / MIDI / menu B+C) + CI green na `main` + fix updater (`app` target + `--latest`).  
-**Residual operatorskie:** G1–G6, G8–G10 na HW po artefaktach β2 — uczciwie ⬜ przy cutcie jeśli brak maszyny; G7 smoke Compose na CI nie zastępuje pełnego `compose.prod.yml up` na hoście.
+**Must kodu β2 (done przy tagu):** feature must (Audio / MIDI / menu B+C / Countdown) + CI green na `main` + fix updater (`app` target + `--latest` + sidecar health).  
+**Residual operatorskie po β2:** G1–G10 na HW z artefaktów `v5.0.0-beta.2` — uczciwie ⬜ przy cutcie; must green przed / przy **5.0.0**.
 
-**Baseline installers:** `v5.0.0-beta.1` / `v5.0.0-beta.1.1` (G1–G5, G7–G10).  
-**G6 updater (ścieżka β2):** β1.1 → β2; **must kodu:** `latest.json` z **darwin + windows** (mac target `app` → `.app.tar.gz`/`.sig`; tauri-action merge platform; nie Windows-only).
+**Baseline installers:** `v5.0.0-beta.1.1` → **`v5.0.0-beta.2`**.  
+**G6 updater:** β1.1 → β2; kod: `latest.json` z **darwin + windows**.
 
 ## Przygotowanie lokalne / CI
 
@@ -58,10 +68,11 @@ Wykonane (2026-07-21):
 - CI na `main` po #40 (Admin update panel) — green
 - Tag `v5.0.0-beta.1` — bump + docs closeout
 - Tag `v5.0.0-beta.1.1` — docs cut residual → must β2 + scope report β2
+- Tag `v5.0.0-beta.2` — feature cut (#44–#49) + docs closeout → **5.0.0**
 
 ## Sekwencja weryfikacji (operator)
 
-1. Pobierz instalatory z [GitHub Release](https://github.com/Negatywistyczny/stagesync/releases) (`v5.0.0-beta.1.1` lub nowszy RC β2):
+1. Pobierz instalatory z [GitHub Release](https://github.com/Negatywistyczny/stagesync/releases) (`v5.0.0-beta.2`):
    - `.dmg` → otwórz na macOS (unsigned, prawy klik → Otwórz). → **G1**
    - `.msi` → zainstaluj na Windows. → **G2**
 2. Weryfikuj:
@@ -73,7 +84,7 @@ Wykonane (2026-07-21):
    - `compose.prod.yml` z `STAGESYNC_VERSION=…` → `/api/health` → **G7**
    - host update: starszy obraz → Admin → Aktualizuj host → `data/` bez zmian → **G8**
    - rollback do poprzedniego tagu → **G9**
-5. Przeczytaj INSTALL/DESKTOP — flow Faza A (+ B/C gdy wdrożone) + updates + Windows EISDIR. → **G10**
+5. Przeczytaj INSTALL/DESKTOP — flow Faza A+B+C + updates + Windows EISDIR. → **G10**
 
 ## Ograniczenia beta
 
@@ -83,6 +94,6 @@ Wykonane (2026-07-21):
 - Desktop update (G6): wymaga tag push z `latest.json` (pełny publish Release).
 - Jeśli Actions `github-release` padnie na limicie wydatków GitHub — dokończ publish ręcznie przez `gh` (jak przy α13).
 
-## Po tagu β1.1 / przed β2
+## Po tagu β2 / przed 5.0.0
 
-Aktywny etap w [TODO.md](../../TODO.md) = **β2** (audio + MIDI + menu B/C + G1–G10 must).
+Aktywny etap w [TODO.md](../../TODO.md) = **5.0.0** (polish + Faza D + fade + G1–G10 green).

@@ -19,7 +19,7 @@ import {
 } from "./transport/engine.js";
 import { createStageHub, type StageHub } from "./transport/stage-hub.js";
 
-const VERSION = process.env.npm_package_version ?? "5.0.0-beta.1.1";
+const VERSION = process.env.npm_package_version ?? "5.0.0-beta.2";
 
 export type CreateAppOptions = {
   /** Override data root (defaults to STAGESYNC_DATA_DIR or repo data/). */

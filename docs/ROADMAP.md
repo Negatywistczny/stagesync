@@ -20,8 +20,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.13** | Hotfix: Windows sidecar `EISDIR` / `C:` | **Wydane 2026-07-21** — MSI: Node bez ścieżek `\\?\…` jako main module; spawn względny + cwd | [TODO.md](./TODO.md) · [DESKTOP.md](./DESKTOP.md) |
 | **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — H1–H12 (α10–α13); residual (menu Faza B, G1–G10) → **must β2** (docs cut `5.0.0-beta.1.1`) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
-| **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Aktywny** — playback 0…N; MIDI I/O serwera; menu Faza B+C; G1–G10 przed tagiem | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
-| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | Polish UI (zoom, help, copy, gęstość); `docs/api` domknięte; CI + smoke E2E | — |
+| **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
+| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny** — polish UI (zoom, help, copy, gęstość); fade/Faza D; `docs/api`; CI + smoke E2E; G1–G10 green | [TODO.md](./TODO.md) |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
 
 ### Alpha 4 — zakres orientacyjny
@@ -77,7 +77,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - Migrator legacy 4.x → v5 (MVP + fixtures M1–M9)
 - **CL-01 / 04 / 05** Client P0 + **PO smoke P8 green** (zachowanie)
-- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10`…`v5.0.0-alpha.13` desktop — wydane; **β1** wydane; aktywny etap → **β2** ([TODO.md](./TODO.md))
+- Tag `v5.0.0-alpha.9` — done; `v5.0.0-alpha.10`…`v5.0.0-alpha.13` desktop — wydane; **β1** / **β2** wydane; aktywny etap → **5.0.0** ([TODO.md](./TODO.md))
 
 ### Alpha 12 — zakres orientacyjny (**wydane 2026-07-21**)
 
@@ -89,7 +89,7 @@ Plan PR: [report-implementation-plan-alpha4.md](./analysis/reports/report-implem
 
 - **Must:** naprawa `EISDIR` / `lstat 'C:'` przy starcie sidecara z MSI (ścieżki Win32 `\\?\…` vs Node main module)
 - **OUT α13:** menu Faza B+; bramka G1–G10; reszta host/dystrybucja → **β1**
-- Tag `v5.0.0-alpha.13` — done; **β1** / **β1.1** wydane 2026-07-21; aktywny etap w TODO = β2 (start kodu na prośbę)
+- Tag `v5.0.0-alpha.13` — done; **β1** / **β1.1** / **β2** wydane 2026-07-21; aktywny etap w TODO = **5.0.0** (start kodu na prośbę)
 
 ### Beta 1 — zakres orientacyjny (standalone-first host / dystrybucja) — **wydane 2026-07-21**
 
@@ -114,30 +114,34 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 | Faza | Top-level | Enabled (plan) | Etap |
 |------|-----------|----------------|------|
 | **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (wydane) |
-| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β2** (must; residual z β1) |
-| **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** (must) |
+| **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β2** (wydane) |
+| **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** (wydane) |
 | **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Undo gdy stack; PDF setlisty; archiwum projektu; overlay skrótów; motyw sceniczny | **5.0.0** |
 
 **OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; MUTE ALL / PANIC; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik).
 
 Propozycja pełnej struktury (referencja produktowa): StageSync · Plik · Edycja · Widok · Setlista · Transport · Host · Pomoc — realizowana przez fazy A→D, nie jednym PR.
 
-### Beta 2 — zakres orientacyjny (audio + MIDI + menu B/C) — **aktywny**
+### Beta 2 — zakres orientacyjny (audio + MIDI + menu B/C) — **wydane 2026-07-21**
 
-Scope: [report-scope-beta2.md](./analysis/reports/report-scope-beta2.md) · checklista [TODO.md](./TODO.md).
+Tag `v5.0.0-beta.2`. Scope: [report-scope-beta2.md](./analysis/reports/report-scope-beta2.md).
 
 - **Audio 0…N** ([ADR 0008](./adr/0008-timeline-clip-editing.md)): clip na Timeline, sync transport (`ticksToMs`), trim/move, waveform peak/RMS, gain clip + fader track + mute clip/track; **bez** pencil, **bez** stretch poza plik
 - MIDI I/O (clock / urządzenia po stronie **serwera**) — nie w Tauri ([ADR 0010](./adr/0010-desktop-shell-tauri.md))
-- **Desktop OS menu — Faza B + C** (must; residual β1 + Transport)
-- **G1–G10** green na instalatorach przed tagiem `v5.0.0-beta.2` ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
+- **Desktop OS menu — Faza B + C** (done)
+- **G1–G10** — residual operatorski przy cutcie (⬜ na HW); must green przed / przy **5.0.0** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
 - **OUT β2:** fade/crossfade/loop-region; Faza D menu; Android native; MIDI w procesie Tauri; Flex Time
 
-### 5.0.0 — zakres orientacyjny
+### 5.0.0 — zakres orientacyjny — **aktywny**
+
+Checklista: [TODO.md](./TODO.md).
 
 - Polish UI na żywych kontrolkach (typografia, proporcje, copy, gęstość)
 - Timeline: zoom UI/H/V z ikonami; Pomoc z pełną treścią; **snap picker** (beat/subdivision)
 - Audio polish: fade, crossfade, loop-region; ewent. overlap mode
+- **Desktop OS menu — Faza D**
 - Admin: drobne UX (np. panel toggle) jeśli nie w α4
+- Operator: G1–G10 green na instalatorach
 
 ### Po 5.0.0
 

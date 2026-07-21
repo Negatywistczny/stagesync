@@ -39,7 +39,7 @@ docker login ghcr.io -u <twój-login-github> -p <PAT>
 ```sh
 cp .env.example .env
 # Wypełnij:
-#   STAGESYNC_VERSION=5.0.0-beta.1.1
+#   STAGESYNC_VERSION=5.0.0-beta.2
 #   GHCR_USER=<login>
 #   GHCR_TOKEN=<PAT read:packages>
 #   WATCHTOWER_TOKEN=<losowy secret — openssl rand -hex 32>
@@ -84,7 +84,7 @@ Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WAT
 
 ```sh
 # Przywróć poprzednią wersję w .env, np.:
-# STAGESYNC_VERSION=5.0.0-beta.1.1
+# STAGESYNC_VERSION=5.0.0-beta.2
 docker compose -f compose.prod.yml up -d
 ```
 
