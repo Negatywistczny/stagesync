@@ -106,13 +106,21 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Stub sidecar bundle inputs (cargo check only)
-        working-directory: apps/desktop/src-tauri
         run: |
+          # Tauri resource/sidecar globs skip gitignored paths (ADR 0013).
+          sed -i.bak \
+            -e 's|^apps/desktop/src-tauri/resources/|# ci-stub: apps/desktop/src-tauri/resources/|' \
+            -e 's|^apps/desktop/src-tauri/bin/|# ci-stub: apps/desktop/src-tauri/bin/|' \
+            -e 's|^apps/desktop/src-tauri/lib/|# ci-stub: apps/desktop/src-tauri/lib/|' \
+            -e 's|^apps/desktop/src-tauri/share/|# ci-stub: apps/desktop/src-tauri/share/|' \
+            .gitignore
+
           triple=$(rustc --print host-tuple)
-          mkdir -p bin resources/sidecar/web resources/sidecar/seed resources/sidecar/server/dist lib share
-          printf '#!/bin/sh\nexit 0\n' > "bin/stagesync-host-${triple}"
-          chmod +x "bin/stagesync-host-${triple}"
-          touch resources/sidecar/server/dist/index.js lib/.keep share/.keep
+          root=apps/desktop/src-tauri
+          mkdir -p "$root/bin" "$root/resources/sidecar/web" "$root/resources/sidecar/seed" "$root/resources/sidecar/server/dist" "$root/lib" "$root/share"
+          printf '#!/bin/sh\nexit 0\n' > "$root/bin/stagesync-host-${triple}"
+          chmod +x "$root/bin/stagesync-host-${triple}"
+          touch "$root/resources/sidecar/server/dist/index.js" "$root/lib/.keep" "$root/share/.keep"
 
       - name: Cargo check (desktop shell)
         working-directory: apps/desktop/src-tauri
