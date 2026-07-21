@@ -7,19 +7,21 @@
 
 ## Cel
 
-Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (Faza B+C)** i **ręczną bramkę G1–G10** na instalatorach przed tagiem β2:
+Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (Faza B+C)**, **transport Countdown (#41)** i **ręczną bramkę G1–G10** na instalatorach przed tagiem β2:
 
-1. **Audio 0…N** — clipy na Timeline, sync do ticków serwera (`ticksToMs`), trim/move, waveform, gain/mute (ADR 0008).
-2. **MIDI I/O + clock** — wyłącznie w `apps/server` (ADR 0010 / ADR 0002).
-3. **Menu OS Faza B + C** — Plik/Host + Transport → istniejące API / navigate (bez autorytetu czasu w Tauri).
-4. **G1–G10** green (krytyczne) na artefaktach przed tagiem.
+1. **Audio 0…N** ([#42](https://github.com/Negatywistyczny/stagesync/issues/42)) — clipy na Timeline, sync do ticków serwera (`ticksToMs`), trim/move, waveform, gain/mute (ADR 0008).
+2. **Transport Countdown** ([#41](https://github.com/Negatywistyczny/stagesync/issues/41)) — Play z pre-roll; Stop bez snap past CD (ADR 0002).
+3. **MIDI I/O + clock** — wyłącznie w `apps/server` (ADR 0010 / ADR 0002).
+4. **Menu OS Faza B + C** — Plik/Host + Transport → istniejące API / navigate (bez autorytetu czasu w Tauri).
+5. **G1–G10** green (krytyczne) na artefaktach przed tagiem.
 
 ## Kontrakt IN / OUT
 
 | IN β2 | OUT β2 |
 |-------|--------|
-| Audio playback + clip edit (trim/move, no-overlap) | Fade / crossfade / loop-region → **5.0.0** |
+| Audio playback + clip edit (trim/move, no-overlap) — [#42](https://github.com/Negatywistyczny/stagesync/issues/42) | Fade / crossfade / loop-region → **5.0.0** |
 | Waveform peak/RMS; gain clip; fader/mute track | Flex Time / stretch poza plik / pencil na audio |
+| Play z Countdown / Stop bez snap past CD — [#41](https://github.com/Negatywistyczny/stagesync/issues/41) | — |
 | MIDI device I/O + clock w **serwera** | MIDI w procesie **Tauri** (zakaz) |
 | Menu OS Faza B (Plik + Host) | Menu OS Faza D → **5.0.0** |
 | Menu OS Faza C (Transport) | Android / store auto-update |
@@ -38,8 +40,21 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 | A5 | Waveform peak/RMS | Precompute przy imporcie lub on-demand; nie live FFT |
 | A6 | Gain clip + fader track + mute clip/track | Persist w `project.json`; bez automatyzacji |
 | A7 | Testy mapping ticks↔ms + smoke play/mute | Shared czyste funkcje; bez `Date.now()` w konwersji domenowej |
+| A8 | Issue [#42](https://github.com/Negatywistyczny/stagesync/issues/42) — ścieżka Audio w warstwach | Must β2 (nie defer); lane eye-menu + clip na Timeline |
 
 **Playback (kontrakt):** WebAudio w kliencie, pozycja z ticków serwera — Tauri nie jest autorytetem czasu.
+
+## IN (must) — Transport Countdown (T)
+
+Źródło: issue [#41](https://github.com/Negatywistyczny/stagesync/issues/41) · [ADR 0002](../../adr/0002-timebase-ssot.md) (pre-roll ≤ 0; takt 1 = start utworu).
+
+| # | Wycinek | Uwagi |
+|---|---------|--------|
+| T1 | **Play** startuje z pozycji Countdown / pre-roll | Gdy playhead w CD (ujemne takty); bez wymogu ręcznego scrubu |
+| T2 | **Stop** wraca na początek Forma Countdown | Nie snap na tick 0 „po CD”; locator Timeline = ten sam home |
+| T3 | Projekt bez Countdown | Stop → tick 0 (bez regresji) |
+
+**Must β2** — nie defer; fix: PR `fix/countdown-play-from-preroll`.
 
 ## IN (must) — MIDI serwera (M)
 
@@ -104,7 +119,8 @@ Reuse Faza A: `install_desktop_menu` + navigate / eventy WebView.
 
 | Aksjomat | Status w tym scope |
 |----------|-------------------|
-| SSOT czasu = serwer; klient wygładza tylko między tickami ([ADR 0002](../../adr/0002-timebase-ssot.md)) | ✓ A3, C1–C3 |
+| SSOT czasu = serwer; klient wygładza tylko między tickami ([ADR 0002](../../adr/0002-timebase-ssot.md)) | ✓ A3, C1–C3, T* |
+| Pre-roll ≤ 0; Stop/home = Countdown gdy obecny ([ADR 0002](../../adr/0002-timebase-ssot.md), [#41](https://github.com/Negatywistyczny/stagesync/issues/41)) | ✓ T1–T3 |
 | Kanon = integer ticks + PPQ; ms tylko na krawędzi audio | ✓ A3, A7 |
 | Audio no-overlap; zakaz pencil; bez stretch poza plik ([ADR 0008](../../adr/0008-timeline-clip-editing.md)) | ✓ A2, A4 |
 | Fade/crossfade → 5.0.0 (nie β2) | ✓ OUT |
