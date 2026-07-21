@@ -354,19 +354,6 @@ export function TimelineShell() {
     setLoop,
   } = useTransport();
   const wasPlayingRef = useRef(state.playing);
-  const bbt = draftProject
-    ? ticksToBbtAlongMeterMap(
-        displayTicks,
-        draftProject.defaultMeter,
-        draftProject.meterMap,
-        draftProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        displayTicks,
-        state.timeSignature,
-        [],
-        state.ppq,
-      );
 
   const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [draftProject, setDraftProject] = useState<Project | null>(null);
@@ -1205,6 +1192,20 @@ export function TimelineShell() {
   }, [draftProject, viewSpan, effectiveZoomH]);
 
   const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, effectiveZoomH);
+
+  const bbt = draftProject
+    ? ticksToBbtAlongMeterMap(
+        displayTicks,
+        draftProject.defaultMeter,
+        draftProject.meterMap,
+        draftProject.ppq,
+      )
+    : ticksToBbtAlongMeterMap(
+        displayTicks,
+        state.timeSignature,
+        [],
+        state.ppq,
+      );
 
   const effectiveLocatorTicks = state.playing ? displayTicks : locatorTicks;
   const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
