@@ -160,6 +160,8 @@ import {
   commitAudioGesture,
   previewAudioFromSession,
   setAudioClipGainDb,
+  setAudioClipFadeMs,
+  setAudioClipLoop,
   setAudioClipMuted,
   setAudioTrackGainDb,
   setAudioTrackMuted,
@@ -4702,6 +4704,63 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />
+                </label>
+                <label className={styles.inspField}>
+                  Fade in (ms)
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    min={0}
+                    step={10}
+                    value={selectedAudioClip.fadeInMs ?? 0}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n) || n < 0) return;
+                      commitDraft(
+                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
+                          fadeInMs: n,
+                        }),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  Fade out (ms)
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    min={0}
+                    step={10}
+                    value={selectedAudioClip.fadeOutMs ?? 0}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n) || n < 0) return;
+                      commitDraft(
+                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
+                          fadeOutMs: n,
+                        }),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(selectedAudioClip.loop)}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioClipLoop(
+                          draftProject,
+                          selectedAudioClip.id,
+                          e.target.checked,
+                        ),
+                      );
+                    }}
+                  />{" "}
+                  Loop region (w obrębie clipu)
                 </label>
                 <label className={styles.inspField}>
                   <input
