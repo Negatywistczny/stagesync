@@ -105,7 +105,10 @@ export function ClientShell() {
     // Role filter: if roles listed, only show when client has that role picked
     if (stageCue.roles && stageCue.roles.length > 0) {
       const match = stageCue.roles.some((r) => picked.includes(r as RoleId));
-      if (!match) return;
+      if (!match) {
+        setCueVisible(false);
+        return;
+      }
     }
     setCueText(stageCue.text);
     setCueVisible(true);
