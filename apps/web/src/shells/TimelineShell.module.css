@@ -1230,15 +1230,16 @@
 }
 
 .helpLaneTekst {
-  background: color-mix(in srgb, var(--ss-color-info) 70%, var(--ss-color-surface));
+  background: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-surface));
 }
 
 .helpLaneAkordy {
-  background: color-mix(in srgb, var(--ss-color-success) 65%, var(--ss-color-surface));
+  background: color-mix(in srgb, var(--ss-color-text-muted) 40%, var(--ss-color-surface));
+  color: var(--ss-color-text);
 }
 
 .helpLaneCue {
-  background: color-mix(in srgb, var(--ss-color-warning) 70%, var(--ss-color-surface));
+  background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-surface));
 }
 
 .helpMarkerPreview {
