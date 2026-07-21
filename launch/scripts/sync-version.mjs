@@ -41,12 +41,22 @@ console.log(`sync-version: ${version}${dryRun ? " (dry-run)" : ""}`);
 
 /** MSI/WiX requires numeric major.minor.patch[.build]; map SemVer pre-release to 4th field. */
 function toWixVersion(semver) {
+  // Nested beta docs cuts: 5.0.0-beta.1.1 → 5.0.0.10101 (room after shipped beta.1 = .10001).
+  const nestedBeta = semver.match(/^(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.(\d+)$/);
+  if (nestedBeta) {
+    const [, major, minor, patch, n, m] = nestedBeta;
+    return `${major}.${minor}.${patch}.${10000 + Number(n) * 100 + Number(m)}`;
+  }
   const match = semver.match(/^(\d+)\.(\d+)\.(\d+)(?:-([^.]+)\.(\d+))?$/);
   if (!match) return semver.replace(/-.*$/, "");
   const [, major, minor, patch, prereleaseTag, prereleaseNum] = match;
   if (!prereleaseTag) return `${major}.${minor}.${patch}`;
   const n = Number(prereleaseNum);
-  if (prereleaseTag === "beta") return `${major}.${minor}.${patch}.${10000 + n}`;
+  if (prereleaseTag === "beta") {
+    // beta.1 already shipped as .10001; beta.2+ use *100 spacing so nested .N.M fits underneath.
+    if (n === 1) return `${major}.${minor}.${patch}.10001`;
+    return `${major}.${minor}.${patch}.${10000 + n * 100}`;
+  }
   return `${major}.${minor}.${patch}.${n}`;
 }
 

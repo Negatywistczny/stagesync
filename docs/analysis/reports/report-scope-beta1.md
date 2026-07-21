@@ -1,8 +1,9 @@
 # Scope beta.1 — Desktop standalone-first host / dystrybucja
 
-**Wersja docelowa:** `5.0.0-beta.1` (tag / bump **tylko na prośbę**)  
+**Wersja:** `5.0.0-beta.1` — **wydana 2026-07-21** (milestone dystrybucyjny); residual → **must β2** w cutcie `5.0.0-beta.1.1`  
 **Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0004](../../adr/0004-updates-docker.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [ADR 0002](../../adr/0002-timebase-ssot.md)  
-**Bramka wejścia:** α9 wydane + P8 green ([report-po-smoke-p8.md](./report-po-smoke-p8.md))
+**Bramka wejścia:** α9 wydane + P8 green ([report-po-smoke-p8.md](./report-po-smoke-p8.md))  
+**Następny scope:** [report-scope-beta2.md](./report-scope-beta2.md)
 
 ## Cel
 
@@ -94,8 +95,18 @@ flowchart TB
 - W Tauri: dodatkowy wiersz **Aktualizuj aplikację** (plugin-updater + minisign).
 - **git-apply / auto-update w tle** — nadal OUT.
 
+## Residual po tagu β1 → must β2 (`5.0.0-beta.1.1`)
+
+| Temat | Status przy β1 | Etap docelowy |
+|-------|----------------|---------------|
+| Desktop OS menu — Faza B | Nie wdrożona | **Must β2** |
+| Bramka G1–G10 (ręczna) | Wszystkie ⬜ | **Must weryfikacji przed tagiem β2** |
+| Desktop OS menu — Faza C | Plan ROADMAP β2 | **Must β2** |
+
+Szczegóły: [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2.md](./report-scope-beta2.md).
+
 ## Release
 
 1. Must H1–H12 green w CI / docs — **done** w α10–α13.
-2. Bump root `package.json` → `5.0.0-beta.1` + CHANGELOG + tag — **wydane 2026-07-21** (milestone dystrybucyjny; G1–G10 ręczne + menu Faza B = carry).
-3. TODO → sekcja β2 po zamknięciu β1.
+2. Bump root `package.json` → `5.0.0-beta.1` + CHANGELOG + tag — **wydane 2026-07-21** (milestone dystrybucyjny).
+3. Docs cut `5.0.0-beta.1.1` — residual jasno → must β2; TODO = sekcja β2.
