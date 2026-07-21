@@ -12,7 +12,7 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 | **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Pełny ekran |
 | **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
 
-Kolejne fazy menu (Plik / Host / Transport / …): **β1+** — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
+Kolejne fazy menu: **Faza B** (Plik / Host) → **β2** (carry); Transport / … → β2 / 5.0.0 — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
 **Bez** MIDI / zegara muzycznego w procesie Tauri.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —

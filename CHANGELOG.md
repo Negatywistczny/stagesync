@@ -5,7 +5,9 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.0.0-beta.1](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.13...v5.0.0-beta.1) - 2026-07-21
+
+> **β1:** milestone dystrybucyjny hosta (Tauri + Node sidecar, Docker secondary, updater). Must H1–H12 zrealizowane w α10–α13; ten cut zamyka etap tagiem. **Menu OS Faza B** oraz pełna ręczna bramka **G1–G10** → carry β2 / operator ([report-beta-gate.md](docs/analysis/reports/report-beta-gate.md)).
 
 ### Naprawiono
 

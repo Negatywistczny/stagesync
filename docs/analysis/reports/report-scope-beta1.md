@@ -96,6 +96,6 @@ flowchart TB
 
 ## Release
 
-1. Must H1–H12 green w CI / docs.
-2. Bump root `package.json` → `5.0.0-beta.1` + CHANGELOG + tag — **tylko na prośbę**.
-3. TODO → sekcja β2 **na prośbę** po zamknięciu β1.
+1. Must H1–H12 green w CI / docs — **done** w α10–α13.
+2. Bump root `package.json` → `5.0.0-beta.1` + CHANGELOG + tag — **wydane 2026-07-21** (milestone dystrybucyjny; G1–G10 ręczne + menu Faza B = carry).
+3. TODO → sekcja β2 po zamknięciu β1.
