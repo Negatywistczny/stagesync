@@ -162,7 +162,7 @@ describe("moveClipsRigidDelta", () => {
 });
 
 describe("placeClipNoOverlap", () => {
-  it("never mutates countdown", () => {
+  it("rejects section overlapping countdown", () => {
     const placed: FormaClip = {
       id: "forma-x",
       name: "X",
@@ -170,8 +170,21 @@ describe("placeClipNoOverlap", () => {
       startTicks: -1000,
       lengthTicks: 2000,
     };
+    const before = [CD, INTRO];
+    expect(placeClipNoOverlap(before, placed)).toEqual(before);
+  });
+
+  it("places after countdown without mutating it", () => {
+    const placed: FormaClip = {
+      id: "forma-x",
+      name: "X",
+      kind: "section",
+      startTicks: 7680,
+      lengthTicks: 3840,
+    };
     const next = placeClipNoOverlap([CD, INTRO], placed);
     expect(next.find((c) => c.id === "forma-cd")).toEqual(CD);
+    expect(next.find((c) => c.id === "forma-x")?.startTicks).toBe(7680);
   });
 });
 

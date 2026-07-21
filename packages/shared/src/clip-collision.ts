@@ -64,6 +64,17 @@ export function placeClipNoOverlap(
     return clips;
   }
 
+  // Reject intrusion into Countdown (same rule as move/resize/insert).
+  if (!isCountdown(placed)) {
+    const countdown = clips.find(isCountdown);
+    if (countdown) {
+      const cdEnd = clipEnd(countdown);
+      if (start < cdEnd && end > countdown.startTicks) {
+        return clips;
+      }
+    }
+  }
+
   const kept: FormaClip[] = [];
   for (const clip of clips) {
     if (clip.id === placed.id) continue;
