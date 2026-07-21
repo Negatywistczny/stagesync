@@ -3868,8 +3868,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             </ShellIconButton>
             <button
               type="button"
-              className={styles.playBtn}
-              aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
+              className={[
+                styles.playBtn,
+                state.playing ? styles.playBtnPlaying : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-label={state.playing ? "Pauza" : "Odtwórz"}
+              aria-pressed={state.playing}
               disabled={commandPending}
               onClick={() =>
                 void (state.playing ? pause() : onPlayClick())
@@ -3878,19 +3884,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               {state.playing ? <IconPause /> : <IconPlay />}
             </button>
             <ShellIconButton
-              label="Pętla — przeciągnij zakres na linijce, potem włącz"
+              label="Pętla (C) — zakres na linijce, potem włącz"
               pressed={loopOn}
               onClick={onLoopToggle}
             >
               <IconLoop />
             </ShellIconButton>
-            <span className={styles.bbt} aria-live="polite">
+            <span className={styles.bbt} aria-live="polite" title="Pozycja BBT">
               {toDisplayBar(bbt.bar)}.{bbt.beat}
             </span>
             <button
               type="button"
               className={styles.metaBtn}
-              title="Tempo — kliknij, aby edytować @ playhead"
+              title="Tempo @ playhead — kliknij, aby edytować"
+              aria-label={`Tempo ${tempoAtPlayhead} BPM`}
               onClick={() => {
                 openMapEdit("tempo", displayTicks);
               }}
@@ -3900,7 +3907,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <button
               type="button"
               className={styles.metaBtn}
-              title="Metrum — kliknij, aby edytować @ playhead"
+              title="Metrum @ playhead — kliknij, aby edytować"
+              aria-label={`Metrum ${meterAtPlayhead.numerator}/${meterAtPlayhead.denominator}`}
               onClick={() => {
                 openMapEdit("metrum", displayTicks);
               }}
@@ -3910,7 +3918,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <button
               type="button"
               className={styles.metaBtn}
-              title="Tonacja — kliknij, aby edytować"
+              title="Tonacja @ playhead — kliknij, aby edytować"
+              aria-label={`Tonacja ${
+                draftProject
+                  ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
+                  : "brak"
+              }`}
               onClick={() => openMapEdit("tonacja", displayTicks)}
             >
               {draftProject
@@ -4939,33 +4952,36 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom">
-          <label className={styles.zoomLab}>
+          <label className={styles.zoomLab} title="Skala interfejsu Timeline">
             UI
             <input
               type="range"
               min={50}
               max={150}
               value={zoomUi}
+              aria-label="Skala UI"
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
           </label>
-          <label className={styles.zoomLab}>
+          <label className={styles.zoomLab} title="Zoom poziomy (oś czasu)">
             H
             <input
               type="range"
               min={ZOOM_H_MIN}
               max={ZOOM_H_MAX}
               value={zoomH}
+              aria-label="Zoom poziomy"
               onChange={(e) => setZoomH(Number(e.target.value))}
             />
           </label>
-          <label className={styles.zoomLab}>
+          <label className={styles.zoomLab} title="Zoom pionowy (wysokość ścieżek)">
             V
             <input
               type="range"
               min={ZOOM_V_MIN}
               max={ZOOM_V_MAX}
               value={zoomV}
+              aria-label="Zoom pionowy"
               onChange={(e) => setVerticalZoom(Number(e.target.value))}
             />
           </label>
