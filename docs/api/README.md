@@ -16,7 +16,7 @@ Runtime data: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 | `GET` | `/api/library` | Indeks biblioteki (seed z template jeśli brak pliku) |
 | `POST` | `/api/projects` | Utwórz projekt v2 seed (`{ name }`) |
 | `GET` | `/api/projects/:id` | Odczyt pełnego `project.json` (v2; auto-upgrade v1→v2) |
-| `PUT` | `/api/projects/:id` | **Pełny dokument v2** (bez `id`; strict — unknown keys → 400) |
+| `PUT` | `/api/projects/:id` | **Pełny dokument** (bez `id`; z `updatedAt` klienta = OCC; mismatch → **409**; strict — unknown keys → 400) |
 | `DELETE` | `/api/projects/:id` | Usuń projekt + wpis w indeksie |
 | `GET` | `/api/transport` | Snapshot transportu SSOT |
 | `POST` | `/api/transport/play` | Play (+ opcjonalne `projectId`, `bpm`, `timeSignature`) |
@@ -25,7 +25,8 @@ Runtime data: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 | `POST` | `/api/transport/seek` | Seek `{ positionTicks }`; po seek resolve map aktywnego projektu |
 
 Sukces = dokument domenowy (library / project / transport state).  
-Błędy `400` / `404` / `500` → `{ ok: false, error }`.
+Błędy `400` / `404` / `409` / `500` → `{ ok: false, error, details? }`.  
+`details` (opcjonalne): tablica `{ path, message, code? }` z Zod przy walidacji body.
 
 ### Project v2 (`ProjectSchema`)
 
