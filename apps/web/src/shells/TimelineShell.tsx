@@ -2055,10 +2055,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
     if (tool === "scissors") {
       e.preventDefault();
-      if (!selectedClipId) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      const next = splitFormaClipAt(draftProject, selectedClipId, raw);
+      const hit =
+        draftProject.forma.clips.find(
+          (c) =>
+            c.kind === "section" &&
+            raw > c.startTicks &&
+            raw < c.startTicks + c.lengthTicks,
+        ) ?? null;
+      const targetId = hit?.id ?? selectedClipId;
+      if (!targetId) return;
+      if (hit) selectLaneClip("forma", hit.id);
+      const next = splitFormaClipAt(draftProject, targetId, raw);
       if (next !== draftProject) commitDraft(next);
       return;
     }
