@@ -6,6 +6,10 @@ import {
   patchSetlistAutoAdvance,
   putSetlist,
 } from "../../lib/setlistApi.js";
+import {
+  DESKTOP_MENU_EVENT,
+  parseDesktopMenuDetail,
+} from "../../lib/desktopMenuEvents.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import styles from "../AdminShell.module.css";
 
@@ -100,7 +104,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
     setDirty(true);
   };
 
-  const onSave = async () => {
+  const onSave = useCallback(async () => {
     setPending(true);
     setError(null);
     try {
@@ -114,7 +118,18 @@ export function SetView({ library, selectedId }: SetViewProps) {
     } finally {
       setPending(false);
     }
-  };
+  }, [draftIds, enabled]);
+
+  useEffect(() => {
+    function onMenu(ev: Event) {
+      const detail = parseDesktopMenuDetail(ev);
+      if (detail?.action !== "save") return;
+      if (!dirty || pending) return;
+      void onSave();
+    }
+    window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
+    return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
+  }, [dirty, pending, onSave]);
 
   const onClear = () => {
     setDraftIds([]);
