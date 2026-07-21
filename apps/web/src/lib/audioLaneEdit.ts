@@ -3,7 +3,10 @@
  */
 
 import {
+  audioClipPlayableMs,
+  applyAbutCrossfade,
   clampAudioClipToAsset,
+  findAbutNeighbor,
   lengthTicksFromAssetWindow,
   moveClipNoOverlap,
   moveClipsRigidDelta,
@@ -140,6 +143,42 @@ export function setAudioClipLoop(
     audioClips: project.audioClips.map((c) =>
       c.id === clipId ? { ...c, loop: loop || undefined } : c,
     ),
+  };
+}
+
+/** Apply symmetric crossfade when selected clip abuts a neighbor (gap 0). */
+export function applyAbutCrossfadeForClip(
+  project: Project,
+  clipId: string,
+  crossfadeMs: number = 80,
+): Project {
+  const clip = project.audioClips.find((c) => c.id === clipId);
+  if (!clip) return project;
+  const onTrack = project.audioClips.filter((c) => c.trackId === clip.trackId);
+  const pair = findAbutNeighbor(onTrack, clipId);
+  if (!pair) return project;
+  const ctx = {
+    bpm: resolveTempoAt(project, pair.left.startTicks),
+    meter: resolveMeterAt(project, pair.left.startTicks),
+    ppq: project.ppq,
+  };
+  const leftAsset = project.assets.find((a) => a.id === pair.left.assetId);
+  const rightAsset = project.assets.find((a) => a.id === pair.right.assetId);
+  const applied = applyAbutCrossfade(
+    pair.left,
+    pair.right,
+    crossfadeMs,
+    audioClipPlayableMs(pair.left, leftAsset, ctx),
+    audioClipPlayableMs(pair.right, rightAsset, ctx),
+  );
+  if (!applied) return project;
+  return {
+    ...project,
+    audioClips: project.audioClips.map((c) => {
+      if (c.id === applied.left.id) return applied.left;
+      if (c.id === applied.right.id) return applied.right;
+      return c;
+    }),
   };
 }
 

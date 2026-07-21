@@ -162,6 +162,7 @@ import {
   setAudioClipGainDb,
   setAudioClipFadeMs,
   setAudioClipLoop,
+  applyAbutCrossfadeForClip,
   setAudioClipMuted,
   setAudioTrackGainDb,
   setAudioTrackMuted,
@@ -4762,6 +4763,21 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />{" "}
                   Loop region (w obrębie clipu)
                 </label>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    if (!draftProject) return;
+                    const next = applyAbutCrossfadeForClip(
+                      draftProject,
+                      selectedAudioClip.id,
+                      80,
+                    );
+                    if (next !== draftProject) commitDraft(next);
+                  }}
+                >
+                  Crossfade z sąsiadem (80 ms)
+                </Button>
                 <label className={styles.inspField}>
                   <input
                     type="checkbox"
