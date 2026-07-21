@@ -269,6 +269,11 @@ import {
   IconTap,
   IconUnchecked,
   IconUndo,
+  IconZoomH,
+  IconZoomIn,
+  IconZoomOut,
+  IconZoomUi,
+  IconZoomV,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -4952,39 +4957,93 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom">
-          <label className={styles.zoomLab} title="Skala interfejsu Timeline">
-            UI
+          <div className={styles.zoomControl} title="Skala interfejsu Timeline">
+            <span className={styles.zoomLab}>
+              <IconZoomUi />
+              UI
+            </span>
+            <ShellIconButton
+              label="Zmniejsz skalę UI"
+              disabled={zoomUi <= 50}
+              onClick={() => setZoomUi((z) => Math.max(50, z - 10))}
+            >
+              <IconZoomOut />
+            </ShellIconButton>
             <input
               type="range"
+              className={styles.zoomRange}
               min={50}
               max={150}
               value={zoomUi}
               aria-label="Skala UI"
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
-          </label>
-          <label className={styles.zoomLab} title="Zoom poziomy (oś czasu)">
-            H
+            <ShellIconButton
+              label="Zwiększ skalę UI"
+              disabled={zoomUi >= 150}
+              onClick={() => setZoomUi((z) => Math.min(150, z + 10))}
+            >
+              <IconZoomIn />
+            </ShellIconButton>
+          </div>
+          <div className={styles.zoomControl} title="Zoom poziomy (oś czasu)">
+            <span className={styles.zoomLab}>
+              <IconZoomH />
+              H
+            </span>
+            <ShellIconButton
+              label="Oddal poziomo"
+              disabled={zoomH <= ZOOM_H_MIN}
+              onClick={() => zoomHorizontalBySteps(-1)}
+            >
+              <IconZoomOut />
+            </ShellIconButton>
             <input
               type="range"
+              className={styles.zoomRange}
               min={ZOOM_H_MIN}
               max={ZOOM_H_MAX}
               value={zoomH}
               aria-label="Zoom poziomy"
               onChange={(e) => setZoomH(Number(e.target.value))}
             />
-          </label>
-          <label className={styles.zoomLab} title="Zoom pionowy (wysokość ścieżek)">
-            V
+            <ShellIconButton
+              label="Przybliż poziomo"
+              disabled={zoomH >= ZOOM_H_MAX}
+              onClick={() => zoomHorizontalBySteps(1)}
+            >
+              <IconZoomIn />
+            </ShellIconButton>
+          </div>
+          <div className={styles.zoomControl} title="Zoom pionowy (wysokość ścieżek)">
+            <span className={styles.zoomLab}>
+              <IconZoomV />
+              V
+            </span>
+            <ShellIconButton
+              label="Oddal pionowo"
+              disabled={zoomV <= ZOOM_V_MIN}
+              onClick={() => zoomVerticalBySteps(-1)}
+            >
+              <IconZoomOut />
+            </ShellIconButton>
             <input
               type="range"
+              className={styles.zoomRange}
               min={ZOOM_V_MIN}
               max={ZOOM_V_MAX}
               value={zoomV}
               aria-label="Zoom pionowy"
               onChange={(e) => setVerticalZoom(Number(e.target.value))}
             />
-          </label>
+            <ShellIconButton
+              label="Przybliż pionowo"
+              disabled={zoomV >= ZOOM_V_MAX}
+              onClick={() => zoomVerticalBySteps(1)}
+            >
+              <IconZoomIn />
+            </ShellIconButton>
+          </div>
         </div>
       </footer>
 

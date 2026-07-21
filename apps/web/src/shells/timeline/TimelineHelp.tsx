@@ -36,7 +36,7 @@ const SECTIONS: HelpSection[] = [
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
       "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
       "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji = zakres; bez zaznaczenia — cały utwór.",
-      "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
+      "Zoom — ikony + suwaki H / V / UI w statusie (± i range; nie ma narzędzia lupy na pasku).",
       "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
     ],
   },
