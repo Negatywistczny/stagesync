@@ -23,6 +23,8 @@ import {
   transportHomeTicks,
   type FormaClip,
   type Project,
+  type SnapMode,
+  DEFAULT_SNAP_MODE,
 } from "@stagesync/shared";
 import {
   buildBarMarks,
@@ -199,6 +201,10 @@ import {
   contentSnapModeFromModifiers,
   cursorForHitZone,
   hitTestClipZone,
+  loadSessionSnapModeFromStorage,
+  persistSessionSnapMode,
+  snapModeFromStorageKey,
+  snapModeToStorageKey,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
   type FormaGesturePreview,
@@ -376,6 +382,9 @@ export function TimelineShell() {
   } | null>(null);
   const toolMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
+  const [snapMode, setSnapMode] = useState<SnapMode>(() =>
+    loadSessionSnapModeFromStorage(),
+  );
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
@@ -3855,6 +3864,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <Icon />
             </ShellIconButton>
           ))}
+          <label className={styles.snapPicker} title="Siatka edycji (snap)">
+            <span className={styles.snapPickerLab}>Snap</span>
+            <select
+              className={styles.snapPickerSelect}
+              aria-label="Tryb snap"
+              value={snapModeToStorageKey(snapMode)}
+              onChange={(e) => {
+                const next =
+                  snapModeFromStorageKey(e.target.value) ?? DEFAULT_SNAP_MODE;
+                setSnapMode(next);
+                persistSessionSnapMode(next);
+              }}
+            >
+              <option value="off">Off</option>
+              <option value="bar">Takt</option>
+              <option value="beat">Beat</option>
+              <option value="subdivision:2">1/2</option>
+              <option value="subdivision:4">1/4</option>
+              <option value="subdivision:8">1/8</option>
+              <option value="subdivision:16">1/16</option>
+            </select>
+          </label>
         </div>
 
         <div className={styles.toolbarCenter}>

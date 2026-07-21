@@ -60,7 +60,7 @@ const SECTIONS: HelpSection[] = [
   {
     title: "Zaznaczanie i edycja",
     items: [
-      "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
+      "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (picker: Off / Takt / Beat / 1/2…1/16; domyślnie Takt).",
       "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi.",
       "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
       "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; bez pencil; playback sync z transportem.",
@@ -91,7 +91,8 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
         { keys: "W", action: "Różdżka — menu" },
         { keys: "?", action: "Ta pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },
-        { keys: "⌘/Ctrl przy drag", action: "Snap off" },
+        { keys: "⌘/Ctrl przy drag", action: "Snap off (chwilowo)" },
+        { keys: "Snap (toolbar)", action: "Off / Takt / Beat / podział" },
       ],
     },
     {
