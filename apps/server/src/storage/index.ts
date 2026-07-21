@@ -18,6 +18,7 @@ import {
   nextMidiProgramId,
   normalizeSetlist,
   pruneSetlistToLibrary,
+  scrubCountdownDigitClips,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
@@ -295,7 +296,9 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV5.parse(ensureFormaSubsections(project));
+    const parsed = ProjectSchemaV5.parse(
+      scrubCountdownDigitClips(ensureFormaSubsections(project)),
+    );
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
