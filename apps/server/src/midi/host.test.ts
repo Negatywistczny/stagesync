@@ -91,6 +91,21 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("sendProgramChange writes program to output", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ outputId: "mock-out-1" });
+    host.sendProgramChange(42);
+    expect(backend.sent).toContainEqual({
+      type: "program",
+      channel: 0,
+      program: 42,
+    });
+    host.dispose();
+    transport.dispose();
+  });
+
   it("rejects unknown device ids without crashing status", () => {
     const transport = createTransportEngine();
     const backend = createMockMidiBackend();

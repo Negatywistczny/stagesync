@@ -3,6 +3,7 @@ import type { HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
+import { wireMidiProgramChangeOut } from "./midi/program-change-out.js";
 import { createLibraryRouter } from "./routes/library.js";
 import { createMidiRouter } from "./routes/midi.js";
 import { createProjectsRouter } from "./routes/projects.js";
@@ -55,6 +56,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const logBuffer = options.logBuffer ?? createLogBuffer();
   const presence = options.presence ?? createClientPresence();
   const midi = options.midi ?? createMidiHost(transport);
+  wireMidiProgramChangeOut(transport, stores, midi);
   const app: Express = express();
 
   app.use(express.json());

@@ -250,6 +250,19 @@ export function createMidiHost(
       onInputMessage(msg);
     },
 
+    /** Program Change on the configured output (song load / patch recall). */
+    sendProgramChange(program: number, channel = 0): void {
+      if (!Number.isInteger(program) || program < 0 || program > 127) return;
+      if (!Number.isInteger(channel) || channel < 0 || channel > 15) return;
+      if (!config.outputId) return;
+      try {
+        backend.send({ type: "program", channel, program });
+        clearError();
+      } catch (err) {
+        setError(err);
+      }
+    },
+
     dispose(): void {
       unsub();
       stopClockOutTimer();
