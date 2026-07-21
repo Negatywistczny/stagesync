@@ -166,10 +166,20 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
         assertValidTimeSignature(opts.timeSignature, ppq);
       }
 
+      const prevProjectId = activeProjectId;
       positionTicks = samplePosition();
 
       if (opts.projectId !== undefined) {
         activeProjectId = opts.projectId;
+      }
+
+      // Switching songs via play({ projectId }) must not keep mid-song ticks.
+      if (
+        project &&
+        opts.projectId !== undefined &&
+        opts.projectId !== prevProjectId
+      ) {
+        positionTicks = transportHomeTicks(project);
       }
 
       if (project && opts.bpm === undefined && opts.timeSignature === undefined) {

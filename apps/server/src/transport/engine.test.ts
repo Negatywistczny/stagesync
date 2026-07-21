@@ -3,6 +3,7 @@ import {
   createProjectV5Seed,
   DEFAULT_PPQ,
   elapsedToTicks,
+  transportHomeTicks,
 } from "@stagesync/shared";
 import { createTransportEngine } from "./engine.js";
 
@@ -163,6 +164,30 @@ describe("TransportEngine", () => {
     const stopped = engine.stop(project);
     expect(stopped.playing).toBe(false);
     expect(stopped.positionTicks).toBe(cd!.startTicks);
+    engine.dispose();
+  });
+
+  it("play with a new projectId seeks to transport home", () => {
+    const a = createProjectV5Seed(
+      "00000000-0000-4000-8000-00000000000a",
+      "A",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 1 },
+    );
+    const b = createProjectV5Seed(
+      "00000000-0000-4000-8000-00000000000b",
+      "B",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 2 },
+    );
+    const homeB = transportHomeTicks(b);
+    const engine = createTransportEngine();
+    engine.loadProject(a.id, a);
+    engine.seek(4800, a);
+    const state = engine.play({ projectId: b.id }, b);
+    expect(state.activeProjectId).toBe(b.id);
+    expect(state.positionTicks).toBe(homeB);
+    expect(state.playing).toBe(true);
     engine.dispose();
   });
 });
