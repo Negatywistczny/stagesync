@@ -72,6 +72,9 @@ jobs:
 
       - name: Compose health smoke
         run: |
+          # Image runs as node (uid 1000); bind-mounted ./data from the runner must be writable.
+          mkdir -p data/library data/projects data/logs
+          chmod -R a+rwX data
           docker compose up -d
           # Wait for healthcheck to pass (up to 40s)
           for i in $(seq 1 8); do

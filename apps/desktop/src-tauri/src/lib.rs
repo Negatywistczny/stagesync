@@ -2,6 +2,8 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use tauri::Manager;
+use tauri_plugin_shell::process::CommandChild;
+use tauri_plugin_shell::ShellExt;
 use tauri_plugin_updater::UpdaterExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -63,11 +65,12 @@ pub fn run() {
     const STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
     const HEALTHCHECK_INTERVAL: Duration = Duration::from_millis(250);
 
-    let sidecar_child: Arc<Mutex<Option<std::process::Child>>> = Arc::new(Mutex::new(None));
+    let sidecar_child: Arc<Mutex<Option<CommandChild>>> = Arc::new(Mutex::new(None));
     let sidecar_child_setup = sidecar_child.clone();
     let sidecar_child_run = sidecar_child.clone();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             let Some(window) = app.get_webview_window("main") else {
@@ -111,32 +114,41 @@ pub fn run() {
             let data_dir = app_data_dir.join("StageSync");
             let _ = std::fs::create_dir_all(&data_dir);
 
-            let mut cmd = tauri::process::Command::new_sidecar("stagesync-host");
-            cmd.arg(server_entry.to_string_lossy().to_string());
-            cmd.env("PORT", PORT.to_string());
-            cmd.env(
-                "STAGESYNC_STATIC_DIR",
-                static_dir.to_string_lossy().to_string(),
-            );
-            cmd.env(
-                "STAGESYNC_DATA_DIR",
-                data_dir.to_string_lossy().to_string(),
-            );
-            cmd.env(
-                "STAGESYNC_SEED_DIR",
-                seed_dir.to_string_lossy().to_string(),
-            );
-            cmd.env(
-                "npm_package_version",
-                app.package_info().version.to_string(),
-            );
-
-            let child = match cmd.spawn() {
-                Ok(child) => child,
-                Err(err) => {
-                    let msg = format!(
+            let server_entry_arg = server_entry.to_string_lossy().to_string();
+            let sidecar = app
+                .handle()
+                .shell()
+                .sidecar("stagesync-host")
+                .and_then(|cmd| {
+                    cmd.args([server_entry_arg.as_str()])
+                        .env("PORT", PORT.to_string())
+                        .env(
+                            "STAGESYNC_STATIC_DIR",
+                            static_dir.to_string_lossy().to_string(),
+                        )
+                        .env(
+                            "STAGESYNC_DATA_DIR",
+                            data_dir.to_string_lossy().to_string(),
+                        )
+                        .env(
+                            "STAGESYNC_SEED_DIR",
+                            seed_dir.to_string_lossy().to_string(),
+                        )
+                        .env(
+                            "npm_package_version",
+                            app.package_info().version.to_string(),
+                        )
+                        .spawn()
+                })
+                .map_err(|err| {
+                    format!(
                         "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy port {PORT} jest wolny."
-                    );
+                    )
+                });
+
+            let child = match sidecar {
+                Ok((_rx, child)) => child,
+                Err(msg) => {
                     let err_url =
                         to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
                     let _ = window.navigate(err_url.parse().unwrap());
@@ -170,7 +182,7 @@ pub fn run() {
                         let _ = window_for_poll.navigate(err_url.parse().unwrap());
 
                         if let Ok(mut guard) = sidecar_child_for_poll.lock() {
-                            if let Some(mut child) = guard.take() {
+                            if let Some(child) = guard.take() {
                                 let _ = child.kill();
                             }
                         }
@@ -191,7 +203,7 @@ pub fn run() {
         .run(tauri::generate_context!(), move |_app_handle, event| {
             if let tauri::RunEvent::ExitRequested { .. } = event {
                 if let Ok(mut guard) = sidecar_child_run.lock() {
-                    if let Some(mut child) = guard.take() {
+                    if let Some(child) = guard.take() {
                         let _ = child.kill();
                     }
                 }
