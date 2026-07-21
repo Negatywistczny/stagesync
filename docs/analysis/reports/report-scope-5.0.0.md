@@ -211,6 +211,7 @@ flowchart LR
 | [#105](https://github.com/Negatywistyczny/stagesync/pull/105) | CreateProjectBody trim/strict | https://github.com/Negatywistyczny/stagesync/pull/105 | pending |
 | [#106](https://github.com/Negatywistyczny/stagesync/pull/106) | Desktop Host→Ustawienia modal | https://github.com/Negatywistyczny/stagesync/pull/106 | pending |
 | [#107](https://github.com/Negatywistyczny/stagesync/pull/107) | StageMessageBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/107 | pending |
+| [#108](https://github.com/Negatywistyczny/stagesync/pull/108) | Zod-validate WS client_hello | https://github.com/Negatywistyczny/stagesync/pull/108 | pending |
 
 ### Parallel (other agents)
 
