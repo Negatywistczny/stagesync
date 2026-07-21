@@ -213,3 +213,28 @@ Sprawdź CI: `gh pr checks <n>` przed merge.
 2. Merge #57 przed lub razem z #58 (stack).
 3. #55/#56/#59/#60 niezależne od siebie względem A/C (możliwe konflikty w `TimelineShell` / Help — rebase rano jeśli trzeba).
 4. G1–G10: [report-beta-gate.md](./report-beta-gate.md) soft-gate — **nie** claim green bez HW.
+
+## Wave 2 backlog (po must A–E; overnight cont. 2026-07-21→22)
+
+Ranked by operator impact × feasibility (small PRs; no merge; no tag; no G1 HW claim).
+
+| Rank | Temat | Branch / PR | Why |
+|------|--------|-------------|-----|
+| 1 | **Smart fade handles** na canvas audio (górne narożniki) | `feat/audio-fade-handles` (stack #58) | ADR 0008 §6; inspector alone is weak UX |
+| 2 | **Crossfade at abut** (no full overlap mode) | `feat/audio-crossfade-abut` (stack fade) | Completes C must residual without X-Fade drag mode |
+| 3 | **ADR 0002** tempo/metrum @ pre-roll clarification | `docs/adr-0002-preroll-tempo` | TODO Should; docs-only |
+| 4 | **Smoke: Forma edit + transport** (in-process, not Playwright) | `test/smoke-forma-transport` | TODO Should carry; extends #60 |
+| 5 | Admin density / songs↔inspector UX polish | `feat/admin-ux-density` | TODO Should; avoid v4 chrome |
+| 6 | ClientShell residual ad-hoc typography | `feat/client-token-hygiene` | Constitution tokens |
+| 7 | AD-01…03 pull-forward | — | Skip unless clearly small; prefer post-stable |
+| — | Playwright browser matrix | — | Defer — infra cost > overnight value |
+| — | Overlap drag mode / Flex Time | — | OUT |
+
+### Parallel PRs from other agents (do not duplicate)
+
+| # | Temat | CI (at wave-2 start) |
+|---|--------|----------------------|
+| [#50](https://github.com/Negatywistyczny/stagesync/pull/50)–[#52](https://github.com/Negatywistyczny/stagesync/pull/52) | fullscreen / docs links / docs hygiene | green |
+| [#61](https://github.com/Negatywistyczny/stagesync/pull/61) | ruler split loop/playhead lanes | green |
+| [#62](https://github.com/Negatywistyczny/stagesync/pull/62) | Cmd/Ctrl+C native Edit menu | green |
+| [#63](https://github.com/Negatywistyczny/stagesync/pull/63) | visual Timeline help | pending — review vs ADR 0011 (no legacy CSS clone) |
