@@ -1,3 +1,4 @@
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -17,6 +18,77 @@ const STARTUP_TIMEOUT: Duration = Duration::from_secs(120);
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(45);
 const HEALTHCHECK_INTERVAL: Duration = Duration::from_millis(250);
 const SIDECAR_LOG_CAP: usize = 6_000;
+/// Relative to sidecar `server/` cwd — avoids passing Win32 `\\?\` absolute paths as Node's main module.
+const SERVER_ENTRY_REL: &str = "dist/index.js";
+
+/// Strip Win32 extended-length / verbatim prefixes so Node can realpath the entry.
+///
+/// Tauri `resource_dir()` often yields `\\?\C:\…`. Passing that as Node argv makes
+/// `realpathSync` collapse to bare `C:` → `EISDIR` (nodejs/node#62446, #60435).
+/// Logic is OS-agnostic so unit tests cover it on macOS/Linux CI.
+fn path_for_node(path: &Path) -> PathBuf {
+    let s = path.to_string_lossy();
+    const VERBATIM: &str = r"\\?\";
+    if let Some(rest) = s.strip_prefix(VERBATIM) {
+        if let Some(unc) = rest.strip_prefix(r"UNC\") {
+            return PathBuf::from(format!(r"\\{unc}"));
+        }
+        return PathBuf::from(rest);
+    }
+    path.to_path_buf()
+}
+
+/// Reject bare drive roots (`C:`) that Node treats as a directory main module.
+fn assert_node_path_usable(path: &Path, label: &str) -> Result<(), String> {
+    let raw = path.to_string_lossy();
+    let trimmed = raw.trim_end_matches(['\\', '/']);
+    if trimmed.len() == 2 && trimmed.as_bytes()[1] == b':' {
+        return Err(format!(
+            "Nieprawidłowa ścieżka {label} dla Node: '{raw}' (goły dysk). Zgłoś bug z logiem instalacji."
+        ));
+    }
+    if raw.is_empty() {
+        return Err(format!("Pusta ścieżka {label} dla Node"));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod path_for_node_tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn strips_windows_verbatim_prefix() {
+        let input = Path::new(r"\\?\C:\Program Files\StageSync\resources\resources\sidecar\server");
+        assert_eq!(
+            path_for_node(input),
+            PathBuf::from(r"C:\Program Files\StageSync\resources\resources\sidecar\server")
+        );
+    }
+
+    #[test]
+    fn strips_windows_verbatim_unc() {
+        let input = Path::new(r"\\?\UNC\server\share\sidecar\server");
+        assert_eq!(
+            path_for_node(input),
+            PathBuf::from(r"\\server\share\sidecar\server")
+        );
+    }
+
+    #[test]
+    fn leaves_normal_paths_alone() {
+        let input = Path::new(r"C:\Program Files\StageSync\resources\sidecar\server");
+        assert_eq!(path_for_node(input), input);
+    }
+
+    #[test]
+    fn rejects_bare_drive() {
+        assert!(assert_node_path_usable(Path::new(r"C:"), "entry").is_err());
+        assert!(assert_node_path_usable(Path::new(r"C:\"), "entry").is_err());
+        assert!(assert_node_path_usable(Path::new(r"C:\StageSync"), "entry").is_ok());
+    }
+}
 
 #[derive(Clone)]
 struct NavState {
@@ -345,10 +417,27 @@ pub fn run() {
                 return Ok(());
             };
 
-            let static_dir = resource_dir.join("resources/sidecar/web");
-            let seed_dir = resource_dir.join("resources/sidecar/seed");
-            let server_dir = resource_dir.join("resources/sidecar/server");
-            let server_entry = server_dir.join("dist/index.js");
+            // Join with OS separators (not a single "a/b/c" string) so Windows never
+            // treats a segment as absolute / drive-relative.
+            let static_dir = path_for_node(
+                &resource_dir
+                    .join("resources")
+                    .join("sidecar")
+                    .join("web"),
+            );
+            let seed_dir = path_for_node(
+                &resource_dir
+                    .join("resources")
+                    .join("sidecar")
+                    .join("seed"),
+            );
+            let server_dir = path_for_node(
+                &resource_dir
+                    .join("resources")
+                    .join("sidecar")
+                    .join("server"),
+            );
+            let server_entry = server_dir.join(SERVER_ENTRY_REL);
 
             // Dev fallback: if sidecar resources aren't bundled, keep the old thin-shell flow.
             if !server_entry.exists() {
@@ -367,16 +456,26 @@ pub fn run() {
                 return Ok(());
             };
 
-            let data_dir = app_data_dir.join("StageSync");
+            let data_dir = path_for_node(&app_data_dir.join("StageSync"));
             let _ = std::fs::create_dir_all(&data_dir);
 
-            let server_entry_arg = server_entry.to_string_lossy().to_string();
+            if let Err(msg) = assert_node_path_usable(&server_dir, "server_dir")
+                .and_then(|_| assert_node_path_usable(&static_dir, "static_dir"))
+                .and_then(|_| assert_node_path_usable(&seed_dir, "seed_dir"))
+                .and_then(|_| assert_node_path_usable(&data_dir, "data_dir"))
+            {
+                let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
+                let _ = window.navigate(err_url.parse().unwrap());
+                return Ok(());
+            }
+
+            // Relative entry + cwd: Node never sees a `\\?\C:\…` absolute main path.
             let sidecar = app
                 .handle()
                 .shell()
                 .sidecar("stagesync-host")
                 .and_then(|cmd| {
-                    cmd.args([server_entry_arg.as_str()])
+                    cmd.args([SERVER_ENTRY_REL])
                         .current_dir(&server_dir)
                         .env("PORT", UI_PORT.to_string())
                         .env(
@@ -400,7 +499,8 @@ pub fn run() {
                 })
                 .map_err(|err| {
                     format!(
-                        "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy stagesync-host nie jest blokowany przez Defender/SmartScreen."
+                        "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy stagesync-host nie jest blokowany przez Defender/SmartScreen.\nentry={SERVER_ENTRY_REL}\ncwd={}",
+                        server_dir.display()
                     )
                 });
 

@@ -46,13 +46,15 @@ Alternatywy: prawy klik na `.app` → **Otwórz** → **Otwórz**; albo System S
 1. Kliknij **Więcej informacji** w ostrzeżeniu SmartScreen.
 2. Kliknij **Uruchom mimo to**.
 
-### Windows — host nie startuje („port zajęty”)
+### Windows — host nie startuje
 
 Komunikat o zajętym porcie `4000` bywał **mylący**: shell czekał na `GET /api/health`, a prawdziwy błąd (crash sidecara Node, `ERR_MODULE_NOT_FOUND`, blokada Defendera) był ignorowany.
 
-Od najnowszego builda:
+Od α12+:
 - przy awarii hosta UI pokazuje **log sidecara** (nie zakładaj od razu zajętego portu);
 - pierwsze uruchomienie na Windows może potrwać dłużej (skan Defendera) — timeout startu to ~2 min.
+
+**`EISDIR: lstat 'C:'` (α13):** Node dostał ścieżkę Win32 z prefiksem `\\?\` (verbatim) jako main module — `realpathSync` zwija ją do gołego `C:`. Naprawione w shellu (względne `dist/index.js` + cwd bez `\\?\`). Po instalacji α13+ przeinstaluj MSI; jeśli stary build nadal pada z tym logiem — to oczekiwane, potrzebny nowy instalator.
 
 Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy `ERR_MODULE_NOT_FOUND` / braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistyczny/stagesync/releases).
 
