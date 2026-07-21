@@ -24,8 +24,8 @@ const SECTIONS: HelpSection[] = [
     title: "Utwory i setlista",
     items: [
       "Tytuł utworu — biblioteka / setlista.",
-      "← / → — poprzedni / następny utwór setlisty (gdy setlista włączona).",
-      "Auto-setlista — serwer po końcu utworu wczytuje następny (zatrzymany, takt 1.1); stan współdzielony z Adminem.",
+      "[ / ] lub Alt+← / Alt+→ — poprzedni / następny utwór setlisty (gdy setlista włączona).",
+      "Auto-setlista — serwer po końcu utworu wczytuje następny (zatrzymany, home Countdown); stan współdzielony z Adminem.",
     ],
   },
   {
