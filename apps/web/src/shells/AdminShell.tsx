@@ -699,6 +699,7 @@ function SongsView({
   const nameDirty = Boolean(selected && draftName !== selected.name);
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
+  const [asideOpen, setAsideOpen] = useState(true);
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -727,11 +728,23 @@ function SongsView({
   }, [library?.projects, filter, sort]);
 
   return (
-    <div className={styles.split}>
+    <div
+      className={[styles.split, asideOpen ? "" : styles.splitCollapsed]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <section className={styles.card} aria-label="Utwory">
         <div className={styles.cardHead}>
           <h1 className={styles.cardTitle}>Utwory</h1>
           <div className={styles.actions}>
+            <Button
+              variant="ghost"
+              aria-expanded={asideOpen}
+              aria-controls="admin-songs-aside"
+              onClick={() => setAsideOpen((v) => !v)}
+            >
+              {asideOpen ? "Ukryj panel" : "Pokaż panel"}
+            </Button>
             <Button
               variant="secondary"
               loading={commandPending}
@@ -851,7 +864,8 @@ function SongsView({
         </div>
       </section>
 
-      <div className={styles.splitAside}>
+      {asideOpen ? (
+      <div className={styles.splitAside} id="admin-songs-aside">
         <aside className={styles.card} aria-label="Wybrany utwór">
           <div className={styles.cardHead}>
             <h2 className={styles.cardTitle}>Wybrany</h2>
@@ -950,6 +964,7 @@ function SongsView({
           onImportFile={onImportFile}
         />
       </div>
+      ) : null}
     </div>
   );
 }
