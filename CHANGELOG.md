@@ -5,6 +5,12 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+- **Timeline Pomoc:** overlay jak w v4 — accent chrome, karty sekcji, miniatury ikon narzędzi / transportu / ścieżek, czytelniejsze skróty `kbd` (treść operatora 5.0.0).
+
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
 > **β2:** Audio 0…N + MIDI I/O serwera + menu OS Faza B+C + Countdown Stop; updater `latest.json` darwin+windows. Ręczna bramka **G1–G10** — residual operatorski (nie green na HW przy cutcie); następny etap → **5.0.0**.
