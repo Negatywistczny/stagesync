@@ -82,7 +82,8 @@ export function ClientShell() {
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
+
+    async function refreshSetlist() {
       try {
         const view = await fetchSetlist();
         if (cancelled) return;
@@ -94,9 +95,25 @@ export function ClientShell() {
           setSetlistEnabled(false);
         }
       }
-    })();
+    }
+
+    void refreshSetlist();
+
+    function onFocus() {
+      void refreshSetlist();
+    }
+    function onVisibility() {
+      if (document.visibilityState === "visible") void refreshSetlist();
+    }
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    const poll = window.setInterval(() => void refreshSetlist(), 15_000);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.clearInterval(poll);
     };
   }, [state.activeProjectId]);
 
