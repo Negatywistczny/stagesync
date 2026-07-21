@@ -24,6 +24,8 @@ W trakcie etapu: odhaczone = usuń z listy (historia tylko w CHANGELOG), nie trz
 Hero: **playback audio 0…N** + **MIDI I/O serwera** + **menu OS Faza B+C** + **G1–G10** green przed tagiem; tag `5.0.0-beta.2` **tylko na prośbę**.  
 Orientacja: [ROADMAP.md](./ROADMAP.md) § Beta 2 · [report-scope-beta2.md](./analysis/reports/report-scope-beta2.md) · [ADR 0008](./adr/0008-timeline-clip-editing.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).
 
+**Must dostarczone w tociku (nie defer):** [#41](https://github.com/Negatywistyczny/stagesync/issues/41) Countdown Play/Stop ([PR #44](https://github.com/Negatywistyczny/stagesync/pull/44)); [#42](https://github.com/Negatywistyczny/stagesync/issues/42) Audio lane ([PR #48](https://github.com/Negatywistyczny/stagesync/pull/48)) — historia w CHANGELOG.
+
 ### Must
 
 - [ ] **Host MIDI I/O** po stronie serwera (clock / urządzenia) — nie w procesie Tauri

@@ -7,6 +7,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+- **Docs / scope β2:** [#41](https://github.com/Negatywistyczny/stagesync/issues/41) Countdown Play/Stop oraz [#42](https://github.com/Negatywistyczny/stagesync/issues/42) Audio lane — **must** w strumieniu `5.0.0-beta.2` (nie defer); [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md).
+
 ### Dodano
 
 - **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; WebAudio playback sync do ticków serwera ([ADR 0008](docs/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistyczny/stagesync/issues/42)).
