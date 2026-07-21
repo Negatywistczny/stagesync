@@ -11,9 +11,12 @@
  *
  * Files updated:
  *   - apps/web/src/lib/appVersion.ts
+ *   - apps/server/src/app.ts (VERSION fallback)
+ *   - Dockerfile (APP_VERSION default)
+ *   - compose.yml (STAGESYNC_VERSION default)
  *   - apps/desktop/src-tauri/tauri.conf.json
  *   - apps/desktop/src-tauri/Cargo.toml
- *   (Dockerfile ARG and compose.yml default are handled via build --build-arg in CI)
+ *   (CI still passes --build-arg APP_VERSION / STAGESYNC_VERSION explicitly)
  */
 
 import { readFileSync, writeFileSync } from "fs";
@@ -69,6 +72,30 @@ const updates = [
   {
     path: "apps/web/src/lib/appVersion.ts",
     transform: (c) => c.replace(/export const APP_VERSION = "[^"]+";/, `export const APP_VERSION = "${version}";`),
+  },
+  {
+    path: "apps/server/src/app.ts",
+    transform: (c) =>
+      c.replace(
+        /const VERSION = process\.env\.npm_package_version \?\? "[^"]+";/,
+        `const VERSION = process.env.npm_package_version ?? "${version}";`,
+      ),
+  },
+  {
+    path: "Dockerfile",
+    transform: (c) =>
+      c.replace(
+        /ENV npm_package_version=\$\{APP_VERSION:-[^}]+\}/,
+        `ENV npm_package_version=\${APP_VERSION:-${version}}`,
+      ),
+  },
+  {
+    path: "compose.yml",
+    transform: (c) =>
+      c.replace(
+        /npm_package_version: \$\{STAGESYNC_VERSION:-[^}]+\}/,
+        `npm_package_version: \${STAGESYNC_VERSION:-${version}}`,
+      ),
   },
   {
     path: "apps/desktop/src-tauri/tauri.conf.json",

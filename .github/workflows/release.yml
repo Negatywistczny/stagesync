@@ -257,18 +257,15 @@ jobs:
           REPO="${{ github.repository }}"
           gh release upload "$TAG" dist/SHA256SUMS.txt -R "$REPO" --clobber
 
-          PRERELEASE_FLAG=""
-          if [[ "${{ env.VERSION }}" == *-* ]]; then
-            PRERELEASE_FLAG="--prerelease"
-          else
-            PRERELEASE_FLAG="--latest"
-          fi
-
+          # Always mark as GitHub "latest" (never --prerelease).
+          # Tauri updater fetches …/releases/latest/download/latest.json;
+          # GitHub's /releases/latest ignores prereleases → 404 when every
+          # alpha/beta is flagged prerelease (semver -rc/-beta is enough).
           gh release edit "$TAG" \
             -R "$REPO" \
             --draft=false \
+            --latest \
             --title "StageSync v${{ env.VERSION }}" \
-            $PRERELEASE_FLAG \
             --notes "$(cat <<EOF
           ## StageSync v${{ env.VERSION }}
 

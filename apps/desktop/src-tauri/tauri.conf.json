@@ -30,6 +30,7 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "targets": [
+      "app",
       "dmg",
       "msi"
     ],

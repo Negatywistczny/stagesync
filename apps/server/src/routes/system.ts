@@ -12,7 +12,7 @@ export type SystemRouterDeps = {
   version?: string;
 };
 
-const GITHUB_REPO = "Negatywistyczny/stagesync";
+const GITHUB_REPO = "Negatywistczny/stagesync";
 
 export type LatestReleaseResult = {
   latest: string | null;

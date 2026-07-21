@@ -59,7 +59,7 @@ Od α12+:
 
 **`EISDIR: lstat 'C:'` (α13):** Node dostał ścieżkę Win32 z prefiksem `\\?\` (verbatim) jako main module — `realpathSync` zwija ją do gołego `C:`. Naprawione w shellu (względne `dist/index.js` + cwd bez `\\?\`). Po instalacji α13+ przeinstaluj MSI; jeśli stary build nadal pada z tym logiem — to oczekiwane, potrzebny nowy instalator.
 
-Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy `ERR_MODULE_NOT_FOUND` / braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistyczny/stagesync/releases).
+Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy `ERR_MODULE_NOT_FOUND` / braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistczny/stagesync/releases).
 
 ## Aktualizacja desktop shell
 
@@ -71,6 +71,9 @@ Gdy jest dostępna nowa wersja:
 4. Shell pobierze podpisany bundle (minisign), zamknie się i zainstaluje nową wersję.
 
 > Aktualizacja shella wymaga połączenia z internetem. Dane projektów są w serwerze — shell ich nie przechowuje.
+>
+> Manifest updatera: `…/releases/latest/download/latest.json`. Release na GitHub **nie może** być oznaczony jako prerelease (semver `-beta` w tagu jest OK) — inaczej `/releases/latest` zwraca 404.
+> `latest.json` musi zawierać **darwin-aarch64** i **windows-x86_64** — macOS buduje target `app` (`.app.tar.gz` + `.sig`) obok `dmg`; bez `app` bundler pomija updater artifacts i zostaje tylko Windows (last-writer).
 
 ## Wymagania (dev / build)
 
