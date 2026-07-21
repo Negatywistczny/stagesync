@@ -14,7 +14,7 @@
 
 .logoImg {
   display: block;
-  height: var(--ss-wordmark-height, 1.25rem);
+  height: var(--ss-wordmark-height, 1.875rem);
   width: auto;
 }
 

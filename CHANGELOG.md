@@ -7,6 +7,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...HEAD)
 
+### Dodano
+
+- **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed `library.template.json` + `seed-projects/`; parity z legacy v4).
+
+### Zmieniono
+
+- **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
+
 ## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
 
 > **α10:** standalone desktop (Tauri + Node sidecar) — pierwszy build β1 host.  
