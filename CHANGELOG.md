@@ -7,6 +7,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.11...HEAD)
 
+### Naprawiono
+
+- **CI / Release:** nieużywane importy + `STAGESYNC_SHELL` w `turbo.json` globalEnv; `gh -R` w `create-draft-release` / publish (bez checkout).
+
 ## [5.0.0-alpha.11](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
 > **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.

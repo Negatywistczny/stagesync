@@ -12,7 +12,6 @@ import {
   SetlistSchema,
   createProjectV5Seed,
   createDefaultTemplateProject,
-  DEFAULT_TEMPLATE_PROJECT_ID,
   defaultSetlist,
   ensureFormaSubsections,
   mergePreserveById,
