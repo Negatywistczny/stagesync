@@ -5,7 +5,9 @@ import {
   TransportSeekBodySchema,
   TransportStateSchema,
   TransportTickMessageSchema,
+  createProjectV5Seed,
   defaultTransportState,
+  transportHomeTicks,
 } from "./index.js";
 
 describe("TransportStateSchema", () => {
@@ -69,5 +71,35 @@ describe("TransportTickMessageSchema", () => {
       sentAtMs: 1_700_000_000_000,
     };
     expect(TransportTickMessageSchema.parse(msg)).toEqual(msg);
+  });
+});
+
+describe("transportHomeTicks", () => {
+  it("returns Countdown startTicks when present", () => {
+    const project = createProjectV5Seed(
+      "00000000-0000-4000-8000-000000000001",
+      "P",
+      "2026-07-21T00:00:00.000Z",
+    );
+    const cd = project.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(transportHomeTicks(project)).toBe(cd.startTicks);
+    expect(transportHomeTicks(project)).toBeLessThan(0);
+  });
+
+  it("returns 0 without Countdown or project", () => {
+    expect(transportHomeTicks(undefined)).toBe(0);
+    expect(transportHomeTicks(null)).toBe(0);
+    expect(
+      transportHomeTicks({
+        forma: {
+          clips: [
+            {
+              kind: "section",
+              startTicks: 0,
+            },
+          ],
+        },
+      }),
+    ).toBe(0);
   });
 });
