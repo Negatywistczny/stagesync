@@ -104,6 +104,11 @@ function asError(err: unknown): Error {
   return err instanceof Error ? err : new Error(formatUnknownError(err));
 }
 
+/** True when the page can actually call into Tauri (not just hostname heuristics). */
+function tauriInvokeAvailable(): boolean {
+  return Boolean(tauriGlobal()?.core?.invoke ?? tauriInternals()?.invoke);
+}
+
 function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   const fromGlobal = tauriGlobal()?.core?.invoke;
   const invoke = fromGlobal ?? tauriInternals()?.invoke;
@@ -213,9 +218,14 @@ export function syncNavRecentProjects(
   return tauriInvoke<void>("set_nav_recent_projects", { projects });
 }
 
-/** Open a URL in the system browser (Tauri) or a new tab (web). */
+/**
+ * Open a URL in the system browser (Tauri) or a new tab (web).
+ *
+ * Browser on :4000 can match `isDesktopShell()` via hostname heuristic without
+ * Tauri inject — only invoke when available, otherwise `window.open`.
+ */
 export function openExternalUrl(url: string): Promise<void> {
-  if (isDesktopShell()) {
+  if (isDesktopShell() && tauriInvokeAvailable()) {
     return tauriInvoke<void>("open_external_url", { url });
   }
   window.open(url, "_blank", "noopener,noreferrer");

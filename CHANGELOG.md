@@ -5,6 +5,12 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+- **Web — linki „Pełna instrukcja / Zgłoś błąd”:** na `http://127.0.0.1:4000` heurystyka `isDesktopShell()` traktowała zwykłą przeglądarkę jak Tauri, więc `openExternalUrl` wołało brakujące `invoke` zamiast `window.open`. Fallback gdy invoke niedostępne.
+
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
 > **β2:** Audio 0…N + MIDI I/O serwera + menu OS Faza B+C + Countdown Stop; updater `latest.json` darwin+windows. Ręczna bramka **G1–G10** — residual operatorski (nie green na HW przy cutcie); następny etap → **5.0.0**.
