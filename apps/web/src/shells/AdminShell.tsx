@@ -26,7 +26,8 @@ import {
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { fetchSetlist, clearHostLogs, fetchNetworkInfo, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus } from "../lib/setlistApi.js";
-import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
+import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
+import { DOCS_INSTALL_URL, DOCS_RELEASES_URL } from "../lib/docsLinks.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
 import { IconFullscreen, IconPower, IconRestart, IconSettings, IconSun } from "./icons.js";
@@ -1153,6 +1154,21 @@ function HostView({
           <p>
             Wersja <strong>{APP_VERSION}</strong>
           </p>
+          {network ? (
+            <p className={styles.muted}>
+              Host: v{network.version} · port <strong>{network.port}</strong>
+            </p>
+          ) : networkError ? null : (
+            <p className={styles.muted}>Wczytywanie stanu hosta…</p>
+          )}
+          <p className={styles.actions}>
+            <Button
+              variant="ghost"
+              onClick={() => void openExternalUrl(DOCS_INSTALL_URL)}
+            >
+              Pełna instrukcja na GitHubie ↗
+            </Button>
+          </p>
           <UpdatePanel />
           <div>
             <h3 className={styles.subTitle}>Kopie zapasowe</h3>
@@ -1268,7 +1284,19 @@ function UpdatePanel() {
       )}
       {!inTauri && hostStatus && (
         <p className={styles.muted}>
-          Desktop: użyj instalatora StageSync Desktop — <a href="https://github.com/Negatywistczny/stagesync/releases" target="_blank" rel="noreferrer">Releases</a>.
+          Desktop: pobierz instalator z{" "}
+          <a
+            href={DOCS_RELEASES_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              void openExternalUrl(DOCS_RELEASES_URL);
+            }}
+          >
+            Releases
+          </a>
+          .
         </p>
       )}
     </div>

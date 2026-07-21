@@ -809,6 +809,21 @@ export function TimelineShell() {
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
 
+      if (helpOpen && e.key === "Escape") {
+        e.preventDefault();
+        setHelpOpen(false);
+        return;
+      }
+      if (
+        !mod &&
+        !e.altKey &&
+        (e.key === "?" || (e.shiftKey && e.key === "/"))
+      ) {
+        e.preventDefault();
+        setHelpOpen(true);
+        return;
+      }
+
       if (mod && key === "s") {
         e.preventDefault();
         if (h.dirty && !h.savePending) void h.onSave();
@@ -946,6 +961,7 @@ export function TimelineShell() {
     locatorTicks,
     navigate,
     pasteClipClipboard,
+    helpOpen,
     toolMenu,
   ]);
 

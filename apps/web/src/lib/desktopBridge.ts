@@ -50,3 +50,12 @@ export function installDesktopUpdate(): Promise<void> {
   }
   return tauriInvoke<void>("install_desktop_update");
 }
+
+/** Open a URL in the system browser (Tauri) or a new tab (web). */
+export function openExternalUrl(url: string): Promise<void> {
+  if (isDesktopShell()) {
+    return tauriInvoke<void>("open_external_url", { url });
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+  return Promise.resolve();
+}

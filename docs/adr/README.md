@@ -26,3 +26,5 @@ Decision log StageSync v5. Spec / praktyka: [adr.github.io](https://adr.github.i
 | [0009](./0009-project-schema-v3.md) | Project schema v3 (pliki / audio refs) | Zaakceptowany |
 | [0010](./0010-desktop-shell-tauri.md) | Desktop shell (Tauri) | Zaakceptowany |
 | [0011](./0011-ui-parity-behavior.md) | Parity behawioralna + IA (rebuild alpha) | Zaakceptowany |
+| [0012](./0012-user-data-location.md) | Lokalizacja danych użytkownika | Zaakceptowany |
+| [0013](./0013-in-app-vs-github-docs.md) | Dokumentacja in-app vs GitHub | Zaakceptowany |

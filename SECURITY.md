@@ -5,7 +5,7 @@
 **Nie** otwieraj publicznych Issues z opisem exploita, payloadami ani krokami
 ataku zero-day.
 
-1. Preferowane: [GitHub Security Advisories](https://github.com/Negatywistyczny/stagesync/security/advisories/new)
+1. Preferowane: [GitHub Security Advisories](https://github.com/Negatywistczny/stagesync/security/advisories/new)
    (prywatny raport dla maintainerów).
 2. Jeśli advisories nie są dostępne — skontaktuj się z właścicielem repozytorium
    przez prywatny kanał GitHub (bez publicznych szczegółów exploita).

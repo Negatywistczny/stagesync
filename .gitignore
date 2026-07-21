@@ -38,6 +38,10 @@ data/library/*
 
 # Tauri
 apps/desktop/src-tauri/target
+apps/desktop/src-tauri/resources/
+apps/desktop/src-tauri/bin/
+apps/desktop/src-tauri/lib/
+apps/desktop/src-tauri/share/
 
 # Debug
 npm-debug.log*

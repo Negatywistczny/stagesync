@@ -14,6 +14,7 @@
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
 | [docs/adr/](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
+| [ADR 0013](./adr/0013-in-app-vs-github-docs.md) | In-app help vs dokumentacja GitHub / bundle | Treść tutoriali w `.dmg` |
 | `.cursor/rules/` | Reguły egzekwowane przez agenta | Długie tutoriale |
 
 ## Monorepo
