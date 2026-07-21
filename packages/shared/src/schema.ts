@@ -367,11 +367,13 @@ export const UpdateProjectBodySchema = PutProjectBodySchema;
 
 export type UpdateProjectBody = PutProjectBody;
 
-export const HealthResponseSchema = z.object({
-  ok: z.literal(true),
-  service: z.literal("stagesync-server"),
-  version: z.string(),
-});
+export const HealthResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    service: z.literal("stagesync-server"),
+    version: z.string(),
+  })
+  .strict();
 
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
