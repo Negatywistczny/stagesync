@@ -35,6 +35,55 @@ export function trimOutMsOf(clip: Pick<AudioClip, "trimOutMs">): number {
   return Math.max(0, clip.trimOutMs ?? 0);
 }
 
+export function fadeInMsOf(clip: Pick<AudioClip, "fadeInMs">): number {
+  return Math.max(0, clip.fadeInMs ?? 0);
+}
+
+export function fadeOutMsOf(clip: Pick<AudioClip, "fadeOutMs">): number {
+  return Math.max(0, clip.fadeOutMs ?? 0);
+}
+
+/**
+ * Linear fade envelope (0…1) at `intoClipMs` within a playable window of `playableMs`.
+ * Pure — callers schedule AudioParam ramps from this policy.
+ */
+export function audioFadeGainAtMs(
+  intoClipMs: number,
+  playableMs: number,
+  fadeInMs: number,
+  fadeOutMs: number,
+): number {
+  if (!(playableMs > 0)) return 0;
+  const t = Math.max(0, Math.min(intoClipMs, playableMs));
+  const fi = Math.max(0, Math.min(fadeInMs, playableMs));
+  const fo = Math.max(0, Math.min(fadeOutMs, playableMs));
+  let g = 1;
+  if (fi > 0 && t < fi) g = Math.min(g, t / fi);
+  if (fo > 0 && t > playableMs - fo) {
+    const left = playableMs - t;
+    g = Math.min(g, left / fo);
+  }
+  return Math.max(0, Math.min(1, g));
+}
+
+/**
+ * Clamp fade lengths so fade-in + fade-out never exceed the playable window.
+ */
+export function clampAudioFades(
+  clip: Pick<AudioClip, "fadeInMs" | "fadeOutMs">,
+  playableMs: number,
+): { fadeInMs: number; fadeOutMs: number } {
+  let fi = fadeInMsOf(clip);
+  let fo = fadeOutMsOf(clip);
+  const max = Math.max(0, playableMs);
+  if (fi + fo > max && max > 0) {
+    const scale = max / (fi + fo);
+    fi *= scale;
+    fo *= scale;
+  }
+  return { fadeInMs: fi, fadeOutMs: fo };
+}
+
 /**
  * Playable source window in ms (after trims).
  * When `durationMs` is unknown, falls back to timeline length converted at ctx tempo.
