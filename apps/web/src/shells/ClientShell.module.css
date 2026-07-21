@@ -998,7 +998,7 @@
   font-size: min(2.25rem, calc(var(--phrase-bar-size) * 0.32));
   font-weight: var(--ss-font-weight-black);
   line-height: var(--ss-leading-display);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--ss-tracking-tight);
   color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
   white-space: nowrap;
   overflow: hidden;
@@ -1148,7 +1148,7 @@
 .drumsHeroEyebrow {
   margin: 0;
   font-size: var(--ss-text-stage-sm);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--ss-tracking-wide);
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
 }
@@ -1157,10 +1157,10 @@
   margin: 0;
   font-size: var(--ss-text-stage-2xl);
   font-weight: var(--ss-font-weight-black);
-  line-height: 1.05;
+  line-height: var(--ss-leading-display);
   color: var(--client-drums);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ss-tracking-label);
 }
 
 .drumsHeroCountdown .drumsHeroSection {
@@ -1170,7 +1170,7 @@
 .drumsHeroCountdownNumber .drumsHeroSection {
   font-size: var(--ss-text-stage-5xl);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ss-tracking-normal);
   text-transform: none;
 }
 
@@ -1194,7 +1194,7 @@
   background: color-mix(in srgb, var(--client-drums) 8%, transparent);
   font-size: var(--ss-text-stage-sm);
   font-weight: var(--ss-font-weight-semibold);
-  line-height: 1.35;
+  line-height: var(--ss-leading-normal);
   color: color-mix(in srgb, var(--client-drums) 92%, white);
 }
 
@@ -1216,7 +1216,7 @@
   color: var(--ss-color-text);
   font: inherit;
   font-size: var(--ss-text-stage-sm);
-  line-height: 1.35;
+  line-height: var(--ss-leading-normal);
   resize: vertical;
   min-height: 2.75rem;
 }
@@ -1266,7 +1266,7 @@
   font-weight: var(--ss-font-weight-black);
   font-variant-numeric: tabular-nums;
   color: var(--ss-color-text-muted);
-  line-height: 1;
+  line-height: var(--ss-leading-display);
 }
 
 .drumsBeatDotDownbeat {
@@ -1379,9 +1379,9 @@
   font-size: var(--ss-text-stage-sm);
   font-weight: var(--ss-font-weight-heavy);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ss-tracking-label);
   color: var(--ss-color-primary);
-  line-height: 1.15;
+  line-height: var(--ss-leading-compact);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1460,7 +1460,7 @@
 .drumsFormSegNote {
   margin: 0;
   font-size: var(--ss-text-stage-xs);
-  line-height: 1.3;
+  line-height: var(--ss-leading-tight);
   color: var(--ss-color-text-muted);
   overflow: hidden;
   display: -webkit-box;
