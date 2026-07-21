@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:40 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~00:45 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -206,6 +206,11 @@ flowchart LR
 | [#100](https://github.com/Negatywistyczny/stagesync/pull/100) | Meter-map bar snap (Kotwice); base #98 | https://github.com/Negatywistyczny/stagesync/pull/100 | stacked/#98 |
 | [#101](https://github.com/Negatywistyczny/stagesync/pull/101) | Audio lane clipboard C/V/D | https://github.com/Negatywistyczny/stagesync/pull/101 | pending |
 | [#102](https://github.com/Negatywistyczny/stagesync/pull/102) | Restore wand + selection scope | https://github.com/Negatywistyczny/stagesync/pull/102 | pending |
+| [#103](https://github.com/Negatywistyczny/stagesync/pull/103) | loadProject → Countdown home | https://github.com/Negatywistyczny/stagesync/pull/103 | pending |
+| [#104](https://github.com/Negatywistyczny/stagesync/pull/104) | Client cue hide on role mismatch | https://github.com/Negatywistyczny/stagesync/pull/104 | pending |
+| [#105](https://github.com/Negatywistyczny/stagesync/pull/105) | CreateProjectBody trim/strict | https://github.com/Negatywistyczny/stagesync/pull/105 | pending |
+| [#106](https://github.com/Negatywistyczny/stagesync/pull/106) | Desktop Host→Ustawienia modal | https://github.com/Negatywistyczny/stagesync/pull/106 | pending |
+| [#107](https://github.com/Negatywistyczny/stagesync/pull/107) | StageMessageBodySchema.strict | https://github.com/Negatywistyczny/stagesync/pull/107 | pending |
 
 ### Parallel (other agents)
 
