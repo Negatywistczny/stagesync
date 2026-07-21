@@ -110,7 +110,16 @@ export function ClientShell() {
     setCueText(stageCue.text);
     setCueVisible(true);
     if (stageCue.ttlMs <= 0) return;
-    const t = window.setTimeout(() => setCueVisible(false), stageCue.ttlMs);
+    const elapsed = Math.max(
+      0,
+      Date.now() - (stageCue.sentAtMs ?? Date.now()),
+    );
+    const remaining = stageCue.ttlMs - elapsed;
+    if (remaining <= 0) {
+      setCueVisible(false);
+      return;
+    }
+    const t = window.setTimeout(() => setCueVisible(false), remaining);
     return () => window.clearTimeout(t);
   }, [stageCue, picked]);
 
