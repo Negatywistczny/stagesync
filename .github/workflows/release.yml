@@ -179,12 +179,6 @@ jobs:
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           subst X: $env:GITHUB_WORKSPACE
           "GITHUB_WORKSPACE=X:\" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          # WiX light.exe needs VBScript (optional feature; may be off on some images).
-          try {
-            dism /Online /Enable-Feature /FeatureName:VBSCRIPT /All /NoRestart | Out-Host
-          } catch {
-            Write-Host "VBSCRIPT enable skipped: $_"
-          }
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
