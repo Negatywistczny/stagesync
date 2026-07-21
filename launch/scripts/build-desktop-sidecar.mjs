@@ -242,6 +242,78 @@ async function assertNoRepoDocsInSidecar(sidecarDir) {
   console.log("[sidecar] docs hygiene check passed (web/dist, server/dist, seed)");
 }
 
+const NODE_MODULES_PRUNE_DIRS = new Set([
+  "src",
+  "test",
+  "tests",
+  "__tests__",
+  "docs",
+  "doc",
+  "example",
+  "examples",
+  "coverage",
+  ".github",
+  ".turbo",
+]);
+
+const NODE_MODULES_PRUNE_FILE_RE =
+  /\.(md|ts|cts|mts|map|markdown|yml|yaml)$/i;
+
+/** Shrink sidecar node_modules for MSI/WiX (Windows path limits). */
+async function pruneDeployedNodeModules(nodeModulesDir) {
+  if (!existsSync(nodeModulesDir)) return;
+  const stack = [nodeModulesDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const ent of entries) {
+      const full = join(dir, ent.name);
+      if (ent.isDirectory()) {
+        if (NODE_MODULES_PRUNE_DIRS.has(ent.name)) {
+          await rm(full, { recursive: true, force: true });
+          continue;
+        }
+        stack.push(full);
+        continue;
+      }
+      if (
+        NODE_MODULES_PRUNE_FILE_RE.test(ent.name) ||
+        ent.name === "LICENSE" ||
+        ent.name.startsWith("LICENSE.") ||
+        ent.name === "CHANGELOG" ||
+        ent.name.startsWith("CHANGELOG.")
+      ) {
+        await rm(full, { force: true });
+      }
+    }
+  }
+}
+
+async function pruneServerDistTypes(distDir) {
+  if (!existsSync(distDir)) return;
+  const stack = [distDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const ent of entries) {
+      const full = join(dir, ent.name);
+      if (ent.isDirectory()) {
+        stack.push(full);
+        continue;
+      }
+      if (ent.name.endsWith(".d.ts") || ent.name.endsWith(".d.ts.map")) {
+        await rm(full, { force: true });
+      }
+    }
+  }
+}
+
+async function pruneRuntimeBundle(sidecarDir) {
+  await pruneServerDistTypes(join(sidecarDir, "server", "dist"));
+  await pruneDeployedNodeModules(join(sidecarDir, "server", "node_modules"));
+  console.log("[sidecar] runtime bundle pruned (dist types + node_modules dev paths)");
+}
+
 const SHARED_RUNTIME_STRIP = [
   "src",
   ".turbo",
@@ -412,6 +484,7 @@ async function buildAndPrepareSidecarResources() {
   console.log("[sidecar] preparing Node runtime in tauri bundle (externalBin support)");
   await prepareNodeRuntimeIntoTauriBundle(target);
 
+  await pruneRuntimeBundle(sidecarDir);
   await assertNoRepoDocsInSidecar(sidecarDir);
 
   if (process.argv.includes("--smoke")) {
