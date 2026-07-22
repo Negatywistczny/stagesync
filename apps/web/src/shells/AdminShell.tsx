@@ -1719,6 +1719,7 @@ function HostSettingsModal({
             className={styles.input}
             type="password"
             autoComplete="off"
+            maxLength={256}
             value={hostToken}
             aria-label="Host lifecycle token"
             placeholder="opcjonalny"
