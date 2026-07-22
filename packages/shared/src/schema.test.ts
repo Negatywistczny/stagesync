@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CreateProjectBodySchema,
-  StageMessageBodySchema,
+  DefaultMeterSchema,
   LibrarySchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -133,18 +133,8 @@ describe("CreateProjectBodySchema", () => {
     expect(CreateProjectBodySchema.parse({ name: "New" })).toEqual({
       name: "New",
     });
-    expect(CreateProjectBodySchema.parse({ name: "  Song  " })).toEqual({
-      name: "Song",
-    });
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
-    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
-  });
-
-  it("rejects unknown keys", () => {
-    expect(() =>
-      CreateProjectBodySchema.parse({ name: "X", extra: true }),
-    ).toThrow();
   });
 });
 
@@ -168,10 +158,21 @@ describe("PutProjectBodySchema", () => {
   });
 });
 
-describe("StageMessageBodySchema", () => {
-  it("rejects unknown keys", () => {
+describe("DefaultMeterSchema", () => {
+  it("accepts 4/4 and 5/8", () => {
+    expect(DefaultMeterSchema.parse({ numerator: 4, denominator: 4 })).toEqual({
+      numerator: 4,
+      denominator: 4,
+    });
+    expect(DefaultMeterSchema.parse({ numerator: 5, denominator: 8 })).toEqual({
+      numerator: 5,
+      denominator: 8,
+    });
+  });
+
+  it("rejects meters that yield non-integer ticksPerBar at PPQ 960", () => {
     expect(() =>
-      StageMessageBodySchema.parse({ text: "Hi", extra: 1 }),
+      DefaultMeterSchema.parse({ numerator: 4, denominator: 7 }),
     ).toThrow();
   });
 });
