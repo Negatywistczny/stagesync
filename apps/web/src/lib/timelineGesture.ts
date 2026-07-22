@@ -84,6 +84,14 @@ export function resolvePencilRangeTicks(
   const barTicks = Math.max(1, Math.floor(options.barTicks));
   const thresholdPx = Math.max(0, options.thresholdPx ?? PENCIL_DRAG_THRESHOLD_PX);
   const floor = Math.max(0, options.floorTicks ?? 0);
+  if (
+    !Number.isFinite(downTicks) ||
+    !Number.isFinite(upTicks) ||
+    !Number.isFinite(barTicks) ||
+    !Number.isFinite(options.dxPx)
+  ) {
+    return { startTicks: floor, lengthTicks: barTicks, isClick: true };
+  }
   const a = Math.max(floor, downTicks);
   const b = Math.max(floor, upTicks);
   const dxPx = Math.abs(options.dxPx);
