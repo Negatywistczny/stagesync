@@ -212,6 +212,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           clearInterval(helloTimer);
           helloTimer = null;
         }
+        setStageCue(null);
         setWsStatus("disconnected");
         latencyEmaRef.current = 0;
         setLatencyMs(null);
