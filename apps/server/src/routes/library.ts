@@ -83,6 +83,7 @@ export function createLibraryRouter(stores: Stores): Router {
             : "Import";
         const project = await stores.createProject(name);
         try {
+          const isTemplate = src.isTemplate === true;
           const candidate = {
             ...project,
             ...src,
@@ -91,11 +92,14 @@ export function createLibraryRouter(stores: Stores): Router {
             updatedAt: project.updatedAt,
             formatVersion: 5 as const,
             ppq: project.ppq,
-            midiProgramId:
-              typeof src.midiProgramId === "number"
+            // Templates must not carry midiProgramId (ProjectSchemaV5).
+            // createProject always assigns a PC — scrub it for template imports.
+            isTemplate: isTemplate ? true : undefined,
+            midiProgramId: isTemplate
+              ? undefined
+              : typeof src.midiProgramId === "number"
                 ? src.midiProgramId
                 : project.midiProgramId,
-            isTemplate: src.isTemplate === true ? true : undefined,
             // Keep migrated assets / lanes (JSON import does not copy bytes —
             // CLI `--uploads-dir` or Admin upload fills files).
             assets: Array.isArray(src.assets) ? src.assets : [],
