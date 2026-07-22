@@ -274,8 +274,10 @@ export function insertSpanOverwrite(
   if (isCountdown(newClip)) return clips;
 
   const floor = contentFloor(opts);
-  const start = Math.max(floor, newClip.startTicks);
-  const length = newClip.lengthTicks;
+  const rawStart = newClip.startTicks;
+  const start = Math.max(floor, rawStart);
+  const end = rawStart + newClip.lengthTicks;
+  const length = Math.max(0, end - start);
   if (length < 1) return clips;
 
   const countdown = clips.find(isCountdown);
