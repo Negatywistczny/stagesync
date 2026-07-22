@@ -1,4 +1,4 @@
-name: CI
+Name: CI
 
 on:
   push:
@@ -7,12 +7,15 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Anuluj poprzednie uruchomienia tego samego pipeline'u, jeśli wypchnięto nowy commit
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 env:
-  # GitHub Actions JS runtime: Node 20 deprecated on runners (2026+).
-  # https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -79,7 +82,7 @@ jobs:
           # Wait for healthcheck to pass (up to 40s)
           for i in $(seq 1 8); do
             sleep 5
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q stagesync)" 2>/dev/null || echo "missing")
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q stagesync)" 2>/devnull || echo "missing")
             echo "health: $STATUS"
             if [ "$STATUS" = "healthy" ]; then break; fi
           done
@@ -88,8 +91,6 @@ jobs:
 
   tauri-smoke:
     name: tauri-cargo-check
-    # Skip Dependabot PRs (npm/Actions only). Use head_ref — github.actor is the human
-    # after "Update branch", not dependabot[bot].
     if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -108,9 +109,14 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      # Cache dla zależności Cargo / Rusta
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
       - name: Stub sidecar bundle inputs (cargo check only)
         run: |
-          # Tauri resource/sidecar globs skip gitignored paths (ADR 0013).
           sed -i.bak \
             -e 's|^apps/desktop/src-tauri/resources/|# ci-stub: apps/desktop/src-tauri/resources/|' \
             -e 's|^apps/desktop/src-tauri/bin/|# ci-stub: apps/desktop/src-tauri/bin/|' \
