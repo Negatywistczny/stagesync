@@ -15,7 +15,7 @@ const SECTIONS: HelpSection[] = [
     title: "Podstawy",
     items: [
       "Edytuj ścieżki Forma, Tekst, Akordy, Cue. Specjalne (Tempo / Tonacja / Metrum / Kotwice) — włącz w menu oka.",
-      "Zapisz / Odrzuć — zapis lub cofnięcie lokalnych zmian na serwerze. Undo / Redo w nagłówku.",
+      "Zapisz / Odrzuć — zapis lub cofnięcie lokalnych zmian na serwerze. Undo / Redo dostępne ze skrótów ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z lub z natywnego menu Edycja.",
       "Metadane (ikona info) — tytuł, PC, tempo domyślne, tonacja startowa, artysta, gatunek.",
       "Linki Admin / Klient w statusie — przełączenie widoku (bez labowego ShellNav).",
     ],
@@ -36,7 +36,6 @@ const SECTIONS: HelpSection[] = [
       "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
       "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
-      "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji = zakres; bez zaznaczenia — cały utwór.",
       "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
       "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
     ],
@@ -45,7 +44,7 @@ const SECTIONS: HelpSection[] = [
     title: "Transport i pętla",
     items: [
       "Play / Pause i Stop — pasek transportu.",
-      "Pętla (L) — przeciągnij zakres na linijce taktów, potem włącz przyciskiem.",
+      "Pętla (C / L) — przeciągnij zakres na linijce taktów, potem włącz przyciskiem lub skrótem.",
       "Metronom — włącz/wyłącz podczas odtwarzania.",
       "Podążaj za wskaźnikiem — podczas Play przewija widok.",
       "Tempo / Metrum / Tonacja na toolbarze — edycja @ playhead; na lane’ach — Pencil / klik segmentu / Scissors.",
@@ -64,7 +63,7 @@ const SECTIONS: HelpSection[] = [
       "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
       "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi.",
       "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
-      "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; bez pencil; playback sync z transportem.",
+      "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; bez pencil; playback sync z transportem. Przeciąganie krawędzi zmienia Trim In/Out, uchwyty na klipie kontrolują Fade In/Out, przyciski S / M na docku włączają Solo / Mute ścieżki.",
     ],
   },
 ];
@@ -75,7 +74,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       heading: "Transport",
       rows: [
         { keys: "Spacja", action: "Play / Pause" },
-        { keys: "L", action: "Pętla on/off" },
+        { keys: "C / L", action: "Pętla / Cycle on/off" },
         { keys: "K", action: "Metronom on/off" },
       ],
     },
@@ -90,19 +89,34 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
     {
       heading: "Narzędzia",
       rows: [
-        { keys: "C", action: "Scissors" },
-        { keys: "W", action: "Różdżka — menu" },
+        { keys: "T, a następnie C", action: "Wybranie narzędzia Nożyczki" },
         { keys: "?", action: "Przełącz tę pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },
         { keys: "⌘/Ctrl przy drag", action: "Snap off" },
       ],
     },
     {
-      heading: "Edycja",
+      heading: "Edycja i schowek",
       rows: [
-        { keys: "Delete / Backspace", action: "Usuń zaznaczony clip" },
+        { keys: "⌘/Ctrl+C", action: "Kopiuj zaznaczone klipy" },
+        { keys: "⌘/Ctrl+X", action: "Wytnij zaznaczone klipy" },
+        { keys: "⌘/Ctrl+V", action: "Wklej w pozycji wskaźnika (locatora)" },
+        { keys: "⌘/Ctrl+D", action: "Duplikuj zaznaczone klipy" },
+        {
+          keys: "Delete / Backspace",
+          action: "Usuń zaznaczony klip lub zdarzenie mapy",
+        },
         { keys: "⌘/Ctrl+Z", action: "Undo" },
         { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
+      ],
+    },
+    {
+      heading: "Nawigacja i Zoom",
+      rows: [
+        { keys: "⌘/Ctrl+← / →", action: "Powiększenie poziome (Zoom H)" },
+        { keys: "⌘/Ctrl+↑ / ↓", action: "Powiększenie pionowe (Zoom V)" },
+        { keys: "Z", action: "Dopasuj widok do pełnego utworu (Fit Zoom)" },
+        { keys: "Shift + Wheel", action: "Poziome przewijanie osi czasu" },
       ],
     },
   ];

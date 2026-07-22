@@ -66,7 +66,7 @@ export function ProjectFilesPanel({
       const project = await uploadProjectAudio(projectId, file);
       setAssets(project.assets);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload nieudany");
+      setError(err instanceof Error ? err.message : "Przesyłanie nieudane");
     } finally {
       busyRef.current = false;
       setBusy(false);

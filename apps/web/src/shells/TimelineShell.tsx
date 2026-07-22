@@ -308,37 +308,37 @@ const TOOLS: {
 }[] = [
   {
     id: "pointer",
-    label: "Pointer",
-    title: "Pointer — zaznacz, przesuń, zmień długość",
+    label: "Wskaźnik",
+    title: "Wskaźnik — zaznacz, przesuń, zmień długość",
     key: "t",
     Icon: IconPointer,
   },
   {
     id: "smart",
-    label: "Smart",
-    title: "Smart Tool — strefy move / trim (jak Pointer)",
+    label: "Inteligentny",
+    title: "Inteligentny — strefy move / trim (jak Wskaźnik)",
     key: "s",
     Icon: IconSmart,
   },
   {
     id: "pencil",
-    label: "Pencil",
-    title: "Pencil — klik: 1 takt; przeciągnij: zakres (nadpisz)",
+    label: "Ołówek",
+    title: "Ołówek — klik: 1 takt; przeciągnij: zakres (nadpisz)",
     key: "p",
     Icon: IconPencil,
   },
   {
     id: "eraser",
-    label: "Eraser",
-    title: "Eraser — usuń zaznaczony clip",
+    label: "Gumka",
+    title: "Gumka — usuń zaznaczony clip",
     key: "e",
     Icon: IconEraser,
   },
   {
     id: "scissors",
-    label: "Scissors",
+    label: "Nożyczki",
     title:
-      "Scissors — Forma: podsekcja; Tekst/Akordy/Cue: podział; Tempo/Tonacja/Metrum: zmiana mapy",
+      "Nożyczki — Forma: podsekcja; Tekst/Akordy/Cue: podział; Tempo/Tonacja/Metrum: zmiana mapy",
     key: "c",
     Icon: IconScissors,
   },
@@ -1009,7 +1009,7 @@ export function TimelineShell() {
           return;
         }
       }
-      if (!mod && !e.altKey && key === "c") {
+      if (!mod && !e.altKey && (key === "c" || key === "l")) {
         e.preventDefault();
         h.onLoopToggle();
         return;
@@ -2996,7 +2996,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ensureAudioTrackVisibility(prev, project.audioTracks),
       );
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Upload audio failed");
+      setLoadError(
+        err instanceof Error
+          ? err.message
+          : "Przesyłanie pliku audio nie powiodło się",
+      );
     } finally {
       audioUploadPendingRef.current = false;
       setAudioUploadPending(false);
@@ -3529,7 +3533,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         if (anchors.length === 0 && !canEditKotwice(draftProject)) {
           return (
             <span className={styles.muted}>
-              Kotwice — dodaj MusicXML (Admin) lub kotwicę Pencil
+              Kotwice — dodaj MusicXML (Admin) lub kotwicę Ołówkiem
             </span>
           );
         }
@@ -4404,7 +4408,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                             className={styles.tapBtn}
                             title={
                               audioUploadPending
-                                ? "Upload w toku…"
+                                ? "Przesyłanie w toku…"
                                 : "Dodaj plik audio"
                             }
                           >
