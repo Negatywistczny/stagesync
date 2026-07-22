@@ -25,56 +25,6 @@
   box-sizing: border-box;
 }
 
-.header {
-  position: relative;
-  z-index: var(--ss-z-sticky);
-  flex: 0 0 auto;
-  display: grid;
-  align-items: center;
-  gap: var(--ss-space-3) var(--ss-space-5);
-  padding: var(--ss-space-3) var(--ss-space-5);
-  border-bottom: 1px solid var(--ss-color-border);
-  background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
-  backdrop-filter: blur(10px);
-  /*
-   * Equal side tracks so songCluster shares the shell centerline with
-   * toolbarCenter (asymmetric brand vs actions must not shift the middle).
-   * Wide: brand | song | actions (≤1100 stacks controls).
-   */
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-areas: "brand controls actions";
-}
-
-.headerBrand {
-  grid-area: brand;
-  justify-self: start;
-  min-width: 0;
-}
-
-.songCluster {
-  grid-area: controls;
-  position: relative;
-  z-index: 1;
-  justify-self: center;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.headerActions {
-  grid-area: actions;
-  justify-self: end;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
 .chromeAlert {
   flex: 0 0 auto;
   margin: 0;
@@ -84,6 +34,11 @@
   line-height: var(--ss-leading-normal);
   border-bottom: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
+}
+
+/* Legacy header grid unused — Level 1 is AppHeader; song lives in .toolbar. */
+.headerBrand {
+  min-width: 0;
 }
 
 .toolBar,
@@ -264,9 +219,8 @@
   z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: grid;
-  /* Same equal-side template as .header — shared horizontal centerline. */
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-areas: "tools center right";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "song tools transport";
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-5);
   padding: var(--ss-space-2) var(--ss-space-5);
@@ -275,34 +229,54 @@
   backdrop-filter: blur(10px);
 }
 
+.songCluster {
+  grid-area: song;
+  position: relative;
+  z-index: 1;
+  justify-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
 .toolBar {
   grid-area: tools;
-  justify-self: start;
+  justify-self: center;
   position: relative;
   min-width: 0;
 }
 
 .toolbarCenter {
-  grid-area: center;
+  grid-area: transport;
   position: relative;
   z-index: 1;
-  justify-self: center;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
-.toolbarRight {
-  grid-area: right;
   justify-self: end;
   flex-wrap: nowrap;
   min-width: 0;
 }
 
+.toolbarDirty {
+  position: absolute;
+  right: var(--ss-space-5);
+  bottom: calc(var(--ss-space-1) * -0.5);
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  line-height: var(--ss-leading-compact);
+  pointer-events: none;
+}
+
 @media (max-width: 900px) {
   .toolbar {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: var(--ss-space-2) var(--ss-space-3);
+  }
+
+  .songCluster {
+    flex: 1 1 100%;
+    justify-content: flex-start;
   }
 
   .toolBar {
@@ -315,10 +289,6 @@
     flex: 0 0 auto;
     margin-left: auto;
     justify-content: flex-end;
-  }
-
-  .toolbarRight {
-    flex: 0 0 auto;
   }
 }
 

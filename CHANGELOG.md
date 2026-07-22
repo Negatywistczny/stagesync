@@ -10,6 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
+- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline/Admin/Client — Level 2 toolbary; song cluster w Timeline L2; Admin sekcje w L2.
 - **Preferencje ([#432](https://github.com/Negatywistczny/stagesync/issues/432)):** modal Audio/MIDI (Cmd/Ctrl+, / menu StageSync); `setSinkId` + localStorage; porty MIDI persistowane w `data/host/midi-config.json`; bez Panic (ROADMAP OUT).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** contextual inspector Track vs Clip (gain/fader wyłącznie `Slider`; trim/fade/loop w klipie; nazwa/M/S/fader w ścieżce).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** zaznaczenie ścieżki audio w docku, Solo (S) oraz kompaktowy fader `Slider`; solo wycisza inne ścieżki w playback WebAudio (bez zmiany SSOT czasu).

@@ -250,6 +250,7 @@ import {
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
 import {
+  isDesktopShell,
   toggleAppFullscreen,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
@@ -268,12 +269,9 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconClose,
-  IconDiscard,
   IconEraser,
   IconEye,
   IconFollow,
-  IconFullscreen,
-  IconHelp,
   IconInfo,
   IconLoop,
   IconMetronome,
@@ -281,23 +279,19 @@ import {
   IconPencil,
   IconPlay,
   IconPointer,
-  IconRedo,
-  IconSave,
   IconScissors,
   IconSmart,
   IconStop,
-  IconSun,
   IconTap,
   IconUnchecked,
-  IconUndo,
 } from "./icons.js";
-import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import {
   SettingsPopover,
   ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
+import { AppHeader } from "./components/AppHeader.js";
 import styles from "./TimelineShell.module.css";
 
 type ToolId = FormaToolId;
@@ -3862,11 +3856,52 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         .join(" ")}
       data-tl-tier={touchTier}
     >
-      <header className={styles.header}>
-        <div className={styles.headerBrand}>
-          <ShellWordmark suffix="Timeline" version={APP_VERSION} />
-        </div>
+      <AppHeader
+        suffix="Timeline"
+        version={APP_VERSION}
+        appJump={[
+          { to: "/admin", label: "Admin" },
+          { to: "/client", label: "Klient" },
+        ]}
+        history={{
+          canUndo: Boolean(draftHistory && canUndo(draftHistory)),
+          canRedo: Boolean(draftHistory && canRedo(draftHistory)),
+          dirty,
+          savePending,
+          onUndo,
+          onRedo,
+          onSave: () => {
+            void onSave();
+          },
+          onDiscard,
+        }}
+        helpPressed={helpOpen}
+        onHelp={() => setHelpOpen(true)}
+        appearancePressed={appearanceOpen}
+        onAppearance={() => setAppearanceOpen((v) => !v)}
+        onFullscreen={() => {
+          void (async () => {
+            try {
+              await toggleAppFullscreen();
+              setFullscreenError(null);
+            } catch (err) {
+              setFullscreenError(
+                err instanceof Error
+                  ? err.message
+                  : "Nie udało się przełączyć pełnego ekranu",
+              );
+            }
+          })();
+        }}
+      />
 
+      {fullscreenError ? (
+        <p className={styles.chromeAlert} role="alert">
+          {fullscreenError}
+        </p>
+      ) : null}
+
+      <div className={styles.toolbar} data-ss-level="2">
         <div className={styles.songCluster} role="group" aria-label="Setlista">
           <ShellIconButton
             label="Metadane utworu"
@@ -3923,84 +3958,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </ShellIconButton>
         </div>
 
-        <div className={styles.headerActions}>
-          <nav className={styles.appJump} aria-label="Aplikacje">
-            <Link to="/admin">Admin</Link>
-            <Link to="/client">Klient</Link>
-          </nav>
-          <ShellIconButton
-            label="Cofnij"
-            disabled={!draftHistory || !canUndo(draftHistory)}
-            onClick={onUndo}
-          >
-            <IconUndo />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Ponów"
-            disabled={!draftHistory || !canRedo(draftHistory)}
-            onClick={onRedo}
-          >
-            <IconRedo />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Odrzuć zmiany"
-            disabled={!dirty || savePending}
-            onClick={onDiscard}
-            className={styles.discardBtn}
-          >
-            <IconDiscard />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Zapisz (⌘/Ctrl+S)"
-            disabled={!dirty || savePending}
-            onClick={() => void onSave()}
-            className={styles.saveBtn}
-          >
-            <IconSave />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Pomoc"
-            pressed={helpOpen}
-            onClick={() => setHelpOpen(true)}
-          >
-            <IconHelp />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Wygląd"
-            pressed={appearanceOpen}
-            onClick={() => setAppearanceOpen((v) => !v)}
-          >
-            <IconSun />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Pełny ekran"
-            onClick={() => {
-              void (async () => {
-                try {
-                  await toggleAppFullscreen();
-                  setFullscreenError(null);
-                } catch (err) {
-                  setFullscreenError(
-                    err instanceof Error
-                      ? err.message
-                      : "Nie udało się przełączyć pełnego ekranu",
-                  );
-                }
-              })();
-            }}
-          >
-            <IconFullscreen />
-          </ShellIconButton>
-        </div>
-      </header>
-
-      {fullscreenError ? (
-        <p className={styles.chromeAlert} role="alert">
-          {fullscreenError}
-        </p>
-      ) : null}
-
-      <div className={styles.toolbar}>
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
           {TOOLS.map(({ id, title, Icon, disabled }) => (
             <ShellIconButton
@@ -4124,11 +4081,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </div>
         </div>
 
-        <div className={styles.toolbarRight}>
-          <span className={styles.dirty} hidden={!dirty}>
+        {isDesktopShell() && dirty ? (
+          <span className={styles.toolbarDirty} aria-live="polite">
             Niezapisane zmiany
           </span>
-        </div>
+        ) : null}
       </div>
 
       <div
