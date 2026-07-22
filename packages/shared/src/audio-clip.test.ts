@@ -20,6 +20,11 @@ describe("gainDbToLinear", () => {
     expect(gainDbToLinear(undefined)).toBe(1);
     expect(gainDbToLinear(-6)).toBeCloseTo(0.501, 2);
   });
+
+  it("clamps extreme dB so WebAudio never sees Infinity", () => {
+    expect(gainDbToLinear(9999)).toBe(gainDbToLinear(24));
+    expect(gainDbToLinear(-9999)).toBe(gainDbToLinear(-60));
+  });
 });
 
 describe("audioClipPlayableMs / ticks mapping", () => {

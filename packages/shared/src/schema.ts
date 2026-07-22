@@ -99,7 +99,7 @@ export const AudioTrackSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   muted: z.boolean().optional(),
-  gainDb: z.number().finite().optional(),
+  gainDb: z.number().finite().min(-60).max(24).optional(),
 });
 
 export type AudioTrack = z.infer<typeof AudioTrackSchema>;
@@ -114,7 +114,7 @@ export const AudioClipSchema = z.object({
   /** Trim from source file end (ms); with trimInMs bounds playable window. */
   trimOutMs: z.number().nonnegative().finite().optional(),
   muted: z.boolean().optional(),
-  gainDb: z.number().finite().optional(),
+  gainDb: z.number().finite().min(-60).max(24).optional(),
 });
 
 export type AudioClip = z.infer<typeof AudioClipSchema>;

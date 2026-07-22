@@ -24,7 +24,8 @@ function ppqOf(ctx: AudioTempoCtx): number {
 /** Convert gain dB to linear amplitude (0 dB → 1). */
 export function gainDbToLinear(gainDb: number | undefined): number {
   if (gainDb == null || !Number.isFinite(gainDb)) return 1;
-  return Math.pow(10, gainDb / 20);
+  const clamped = Math.min(24, Math.max(-60, gainDb));
+  return Math.pow(10, clamped / 20);
 }
 
 export function trimInMsOf(clip: Pick<AudioClip, "trimInMs">): number {
