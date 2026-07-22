@@ -190,7 +190,7 @@ export function AdminShell() {
     return () => {
       cancelled = true;
     };
-  }, [sectionProjectId, state.activeProjectId, displayTicks]);
+  }, [sectionProjectId, state.activeProjectId]);
 
   const libraryGenRef = useRef(0);
 
