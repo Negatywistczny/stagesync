@@ -4,7 +4,7 @@
 
 /** Literowy zapis → symbole: maj→Δ, m7b5→ø7, dim→°, aug→+. */
 export function chordLiteralToSymbolDisplay(chord: string): string {
-  const raw = String(chord ?? "").trim();
+  const raw = String(chord ?? "").trim().slice(0, 64);
   if (!raw || raw === "—" || /^[0-9]+$/.test(raw)) return raw;
 
   const slash = raw.indexOf("/");
