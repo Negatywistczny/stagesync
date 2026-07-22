@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import { renderSVG } from "uqr";
@@ -195,6 +195,10 @@ export function DesktopMenuBridge() {
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
   const [restartError, setRestartError] = useState<string | null>(null);
+  const [setlistNeighborError, setSetlistNeighborError] = useState<string | null>(
+    null,
+  );
+  const setlistNeighborPendingRef = useRef(false);
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -204,6 +208,9 @@ export function DesktopMenuBridge() {
 
   const goSetlistNeighbor = useCallback(
     async (direction: "prev" | "next") => {
+      if (setlistNeighborPendingRef.current) return;
+      setlistNeighborPendingRef.current = true;
+      setSetlistNeighborError(null);
       try {
         const view = await fetchSetlist();
         if (!view.enabled || view.entries.length === 0) return;
@@ -218,8 +225,14 @@ export function DesktopMenuBridge() {
         if (location.pathname.startsWith("/timeline")) {
           navigate(`/timeline/${targetId}`);
         }
-      } catch {
-        /* ignore — menu is best-effort */
+      } catch (err) {
+        setSetlistNeighborError(
+          err instanceof Error
+            ? err.message
+            : "Nie udało się przełączyć utworu setlisty",
+        );
+      } finally {
+        setlistNeighborPendingRef.current = false;
       }
     },
     [location.pathname, navigate, play],
@@ -296,6 +309,19 @@ export function DesktopMenuBridge() {
   return (
     <>
       <Outlet />
+      {setlistNeighborError ? (
+        <p className={styles.toastError} role="alert">
+          {setlistNeighborError}
+          <button
+            type="button"
+            className={styles.toastDismiss}
+            onClick={() => setSetlistNeighborError(null)}
+            aria-label="Zamknij komunikat"
+          >
+            ×
+          </button>
+        </p>
+      ) : null}
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
         <RestartConfirmModal
