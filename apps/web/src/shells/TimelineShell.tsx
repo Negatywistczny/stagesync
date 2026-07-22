@@ -382,7 +382,13 @@ export function TimelineShell() {
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
-  const [metronomeOn, setMetronomeOn] = useState(false);
+  const [metronomeOn, setMetronomeOn] = useState(() => {
+    try {
+      return localStorage.getItem("stagesync-timeline-metronome") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
       return localStorage.getItem("stagesync-timeline-follow-playhead") === "1";
@@ -1509,6 +1515,14 @@ export function TimelineShell() {
       );
     }
     setMetronomeOn(next);
+    try {
+      localStorage.setItem(
+        "stagesync-timeline-metronome",
+        next ? "1" : "0",
+      );
+    } catch {
+      /* ignore */
+    }
   }
 
   function onTap() {
