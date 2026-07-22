@@ -42,9 +42,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Should
 
-- [x] [#61](https://github.com/Negatywistczny/stagesync/pull/61) — split ruler (loop / playhead) — merged
-- [x] [#428](https://github.com/Negatywistczny/stagesync/issues/428) — DAW: Slider, TrackSelection, Solo, contextual inspector
-- [x] [#432](https://github.com/Negatywistczny/stagesync/issues/432) — Preferences Audio/MIDI (`setSinkId`, persist MIDI); **bez** Panic (ROADMAP OUT)
 - [ ] MIDI Panic / MUTE ALL — follow-up po decyzji PO (obecnie OUT w [ROADMAP](./ROADMAP.md) § menu)
 - [ ] Playwright Forma drag E2E (defer z overnight)
 - [ ] ADR 0002 pre-roll tempo/metrum — jeśli nadal otwarte
@@ -54,6 +51,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 - Motywy / auth / multi-user → **5.1+**
 - [#430](https://github.com/Negatywistczny/stagesync/issues/430) Cues Sampler → **5.1+** (scope + ADR przed kodem)
+- [#437](https://github.com/Negatywistczny/stagesync/issues/437) Safety Net (Master/Slave / failover) → **5.1+** (ADR vs SSOT czasu [ADR 0002](./adr/0002-timebase-ssot.md); bez kodu w 5.0.0)
 - Android shell / store auto-update — poza 5.0.0
 - MIDI I/O w procesie Tauri — **nigdy** ([ADR 0010](./adr/0010-desktop-shell-tauri.md))
 - git-apply — nigdy ([ADR 0004](./adr/0004-updates-docker.md))
