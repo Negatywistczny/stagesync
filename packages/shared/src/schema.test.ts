@@ -125,6 +125,12 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
+  it("upgrades v4 to v5", () => {
+    const v4 = createProjectV4Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const v5 = upgradeProjectV4ToV5(v4);
+    expect(ProjectSchemaV5.parse(v5).keyMap[0]?.key.tonic).toBe("C");
+  });
+
   it("rejects template with midiProgramId", () => {
     expect(() =>
       ProjectSchemaV5.parse({
