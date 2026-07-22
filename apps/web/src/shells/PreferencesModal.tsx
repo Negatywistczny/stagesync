@@ -196,10 +196,11 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
           ) : null}
           {midi ? (
             <>
-              <p className={styles.muted}>
-                Backend <strong>{midi.backend}</strong>
-                {!midi.available ? " · niedostępny w tym środowisku" : ""}
-              </p>
+              {!midi.available ? (
+                <p className={styles.muted}>
+                  MIDI niedostępne w tym środowisku.
+                </p>
+              ) : null}
               <label className={styles.field}>
                 <span className={styles.label}>Wejście MIDI</span>
                 <select

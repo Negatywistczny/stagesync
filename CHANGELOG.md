@@ -51,6 +51,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WebSocket; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
 
 #### 🖥️ App Shell & UI
+- **Admin Host:** usunięty przycisk i okno „Ustawienia hosta” (Preferencje MIDI/Audio przez Cmd/Ctrl+,); sekcja **MIDI/Audio**; bez etykiety backendu MIDI i bloku „Kopie zapasowe” / atrap path pickera.
 - **Client / Komunikaty:** większe toasty sceniczne (`TERAZ` / `ZA N`) z typografią `--ss-text-stage-*`, kolorami success/alert i animacją wejścia — układ jak w v4, bez klonowania HTML.
 - **Admin Scena:** panel **Komunikaty** z priorytetem Alert/Normal oraz TTL 6/10/15/30/∞ (∞ faktycznie bez auto-hide).
 - **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.

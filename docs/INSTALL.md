@@ -30,8 +30,8 @@ Dane użytkownika: volume `./data` → `/app/data` w kontenerze (`STAGESYNC_DATA
 `POST /api/system/restart` i `shutdown` są dozwolone z loopback bez tokenu.
 Z LAN wymagają `Authorization: Bearer <STAGESYNC_HOST_TOKEN>` **albo**
 `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1` (tylko zaufane sieci). Admin wysyła token
-z `localStorage.stagesync.hostToken` gdy ustawiony — w UI: **Ustawienia hosta →
-LAN restart / shutdown** (PR [#257](https://github.com/Negatywistyczny/stagesync/pull/257)).
+z `localStorage.stagesync.hostToken` gdy ustawiony — w UI: zakładka **Host**
+(przyciski restart / shutdown w nagłówku Admina; PR [#257](https://github.com/Negatywistyczny/stagesync/pull/257)).
 
 ## Produkcja z GHCR (compose.prod.yml)
 
@@ -76,7 +76,7 @@ Serwer przy starcie robi też **shadow `.bak`** przed destrukcyjnym rewrite sche
 
 ### Na żądanie z Admina (zalecane)
 
-Admin → Ustawienia hosta → **Sprawdź aktualizacje** → **Aktualizuj host**.
+Admin → Host → **Sprawdź aktualizacje** → **Aktualizuj host**.
 
 Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WATCHTOWER_TOKEN` ustawione.
 

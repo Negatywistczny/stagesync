@@ -35,7 +35,7 @@ import {
 } from "../lib/docsLinks.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconFullscreen, IconPower, IconRestart, IconSettings, IconSun } from "./icons.js";
+import { IconFullscreen, IconPower, IconRestart, IconSun } from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
@@ -78,13 +78,11 @@ export function AdminShell() {
   const [section, setSection] = useState<SectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
   const [batchPcOpen, setBatchPcOpen] = useState(false);
-  const [pathPickerOpen, setPathPickerOpen] = useState(false);
   const [commandPending, setCommandPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
@@ -333,12 +331,6 @@ export function AdminShell() {
               <IconSun />
             </ShellIconButton>
             <ShellIconButton
-              label="Ustawienia hosta"
-              onClick={() => setSettingsOpen(true)}
-            >
-              <IconSettings />
-            </ShellIconButton>
-            <ShellIconButton
               label={restart.label}
               pressed={restart.pending}
               onClick={restart.arm}
@@ -467,7 +459,6 @@ export function AdminShell() {
         {section === "host" ? (
           <HostView
             statusMsg={hostStatusMsg}
-            onPathPicker={() => setPathPickerOpen(true)}
             autoCheckUpdate={menuCheckUpdate}
             onAutoCheckUpdateConsumed={() => setMenuCheckUpdate(false)}
           />
@@ -516,13 +507,6 @@ export function AdminShell() {
           </span>
         </div>
       </footer>
-
-      {settingsOpen ? (
-        <HostSettingsModal
-          onClose={() => setSettingsOpen(false)}
-          onPathPicker={() => setPathPickerOpen(true)}
-        />
-      ) : null}
 
       {importModalOpen ? (
         <Modal
@@ -624,15 +608,6 @@ export function AdminShell() {
             setBatchPcOpen(false);
           }}
         />
-      ) : null}
-
-      {pathPickerOpen ? (
-        <Modal title="Ścieżka" onClose={() => setPathPickerOpen(false)}>
-          <p className={styles.muted}>Przeglądanie katalogów — shell.</p>
-          <Button variant="ghost" onClick={() => setPathPickerOpen(false)}>
-            Zamknij
-          </Button>
-        </Modal>
       ) : null}
 
       <ShellPromptDialog
@@ -1065,12 +1040,10 @@ function useDoubleConfirm(action: () => Promise<void>, label: string) {
 
 function HostView({
   statusMsg,
-  onPathPicker,
   autoCheckUpdate = false,
   onAutoCheckUpdateConsumed,
 }: {
   statusMsg: string | null;
-  onPathPicker: () => void;
   autoCheckUpdate?: boolean;
   onAutoCheckUpdateConsumed?: () => void;
 }) {
@@ -1246,9 +1219,9 @@ function HostView({
           </pre>
         </section>
 
-        <section className={styles.card} aria-label="MIDI">
+        <section className={styles.card} aria-label="MIDI/Audio">
           <div className={styles.cardHead}>
-            <h2 className={styles.cardTitle}>MIDI</h2>
+            <h2 className={styles.cardTitle}>MIDI/Audio</h2>
           </div>
           <div className={`${styles.cardBody} ${styles.midiBody}`}>
             {midiError ? (
@@ -1258,11 +1231,16 @@ function HostView({
             ) : null}
             {midi ? (
               <>
-                <p className={styles.muted}>
-                  Backend <strong>{midi.backend}</strong>
-                  {midi.clockOutActive ? " · clock OUT aktywny" : ""}
-                  {midi.lastError ? ` · ${midi.lastError}` : ""}
-                </p>
+                {midi.clockOutActive || midi.lastError ? (
+                  <p className={styles.muted}>
+                    {[
+                      midi.clockOutActive ? "clock OUT aktywny" : null,
+                      midi.lastError || null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                ) : null}
                 <div
                   className={styles.midiMeters}
                   role="group"
@@ -1329,7 +1307,7 @@ function HostView({
                         );
                       }}
                     >
-                      Preferencje MIDI…
+                      Preferencje MIDI/Audio…
                     </Button>
                   </div>
                 </div>
@@ -1356,17 +1334,6 @@ function HostView({
             <p>
               Wersja <strong>{APP_VERSION}</strong>
             </p>
-            <div>
-              <h3 className={styles.subTitle}>Kopie zapasowe</h3>
-              <div className={styles.actions}>
-                <Button variant="ghost" disabled>
-                  Przywróć…
-                </Button>
-                <Button variant="ghost" onClick={onPathPicker}>
-                  Path picker
-                </Button>
-              </div>
-            </div>
           </div>
           <div className={styles.aboutCol}>
             <div className={styles.actions}>
@@ -1578,55 +1545,6 @@ function UpdatePanel({
         onCancel={() => setConfirmDesktopUpdate(false)}
       />
     </div>
-  );
-}
-
-function HostSettingsModal({
-  onClose,
-  onPathPicker,
-}: {
-  onClose: () => void;
-  onPathPicker: () => void;
-}) {
-  return (
-    <Modal title="Ustawienia hosta" onClose={onClose}>
-      <fieldset className={styles.fieldset}>
-        <legend>Audio / MIDI</legend>
-        <p className={styles.muted}>
-          Porty MIDI i wyjście audio — Preferencje (Cmd/Ctrl+,).
-        </p>
-        <Button
-          variant="ghost"
-          onClick={() => {
-            window.dispatchEvent(
-              new CustomEvent("stagesync:open-preferences", {
-                detail: { tab: "midi" },
-              }),
-            );
-            onClose();
-          }}
-        >
-          Otwórz Preferencje…
-        </Button>
-      </fieldset>
-      <fieldset className={styles.fieldset}>
-        <legend>Sieć</legend>
-        <p className={styles.muted}>
-          Port, hostname i URL-e — karta Sieć na zakładce Host.
-        </p>
-        <Button variant="ghost" onClick={onPathPicker}>
-          Wybierz ścieżkę…
-        </Button>
-      </fieldset>
-      <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose}>
-          Zamknij
-        </Button>
-        <Button variant="primary" onClick={onClose}>
-          OK
-        </Button>
-      </div>
-    </Modal>
   );
 }
 
