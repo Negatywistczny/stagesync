@@ -1,40 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Project } from "@stagesync/shared";
 import { fetchProject } from "./libraryApi.js";
 
 export function useActiveProject(activeProjectId: string | null | undefined) {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(false);
+  const loadGenRef = useRef(0);
 
   const reload = useCallback(async () => {
     if (!activeProjectId) {
       setActiveProject(null);
       return;
     }
-    const project = await fetchProject(activeProjectId);
-    setActiveProject(project);
+    const gen = ++loadGenRef.current;
+    const id = activeProjectId;
+    try {
+      const project = await fetchProject(id);
+      if (gen !== loadGenRef.current) return;
+      setActiveProject(project);
+    } catch {
+      if (gen !== loadGenRef.current) return;
+      setActiveProject(null);
+    }
   }, [activeProjectId]);
 
   useEffect(() => {
     if (!activeProjectId) {
+      loadGenRef.current += 1;
       setActiveProject(null);
       setLoading(false);
       return;
     }
-    let cancelled = false;
+    const gen = ++loadGenRef.current;
     setLoading(true);
     void (async () => {
       try {
         const project = await fetchProject(activeProjectId);
-        if (!cancelled) setActiveProject(project);
+        if (gen !== loadGenRef.current) return;
+        setActiveProject(project);
       } catch {
-        if (!cancelled) setActiveProject(null);
+        if (gen !== loadGenRef.current) return;
+        setActiveProject(null);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (gen === loadGenRef.current) setLoading(false);
       }
     })();
     return () => {
-      cancelled = true;
+      loadGenRef.current += 1;
     };
   }, [activeProjectId]);
 
