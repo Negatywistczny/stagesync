@@ -96,7 +96,7 @@ Wykonane (2026-07-21):
 
 ## Po tagu β2 / przed 5.0.0
 
-Aktywny etap w [TODO.md](../../TODO.md) = **5.0.0** (polish + Faza D + fade + G1–G10 green).  
+Aktywny etap w [TODO.md](../../TODO.md) = **5.0.0** (must A–E + Faza D **w kodzie**; residual = **G1–G10** operator + drafty OSMD/migration/wand; tag tylko na prośbę).  
 Scope kodu: [report-scope-5.0.0.md](./report-scope-5.0.0.md).
 
 ### Soft-gate overnight (2026-07-21→22) — bez HW

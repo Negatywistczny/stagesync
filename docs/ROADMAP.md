@@ -21,7 +21,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — H1–H12 (α10–α13); residual (menu Faza B, G1–G10) → **must β2** (docs cut `5.0.0-beta.1.1`) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
-| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny** — polish UI (zoom, help, copy, gęstość); fade/Faza D; `docs/api`; CI + smoke E2E; G1–G10 green | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
+| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny (kod A–E + Faza D na `main`)** — brak tagu; residual = **G1–G10** operator + drafty OSMD/migration/wand; hero przy cutcie | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
 
 ### Zamknięte etapy (α3–β1)
@@ -39,7 +39,7 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 | **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (wydane) |
 | **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β2** (wydane) |
 | **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** (wydane) |
-| **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Undo gdy stack; PDF setlisty; archiwum projektu; overlay skrótów; motyw sceniczny | **5.0.0** |
+| **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Usuń; Zoom H; Skróty; Undo grey-out (PDF setlisty / archiwum / motyw — OUT jeśli nie API) | **5.0.0** (wydane w kodzie — [#460](https://github.com/Negatywistyczny/stagesync/pull/460)) |
 
 **OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; MUTE ALL / PANIC; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik).
 
@@ -55,16 +55,24 @@ Tag `v5.0.0-beta.2`. Scope: [report-scope-beta2.md](./analysis/reports/report-sc
 - **G1–G10** — residual operatorski przy cutcie (⬜ na HW); must green przed / przy **5.0.0** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
 - **OUT β2:** fade/crossfade/loop-region; Faza D menu; Android native; MIDI w procesie Tauri; Flex Time
 
-### 5.0.0 — zakres orientacyjny — **aktywny**
+### 5.0.0 — zakres orientacyjny — **aktywny (kod domknięty; brak tagu)**
 
 Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md).
 
+**W kodzie na `main` (must A–E + residual closeout 2026-07-22):**
+
 - Polish UI na żywych kontrolkach (typografia, proporcje, copy, gęstość)
-- Timeline: zoom UI/H/V z ikonami; Pomoc z pełną treścią; **snap picker** (beat/subdivision)
-- Audio polish: fade, crossfade, loop-region; ewent. overlap mode
-- **Desktop OS menu — Faza D** (Usuń + Zoom H + Skróty + Undo grey-out)
-- Admin: drobne UX (np. panel toggle) jeśli nie w α4
-- Operator: G1–G10 green na instalatorach (soft-gate bez HW w overnight — [report-beta-gate](./analysis/reports/report-beta-gate.md))
+- Timeline: zoom UI/H/V z ikonami; Pomoc + skróty; **snap picker** (beat/subdivision)
+- Audio polish: fade, crossfade, loop-region (+ WebAudio envelope)
+- **Desktop OS menu — Faza D** — done ([#460](https://github.com/Negatywistyczny/stagesync/pull/460))
+- Mobile / tablet breakpoints + Client touch targets ([#464](https://github.com/Negatywistyczny/stagesync/pull/464))
+- `docs/api` + CI + smoke E2E
+
+**Operator / przed tagiem (nie claim green w docs):**
+
+- G1–G10 na instalatorach β2 — [report-beta-gate](./analysis/reports/report-beta-gate.md)
+- Draft residual: OSMD [#465](https://github.com/Negatywistyczny/stagesync/pull/465), migration [#466](https://github.com/Negatywistyczny/stagesync/pull/466) (CI red); wand [#467](https://github.com/Negatywistyczny/stagesync/pull/467) (draft, CI green)
+- Nazwa hero linii 5.0 + bump/tag — **tylko na prośbę**
 
 ### Po 5.0.0
 
