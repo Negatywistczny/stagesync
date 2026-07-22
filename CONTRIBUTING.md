@@ -61,21 +61,22 @@ Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](d
 
 ### CHANGELOG.md (Keep a Changelog)
 
-Pisz wyłącznie **efekty w produkcie/API/kodzie** — z perspektywy użytkownika, operatora
-lub dewelopera integrującego API.
+Pełna reguła agenta: [`.cursor/rules/changelog.mdc`](.cursor/rules/changelog.mdc).
+
+Skrót: ludzki opis korzyści/zachowania; kolejność H3 **Zmieniono → Dodano → Naprawiono** (jak w β2+); domeny jako `####`; **nigdy** drugi ten sam H3; agreguj commity; bez nazw funkcji, tokenów CSS, CI/Vitest ani checklist G1–G10.
 
 | Tak | Nie |
 |-----|-----|
 | Co się zmienia w zachowaniu systemu | Żargon czatu / AI (`stub`, `residual`, `must w strumieniu`, `ROADMAP OUT`) |
 | Fakt względem ostatniego wydania | Fałszywy „powrót” do stanu, którego nie było w wydanej wersji |
-| Kategorie: Dodano / Zmieniono / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO (to żyje w ADR / CONTRIBUTING / TODO) |
+| Kategorie: Zmieniono / Dodano / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO (to żyje w ADR / CONTRIBUTING / TODO) |
 | Zwięzły opis + opcjonalny link `#issue` / `#pr` | Relacja przebiegu prac („fundament pod…”, „parity bez stubu…”) |
 
 Polityka parytetu v4 → `5.0.0`: [ADR 0011 §1a](docs/adr/0011-ui-parity-behavior.md).
 
 ## Checklista przed release
 
-- [ ] [CHANGELOG.md](CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione; **bez** sekcji `[Unreleased]` w trakcie cut release (dopiero po pierwszych zmianach post-release)
+- [ ] [CHANGELOG.md](CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione; **bez** sekcji `[Unreleased]` w trakcie cut release (dopiero po pierwszych zmianach post-release); styl wg [changelog.mdc](.cursor/rules/changelog.mdc)
 - [ ] [README.md](README.md) — uruchomienie i wersja nadal zgodne z rzeczywistością
 - [ ] Design System — brak ad-hoc HEX / drugiego Buttona; tokeny `--ss-*` ([docs/ui/](docs/ui/README.md))
 - [ ] Brak orphan `TODO` / `FIXME` / `TEMP` w kodzie bez pozycji w [docs/TODO.md](docs/TODO.md)

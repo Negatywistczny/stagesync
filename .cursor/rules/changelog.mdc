@@ -1,0 +1,75 @@
+---
+description: Keep a Changelog PL — ludzki, zbity, bez dumpów agenta; kanoniczna struktura Unreleased
+globs: CHANGELOG.md
+alwaysApply: true
+---
+
+# Changelog (Keep a Changelog PL)
+
+Uzupełnia [versioning.mdc](versioning.mdc) (SemVer / tag / cut release). Ten plik = **jak pisać wpisy**.
+
+## Cel
+
+Changelog jest dla **użytownika i operatora**, nie dla gita ani agenta.
+
+- Opisuj **korzyść / zachowanie** („co się zmieniło w produkcie”).
+- **Agreguj** powiązane commity w jeden bullet.
+- Issue/PR na końcu: `(#123)` lub pełny link GitHub — nie w środku zdania jako jedyny kontekst.
+
+## Struktura `[Unreleased]`
+
+Kolejność H3 (jak w wydanych sekcjach β2+):
+
+1. `### Zmieniono`
+2. `### Dodano`
+3. `### Naprawiono`
+
+Opcjonalnie `### Usunięto` / `### Bezpieczeństwo` tylko gdy naprawdę potrzebne — też **jedna** sekcja każdego typu.
+
+Pod H3 grupuj domenowo przez `####` (gdy ≥ ~4 bulletów w sekcji):
+
+| `####` | Zakres |
+|--------|--------|
+| Timeline & DAW | edycja, linijka, Formy, inspector, narzędzia, Pomoc Timeline |
+| Audio / MIDI / Transport | playback, fade, MIDI I/O, playhead, setlista, WS |
+| App Shell & UI | Admin / Client chrome, preferencje, i18n widoczne w UI |
+| Desktop | Tauri, menu OS, updater, DnD shelła |
+| API / Server | HTTP, persystencja, walidacja krawędzi, migracja |
+| Docs | tylko publiczna infra (README, INSTALL) — nie wewnętrzne checklisty |
+
+Puste H3 — **nie twórz**. Brakujące H3 — dodaj **raz**, w kanonicznej kolejności.
+
+### Zakaz drugiego tego samego H3
+
+**Nigdy** nie dodawaj drugiej sekcji `### Dodano` / `### Zmieniono` / `### Naprawiono`.
+Dopisuj bullet pod istniejącym nagłówkiem. Jeśli go nie ma — utwórz jedną sekcję we właściwym miejscu kolejności.
+
+## Język bulletów
+
+- Prefiks domeny pogrubiony: `- **Timeline:** …`
+- Polski, zwięzły; bez dziennika „dziś zrobiłem…”.
+- Identyfikatory kodu / tokeny CSS / nazwy plików — tylko gdy użytkownik je zobaczy (np. nazwa instalatora).
+
+### Czarna lista (nie wklejaj)
+
+- Nazwy funkcji / symboli (`ensureAudioBuffered`, `graphKey`, `setSinkId`, `MQ_MOBILE`…)
+- Tokeny CSS / klasy (`--ss-*`, `.zoomRange`, `--tl-marker-line`)
+- Szum CI / Vitest / Codecov / coverage paths
+- Stany checklist PO smoke / G1–G10 / „⬜ green”
+- Duplikaty tego samego feature w wielu bulletach
+- Surowy `git log` / lista commitów
+
+## Transformacja (wzór)
+
+❌ `ensureAudioBuffered przed Play; clearAudioBufferCache przy odmontowaniu; graphKey na fade`  
+✅ **Audio:** buforowanie przed Play (spinner); wyciszanie przy Pause/Stop; poprawna obwiednia fade/loop na klipie
+
+❌ `### Naprawiono` … później znowu `### Naprawiono` z kolejnymi fixami  
+✅ jeden `### Naprawiono` + ewentualnie `####` domenowe
+
+❌ osobne bullety: AppHeader L1, song cluster L2, undo menu, grey-out historii  
+✅ **Desktop / chrome:** dwupoziomowy nagłówek; menu Edycja Cofnij/Ponów zsynchronizowane z historią draftu Timeline (`#443`)
+
+## Relacja do release
+
+Przy cut release: przenieś Unreleased → `## [X.Y.Z] - RRRR-MM-DD` (patrz versioning). Nie twórz pustego `[Unreleased]` w tym samym cutcie.
