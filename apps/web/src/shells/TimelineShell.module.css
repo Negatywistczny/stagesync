@@ -513,6 +513,15 @@
 }
 
 .markerOverlay {
+  --tl-ruler-lane-h: calc(
+    (var(--ss-space-6) + var(--ss-space-1)) * var(--tl-zoom-ui)
+  );
+  /* Subtle rail vs canvas — not primary/info accents. */
+  --tl-marker-line: color-mix(
+    in srgb,
+    var(--ss-color-text-muted) 72%,
+    var(--ss-color-bg)
+  );
   position: absolute;
   left: var(--tl-dock-w);
   right: 0;
@@ -525,15 +534,15 @@
 
 .playheadMidi {
   position: absolute;
-  top: 0;
+  /* Start at BeatLane top (below LoopLane). */
+  top: var(--tl-ruler-lane-h);
   bottom: 0;
   width: 2px;
   margin-left: -1px;
-  background: var(--ss-color-info);
+  background: var(--tl-marker-line);
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.95;
   z-index: 1;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ss-color-info) 35%, transparent);
 }
 
 .playheadMidi::before {
@@ -544,14 +553,14 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid var(--ss-color-info);
+  border-top: 8px solid var(--tl-marker-line);
 }
 
 .locator {
   position: absolute;
-  top: 0;
-  /* Hit target only over ruler — full-height steal blocked Forma/Tekst drag (v4 regression). */
-  height: calc(var(--ss-space-6) + var(--ss-space-2));
+  top: var(--tl-ruler-lane-h);
+  /* Hit target over BeatLane only — LoopLane owns cycle gestures. */
+  height: var(--tl-ruler-lane-h);
   width: 12px;
   margin-left: -6px;
   background: transparent;
@@ -570,7 +579,7 @@
   left: 50%;
   width: 2px;
   margin-left: -1px;
-  background: var(--ss-color-primary);
+  background: var(--tl-marker-line);
   pointer-events: none;
 }
 
@@ -582,7 +591,7 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 8px solid var(--ss-color-primary);
+  border-bottom: 8px solid var(--tl-marker-line);
   pointer-events: none;
 }
 
@@ -594,7 +603,7 @@
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
   font-variant-numeric: tabular-nums;
-  color: var(--ss-color-primary);
+  color: var(--ss-color-text-muted);
   white-space: nowrap;
   pointer-events: none;
 }
