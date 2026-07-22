@@ -9,6 +9,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
+- **Walidacja:** ściślejsze schematy i limity długości / BPM / metrum na krawędziach (projekt, biblioteka, setlista, MIDI, cue sceniczny, transport); odrzucanie niepoprawnych metrum; BPM 20–400.
+- **Timebase:** konwersje ticks↔BBT i snap do taktów uwzględniają mapę metrum; ochrona przed nie-skończonymi tickami.
+- **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WS; skracanie komunikatów błędów; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
+- **UI:** typografia i odstępy wyłącznie tokenami `--ss-*` w Admin / Client / Timeline; touch targety zgodne z gęstością design systemu.
 
 ### Dodano
 
@@ -52,13 +56,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline:** ochrona przed nakładającymi się komendami transportu; jaśniejszy konflikt zapisu OCC; anulowanie fetchy pickera utworu / uploadu audio przy zamknięciu; limit 64 ścieżek audio w UI.
 - **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST transportu zawierają czas serwera.
-
-### Zmieniono
-
-- **Walidacja:** ściślejsze schematy i limity długości / BPM / metrum na krawędziach (projekt, biblioteka, setlista, MIDI, cue sceniczny, transport); odrzucanie niepoprawnych metrum; BPM 20–400.
-- **Timebase:** konwersje ticks↔BBT i snap do taktów uwzględniają mapę metrum; ochrona przed nie-skończonymi tickami.
-- **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WS; skracanie komunikatów błędów; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
-- **UI:** typografia i odstępy wyłącznie tokenami `--ss-*` w Admin / Client / Timeline; touch targety zgodne z gęstością design systemu.
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
