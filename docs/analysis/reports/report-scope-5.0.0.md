@@ -176,6 +176,69 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
+## Handoff morning (2026-07-22 — overnight; update ~07:20 CEST)
+
+**Audit działa.** Agent: bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
+
+### Must A–E (#53–#60)
+
+Wszystkie **OPEN + CI green** (sprawdzone ~06:32 / ponownie w trakcie fali). Merge order: #53→#54; #57→#58 before #64/#66.
+
+### Wave 16 — post-must (~06:36–07:20 CEST) — ten agent
+
+| # | Temat | URL |
+|---|--------|-----|
+| [#266](https://github.com/Negatywistyczny/stagesync/pull/266) | Timeline song picker filter | https://github.com/Negatywistyczny/stagesync/pull/266 |
+| [#267](https://github.com/Negatywistyczny/stagesync/pull/267) | Drums note maxLength 500 | https://github.com/Negatywistyczny/stagesync/pull/267 |
+| [#268](https://github.com/Negatywistyczny/stagesync/pull/268) | ProjectFiles stale reload | https://github.com/Negatywistyczny/stagesync/pull/268 |
+| [#269](https://github.com/Negatywistyczny/stagesync/pull/269) | Desktop setlist neighbor pending + toast | https://github.com/Negatywistyczny/stagesync/pull/269 |
+| [#270](https://github.com/Negatywistyczny/stagesync/pull/270)–[#271](https://github.com/Negatywistyczny/stagesync/pull/271) | Admin/Timeline fullscreen errors | https://github.com/Negatywistyczny/stagesync/pull/270 |
+| [#272](https://github.com/Negatywistyczny/stagesync/pull/272) | Client name modal Escape | https://github.com/Negatywistyczny/stagesync/pull/272 |
+| [#274](https://github.com/Negatywistyczny/stagesync/pull/274) | ProjectFiles delete confirm pending | https://github.com/Negatywistyczny/stagesync/pull/274 |
+| [#276](https://github.com/Negatywistyczny/stagesync/pull/276) | Stage send aria-live | https://github.com/Negatywistyczny/stagesync/pull/276 |
+| [#277](https://github.com/Negatywistyczny/stagesync/pull/277) | Desktop play/stop toast (rebase w/#269) | https://github.com/Negatywistyczny/stagesync/pull/277 |
+| [#278](https://github.com/Negatywistyczny/stagesync/pull/278) | MusicXML/Batch PC dismiss while busy | https://github.com/Negatywistyczny/stagesync/pull/278 |
+| [#279](https://github.com/Negatywistyczny/stagesync/pull/279) | ShellBlockingDialog focus trap (rebase w/#274) | https://github.com/Negatywistyczny/stagesync/pull/279 |
+| [#280](https://github.com/Negatywistyczny/stagesync/pull/280) | Forma default subsections max 64 | https://github.com/Negatywistyczny/stagesync/pull/280 |
+| [#281](https://github.com/Negatywistyczny/stagesync/pull/281) | Library export Zod body | https://github.com/Negatywistyczny/stagesync/pull/281 |
+| [#282](https://github.com/Negatywistyczny/stagesync/pull/282) | Library import orphan delete | https://github.com/Negatywistyczny/stagesync/pull/282 |
+| [#283](https://github.com/Negatywistyczny/stagesync/pull/283) | Batch MIDI assignments max 1024 | https://github.com/Negatywistyczny/stagesync/pull/283 |
+| [#284](https://github.com/Negatywistyczny/stagesync/pull/284) | Transport mutation mutex | https://github.com/Negatywistyczny/stagesync/pull/284 |
+| [#285](https://github.com/Negatywistyczny/stagesync/pull/285) | Asset file stream errors | https://github.com/Negatywistyczny/stagesync/pull/285 |
+| [#286](https://github.com/Negatywistyczny/stagesync/pull/286) | sppToTicks MIDI 14-bit range | https://github.com/Negatywistyczny/stagesync/pull/286 |
+| [#287](https://github.com/Negatywistyczny/stagesync/pull/287) | Countdown digit labels max 32 | https://github.com/Negatywistyczny/stagesync/pull/287 |
+| [#288](https://github.com/Negatywistyczny/stagesync/pull/288) | Tap-tempo BPM 20–400 | https://github.com/Negatywistyczny/stagesync/pull/288 |
+| [#289](https://github.com/Negatywistyczny/stagesync/pull/289) | Log SSE history replay errors | https://github.com/Negatywistyczny/stagesync/pull/289 |
+| [#290](https://github.com/Negatywistyczny/stagesync/pull/290) | updateAvailable SemVer gt | https://github.com/Negatywistyczny/stagesync/pull/290 |
+| [#291](https://github.com/Negatywistyczny/stagesync/pull/291) | Map segments leading default gap | https://github.com/Negatywistyczny/stagesync/pull/291 |
+| [#293](https://github.com/Negatywistyczny/stagesync/pull/293) | UG altered chords (Am7b5…) | https://github.com/Negatywistyczny/stagesync/pull/293 |
+| [#294](https://github.com/Negatywistyczny/stagesync/pull/294) | Tekst/Cue -r remnant text | https://github.com/Negatywistyczny/stagesync/pull/294 |
+| [#295](https://github.com/Negatywistyczny/stagesync/pull/295) | upsertTempoAt BPM 20–400 | https://github.com/Negatywistyczny/stagesync/pull/295 |
+| [#296](https://github.com/Negatywistyczny/stagesync/pull/296) | Skip 169.254 LAN addresses | https://github.com/Negatywistyczny/stagesync/pull/296 |
+
+Earlier overnight (#194–#265) + musts: prefer latest handoff tables; do not reimplement.
+
+### Merge / rebase notes (wave 16)
+
+- Desktop toast: unify **#269** + **#277** into one menu-error state.
+- **#274** `pending` vs **#279** focus trap on `ShellBlockingDialog`.
+- Asset stream **#285** vs upload PRs **#175**/**#186**.
+- Prefer **#102** over **#92**; C-fade **#57→#58** before **#64/#66**.
+
+### Remaining backlog (ranked)
+
+1. Continue small 1-theme PRs to ~10:00; fix any red CI.
+2. Wand floor length shrink (rebase on #102).
+3. Client setlist focus/poll generation after #143 lands.
+4. Admin density deep-pass; Client clamps (#90/#198).
+5. Playwright Forma drag — defer (#67 exists).
+6. G1–G10 — soft-gate only (no HW green claim).
+
+### Blokery
+
+- G1–G10 soft-gate only — **nie** claim green bez HW.
+- No merge / no `5.0.0` tag without explicit ask.
+
 ## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
