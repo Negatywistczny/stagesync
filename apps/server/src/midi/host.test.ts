@@ -139,7 +139,11 @@ describe("midi host", () => {
   });
 
   it("MIDI IN Start/Stop/Continue/SPP drive transport", () => {
-    const transport = createTransportEngine();
+    const nowMs = 1_000_000;
+    const transport = createTransportEngine({
+      now: () => nowMs,
+      tickIntervalMs: 60_000,
+    });
     const backend = createMockMidiBackend();
     const host = createMidiHost(transport, { backend });
     host.setConfig({ inputId: "mock-in-1" });
