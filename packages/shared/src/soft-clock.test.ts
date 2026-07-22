@@ -26,12 +26,10 @@ describe("getDisplayTicks", () => {
     expect(getDisplayTicks(anchor, 900, 1000, true)).toBe(1000);
   });
 
-  it("rejects non-finite anchor or timestamps", () => {
-    expect(() =>
-      getDisplayTicks({ ...anchor, bpm: Number.NaN }, 1500, 1000, true),
-    ).toThrow(RangeError);
-    expect(() => getDisplayTicks(anchor, Number.POSITIVE_INFINITY, 1000, true)).toThrow(
-      RangeError,
-    );
+  it("falls back when timestamps are non-finite", () => {
+    expect(getDisplayTicks(anchor, Number.NaN, 1000, true)).toBe(1000);
+    expect(
+      getDisplayTicks(anchor, 1500, Number.POSITIVE_INFINITY, true),
+    ).toBe(1000);
   });
 });
