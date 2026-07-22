@@ -436,6 +436,21 @@ export const StageMessageBodySchema = z.object({
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
 
+/** Inbound WS presence hello from Client shells (`/ws/transport`). */
+export const ClientHelloMessageSchema = z
+  .object({
+    type: z.literal("client_hello"),
+    displayName: z.string().max(80).optional(),
+    roles: z
+      .array(z.enum(["karaoke", "grid", "score", "drums", "timeline"]))
+      .max(2)
+      .optional(),
+    latencyMs: z.number().finite().nonnegative().nullable().optional(),
+  })
+  .strict();
+
+export type ClientHelloMessage = z.infer<typeof ClientHelloMessageSchema>;
+
 /** GET /api/system/update-status response */
 export const UpdateStatusSchema = z.object({
   current: z.string(),
