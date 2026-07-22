@@ -295,7 +295,7 @@ export function SystemView({
                         );
                       }}
                     >
-                      Preferencje MIDI/Audio…
+                      Ustawienia…
                     </Button>
                   </div>
                 </div>

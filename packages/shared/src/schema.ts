@@ -666,6 +666,18 @@ export const ApplyUpdateBodySchema = z
 
 export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;
 
+/** PUT /api/system/settings — managed .env values from Admin Ustawienia. */
+export const PutServerSettingsBodySchema = z
+  .object({
+    values: z.record(
+      z.string().min(1).max(64),
+      z.union([z.string().max(500), z.boolean(), z.number(), z.null()]),
+    ),
+  })
+  .strict();
+
+export type PutServerSettingsBody = z.infer<typeof PutServerSettingsBodySchema>;
+
 
 /** MIDI port listed by the host (apps/server). */
 export const MidiPortSchema = z.object({

@@ -1,8 +1,11 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
+import { loadDotenvIntoProcess } from "./env-settings.js";
 import { createLifecycle } from "./lifecycle.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { attachTransportWs } from "./transport/ws.js";
+
+loadDotenvIntoProcess();
 
 function resolveListenPort(): number {
   const raw = process.env.PORT;
@@ -17,7 +20,18 @@ function resolveListenPort(): number {
   return n;
 }
 
+function resolveBindHost(): string {
+  const raw = (process.env.STAGESYNC_BIND_HOST ?? "0.0.0.0").trim();
+  if (raw === "localhost" || raw === "127.0.0.1") return "127.0.0.1";
+  if (raw === "0.0.0.0" || raw === "::") return raw;
+  console.warn(
+    `[stagesync-server] invalid STAGESYNC_BIND_HOST=${JSON.stringify(raw)}; using 0.0.0.0`,
+  );
+  return "0.0.0.0";
+}
+
 const PORT = resolveListenPort();
+const BIND_HOST = resolveBindHost();
 /** Hot-reload races (tsx watch) often hit EADDRINUSE briefly — retry instead of crashing. */
 const LISTEN_RETRY_MS = 250;
 const LISTEN_RETRY_MAX = 40;
@@ -68,10 +82,14 @@ function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
   };
 
   server.once("error", onError);
-  server.listen(PORT, () => {
+  server.listen(PORT, BIND_HOST, () => {
     server.off("error", onError);
-    logBuffer.push("info", `listening on http://localhost:${PORT}`);
-    console.log(`[stagesync-server] listening on http://localhost:${PORT}`);
+    const where =
+      BIND_HOST === "0.0.0.0" || BIND_HOST === "::"
+        ? `http://localhost:${PORT} (bind ${BIND_HOST})`
+        : `http://${BIND_HOST}:${PORT}`;
+    logBuffer.push("info", `listening on ${where}`);
+    console.log(`[stagesync-server] listening on ${where}`);
     console.log(
       `[stagesync-server] transport WS ws://localhost:${PORT}/ws/transport`,
     );

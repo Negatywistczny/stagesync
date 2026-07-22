@@ -56,7 +56,11 @@ describe("fetchLatestReleaseVersion", () => {
       ]),
     );
 
-    const result = await fetchLatestReleaseVersion("tok", fetchImpl as unknown as typeof fetch);
+    const result = await fetchLatestReleaseVersion(
+      "tok",
+      fetchImpl as unknown as typeof fetch,
+      "all",
+    );
     expect(result).toEqual({ latest: "5.0.0-alpha.13", error: null });
     expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("/releases?per_page=20");
   });

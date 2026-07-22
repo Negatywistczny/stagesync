@@ -60,6 +60,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Ustawienia (Admin):** jedno okno **Ustawienia** (Audio/MIDI/Metronom + Serwer: port/bind/mDNS, logi, kanał Stable/Beta/RC, ścieżki z pickerem); Odrzuć/Zapisz dla draftu lokalnego i `.env`.
 - **Dirty draft:** usunięta etykieta „niezapisane” z nagłówka / toolbara; przy niezapisanych zmianach wyróżnione **Zapisz** (akcent) i **Odrzuć** (danger) — Preferencje oraz chrome Timeline.
 - **Client — partytura:** ustawienia (zoom, oktawa, śledzenie playheada, widoczne partie) w oknie **Partytura** (⚙️), bez pływającego toolbara nad nutami.
 - **Admin chrome:** przycisk **Ustawienia** (zamiast Wygląd) otwiera Preferencje; motyw/kontrast w Ogólne.
@@ -76,6 +77,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, Inspector jako drawer przy metadanych/zaznaczeniu, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
 
 #### ⚙️ Serwer & API
+- **Ustawienia hosta:** `GET|PUT /api/system/settings` + `GET /api/system/browse`; bind host; filtr kanału aktualizacji; flaga mDNS w `/network`.
 - **Cue TTL:** `ttlMs: 0` = ∞ (REST + WS); Admin wysyła 0 zamiast cichego spadku do 6 s.
 - **Walidacja:** ściślejsze limity długości, BPM (20–400) i metrum na krawędziach API; odrzucanie niepoprawnego metrum.
 - **Timebase:** konwersje ticks↔BBT i snap do taktów respektują mapę metrum; ochrona przed nieprawidłowymi tickami.

@@ -33,7 +33,7 @@ import { ShellIconButton } from "./ShellIconButton.js";
 import {
   PreferencesModal,
   type PreferencesTab,
-} from "./PreferencesModal.js";
+} from "./ServerSettingsModal.js";
 import styles from "./DesktopMenuBridge.module.css";
 
 function Modal({

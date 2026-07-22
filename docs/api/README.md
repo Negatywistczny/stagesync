@@ -32,6 +32,9 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 | `GET` | `/api/system/logs/stream` | SSE stream logów |
 | `POST` | `/api/system/logs/clear` | Czyści ring-buffer |
 | `GET` | `/api/system/network` | Adresy LAN, port, wersja, opcjonalnie `dataDir` |
+| `GET` | `/api/system/settings` | Zarządzane wartości `.env` (Admin Ustawienia; loopback/token) |
+| `PUT` | `/api/system/settings` | Zapis zarządzanych kluczy do `.env` |
+| `GET` | `/api/system/browse` | Picker katalogów (repo + home) |
 | `GET` | `/api/system/update-status` | Porównanie wersji vs GitHub Releases (Docker); w shellu desktop — soft skip |
 | `POST` | `/api/system/apply-update` | Trigger Watchtower (`STAGESYNC_UPDATER_*`); inaczej **501** |
 | `POST` | `/api/system/restart` | Restart procesu (lifecycle); LAN wymaga tokenu / allow |

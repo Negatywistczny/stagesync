@@ -339,6 +339,105 @@ function hostLifecycleHeaders(): HeadersInit {
   return {};
 }
 
+
+export type ServerSettingsValues = {
+  PORT: string;
+  STAGESYNC_BIND_HOST: string;
+  STAGESYNC_DISABLE_MDNS: boolean;
+  LOG_LEVEL: string;
+  STAGESYNC_DISABLE_AUTO_UPDATE: boolean;
+  STAGESYNC_UPDATE_CHANNEL: string;
+  STAGESYNC_DATA_DIR: string;
+  STAGESYNC_BACKUPS_DIR: string;
+  STAGESYNC_ASSETS_DIR: string;
+  [key: string]: string | boolean;
+};
+
+export type ServerSettingsResponse = {
+  values: ServerSettingsValues;
+  envExists: boolean;
+  schema: Record<string, {
+    section: string;
+    type: string;
+    label: string;
+    hint: string | null;
+    options: string[] | null;
+    defaultValue: string | boolean | null;
+    pathKind: "dir" | "file" | null;
+    restartRequired: boolean;
+  }>;
+  restartRequired?: boolean;
+  restartKeys?: string[];
+  message?: string;
+  resolved?: {
+    dataDir: string | null;
+    backupsDir: string | null;
+    assetsHint: string | null;
+  };
+};
+
+export async function fetchServerSettings(): Promise<ServerSettingsResponse> {
+  const res = await fetch("/api/system/settings", {
+    cache: "no-store",
+    headers: hostLifecycleHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as ServerSettingsResponse;
+}
+
+export async function putServerSettings(
+  values: Partial<ServerSettingsValues>,
+): Promise<ServerSettingsResponse> {
+  const res = await fetch("/api/system/settings", {
+    method: "PUT",
+    headers: {
+      "content-type": "application/json",
+      ...hostLifecycleHeaders(),
+    },
+    body: JSON.stringify({ values }),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as ServerSettingsResponse;
+}
+
+export type BrowseResult = {
+  path: string;
+  envPath: string;
+  parent: string | null;
+  parentEnvPath: string | null;
+  canSelectCurrent: boolean;
+  entries: Array<{
+    name: string;
+    type: "dir" | "file";
+    path: string;
+    envPath: string;
+    selectable: boolean;
+  }>;
+};
+
+export async function browseServerPath(options: {
+  path?: string;
+  mode?: "dir" | "file";
+  ext?: string;
+}): Promise<BrowseResult> {
+  const params = new URLSearchParams();
+  params.set("mode", options.mode ?? "dir");
+  if (options.path) params.set("path", options.path);
+  if (options.ext) params.set("ext", options.ext);
+  const res = await fetch(`/api/system/browse?${params}`, {
+    cache: "no-store",
+    headers: hostLifecycleHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as BrowseResult;
+}
+
 export type HostUpdateStatus = {
   current: string;
   latest: string | null;

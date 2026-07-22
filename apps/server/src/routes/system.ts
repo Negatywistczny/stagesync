@@ -5,8 +5,23 @@ import type { LogBuffer } from "../log-buffer.js";
 import type { Lifecycle } from "../lifecycle.js";
 import { buildNetworkInfo } from "../network-info.js";
 import { isRunningUnderPm2 } from "../lifecycle.js";
-import { ApplyUpdateBodySchema } from "@stagesync/shared";
+import {
+  ApplyUpdateBodySchema,
+  PutServerSettingsBodySchema,
+} from "@stagesync/shared";
 import { buildStoreZip, type ZipEntry } from "../diagnostics-zip.js";
+import {
+  getSettingsSchemaForClient,
+  listRestartRequiredKeys,
+  readManagedSettings,
+  releaseMatchesUpdateChannel,
+  writeManagedSettings,
+} from "../env-settings.js";
+import {
+  listBrowseDirectory,
+  resolveBrowseStartPath,
+} from "../path-browser.js";
+import { sendError, handleRouteError } from "./errors.js";
 
 export type SystemRouterDeps = {
   logBuffer: LogBuffer;
@@ -124,6 +139,7 @@ export function isSemverNewer(candidate: string, current: string): boolean {
 export async function fetchLatestReleaseVersion(
   token?: string,
   fetchImpl: typeof fetch = fetch,
+  channel: string = process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable",
 ): Promise<LatestReleaseResult> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
@@ -169,7 +185,17 @@ export async function fetchLatestReleaseVersion(
     }
 
     const published = (data as GitHubReleaseListItem[])
-      .filter((r) => r && r.draft !== true && typeof r.tag_name === "string")
+      .filter(
+        (r) =>
+          r &&
+          r.draft !== true &&
+          typeof r.tag_name === "string" &&
+          releaseMatchesUpdateChannel(
+            r.tag_name,
+            Boolean(r.prerelease),
+            channel,
+          ),
+      )
       .sort((a, b) => {
         const ta = Date.parse(a.published_at ?? a.created_at ?? "") || 0;
         const tb = Date.parse(b.published_at ?? b.created_at ?? "") || 0;
@@ -178,7 +204,10 @@ export async function fetchLatestReleaseVersion(
 
     const tag = published[0]?.tag_name?.replace(/^v/, "") ?? null;
     if (!tag) {
-      return { latest: null, error: "Brak opublikowanych wydań na GitHub Releases" };
+      return {
+        latest: null,
+        error: "Brak opublikowanych wydań na wybranym kanale aktualizacji",
+      };
     }
     return { latest: tag, error: null };
   } catch {
@@ -213,16 +242,123 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
 
   router.get("/network", (_req, res) => {
     res.set("Cache-Control", "no-store");
+    const mdnsDisabled =
+      process.env.STAGESYNC_DISABLE_MDNS === "1" ||
+      process.env.STAGESYNC_DISABLE_MDNS === "true";
     res.json({
       ...buildNetworkInfo(port),
       version,
       ...(dataDir ? { dataDir } : {}),
+      mdnsEnabled: !mdnsDisabled,
+      bindHost:
+        (process.env.STAGESYNC_BIND_HOST ?? "0.0.0.0").trim() || "0.0.0.0",
+      updateChannel: process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable",
+      autoUpdateDisabled:
+        process.env.STAGESYNC_DISABLE_AUTO_UPDATE === "1" ||
+        process.env.STAGESYNC_DISABLE_AUTO_UPDATE === "true",
     });
+  });
+
+  router.get("/settings", (req, res) => {
+    if (!assertLifecycleAllowed(req, res)) return;
+    try {
+      const { values, envExists } = readManagedSettings();
+      res.set("Cache-Control", "no-store");
+      res.json({
+        values,
+        envExists,
+        schema: getSettingsSchemaForClient(),
+        restartRequired: true,
+        resolved: {
+          dataDir: dataDir ?? null,
+          backupsDir: dataDir ? join(dataDir, "backups") : null,
+          assetsHint: dataDir
+            ? join(dataDir, "projects", "<id>", "assets")
+            : null,
+        },
+      });
+    } catch (err) {
+      handleRouteError(res, err);
+    }
+  });
+
+  router.put("/settings", (req, res) => {
+    if (!assertLifecycleAllowed(req, res)) return;
+    try {
+      const body = PutServerSettingsBodySchema.safeParse(req.body);
+      if (!body.success) {
+        res.status(400).json({
+          ok: false,
+          error: "Invalid body",
+          details: body.error.issues,
+        });
+        return;
+      }
+      const before = readManagedSettings().values;
+      const { values, envExists } = writeManagedSettings(body.data.values);
+      const restartKeys = listRestartRequiredKeys(before, values);
+      res.json({
+        ok: true,
+        values,
+        envExists,
+        schema: getSettingsSchemaForClient(),
+        restartRequired: restartKeys.length > 0,
+        restartKeys,
+        message:
+          restartKeys.length > 0
+            ? "Zapisano. Zrestartuj serwer, aby zastosować zmiany sieci / ścieżek / logów."
+            : "Zapisano.",
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        sendError(res, 400, err.message);
+        return;
+      }
+      handleRouteError(res, err);
+    }
+  });
+
+  router.get("/browse", (req, res) => {
+    if (!assertLifecycleAllowed(req, res)) return;
+    try {
+      const mode = req.query.mode === "file" ? "file" : "dir";
+      const ext =
+        typeof req.query.ext === "string" && req.query.ext.trim()
+          ? req.query.ext.trim()
+          : undefined;
+      const rawPath =
+        typeof req.query.path === "string" ? req.query.path.trim() : "";
+      const browsePath = resolveBrowseStartPath(rawPath, { mode });
+      const result = listBrowseDirectory(browsePath, { mode, ext });
+      res.set("Cache-Control", "no-store");
+      res.json(result);
+    } catch (err) {
+      if (err instanceof Error) {
+        sendError(res, 400, err.message);
+        return;
+      }
+      handleRouteError(res, err);
+    }
   });
 
   /** GET /api/system/update-status — compare current vs GitHub Releases latest. */
   router.get("/update-status", async (_req, res) => {
     res.set("Cache-Control", "no-store");
+
+    if (
+      process.env.STAGESYNC_DISABLE_AUTO_UPDATE === "1" ||
+      process.env.STAGESYNC_DISABLE_AUTO_UPDATE === "true"
+    ) {
+      res.json({
+        current: version,
+        latest: null,
+        updateAvailable: false,
+        error:
+          "Aktualizacje wyłączone w Ustawieniach (STAGESYNC_DISABLE_AUTO_UPDATE).",
+        autoUpdateDisabled: true,
+      });
+      return;
+    }
 
     // Desktop sidecar: app updates via Tauri updater; Watchtower/host GitHub
     // check is Docker-only — skip noisy Releases fetch and soft-fail messaging.
@@ -237,12 +373,18 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     }
 
     const token = process.env.STAGESYNC_GITHUB_TOKEN;
-    const { latest, error } = await fetchLatestReleaseVersion(token);
+    const channel = process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable";
+    const { latest, error } = await fetchLatestReleaseVersion(
+      token,
+      fetch,
+      channel,
+    );
     res.json({
       current: version,
       latest,
       updateAvailable: latest !== null && isSemverNewer(latest, version),
       error,
+      updateChannel: channel,
     });
   });
 
