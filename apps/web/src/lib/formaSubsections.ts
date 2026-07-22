@@ -27,7 +27,7 @@ export function subsectionMaxChunkTicks(
   return 4 * ticksPerBar(meter, project.ppq);
 }
 
-/** Sorted unique interior offsets in (0, lengthTicks). */
+/** Sorted unique interior offsets in (0, lengthTicks). Cap at 64. */
 export function normalizeSubsectionOffsets(
   offsets: readonly number[],
   lengthTicks: number,
@@ -39,7 +39,9 @@ export function normalizeSubsectionOffsets(
         .map((t) => Math.round(Number(t)))
         .filter((t) => Number.isFinite(t) && t > 0 && t < len),
     ),
-  ].sort((a, b) => a - b);
+  ]
+    .sort((a, b) => a - b)
+    .slice(0, 64);
 }
 
 /** Band ranges covering [0, lengthTicks), including implicit start at 0. */
@@ -71,6 +73,7 @@ function interior4BarStartsFromLeft(
   const out: number[] = [];
   for (let t = spanStart + chunk; t < spanEnd; t += chunk) {
     out.push(t);
+    if (out.length >= 64) break;
   }
   return out;
 }
@@ -84,6 +87,7 @@ function interior4BarStartsFromRight(
   const out: number[] = [];
   for (let t = spanEnd - chunk; t > spanStart; t -= chunk) {
     out.push(t);
+    if (out.length >= 64) break;
   }
   return out.sort((a, b) => a - b);
 }
