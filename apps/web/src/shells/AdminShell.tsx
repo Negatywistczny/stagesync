@@ -99,7 +99,9 @@ export function AdminShell() {
     try {
       await postSystemRestart();
     } catch (err) {
-      setHostStatusMsg(err instanceof Error ? err.message : "Restart nieudany");
+      const message =
+        err instanceof Error ? err.message : "Restart nieudany";
+      setHostStatusMsg(message.slice(0, 500));
     }
   }, "Restart");
 
@@ -108,9 +110,9 @@ export function AdminShell() {
     try {
       await postSystemShutdown();
     } catch (err) {
-      setHostStatusMsg(
-        err instanceof Error ? err.message : "Wyłączenie nieudane",
-      );
+      const message =
+        err instanceof Error ? err.message : "Wyłączenie nieudane";
+      setHostStatusMsg(message.slice(0, 500));
     }
   }, "Wyłącz");
 
