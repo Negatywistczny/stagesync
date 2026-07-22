@@ -14,14 +14,29 @@ export function ticksInLoopRegion(
   ticks: number,
   range: LoopRange | null | undefined,
 ): boolean {
-  if (!range || range.endTicks <= range.startTicks) return false;
+  if (
+    !range ||
+    !Number.isFinite(ticks) ||
+    !Number.isFinite(range.startTicks) ||
+    !Number.isFinite(range.endTicks) ||
+    range.endTicks <= range.startTicks
+  ) {
+    return false;
+  }
   return ticks >= range.startTicks && ticks < range.endTicks;
 }
 
 export function usableLoopRange(
   loop: TransportLoop | null | undefined,
 ): LoopRange | null {
-  if (!loop || loop.endTicks <= loop.startTicks) return null;
+  if (
+    !loop ||
+    !Number.isFinite(loop.startTicks) ||
+    !Number.isFinite(loop.endTicks) ||
+    loop.endTicks <= loop.startTicks
+  ) {
+    return null;
+  }
   return { startTicks: loop.startTicks, endTicks: loop.endTicks };
 }
 
