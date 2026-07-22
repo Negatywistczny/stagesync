@@ -309,7 +309,7 @@ function splitCountsByContentBars(
   }
   const raw = contentSpans.map((s) => (s.bars / totalBars) * n);
   const floors = raw.map((x) => Math.floor(x));
-  let assigned = floors.reduce((a, b) => a + b, 0);
+  const assigned = floors.reduce((a, b) => a + b, 0);
   const frac = raw
     .map((x, i) => ({ i, f: x - floors[i]! }))
     .sort((a, b) => b.f - a.f);
