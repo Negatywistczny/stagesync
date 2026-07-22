@@ -192,6 +192,12 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 placeholder="Filtr…"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape" && filter) {
+                    e.preventDefault();
+                    setFilter("");
+                  }
+                }}
                 aria-label="Filtr utworów"
               />
             </div>
