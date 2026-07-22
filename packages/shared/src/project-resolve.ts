@@ -18,7 +18,7 @@ function lastEventAt<T extends { startTicks: number }>(
 }
 
 export function resolveTempoAt(
-  project: Project,
+  project: Pick<Project, "tempoMap" | "defaultBpm">,
   positionTicks: number,
 ): number {
   const ev = lastEventAt(project.tempoMap, positionTicks);
@@ -26,7 +26,7 @@ export function resolveTempoAt(
 }
 
 export function resolveMeterAt(
-  project: Project,
+  project: Pick<Project, "meterMap" | "defaultMeter">,
   positionTicks: number,
 ): TimeSignature {
   const ev = lastEventAt(project.meterMap, positionTicks);

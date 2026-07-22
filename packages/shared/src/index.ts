@@ -18,18 +18,8 @@ export {
 } from "./time.js";
 
 export {
-  resolveMeterAtTicks,
-  ticksToBbtAlongMeterMap,
-  bbtToTicksAlongMeterMap,
-  type MeterMapEvent,
-} from "./meter-map-bbt.js";
-
-export {
   LibrarySchema,
   LibraryProjectEntrySchema,
-  BPM_MIN,
-  BPM_MAX,
-  BpmSchema,
   ProjectIdSchema,
   FormaClipKindSchema,
   FormaClipSchema,
@@ -60,7 +50,6 @@ export {
   ApiErrorDetailSchema,
   ApiErrorSchema,
   StageMessageBodySchema,
-  ClientHelloMessageSchema,
   TekstClipSchema,
   AkordClipSchema,
   CueClipSchema,
@@ -94,7 +83,6 @@ export {
   type ApiErrorDetail,
   type ApiError,
   type StageMessageBody,
-  type ClientHelloMessage,
   UpdateStatusSchema,
   ApplyUpdateBodySchema,
   MidiPortSchema,
@@ -146,7 +134,7 @@ export {
   resolveFormaClipAt,
 } from "./project-resolve.js";
 
-
+export { ticksToMsAlongTempoMap } from "./tempo-map-ms.js";
 export {
   projectEndTicks,
   emptyProjectEndTicks,
@@ -213,14 +201,12 @@ export {
 
 export {
   getDisplayTicks,
-  wrapDisplayTicks,
   type TransportAnchor,
 } from "./soft-clock.js";
 
 export {
   quantizeTicks,
   snapTicksToBarStart,
-  snapTicksToBarStartAlongMeterMap,
   snapTicksToBeatGrid,
   snapTicksToSubdivision,
   DEFAULT_SNAP_MODE,
@@ -232,13 +218,10 @@ export {
 export {
   clampFormaSubsections,
   deleteClip,
-  insertGapSectionAfterCountdown,
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
-  moveSectionsFromId,
   placeClipNoOverlap,
-  allocateUniqueClipId,
   resizeClipNoOverlap,
   splitClipAt,
   type ClipEdge,
@@ -247,18 +230,12 @@ export {
 } from "./clip-collision.js";
 
 export {
-  audioClipAbutGapTicks,
   audioClipBufferOffsetSec,
-  audioClipEndTicks,
+  audioClipBufferOffsetSecAlongMaps,
   audioClipPlayableMs,
   audioClipRemainingSec,
-  audioFadeGainAtMs,
-  applyAbutCrossfade,
+  audioClipRemainingSecAlongMaps,
   clampAudioClipToAsset,
-  clampAudioFades,
-  fadeInMsOf,
-  fadeOutMsOf,
-  findAbutNeighbor,
   gainDbToLinear,
   lengthTicksFromAssetWindow,
   maxAudioLengthTicks,
@@ -282,7 +259,6 @@ export {
 export {
   wandContentToForma,
   type WandMode,
-  type WandScope,
 } from "./wand.js";
 
 export {
