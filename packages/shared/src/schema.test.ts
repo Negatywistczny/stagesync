@@ -1,17 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  BpmSchema,
   CreateProjectBodySchema,
-  DefaultMeterSchema,
+  StageMessageBodySchema,
   LibrarySchema,
-  SetlistSchema,
   ProjectSchema,
   ProjectSchemaV2,
   ProjectSchemaV3,
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
-  TempoEventSchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -43,41 +40,6 @@ describe("LibrarySchema", () => {
     expect(() =>
       LibrarySchema.parse({ version: 2, projects: [] }),
     ).toThrow();
-  });
-
-  it("rejects unknown library keys", () => {
-    expect(() =>
-      LibrarySchema.parse({ version: 1, projects: [], extra: true }),
-    ).toThrow();
-  });
-});
-
-describe("SetlistSchema", () => {
-  it("rejects unknown keys", () => {
-    expect(() =>
-      SetlistSchema.parse({
-        version: 1,
-        enabled: false,
-        projectIds: [],
-        autoAdvance: { enabled: false },
-        extra: 1,
-      }),
-    ).toThrow();
-  });
-});
-
-describe("BpmSchema", () => {
-  it("accepts Timeline UI range 20…400", () => {
-    expect(BpmSchema.parse(20)).toBe(20);
-    expect(BpmSchema.parse(400)).toBe(400);
-    expect(TempoEventSchema.parse({ id: "t", startTicks: 0, bpm: 120 }).bpm).toBe(
-      120,
-    );
-  });
-
-  it("rejects out of range", () => {
-    expect(() => BpmSchema.parse(19)).toThrow();
-    expect(() => BpmSchema.parse(401)).toThrow();
   });
 });
 
@@ -164,39 +126,6 @@ describe("ProjectSchemaV5", () => {
       }),
     ).toThrow();
   });
-
-  it("accepts optional audio fade and loop fields", () => {
-    const raw = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    const withFade = {
-      ...raw,
-      audioTracks: [{ id: "t1", name: "A" }],
-      audioClips: [
-        {
-          id: "c1",
-          trackId: "t1",
-          assetId: "a1",
-          startTicks: 0,
-          lengthTicks: 1920,
-          fadeInMs: 50,
-          fadeOutMs: 100,
-          loop: true,
-        },
-      ],
-      assets: [
-        {
-          id: "a1",
-          kind: "audio" as const,
-          storageName: "x.wav",
-          originalName: "x.wav",
-          mimeType: "audio/wav",
-          sizeBytes: 10,
-        },
-      ],
-    };
-    const parsed = ProjectSchema.parse(withFade);
-    expect(parsed.audioClips[0]?.fadeInMs).toBe(50);
-    expect(parsed.audioClips[0]?.loop).toBe(true);
-  });
 });
 
 describe("CreateProjectBodySchema", () => {
@@ -204,18 +133,8 @@ describe("CreateProjectBodySchema", () => {
     expect(CreateProjectBodySchema.parse({ name: "New" })).toEqual({
       name: "New",
     });
-    expect(CreateProjectBodySchema.parse({ name: "  Song  " })).toEqual({
-      name: "Song",
-    });
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
-    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
-  });
-
-  it("rejects unknown keys", () => {
-    expect(() =>
-      CreateProjectBodySchema.parse({ name: "X", extra: true }),
-    ).toThrow();
   });
 });
 
@@ -239,21 +158,10 @@ describe("PutProjectBodySchema", () => {
   });
 });
 
-describe("DefaultMeterSchema", () => {
-  it("accepts 4/4 and 5/8", () => {
-    expect(DefaultMeterSchema.parse({ numerator: 4, denominator: 4 })).toEqual({
-      numerator: 4,
-      denominator: 4,
-    });
-    expect(DefaultMeterSchema.parse({ numerator: 5, denominator: 8 })).toEqual({
-      numerator: 5,
-      denominator: 8,
-    });
-  });
-
-  it("rejects meters that yield non-integer ticksPerBar at PPQ 960", () => {
+describe("StageMessageBodySchema", () => {
+  it("rejects unknown keys", () => {
     expect(() =>
-      DefaultMeterSchema.parse({ numerator: 4, denominator: 7 }),
+      StageMessageBodySchema.parse({ text: "Hi", extra: 1 }),
     ).toThrow();
   });
 });

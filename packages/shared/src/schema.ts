@@ -436,11 +436,13 @@ export const ApiErrorSchema = z.object({
 
 export type ApiError = z.infer<typeof ApiErrorSchema>;
 
-export const StageMessageBodySchema = z.object({
-  text: z.string().min(1).max(200),
-  roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
-  ttlMs: z.number().int().positive().optional(),
-});
+export const StageMessageBodySchema = z
+  .object({
+    text: z.string().min(1).max(200),
+    roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
+    ttlMs: z.number().int().positive().optional(),
+  })
+  .strict();
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
 
