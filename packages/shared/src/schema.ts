@@ -29,17 +29,17 @@ export const FormaClipKindSchema = z.enum(["countdown", "section"]);
 
 export const FormaClipSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
+  name: z.string().min(1).max(120),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   kind: FormaClipKindSchema.default("section"),
   /** Optional per-section note (Client Forma / drums). */
-  note: z.string().optional(),
+  note: z.string().max(500).optional(),
   /**
    * Interior subsection boundaries as offsets from clip.startTicks (v4 scissors).
    * Relative so move keeps cuts; resize clamps via helpers.
    */
-  subsections: z.array(z.number().int().positive()).optional(),
+  subsections: z.array(z.number().int().positive()).max(64).optional(),
 });
 
 export type FormaClip = z.infer<typeof FormaClipSchema>;
@@ -204,7 +204,7 @@ export const TekstClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  text: z.string(),
+  text: z.string().max(2000),
 });
 
 export type TekstClip = z.infer<typeof TekstClipSchema>;
@@ -214,7 +214,7 @@ export const AkordClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  symbol: z.string().min(1),
+  symbol: z.string().min(1).max(64),
 });
 
 export type AkordClip = z.infer<typeof AkordClipSchema>;
@@ -224,7 +224,7 @@ export const CueClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  label: z.string().min(1),
+  label: z.string().min(1).max(200),
 });
 
 export type CueClip = z.infer<typeof CueClipSchema>;
