@@ -1019,6 +1019,14 @@ export function TimelineShell() {
         h.nudgeLocator(e.key === "ArrowLeft" ? -1 : 1);
         return;
       }
+      if (!mod && !e.altKey && (e.key === "[" || e.key === "]")) {
+        const id = e.key === "]" ? h.nextSetlistId : h.prevSetlistId;
+        if (id) {
+          e.preventDefault();
+          navigate(`/timeline/${id}`);
+        }
+        return;
+      }
       if (
         !mod &&
         e.altKey &&
