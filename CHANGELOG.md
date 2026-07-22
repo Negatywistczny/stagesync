@@ -7,6 +7,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ### Dodano
 
 - **Diagnostics ([#351](https://github.com/Negatywistczny/stagesync/issues/351)):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
@@ -38,6 +39,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timebase:** konwersje ticks↔BBT i snap do taktów uwzględniają mapę metrum; ochrona przed nie-skończonymi tickami.
 - **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WS; skracanie komunikatów błędów; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
 - **UI:** typografia i odstępy wyłącznie tokenami `--ss-*` w Admin / Client / Timeline; touch targety zgodne z gęstością design systemu.
+=======
+### Zmieniono
+
+- **Timeline ruler (Logic-style):** linijka podzielona na dwie połowy — góra: numery taktów + tworzenie/przesuwanie regionu pętli (podświetlenie); dół: podziałka beatów + scrub playheada. Klik w istniejący region na górze przełącza cycle on/off.
+>>>>>>> 61a0968 (feat(timeline): split ruler into loop and playhead lanes)
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 

@@ -135,8 +135,10 @@ import {
 } from "../lib/scoreBarEdit.js";
 import {
   snapLoopRange,
+  snapMovedLoopRange,
   ticksInLoopRegion,
   usableLoopRange,
+  type LoopRange,
 } from "../lib/timelineLocator.js";
 import {
   canRedo,
@@ -453,8 +455,13 @@ export function TimelineShell() {
     pointerId: number;
     originTicks: number;
     originClientX: number;
-    /** Ruler empty area vs locator handle (v4 click-in-loop toggles only on ruler). */
-    source: "ruler" | "locator";
+    /**
+     * Logic-style split ruler: top lane creates/moves cycle; bottom + locator
+     * scrub playhead only.
+     */
+    source: "ruler-loop" | "ruler-beat" | "locator";
+    kind: "seek" | "create" | "move";
+    moveOriginRange?: LoopRange;
   } | null>(null);
   const mapDragRef = useRef<{
     lane: MapLaneId;
@@ -2589,27 +2596,49 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   function onLocatorPointerDown(
     e: React.PointerEvent<HTMLElement>,
-    source: "ruler" | "locator",
+    source: "ruler-loop" | "ruler-beat" | "locator",
   ) {
     if (e.button !== 0) return;
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
     e.currentTarget.setPointerCapture(e.pointerId);
+    const existing = usableLoopRange(state.loop);
+    if (source === "ruler-loop") {
+      if (existing && ticksInLoopRegion(raw, existing)) {
+        loopDragRef.current = {
+          pointerId: e.pointerId,
+          originTicks: raw,
+          originClientX: e.clientX,
+          source,
+          kind: "move",
+          moveOriginRange: existing,
+        };
+        setLoopDraft(existing);
+        return;
+      }
+      loopDragRef.current = {
+        pointerId: e.pointerId,
+        originTicks: raw,
+        originClientX: e.clientX,
+        source,
+        kind: "create",
+      };
+      setLoopDraft(null);
+      return;
+    }
     loopDragRef.current = {
       pointerId: e.pointerId,
       originTicks: raw,
       originClientX: e.clientX,
       source,
+      kind: "seek",
     };
     setLoopDraft(null);
-    // Immediate seek/scrub (v4); loop-select only after 5px drag on ruler.
-    if (source === "locator" || !ticksInLoopRegion(raw, usableLoopRange(state.loop))) {
-      setLocatorFromClientX(e.clientX, {
-        seekTransport: true,
-        metaKey: e.metaKey,
-        ctrlKey: e.ctrlKey,
-      });
-    }
+    setLocatorFromClientX(e.clientX, {
+      seekTransport: true,
+      metaKey: e.metaKey,
+      ctrlKey: e.ctrlKey,
+    });
   }
 
   function onLocatorPointerMove(e: React.PointerEvent<HTMLElement>) {
@@ -2625,20 +2654,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
-    const dx = Math.abs(e.clientX - drag.originClientX);
-    if (dx >= 5 && draftProject) {
-      const a = Math.min(drag.originTicks, raw);
-      const b = Math.max(drag.originTicks, raw);
-      // Live snap on preview (v4 feel); Cmd/Ctrl = off.
-      const mode = contentSnapModeFromModifiers(e.metaKey, e.ctrlKey);
-      setLoopDraft(snapLoopRange(draftProject, a, b, mode));
-    } else if (dx < 5) {
-      setLocatorFromClientX(e.clientX, {
-        seekTransport: true,
-        metaKey: e.metaKey,
-        ctrlKey: e.ctrlKey,
-      });
+    const mode = contentSnapModeFromModifiers(e.metaKey, e.ctrlKey);
+    if (drag.kind === "create" && draftProject) {
+      const dx = Math.abs(e.clientX - drag.originClientX);
+      if (dx >= 5) {
+        const a = Math.min(drag.originTicks, raw);
+        const b = Math.max(drag.originTicks, raw);
+        setLoopDraft(snapLoopRange(draftProject, a, b, mode));
+      }
+      return;
     }
+    if (drag.kind === "move" && drag.moveOriginRange && draftProject) {
+      const delta = raw - drag.originTicks;
+      setLoopDraft(
+        snapMovedLoopRange(draftProject, drag.moveOriginRange, delta, mode),
+      );
+      return;
+    }
+    setLocatorFromClientX(e.clientX, {
+      seekTransport: true,
+      metaKey: e.metaKey,
+      ctrlKey: e.ctrlKey,
+    });
   }
 
   function onLocatorPointerUp(e: React.PointerEvent<HTMLElement>) {
@@ -2648,8 +2685,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
     if (!drag || drag.pointerId !== e.pointerId) return;
     const draft = loopDraftRef.current;
+    const dx = Math.abs(e.clientX - drag.originClientX);
     loopDragRef.current = null;
-    if (draft && draft.endTicks > draft.startTicks && draftProject) {
+    if (
+      drag.kind === "create" &&
+      draft &&
+      draft.endTicks > draft.startTicks &&
+      draftProject
+    ) {
       const snapped = snapLoopRange(
         draftProject,
         draft.startTicks,
@@ -2663,23 +2706,29 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       }).finally(() => setLoopDraft(null));
       return;
     }
-    setLoopDraft(null);
-    // v4: click inside existing loop region on ruler toggles cycle on/off.
-    if (
-      drag.source === "ruler" &&
-      ticksInLoopRegion(drag.originTicks, usableLoopRange(state.loop))
-    ) {
-      const range = usableLoopRange(state.loop);
-      if (range) {
+    if (drag.kind === "move" && drag.moveOriginRange) {
+      if (dx < 5) {
+        setLoopDraft(null);
         void setLoop({ enabled: !state.loop?.enabled });
+        return;
       }
-      return;
+      if (draft && draft.endTicks > draft.startTicks) {
+        void setLoop({
+          enabled: state.loop?.enabled ?? true,
+          startTicks: draft.startTicks,
+          endTicks: draft.endTicks,
+        }).finally(() => setLoopDraft(null));
+        return;
+      }
     }
-    setLocatorFromClientX(e.clientX, {
-      seekTransport: true,
-      metaKey: e.metaKey,
-      ctrlKey: e.ctrlKey,
-    });
+    setLoopDraft(null);
+    if (drag.kind === "seek") {
+      setLocatorFromClientX(e.clientX, {
+        seekTransport: true,
+        metaKey: e.metaKey,
+        ctrlKey: e.ctrlKey,
+      });
+    }
   }
 
   function onLoopToggle() {
@@ -4118,50 +4167,71 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   </div>
                   <div
                     className={styles.ruler}
-                    onPointerDown={(e) => onLocatorPointerDown(e, "ruler")}
-                    onPointerMove={onLocatorPointerMove}
-                    onPointerUp={onLocatorPointerUp}
                   >
-                    {loopRange ? (
-                      <div
-                        className={[
-                          styles.loopRegion,
-                          loopOn ? "" : styles.loopRegionOff,
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        style={{
-                          left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH)}px`,
-                          width: `${Math.max(
-                            tickToPx(loopRange.endTicks, viewSpan, barTicks, effectiveZoomH) -
-                              tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH),
-                            2,
-                          )}px`,
-                        }}
-                        aria-hidden
-                      />
-                    ) : null}
-                    {barMarks.map((mark) => (
-                      <span
-                        key={`bar-${mark.ticks}`}
-                        className={styles.rulerMark}
-                        style={{
-                          left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                        }}
-                      >
-                        {mark.label}
-                      </span>
-                    ))}
-                    {rulerBeatMarks.map((mark) => (
-                      <span
-                        key={`beat-${mark.ticks}`}
-                        className={styles.rulerBeatTick}
-                        style={{
-                          left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                        }}
-                        aria-hidden
-                      />
-                    ))}
+                    <div
+                      className={styles.rulerLoopLane}
+                      onPointerDown={(e) => onLocatorPointerDown(e, "ruler-loop")}
+                      onPointerMove={onLocatorPointerMove}
+                      onPointerUp={onLocatorPointerUp}
+                    >
+                      {loopRange ? (
+                        <div
+                          className={[
+                            styles.loopRegion,
+                            loopOn ? "" : styles.loopRegionOff,
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          style={{
+                            left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH)}px`,
+                            width: `${Math.max(
+                              tickToPx(loopRange.endTicks, viewSpan, barTicks, effectiveZoomH) -
+                                tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH),
+                              2,
+                            )}px`,
+                          }}
+                          aria-hidden
+                        />
+                      ) : null}
+                      {barMarks.map((mark) => (
+                        <span
+                          key={`bar-${mark.ticks}`}
+                          className={styles.rulerMark}
+                          style={{
+                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                          }}
+                        >
+                          {mark.label}
+                        </span>
+                      ))}
+                    </div>
+                    <div
+                      className={styles.rulerBeatLane}
+                      onPointerDown={(e) => onLocatorPointerDown(e, "ruler-beat")}
+                      onPointerMove={onLocatorPointerMove}
+                      onPointerUp={onLocatorPointerUp}
+                    >
+                      {barMarks.map((mark) => (
+                        <span
+                          key={`bar-tick-${mark.ticks}`}
+                          className={styles.rulerBarTick}
+                          style={{
+                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                          }}
+                          aria-hidden
+                        />
+                      ))}
+                      {rulerBeatMarks.map((mark) => (
+                        <span
+                          key={`beat-${mark.ticks}`}
+                          className={styles.rulerBeatTick}
+                          style={{
+                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                          }}
+                          aria-hidden
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
 

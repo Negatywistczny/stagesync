@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { createProjectV5Seed, type TransportLoop } from "@stagesync/shared";
 import {
+  moveLoopRange,
   snapLoopRange,
+  snapMovedLoopRange,
   ticksInLoopRegion,
   transportStateFromTick,
   usableLoopRange,
@@ -43,6 +45,28 @@ describe("timelineLocator", () => {
     const range = snapLoopRange(project, 500, 5000);
     expect(range.startTicks).toBe(960);
     expect(range.endTicks).toBe(4800);
+  });
+
+  it("moveLoopRange preserves duration", () => {
+    expect(moveLoopRange({ startTicks: 1920, endTicks: 7680 }, -960)).toEqual({
+      startTicks: 960,
+      endTicks: 6720,
+    });
+  });
+
+  it("snapMovedLoopRange snaps start and keeps duration", () => {
+    const project = createProjectV5Seed(
+      "id",
+      "Demo",
+      "2026-07-20T00:00:00.000Z",
+    );
+    const range = snapMovedLoopRange(
+      project,
+      { startTicks: 1920, endTicks: 5760 },
+      500,
+    );
+    expect(range.startTicks).toBe(2880);
+    expect(range.endTicks - range.startTicks).toBe(3840);
   });
 
   it("transportStateFromTick preserves loop", () => {
