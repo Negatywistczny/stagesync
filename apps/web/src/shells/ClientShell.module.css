@@ -1697,6 +1697,13 @@
   color: var(--ss-color-text-muted);
 }
 
+.pitchToggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-1);
+  margin-bottom: var(--ss-space-2);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;

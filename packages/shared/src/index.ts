@@ -217,6 +217,29 @@ export {
 } from "./chord-display.js";
 
 export {
+  COUNTDOWN_NAME,
+  formatSectionNameForDisplay,
+  normalizeSectionName,
+  type FormatSectionNameOptions,
+} from "./section-names.js";
+
+export {
+  INSTRUMENT_PITCH_MANUAL_MAX,
+  INSTRUMENT_PITCH_MANUAL_MIN,
+  INSTRUMENT_PITCH_PRESETS,
+  applyInstrumentPitchToChord,
+  clampManualInstrumentPitch,
+  clampSemitoneOffset,
+  isInstrumentPitchMode,
+  parseTonicSymbol,
+  resolveInstrumentPitchOffset,
+  resolveTranspose,
+  transposeChord,
+  type InstrumentPitchMode,
+  type TransposeResolve,
+} from "./transpose.js";
+
+export {
   getDisplayTicks,
   wrapDisplayTicks,
   type TransportAnchor,

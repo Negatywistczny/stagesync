@@ -28,8 +28,8 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 | React + CSS Modules + `--ss-*` | Stack v5 |
 | Admin: Utwory · Set · Scena · Host | IA v5 — **Set + wybór utworów w jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)); import paczki pod Wybrany; bez „zaznacz na innej zakładce” |
 | Host MIDI I/O + meters + Tr./Lead/Edycja zdalna | **β2** (z audio; β1 = host bez MIDI) — **bez** disabled chrome stub |
-| Pełny OSMD sync playhead→nuty | Stub OK; upload MusicXML = wired |
-| Client: tonacja koncertowa / polskie nazwy sekcji | Should (później) |
+| Client: tonacja koncertowa / polskie nazwy sekcji | **Done** — C/B♭/E♭/ręczna + switch nazw |
+| Pełny OSMD sync playhead→nuty | Stub OK; upload MusicXML = wired; partie/oktawa z rendererem |
 | Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
 | Backup restore / path picker FS | Placeholder (path picker shell) |
 | Forma scissors = subsections v4 | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×** |

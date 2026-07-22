@@ -1,4 +1,7 @@
-import type { Project } from "@stagesync/shared";
+import {
+  formatSectionNameForDisplay,
+  type Project,
+} from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
   type KaraokeSectionGroup,
@@ -13,6 +16,7 @@ type KaraokePaneProps = {
   displayTicks: number;
   loading: boolean;
   hasActiveProjectId: boolean;
+  sectionNamesPolish?: boolean;
   vocalTapOn?: boolean;
   vocalTapIndex?: number;
   onVocalTap?: () => void;
@@ -63,14 +67,16 @@ function scrollLineIntoCenter(
 
 function SectionProgressBars({
   section,
+  displayName,
 }: {
   section: KaraokeSectionGroup;
+  displayName: string;
 }) {
   if (!section.useProgress || section.bars.length === 0) return null;
   return (
     <div
       className={styles.karaokeSectionProgress}
-      aria-label={`Postęp sekcji ${section.name}`}
+      aria-label={`Postęp sekcji ${displayName}`}
     >
       <div className={styles.karaokeProgressBars}>
         {section.bars.map((cell, i) => {
@@ -106,6 +112,7 @@ export function KaraokePane({
   displayTicks,
   loading,
   hasActiveProjectId,
+  sectionNamesPolish = false,
   vocalTapOn = false,
   vocalTapIndex = 0,
   onVocalTap,
@@ -220,6 +227,12 @@ export function KaraokePane({
             const isActive = sec.active;
             const sectionRefTarget =
               isActive && activeLineId == null ? true : false;
+            const displayName =
+              sec.name === "—"
+                ? sec.name
+                : formatSectionNameForDisplay(sec.name, {
+                    polish: sectionNamesPolish,
+                  });
             return (
               <section
                 key={sec.id}
@@ -234,8 +247,11 @@ export function KaraokePane({
                   .join(" ")}
                 data-section-id={sec.id}
               >
-                <h3 className={styles.karaokeSectionTitle}>{sec.name}</h3>
-                <SectionProgressBars section={sec} />
+                <h3 className={styles.karaokeSectionTitle}>{displayName}</h3>
+                <SectionProgressBars
+                  section={sec}
+                  displayName={displayName}
+                />
                 {sec.lines.length > 0 ? (
                   <div className={styles.karaokeSectionLines}>
                     {sec.lines.map((line) => (

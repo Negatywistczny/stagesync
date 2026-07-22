@@ -9,6 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline/Admin/Client — Level 2 toolbary; song cluster w Timeline L2; Admin sekcje w L2.
 - **Desktop ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** menu Edycja — Cofnij/Ponów (`edit-undo` / `edit-redo`) dla draftu Timeline przy ukrytym AppHeader.

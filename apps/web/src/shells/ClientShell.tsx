@@ -1,13 +1,23 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { isDesktopShell, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
-import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
+import {
+  INSTRUMENT_PITCH_MANUAL_MAX,
+  INSTRUMENT_PITCH_MANUAL_MIN,
+  toDisplayBar,
+  ticksToBbt,
+  type InstrumentPitchMode,
+  type Project,
+} from "@stagesync/shared";
 import {
   loadClientDisplayPrefs,
   setFormNotesEdit,
   setGridAnimations,
   setHybridPolishB,
+  setInstrumentPitch,
+  setInstrumentPitchManual,
   setLiteralQuality,
+  setSectionNamesPolish,
   type ClientDisplayPrefs,
 } from "../lib/clientDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
@@ -196,6 +206,8 @@ export function ClientShell() {
     onToggleGlobalSettings: toggleGlobalSettings,
     onCloseGlobalSettings: () => setGlobalSettings(false),
     onBack: started ? () => setStarted(false) : undefined,
+    displayPrefs,
+    onDisplayPrefsChange: setDisplayPrefs,
   };
 
   if (nameModal) {
@@ -377,6 +389,7 @@ export function ClientShell() {
                     project={activeProject}
                     displayTicks={displayTicks}
                     notesEdit={displayPrefs.formNotesEdit}
+                    sectionNamesPolish={displayPrefs.sectionNamesPolish}
                     onNoteChange={(clipId, note) => {
                       if (!state.activeProjectId) return;
                       const prev = activeProject;
@@ -422,6 +435,7 @@ export function ClientShell() {
                   displayTicks={displayTicks}
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
+                  sectionNamesPolish={displayPrefs.sectionNamesPolish}
                   vocalTapOn={vocalTapOn}
                   vocalTapIndex={vocalTapIndex}
                   onVocalTap={() => {
@@ -502,6 +516,8 @@ type ClientHeaderProps = {
   onBack?: () => void;
   /** Desktop: show brand in L2 when AppHeader is hidden. */
   showBrand: boolean;
+  displayPrefs: ClientDisplayPrefs;
+  onDisplayPrefsChange: (prefs: ClientDisplayPrefs) => void;
 };
 
 function ClientChrome({
@@ -520,6 +536,8 @@ function ClientChrome({
   onCloseGlobalSettings,
   onBack,
   showBrand,
+  displayPrefs,
+  onDisplayPrefsChange,
 }: ClientHeaderProps) {
   return (
     <>
@@ -598,7 +616,10 @@ function ClientChrome({
                   title="Globalne"
                   onClose={onCloseGlobalSettings}
                 >
-                  <GlobalSettingsFields />
+                  <GlobalSettingsFields
+                    prefs={displayPrefs}
+                    onPrefsChange={onDisplayPrefsChange}
+                  />
                 </SettingsPopover>
               ) : null}
             </SettingsPopoverAnchor>
@@ -617,21 +638,92 @@ function ClientChrome({
           placement="fixed-top-right"
           onClose={onCloseGlobalSettings}
         >
-          <GlobalSettingsFields />
+          <GlobalSettingsFields
+            prefs={displayPrefs}
+            onPrefsChange={onDisplayPrefsChange}
+          />
         </SettingsPopover>
       ) : null}
     </>
   );
 }
 
-function GlobalSettingsFields() {
+const PITCH_OPTIONS: {
+  id: InstrumentPitchMode;
+  label: string;
+  title: string;
+}[] = [
+  { id: "concert", label: "C", title: "Strój koncertowy (C)" },
+  { id: "bb", label: "B♭", title: "Instrument B♭ — korekta +2 półtony" },
+  { id: "eb", label: "E♭", title: "Instrument E♭ — korekta +9 półtonów" },
+  {
+    id: "manual",
+    label: "±",
+    title: "Ręczna — korekta −6…+6 półtonów",
+  },
+];
+
+function GlobalSettingsFields({
+  prefs,
+  onPrefsChange,
+}: {
+  prefs: ClientDisplayPrefs;
+  onPrefsChange: (prefs: ClientDisplayPrefs) => void;
+}) {
   return (
     <>
       <p className={styles.fieldLab}>Wygląd</p>
       <ShellAppearanceFields />
-      <p className={styles.muted}>
-        Tonacja koncertowa / polskie nazwy — później (β).
-      </p>
+      <p className={styles.fieldLab}>Strój instrumentu</p>
+      <div
+        className={styles.pitchToggle}
+        role="group"
+        aria-label="Strój instrumentu transponującego"
+      >
+        {PITCH_OPTIONS.map((opt) => (
+          <Button
+            key={opt.id}
+            variant="ghost"
+            selected={prefs.instrumentPitch === opt.id}
+            title={opt.title}
+            aria-label={opt.title}
+            onClick={() => {
+              setInstrumentPitch(opt.id);
+              onPrefsChange({ ...prefs, instrumentPitch: opt.id });
+            }}
+          >
+            {opt.label}
+          </Button>
+        ))}
+      </div>
+      {prefs.instrumentPitch === "manual" ? (
+        <label className={styles.field}>
+          Korekta ({prefs.instrumentPitchManual > 0 ? "+" : ""}
+          {prefs.instrumentPitchManual})
+          <input
+            type="range"
+            min={INSTRUMENT_PITCH_MANUAL_MIN}
+            max={INSTRUMENT_PITCH_MANUAL_MAX}
+            step={1}
+            value={prefs.instrumentPitchManual}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              setInstrumentPitchManual(n);
+              onPrefsChange({ ...prefs, instrumentPitchManual: n });
+            }}
+          />
+        </label>
+      ) : null}
+      <ShellSwitchRow
+        checked={prefs.sectionNamesPolish}
+        onChange={(e) => {
+          const next = e.target.checked;
+          setSectionNamesPolish(next);
+          onPrefsChange({ ...prefs, sectionNamesPolish: next });
+        }}
+      >
+        Polskie nazwy sekcji
+      </ShellSwitchRow>
     </>
   );
 }
@@ -780,7 +872,7 @@ function RoleSettingsFields({
           </Button>
         </div>
         <p className={styles.muted}>
-          Zoom lokalny (stub OSMD). Partie / oktawa — później.
+          Zoom lokalny (ustawienie zapamiętane po stronie OSMD — poza 5.0.0).
         </p>
       </>
     );

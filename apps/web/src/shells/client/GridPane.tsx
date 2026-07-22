@@ -9,7 +9,13 @@ import {
   type Ref,
 } from "react";
 import styles from "../ClientShell.module.css";
-import { formatChordForDisplay, type Project } from "@stagesync/shared";
+import {
+  applyInstrumentPitchToChord,
+  formatChordForDisplay,
+  formatSectionNameForDisplay,
+  resolveKeyAt,
+  type Project,
+} from "@stagesync/shared";
 import {
   buildGridLiveContext,
   cycleTotalBars,
@@ -90,19 +96,34 @@ export function GridPane({
     return <p className={styles.empty}>{ctx.emptyReason}</p>;
   }
 
+  const key = resolveKeyAt(project, displayTicks);
   const fmt = (symbol: string) =>
-    formatChordForDisplay(symbol, {
-      literalQuality: prefs.literalQuality,
-      hybridPolishB: prefs.hybridPolishB,
-    });
+    formatChordForDisplay(
+      applyInstrumentPitchToChord(
+        symbol,
+        prefs.instrumentPitch,
+        prefs.instrumentPitchManual,
+        key,
+      ),
+      {
+        literalQuality: prefs.literalQuality,
+        hybridPolishB: prefs.hybridPolishB,
+      },
+    );
 
+  const sectionDisplay =
+    ctx.sectionName == null
+      ? null
+      : formatSectionNameForDisplay(ctx.sectionName, {
+          polish: prefs.sectionNamesPolish,
+        });
   const subsectionLabel =
-    ctx.sectionName != null &&
+    sectionDisplay != null &&
     ctx.subsectionCount != null &&
     ctx.subsectionCount > 1 &&
     ctx.subsectionIndex != null
-      ? `${ctx.sectionName} · ${ctx.subsectionIndex + 1}/${ctx.subsectionCount}`
-      : ctx.sectionName;
+      ? `${sectionDisplay} · ${ctx.subsectionIndex + 1}/${ctx.subsectionCount}`
+      : sectionDisplay;
 
   return (
     <GridPaneBody
