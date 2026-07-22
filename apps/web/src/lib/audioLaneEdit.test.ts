@@ -6,6 +6,7 @@ import {
 } from "@stagesync/shared";
 import {
   addAudioTrack,
+  MAX_AUDIO_TRACKS,
   applyDecodedAudioMeta,
   commitMoveAudioClip,
   commitResizeAudioClip,
@@ -91,5 +92,14 @@ describe("audioLaneEdit", () => {
     expect(next.audioClips[0]!.lengthTicks).toBe(
       elapsedToTicks(2000, 120, p.defaultMeter, p.ppq),
     );
+  });
+
+  it("addAudioTrack rejects above MAX_AUDIO_TRACKS", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    for (let i = 0; i < MAX_AUDIO_TRACKS; i++) {
+      p = addAudioTrack(p).project;
+    }
+    expect(p.audioTracks).toHaveLength(MAX_AUDIO_TRACKS);
+    expect(() => addAudioTrack(p)).toThrow(RangeError);
   });
 });
