@@ -83,7 +83,7 @@ export function ensureAudioTrackVisibility(
 ): TrackVisibilityMap {
   let changed = false;
   const next = { ...visibility };
-  const live = new Set(audioTracks.map((t) => audioLaneId(t.id)));
+  const live = new Set<string>(audioTracks.map((t) => audioLaneId(t.id)));
   for (const key of Object.keys(next)) {
     if (key.startsWith("audio:") && !live.has(key)) {
       delete next[key];
