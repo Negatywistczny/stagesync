@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
 import { TransportTickMessageSchema } from "@stagesync/shared";
 import type { ClientPresence } from "../client-presence.js";
+import type { LiveDeskStore } from "../live-desk.js";
 import type { TransportEngine } from "./engine.js";
 import type { StageHub } from "./stage-hub.js";
 
@@ -15,6 +16,7 @@ export function attachTransportWs(
   transport: TransportEngine,
   stageHub?: StageHub,
   presence?: ClientPresence,
+  liveDesk?: LiveDeskStore,
 ): WebSocketServer {
   const wss = new WebSocketServer({ server, path: TRANSPORT_WS_PATH });
 
@@ -30,11 +32,19 @@ export function attachTransportWs(
     ws.send(JSON.stringify(msg));
   }
 
+  function sendJson(ws: WebSocket, raw: unknown): void {
+    if (ws.readyState !== ws.OPEN) return;
+    ws.send(JSON.stringify(raw));
+  }
+
   wss.on("connection", (ws: PresenceSocket) => {
     const id = randomUUID();
     ws.__presenceId = id;
     presence?.connect(id);
     send(ws, transport.toTickMessage());
+    if (liveDesk) {
+      sendJson(ws, liveDesk.snapshotMessage());
+    }
 
     ws.on("message", (data) => {
       if (!presence) return;
@@ -82,9 +92,19 @@ export function attachTransportWs(
     }
   });
 
+  const unsubLive = liveDesk?.onMessage((msg) => {
+    const payload = JSON.stringify(msg);
+    for (const client of wss.clients) {
+      if (client.readyState === client.OPEN) {
+        client.send(payload);
+      }
+    }
+  });
+
   wss.on("close", () => {
     unsubscribe();
     unsubStage?.();
+    unsubLive?.();
   });
 
   return wss;

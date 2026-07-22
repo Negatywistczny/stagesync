@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@stagesync/ui";
 import {
+  fetchLiveDesk,
   fetchStageClients,
+  patchLiveDesk,
   sendStageMessage,
+  type LiveDeskSettingsDto,
   type PresenceClient,
 } from "../../lib/setlistApi.js";
 import styles from "../AdminShell.module.css";
+import { ShellSwitchRow } from "../ShellSwitchRow.js";
 
 const ROLE_OPTIONS = [
   { id: "karaoke", label: "Tekst" },
@@ -61,6 +65,9 @@ export function StageView() {
   const [clients, setClients] = useState<PresenceClient[]>([]);
   const [clientsError, setClientsError] = useState<string | null>(null);
   const [clientsLoading, setClientsLoading] = useState(false);
+  const [liveDesk, setLiveDesk] = useState<LiveDeskSettingsDto | null>(null);
+  const [liveDeskError, setLiveDeskError] = useState<string | null>(null);
+  const [liveDeskSaving, setLiveDeskSaving] = useState(false);
 
   const refreshClients = useCallback(async () => {
     setClientsLoading(true);
@@ -81,6 +88,43 @@ export function StageView() {
     const id = window.setInterval(() => void refreshClients(), 4000);
     return () => window.clearInterval(id);
   }, [refreshClients]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const desk = await fetchLiveDesk();
+        if (!cancelled) {
+          setLiveDesk(desk);
+          setLiveDeskError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLiveDeskError(
+            err instanceof Error ? err.message : "Błąd Live Desk",
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function applyLiveDesk(patch: Partial<LiveDeskSettingsDto>) {
+    setLiveDeskSaving(true);
+    setLiveDeskError(null);
+    try {
+      const next = await patchLiveDesk(patch);
+      setLiveDesk(next);
+    } catch (err) {
+      setLiveDeskError(
+        err instanceof Error ? err.message : "Nie udało się zapisać",
+      );
+    } finally {
+      setLiveDeskSaving(false);
+    }
+  }
 
   function toggleRole(id: RoleId) {
     setRoles((prev) =>
@@ -226,6 +270,98 @@ export function StageView() {
               Wyczyść
             </Button>
           </div>
+        </div>
+      </section>
+
+      <section className={styles.card} aria-label="Korekta na scenie">
+        <div className={styles.cardHead}>
+          <h1 className={styles.cardTitle}>Korekta na scenie</h1>
+        </div>
+        <div className={styles.cardBody}>
+          {liveDeskError ? (
+            <p className={styles.error} role="alert">
+              {liveDeskError}
+            </p>
+          ) : null}
+          {!liveDesk ? (
+            <p className={styles.muted}>Wczytywanie Live Desk…</p>
+          ) : (
+            <>
+              <label className={styles.field}>
+                Transpozycja zespołu (
+                {liveDesk.transpositionSemitones > 0 ? "+" : ""}
+                {liveDesk.transpositionSemitones} półtonów)
+                <input
+                  type="range"
+                  min={-12}
+                  max={12}
+                  step={1}
+                  value={liveDesk.transpositionSemitones}
+                  disabled={liveDeskSaving}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    setLiveDesk({ ...liveDesk, transpositionSemitones: n });
+                  }}
+                  onMouseUp={() =>
+                    void applyLiveDesk({
+                      transpositionSemitones: liveDesk.transpositionSemitones,
+                    })
+                  }
+                  onTouchEnd={() =>
+                    void applyLiveDesk({
+                      transpositionSemitones: liveDesk.transpositionSemitones,
+                    })
+                  }
+                  onKeyUp={(e) => {
+                    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                      void applyLiveDesk({
+                        transpositionSemitones: liveDesk.transpositionSemitones,
+                      });
+                    }
+                  }}
+                />
+              </label>
+              <label className={styles.field}>
+                Kompensacja sieci (
+                {liveDesk.syncLeadMs > 0 ? "+" : ""}
+                {liveDesk.syncLeadMs} ms)
+                <input
+                  type="range"
+                  min={-500}
+                  max={500}
+                  step={25}
+                  value={liveDesk.syncLeadMs}
+                  disabled={liveDeskSaving}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    setLiveDesk({ ...liveDesk, syncLeadMs: n });
+                  }}
+                  onMouseUp={() =>
+                    void applyLiveDesk({ syncLeadMs: liveDesk.syncLeadMs })
+                  }
+                  onTouchEnd={() =>
+                    void applyLiveDesk({ syncLeadMs: liveDesk.syncLeadMs })
+                  }
+                  onKeyUp={(e) => {
+                    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                      void applyLiveDesk({ syncLeadMs: liveDesk.syncLeadMs });
+                    }
+                  }}
+                />
+              </label>
+              <ShellSwitchRow
+                checked={liveDesk.clientEditEnabled}
+                disabled={liveDeskSaving}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setLiveDesk({ ...liveDesk, clientEditEnabled: on });
+                  void applyLiveDesk({ clientEditEnabled: on });
+                }}
+              >
+                Edycja zdalna (notatki Formy / tap wokalu)
+              </ShellSwitchRow>
+            </>
+          )}
         </div>
       </section>
 

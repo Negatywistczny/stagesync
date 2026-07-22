@@ -10,6 +10,8 @@ import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
 import { createMidiProgramChangeHandler } from "./midi/program-change.js";
 import { wireMidiProgramChangeOut } from "./midi/program-change-out.js";
+import { createLiveDeskStore, type LiveDeskStore } from "./live-desk.js";
+import { createLiveDeskRouter } from "./routes/live-desk.js";
 import { createLibraryRouter } from "./routes/library.js";
 import { createMidiRouter } from "./routes/midi.js";
 import { createProjectsRouter } from "./routes/projects.js";
@@ -45,6 +47,7 @@ export type CreateAppOptions = {
   stores?: Stores;
   transport?: TransportEngine;
   stageHub?: StageHub;
+  liveDesk?: LiveDeskStore;
   logBuffer?: LogBuffer;
   presence?: ClientPresence;
   midi?: MidiHost;
@@ -61,6 +64,7 @@ export type AppBundle = {
   app: Express;
   transport: TransportEngine;
   stageHub: StageHub;
+  liveDesk: LiveDeskStore;
   stores: Stores;
   logBuffer: LogBuffer;
   presence: ClientPresence;
@@ -81,6 +85,9 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const stores = options.stores ?? createStores(dataDir);
   const transport = options.transport ?? createTransportEngine();
   const stageHub = options.stageHub ?? createStageHub();
+  const midiPaths = resolveDataPaths(dataDir);
+  const liveDesk =
+    options.liveDesk ?? createLiveDeskStore(midiPaths.liveDeskFile);
   const logBuffer =
     options.logBuffer ??
     createLogBuffer({
@@ -89,7 +96,6 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
         : undefined,
     });
   const presence = options.presence ?? createClientPresence();
-  const midiPaths = resolveDataPaths(dataDir);
   const midi =
     options.midi ??
     createMidiHost(transport, {
@@ -135,6 +141,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   app.use("/api/projects", createProjectsRouter(stores, transport));
   app.use("/api/setlist", createSetlistRouter(stores, transport));
   app.use("/api/stage", createStageRouter(stageHub, presence));
+  app.use("/api/live-desk", createLiveDeskRouter(liveDesk));
   app.use(
     "/api/system",
     createSystemRouter({
@@ -168,5 +175,5 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   );
   logBuffer.push("info", `StageSync server ready (${VERSION})`);
 
-  return { app, transport, stageHub, stores, logBuffer, presence, midi };
+  return { app, transport, stageHub, liveDesk, stores, logBuffer, presence, midi };
 }

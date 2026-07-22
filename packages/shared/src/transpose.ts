@@ -317,11 +317,13 @@ export function applyInstrumentPitchToChord(
   pitchMode: InstrumentPitchMode | string,
   manualSemitones: number,
   key: KeySignature | null | undefined,
+  teamSemitones = 0,
 ): string {
   if (chord == null || chord === "—" || /^[0-9]+$/.test(String(chord))) {
     return String(chord ?? "—");
   }
-  const offset = resolveInstrumentPitchOffset(pitchMode, manualSemitones);
+  const local = resolveInstrumentPitchOffset(pitchMode, manualSemitones);
+  const offset = local + clampSemitoneOffset(teamSemitones);
   if (!offset) return chord;
   if (key?.tonic) {
     const resolved = resolveTranspose(key, offset);

@@ -1762,6 +1762,33 @@
   font-size: var(--ss-text-sm);
 }
 
+.inspFieldset {
+  margin: var(--ss-space-2) 0 0;
+  padding: 0;
+  border: none;
+  font-size: var(--ss-text-sm);
+}
+
+.inspFieldset legend {
+  padding: 0;
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.inspChecks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-1);
+}
+
+.inspCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-1);
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+}
+
 .meterEditRow,
 .keyEditRow {
   display: flex;

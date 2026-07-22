@@ -21,6 +21,8 @@ export type TransportContextValue = {
   seek: (positionTicks: number) => Promise<void>;
   setLoop: (body: TransportLoopBody) => Promise<void>;
   stageCue: StageCue | null;
+  /** Live Desk (team transpose / sync-lead / remote edit). */
+  liveDesk: LiveDeskState;
   /** Announce Client identity to Admin presence (WS). */
   announcePresence: (payload: {
     displayName: string | null;
@@ -34,6 +36,18 @@ export type StageCue = {
   sentAtMs: number;
   roles?: Array<"karaoke" | "grid" | "score" | "drums">;
   priority?: "normal" | "alert";
+};
+
+export type LiveDeskState = {
+  transpositionSemitones: number;
+  syncLeadMs: number;
+  clientEditEnabled: boolean;
+};
+
+export const DEFAULT_LIVE_DESK: LiveDeskState = {
+  transpositionSemitones: 0,
+  syncLeadMs: 200,
+  clientEditEnabled: true,
 };
 
 export const TransportContext = createContext<TransportContextValue | null>(

@@ -281,12 +281,26 @@ export const AkordClipSchema = z.object({
 
 export type AkordClip = z.infer<typeof AkordClipSchema>;
 
-/** Content lane clip — Cue (α7 schema; edit optional). */
+/** Performance roles that can receive a Timeline cue (v4 cue-model). */
+export const CueClipRoleSchema = z.enum([
+  "karaoke",
+  "grid",
+  "score",
+  "drums",
+]);
+
+export type CueClipRole = z.infer<typeof CueClipRoleSchema>;
+
+/** Content lane clip — Cue (α7+; roles/priority = v4 parity). */
 export const CueClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   label: z.string().min(1).max(200),
+  /** Empty / omitted = all roles. */
+  roles: z.array(CueClipRoleSchema).max(4).optional(),
+  /** Omit or `normal`; persist `alert` when highlighted. */
+  priority: z.enum(["normal", "alert"]).optional(),
 });
 
 export type CueClip = z.infer<typeof CueClipSchema>;

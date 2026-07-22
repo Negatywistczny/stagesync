@@ -17,6 +17,8 @@ export type DataPaths = {
   projectsDir: string;
   /** Host MIDI port selection (PUT /api/midi/config). */
   midiConfigFile: string;
+  /** Live Desk (transpose / sync-lead / client-edit). */
+  liveDeskFile: string;
 };
 
 export function resolveDataPaths(dataDir = defaultDataDir()): DataPaths {
@@ -29,6 +31,7 @@ export function resolveDataPaths(dataDir = defaultDataDir()): DataPaths {
     setlistFile: join(dataDir, "library", "setlist.json"),
     projectsDir: join(dataDir, "projects"),
     midiConfigFile: join(dataDir, "host", "midi-config.json"),
+    liveDeskFile: join(dataDir, "library", "live-desk.json"),
   };
 }
 

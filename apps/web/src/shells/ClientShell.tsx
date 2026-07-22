@@ -28,6 +28,7 @@ import {
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
 import { putProject } from "../lib/libraryApi.js";
 import { fetchSetlist } from "../lib/setlistApi.js";
+import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
@@ -66,16 +67,20 @@ export function ClientShell() {
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
   const {
     state,
-    displayTicks,
+    displayTicks: rawDisplayTicks,
     wsStatus,
     latencyMs,
     stageCue,
+    liveDesk,
     play,
     seek,
     commandPending,
     error: transportError,
     announcePresence,
   } = useTransport();
+  const displayTicks =
+    rawDisplayTicks +
+    ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq);
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const {
     activeProject,
@@ -435,10 +440,13 @@ export function ClientShell() {
                   <DrumsPane
                     project={activeProject}
                     displayTicks={displayTicks}
-                    notesEdit={displayPrefs.formNotesEdit}
+                    notesEdit={
+                      displayPrefs.formNotesEdit && liveDesk.clientEditEnabled
+                    }
                     sectionNamesPolish={displayPrefs.sectionNamesPolish}
                     onNoteChange={(clipId, note) => {
-                      if (!state.activeProjectId) return;
+                      if (!state.activeProjectId || !liveDesk.clientEditEnabled)
+                        return;
                       const prev = activeProject;
                       const next: Project = {
                         ...activeProject,
@@ -483,10 +491,16 @@ export function ClientShell() {
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
                   prefs={displayPrefs}
-                  vocalTapOn={vocalTapOn}
+                  teamSemitones={liveDesk.transpositionSemitones}
+                  vocalTapOn={vocalTapOn && liveDesk.clientEditEnabled}
                   vocalTapIndex={vocalTapIndex}
                   onVocalTap={() => {
-                    if (!activeProject || !state.activeProjectId) return;
+                    if (
+                      !activeProject ||
+                      !state.activeProjectId ||
+                      !liveDesk.clientEditEnabled
+                    )
+                      return;
                     const queue = vocalTapQueue(activeProject);
                     const clip = queue[vocalTapIndex];
                     if (!clip) {
@@ -511,6 +525,14 @@ export function ClientShell() {
                       })
                       .catch(() => undefined);
                   }}
+                  onVocalTapStep={(dir) => {
+                    if (!activeProject) return;
+                    const queue = vocalTapQueue(activeProject);
+                    const max = Math.max(0, queue.length - 1);
+                    setVocalTapIndex((i) =>
+                      Math.max(0, Math.min(max, i + dir)),
+                    );
+                  }}
                 />
               ) : id === "grid" ? (
                 <GridPane
@@ -519,6 +541,7 @@ export function ClientShell() {
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
                   prefs={displayPrefs}
+                  teamSemitones={liveDesk.transpositionSemitones}
                 />
               ) : id === "score" ? (
                 <ScorePane

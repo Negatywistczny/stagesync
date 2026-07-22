@@ -1455,10 +1455,7 @@ function UpdatePanel({
         <Button variant="secondary" onClick={handleCheck} disabled={checking || applying}>
           {checking ? "Sprawdzam…" : "Sprawdź aktualizacje"}
         </Button>
-        <select className={styles.select} disabled aria-label="Kanał">
-          <option>Oficjalne</option>
-          <option disabled>Testowe (β2)</option>
-        </select>
+        <span className={styles.muted}>Kanał: oficjalne</span>
       </div>
       {error && <p className={styles.muted} style={{ color: "var(--ss-color-danger, red)" }}>{error}</p>}
       {done && <p className={styles.muted}>Aktualizacja hosta uruchomiona — połączenie wróci za chwilę.</p>}

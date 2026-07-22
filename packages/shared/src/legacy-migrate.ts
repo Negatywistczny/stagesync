@@ -67,6 +67,8 @@ export type LegacySong = {
     startAbs?: unknown;
     text?: unknown;
     lengthBeats?: unknown;
+    roles?: unknown;
+    priority?: unknown;
   }>;
   tempoMap?: Array<{ id?: unknown; startAbs?: unknown; bpm?: unknown }>;
   meterMap?: Array<{ id?: unknown; startAbs?: unknown; meter?: unknown }>;
@@ -555,11 +557,24 @@ export function migrateLegacySong(
   const barTicks = ticksPerBar(defaultMeter, ppq);
   const cueClips = cuesRaw.map((c, i) => {
     const lengthBeats = asFiniteNumber(c.lengthBeats, minBarBeats);
+    const rolesRaw = Array.isArray(c.roles) ? c.roles : [];
+    const roles = rolesRaw
+      .map((r) => String(r).toLowerCase())
+      .filter(
+        (r): r is "karaoke" | "grid" | "score" | "drums" =>
+          r === "karaoke" || r === "grid" || r === "score" || r === "drums",
+      );
+    const priority =
+      String(c.priority ?? "").toLowerCase() === "alert"
+        ? ("alert" as const)
+        : undefined;
     return {
       id: asString(c.id, `cue-${i}`),
       startTicks: toTicks(asFiniteNumber(c.startAbs, 0), shiftQuarters, ppq),
       lengthTicks: Math.max(1, absBeatToTicks(lengthBeats, ppq) || barTicks),
       label: asString(c.text, "Cue") || "Cue",
+      ...(roles.length > 0 ? { roles } : {}),
+      ...(priority ? { priority } : {}),
     };
   });
 
