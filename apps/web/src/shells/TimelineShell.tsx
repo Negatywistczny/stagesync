@@ -655,14 +655,20 @@ export function TimelineShell() {
 
   useEffect(() => {
     if (!songScreenOpen) return;
+    let cancelled = false;
     void (async () => {
       try {
         const lib = await fetchLibrary();
-        setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
+        if (!cancelled) {
+          setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
+        }
       } catch {
-        setLibraryNames([]);
+        if (!cancelled) setLibraryNames([]);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [songScreenOpen]);
 
   useEffect(() => {
