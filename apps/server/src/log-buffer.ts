@@ -53,7 +53,12 @@ export function createLogBuffer(options: { maxLines?: number } = {}) {
     addSseClient(res: Response): () => void {
       clients.add(res);
       for (const line of lines) {
-        res.write(`data: ${JSON.stringify(line)}\n\n`);
+        try {
+          res.write(`data: ${JSON.stringify(line)}\n\n`);
+        } catch {
+          clients.delete(res);
+          break;
+        }
       }
       return () => {
         clients.delete(res);
