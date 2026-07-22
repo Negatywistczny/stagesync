@@ -18,6 +18,13 @@ describe("countdown-content", () => {
     expect(countdownDigitLabels(0)).toEqual([]);
   });
 
+  it("countdownDigitLabels caps at 32 bars", () => {
+    const labels = countdownDigitLabels(100);
+    expect(labels).toHaveLength(32);
+    expect(labels[0]).toEqual({ barOffset: 0, label: "32" });
+    expect(labels[31]).toEqual({ barOffset: 31, label: "1" });
+  });
+
   it("syntheticCountdownTekstClips maps labels into CD span ticks", () => {
     const clips = syntheticCountdownTekstClips(-7680, 2, 3840);
     expect(clips).toEqual([
