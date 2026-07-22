@@ -6,6 +6,7 @@ import {
   countdownBars,
   deleteFormaSubsection,
   formaSubsectionRows,
+  MAX_COUNTDOWN_BARS,
   renameFormaClip,
   setCountdownBars,
   setFormaSubsectionStartBar,
@@ -33,6 +34,13 @@ describe("formaInspector", () => {
     expect(updated.lengthTicks).toBe(7680 * 1.5); // 3 bars @ 4/4
     expect(updated.startTicks).toBe(-updated.lengthTicks);
     expect(updated.startTicks + updated.lengthTicks).toBe(0);
+  });
+
+  it("setCountdownBars rejects out-of-range bar counts", () => {
+    expect(() => setCountdownBars(project, 0)).toThrow(RangeError);
+    expect(() => setCountdownBars(project, MAX_COUNTDOWN_BARS + 1)).toThrow(
+      RangeError,
+    );
   });
 
   it("setCountdownBars lengthen shifts then renorms so post-CD stays at song start", () => {
