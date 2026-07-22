@@ -137,4 +137,50 @@ describe("resolveStageCueBanner", () => {
       id: "session:00000000-0000-4000-8000-000000000002",
     });
   });
+
+  it("filters song cue by role intersection", () => {
+    const { now } = resolveStageCueBanner({
+      cueClips: [
+        {
+          id: "c-drums",
+          startTicks: 0,
+          lengthTicks: bar,
+          label: "Drums hit",
+          roles: ["drums"],
+        },
+      ],
+      sessionCue: null,
+      playheadTicks: 10,
+      bpm: 120,
+      ppq: DEFAULT_PPQ,
+      meter,
+      activeRoles: ["karaoke"],
+    });
+    expect(now).toBeNull();
+  });
+
+  it("passes song cue alert priority", () => {
+    const { now } = resolveStageCueBanner({
+      cueClips: [
+        {
+          id: "c-alert",
+          startTicks: 0,
+          lengthTicks: bar,
+          label: "Hold!",
+          priority: "alert",
+        },
+      ],
+      sessionCue: null,
+      playheadTicks: 10,
+      bpm: 120,
+      ppq: DEFAULT_PPQ,
+      meter,
+      activeRoles: ["grid"],
+    });
+    expect(now).toMatchObject({
+      text: "Hold!",
+      priority: "alert",
+      source: "song",
+    });
+  });
 });
