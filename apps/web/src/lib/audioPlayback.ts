@@ -97,7 +97,10 @@ function stopAll(): void {
 }
 
 function graphKey(input: AudioPlaybackInput): string {
+  const tempo = resolveTempoAt(input.project, input.displayTicks);
+  const meter = resolveMeterAt(input.project, input.displayTicks);
   return [
+    `t:${tempo}:${meter.numerator}/${meter.denominator}`,
     input.project.audioClips
       .map(
         (c) =>
@@ -108,6 +111,14 @@ function graphKey(input: AudioPlaybackInput): string {
       .map((t) => `${t.id}:${t.muted}:${t.gainDb}`)
       .join(";"),
   ].join("|");
+}
+
+function tempoCtxAt(project: Project, ticks: number) {
+  return {
+    bpm: resolveTempoAt(project, ticks),
+    meter: resolveMeterAt(project, ticks),
+    ppq: project.ppq,
+  };
 }
 
 function startClip(
@@ -122,11 +133,7 @@ function startClip(
   const track = project.audioTracks.find((t) => t.id === clip.trackId);
   if (track?.muted || clip.muted) return;
 
-  const ctxTempo = {
-    bpm: resolveTempoAt(project, clip.startTicks),
-    meter: resolveMeterAt(project, clip.startTicks),
-    ppq: project.ppq,
-  };
+  const ctxTempo = tempoCtxAt(project, displayTicks);
   const offset = audioClipBufferOffsetSec(clip, displayTicks, ctxTempo);
   if (offset == null) return;
 
@@ -243,9 +250,7 @@ export function syncAudioPlayback(
     const track = trackById.get(clip.trackId);
     if (track?.muted || clip.muted) continue;
     const offset = audioClipBufferOffsetSec(clip, input.displayTicks, {
-      bpm: resolveTempoAt(input.project, clip.startTicks),
-      meter: resolveMeterAt(input.project, clip.startTicks),
-      ppq: input.project.ppq,
+      ...tempoCtxAt(input.project, input.displayTicks),
     });
     if (offset == null) continue;
     stillNeeded.add(clip.id);
