@@ -156,7 +156,11 @@ export function StageView() {
               {error}
             </p>
           ) : null}
-          {status ? <p className={styles.muted}>{status}</p> : null}
+          {status ? (
+            <p className={styles.muted} role="status" aria-live="polite">
+              {status}
+            </p>
+          ) : null}
           <textarea
             className={styles.textarea}
             maxLength={200}
