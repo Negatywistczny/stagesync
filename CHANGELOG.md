@@ -68,6 +68,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST zawierają czas serwera; klient nie parsuje cue scenicznego jako ticka i toleruje legacy REST bez `type`/`serverTimeMs`.
 
 #### 🖥️ App Shell & UI
+- **Client — suwaki ustawień:** transpozycja (strój ręczny) i skala tekstu Karaoke w kolorze primary (amber), jak zoom Timeline.
 - **Client Grid (karuzela):** brak mrugnięcia na końcu przesunięcia wersów — treść wiersza jest commitowana przed zresetowaniem `translateY`.
 - **Mobile ≤768px:** toolbar Timeline, header Client oraz zakładki/karty Admin zawijają się bez poziomego overflow.
 - **Client:** ikony stroju jak w v4 nad etykietami C / B♭ / E♭ / Ręczna; Spacja (vocal tap) nie przechwytuje fokusu w polach tekstowych ([#363](https://github.com/Negatywistyczny/stagesync/issues/363)).

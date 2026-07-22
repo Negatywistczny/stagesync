@@ -1787,6 +1787,78 @@
   color: var(--ss-color-text-muted);
 }
 
+/* Match Timeline `.zoomRange` — amber primary thumb/accent (transpozycja, skala). */
+.prefsRange {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--ss-space-4);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  accent-color: var(--ss-color-primary);
+}
+
+.prefsRange:focus {
+  outline: none;
+}
+
+.prefsRange:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--ss-radius-sm);
+}
+
+.prefsRange::-webkit-slider-runnable-track {
+  height: var(--ss-space-1);
+  border-radius: var(--ss-radius-pill);
+  background: var(--ss-color-border);
+}
+
+.prefsRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--ss-space-3);
+  height: var(--ss-space-3);
+  margin-top: calc((var(--ss-space-1) - var(--ss-space-3)) / 2);
+  border-radius: var(--ss-radius-pill);
+  border: 1px solid var(--ss-color-border);
+  background: var(--ss-color-primary);
+}
+
+.prefsRange:active::-webkit-slider-thumb {
+  background: var(--ss-color-primary-active);
+}
+
+.prefsRange::-moz-range-track {
+  height: var(--ss-space-1);
+  border-radius: var(--ss-radius-pill);
+  background: var(--ss-color-border);
+}
+
+.prefsRange::-moz-range-thumb {
+  width: var(--ss-space-3);
+  height: var(--ss-space-3);
+  border-radius: var(--ss-radius-pill);
+  border: 1px solid var(--ss-color-border);
+  background: var(--ss-color-primary);
+}
+
+.prefsRange:active::-moz-range-thumb {
+  background: var(--ss-color-primary-active);
+}
+
+@media (hover: hover) {
+  .prefsRange:hover::-webkit-slider-thumb {
+    background: var(--ss-color-primary-hover);
+  }
+
+  .prefsRange:hover::-moz-range-thumb {
+    background: var(--ss-color-primary-hover);
+  }
+}
+
 .pitchToggle {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

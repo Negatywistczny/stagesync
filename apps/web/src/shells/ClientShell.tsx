@@ -708,6 +708,7 @@ function GlobalSettingsFields({
           Transpozycja ({prefs.instrumentPitchManual > 0 ? "+" : ""}
           {prefs.instrumentPitchManual})
           <input
+            className={styles.prefsRange}
             type="range"
             min={INSTRUMENT_PITCH_MANUAL_MIN}
             max={INSTRUMENT_PITCH_MANUAL_MAX}
@@ -778,6 +779,7 @@ function RoleSettingsFields({
         <label className={styles.field}>
           Skala tekstu ({textScale}%)
           <input
+            className={styles.prefsRange}
             type="range"
             min={80}
             max={200}
