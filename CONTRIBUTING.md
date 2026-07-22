@@ -63,7 +63,7 @@ Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](d
 
 Pełna reguła agenta: [`.cursor/rules/changelog.mdc`](.cursor/rules/changelog.mdc).
 
-Skrót: ludzki opis korzyści/zachowania; kolejność H3 **Zmieniono → Dodano → Naprawiono** (jak w β2+); domeny jako `####`; **nigdy** drugi ten sam H3; agreguj commity; bez nazw funkcji, tokenów CSS, CI/Vitest ani checklist G1–G10.
+Skrót: ludzki opis korzyści/zachowania; kolejność H3 **Zmieniono → Dodano → Naprawiono** (jak w β2+); domeny jako emoji `####` (`⏱️ Timeline & DAW`, `🎛️ Audio / MIDI / Transport`, `🖥️ App Shell & UI`, `💻 Desktop`, `⚙️ API / Serwer`, `📚 Docs`); **nigdy** drugi ten sam H3; agreguj commity; bez nazw funkcji, tokenów CSS, CI/Vitest ani checklist G1–G10.
 
 | Tak | Nie |
 |-----|-----|
