@@ -10,7 +10,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-
 - **Różdżka:** z powrotem w toolbarze / skrót W — Tekst→Forma, Akordy→Forma lub obie; zakres = zaznaczone sekcje Formy.
 - **MIDI playhead:** opcjonalny wskaźnik w Wygląd (zapamiętywany lokalnie).
 - **Inspector audio ([#428](https://github.com/Negatywistyczny/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.
@@ -19,51 +18,43 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Forma:** kaskadowe przesuwanie późniejszych klipów; luka Intro po Countdown przy pierwszym przeciągnięciu; nożyczki tną pod kursorem.
 
 #### 🎛️ Audio / MIDI / Transport
-
 - **Audio na klipie:** fade in/out z uchwytami Smart, crossfade przy styku, region loop, kopiuj/wklej; buforowanie przed Play ze spinnerem i ostrzeżeniem przy błędzie decode ([#365](https://github.com/Negatywistyczny/stagesync/issues/365)).
 - **Preferencje Audio/MIDI ([#432](https://github.com/Negatywistyczny/stagesync/issues/432)):** modal (Cmd/Ctrl+, / menu StageSync) — wyjście audio i porty MIDI zapamiętywane na hoście.
 - **Transport i setlista ([#358](https://github.com/Negatywistyczny/stagesync/issues/358)):** pauza / stop na końcu utworu; opcjonalne auto-advance; `[` / `]` między utworami; ponowne łączenie WS z backoffiem; baner offline Client + odświeżenie projektu.
 - **MIDI (host):** Start/Stop/Continue/SPP z wejścia; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po numerze programu (SSOT serwera).
 
 #### 🖥️ App Shell & UI
-
 - **Client — partytura:** render MusicXML z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika w pasku roli.
 - **Client — strój i Formy:** C / B♭ / E♭ / ręczna (−6…+6); polskie nazwy sekcji Formy; Karaoke z tym samym strojem i formatem akordów co Grid (live transpozycja).
 - **Chrome ([#443](https://github.com/Negatywistyczny/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-
 - **Menu OS ([#443](https://github.com/Negatywistyczny/stagesync/issues/443), Faza D):** Edycja — Cofnij/Ponów/Usuń (z wyszarzaniem bez historii); Widok — Powiększ / Pomniejsz / Rzeczywisty rozmiar; Pomoc — Skróty; czytelniejsze błędy transportu i sąsiadów setlisty.
 - **Diagnostyka ([#351](https://github.com/Negatywistyczny/stagesync/issues/351)):** rotujący log hosta, handlery crashy, eksport ZIP z Admin Host / menu Pomoc; osobny log sidecara.
 - **Instalator Windows ([#396](https://github.com/Negatywistyczny/stagesync/issues/396)):** `StageSync_{version}_x64.msi` (bez `_en-US`); zwinięte notatki updatera w release; `latest.json` przy rename.
 
 #### ⚙️ Serwer & API
-
 - **Migracja v4→v5:** rok i okładka; MusicXML oraz lokalne okładki/audio → assets (ścieżki audio); CLI z katalogiem uploadów kopiuje pliki.
 
 #### 📚 Dokumentacja
-
 - **README ([#417](https://github.com/Negatywistyczny/stagesync/issues/417)):** treść po polsku, pełniejszy zestaw badge i sekcja stosu.
 - **API:** domknięta dokumentacja powierzchni REST.
 
 ### Zmieniono
 
 #### ⚙️ Serwer & API
-
 - **Walidacja:** ściślejsze limity długości, BPM (20–400) i metrum na krawędziach API; odrzucanie niepoprawnego metrum.
 - **Timebase:** konwersje ticks↔BBT i snap do taktów respektują mapę metrum; ochrona przed nieprawidłowymi tickami.
 - **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WebSocket; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
 
 #### 🖥️ App Shell & UI
-
 - **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
 - **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, ukryty inspector, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
 
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
-
 - **Pomoc i i18n:** skróty zsynchronizowane z kodem (schowek, zoom, Fit Zoom, nożyczki, pętla); polskie etykiety narzędzi; usunięty zbędny lead o v4/OUT.
 - **Metrum i snap:** zmiana metrum od Taktu 1 przelicza przedtakt; snap do beatu odcinkowo po mapie metrum.
 - **Chrome Timeline:** przywrócony układ tools | transport | utwór; wyśrodkowany przycisk oka w docku; playhead/locator od górnej krawędzi pasa beatów; suwaki zoom w kolorze primary.
@@ -71,12 +62,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Setlista ([#363](https://github.com/Negatywistyczny/stagesync/issues/363)):** `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc zgodna z kodem.
 
 #### 🎛️ Audio / MIDI / Transport
-
 - **Playback:** poprawna obwiednia fade in/out i loop z oknem trim; dźwięk gaśnie od razu przy Pause/Stop (bez czekania na potwierdzenie serwera).
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST zawierają czas serwera.
 
 #### 🖥️ App Shell & UI
-
 - **Mobile ≤768px:** toolbar Timeline, header Client oraz zakładki/karty Admin zawijają się bez poziomego overflow.
 - **Client:** ikony stroju jak w v4 nad etykietami C / B♭ / E♭ / Ręczna; Spacja (vocal tap) nie przechwytuje fokusu w polach tekstowych ([#363](https://github.com/Negatywistyczny/stagesync/issues/363)).
 - **Preferencje:** Audio / MIDI jako zakładki z podkreśleniem (nie segmented control).

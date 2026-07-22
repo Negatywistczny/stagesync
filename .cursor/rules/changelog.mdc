@@ -41,6 +41,12 @@ Pod H3 grupuj domenowo przez `####` **z emoji** (gdy ≥ ~4 bulletów w sekcji).
 Puste H3 — **nie twórz**. Brakujące H3 — dodaj **raz**, w kanonicznej kolejności.
 Nagłówki `####` **bez** emoji albo z inną nazwą domeny — **zakazane** (używaj tabeli powyżej).
 
+### Whitespace wokół `####`
+
+- **Jedna** pusta linia przed każdym `####` (po `###` albo po ostatnim bullecie poprzedniego klastra).
+- **Bez** pustej linii między `####` a pierwszym bulletem.
+- **Zakaz** podwójnych pustych linii wokół `####`.
+
 ### Inclusion: Dokumentacja vs Infrastruktura
 
 1. **Dokumentacja:** wpisuj przewodniki użytkownika, schematy API, podręczniki skrótów, instalację. Pomijaj notatki wewnętrzne, arkusze QA, same literówki / kaskady TODO.
