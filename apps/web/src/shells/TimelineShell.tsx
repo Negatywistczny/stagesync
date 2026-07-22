@@ -362,6 +362,8 @@ export function TimelineShell() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [savePending, setSavePending] = useState(false);
+  const [audioUploadPending, setAudioUploadPending] = useState(false);
+  const audioUploadPendingRef = useRef(false);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
@@ -2812,6 +2814,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
+    if (audioUploadPendingRef.current) return;
+    audioUploadPendingRef.current = true;
+    setAudioUploadPending(true);
     try {
       const next = await uploadProjectAudio(projectId, file);
       // Prefer the uploaded clip on the chosen track when server put it on track 0
@@ -2837,6 +2842,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       );
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Upload audio failed");
+    } finally {
+      audioUploadPendingRef.current = false;
+      setAudioUploadPending(false);
     }
   }
 
@@ -4144,12 +4152,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           >
                             M
                           </button>
-                          <label className={styles.tapBtn} title="Dodaj plik audio">
+                          <label
+                            className={styles.tapBtn}
+                            title={
+                              audioUploadPending
+                                ? "Upload w toku…"
+                                : "Dodaj plik audio"
+                            }
+                          >
                             +
                             <input
                               type="file"
                               accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
                               hidden
+                              disabled={audioUploadPending}
                               onChange={(e) => {
                                 const f = e.target.files?.[0];
                                 e.target.value = "";
