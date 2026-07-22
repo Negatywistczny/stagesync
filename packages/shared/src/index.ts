@@ -225,6 +225,7 @@ export {
   moveClipsRigidDelta,
   moveSectionsFromId,
   placeClipNoOverlap,
+  allocateUniqueClipId,
   resizeClipNoOverlap,
   splitClipAt,
   type ClipEdge,
