@@ -1,12 +1,12 @@
 # StageSync
 
-[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/Negatywistyczny/stagesync/actions/workflows/ci.yml)
-[![version](https://img.shields.io/badge/version-5.0.0--beta.2-blue)](https://github.com/Negatywistyczny/stagesync/releases)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
+[![version](https://img.shields.io/badge/version-5.0.0--beta.2-blue)](https://github.com/Negatywistczny/stagesync/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **StageSync** to nowoczesny, wieloplatformowy system synchronizacji scenicznej oraz odtwarzania osi czasu (Timeline) przeznaczony dla realizatorów, zespołów i operatorów wydarzeń na żywo.
 
-> ℹ️ **Legacy 4.x:** [STAGESYNC-APP-LEGACY](https://github.com/Negatywistyczny/STAGESYNC-APP-LEGACY). Rozwój wersji v5: [stagesync](https://github.com/Negatywistyczny/stagesync).
+> ℹ️ **Legacy 4.x:** [STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY). Rozwój wersji v5: [stagesync](https://github.com/Negatywistczny/stagesync).
 
 ---
 
@@ -21,7 +21,7 @@
 
 ### Aplikacja Desktopowa (Tauri — zalecana dla operatora)
 
-1. Pobierz instalator `.dmg` (macOS) lub `.msi` (Windows) z sekcji [Releases](https://github.com/Negatywistyczny/stagesync/releases).
+1. Pobierz instalator `.dmg` (macOS) lub `.msi` (Windows) z sekcji [Releases](https://github.com/Negatywistczny/stagesync/releases).
 2. Zainstaluj i uruchom aplikację — wbudowany serwer wystartuje automatycznie, otwierając widok Admina i Osi Czasu.
 
 > 📄 Pełna instrukcja obsługi: [docs/DESKTOP.md](docs/DESKTOP.md)
@@ -61,7 +61,7 @@ docker compose -f compose.prod.yml up -d
 
 ```sh
 # 1. Sklonuj repozytorium i zainstaluj zależności
-git clone [https://github.com/Negatywistyczny/stagesync.git](https://github.com/Negatywistyczny/stagesync.git)
+git clone [https://github.com/Negatywistczny/stagesync.git](https://github.com/Negatywistczny/stagesync.git)
 cd stagesync
 pnpm install
 
