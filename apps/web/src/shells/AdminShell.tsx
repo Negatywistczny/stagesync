@@ -35,7 +35,7 @@ import {
 } from "../lib/docsLinks.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconPower, IconRestart } from "./icons.js";
+import { IconFullscreen, IconPower, IconRestart, IconSettings, IconSun } from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
@@ -44,7 +44,7 @@ import {
   ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
-import { AppHeader } from "./components/AppHeader.js";
+import { ShellWordmark } from "./ShellWordmark.js";
 import {
   ShellConfirmDialog,
   ShellPromptDialog,
@@ -292,24 +292,9 @@ export function AdminShell() {
   return (
     <div className={styles.shell}>
       <div className={styles.chromeWrap}>
-        <AppHeader
-          suffix="Admin"
-          version={APP_VERSION}
-          hideOnDesktop={false}
-          appJump={[
-            timelineProjectId
-              ? { to: `/timeline/${timelineProjectId}`, label: "Timeline" }
-              : { to: "/timeline", label: "Timeline", disabled: true },
-            { to: "/client", label: "Klient" },
-          ]}
-          appearancePressed={appearanceOpen}
-          onAppearance={() => setAppearanceOpen((v) => !v)}
-          onSettings={() => setSettingsOpen(true)}
-          settingsLabel="Ustawienia hosta"
-          onFullscreen={() => void toggleAppFullscreen()}
-        />
+        <header className={styles.chrome}>
+          <ShellWordmark suffix="Admin" version={APP_VERSION} />
 
-        <div className={styles.level2} data-ss-level="2">
           <nav className={styles.sections} aria-label="Sekcje">
             {SECTIONS.map((item) => (
               <button
@@ -328,7 +313,31 @@ export function AdminShell() {
               </button>
             ))}
           </nav>
-          <div className={styles.level2Aside}>
+
+          <div className={styles.chromeAside}>
+            <nav className={styles.appJump} aria-label="Aplikacje">
+              {timelineProjectId ? (
+                <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
+              ) : (
+                <span className={styles.appJumpMuted} aria-disabled>
+                  Timeline
+                </span>
+              )}
+              <Link to="/client">Klient</Link>
+            </nav>
+            <ShellIconButton
+              label="Wygląd"
+              aria-expanded={appearanceOpen}
+              onClick={() => setAppearanceOpen((v) => !v)}
+            >
+              <IconSun />
+            </ShellIconButton>
+            <ShellIconButton
+              label="Ustawienia hosta"
+              onClick={() => setSettingsOpen(true)}
+            >
+              <IconSettings />
+            </ShellIconButton>
             <ShellIconButton
               label={restart.label}
               pressed={restart.pending}
@@ -343,8 +352,14 @@ export function AdminShell() {
             >
               <IconPower />
             </ShellIconButton>
+            <ShellIconButton
+              label="Pełny ekran"
+              onClick={() => void toggleAppFullscreen()}
+            >
+              <IconFullscreen />
+            </ShellIconButton>
           </div>
-        </div>
+        </header>
 
         {appearanceOpen ? (
           <SettingsPopover

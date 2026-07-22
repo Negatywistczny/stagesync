@@ -9,13 +9,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
-- **App chrome:** Client wraca do jednego zawsze widocznego nagłówka (bez L1/L2); Admin zostawia podział na 2 poziomy z Level 1 zawsze widocznym (także Desktop).
+- **App chrome:** Client i Admin wracają do jednego zawsze widocznego nagłówka (bez L1/L2); dwupoziomowy chrome zostaje w Timeline.
 
 ### Dodano
 
 - **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — domyślnie ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
-- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline/Admin — Level 2 toolbary; song cluster w Timeline L2; Admin sekcje w L2.
+- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline — Level 2 toolbar z song clusterem (po prawej).
 - **Desktop ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** menu Edycja — Cofnij/Ponów (`edit-undo` / `edit-redo`) dla draftu Timeline przy ukrytym AppHeader.
 - **Preferencje ([#432](https://github.com/Negatywistczny/stagesync/issues/432)):** modal Audio/MIDI (Cmd/Ctrl+, / menu StageSync); `setSinkId` + localStorage; porty MIDI persistowane w `data/host/midi-config.json`; bez Panic (ROADMAP OUT).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** contextual inspector Track vs Clip (gain/fader wyłącznie `Slider`; trim/fade/loop w klipie; nazwa/M/S/fader w ścieżce).
