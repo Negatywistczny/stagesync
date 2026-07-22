@@ -81,7 +81,7 @@ export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 
 export const ProjectAssetSchema = z.object({
   id: z.string().min(1),
-  storageName: z.string().min(1),
+  storageName: z.string().min(1).max(200),
   originalName: z.string().min(1),
   kind: ProjectAssetKindSchema,
   mimeType: z.string().min(1),
