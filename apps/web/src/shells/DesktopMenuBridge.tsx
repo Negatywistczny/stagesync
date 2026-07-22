@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import { renderSVG } from "uqr";
@@ -33,26 +33,8 @@ function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
-  const titleId = useId();
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
   return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal
-      aria-labelledby={titleId}
-    >
+    <div className={styles.overlay} role="dialog" aria-modal>
       <button
         type="button"
         className={styles.backdrop}
@@ -61,7 +43,7 @@ function Modal({
       />
       <div className={styles.panel}>
         <div className={styles.head}>
-          <h2 id={titleId}>{title}</h2>
+          <h2>{title}</h2>
           <ShellIconButton label="Zamknij" onClick={onClose}>
             ×
           </ShellIconButton>
@@ -212,8 +194,8 @@ export function DesktopMenuBridge() {
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
+  const restartPendingRef = useRef(false);
   const [restartError, setRestartError] = useState<string | null>(null);
-  const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -266,6 +248,8 @@ export function DesktopMenuBridge() {
   }, [stop]);
 
   const onRestartConfirm = useCallback(async () => {
+    if (restartPendingRef.current) return;
+    restartPendingRef.current = true;
     setRestartPending(true);
     setRestartError(null);
     try {
@@ -276,6 +260,7 @@ export function DesktopMenuBridge() {
         err instanceof Error ? err.message : "Restart nieudany",
       );
     } finally {
+      restartPendingRef.current = false;
       setRestartPending(false);
     }
   }, []);
@@ -304,35 +289,17 @@ export function DesktopMenuBridge() {
           setRestartError(null);
           setRestartOpen(true);
           break;
-        case "save":
-          if (!location.pathname.startsWith("/timeline/")) {
-            setSaveNotice(
-              "Zapisz (⌘/Ctrl+S) działa w Timeline — otwórz utwór do edycji.",
-            );
-          }
-          break;
         default:
           break;
       }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [goSetlistNeighbor, location.pathname, onTransportPlay, onTransportStop]);
-
-  useEffect(() => {
-    if (!saveNotice) return;
-    const t = window.setTimeout(() => setSaveNotice(null), 2800);
-    return () => window.clearTimeout(t);
-  }, [saveNotice]);
+  }, [goSetlistNeighbor, onTransportPlay, onTransportStop]);
 
   return (
     <>
       <Outlet />
-      {saveNotice ? (
-        <p className={styles.toast} role="status" aria-live="polite">
-          {saveNotice}
-        </p>
-      ) : null}
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
         <RestartConfirmModal
