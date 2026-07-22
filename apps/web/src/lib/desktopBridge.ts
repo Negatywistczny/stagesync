@@ -80,46 +80,31 @@ export function isDesktopShell(): boolean {
 
 /** Normalize Tauri / Promise rejection reasons into a readable message. */
 export function formatUnknownError(err: unknown): string {
-  let message: string;
+  const cap = (s: string) => s.slice(0, 500);
   if (err instanceof Error) {
-    message = err.message || err.name || "Unknown error";
-  } else if (typeof err === "string") {
-    message = err || "Unknown error";
-  } else if (err && typeof err === "object" && "message" in err) {
-    const raw = (err as { message: unknown }).message;
-    if (typeof raw === "string" && raw.trim()) {
-      message = raw;
-    } else {
-      message = "";
-    }
-  } else {
-    message = "";
+    return cap(err.message || err.name || "Unknown error");
   }
-  if (!message) {
-    try {
-      const json = JSON.stringify(err);
-      if (json && json !== "{}") message = json;
-    } catch {
-      /* ignore */
-    }
+  if (typeof err === "string") {
+    return cap(err || "Unknown error");
   }
-  if (!message) {
-    const fallback = String(err);
-    message =
-      fallback === "undefined" || fallback === "null"
-        ? "Unknown error"
-        : fallback;
+  if (err && typeof err === "object" && "message" in err) {
+    const message = (err as { message: unknown }).message;
+    if (typeof message === "string" && message.trim()) return cap(message);
   }
-  return message.slice(0, 500);
+  try {
+    const json = JSON.stringify(err);
+    if (json && json !== "{}") return cap(json);
+  } catch {
+    /* ignore */
+  }
+  const fallback = String(err);
+  return cap(
+    fallback === "undefined" || fallback === "null" ? "Unknown error" : fallback,
+  );
 }
 
 function asError(err: unknown): Error {
   return err instanceof Error ? err : new Error(formatUnknownError(err));
-}
-
-/** True when the page can actually call into Tauri (not just hostname heuristics). */
-function tauriInvokeAvailable(): boolean {
-  return Boolean(tauriGlobal()?.core?.invoke ?? tauriInternals()?.invoke);
 }
 
 function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
@@ -131,14 +116,6 @@ function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T>
   return (invoke(cmd, args) as Promise<T>).catch((err: unknown) => {
     throw asError(err);
   });
-}
-
-async function toggleHtmlFullscreen(): Promise<void> {
-  if (!document.fullscreenElement) {
-    await document.documentElement.requestFullscreen();
-  } else {
-    await document.exitFullscreen();
-  }
 }
 
 /** Check for a desktop update via tauri-plugin-updater. */
@@ -192,13 +169,9 @@ async function toggleNativeWindowViaPlugin(): Promise<void> {
 /**
  * Fullscreen: native Tauri window in desktop shell; HTML Fullscreen API in browser.
  * macOS desktop uses maximize (green-button UX); other platforms use true fullscreen.
- *
- * Browser on :4000 can match `isDesktopShell()` via hostname heuristic without Tauri
- * inject — only take the native path when invoke is actually available, otherwise
- * HTML Fullscreen (preserves the click user-gesture).
  */
 export async function toggleAppFullscreen(): Promise<void> {
-  if (isDesktopShell() && tauriInvokeAvailable()) {
+  if (isDesktopShell()) {
     const errors: string[] = [];
 
     try {
@@ -220,7 +193,11 @@ export async function toggleAppFullscreen(): Promise<void> {
     );
   }
 
-  await toggleHtmlFullscreen();
+  if (!document.fullscreenElement) {
+    await document.documentElement.requestFullscreen();
+  } else {
+    await document.exitFullscreen();
+  }
 }
 
 /** Sync last Timeline project id to the native menu (desktop only). */
@@ -239,14 +216,9 @@ export function syncNavRecentProjects(
   return tauriInvoke<void>("set_nav_recent_projects", { projects });
 }
 
-/**
- * Open a URL in the system browser (Tauri) or a new tab (web).
- *
- * Browser on :4000 can match `isDesktopShell()` via hostname heuristic without
- * Tauri inject — only invoke when available, otherwise `window.open`.
- */
+/** Open a URL in the system browser (Tauri) or a new tab (web). */
 export function openExternalUrl(url: string): Promise<void> {
-  if (isDesktopShell() && tauriInvokeAvailable()) {
+  if (isDesktopShell()) {
     return tauriInvoke<void>("open_external_url", { url });
   }
   window.open(url, "_blank", "noopener,noreferrer");
