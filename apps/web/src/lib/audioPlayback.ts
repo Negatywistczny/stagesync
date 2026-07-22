@@ -29,6 +29,8 @@ type ActiveSource = {
 
 const bufferCache = new Map<string, AudioBuffer>();
 const inflight = new Map<string, Promise<AudioBuffer | null>>();
+/** Keys (`projectId:assetId`) that failed fetch/decode — UI warning until cleared. */
+const failedAssets = new Set<string>();
 let active: ActiveSource[] = [];
 let lastDisplayTicks: number | null = null;
 let lastGraphKey = "";
@@ -44,6 +46,7 @@ function cacheKey(projectId: string, assetId: string): string {
 }
 
 function rememberBuffer(key: string, decoded: AudioBuffer): void {
+  failedAssets.delete(key);
   if (bufferCache.has(key)) bufferCache.delete(key);
   bufferCache.set(key, decoded);
   while (bufferCache.size > MAX_BUFFER_CACHE) {
@@ -53,8 +56,29 @@ function rememberBuffer(key: string, decoded: AudioBuffer): void {
   }
 }
 
+function markFailed(key: string): void {
+  failedAssets.add(key);
+}
+
 export function assetFileUrl(projectId: string, assetId: string): string {
   return `/api/projects/${encodeURIComponent(projectId)}/assets/${encodeURIComponent(assetId)}/file`;
+}
+
+export function isAudioAssetDecodeFailed(
+  projectId: string,
+  assetId: string,
+): boolean {
+  return failedAssets.has(cacheKey(projectId, assetId));
+}
+
+/** Asset ids for `projectId` that failed load/decode (Timeline warnings). */
+export function getFailedAudioAssetIds(projectId: string): string[] {
+  const prefix = `${projectId}:`;
+  const out: string[] = [];
+  for (const key of failedAssets) {
+    if (key.startsWith(prefix)) out.push(key.slice(prefix.length));
+  }
+  return out;
 }
 
 export async function loadAudioBuffer(
@@ -74,13 +98,20 @@ export async function loadAudioBuffer(
   const job = (async () => {
     try {
       const res = await fetch(assetFileUrl(projectId, assetId));
-      if (!res.ok) return null;
+      if (!res.ok) {
+        markFailed(key);
+        return null;
+      }
       const raw = await res.arrayBuffer();
-      if (raw.byteLength > 100 * 1024 * 1024) return null;
+      if (raw.byteLength > 100 * 1024 * 1024) {
+        markFailed(key);
+        return null;
+      }
       const decoded = await ctx.decodeAudioData(raw.slice(0));
       rememberBuffer(key, decoded);
       return decoded;
     } catch {
+      markFailed(key);
       return null;
     } finally {
       inflight.delete(key);
@@ -90,10 +121,49 @@ export async function loadAudioBuffer(
   return job;
 }
 
+/**
+ * Ensure unmuted clips under `playheadTicks` are decoded before Play (#365).
+ * Does not start transport — caller gates UI then invokes server play.
+ */
+export async function ensureAudioBuffered(
+  projectId: string,
+  project: Project,
+  playheadTicks: number,
+  ctx: AudioContext = getMetronomeAudioContext(),
+): Promise<{ ready: boolean; failedAssetIds: string[] }> {
+  const trackById = new Map(project.audioTracks.map((t) => [t.id, t]));
+  const assetIds = new Set<string>();
+  for (const clip of project.audioClips) {
+    const track = trackById.get(clip.trackId);
+    if (track?.muted || clip.muted) continue;
+    const offset = audioClipBufferOffsetSecAlongMaps(
+      clip,
+      playheadTicks,
+      project,
+    );
+    if (offset == null) continue;
+    assetIds.add(clip.assetId);
+  }
+  if (assetIds.size === 0) {
+    return { ready: true, failedAssetIds: [] };
+  }
+  await Promise.all(
+    [...assetIds].map((assetId) => loadAudioBuffer(projectId, assetId, ctx)),
+  );
+  const failedAssetIds = [...assetIds].filter((id) =>
+    isAudioAssetDecodeFailed(projectId, id),
+  );
+  const ready = [...assetIds].every((id) =>
+    bufferCache.has(cacheKey(projectId, id)),
+  );
+  return { ready, failedAssetIds };
+}
+
 export function clearAudioBufferCache(projectId?: string): void {
   if (!projectId) {
     bufferCache.clear();
     inflight.clear();
+    failedAssets.clear();
     return;
   }
   const prefix = `${projectId}:`;
@@ -102,6 +172,9 @@ export function clearAudioBufferCache(projectId?: string): void {
   }
   for (const key of [...inflight.keys()]) {
     if (key.startsWith(prefix)) inflight.delete(key);
+  }
+  for (const key of [...failedAssets]) {
+    if (key.startsWith(prefix)) failedAssets.delete(key);
   }
 }
 
