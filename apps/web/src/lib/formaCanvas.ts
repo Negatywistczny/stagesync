@@ -232,7 +232,7 @@ export function iterPreRollBarBoundariesTicks(
 
   const out: BarBoundary[] = [];
   let t = start;
-  const maxBars = 10_000;
+  const maxBars = 4096;
   while (t < end && out.length < maxBars) {
     const meter = t < 0 ? project.defaultMeter : meterAtTicks(project, t);
     const len = ticksPerBar(meter, project.ppq);
