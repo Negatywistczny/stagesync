@@ -202,6 +202,63 @@ describe("migrateLegacySong", () => {
       ),
     ).toThrow(/ProjectSchema/);
   });
+  it("maps year, coverUrl, MusicXML asset, and audio tracks/clips", () => {
+    const song: LegacySong = {
+      ...templateSong(),
+      year: 1978,
+      artist: "ABBA",
+      genre: "Pop",
+      coverUrl:
+        "https://resources.tidal.com/images/example/1280x1280.jpg",
+      musicxmlFile: "halo-tu-londyn.mxl",
+      audioFile: "guide.wav",
+      stems: ["drums.wav", "bass.mp3"],
+    };
+    const { project, pendingAssets } = migrateLegacySong(song, {
+      projectId: PID,
+      updatedAt: FIXED_AT,
+    });
+    expect(project.year).toBe(1978);
+    expect(project.artist).toBe("ABBA");
+    expect(project.coverUrl).toContain("tidal.com");
+    expect(project.assets.map((a) => a.kind).sort()).toEqual([
+      "audio",
+      "audio",
+      "audio",
+      "musicxml",
+    ]);
+    expect(
+      project.assets.find((a) => a.kind === "musicxml")?.originalName,
+    ).toBe("halo-tu-londyn.mxl");
+    expect(project.audioTracks).toHaveLength(3);
+    expect(project.audioClips).toHaveLength(3);
+    expect(project.audioClips.every((c) => c.startTicks === 0)).toBe(true);
+    expect(pendingAssets).toHaveLength(4);
+    expect(pendingAssets.some((p) => p.kind === "musicxml")).toBe(true);
+    expect(pendingAssets.filter((p) => p.kind === "audio")).toHaveLength(3);
+  });
+
+  it("maps local cover filename to cover asset (not coverUrl)", () => {
+    const song: LegacySong = {
+      ...templateSong(),
+      coverUrl: "sleeve.png",
+    };
+    const { project, pendingAssets } = migrateLegacySong(song, {
+      projectId: PID,
+      updatedAt: FIXED_AT,
+    });
+    expect(project.coverUrl).toBeUndefined();
+    expect(project.assets.some((a) => a.kind === "cover")).toBe(true);
+    expect(pendingAssets.some((p) => p.kind === "cover")).toBe(true);
+  });
+
+  it("does not zero year when valid", () => {
+    const { project } = migrateLegacySong(
+      { ...templateSong(), year: 2015 },
+      { projectId: PID, updatedAt: FIXED_AT },
+    );
+    expect(project.year).toBe(2015);
+  });
 });
 
 describe("migrateLegacyDatabase", () => {
