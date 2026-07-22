@@ -84,7 +84,9 @@ export function createClientPresence() {
       if (Object.prototype.hasOwnProperty.call(payload, "latencyMs")) {
         const n = Number(payload.latencyMs);
         entry.latencyMs =
-          Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
+          Number.isFinite(n) && n >= 0
+            ? Math.min(60_000, Math.round(n))
+            : null;
       }
       entry.updatedAt = Date.now();
       return { ...entry, roles: [...entry.roles] };
