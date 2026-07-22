@@ -169,6 +169,9 @@ import {
 import {
   allowAudioPlayback,
   clearAudioBufferCache,
+  ensureAudioBuffered,
+  getFailedAudioAssetIds,
+  isAudioAssetDecodeFailed,
   loadAudioBuffer,
   restartAudioPlayback,
   stopAudioPlayback,
@@ -371,6 +374,8 @@ export function TimelineShell() {
   const [savePending, setSavePending] = useState(false);
   const [audioUploadPending, setAudioUploadPending] = useState(false);
   const audioUploadPendingRef = useRef(false);
+  const [audioBuffering, setAudioBuffering] = useState(false);
+  const [failedAudioAssetIds, setFailedAudioAssetIds] = useState<string[]>([]);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
@@ -580,7 +585,7 @@ export function TimelineShell() {
           project.audioTracks,
         ),
       );
-      clearAudioBufferCache(id);
+      setFailedAudioAssetIds(getFailedAudioAssetIds(id));
       const first = project.forma.clips[0]?.id ?? null;
       setClipSelection(
         first ? selectSingle(first, "forma") : clearSelection(),
@@ -1378,8 +1383,11 @@ export function TimelineShell() {
   ]);
 
   useEffect(() => {
-    return () => stopAudioPlayback();
-  }, []);
+    return () => {
+      stopAudioPlayback();
+      if (projectId) clearAudioBufferCache(projectId);
+    };
+  }, [projectId]);
 
   const audioAssetDecodeKey =
     draftProject?.assets
@@ -1404,7 +1412,9 @@ export function TimelineShell() {
       for (const asset of missing) {
         if (cancelled) return;
         const buf = await loadAudioBuffer(projectId, asset.id);
-        if (!buf || cancelled) continue;
+        if (cancelled) return;
+        setFailedAudioAssetIds(getFailedAudioAssetIds(projectId));
+        if (!buf) continue;
         const meta = computeWaveformFromAudioBuffer(buf);
         project = applyDecodedAudioMeta(project, asset.id, {
           durationMs: meta.durationMs,
@@ -1487,6 +1497,21 @@ export function TimelineShell() {
     allowAudioPlayback();
     await resumeMetronomeAudio(getMetronomeAudioContext());
     if (projectId && draftProject) {
+      setAudioBuffering(true);
+      try {
+        const buffered = await ensureAudioBuffered(
+          projectId,
+          draftProject,
+          locatorTicks,
+        );
+        setFailedAudioAssetIds(
+          buffered.failedAssetIds.length
+            ? buffered.failedAssetIds
+            : getFailedAudioAssetIds(projectId),
+        );
+      } finally {
+        setAudioBuffering(false);
+      }
       restartAudioPlayback(projectId, {
         project: draftProject,
         playing: true,
@@ -3184,6 +3209,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     onUndo,
     onRedo,
     onPlayOrPause: () => {
+      if (audioBuffering) return;
       void (state.playing ? onPauseClick() : onPlayClick());
     },
     onMetronomeToggle,
@@ -3256,6 +3282,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               peaks && peaks.length
                 ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
                 : "";
+            const decodeFailed =
+              Boolean(projectId) &&
+              (failedAudioAssetIds.includes(clip.assetId) ||
+                isAudioAssetDecodeFailed(projectId!, clip.assetId));
             return (
               <button
                 key={clip.id}
@@ -3269,12 +3299,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     ? styles.clipSelected
                     : "",
                   clip.muted ? styles.audioClipMuted : "",
+                  decodeFailed ? styles.audioClipDecodeFailed : "",
                   previewing ? styles.formaClipDim : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
                 style={style}
-                title={`${asset?.originalName ?? "Audio"} — move/trim`}
+                title={
+                  decodeFailed
+                    ? `${asset?.originalName ?? "Audio"} — błąd wczytania / dekodowania`
+                    : `${asset?.originalName ?? "Audio"} — move/trim`
+                }
                 onPointerDown={(e) => onAudioClipPointerDown(e, lane, clip)}
                 onPointerMove={onFormaClipPointerMove}
                 onPointerUp={onFormaClipPointerUp}
@@ -3918,14 +3953,33 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             </ShellIconButton>
             <button
               type="button"
-              className={styles.playBtn}
-              aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
-              disabled={commandPending}
+              className={[
+                styles.playBtn,
+                state.playing ? styles.playBtnPlaying : "",
+                audioBuffering ? styles.playBtnBuffering : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-label={
+                audioBuffering
+                  ? "Buforowanie audio"
+                  : state.playing
+                    ? "Pauza"
+                    : "Odtwarzaj"
+              }
+              aria-busy={audioBuffering || undefined}
+              disabled={commandPending || audioBuffering}
               onClick={() =>
                 void (state.playing ? onPauseClick() : onPlayClick())
               }
             >
-              {state.playing ? <IconPause /> : <IconPlay />}
+              {audioBuffering ? (
+                <span className={styles.playBtnSpinner} aria-hidden="true" />
+              ) : state.playing ? (
+                <IconPause />
+              ) : (
+                <IconPlay />
+              )}
             </button>
             <ShellIconButton
               label="Pętla — przeciągnij zakres na linijce, potem włącz"
