@@ -106,12 +106,19 @@ export function ClientShell() {
     // Role filter: if roles listed, only show when client has that role picked
     if (stageCue.roles && stageCue.roles.length > 0) {
       const match = stageCue.roles.some((r) => picked.includes(r as RoleId));
-      if (!match) return;
+      if (!match) {
+        setCueVisible(false);
+        return;
+      }
     }
     setCueText(stageCue.text);
     setCueVisible(true);
-    if (stageCue.ttlMs <= 0) return;
-    const t = window.setTimeout(() => setCueVisible(false), stageCue.ttlMs);
+    const ttl = stageCue.ttlMs;
+    // 0 = infinite (Admin ∞); missing/non-finite → same default as server (6s).
+    if (ttl === 0) return;
+    const delayMs =
+      typeof ttl === "number" && Number.isFinite(ttl) && ttl > 0 ? ttl : 6000;
+    const t = window.setTimeout(() => setCueVisible(false), delayMs);
     return () => window.clearTimeout(t);
   }, [stageCue, picked]);
 
