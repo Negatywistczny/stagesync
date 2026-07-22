@@ -5459,7 +5459,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
       {touchTier === "mobile" ? (
         <p className={styles.touchTierNote} role="status">
-          Tryb odtwarzacza — pełna edycja na tablecie (>768 px) lub komputerze.
+          Tryb odtwarzacza — pełna edycja na tablecie ({'>'}768 px) lub komputerze.
           Metadane można edytować.
         </p>
       ) : null}
