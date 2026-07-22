@@ -19,6 +19,8 @@ export type AudioPlaybackInput = {
   project: Project;
   playing: boolean;
   displayTicks: number;
+  /** When non-empty, only these audio track ids are audible (client Solo). */
+  soloTrackIds?: readonly string[];
 };
 
 type ActiveSource = {
@@ -224,7 +226,21 @@ function graphKey(input: AudioPlaybackInput): string {
     input.project.audioTracks
       .map((t) => `${t.id}:${t.muted}:${t.gainDb}`)
       .join(";"),
+    (input.soloTrackIds ?? []).join(","),
   ].join("|");
+}
+
+function isClipAudible(
+  track: Project["audioTracks"][number] | undefined,
+  clipMuted: boolean | undefined,
+  soloTrackIds: readonly string[] | undefined,
+): boolean {
+  if (clipMuted) return false;
+  if (track?.muted) return false;
+  if (soloTrackIds && soloTrackIds.length > 0) {
+    return track != null && soloTrackIds.includes(track.id);
+  }
+  return true;
 }
 
 function startClip(
@@ -233,11 +249,12 @@ function startClip(
   clipId: string,
   displayTicks: number,
   ctx: AudioContext,
+  soloTrackIds?: readonly string[],
 ): void {
   const clip = project.audioClips.find((c) => c.id === clipId);
   if (!clip) return;
   const track = project.audioTracks.find((t) => t.id === clip.trackId);
-  if (track?.muted || clip.muted) return;
+  if (!isClipAudible(track, clip.muted, soloTrackIds)) return;
 
   const ctxTempo = {
     bpm: resolveTempoAt(project, clip.startTicks),
@@ -310,7 +327,7 @@ export function syncAudioPlayback(
   for (const clip of input.project.audioClips) {
     if (epochAtStart !== stopEpoch || playbackSuppressed) break;
     const track = trackById.get(clip.trackId);
-    if (track?.muted || clip.muted) continue;
+    if (!isClipAudible(track, clip.muted, input.soloTrackIds)) continue;
     const offset = audioClipBufferOffsetSecAlongMaps(
       clip,
       input.displayTicks,
@@ -319,7 +336,14 @@ export function syncAudioPlayback(
     if (offset == null) continue;
     stillNeeded.add(clip.id);
     if (active.some((a) => a.clipId === clip.id)) continue;
-    startClip(projectId, input.project, clip.id, input.displayTicks, ctx);
+    startClip(
+      projectId,
+      input.project,
+      clip.id,
+      input.displayTicks,
+      ctx,
+      input.soloTrackIds,
+    );
   }
 
   for (const a of [...active]) {

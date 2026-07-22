@@ -42,8 +42,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Should
 
-- [ ] [#61](https://github.com/Negatywistczny/stagesync/pull/61) — split ruler (loop / playhead); rebase na `main`
-- [ ] [#428](https://github.com/Negatywistczny/stagesync/issues/428) — DAW: Slider, TrackSelection, Solo, contextual inspector
+- [x] [#61](https://github.com/Negatywistczny/stagesync/pull/61) — split ruler (loop / playhead) — merged
+- [ ] [#428](https://github.com/Negatywistczny/stagesync/issues/428) — DAW: Slider ✓, TrackSelection/Solo/fader (PR B), contextual inspector (PR C)
 - [ ] [#432](https://github.com/Negatywistczny/stagesync/issues/432) — Preferences Audio/MIDI (`setSinkId`, persist MIDI); **bez** Panic (ROADMAP OUT)
 - [ ] MIDI Panic / MUTE ALL — follow-up po decyzji PO (obecnie OUT w [ROADMAP](./ROADMAP.md) § menu)
 - [ ] Playwright Forma drag E2E (defer z overnight)

@@ -8,7 +8,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
-import { Button } from "@stagesync/ui";
+import { Button, Slider } from "@stagesync/ui";
 import {
   resolveMeterAt,
   resolveTempoAt,
@@ -55,9 +55,12 @@ import {
 } from "../lib/timelineClipboard.js";
 import {
   clearSelection,
+  clearTrackSelection,
   EMPTY_CLIP_SELECTION,
+  EMPTY_TRACK_SELECTION,
   idsOnLane,
   isAudioSelectionLane,
+  isAudioTrackSelected,
   isClipSelected,
   isMarqueeClick,
   isMultiSelectClick,
@@ -65,12 +68,15 @@ import {
   primaryLane,
   rectsIntersect,
   resolveMoveIds,
+  selectAudioTrack,
   selectRangeTo,
   selectSingle,
   setSelection,
   toggleSelected,
+  toggleSoloTrackId,
   type ClipSelection,
   type ClipSelectionLane,
+  type TrackSelection,
 } from "../lib/timelineSelection.js";
 import {
   subsectionRanges,
@@ -499,8 +505,19 @@ export function TimelineShell() {
   /** Forma/content multi-select (v4 selectedIds + primaryId). */
   const [clipSelection, setClipSelection] =
     useState<ClipSelection>(EMPTY_CLIP_SELECTION);
+  const [trackSelection, setTrackSelection] =
+    useState<TrackSelection>(EMPTY_TRACK_SELECTION);
+  const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
   const primaryId = clipSelection.primaryId;
   const selectionLane = primaryLane(clipSelection);
+
+  // Clip focus and track header focus are mutually exclusive in the dock/inspector.
+  useEffect(() => {
+    if (clipSelection.items.length > 0) {
+      setTrackSelection(clearTrackSelection());
+    }
+  }, [clipSelection]);
+
   const selectedClipId = selectionLane === "forma" ? primaryId : null;
   const selectedTekstClipId = selectionLane === "tekst" ? primaryId : null;
   const selectedAkordClipId = selectionLane === "akordy" ? primaryId : null;
@@ -1381,12 +1398,14 @@ export function TimelineShell() {
       project: draftProject,
       playing: state.playing,
       displayTicks,
+      soloTrackIds: soloAudioTrackIds,
     });
   }, [
     projectId,
     draftProject,
     state.playing,
     displayTicks,
+    soloAudioTrackIds,
   ]);
 
   useEffect(() => {
@@ -4285,13 +4304,52 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       className={[
                         styles.dockCell,
                         track.group === "special" ? styles.dockMuted : "",
+                        track.group === "audio" &&
+                        track.audioTrackId &&
+                        isAudioTrackSelected(trackSelection, track.audioTrackId)
+                          ? styles.dockSelected
+                          : "",
                       ]
                         .filter(Boolean)
                         .join(" ")}
+                      onClick={(e) => {
+                        if (track.group !== "audio" || !track.audioTrackId) return;
+                        if ((e.target as HTMLElement).closest("button, label, input")) {
+                          return;
+                        }
+                        setClipSelection(clearSelection());
+                        setTrackSelection(selectAudioTrack(track.audioTrackId));
+                      }}
                     >
                       <span>{track.label}</span>
                       {track.group === "audio" && track.audioTrackId ? (
-                        <>
+                        <div
+                          className={styles.dockTools}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            className={[
+                              styles.tapBtn,
+                              soloAudioTrackIds.includes(track.audioTrackId)
+                                ? styles.tapBtnSelected
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            title={
+                              soloAudioTrackIds.includes(track.audioTrackId)
+                                ? "Wyłącz solo"
+                                : "Solo ścieżki"
+                            }
+                            onClick={() => {
+                              setSoloAudioTrackIds((prev) =>
+                                toggleSoloTrackId(prev, track.audioTrackId!),
+                              );
+                            }}
+                          >
+                            S
+                          </button>
                           <button
                             type="button"
                             className={styles.tapBtn}
@@ -4318,6 +4376,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           >
                             M
                           </button>
+                          <Slider
+                            className={styles.dockFader}
+                            aria-label={`Fader ${track.label}`}
+                            min={-24}
+                            max={12}
+                            step={0.5}
+                            value={
+                              draftProject?.audioTracks.find(
+                                (a) => a.id === track.audioTrackId,
+                              )?.gainDb ?? 0
+                            }
+                            onValueChange={(v) => {
+                              if (!draftProject || !track.audioTrackId) return;
+                              commitDraft(
+                                setAudioTrackGainDb(
+                                  draftProject,
+                                  track.audioTrackId,
+                                  v,
+                                ),
+                              );
+                            }}
+                          />
                           <label
                             className={styles.tapBtn}
                             title={
@@ -4344,7 +4424,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                               }}
                             />
                           </label>
-                        </>
+                        </div>
                       ) : null}
                       {track.id === "tekst" ? (
                         <button

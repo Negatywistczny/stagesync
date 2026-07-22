@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
+  isAudioTrackSelected,
   isClipSelected,
   isMarqueeClick,
   isMultiSelectClick,
+  isTrackAudibleWithSolo,
   marqueeSelectFromHits,
   primaryLane,
   resolveMoveIds,
+  selectAudioTrack,
   selectRangeTo,
   selectSingle,
   selectionSameLane,
   setSelection,
   toggleSelected,
+  toggleSoloTrackId,
 } from "./timelineSelection.js";
 
 describe("timelineSelection", () => {
@@ -116,5 +120,21 @@ describe("timelineSelection", () => {
   it("isMarqueeClick threshold", () => {
     expect(isMarqueeClick(2, 2)).toBe(true);
     expect(isMarqueeClick(5, 0)).toBe(false);
+  });
+
+  it("selectAudioTrack + solo set", () => {
+    const trackSel = selectAudioTrack("tr-a");
+    expect(isAudioTrackSelected(trackSel, "tr-a")).toBe(true);
+    expect(isAudioTrackSelected(trackSel, "tr-b")).toBe(false);
+    let solo = toggleSoloTrackId([], "tr-a");
+    expect(solo).toEqual(["tr-a"]);
+    solo = toggleSoloTrackId(solo, "tr-b");
+    expect(solo).toEqual(["tr-a", "tr-b"]);
+    solo = toggleSoloTrackId(solo, "tr-a");
+    expect(solo).toEqual(["tr-b"]);
+    expect(isTrackAudibleWithSolo("tr-a", false, [])).toBe(true);
+    expect(isTrackAudibleWithSolo("tr-a", true, [])).toBe(false);
+    expect(isTrackAudibleWithSolo("tr-a", false, ["tr-b"])).toBe(false);
+    expect(isTrackAudibleWithSolo("tr-b", false, ["tr-b"])).toBe(true);
   });
 });
