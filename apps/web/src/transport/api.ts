@@ -17,7 +17,7 @@ async function parseState(res: Response): Promise<TransportState> {
     } catch {
       /* ignore */
     }
-    throw new Error(message);
+    throw new Error(message.slice(0, 500));
   }
   return TransportStateSchema.parse(await res.json());
 }
