@@ -691,6 +691,14 @@ export function TimelineShell() {
     setPrimaryMapId(null);
   }, []);
 
+  const closeMobileInspector = useCallback(() => {
+    setSongMetaOpen(false);
+    clearClipSelection();
+    clearMapSelection();
+    setTrackSelection(clearTrackSelection());
+    setSelectedAnchorId(null);
+  }, [clearClipSelection, clearMapSelection]);
+
   const setMapSelection = useCallback(
     (lane: MapLaneId, ids: string[], mapPrimaryId: string | null) => {
       setSelectedMapLane(lane);
@@ -1400,6 +1408,18 @@ export function TimelineShell() {
       ? scoreAnchors(draftProject).find((a) => a.id === selectedAnchorId) ??
         null
       : null;
+
+  /** Same conditions that populate the desktop inspector (not the empty hint). */
+  const inspectorOpen =
+    Boolean(songMetaOpen && draftProject) ||
+    Boolean(selectedMapLane && selectedMapIds.length > 0) ||
+    selectedTekstClip != null ||
+    selectedAkordClip != null ||
+    selectedCueClip != null ||
+    selectedAnchor != null ||
+    selectedAudioClip != null ||
+    selectedDockAudioTrack != null ||
+    selectedClip != null;
 
   const meterAtPlayhead = draftProject
     ? resolveMeterAt(draftProject, displayTicks)
@@ -4702,9 +4722,34 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </div>
         </div>
 
-        <aside className={styles.inspector} aria-label="Właściwości">
+        {touchTier === "mobile" && inspectorOpen ? (
+          <button
+            type="button"
+            className={styles.inspectorBackdrop}
+            aria-label="Zamknij"
+            onClick={closeMobileInspector}
+          />
+        ) : null}
+        <aside
+          className={[
+            styles.inspector,
+            inspectorOpen ? styles.inspectorOpen : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-label="Właściwości"
+          aria-hidden={touchTier === "mobile" && !inspectorOpen ? true : undefined}
+        >
             <div className={styles.inspHead}>
               <h2 className={styles.inspTitle}>Właściwości</h2>
+              <span className={styles.inspClose}>
+                <ShellIconButton
+                  label="Zamknij"
+                  onClick={closeMobileInspector}
+                >
+                  <IconClose />
+                </ShellIconButton>
+              </span>
             </div>
             {songMetaOpen && draftProject ? (
               <div className={styles.inspBody}>

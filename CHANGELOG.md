@@ -10,6 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
+- **Mobile — inspector:** na telefonie (≤768px) Właściwości otwierają się jako dolny sheet (Metadane / zaznaczenie klipu lub mapy) z Zamknij i tłem; desktop bez zmian układu.
 - **Tablet — nudge i gesty:** pasek ◀▶ + 4 przyciski krawędzi (stretch in/out) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom na osi czasu.
 - **Różdżka:** z powrotem w toolbarze / skrót W — Tekst→Forma, Akordy→Forma lub obie; zakres = zaznaczone sekcje Formy.
 - **MIDI playhead:** opcjonalny wskaźnik w Wygląd (zapamiętywany lokalnie).
@@ -51,7 +52,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
-- **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, ukryty inspector, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
+- **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, inspector jako dolny sheet, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
 
 ### Naprawiono
 

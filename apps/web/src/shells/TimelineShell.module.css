@@ -2132,8 +2132,48 @@
   grid-template-columns: 1fr;
 }
 
+.shell[data-tl-tier="mobile"] .inspectorBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--ss-z-panel) - 1);
+  border: none;
+  padding: 0;
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+  cursor: pointer;
+}
+
 .shell[data-tl-tier="mobile"] .inspector {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--ss-z-panel);
+  max-height: 70dvh;
+  overflow: auto;
+  border-left: none;
+  border-top: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-md) var(--ss-radius-md) 0 0;
+  padding-bottom: max(var(--ss-space-2), env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--ss-duration-normal) ease,
+    visibility var(--ss-duration-normal);
+}
+
+.shell[data-tl-tier="mobile"] .inspector.inspectorOpen {
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.inspClose {
   display: none;
+}
+
+.shell[data-tl-tier="mobile"] .inspClose {
+  display: inline-flex;
 }
 
 .shell[data-tl-tier="mobile"] .metaBtn {
@@ -2321,6 +2361,11 @@
 }
 
 @media (max-width: 768px) {
+  .shell {
+    /* Client-sized targets even if tier is tablet (narrow window). */
+    --ss-touch-min: var(--ss-touch-min-client);
+  }
+
   .main {
     grid-template-columns: 1fr;
   }
