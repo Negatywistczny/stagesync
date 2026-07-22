@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import { renderSVG } from "uqr";
@@ -194,6 +194,7 @@ export function DesktopMenuBridge() {
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
+  const restartPendingRef = useRef(false);
   const [restartError, setRestartError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -247,6 +248,8 @@ export function DesktopMenuBridge() {
   }, [stop]);
 
   const onRestartConfirm = useCallback(async () => {
+    if (restartPendingRef.current) return;
+    restartPendingRef.current = true;
     setRestartPending(true);
     setRestartError(null);
     try {
@@ -257,6 +260,7 @@ export function DesktopMenuBridge() {
         err instanceof Error ? err.message : "Restart nieudany",
       );
     } finally {
+      restartPendingRef.current = false;
       setRestartPending(false);
     }
   }, []);
