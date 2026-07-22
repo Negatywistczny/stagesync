@@ -620,7 +620,8 @@
   /* Above grid (--ss-z-grid) and playhead/locator (--ss-z-playhead). */
   z-index: var(--ss-z-sticky);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   /* Two equal ruler lanes (loop / beat) — Logic-style split. */
   min-height: calc((var(--ss-space-6) + var(--ss-space-1)) * 2 * var(--tl-zoom-ui));
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
