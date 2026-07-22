@@ -14,6 +14,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WS; skracanie komunikatów błędów; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
 - **UI:** typografia i odstępy wyłącznie tokenami `--ss-*` w Admin / Client / Timeline; touch targety zgodne z gęstością design systemu.
 - **Mobile / tablet:** ujednolicone progi `≤768px` (mobile) / `≤1024px` (tablet); Client touch 44×44 (`--ss-touch-min-client`); Timeline na telefonie = tryb odtwarzacza (bez narzędzi DAW); Admin footer kompaktowy; `stageSplit` → 1 kolumna ≤768px. Bez zmian chrome desktop (>1024px).
+- **Docs (5.0.0 closeout):** TODO / ROADMAP / scope report / beta-gate zsynchronizowane z `main` po Faza D + fade + help + mobile; G1–G10 nadal ⬜ (bez claim green); drafty OSMD/migration/wand jako residual.
 
 ### Dodano
 

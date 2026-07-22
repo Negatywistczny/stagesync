@@ -2,8 +2,8 @@
 
 **Wersja docelowa:** `5.0.0` (tag / bump **tylko na prośbę**; nazwa hero linii 5.0 przy cutcie)  
 **Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [ADR 0007](../../adr/0007-snap-grid.md) · [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [ADR 0011](../../adr/0011-ui-parity-behavior.md) · [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2.md](./report-scope-beta2.md)  
-**Bramka wejścia:** `v5.0.0-beta.2` wydane (2026-07-21); P8 green; start kodu na jawną prośbę (overnight audit 2026-07-21→22)  
-**Okno implementacji:** do **10:00** (UTC+2) 2026-07-22 — małe PR-y, **bez merge do `main`**, CI green; G1–G10 = soft-gate (bez HW)
+**Bramka wejścia:** `v5.0.0-beta.2` wydane (2026-07-21); P8 green  
+**Status kodu (2026-07-22):** must **A–E** + Faza D + mobile + help/i18n — **na `main`**. Tag **nie** wycięty. **G1–G10** = ⬜ operator HW.
 
 ## Cel
 
@@ -28,63 +28,61 @@ Domknąć **stabilne 5.0.0** jako linię produktową (nie kolejny beta feature d
 | Soft-gate G1–G10 (docs checklist; HW = operator) | Fałszywy green G1–G10 w CI |
 | Tag `5.0.0` + nazwa hero | Tag/bump **bez** prośby użytkownika |
 
-## IN (must) — A: Polish UI
+## IN (must) — A: Polish UI — **done (kod)**
 
 Źródło: [TODO](../../TODO.md) · [ui-density](../../../.cursor/rules/ui-density.mdc) · [ADR 0011](../../adr/0011-ui-parity-behavior.md).
 
-| # | Wycinek | Uwagi |
+| # | Wycinek | Status |
 |---|---------|--------|
-| A1 | Audyt żywych kontrolek Timeline / Admin / Client | Transport, status zoom, dock, inspector, Admin Live Desk |
-| A2 | Typografia / spacing wyłącznie `--ss-*` | Brak ad-hoc `font-size` px / HEX w shellach |
-| A3 | Copy PL + proporcje / gęstość | Parity = zachowanie, nie ikony |
-| A4 | Bez nowych wariantów `Button` | Zamknięty zbiór 7 stanów |
+| A1 | Audyt żywych kontrolek Timeline / Admin / Client | ✓ trains + residual |
+| A2 | Typografia / spacing wyłącznie `--ss-*` | ✓ |
+| A3 | Copy PL + proporcje / gęstość | ✓ (+ help/i18n [#468](https://github.com/Negatywistyczny/stagesync/pull/468)) |
+| A4 | Bez nowych wariantów `Button` | ✓ |
 
 **Powierzchnie (orientacja):** `TimelineShell.tsx` (+ module CSS), Admin (`SetView` / `StageView` / Host), Client shells, `packages/ui` tokeny.
 
-## IN (must) — B: Timeline zoom / Help / snap picker
+## IN (must) — B: Timeline zoom / Help / snap picker — **done (kod)**
 
-Źródło: [ADR 0007](../../adr/0007-snap-grid.md) faza 2 · ROADMAP § Alpha 4 odłożone · `TimelineShell` (stan `zoomH`/`zoomV`/`zoomUi` już istnieje — suwaki tekstowe H/V/UI).
+Źródło: [ADR 0007](../../adr/0007-snap-grid.md) faza 2 · `TimelineShell` (stan `zoomH`/`zoomV`/`zoomUi`).
 
-| # | Wycinek | Uwagi |
+| # | Wycinek | Status |
 |---|---------|--------|
-| B1 | Zoom H/V (+ UI) z **ikonami** przy suwakach / +/- | Reuse `apps/web/src/shells/icons.tsx`; bez narzędzia lupy (OUT α8) |
-| B2 | Snap picker UI: `off` / `bar` / `beat` / `subdivision` | Sesja Timeline (+ opcjonalnie localStorage); default `bar`; Cmd/Ctrl = chwilowy off (już α7) |
-| B3 | Pomoc Timeline — pełna treść | Rozszerzyć `TimelineHelp.tsx` (audio β2, MIDI host, snap picker, Faza D skróty); bez emoji chrome |
-| B4 | Wiring snap mode → `quantizeTicks` / edycja | Stan React; nie zapis w `project.json` (ADR 0007) |
+| B1 | Zoom H/V (+ UI) z **ikonami** | ✓ |
+| B2 | Snap picker UI: `off` / `bar` / `beat` / `subdivision` | ✓ |
+| B3 | Pomoc Timeline — pełna treść + skróty sync | ✓ [#468](https://github.com/Negatywistyczny/stagesync/pull/468) |
+| B4 | Wiring snap mode → `quantizeTicks` / edycja | ✓ |
 
-## IN (must) — C: Audio polish (fade / crossfade / loop-region)
+## IN (must) — C: Audio polish (fade / crossfade / loop-region) — **done (kod)**
 
-Źródło: [ADR 0008](../../adr/0008-timeline-clip-editing.md) §1, §4, §6, §9 · schema `AudioClipSchema` (dziś: trim/gain/mute, **bez** fade).
+Źródło: [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [#462](https://github.com/Negatywistyczny/stagesync/pull/462).
 
-| # | Wycinek | Uwagi |
+| # | Wycinek | Status |
 |---|---------|--------|
-| C1 | Schema: `fadeInMs` / `fadeOutMs` (ew. crossfade pair) | Zod na krawędzi; fail-fast; bump formatu wg ADR 0009 jeśli potrzeba |
-| C2 | Playback: envelope fade przy WebAudio scheduler | Pozycja z ticków serwera (`ticksToMs`); bez zegara muzycznego klienta |
-| C3 | UI: Smart zones górne narożniki = fade handles | Pointer/Smart; bez pencil audio |
-| C4 | Crossfade przy styku / overlap mode (opcjonalnie) | Jeśli czas: minimalny overlap + X-fade; inaczej defer z notatką w handoff |
-| C5 | Loop-region audio (clip loop) vs transport cycle | Rozróżnić: transport loop (już jest) vs **loop-region klipu**; must = clip loop-region per ADR |
-| C6 | Testy shared + smoke playback | Czyste funkcje; bez `Date.now()` w konwersji domenowej |
+| C1 | Schema: `fadeInMs` / `fadeOutMs` | ✓ |
+| C2 | Playback: envelope fade (WebAudio `AudioParam`) | ✓ |
+| C3 | UI: Smart fade handles | ✓ |
+| C4 | Crossfade przy styku | ✓ (minimal) |
+| C5 | Loop-region audio (clip) vs transport cycle | ✓ |
+| C6 | Testy shared + smoke playback | ✓ (shared); pełny browser matrix = Should |
 
-## IN (must) — D: Desktop OS menu Faza D
+## IN (must) — D: Desktop OS menu Faza D — **done (kod)**
 
-Źródło: [ROADMAP](../../ROADMAP.md) § Desktop OS menu · `apps/desktop/src-tauri/src/lib.rs` (A+B+C done; **brak** submenu Edycja; Widok bez zoom; Pomoc = docs/issues).
+Źródło: [ROADMAP](../../ROADMAP.md) · [#460](https://github.com/Negatywistyczny/stagesync/pull/460).
 
-| # | Wycinek | Uwagi |
+| # | Wycinek | Status |
 |---|---------|--------|
-| D1 | **Edycja:** Undo / Redo / Cut / Copy / Paste / Delete | Mostek `stagesync:desktop-menu` → istniejące commandy Timeline; **bez** disabled „na zapas”; gdy brak stacka — disable tylko realnie |
-| D2 | **Widok:** Zoom in / out / reset (H lub UI) | Event → handlery zoom w Timeline (już `zoomHorizontalBySteps` / UI) |
-| D3 | **Pomoc:** skróty / overlay pomocy / rozbudowa | Otwórz Timeline Help; ewentualnie PDF setlisty / archiwum jeśli API gotowe — inaczej OUT z checklistą |
-| D4 | Zero MIDI / clock w Rust | Shell tylko mostkuje; SSOT = `apps/server` |
+| D1 | **Edycja:** Undo / Redo / Delete (+ grey-out stack) | ✓ |
+| D2 | **Widok:** Zoom in / out / reset | ✓ |
+| D3 | **Pomoc:** Skróty (`help-shortcuts`) | ✓ |
+| D4 | Zero MIDI / clock w Rust | ✓ |
 
-## IN (must) — E: docs/api + CI + smoke E2E
+## IN (must) — E: docs/api + CI + smoke E2E — **done (kod)**
 
-Źródło: [docs/api/README.md](../../api/README.md) (nieaktualne: v2, brak MIDI / setlist / assets / desktop paths).
-
-| # | Wycinek | Uwagi |
+| # | Wycinek | Status |
 |---|---------|--------|
-| E1 | Domknięcie `docs/api` do stanu β2+ | REST + WS: projects v3+, transport Countdown, MIDI, setlist, assets, OCC `details` |
-| E2 | CI: utrzymać green `lint-types-test-build` (+ compose / tauri-check) | Fix regresji w PR-ach A–D |
-| E3 | Smoke E2E (automatyzowalne) | Minimalny smoke: health + transport play/stop **lub** Playwright Forma drag jeśli infra gotowa; nie blokować tagu brakiem pełnego browser matrix |
+| E1 | Domknięcie `docs/api` | ✓ |
+| E2 | CI green `lint-types-test-build` (+ compose / tauri-check) | ✓ na `main` po merge residual |
+| E3 | Smoke E2E (health / Forma / transport) | ✓; Playwright Forma drag = Should |
 
 ## Soft-gate — G1–G10 (operator; poza oknem HW)
 
@@ -109,7 +107,8 @@ Zob. sekcja „Sekwencja weryfikacji” w [report-beta-gate.md](./report-beta-ga
 | Clone chrome v4 | **Zakaz** ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) |
 | git-apply | Nigdy ([ADR 0004](../../adr/0004-updates-docker.md)) |
 | Tag/bump `5.0.0` bez prośby | Zakaz overnight |
-| Merge PR → `main` przez agenta | Zakaz — user rano |
+| Merge PR → `main` przez agenta overnight | Zakaz overnight (historyczne) — residual closeout PR docs OK |
+| Draft OSMD / migration / wand bez green CI | Residual — nie claim w must A–E |
 
 ## Should (jeśli czas po must A–E)
 
@@ -235,3 +234,26 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 
 **Weryfikacja po merge:** `pnpm lint && pnpm check-types && pnpm test && pnpm build` green lokalnie i w CI (#416).  
 **Następne kroki:** PO smoke na `main`; operator G1–G10; tag `v5.0.0` + nazwa hero **tylko na prośbę**.
+
+---
+
+## Closeout residual (2026-07-22) — docs + kod must
+
+**Kod zmergowany po trains (kolejność):** [#462](https://github.com/Negatywistyczny/stagesync/pull/462) audio fade/loop → [#460](https://github.com/Negatywistyczny/stagesync/pull/460) Faza D → [#468](https://github.com/Negatywistyczny/stagesync/pull/468) help/skróty + i18n → [#464](https://github.com/Negatywistyczny/stagesync/pull/464) mobile.  
+**Zamknięty bez merge:** [#463](https://github.com/Negatywistyczny/stagesync/pull/463) (superseded by #468).
+
+| Must | Status |
+|------|--------|
+| A–E | ✓ w kodzie na `main` |
+| Faza D | ✓ #460 |
+| Mobile breakpoints | ✓ #464 |
+| G1–G10 | ⬜ **operator HW — bez claim green** |
+| Tag / bump `5.0.0` | ⛔ tylko na prośbę |
+
+| Draft residual | Status |
+|----------------|--------|
+| [#465](https://github.com/Negatywistyczny/stagesync/pull/465) OSMD score nav | OPEN draft, **CI red** — nie merge |
+| [#466](https://github.com/Negatywistyczny/stagesync/pull/466) migration assets meta | OPEN draft, **CI red** — nie merge |
+| [#467](https://github.com/Negatywistyczny/stagesync/pull/467) wand karaoke MIDI | OPEN draft, CI green — zostaje draft do stabilizacji TimelineShell |
+
+**Świadome OUT / 5.1+:** Safety Net [#437](https://github.com/Negatywistyczny/stagesync/issues/437), Cues Sampler [#430](https://github.com/Negatywistyczny/stagesync/issues/430), motywy/auth — bez kodu w 5.0.0.
