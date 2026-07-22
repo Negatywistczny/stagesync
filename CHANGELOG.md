@@ -31,6 +31,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **MIDI (host):** Start/Stop/Continue/SPP z wejścia; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po numerze programu (SSOT serwera).
 
 #### 🖥️ App Shell & UI
+- **Admin Scena — Komunikaty (SSOT):** lista aktywnych komunikatów z usuwaniem pojedynczym i „Wyczyść wszystkie”; bez statusu „Wysłano do wszystkich”.
 - **Client — partytura ([#465](https://github.com/Negatywistyczny/stagesync/pull/465)):** render MusicXML (OSMD) z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika; wybór widocznych partii oraz oktawa (−1/0/+1) z Live Desk transpose.
 - **Client — strój i Formy:** C / B♭ / E♭ / ręczna (−6…+6); polskie nazwy sekcji Formy; Karaoke/Grid z live transpozycją akordów (w tym zespołową).
 - **Client — tap wokalu:** ↑/↓ przełącza linię kolejki (obok Spacji).
@@ -43,9 +44,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Instalator Windows ([#396](https://github.com/Negatywistyczny/stagesync/issues/396)):** `StageSync_{version}_x64.msi` (bez `_en-US`); zwinięte notatki updatera w release; `latest.json` przy rename.
 
 #### ⚙️ Serwer & API
+- **Stage messages SSOT:** aktywne komunikaty sesji (`GET|DELETE /api/stage/messages`, `DELETE …/:id`); WS `stage_cue` z `id`, `stage_cue_dismiss`, snapshot przy connect.
 - **Migracja v4→v5:** rok i okładka; MusicXML oraz lokalne okładki/audio → assets (ścieżki audio); CLI z katalogiem uploadów kopiuje pliki.
 
 #### 📚 Dokumentacja
+- **API Stage:** `GET|DELETE /api/stage/messages`, WS `stage_cue_dismiss` + snapshot `stage_cue` przy connect.
 - **API MIDI:** `POST /api/midi/panic` (MUTE ALL) w dokumentacji REST.
 - **README ([#417](https://github.com/Negatywistyczny/stagesync/issues/417)):** treść po polsku, pełniejszy zestaw badge i sekcja stosu.
 - **API:** dokumentacja REST + WebSocket pod `formatVersion: 5` (Project, Assets, Transport, Setlist, Stage, MIDI, System; ticki + `stage_cue` + presence).
@@ -57,7 +60,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Preferencje Audio:** sekcje **Urządzenia Wyjściowe** i **Parametry Silnika** (fieldset); usunięty zbędny hint „Wybór zapisywany lokalnie.” pod wyborem wyjścia.
 - **Admin Host:** usunięty przycisk i okno „Ustawienia hosta” (Preferencje MIDI/Audio przez Cmd/Ctrl+,); sekcja **MIDI/Audio**; bez etykiety backendu MIDI i bloku „Kopie zapasowe” / atrap path pickera.
 - **Client / Komunikaty:** większe toasty sceniczne (`TERAZ` / `ZA N`) z typografią `--ss-text-stage-*`, kolorami success/alert i animacją wejścia — układ jak w v4, bez klonowania HTML.
-- **Admin Scena:** panel **Komunikaty** z priorytetem Alert/Normal oraz TTL 6/10/15/30/∞ (∞ faktycznie bez auto-hide).
+- **Admin Scena:** panel **Komunikaty** z priorytetem Alert/Normal, TTL 6/10/15/30/∞ oraz listą aktywnych (Usuń / Wyczyść wszystkie) zamiast toasta „Wysłano…”.
 - **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
 - **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, Inspector jako drawer przy metadanych/zaznaczeniu, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
 

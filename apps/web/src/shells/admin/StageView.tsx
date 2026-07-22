@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@stagesync/ui";
 import {
+  clearStageMessages,
+  dismissStageMessage,
   fetchLiveDesk,
   fetchStageClients,
+  fetchStageMessages,
   patchLiveDesk,
   sendStageMessage,
   type LiveDeskSettingsDto,
   type PresenceClient,
+  type SessionStageMessage,
 } from "../../lib/setlistApi.js";
 import shell from "../AdminShell.module.css";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
@@ -55,20 +59,46 @@ function presenceTitle(phase: ClientPhase): string {
   }
 }
 
+function formatSessionRoles(roles: SessionStageMessage["roles"]): string {
+  if (!roles || roles.length === 0) return "wszyscy";
+  return roles
+    .map((role) => ROLE_OPTIONS.find((r) => r.id === role)?.label ?? role)
+    .join(", ");
+}
+
+function formatExpiresAt(msg: SessionStageMessage): string {
+  if (!msg.expiresAt) return "";
+  const at = Date.parse(msg.expiresAt);
+  if (!Number.isFinite(at)) return "";
+  return ` · do ${new Date(at).toLocaleTimeString("pl-PL", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })}`;
+}
+
 export function StageView() {
   const [text, setText] = useState("");
   const [ttlMs, setTtlMs] = useState(6000);
   const [priority, setPriority] = useState<CuePriority>("normal");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
   const [roles, setRoles] = useState<RoleId[]>([]);
+  const [messages, setMessages] = useState<SessionStageMessage[]>([]);
   const [clients, setClients] = useState<PresenceClient[]>([]);
   const [clientsError, setClientsError] = useState<string | null>(null);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [liveDesk, setLiveDesk] = useState<LiveDeskSettingsDto | null>(null);
   const [liveDeskError, setLiveDeskError] = useState<string | null>(null);
   const [liveDeskSaving, setLiveDeskSaving] = useState(false);
+
+  const refreshMessages = useCallback(async () => {
+    try {
+      setMessages(await fetchStageMessages());
+    } catch {
+      /* keep last known list; send/dismiss surfaces errors */
+    }
+  }, []);
 
   const refreshClients = useCallback(async () => {
     setClientsLoading(true);
@@ -86,9 +116,13 @@ export function StageView() {
 
   useEffect(() => {
     void refreshClients();
-    const id = window.setInterval(() => void refreshClients(), 4000);
+    void refreshMessages();
+    const id = window.setInterval(() => {
+      void refreshClients();
+      void refreshMessages();
+    }, 4000);
     return () => window.clearInterval(id);
-  }, [refreshClients]);
+  }, [refreshClients, refreshMessages]);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,22 +172,48 @@ export function StageView() {
     if (!trimmed) return;
     setPending(true);
     setError(null);
-    setStatus(null);
     try {
-      await sendStageMessage({
+      const next = await sendStageMessage({
         text: trimmed,
         ttlMs,
         roles: roles.length > 0 ? roles : undefined,
         priority: priority === "alert" ? "alert" : undefined,
       });
-      setStatus(
-        roles.length > 0
-          ? `Wysłano do: ${roles.join(", ")}.`
-          : "Wysłano do wszystkich.",
-      );
+      setMessages(next);
+      setText("");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Wysyłka nieudana";
+      setError(message.slice(0, 500));
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const onDismiss = async (id: string) => {
+    setPending(true);
+    setError(null);
+    try {
+      setMessages(await dismissStageMessage(id));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Nie udało się usunąć";
+      setError(message.slice(0, 500));
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const onClearAll = async () => {
+    if (messages.length === 0) return;
+    setPending(true);
+    setError(null);
+    try {
+      await clearStageMessages();
+      setMessages([]);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Nie udało się wyczyścić";
       setError(message.slice(0, 500));
     } finally {
       setPending(false);
@@ -185,6 +245,8 @@ export function StageView() {
       : headerPresence === "error"
         ? "Problem z pobraniem listy klientów"
         : "Brak podłączonych klientów";
+  const activeCountLabel =
+    messages.length === 1 ? "1 aktywny" : `${messages.length} aktywnych`;
 
   return (
     <div className={styles.root}>
@@ -291,6 +353,16 @@ export function StageView() {
         >
           <div className={shell.cardHead}>
             <h1 className={shell.cardTitle}>Komunikaty</h1>
+            <span
+              className={[
+                styles.sessionMsgCount,
+                messages.length > 0 ? styles.sessionMsgCountOn : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {activeCountLabel}
+            </span>
           </div>
           <div className={[shell.cardBody, styles.messagesBody].join(" ")}>
             {error ? (
@@ -298,7 +370,6 @@ export function StageView() {
                 {error}
               </p>
             ) : null}
-            {status ? <p className={shell.muted}>{status}</p> : null}
             <textarea
               className={shell.textarea}
               maxLength={200}
@@ -363,14 +434,64 @@ export function StageView() {
               <Button
                 variant="ghost"
                 disabled={pending}
-                onClick={() => {
-                  setText("");
-                  setStatus(null);
-                }}
+                onClick={() => setText("")}
               >
                 Wyczyść
               </Button>
             </div>
+
+            <div className={styles.sessionMsgListHead}>
+              {messages.length > 0 ? (
+                <Button
+                  variant="ghost"
+                  disabled={pending}
+                  onClick={() => void onClearAll()}
+                >
+                  Wyczyść wszystkie
+                </Button>
+              ) : null}
+            </div>
+            <ul className={styles.sessionMsgList} aria-live="polite">
+              {messages.length === 0 ? (
+                <li className={styles.sessionMsgEmpty}>
+                  Brak aktywnych komunikatów
+                </li>
+              ) : (
+                messages.map((msg) => {
+                  const isAlert = msg.priority === "alert";
+                  return (
+                    <li
+                      key={msg.id}
+                      className={[
+                        styles.sessionMsgRow,
+                        isAlert ? styles.sessionMsgRowAlert : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <div className={styles.sessionMsgMain}>
+                        <span className={styles.sessionMsgText}>
+                          {msg.text}
+                        </span>
+                        <span className={styles.sessionMsgMeta}>
+                          {formatSessionRoles(msg.roles)}
+                          {isAlert ? " · alert" : " · normal"}
+                          {formatExpiresAt(msg)}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        disabled={pending}
+                        title="Usuń komunikat"
+                        onClick={() => void onDismiss(msg.id)}
+                      >
+                        Usuń
+                      </Button>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
           </div>
         </section>
 

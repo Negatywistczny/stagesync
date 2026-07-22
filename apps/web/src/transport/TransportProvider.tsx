@@ -71,6 +71,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const commandPendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
+  const [stageCues, setStageCues] = useState<StageCue[]>([]);
   const [liveDesk, setLiveDesk] = useState<LiveDeskState>(DEFAULT_LIVE_DESK);
 
   const anchorRef = useRef<TransportAnchor>(toAnchor(defaultTransportState()));
@@ -222,13 +223,42 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         }
         if (parsed.data.type === "stage_cue") {
           const cue = parsed.data;
-          setStageCue({
+          const nextCue: StageCue = {
+            id: cue.id,
             text: cue.text.slice(0, 200),
             ttlMs: cue.ttlMs,
             sentAtMs: cue.sentAtMs,
             roles: cue.roles,
             priority: cue.priority,
+          };
+          setStageCues((prev) => {
+            if (nextCue.id) {
+              const idx = prev.findIndex((c) => c.id === nextCue.id);
+              if (idx >= 0) {
+                const copy = [...prev];
+                copy[idx] = nextCue;
+                return copy;
+              }
+            }
+            return [...prev, nextCue];
           });
+          setStageCue(nextCue);
+          return;
+        }
+        if (parsed.data.type === "stage_cue_dismiss") {
+          const dismiss = parsed.data;
+          if (dismiss.clearAll) {
+            setStageCues([]);
+            setStageCue(null);
+            return;
+          }
+          if (dismiss.id) {
+            setStageCues((prev) => {
+              const next = prev.filter((c) => c.id !== dismiss.id);
+              setStageCue(next.length > 0 ? next[next.length - 1]! : null);
+              return next;
+            });
+          }
           return;
         }
         if (parsed.data.type === "live_desk") {
@@ -265,6 +295,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           helloTimer = null;
         }
         setStageCue(null);
+        setStageCues([]);
         setWsStatus("disconnected");
         latencyEmaRef.current = 0;
         setLatencyMs(null);
@@ -392,6 +423,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       seek,
       setLoop,
       stageCue,
+      stageCues,
       liveDesk,
       announcePresence,
     }),
@@ -408,6 +440,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       seek,
       setLoop,
       stageCue,
+      stageCues,
       liveDesk,
       announcePresence,
     ],

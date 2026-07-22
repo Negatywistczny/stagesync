@@ -18,6 +18,8 @@ export type StageCueBannerClip = {
 };
 
 export type StageCueBannerSession = {
+  /** Session message id when known (SSOT); falls back to sentAtMs in banner id. */
+  id?: string;
   text: string;
   sentAtMs: number;
   ttlMs: number;
@@ -83,7 +85,9 @@ function lookaheadTicksFromTempo(
  */
 export function resolveStageCueBanner(opts: {
   cueClips: readonly StageCueBannerClip[];
-  sessionCue: StageCueBannerSession | null;
+  /** @deprecated Prefer `sessionCues` for multi-message SSOT. */
+  sessionCue?: StageCueBannerSession | null;
+  sessionCues?: readonly StageCueBannerSession[] | null;
   playheadTicks: number;
   bpm: number;
   ppq: number;
@@ -127,19 +131,22 @@ export function resolveStageCueBanner(opts: {
     }
   }
 
+  const sessionSource =
+    opts.sessionCues ??
+    (opts.sessionCue != null ? [opts.sessionCue] : []);
   const sessionItems: Ranked[] = [];
-  if (opts.sessionCue && roleMatches(opts.activeRoles, opts.sessionCue.roles)) {
-    const text = opts.sessionCue.text.trim().slice(0, 200);
-    if (text) {
-      sessionItems.push({
-        id: `session:${opts.sessionCue.sentAtMs}`,
-        text,
-        slot: "now",
-        priority: opts.sessionCue.priority === "alert" ? "alert" : "normal",
-        source: "session",
-        startRank: opts.sessionCue.sentAtMs,
-      });
-    }
+  for (const session of sessionSource) {
+    if (!roleMatches(opts.activeRoles, session.roles)) continue;
+    const text = session.text.trim().slice(0, 200);
+    if (!text) continue;
+    sessionItems.push({
+      id: `session:${session.id ?? session.sentAtMs}`,
+      text,
+      slot: "now",
+      priority: session.priority === "alert" ? "alert" : "normal",
+      source: "session",
+      startRank: session.sentAtMs,
+    });
   }
 
   const now =

@@ -96,7 +96,10 @@ Wszystkie odpowiedzi sukcesu = **`TransportTickMessage`** (stan + `type` +
 
 | Metoda | Ścieżka | Opis |
 |--------|---------|------|
-| `POST` | `/api/stage/message` | Cue sceniczny → broadcast WS `stage_cue`; **201** |
+| `POST` | `/api/stage/message` | Cue sceniczny → SSOT `sessionMessages` + broadcast WS `stage_cue`; **201** `{ …cue, messages }` |
+| `GET` | `/api/stage/messages` | Aktywne komunikaty sesji: `{ messages: [...] }` |
+| `DELETE` | `/api/stage/messages` | Wyczyść wszystkie → WS `stage_cue_dismiss` (`clearAll`) |
+| `DELETE` | `/api/stage/messages/:id` | Usuń jeden → WS `stage_cue_dismiss` (`id`) |
 | `GET` | `/api/stage/clients` | Presence: `{ clients: [...] }` z połączonych WS |
 
 ### MIDI (host / sidecar Node)
@@ -142,15 +145,20 @@ Ramki (`TransportWsServerMessage` — discriminated na `type`):
 
 1. **`transport_tick`** — pola `TransportState` + `serverTimeMs` (monotoniczny
    zegar silnika) + opcjonalne `sentAtMs` (wall-clock do EMA latency).
-2. **`stage_cue`** — `{ text, roles?, ttlMs, sentAtMs }` (po `POST /api/stage/message`).
+2. **`stage_cue`** — `{ id?, text, roles?, ttlMs, sentAtMs, priority? }` (po
+   `POST /api/stage/message`; snapshot aktywnych przy nowym WS).
+3. **`stage_cue_dismiss`** — `{ id? }` albo `{ clearAll: true }` + `sentAtMs`
+   (po `DELETE /api/stage/messages…` lub TTL).
+4. **`live_desk`** — snapshot Live Desk (transpose / sync-lead / remote edit).
 
 Częstotliwość ticków: ~25 Hz (`TRANSPORT_TICK_INTERVAL_MS` = 40) gdy `playing`;
 snapshot także przy zmianie stanu (play / pause / stop / seek / load / loop)
 oraz przy pierwszym połączeniu.
 
-Klient powinien **nie** traktować `stage_cue` jako ticka. Parser
-`parseTransportTickPayload` toleruje legacy bare `TransportState` (bez `type` /
-`serverTimeMs`) → coerce do ticka z `serverTimeMs: 0`.
+Klient powinien **nie** traktować `stage_cue` / `stage_cue_dismiss` / `live_desk`
+jako ticka. Parser `parseTransportTickPayload` toleruje legacy bare
+`TransportState` (bez `type` / `serverTimeMs`) → coerce do ticka z
+`serverTimeMs: 0`.
 
 ### Klient → serwer (presence)
 

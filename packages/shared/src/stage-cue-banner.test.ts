@@ -104,4 +104,37 @@ describe("resolveStageCueBanner", () => {
     });
     expect(now?.priority).toBe("alert");
   });
+
+  it("picks alert among multiple sessionCues", () => {
+    const { now } = resolveStageCueBanner({
+      cueClips: [],
+      sessionCues: [
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          text: "Normal",
+          sentAtMs: 100,
+          ttlMs: 0,
+          priority: "normal",
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000002",
+          text: "ALERT",
+          sentAtMs: 50,
+          ttlMs: 0,
+          priority: "alert",
+        },
+      ],
+      playheadTicks: 0,
+      bpm: 120,
+      ppq: DEFAULT_PPQ,
+      meter,
+      activeRoles: ["karaoke"],
+    });
+    expect(now).toMatchObject({
+      text: "ALERT",
+      priority: "alert",
+      source: "session",
+      id: "session:00000000-0000-4000-8000-000000000002",
+    });
+  });
 });

@@ -74,9 +74,79 @@
 }
 
 .messagesBody textarea {
-  flex: 1 1 auto;
-  min-height: 6rem;
+  flex: 0 0 auto;
+  min-height: 4.5rem;
+  max-height: 8rem;
   resize: none;
+}
+
+.sessionMsgCount {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sessionMsgCountOn {
+  color: var(--ss-color-text);
+}
+
+.sessionMsgListHead {
+  display: flex;
+  justify-content: flex-end;
+  min-height: var(--ss-space-8);
+}
+
+.sessionMsgList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.sessionMsgEmpty {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  padding: var(--ss-space-2) 0;
+}
+
+.sessionMsgRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-2);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sm);
+  border-left: 3px solid var(--ss-color-border);
+}
+
+.sessionMsgRowAlert {
+  border-left-color: var(--ss-color-danger);
+}
+
+.sessionMsgMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.sessionMsgText {
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text);
+  word-break: break-word;
+}
+
+.sessionMsgMeta {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
 }
 
 .clientsBody {

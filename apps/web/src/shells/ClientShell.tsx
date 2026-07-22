@@ -70,7 +70,7 @@ export function ClientShell() {
     displayTicks: rawDisplayTicks,
     wsStatus,
     latencyMs,
-    stageCue,
+    stageCues,
     liveDesk,
     play,
     seek,
@@ -93,13 +93,7 @@ export function ClientShell() {
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
   const [drumsNoteError, setDrumsNoteError] = useState<string | null>(null);
-  const [sessionCue, setSessionCue] = useState<{
-    text: string;
-    ttlMs: number;
-    sentAtMs: number;
-    roles?: Array<"karaoke" | "grid" | "score" | "drums">;
-    priority?: "normal" | "alert";
-  } | null>(null);
+  const [wallClockMs, setWallClockMs] = useState(() => Date.now());
   const cueAlertSeenRef = useRef<Set<string>>(new Set());
   const [cueFlashId, setCueFlashId] = useState<string | null>(null);
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
@@ -145,25 +139,18 @@ export function ClientShell() {
   }, [state.activeProjectId]);
 
   useEffect(() => {
-    if (!stageCue) {
-      setSessionCue(null);
-      return;
-    }
-    setSessionCue({
-      text: stageCue.text,
-      ttlMs: stageCue.ttlMs,
-      sentAtMs: stageCue.sentAtMs,
-      roles: stageCue.roles,
-      priority: stageCue.priority,
-    });
-    const ttl = stageCue.ttlMs;
-    // 0 = infinite (Admin ∞); missing/non-finite → same default as server (6s).
-    if (ttl === 0) return;
-    const delayMs =
-      typeof ttl === "number" && Number.isFinite(ttl) && ttl > 0 ? ttl : 6000;
-    const t = window.setTimeout(() => setSessionCue(null), delayMs);
-    return () => window.clearTimeout(t);
-  }, [stageCue]);
+    const id = window.setInterval(() => setWallClockMs(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const sessionCues = stageCues.filter((cue) => {
+    if (cue.ttlMs === 0) return true;
+    const ttl =
+      typeof cue.ttlMs === "number" && Number.isFinite(cue.ttlMs) && cue.ttlMs > 0
+        ? cue.ttlMs
+        : 6000;
+    return wallClockMs < cue.sentAtMs + ttl;
+  });
 
   const cueMeter = activeProject
     ? resolveMeterAt(activeProject, displayTicks)
@@ -173,7 +160,7 @@ export function ClientShell() {
     : state.bpm;
   const { now: cueNow, next: cueNext } = resolveStageCueBanner({
     cueClips: activeProject?.cue.clips ?? [],
-    sessionCue,
+    sessionCues,
     playheadTicks: displayTicks,
     bpm: cueBpm,
     ppq: activeProject?.ppq ?? state.ppq,

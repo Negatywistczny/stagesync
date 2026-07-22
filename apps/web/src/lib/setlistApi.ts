@@ -55,12 +55,53 @@ export async function sendStageMessage(body: {
   ttlMs?: number;
   roles?: Array<"karaoke" | "grid" | "score" | "drums">;
   priority?: "normal" | "alert";
-}): Promise<void> {
+}): Promise<SessionStageMessage[]> {
   const res = await fetch("/api/stage/message", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  const payload = (await res.json()) as { messages?: SessionStageMessage[] };
+  return payload.messages ?? [];
+}
+
+export type SessionStageMessage = {
+  id: string;
+  text: string;
+  roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+  ttlMs: number;
+  sentAtMs: number;
+  priority?: "normal" | "alert";
+  expiresAt?: string;
+};
+
+export async function fetchStageMessages(): Promise<SessionStageMessage[]> {
+  const res = await fetch("/api/stage/messages");
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  const body = (await res.json()) as { messages: SessionStageMessage[] };
+  return body.messages;
+}
+
+export async function dismissStageMessage(
+  id: string,
+): Promise<SessionStageMessage[]> {
+  const res = await fetch(`/api/stage/messages/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  const body = (await res.json()) as { messages: SessionStageMessage[] };
+  return body.messages;
+}
+
+export async function clearStageMessages(): Promise<void> {
+  const res = await fetch("/api/stage/messages", { method: "DELETE" });
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }

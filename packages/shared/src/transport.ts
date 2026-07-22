@@ -78,6 +78,8 @@ export type TransportTickMessage = z.infer<typeof TransportTickMessageSchema>;
 /** Outbound WS cue on `/ws/transport` (multiplexed with ticks). */
 export const StageCueMessageSchema = z.object({
   type: z.literal("stage_cue"),
+  /** Session message id (SSOT); optional for older payloads. */
+  id: z.string().uuid().optional(),
   text: z.string().min(1).max(200),
   roles: z
     .array(z.enum(["karaoke", "grid", "score", "drums"]))
@@ -90,6 +92,35 @@ export const StageCueMessageSchema = z.object({
 });
 
 export type StageCueMessage = z.infer<typeof StageCueMessageSchema>;
+
+/** Outbound WS dismiss for a session cue (or clear-all). No refine — DU member. */
+export const StageCueDismissMessageSchema = z.object({
+  type: z.literal("stage_cue_dismiss"),
+  id: z.string().uuid().optional(),
+  clearAll: z.boolean().optional(),
+  sentAtMs: z.number().finite(),
+});
+
+export type StageCueDismissMessage = z.infer<
+  typeof StageCueDismissMessageSchema
+>;
+
+/** Active Admin session message (REST list / SSOT store row). */
+export const SessionStageMessageSchema = z.object({
+  id: z.string().uuid(),
+  text: z.string().min(1).max(200),
+  roles: z
+    .array(z.enum(["karaoke", "grid", "score", "drums"]))
+    .max(4)
+    .optional(),
+  ttlMs: z.number().finite().nonnegative(),
+  sentAtMs: z.number().finite(),
+  priority: z.enum(["normal", "alert"]).optional(),
+  /** ISO wall-clock expiry; omitted when `ttlMs === 0`. */
+  expiresAt: z.string().optional(),
+});
+
+export type SessionStageMessage = z.infer<typeof SessionStageMessageSchema>;
 
 /** Live Desk — team transpose / sync-lead / remote edit (v4 AD-01…03). */
 export const LiveDeskSettingsSchema = z
@@ -133,6 +164,7 @@ export type LiveDeskMessage = z.infer<typeof LiveDeskMessageSchema>;
 export const TransportWsServerMessageSchema = z.discriminatedUnion("type", [
   TransportTickMessageSchema,
   StageCueMessageSchema,
+  StageCueDismissMessageSchema,
   LiveDeskMessageSchema,
 ]);
 

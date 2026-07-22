@@ -132,6 +132,21 @@ describe("TransportWsServerMessageSchema", () => {
     expect(TransportTickMessageSchema.safeParse(cue).success).toBe(false);
     expect(TransportWsServerMessageSchema.parse(cue).type).toBe("stage_cue");
   });
+
+  it("parses stage_cue_dismiss by type", () => {
+    const byId = {
+      type: "stage_cue_dismiss" as const,
+      id: "00000000-0000-4000-8000-000000000001",
+      sentAtMs: 1_700_000_000_000,
+    };
+    const clearAll = {
+      type: "stage_cue_dismiss" as const,
+      clearAll: true,
+      sentAtMs: 1_700_000_000_001,
+    };
+    expect(TransportWsServerMessageSchema.parse(byId)).toEqual(byId);
+    expect(TransportWsServerMessageSchema.parse(clearAll)).toEqual(clearAll);
+  });
 });
 
 describe("parseTransportTickPayload", () => {

@@ -20,7 +20,10 @@ export type TransportContextValue = {
   stop: () => Promise<void>;
   seek: (positionTicks: number) => Promise<void>;
   setLoop: (body: TransportLoopBody) => Promise<void>;
+  /** Latest session cue (compat); prefer `stageCues` for multi-message SSOT. */
   stageCue: StageCue | null;
+  /** Active session cues from WS snapshot / upsert / dismiss. */
+  stageCues: StageCue[];
   /** Live Desk (team transpose / sync-lead / remote edit). */
   liveDesk: LiveDeskState;
   /** Announce Client identity to Admin presence (WS). */
@@ -31,6 +34,7 @@ export type TransportContextValue = {
 };
 
 export type StageCue = {
+  id?: string;
   text: string;
   ttlMs: number;
   sentAtMs: number;

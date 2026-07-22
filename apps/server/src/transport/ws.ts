@@ -45,6 +45,11 @@ export function attachTransportWs(
     if (liveDesk) {
       sendJson(ws, liveDesk.snapshotMessage());
     }
+    if (stageHub) {
+      for (const cue of stageHub.snapshotCues()) {
+        sendJson(ws, cue);
+      }
+    }
 
     ws.on("message", (data) => {
       if (!presence) return;
