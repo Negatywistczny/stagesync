@@ -405,7 +405,7 @@ export const UpdateStatusSchema = z.object({
   latest: z.string().nullable(),
   updateAvailable: z.boolean(),
   /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
-  error: z.string().nullable().optional(),
+  error: z.string().max(500).nullable().optional(),
 });
 
 export type UpdateStatus = z.infer<typeof UpdateStatusSchema>;
