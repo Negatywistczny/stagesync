@@ -150,13 +150,17 @@ export function KaraokePane({
     project != null ? buildKaraokeLiveContext(project, displayTicks) : null;
 
   const activeLineId = ctx?.lines.find((l) => l.active)?.id ?? null;
-  const activeSectionId = ctx?.sections.find((s) => s.active)?.id ?? null;
-  /** Prefer line scroll; fall back to section card (progress-only sections). */
+  const activeSection = ctx?.sections.find((s) => s.active) ?? null;
+  /**
+   * v4: scroll to line when lit; during lyric-section rests keep scroll (no
+   * jump to section). Section scroll only for progress / empty-line cards.
+   */
   const scrollKey =
     activeLineId != null
       ? `line-${activeLineId}`
-      : activeSectionId != null
-        ? `section-${activeSectionId}`
+      : activeSection != null &&
+          (activeSection.useProgress || activeSection.lines.length === 0)
+        ? `section-${activeSection.id}`
         : null;
 
   useEffect(() => {
@@ -224,56 +228,61 @@ export function KaraokePane({
           className={styles.karaokeScroll}
           aria-label="Tekst pogrupowany w sekcje Formy"
         >
-          {ctx.sections.map((sec) => {
-            const isActive = sec.active;
-            const sectionRefTarget =
-              isActive && activeLineId == null ? true : false;
-            const displayName =
-              sec.name === "—"
-                ? sec.name
-                : formatSectionNameForDisplay(sec.name, {
-                    polish: prefs.sectionNamesPolish,
-                  });
-            return (
-              <section
-                key={sec.id}
-                ref={bindActiveRef(sectionRefTarget)}
-                className={[
-                  styles.karaokeSection,
-                  isActive ? styles.karaokeSectionActive : "",
-                  sec.useProgress ? styles.karaokeSectionProgressMode : "",
-                  sec.kind === "countdown" ? styles.karaokeSectionCountdown : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                data-section-id={sec.id}
-              >
-                <h3 className={styles.karaokeSectionTitle}>{displayName}</h3>
-                <SectionProgressBars
-                  section={sec}
-                  displayName={displayName}
-                />
-                {sec.lines.length > 0 ? (
-                  <div className={styles.karaokeSectionLines}>
-                    {sec.lines.map((line) => (
-                      <p
-                        key={line.id}
-                        ref={bindActiveRef(line.active)}
-                        className={[
-                          styles.karaokeLine,
-                          line.active ? styles.karaokeLineActive : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {line.text}
-                      </p>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
-            );
-          })}
+          {/* v4: `.view-scroll` > `.karaoke-scroll-pad` (pad owns 50vh room) */}
+          <div className={styles.karaokeScrollPad}>
+            {ctx.sections.map((sec) => {
+              const isActive = sec.active;
+              const sectionRefTarget =
+                scrollKey === `section-${sec.id}` ? true : false;
+              const displayName =
+                sec.name === "—"
+                  ? sec.name
+                  : formatSectionNameForDisplay(sec.name, {
+                      polish: prefs.sectionNamesPolish,
+                    });
+              return (
+                <section
+                  key={sec.id}
+                  ref={bindActiveRef(sectionRefTarget)}
+                  className={[
+                    styles.karaokeSection,
+                    isActive ? styles.karaokeSectionActive : "",
+                    sec.useProgress ? styles.karaokeSectionProgressMode : "",
+                    sec.kind === "countdown"
+                      ? styles.karaokeSectionCountdown
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  data-section-id={sec.id}
+                >
+                  <h3 className={styles.karaokeSectionTitle}>{displayName}</h3>
+                  <SectionProgressBars
+                    section={sec}
+                    displayName={displayName}
+                  />
+                  {sec.lines.length > 0 ? (
+                    <div className={styles.karaokeSectionLines}>
+                      {sec.lines.map((line) => (
+                        <p
+                          key={line.id}
+                          ref={bindActiveRef(line.active)}
+                          className={[
+                            styles.karaokeLine,
+                            line.active ? styles.karaokeLineActive : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          {line.text}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
+                </section>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className={styles.karaokePlaceholder}>

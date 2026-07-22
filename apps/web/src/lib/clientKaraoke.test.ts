@@ -130,6 +130,38 @@ describe("clientKaraoke", () => {
     expect(ctx?.sectionBars).toEqual([]);
   });
 
+  it("does not highlight lyric lines during rests between clips (v4 findActiveLine)", () => {
+    const withGap = {
+      ...project,
+      tekst: {
+        clips: [
+          {
+            id: "tx-a",
+            text: "A",
+            startTicks: 0,
+            lengthTicks: 2 * BEAT,
+          },
+          {
+            id: "tx-b",
+            text: "B",
+            startTicks: 4 * BEAT,
+            lengthTicks: 2 * BEAT,
+          },
+        ],
+      },
+    };
+
+    const inA = buildKaraokeLiveContext(withGap, BEAT)!;
+    expect(inA.lines.find((l) => l.active)?.text).toBe("A");
+
+    const inRest = buildKaraokeLiveContext(withGap, 3 * BEAT)!;
+    expect(inRest.lines.every((l) => !l.active)).toBe(true);
+    expect(inRest.lyricLine).toBeNull();
+
+    const inB = buildKaraokeLiveContext(withGap, 5 * BEAT)!;
+    expect(inB.lines.find((l) => l.active)?.text).toBe("B");
+  });
+
   it("groupKaraokeSections assigns by lyric startTicks", () => {
     const clips = mergeTekstWithCountdownDigits(project, 0);
     const groups = groupKaraokeSections(project, clips, 0, null);

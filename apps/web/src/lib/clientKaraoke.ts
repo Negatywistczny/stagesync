@@ -288,16 +288,13 @@ export function buildKaraokeLiveContext(
   const lyricLine = tekst?.text?.trim() ? tekst.text : null;
   const hasLyricLines = clips.length > 0;
 
-  let activeIdx = clips.findIndex(
+  // v4 VocalTiming.findActiveLine: only inside a clip window; gaps/rests → null
+  // (no “hold previous / peek next” highlight during pauses).
+  const activeIdx = clips.findIndex(
     (c) =>
       displayTicks >= c.startTicks &&
       displayTicks < c.startTicks + c.lengthTicks,
   );
-  if (activeIdx < 0 && clips.length > 0) {
-    // Between clips — show nearest upcoming, else last past.
-    const next = clips.findIndex((c) => c.startTicks > displayTicks);
-    activeIdx = next >= 0 ? next : clips.length - 1;
-  }
 
   const activeLineId =
     activeIdx >= 0 ? (clips[activeIdx]?.id ?? null) : null;

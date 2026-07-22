@@ -480,19 +480,12 @@
   font-weight: var(--ss-font-weight-semibold);
 }
 
-/* v4 `.karaoke-scroll-pad` — sections stacked with center scroll room */
+/* v4 `#view-karaoke .view-scroll` — viewport that scrolls */
 .karaokeScroll {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-8);
-  overflow: auto;
-  padding-block: 50vh;
-  padding-block: 50dvh;
-  padding-inline: var(--ss-space-2);
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: auto;
   width: 100%;
-  box-sizing: border-box;
   scrollbar-width: none;
 }
 
@@ -500,6 +493,21 @@
   display: none;
   width: 0;
   height: 0;
+}
+
+/* v4 `.karaoke-scroll-pad` — content + vertical room so lines can center */
+.karaokeScrollPad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-8);
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: auto;
+  box-sizing: border-box;
+  padding-block: 50vh;
+  padding-block: 50dvh;
+  padding-inline: var(--ss-space-6);
 }
 
 /* v4 `.karaoke-section` card */
