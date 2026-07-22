@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~03:03 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -259,18 +259,42 @@ Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](h
 
 ### Remaining backlog (ranked)
 
-1. Admin density deep-pass beyond #82/#95
-2. Playwright Forma drag matrix — defer
-3. Overlap drag / Flex Time — OUT
-4. AD-01…03 — skip
-5. PDF setlist / archive — OUT
-6. Full auth / multi-user — 5.1+
+1. Prefer **#197** over **#195** (trackId upload supersedes place-after-only)
+2. Prefer **#204** (drums alert+OCC) with **#199** (vocal OCC) / **#146** (vocal alert)
+3. ClientShell remaining clamp()/weight literals (beyond #198) — pairs with #90
+4. Playwright Forma drag matrix — defer (#67 smoke exists)
+5. Overlap drag / Flex Time — OUT
+6. AD-01…03 — skip
+7. PDF setlist / archive — OUT
+8. Full auth / multi-user — 5.1+
+9. Near **10:00 UTC+2**: stop new features; refresh this handoff with final CI
 
 ### Blokery
 
 - G1–G10 soft-gate only — **nie** claim green bez HW.
 - #83: LAN Host restart needs `STAGESYNC_HOST_TOKEN` or `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`.
 - TimelineShell rebases likely across open PRs.
+
+## Wave 10 (~03:00 CEST 2026-07-22) — continuation after musts
+
+**Binding:** window open until **10:00 UTC+2**; no merge; no `5.0.0` tag; G1–G10 soft-gate.
+
+| # | Temat | URL | CI (~03:03) |
+|---|--------|-----|-------------|
+| [#194](https://github.com/Negatywistyczny/stagesync/pull/194) | isolate WebSocket send per client | https://github.com/Negatywistyczny/stagesync/pull/194 | green |
+| [#195](https://github.com/Negatywistyczny/stagesync/pull/195) | place uploaded audio after existing clips | https://github.com/Negatywistyczny/stagesync/pull/195 | green |
+| [#196](https://github.com/Negatywistyczny/stagesync/pull/196) | Escape song picker + UG import | https://github.com/Negatywistyczny/stagesync/pull/196 | green |
+| [#197](https://github.com/Negatywistyczny/stagesync/pull/197) | honor multipart `trackId` on audio upload (**prefer over #195**) | https://github.com/Negatywistyczny/stagesync/pull/197 | green |
+| [#198](https://github.com/Negatywistyczny/stagesync/pull/198) | ClientShell label sizes via `--ss-text-*` | https://github.com/Negatywistyczny/stagesync/pull/198 | green |
+| [#199](https://github.com/Negatywistyczny/stagesync/pull/199) | Client putProject apply `updatedAt` | https://github.com/Negatywistyczny/stagesync/pull/199 | green |
+| [#200](https://github.com/Negatywistyczny/stagesync/pull/200) | Escape + isolate tempo/meter/key dialogs | https://github.com/Negatywistyczny/stagesync/pull/200 | green |
+| [#201](https://github.com/Negatywistyczny/stagesync/pull/201) | Admin `runMutation` pending ref | https://github.com/Negatywistyczny/stagesync/pull/201 | green |
+| [#202](https://github.com/Negatywistyczny/stagesync/pull/202) | `KEY_TONICS` enum for key signature | https://github.com/Negatywistyczny/stagesync/pull/202 | pending (lint/types follow-ups) |
+| [#203](https://github.com/Negatywistyczny/stagesync/pull/203) | persist Timeline zoom H/V/UI | https://github.com/Negatywistyczny/stagesync/pull/203 | pending |
+| [#204](https://github.com/Negatywistyczny/stagesync/pull/204) | drums note save alert + OCC | https://github.com/Negatywistyczny/stagesync/pull/204 | pending |
+
+**#50–#52:** non-blocking (fullscreen / docs). Musts **#53–#60** still open unmerged.
+
 ## Wave 2 backlog (historical ranking at start of cont.)
 
 | Rank | Temat | Outcome |
