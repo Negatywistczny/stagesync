@@ -131,7 +131,7 @@ async function main(): Promise<void> {
   const libraryFile = join(libraryDir, "library.json");
   const setlistFile = join(libraryDir, "setlist.json");
 
-  const bak = `${inputPath}.pre-migrate-${Date.now()}.bak`;
+  const bak = `${inputPath}.pre-migrate.bak`;
   await copyFile(inputPath, bak);
   console.log(`Shadow backup: ${bak}`);
 
