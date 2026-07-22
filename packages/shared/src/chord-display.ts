@@ -46,7 +46,8 @@ export function formatChordForDisplay(
 
 /** Polskie hybrydowe nazewnictwo: B → H, ale Bb zostaje Bb. */
 export function formatHybridPolishB(text: string): string {
-  return String(text ?? "").replace(/(^|\/)B(?!b)/gi, (_, prefix: string) =>
+  // Case-sensitive: only capital B (not bm7 → Hm7, not F/b → F/H).
+  return String(text ?? "").replace(/(^|\/)B(?!b)/g, (_, prefix: string) =>
     `${prefix}H`,
   );
 }
