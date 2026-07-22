@@ -178,7 +178,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           };
           if (raw.type === "stage_cue" && typeof raw.text === "string") {
             setStageCue({
-              text: raw.text,
+              text: raw.text.slice(0, 200),
               ttlMs: raw.ttlMs ?? 6000,
               sentAtMs: raw.sentAtMs ?? Date.now(),
               roles: raw.roles,
