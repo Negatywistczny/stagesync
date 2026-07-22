@@ -56,11 +56,11 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          files: |
-            packages/shared/coverage/lcov.info
-            apps/server/coverage/lcov.info
-            apps/web/coverage/lcov.info
+          # Surface upload/auth failures; do not hide empty Codecov dashboards.
+          fail_ci_if_error: true
+          # Comma-separated — multiline YAML is passed as one path with embedded newlines.
+          disable_search: true
+          files: packages/shared/coverage/lcov.info,apps/server/coverage/lcov.info,apps/web/coverage/lcov.info
 
       - name: Migrate legacy dry-run (M9)
         run: |
