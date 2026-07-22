@@ -25,8 +25,10 @@ Runtime data: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 | `POST` | `/api/transport/seek` | Seek `{ positionTicks }`; po seek resolve map aktywnego projektu |
 
 Sukces = dokument domenowy (library / project / transport state).  
-Błędy `400` / `404` / `409` / `500` → `{ ok: false, error, details? }`.  
-`details` (opcjonalne): tablica `{ path, message, code? }` z Zod przy walidacji body.
+Błędy `400` / `404` / `409` / `413` / `500` → `{ ok: false, error, details? }`.  
+`details` (opcjonalne): tablica `{ path, message, code? }` z Zod przy walidacji body.  
+Nieznane ścieżki pod `/api/*` → **404** JSON (nie HTML SPA).  
+Body JSON powyżej limitu (`express.json` ~2 MB) → **413** `Payload too large`.
 
 ### Project v2 (`ProjectSchema`)
 
