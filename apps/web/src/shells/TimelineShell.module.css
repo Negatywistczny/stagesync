@@ -51,6 +51,17 @@
   gap: var(--ss-space-2);
 }
 
+.transportExtras {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+}
+
+.songClusterExtra {
+  display: contents;
+}
+
 .snapPicker {
   display: inline-flex;
   align-items: center;
@@ -2089,6 +2100,45 @@
 .shell[data-tl-tier="mobile"] .formaClip,
 .shell[data-tl-tier="mobile"] .mapSegment {
   cursor: default;
+}
+
+.shell[data-tl-tier="mobile"] .toolBar,
+.shell[data-tl-tier="mobile"] .transportExtras,
+.shell[data-tl-tier="mobile"] .songClusterExtra {
+  display: none;
+}
+
+.shell[data-tl-tier="mobile"] .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-2) var(--ss-space-3);
+}
+
+.shell[data-tl-tier="mobile"] .toolbarCenter {
+  flex: 1 1 auto;
+  justify-content: center;
+  margin-left: 0;
+}
+
+.shell[data-tl-tier="mobile"] .songCluster {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+.shell[data-tl-tier="mobile"] .canvasScroll {
+  touch-action: pan-x pan-y;
+}
+
+.shell[data-tl-tier="mobile"] .ruler,
+.shell[data-tl-tier="mobile"] .locator,
+.shell[data-tl-tier="mobile"] .laneFillHit,
+.shell[data-tl-tier="mobile"] .laneResize,
+.shell[data-tl-tier="mobile"] .laneCell,
+.shell[data-tl-tier="mobile"] .formaLaneCell,
+.shell[data-tl-tier="mobile"] .formaClip {
+  touch-action: pan-x;
 }
 
 .shell[data-tl-tier="tablet"] .formaClip {

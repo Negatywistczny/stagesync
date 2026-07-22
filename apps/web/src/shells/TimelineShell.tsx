@@ -205,6 +205,7 @@ import {
   detectTimelineTier,
   TIMELINE_COARSE_MQ,
   TIMELINE_MOBILE_MQ,
+  TIMELINE_TABLET_MQ,
   timelineGesturesAllowed,
   TOUCH_FULL_EDIT_MSG,
   type TimelineTouchTier,
@@ -748,12 +749,15 @@ export function TimelineShell() {
     const syncTier = () => setTouchTier(detectTimelineTier());
     syncTier();
     const mobileMq = window.matchMedia(TIMELINE_MOBILE_MQ);
+    const tabletMq = window.matchMedia(TIMELINE_TABLET_MQ);
     const coarseMq = window.matchMedia(TIMELINE_COARSE_MQ);
     mobileMq.addEventListener("change", syncTier);
+    tabletMq.addEventListener("change", syncTier);
     coarseMq.addEventListener("change", syncTier);
     window.addEventListener("resize", syncTier);
     return () => {
       mobileMq.removeEventListener("change", syncTier);
+      tabletMq.removeEventListener("change", syncTier);
       coarseMq.removeEventListener("change", syncTier);
       window.removeEventListener("resize", syncTier);
     };
@@ -3999,13 +4003,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <IconPlay />
               )}
             </button>
-            <ShellIconButton
-              label="Pętla — przeciągnij zakres na linijce, potem włącz"
-              pressed={loopOn}
-              onClick={onLoopToggle}
-            >
-              <IconLoop />
-            </ShellIconButton>
             <span className={styles.bbt} aria-live="polite">
               {toDisplayBar(bbt.bar)}.{bbt.beat}
             </span>
@@ -4019,53 +4016,62 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               {tempoAtPlayhead} BPM
             </button>
-            <button
-              type="button"
-              className={styles.metaBtn}
-              title="Metrum — kliknij, aby edytować @ playhead"
-              onClick={() => {
-                openMapEdit("metrum", displayTicks);
-              }}
-            >
-              {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
-            </button>
-            <button
-              type="button"
-              className={styles.metaBtn}
-              title="Tonacja — kliknij, aby edytować"
-              onClick={() => openMapEdit("tonacja", displayTicks)}
-            >
-              {draftProject
-                ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
-                : "—"}
-            </button>
-            <ShellIconButton
-              label="Metronom (K)"
-              pressed={metronomeOn}
-              onClick={() => void onMetronomeToggle()}
-            >
-              <IconMetronome />
-            </ShellIconButton>
-            <ShellIconButton
-              label="Podążaj za wskaźnikiem"
-              pressed={followPlayhead}
-              onClick={() => {
-                setFollowPlayhead((v) => {
-                  const next = !v;
-                  try {
-                    localStorage.setItem(
-                      "stagesync-timeline-follow-playhead",
-                      next ? "1" : "0",
-                    );
-                  } catch {
-                    /* ignore */
-                  }
-                  return next;
-                });
-              }}
-            >
-              <IconFollow />
-            </ShellIconButton>
+            <div className={styles.transportExtras}>
+              <ShellIconButton
+                label="Pętla — przeciągnij zakres na linijce, potem włącz"
+                pressed={loopOn}
+                onClick={onLoopToggle}
+              >
+                <IconLoop />
+              </ShellIconButton>
+              <button
+                type="button"
+                className={styles.metaBtn}
+                title="Metrum — kliknij, aby edytować @ playhead"
+                onClick={() => {
+                  openMapEdit("metrum", displayTicks);
+                }}
+              >
+                {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
+              </button>
+              <button
+                type="button"
+                className={styles.metaBtn}
+                title="Tonacja — kliknij, aby edytować"
+                onClick={() => openMapEdit("tonacja", displayTicks)}
+              >
+                {draftProject
+                  ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
+                  : "—"}
+              </button>
+              <ShellIconButton
+                label="Metronom (K)"
+                pressed={metronomeOn}
+                onClick={() => void onMetronomeToggle()}
+              >
+                <IconMetronome />
+              </ShellIconButton>
+              <ShellIconButton
+                label="Podążaj za wskaźnikiem"
+                pressed={followPlayhead}
+                onClick={() => {
+                  setFollowPlayhead((v) => {
+                    const next = !v;
+                    try {
+                      localStorage.setItem(
+                        "stagesync-timeline-follow-playhead",
+                        next ? "1" : "0",
+                      );
+                    } catch {
+                      /* ignore */
+                    }
+                    return next;
+                  });
+                }}
+              >
+                <IconFollow />
+              </ShellIconButton>
+            </div>
           </div>
         </div>
 
@@ -4106,23 +4112,25 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           >
             <IconChevronRight />
           </ShellIconButton>
-          <ShellIconButton
-            label="Auto-setlista"
-            disabled={!setlistEnabled || commandPending}
-            pressed={autoAdvance}
-            onClick={() => {
-              void (async () => {
-                try {
-                  const v = await patchSetlistAutoAdvance(!autoAdvance);
-                  setAutoAdvance(v.autoAdvance.enabled);
-                } catch {
-                  /* ignore */
-                }
-              })();
-            }}
-          >
-            <IconAutoAdvance />
-          </ShellIconButton>
+          <span className={styles.songClusterExtra}>
+            <ShellIconButton
+              label="Auto-setlista"
+              disabled={!setlistEnabled || commandPending}
+              pressed={autoAdvance}
+              onClick={() => {
+                void (async () => {
+                  try {
+                    const v = await patchSetlistAutoAdvance(!autoAdvance);
+                    setAutoAdvance(v.autoAdvance.enabled);
+                  } catch {
+                    /* ignore */
+                  }
+                })();
+              }}
+            >
+              <IconAutoAdvance />
+            </ShellIconButton>
+          </span>
         </div>
 
         {isDesktopShell() && dirty ? (
@@ -5451,7 +5459,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
       {touchTier === "mobile" ? (
         <p className={styles.touchTierNote} role="status">
-          Tryb tylko do odczytu — pełna edycja na tablecie (≥768px) lub komputerze.
+          Tryb odtwarzacza — pełna edycja na tablecie (>768 px) lub komputerze.
           Metadane można edytować.
         </p>
       ) : null}

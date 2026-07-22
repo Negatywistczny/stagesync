@@ -808,6 +808,17 @@
   font-weight: var(--ss-font-weight-regular);
 }
 
+@media (max-width: 768px) {
+  .status {
+    gap: var(--ss-space-2) var(--ss-space-3);
+    padding: var(--ss-space-2) var(--ss-space-3);
+  }
+
+  .statusOptional {
+    display: none;
+  }
+}
+
 /* —— Form bits —— */
 
 .input,
