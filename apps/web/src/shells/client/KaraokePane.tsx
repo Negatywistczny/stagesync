@@ -3,6 +3,7 @@ import {
   buildKaraokeLiveContext,
   type KaraokeSectionGroup,
 } from "../../lib/clientKaraoke.js";
+import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js";
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
 import { useEffect, useRef, type CSSProperties } from "react";
@@ -129,15 +130,7 @@ export function KaraokePane({
     if (!vocalTapOn || !onVocalTap) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== "Space" && e.key !== " ") return;
-      const t = e.target as HTMLElement | null;
-      if (
-        t &&
-        (t.tagName === "INPUT" ||
-          t.tagName === "TEXTAREA" ||
-          t.isContentEditable)
-      ) {
-        return;
-      }
+      if (isEditableKeyboardTarget(e.target)) return;
       e.preventDefault();
       onVocalTap();
     };

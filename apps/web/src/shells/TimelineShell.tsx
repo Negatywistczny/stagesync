@@ -175,6 +175,7 @@ import {
   suppressAudioPlayback,
   syncAudioPlayback,
 } from "../lib/audioPlayback.js";
+import { isEditableKeyboardTarget } from "../lib/isEditableKeyboardTarget.js";
 import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
 import {
   computeWaveformFromAudioBuffer,
@@ -869,13 +870,7 @@ export function TimelineShell() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      const t = e.target as HTMLElement | null;
-      if (
-        t &&
-        (t.tagName === "INPUT" ||
-          t.tagName === "TEXTAREA" ||
-          t.isContentEditable)
-      ) {
+      if (isEditableKeyboardTarget(e.target)) {
         return;
       }
       const h = keyHandlersRef.current;
@@ -1045,13 +1040,7 @@ export function TimelineShell() {
     if (!scrollEl) return;
 
     function onWheel(e: WheelEvent) {
-      const t = document.activeElement as HTMLElement | null;
-      if (
-        t &&
-        (t.tagName === "INPUT" ||
-          t.tagName === "TEXTAREA" ||
-          t.isContentEditable)
-      ) {
+      if (isEditableKeyboardTarget(document.activeElement)) {
         return;
       }
       const h = keyHandlersRef.current;
