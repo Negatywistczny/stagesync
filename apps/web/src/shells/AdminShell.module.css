@@ -284,18 +284,13 @@
 }
 
 .setControls {
-  display: grid;
-  grid-template-columns: max-content;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ss-space-1);
+  gap: var(--ss-space-2) var(--ss-space-4);
   width: fit-content;
   max-width: 100%;
   flex-shrink: 0;
-}
-
-.setControls > * {
-  width: 100%;
-  max-width: none;
 }
 
 .setSplit {
