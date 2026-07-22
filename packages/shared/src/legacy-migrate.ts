@@ -37,6 +37,17 @@ export type LegacySong = {
   key?: { tonic?: unknown; mode?: unknown };
   artist?: unknown;
   genre?: unknown;
+  year?: unknown;
+  /** Basename under legacy `uploads/` (MusicXML). */
+  musicxmlFile?: unknown;
+  /** Remote cover URL (v4) or local filename under uploads/. */
+  coverUrl?: unknown;
+  /** Optional single audio basename under uploads/ (not in v4 canon — defensive). */
+  audioFile?: unknown;
+  /** Optional list of audio basenames under uploads/. */
+  audioFiles?: unknown;
+  /** Optional stem basenames under uploads/. */
+  stems?: unknown;
   midiProgramId?: unknown;
   isTemplate?: unknown;
   markers?: Array<{ id?: unknown; kind?: unknown; startAbs?: unknown }>;
@@ -95,6 +106,22 @@ export type MigrateLegacySongResult = {
   /** Quarters subtracted so first content section lands at tick 0. */
   shiftQuarters: number;
   legacySongId: string;
+  /**
+   * Local files to copy from legacy `uploads/` → `projects/<id>/assets/`.
+   * Pure migrator does not touch the filesystem — CLI / import I/O layer applies these.
+   */
+  pendingAssets: LegacyPendingAsset[];
+};
+
+/** File copy instruction produced by migrate (no bytes). */
+export type LegacyPendingAsset = {
+  assetId: string;
+  kind: "audio" | "cover" | "musicxml";
+  /** Basename in legacy uploads directory. */
+  sourceFileName: string;
+  storageName: string;
+  originalName: string;
+  mimeType: string;
 };
 
 export type MigrateLegacyDatabaseResult = {
@@ -157,6 +184,117 @@ export function legacySongIdToProjectId(legacyId: string): string {
     .padEnd(32, "0")
     .slice(0, 32);
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+/** Stable asset id for re-runs (not cryptographic). */
+export function legacyAssetId(
+  projectId: string,
+  kind: string,
+  fileName: string,
+): string {
+  return legacySongIdToProjectId(`${projectId}:${kind}:${fileName}`);
+}
+
+function basenameOnly(raw: string): string {
+  const cleaned = raw.replace(/\\/g, "/").split("/").pop() ?? raw;
+  return cleaned.trim();
+}
+
+function extOf(name: string): string {
+  const i = name.lastIndexOf(".");
+  return i >= 0 ? name.slice(i).toLowerCase() : "";
+}
+
+const AUDIO_EXT = new Set([
+  ".mp3",
+  ".wav",
+  ".aiff",
+  ".aif",
+  ".m4a",
+  ".flac",
+  ".ogg",
+]);
+const MUSICXML_EXT = new Set([".musicxml", ".xml", ".mxl"]);
+const COVER_EXT = new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+  ".svg",
+]);
+
+export function mimeForLegacyAsset(
+  kind: "audio" | "cover" | "musicxml",
+  fileName: string,
+): string {
+  const ext = extOf(fileName);
+  if (kind === "musicxml") {
+    if (ext === ".mxl") return "application/vnd.recordare.musicxml";
+    return "application/vnd.recordare.musicxml+xml";
+  }
+  if (kind === "cover") {
+    if (ext === ".png") return "image/png";
+    if (ext === ".webp") return "image/webp";
+    if (ext === ".gif") return "image/gif";
+    if (ext === ".svg") return "image/svg+xml";
+    return "image/jpeg";
+  }
+  switch (ext) {
+    case ".mp3":
+      return "audio/mpeg";
+    case ".wav":
+      return "audio/wav";
+    case ".aiff":
+    case ".aif":
+      return "audio/aiff";
+    case ".m4a":
+      return "audio/mp4";
+    case ".flac":
+      return "audio/flac";
+    case ".ogg":
+      return "audio/ogg";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function isRemoteUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value) || value.startsWith("data:");
+}
+
+function collectLegacyAudioFileNames(song: LegacySong): string[] {
+  const out: string[] = [];
+  const push = (raw: unknown) => {
+    const s = basenameOnly(asString(raw));
+    if (!s) return;
+    if (!AUDIO_EXT.has(extOf(s))) return;
+    if (!out.includes(s)) out.push(s);
+  };
+  push(song.audioFile);
+  if (Array.isArray(song.audioFiles)) {
+    for (const item of song.audioFiles) push(item);
+  }
+  if (Array.isArray(song.stems)) {
+    for (const item of song.stems) push(item);
+  }
+  return out;
+}
+
+function parseLegacyYear(raw: unknown): number | undefined {
+  if (raw == null || raw === "") return undefined;
+  const n = Math.round(asFiniteNumber(raw, NaN));
+  if (!Number.isFinite(n) || n < 1000 || n > 9999) return undefined;
+  return n;
+}
+
+function formaContentEndTicks(clips: FormaClip[]): number {
+  let max = 0;
+  for (const c of clips) {
+    if (c.kind === "countdown") continue;
+    max = Math.max(max, c.startTicks + c.lengthTicks);
+  }
+  return Math.max(max, 7680);
 }
 
 function toTicks(absBeat: number, shiftQuarters: number, ppq: number): number {
@@ -444,6 +582,120 @@ export function migrateLegacySong(
       ? undefined
       : Math.min(127, Math.max(0, Math.floor(asFiniteNumber(midiRaw, 0))));
 
+  const year = parseLegacyYear(song.year);
+  if (song.year != null && song.year !== "" && year == null) {
+    warnings.push(`song ${legacySongId}: invalid year ignored`);
+  }
+
+  const pendingAssets: LegacyPendingAsset[] = [];
+  const assets: Project["assets"] = [];
+  const audioTracks: Project["audioTracks"] = [];
+  const audioClips: Project["audioClips"] = [];
+
+  const musicxmlName = basenameOnly(asString(song.musicxmlFile));
+  if (musicxmlName) {
+    if (!MUSICXML_EXT.has(extOf(musicxmlName))) {
+      warnings.push(
+        `song ${legacySongId}: musicxmlFile "${musicxmlName}" has unsupported extension`,
+      );
+    } else {
+      const assetId = legacyAssetId(projectId, "musicxml", musicxmlName);
+      const storageName = `${assetId}${extOf(musicxmlName) || ".mxl"}`;
+      const mimeType = mimeForLegacyAsset("musicxml", musicxmlName);
+      assets.push({
+        id: assetId,
+        storageName,
+        originalName: musicxmlName,
+        kind: "musicxml",
+        mimeType,
+        sizeBytes: 0,
+      });
+      pendingAssets.push({
+        assetId,
+        kind: "musicxml",
+        sourceFileName: musicxmlName,
+        storageName,
+        originalName: musicxmlName,
+        mimeType,
+      });
+    }
+  }
+
+  let coverUrl: string | undefined;
+  const coverRaw = asString(song.coverUrl);
+  if (coverRaw) {
+    if (isRemoteUrl(coverRaw)) {
+      coverUrl = coverRaw.slice(0, 500);
+    } else {
+      const coverName = basenameOnly(coverRaw);
+      if (coverName && COVER_EXT.has(extOf(coverName))) {
+        const assetId = legacyAssetId(projectId, "cover", coverName);
+        const storageName = `${assetId}${extOf(coverName)}`;
+        const mimeType = mimeForLegacyAsset("cover", coverName);
+        assets.push({
+          id: assetId,
+          storageName,
+          originalName: coverName,
+          kind: "cover",
+          mimeType,
+          sizeBytes: 0,
+        });
+        pendingAssets.push({
+          assetId,
+          kind: "cover",
+          sourceFileName: coverName,
+          storageName,
+          originalName: coverName,
+          mimeType,
+        });
+      } else if (coverName) {
+        // Treat non-http string as coverUrl for meta preview (v4 parity).
+        coverUrl = coverRaw.slice(0, 500);
+        warnings.push(
+          `song ${legacySongId}: coverUrl kept as URL string (not a local image file)`,
+        );
+      }
+    }
+  }
+
+  const audioNames = collectLegacyAudioFileNames(song);
+  const audioLengthTicks = formaContentEndTicks(formaClips);
+  for (let i = 0; i < audioNames.length; i++) {
+    const fileName = audioNames[i]!;
+    const assetId = legacyAssetId(projectId, "audio", fileName);
+    const storageName = `${assetId}${extOf(fileName) || ".wav"}`;
+    const mimeType = mimeForLegacyAsset("audio", fileName);
+    assets.push({
+      id: assetId,
+      storageName,
+      originalName: fileName,
+      kind: "audio",
+      mimeType,
+      sizeBytes: 0,
+    });
+    pendingAssets.push({
+      assetId,
+      kind: "audio",
+      sourceFileName: fileName,
+      storageName,
+      originalName: fileName,
+      mimeType,
+    });
+    const trackId = legacyAssetId(projectId, "track", fileName);
+    const stem = fileName.replace(/\.[^.]+$/, "") || `Audio ${i + 1}`;
+    audioTracks.push({
+      id: trackId,
+      name: stem.slice(0, 80),
+    });
+    audioClips.push({
+      id: legacyAssetId(projectId, "clip", fileName),
+      trackId,
+      assetId,
+      startTicks: 0,
+      lengthTicks: audioLengthTicks,
+    });
+  }
+
   const draft = {
     id: projectId,
     name: asString(song.title ?? song.name, "Untitled"),
@@ -456,9 +708,9 @@ export function migrateLegacySong(
     tempoMap,
     meterMap,
     keyMap,
-    assets: [],
-    audioTracks: [],
-    audioClips: [],
+    assets,
+    audioTracks,
+    audioClips,
     tekst: { clips: tekstClips },
     akordy: { clips: akordyClips },
     cue: { clips: cueClips },
@@ -467,6 +719,8 @@ export function migrateLegacySong(
     ...(song.isTemplate === true ? { isTemplate: true } : {}),
     ...(asString(song.artist) ? { artist: asString(song.artist) } : {}),
     ...(asString(song.genre) ? { genre: asString(song.genre) } : {}),
+    ...(year != null ? { year } : {}),
+    ...(coverUrl ? { coverUrl } : {}),
   };
 
   const parsed = ProjectSchema.safeParse(draft);
@@ -490,6 +744,7 @@ export function migrateLegacySong(
     warnings,
     shiftQuarters,
     legacySongId,
+    pendingAssets,
   };
 }
 

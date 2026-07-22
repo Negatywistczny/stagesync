@@ -91,11 +91,16 @@ export function createLibraryRouter(stores: Stores): Router {
             updatedAt: project.updatedAt,
             formatVersion: 5 as const,
             ppq: project.ppq,
-            midiProgramId: project.midiProgramId,
-            isTemplate: undefined,
-            assets: [],
-            audioTracks: [],
-            audioClips: [],
+            midiProgramId:
+              typeof src.midiProgramId === "number"
+                ? src.midiProgramId
+                : project.midiProgramId,
+            isTemplate: src.isTemplate === true ? true : undefined,
+            // Keep migrated assets / lanes (JSON import does not copy bytes —
+            // CLI `--uploads-dir` or Admin upload fills files).
+            assets: Array.isArray(src.assets) ? src.assets : [],
+            audioTracks: Array.isArray(src.audioTracks) ? src.audioTracks : [],
+            audioClips: Array.isArray(src.audioClips) ? src.audioClips : [],
           };
           const parsed = ProjectSchemaV5.parse(candidate);
           const { id: _id, ...body } = parsed;

@@ -4,23 +4,37 @@
  *
  *   pnpm migrate:legacy -- --input path/to/database.json --dry-run
  *   pnpm migrate:legacy -- --input path/to/database.json --data-dir ./data --apply
+ *   pnpm migrate:legacy -- --input … --data-dir ./data --uploads-dir ./uploads --apply
  *
  * Docs: docs/MIGRATION.md
  */
 
-import { readFile, writeFile, mkdir, copyFile, access } from "node:fs/promises";
-import { isAbsolute, join, resolve } from "node:path";
+import {
+  readFile,
+  writeFile,
+  mkdir,
+  copyFile,
+  access,
+  stat,
+} from "node:fs/promises";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   detectLibraryImportFormat,
   migrateLegacyDatabase,
+  ProjectSchema,
   SetlistSchema,
   LibrarySchema,
   type LegacyDatabase,
+  type LegacyPendingAsset,
+  type Project,
 } from "@stagesync/shared";
 
 /** Monorepo root (apps/server/src/cli → ../../../..) */
-const REPO_ROOT = resolve(fileURLToPath(new URL(".", import.meta.url)), "../../../..");
+const REPO_ROOT = resolve(
+  fileURLToPath(new URL(".", import.meta.url)),
+  "../../../..",
+);
 
 function resolveUserPath(p: string): string {
   if (isAbsolute(p)) return p;
@@ -32,13 +46,15 @@ function usage(): void {
   console.log(`Usage:
   pnpm migrate:legacy -- --input <database.json> --dry-run
   pnpm migrate:legacy -- --input <database.json> --data-dir <dir> --apply
+  pnpm migrate:legacy -- --input <database.json> --data-dir <dir> --uploads-dir <dir> --apply
 
 Options:
-  --input      Path to legacy 4.x database.json
-  --data-dir   v5 data root (contains library/ + projects/)
-  --dry-run    Report only (default if --apply omitted)
-  --apply      Write project.json files + merge library/setlist
-  --help       Show this help
+  --input         Path to legacy 4.x database.json
+  --data-dir      v5 data root (contains library/ + projects/)
+  --uploads-dir   Legacy uploads/ (MusicXML / audio / local covers). Default: <input-dir>/uploads or ../uploads
+  --dry-run       Report only (default if --apply omitted)
+  --apply         Write project.json files + merge library/setlist + copy pending assets
+  --help          Show this help
 `);
 }
 
@@ -49,7 +65,14 @@ function parseArgs(argv: string[]) {
     apply: boolean;
     input: string | null;
     dataDir: string | null;
-  } = { dryRun: true, apply: false, input: null, dataDir: null };
+    uploadsDir: string | null;
+  } = {
+    dryRun: true,
+    apply: false,
+    input: null,
+    dataDir: null,
+    uploadsDir: null,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--help" || a === "-h") out.help = true;
@@ -61,6 +84,7 @@ function parseArgs(argv: string[]) {
       out.dryRun = false;
     } else if (a === "--input") out.input = argv[++i] ?? null;
     else if (a === "--data-dir") out.dataDir = argv[++i] ?? null;
+    else if (a === "--uploads-dir") out.uploadsDir = argv[++i] ?? null;
   }
   return out;
 }
@@ -72,6 +96,60 @@ async function pathExists(p: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function resolveUploadsDir(
+  explicit: string | null,
+  inputPath: string,
+): Promise<string | null> {
+  if (explicit) return resolveUserPath(explicit);
+  const beside = join(dirname(inputPath), "uploads");
+  if (await pathExists(beside)) return beside;
+  const sibling = join(dirname(inputPath), "..", "uploads");
+  if (await pathExists(sibling)) return resolve(sibling);
+  return null;
+}
+
+async function materializePendingAssets(
+  project: Project,
+  pending: LegacyPendingAsset[],
+  uploadsDir: string | null,
+  assetsDir: string,
+): Promise<{ project: Project; warnings: string[] }> {
+  const warnings: string[] = [];
+  if (pending.length === 0) return { project, warnings };
+  if (!uploadsDir) {
+    warnings.push(
+      `${project.name}: ${pending.length} asset(s) pending — pass --uploads-dir to copy files`,
+    );
+    return { project, warnings };
+  }
+
+  await mkdir(assetsDir, { recursive: true });
+  const sizeById = new Map<string, number>();
+
+  for (const item of pending) {
+    const src = join(uploadsDir, item.sourceFileName);
+    const dest = join(assetsDir, item.storageName);
+    if (!(await pathExists(src))) {
+      warnings.push(
+        `${project.name}: missing upload "${item.sourceFileName}" (${item.kind})`,
+      );
+      continue;
+    }
+    await copyFile(src, dest);
+    const st = await stat(dest);
+    sizeById.set(item.assetId, st.size);
+  }
+
+  if (sizeById.size === 0) return { project, warnings };
+
+  const nextAssets = project.assets.map((a) => {
+    const size = sizeById.get(a.id);
+    return size != null ? { ...a, sizeBytes: size } : a;
+  });
+  const next = ProjectSchema.parse({ ...project, assets: nextAssets });
+  return { project: next, warnings };
 }
 
 async function main(): Promise<void> {
@@ -102,7 +180,7 @@ async function main(): Promise<void> {
   for (const p of result.projects) {
     const proj = p.project;
     console.log(
-      `  • ${p.legacySongId} → ${proj.id}  "${proj.name}"  forma=${proj.forma.clips.length} tekst=${proj.tekst.clips.length} akordy=${proj.akordy.clips.length} cue=${proj.cue.clips.length}  shift=${p.shiftQuarters}`,
+      `  • ${p.legacySongId} → ${proj.id}  "${proj.name}"  forma=${proj.forma.clips.length} tekst=${proj.tekst.clips.length} akordy=${proj.akordy.clips.length} cue=${proj.cue.clips.length} assets=${proj.assets.length}  shift=${p.shiftQuarters}`,
     );
   }
   if (result.warnings.length) {
@@ -126,6 +204,15 @@ async function main(): Promise<void> {
   }
 
   const dataDir = resolveUserPath(args.dataDir);
+  const uploadsDir = await resolveUploadsDir(args.uploadsDir, inputPath);
+  if (uploadsDir) {
+    console.log(`Uploads dir: ${uploadsDir}`);
+  } else {
+    console.log(
+      "Uploads dir: (none) — MusicXML/audio refs kept; copy later with --uploads-dir",
+    );
+  }
+
   const libraryDir = join(dataDir, "library");
   const projectsDir = join(dataDir, "projects");
   const libraryFile = join(libraryDir, "library.json");
@@ -138,9 +225,10 @@ async function main(): Promise<void> {
   await mkdir(libraryDir, { recursive: true });
   await mkdir(projectsDir, { recursive: true });
 
-  let library = { version: 1 as const, projects: [] as ReturnType<
-    typeof LibrarySchema.parse
-  >["projects"] };
+  let library = {
+    version: 1 as const,
+    projects: [] as ReturnType<typeof LibrarySchema.parse>["projects"],
+  };
   if (await pathExists(libraryFile)) {
     library = LibrarySchema.parse(
       JSON.parse(await readFile(libraryFile, "utf8")),
@@ -148,14 +236,28 @@ async function main(): Promise<void> {
   }
 
   const byId = new Map(library.projects.map((e) => [e.id, e]));
-  for (const { project } of result.projects) {
-    const dir = join(projectsDir, project.id);
-    await mkdir(join(dir, "assets"), { recursive: true });
+  for (const { project: migrated, pendingAssets } of result.projects) {
+    const dir = join(projectsDir, migrated.id);
+    const assetsDir = join(dir, "assets");
+    await mkdir(assetsDir, { recursive: true });
+    const { project, warnings: assetWarnings } = await materializePendingAssets(
+      migrated,
+      pendingAssets,
+      uploadsDir,
+      assetsDir,
+    );
+    for (const w of assetWarnings) {
+      console.log(`  ! ${w}`);
+    }
     const projectFile = join(dir, "project.json");
     if (await pathExists(projectFile)) {
       await copyFile(projectFile, `${projectFile}.bak`);
     }
-    await writeFile(projectFile, `${JSON.stringify(project, null, 2)}\n`, "utf8");
+    await writeFile(
+      projectFile,
+      `${JSON.stringify(project, null, 2)}\n`,
+      "utf8",
+    );
     byId.set(project.id, {
       id: project.id,
       name: project.name,

@@ -51,7 +51,7 @@ pnpm migrate:legacy -- \
 Co robi:
 
 1. Kopiuje `database.json` → `database.json.pre-migrate-<ts>.bak` (shadow backup).
-2. Dla każdego utworu: `data/projects/<uuid>/project.json` (+ pusty `assets/`).
+2. Dla każdego utworu: `data/projects/<uuid>/project.json` + kopia plików z `--uploads-dir` do `assets/`.
 3. Aktualizuje `data/library/library.json` (merge po `id`).
 4. Zapisuje `data/library/setlist.json` z zmapowanymi id.
 
@@ -72,10 +72,18 @@ Istniejące `project.json` / `setlist.json` dostają `.bak` przed nadpisaniem.
 | `setlist.songIds` | `setlist.projectIds` (zmapowane) |
 | `scoreBarMap` / Kotwice | `scoreBarMap.anchors` (+ ids) |
 | `sections[].drumsNote` | `forma.clips[].note` |
-| MusicXML / cover file copy | OUT (assets empty) |
+| `year` / `artist` / `genre` | `year` / `artist` / `genre` |
+| `coverUrl` (http/s) | `coverUrl` (meta preview) |
+| `coverUrl` (local image in uploads/) | `assets[]` `kind: cover` + copy |
+| `musicxmlFile` | `assets[]` `kind: musicxml` + copy z `uploads/` |
+| `audioFile` / `audioFiles` / `stems` | `assets[]` + `audioTracks` / `audioClips` + copy |
 
 Pozycje: `startTicks = round((startAbs − shift) × PPQ)`, gdzie `shift` =
 `startAbs` pierwszej sekcji nie-Countdown (treść od taktu 1).
+
+Przy `--apply` podaj `--uploads-dir` (domyślnie `<input>/uploads` lub `../uploads`),
+żeby skopiować pliki do `data/projects/<id>/assets/`. Brak pliku → ostrzeżenie,
+wpis w `assets` zostaje (można dograć w Admin).
 
 ## Błędy
 
@@ -94,7 +102,9 @@ W **Admin → Utwory** (kafelek **Pliki** pod Wybrany) upuść lub wybierz:
 | legacy `database.json` (`songs[]`) | `migrateLegacyDatabase` → import utworów |
 
 Format jest wykrywany automatycznie (klient + `POST /api/library/import`).
-Archiwa ZIP / binarne `.stagesync` — na razie **nie** (czytelny błąd PL); pełna migracja assetów z zip = OUT.
+Archiwa ZIP / binarne `.stagesync` — na razie **nie** (czytelny błąd PL).
+Import JSON legacy przenosi **refs** assetów (`musicxml` / audio / cover);
+bajty plików kopiuj CLI z `--uploads-dir` albo wgraj ręcznie w Admin → Pliki.
 
 CLI (`pnpm migrate:legacy`) nadal przydatny do dry-run / zapisu setlisty pod wskazany `--data-dir`.
 

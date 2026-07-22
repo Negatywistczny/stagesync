@@ -406,6 +406,8 @@ const ProjectSchemaV5Object = z
     artist: z.string().max(200).optional(),
     genre: z.string().max(200).optional(),
     year: z.number().int().min(1000).max(9999).optional(),
+    /** Remote / absolute cover URL (legacy v4 `coverUrl`); local covers use `assets` kind cover. */
+    coverUrl: z.string().max(500).optional(),
   })
   .strict();
 
