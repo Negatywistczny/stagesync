@@ -117,11 +117,22 @@ describe("setlist auto-advance", () => {
 
     // ~1s @ 120 BPM ≈ 1920 ticks — past end 960
     nowMs += 1000;
-    await new Promise((r) => setTimeout(r, 80));
 
-    const state = TransportStateSchema.parse(
+    // Poll: transport tick (20ms) + async setlist/load/stop can lag under suite load.
+    let state = TransportStateSchema.parse(
       await (await fetch(`${baseUrl}/api/transport`)).json(),
     );
+    const deadline = Date.now() + 2000;
+    while (
+      (state.playing || state.activeProjectId !== b.id) &&
+      Date.now() < deadline
+    ) {
+      await new Promise((r) => setTimeout(r, 40));
+      state = TransportStateSchema.parse(
+        await (await fetch(`${baseUrl}/api/transport`)).json(),
+      );
+    }
+
     expect(state.playing).toBe(false);
     expect(state.activeProjectId).toBe(b.id);
     expect(state.positionTicks).toBe(transportHomeTicks(b));

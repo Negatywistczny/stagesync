@@ -106,11 +106,18 @@ describe("pause at song end", () => {
     });
 
     nowMs += 1000;
-    await new Promise((r) => setTimeout(r, 80));
 
-    const state = TransportStateSchema.parse(
+    let state = TransportStateSchema.parse(
       await (await fetch(`${baseUrl}/api/transport`)).json(),
     );
+    const deadline = Date.now() + 2000;
+    while (state.playing && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 40));
+      state = TransportStateSchema.parse(
+        await (await fetch(`${baseUrl}/api/transport`)).json(),
+      );
+    }
+
     expect(state.playing).toBe(false);
     expect(state.activeProjectId).toBe(created.id);
     expect(state.positionTicks).toBe(960);
