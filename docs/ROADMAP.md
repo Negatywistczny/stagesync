@@ -71,6 +71,8 @@ Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/repo
 - Motywy (`data-theme` + switcher)
 - Auth / multi-user (speculative)
 - Android (PWA / Capacitor) — jeśli produkt wymaga sklepu
+- **Cues Sampler** ([#430](https://github.com/Negatywistczny/stagesync/issues/430)) — ścieżka Sampler Cue z Formy / voice cues z wyprzedzeniem taktowym; wymaga scope report + ADR (routing Cue vs main) przed kodem → **5.1+**
+
 
 ## Zasady operacyjne
 
