@@ -82,9 +82,9 @@ export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 export const ProjectAssetSchema = z.object({
   id: z.string().min(1),
   storageName: z.string().min(1),
-  originalName: z.string().min(1),
+  originalName: z.string().min(1).max(512),
   kind: ProjectAssetKindSchema,
-  mimeType: z.string().min(1),
+  mimeType: z.string().min(1).max(128),
   sizeBytes: z.number().int().nonnegative(),
   durationMs: z.number().positive().finite().optional(),
   /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
@@ -97,7 +97,7 @@ export type ProjectAsset = z.infer<typeof ProjectAssetSchema>;
 
 export const AudioTrackSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
+  name: z.string().min(1).max(80),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().optional(),
 });
