@@ -261,8 +261,37 @@ export const ProjectSchemaV4 = z
 
 export type ProjectV4 = z.infer<typeof ProjectSchemaV4>;
 
+export const KEY_TONICS = [
+  "C",
+  "C#",
+  "Db",
+  "D",
+  "Eb",
+  "E",
+  "F",
+  "F#",
+  "Gb",
+  "G",
+  "Ab",
+  "A",
+  "Bb",
+  "B",
+] as const;
+
+export type KeyTonic = (typeof KEY_TONICS)[number];
+
+export function normalizeKeyTonic(
+  raw: unknown,
+  fallback: KeyTonic = "C",
+): KeyTonic {
+  if (typeof raw === "string" && (KEY_TONICS as readonly string[]).includes(raw)) {
+    return raw as KeyTonic;
+  }
+  return fallback;
+}
+
 export const KeySignatureSchema = z.object({
-  tonic: z.string().min(1),
+  tonic: z.enum(KEY_TONICS),
   mode: z.enum(["major", "minor"]),
 });
 

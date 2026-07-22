@@ -14,6 +14,7 @@ import {
   resolveTempoAt,
   resolveKeyAt,
   formatKeySignature,
+  KEY_TONICS,
   parseLegacyMeter,
   ticksPerBar,
   ticksToBbt,
@@ -4482,22 +4483,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         );
                       }}
                     >
-                      {[
-                        "C",
-                        "C#",
-                        "Db",
-                        "D",
-                        "Eb",
-                        "E",
-                        "F",
-                        "F#",
-                        "Gb",
-                        "G",
-                        "Ab",
-                        "A",
-                        "Bb",
-                        "B",
-                      ].map((t) => (
+                      {KEY_TONICS.map((t) => (
                         <option key={t} value={t}>
                           {t}
                         </option>
@@ -5442,22 +5428,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }
               >
-                {[
-                  "C",
-                  "C#",
-                  "Db",
-                  "D",
-                  "Eb",
-                  "E",
-                  "F",
-                  "F#",
-                  "Gb",
-                  "G",
-                  "Ab",
-                  "A",
-                  "Bb",
-                  "B",
-                ].map((t) => (
+                {KEY_TONICS.map((t) => (
                   <option key={t} value={t}>
                     {t}
                   </option>
