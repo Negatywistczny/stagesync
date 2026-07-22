@@ -1,92 +1,51 @@
 # StageSync
 
-[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
-[![version](https://img.shields.io/badge/version-5.0.0--beta.2-blue)](https://github.com/Negatywistczny/stagesync/releases)
-[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/Negatywistczny/stagesync/ci.yml?branch=main&label=CI)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Negatywistczny/stagesync?include_prereleases&label=release)](https://github.com/Negatywistczny/stagesync/releases)
+[![License](https://img.shields.io/github/license/Negatywistczny/stagesync)](LICENSE)
+[![Version](https://img.shields.io/github/package-json/v/Negatywistczny/stagesync)](package.json)
 
-**StageSync** to nowoczesny, wieloplatformowy system synchronizacji scenicznej oraz odtwarzania osi czasu (Timeline) przeznaczony dla realizatorów, zespołów i operatorów wydarzeń na żywo.
+**StageSync** — centralized stage transport, Timeline, and musician Client sync for live shows.
 
-> ℹ️ **Legacy 4.x:** [STAGESYNC-APP-LEGACY](https://github.com/Negatywistczny/STAGESYNC-APP-LEGACY). Rozwój wersji v5: [stagesync](https://github.com/Negatywistczny/stagesync).
+> Legacy 4.x: [STAGESYNC-APP-LEGACY](https://github.com/Negatywistyczny/STAGESYNC-APP-LEGACY). This repo is **v5**.
 
----
+## Quick start
 
-### ✨ Kluczowe możliwości
-- ⏱ **Precyzyjna Oś Czasu (Timeline):** Obsługa wielościeżkowego audio, pętli, przejść fade/crossfade oraz płynnego przyciągania (Snap).
-- 🌐 **Architektura Host / Client:** Centralny serwer sceniczny synchronizujący w czasie rzeczywistym podłączone iPady i ekrany muzyków.
-- 💻 **Natywna Aplikacja Desktopowa:** Lekkie środowisko Tauri dla macOS i Windows z wbudowanym automatycznym silnikiem (sidecar).
+**Desktop (recommended):** download `.dmg` / `.msi` from [Releases](https://github.com/Negatywistczny/stagesync/releases), install, and run — the host sidecar starts locally. Details: [docs/DESKTOP.md](docs/DESKTOP.md).
 
----
+**Docker / rack host:** see [docs/INSTALL.md](docs/INSTALL.md) (Compose, GHCR, ports, updates).
 
-## 🚀 Szybki start — Scena / Produkcja
-
-### Aplikacja Desktopowa (Tauri — zalecana dla operatora)
-
-1. Pobierz instalator `.dmg` (macOS) lub `.msi` (Windows) z sekcji [Releases](https://github.com/Negatywistczny/stagesync/releases).
-2. Zainstaluj i uruchom aplikację — wbudowany serwer wystartuje automatycznie, otwierając widok Admina i Osi Czasu.
-
-> 📄 Pełna instrukcja obsługi: [docs/DESKTOP.md](docs/DESKTOP.md)
-
----
-
-### Serwer Sceniczny (Docker — infrastruktura dedykowana)
-
-Dla dedykowanych serwerów rackowych i instalacji stacjonarnych:
+**From source (dev):** Node.js **20** + [pnpm](https://pnpm.io/) 9. Desktop builds from source also need **Rust** (Tauri).
 
 ```sh
-docker login ghcr.io          # PAT read:packages — jednorazowo
-cp .env.example .env          # Ustaw STAGESYNC_VERSION i tokeny
-docker compose -f compose.prod.yml up -d
+git clone https://github.com/Negatywistczny/stagesync.git
+cd stagesync && pnpm install && pnpm dev
 ```
 
-| URL | Rola / Dostęp |
+`test` / `build` / `lint` and contribution rules → [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Monorepo
+
+| Path | Role |
 | :--- | :--- |
-| `http://localhost:4000/admin` | Panel Admina (konfiguracja, stan sieci) |
-| `http://localhost:4000/timeline` | Edytor Osi Czasu (Timeline) |
-| `http://localhost:4000/` | Widok Klienta (ekrany dla muzyków) |
+| `apps/server` | API, persistence, transport SSOT |
+| `apps/web` | Admin / Timeline / Client UI |
+| `apps/desktop` | Tauri shell + Node sidecar |
+| `packages/shared` | Zod schemas + pure time helpers |
+| `packages/ui` | Design system (`--ss-*` tokens) |
+| `data/` | Runtime templates (user projects gitignored) |
 
-> 📄 Pełna instrukcja wdrożenia: [docs/INSTALL.md](docs/INSTALL.md)
+## Documentation
 
----
-
-### 🔄 Aktualizacja
-
-- **Aplikacja Desktop:** Wybierz w menu: `Admin` → `Sprawdź aktualizacje`.
-- **Docker:** Zmień zmienną `STAGESYNC_VERSION` w pliku `.env` i przeładuj kontenery (`docker compose -f compose.prod.yml up -d`).
-
----
-
-## 🛠 Deweloperzy (Uruchomienie ze źródeł)
-
-**Wymagania:** Node.js 20 (`nvm use`), [pnpm](https://pnpm.io/) 9.
-
-```sh
-# 1. Sklonuj repozytorium i zainstaluj zależności
-git clone [https://github.com/Negatywistczny/stagesync.git](https://github.com/Negatywistczny/stagesync.git)
-cd stagesync
-pnpm install
-
-# 2. Uruchom środowisko deweloperskie (Web :3000 + Server :4000)
-pnpm dev
-```
-
-### Przydatne polecenia:
-```sh
-pnpm test      # Uruchomienie zestawu testów
-pnpm build     # Kompilacja produkcyjna paczek
-pnpm lint      # Weryfikacja spójności kodu i linter
-```
-
----
-
-## 📚 Dokumentacja i Architektura
-
-| Przewodnik | Opis |
+| Doc | |
 | :--- | :--- |
-| 🚀 [INSTALL](docs/INSTALL.md) | Wdrożenie produkcyjne Docker Compose, GHCR, procedury rollback |
-| 💻 [DESKTOP](docs/DESKTOP.md) | Konfiguracja aplikacji Tauri oraz architektura Sidecara |
-| 🏗 [ARCHITECTURE](docs/ARCHITECTURE.md) | Mapa monorepo, model danych SSOT i integracja |
-| 🗺 [ROADMAP](docs/ROADMAP.md) | Kamienie milowe i etapy wydań (Alpha → Beta → 5.0.0) |
-| 📋 [TODO](docs/TODO.md) | Bieżąca lista zadań i priorytetów |
-| 📝 [CHANGELOG](CHANGELOG.md) | Pełna historia zmian |
-| 🎨 [UI System](docs/ui/README.md) | Design System, tokeny i komponenty UI |
-| 🤝 [CONTRIBUTING](CONTRIBUTING.md) | Zasady współtworzenia kodu i standardy commitów |
+| [INSTALL](docs/INSTALL.md) | Production Docker / GHCR |
+| [DESKTOP](docs/DESKTOP.md) | Tauri installers & updater |
+| [ARCHITECTURE](docs/ARCHITECTURE.md) | Monorepo map & SSOT |
+| [docs/api](docs/api/) | REST surface |
+| [ADR](docs/adr/) | Architecture decisions |
+| [SECURITY](SECURITY.md) | Vulnerability reporting |
+| [ROADMAP](docs/ROADMAP.md) / [TODO](docs/TODO.md) | Milestones & checklist |
+| [CHANGELOG](CHANGELOG.md) | Release history |
+| [UI](docs/ui/README.md) | Design system |
+| [CONTRIBUTING](CONTRIBUTING.md) | Commits, PRs, branches |

@@ -9,6 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Features
 
+- **README (#419 / #417):** landing ~60–80 linii; badges CI/release/license/version (bez Tailwind / visitorbadge).
 - **Timeline:** zoom H/V/UI z ikonami; snap picker (off / bar / beat / subdivision); rozszerzona Pomoc z kartami sekcji, miniaturami narzędzi / transportu / ścieżek i czytelnymi skrótami klawiszowymi; zoom sesji zapisywany lokalnie.
 - **Audio:** fade in/out (envelope WebAudio + uchwyty Smart na klipie); crossfade przy styku; region loop klipu; kontrolki w inspectorze; kopiuj/wklej na ścieżce audio.
 - **Transport i setlista:** pauza i zatrzymanie playheadu na końcu utworu; opcjonalne auto-advance setlisty; nawigacja `[` / `]` między utworami; WS reconnect z exponential backoff+jitter; baner offline Client + refetch projektu po reconnect (#358).
