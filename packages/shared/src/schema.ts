@@ -1,27 +1,5 @@
 import { z } from "zod";
-import { assertValidTimeSignature, DEFAULT_PPQ } from "./time.js";
-
-function refineMeterForPpq(
-  ts: { numerator: number; denominator: number },
-  ctx: z.RefinementCtx,
-) {
-  try {
-    assertValidTimeSignature(ts, DEFAULT_PPQ);
-  } catch (err) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message:
-        err instanceof Error
-          ? err.message
-          : "Invalid meter for default PPQ (ticksPerBar must be integer)",
-    });
-  }
-}
-
-/** UI + API range for tempo (Timeline inputs use 20…400). */
-export const BPM_MIN = 20;
-export const BPM_MAX = 400;
-export const BpmSchema = z.number().finite().min(BPM_MIN).max(BPM_MAX);
+import { DEFAULT_PPQ } from "./time.js";
 
 /** Catalog entry — denormalized fields for Admin list / Batch PC / Ostrzeżenia. */
 export const LibraryProjectEntrySchema = z.object({
@@ -38,12 +16,10 @@ export const LibraryProjectEntrySchema = z.object({
 export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;
 
 /** Skeleton library catalog — validated at every edge (API / disk). */
-export const LibrarySchema = z
-  .object({
-    version: z.literal(1),
-    projects: z.array(LibraryProjectEntrySchema),
-  })
-  .strict();
+export const LibrarySchema = z.object({
+  version: z.literal(1),
+  projects: z.array(LibraryProjectEntrySchema),
+});
 
 export type Library = z.infer<typeof LibrarySchema>;
 
@@ -86,29 +62,20 @@ export type ScoreBarMap = z.infer<typeof ScoreBarMapSchema>;
 export const TempoEventSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
-  bpm: BpmSchema,
+  bpm: z.number().positive().finite(),
 });
 
-export const MeterEventSchema = z
-  .object({
-    id: z.string().min(1),
-    startTicks: z.number().int(),
-    numerator: z.number().int().positive(),
-    denominator: z.number().int().positive(),
-  })
-  .superRefine((m, ctx) =>
-    refineMeterForPpq(
-      { numerator: m.numerator, denominator: m.denominator },
-      ctx,
-    ),
-  );
+export const MeterEventSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  numerator: z.number().int().positive(),
+  denominator: z.number().int().positive(),
+});
 
-export const DefaultMeterSchema = z
-  .object({
-    numerator: z.number().int().positive(),
-    denominator: z.number().int().positive(),
-  })
-  .superRefine(refineMeterForPpq);
+export const DefaultMeterSchema = z.object({
+  numerator: z.number().int().positive(),
+  denominator: z.number().int().positive(),
+});
 
 export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 
@@ -148,46 +115,32 @@ export const AudioClipSchema = z.object({
   trimOutMs: z.number().nonnegative().finite().optional(),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().optional(),
-  /** Fade-in length from clip start (ms of playable window). */
-  fadeInMs: z.number().nonnegative().finite().optional(),
-  /** Fade-out length ending at clip end (ms of playable window). */
-  fadeOutMs: z.number().nonnegative().finite().optional(),
-  /** Loop source within clip span while playhead is inside ([ADR 0008]). */
-  loop: z.boolean().optional(),
 });
 
 export type AudioClip = z.infer<typeof AudioClipSchema>;
 
 /** Concert setlist — independent of library order (ADR 0009). */
-export const SetlistSchema = z
-  .object({
-    version: z.literal(1),
+export const SetlistSchema = z.object({
+  version: z.literal(1),
+  enabled: z.boolean(),
+  projectIds: z.array(z.string().uuid()),
+  autoAdvance: z.object({
     enabled: z.boolean(),
-    projectIds: z.array(z.string().uuid()).max(256),
-    autoAdvance: z
-      .object({
-        enabled: z.boolean(),
-      })
-      .strict(),
-  })
-  .strict();
+  }),
+});
 
 export type Setlist = z.infer<typeof SetlistSchema>;
 
-export const PutSetlistBodySchema = z
-  .object({
-    enabled: z.boolean(),
-    projectIds: z.array(z.string().uuid()).max(256),
-  })
-  .strict();
+export const PutSetlistBodySchema = z.object({
+  enabled: z.boolean(),
+  projectIds: z.array(z.string().uuid()),
+});
 
 export type PutSetlistBody = z.infer<typeof PutSetlistBodySchema>;
 
-export const PatchSetlistAutoAdvanceBodySchema = z
-  .object({
-    enabled: z.boolean(),
-  })
-  .strict();
+export const PatchSetlistAutoAdvanceBodySchema = z.object({
+  enabled: z.boolean(),
+});
 
 export type PatchSetlistAutoAdvanceBody = z.infer<
   typeof PatchSetlistAutoAdvanceBodySchema
@@ -211,7 +164,7 @@ export const ProjectSchemaV2 = z
     formatVersion: z.literal(2),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: BpmSchema,
+    defaultBpm: z.number().positive().finite(),
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
@@ -231,7 +184,7 @@ export const ProjectSchemaV3 = z
     formatVersion: z.literal(3),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: BpmSchema,
+    defaultBpm: z.number().positive().finite(),
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
@@ -284,7 +237,7 @@ export const ProjectSchemaV4 = z
     formatVersion: z.literal(4),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: BpmSchema,
+    defaultBpm: z.number().positive().finite(),
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
@@ -333,14 +286,14 @@ const ProjectSchemaV5Object = z
     formatVersion: z.literal(5),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: BpmSchema,
+    defaultBpm: z.number().positive().finite(),
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
     }),
-    tempoMap: z.array(TempoEventSchema).max(256),
-    meterMap: z.array(MeterEventSchema).max(256),
-    keyMap: z.array(KeyEventSchema).max(256),
+    tempoMap: z.array(TempoEventSchema),
+    meterMap: z.array(MeterEventSchema),
+    keyMap: z.array(KeyEventSchema),
     assets: z.array(ProjectAssetSchema),
     audioTracks: z.array(AudioTrackSchema),
     audioClips: z.array(AudioClipSchema),
@@ -390,28 +343,22 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
 
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 
-export const CreateProjectBodySchema = z
-  .object({
-    name: z.string().trim().min(1).max(200),
-    fromTemplateId: z.string().min(1).optional(),
-    isTemplate: z.boolean().optional(),
-  })
-  .strict();
+export const CreateProjectBodySchema = z.object({
+  name: z.string().min(1),
+  fromTemplateId: z.string().min(1).optional(),
+  isTemplate: z.boolean().optional(),
+});
 
 export type CreateProjectBody = z.infer<typeof CreateProjectBodySchema>;
 
-export const BatchMidiPcBodySchema = z
-  .object({
-    assignments: z.array(
-      z
-        .object({
-          id: z.string().min(1),
-          midiProgramId: z.number().int().min(0).max(127),
-        })
-        .strict(),
-    ),
-  })
-  .strict();
+export const BatchMidiPcBodySchema = z.object({
+  assignments: z.array(
+    z.object({
+      id: z.string().min(1),
+      midiProgramId: z.number().int().min(0).max(127),
+    }),
+  ),
+});
 
 export type BatchMidiPcBody = z.infer<typeof BatchMidiPcBodySchema>;
 
@@ -420,13 +367,11 @@ export const UpdateProjectBodySchema = PutProjectBodySchema;
 
 export type UpdateProjectBody = PutProjectBody;
 
-export const HealthResponseSchema = z
-  .object({
-    ok: z.literal(true),
-    service: z.literal("stagesync-server"),
-    version: z.string(),
-  })
-  .strict();
+export const HealthResponseSchema = z.object({
+  ok: z.literal(true),
+  service: z.literal("stagesync-server"),
+  version: z.string(),
+});
 
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
@@ -446,53 +391,32 @@ export const ApiErrorSchema = z.object({
 
 export type ApiError = z.infer<typeof ApiErrorSchema>;
 
-export const StageMessageBodySchema = z
-  .object({
-    text: z.string().min(1).max(200),
-    roles: z
+export const StageMessageBodySchema = z.object({
+  text: z.string().min(1).max(200),
+  roles: z
     .array(z.enum(["karaoke", "grid", "score", "drums"]))
     .max(4)
     .optional(),
-    ttlMs: z.number().int().positive().optional(),
-  })
-  .strict();
+  ttlMs: z.number().int().positive().optional(),
+});
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
 
-/** Inbound WS presence hello from Client shells (`/ws/transport`). */
-export const ClientHelloMessageSchema = z
-  .object({
-    type: z.literal("client_hello"),
-    displayName: z.string().max(80).optional(),
-    roles: z
-      .array(z.enum(["karaoke", "grid", "score", "drums", "timeline"]))
-      .max(2)
-      .optional(),
-    latencyMs: z.number().finite().nonnegative().nullable().optional(),
-  })
-  .strict();
-
-export type ClientHelloMessage = z.infer<typeof ClientHelloMessageSchema>;
-
 /** GET /api/system/update-status response */
-export const UpdateStatusSchema = z
-  .object({
-    current: z.string(),
-    latest: z.string().nullable(),
-    updateAvailable: z.boolean(),
-    /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
-    error: z.string().max(500).nullable().optional(),
-  })
-  .strict();
+export const UpdateStatusSchema = z.object({
+  current: z.string(),
+  latest: z.string().nullable(),
+  updateAvailable: z.boolean(),
+  /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
+  error: z.string().nullable().optional(),
+});
 
 export type UpdateStatus = z.infer<typeof UpdateStatusSchema>;
 
 /** POST /api/system/apply-update body */
-export const ApplyUpdateBodySchema = z
-  .object({
-    target: z.enum(["host"]),
-  })
-  .strict();
+export const ApplyUpdateBodySchema = z.object({
+  target: z.enum(["host"]),
+});
 
 export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;
 
@@ -507,14 +431,12 @@ export const MidiPortSchema = z.object({
 export type MidiPort = z.infer<typeof MidiPortSchema>;
 
 /** Runtime selection + feature flags for Host MIDI. */
-export const MidiHostConfigSchema = z
-  .object({
-    inputId: z.string().min(1).nullable(),
-    outputId: z.string().min(1).nullable(),
-    /** Emit MIDI clock / start / stop / SPP on the selected output from transport SSOT. */
-    clockOutEnabled: z.boolean(),
-  })
-  .strict();
+export const MidiHostConfigSchema = z.object({
+  inputId: z.string().min(1).nullable(),
+  outputId: z.string().min(1).nullable(),
+  /** Emit MIDI clock / start / stop / SPP on the selected output from transport SSOT. */
+  clockOutEnabled: z.boolean(),
+});
 
 export type MidiHostConfig = z.infer<typeof MidiHostConfigSchema>;
 
@@ -529,30 +451,26 @@ export const PutMidiHostConfigBodySchema = z
 export type PutMidiHostConfigBody = z.infer<typeof PutMidiHostConfigBodySchema>;
 
 /** Rates are approximate messages (or beats) in the last ~1s. */
-export const MidiHostRatesSchema = z
-  .object({
-    clockPerSec: z.number().nonnegative(),
-    sppPerSec: z.number().nonnegative(),
-    pcPerSec: z.number().nonnegative(),
-    beatToWsPerSec: z.number().nonnegative(),
-  })
-  .strict();
+export const MidiHostRatesSchema = z.object({
+  clockPerSec: z.number().nonnegative(),
+  sppPerSec: z.number().nonnegative(),
+  pcPerSec: z.number().nonnegative(),
+  beatToWsPerSec: z.number().nonnegative(),
+});
 
 export type MidiHostRates = z.infer<typeof MidiHostRatesSchema>;
 
 /** GET /api/midi — Admin Host status. */
-export const MidiHostStatusSchema = z
-  .object({
-    available: z.boolean(),
-    backend: z.enum(["native", "mock", "none"]),
-    config: MidiHostConfigSchema,
-    inputs: z.array(MidiPortSchema),
-    outputs: z.array(MidiPortSchema),
-    rates: MidiHostRatesSchema,
-    /** True while transport is playing and clock-out timer is armed. */
-    clockOutActive: z.boolean(),
-    lastError: z.string().nullable(),
-  })
-  .strict();
+export const MidiHostStatusSchema = z.object({
+  available: z.boolean(),
+  backend: z.enum(["native", "mock", "none"]),
+  config: MidiHostConfigSchema,
+  inputs: z.array(MidiPortSchema),
+  outputs: z.array(MidiPortSchema),
+  rates: MidiHostRatesSchema,
+  /** True while transport is playing and clock-out timer is armed. */
+  clockOutActive: z.boolean(),
+  lastError: z.string().nullable(),
+});
 
 export type MidiHostStatus = z.infer<typeof MidiHostStatusSchema>;
