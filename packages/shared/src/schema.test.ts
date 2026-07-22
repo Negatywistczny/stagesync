@@ -40,6 +40,16 @@ describe("LibrarySchema", () => {
       LibrarySchema.parse({ version: 2, projects: [] }),
     ).toThrow();
   });
+
+  it("rejects more than 1024 catalog entries", () => {
+    const projects = Array.from({ length: 1025 }, (_, i) => ({
+      id: `p${i}`,
+      name: `Song ${i}`,
+    }));
+    expect(() =>
+      LibrarySchema.parse({ version: 1, projects }),
+    ).toThrow();
+  });
 });
 
 describe("ProjectSchemaV3", () => {
