@@ -42,6 +42,11 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"]
     },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["coverage/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
