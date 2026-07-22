@@ -130,8 +130,9 @@ export function AdminShell() {
     library?.projects.find((p) => p.id === state.activeProjectId) ?? null;
   const nowName = nowProject?.name ?? "—";
   const nextName = setlistView?.enabled
-    ? (setlistView.next?.name ?? (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
-    : "z setu";
+    ? (setlistView.next?.name ??
+      (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
+    : "—";
 
   useEffect(() => {
     const sectionParam = searchParams.get("section");
