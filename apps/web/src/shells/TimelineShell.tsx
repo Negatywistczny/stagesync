@@ -1226,6 +1226,8 @@ export function TimelineShell() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [
+    applyWand,
+    commitDraft,
     copyClipSelection,
     cutClipSelection,
     deleteSelectedFormaClip,
@@ -1234,7 +1236,9 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
+    tapLineIndex,
     toolMenu,
+    wandMenu,
   ]);
 
   useEffect(() => {
