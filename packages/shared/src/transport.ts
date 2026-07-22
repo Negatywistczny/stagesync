@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BpmSchema } from "./schema.js";
 import { DEFAULT_PPQ } from "./time.js";
 
 export const TimeSignatureSchema = z.object({
@@ -16,12 +17,8 @@ export type TransportLoop = z.infer<typeof TransportLoopSchema>;
 
 export const TransportStateSchema = z.object({
   playing: z.boolean(),
-  positionTicks: z
-    .number()
-    .int()
-    .min(Number.MIN_SAFE_INTEGER)
-    .max(Number.MAX_SAFE_INTEGER),
-  bpm: z.number().positive().finite(),
+  positionTicks: z.number().int(),
+  bpm: BpmSchema,
   timeSignature: TimeSignatureSchema,
   ppq: z.number().int().positive(),
   activeProjectId: z.string().uuid().nullable().optional(),
@@ -31,7 +28,7 @@ export const TransportStateSchema = z.object({
 export type TransportState = z.infer<typeof TransportStateSchema>;
 
 export const TransportSeekBodySchema = z.object({
-  positionTicks: z.number().int().finite(),
+  positionTicks: z.number().int(),
 });
 
 export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
@@ -43,26 +40,13 @@ export const TransportLoopBodySchema = z
     startTicks: z.number().int().optional(),
     endTicks: z.number().int().optional(),
   })
-  .strict()
-  .superRefine((val, ctx) => {
-    if (
-      val.startTicks != null &&
-      val.endTicks != null &&
-      val.endTicks <= val.startTicks
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: "endTicks must be greater than startTicks",
-        path: ["endTicks"],
-      });
-    }
-  });
+  .strict();
 
 export type TransportLoopBody = z.infer<typeof TransportLoopBodySchema>;
 
 export const TransportPlayBodySchema = z
   .object({
-    bpm: z.number().positive().finite().optional(),
+    bpm: BpmSchema.optional(),
     timeSignature: TimeSignatureSchema.optional(),
     projectId: z.string().uuid().optional(),
   })

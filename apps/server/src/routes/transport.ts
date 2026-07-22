@@ -9,25 +9,20 @@ import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "../transport/engine.js";
 import { handleRouteError } from "./errors.js";
 
+/** REST responses include serverTimeMs (same clock as WS ticks) for soft-clock ordering. */
+function respondTick(res: import("express").Response, transport: TransportEngine) {
+  res.json(transport.toTickMessage());
+}
+
 export function createTransportRouter(
   transport: TransportEngine,
   stores: Stores,
 ): Router {
   const router = Router();
-  let mutationChain: Promise<void> = Promise.resolve();
-
-  function withTransportLock<T>(fn: () => Promise<T>): Promise<T> {
-    const run = mutationChain.then(fn, fn);
-    mutationChain = run.then(
-      () => undefined,
-      () => undefined,
-    );
-    return run;
-  }
 
   router.get("/", (_req, res) => {
     try {
-      res.json(transport.getState());
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -35,17 +30,15 @@ export function createTransportRouter(
 
   router.post("/play", async (req, res) => {
     try {
-      const state = await withTransportLock(async () => {
-        const body = TransportPlayBodySchema.parse(req.body ?? {});
-        let project;
-        const projectId =
-          body.projectId ?? transport.getActiveProjectId() ?? undefined;
-        if (projectId) {
-          project = await stores.getProject(projectId);
-        }
-        return transport.play(body, project);
-      });
-      res.json(state);
+      const body = TransportPlayBodySchema.parse(req.body ?? {});
+      let project;
+      const projectId =
+        body.projectId ?? transport.getActiveProjectId() ?? undefined;
+      if (projectId) {
+        project = await stores.getProject(projectId);
+      }
+      transport.play(body, project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -53,21 +46,19 @@ export function createTransportRouter(
 
   router.post("/load", async (req, res) => {
     try {
-      const state = await withTransportLock(async () => {
-        const body = TransportLoadBodySchema.parse(req.body ?? {});
-        const project = await stores.getProject(body.projectId);
-        return transport.loadProject(body.projectId, project);
-      });
-      res.json(state);
+      const body = TransportLoadBodySchema.parse(req.body ?? {});
+      const project = await stores.getProject(body.projectId);
+      transport.loadProject(body.projectId, project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
   });
 
-  router.post("/pause", async (_req, res) => {
+  router.post("/pause", (_req, res) => {
     try {
-      const state = await withTransportLock(async () => transport.pause());
-      res.json(state);
+      transport.pause();
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -75,15 +66,13 @@ export function createTransportRouter(
 
   router.post("/stop", async (_req, res) => {
     try {
-      const state = await withTransportLock(async () => {
-        let project;
-        const activeId = transport.getActiveProjectId();
-        if (activeId) {
-          project = await stores.getProject(activeId);
-        }
-        return transport.stop(project);
-      });
-      res.json(state);
+      let project;
+      const activeId = transport.getActiveProjectId();
+      if (activeId) {
+        project = await stores.getProject(activeId);
+      }
+      transport.stop(project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -91,28 +80,24 @@ export function createTransportRouter(
 
   router.post("/seek", async (req, res) => {
     try {
-      const state = await withTransportLock(async () => {
-        const body = TransportSeekBodySchema.parse(req.body);
-        let project;
-        const activeId = transport.getActiveProjectId();
-        if (activeId) {
-          project = await stores.getProject(activeId);
-        }
-        return transport.seek(body.positionTicks, project);
-      });
-      res.json(state);
+      const body = TransportSeekBodySchema.parse(req.body);
+      let project;
+      const activeId = transport.getActiveProjectId();
+      if (activeId) {
+        project = await stores.getProject(activeId);
+      }
+      transport.seek(body.positionTicks, project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
   });
 
-  router.post("/loop", async (req, res) => {
+  router.post("/loop", (req, res) => {
     try {
-      const state = await withTransportLock(async () => {
-        const body = TransportLoopBodySchema.parse(req.body ?? {});
-        return transport.setLoop(body);
-      });
-      res.json(state);
+      const body = TransportLoopBodySchema.parse(req.body ?? {});
+      transport.setLoop(body);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }

@@ -46,10 +46,18 @@ function transportWsUrl(): string {
 }
 
 /** v4-style EMA of one-way delay from wall-clock `sentAtMs`. */
-function noteLatencySample(prev: number, sentAtMs: number): number {
-  const sample = Math.max(0, Date.now() - sentAtMs);
+const MAX_LATENCY_MS = 60_000;
+
+export function noteLatencySample(prev: number, sentAtMs: number): number {
+  const sample = Math.min(
+    MAX_LATENCY_MS,
+    Math.max(0, Date.now() - sentAtMs),
+  );
   if (!prev) return sample;
-  return Math.round(prev * 0.82 + sample * 0.18);
+  return Math.min(
+    MAX_LATENCY_MS,
+    Math.round(prev * 0.82 + sample * 0.18),
+  );
 }
 
 export function TransportProvider({ children }: { children: ReactNode }) {
@@ -58,6 +66,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [commandPending, setCommandPending] = useState(false);
+  const commandPendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
 
@@ -163,9 +172,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        if (cancelled) return;
-        lastServerTimeMsRef.current = Number.NEGATIVE_INFINITY;
-        setWsStatus("connected");
+        if (!cancelled) setWsStatus("connected");
         sendHello();
         // Keep Admin presence latency fresh while connected (v4 interval).
         helloTimer = setInterval(() => {
@@ -185,7 +192,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           };
           if (raw.type === "stage_cue" && typeof raw.text === "string") {
             setStageCue({
-              text: raw.text,
+              text: raw.text.slice(0, 200),
               ttlMs: raw.ttlMs ?? 6000,
               sentAtMs: raw.sentAtMs ?? Date.now(),
               roles: raw.roles,
@@ -236,7 +243,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       try {
         const initial = await getTransport();
         if (cancelled) return;
-        applyAnchor(initial, performance.now());
+        applyAnchor(initial.state, performance.now(), initial.serverTimeMs);
       } catch (err) {
         if (!cancelled) {
           setError(formatTransportError(err, "Failed to load"));
@@ -267,12 +274,14 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   );
 
   const runCommand = useCallback(
-    async (fn: () => Promise<TransportState>) => {
+    async (fn: () => Promise<{ state: TransportState; serverTimeMs: number }>) => {
+      if (commandPendingRef.current) return;
+      commandPendingRef.current = true;
       setCommandPending(true);
       setError(null);
       try {
-        const next = await fn();
-        applyAnchor(next, performance.now());
+        const { state: next, serverTimeMs } = await fn();
+        applyAnchor(next, performance.now(), serverTimeMs);
         if (next.playing) {
           startRaf();
         } else {
@@ -281,6 +290,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         setError(formatTransportError(err, "Command failed"));
       } finally {
+        commandPendingRef.current = false;
         setCommandPending(false);
       }
     },

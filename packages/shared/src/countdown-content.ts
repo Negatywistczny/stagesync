@@ -27,7 +27,7 @@ export function countdownDigitLabels(bars: number): CountdownDigitLabel[] {
   const n = Math.min(32, total);
   const out: CountdownDigitLabel[] = [];
   for (let i = 0; i < n; i++) {
-    out.push({ barOffset: i, label: String(total - i) });
+    out.push({ barOffset: i, label: String(n - i) });
   }
   return out;
 }

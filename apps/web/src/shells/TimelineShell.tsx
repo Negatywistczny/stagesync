@@ -19,6 +19,7 @@ import {
   ticksToBbt,
   toDisplayBar,
   importUgText,
+  normalizeKeyTonic,
   projectEndTicks,
   transportHomeTicks,
   type FormaClip,
@@ -202,6 +203,7 @@ import {
   hitTestClipZone,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
+  type ClipHitZone,
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
@@ -1460,7 +1462,8 @@ export function TimelineShell() {
     setDraftHistory((h) => {
       if (!h || !canUndo(h)) return h;
       const next = undoDraft(h);
-      setDraftProject(next.present);
+      setDraftProject(next.present.project);
+      setClipSelection(next.present.clipSelection);
       return next;
     });
   }
@@ -1469,7 +1472,8 @@ export function TimelineShell() {
     setDraftHistory((h) => {
       if (!h || !canRedo(h)) return h;
       const next = redoDraft(h);
-      setDraftProject(next.present);
+      setDraftProject(next.present.project);
+      setClipSelection(next.present.clipSelection);
       return next;
     });
   }
@@ -4517,7 +4521,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           resolveKeyAt(draftProject, 0)?.mode ?? "major";
                         commitDraft(
                           upsertKeyAt(draftProject, 0, {
-                            tonic: e.target.value || "C",
+                            tonic: normalizeKeyTonic(e.target.value, "C"),
                             mode,
                           }),
                         );
@@ -5537,7 +5541,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   const modeEl = document.getElementById(
                     "key-mode",
                   ) as HTMLSelectElement | null;
-                  const tonic = tonicEl?.value || "C";
+                  const tonic = normalizeKeyTonic(tonicEl?.value, "C");
                   const mode =
                     modeEl?.value === "minor"
                       ? ("minor" as const)
@@ -5590,7 +5594,7 @@ function FormaClipButton({
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
-  const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
+  const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
   const countdown = clip.kind === "countdown";
   const cursor = pencilActive
     ? "crosshair"
