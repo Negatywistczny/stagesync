@@ -20,6 +20,8 @@ describe("chord-display", () => {
     expect(formatHybridPolishB("B")).toBe("H");
     expect(formatHybridPolishB("Bb")).toBe("Bb");
     expect(formatHybridPolishB("F/B")).toBe("F/H");
+    expect(formatHybridPolishB("bm7")).toBe("bm7");
+    expect(formatHybridPolishB("F/b")).toBe("F/b");
     expect(formatChordForDisplay("Bmaj7", { hybridPolishB: true })).toBe(
       "HΔ7",
     );
