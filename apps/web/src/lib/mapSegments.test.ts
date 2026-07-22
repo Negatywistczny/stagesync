@@ -52,4 +52,31 @@ describe("mapSegments", () => {
     expect(segments[0]?.endTicks).toBe(7680);
     expect(segments[1]?.startTicks).toBe(7680);
   });
+
+  it("tempoMapSegments fills leading gap before first map event", () => {
+    const project = createProjectV5Seed(
+      "id",
+      "Demo",
+      "2026-07-20T00:00:00.000Z",
+    );
+    project.defaultBpm = 100;
+    project.tempoMap = [
+      { id: "t1", startTicks: 3840, bpm: 140 },
+    ];
+    const span = { start: 0, end: 7680 };
+    const segments = tempoMapSegments(project, span);
+    expect(segments).toHaveLength(2);
+    expect(segments[0]).toMatchObject({
+      startTicks: 0,
+      endTicks: 3840,
+      label: "100 BPM",
+      eventId: "tempo-default",
+    });
+    expect(segments[1]).toMatchObject({
+      startTicks: 3840,
+      endTicks: 7680,
+      label: "140 BPM",
+      eventId: "t1",
+    });
+  });
 });
