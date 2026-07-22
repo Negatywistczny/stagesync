@@ -442,6 +442,8 @@ export function TimelineShell() {
   const toolRef = useRef<ToolId>("pointer");
   toolRef.current = tool;
   const [tapLineIndex, setTapLineIndex] = useState(0);
+  const tapLineIndexRef = useRef(0);
+  tapLineIndexRef.current = tapLineIndex;
   const [heldZoom, setHeldZoom] = useState(false);
   const heldZoomRef = useRef(false);
   heldZoomRef.current = heldZoom;
@@ -460,6 +462,8 @@ export function TimelineShell() {
     left: number;
     top: number;
   } | null>(null);
+  const wandMenuOpenRef = useRef(false);
+  wandMenuOpenRef.current = Boolean(wandMenu);
   const toolMenuRef = useRef<HTMLDivElement>(null);
   const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
@@ -649,6 +653,9 @@ export function TimelineShell() {
     onLoopToggle: () => {},
     onTool: (id: ToolId) => {
       void id;
+    },
+    applyWand: (mode: WandMode) => {
+      void mode;
     },
     nudgeLocator: (dir: -1 | 1) => {
       void dir;
@@ -1089,7 +1096,7 @@ export function TimelineShell() {
           const draft = draftRef.current;
           if (!draft) return;
           const queue = vocalTapQueue(draft);
-          const clip = queue[tapLineIndex];
+          const clip = queue[tapLineIndexRef.current];
           if (!clip) return;
           const next = applyVocalTap(draft, clip.id, locatorTicks);
           commitDraft(next);
@@ -1118,20 +1125,20 @@ export function TimelineShell() {
           return;
         }
       }
-      if (wandMenu && !mod) {
+      if (wandMenuOpenRef.current && !mod) {
         if (e.key === "1") {
           e.preventDefault();
-          applyWand("tekst");
+          h.applyWand("tekst");
           return;
         }
         if (e.key === "2") {
           e.preventDefault();
-          applyWand("akordy");
+          h.applyWand("akordy");
           return;
         }
         if (e.key === "3") {
           e.preventDefault();
-          applyWand("both");
+          h.applyWand("both");
           return;
         }
         if (e.key === "Escape") {
@@ -1226,7 +1233,6 @@ export function TimelineShell() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [
-    applyWand,
     commitDraft,
     copyClipSelection,
     cutClipSelection,
@@ -1236,9 +1242,7 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
-    tapLineIndex,
     toolMenu,
-    wandMenu,
   ]);
 
   useEffect(() => {
@@ -3589,6 +3593,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     onMetronomeToggle,
     onLoopToggle,
     onTool,
+    applyWand,
     nudgeLocator,
     fitZoom,
     zoomHorizontalBySteps,
