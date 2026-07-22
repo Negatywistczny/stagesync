@@ -553,6 +553,7 @@ export function ClientShell() {
                   onScoreZoomChange={setScoreZoom}
                   followPlayhead={scoreFollowPlayhead}
                   onFollowPlayheadChange={setScoreFollowPlayhead}
+                  teamSemitones={liveDesk.transpositionSemitones}
                   onSeek={(ticks) => {
                     void seek(ticks);
                   }}

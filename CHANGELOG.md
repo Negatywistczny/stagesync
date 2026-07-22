@@ -29,7 +29,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **MIDI (host):** Start/Stop/Continue/SPP z wejścia; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po numerze programu (SSOT serwera).
 
 #### 🖥️ App Shell & UI
-- **Client — partytura ([#465](https://github.com/Negatywistyczny/stagesync/pull/465)):** render MusicXML (OSMD) z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika w pasku roli.
+- **Client — partytura ([#465](https://github.com/Negatywistyczny/stagesync/pull/465)):** render MusicXML (OSMD) z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika; wybór widocznych partii oraz oktawa (−1/0/+1) z Live Desk transpose.
 - **Client — strój i Formy:** C / B♭ / E♭ / ręczna (−6…+6); polskie nazwy sekcji Formy; Karaoke/Grid z live transpozycją akordów (w tym zespołową).
 - **Client — tap wokalu:** ↑/↓ przełącza linię kolejki (obok Spacji).
 - **Chrome ([#443](https://github.com/Negatywistyczny/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.

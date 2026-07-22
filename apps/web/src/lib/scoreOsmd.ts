@@ -180,3 +180,158 @@ export function scrollCursorIntoView(
   const target = Math.max(0, offset - scrollRect.height * 0.14);
   scrollEl.scrollTo({ top: target, behavior: "smooth" });
 }
+
+export type ScorePartInfo = {
+  id: string;
+  label: string;
+  index: number;
+};
+
+export function scoreInstrumentId(
+  instr: { IdString?: string; Name?: string; PartAbbreviation?: string },
+  index: number,
+): string {
+  const base = String(
+    instr.IdString || instr.Name || instr.PartAbbreviation || "part",
+  ).trim();
+  return `${base || "part"}::${index}`;
+}
+
+export function listScoreParts(osmd: OpenSheetMusicDisplay): ScorePartInfo[] {
+  const instruments = osmd.Sheet?.Instruments;
+  if (!Array.isArray(instruments)) return [];
+  return instruments.map((instr, index) => {
+    const name = String(
+      (instr as { Name?: string }).Name ||
+        (instr as { PartAbbreviation?: string }).PartAbbreviation ||
+        "",
+    ).trim();
+    return {
+      id: scoreInstrumentId(
+        instr as { IdString?: string; Name?: string; PartAbbreviation?: string },
+        index,
+      ),
+      label: name || `Partia ${index + 1}`,
+      index,
+    };
+  });
+}
+
+/** Hide parts listed in `hiddenIds`; keep at least one visible when possible. */
+export function applyScorePartVisibility(
+  osmd: OpenSheetMusicDisplay,
+  hiddenIds: readonly string[],
+): void {
+  const instruments = osmd.Sheet?.Instruments;
+  if (!Array.isArray(instruments) || instruments.length === 0) return;
+  const hidden = new Set(hiddenIds);
+  const parts = listScoreParts(osmd);
+  let visibleCount = parts.filter((p) => !hidden.has(p.id)).length;
+  if (visibleCount === 0 && parts.length > 0) {
+    hidden.delete(parts[0]!.id);
+    visibleCount = 1;
+  }
+  instruments.forEach((instr, index) => {
+    const id = scoreInstrumentId(
+      instr as { IdString?: string; Name?: string; PartAbbreviation?: string },
+      index,
+    );
+    const visible = !hidden.has(id);
+    (instr as { Visible?: boolean }).Visible = visible;
+    const voices = (instr as { Voices?: Array<{ Visible?: boolean }> }).Voices;
+    if (Array.isArray(voices)) {
+      for (const voice of voices) {
+        voice.Visible = visible;
+      }
+    }
+  });
+}
+
+export type ScoreOctave = -1 | 0 | 1;
+
+export function clampScoreOctave(n: unknown): ScoreOctave {
+  const v = typeof n === "number" ? n : Number.parseInt(String(n), 10);
+  if (!Number.isFinite(v)) return 0;
+  if (v <= -1) return -1;
+  if (v >= 1) return 1;
+  return 0;
+}
+
+export function scoreOctaveToSemitones(octave: ScoreOctave): number {
+  return octave * 12;
+}
+
+/** Apply Sheet.Transpose (team + score octave) and re-render when ready. */
+export function applyScoreSheetTranspose(
+  osmd: OpenSheetMusicDisplay,
+  semitones: number,
+): void {
+  if (!osmd.Sheet) return;
+  const next = Math.trunc(semitones);
+  const current = osmd.Sheet.Transpose ?? 0;
+  if (current === next) {
+    if (osmd.IsReadyToRender()) osmd.render();
+    return;
+  }
+  osmd.Sheet.Transpose = next;
+  try {
+    osmd.updateGraphic();
+  } catch {
+    /* older OSMD */
+  }
+  if (osmd.IsReadyToRender()) {
+    osmd.render();
+  }
+}
+
+const HIDDEN_PARTS_KEY = "stagesync-score-hidden-parts";
+const OCTAVE_KEY = "stagesync-score-octave";
+
+export function loadScoreHiddenParts(projectId: string): string[] {
+  try {
+    const raw = localStorage.getItem(HIDDEN_PARTS_KEY);
+    if (!raw) return [];
+    const map = JSON.parse(raw) as Record<string, string[]>;
+    const list = map[projectId];
+    return Array.isArray(list) ? list.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveScoreHiddenParts(
+  projectId: string,
+  hiddenIds: readonly string[],
+): void {
+  try {
+    const raw = localStorage.getItem(HIDDEN_PARTS_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, string[]>) : {};
+    map[projectId] = [...hiddenIds];
+    localStorage.setItem(HIDDEN_PARTS_KEY, JSON.stringify(map));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadScoreOctave(projectId: string): ScoreOctave {
+  try {
+    const raw = localStorage.getItem(OCTAVE_KEY);
+    if (!raw) return 0;
+    const map = JSON.parse(raw) as Record<string, number>;
+    return clampScoreOctave(map[projectId]);
+  } catch {
+    return 0;
+  }
+}
+
+export function saveScoreOctave(projectId: string, octave: ScoreOctave): void {
+  try {
+    const raw = localStorage.getItem(OCTAVE_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+    map[projectId] = octave;
+    localStorage.setItem(OCTAVE_KEY, JSON.stringify(map));
+  } catch {
+    /* ignore */
+  }
+}
+

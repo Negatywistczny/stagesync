@@ -1,5 +1,5 @@
 /**
- * Client MusicXML score (OSMD) — playhead sync + click-to-seek.
+ * Client MusicXML score (OSMD) — playhead sync + click-to-seek + parts/octave.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -9,11 +9,22 @@ import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { assetFileUrl } from "../../lib/audioPlayback.js";
 import {
   applyOsmdZoom,
+  applyScorePartVisibility,
+  applyScoreSheetTranspose,
+  clampScoreOctave,
   createOsmd,
   goToScoreBar,
+  listScoreParts,
+  loadScoreHiddenParts,
+  loadScoreOctave,
   renderOsmd,
+  saveScoreHiddenParts,
+  saveScoreOctave,
   scoreBarFromClientPoint,
+  scoreOctaveToSemitones,
   scrollCursorIntoView,
+  type ScoreOctave,
+  type ScorePartInfo,
 } from "../../lib/scoreOsmd.js";
 import {
   SCORE_ZOOM_DEFAULT,
@@ -37,6 +48,8 @@ type Props = {
   followPlayhead: boolean;
   onFollowPlayheadChange: (on: boolean) => void;
   onSeek: (ticks: number) => void;
+  /** Live Desk team transpose (semitones). */
+  teamSemitones?: number;
 };
 
 export function ScorePane({
@@ -49,6 +62,7 @@ export function ScorePane({
   followPlayhead,
   onFollowPlayheadChange,
   onSeek,
+  teamSemitones = 0,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -56,14 +70,29 @@ export function ScorePane({
   const lastBarRef = useRef<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [parts, setParts] = useState<ScorePartInfo[]>([]);
+  const [hiddenPartIds, setHiddenPartIds] = useState<string[]>([]);
+  const [scoreOctave, setScoreOctave] = useState<ScoreOctave>(0);
 
   const xmlAsset = (project?.assets ?? []).find((a) => a.kind === "musicxml");
+  const projectId = project?.id;
+
+  useEffect(() => {
+    if (!projectId) {
+      setHiddenPartIds([]);
+      setScoreOctave(0);
+      return;
+    }
+    setHiddenPartIds(loadScoreHiddenParts(projectId));
+    setScoreOctave(loadScoreOctave(projectId));
+  }, [projectId]);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host || !project || !xmlAsset) {
       osmdRef.current = null;
       setReady(false);
+      setParts([]);
       return;
     }
 
@@ -75,13 +104,21 @@ export function ScorePane({
     lastBarRef.current = null;
 
     const url = assetFileUrl(project.id, xmlAsset.id);
+    const hidden = loadScoreHiddenParts(project.id);
+    const octave = loadScoreOctave(project.id);
     void (async () => {
       try {
         await osmd.load(url);
         if (cancelled) return;
         osmd.Zoom = Math.max(0.4, Math.min(2.5, scoreZoom / 100));
+        applyScorePartVisibility(osmd, hidden);
+        applyScoreSheetTranspose(
+          osmd,
+          teamSemitones + scoreOctaveToSemitones(octave),
+        );
         renderOsmd(osmd);
         if (cancelled) return;
+        setParts(listScoreParts(osmd));
         setReady(true);
         const bar = scoreBarFromDisplayTicks(project, displayTicks);
         goToScoreBar(osmd, bar);
@@ -92,6 +129,7 @@ export function ScorePane({
           err instanceof Error ? err.message : "Nie można załadować MusicXML",
         );
         setReady(false);
+        setParts([]);
       }
     })();
 
@@ -130,6 +168,19 @@ export function ScorePane({
     }
   }, [displayTicks, project, ready, followPlayhead]);
 
+  useEffect(() => {
+    const osmd = osmdRef.current;
+    if (!osmd || !ready) return;
+    applyScorePartVisibility(osmd, hiddenPartIds);
+    applyScoreSheetTranspose(
+      osmd,
+      teamSemitones + scoreOctaveToSemitones(scoreOctave),
+    );
+    if (lastBarRef.current != null) {
+      goToScoreBar(osmd, lastBarRef.current);
+    }
+  }, [hiddenPartIds, scoreOctave, teamSemitones, ready]);
+
   if (!hasActiveProjectId) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
@@ -142,6 +193,27 @@ export function ScorePane({
 
   const bumpZoom = (delta: number) => {
     onScoreZoomChange(clampScoreZoom(scoreZoom + delta));
+  };
+
+  const setPartVisible = (partId: string, visible: boolean) => {
+    setHiddenPartIds((prev) => {
+      let next = visible
+        ? prev.filter((id) => id !== partId)
+        : prev.includes(partId)
+          ? prev
+          : [...prev, partId];
+      if (parts.length > 0 && next.length >= parts.length) {
+        next = parts.filter((p) => p.id !== partId).map((p) => p.id);
+      }
+      if (projectId) saveScoreHiddenParts(projectId, next);
+      return next;
+    });
+  };
+
+  const onOctaveChange = (raw: string) => {
+    const next = clampScoreOctave(raw);
+    setScoreOctave(next);
+    if (projectId) saveScoreOctave(projectId, next);
   };
 
   return (
@@ -172,6 +244,20 @@ export function ScorePane({
             Reset
           </Button>
         </div>
+        <label className={styles.scoreOctaveField}>
+          Oktawa
+          <select
+            className={styles.scoreOctaveSelect}
+            aria-label="Transpozycja oktawy partytury"
+            value={String(scoreOctave)}
+            disabled={!ready}
+            onChange={(e) => onOctaveChange(e.target.value)}
+          >
+            <option value="-1">−1</option>
+            <option value="0">0</option>
+            <option value="1">+1</option>
+          </select>
+        </label>
         <ShellSwitchRow
           checked={followPlayhead}
           onChange={(e) => onFollowPlayheadChange(e.target.checked)}
@@ -179,6 +265,28 @@ export function ScorePane({
           Śledź wskaźnik odtwarzania
         </ShellSwitchRow>
       </div>
+
+      {ready && parts.length > 1 ? (
+        <div
+          className={styles.scoreParts}
+          role="group"
+          aria-label="Widoczne partie"
+        >
+          {parts.map((part) => {
+            const on = !hiddenPartIds.includes(part.id);
+            return (
+              <label key={part.id} className={styles.scorePartItem}>
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={(e) => setPartVisible(part.id, e.target.checked)}
+                />
+                <span>{part.label}</span>
+              </label>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div className={styles.scoreWrap}>
         {!xmlAsset ? (
