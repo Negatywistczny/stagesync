@@ -7,7 +7,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Features
+### Dodano
 
 - **Diagnostics ([#351](https://github.com/Negatywistczny/stagesync/issues/351)):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
 - **Audio preload ([#365](https://github.com/Negatywistczny/stagesync/issues/365)):** `ensureAudioBuffered` przed Play (spinner na przycisku); ostrzeżenie UI przy błędzie decode; `clearAudioBufferCache` przy zmianie/odmontowaniu utworu.
@@ -23,7 +23,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Forma:** kaskadowe przesuwanie późniejszych klipów; luka Intro po Countdown przy pierwszym przeciągnięciu sekcji; nożyczki tną pod kursorem.
 - **API / docs:** domknięta dokumentacja REST; smoke E2E (health, zapis Formy, seek, play/stop).
 
-### Bug Fixes
+### Naprawiono
 
 - **Timeline setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
 - **Client Space ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skrót Spacji (vocal tap) ignoruje fokus w polach tekstowych (`INPUT` / `TEXTAREA` / `SELECT` / contentEditable); wspólny helper też w Timeline.
@@ -32,7 +32,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST transportu zawierają czas serwera.
 
-### Hardening & Backend
+### Zmieniono
 
 - **Walidacja:** ściślejsze schematy i limity długości / BPM / metrum na krawędziach (projekt, biblioteka, setlista, MIDI, cue sceniczny, transport); odrzucanie niepoprawnych metrum; BPM 20–400.
 - **Timebase:** konwersje ticks↔BBT i snap do taktów uwzględniają mapę metrum; ochrona przed nie-skończonymi tickami.

@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-beta.2` na `main` + **merge trains 0–8** (2026-07-22, [#408](https://github.com/Negatywistyczny/stagesync/pull/408)–[#416](https://github.com/Negatywistyczny/stagesync/pull/416)); tag **`5.0.0` tylko na prośbę**.  
+**Stan:** `5.0.0-beta.2` na `main` + **merge trains 0–8** (2026-07-22, [#408](https://github.com/Negatywistczny/stagesync/pull/408)–[#416](https://github.com/Negatywistczny/stagesync/pull/416)); tag **`5.0.0` tylko na prośbę**.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
 **P8:** green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).  
@@ -30,10 +30,10 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 - Timeline: zoom H/V z ikonami; snap picker; Pomoc rozszerzona (trains 0–1, 5)
 - Audio: fade / crossfade / loop-region schema + UI handles (train 0, ADR 0008)
 - `docs/api` closeout + smoke E2E (train 1)
-- MIDI host I/O, PC OUT, transport IN (trains 4, 7) — PC → load project / Client Space guard / `[` `]` setlist → osobne issues poniżej
-- Desktop menu Faza B/C + error surfacing (trains 6–7); **Faza D** (Undo/zoom/Pomoc) — residual poniżej
+- MIDI host I/O, PC OUT, transport IN (trains 4, 7); PC → load / Client Space / `[` `]` setlist — issues zamknięte
+- Desktop menu Faza B/C + error surfacing (trains 6–7); **Faza D** residual poniżej
 - Overnight Zod caps + UI token hygiene (train 8)
-- **266** overnight PR-ów zamkniętych; otwarte świadomie: [#61](https://github.com/Negatywistyczny/stagesync/pull/61), [#63](https://github.com/Negatywistyczny/stagesync/pull/63) (ADR 0011 — **bez merge**)
+- **266** overnight PR-ów zamkniętych
 
 ### Must (residual przed tagiem)
 
@@ -42,6 +42,10 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Should
 
+- [ ] [#61](https://github.com/Negatywistczny/stagesync/pull/61) — split ruler (loop / playhead); rebase na `main`
+- [ ] [#428](https://github.com/Negatywistczny/stagesync/issues/428) — DAW: Slider, TrackSelection, Solo, contextual inspector
+- [ ] [#432](https://github.com/Negatywistczny/stagesync/issues/432) — Preferences Audio/MIDI (`setSinkId`, persist MIDI); **bez** Panic (ROADMAP OUT)
+- [ ] MIDI Panic / MUTE ALL — follow-up po decyzji PO (obecnie OUT w [ROADMAP](./ROADMAP.md) § menu)
 - [ ] Playwright Forma drag E2E (defer z overnight)
 - [ ] ADR 0002 pre-roll tempo/metrum — jeśli nadal otwarte
 - [ ] AD-01…03 Transpozycja / Lead / Edycja zdalna — pull-forward jeśli PO
@@ -49,11 +53,12 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 ### OUT (świadome — nie must 5.0.0)
 
 - Motywy / auth / multi-user → **5.1+**
+- [#430](https://github.com/Negatywistczny/stagesync/issues/430) Cues Sampler → **5.1+** (scope + ADR przed kodem)
 - Android shell / store auto-update — poza 5.0.0
 - MIDI I/O w procesie Tauri — **nigdy** ([ADR 0010](./adr/0010-desktop-shell-tauri.md))
 - git-apply — nigdy ([ADR 0004](./adr/0004-updates-docker.md))
 - Clone chrome v4 — **zakaz** ([ADR 0011](./adr/0011-ui-parity-behavior.md))
-- Merge [#61](https://github.com/Negatywistyczny/stagesync/pull/61) / [#63](https://github.com/Negatywistyczny/stagesync/pull/63) bez decyzji ADR 0011
+- [#63](https://github.com/Negatywistczny/stagesync/pull/63) visual Help v4-like — **zamknięty bez merge** (ADR 0011; treść Pomocy już na `main`)
 
 ### Release
 
