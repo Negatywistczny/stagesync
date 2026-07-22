@@ -198,7 +198,16 @@ export function ClientShell() {
             Witaj w StageSync
           </h1>
           <p className={styles.muted}>Podaj swoje imię lub nazwę tabletu.</p>
-          <form onSubmit={submitName}>
+          <form
+            onSubmit={submitName}
+            onKeyDown={(e) => {
+              if (e.key !== "Escape") return;
+              e.preventDefault();
+              const n = nameDraft.trim() || "Gość";
+              setName(n);
+              setNameModal(false);
+            }}
+          >
             <input
               className={styles.input}
               maxLength={40}
