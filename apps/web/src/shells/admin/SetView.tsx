@@ -121,9 +121,23 @@ export function SetView({ library, selectedId }: SetViewProps) {
     setDirty(true);
   };
 
-  const onToggleEnabled = (next: boolean) => {
-    setEnabled(next);
-    setDirty(true);
+  const onToggleEnabled = async (next: boolean) => {
+    setPending(true);
+    setError(null);
+    try {
+      // Persist enabled immediately (parity with Auto-setlista). Keep local draft
+      // order if the list is still dirty — do not write draftIds until Zapisz.
+      const v = await putSetlist({
+        enabled: next,
+        projectIds: view?.projectIds ?? [],
+      });
+      setView(v);
+      setEnabled(v.enabled);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Aktywny set");
+    } finally {
+      setPending(false);
+    }
   };
 
   const onAutoAdvance = async (next: boolean) => {
