@@ -75,17 +75,6 @@ export function placeClipNoOverlap(
     return clips;
   }
 
-  // Reject intrusion into Countdown (same rule as move/resize/insert).
-  if (!isCountdown(placed)) {
-    const countdown = clips.find(isCountdown);
-    if (countdown) {
-      const cdEnd = clipEnd(countdown);
-      if (start < cdEnd && end > countdown.startTicks) {
-        return clips;
-      }
-    }
-  }
-
   const usedIds = new Set<string>([placed.id]);
   const kept: FormaClip[] = [];
   for (const clip of clips) {
@@ -187,40 +176,6 @@ export function moveClipNoOverlap(
 }
 
 /**
- * TE-23: after moving the first post-Countdown section to the right, fill the
- * empty span (Countdown end → section start) with a new "Intro" section.
- * No-op when gap is missing / too small / moved clip is not first section.
- */
-export function insertGapSectionAfterCountdown(
-  clips: FormaClip[],
-  movedId: string,
-  opts?: CollisionOpts,
-): FormaClip[] {
-  const countdown = clips.find(isCountdown);
-  if (!countdown) return clips;
-  const cdEnd = clipEnd(countdown);
-  const sections = sortClips(clips.filter((c) => !isCountdown(c)));
-  const first = sections[0];
-  if (!first || first.id !== movedId) return clips;
-  if (first.startTicks <= cdEnd) return clips;
-
-  const gapLen = first.startTicks - cdEnd;
-  if (gapLen < minLength(opts)) return clips;
-
-  // Avoid duplicate if a section already occupies the gap start.
-  if (sections.some((c) => c.startTicks === cdEnd)) return clips;
-
-  const gap: FormaClip = {
-    id: `forma-gap-${cdEnd}-${gapLen}`,
-    name: "Intro",
-    kind: "section",
-    startTicks: cdEnd,
-    lengthTicks: gapLen,
-  };
-  return sortClips([...clips, gap]);
-}
-
-/**
  * Rigid multi-move (v4 moveIds + same Δ): translate selected clips together,
  * then place into non-selected neighbors (cover-trim). Movers do not trim each other.
  * Countdown ids in `moveIds` are ignored.
@@ -265,31 +220,6 @@ export function moveClipsRigidDelta(
     result = placeClipNoOverlap(result, placed);
   }
   return sortClips(result);
-}
-
-/**
- * Move a section and all later sections by the same Δ (v4 TE-24 cascade).
- * Countdown never moves. Empty / unknown id → no-op.
- */
-export function moveSectionsFromId(
-  clips: FormaClip[],
-  id: string,
-  newStartTicks: number,
-  opts?: CollisionOpts,
-): FormaClip[] {
-  const target = clips.find((c) => c.id === id);
-  if (!target || isCountdown(target)) return clips;
-
-  const floor = contentFloor(opts);
-  const desired = Math.max(floor, Math.trunc(newStartTicks));
-  if (!Number.isFinite(desired)) return clips;
-  const delta = desired - target.startTicks;
-  if (delta === 0) return clips;
-
-  const moveIds = clips
-    .filter((c) => !isCountdown(c) && c.startTicks >= target.startTicks)
-    .map((c) => c.id);
-  return moveClipsRigidDelta(clips, moveIds, delta, opts);
 }
 
 /**
