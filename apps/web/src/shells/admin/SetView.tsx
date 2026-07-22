@@ -397,8 +397,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={Math.round(budgetRatio * 100)}
-                  aria-label={`Budżet czasu ${timeBudgetMinutes} min`}
-                  title={`Budżet: ${timeBudgetMinutes} min`}
+                  aria-label={`Czas ${timeBudgetMinutes} min`}
+                  title={`Czas: ${timeBudgetMinutes} min`}
                 >
                   <div
                     className={[
@@ -413,7 +413,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
               </div>
               <div className={shell.actions}>
                 <label className={styles.budgetLabel}>
-                  <span className={shell.muted}>Budżet</span>
+                  <span className={shell.muted}>Czas</span>
                   <input
                     className={styles.budgetInput}
                     type="number"
@@ -421,7 +421,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                     max={24 * 60}
                     value={timeBudgetMinutes}
                     disabled={pending}
-                    aria-label="Budżet czasu w minutach"
+                    aria-label="Czas w minutach"
                     onChange={(e) => {
                       const n = Number(e.target.value);
                       if (!Number.isFinite(n)) return;
