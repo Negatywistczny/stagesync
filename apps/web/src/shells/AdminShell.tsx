@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
@@ -6,7 +6,7 @@ import {
   looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
-  ticksToBbtAlongMeterMap,
+  ticksToBbt,
   toDisplayBar,
   ZIP_IMPORT_UNSUPPORTED_PL,
   type Library,
@@ -86,7 +86,6 @@ export function AdminShell() {
   const [batchPcOpen, setBatchPcOpen] = useState(false);
   const [pathPickerOpen, setPathPickerOpen] = useState(false);
   const [commandPending, setCommandPending] = useState(false);
-  const commandPendingRef = useRef(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -114,23 +113,12 @@ export function AdminShell() {
     }
   }, "Wyłącz");
 
-  const { state, displayTicks, wsStatus, play } = useTransport();
+  const { state, displayTicks, wsStatus, play, commandPending: transportPending } =
+    useTransport();
+  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [setlistView, setSetlistView] = useState<SetlistView | null>(null);
-  const bbt = activeProject
-    ? ticksToBbtAlongMeterMap(
-        displayTicks,
-        activeProject.defaultMeter,
-        activeProject.meterMap,
-        activeProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        displayTicks,
-        state.timeSignature,
-        [],
-        state.ppq,
-      );
 
   const sectionProjectId = state.activeProjectId ?? selectedId;
   const activeSection = activeProject
@@ -234,21 +222,22 @@ export function AdminShell() {
     setDraftName(selected?.name ?? "");
   }, [selected?.id, selected?.name]);
 
-  const runMutation = useCallback(async (op: () => Promise<void>) => {
-    if (commandPendingRef.current) return;
-    commandPendingRef.current = true;
-    setCommandPending(true);
-    setActionError(null);
-    setActionNotice(null);
-    try {
-      await op();
-    } catch (err) {
-      setActionError(errMessage(err));
-    } finally {
-      commandPendingRef.current = false;
-      setCommandPending(false);
-    }
-  }, []);
+  const runMutation = useCallback(
+    async (op: () => Promise<void>) => {
+      if (commandPending) return;
+      setCommandPending(true);
+      setActionError(null);
+      setActionNotice(null);
+      try {
+        await op();
+      } catch (err) {
+        setActionError(errMessage(err));
+      } finally {
+        setCommandPending(false);
+      }
+    },
+    [commandPending],
+  );
 
   const onCreate = () => {
     setCreatePromptOpen(true);
@@ -391,6 +380,7 @@ export function AdminShell() {
             actionError={actionError}
             actionNotice={actionNotice}
             commandPending={commandPending}
+            transportPending={transportPending}
             selectedId={selectedId}
             selected={selected}
             draftName={draftName}
@@ -577,32 +567,34 @@ export function AdminShell() {
               disabled={!selectedId || commandPending || !ugText.trim()}
               loading={commandPending}
               onClick={() => {
-                if (!selectedId) return;
-                void runMutation(async () => {
+                void (async () => {
+                  if (!selectedId) return;
+                  setCommandPending(true);
                   setUgError(null);
-                  const project = await fetchProject(selectedId);
-                  const result = importUgText(ugText, {
-                    ppq: project.ppq,
-                    meter: resolveMeterAt(project, 0),
-                  });
-                  if (!result.ok) {
-                    setUgError(result.message);
-                    return;
-                  }
                   try {
+                    const project = await fetchProject(selectedId);
+                    const result = importUgText(ugText, {
+                      ppq: project.ppq,
+                      meter: resolveMeterAt(project, 0),
+                    });
+                    if (!result.ok) {
+                      setUgError(result.message);
+                      return;
+                    }
                     await putProject(selectedId, {
                       ...project,
                       tekst: result.tekst,
                       akordy: result.akordy,
                     });
+                    setImportModalOpen(false);
+                    setUgText("");
+                    await refreshLibrary(selectedId);
                   } catch (err) {
                     setUgError(errMessage(err));
-                    throw err;
+                  } finally {
+                    setCommandPending(false);
                   }
-                  setImportModalOpen(false);
-                  setUgText("");
-                  await refreshLibrary(selectedId);
-                });
+                })();
               }}
             >
               Importuj do utworu
@@ -666,6 +658,7 @@ function SongsView({
   actionError,
   actionNotice,
   commandPending,
+  transportPending,
   selectedId,
   selected,
   draftName,
@@ -688,6 +681,7 @@ function SongsView({
   actionError: string | null;
   actionNotice: string | null;
   commandPending: boolean;
+  transportPending: boolean;
   selectedId: string | null;
   selected: Library["projects"][number] | null;
   draftName: string;
@@ -755,7 +749,7 @@ function SongsView({
         <div className={styles.cardBody}>
           <div className={styles.toolbar}>
             <input
-              className={styles.filterInput}
+              className={styles.input}
               placeholder="Filtruj…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
@@ -924,7 +918,8 @@ function SongsView({
                   )}
                   <Button
                     variant="secondary"
-                    disabled={!selectedId || commandPending}
+                    disabled={!selectedId || commandPending || transportPending}
+                    loading={transportPending}
                     onClick={() => selectedId && onPlay(selectedId)}
                   >
                     Odtwórz
@@ -1077,15 +1072,11 @@ function HostView({
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
-  const [clearLogsPending, setClearLogsPending] = useState(false);
-  const [clearLogsError, setClearLogsError] = useState<string | null>(null);
-  const clearLogsPendingRef = useRef(false);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
-  const midiBusyRef = useRef(false);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
@@ -1147,8 +1138,6 @@ function HostView({
       outputId?: string | null;
       clockOutEnabled?: boolean;
     }) => {
-      if (midiBusyRef.current) return;
-      midiBusyRef.current = true;
       setMidiBusy(true);
       try {
         const status = await putMidiHostConfig(patch);
@@ -1157,7 +1146,6 @@ function HostView({
       } catch (err) {
         setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
       } finally {
-        midiBusyRef.current = false;
         setMidiBusy(false);
       }
     },
@@ -1218,26 +1206,13 @@ function HostView({
               </Button>
               <Button
                 variant="ghost"
-                disabled={clearLogsPending}
-                loading={clearLogsPending}
                 onClick={() => {
                   void (async () => {
-                    if (clearLogsPendingRef.current) return;
-                    clearLogsPendingRef.current = true;
-                    setClearLogsPending(true);
-                    setClearLogsError(null);
                     try {
                       await clearHostLogs();
                       setLines([]);
-                    } catch (err) {
-                      setClearLogsError(
-                        err instanceof Error
-                          ? err.message
-                          : "Nie udało się wyczyścić logów",
-                      );
-                    } finally {
-                      clearLogsPendingRef.current = false;
-                      setClearLogsPending(false);
+                    } catch {
+                      /* ignore */
                     }
                   })();
                 }}
@@ -1246,11 +1221,6 @@ function HostView({
               </Button>
             </div>
           </div>
-          {clearLogsError ? (
-            <p className={styles.error} role="alert">
-              {clearLogsError}
-            </p>
-          ) : null}
           <pre className={styles.terminal} aria-live="polite">
             {lines.length === 0
               ? "Oczekiwanie na logi…"
@@ -1300,7 +1270,7 @@ function HostView({
                     </span>
                   </div>
                   <div className={styles.midiCard}>
-                    <span className={styles.midiLabel}>Beat → WS</span>
+                    <span className={styles.midiLabel}>Beat→WS</span>
                     <span className={styles.midiValue}>
                       {rateLabel(midi.rates.beatToWsPerSec)}
                     </span>
@@ -1313,7 +1283,7 @@ function HostView({
                       className={styles.select}
                       disabled={midiBusy || !midi.available}
                       value={midi.config.inputId ?? ""}
-                      aria-label="Wejście MIDI"
+                      aria-label="MIDI input"
                       onChange={(e) => {
                         const v = e.target.value;
                         void applyMidiConfig({ inputId: v === "" ? null : v });
@@ -1333,7 +1303,7 @@ function HostView({
                       className={styles.select}
                       disabled={midiBusy || !midi.available}
                       value={midi.config.outputId ?? ""}
-                      aria-label="Wyjście MIDI"
+                      aria-label="MIDI output"
                       onChange={(e) => {
                         const v = e.target.value;
                         void applyMidiConfig({ outputId: v === "" ? null : v });
@@ -1348,12 +1318,12 @@ function HostView({
                     </select>
                   </label>
                   <label className={styles.midiPortRow}>
-                    <span className={styles.midiLabel}>Clock wyjście</span>
+                    <span className={styles.midiLabel}>Clock OUT</span>
                     <input
                       type="checkbox"
                       checked={midi.config.clockOutEnabled}
                       disabled={midiBusy || !midi.available}
-                      aria-label="Clock MIDI wyjście"
+                      aria-label="MIDI clock out"
                       onChange={(e) => {
                         void applyMidiConfig({
                           clockOutEnabled: e.target.checked,
@@ -1434,8 +1404,6 @@ function UpdatePanel({
 }) {
   const [checking, setChecking] = useState(false);
   const [applying, setApplying] = useState(false);
-  const checkingRef = useRef(false);
-  const applyingRef = useRef(false);
   const [hostStatus, setHostStatus] = useState<HostUpdateStatus | null>(null);
   const [desktopStatus, setDesktopStatus] = useState<DesktopUpdateInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1445,8 +1413,6 @@ function UpdatePanel({
   const inTauri = isDesktopShell();
 
   const handleCheck = useCallback(async () => {
-    if (checkingRef.current || applyingRef.current) return;
-    checkingRef.current = true;
     setChecking(true);
     setError(null);
     setHostStatus(null);
@@ -1474,7 +1440,6 @@ function UpdatePanel({
       }
       setError(messages.length ? messages.join(" · ") : null);
     } finally {
-      checkingRef.current = false;
       setChecking(false);
     }
   }, [inTauri]);
@@ -1493,8 +1458,6 @@ function UpdatePanel({
   }, [autoCheck, handleCheck]);
 
   const handleApplyHost = useCallback(async () => {
-    if (applyingRef.current || checkingRef.current) return;
-    applyingRef.current = true;
     setApplying(true);
     setError(null);
     try {
@@ -1503,21 +1466,17 @@ function UpdatePanel({
     } catch (e) {
       setError(formatUnknownError(e));
     } finally {
-      applyingRef.current = false;
       setApplying(false);
     }
   }, []);
 
   const handleApplyDesktop = useCallback(async () => {
-    if (applyingRef.current || checkingRef.current) return;
-    applyingRef.current = true;
     setApplying(true);
     setError(null);
     try {
       await installDesktopUpdate();
     } catch (e) {
       setError(formatUnknownError(e));
-      applyingRef.current = false;
       setApplying(false);
     }
   }, []);
@@ -1631,7 +1590,6 @@ function HostSettingsModal({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
-  const midiBusyRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -1655,8 +1613,6 @@ function HostSettingsModal({
     outputId?: string | null;
     clockOutEnabled?: boolean;
   }) => {
-    if (midiBusyRef.current) return;
-    midiBusyRef.current = true;
     setMidiBusy(true);
     try {
       const status = await putMidiHostConfig(patch);
@@ -1665,7 +1621,6 @@ function HostSettingsModal({
     } catch (err) {
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
     } finally {
-      midiBusyRef.current = false;
       setMidiBusy(false);
     }
   };
@@ -1687,7 +1642,7 @@ function HostSettingsModal({
                 className={styles.select}
                 disabled={midiBusy || !midi.available}
                 value={midi.config.inputId ?? ""}
-                aria-label="Wejście MIDI"
+                aria-label="MIDI input"
                 onChange={(e) => {
                   const v = e.target.value;
                   void applyMidiConfig({ inputId: v === "" ? null : v });
@@ -1707,7 +1662,7 @@ function HostSettingsModal({
                 className={styles.select}
                 disabled={midiBusy || !midi.available}
                 value={midi.config.outputId ?? ""}
-                aria-label="Wyjście MIDI"
+                aria-label="MIDI output"
                 onChange={(e) => {
                   const v = e.target.value;
                   void applyMidiConfig({ outputId: v === "" ? null : v });
@@ -1722,12 +1677,12 @@ function HostSettingsModal({
               </select>
             </label>
             <label className={styles.midiPortRow}>
-              <span className={styles.midiLabel}>Clock wyjście</span>
+              <span className={styles.midiLabel}>Clock OUT</span>
               <input
                 type="checkbox"
                 checked={midi.config.clockOutEnabled}
                 disabled={midiBusy || !midi.available}
-                aria-label="Clock MIDI wyjście"
+                aria-label="MIDI clock out"
                 onChange={(e) => {
                   void applyMidiConfig({ clockOutEnabled: e.target.checked });
                 }}
@@ -1777,7 +1732,6 @@ function MusicXmlModal({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const busyRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -1801,9 +1755,8 @@ function MusicXmlModal({
             hidden
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (!file || !projectId || busyRef.current) return;
+              if (!file || !projectId) return;
               void (async () => {
-                busyRef.current = true;
                 setBusy(true);
                 setError(null);
                 try {
@@ -1813,7 +1766,6 @@ function MusicXmlModal({
                 } catch (err) {
                   setError(err instanceof Error ? err.message : "Upload nieudany");
                 } finally {
-                  busyRef.current = false;
                   setBusy(false);
                 }
               })();
@@ -1857,7 +1809,6 @@ function BatchPcModal({
   });
   const [start, setStart] = useState(playable[0]?.midiProgramId ?? 0);
   const [busy, setBusy] = useState(false);
-  const busyRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   const renumber = () => {
@@ -1928,8 +1879,6 @@ function BatchPcModal({
           disabled={busy || playable.length === 0}
           onClick={() => {
             void (async () => {
-              if (busyRef.current) return;
-              busyRef.current = true;
               setBusy(true);
               setError(null);
               try {
@@ -1942,7 +1891,6 @@ function BatchPcModal({
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Zapis PC nieudany");
               } finally {
-                busyRef.current = false;
                 setBusy(false);
               }
             })();
@@ -1965,26 +1913,8 @@ function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
-  const titleId = useId();
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
   return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal
-      aria-labelledby={titleId}
-    >
+    <div className={styles.overlay} role="dialog" aria-modal>
       <button
         type="button"
         className={styles.backdrop}
@@ -1993,7 +1923,7 @@ function Modal({
       />
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
-          <h2 id={titleId}>{title}</h2>
+          <h2>{title}</h2>
           <ShellIconButton label="Zamknij" onClick={onClose}>
             ×
           </ShellIconButton>
