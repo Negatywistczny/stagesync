@@ -1072,15 +1072,19 @@ function HostView({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const midiRefreshGenRef = useRef(0);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
   const refreshMidi = useCallback(async () => {
+    const gen = ++midiRefreshGenRef.current;
     try {
       const status = await fetchMidiHostStatus();
+      if (gen !== midiRefreshGenRef.current) return;
       setMidi(status);
       setMidiError(null);
     } catch (err) {
+      if (gen !== midiRefreshGenRef.current) return;
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
     }
   }, []);
@@ -1107,7 +1111,10 @@ function HostView({
     const id = window.setInterval(() => {
       void refreshMidi();
     }, 1000);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(id);
+      midiRefreshGenRef.current += 1;
+    };
   }, [refreshMidi]);
 
   useEffect(() => {
