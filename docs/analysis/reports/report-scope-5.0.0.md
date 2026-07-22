@@ -176,15 +176,17 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~02:24 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
-### Must A–E (#53–#60) — CI green
+### Post-must PR band (open, CI mostly green)
 
-| # | Temat | URL |
-|---|--------|-----|
-| [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) | A→E musts | merge order: #53→#54; #57→#58 |
+- Wave 7: [#156](https://github.com/Negatywistyczny/stagesync/pull/156)–[#167](https://github.com/Negatywistyczny/stagesync/pull/167)
+- Wave 8: [#168](https://github.com/Negatywistyczny/stagesync/pull/168)–[#181](https://github.com/Negatywistyczny/stagesync/pull/181)
+- Wave 9: [#182](https://github.com/Negatywistyczny/stagesync/pull/182)–[#189](https://github.com/Negatywistyczny/stagesync/pull/189) (loop range, notify isolation, name trim, audio Alt+drag, multer 413, karaoke Space, dirty Esc, settings Escape)
+
+Earlier overnight: [#120](https://github.com/Negatywistyczny/stagesync/pull/120)–[#155](https://github.com/Negatywistyczny/stagesync/pull/155). Musts A–E [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) still open (not end of window).
 
 ### Wave 2+ open PRs (CI ~00:50)
 
