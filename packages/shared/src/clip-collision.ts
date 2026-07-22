@@ -50,17 +50,6 @@ function sortClips(clips: FormaClip[]): FormaClip[] {
   return [...clips].sort((a, b) => a.startTicks - b.startTicks);
 }
 
-/** Allocate `${base}` or `${base}-2`, `${base}-3`, … avoiding `used`. */
-export function allocateUniqueClipId(
-  base: string,
-  used: ReadonlySet<string>,
-): string {
-  if (!used.has(base)) return base;
-  let n = 2;
-  while (used.has(`${base}-${n}`)) n += 1;
-  return `${base}-${n}`;
-}
-
 /**
  * Place `placed` into the lane: trim/split overlapping non-countdown neighbors.
  * Countdown is never modified. `placed` replaces any prior clip with the same id.
@@ -75,20 +64,28 @@ export function placeClipNoOverlap(
     return clips;
   }
 
-  const usedIds = new Set<string>([placed.id]);
+  // Reject intrusion into Countdown (same rule as move/resize/insert).
+  if (!isCountdown(placed)) {
+    const countdown = clips.find(isCountdown);
+    if (countdown) {
+      const cdEnd = clipEnd(countdown);
+      if (start < cdEnd && end > countdown.startTicks) {
+        return clips;
+      }
+    }
+  }
+
   const kept: FormaClip[] = [];
   for (const clip of clips) {
     if (clip.id === placed.id) continue;
     if (isCountdown(clip)) {
       kept.push(clip);
-      usedIds.add(clip.id);
       continue;
     }
 
     const cEnd = clipEnd(clip);
     if (cEnd <= start || clip.startTicks >= end) {
       kept.push(clip);
-      usedIds.add(clip.id);
       continue;
     }
 
@@ -102,7 +99,6 @@ export function placeClipNoOverlap(
           lengthTicks: start - clip.startTicks,
         }),
       );
-      usedIds.add(clip.id);
     }
 
     if (keepRight) {
@@ -110,15 +106,11 @@ export function placeClipNoOverlap(
       const remapped = (clip.subsections ?? [])
         .map((s) => s - offset)
         .filter((s) => s > 0);
-      const rightId = keepLeft
-        ? allocateUniqueClipId(`${clip.id}-r`, usedIds)
-        : clip.id;
-      usedIds.add(rightId);
       kept.push(
         clampFormaSubsections({
           ...clip,
-          // Split: left keeps id; right gets a unique suffix. Trim-from-left: same id.
-          id: rightId,
+          // Split: left keeps id; right gets a fresh suffix. Trim-from-left: same id.
+          id: keepLeft ? `${clip.id}-r` : clip.id,
           startTicks: end,
           lengthTicks: cEnd - end,
           subsections: remapped.length ? remapped : undefined,
@@ -176,40 +168,6 @@ export function moveClipNoOverlap(
 }
 
 /**
- * TE-23: after moving the first post-Countdown section to the right, fill the
- * empty span (Countdown end → section start) with a new "Intro" section.
- * No-op when gap is missing / too small / moved clip is not first section.
- */
-export function insertGapSectionAfterCountdown(
-  clips: FormaClip[],
-  movedId: string,
-  opts?: CollisionOpts,
-): FormaClip[] {
-  const countdown = clips.find(isCountdown);
-  if (!countdown) return clips;
-  const cdEnd = clipEnd(countdown);
-  const sections = sortClips(clips.filter((c) => !isCountdown(c)));
-  const first = sections[0];
-  if (!first || first.id !== movedId) return clips;
-  if (first.startTicks <= cdEnd) return clips;
-
-  const gapLen = first.startTicks - cdEnd;
-  if (gapLen < minLength(opts)) return clips;
-
-  // Avoid duplicate if a section already occupies the gap start.
-  if (sections.some((c) => c.startTicks === cdEnd)) return clips;
-
-  const gap: FormaClip = {
-    id: `forma-gap-${cdEnd}-${gapLen}`,
-    name: "Intro",
-    kind: "section",
-    startTicks: cdEnd,
-    lengthTicks: gapLen,
-  };
-  return sortClips([...clips, gap]);
-}
-
-/**
  * Rigid multi-move (v4 moveIds + same Δ): translate selected clips together,
  * then place into non-selected neighbors (cover-trim). Movers do not trim each other.
  * Countdown ids in `moveIds` are ignored.
@@ -254,31 +212,6 @@ export function moveClipsRigidDelta(
     result = placeClipNoOverlap(result, placed);
   }
   return sortClips(result);
-}
-
-/**
- * Move a section and all later sections by the same Δ (v4 TE-24 cascade).
- * Countdown never moves. Empty / unknown id → no-op.
- */
-export function moveSectionsFromId(
-  clips: FormaClip[],
-  id: string,
-  newStartTicks: number,
-  opts?: CollisionOpts,
-): FormaClip[] {
-  const target = clips.find((c) => c.id === id);
-  if (!target || isCountdown(target)) return clips;
-
-  const floor = contentFloor(opts);
-  const desired = Math.max(floor, Math.trunc(newStartTicks));
-  if (!Number.isFinite(desired)) return clips;
-  const delta = desired - target.startTicks;
-  if (delta === 0) return clips;
-
-  const moveIds = clips
-    .filter((c) => !isCountdown(c) && c.startTicks >= target.startTicks)
-    .map((c) => c.id);
-  return moveClipsRigidDelta(clips, moveIds, delta, opts);
 }
 
 /**
@@ -407,20 +340,13 @@ export function splitClipAt(
     ...target,
     lengthTicks: leftLen,
   };
-  const without = clips.filter((c) => c.id !== id);
-  const used = new Set(without.map((c) => c.id));
-  used.add(left.id);
   const right: FormaClip = {
     ...target,
-    id: opts?.rightId ?? allocateUniqueClipId(`${target.id}-r`, used),
+    id: opts?.rightId ?? `${target.id}-r`,
     startTicks: at,
     lengthTicks: rightLen,
   };
 
-  return sortClips([
-    ...without,
-    clampFormaSubsections(left),
-    clampFormaSubsections(right),
-  ]);
+  const without = clips.filter((c) => c.id !== id);
+  return sortClips([...without, left, right]);
 }
-
