@@ -3,6 +3,7 @@
  */
 
 const MAX_NAME_LEN = 40;
+const MAX_CLIENTS = 256;
 const ALLOWED_ROLES = new Set([
   "karaoke",
   "grid",
@@ -47,6 +48,17 @@ export function createClientPresence() {
   function ensure(id: string): PresenceClient {
     let entry = clients.get(id);
     if (!entry) {
+      if (clients.size >= MAX_CLIENTS) {
+        let oldestId: string | null = null;
+        let oldestAt = Number.POSITIVE_INFINITY;
+        for (const [cid, c] of clients) {
+          if (c.connectedAt < oldestAt) {
+            oldestAt = c.connectedAt;
+            oldestId = cid;
+          }
+        }
+        if (oldestId) clients.delete(oldestId);
+      }
       const now = Date.now();
       entry = {
         id,
