@@ -861,6 +861,34 @@ export function TimelineShell() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (tempoEditOpen) {
+          e.preventDefault();
+          setTempoEditOpen(false);
+          return;
+        }
+        if (meterEditOpen) {
+          e.preventDefault();
+          setMeterEditOpen(false);
+          return;
+        }
+        if (keyEditOpen) {
+          e.preventDefault();
+          setKeyEditOpen(false);
+          return;
+        }
+        if (helpOpen) {
+          e.preventDefault();
+          setHelpOpen(false);
+          return;
+        }
+      }
+
+      // Map-edit dialogs own the keyboard (BPM/meter inputs + no transport).
+      if (tempoEditOpen || meterEditOpen || keyEditOpen) {
+        return;
+      }
+
       const t = e.target as HTMLElement | null;
       if (
         t &&
@@ -874,11 +902,6 @@ export function TimelineShell() {
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
 
-      if (helpOpen && e.key === "Escape") {
-        e.preventDefault();
-        setHelpOpen(false);
-        return;
-      }
       if (
         !mod &&
         !e.altKey &&
@@ -1027,6 +1050,9 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
+    tempoEditOpen,
+    meterEditOpen,
+    keyEditOpen,
     toolMenu,
   ]);
 
@@ -5322,9 +5348,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         : null}
 
       {tempoEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="tempo-edit-title"
+        >
           <div className={styles.overlayPanel}>
-            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id="tempo-edit-title">
+              Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <label className={styles.inspField}>
               BPM
               <input
@@ -5357,9 +5390,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {meterEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="meter-edit-title"
+        >
           <div className={styles.overlayPanel}>
-            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id="meter-edit-title">
+              Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <div
               className={styles.meterEditRow}
               role="group"
@@ -5426,9 +5466,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {keyEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="key-edit-title"
+        >
           <div className={styles.overlayPanel}>
-            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id="key-edit-title">
+              Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <div
               className={styles.keyEditRow}
               role="group"
