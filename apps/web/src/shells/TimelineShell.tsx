@@ -379,6 +379,8 @@ export function TimelineShell() {
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(false);
+  const [autoAdvancePending, setAutoAdvancePending] = useState(false);
+  const autoAdvancePendingRef = useRef(false);
 
   const [tool, setTool] = useState<ToolId>("pointer");
   const [toolMenu, setToolMenu] = useState<{
@@ -3824,15 +3826,27 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </ShellIconButton>
           <ShellIconButton
             label="Auto-setlista"
-            disabled={!setlistEnabled || commandPending}
+            disabled={
+              !setlistEnabled || commandPending || autoAdvancePending
+            }
             pressed={autoAdvance}
             onClick={() => {
               void (async () => {
+                if (autoAdvancePendingRef.current) return;
+                autoAdvancePendingRef.current = true;
+                setAutoAdvancePending(true);
                 try {
                   const v = await patchSetlistAutoAdvance(!autoAdvance);
                   setAutoAdvance(v.autoAdvance.enabled);
-                } catch {
-                  /* ignore */
+                } catch (err) {
+                  setLoadError(
+                    err instanceof Error
+                      ? err.message
+                      : "Nie udało się zmienić auto-setlisty",
+                  );
+                } finally {
+                  autoAdvancePendingRef.current = false;
+                  setAutoAdvancePending(false);
                 }
               })();
             }}
