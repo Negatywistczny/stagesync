@@ -4495,6 +4495,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={draftProject.artist ?? ""}
+                    maxLength={200}
                     onChange={(e) =>
                       commitDraft({
                         ...draftProject,
@@ -4508,6 +4509,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={draftProject.genre ?? ""}
+                    maxLength={200}
                     onChange={(e) =>
                       commitDraft({
                         ...draftProject,
@@ -4614,6 +4616,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <textarea
                     className={styles.nameInput}
                     value={selectedTekstClip.text}
+                    maxLength={2000}
                     aria-label="Tekst linii"
                     rows={3}
                     onChange={(e) => {
@@ -4640,6 +4643,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={selectedAkordClip.symbol}
+                    maxLength={64}
                     aria-label="Symbol akordu"
                     onChange={(e) => {
                       if (!draftProject) return;
@@ -4665,6 +4669,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={selectedCueClip.label}
+                    maxLength={200}
                     aria-label="Etykieta cue"
                     onChange={(e) => {
                       if (!draftProject) return;
@@ -4814,6 +4819,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     <input
                       className={styles.nameInput}
                       value={selectedClip.name}
+                      maxLength={120}
                       aria-label="Nazwa sekcji"
                       onChange={(e) => onClipRename(e.target.value)}
                     />
@@ -4831,6 +4837,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       className={styles.nameInput}
                       rows={2}
                       value={selectedClip.note ?? ""}
+                      maxLength={500}
                       aria-label="Notatka sekcji"
                       onChange={(e) => {
                         if (!draftProject || !selectedClip) return;
