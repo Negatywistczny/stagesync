@@ -16,8 +16,6 @@ export function getLanAddresses(): LanAddress[] {
       if (row.internal) continue;
       const family = String(row.family) === "IPv6" ? "IPv6" : "IPv4";
       if (family !== "IPv4") continue;
-      // Skip APIPA / link-local (mac Thunderbolt bridge noise).
-      if (row.address.startsWith("169.254.")) continue;
       out.push({
         address: row.address,
         family,
@@ -36,8 +34,9 @@ export function buildNetworkInfo(port: number): {
   urls: string[];
 } {
   const lan = getLanAddresses();
-  const hostname = process.env.HOSTNAME || "localhost";
-  const addresses = lan.map((r) => r.address).slice(0, 16);
+  const hostname =
+    (process.env.HOSTNAME ?? "localhost").trim().slice(0, 64) || "localhost";
+  const addresses = lan.map((r) => r.address);
   const urls = [
     `http://localhost:${port}`,
     ...addresses.map((a) => `http://${a}:${port}`),
