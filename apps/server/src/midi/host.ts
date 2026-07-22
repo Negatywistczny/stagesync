@@ -9,6 +9,7 @@
 import {
   MIDI_CLOCK_PPQN,
   midiClockIntervalMs,
+  sppToTicks,
   ticksToSpp,
   type MidiHostConfig,
   type MidiHostStatus,
@@ -73,6 +74,8 @@ export function createMidiHost(
   let lastBpm: number | null = null;
   let lastTicks: number | null = null;
   let inputClockCount = 0;
+  /** Last Song Position Pointer (ticks) from MIDI IN — applied on Start/Continue. */
+  let lastSppTicks: number | null = null;
 
   const clockIn = new RateMeter();
   const sppIn = new RateMeter();
@@ -169,6 +172,7 @@ export function createMidiHost(
         break;
       case "spp":
         sppIn.hit(t);
+        lastSppTicks = sppToTicks(msg.value, transport.getState().ppq);
         break;
       case "program":
         pcIn.hit(t);
@@ -176,9 +180,33 @@ export function createMidiHost(
         break;
       case "start":
         inputClockCount = 0;
+        try {
+          if (lastSppTicks != null) {
+            transport.seek(lastSppTicks);
+          } else {
+            transport.seek(0);
+          }
+          transport.play();
+        } catch (err) {
+          setError(err);
+        }
+        break;
+      case "continue":
+        try {
+          if (lastSppTicks != null) {
+            transport.seek(lastSppTicks);
+          }
+          transport.play();
+        } catch (err) {
+          setError(err);
+        }
         break;
       case "stop":
-      case "continue":
+        try {
+          transport.pause();
+        } catch (err) {
+          setError(err);
+        }
         break;
     }
   }

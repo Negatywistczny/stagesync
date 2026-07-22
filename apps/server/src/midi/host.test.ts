@@ -137,4 +137,27 @@ describe("midi host", () => {
     host.dispose();
     transport.dispose();
   });
+
+  it("MIDI IN Start/Stop/Continue/SPP drive transport", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ inputId: "mock-in-1" });
+
+    backend.emitInput({ type: "spp", value: 4 }); // 960 ticks @ PPQ 960
+    backend.emitInput({ type: "continue" });
+    expect(transport.getState().playing).toBe(true);
+    expect(transport.getState().positionTicks).toBe(960);
+
+    backend.emitInput({ type: "stop" });
+    expect(transport.getState().playing).toBe(false);
+    expect(transport.getState().positionTicks).toBe(960);
+
+    backend.emitInput({ type: "start" });
+    expect(transport.getState().playing).toBe(true);
+    expect(transport.getState().positionTicks).toBe(960);
+
+    host.dispose();
+    transport.dispose();
+  });
 });
