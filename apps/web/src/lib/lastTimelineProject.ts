@@ -1,5 +1,7 @@
 /** localStorage keys for last / recent Timeline projects (native OS menu Faza B). */
 
+import { ProjectIdSchema } from "@stagesync/shared";
+
 export const LAST_TIMELINE_PROJECT_KEY = "stagesync:lastTimelineProjectId";
 export const RECENT_TIMELINE_PROJECTS_KEY = "stagesync:recentTimelineProjects";
 
@@ -10,10 +12,20 @@ export type RecentTimelineProject = {
   name: string;
 };
 
+function isProjectId(id: string): boolean {
+  return ProjectIdSchema.safeParse(id).success;
+}
+
 export function getLastTimelineProjectId(): string | null {
   if (typeof localStorage === "undefined") return null;
   try {
-    return localStorage.getItem(LAST_TIMELINE_PROJECT_KEY);
+    const raw = localStorage.getItem(LAST_TIMELINE_PROJECT_KEY);
+    if (!raw) return null;
+    if (!isProjectId(raw)) {
+      localStorage.removeItem(LAST_TIMELINE_PROJECT_KEY);
+      return null;
+    }
+    return raw;
   } catch {
     return null;
   }
@@ -22,7 +34,7 @@ export function getLastTimelineProjectId(): string | null {
 export function setLastTimelineProjectId(id: string | null): void {
   if (typeof localStorage === "undefined") return;
   try {
-    if (id) {
+    if (id && isProjectId(id)) {
       localStorage.setItem(LAST_TIMELINE_PROJECT_KEY, id);
     } else {
       localStorage.removeItem(LAST_TIMELINE_PROJECT_KEY);
