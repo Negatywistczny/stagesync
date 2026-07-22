@@ -176,15 +176,25 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~02:11 CEST)
 
-**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
+**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2** — musts A–E (#53–#60) **nie** kończą pracy.
 
-### Must A–E (#53–#60) — CI green
+### Must A–E (#53–#60) — CI green (open, not merged)
 
 | # | Temat | URL |
 |---|--------|-----|
 | [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) | A→E musts | merge order: #53→#54; #57→#58 |
+
+### Wave 7–8 — post-must continuation (~01:36–02:11 CEST)
+
+| # | Temat | URL |
+|---|--------|-----|
+| [#156](https://github.com/Negatywistyczny/stagesync/pull/156)–[#167](https://github.com/Negatywistyczny/stagesync/pull/167) | tempoMap ms, C/L keys, transport banner, API 404/413, safe ticks, content scissors, Client copy, undo selection, desktop Save, CI harden, loop ticks | wave 7 |
+| [#168](https://github.com/Negatywistyczny/stagesync/pull/168) | docs handoff wave 7 | |
+| [#169](https://github.com/Negatywistyczny/stagesync/pull/169)–[#180](https://github.com/Negatywistyczny/stagesync/pull/180) | Admin Escape/filter/focus/MIDI, state ticks, desktop Escape, disk uploads, docs 413, WS error clear, shell Escape, 9/8·12/8 tests, soft-clock NaN | wave 8 |
+
+Earlier overnight: [#120](https://github.com/Negatywistyczny/stagesync/pull/120)–[#155](https://github.com/Negatywistyczny/stagesync/pull/155). Fade/snap/menu/help already open: [#55](https://github.com/Negatywistyczny/stagesync/pull/55)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60), [#64](https://github.com/Negatywistyczny/stagesync/pull/64)/[#66](https://github.com/Negatywistyczny/stagesync/pull/66).
 
 ### Wave 2+ open PRs (CI ~00:50)
 
@@ -257,14 +267,15 @@ flowchart LR
 
 Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116) (MIDI status strict / UpdateStatus strict / Client role no-emoji).
 
-### Remaining backlog (ranked)
+### Remaining backlog (ranked) — ~02:11
 
-1. Admin density deep-pass beyond #82/#95
-2. Playwright Forma drag matrix — defer
-3. Overlap drag / Flex Time — OUT
-4. AD-01…03 — skip
-5. PDF setlist / archive — OUT
-6. Full auth / multi-user — 5.1+
+1. **Merge train** — musts A–E + fade stack; agent does not merge.
+2. **Forma scissors under pointer** — [#75](https://github.com/Negatywistyczny/stagesync/pull/75) (pairs with #161).
+3. **Admin density** — further beyond #169–#172.
+4. **Playwright Forma drag matrix** — defer (#67 smoke).
+5. **TE-16 gap-seal** — skip until PO (M50).
+6. Overlap / Flex Time / AD-01…03 — OUT.
+7. G1–G10 HW — soft-gate only.
 
 ### Blokery
 
