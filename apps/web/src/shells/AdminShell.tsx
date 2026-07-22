@@ -86,6 +86,7 @@ export function AdminShell() {
   const [batchPcOpen, setBatchPcOpen] = useState(false);
   const [pathPickerOpen, setPathPickerOpen] = useState(false);
   const [commandPending, setCommandPending] = useState(false);
+  const commandPendingRef = useRef(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -233,22 +234,21 @@ export function AdminShell() {
     setDraftName(selected?.name ?? "");
   }, [selected?.id, selected?.name]);
 
-  const runMutation = useCallback(
-    async (op: () => Promise<void>) => {
-      if (commandPending) return;
-      setCommandPending(true);
-      setActionError(null);
-      setActionNotice(null);
-      try {
-        await op();
-      } catch (err) {
-        setActionError(errMessage(err));
-      } finally {
-        setCommandPending(false);
-      }
-    },
-    [commandPending],
-  );
+  const runMutation = useCallback(async (op: () => Promise<void>) => {
+    if (commandPendingRef.current) return;
+    commandPendingRef.current = true;
+    setCommandPending(true);
+    setActionError(null);
+    setActionNotice(null);
+    try {
+      await op();
+    } catch (err) {
+      setActionError(errMessage(err));
+    } finally {
+      commandPendingRef.current = false;
+      setCommandPending(false);
+    }
+  }, []);
 
   const onCreate = () => {
     setCreatePromptOpen(true);
