@@ -18,7 +18,7 @@ export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;
 /** Skeleton library catalog — validated at every edge (API / disk). */
 export const LibrarySchema = z.object({
   version: z.literal(1),
-  projects: z.array(LibraryProjectEntrySchema).max(1024),
+  projects: z.array(LibraryProjectEntrySchema),
 });
 
 export type Library = z.infer<typeof LibrarySchema>;
@@ -54,7 +54,7 @@ export const ScoreBarAnchorSchema = z.object({
 export type ScoreBarAnchor = z.infer<typeof ScoreBarAnchorSchema>;
 
 export const ScoreBarMapSchema = z.object({
-  anchors: z.array(ScoreBarAnchorSchema),
+  anchors: z.array(ScoreBarAnchorSchema).max(512),
 });
 
 export type ScoreBarMap = z.infer<typeof ScoreBarMapSchema>;
@@ -123,7 +123,7 @@ export type AudioClip = z.infer<typeof AudioClipSchema>;
 export const SetlistSchema = z.object({
   version: z.literal(1),
   enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()).max(256),
+  projectIds: z.array(z.string().uuid()),
   autoAdvance: z.object({
     enabled: z.boolean(),
   }),
@@ -133,7 +133,7 @@ export type Setlist = z.infer<typeof SetlistSchema>;
 
 export const PutSetlistBodySchema = z.object({
   enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()).max(256),
+  projectIds: z.array(z.string().uuid()),
 });
 
 export type PutSetlistBody = z.infer<typeof PutSetlistBodySchema>;
@@ -289,22 +289,22 @@ const ProjectSchemaV5Object = z
     defaultBpm: z.number().positive().finite(),
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
-      clips: z.array(FormaClipSchema),
+      clips: z.array(FormaClipSchema).max(256),
     }),
-    tempoMap: z.array(TempoEventSchema),
-    meterMap: z.array(MeterEventSchema),
-    keyMap: z.array(KeyEventSchema),
-    assets: z.array(ProjectAssetSchema).max(256),
-    audioTracks: z.array(AudioTrackSchema).max(64),
-    audioClips: z.array(AudioClipSchema).max(512),
+    tempoMap: z.array(TempoEventSchema).max(256),
+    meterMap: z.array(MeterEventSchema).max(256),
+    keyMap: z.array(KeyEventSchema).max(256),
+    assets: z.array(ProjectAssetSchema),
+    audioTracks: z.array(AudioTrackSchema),
+    audioClips: z.array(AudioClipSchema),
     tekst: z.object({
-      clips: z.array(TekstClipSchema),
+      clips: z.array(TekstClipSchema).max(2048),
     }),
     akordy: z.object({
-      clips: z.array(AkordClipSchema),
+      clips: z.array(AkordClipSchema).max(2048),
     }),
     cue: z.object({
-      clips: z.array(CueClipSchema),
+      clips: z.array(CueClipSchema).max(2048),
     }),
     scoreBarMap: ScoreBarMapSchema.default({ anchors: [] }),
     midiProgramId: z.number().int().min(0).max(127).optional(),

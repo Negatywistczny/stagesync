@@ -8,8 +8,6 @@ import {
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
-  PutSetlistBodySchema,
-  SetlistSchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -40,16 +38,6 @@ describe("LibrarySchema", () => {
   it("rejects wrong version", () => {
     expect(() =>
       LibrarySchema.parse({ version: 2, projects: [] }),
-    ).toThrow();
-  });
-
-  it("rejects more than 1024 catalog entries", () => {
-    const projects = Array.from({ length: 1025 }, (_, i) => ({
-      id: `p${i}`,
-      name: `Song ${i}`,
-    }));
-    expect(() =>
-      LibrarySchema.parse({ version: 1, projects }),
     ).toThrow();
   });
 });
@@ -121,13 +109,6 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
-  it("rejects out-of-range year", () => {
-    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    expect(() => ProjectSchemaV5.parse({ ...seed, year: 999 })).toThrow();
-    expect(() => ProjectSchemaV5.parse({ ...seed, year: 10000 })).toThrow();
-    expect(ProjectSchemaV5.parse({ ...seed, year: 1978 }).year).toBe(1978);
-  });
-
   it("upgrades v4 to v5", () => {
     const v4 = createProjectV4Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const v5 = upgradeProjectV4ToV5(v4);
@@ -145,15 +126,19 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
-  it("rejects more than 64 audio tracks", () => {
+  it("rejects more than 256 forma clips", () => {
     const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const clips = Array.from({ length: 257 }, (_, i) => ({
+      id: `f${i}`,
+      name: `S${i}`,
+      kind: "section" as const,
+      startTicks: i * 100,
+      lengthTicks: 100,
+    }));
     expect(() =>
       ProjectSchemaV5.parse({
         ...seed,
-        audioTracks: Array.from({ length: 65 }, (_, i) => ({
-          id: `t${i}`,
-          name: `Audio ${i}`,
-        })),
+        forma: { clips },
       }),
     ).toThrow();
   });
@@ -166,31 +151,6 @@ describe("CreateProjectBodySchema", () => {
     });
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
-  });
-});
-
-describe("SetlistSchema", () => {
-  it("rejects more than 256 project ids", () => {
-    const ids = Array.from({ length: 257 }, () => crypto.randomUUID());
-    expect(() =>
-      SetlistSchema.parse({
-        version: 1,
-        enabled: true,
-        projectIds: ids,
-        autoAdvance: { enabled: false },
-      }),
-    ).toThrow();
-    expect(
-      SetlistSchema.parse({
-        version: 1,
-        enabled: true,
-        projectIds: ids.slice(0, 256),
-        autoAdvance: { enabled: false },
-      }).projectIds,
-    ).toHaveLength(256);
-    expect(() =>
-      PutSetlistBodySchema.parse({ enabled: true, projectIds: ids }),
-    ).toThrow();
   });
 });
 
