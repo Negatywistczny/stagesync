@@ -1480,9 +1480,21 @@ export function TimelineShell() {
   useEffect(() => {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
-      if (detail?.action !== "save") return;
+      if (!detail) return;
       const h = keyHandlersRef.current;
-      if (h.dirty && !h.savePending) void h.onSave();
+      switch (detail.action) {
+        case "save":
+          if (h.dirty && !h.savePending) void h.onSave();
+          break;
+        case "edit-undo":
+          h.onUndo();
+          break;
+        case "edit-redo":
+          h.onRedo();
+          break;
+        default:
+          break;
+      }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
