@@ -24,6 +24,9 @@ export function recordTap(
   state: TapTempoState,
   nowMs: number,
 ): { state: TapTempoState; bpm: number | null } {
+  if (!Number.isFinite(nowMs)) {
+    return { state, bpm: null };
+  }
   const taps = [...state.tapsMs, nowMs];
   while (taps.length > MAX_INTERVALS + 1) taps.shift();
 
