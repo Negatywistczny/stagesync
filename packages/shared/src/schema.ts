@@ -4,7 +4,7 @@ import { DEFAULT_PPQ } from "./time.js";
 /** Catalog entry — denormalized fields for Admin list / Batch PC / Ostrzeżenia. */
 export const LibraryProjectEntrySchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1).max(200),
+  name: z.string().min(1),
   updatedAt: z.string().datetime().optional(),
   midiProgramId: z.number().int().min(0).max(127).optional(),
   isTemplate: z.boolean().optional(),
@@ -86,7 +86,7 @@ export const ProjectAssetSchema = z.object({
   kind: ProjectAssetKindSchema,
   mimeType: z.string().min(1),
   sizeBytes: z.number().int().nonnegative(),
-  durationMs: z.number().positive().finite().max(24 * 60 * 60 * 1000).optional(),
+  durationMs: z.number().positive().finite().optional(),
   /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
   waveformPeaks: z.array(z.number().min(0).max(1)).max(512).optional(),
   /** Optional mean RMS of the full file (0…1). */
@@ -110,9 +110,9 @@ export const AudioClipSchema = z.object({
   assetId: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  trimInMs: z.number().nonnegative().finite().max(24 * 60 * 60 * 1000).optional(),
+  trimInMs: z.number().nonnegative().finite().optional(),
   /** Trim from source file end (ms); with trimInMs bounds playable window. */
-  trimOutMs: z.number().nonnegative().finite().max(24 * 60 * 60 * 1000).optional(),
+  trimOutMs: z.number().nonnegative().finite().optional(),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().optional(),
 });
@@ -282,7 +282,7 @@ export type KeyEvent = z.infer<typeof KeyEventSchema>;
 const ProjectSchemaV5Object = z
   .object({
     id: z.string().min(1),
-    name: z.string().min(1).max(200),
+    name: z.string().min(1),
     formatVersion: z.literal(5),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
@@ -344,7 +344,7 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 
 export const CreateProjectBodySchema = z.object({
-  name: z.string().min(1).max(200),
+  name: z.string().min(1),
   fromTemplateId: z.string().min(1).optional(),
   isTemplate: z.boolean().optional(),
 });
@@ -352,24 +352,15 @@ export const CreateProjectBodySchema = z.object({
 export type CreateProjectBody = z.infer<typeof CreateProjectBodySchema>;
 
 export const BatchMidiPcBodySchema = z.object({
-  assignments: z
-    .array(
-      z.object({
-        id: z.string().min(1),
-        midiProgramId: z.number().int().min(0).max(127),
-      }),
-    )
-    .max(1024),
+  assignments: z.array(
+    z.object({
+      id: z.string().min(1),
+      midiProgramId: z.number().int().min(0).max(127),
+    }),
+  ),
 });
 
 export type BatchMidiPcBody = z.infer<typeof BatchMidiPcBodySchema>;
-
-/** Optional selection for POST /api/library/export — omit / empty → all non-template. */
-export const ExportLibraryBodySchema = z.object({
-  projectIds: z.array(z.string().uuid()).max(1024).optional(),
-});
-
-export type ExportLibraryBody = z.infer<typeof ExportLibraryBodySchema>;
 
 /** @deprecated Use PutProjectBodySchema for full-document PUT. */
 export const UpdateProjectBodySchema = PutProjectBodySchema;
@@ -402,9 +393,11 @@ export type ApiError = z.infer<typeof ApiErrorSchema>;
 
 export const StageMessageBodySchema = z.object({
   text: z.string().min(1).max(200),
-  roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
-  /** Positive TTL capped at 24h; omit → server default. Pair with Admin ∞ = 0 (PR #130). */
-  ttlMs: z.number().int().positive().max(86_400_000).optional(),
+  roles: z
+    .array(z.enum(["karaoke", "grid", "score", "drums"]))
+    .max(4)
+    .optional(),
+  ttlMs: z.number().int().positive().optional(),
 });
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
