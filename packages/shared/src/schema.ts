@@ -362,6 +362,13 @@ export const BatchMidiPcBodySchema = z.object({
 
 export type BatchMidiPcBody = z.infer<typeof BatchMidiPcBodySchema>;
 
+/** Optional selection for POST /api/library/export — omit / empty → all non-template. */
+export const ExportLibraryBodySchema = z.object({
+  projectIds: z.array(z.string().uuid()).max(1024).optional(),
+});
+
+export type ExportLibraryBody = z.infer<typeof ExportLibraryBodySchema>;
+
 /** @deprecated Use PutProjectBodySchema for full-document PUT. */
 export const UpdateProjectBodySchema = PutProjectBodySchema;
 
