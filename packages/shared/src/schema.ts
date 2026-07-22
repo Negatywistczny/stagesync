@@ -81,12 +81,12 @@ export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 
 export const ProjectAssetSchema = z.object({
   id: z.string().min(1),
-  storageName: z.string().min(1).max(200),
+  storageName: z.string().min(1),
   originalName: z.string().min(1),
   kind: ProjectAssetKindSchema,
   mimeType: z.string().min(1),
-  sizeBytes: z.number().int().nonnegative().max(100 * 1024 * 1024),
-  durationMs: z.number().positive().finite().optional(),
+  sizeBytes: z.number().int().nonnegative(),
+  durationMs: z.number().positive().finite().max(24 * 60 * 60 * 1000).optional(),
   /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
   waveformPeaks: z.array(z.number().min(0).max(1)).max(512).optional(),
   /** Optional mean RMS of the full file (0…1). */
