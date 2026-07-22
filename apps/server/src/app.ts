@@ -18,9 +18,19 @@ import {
   createTransportEngine,
   type TransportEngine,
 } from "./transport/engine.js";
+import { wirePauseAtSongEnd } from "./transport/pause-at-end.js";
+import { wireSetlistAutoAdvance } from "./transport/auto-advance.js";
 import { createStageHub, type StageHub } from "./transport/stage-hub.js";
 
-const VERSION = process.env.npm_package_version ?? "5.0.0-beta.2";
+function resolveServiceVersion(): string {
+  const staged = process.env.STAGESYNC_VERSION?.trim();
+  if (staged) return staged;
+  const npm = process.env.npm_package_version?.trim();
+  if (npm && npm !== "0.0.0") return npm;
+  return "5.0.0-beta.2";
+}
+
+const VERSION = resolveServiceVersion();
 
 export type CreateAppOptions = {
   /** Override data root (defaults to STAGESYNC_DATA_DIR or repo data/). */
@@ -56,6 +66,8 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const logBuffer = options.logBuffer ?? createLogBuffer();
   const presence = options.presence ?? createClientPresence();
   const midi = options.midi ?? createMidiHost(transport);
+  wirePauseAtSongEnd(transport, stores);
+  wireSetlistAutoAdvance(transport, stores);
   wireMidiProgramChangeOut(transport, stores, midi);
   const app: Express = express();
 
