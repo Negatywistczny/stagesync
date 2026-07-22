@@ -26,6 +26,11 @@ import {
 import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 
+function formatTransportError(err: unknown, fallback: string): string {
+  const message = err instanceof Error ? err.message : fallback;
+  return message.slice(0, 500);
+}
+
 function toAnchor(state: TransportState): TransportAnchor {
   return {
     positionTicks: state.positionTicks,
@@ -202,7 +207,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
             stopRaf();
           }
         } catch (err) {
-          setError(err instanceof Error ? err.message : "Invalid tick");
+          setError(formatTransportError(err, "Invalid tick"));
         }
       };
 
@@ -231,7 +236,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         applyAnchor(initial, performance.now());
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load");
+          setError(formatTransportError(err, "Failed to load"));
         }
       }
       connect();
@@ -271,7 +276,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           stopRaf();
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Command failed");
+        setError(formatTransportError(err, "Command failed"));
       } finally {
         setCommandPending(false);
       }
