@@ -19,6 +19,8 @@ import {
 const TS_4_4: TimeSignature = { numerator: 4, denominator: 4 };
 const TS_5_8: TimeSignature = { numerator: 5, denominator: 8 };
 const TS_7_8: TimeSignature = { numerator: 7, denominator: 8 };
+const TS_9_8: TimeSignature = { numerator: 9, denominator: 8 };
+const TS_12_8: TimeSignature = { numerator: 12, denominator: 8 };
 
 describe("DEFAULT_PPQ", () => {
   it("is 960", () => {
@@ -27,10 +29,12 @@ describe("DEFAULT_PPQ", () => {
 });
 
 describe("ticksPerBar", () => {
-  it("computes integer ticks for 4/4, 5/8, 7/8", () => {
+  it("computes integer ticks for 4/4, 5/8, 7/8, 9/8, 12/8", () => {
     expect(ticksPerBar(TS_4_4)).toBe(4 * DEFAULT_PPQ); // 3840
     expect(ticksPerBar(TS_5_8)).toBe(5 * ((DEFAULT_PPQ * 4) / 8)); // 2400
     expect(ticksPerBar(TS_7_8)).toBe(7 * ((DEFAULT_PPQ * 4) / 8)); // 3360
+    expect(ticksPerBar(TS_9_8)).toBe(9 * ((DEFAULT_PPQ * 4) / 8)); // 4320
+    expect(ticksPerBar(TS_12_8)).toBe(12 * ((DEFAULT_PPQ * 4) / 8)); // 5760
   });
 
   it("throws when ticksPerBar would not be an integer", () => {
@@ -96,6 +100,17 @@ describe("ticksToBbt / bbtToTicks — 5/8 and 7/8", () => {
     expect(perBar).toBe(3360);
     expect(ticksToBbt(perBar, TS_7_8)).toEqual({ bar: 1, beat: 1, tick: 0 });
     expect(bbtToTicks(1, 1, 0, TS_7_8)).toBe(perBar);
+  });
+
+  it("9/8 and 12/8: integer ticksPerBar and mid-bar round-trip", () => {
+    expect(ticksPerBar(TS_9_8)).toBe(4320);
+    expect(ticksPerBar(TS_12_8)).toBe(5760);
+    for (const ts of [TS_9_8, TS_12_8]) {
+      const perBar = ticksPerBar(ts);
+      const mid = Math.floor(perBar / 2);
+      const bbt = ticksToBbt(mid, ts);
+      expect(bbtToTicks(bbt.bar, bbt.beat, bbt.tick, ts)).toBe(mid);
+    }
   });
 });
 
