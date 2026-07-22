@@ -7,6 +7,7 @@ const PPQ = 960;
 import {
   quantizeTicks,
   snapTicksToBarStart,
+  snapTicksToBarStartAlongMeterMap,
   snapTicksToBeatGrid,
   snapTicksToSubdivision,
 } from "./snap-grid.js";
@@ -19,6 +20,19 @@ describe("snap-grid", () => {
     const mid = 1920; // middle of bar 0 in 4/4
     expect(snapTicksToBarStart(mid, M4, PPQ)).toBe(0);
     expect(snapTicksToBarStart(mid + 1, M4, PPQ)).toBe(3840);
+  });
+
+  it("snapTicksToBarStartAlongMeterMap walks into 5/8", () => {
+    const bar4 = 3840;
+    const map = [
+      { startTicks: 0, numerator: 4, denominator: 4 },
+      { startTicks: bar4 * 2, numerator: 5, denominator: 8 },
+    ];
+    const mid5 = bar4 * 2 + 1200; // within first 5/8 bar (2400 ticks)
+    expect(snapTicksToBarStartAlongMeterMap(mid5, M4, map, PPQ)).toBe(bar4 * 2);
+    expect(
+      snapTicksToBarStartAlongMeterMap(mid5 + 1, M4, map, PPQ),
+    ).toBe(bar4 * 2 + 2400);
   });
 
   it("snapTicksToBeatGrid quantizes to local beat in 4/4", () => {

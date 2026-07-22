@@ -6,6 +6,10 @@
  */
 
 import {
+  resolveMeterAtTicks,
+  type MeterMapEvent,
+} from "./meter-map-bbt.js";
+import {
   DEFAULT_PPQ,
   localTicksPerBeat,
   ticksPerBar,
@@ -26,6 +30,9 @@ export type SnapContext = {
   ppq?: number;
   /** Countdown end / content floor — clamp after snap (v4 contentFloorAbs). */
   contentFloorTicks?: number;
+  /** When set with meterMap, bar mode walks musical barlines (not meter@tick from 0). */
+  defaultMeter?: TimeSignature;
+  meterMap?: readonly MeterMapEvent[];
 };
 
 /** Domyślna kwantyzacja edycji: **miara** (początek taktu). Stała na stałe — picker tylko override. */
@@ -57,6 +64,46 @@ export function snapTicksToBarStart(
   if (end <= start) return start;
   if (ticks - start <= end - ticks) return start;
   return end;
+}
+
+/**
+ * Nearest musical barline walking meterMap (midpoint → earlier).
+ * Pre-roll (ticks &lt; 0) uses constant defaultMeter like {@link snapTicksToBarStart}.
+ */
+export function snapTicksToBarStartAlongMeterMap(
+  ticks: number,
+  defaultMeter: TimeSignature,
+  meterMap: readonly MeterMapEvent[],
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (!Number.isFinite(ticks) || !Number.isInteger(ticks)) {
+    throw new RangeError("ticks must be a finite integer");
+  }
+  if (ticks < 0) {
+    return snapTicksToBarStart(ticks, defaultMeter, ppq);
+  }
+
+  let prev = 0;
+  let cursor = 0;
+  let guard = 0;
+  while (guard < 100_000) {
+    const meter = resolveMeterAtTicks(cursor, defaultMeter, meterMap);
+    const perBar = ticksPerBar(meter, ppq);
+    const next = cursor + perBar;
+    if (ticks >= cursor && ticks < next) {
+      if (ticks - cursor <= next - ticks) return cursor;
+      return next;
+    }
+    if (ticks === next) return next;
+    prev = cursor;
+    cursor = next;
+    guard += 1;
+    if (cursor > ticks + perBar) {
+      // Should have returned inside loop; fall back.
+      return prev;
+    }
+  }
+  throw new RangeError("snapTicksToBarStartAlongMeterMap exceeded max bars");
 }
 
 /**
@@ -120,7 +167,15 @@ export function quantizeTicks(
       snapped = ticks;
       break;
     case "bar":
-      snapped = snapTicksToBarStart(ticks, ctx.meter, ppq);
+      snapped =
+        ctx.defaultMeter != null && ctx.meterMap != null
+          ? snapTicksToBarStartAlongMeterMap(
+              ticks,
+              ctx.defaultMeter,
+              ctx.meterMap,
+              ppq,
+            )
+          : snapTicksToBarStart(ticks, ctx.meter, ppq);
       break;
     case "beat":
       snapped = snapTicksToBeatGrid(ticks, ctx.meter, ppq);

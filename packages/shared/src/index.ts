@@ -18,6 +18,13 @@ export {
 } from "./time.js";
 
 export {
+  resolveMeterAtTicks,
+  ticksToBbtAlongMeterMap,
+  bbtToTicksAlongMeterMap,
+  type MeterMapEvent,
+} from "./meter-map-bbt.js";
+
+export {
   LibrarySchema,
   LibraryProjectEntrySchema,
   BPM_MIN,
@@ -213,6 +220,7 @@ export {
 export {
   quantizeTicks,
   snapTicksToBarStart,
+  snapTicksToBarStartAlongMeterMap,
   snapTicksToBeatGrid,
   snapTicksToSubdivision,
   DEFAULT_SNAP_MODE,

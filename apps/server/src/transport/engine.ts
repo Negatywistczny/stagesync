@@ -150,10 +150,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
     loadProject(projectId: string, project: Project): TransportState {
       activeProjectId = projectId;
-      positionTicks = samplePosition();
       playing = false;
       stopTimer();
-      applyMapsFromProject(project, 0);
+      const home = transportHomeTicks(project);
+      positionTicks = home;
+      applyMapsFromProject(project, home);
       notify();
       return snapshot();
     },

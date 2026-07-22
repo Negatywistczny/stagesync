@@ -130,6 +130,8 @@ describe("TransportEngine", () => {
     expect(state.playing).toBe(false);
     expect(state.activeProjectId).toBe(project.id);
     expect(state.bpm).toBe(90);
+    const cd = project.forma.clips.find((c) => c.kind === "countdown");
+    expect(state.positionTicks).toBe(cd!.startTicks);
     engine.dispose();
   });
 
