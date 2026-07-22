@@ -34,7 +34,11 @@ export function createStageHub() {
         sentAtMs: partial.sentAtMs ?? Date.now(),
       };
       for (const listener of listeners) {
-        listener(msg);
+        try {
+          listener(msg);
+        } catch (err) {
+          console.error("[stagesync-server] stage listener error", err);
+        }
       }
       return msg;
     },
