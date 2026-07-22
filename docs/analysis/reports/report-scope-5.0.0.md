@@ -176,6 +176,42 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
+## Handoff morning (2026-07-22 — overnight; update ~07:41 CEST)
+
+**Audit działa.** Tools OK; musts **#53–#60 OPEN + CI green**; no merge to `main`; no `5.0.0` tag; G1–G10 **not** claimed. Window → **10:00 UTC+2**.
+
+### Must A–E
+
+Merge order: #53→#54; #57→#58 before #64/#66. Prefer latest handoff over #205/#213/#223/#239/#247/#255/#297.
+
+### Wave 16–17 open PRs (this agent, ~06:36–07:41)
+
+| Range | Themes |
+|-------|--------|
+| [#266](https://github.com/Negatywistyczny/stagesync/pull/266)–[#279](https://github.com/Negatywistyczny/stagesync/pull/279) | Song filter, drums maxLength, ProjectFiles races, desktop toasts, fullscreen errors, Escape name, delete pending, Stage aria-live, modal busy, focus trap |
+| [#280](https://github.com/Negatywistyczny/stagesync/pull/280)–[#291](https://github.com/Negatywistyczny/stagesync/pull/291) | Forma 64, library export/import/batch, transport mutex, asset stream, SPP range, countdown 32, tap-tempo, log SSE, SemVer update, mapSegments gap |
+| [#293](https://github.com/Negatywistyczny/stagesync/pull/293)–[#296](https://github.com/Negatywistyczny/stagesync/pull/296) | UG altered chords, Tekst/Cue -r, upsertTempo BPM, skip 169.254 |
+| [#297](https://github.com/Negatywistyczny/stagesync/pull/297) | Docs handoff wave 16 |
+| [#299](https://github.com/Negatywistyczny/stagesync/pull/299)–[#309](https://github.com/Negatywistyczny/stagesync/pull/309) | Wand floor shrink, hybrid B, metronome storm, import 1024, meter upsert, native SPP, empty waveform, web subsections 64, setlist 256, legacy BPM, Akordy 64 |
+
+Earlier overnight (#194–#265) still open — do not reimplement.
+
+### Merge / rebase notes
+
+- Desktop toast: unify **#269** + **#277**.
+- **#274** `pending` vs **#279** focus trap.
+- **#285** vs **#175**/**#186** on assets.
+- **#299** vs **#102** on wand.
+- **#308** vs **#202** on legacy-migrate.
+
+### Remaining backlog (to 10:00)
+
+1. More small 1-theme PRs; fix any red CI.
+2. Client setlist poll generation after #143.
+3. Admin density / Client clamps (#90/#198).
+4. Playwright Forma drag — defer (#67).
+5. G1–G10 soft-gate only.
+
 ## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
