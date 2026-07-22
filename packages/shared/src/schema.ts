@@ -8,8 +8,8 @@ export const LibraryProjectEntrySchema = z.object({
   updatedAt: z.string().datetime().optional(),
   midiProgramId: z.number().int().min(0).max(127).optional(),
   isTemplate: z.boolean().optional(),
-  artist: z.string().optional(),
-  genre: z.string().optional(),
+  artist: z.string().max(200).optional(),
+  genre: z.string().max(200).optional(),
   hasMusicXml: z.boolean().optional(),
 });
 
@@ -309,8 +309,8 @@ const ProjectSchemaV5Object = z
     scoreBarMap: ScoreBarMapSchema.default({ anchors: [] }),
     midiProgramId: z.number().int().min(0).max(127).optional(),
     isTemplate: z.boolean().optional(),
-    artist: z.string().optional(),
-    genre: z.string().optional(),
+    artist: z.string().max(200).optional(),
+    genre: z.string().max(200).optional(),
     year: z.number().int().optional(),
   })
   .strict();

@@ -125,6 +125,16 @@ describe("ProjectSchemaV5", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects artist longer than 200 chars", () => {
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    expect(() =>
+      ProjectSchemaV5.parse({
+        ...seed,
+        artist: "x".repeat(201),
+      }),
+    ).toThrow();
+  });
 });
 
 describe("CreateProjectBodySchema", () => {
