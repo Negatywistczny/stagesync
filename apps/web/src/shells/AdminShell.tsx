@@ -78,6 +78,7 @@ export function AdminShell() {
   const [section, setSection] = useState<SectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
@@ -98,7 +99,9 @@ export function AdminShell() {
     try {
       await postSystemRestart();
     } catch (err) {
-      setHostStatusMsg(err instanceof Error ? err.message : "Restart nieudany");
+      const message =
+        err instanceof Error ? err.message : "Restart nieudany";
+      setHostStatusMsg(message.slice(0, 500));
     }
   }, "Restart");
 
@@ -107,9 +110,9 @@ export function AdminShell() {
     try {
       await postSystemShutdown();
     } catch (err) {
-      setHostStatusMsg(
-        err instanceof Error ? err.message : "Wyłączenie nieudane",
-      );
+      const message =
+        err instanceof Error ? err.message : "Wyłączenie nieudane";
+      setHostStatusMsg(message.slice(0, 500));
     }
   }, "Wyłącz");
 
@@ -189,8 +192,12 @@ export function AdminShell() {
     };
   }, [sectionProjectId, state.activeProjectId, displayTicks]);
 
+  const libraryGenRef = useRef(0);
+
   const refreshLibrary = useCallback(async (preferId?: string | null) => {
+    const gen = ++libraryGenRef.current;
     const data = await fetchLibrary();
+    if (gen !== libraryGenRef.current) return data;
     setLibrary(data);
     setLibraryError(null);
     setSelectedId((prev) => {
@@ -208,21 +215,21 @@ export function AdminShell() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const gen = ++libraryGenRef.current;
     void (async () => {
       try {
         const data = await fetchLibrary();
-        if (cancelled) return;
+        if (gen !== libraryGenRef.current) return;
         setLibrary(data);
         setSelectedId(data.projects[0]?.id ?? null);
       } catch (err) {
-        if (!cancelled) {
+        if (gen === libraryGenRef.current) {
           setLibraryError(errMessage(err));
         }
       }
     })();
     return () => {
-      cancelled = true;
+      libraryGenRef.current += 1;
     };
   }, []);
 
@@ -362,12 +369,31 @@ export function AdminShell() {
             </ShellIconButton>
             <ShellIconButton
               label="Pełny ekran"
-              onClick={() => void toggleAppFullscreen()}
+              onClick={() => {
+                void (async () => {
+                  try {
+                    await toggleAppFullscreen();
+                    setFullscreenError(null);
+                  } catch (err) {
+                    setFullscreenError(
+                      err instanceof Error
+                        ? err.message
+                        : "Nie udało się przełączyć pełnego ekranu",
+                    );
+                  }
+                })();
+              }}
             >
               <IconFullscreen />
             </ShellIconButton>
           </div>
         </header>
+
+        {fullscreenError ? (
+          <p className={styles.chromeAlert} role="alert">
+            {fullscreenError}
+          </p>
+        ) : null}
 
         {appearanceOpen ? (
           <SettingsPopover
@@ -769,6 +795,12 @@ function SongsView({
               placeholder="Filtruj…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && filter) {
+                  e.preventDefault();
+                  setFilter("");
+                }
+              }}
               aria-label="Filtruj utwory"
             />
             <select
@@ -912,14 +944,27 @@ function SongsView({
                   <Button variant="secondary" disabled={locked} onClick={onXml}>
                     XML
                   </Button>
-                  <Button
-                    variant="ghost"
-                    disabled={locked || !selected?.hasMusicXml}
-                    title={selected?.hasMusicXml ? "Ma MusicXML" : "Brak MusicXML — użyj XML"}
-                    onClick={onXml}
-                  >
-                    Partytura
-                  </Button>
+                  {selected?.hasMusicXml && selectedId && !locked ? (
+                    <Link
+                      className={styles.editLink}
+                      to={`/timeline/${selectedId}`}
+                      title="Otwórz utwór w Timeline (partytura / OSMD)"
+                    >
+                      Partytura
+                    </Link>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      disabled
+                      title={
+                        selected?.hasMusicXml
+                          ? "Otwórz w Timeline"
+                          : "Brak MusicXML — użyj XML"
+                      }
+                    >
+                      Partytura
+                    </Button>
+                  )}
                   {locked ? (
                     <span className={styles.editLinkMuted} aria-disabled>
                       Otwórz w Timeline
@@ -1056,17 +1101,28 @@ function LibraryFilesCard({
 
 function useDoubleConfirm(action: () => Promise<void>, label: string) {
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
+  const actionInFlightRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const arm = useCallback(() => {
-    if (pending) {
+    if (actionInFlightRef.current) return;
+    if (pendingRef.current) {
       if (timerRef.current) clearTimeout(timerRef.current);
+      pendingRef.current = false;
       setPending(false);
-      void action();
+      actionInFlightRef.current = true;
+      void action().finally(() => {
+        actionInFlightRef.current = false;
+      });
       return;
     }
+    pendingRef.current = true;
     setPending(true);
-    timerRef.current = setTimeout(() => setPending(false), 4000);
-  }, [action, pending]);
+    timerRef.current = setTimeout(() => {
+      pendingRef.current = false;
+      setPending(false);
+    }, 4000);
+  }, [action]);
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -1096,6 +1152,7 @@ function HostView({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const midiRefreshGenRef = useRef(0);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
@@ -1106,11 +1163,14 @@ function HostView({
   }, [copiedUrl]);
 
   const refreshMidi = useCallback(async () => {
+    const gen = ++midiRefreshGenRef.current;
     try {
       const status = await fetchMidiHostStatus();
+      if (gen !== midiRefreshGenRef.current) return;
       setMidi(status);
       setMidiError(null);
     } catch (err) {
+      if (gen !== midiRefreshGenRef.current) return;
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
     }
   }, []);
@@ -1137,7 +1197,10 @@ function HostView({
     const id = window.setInterval(() => {
       void refreshMidi();
     }, 1000);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(id);
+      midiRefreshGenRef.current += 1;
+    };
   }, [refreshMidi]);
 
   useEffect(() => {
@@ -1428,10 +1491,10 @@ function HostView({
             </p>
             <div>
               <h3 className={styles.subTitle}>Kopie zapasowe</h3>
+              <p className={styles.muted}>
+                Przywracanie z kopii — poza 5.0.0 (shadow backup po stronie hosta).
+              </p>
               <div className={styles.actions}>
-                <Button variant="ghost" disabled>
-                  Przywróć…
-                </Button>
                 <Button variant="ghost" onClick={onPathPicker}>
                   Folder danych…
                 </Button>
@@ -1906,7 +1969,7 @@ function MusicXmlModal({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal title="MusicXML" onClose={onClose}>
+    <Modal title="MusicXML" onClose={onClose} closeDisabled={busy}>
       {!projectId ? (
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (
@@ -1945,7 +2008,7 @@ function MusicXmlModal({
         </>
       )}
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose} disabled={busy}>
           Anuluj
         </Button>
         <Button
@@ -1993,7 +2056,7 @@ function BatchPcModal({
   };
 
   return (
-    <Modal title="Batch PC" onClose={onClose}>
+    <Modal title="Batch PC" onClose={onClose} closeDisabled={busy}>
       <p className={styles.muted}>
         Numeracja Program Change (0–127) dla utworów (bez wzorów).
       </p>
@@ -2010,10 +2073,11 @@ function BatchPcModal({
           min={0}
           max={127}
           value={start}
+          disabled={busy}
           onChange={(e) => setStart(Number(e.target.value))}
         />
       </label>
-      <Button variant="secondary" onClick={renumber}>
+      <Button variant="secondary" onClick={renumber} disabled={busy}>
         Numeruj od startu
       </Button>
       <ul className={styles.list}>
@@ -2030,6 +2094,7 @@ function BatchPcModal({
               max={127}
               value={draft[p.id] ?? 0}
               aria-label={`PC ${p.name}`}
+              disabled={busy}
               onChange={(e) =>
                 setDraft((d) => ({
                   ...d,
@@ -2041,7 +2106,7 @@ function BatchPcModal({
         ))}
       </ul>
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose} disabled={busy}>
           Anuluj
         </Button>
         <Button
@@ -2079,10 +2144,12 @@ function Modal({
   title,
   children,
   onClose,
+  closeDisabled = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  closeDisabled?: boolean;
 }) {
   return (
     <div className={styles.overlay} role="dialog" aria-modal>
@@ -2090,12 +2157,17 @@ function Modal({
         type="button"
         className={styles.backdrop}
         aria-label="Zamknij"
+        disabled={closeDisabled}
         onClick={onClose}
       />
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
           <h2>{title}</h2>
-          <ShellIconButton label="Zamknij" onClick={onClose}>
+          <ShellIconButton
+            label="Zamknij"
+            disabled={closeDisabled}
+            onClick={onClose}
+          >
             ×
           </ShellIconButton>
         </div>

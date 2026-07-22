@@ -71,6 +71,7 @@ export function ClientShell() {
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
+  const [uiError, setUiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!started) return;
@@ -105,7 +106,10 @@ export function ClientShell() {
     // Role filter: if roles listed, only show when client has that role picked
     if (stageCue.roles && stageCue.roles.length > 0) {
       const match = stageCue.roles.some((r) => picked.includes(r as RoleId));
-      if (!match) return;
+      if (!match) {
+        setCueVisible(false);
+        return;
+      }
     }
     setCueText(stageCue.text);
     setCueVisible(true);
@@ -126,7 +130,14 @@ export function ClientShell() {
       : null;
 
   async function onFullscreen() {
-    await toggleAppFullscreen();
+    try {
+      await toggleAppFullscreen();
+      setUiError(null);
+    } catch (err) {
+      setUiError(
+        err instanceof Error ? err.message : "Nie udało się przełączyć pełnego ekranu",
+      );
+    }
   }
 
   async function onNextSong() {
@@ -170,6 +181,7 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
+    uiError,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -186,7 +198,16 @@ export function ClientShell() {
             Witaj w StageSync
           </h1>
           <p className={styles.muted}>Podaj swoje imię lub nazwę tabletu.</p>
-          <form onSubmit={submitName}>
+          <form
+            onSubmit={submitName}
+            onKeyDown={(e) => {
+              if (e.key !== "Escape") return;
+              e.preventDefault();
+              const n = nameDraft.trim() || "Gość";
+              setName(n);
+              setNameModal(false);
+            }}
+          >
             <input
               className={styles.input}
               maxLength={40}
@@ -436,6 +457,7 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   nextSetlistId: string | null;
+  uiError: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -451,6 +473,7 @@ function ClientHeader({
   songTitle,
   bbt,
   nextSetlistId,
+  uiError,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -488,6 +511,11 @@ function ClientHeader({
         >
           →następny
         </button>
+      ) : null}
+      {uiError ? (
+        <span className={styles.uiError} role="alert">
+          {uiError}
+        </span>
       ) : null}
       <span className={styles.takt}>
         takt {toDisplayBar(bbt.bar)}.{bbt.beat}

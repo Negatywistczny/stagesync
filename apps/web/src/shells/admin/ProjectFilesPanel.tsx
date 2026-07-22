@@ -30,8 +30,9 @@ export function ProjectFilesPanel({
   const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const reload = useCallback(async (id: string) => {
+  const reload = useCallback(async (id: string, isStale?: () => boolean) => {
     const project: Project = await fetchProject(id);
+    if (isStale?.()) return;
     setAssets(project.assets);
   }, []);
 
@@ -41,9 +42,10 @@ export function ProjectFilesPanel({
       return;
     }
     let cancelled = false;
+    const isStale = () => cancelled;
     void (async () => {
       try {
-        await reload(projectId);
+        await reload(projectId, isStale);
         if (!cancelled) setError(null);
       } catch (err) {
         if (!cancelled) {
@@ -79,12 +81,12 @@ export function ProjectFilesPanel({
   const confirmDelete = async () => {
     if (!projectId || !deleteAssetId || busy || locked) return;
     const assetId = deleteAssetId;
-    setDeleteAssetId(null);
     setBusy(true);
     setError(null);
     try {
       const project = await deleteProjectAsset(projectId, assetId);
       setAssets(project.assets);
+      setDeleteAssetId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Usuwanie nieudane");
     } finally {
@@ -150,8 +152,11 @@ export function ProjectFilesPanel({
         title="Usuń plik"
         message="Usunąć plik z projektu?"
         confirmLabel="Usuń"
+        pending={busy}
         onConfirm={() => void confirmDelete()}
-        onCancel={() => setDeleteAssetId(null)}
+        onCancel={() => {
+          if (!busy) setDeleteAssetId(null);
+        }}
       />
     </div>
   );

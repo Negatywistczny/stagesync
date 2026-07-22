@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@stagesync/ui";
 import {
   fetchStageClients,
@@ -59,25 +59,33 @@ export function StageView() {
   const [clients, setClients] = useState<PresenceClient[]>([]);
   const [clientsError, setClientsError] = useState<string | null>(null);
   const [clientsLoading, setClientsLoading] = useState(false);
+  const clientsGenRef = useRef(0);
 
   const refreshClients = useCallback(async () => {
+    const gen = ++clientsGenRef.current;
     setClientsLoading(true);
     setClientsError(null);
     try {
-      setClients(await fetchStageClients());
+      const list = await fetchStageClients();
+      if (gen !== clientsGenRef.current) return;
+      setClients(list);
     } catch (err) {
+      if (gen !== clientsGenRef.current) return;
       setClientsError(
         err instanceof Error ? err.message : "Nie udało się pobrać klientów",
       );
     } finally {
-      setClientsLoading(false);
+      if (gen === clientsGenRef.current) setClientsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void refreshClients();
     const id = window.setInterval(() => void refreshClients(), 4000);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(id);
+      clientsGenRef.current += 1;
+    };
   }, [refreshClients]);
 
   function toggleRole(id: RoleId) {
@@ -148,7 +156,11 @@ export function StageView() {
               {error}
             </p>
           ) : null}
-          {status ? <p className={styles.muted}>{status}</p> : null}
+          {status ? (
+            <p className={styles.muted} role="status" aria-live="polite">
+              {status}
+            </p>
+          ) : null}
           <textarea
             className={styles.textarea}
             maxLength={200}

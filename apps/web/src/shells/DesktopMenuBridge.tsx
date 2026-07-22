@@ -195,6 +195,7 @@ export function DesktopMenuBridge() {
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
   const [restartError, setRestartError] = useState<string | null>(null);
+  const [transportError, setTransportError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -226,6 +227,7 @@ export function DesktopMenuBridge() {
   );
 
   const onTransportPlay = useCallback(async () => {
+    setTransportError(null);
     try {
       const projectId =
         state.activeProjectId ??
@@ -233,16 +235,21 @@ export function DesktopMenuBridge() {
           ? (location.pathname.split("/")[2] ?? null)
           : null);
       await play(projectId ? { projectId } : undefined);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setTransportError(
+        err instanceof Error ? err.message : "Nie udało się uruchomić transportu",
+      );
     }
   }, [location.pathname, play, state.activeProjectId]);
 
   const onTransportStop = useCallback(async () => {
+    setTransportError(null);
     try {
       await stop();
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setTransportError(
+        err instanceof Error ? err.message : "Nie udało się zatrzymać transportu",
+      );
     }
   }, [stop]);
 
@@ -296,6 +303,19 @@ export function DesktopMenuBridge() {
   return (
     <>
       <Outlet />
+      {transportError ? (
+        <p className={styles.toastError} role="alert">
+          {transportError}
+          <button
+            type="button"
+            className={styles.toastDismiss}
+            onClick={() => setTransportError(null)}
+            aria-label="Zamknij komunikat"
+          >
+            ×
+          </button>
+        </p>
+      ) : null}
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
         <RestartConfirmModal
