@@ -2834,20 +2834,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
     try {
-      const next = await uploadProjectAudio(projectId, file);
-      // Prefer the uploaded clip on the chosen track when server put it on track 0
-      let project = next;
-      if (trackId && next.audioClips.length) {
-        const last = next.audioClips[next.audioClips.length - 1]!;
-        if (last.trackId !== trackId) {
-          project = {
-            ...next,
-            audioClips: next.audioClips.map((c) =>
-              c.id === last.id ? { ...c, trackId } : c,
-            ),
-          };
-        }
-      }
+      const project = await uploadProjectAudio(projectId, file, { trackId });
       setSavedProject(project);
       setDraftProject(project);
       setDraftHistory((h) =>

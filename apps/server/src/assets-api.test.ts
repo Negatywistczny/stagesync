@@ -77,6 +77,51 @@ describe("project assets API", () => {
     expect(body.assets).toHaveLength(1);
   });
 
+  it("honors multipart trackId for the created audio clip", async () => {
+    const form1 = new FormData();
+    form1.append(
+      "file",
+      new Blob([new Uint8Array([1])], { type: "audio/wav" }),
+      "kick.wav",
+    );
+    const up1 = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: form1,
+    });
+    expect(up1.status).toBe(201);
+    const first = ProjectSchema.parse(await up1.json());
+    expect(first.audioTracks.length).toBeGreaterThanOrEqual(1);
+
+    const trackB = { id: "track-b", name: "Audio 2" };
+    const seeded = {
+      ...first,
+      audioTracks: [...first.audioTracks, trackB],
+    };
+    const put = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(putBody(seeded)),
+    });
+    expect(put.status).toBe(200);
+
+    const form2 = new FormData();
+    form2.append(
+      "file",
+      new Blob([new Uint8Array([9, 9])], { type: "audio/wav" }),
+      "snare.wav",
+    );
+    form2.append("trackId", trackB.id);
+    const up2 = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: form2,
+    });
+    expect(up2.status).toBe(201);
+    const project = ProjectSchema.parse(await up2.json());
+    const clip = project.audioClips[project.audioClips.length - 1];
+    expect(clip?.trackId).toBe(trackB.id);
+    expect(clip?.assetId).toBe(project.assets.at(-1)?.id);
+  });
+
   it("merge-preserves assets when PUT omits them", async () => {
     const form = new FormData();
     form.append(
