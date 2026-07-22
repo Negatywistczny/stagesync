@@ -152,7 +152,7 @@ fn navigate_main(app: &tauri::AppHandle, path: &str) {
     }
 }
 
-/// Desktop OS menu Faza A–D: StageSync | Plik | Edycja | Widok | Transport | Host | Pomoc (ADR 0010 / ROADMAP).
+/// Desktop OS menu Faza A+B+C: StageSync | Plik | Widok | Transport | Host | Pomoc (ADR 0010).
 fn dispatch_menu_action(app: &tauri::AppHandle, action: &str) {
     let Some(window) = app.get_webview_window("main") else {
         return;
@@ -241,34 +241,19 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         &[&open_recent, &file_sep, &file_save, &file_close],
     )?;
 
-    let edit_undo = MenuItem::with_id(app, "edit_undo", "Cofnij", true, Some("CmdOrCtrl+Z"))?;
-    let edit_redo = MenuItem::with_id(
-        app,
-        "edit_redo",
-        "Ponów",
-        true,
-        Some("CmdOrCtrl+Shift+Z"),
-    )?;
-    let edit_sep_1 = PredefinedMenuItem::separator(app)?;
-    let edit_cut = MenuItem::with_id(app, "edit_cut", "Wytnij", true, Some("CmdOrCtrl+X"))?;
-    let edit_copy = MenuItem::with_id(app, "edit_copy", "Kopiuj", true, Some("CmdOrCtrl+C"))?;
-    let edit_paste = MenuItem::with_id(app, "edit_paste", "Wklej", true, Some("CmdOrCtrl+V"))?;
-    let edit_sep_2 = PredefinedMenuItem::separator(app)?;
-    let edit_delete = MenuItem::with_id(app, "edit_delete", "Usuń", true, Some("Backspace"))?;
+    // macOS routes ⌘C/X/V/A through the app menu First Responder chain.
+    // Without these PredefinedMenuItems, WebView text selection only copies via
+    // context menu — keyboard shortcuts are silent. (Full Undo/Redo → Timeline
+    // stays Faza D; do not steal ⌘Z with PredefinedMenuItem::undo here.)
+    let edit_cut = PredefinedMenuItem::cut(app, Some("Wytnij"))?;
+    let edit_copy = PredefinedMenuItem::copy(app, Some("Kopiuj"))?;
+    let edit_paste = PredefinedMenuItem::paste(app, Some("Wklej"))?;
+    let edit_select_all = PredefinedMenuItem::select_all(app, Some("Zaznacz wszystko"))?;
     let edit_submenu = Submenu::with_items(
         app,
         "Edycja",
         true,
-        &[
-            &edit_undo,
-            &edit_redo,
-            &edit_sep_1,
-            &edit_cut,
-            &edit_copy,
-            &edit_paste,
-            &edit_sep_2,
-            &edit_delete,
-        ],
+        &[&edit_cut, &edit_copy, &edit_paste, &edit_select_all],
     )?;
 
     let nav_admin = MenuItem::with_id(app, "nav_admin", "Admin", true, Some("CmdOrCtrl+1"))?;
@@ -294,13 +279,8 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
     let fullscreen_accel = Some("F11");
     let fullscreen =
         MenuItem::with_id(app, "fullscreen", "Pełny ekran", true, fullscreen_accel)?;
-    let zoom_in = MenuItem::with_id(app, "view_zoom_in", "Powiększ", true, Some("CmdOrCtrl+="))?;
-    let zoom_out = MenuItem::with_id(app, "view_zoom_out", "Pomniejsz", true, Some("CmdOrCtrl+-"))?;
-    let zoom_reset =
-        MenuItem::with_id(app, "view_zoom_reset", "Resetuj zoom", true, Some("CmdOrCtrl+0"))?;
     let view_sep_1 = PredefinedMenuItem::separator(app)?;
     let view_sep_2 = PredefinedMenuItem::separator(app)?;
-    let view_sep_3 = PredefinedMenuItem::separator(app)?;
 
     let view_submenu = Submenu::with_items(
         app,
@@ -313,10 +293,6 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
             &view_sep_1,
             &admin_tabs,
             &view_sep_2,
-            &zoom_in,
-            &zoom_out,
-            &zoom_reset,
-            &view_sep_3,
             &fullscreen,
         ],
     )?;
@@ -401,13 +377,6 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         true,
         None::<&str>,
     )?;
-    let help_shortcuts = MenuItem::with_id(
-        app,
-        "help_shortcuts",
-        "Skróty i pomoc Timeline…",
-        true,
-        Some("Shift+/"),
-    )?;
     #[cfg(not(target_os = "macos"))]
     let help_about = MenuItem::with_id(
         app,
@@ -423,21 +392,10 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         app,
         "Pomoc",
         true,
-        &[
-            &help_shortcuts,
-            &help_docs,
-            &help_issues,
-            &help_sep,
-            &help_about,
-        ],
+        &[&help_docs, &help_issues, &help_sep, &help_about],
     )?;
     #[cfg(target_os = "macos")]
-    let help_submenu = Submenu::with_items(
-        app,
-        "Pomoc",
-        true,
-        &[&help_shortcuts, &help_docs, &help_issues],
-    )?;
+    let help_submenu = Submenu::with_items(app, "Pomoc", true, &[&help_docs, &help_issues])?;
 
     Menu::with_items(
         app,
@@ -475,16 +433,6 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "check_updates" => navigate_main(&app, "/admin?section=host&action=check-update"),
             "file_save" => dispatch_menu_action(&app, "save"),
             "file_close" => navigate_main(&app, "/admin"),
-            "edit_undo" => dispatch_menu_action(&app, "edit-undo"),
-            "edit_redo" => dispatch_menu_action(&app, "edit-redo"),
-            "edit_cut" => dispatch_menu_action(&app, "edit-cut"),
-            "edit_copy" => dispatch_menu_action(&app, "edit-copy"),
-            "edit_paste" => dispatch_menu_action(&app, "edit-paste"),
-            "edit_delete" => dispatch_menu_action(&app, "edit-delete"),
-            "view_zoom_in" => dispatch_menu_action(&app, "view-zoom-in"),
-            "view_zoom_out" => dispatch_menu_action(&app, "view-zoom-out"),
-            "view_zoom_reset" => dispatch_menu_action(&app, "view-zoom-reset"),
-            "help_shortcuts" => dispatch_menu_action(&app, "help-shortcuts"),
             "nav_admin" => navigate_main(&app, "/admin"),
             "nav_timeline" => {
                 let Some(window) = app.get_webview_window("main") else {
@@ -503,10 +451,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "transport_stop" => dispatch_menu_action(&app, "transport-stop"),
             "transport_prev" => dispatch_menu_action(&app, "transport-prev"),
             "transport_next" => dispatch_menu_action(&app, "transport-next"),
-            "host_status" => navigate_main(&app, "/admin?section=host"),
-            "host_settings" => {
-                navigate_main(&app, "/admin?section=host&action=host-settings")
-            }
+            "host_status" | "host_settings" => navigate_main(&app, "/admin?section=host"),
             "host_clients" => navigate_main(&app, "/admin?section=stage"),
             "host_qr" => dispatch_menu_action(&app, "host-qr"),
             "host_restart" => dispatch_menu_action(&app, "host-restart"),
