@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BpmSchema } from "./schema.js";
 import { DEFAULT_PPQ } from "./time.js";
 
 export const TimeSignatureSchema = z.object({
@@ -17,7 +18,7 @@ export type TransportLoop = z.infer<typeof TransportLoopSchema>;
 export const TransportStateSchema = z.object({
   playing: z.boolean(),
   positionTicks: z.number().int(),
-  bpm: z.number().positive().finite(),
+  bpm: BpmSchema,
   timeSignature: TimeSignatureSchema,
   ppq: z.number().int().positive(),
   activeProjectId: z.string().uuid().nullable().optional(),
@@ -45,7 +46,7 @@ export type TransportLoopBody = z.infer<typeof TransportLoopBodySchema>;
 
 export const TransportPlayBodySchema = z
   .object({
-    bpm: z.number().positive().finite().optional(),
+    bpm: BpmSchema.optional(),
     timeSignature: TimeSignatureSchema.optional(),
     projectId: z.string().uuid().optional(),
   })
