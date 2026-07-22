@@ -1663,7 +1663,7 @@ function MusicXmlModal({
                   onUploaded();
                   onClose();
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : "Upload nieudany");
+                  setError(err instanceof Error ? err.message : "Przesyłanie nieudane");
                 } finally {
                   setBusy(false);
                 }

@@ -231,7 +231,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
             stopRaf();
           }
         } catch (err) {
-          setError(formatTransportError(err, "Invalid tick"));
+          setError(formatTransportError(err, "Nieprawidłowy tick"));
         }
       };
 
@@ -263,7 +263,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         applyAnchor(initial.state, performance.now(), initial.serverTimeMs);
       } catch (err) {
         if (!cancelled) {
-          setError(formatTransportError(err, "Failed to load"));
+          setError(formatTransportError(err, "Nie udało się wczytać"));
         }
       }
       connect();
@@ -305,7 +305,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           stopRaf();
         }
       } catch (err) {
-        setError(formatTransportError(err, "Command failed"));
+        setError(formatTransportError(err, "Komenda nie powiodła się"));
       } finally {
         commandPendingRef.current = false;
         setCommandPending(false);
