@@ -3,6 +3,7 @@ import type { HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
+import { createMidiProgramChangeHandler } from "./midi/program-change.js";
 import { createLibraryRouter } from "./routes/library.js";
 import { createMidiRouter } from "./routes/midi.js";
 import { createProjectsRouter } from "./routes/projects.js";
@@ -17,19 +18,9 @@ import {
   createTransportEngine,
   type TransportEngine,
 } from "./transport/engine.js";
-import { wirePauseAtSongEnd } from "./transport/pause-at-end.js";
-import { wireSetlistAutoAdvance } from "./transport/auto-advance.js";
 import { createStageHub, type StageHub } from "./transport/stage-hub.js";
 
-function resolveServiceVersion(): string {
-  const staged = process.env.STAGESYNC_VERSION?.trim();
-  if (staged) return staged;
-  const npm = process.env.npm_package_version?.trim();
-  if (npm && npm !== "0.0.0") return npm;
-  return "5.0.0-beta.2";
-}
-
-const VERSION = resolveServiceVersion();
+const VERSION = process.env.npm_package_version ?? "5.0.0-beta.2";
 
 export type CreateAppOptions = {
   /** Override data root (defaults to STAGESYNC_DATA_DIR or repo data/). */
@@ -64,9 +55,11 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const stageHub = options.stageHub ?? createStageHub();
   const logBuffer = options.logBuffer ?? createLogBuffer();
   const presence = options.presence ?? createClientPresence();
-  const midi = options.midi ?? createMidiHost(transport);
-  wirePauseAtSongEnd(transport, stores);
-  wireSetlistAutoAdvance(transport, stores);
+  const midi =
+    options.midi ??
+    createMidiHost(transport, {
+      onProgramChange: createMidiProgramChangeHandler(transport, stores),
+    });
   const app: Express = express();
 
   app.use(express.json());
