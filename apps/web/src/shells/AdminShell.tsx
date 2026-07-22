@@ -113,7 +113,8 @@ export function AdminShell() {
     }
   }, "Wyłącz");
 
-  const { state, displayTicks, wsStatus, play } = useTransport();
+  const { state, displayTicks, wsStatus, play, commandPending: transportPending } =
+    useTransport();
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
@@ -379,6 +380,7 @@ export function AdminShell() {
             actionError={actionError}
             actionNotice={actionNotice}
             commandPending={commandPending}
+            transportPending={transportPending}
             selectedId={selectedId}
             selected={selected}
             draftName={draftName}
@@ -656,6 +658,7 @@ function SongsView({
   actionError,
   actionNotice,
   commandPending,
+  transportPending,
   selectedId,
   selected,
   draftName,
@@ -678,6 +681,7 @@ function SongsView({
   actionError: string | null;
   actionNotice: string | null;
   commandPending: boolean;
+  transportPending: boolean;
   selectedId: string | null;
   selected: Library["projects"][number] | null;
   draftName: string;
@@ -914,7 +918,8 @@ function SongsView({
                   )}
                   <Button
                     variant="secondary"
-                    disabled={!selectedId || commandPending}
+                    disabled={!selectedId || commandPending || transportPending}
+                    loading={transportPending}
                     onClick={() => selectedId && onPlay(selectedId)}
                   >
                     Odtwórz
