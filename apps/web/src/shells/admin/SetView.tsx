@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@stagesync/ui";
 import type { Library, SetlistView } from "@stagesync/shared";
 import {
@@ -21,6 +21,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const [enabled, setEnabled] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
@@ -101,6 +102,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
   };
 
   const onSave = async () => {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     setPending(true);
     setError(null);
     try {
@@ -112,6 +115,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Zapis nieudany");
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   };
@@ -127,6 +131,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
   };
 
   const onAutoAdvance = async (next: boolean) => {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     setPending(true);
     setError(null);
     try {
@@ -135,6 +141,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Auto-setlista");
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   };
