@@ -276,7 +276,10 @@ export function migrateLegacySong(
 
   const endAbs = songEndAbs(song, sections);
   const defaultMeter = parseLegacyMeter(song.chords?.timeSignature);
-  const defaultBpm = Math.max(1, asFiniteNumber(song.tempo, 120));
+  const defaultBpm = Math.min(
+    400,
+    Math.max(20, asFiniteNumber(song.tempo, 120)),
+  );
   const minBarBeats =
     (defaultMeter.numerator * 4) / defaultMeter.denominator;
   /** One beat in quarters — dense chords must not use min=full bar (legacy deriveClipLengths). */
@@ -313,7 +316,7 @@ export function migrateLegacySong(
   let tempoMap = tempoMapRaw.map((ev, i) => ({
     id: asString(ev.id, `tempo-${i}`),
     startTicks: toTicks(asFiniteNumber(ev.startAbs, 0), shiftQuarters, ppq),
-    bpm: Math.max(1, asFiniteNumber(ev.bpm, defaultBpm)),
+    bpm: Math.min(400, Math.max(20, asFiniteNumber(ev.bpm, defaultBpm))),
   }));
   if (tempoMap.length === 0) {
     tempoMap = [{ id: "tempo-0", startTicks: 0, bpm: defaultBpm }];
