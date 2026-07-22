@@ -34,6 +34,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Preferencje:** Audio / MIDI jako zakładki ustawień (pasek z podkreśleniem), nie segmented control / przełączniki.
 - **Timeline:** przycisk widoczności ścieżek (eye) wyśrodkowany w docku linijki (poziomo i pionowo).
 - **Timeline:** playhead i locator zaczynają się od górnej krawędzi BeatLane (nie LoopLane); obie linie w delikatnym odcieniu względem canvas (`--tl-marker-line`).
 - **Timeline setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
