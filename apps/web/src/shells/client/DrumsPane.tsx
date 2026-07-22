@@ -3,7 +3,10 @@ import {
   useRef,
   type CSSProperties,
 } from "react";
-import { type Project } from "@stagesync/shared";
+import {
+  formatSectionNameForDisplay,
+  type Project,
+} from "@stagesync/shared";
 import { buildFormaLiveContext } from "../../lib/clientForma.js";
 import styles from "../ClientShell.module.css";
 
@@ -11,6 +14,7 @@ type DrumsPaneProps = {
   project: Project;
   displayTicks: number;
   notesEdit?: boolean;
+  sectionNamesPolish?: boolean;
   onNoteChange?: (clipId: string, note: string) => void;
 };
 
@@ -22,6 +26,7 @@ export function DrumsPane({
   project,
   displayTicks,
   notesEdit = false,
+  sectionNamesPolish = false,
   onNoteChange,
 }: DrumsPaneProps) {
   const ctx = buildFormaLiveContext(project, displayTicks);
@@ -40,6 +45,12 @@ export function DrumsPane({
   if (!ctx) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
+
+  const fmtName = (name: string) =>
+    formatSectionNameForDisplay(name, { polish: sectionNamesPolish });
+  const heroTitle = ctx.countdownNumber
+    ? ctx.heroTitle
+    : fmtName(ctx.heroTitle);
 
   return (
     <div
@@ -65,12 +76,12 @@ export function DrumsPane({
           style={
             {
               ["--hero-name-ch" as string]: String(
-                Math.max(ctx.heroTitle.length, 4),
+                Math.max(heroTitle.length, 4),
               ),
             } as CSSProperties
           }
         >
-          {ctx.heroTitle}
+          {heroTitle}
         </h2>
         <p className={styles.drumsHeroMeta}>{ctx.heroMeta}</p>
         {notesEdit && ctx.activeClipId && onNoteChange ? (
@@ -141,7 +152,9 @@ export function DrumsPane({
                 }
               >
                 <div className={styles.drumsFormSegHead}>
-                  <span className={styles.drumsFormSegName}>{seg.name}</span>
+                  <span className={styles.drumsFormSegName}>
+                    {fmtName(seg.name)}
+                  </span>
                   <span className={styles.drumsFormSegMeta}>
                     {seg.barCount} takt{seg.barCount === 1 ? "" : "ów"}
                   </span>
