@@ -1,0 +1,96 @@
+/* Admin Scena — układ reżyserski: Master Bar + Komunikaty | Klienci */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-4);
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+/* —— Master Bar (Korekta na scenie) —— */
+
+.masterBar {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.masterBarBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-4);
+  padding: var(--ss-space-2) var(--ss-space-3);
+  min-height: 0;
+  overflow: visible;
+}
+
+.masterField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+  line-height: var(--ss-leading-tight);
+}
+
+.masterField input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--ss-color-primary);
+}
+
+.masterSwitch {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* —— Bottom: Komunikaty | Klienci —— */
+
+.bottom {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--ss-space-4);
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.messagesBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  flex: 1;
+  min-height: 0;
+}
+
+.messagesBody textarea {
+  flex: 1 1 auto;
+  min-height: 6rem;
+  resize: none;
+}
+
+.clientsBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .bottom {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

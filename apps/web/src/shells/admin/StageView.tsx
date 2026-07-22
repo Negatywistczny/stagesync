@@ -8,8 +8,9 @@ import {
   type LiveDeskSettingsDto,
   type PresenceClient,
 } from "../../lib/setlistApi.js";
-import styles from "../AdminShell.module.css";
+import shell from "../AdminShell.module.css";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
+import styles from "./StageView.module.css";
 
 const ROLE_OPTIONS = [
   { id: "karaoke", label: "Tekst" },
@@ -37,8 +38,8 @@ function resolveClientPhase(
 }
 
 function presenceDotClass(phase: ClientPhase): string {
-  if (phase === "ready") return styles.presenceDotOn ?? "";
-  return styles.presenceDotPending ?? "";
+  if (phase === "ready") return shell.presenceDotOn ?? "";
+  return shell.presenceDotPending ?? "";
 }
 
 function presenceTitle(phase: ClientPhase): string {
@@ -166,10 +167,10 @@ export function StageView() {
       : "empty";
   const headerDotClass =
     headerPresence === "online"
-      ? (styles.presenceDotOn ?? "")
+      ? (shell.presenceDotOn ?? "")
       : headerPresence === "error"
-        ? (styles.presenceDotPending ?? "")
-        : (styles.presenceDotOff ?? "");
+        ? (shell.presenceDotPending ?? "")
+        : (shell.presenceDotOff ?? "");
   const headerCountLabel =
     headerPresence === "online"
       ? clients.length === 1
@@ -186,108 +187,25 @@ export function StageView() {
         : "Brak podłączonych klientów";
 
   return (
-    <div className={[styles.twoUp, styles.twoUpStage].join(" ")}>
-      <section className={styles.card} aria-label="Komunikaty">
-        <div className={styles.cardHead}>
-          <h1 className={styles.cardTitle}>Komunikaty</h1>
+    <div className={styles.root}>
+      <section
+        className={[shell.card, styles.masterBar].join(" ")}
+        aria-label="Korekta na scenie"
+      >
+        <div className={shell.cardHead}>
+          <h1 className={shell.cardTitle}>Korekta na scenie</h1>
         </div>
-        <div className={styles.cardBody}>
-          {error ? (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          ) : null}
-          {status ? <p className={styles.muted}>{status}</p> : null}
-          <textarea
-            className={styles.textarea}
-            maxLength={200}
-            placeholder="Treść…"
-            value={text}
-            disabled={pending}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <p className={styles.muted}>Role (puste = wszyscy)</p>
-          <div className={styles.chips}>
-            {ROLE_OPTIONS.map((r) => {
-              const on = roles.includes(r.id);
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  className={on ? styles.chipOn : styles.chip}
-                  disabled={pending}
-                  aria-pressed={on}
-                  onClick={() => toggleRole(r.id)}
-                >
-                  {r.label}
-                </button>
-              );
-            })}
-          </div>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={
-                priority === "alert" ? styles.chipOn : styles.chip
-              }
-              disabled={pending}
-              aria-pressed={priority === "alert"}
-              title="Priorytet alert"
-              onClick={() =>
-                setPriority((p) => (p === "alert" ? "normal" : "alert"))
-              }
-            >
-              {priority === "alert" ? "Alert" : "Normal"}
-            </button>
-            <select
-              className={styles.select}
-              value={String(ttlMs)}
-              disabled={pending}
-              onChange={(e) => setTtlMs(Number(e.target.value))}
-            >
-              <option value="6000">TTL 6 s</option>
-              <option value="10000">10 s</option>
-              <option value="15000">15 s</option>
-              <option value="30000">30 s</option>
-              <option value="0">∞</option>
-            </select>
-            <Button
-              variant="primary"
-              disabled={pending || !text.trim()}
-              loading={pending}
-              onClick={() => void onSend()}
-            >
-              Wyślij
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={pending}
-              onClick={() => {
-                setText("");
-                setStatus(null);
-              }}
-            >
-              Wyczyść
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.card} aria-label="Korekta na scenie">
-        <div className={styles.cardHead}>
-          <h1 className={styles.cardTitle}>Korekta na scenie</h1>
-        </div>
-        <div className={styles.cardBody}>
+        <div className={styles.masterBarBody}>
           {liveDeskError ? (
-            <p className={styles.error} role="alert">
+            <p className={shell.error} role="alert">
               {liveDeskError}
             </p>
           ) : null}
           {!liveDesk ? (
-            <p className={styles.muted}>Wczytywanie Live Desk…</p>
+            <p className={shell.muted}>Wczytywanie Live Desk…</p>
           ) : (
             <>
-              <label className={styles.field}>
+              <label className={styles.masterField}>
                 Transpozycja zespołu (
                 {liveDesk.transpositionSemitones > 0 ? "+" : ""}
                 {liveDesk.transpositionSemitones} półtonów)
@@ -321,7 +239,7 @@ export function StageView() {
                   }}
                 />
               </label>
-              <label className={styles.field}>
+              <label className={styles.masterField}>
                 Kompensacja sieci (
                 {liveDesk.syncLeadMs > 0 ? "+" : ""}
                 {liveDesk.syncLeadMs} ms)
@@ -350,6 +268,7 @@ export function StageView() {
                 />
               </label>
               <ShellSwitchRow
+                className={styles.masterSwitch}
                 checked={liveDesk.clientEditEnabled}
                 disabled={liveDeskSaving}
                 onChange={(e) => {
@@ -365,83 +284,177 @@ export function StageView() {
         </div>
       </section>
 
-      <section className={styles.card} aria-label="Klienci">
-        <div className={styles.cardHead}>
-          <div className={styles.clientsHeadLead}>
-            <span
-              className={[styles.presenceDot, headerDotClass].join(" ")}
-              title={headerDotTitle}
-              aria-hidden
-            />
-            <h1 className={styles.cardTitle}>Klienci</h1>
-            <span className={styles.clientsHeadCount}>{headerCountLabel}</span>
+      <div className={styles.bottom}>
+        <section
+          className={[shell.card, styles.panel].join(" ")}
+          aria-label="Komunikaty"
+        >
+          <div className={shell.cardHead}>
+            <h1 className={shell.cardTitle}>Komunikaty</h1>
           </div>
-          <Button
-            variant="ghost"
-            loading={clientsLoading}
-            onClick={() => void refreshClients()}
-          >
-            Odśwież
-          </Button>
-        </div>
-        <div className={styles.cardBody}>
-          {clientsError ? (
-            <p className={styles.error} role="alert">
-              {clientsError}
-            </p>
-          ) : null}
-          {clients.length === 0 ? (
-            <p className={styles.muted}>Brak połączonych klientów.</p>
-          ) : (
-            <ul className={styles.list} aria-live="polite">
-              {clients.map((c) => {
-                const phase = resolveClientPhase(c);
-                const title = presenceTitle(phase);
-                const name =
-                  phase === "awaiting-data"
-                    ? "Łączenie…"
-                    : (c.displayName ?? "Anonim");
+          <div className={[shell.cardBody, styles.messagesBody].join(" ")}>
+            {error ? (
+              <p className={shell.error} role="alert">
+                {error}
+              </p>
+            ) : null}
+            {status ? <p className={shell.muted}>{status}</p> : null}
+            <textarea
+              className={shell.textarea}
+              maxLength={200}
+              placeholder="Treść…"
+              value={text}
+              disabled={pending}
+              onChange={(e) => setText(e.target.value)}
+            />
+            <p className={shell.muted}>Role (puste = wszyscy)</p>
+            <div className={shell.chips}>
+              {ROLE_OPTIONS.map((r) => {
+                const on = roles.includes(r.id);
                 return (
-                  <li
-                    key={c.id}
-                    className={[styles.songRow, styles.songRowPair].join(" ")}
+                  <button
+                    key={r.id}
+                    type="button"
+                    className={on ? shell.chipOn : shell.chip}
+                    disabled={pending}
+                    aria-pressed={on}
+                    onClick={() => toggleRole(r.id)}
                   >
-                    <span className={styles.clientMain}>
-                      <span
-                        className={[
-                          styles.presenceDot,
-                          presenceDotClass(phase),
-                        ].join(" ")}
-                        title={title}
-                        aria-label={title}
-                      />
-                      <span className={styles.songName}>{name}</span>
-                    </span>
-                    <span className={styles.songMeta}>
-                      {[
-                        phase === "awaiting-data"
-                          ? "brak danych"
-                          : phase === "stale"
-                            ? "brak sygnału"
-                            : c.roles.length > 0
-                              ? c.roles.join(", ")
-                              : "—",
-                        phase === "ready" || phase === "awaiting-role"
-                          ? c.latencyMs != null
-                            ? `${c.latencyMs} ms`
-                            : null
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                  </li>
+                    {r.label}
+                  </button>
                 );
               })}
-            </ul>
-          )}
-        </div>
-      </section>
+            </div>
+            <div className={shell.actions}>
+              <button
+                type="button"
+                className={
+                  priority === "alert" ? shell.chipOn : shell.chip
+                }
+                disabled={pending}
+                aria-pressed={priority === "alert"}
+                title="Priorytet alert"
+                onClick={() =>
+                  setPriority((p) => (p === "alert" ? "normal" : "alert"))
+                }
+              >
+                {priority === "alert" ? "Alert" : "Normal"}
+              </button>
+              <select
+                className={shell.select}
+                value={String(ttlMs)}
+                disabled={pending}
+                onChange={(e) => setTtlMs(Number(e.target.value))}
+              >
+                <option value="6000">TTL 6 s</option>
+                <option value="10000">10 s</option>
+                <option value="15000">15 s</option>
+                <option value="30000">30 s</option>
+                <option value="0">∞</option>
+              </select>
+              <Button
+                variant="primary"
+                disabled={pending || !text.trim()}
+                loading={pending}
+                onClick={() => void onSend()}
+              >
+                Wyślij
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={pending}
+                onClick={() => {
+                  setText("");
+                  setStatus(null);
+                }}
+              >
+                Wyczyść
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className={[shell.card, styles.panel].join(" ")}
+          aria-label="Klienci"
+        >
+          <div className={shell.cardHead}>
+            <div className={shell.clientsHeadLead}>
+              <span
+                className={[shell.presenceDot, headerDotClass].join(" ")}
+                title={headerDotTitle}
+                aria-hidden
+              />
+              <h1 className={shell.cardTitle}>Klienci</h1>
+              <span className={shell.clientsHeadCount}>{headerCountLabel}</span>
+            </div>
+            <Button
+              variant="ghost"
+              loading={clientsLoading}
+              onClick={() => void refreshClients()}
+            >
+              Odśwież
+            </Button>
+          </div>
+          <div className={[shell.cardBody, styles.clientsBody].join(" ")}>
+            {clientsError ? (
+              <p className={shell.error} role="alert">
+                {clientsError}
+              </p>
+            ) : null}
+            {clients.length === 0 ? (
+              <p className={shell.muted}>Brak połączonych klientów.</p>
+            ) : (
+              <ul className={shell.list} aria-live="polite">
+                {clients.map((c) => {
+                  const phase = resolveClientPhase(c);
+                  const title = presenceTitle(phase);
+                  const name =
+                    phase === "awaiting-data"
+                      ? "Łączenie…"
+                      : (c.displayName ?? "Anonim");
+                  return (
+                    <li
+                      key={c.id}
+                      className={[shell.songRow, shell.songRowPair].join(" ")}
+                    >
+                      <span className={shell.clientMain}>
+                        <span
+                          className={[
+                            shell.presenceDot,
+                            presenceDotClass(phase),
+                          ].join(" ")}
+                          title={title}
+                          aria-label={title}
+                        />
+                        <span className={shell.songName}>{name}</span>
+                      </span>
+                      <span className={shell.songMeta}>
+                        {[
+                          phase === "awaiting-data"
+                            ? "brak danych"
+                            : phase === "stale"
+                              ? "brak sygnału"
+                              : c.roles.length > 0
+                                ? c.roles.join(", ")
+                                : "—",
+                          phase === "ready" || phase === "awaiting-role"
+                            ? c.latencyMs != null
+                              ? `${c.latencyMs} ms`
+                              : null
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
