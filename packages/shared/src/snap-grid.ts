@@ -108,6 +108,7 @@ export function snapTicksToBarStartAlongMeterMap(
 
 /**
  * Snap to local beat grid (v4 quantizeAbsBeat / beatUnitQuarters).
+ * Absolute from 0 — prefer {@link snapTicksToBeatGridAlongMeterMap} when meterMap varies.
  */
 export function snapTicksToBeatGrid(
   ticks: number,
@@ -119,6 +120,54 @@ export function snapTicksToBeatGrid(
   }
   const step = localTicksPerBeat(meter, ppq);
   return Math.round(ticks / step) * step;
+}
+
+/**
+ * Snap to local beat grid within the musical bar that contains `ticks`
+ * (piece-wise via meterMap). Global `Math.round(ticks/step)*step` drifts after
+ * mid-song meter changes (e.g. 4/4 → 3/4 → 7/8).
+ *
+ * Pre-roll (`ticks < 0`) uses constant `defaultMeter` like bar snap.
+ */
+export function snapTicksToBeatGridAlongMeterMap(
+  ticks: number,
+  defaultMeter: TimeSignature,
+  meterMap: readonly MeterMapEvent[],
+  ppq: number = DEFAULT_PPQ,
+): number {
+  if (!Number.isFinite(ticks) || !Number.isInteger(ticks)) {
+    throw new RangeError("ticks must be a finite integer");
+  }
+  if (ticks < 0) {
+    return snapTicksToBeatGrid(ticks, defaultMeter, ppq);
+  }
+
+  let cursor = 0;
+  let guard = 0;
+  while (guard < 100_000) {
+    const meter = resolveMeterAtTicks(cursor, defaultMeter, meterMap);
+    const perBar = ticksPerBar(meter, ppq);
+    const next = cursor + perBar;
+    if (ticks >= cursor && ticks < next) {
+      const step = localTicksPerBeat(meter, ppq);
+      const local = ticks - cursor;
+      const snappedLocal = Math.round(local / step) * step;
+      if (snappedLocal <= 0) return cursor;
+      if (snappedLocal >= perBar) return next;
+      return cursor + snappedLocal;
+    }
+    if (ticks === next) return next;
+    cursor = next;
+    guard += 1;
+    if (cursor > ticks + perBar) {
+      return snapTicksToBeatGrid(
+        ticks,
+        resolveMeterAtTicks(ticks, defaultMeter, meterMap),
+        ppq,
+      );
+    }
+  }
+  throw new RangeError("snapTicksToBeatGridAlongMeterMap exceeded max bars");
 }
 
 /**
@@ -178,7 +227,15 @@ export function quantizeTicks(
           : snapTicksToBarStart(ticks, ctx.meter, ppq);
       break;
     case "beat":
-      snapped = snapTicksToBeatGrid(ticks, ctx.meter, ppq);
+      snapped =
+        ctx.defaultMeter != null && ctx.meterMap != null
+          ? snapTicksToBeatGridAlongMeterMap(
+              ticks,
+              ctx.defaultMeter,
+              ctx.meterMap,
+              ppq,
+            )
+          : snapTicksToBeatGrid(ticks, ctx.meter, ppq);
       break;
     default:
       snapped = snapTicksToSubdivision(ticks, mode.parts, ppq);
