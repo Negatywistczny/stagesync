@@ -32,6 +32,9 @@ const inflight = new Map<string, Promise<AudioBuffer | null>>();
 let active: ActiveSource[] = [];
 let lastDisplayTicks: number | null = null;
 let lastGraphKey = "";
+/** Local halt while pause/stop RTT still has `playing: true` from SSOT. */
+let playbackSuppressed = false;
+let stopEpoch = 0;
 
 const SEEK_JUMP_TICKS = 480;
 const MAX_BUFFER_CACHE = 32;
@@ -110,6 +113,33 @@ function stopAll(): void {
   active = [];
 }
 
+/** Immediate local mute (Pause/Stop click) — blocks re-schedule until cleared. */
+export function suppressAudioPlayback(): void {
+  playbackSuppressed = true;
+  stopEpoch += 1;
+  stopAll();
+  lastDisplayTicks = null;
+  lastGraphKey = "";
+}
+
+/** Re-arm scheduler after an explicit Play gesture. */
+export function allowAudioPlayback(): void {
+  playbackSuppressed = false;
+}
+
+/** Test/debug: active BufferSource count + suppress flag. */
+export function getAudioPlaybackDebugState(): {
+  activeCount: number;
+  suppressed: boolean;
+  stopEpoch: number;
+} {
+  return {
+    activeCount: active.length,
+    suppressed: playbackSuppressed,
+    stopEpoch,
+  };
+}
+
 function graphKey(input: AudioPlaybackInput): string {
   return [
     input.project.audioClips
@@ -183,13 +213,14 @@ export function syncAudioPlayback(
   input: AudioPlaybackInput,
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
-  if (!input.playing || ctx.state !== "running") {
+  if (playbackSuppressed || !input.playing || ctx.state !== "running") {
     stopAll();
     lastDisplayTicks = input.displayTicks;
     lastGraphKey = graphKey(input);
     return;
   }
 
+  const epochAtStart = stopEpoch;
   const gKey = graphKey(input);
   const jumped =
     lastDisplayTicks != null &&
@@ -204,6 +235,7 @@ export function syncAudioPlayback(
   const stillNeeded = new Set<string>();
 
   for (const clip of input.project.audioClips) {
+    if (epochAtStart !== stopEpoch || playbackSuppressed) break;
     const track = trackById.get(clip.trackId);
     if (track?.muted || clip.muted) continue;
     const offset = audioClipBufferOffsetSecAlongMaps(
@@ -226,6 +258,7 @@ export function syncAudioPlayback(
 }
 
 export function stopAudioPlayback(): void {
+  stopEpoch += 1;
   stopAll();
   lastDisplayTicks = null;
   lastGraphKey = "";
@@ -244,6 +277,8 @@ export function restartAudioPlayback(
   input: AudioPlaybackInput,
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
+  playbackSuppressed = false;
+  stopEpoch += 1;
   stopAll();
   lastDisplayTicks = null;
   lastGraphKey = "";

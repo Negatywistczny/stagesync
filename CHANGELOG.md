@@ -19,6 +19,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Timeline audio po Pause/Stop (#352):** natychmiastowy `suppressAudioPlayback()` przy Pause/Stop (UI + menu), żeby WebAudio nie grał w trakcie RTT zanim SSOT ustawi `playing: false`; sync nie re-schedule’uje przy suppress.
 - **Train 8 schema repair:** przywrócono baseline `schema.ts` z `main` po regresji `--theirs`; zachowano `fadeInMs`/`fadeOutMs`/`loop`, `KEY_TONICS`, `ExportLibraryBodySchema`, `serverTimeMs` w `TransportProvider`, `ClipHitZone` w `TimelineShell`.
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
