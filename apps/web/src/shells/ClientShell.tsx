@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
-import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
+import { toDisplayBar, ticksToBbtAlongMeterMap, type Project } from "@stagesync/shared";
 import {
   loadClientDisplayPrefs,
   setFormNotesEdit,
@@ -58,12 +58,24 @@ export function ClientShell() {
     play,
     announcePresence,
   } = useTransport();
-  const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const {
     activeProject,
     setActiveProject,
     loading: projectLoading,
   } = useActiveProject(state.activeProjectId);
+  const headerBbt = activeProject
+    ? ticksToBbtAlongMeterMap(
+        displayTicks,
+        activeProject.defaultMeter,
+        activeProject.meterMap,
+        activeProject.ppq,
+      )
+    : ticksToBbtAlongMeterMap(
+        displayTicks,
+        state.timeSignature,
+        [],
+        state.ppq,
+      );
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
