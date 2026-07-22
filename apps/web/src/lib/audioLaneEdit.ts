@@ -109,6 +109,32 @@ export function setAudioClipGainDb(
   };
 }
 
+export function setAudioClipTrimMs(
+  project: Project,
+  clipId: string,
+  trim: { trimInMs?: number; trimOutMs?: number },
+): Project {
+  return {
+    ...project,
+    audioClips: project.audioClips.map((c) => {
+      if (c.id !== clipId) return c;
+      const trimInMs =
+        trim.trimInMs === undefined
+          ? c.trimInMs
+          : trim.trimInMs > 0
+            ? trim.trimInMs
+            : undefined;
+      const trimOutMs =
+        trim.trimOutMs === undefined
+          ? c.trimOutMs
+          : trim.trimOutMs > 0
+            ? trim.trimOutMs
+            : undefined;
+      return { ...c, trimInMs, trimOutMs };
+    }),
+  };
+}
+
 export function setAudioClipFadeMs(
   project: Project,
   clipId: string,
@@ -206,6 +232,21 @@ export function setAudioTrackGainDb(
     ...project,
     audioTracks: project.audioTracks.map((t) =>
       t.id === trackId ? { ...t, gainDb } : t,
+    ),
+  };
+}
+
+export function setAudioTrackName(
+  project: Project,
+  trackId: string,
+  name: string,
+): Project {
+  const next = name.trim().slice(0, 80);
+  if (!next) return project;
+  return {
+    ...project,
+    audioTracks: project.audioTracks.map((t) =>
+      t.id === trackId ? { ...t, name: next } : t,
     ),
   };
 }

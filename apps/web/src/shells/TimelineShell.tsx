@@ -169,10 +169,14 @@ import {
   applyDecodedAudioMeta,
   commitAudioGesture,
   previewAudioFromSession,
+  setAudioClipFadeMs,
   setAudioClipGainDb,
+  setAudioClipLoop,
   setAudioClipMuted,
+  setAudioClipTrimMs,
   setAudioTrackGainDb,
   setAudioTrackMuted,
+  setAudioTrackName,
 } from "../lib/audioLaneEdit.js";
 import {
   allowAudioPlayback,
@@ -1335,10 +1339,11 @@ export function TimelineShell() {
     draftProject && selectedAudioClipId
       ? draftProject.audioClips.find((c) => c.id === selectedAudioClipId) ?? null
       : null;
-  const selectedAudioTrack =
-    draftProject && selectedAudioClip
-      ? draftProject.audioTracks.find((tr) => tr.id === selectedAudioClip.trackId) ??
-        null
+  const selectedDockAudioTrack =
+    draftProject && trackSelection.audioTrackId
+      ? draftProject.audioTracks.find(
+          (tr) => tr.id === trackSelection.audioTrackId,
+        ) ?? null
       : null;
   const selectedAnchor =
     draftProject && selectedAnchorId
@@ -4925,11 +4930,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
               </div>
-            ) : selectedAudioClip && selectedAudioTrack ? (
+            ) : selectedAudioClip ? (
               <div className={styles.inspBody}>
+                <p className={styles.muted}>Klip audio</p>
                 <p className={styles.muted}>
-                  {draftProject?.assets.find((a) => a.id === selectedAudioClip.assetId)
-                    ?.originalName ?? "Audio"}
+                  {draftProject?.assets.find(
+                    (a) => a.id === selectedAudioClip.assetId,
+                  )?.originalName ?? "Audio"}
                 </p>
                 <label className={styles.inspField}>
                   <input
@@ -4949,18 +4956,97 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   Mute clip
                 </label>
                 <label className={styles.inspField}>
-                  Gain clip (dB)
+                  Trim In (ms)
                   <input
                     className={styles.lengthInput}
                     type="number"
-                    step={0.5}
-                    value={selectedAudioClip.gainDb ?? 0}
+                    min={0}
+                    step={1}
+                    value={selectedAudioClip.trimInMs ?? 0}
                     onChange={(e) => {
                       if (!draftProject) return;
                       const n = Number(e.target.value);
-                      if (!Number.isFinite(n)) return;
+                      if (!Number.isFinite(n) || n < 0) return;
                       commitDraft(
-                        setAudioClipGainDb(draftProject, selectedAudioClip.id, n),
+                        setAudioClipTrimMs(draftProject, selectedAudioClip.id, {
+                          trimInMs: n,
+                        }),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  Trim Out (ms)
+                  <input
+                    className={styles.lengthInput}
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={selectedAudioClip.trimOutMs ?? 0}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n) || n < 0) return;
+                      commitDraft(
+                        setAudioClipTrimMs(draftProject, selectedAudioClip.id, {
+                          trimOutMs: n,
+                        }),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  Gain clip (dB)
+                  <Slider
+                    aria-label="Gain clip"
+                    min={-24}
+                    max={12}
+                    step={0.5}
+                    value={selectedAudioClip.gainDb ?? 0}
+                    onValueChange={(v) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioClipGainDb(
+                          draftProject,
+                          selectedAudioClip.id,
+                          v,
+                        ),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  Fade In (ms)
+                  <Slider
+                    aria-label="Fade in"
+                    min={0}
+                    max={2000}
+                    step={10}
+                    value={selectedAudioClip.fadeInMs ?? 0}
+                    onValueChange={(v) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
+                          fadeInMs: v,
+                        }),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  Fade Out (ms)
+                  <Slider
+                    aria-label="Fade out"
+                    min={0}
+                    max={2000}
+                    step={10}
+                    value={selectedAudioClip.fadeOutMs ?? 0}
+                    onValueChange={(v) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
+                          fadeOutMs: v,
+                        }),
                       );
                     }}
                   />
@@ -4968,38 +5054,108 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   <input
                     type="checkbox"
-                    checked={Boolean(selectedAudioTrack.muted)}
+                    checked={Boolean(selectedAudioClip.loop)}
                     onChange={(e) => {
                       if (!draftProject) return;
                       commitDraft(
-                        setAudioTrackMuted(
+                        setAudioClipLoop(
                           draftProject,
-                          selectedAudioTrack.id,
+                          selectedAudioClip.id,
                           e.target.checked,
                         ),
                       );
                     }}
                   />{" "}
-                  Mute track
+                  Loop
                 </label>
+              </div>
+            ) : selectedDockAudioTrack ? (
+              <div className={styles.inspBody}>
+                <p className={styles.muted}>Ścieżka audio</p>
                 <label className={styles.inspField}>
-                  Fader track (dB)
+                  Nazwa
                   <input
-                    className={styles.lengthInput}
-                    type="number"
-                    step={0.5}
-                    value={selectedAudioTrack.gainDb ?? 0}
+                    className={styles.nameInput}
+                    value={selectedDockAudioTrack.name}
+                    aria-label="Nazwa ścieżki"
                     onChange={(e) => {
                       if (!draftProject) return;
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n)) return;
+                      commitDraft(
+                        setAudioTrackName(
+                          draftProject,
+                          selectedDockAudioTrack.id,
+                          e.target.value,
+                        ),
+                      );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(selectedDockAudioTrack.muted)}
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        setAudioTrackMuted(
+                          draftProject,
+                          selectedDockAudioTrack.id,
+                          e.target.checked,
+                        ),
+                      );
+                    }}
+                  />{" "}
+                  Mute
+                </label>
+                <label className={styles.inspField}>
+                  <input
+                    type="checkbox"
+                    checked={soloAudioTrackIds.includes(
+                      selectedDockAudioTrack.id,
+                    )}
+                    onChange={() => {
+                      setSoloAudioTrackIds((prev) =>
+                        toggleSoloTrackId(prev, selectedDockAudioTrack.id),
+                      );
+                    }}
+                  />{" "}
+                  Solo
+                </label>
+                <label className={styles.inspField}>
+                  Fader (dB)
+                  <Slider
+                    aria-label="Fader ścieżki"
+                    min={-24}
+                    max={12}
+                    step={0.5}
+                    value={selectedDockAudioTrack.gainDb ?? 0}
+                    onValueChange={(v) => {
+                      if (!draftProject) return;
                       commitDraft(
                         setAudioTrackGainDb(
                           draftProject,
-                          selectedAudioTrack.id,
-                          n,
+                          selectedDockAudioTrack.id,
+                          v,
                         ),
                       );
+                    }}
+                  />
+                </label>
+                <label className={styles.inspField}>
+                  Dodaj plik audio
+                  <input
+                    type="file"
+                    accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
+                    disabled={audioUploadPending}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) {
+                        void onUploadAudioToTrack(
+                          selectedDockAudioTrack.id,
+                          f,
+                        );
+                      }
                     }}
                   />
                 </label>
