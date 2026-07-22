@@ -11,7 +11,7 @@ import {
   ticksPerBar,
   type TimeSignature,
 } from "./time.js";
-import { ProjectSchema, type Project, type FormaClip } from "./schema.js";
+import { ProjectSchema, normalizeKeyTonic, type Project, type FormaClip } from "./schema.js";
 import { sealAkordyLengths } from "./ug-import.js";
 import { scrubCountdownDigitClips } from "./countdown-content.js";
 import {
@@ -343,7 +343,7 @@ export function migrateLegacySong(
 
   // Key map
   const keyFallback = {
-    tonic: asString(song.key?.tonic, "C"),
+    tonic: normalizeKeyTonic(song.key?.tonic, "C"),
     mode:
       asString(song.key?.mode, "major").toLowerCase() === "minor"
         ? ("minor" as const)
@@ -351,7 +351,7 @@ export function migrateLegacySong(
   };
   const keyMapRaw = Array.isArray(song.keyMap) ? song.keyMap : [];
   let keyMap = keyMapRaw.map((ev, i) => {
-    const tonic = asString(ev.key?.tonic, keyFallback.tonic);
+    const tonic = normalizeKeyTonic(ev.key?.tonic, keyFallback.tonic);
     const mode =
       asString(ev.key?.mode, keyFallback.mode).toLowerCase() === "minor"
         ? ("minor" as const)

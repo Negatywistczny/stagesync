@@ -148,6 +148,22 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
+  it("rejects invalid keyMap tonic", () => {
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    expect(() =>
+      ProjectSchemaV5.parse({
+        ...seed,
+        keyMap: [
+          {
+            id: "key-0",
+            startTicks: 0,
+            key: { tonic: "Foo", mode: "major" },
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
   it("upgrades v4 to v5", () => {
     const v4 = createProjectV4Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const v5 = upgradeProjectV4ToV5(v4);
