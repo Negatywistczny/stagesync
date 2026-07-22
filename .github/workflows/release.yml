@@ -104,10 +104,14 @@ jobs:
           | System operacyjny | Plik instalacyjny |
           | :--- | :--- |
           | 🍎 **macOS** (Apple Silicon) | \`StageSync_${{ env.VERSION }}_aarch64.dmg\` |
-          | 🪟 **Windows** (64-bit) | \`StageSync_${{ env.VERSION }}_x64_en-US.msi\` |
+          | 🪟 **Windows** (64-bit) | \`StageSync_${{ env.VERSION }}_x64.msi\` |
 
-          > ℹ️ **Uwaga dotycząca pozostałych plików:**  
-          > Pliki z rozszerzeniami \`.sig\`, \`.app.tar.gz\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są plikami technicznymi używanymi przez wbudowany mechanizm automatycznych aktualizacji (in-app updater) oraz weryfikacji spójności. Nie musisz ich pobierać ręcznie.
+          <details>
+          <summary>Pliki automatycznych aktualizacji i checksumy</summary>
+
+          Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji i weryfikację spójności — nie musisz ich pobierać ręcznie.
+
+          </details>
 
           ---
 
@@ -242,6 +246,19 @@ jobs:
           args: --verbose
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
+      - name: Rename MSI without en-US locale suffix
+        shell: bash
+        run: |
+          set -euo pipefail
+          MSI_DIR="apps/desktop/src-tauri/target/release/bundle/msi"
+          shopt -s nullglob
+          for f in "$MSI_DIR"/*_en-US.msi; do
+            base="$(basename "$f")"
+            dest="$MSI_DIR/${base/_en-US/}"
+            mv "$f" "$dest"
+            echo "Renamed $base → $(basename "$dest")"
+          done
+
       - name: Upload msi artifact
         uses: actions/upload-artifact@v7
         with:
@@ -268,6 +285,32 @@ jobs:
         with:
           name: windows-msi
           path: dist/
+
+      - name: Rename MSI and align release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="v${{ env.VERSION }}"
+          REPO="${{ github.repository }}"
+          cd dist
+          shopt -s nullglob
+          for f in *_en-US.msi; do
+            dest="${f/_en-US/}"
+            mv "$f" "$dest"
+            echo "Renamed $f → $dest"
+            # Replace draft asset uploaded by tauri-action (still had _en-US).
+            gh release delete-asset "$TAG" "$f" -R "$REPO" --yes 2>/dev/null || true
+            gh release upload "$TAG" "$dest" -R "$REPO" --clobber
+          done
+          # Keep updater manifest URLs consistent if they still mention _en-US.
+          if gh release download "$TAG" -R "$REPO" -p latest.json -D . 2>/dev/null; then
+            if grep -q '_en-US\.msi' latest.json; then
+              sed -i 's/_en-US\.msi/.msi/g' latest.json
+              gh release upload "$TAG" latest.json -R "$REPO" --clobber
+              echo "Updated latest.json MSI URLs"
+            fi
+          fi
 
       - name: Generate SHA256 checksums
         run: |

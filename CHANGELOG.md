@@ -12,6 +12,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline:** zoom H/V/UI z ikonami; snap picker (off / bar / beat / subdivision); rozszerzona Pomoc z kartami sekcji, miniaturami narzędzi / transportu / ścieżek i czytelnymi skrótami klawiszowymi; zoom sesji zapisywany lokalnie.
 - **Audio:** fade in/out (envelope WebAudio + uchwyty Smart na klipie); crossfade przy styku; region loop klipu; kontrolki w inspectorze; kopiuj/wklej na ścieżce audio.
 - **Transport i setlista:** pauza i zatrzymanie playheadu na końcu utworu; opcjonalne auto-advance setlisty; nawigacja `[` / `]` między utworami; WS reconnect z exponential backoff+jitter; baner offline Client + refetch projektu po reconnect (#358).
+- **Release MSI (#396):** instalator Windows publikowany jako `StageSync_{version}_x64.msi` (bez `_en-US`); sekcja updatera w `RELEASE_BODY` zwinięta w `<details>`; `latest.json` dopasowywany przy rename.
 - **MIDI (host):** Start/Stop/Continue/SPP z MIDI IN; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po `midiProgramId` (SSOT serwera).
 - **Desktop:** menu OS — Edycja (m.in. Cmd/Ctrl+C), zoom w Widok, otwarcie Pomocy; czytelniejsze błędy transportu i sąsiadów setlisty.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.

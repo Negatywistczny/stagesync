@@ -29,7 +29,7 @@ Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/N
 | Platforma | Plik |
 |-----------|------|
 | macOS | `StageSync_x.y.z_aarch64.dmg` lub `x64.dmg` |
-| Windows | `StageSync_x.y.z_x64_en-US.msi` |
+| Windows | `StageSync_x.y.z_x64.msi` |
 
 ### Instalacja bez podpisu cyfrowego (beta)
 
