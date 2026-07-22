@@ -117,6 +117,20 @@ export function AdminShell() {
   }, "Wyłącz");
 
   const { state, displayTicks, wsStatus, play } = useTransport();
+  const goSection = useCallback(
+    (id: SectionId) => {
+      setSection(id);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("section", id);
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
@@ -323,7 +337,7 @@ export function AdminShell() {
                   .filter(Boolean)
                   .join(" ")}
                 aria-pressed={section === item.id}
-                onClick={() => setSection(item.id)}
+                onClick={() => goSection(item.id)}
               >
                 {item.label}
               </button>
