@@ -30,8 +30,9 @@ export function ProjectFilesPanel({
   const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const reload = useCallback(async (id: string) => {
+  const reload = useCallback(async (id: string, isStale?: () => boolean) => {
     const project: Project = await fetchProject(id);
+    if (isStale?.()) return;
     setAssets(project.assets);
   }, []);
 
@@ -41,9 +42,10 @@ export function ProjectFilesPanel({
       return;
     }
     let cancelled = false;
+    const isStale = () => cancelled;
     void (async () => {
       try {
-        await reload(projectId);
+        await reload(projectId, isStale);
         if (!cancelled) setError(null);
       } catch (err) {
         if (!cancelled) {
