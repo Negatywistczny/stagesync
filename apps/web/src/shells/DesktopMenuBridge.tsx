@@ -190,7 +190,7 @@ function RestartConfirmModal({
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { play, stop, state } = useTransport();
+  const { play, stop, state, commandPending } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
@@ -204,6 +204,7 @@ export function DesktopMenuBridge() {
 
   const goSetlistNeighbor = useCallback(
     async (direction: "prev" | "next") => {
+      if (commandPending) return;
       try {
         const view = await fetchSetlist();
         if (!view.enabled || view.entries.length === 0) return;
@@ -222,10 +223,11 @@ export function DesktopMenuBridge() {
         /* ignore — menu is best-effort */
       }
     },
-    [location.pathname, navigate, play],
+    [commandPending, location.pathname, navigate, play],
   );
 
   const onTransportPlay = useCallback(async () => {
+    if (commandPending) return;
     try {
       const projectId =
         state.activeProjectId ??
@@ -236,15 +238,16 @@ export function DesktopMenuBridge() {
     } catch {
       /* ignore */
     }
-  }, [location.pathname, play, state.activeProjectId]);
+  }, [commandPending, location.pathname, play, state.activeProjectId]);
 
   const onTransportStop = useCallback(async () => {
+    if (commandPending) return;
     try {
       await stop();
     } catch {
       /* ignore */
     }
-  }, [stop]);
+  }, [commandPending, stop]);
 
   const onRestartConfirm = useCallback(async () => {
     setRestartPending(true);
