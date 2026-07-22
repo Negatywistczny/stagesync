@@ -1006,6 +1006,11 @@ export function TimelineShell() {
       }
       if (!mod && !e.altKey && key === "c") {
         e.preventDefault();
+        onTool("scissors");
+        return;
+      }
+      if (!mod && !e.altKey && key === "l") {
+        e.preventDefault();
         h.onLoopToggle();
         return;
       }
@@ -3983,7 +3988,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               {state.playing ? <IconPause /> : <IconPlay />}
             </button>
             <ShellIconButton
-              label="Pętla — przeciągnij zakres na linijce, potem włącz"
+              label="Pętla (L) — przeciągnij zakres na linijce, potem włącz"
               pressed={loopOn}
               onClick={onLoopToggle}
             >
