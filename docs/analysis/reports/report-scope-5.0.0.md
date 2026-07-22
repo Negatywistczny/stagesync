@@ -176,70 +176,63 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~01:17 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~01:27 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
 ### Must A–E (#53–#60)
 
-CI green — **nie koniec okna**. Merge order: #53→#54; #57→#58; E=#60 docs/api+smoke.
+CI green — kontynuacja po mustach. Merge: #53→#54; #57→#58; E=#60.
 
-### Correction
+### Key correction
 
-- [#73](https://github.com/Negatywistyczny/stagesync/pull/73) auto-advance **OPEN** (nie na main). Pair with [#121](https://github.com/Negatywistyczny/stagesync/pull/121) (pause when AA off).
+- [#73](https://github.com/Negatywistyczny/stagesync/pull/73) auto-advance **OPEN** — pair [#121](https://github.com/Negatywistyczny/stagesync/pull/121).
 
-### Wave 3–4 PRs (this stretch) — CI ~01:16
+### Wave 3–5 PRs opened this stretch (#120–#146)
 
-| # | Temat | URL | CI |
-|---|--------|-----|----|
-| [#120](https://github.com/Negatywistyczny/stagesync/pull/120) | Client metronome dots follow live meter | https://github.com/Negatywistyczny/stagesync/pull/120 | green |
-| [#121](https://github.com/Negatywistyczny/stagesync/pull/121) | Pause + clamp at song end (AA off) | https://github.com/Negatywistyczny/stagesync/pull/121 | green |
-| [#122](https://github.com/Negatywistyczny/stagesync/pull/122) | MIDI PC IN → load project | https://github.com/Negatywistyczny/stagesync/pull/122 | green |
-| [#123](https://github.com/Negatywistyczny/stagesync/pull/123) | Follow tempo/meter maps mid-play | https://github.com/Negatywistyczny/stagesync/pull/123 | green |
-| [#124](https://github.com/Negatywistyczny/stagesync/pull/124) | Forma cascade move TE-24 | https://github.com/Negatywistyczny/stagesync/pull/124 | green |
-| [#125](https://github.com/Negatywistyczny/stagesync/pull/125) | Intro gap after CD TE-23 | https://github.com/Negatywistyczny/stagesync/pull/125 | green |
-| [#126](https://github.com/Negatywistyczny/stagesync/pull/126) | Handoff refresh wave 3 | https://github.com/Negatywistyczny/stagesync/pull/126 | green |
-| [#127](https://github.com/Negatywistyczny/stagesync/pull/127) | MIDI PC OUT on project load | https://github.com/Negatywistyczny/stagesync/pull/127 | green |
-| [#128](https://github.com/Negatywistyczny/stagesync/pull/128) | Toggle Help with `?` | https://github.com/Negatywistyczny/stagesync/pull/128 | green |
-| [#129](https://github.com/Negatywistyczny/stagesync/pull/129) | Esc closes eye menu | https://github.com/Negatywistyczny/stagesync/pull/129 | green |
-| [#130](https://github.com/Negatywistyczny/stagesync/pull/130) | Stage TTL 0 = infinite | https://github.com/Negatywistyczny/stagesync/pull/130 | pending |
-| [#131](https://github.com/Negatywistyczny/stagesync/pull/131) | Admin stop project refetch on tick | https://github.com/Negatywistyczny/stagesync/pull/131 | pending |
-| [#132](https://github.com/Negatywistyczny/stagesync/pull/132) | Stage Polish role labels | https://github.com/Negatywistyczny/stagesync/pull/132 | pending |
-| [#134](https://github.com/Negatywistyczny/stagesync/pull/134) | Honest Dalej when setlist off | https://github.com/Negatywistyczny/stagesync/pull/134 | pending |
-| [#136](https://github.com/Negatywistyczny/stagesync/pull/136) | Admin section tabs → `?section=` | https://github.com/Negatywistyczny/stagesync/pull/136 | pending |
-| [#137](https://github.com/Negatywistyczny/stagesync/pull/137) | Update panel token hygiene | https://github.com/Negatywistyczny/stagesync/pull/137 | pending |
+| # | Temat | CI |
+|---|--------|----|
+| [120](https://github.com/Negatywistyczny/stagesync/pull/120) | Client metronome meter dots | green |
+| [121](https://github.com/Negatywistyczny/stagesync/pull/121) | Pause at song end (AA off) | green |
+| [122](https://github.com/Negatywistyczny/stagesync/pull/122) | MIDI PC IN → load | green |
+| [123](https://github.com/Negatywistyczny/stagesync/pull/123) | Mid-play tempo/meter maps | green |
+| [124](https://github.com/Negatywistyczny/stagesync/pull/124) | Forma cascade TE-24 | green |
+| [125](https://github.com/Negatywistyczny/stagesync/pull/125) | Intro gap TE-23 | green |
+| [126](https://github.com/Negatywistyczny/stagesync/pull/126)–[138](https://github.com/Negatywistyczny/stagesync/pull/138) | handoff docs waves | green |
+| [127](https://github.com/Negatywistyczny/stagesync/pull/127) | MIDI PC OUT on load | green |
+| [128](https://github.com/Negatywistyczny/stagesync/pull/128) | `?` toggles Help | green |
+| [129](https://github.com/Negatywistyczny/stagesync/pull/129) | Esc closes eye menu | green |
+| [130](https://github.com/Negatywistyczny/stagesync/pull/130) | Stage TTL 0 = ∞ | green |
+| [131](https://github.com/Negatywistyczny/stagesync/pull/131) | Admin no project refetch/tick | green |
+| [132](https://github.com/Negatywistyczny/stagesync/pull/132) | Stage PL role labels | green |
+| [134](https://github.com/Negatywistyczny/stagesync/pull/134) | Dalej honest when set off | green |
+| [136](https://github.com/Negatywistyczny/stagesync/pull/136) | Admin `?section=` sync | green |
+| [137](https://github.com/Negatywistyczny/stagesync/pull/137) | Update panel tokens | green |
+| [139](https://github.com/Negatywistyczny/stagesync/pull/139) | Library accept JSON-only | green |
+| [140](https://github.com/Negatywistyczny/stagesync/pull/140) | play(projectId) → home | pending |
+| [141](https://github.com/Negatywistyczny/stagesync/pull/141) | Desktop Odtwórz toggles pause | pending |
+| [142](https://github.com/Negatywistyczny/stagesync/pull/142) | Metronome reset on meter change | pending |
+| [143](https://github.com/Negatywistyczny/stagesync/pull/143) | Client setlist focus poll | pending |
+| [144](https://github.com/Negatywistyczny/stagesync/pull/144) | Audio restart on tempo change | pending |
+| [145](https://github.com/Negatywistyczny/stagesync/pull/145) | Client active project refresh | pending |
+| [146](https://github.com/Negatywistyczny/stagesync/pull/146) | Vocal tap OCC surface | pending |
 
-### Earlier waves (still open; skrót)
+### Merge guidance (high priority)
 
-| Range | Note |
-|-------|------|
-| [#50](https://github.com/Negatywistyczny/stagesync/pull/50)–[#52](https://github.com/Negatywistyczny/stagesync/pull/52) | parallel; green; non-blocking |
-| [#53](https://github.com/Negatywistyczny/stagesync/pull/53)–[#60](https://github.com/Negatywistyczny/stagesync/pull/60) | Must A–E |
-| [#57](https://github.com/Negatywistyczny/stagesync/pull/57)–[#66](https://github.com/Negatywistyczny/stagesync/pull/66) | fade/crossfade stack |
-| [#64](https://github.com/Negatywistyczny/stagesync/pull/64)–[#117](https://github.com/Negatywistyczny/stagesync/pull/117) | wave 2+ polish / Zod / desktop |
-| [#84](https://github.com/Negatywistyczny/stagesync/pull/84), [#100](https://github.com/Negatywistyczny/stagesync/pull/100) | **retargeted to `main`** for CI (were stacked) |
+- **#124** before **#125**; **#73**+**#121**; **#122**+**#127** (`app.ts`); **#123**+**#140**+**#142**+**#144** (transport/audio/metro).
+- **#130** with **#107** (StageMessage schema).
+- Prefer **#102** over **#92**; Faza D = **#59**.
+- **#84** / **#100** retargeted to `main` for CI.
 
-### Merge guidance
+### Remaining backlog
 
-- **#124** before **#125** (cascade then Intro gap).
-- **#73** + **#121** (AA on / AA off).
-- **#122** + **#127** (PC IN / OUT) — both touch `app.ts`.
-- **#130** after/with **#107** (StageMessageBodySchema).
-- Prefer **#102** over **#92**.
-- C-fade: #57→#58 before #64/#66.
-- Faza D desktop: **#59** (already green).
-
-### Remaining backlog (ranked)
-
-1. Playwright Forma drag matrix — defer
-2. Soft-clock / Client meter-map BBT (after #98)
-3. Library accept MIME vs ZIP honesty
-4. AD-01…03 — skip
-5. Overlap / Flex Time — OUT
-6. Tag `5.0.0` — **tylko na prośbę**
+1. Client meter-map BBT (after #98)
+2. Playwright Forma drag — defer
+3. AD-01…03 / Flex Time — OUT
+4. Tag `5.0.0` — tylko na prośbę
 
 ### Blokery
 
-- G1–G10 soft-gate — **nie** claim green bez HW.
-- #83 LAN lifecycle token / `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`.
-- TimelineShell rebase hotspot.
+- G1–G10 soft-gate only.
+- #83 LAN lifecycle token.
+- TimelineShell rebase hotspot across open PRs.
