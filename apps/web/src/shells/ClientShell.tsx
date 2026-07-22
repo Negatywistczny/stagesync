@@ -56,6 +56,8 @@ export function ClientShell() {
     latencyMs,
     stageCue,
     play,
+    commandPending,
+    error: transportError,
     announcePresence,
   } = useTransport();
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
@@ -130,12 +132,8 @@ export function ClientShell() {
   }
 
   async function onNextSong() {
-    if (!nextSetlistId) return;
-    try {
-      await play({ projectId: nextSetlistId });
-    } catch {
-      /* ignore */
-    }
+    if (!nextSetlistId || commandPending) return;
+    await play({ projectId: nextSetlistId });
   }
 
   function toggleRole(id: RoleId) {
@@ -170,6 +168,8 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
+    nextSongPending: commandPending,
+    transportError,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -439,6 +439,8 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   nextSetlistId: string | null;
+  nextSongPending: boolean;
+  transportError: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -454,6 +456,8 @@ function ClientHeader({
   songTitle,
   bbt,
   nextSetlistId,
+  nextSongPending,
+  transportError,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -485,12 +489,17 @@ function ClientHeader({
         <button
           type="button"
           className={styles.setlistNext}
-          disabled={!nextSetlistId}
+          disabled={!nextSetlistId || nextSongPending}
           onClick={onNextSong}
           title="Następny utwór setlisty"
         >
           →następny
         </button>
+      ) : null}
+      {transportError ? (
+        <span className={styles.transportError} role="alert">
+          {transportError}
+        </span>
       ) : null}
       <span className={styles.takt}>
         takt {toDisplayBar(bbt.bar)}.{bbt.beat}
