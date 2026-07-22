@@ -66,9 +66,9 @@ export function StageView() {
     try {
       setClients(await fetchStageClients());
     } catch (err) {
-      setClientsError(
-        err instanceof Error ? err.message : "Nie udało się pobrać klientów",
-      );
+      const message =
+        err instanceof Error ? err.message : "Nie udało się pobrać klientów";
+      setClientsError(message.slice(0, 500));
     } finally {
       setClientsLoading(false);
     }
@@ -104,7 +104,9 @@ export function StageView() {
           : "Wysłano do wszystkich.",
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Wysyłka nieudana");
+      const message =
+        err instanceof Error ? err.message : "Wysyłka nieudana";
+      setError(message.slice(0, 500));
     } finally {
       setPending(false);
     }
