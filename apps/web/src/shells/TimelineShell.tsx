@@ -4869,13 +4869,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     className={styles.lengthInput}
                     type="number"
                     step={0.5}
+                    min={-60}
+                    max={24}
                     value={selectedAudioClip.gainDb ?? 0}
                     onChange={(e) => {
                       if (!draftProject) return;
                       const n = Number(e.target.value);
                       if (!Number.isFinite(n)) return;
                       commitDraft(
-                        setAudioClipGainDb(draftProject, selectedAudioClip.id, n),
+                        setAudioClipGainDb(
+                          draftProject,
+                          selectedAudioClip.id,
+                          Math.min(24, Math.max(-60, n)),
+                        ),
                       );
                     }}
                   />
@@ -4903,6 +4909,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     className={styles.lengthInput}
                     type="number"
                     step={0.5}
+                    min={-60}
+                    max={24}
                     value={selectedAudioTrack.gainDb ?? 0}
                     onChange={(e) => {
                       if (!draftProject) return;
@@ -4912,7 +4920,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         setAudioTrackGainDb(
                           draftProject,
                           selectedAudioTrack.id,
-                          n,
+                          Math.min(24, Math.max(-60, n)),
                         ),
                       );
                     }}
