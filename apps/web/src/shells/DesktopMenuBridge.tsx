@@ -190,7 +190,7 @@ function RestartConfirmModal({
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { play, stop, state } = useTransport();
+  const { play, pause, stop, state } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
@@ -240,6 +240,10 @@ export function DesktopMenuBridge() {
 
   const onTransportPlay = useCallback(async () => {
     try {
+      if (state.playing) {
+        await pause();
+        return;
+      }
       const projectId =
         state.activeProjectId ??
         (location.pathname.startsWith("/timeline/")
@@ -249,7 +253,7 @@ export function DesktopMenuBridge() {
     } catch {
       /* ignore */
     }
-  }, [location.pathname, play, state.activeProjectId]);
+  }, [location.pathname, pause, play, state.activeProjectId, state.playing]);
 
   const onTransportStop = useCallback(async () => {
     try {
