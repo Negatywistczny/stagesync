@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import { renderSVG } from "uqr";
@@ -190,15 +190,12 @@ function RestartConfirmModal({
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { play, pause, stop, state } = useTransport();
+  const { play, stop, state } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
   const [restartError, setRestartError] = useState<string | null>(null);
-  const [setlistNeighborError, setSetlistNeighborError] = useState<string | null>(
-    null,
-  );
-  const setlistNeighborPendingRef = useRef(false);
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -208,9 +205,6 @@ export function DesktopMenuBridge() {
 
   const goSetlistNeighbor = useCallback(
     async (direction: "prev" | "next") => {
-      if (setlistNeighborPendingRef.current) return;
-      setlistNeighborPendingRef.current = true;
-      setSetlistNeighborError(null);
       try {
         const view = await fetchSetlist();
         if (!view.enabled || view.entries.length === 0) return;
@@ -225,14 +219,8 @@ export function DesktopMenuBridge() {
         if (location.pathname.startsWith("/timeline")) {
           navigate(`/timeline/${targetId}`);
         }
-      } catch (err) {
-        setSetlistNeighborError(
-          err instanceof Error
-            ? err.message
-            : "Nie udało się przełączyć utworu setlisty",
-        );
-      } finally {
-        setlistNeighborPendingRef.current = false;
+      } catch {
+        /* ignore — menu is best-effort */
       }
     },
     [location.pathname, navigate, play],
@@ -240,10 +228,6 @@ export function DesktopMenuBridge() {
 
   const onTransportPlay = useCallback(async () => {
     try {
-      if (state.playing) {
-        await pause();
-        return;
-      }
       const projectId =
         state.activeProjectId ??
         (location.pathname.startsWith("/timeline/")
@@ -253,7 +237,7 @@ export function DesktopMenuBridge() {
     } catch {
       /* ignore */
     }
-  }, [location.pathname, pause, play, state.activeProjectId, state.playing]);
+  }, [location.pathname, play, state.activeProjectId]);
 
   const onTransportStop = useCallback(async () => {
     try {
@@ -302,28 +286,33 @@ export function DesktopMenuBridge() {
           setRestartError(null);
           setRestartOpen(true);
           break;
+        case "save":
+          if (!location.pathname.startsWith("/timeline/")) {
+            setSaveNotice(
+              "Zapisz (⌘/Ctrl+S) działa w Timeline — otwórz utwór do edycji.",
+            );
+          }
+          break;
         default:
           break;
       }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [goSetlistNeighbor, onTransportPlay, onTransportStop]);
+  }, [goSetlistNeighbor, location.pathname, onTransportPlay, onTransportStop]);
+
+  useEffect(() => {
+    if (!saveNotice) return;
+    const t = window.setTimeout(() => setSaveNotice(null), 2800);
+    return () => window.clearTimeout(t);
+  }, [saveNotice]);
 
   return (
     <>
       <Outlet />
-      {setlistNeighborError ? (
-        <p className={styles.toastError} role="alert">
-          {setlistNeighborError}
-          <button
-            type="button"
-            className={styles.toastDismiss}
-            onClick={() => setSetlistNeighborError(null)}
-            aria-label="Zamknij komunikat"
-          >
-            ×
-          </button>
+      {saveNotice ? (
+        <p className={styles.toast} role="status" aria-live="polite">
+          {saveNotice}
         </p>
       ) : null}
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}

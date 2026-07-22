@@ -1514,7 +1514,19 @@ export function TimelineShell() {
       const detail = parseDesktopMenuDetail(ev);
       if (detail?.action !== "save") return;
       const h = keyHandlersRef.current;
-      if (h.dirty && !h.savePending) void h.onSave();
+      if (h.savePending) return;
+      if (!h.dirty) {
+        if (canvasNoticeTimerRef.current) {
+          clearTimeout(canvasNoticeTimerRef.current);
+        }
+        setCanvasNotice("Brak zmian do zapisania");
+        canvasNoticeTimerRef.current = setTimeout(() => {
+          setCanvasNotice(null);
+          canvasNoticeTimerRef.current = null;
+        }, 2200);
+        return;
+      }
+      void h.onSave();
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);

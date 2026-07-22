@@ -119,41 +119,21 @@
   justify-content: flex-end;
 }
 
-.toastError {
+.toast {
   position: fixed;
-  z-index: 70;
-  right: var(--ss-space-4);
   bottom: var(--ss-space-4);
-  display: flex;
-  align-items: center;
-  gap: var(--ss-space-2);
-  max-width: min(28rem, calc(100vw - 2 * var(--ss-space-4)));
+  left: 50%;
+  z-index: 70;
+  transform: translateX(-50%);
   margin: 0;
-  padding: var(--ss-space-3) var(--ss-space-3) var(--ss-space-3) var(--ss-space-4);
+  padding: var(--ss-space-2) var(--ss-space-4);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-elevated);
-  color: var(--ss-color-danger);
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-normal);
-}
-
-.toastDismiss {
-  flex: none;
-  border: 0;
-  background: transparent;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-lg);
-  line-height: 1;
-  cursor: pointer;
-  padding: var(--ss-space-1);
-}
-
-.toastDismiss:hover {
   color: var(--ss-color-text);
-}
-
-.toastDismiss:focus-visible {
-  outline: 2px solid var(--ss-color-primary);
-  outline-offset: 2px;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  max-width: min(36rem, calc(100vw - var(--ss-space-8)));
+  text-align: center;
 }
