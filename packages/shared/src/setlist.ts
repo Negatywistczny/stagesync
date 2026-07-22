@@ -35,6 +35,7 @@ export function normalizeSetlist(raw: {
     if (!id || seen.has(id)) continue;
     seen.add(id);
     projectIds.push(id);
+    if (projectIds.length >= 256) break;
   }
   return {
     enabled: Boolean(raw.enabled),
