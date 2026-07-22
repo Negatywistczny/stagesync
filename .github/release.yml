@@ -1,0 +1,22 @@
+changelog:
+  categories:
+    - title: "🚀 Nowe funkcje (Features)"
+      labels:
+        - "enhancement"
+        - "feat"
+        - "type:feat"
+    - title: "🐛 Poprawki błędów (Bug Fixes)"
+      labels:
+        - "bug"
+        - "fix"
+        - "type:bug"
+    - title: "🧹 Porządki, Refaktor i Dokumentacja (Maintenance & Docs)"
+      labels:
+        - "chore"
+        - "refactor"
+        - "documentation"
+        - "type:chore"
+        - "type:docs"
+  exclude:
+    labels:
+      - "ignore-for-release"
