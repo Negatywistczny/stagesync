@@ -9,7 +9,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
-- **App chrome:** Client i Admin wracają do jednego zawsze widocznego nagłówka (bez L1/L2); dwupoziomowy chrome zostaje w Timeline.
 
 ### Dodano
 
