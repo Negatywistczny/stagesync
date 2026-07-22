@@ -26,6 +26,15 @@ describe("TransportStateSchema", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects unsafe integer positionTicks", () => {
+    expect(() =>
+      TransportStateSchema.parse({
+        ...defaultTransportState(),
+        positionTicks: Number.MAX_SAFE_INTEGER + 1,
+      }),
+    ).toThrow();
+  });
 });
 
 describe("TransportSeekBodySchema", () => {

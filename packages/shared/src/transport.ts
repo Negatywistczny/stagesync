@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { BpmSchema } from "./schema.js";
 import { DEFAULT_PPQ } from "./time.js";
 
 export const TimeSignatureSchema = z.object({
@@ -9,24 +8,20 @@ export const TimeSignatureSchema = z.object({
 
 export const TransportLoopSchema = z.object({
   enabled: z.boolean(),
-  startTicks: z
-    .number()
-    .int()
-    .min(Number.MIN_SAFE_INTEGER)
-    .max(Number.MAX_SAFE_INTEGER),
-  endTicks: z
-    .number()
-    .int()
-    .min(Number.MIN_SAFE_INTEGER)
-    .max(Number.MAX_SAFE_INTEGER),
+  startTicks: z.number().int(),
+  endTicks: z.number().int(),
 });
 
 export type TransportLoop = z.infer<typeof TransportLoopSchema>;
 
 export const TransportStateSchema = z.object({
   playing: z.boolean(),
-  positionTicks: z.number().int(),
-  bpm: BpmSchema,
+  positionTicks: z
+    .number()
+    .int()
+    .min(Number.MIN_SAFE_INTEGER)
+    .max(Number.MAX_SAFE_INTEGER),
+  bpm: z.number().positive().finite(),
   timeSignature: TimeSignatureSchema,
   ppq: z.number().int().positive(),
   activeProjectId: z.string().uuid().nullable().optional(),
@@ -35,15 +30,8 @@ export const TransportStateSchema = z.object({
 
 export type TransportState = z.infer<typeof TransportStateSchema>;
 
-/** Musical position ticks — fail-fast outside JS safe integer range. */
-export const SafeTicksSchema = z
-  .number()
-  .int()
-  .min(Number.MIN_SAFE_INTEGER)
-  .max(Number.MAX_SAFE_INTEGER);
-
 export const TransportSeekBodySchema = z.object({
-  positionTicks: SafeTicksSchema,
+  positionTicks: z.number().int(),
 });
 
 export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
@@ -52,18 +40,8 @@ export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
 export const TransportLoopBodySchema = z
   .object({
     enabled: z.boolean(),
-    startTicks: z
-      .number()
-      .int()
-      .min(Number.MIN_SAFE_INTEGER)
-      .max(Number.MAX_SAFE_INTEGER)
-      .optional(),
-    endTicks: z
-      .number()
-      .int()
-      .min(Number.MIN_SAFE_INTEGER)
-      .max(Number.MAX_SAFE_INTEGER)
-      .optional(),
+    startTicks: z.number().int().optional(),
+    endTicks: z.number().int().optional(),
   })
   .strict();
 
@@ -71,7 +49,7 @@ export type TransportLoopBody = z.infer<typeof TransportLoopBodySchema>;
 
 export const TransportPlayBodySchema = z
   .object({
-    bpm: BpmSchema.optional(),
+    bpm: z.number().positive().finite().optional(),
     timeSignature: TimeSignatureSchema.optional(),
     projectId: z.string().uuid().optional(),
   })
@@ -90,12 +68,12 @@ export type TransportLoadBody = z.infer<typeof TransportLoadBodySchema>;
 export const TransportTickMessageSchema = TransportStateSchema.extend({
   type: z.literal("transport_tick"),
   /** Monotonic engine clock (ordering / staleness). */
-  serverTimeMs: z.number().finite(),
+  serverTimeMs: z.number(),
   /**
    * Wall-clock send time (`Date.now()` on host) for client one-way latency EMA.
    * Optional for older payloads; new ticks always include it.
    */
-  sentAtMs: z.number().finite().optional(),
+  sentAtMs: z.number().optional(),
 });
 
 export type TransportTickMessage = z.infer<typeof TransportTickMessageSchema>;
