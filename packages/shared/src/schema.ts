@@ -485,11 +485,13 @@ export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;
 
 
 /** MIDI port listed by the host (apps/server). */
-export const MidiPortSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  direction: z.enum(["input", "output"]),
-});
+export const MidiPortSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    direction: z.enum(["input", "output"]),
+  })
+  .strict();
 
 export type MidiPort = z.infer<typeof MidiPortSchema>;
 
