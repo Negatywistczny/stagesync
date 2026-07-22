@@ -1076,6 +1076,12 @@ function HostView({
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
+  useEffect(() => {
+    if (!copiedUrl) return;
+    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
+    return () => window.clearTimeout(t);
+  }, [copiedUrl]);
+
   const refreshMidi = useCallback(async () => {
     try {
       const status = await fetchMidiHostStatus();
