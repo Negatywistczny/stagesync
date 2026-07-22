@@ -100,7 +100,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   function notify(): void {
     const msg = tickMessage();
     for (const listener of listeners) {
-      listener(msg);
+      try {
+        listener(msg);
+      } catch (err) {
+        console.error("[stagesync-server] transport listener error", err);
+      }
     }
   }
 
