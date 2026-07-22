@@ -158,6 +158,10 @@
   align-items: stretch;
 }
 
+.splitCollapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .splitAside {
   display: flex;
   flex-direction: column;
