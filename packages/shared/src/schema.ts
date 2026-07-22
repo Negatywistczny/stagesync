@@ -1,5 +1,22 @@
 import { z } from "zod";
-import { DEFAULT_PPQ } from "./time.js";
+import { assertValidTimeSignature, DEFAULT_PPQ } from "./time.js";
+
+function refineMeterForPpq(
+  ts: { numerator: number; denominator: number },
+  ctx: z.RefinementCtx,
+) {
+  try {
+    assertValidTimeSignature(ts, DEFAULT_PPQ);
+  } catch (err) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        err instanceof Error
+          ? err.message
+          : "Invalid meter for default PPQ (ticksPerBar must be integer)",
+    });
+  }
+}
 
 /** Catalog entry — denormalized fields for Admin list / Batch PC / Ostrzeżenia. */
 export const LibraryProjectEntrySchema = z.object({
@@ -65,17 +82,26 @@ export const TempoEventSchema = z.object({
   bpm: z.number().positive().finite(),
 });
 
-export const MeterEventSchema = z.object({
-  id: z.string().min(1),
-  startTicks: z.number().int(),
-  numerator: z.number().int().positive(),
-  denominator: z.number().int().positive(),
-});
+export const MeterEventSchema = z
+  .object({
+    id: z.string().min(1),
+    startTicks: z.number().int(),
+    numerator: z.number().int().positive(),
+    denominator: z.number().int().positive(),
+  })
+  .superRefine((m, ctx) =>
+    refineMeterForPpq(
+      { numerator: m.numerator, denominator: m.denominator },
+      ctx,
+    ),
+  );
 
-export const DefaultMeterSchema = z.object({
-  numerator: z.number().int().positive(),
-  denominator: z.number().int().positive(),
-});
+export const DefaultMeterSchema = z
+  .object({
+    numerator: z.number().int().positive(),
+    denominator: z.number().int().positive(),
+  })
+  .superRefine(refineMeterForPpq);
 
 export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 

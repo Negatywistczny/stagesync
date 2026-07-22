@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CreateProjectBodySchema,
+  DefaultMeterSchema,
   LibrarySchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -186,6 +187,25 @@ describe("PutProjectBodySchema", () => {
     void id;
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
+    ).toThrow();
+  });
+});
+
+describe("DefaultMeterSchema", () => {
+  it("accepts 4/4 and 5/8", () => {
+    expect(DefaultMeterSchema.parse({ numerator: 4, denominator: 4 })).toEqual({
+      numerator: 4,
+      denominator: 4,
+    });
+    expect(DefaultMeterSchema.parse({ numerator: 5, denominator: 8 })).toEqual({
+      numerator: 5,
+      denominator: 8,
+    });
+  });
+
+  it("rejects meters that yield non-integer ticksPerBar at PPQ 960", () => {
+    expect(() =>
+      DefaultMeterSchema.parse({ numerator: 4, denominator: 7 }),
     ).toThrow();
   });
 });
