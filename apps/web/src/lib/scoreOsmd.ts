@@ -22,10 +22,14 @@ const BEAT_CURSOR = {
   follow: false,
 };
 
+/**
+ * Construct OSMD for the score pane.
+ *
+ * Never call `enableOrDisableCursors` here. OSMD 2.x creates cursors inside
+ * `render()` after the SVG backend exists; calling enable at construct crashes
+ * when `RestoreCursorAfterRerender` writes `.hidden` on undefined cursors.
+ */
 export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
-  // DrawingParameters.drawCursors defaults true; OSMD.enableOrDisableCursors() must
-  // run only after load+render (GraphicSheet + SVG backend). Calling it at construct
-  // crashes OSMD 2.x (RestoreCursorAfterRerender writes .hidden on undefined cursors).
   const osmd = new OpenSheetMusicDisplay(container, {
     autoResize: true,
     backend: "svg",
@@ -37,10 +41,16 @@ export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
     cursorsOptions: [BEAT_CURSOR, MEASURE_CURSOR],
   });
   osmd.EngravingRules.PageBackgroundColor = "#ffffff";
+  // OSMD bug belt-and-suspenders: enableOrDisableCursors(true) still assigns
+  // `this.cursors[i].hidden` when cursor creation was skipped (no backend yet).
+  osmd.EngravingRules.RestoreCursorAfterRerender = false;
   return osmd;
 }
 
-/** First paint after load — cursors are created inside OSMD.render(). */
+/**
+ * First paint after load. Relies solely on OSMD.render() to create/enable
+ * cursors (do not call enableOrDisableCursors from app code).
+ */
 export function renderOsmd(osmd: OpenSheetMusicDisplay): void {
   if (!osmd.IsReadyToRender()) return;
   osmd.render();

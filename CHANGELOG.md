@@ -72,7 +72,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Client / Komunikaty:** klipy Cue z Timeline pokazują się jako `TERAZ` / `ZA N` (~5 s lookahead); live komunikat wygrywa slot `TERAZ`; pusty stan = ukryty host (bez placeholdera).
 - **Admin Set:** „Aktywny set” i „Auto-setlista” obok siebie (z zawijaniem na wąskim ekranie).
-- **Client — partytura (OSMD):** brak crasha przy otwarciu Score — kursory włączane dopiero po pierwszym load+render.
+- **Client — partytura (OSMD):** brak crasha przy otwarciu Score — bez `enableOrDisableCursors` przy konstrukcji; kursory tylko przez `render()` po load (OSMD 2.x).
 - **Client — suwaki ustawień:** transpozycja (strój ręczny) i skala tekstu Karaoke w kolorze primary (amber), jak zoom Timeline.
 - **Client Grid (karuzela):** brak mrugnięcia na końcu przesunięcia wersów — treść wiersza jest commitowana przed zresetowaniem `translateY`.
 - **Client Karaoke:** aktywna linia znowu na środku ekranu (osobny scroll + pad jak v4); w pauzach między frazami brak podświetlenia (nie „trzyma” poprzedniej / następnej linii).
