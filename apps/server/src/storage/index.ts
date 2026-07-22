@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
-import { access, mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   LibrarySchema,
@@ -562,7 +562,8 @@ export function createStores(dataDir?: string) {
     async addProjectAsset(
       projectId: string,
       asset: ProjectAsset,
-      fileBytes: Buffer,
+      /** In-memory bytes or a temp file path to copy into the project assets dir. */
+      fileSource: Buffer | string,
       opts?: { createAudioClip?: boolean },
     ): Promise<Project> {
       return withLibraryLock(async () => {
@@ -571,7 +572,11 @@ export function createStores(dataDir?: string) {
         const assetsDir = projectAssetsDir(paths, safeId);
         await mkdir(assetsDir, { recursive: true });
         const dest = assetFilePath(paths, safeId, asset.storageName);
-        await writeFile(dest, fileBytes);
+        if (typeof fileSource === "string") {
+          await copyFile(fileSource, dest);
+        } else {
+          await writeFile(dest, fileSource);
+        }
 
         const assets = [...project.assets, asset];
         let audioTracks = [...project.audioTracks];

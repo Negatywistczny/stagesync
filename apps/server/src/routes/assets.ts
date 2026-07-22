@@ -1,13 +1,31 @@
 import { randomUUID } from "node:crypto";
-import { extname } from "node:path";
+import { mkdirSync } from "node:fs";
+import { unlink } from "node:fs/promises";
+import { extname, join } from "node:path";
+import { tmpdir } from "node:os";
 import { Router } from "express";
 import multer from "multer";
 import { createReadStream } from "node:fs";
 import type { Stores } from "../storage/index.js";
 import { handleRouteError, sendError } from "./errors.js";
 
+const uploadDir = join(tmpdir(), "stagesync-uploads");
+
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      try {
+        mkdirSync(uploadDir, { recursive: true });
+        cb(null, uploadDir);
+      } catch (err) {
+        cb(err as Error, uploadDir);
+      }
+    },
+    filename: (_req, file, cb) => {
+      const ext = extname(file.originalname || "").toLowerCase() || ".bin";
+      cb(null, `${randomUUID()}${ext}`);
+    },
+  }),
   limits: { fileSize: 100 * 1024 * 1024 },
 });
 
@@ -53,6 +71,15 @@ function mimeForExt(ext: string): string {
   }
 }
 
+async function unlinkQuiet(path: string | undefined): Promise<void> {
+  if (!path) return;
+  try {
+    await unlink(path);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function createAssetsRouter(stores: Stores): Router {
   const router = Router({ mergeParams: true });
 
@@ -84,10 +111,11 @@ export function createAssetsRouter(stores: Stores): Router {
   });
 
   router.post("/", upload.single("file"), async (req, res) => {
+    const tempPath = req.file?.path;
     try {
       const projectId = projectIdFrom(req);
       const file = req.file;
-      if (!file) {
+      if (!file || !tempPath) {
         sendError(res, 400, "Missing file field");
         return;
       }
@@ -115,12 +143,14 @@ export function createAssetsRouter(stores: Stores): Router {
           mimeType: file.mimetype || mimeForExt(ext),
           sizeBytes: file.size,
         },
-        file.buffer,
+        tempPath,
         { createAudioClip: isAudio },
       );
       res.status(201).json(project);
     } catch (err) {
       handleRouteError(res, err);
+    } finally {
+      await unlinkQuiet(tempPath);
     }
   });
 
