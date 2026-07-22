@@ -41,6 +41,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Audio WebAudio:** obwiednia Fade In/Out przez `AudioParam` ramps + Loop z oknem trim; `graphKey` reaguje na zmiany fade/loop.
 - **Timeline:** zmiana metrum @ Takt 1 przelicza długość przedtaktu (stała liczba taktów); snap `beat` odcinkowo po `meterMap`.
 - **Client:** strój instrumentu — ikony v4 (🎹 / 🎺 / 🎷 / ±) nad etykietami C / B♭ / E♭ / Ręczna.
 - **Timeline:** suwaki zoom UI/H/V w kolorze primary (amber); klasa `.zoomRange` podpięta do inputów.
