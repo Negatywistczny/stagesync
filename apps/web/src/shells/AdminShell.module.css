@@ -611,8 +611,8 @@
 
 .twoUp {
   display: grid;
-  /* Logi flexes; MIDI column sized for readable 2×2 meters. */
-  grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+  /* Logi flexes; MIDI column sized for meter + port rows. */
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
   gap: var(--ss-space-4);
   height: 100%;
   min-height: 0;
@@ -712,31 +712,29 @@
 }
 
 .midiBody {
-  overflow: hidden;
+  /* cardBody already scrolls; avoid clipping port/action rows */
+  overflow: auto;
+  min-height: 0;
 }
 
-.midiGrid {
+.midiMeters {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
   gap: var(--ss-space-2);
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
-.midiCard {
+.midiMeter {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--ss-space-1);
+  justify-content: space-between;
+  gap: var(--ss-space-2);
   min-width: 0;
-  min-height: 0;
-  padding: var(--ss-space-3);
+  min-height: var(--ss-space-8);
+  padding: 0 var(--ss-space-2);
   border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  border: 1px solid var(--ss-color-border);
-  text-align: center;
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
 }
 
 .midiLabel {
@@ -745,13 +743,14 @@
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-medium);
   line-height: var(--ss-leading-tight);
+  white-space: nowrap;
 }
 
 .midiValue {
   margin: 0;
   color: var(--ss-color-text);
-  font-size: var(--ss-text-xl);
-  font-weight: var(--ss-font-weight-bold);
+  font-size: var(--ss-text-md);
+  font-weight: var(--ss-font-weight-semibold);
   font-variant-numeric: tabular-nums;
   line-height: var(--ss-leading-tight);
 }
@@ -760,16 +759,37 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-2);
-  margin-top: var(--ss-space-3);
   min-width: 0;
+  flex: 0 0 auto;
 }
 
 .midiPortRow {
   display: grid;
-  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
+  grid-template-columns: minmax(5rem, 6rem) minmax(0, 1fr);
   align-items: center;
   gap: var(--ss-space-2);
   min-width: 0;
+  min-height: var(--ss-space-8);
+}
+
+.midiPortValue {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+}
+
+.midiActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-height: var(--ss-space-8);
 }
 
 /* —— Status bar (always on) —— */
