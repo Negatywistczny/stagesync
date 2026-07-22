@@ -145,9 +145,11 @@ export function clipsFromOnsets(
   spanEnd: number,
   idPrefix: string,
   seqStart: number,
+  sourceLineId?: string,
 ): { clips: AkordClip[]; nextSeq: number } {
   const clips: AkordClip[] = [];
   let seq = seqStart;
+  const lineId = sourceLineId?.trim() || undefined;
   for (let i = 0; i < symbols.length; i++) {
     const start = onsets[i]!;
     const end = i + 1 < onsets.length ? onsets[i + 1]! : spanEnd;
@@ -156,6 +158,7 @@ export function clipsFromOnsets(
       startTicks: start,
       lengthTicks: Math.max(1, end - start),
       symbol: symbols[i]!,
+      ...(lineId ? { sourceLineId: lineId } : {}),
     });
   }
   return { clips, nextSeq: seq };
@@ -227,7 +230,10 @@ export function importUgText(
     let pendingChords: string[] = [];
     let sawContent = false;
 
-    const flushChordsAtCursor = (symbols: string[]) => {
+    const flushChordsAtCursor = (
+      symbols: string[],
+      sourceLineId?: string,
+    ) => {
       const list = dedupeConsecutive(symbols);
       if (!list.length) return;
       const spanStart = cursor;
@@ -240,7 +246,14 @@ export function importUgText(
         beatsPerBar,
         ticksPerBeat,
       );
-      const placed = clipsFromOnsets(list, onsets, spanEnd, prefix, seq);
+      const placed = clipsFromOnsets(
+        list,
+        onsets,
+        spanEnd,
+        prefix,
+        seq,
+        sourceLineId,
+      );
       seq = placed.nextSeq;
       akordClips.push(...placed.clips);
       cursor = spanEnd;
@@ -263,13 +276,14 @@ export function importUgText(
         const chords = dedupeConsecutive([...pendingChords, ...bracketChords]);
         pendingChords = [];
         const lineStart = cursor;
+        const tekstId = `${prefix}-tekst-${++seq}`;
         if (chords.length) {
-          flushChordsAtCursor(chords);
+          flushChordsAtCursor(chords, tekstId);
         } else {
           cursor += lineTicks;
         }
         tekstClips.push({
-          id: `${prefix}-tekst-${++seq}`,
+          id: tekstId,
           startTicks: lineStart,
           lengthTicks: lineTicks,
           text: lyric,
@@ -294,13 +308,14 @@ export function importUgText(
           : [];
         pendingChords = [];
         const lineStart = cursor;
+        const tekstId = `${prefix}-tekst-${++seq}`;
         if (chords.length) {
-          flushChordsAtCursor(chords);
+          flushChordsAtCursor(chords, tekstId);
         } else {
           cursor += lineTicks;
         }
         tekstClips.push({
-          id: `${prefix}-tekst-${++seq}`,
+          id: tekstId,
           startTicks: lineStart,
           lengthTicks: lineTicks,
           text: lyric,

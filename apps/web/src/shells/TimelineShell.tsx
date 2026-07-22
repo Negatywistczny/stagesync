@@ -3623,6 +3623,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     setTool(id);
   }
 
+  function flashCanvasNotice(message: string) {
+    if (canvasNoticeTimerRef.current) {
+      clearTimeout(canvasNoticeTimerRef.current);
+    }
+    setCanvasNotice(message);
+    canvasNoticeTimerRef.current = setTimeout(() => {
+      setCanvasNotice(null);
+      canvasNoticeTimerRef.current = null;
+    }, 3200);
+  }
+
   function applyWand(mode: WandMode) {
     const draft = draftRef.current;
     if (!draft) return;
@@ -3653,6 +3664,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         if (host) sectionIds.add(host.id);
       }
       if (sectionIds.size === 0) {
+        flashCanvasNotice(
+          "Zaznacz sekcję Formy albo clipy Tekstu/Akordów — Różdżka nie działa na Cue",
+        );
         setWandMenu(null);
         setTool("pointer");
         return;
@@ -3660,7 +3674,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       scope = { sectionIds: [...sectionIds] };
     }
     const result = placeContentFromForma(draft, mode, scope);
-    if (result.ok && result.project !== draft) commitDraft(result.project);
+    if (!result.ok) {
+      flashCanvasNotice(
+        result.message || "Nie udało się rozmieścić treści Różdżką",
+      );
+      setWandMenu(null);
+      setTool("pointer");
+      return;
+    }
+    if (result.project !== draft) commitDraft(result.project);
+    let msg = result.message || `Różdżka: ${result.placed} clipów`;
+    if (result.approximate) {
+      msg += " — przybliżone (doprecyzuj Tapem)";
+    }
+    flashCanvasNotice(msg);
     setWandMenu(null);
     setTool("pointer");
   }

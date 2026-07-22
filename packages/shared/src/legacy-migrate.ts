@@ -52,7 +52,15 @@ export type LegacySong = {
   isTemplate?: unknown;
   markers?: Array<{ id?: unknown; kind?: unknown; startAbs?: unknown }>;
   sections?: LegacySection[];
-  vocal?: { lines?: Array<{ id?: unknown; text?: unknown; startAbs?: unknown; rest?: unknown }> };
+  vocal?: {
+    lines?: Array<{
+      id?: unknown;
+      text?: unknown;
+      startAbs?: unknown;
+      rest?: unknown;
+      sourceSection?: unknown;
+    }>;
+  };
   chords?: {
     timeSignature?: unknown;
     clips?: Array<{
@@ -60,6 +68,7 @@ export type LegacySong = {
       chord?: unknown;
       startAbs?: unknown;
       lengthBeats?: unknown;
+      sourceLineId?: unknown;
     }>;
   };
   cues?: Array<{
@@ -527,12 +536,16 @@ export function migrateLegacySong(
       ({ line }) =>
         !line.rest && !/^vl-cd-/i.test(asString(line.id)),
     );
-  const tekstClips = contentVocal.map(({ line, lengthBeats }, i) => ({
-    id: asString(line.id, `tekst-${i}`),
-    startTicks: toTicks(asFiniteNumber(line.startAbs, 0), shiftQuarters, ppq),
-    lengthTicks: Math.max(1, absBeatToTicks(lengthBeats, ppq)),
-    text: asString(line.text, ""),
-  }));
+  const tekstClips = contentVocal.map(({ line, lengthBeats }, i) => {
+    const sourceSection = asString(line.sourceSection, "").trim();
+    return {
+      id: asString(line.id, `tekst-${i}`),
+      startTicks: toTicks(asFiniteNumber(line.startAbs, 0), shiftQuarters, ppq),
+      lengthTicks: Math.max(1, absBeatToTicks(lengthBeats, ppq)),
+      text: asString(line.text, ""),
+      ...(sourceSection ? { sourceSection } : {}),
+    };
+  });
 
   // Akordy — length from onsets (or legacy lengthBeats); never min=bar for dense lines
   const chordClipsRaw = song.chords?.clips ?? [];
@@ -544,11 +557,13 @@ export function migrateLegacySong(
       c.lengthBeats != null && Number(c.lengthBeats) > 0
         ? asFiniteNumber(c.lengthBeats, derived)
         : derived;
+    const sourceLineId = asString(c.sourceLineId, "").trim();
     return {
       id: asString(c.id, `akord-${i}`),
       startTicks: toTicks(asFiniteNumber(c.startAbs, 0), shiftQuarters, ppq),
       lengthTicks: Math.max(1, absBeatToTicks(fromLegacy, ppq)),
       symbol: asString(c.chord, "C") || "C",
+      ...(sourceLineId ? { sourceLineId } : {}),
     };
   });
   const akordyClips = sealAkordyLengths(akordyClipsRaw);

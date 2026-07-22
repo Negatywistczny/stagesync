@@ -89,7 +89,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
-- **Różdżka:** rozmieszcza Tekst/Akordy wg istniejących sekcji Formy (jak v4); Forma, Countdown i cyfry CD pozostają bez zmian.
+- **Różdżka:** poprawione szacowanie długości w taktach (warstwy A/B/D/F dla Tekstu, A–E bez F dla Akordów); membership `sourceSection` / `sourceLineId`; zakres zaznaczenia + toast wyniku; Forma bez zmian.
 - **Pomoc i i18n:** skróty zsynchronizowane z kodem (schowek, zoom, Fit Zoom, nożyczki, pętla); polskie etykiety narzędzi; usunięty zbędny lead o v4/OUT.
 - **Metrum i snap:** zmiana metrum od Taktu 1 przelicza przedtakt; snap do beatu odcinkowo po mapie metrum.
 - **Chrome Timeline:** przywrócony układ tools | transport | utwór; wyśrodkowany przycisk oka w docku; playhead/locator od górnej krawędzi pasa beatów; suwaki zoom w kolorze primary.

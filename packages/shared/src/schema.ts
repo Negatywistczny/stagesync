@@ -363,6 +363,8 @@ export const TekstClipSchema = z.object({
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   text: z.string().max(2000),
+  /** UG / legacy: Forma section name affinity for Różdżka membership. */
+  sourceSection: z.string().max(200).optional(),
 });
 
 export type TekstClip = z.infer<typeof TekstClipSchema>;
@@ -373,6 +375,8 @@ export const AkordClipSchema = z.object({
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   symbol: z.string().min(1).max(64),
+  /** UG / legacy: vocal line id this chord row belongs to (Różdżka layer L). */
+  sourceLineId: z.string().min(1).max(128).optional(),
 });
 
 export type AkordClip = z.infer<typeof AkordClipSchema>;

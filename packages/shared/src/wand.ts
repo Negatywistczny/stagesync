@@ -1,6 +1,8 @@
 /**
  * Różdżka — place Tekst / Akordy onto existing Forma sections (v4 parity).
  * Pure; Forma clips are never mutated. Countdown / digit clips stay put.
+ *
+ * Port of legacy `placeVocalsFromForma` (A–F) + `placeChordsFromForma` (A–E + L).
  */
 
 import { isCountdownDigitClipId } from "./countdown-content.js";
@@ -22,6 +24,8 @@ export type WandResult = {
   ok: boolean;
   placed: number;
   message?: string;
+  /** True when any section used approximate layer (B / F / C with B|F). */
+  approximate?: boolean;
 };
 
 type ContentLike = {
@@ -29,6 +33,8 @@ type ContentLike = {
   startTicks: number;
   lengthTicks: number;
   text?: string;
+  sourceSection?: string;
+  sourceLineId?: string;
 };
 
 const TEXT_WEIGHT_RATIO_THRESHOLD = 2;
@@ -58,6 +64,17 @@ function sectionInFilter(
   return filter.has(sectionId);
 }
 
+function normalizeSectionNameKey(name: string): string {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function barTicksAt(project: Project, atTicks: number): number {
+  return ticksPerBar(resolveMeterAt(project, atTicks), project.ppq);
+}
+
 function beatTicksAt(project: Project, atTicks: number): number {
   const meter = resolveMeterAt(project, atTicks);
   const bar = ticksPerBar(meter, project.ppq);
@@ -65,13 +82,14 @@ function beatTicksAt(project: Project, atTicks: number): number {
   return Math.max(1, Math.floor(bar / beats));
 }
 
+/** Musical bars in span (v4: lengthBeats / quartersPerBar). */
 function barsInSpan(
   project: Project,
   startTicks: number,
   lengthTicks: number,
 ): number {
-  const beat = beatTicksAt(project, startTicks);
-  return Math.max(0, lengthTicks / beat);
+  const bar = barTicksAt(project, startTicks);
+  return Math.max(0, lengthTicks / bar);
 }
 
 function snapTicks(project: Project, ticks: number, atTicks: number): number {
@@ -123,20 +141,24 @@ function barDurationsWeighted(bars: number, lines: ContentLike[]): number[] {
   return weights.map((w) => (w / total) * bars);
 }
 
+/** Tekst layers A–F (v4 `pickLayerAndDurations`). */
 function pickLayerAndDurations(
   bars: number,
   lines: ContentLike[],
+  opts: { forceWeights?: boolean } = {},
 ): { layer: string; durs: number[]; approximate: boolean } {
   const n = lines.length;
   if (n === 1) return { layer: "E", durs: [bars], approximate: false };
   if (n > bars) {
     return { layer: "D", durs: barDurationsABD(bars, n), approximate: false };
   }
-  if (bars % n === 0) {
+  // Even whole-bar split wins over text weights — F must not break A
+  if (bars % n === 0 && !opts.forceWeights) {
     return { layer: "A", durs: barDurationsABD(bars, n), approximate: false };
   }
+  // F only when the floor is ≤1 bar/line
   const base = Math.floor(bars / n);
-  if (base <= 1 && shouldUseTextWeights(lines)) {
+  if (opts.forceWeights || (base <= 1 && shouldUseTextWeights(lines))) {
     return {
       layer: "F",
       durs: barDurationsWeighted(bars, lines),
@@ -146,17 +168,32 @@ function pickLayerAndDurations(
   return { layer: "B", durs: barDurationsABD(bars, n), approximate: true };
 }
 
+/** Akordy layers E → D → A → B (no F). */
+function pickChordLayerAndDurations(
+  bars: number,
+  n: number,
+): { layer: string; durs: number[]; approximate: boolean } {
+  if (n === 1) return { layer: "E", durs: [bars], approximate: false };
+  if (n > bars) {
+    return { layer: "D", durs: barDurationsABD(bars, n), approximate: false };
+  }
+  if (bars % n === 0) {
+    return { layer: "A", durs: barDurationsABD(bars, n), approximate: false };
+  }
+  return { layer: "B", durs: barDurationsABD(bars, n), approximate: true };
+}
+
 function onsetsFromBarDurations(
   project: Project,
   spanStart: number,
   durs: number[],
 ): number[] {
-  const beat = beatTicksAt(project, spanStart);
+  const bar = barTicksAt(project, spanStart);
   const onsets: number[] = [];
   let cursor = spanStart;
   for (const dur of durs) {
     onsets.push(snapTicks(project, cursor, spanStart));
-    cursor += dur * beat;
+    cursor += dur * bar;
   }
   return onsets;
 }
@@ -166,10 +203,15 @@ function placeInSpan(
   lines: ContentLike[],
   spanStart: number,
   spanLengthTicks: number,
+  kind: "tekst" | "akordy",
 ): { layer: string | null; approximate: boolean; onsets: number[] } {
   if (!lines.length) return { layer: null, approximate: false, onsets: [] };
   const bars = barsInSpan(project, spanStart, spanLengthTicks);
-  const { layer, durs, approximate } = pickLayerAndDurations(bars, lines);
+  const picked =
+    kind === "tekst"
+      ? pickLayerAndDurations(bars, lines)
+      : pickChordLayerAndDurations(bars, lines.length);
+  const { layer, durs, approximate } = picked;
   const onsets = onsetsFromBarDurations(project, spanStart, durs);
   const spanEnd = spanStart + spanLengthTicks;
   const minDur = beatTicksAt(project, spanStart);
@@ -224,10 +266,7 @@ function detectContentGapSpans(
 ): { startTicks: number; lengthTicks: number; bars: number }[] | null {
   const spans = subsectionSpans(sec);
   if (spans.length < 2) return null;
-  const oneBar = ticksPerBar(
-    resolveMeterAt(project, sec.startTicks),
-    project.ppq,
-  );
+  const oneBar = barTicksAt(project, sec.startTicks);
   const classified = spans.map((sp) => {
     const bars = barsInSpan(project, sp.startTicks, sp.lengthTicks);
     const isGap = sp.lengthTicks <= oneBar + 1 && bars <= 1 + 1e-6;
@@ -310,10 +349,7 @@ function containingSection(
     const end = next ? next.startTicks : clip.startTicks + clip.lengthTicks;
     if (startTicks >= clip.startTicks && startTicks < end) {
       if (next) {
-        const bar = ticksPerBar(
-          resolveMeterAt(project, next.startTicks),
-          project.ppq,
-        );
+        const bar = barTicksAt(project, next.startTicks);
         if (
           startTicks < next.startTicks &&
           startTicks >= next.startTicks - bar
@@ -339,18 +375,38 @@ function isSungTekst(clip: TekstClip): boolean {
   return true;
 }
 
+/** Prefer sourceSection name affinity; fallback containingSection(startTicks). */
 function membershipTekstBySection(
   project: Project,
   sections: FormaClip[],
 ): Map<string, TekstClip[]> {
   const buckets = new Map<string, TekstClip[]>();
-  for (const sec of sections) buckets.set(sec.id, []);
+  const byKey = new Map<string, FormaClip>();
+  for (const sec of sections) {
+    buckets.set(sec.id, []);
+    const key = normalizeSectionNameKey(sec.name);
+    if (key && !byKey.has(key)) byKey.set(key, sec);
+  }
+
+  const assigned = new Set<string>();
+
   for (const clip of project.tekst.clips) {
     if (!isSungTekst(clip)) continue;
+    const src = clip.sourceSection?.trim() ?? "";
+    if (!src) continue;
+    const host = byKey.get(normalizeSectionNameKey(src));
+    if (!host || !buckets.has(host.id)) continue;
+    buckets.get(host.id)!.push(clip);
+    assigned.add(clip.id);
+  }
+
+  for (const clip of project.tekst.clips) {
+    if (!isSungTekst(clip) || assigned.has(clip.id)) continue;
     const host = containingSection(sections, clip.startTicks, project);
     if (!host || !buckets.has(host.id)) continue;
     buckets.get(host.id)!.push(clip);
   }
+
   for (const list of buckets.values()) {
     list.sort(
       (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
@@ -359,18 +415,54 @@ function membershipTekstBySection(
   return buckets;
 }
 
+/**
+ * Prefer sourceLineId → vocal.sourceSection → Forma name; else startTicks span.
+ */
 function membershipAkordyBySection(
   project: Project,
   sections: FormaClip[],
 ): Map<string, AkordClip[]> {
   const buckets = new Map<string, AkordClip[]>();
-  for (const sec of sections) buckets.set(sec.id, []);
+  const byName = new Map<string, FormaClip>();
+  for (const sec of sections) {
+    buckets.set(sec.id, []);
+    const key = normalizeSectionNameKey(sec.name);
+    if (key && !byName.has(key)) byName.set(key, sec);
+  }
+
+  const linesById = new Map<string, TekstClip>();
+  for (const line of project.tekst.clips) {
+    linesById.set(line.id, line);
+  }
+
   for (const clip of project.akordy.clips) {
     if (isCountdownDigitClipId(clip.id)) continue;
-    const host = containingSection(sections, clip.startTicks, project);
-    if (!host || !buckets.has(host.id)) continue;
-    buckets.get(host.id)!.push(clip);
+
+    let assignedSec: FormaClip | null = null;
+    const srcLineId = clip.sourceLineId?.trim() ?? "";
+    if (srcLineId && linesById.has(srcLineId)) {
+      const line = linesById.get(srcLineId)!;
+      const srcName = line.sourceSection?.trim() ?? "";
+      if (srcName) {
+        const hit = byName.get(normalizeSectionNameKey(srcName));
+        if (hit) assignedSec = hit;
+      }
+      if (!assignedSec) {
+        assignedSec = containingSection(
+          sections,
+          line.startTicks,
+          project,
+        );
+      }
+    }
+    if (!assignedSec) {
+      assignedSec = containingSection(sections, clip.startTicks, project);
+    }
+    if (assignedSec && buckets.has(assignedSec.id)) {
+      buckets.get(assignedSec.id)!.push(clip);
+    }
   }
+
   for (const list of buckets.values()) {
     list.sort(
       (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
@@ -397,76 +489,116 @@ function sealTekstLengths(
   });
 }
 
+type PlaceChunkResult = {
+  placed: number;
+  approximate: boolean;
+  layer: string | null;
+};
+
 function placeChunkOnsets(
   project: Project,
   chunk: ContentLike[],
   spanStart: number,
   spanLengthTicks: number,
   onsetById: Map<string, number>,
-): number {
+  kind: "tekst" | "akordy",
+): PlaceChunkResult {
+  if (!chunk.length) return { placed: 0, approximate: false, layer: null };
   if (chunk.length === 1) {
     onsetById.set(chunk[0]!.id, snapTicks(project, spanStart, spanStart));
-    return 1;
+    return { placed: 1, approximate: false, layer: "E" };
   }
-  const res = placeInSpan(project, chunk, spanStart, spanLengthTicks);
+  const res = placeInSpan(project, chunk, spanStart, spanLengthTicks, kind);
   for (let i = 0; i < chunk.length; i++) {
     onsetById.set(chunk[i]!.id, res.onsets[i]!);
   }
-  return chunk.length;
+  return {
+    placed: chunk.length,
+    approximate: res.approximate,
+    layer: res.layer,
+  };
 }
+
+type PlaceSectionResult = {
+  placed: number;
+  approximate: boolean;
+  layer: string | null;
+};
 
 function placeSectionContent(
   project: Project,
   sec: FormaClip,
   lines: ContentLike[],
   onsetById: Map<string, number>,
-): number {
-  if (!lines.length) return 0;
+  kind: "tekst" | "akordy",
+): PlaceSectionResult {
+  if (!lines.length) {
+    return { placed: 0, approximate: false, layer: null };
+  }
   if (lines.length === 1) {
     onsetById.set(
       lines[0]!.id,
       snapTicks(project, sec.startTicks, sec.startTicks),
     );
-    return 1;
+    return { placed: 1, approximate: false, layer: "E" };
   }
   const contentSpans = detectContentGapSpans(project, sec);
   if (contentSpans && contentSpans.length >= 1) {
     const counts = splitCountsByContentBars(lines.length, contentSpans);
     let offset = 0;
     let placed = 0;
+    let anyApprox = false;
+    const subLayers = new Set<string>();
     for (let ci = 0; ci < contentSpans.length; ci++) {
       const count = counts[ci] || 0;
       if (count <= 0) continue;
       const chunk = lines.slice(offset, offset + count);
       offset += count;
-      placed += placeChunkOnsets(
+      const res = placeChunkOnsets(
         project,
         chunk,
         contentSpans[ci]!.startTicks,
         contentSpans[ci]!.lengthTicks,
         onsetById,
+        kind,
       );
+      placed += res.placed;
+      if (res.approximate) anyApprox = true;
+      if (res.layer) subLayers.add(res.layer);
     }
     if (offset < lines.length && contentSpans.length) {
       const last = contentSpans[contentSpans.length - 1]!;
       const chunk = lines.slice(offset);
-      placed += placeChunkOnsets(
+      const res = placeChunkOnsets(
         project,
         chunk,
         last.startTicks,
         last.lengthTicks,
         onsetById,
+        kind,
       );
+      placed += res.placed;
+      if (res.approximate) anyApprox = true;
     }
-    return placed;
+    const approxLayers =
+      kind === "tekst"
+        ? subLayers.has("B") || subLayers.has("F")
+        : subLayers.has("B");
+    return {
+      placed,
+      approximate: anyApprox || approxLayers,
+      layer: "C",
+    };
   }
-  return placeChunkOnsets(
+  const res = placeChunkOnsets(
     project,
     lines,
     sec.startTicks,
     sec.lengthTicks,
     onsetById,
+    kind,
   );
+  return res;
 }
 
 function placeTekstFromForma(
@@ -504,11 +636,14 @@ function placeTekstFromForma(
   const buckets = membershipTekstBySection(project, sections);
   const onsetById = new Map<string, number>();
   let placed = 0;
+  let approxN = 0;
 
   for (const sec of sections) {
     if (!sectionInFilter(filter, sec.id)) continue;
     const lines = buckets.get(sec.id) ?? [];
-    placed += placeSectionContent(project, sec, lines, onsetById);
+    const res = placeSectionContent(project, sec, lines, onsetById, "tekst");
+    placed += res.placed;
+    if (res.approximate) approxN += 1;
   }
 
   if (!placed) {
@@ -536,57 +671,120 @@ function placeTekstFromForma(
     project: { ...project, tekst: { clips: nextClips } },
     ok: true,
     placed,
-    message: `Tekst → Forma: ${placed} linii`,
+    approximate: approxN > 0,
+    message:
+      `Tekst → Forma: ${placed} linii` +
+      (approxN ? `, ${approxN} przybliżonych` : ""),
   };
 }
 
-function vocalSpansForSection(
+type VocalSpan = {
+  line: TekstClip;
+  startTicks: number;
+  lengthTicks: number;
+};
+
+function getSectionVocalSpans(
   project: Project,
   sec: FormaClip,
-  tekstClips: TekstClip[],
-): { startTicks: number; lengthTicks: number }[] {
+): VocalSpan[] {
+  const secStart = sec.startTicks;
   const secEnd = sec.startTicks + sec.lengthTicks;
-  const sections = musicSections(project);
-  const inSec = tekstClips
-    .filter(isSungTekst)
-    .filter((c) => {
-      const host = containingSection(sections, c.startTicks, project);
-      return host?.id === sec.id;
-    })
-    .sort((a, b) => a.startTicks - b.startTicks);
-  if (!inSec.length) return [];
-  return inSec.map((c, i) => {
-    const end =
-      i + 1 < inSec.length
-        ? Math.min(secEnd, inSec[i + 1]!.startTicks)
-        : secEnd;
+  const secKey = normalizeSectionNameKey(sec.name);
+  const lines = project.tekst.clips.filter(isSungTekst);
+  const bySrc: TekstClip[] = [];
+  const byAbs: TekstClip[] = [];
+  for (const line of lines) {
+    const src = line.sourceSection?.trim() ?? "";
+    if (src && secKey && normalizeSectionNameKey(src) === secKey) {
+      bySrc.push(line);
+      continue;
+    }
+    if (line.startTicks >= secStart && line.startTicks < secEnd) {
+      byAbs.push(line);
+    }
+  }
+  const chosen = (bySrc.length ? bySrc : byAbs)
+    .slice()
+    .sort((a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id));
+  if (!chosen.length) return [];
+
+  return chosen.map((line, i) => {
+    const start = Math.max(secStart, line.startTicks);
+    let end: number;
+    if (i + 1 < chosen.length) {
+      end = Math.min(secEnd, chosen[i + 1]!.startTicks);
+    } else {
+      end = secEnd;
+    }
+    end = Math.min(secEnd, Math.max(start + 1, end));
     return {
-      startTicks: Math.max(sec.startTicks, c.startTicks),
-      lengthTicks: Math.max(1, end - Math.max(sec.startTicks, c.startTicks)),
+      line,
+      startTicks: start,
+      lengthTicks: Math.max(1, end - start),
     };
   });
 }
 
-function assignClipsToVocalSpans(
+function clusterClipsByPackedBar(
+  project: Project,
   clips: AkordClip[],
-  spans: { startTicks: number; lengthTicks: number }[],
-): { span: { startTicks: number; lengthTicks: number }; clips: AkordClip[] }[] {
-  if (!spans.length) return [];
-  const groups = spans.map((span) => ({ span, clips: [] as AkordClip[] }));
-  for (const clip of clips) {
-    let best = 0;
-    for (let i = 0; i < spans.length; i++) {
-      const s = spans[i]!;
-      const end = s.startTicks + s.lengthTicks;
-      if (clip.startTicks >= s.startTicks && clip.startTicks < end) {
-        best = i;
-        break;
-      }
-      if (clip.startTicks >= s.startTicks) best = i;
-    }
-    groups[best]!.clips.push(clip);
+  secStart: number,
+): AkordClip[][] {
+  const bar = barTicksAt(project, secStart);
+  const sorted = [...clips].sort(
+    (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+  );
+  const byBar = new Map<number, AkordClip[]>();
+  for (const clip of sorted) {
+    const idx = Math.floor((clip.startTicks - secStart) / bar + 1e-9);
+    if (!byBar.has(idx)) byBar.set(idx, []);
+    byBar.get(idx)!.push(clip);
   }
-  return groups.filter((g) => g.clips.length > 0);
+  return [...byBar.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([, group]) => group);
+}
+
+/**
+ * Prefer sourceLineId; else packed-bar clusters when count matches;
+ * else null → full-section placement.
+ */
+function assignClipsToVocalSpans(
+  project: Project,
+  clips: AkordClip[],
+  spans: VocalSpan[],
+  secStart: number,
+): { span: VocalSpan; clips: AkordClip[] }[] | null {
+  if (!clips.length || !spans.length) return null;
+
+  const byLineId = new Map<string, AkordClip[]>();
+  for (const sp of spans) {
+    byLineId.set(sp.line.id, []);
+  }
+  let tagged = 0;
+  for (const clip of clips) {
+    const sid = clip.sourceLineId?.trim() ?? "";
+    if (sid && byLineId.has(sid)) {
+      byLineId.get(sid)!.push(clip);
+      tagged += 1;
+    }
+  }
+  if (tagged > 0) {
+    return spans.map((sp) => {
+      const group = byLineId.get(sp.line.id) ?? [];
+      group.sort(
+        (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+      );
+      return { span: sp, clips: group };
+    });
+  }
+
+  const clusters = clusterClipsByPackedBar(project, clips, secStart);
+  if (clusters.length === spans.length) {
+    return spans.map((sp, i) => ({ span: sp, clips: clusters[i]! }));
+  }
+  return null;
 }
 
 function placeAkordyFromForma(
@@ -623,28 +821,54 @@ function placeAkordyFromForma(
   const buckets = membershipAkordyBySection(project, sections);
   const onsetById = new Map<string, number>();
   let placed = 0;
+  let approxN = 0;
+  let lineN = 0;
 
   for (const sec of sections) {
     if (!sectionInFilter(filter, sec.id)) continue;
     const clips = buckets.get(sec.id) ?? [];
     if (!clips.length) continue;
 
-    const vocalSpans = vocalSpansForSection(project, sec, project.tekst.clips);
-    if (vocalSpans.length > 0) {
-      const groups = assignClipsToVocalSpans(clips, vocalSpans);
-      for (const { span, clips: chunk } of groups) {
-        placed += placeChunkOnsets(
+    const vocalSpans = getSectionVocalSpans(project, sec);
+    const lineGroups =
+      vocalSpans.length > 0
+        ? assignClipsToVocalSpans(
+            project,
+            clips,
+            vocalSpans,
+            sec.startTicks,
+          )
+        : null;
+
+    if (lineGroups) {
+      lineN += 1;
+      let anyApprox = false;
+      for (const { span, clips: chunk } of lineGroups) {
+        if (!chunk.length) continue;
+        const res = placeChunkOnsets(
           project,
           chunk,
           span.startTicks,
           span.lengthTicks,
           onsetById,
+          "akordy",
         );
+        placed += res.placed;
+        if (res.approximate) anyApprox = true;
       }
+      if (anyApprox) approxN += 1;
       continue;
     }
 
-    placed += placeSectionContent(project, sec, clips, onsetById);
+    const res = placeSectionContent(
+      project,
+      sec,
+      clips,
+      onsetById,
+      "akordy",
+    );
+    placed += res.placed;
+    if (res.approximate) approxN += 1;
   }
 
   if (!placed) {
@@ -670,7 +894,11 @@ function placeAkordyFromForma(
     project: { ...project, akordy: { clips: nextClips } },
     ok: true,
     placed,
-    message: `Akordy → Forma: ${placed} clipów`,
+    approximate: approxN > 0,
+    message:
+      `Akordy → Forma: ${placed} clipów` +
+      (lineN ? ` (${lineN} sekcji po wersach)` : "") +
+      (approxN ? `, ${approxN} przybliżonych` : ""),
   };
 }
 
@@ -693,6 +921,7 @@ export function placeContentFromForma(
     return {
       ...chords,
       project: vocals.project,
+      approximate: vocals.approximate,
       message: chords.message
         ? `Tekst OK, ale ${chords.message}`
         : "Tekst OK, ale Akordy się nie udały",
@@ -702,6 +931,7 @@ export function placeContentFromForma(
     project: chords.project,
     ok: true,
     placed: vocals.placed + chords.placed,
+    approximate: Boolean(vocals.approximate || chords.approximate),
     message: `Tekst + Akordy → Forma: ${vocals.placed} linii, ${chords.placed} clipów`,
   };
 }
