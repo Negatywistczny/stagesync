@@ -1067,6 +1067,9 @@ function HostView({
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
+  const [clearLogsPending, setClearLogsPending] = useState(false);
+  const [clearLogsError, setClearLogsError] = useState<string | null>(null);
+  const clearLogsPendingRef = useRef(false);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
@@ -1201,13 +1204,26 @@ function HostView({
               </Button>
               <Button
                 variant="ghost"
+                disabled={clearLogsPending}
+                loading={clearLogsPending}
                 onClick={() => {
                   void (async () => {
+                    if (clearLogsPendingRef.current) return;
+                    clearLogsPendingRef.current = true;
+                    setClearLogsPending(true);
+                    setClearLogsError(null);
                     try {
                       await clearHostLogs();
                       setLines([]);
-                    } catch {
-                      /* ignore */
+                    } catch (err) {
+                      setClearLogsError(
+                        err instanceof Error
+                          ? err.message
+                          : "Nie udało się wyczyścić logów",
+                      );
+                    } finally {
+                      clearLogsPendingRef.current = false;
+                      setClearLogsPending(false);
                     }
                   })();
                 }}
@@ -1216,6 +1232,11 @@ function HostView({
               </Button>
             </div>
           </div>
+          {clearLogsError ? (
+            <p className={styles.error} role="alert">
+              {clearLogsError}
+            </p>
+          ) : null}
           <pre className={styles.terminal} aria-live="polite">
             {lines.length === 0
               ? "Oczekiwanie na logi…"
