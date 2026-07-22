@@ -85,7 +85,7 @@ export const ProjectAssetSchema = z.object({
   originalName: z.string().min(1),
   kind: ProjectAssetKindSchema,
   mimeType: z.string().min(1),
-  sizeBytes: z.number().int().nonnegative(),
+  sizeBytes: z.number().int().nonnegative().max(100 * 1024 * 1024),
   durationMs: z.number().positive().finite().optional(),
   /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
   waveformPeaks: z.array(z.number().min(0).max(1)).max(512).optional(),
