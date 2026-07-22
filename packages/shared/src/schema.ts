@@ -8,8 +8,8 @@ export const LibraryProjectEntrySchema = z.object({
   updatedAt: z.string().datetime().optional(),
   midiProgramId: z.number().int().min(0).max(127).optional(),
   isTemplate: z.boolean().optional(),
-  artist: z.string().max(200).optional(),
-  genre: z.string().max(200).optional(),
+  artist: z.string().optional(),
+  genre: z.string().optional(),
   hasMusicXml: z.boolean().optional(),
 });
 
@@ -29,17 +29,17 @@ export const FormaClipKindSchema = z.enum(["countdown", "section"]);
 
 export const FormaClipSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1).max(120),
+  name: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   kind: FormaClipKindSchema.default("section"),
   /** Optional per-section note (Client Forma / drums). */
-  note: z.string().max(500).optional(),
+  note: z.string().optional(),
   /**
    * Interior subsection boundaries as offsets from clip.startTicks (v4 scissors).
    * Relative so move keeps cuts; resize clamps via helpers.
    */
-  subsections: z.array(z.number().int().positive()).max(64).optional(),
+  subsections: z.array(z.number().int().positive()).optional(),
 });
 
 export type FormaClip = z.infer<typeof FormaClipSchema>;
@@ -54,7 +54,7 @@ export const ScoreBarAnchorSchema = z.object({
 export type ScoreBarAnchor = z.infer<typeof ScoreBarAnchorSchema>;
 
 export const ScoreBarMapSchema = z.object({
-  anchors: z.array(ScoreBarAnchorSchema).max(512),
+  anchors: z.array(ScoreBarAnchorSchema),
 });
 
 export type ScoreBarMap = z.infer<typeof ScoreBarMapSchema>;
@@ -81,10 +81,10 @@ export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 
 export const ProjectAssetSchema = z.object({
   id: z.string().min(1),
-  storageName: z.string().min(1),
-  originalName: z.string().min(1).max(512),
+  storageName: z.string().min(1).max(200),
+  originalName: z.string().min(1),
   kind: ProjectAssetKindSchema,
-  mimeType: z.string().min(1).max(128),
+  mimeType: z.string().min(1),
   sizeBytes: z.number().int().nonnegative(),
   durationMs: z.number().positive().finite().optional(),
   /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
@@ -97,7 +97,7 @@ export type ProjectAsset = z.infer<typeof ProjectAssetSchema>;
 
 export const AudioTrackSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1).max(80),
+  name: z.string().min(1),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().optional(),
 });
@@ -204,7 +204,7 @@ export const TekstClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  text: z.string().max(2000),
+  text: z.string(),
 });
 
 export type TekstClip = z.infer<typeof TekstClipSchema>;
@@ -214,7 +214,7 @@ export const AkordClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  symbol: z.string().min(1).max(64),
+  symbol: z.string().min(1),
 });
 
 export type AkordClip = z.infer<typeof AkordClipSchema>;
@@ -224,7 +224,7 @@ export const CueClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  label: z.string().min(1).max(200),
+  label: z.string().min(1),
 });
 
 export type CueClip = z.infer<typeof CueClipSchema>;
@@ -289,28 +289,28 @@ const ProjectSchemaV5Object = z
     defaultBpm: z.number().positive().finite(),
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
-      clips: z.array(FormaClipSchema).max(256),
+      clips: z.array(FormaClipSchema),
     }),
-    tempoMap: z.array(TempoEventSchema).max(256),
-    meterMap: z.array(MeterEventSchema).max(256),
-    keyMap: z.array(KeyEventSchema).max(256),
+    tempoMap: z.array(TempoEventSchema),
+    meterMap: z.array(MeterEventSchema),
+    keyMap: z.array(KeyEventSchema),
     assets: z.array(ProjectAssetSchema),
     audioTracks: z.array(AudioTrackSchema),
     audioClips: z.array(AudioClipSchema),
     tekst: z.object({
-      clips: z.array(TekstClipSchema).max(2048),
+      clips: z.array(TekstClipSchema),
     }),
     akordy: z.object({
-      clips: z.array(AkordClipSchema).max(2048),
+      clips: z.array(AkordClipSchema),
     }),
     cue: z.object({
-      clips: z.array(CueClipSchema).max(2048),
+      clips: z.array(CueClipSchema),
     }),
     scoreBarMap: ScoreBarMapSchema.default({ anchors: [] }),
     midiProgramId: z.number().int().min(0).max(127).optional(),
     isTemplate: z.boolean().optional(),
-    artist: z.string().max(200).optional(),
-    genre: z.string().max(200).optional(),
+    artist: z.string().optional(),
+    genre: z.string().optional(),
     year: z.number().int().optional(),
   })
   .strict();
