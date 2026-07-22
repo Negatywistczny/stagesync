@@ -34,6 +34,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Timeline:** przycisk widoczności ścieżek (eye) wyśrodkowany w docku linijki (poziomo i pionowo).
 - **Timeline:** playhead i locator zaczynają się od górnej krawędzi BeatLane (nie LoopLane); obie linie w delikatnym odcieniu względem canvas (`--tl-marker-line`).
 - **Timeline setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
 - **Client Space ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skrót Spacji (vocal tap) ignoruje fokus w polach tekstowych (`INPUT` / `TEXTAREA` / `SELECT` / contentEditable); wspólny helper też w Timeline.
