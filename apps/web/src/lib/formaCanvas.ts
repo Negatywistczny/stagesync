@@ -57,13 +57,20 @@ export function contentFloorTicks(clips: FormaClip[]): number {
 
 export function computeFormaViewSpan(clips: FormaClip[]): ViewSpan {
   const barTicks = ticksPerBar(DEFAULT_VIEW_METER, DEFAULT_PPQ);
-  if (clips.length === 0) {
+  const finite = clips.filter(
+    (c) =>
+      Number.isFinite(c.startTicks) && Number.isFinite(c.lengthTicks),
+  );
+  if (finite.length === 0) {
     return { start: -7680, end: 7680 * 4 };
   }
-  const start = Math.min(...clips.map((c) => c.startTicks));
+  const start = Math.min(...finite.map((c) => c.startTicks));
   const contentEnd = Math.max(
-    ...clips.map((c) => c.startTicks + c.lengthTicks),
+    ...finite.map((c) => c.startTicks + c.lengthTicks),
   );
+  if (!Number.isFinite(start) || !Number.isFinite(contentEnd)) {
+    return { start: -7680, end: 7680 * 4 };
+  }
   const end = Math.max(
     contentEnd + TRAILING_VIEW_BARS * barTicks,
     start + barTicks,
