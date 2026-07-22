@@ -38,6 +38,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Timeline Pomoc:** usunięty lead o v4/OUT/MIDI (zostają karty i skróty).
 - **Preferencje:** Audio / MIDI jako zakładki ustawień (pasek z podkreśleniem), nie segmented control / przełączniki.
 - **Timeline toolbar:** przywrócony układ tools | transport (środek) | song (prawo) — regresja po przeniesieniu song cluster do L2.
 - **Timeline:** przycisk widoczności ścieżek (eye) wyśrodkowany w docku linijki (poziomo i pionowo).

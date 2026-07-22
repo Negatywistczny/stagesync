@@ -1219,13 +1219,6 @@
   gap: var(--ss-space-4);
 }
 
-.helpLead {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-relaxed);
-  color: var(--ss-color-text-muted);
-}
-
 .helpGrid {
   display: grid;
   grid-template-columns: 1fr;
