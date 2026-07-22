@@ -61,6 +61,7 @@ export function StageView() {
   const [text, setText] = useState("");
   const [ttlMs, setTtlMs] = useState(6000);
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [roles, setRoles] = useState<RoleId[]>([]);
@@ -104,7 +105,8 @@ export function StageView() {
 
   const onSend = async () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || pendingRef.current) return;
+    pendingRef.current = true;
     setPending(true);
     setError(null);
     setStatus(null);
@@ -122,6 +124,7 @@ export function StageView() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Wysyłka nieudana");
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   };
