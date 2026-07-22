@@ -45,19 +45,34 @@ export function tempoMapSegments(
     span,
     (ev) => `${ev.bpm} BPM`,
   );
-  if (fromMap.length > 0) return fromMap;
-  if (span.end > span.start) {
+  if (fromMap.length === 0) {
+    if (span.end > span.start) {
+      return [
+        {
+          startTicks: span.start,
+          endTicks: span.end,
+          label: `${project.defaultBpm} BPM`,
+          eventId: "tempo-default",
+          eventStartTicks: 0,
+        },
+      ];
+    }
+    return [];
+  }
+  const first = fromMap[0]!;
+  if (first.startTicks > span.start) {
     return [
       {
         startTicks: span.start,
-        endTicks: span.end,
+        endTicks: first.startTicks,
         label: `${project.defaultBpm} BPM`,
         eventId: "tempo-default",
         eventStartTicks: 0,
       },
+      ...fromMap,
     ];
   }
-  return [];
+  return fromMap;
 }
 
 export function meterMapSegments(
@@ -69,20 +84,36 @@ export function meterMapSegments(
     span,
     (ev) => `${ev.numerator}/${ev.denominator}`,
   );
-  if (fromMap.length > 0) return fromMap;
-  if (span.end > span.start) {
-    const m = project.defaultMeter;
+  const m = project.defaultMeter;
+  const defaultLabel = `${m.numerator}/${m.denominator}`;
+  if (fromMap.length === 0) {
+    if (span.end > span.start) {
+      return [
+        {
+          startTicks: span.start,
+          endTicks: span.end,
+          label: defaultLabel,
+          eventId: "meter-default",
+          eventStartTicks: 0,
+        },
+      ];
+    }
+    return [];
+  }
+  const first = fromMap[0]!;
+  if (first.startTicks > span.start) {
     return [
       {
         startTicks: span.start,
-        endTicks: span.end,
-        label: `${m.numerator}/${m.denominator}`,
+        endTicks: first.startTicks,
+        label: defaultLabel,
         eventId: "meter-default",
         eventStartTicks: 0,
       },
+      ...fromMap,
     ];
   }
-  return [];
+  return fromMap;
 }
 
 export function keyMapSegments(
