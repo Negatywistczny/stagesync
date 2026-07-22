@@ -194,6 +194,18 @@ export function commitMoveClip(
   return { ...project, forma: { clips } };
 }
 
+/** IDs to move when dragging a single Forma section (TE-24 cascade). */
+export function cascadeFormaMoveIds(
+  clips: readonly FormaClip[],
+  clipId: string,
+): string[] {
+  const target = clips.find((c) => c.id === clipId);
+  if (!target || target.kind === "countdown") return [clipId];
+  return clips
+    .filter((c) => c.kind !== "countdown" && c.startTicks >= target.startTicks)
+    .map((c) => c.id);
+}
+
 /** Multi-move same Δ from primary preview start (v4 moveIds). */
 export function commitMoveClips(
   project: Project,

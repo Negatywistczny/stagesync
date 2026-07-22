@@ -204,6 +204,7 @@ import {
   hitTestClipZone,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
+  type ClipHitZone,
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
@@ -5671,7 +5672,7 @@ function FormaClipButton({
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
-  const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
+  const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
   const countdown = clip.kind === "countdown";
   const cursor = pencilActive
     ? "crosshair"

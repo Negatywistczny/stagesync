@@ -8,10 +8,19 @@ title=$(gh pr view "$pr" --json title -q .title)
 echo "=== Integrating PR #$pr: $title ==="
 
 if gh pr diff "$pr" | git apply -3 --index; then
-  git commit -m "$title"
-  echo "  OK"
+  :
 else
-  echo "  APPLY FAILED for PR #$pr"
-  git diff --name-only --diff-filter=U 2>/dev/null || true
-  exit 2
+  echo "  conflicts — preferring PR (theirs) on remaining hunks"
+  for f in $(git diff --name-only --diff-filter=U); do
+    git checkout --theirs "$f" 2>/dev/null || git checkout --theirs -- "$f"
+    git add "$f"
+  done
+  if git diff --name-only --diff-filter=U | grep -q .; then
+    echo "  UNRESOLVED for PR #$pr"
+    git diff --name-only --diff-filter=U
+    exit 2
+  fi
 fi
+
+git commit -m "$title"
+echo "  OK"
