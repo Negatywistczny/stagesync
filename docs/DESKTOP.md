@@ -99,6 +99,8 @@ Opcjonalnie (dev / thin-shell): `STAGESYNC_URL=http://127.0.0.1:4000/admin pnpm 
 
 **Pełny ekran:** w aplikacji desktop przycisk przełącza **natywne okno** (Tauri); w przeglądarce — HTML Fullscreen API (Klient na tablecie).
 
+**Drag-and-drop plików:** okno ma `dragDropEnabled: false` — Tauri nie przejmuje dropów OS, więc działają HTML5 `onDrop` / `dataTransfer` w Admin (import biblioteki) i drag setlisty. Natywne ścieżki plików z `onDragDropEvent` nie są używane (upload idzie przez `File` + HTTP jak w przeglądarce).
+
 ## Build lokalny (macOS / Windows)
 
 ```sh
