@@ -8,6 +8,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { flushSync } from "react-dom";
 import styles from "../ClientShell.module.css";
 import {
   applyInstrumentPitchToChord,
@@ -339,12 +340,16 @@ function GridPaneBody({
         nextCycle: liveRef.current.nextCycle,
         countdownPreview: liveRef.current.countdownPreview,
       };
+      // Keep final translateY until React commits the promoted row, then snap
+      // to 0 in the same turn — otherwise translateY(0) + old row paints (flicker).
       track.style.transition = "none";
-      track.style.transform = "translateY(0)";
-      commitDisplay(snap);
-      setCarouselAnimating(false);
-      setHighlightNextRow(false);
+      flushSync(() => {
+        commitDisplay(snap);
+        setCarouselAnimating(false);
+        setHighlightNextRow(false);
+      });
       carouselBusy.current = false;
+      track.style.transform = "translateY(0)";
       void track.offsetHeight;
       resetTrackTransform(track);
     };
