@@ -24,16 +24,19 @@ class RateMeter {
   private stamps: number[] = [];
 
   hit(now: number): void {
+    if (!Number.isFinite(now)) return;
     this.stamps.push(now);
     this.prune(now);
   }
 
   rate(now: number): number {
+    if (!Number.isFinite(now)) return 0;
     this.prune(now);
     return this.stamps.length;
   }
 
   private prune(now: number): void {
+    if (!Number.isFinite(now)) return;
     const cutoff = now - WINDOW_MS;
     while (this.stamps.length > 0 && this.stamps[0]! < cutoff) {
       this.stamps.shift();
