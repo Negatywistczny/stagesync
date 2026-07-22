@@ -28,6 +28,15 @@ export function getDisplayTicks(
   localReceiptMs: number,
   isPlaying: boolean,
 ): number {
+  if (
+    !Number.isFinite(anchor.positionTicks) ||
+    !Number.isFinite(anchor.bpm) ||
+    !Number.isFinite(anchor.ppq) ||
+    !Number.isFinite(currentTimestampMs) ||
+    !Number.isFinite(localReceiptMs)
+  ) {
+    throw new RangeError("getDisplayTicks: non-finite input");
+  }
   if (!isPlaying) {
     return anchor.positionTicks;
   }
