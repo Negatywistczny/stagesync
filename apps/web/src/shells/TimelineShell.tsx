@@ -16,15 +16,13 @@ import {
   formatKeySignature,
   parseLegacyMeter,
   ticksPerBar,
-  ticksToBbtAlongMeterMap,
+  ticksToBbt,
   toDisplayBar,
   importUgText,
   projectEndTicks,
   transportHomeTicks,
-  wandContentToForma,
   type FormaClip,
   type Project,
-  type WandMode,
 } from "@stagesync/shared";
 import {
   buildBarMarks,
@@ -40,7 +38,6 @@ import {
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
 import {
-  cascadeFormaMoveIds,
   commitGesture,
   commitMoveClip,
   deleteFormaClip,
@@ -204,7 +201,6 @@ import {
   hitTestClipZone,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
-  type ClipHitZone,
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
@@ -232,6 +228,14 @@ import {
   setLaneHeightOverride,
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
+import {
+  loadZoomPrefs,
+  saveZoomPrefs,
+  ZOOM_H_MAX,
+  ZOOM_H_MIN,
+  ZOOM_UI_MAX,
+  ZOOM_UI_MIN,
+} from "../lib/timelineZoomPrefs.js";
 import {
   toggleAppFullscreen,
   syncNavRecentProjects,
@@ -273,7 +277,6 @@ import {
   IconTap,
   IconUnchecked,
   IconUndo,
-  IconWand,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -331,14 +334,7 @@ const TOOLS: {
     key: "c",
     Icon: IconScissors,
   },
-  {
-    id: "wand",
-    label: "Różdżka",
-    title:
-      "Różdżka — Tekst / Akordy → Forma (zaznaczenie sekcji = zakres; bez — cały utwór)",
-    key: "w",
-    Icon: IconWand,
-  },
+  // Różdżka (wand) — ukryta do naprawy zachowania (PO smoke); core `wandContentToForma` zostaje.
 ];
 
 const TOOL_BY_KEY = Object.fromEntries(TOOLS.map((t) => [t.key, t]));
@@ -366,6 +362,7 @@ export function TimelineShell() {
     setLoop,
   } = useTransport();
   const wasPlayingRef = useRef(state.playing);
+  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
 
   const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [draftProject, setDraftProject] = useState<Project | null>(null);
@@ -385,17 +382,11 @@ export function TimelineShell() {
     left: number;
     top: number;
   } | null>(null);
-  const [wandMenu, setWandMenu] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
   const toolMenuRef = useRef<HTMLDivElement>(null);
-  const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [songPickerFilter, setSongPickerFilter] = useState("");
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
@@ -407,9 +398,9 @@ export function TimelineShell() {
       return false;
     }
   });
-  const [zoomH, setZoomH] = useState(DEFAULT_PX_PER_BAR);
-  const [zoomV, setZoomV] = useState(DEFAULT_LANE_PX);
-  const [zoomUi, setZoomUi] = useState(100);
+  const [zoomH, setZoomH] = useState(() => loadZoomPrefs().zoomH);
+  const [zoomV, setZoomV] = useState(() => loadZoomPrefs().zoomV);
+  const [zoomUi, setZoomUi] = useState(() => loadZoomPrefs().zoomUi);
   const [laneHeights, setLaneHeights] = useState<LaneHeightsMap>(() =>
     loadLaneHeights(),
   );
@@ -430,8 +421,6 @@ export function TimelineShell() {
   const effectiveZoomV = Math.max(1, Math.round(zoomV * uiScale));
   /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
   const ZOOM_H_STEP = 4;
-  const ZOOM_H_MIN = 24;
-  const ZOOM_H_MAX = 160;
   const ZOOM_V_STEP = 4;
   const ZOOM_V_MIN = MIN_LANE_PX;
   const ZOOM_V_MAX = MAX_LANE_PX;
@@ -661,24 +650,19 @@ export function TimelineShell() {
   }, [projectId, draftProject?.name]);
 
   useEffect(() => {
-    if (!songScreenOpen) {
-      setSongPickerFilter("");
-      return;
-    }
-    let cancelled = false;
+    saveZoomPrefs({ zoomH, zoomV, zoomUi });
+  }, [zoomH, zoomV, zoomUi]);
+
+  useEffect(() => {
+    if (!songScreenOpen) return;
     void (async () => {
       try {
         const lib = await fetchLibrary();
-        if (!cancelled) {
-          setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
-        }
+        setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
       } catch {
-        if (!cancelled) setLibraryNames([]);
+        setLibraryNames([]);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
   }, [songScreenOpen]);
 
   useEffect(() => {
@@ -911,7 +895,7 @@ export function TimelineShell() {
         (e.key === "?" || (e.shiftKey && e.key === "/"))
       ) {
         e.preventDefault();
-        setHelpOpen((open) => !open);
+        setHelpOpen(true);
         return;
       }
 
@@ -1022,14 +1006,6 @@ export function TimelineShell() {
       if (!mod && !e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
         e.preventDefault();
         h.nudgeLocator(e.key === "ArrowLeft" ? -1 : 1);
-        return;
-      }
-      if (!mod && !e.altKey && (e.key === "[" || e.key === "]")) {
-        const id = e.key === "]" ? h.nextSetlistId : h.prevSetlistId;
-        if (id) {
-          e.preventDefault();
-          navigate(`/timeline/${id}`);
-        }
         return;
       }
       if (
@@ -1228,38 +1204,16 @@ export function TimelineShell() {
 
   const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, effectiveZoomH);
 
-  const bbt = draftProject
-    ? ticksToBbtAlongMeterMap(
-        displayTicks,
-        draftProject.defaultMeter,
-        draftProject.meterMap,
-        draftProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        displayTicks,
-        state.timeSignature,
-        [],
-        state.ppq,
-      );
-
   const effectiveLocatorTicks = state.playing ? displayTicks : locatorTicks;
   const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
     : state.timeSignature;
-  const locatorBbt = draftProject
-    ? ticksToBbtAlongMeterMap(
-        effectiveLocatorTicks,
-        draftProject.defaultMeter,
-        draftProject.meterMap,
-        draftProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        effectiveLocatorTicks,
-        locatorMeter,
-        [],
-        state.ppq,
-      );
+  const locatorBbt = ticksToBbt(
+    effectiveLocatorTicks,
+    locatorMeter,
+    draftProject?.ppq ?? state.ppq,
+  );
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
   // v4: cyan MIDI overlay only when external clock is live and Timeline is not the
   // transport source. Alpha: server Timeline owns play → no separate MIDI overlay (β2).
@@ -2111,19 +2065,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
     if (tool === "scissors") {
       e.preventDefault();
+      if (!selectedClipId) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      const hit =
-        draftProject.forma.clips.find(
-          (c) =>
-            c.kind === "section" &&
-            raw > c.startTicks &&
-            raw < c.startTicks + c.lengthTicks,
-        ) ?? null;
-      const targetId = hit?.id ?? selectedClipId;
-      if (!targetId) return;
-      if (hit) selectLaneClip("forma", hit.id);
-      const next = splitFormaClipAt(draftProject, targetId, raw);
+      const next = splitFormaClipAt(draftProject, selectedClipId, raw);
       if (next !== draftProject) commitDraft(next);
       return;
     }
@@ -2568,18 +2513,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [toolMenu]);
-
-  useEffect(() => {
-    if (!wandMenu) return;
-    function onPointerDown(e: PointerEvent) {
-      const el = wandMenuRef.current;
-      if (el && e.target instanceof Node && el.contains(e.target)) return;
-      setWandMenu(null);
-      setTool((t) => (t === "wand" ? "pointer" : t));
-    }
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [wandMenu]);
 
   function placeLocatorAtTicks(
     ticks: number,
@@ -3201,39 +3134,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const def = TOOLS.find((t) => t.id === id);
     if (def?.disabled) return;
     setToolMenu(null);
-    if (id === "wand") {
-      setTool("wand");
-      const { x, y } = lastPointerRef.current;
-      setWandMenu({
-        left: Math.max(8, x),
-        top: Math.max(8, y),
-      });
-      return;
-    }
-    setWandMenu(null);
     setTool(id);
-  }
-
-  function applyWand(mode: WandMode) {
-    const draft = draftRef.current;
-    if (!draft) return;
-    const formaIds = idsOnLane(clipSelection, "forma");
-    const ranges = formaIds.length
-      ? draft.forma.clips
-          .filter((c) => formaIds.includes(c.id) && c.kind === "section")
-          .map((c) => ({
-            startTicks: c.startTicks,
-            endTicks: c.startTicks + c.lengthTicks,
-          }))
-      : undefined;
-    const next = wandContentToForma(
-      draft,
-      mode,
-      ranges?.length ? { ranges } : {},
-    );
-    if (next !== draft) commitDraft(next);
-    setWandMenu(null);
-    setTool("pointer");
   }
 
   function openToolMenuAt(clientX: number, clientY: number) {
@@ -3529,7 +3430,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         return (
           <>
             {draftProject.forma.clips.map((clip) => {
-              const rawMoveIds =
+              const moveIds =
                 gestureSession?.kind === "move" &&
                 (gestureSession.lane ?? "forma") === "forma"
                   ? gestureSession.moveIds?.length
@@ -3538,14 +3439,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ? [gestureSession.clipId]
                       : []
                   : [];
-              // TE-24: single-id drag previews cascade; multi-select keeps explicit ids.
-              const moveIds =
-                rawMoveIds.length === 1
-                  ? cascadeFormaMoveIds(
-                      draftProject.forma.clips,
-                      rawMoveIds[0]!,
-                    )
-                  : rawMoveIds;
               const moveDelta =
                 gesturePreview &&
                 gestureSession?.kind === "move" &&
@@ -4801,10 +4694,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Wycisz clip
+                  Mute clip
                 </label>
                 <label className={styles.inspField}>
-                  Wzmocnienie clipu (dB)
+                  Gain clip (dB)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -4835,10 +4728,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Wycisz ścieżkę
+                  Mute track
                 </label>
                 <label className={styles.inspField}>
-                  Fader ścieżki (dB)
+                  Fader track (dB)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -5060,8 +4953,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             UI
             <input
               type="range"
-              min={50}
-              max={150}
+              min={ZOOM_UI_MIN}
+              max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
@@ -5271,29 +5164,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
-              <input
-                className={styles.nameInput}
-                type="search"
-                placeholder="Filtruj…"
-                value={songPickerFilter}
-                onChange={(e) => setSongPickerFilter(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape" && songPickerFilter) {
-                    e.preventDefault();
-                    setSongPickerFilter("");
-                  }
-                }}
-                aria-label="Filtruj utwory"
-                autoFocus
-              />
               <ul className={styles.songList}>
-                {libraryNames
-                  .filter((p) => {
-                    const q = songPickerFilter.trim().toLowerCase();
-                    if (!q) return true;
-                    return p.name.toLowerCase().includes(q);
-                  })
-                  .map((p) => (
+                {libraryNames.map((p) => (
                   <li key={p.id}>
                     <Link
                       to={`/timeline/${p.id}`}
@@ -5452,37 +5324,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <Icon />
                   <span>{label}</span>
                   <span className={styles.toolMenuKey}>{key}</span>
-                </button>
-              ))}
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {wandMenu
-        ? createPortal(
-            <div
-              ref={wandMenuRef}
-              className={styles.toolMenu}
-              style={{ top: wandMenu.top, left: wandMenu.left }}
-              role="menu"
-              aria-label="Różdżka — źródło"
-            >
-              {(
-                [
-                  ["tekst", "Tekst → Forma"],
-                  ["akordy", "Akordy → Forma"],
-                  ["both", "Tekst + Akordy → Forma"],
-                ] as const
-              ).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  role="menuitem"
-                  className={styles.toolMenuItem}
-                  onClick={() => applyWand(mode)}
-                >
-                  <span>{label}</span>
                 </button>
               ))}
             </div>,
@@ -5710,7 +5551,7 @@ function FormaClipButton({
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
-  const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
+  const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
   const countdown = clip.kind === "countdown";
   const cursor = pencilActive
     ? "crosshair"
