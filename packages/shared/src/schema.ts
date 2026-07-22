@@ -481,9 +481,11 @@ export const UpdateStatusSchema = z.object({
 export type UpdateStatus = z.infer<typeof UpdateStatusSchema>;
 
 /** POST /api/system/apply-update body */
-export const ApplyUpdateBodySchema = z.object({
-  target: z.enum(["host"]),
-});
+export const ApplyUpdateBodySchema = z
+  .object({
+    target: z.enum(["host"]),
+  })
+  .strict();
 
 export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;
 
