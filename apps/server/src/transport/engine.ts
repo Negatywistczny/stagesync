@@ -262,6 +262,21 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
+    /**
+     * When a library project is deleted, drop it from transport so stop/seek/play
+     * do not 404 on a missing activeProjectId.
+     */
+    clearActiveIf(projectId: string): TransportState | null {
+      if (activeProjectId !== projectId) return null;
+      activeProjectId = null;
+      positionTicks = samplePosition();
+      playing = false;
+      stopTimer();
+      loop = null;
+      notify();
+      return snapshot();
+    },
+
     dispose(): void {
       stopTimer();
       listeners.clear();
