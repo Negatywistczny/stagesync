@@ -4407,6 +4407,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={draftProject.name}
+                    maxLength={200}
                     aria-label="Tytuł utworu"
                     onChange={(e) => {
                       commitDraft({

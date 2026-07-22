@@ -870,6 +870,7 @@ function SongsView({
                       id="admin-project-name"
                       className={styles.input}
                       value={draftName}
+                      maxLength={200}
                       disabled={locked}
                       aria-label="Nazwa projektu"
                       onChange={(e) => onDraftNameChange(e.target.value)}

@@ -146,6 +146,12 @@ describe("CreateProjectBodySchema", () => {
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
   });
+
+  it("rejects names longer than 200 chars", () => {
+    expect(() =>
+      CreateProjectBodySchema.parse({ name: "x".repeat(201) }),
+    ).toThrow();
+  });
 });
 
 describe("PutProjectBodySchema", () => {
