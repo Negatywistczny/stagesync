@@ -622,12 +622,7 @@ export function AdminShell() {
       ) : null}
 
       {pathPickerOpen ? (
-        <Modal title="Ścieżka" onClose={() => setPathPickerOpen(false)}>
-          <p className={styles.muted}>Przeglądanie katalogów — shell.</p>
-          <Button variant="ghost" onClick={() => setPathPickerOpen(false)}>
-            Zamknij
-          </Button>
-        </Modal>
+        <DataDirModal onClose={() => setPathPickerOpen(false)} />
       ) : null}
 
       <ShellPromptDialog
@@ -1372,7 +1367,7 @@ function HostView({
                   Przywróć…
                 </Button>
                 <Button variant="ghost" onClick={onPathPicker}>
-                  Path picker
+                  Folder danych…
                 </Button>
               </div>
             </div>
@@ -1590,6 +1585,49 @@ function UpdatePanel({
   );
 }
 
+function DataDirModal({ onClose }: { onClose: () => void }) {
+  const [dataDir, setDataDir] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const info = await fetchNetworkInfo();
+        if (!cancelled) setDataDir(info.dataDir ?? null);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Nie udało się odczytać ścieżki");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <Modal title="Folder danych" onClose={onClose}>
+      <p className={styles.muted}>
+        Przeglądarka nie może wybierać katalogu hosta. Dane runtime leżą w{" "}
+        <code>STAGESYNC_DATA_DIR</code> (domyślnie <code>data/</code> na maszynie
+        serwera).
+      </p>
+      {error ? <p className={styles.muted}>{error}</p> : null}
+      {dataDir ? (
+        <p>
+          Aktualny folder: <code>{dataDir}</code>
+        </p>
+      ) : !error ? (
+        <p className={styles.muted}>Wczytywanie…</p>
+      ) : null}
+      <Button variant="ghost" onClick={onClose}>
+        Zamknij
+      </Button>
+    </Modal>
+  );
+}
+
 function HostSettingsModal({
   onClose,
   onPathPicker,
@@ -1714,7 +1752,7 @@ function HostSettingsModal({
           Port, hostname i URL-e — karta Sieć na zakładce Host.
         </p>
         <Button variant="ghost" onClick={onPathPicker}>
-          Wybierz ścieżkę…
+          Folder danych…
         </Button>
       </fieldset>
       <div className={styles.actions}>
