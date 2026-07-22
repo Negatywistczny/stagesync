@@ -12,7 +12,9 @@ import {
   commitResizeAudioClip,
   deleteAudioClip,
   setAudioClipMuted,
+  setAudioClipTrimMs,
   setAudioTrackMuted,
+  setAudioTrackName,
 } from "./audioLaneEdit.js";
 
 function projectWithAudio(): Project {
@@ -73,6 +75,18 @@ describe("audioLaneEdit", () => {
     expect(p.audioTracks[0]!.muted).toBe(true);
     p = deleteAudioClip(p, "clip-1");
     expect(p.audioClips).toHaveLength(0);
+  });
+
+  it("setAudioTrackName and setAudioClipTrimMs", () => {
+    let p = projectWithAudio();
+    const trackId = p.audioTracks[0]!.id;
+    p = setAudioTrackName(p, trackId, "  Lead  ");
+    expect(p.audioTracks[0]!.name).toBe("Lead");
+    p = setAudioClipTrimMs(p, "clip-1", { trimInMs: 120, trimOutMs: 80 });
+    expect(p.audioClips[0]!.trimInMs).toBe(120);
+    expect(p.audioClips[0]!.trimOutMs).toBe(80);
+    p = setAudioClipTrimMs(p, "clip-1", { trimInMs: 0 });
+    expect(p.audioClips[0]!.trimInMs).toBeUndefined();
   });
 
   it("applyDecodedAudioMeta stamps peaks", () => {
