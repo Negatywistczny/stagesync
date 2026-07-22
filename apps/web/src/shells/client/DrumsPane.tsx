@@ -80,6 +80,7 @@ export function DrumsPane({
             placeholder="Notatka perkusji (fill, crash, ride…)"
             aria-label="Notatka aktywnej sekcji"
             value={ctx.activeNote ?? ""}
+            maxLength={500}
             onChange={(e) => onNoteChange(ctx.activeClipId!, e.target.value)}
           />
         ) : ctx.activeNote ? (
@@ -177,6 +178,7 @@ export function DrumsPane({
                     placeholder="Notatka perkusji…"
                     aria-label={`Notatka: ${seg.name}`}
                     value={seg.note ?? ""}
+                    maxLength={500}
                     onChange={(e) => onNoteChange(seg.id, e.target.value)}
                   />
                 ) : seg.note ? (
