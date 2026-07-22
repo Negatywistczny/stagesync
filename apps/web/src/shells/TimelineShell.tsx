@@ -4444,8 +4444,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.lengthInput}
                     type="number"
-                    min={1900}
-                    max={2100}
+                    min={1000}
+                    max={9999}
                     placeholder="1978"
                     value={draftProject.year ?? ""}
                     aria-label="Rok wydania"
@@ -4457,9 +4457,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       }
                       const n = Number(raw);
                       if (!Number.isFinite(n)) return;
+                      const year = Math.round(n);
+                      if (year < 1000 || year > 9999) return;
                       commitDraft({
                         ...draftProject,
-                        year: Math.round(n),
+                        year,
                       });
                     }}
                   />

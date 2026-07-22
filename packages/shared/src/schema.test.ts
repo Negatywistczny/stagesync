@@ -109,6 +109,13 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
+  it("rejects out-of-range year", () => {
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    expect(() => ProjectSchemaV5.parse({ ...seed, year: 999 })).toThrow();
+    expect(() => ProjectSchemaV5.parse({ ...seed, year: 10000 })).toThrow();
+    expect(ProjectSchemaV5.parse({ ...seed, year: 1978 }).year).toBe(1978);
+  });
+
   it("upgrades v4 to v5", () => {
     const v4 = createProjectV4Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const v5 = upgradeProjectV4ToV5(v4);
