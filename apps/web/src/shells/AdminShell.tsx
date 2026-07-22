@@ -1072,6 +1072,7 @@ function HostView({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const midiBusyRef = useRef(false);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
@@ -1588,6 +1589,7 @@ function HostSettingsModal({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const midiBusyRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
