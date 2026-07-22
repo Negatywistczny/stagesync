@@ -1618,10 +1618,18 @@
   margin-left: auto;
 }
 
-.zoomLab {
+.zoomControl {
   display: flex;
   align-items: center;
-  gap: var(--ss-space-2);
+  gap: var(--ss-space-1);
+  min-width: 0;
+}
+
+.zoomLab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-1);
+  min-width: var(--ss-space-10);
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-medium);
   line-height: var(--ss-leading-compact);
@@ -1631,7 +1639,7 @@
   white-space: nowrap;
 }
 
-.zoomLab input[type="range"] {
+.zoomRange {
   width: var(--ss-space-16);
   accent-color: var(--ss-color-primary);
 }
