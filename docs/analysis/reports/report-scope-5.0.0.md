@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~03:18 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -259,18 +259,45 @@ Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](h
 
 ### Remaining backlog (ranked)
 
-1. Admin density deep-pass beyond #82/#95
-2. Playwright Forma drag matrix — defer
-3. Overlap drag / Flex Time — OUT
-4. AD-01…03 — skip
-5. PDF setlist / archive — OUT
-6. Full auth / multi-user — 5.1+
+1. Prefer **#197** over **#195**; **#212** over **#151**; **#213** over **#205** (handoff)
+2. Cue stack: **#130** → **#209** → **#211** (+ **#104** / **#152**)
+3. Client OCC: **#199** / **#204** / **#146**
+4. Zod bounds wave (#214–#220, #222) — merge after shared conflicts resolve
+5. ClientShell remaining clamp()/weight — pairs with #90
+6. Playwright Forma drag — defer (#67)
+7. Overlap / Flex Time / AD-01…03 — OUT / skip
+8. Near **10:00 UTC+2**: final CI refresh in handoff; stop new features
 
 ### Blokery
 
 - G1–G10 soft-gate only — **nie** claim green bez HW.
 - #83: LAN Host restart needs `STAGESYNC_HOST_TOKEN` or `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`.
-- TimelineShell rebases likely across open PRs.
+- TimelineShell / `schema.ts` rebases likely across open PRs.
+
+## Waves 10–12 (~02:40–03:18 CEST) — post-must continuation
+
+**Binding:** until **10:00 UTC+2**; no merge; no `5.0.0` tag; G1–G10 soft-gate.
+
+| # | Temat | URL | CI (~03:18) |
+|---|--------|-----|-------------|
+| [#194](https://github.com/Negatywistyczny/stagesync/pull/194)–[#208](https://github.com/Negatywistyczny/stagesync/pull/208) | WS isolation, uploads, Escape, OCC, zoom, metronome, Admin guards… | see GitHub | green |
+| [#209](https://github.com/Negatywistyczny/stagesync/pull/209) | stage-hub default ttlMs | https://github.com/Negatywistyczny/stagesync/pull/209 | green |
+| [#210](https://github.com/Negatywistyczny/stagesync/pull/210) | countdown max 32 bars | https://github.com/Negatywistyczny/stagesync/pull/210 | green |
+| [#211](https://github.com/Negatywistyczny/stagesync/pull/211) | Client cue TTL + role hide | https://github.com/Negatywistyczny/stagesync/pull/211 | green |
+| [#212](https://github.com/Negatywistyczny/stagesync/pull/212) | projectEndTicks content+audio | https://github.com/Negatywistyczny/stagesync/pull/212 | green |
+| [#213](https://github.com/Negatywistyczny/stagesync/pull/213) | handoff waves 10–11 | https://github.com/Negatywistyczny/stagesync/pull/213 | green |
+| [#214](https://github.com/Negatywistyczny/stagesync/pull/214) | setlist max 256 | https://github.com/Negatywistyczny/stagesync/pull/214 | green |
+| [#215](https://github.com/Negatywistyczny/stagesync/pull/215) | library max 1024 | https://github.com/Negatywistyczny/stagesync/pull/215 | green |
+| [#216](https://github.com/Negatywistyczny/stagesync/pull/216) | assets/audio array max | https://github.com/Negatywistyczny/stagesync/pull/216 | green |
+| [#217](https://github.com/Negatywistyczny/stagesync/pull/217) | forma/content/map array max | https://github.com/Negatywistyczny/stagesync/pull/217 | green |
+| [#218](https://github.com/Negatywistyczny/stagesync/pull/218) | artist/genre max 200 | https://github.com/Negatywistyczny/stagesync/pull/218 | green |
+| [#219](https://github.com/Negatywistyczny/stagesync/pull/219) | clip text / forma name max | https://github.com/Negatywistyczny/stagesync/pull/219 | green |
+| [#220](https://github.com/Negatywistyczny/stagesync/pull/220) | audio track / asset name max | https://github.com/Negatywistyczny/stagesync/pull/220 | pending |
+| [#221](https://github.com/Negatywistyczny/stagesync/pull/221) | Timeline save/upload error banner | https://github.com/Negatywistyczny/stagesync/pull/221 | pending |
+| [#222](https://github.com/Negatywistyczny/stagesync/pull/222) | asset storageName max | https://github.com/Negatywistyczny/stagesync/pull/222 | pending |
+
+**#50–#52:** non-blocking. Musts **#53–#60** still open unmerged. Agent continues until ~10:00.
+
 ## Wave 2 backlog (historical ranking at start of cont.)
 
 | Rank | Temat | Outcome |
