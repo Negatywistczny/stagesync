@@ -16,7 +16,7 @@ async function readApiError(res: Response): Promise<string> {
   } catch {
     /* ignore */
   }
-  return message;
+  return message.slice(0, 500);
 }
 
 export async function fetchLibrary(): Promise<Library> {
