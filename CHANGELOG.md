@@ -10,6 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
+- **Tablet — nudge i gesty:** pasek ◀▶ + 4 przyciski krawędzi (stretch in/out) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom na osi czasu.
 - **Różdżka:** z powrotem w toolbarze / skrót W — Tekst→Forma, Akordy→Forma lub obie; zakres = zaznaczone sekcje Formy.
 - **MIDI playhead:** opcjonalny wskaźnik w Wygląd (zapamiętywany lokalnie).
 - **Inspector audio ([#428](https://github.com/Negatywistyczny/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.

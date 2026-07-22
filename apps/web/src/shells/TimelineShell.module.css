@@ -2068,11 +2068,19 @@
   bottom: calc(var(--ss-space-10) + var(--ss-space-4));
   z-index: var(--ss-z-panel);
   display: flex;
+  align-items: center;
   gap: var(--ss-space-2);
   padding: var(--ss-space-2);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
   background: var(--ss-color-elevated);
+}
+
+.touchNudgeSep {
+  align-self: stretch;
+  width: 1px;
+  margin-inline: var(--ss-space-1);
+  background: var(--ss-color-border);
 }
 
 .touchNudgeBtn {
@@ -2085,6 +2093,12 @@
   font: inherit;
   font-size: var(--ss-text-lg);
   cursor: pointer;
+}
+
+.touchNudgeBtnSm {
+  min-width: var(--ss-space-8);
+  min-height: var(--ss-space-8);
+  font-size: var(--ss-text-sm);
 }
 
 .touchTierNote {
