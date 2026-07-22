@@ -73,7 +73,7 @@ export function setAkordyClipSymbol(
   clipId: string,
   symbol: string,
 ): Project {
-  const next = symbol.trim() || "C";
+  const next = (symbol.trim() || "C").slice(0, 64);
   const clips = project.akordy.clips.map((c) =>
     c.id === clipId ? { ...c, symbol: next } : c,
   );
