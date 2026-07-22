@@ -205,6 +205,12 @@ import {
   AUDIO_LATENCY_CHANGED_EVENT,
   getStoredLatencyCompensationMs,
 } from "../lib/audioLatencyPrefs.js";
+import {
+  CLOCK_DISPLAY_CHANGED_EVENT,
+  formatClockDisplay,
+  getStoredClockDisplayFormat,
+  type ClockDisplayFormat,
+} from "../lib/clockDisplayPrefs.js";
 import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { isEditableKeyboardTarget } from "../lib/isEditableKeyboardTarget.js";
 import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
@@ -426,7 +432,16 @@ export function TimelineShell() {
   const [latencyCompMs, setLatencyCompMs] = useState(
     () => getStoredLatencyCompensationMs(),
   );
-  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+  const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
+    getStoredClockDisplayFormat(),
+  );
+  const clockLabel = formatClockDisplay({
+    ticks: displayTicks,
+    bpm: state.bpm,
+    timeSignature: state.timeSignature,
+    ppq: state.ppq,
+    format: clockFormat,
+  });
 
   useEffect(() => {
     const onLatency = () => {
@@ -435,6 +450,16 @@ export function TimelineShell() {
     window.addEventListener(AUDIO_LATENCY_CHANGED_EVENT, onLatency);
     return () => {
       window.removeEventListener(AUDIO_LATENCY_CHANGED_EVENT, onLatency);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onClock = () => {
+      setClockFormat(getStoredClockDisplayFormat());
+    };
+    window.addEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
+    return () => {
+      window.removeEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
     };
   }, []);
 
@@ -4297,7 +4322,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               )}
             </button>
             <span className={styles.bbt} aria-live="polite">
-              {toDisplayBar(bbt.bar)}.{bbt.beat}
+              {clockLabel}
             </span>
             <button
               type="button"

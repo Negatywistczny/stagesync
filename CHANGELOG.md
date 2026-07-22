@@ -22,6 +22,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Cue:** role sceniczne + priorytet Alert w schemacie, migracji i Inspectorze.
 
 #### 🎛️ Audio / MIDI / Transport
+- **Preferencje (4 zakładki):** Ogólne (motyw/kontrast, format zegara BBT ↔ MM:SS.ms), Audio, MIDI i Metronom (głośność akcentu/beatów + dźwięk: domyślny/woodblock/bell) — lokalne `localStorage`; MIDI porty/Clock OUT dopiero po **Zapisz**.
+- **Preferencje — Odrzuć / Zapisz:** edycje w draftcie do zapisu; Odrzuć, Esc i tło przywracają stan z otwarcia (podgląd wyglądu bez zapisu).
 - **Preferencje — MIDI Panic:** przycisk **MIDI Panic / Reset Controllers** wysyła All Sound Off / Reset Controllers / All Notes Off na 16 kanałach hosta (`POST /api/midi/panic`); potwierdzenie „Wysłano sygnał Reset”.
 - **Preferencje — Audio:** informacje silnika (Sample Rate, latencja sieci) oraz kompensacja latencji wyjścia (−100…+500 ms, `localStorage`) jako offset ticków przy odtwarzaniu WebAudio (SSOT serwera bez zmian).
 - **Live Desk:** transpozycja zespołu, kompensacja sync-lead i przełącznik edycji zdalnej — API `/api/live-desk`, broadcast WS, Admin Scena + Client.
@@ -56,6 +58,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Admin chrome:** przycisk **Ustawienia** (zamiast Wygląd) otwiera Preferencje; motyw/kontrast w Ogólne.
 - **Admin Utwory — master-detail:** lewa kolumna (szukaj / sort / + Nowy Utwór + rozciągana lista + zwijane Wzory); prawa tylko inspector wybranego utworu (tytuł, Otwórz / Odtwórz / Usuń, assety); import/eksport JSON i UG w menu **Zarządzaj bazą ▾** (poza panelem utworu).
 - **Admin Set:** etykieta limitu czasu w pasku podsumowania: **Czas** (zamiast Budżet).
 - **Admin Set:** pasek `Set (N) — Łączny czas` z budżetem czasu (domyślnie 45 min); pusty stan z podpowiedzią przeciągania oraz **+ Dodaj przerwę** / **Wczytaj szablon**; pozycje **Przerwa / Zapowiedź** z czasem w minutach (liczą się do sumy, bez auto-advance).

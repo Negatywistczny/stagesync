@@ -8,7 +8,6 @@ import {
   resolveStageCueBanner,
   resolveTempoAt,
   stageCueBannerLabel,
-  toDisplayBar,
   ticksToBbt,
   type InstrumentPitchMode,
   type Project,
@@ -25,6 +24,12 @@ import {
   setSectionNamesPolish,
   type ClientDisplayPrefs,
 } from "../lib/clientDisplayPrefs.js";
+import {
+  CLOCK_DISPLAY_CHANGED_EVENT,
+  formatClockDisplay,
+  getStoredClockDisplayFormat,
+  type ClockDisplayFormat,
+} from "../lib/clockDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
 import { putProject } from "../lib/libraryApi.js";
 import { fetchSetlist } from "../lib/setlistApi.js";
@@ -82,6 +87,16 @@ export function ClientShell() {
     rawDisplayTicks +
     ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq);
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+  const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
+    getStoredClockDisplayFormat(),
+  );
+  const clockLabel = formatClockDisplay({
+    ticks: displayTicks,
+    bpm: state.bpm,
+    timeSignature: state.timeSignature,
+    ppq: state.ppq,
+    format: clockFormat,
+  });
   const {
     activeProject,
     setActiveProject,
@@ -108,6 +123,16 @@ export function ClientShell() {
       roles: picked,
     });
   }, [started, name, picked, announcePresence]);
+
+  useEffect(() => {
+    const onClock = () => {
+      setClockFormat(getStoredClockDisplayFormat());
+    };
+    window.addEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
+    return () => {
+      window.removeEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
+    };
+  }, []);
 
   // After WS reconnect, refetch project even if activeProjectId unchanged (#358).
   useEffect(() => {
@@ -232,6 +257,7 @@ export function ClientShell() {
     started,
     songTitle,
     bbt: headerBbt,
+    clockLabel,
     nextSetlistId,
     nextSongPending: commandPending,
     transportError,
@@ -611,6 +637,7 @@ type ClientHeaderProps = {
   started: boolean;
   songTitle: string;
   bbt: { bar: number; beat: number };
+  clockLabel: string;
   nextSetlistId: string | null;
   nextSongPending: boolean;
   transportError: string | null;
@@ -630,6 +657,7 @@ function ClientChrome({
   started,
   songTitle,
   bbt,
+  clockLabel,
   nextSetlistId,
   nextSongPending,
   transportError,
@@ -680,9 +708,7 @@ function ClientChrome({
           {transportError}
         </span>
       ) : null}
-      <span className={styles.takt}>
-        takt {toDisplayBar(bbt.bar)}.{bbt.beat}
-      </span>
+      <span className={styles.takt}>{clockLabel}</span>
 
       <div className={styles.headerActions}>
         <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />

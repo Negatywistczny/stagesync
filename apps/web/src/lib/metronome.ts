@@ -8,6 +8,10 @@ import {
   ticksToMs,
   type TimeSignature,
 } from "@stagesync/shared";
+import {
+  getMetronomePrefs,
+  type MetronomeTimbre,
+} from "./metronomePrefs.js";
 
 export type MetronomeDeps = {
   getAudioContext: () => AudioContext;
@@ -45,17 +49,56 @@ export async function resumeMetronomeAudio(
   }
 }
 
+const BASE_ACCENT_GAIN = 0.08;
+const BASE_BEAT_GAIN = 0.045;
+
+type TimbreProfile = {
+  type: OscillatorType;
+  accentHz: number;
+  beatHz: number;
+  durationSec: number;
+};
+
+const TIMBRE_PROFILES: Record<MetronomeTimbre, TimbreProfile> = {
+  default: {
+    type: "square",
+    accentHz: 1200,
+    beatHz: 800,
+    durationSec: 0.05,
+  },
+  woodblock: {
+    type: "triangle",
+    accentHz: 980,
+    beatHz: 620,
+    durationSec: 0.035,
+  },
+  bell: {
+    type: "sine",
+    accentHz: 1760,
+    beatHz: 1320,
+    durationSec: 0.08,
+  },
+};
+
 function scheduleClick(ctx: AudioContext, when: number, accent: boolean) {
+  const prefs = getMetronomePrefs();
+  const profile = TIMBRE_PROFILES[prefs.timbre];
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  osc.type = "square";
-  osc.frequency.value = accent ? 1200 : 800;
-  gain.gain.value = accent ? 0.08 : 0.045;
-  gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.04);
+  osc.type = profile.type;
+  osc.frequency.value = accent ? profile.accentHz : profile.beatHz;
+  const level =
+    (accent ? BASE_ACCENT_GAIN : BASE_BEAT_GAIN) *
+    ((accent ? prefs.accentVolume : prefs.beatVolume) / 100);
+  gain.gain.value = Math.max(0.0001, level);
+  gain.gain.exponentialRampToValueAtTime(
+    0.0001,
+    when + profile.durationSec * 0.85,
+  );
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start(when);
-  osc.stop(when + 0.05);
+  osc.stop(when + profile.durationSec);
 }
 
 export type MetronomeTickInput = {

@@ -6,8 +6,6 @@ import {
   looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
-  ticksToBbt,
-  toDisplayBar,
   ZIP_IMPORT_UNSUPPORTED_PL,
   type Library,
   type Project,
@@ -29,15 +27,21 @@ import { fetchSetlist, postSystemRestart, postSystemShutdown } from "../lib/setl
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
+import {
+  CLOCK_DISPLAY_CHANGED_EVENT,
+  formatClockDisplay,
+  getStoredClockDisplayFormat,
+  type ClockDisplayFormat,
+} from "../lib/clockDisplayPrefs.js";
+import { openPreferences } from "../lib/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconFullscreen, IconPower, IconRestart, IconSun } from "./icons.js";
+import { IconFullscreen, IconPower, IconRestart, IconSettings } from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
 import {
   SettingsPopover,
   SettingsPopoverAnchor,
-  ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellWordmark } from "./ShellWordmark.js";
@@ -74,7 +78,6 @@ export function AdminShell() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [section, setSection] = useState<SectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
@@ -110,7 +113,16 @@ export function AdminShell() {
 
   const { state, displayTicks, wsStatus, play, commandPending: transportPending } =
     useTransport();
-  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+  const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
+    getStoredClockDisplayFormat(),
+  );
+  const clockLabel = formatClockDisplay({
+    ticks: displayTicks,
+    bpm: state.bpm,
+    timeSignature: state.timeSignature,
+    ppq: state.ppq,
+    format: clockFormat,
+  });
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [setlistView, setSetlistView] = useState<SetlistView | null>(null);
@@ -125,6 +137,16 @@ export function AdminShell() {
   const nextName = setlistView?.enabled
     ? (setlistView.next?.name ?? (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
     : "z setu";
+
+  useEffect(() => {
+    const onClock = () => {
+      setClockFormat(getStoredClockDisplayFormat());
+    };
+    window.addEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
+    return () => {
+      window.removeEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
+    };
+  }, []);
 
   useEffect(() => {
     const sectionParam = searchParams.get("section");
@@ -321,11 +343,10 @@ export function AdminShell() {
               <Link to="/client">Klient</Link>
             </nav>
             <ShellIconButton
-              label="Wygląd"
-              aria-expanded={appearanceOpen}
-              onClick={() => setAppearanceOpen((v) => !v)}
+              label="Ustawienia"
+              onClick={() => openPreferences("general")}
             >
-              <IconSun />
+              <IconSettings />
             </ShellIconButton>
             <ShellIconButton
               label={restart.label}
@@ -349,16 +370,6 @@ export function AdminShell() {
             </ShellIconButton>
           </div>
         </header>
-
-        {appearanceOpen ? (
-          <SettingsPopover
-            title="Wygląd"
-            placement="fixed-top-right"
-            onClose={() => setAppearanceOpen(false)}
-          >
-            <ShellAppearanceFields />
-          </SettingsPopover>
-        ) : null}
       </div>
 
       <main className={styles.workspace}>
@@ -487,7 +498,7 @@ export function AdminShell() {
         <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
           <span className={styles.statusLab}>Pozycja</span>
           <span className={[styles.statusVal, styles.statusMono].join(" ")}>
-            {toDisplayBar(bbt.bar)}.{bbt.beat} · {state.bpm} BPM ·{" "}
+            {clockLabel} · {state.bpm} BPM ·{" "}
             {state.timeSignature.numerator}/{state.timeSignature.denominator}
           </span>
         </div>

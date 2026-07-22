@@ -18,7 +18,7 @@
 .panel {
   position: relative;
   z-index: 1;
-  width: min(28rem, 100%);
+  width: min(32rem, 100%);
   max-height: min(80dvh, 40rem);
   overflow: auto;
   padding: var(--ss-space-4);
@@ -209,6 +209,15 @@
   gap: var(--ss-space-2);
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text);
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text);
+  line-height: var(--ss-leading-normal);
 }
 
 .muted {

@@ -1,12 +1,28 @@
-/** Open Preferences modal (Audio / MIDI) from menu or Cmd/Ctrl+, */
+/** Open Preferences modal from menu or Cmd/Ctrl+, */
 
 export const OPEN_PREFERENCES_EVENT = "stagesync:open-preferences";
 
+export type PreferencesTab = "general" | "audio" | "midi" | "metronome";
+
 export type OpenPreferencesDetail = {
-  tab?: "audio" | "midi";
+  tab?: PreferencesTab;
 };
 
-export function openPreferences(tab?: "audio" | "midi"): void {
+const PREFS_TABS: readonly PreferencesTab[] = [
+  "general",
+  "audio",
+  "midi",
+  "metronome",
+];
+
+export function isPreferencesTab(value: unknown): value is PreferencesTab {
+  return (
+    typeof value === "string" &&
+    (PREFS_TABS as readonly string[]).includes(value)
+  );
+}
+
+export function openPreferences(tab?: PreferencesTab): void {
   window.dispatchEvent(
     new CustomEvent(OPEN_PREFERENCES_EVENT, {
       detail: tab ? { tab } : {},
@@ -22,6 +38,6 @@ export function parseOpenPreferencesDetail(
   if (detail == null) return {};
   if (typeof detail !== "object") return {};
   const tab = (detail as { tab?: unknown }).tab;
-  if (tab === "audio" || tab === "midi") return { tab };
+  if (isPreferencesTab(tab)) return { tab };
   return {};
 }

@@ -7,20 +7,44 @@ import {
 } from "../lib/appearance.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 
-export function ShellAppearanceFields() {
-  const [state, setState] = useState<AppearanceState>(() => readAppearance());
+type Props = {
+  /** Controlled draft (Preferences). When set with onChange, does not persist. */
+  value?: AppearanceState;
+  onChange?: (next: AppearanceState) => void;
+};
+
+export function ShellAppearanceFields({ value, onChange }: Props = {}) {
+  const controlled = value !== undefined && onChange !== undefined;
+  const [uncontrolled, setUncontrolled] = useState<AppearanceState>(() =>
+    readAppearance(),
+  );
+  const state = controlled ? value : uncontrolled;
 
   useEffect(() => {
-    applyAppearance(state);
-  }, [state]);
+    if (!controlled) applyAppearance(state);
+  }, [controlled, state]);
 
-  const onLight = useCallback((checked: boolean) => {
-    setState(setAppearance({ light: checked }));
-  }, []);
+  const onLight = useCallback(
+    (checked: boolean) => {
+      if (controlled) {
+        onChange({ ...value, light: checked });
+        return;
+      }
+      setUncontrolled(setAppearance({ light: checked }));
+    },
+    [controlled, onChange, value],
+  );
 
-  const onContrast = useCallback((checked: boolean) => {
-    setState(setAppearance({ highContrast: checked }));
-  }, []);
+  const onContrast = useCallback(
+    (checked: boolean) => {
+      if (controlled) {
+        onChange({ ...value, highContrast: checked });
+        return;
+      }
+      setUncontrolled(setAppearance({ highContrast: checked }));
+    },
+    [controlled, onChange, value],
+  );
 
   return (
     <>

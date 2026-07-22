@@ -206,7 +206,7 @@ export function DesktopMenuBridge() {
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const [prefsTab, setPrefsTab] = useState<PreferencesTab>("audio");
+  const [prefsTab, setPrefsTab] = useState<PreferencesTab>("general");
   const [restartPending, setRestartPending] = useState(false);
   const restartPendingRef = useRef(false);
   const [restartError, setRestartError] = useState<string | null>(null);
@@ -317,7 +317,7 @@ export function DesktopMenuBridge() {
           });
           break;
         case "preferences":
-          setPrefsTab("audio");
+          setPrefsTab("general");
           setPrefsOpen(true);
           break;
         default:
@@ -332,7 +332,7 @@ export function DesktopMenuBridge() {
     function onOpenPrefs(ev: Event) {
       const detail = parseOpenPreferencesDetail(ev);
       if (detail?.tab) setPrefsTab(detail.tab);
-      else setPrefsTab("audio");
+      else setPrefsTab("general");
       setPrefsOpen(true);
     }
     function onKey(ev: KeyboardEvent) {
@@ -348,7 +348,7 @@ export function DesktopMenuBridge() {
         return;
       }
       ev.preventDefault();
-      setPrefsTab("audio");
+      setPrefsTab("general");
       setPrefsOpen(true);
     }
     window.addEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
