@@ -104,6 +104,11 @@ function asError(err: unknown): Error {
   return err instanceof Error ? err : new Error(formatUnknownError(err));
 }
 
+/** True when the page can actually call into Tauri (not just hostname heuristics). */
+function tauriInvokeAvailable(): boolean {
+  return Boolean(tauriGlobal()?.core?.invoke ?? tauriInternals()?.invoke);
+}
+
 function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   const fromGlobal = tauriGlobal()?.core?.invoke;
   const invoke = fromGlobal ?? tauriInternals()?.invoke;
@@ -113,6 +118,14 @@ function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T>
   return (invoke(cmd, args) as Promise<T>).catch((err: unknown) => {
     throw asError(err);
   });
+}
+
+async function toggleHtmlFullscreen(): Promise<void> {
+  if (!document.fullscreenElement) {
+    await document.documentElement.requestFullscreen();
+  } else {
+    await document.exitFullscreen();
+  }
 }
 
 /** Check for a desktop update via tauri-plugin-updater. */
@@ -166,9 +179,13 @@ async function toggleNativeWindowViaPlugin(): Promise<void> {
 /**
  * Fullscreen: native Tauri window in desktop shell; HTML Fullscreen API in browser.
  * macOS desktop uses maximize (green-button UX); other platforms use true fullscreen.
+ *
+ * Browser on :4000 can match `isDesktopShell()` via hostname heuristic without Tauri
+ * inject — only take the native path when invoke is actually available, otherwise
+ * HTML Fullscreen (preserves the click user-gesture).
  */
 export async function toggleAppFullscreen(): Promise<void> {
-  if (isDesktopShell()) {
+  if (isDesktopShell() && tauriInvokeAvailable()) {
     const errors: string[] = [];
 
     try {
@@ -190,11 +207,7 @@ export async function toggleAppFullscreen(): Promise<void> {
     );
   }
 
-  if (!document.fullscreenElement) {
-    await document.documentElement.requestFullscreen();
-  } else {
-    await document.exitFullscreen();
-  }
+  await toggleHtmlFullscreen();
 }
 
 /** Sync last Timeline project id to the native menu (desktop only). */

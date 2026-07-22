@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatUnknownError, isDesktopShell } from "./desktopBridge.js";
+import {
+  formatUnknownError,
+  isDesktopShell,
+  toggleAppFullscreen,
+} from "./desktopBridge.js";
 
 describe("isDesktopShell", () => {
   afterEach(() => {
@@ -26,6 +30,67 @@ describe("isDesktopShell", () => {
   it("returns false in a plain browser context", () => {
     vi.stubGlobal("window", {});
     expect(isDesktopShell()).toBe(false);
+  });
+});
+
+describe("toggleAppFullscreen", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("uses HTML Fullscreen API in a plain browser", async () => {
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    const exitFullscreen = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("document", {
+      querySelector: () => null,
+      fullscreenElement: null,
+      documentElement: { requestFullscreen },
+      exitFullscreen,
+    });
+
+    await toggleAppFullscreen();
+
+    expect(requestFullscreen).toHaveBeenCalledOnce();
+    expect(exitFullscreen).not.toHaveBeenCalled();
+  });
+
+  it("uses HTML Fullscreen when :4000 looks like desktop but Tauri invoke is missing", async () => {
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    const exitFullscreen = vi.fn().mockResolvedValue(undefined);
+    // Same false-positive as browser → http://127.0.0.1:4000 (server without shell inject).
+    vi.stubGlobal("window", {
+      location: { hostname: "127.0.0.1", port: "4000" },
+    });
+    vi.stubGlobal("document", {
+      querySelector: () => null,
+      fullscreenElement: null,
+      documentElement: { requestFullscreen },
+      exitFullscreen,
+    });
+
+    expect(isDesktopShell()).toBe(true);
+    await toggleAppFullscreen();
+
+    expect(requestFullscreen).toHaveBeenCalledOnce();
+    expect(exitFullscreen).not.toHaveBeenCalled();
+  });
+
+  it("exits HTML fullscreen when already active", async () => {
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    const exitFullscreen = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("document", {
+      querySelector: () => null,
+      fullscreenElement: {},
+      documentElement: { requestFullscreen },
+      exitFullscreen,
+    });
+
+    await toggleAppFullscreen();
+
+    expect(exitFullscreen).toHaveBeenCalledOnce();
+    expect(requestFullscreen).not.toHaveBeenCalled();
   });
 });
 
