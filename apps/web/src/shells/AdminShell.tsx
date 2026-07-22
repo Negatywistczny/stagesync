@@ -189,8 +189,12 @@ export function AdminShell() {
     };
   }, [sectionProjectId, state.activeProjectId, displayTicks]);
 
+  const libraryGenRef = useRef(0);
+
   const refreshLibrary = useCallback(async (preferId?: string | null) => {
+    const gen = ++libraryGenRef.current;
     const data = await fetchLibrary();
+    if (gen !== libraryGenRef.current) return data;
     setLibrary(data);
     setLibraryError(null);
     setSelectedId((prev) => {
@@ -208,21 +212,21 @@ export function AdminShell() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const gen = ++libraryGenRef.current;
     void (async () => {
       try {
         const data = await fetchLibrary();
-        if (cancelled) return;
+        if (gen !== libraryGenRef.current) return;
         setLibrary(data);
         setSelectedId(data.projects[0]?.id ?? null);
       } catch (err) {
-        if (!cancelled) {
+        if (gen === libraryGenRef.current) {
           setLibraryError(errMessage(err));
         }
       }
     })();
     return () => {
-      cancelled = true;
+      libraryGenRef.current += 1;
     };
   }, []);
 
