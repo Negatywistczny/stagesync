@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { isDesktopShell, toggleAppFullscreen } from "../lib/desktopBridge.js";
+import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
@@ -40,7 +40,6 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { ShellWordmark } from "./ShellWordmark.js";
-import { AppHeader } from "./components/AppHeader.js";
 import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
@@ -247,7 +246,7 @@ export function ClientShell() {
   if (!started) {
     return (
       <div className={styles.page}>
-        <ClientChrome {...headerProps} started={false} showBrand={isDesktopShell()} />
+        <ClientChrome {...headerProps} started={false} />
         {wsStatus === "disconnected" ? (
           <p className={styles.offlineBanner} role="status">
             Brak połączenia z serwerem. Próba ponownego łączenia…
@@ -329,7 +328,7 @@ export function ClientShell() {
 
   return (
     <div className={styles.page}>
-      <ClientChrome {...headerProps} started showBrand={isDesktopShell()} />
+      <ClientChrome {...headerProps} started />
       {wsStatus === "disconnected" ? (
         <p className={styles.offlineBanner} role="status">
           Brak połączenia z serwerem. Próba ponownego łączenia…
@@ -514,8 +513,6 @@ type ClientHeaderProps = {
   onToggleGlobalSettings: () => void;
   onCloseGlobalSettings: () => void;
   onBack?: () => void;
-  /** Desktop: show brand in L2 when AppHeader is hidden. */
-  showBrand: boolean;
   displayPrefs: ClientDisplayPrefs;
   onDisplayPrefsChange: (prefs: ClientDisplayPrefs) => void;
 };
@@ -535,116 +532,80 @@ function ClientChrome({
   onToggleGlobalSettings,
   onCloseGlobalSettings,
   onBack,
-  showBrand,
   displayPrefs,
   onDisplayPrefsChange,
 }: ClientHeaderProps) {
   return (
-    <>
-      <AppHeader
-        suffix="Client"
-        appJump={[
-          { to: "/admin", label: "Admin" },
-          { to: "/timeline", label: "Timeline", disabled: true },
-        ]}
-        wordmarkOnClick={started && onBack ? onBack : undefined}
-        wordmarkTitle={
-          started && onBack ? "Powrót do wyboru ról" : undefined
-        }
-        onSettings={onToggleGlobalSettings}
-        settingsLabel="Ustawienia globalne"
-        onFullscreen={onFullscreen}
+    <header className={styles.header}>
+      <ShellWordmark
+        onClick={started && onBack ? onBack : undefined}
+        title={started && onBack ? "Powrót do wyboru ról" : undefined}
       />
-      <header className={styles.header} data-ss-level="2">
-        {showBrand ? (
-          <ShellWordmark
-            onClick={started && onBack ? onBack : undefined}
-            title={started && onBack ? "Powrót do wyboru ról" : undefined}
+
+      <div className={styles.metronome} aria-hidden>
+        {[1, 2, 3, 4].map((i) => (
+          <span
+            key={i}
+            className={[
+              styles.dot,
+              wsStatus !== "disconnected" && i === bbt.beat
+                ? styles.dotActive
+                : "",
+            ].join(" ")}
           />
-        ) : null}
+        ))}
+      </div>
 
-        <div className={styles.metronome} aria-hidden>
-          {[1, 2, 3, 4].map((i) => (
-            <span
-              key={i}
-              className={[
-                styles.dot,
-                wsStatus !== "disconnected" && i === bbt.beat
-                  ? styles.dotActive
-                  : "",
-              ].join(" ")}
-            />
-          ))}
-        </div>
-
-        <strong className={styles.songTitle}>{songTitle}</strong>
-        {started ? (
-          <button
-            type="button"
-            className={styles.setlistNext}
-            disabled={!nextSetlistId || nextSongPending}
-            onClick={onNextSong}
-            title="Następny utwór setlisty"
-          >
-            →następny
-          </button>
-        ) : null}
-        {transportError ? (
-          <span className={styles.transportError} role="alert">
-            {transportError}
-          </span>
-        ) : null}
-        <span className={styles.takt}>
-          takt {toDisplayBar(bbt.bar)}.{bbt.beat}
-        </span>
-
-        <div className={styles.headerActions}>
-          <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
-          {showBrand ? (
-            <SettingsPopoverAnchor>
-              <ShellIconButton
-                label="Ustawienia globalne"
-                aria-expanded={globalSettingsOpen}
-                aria-controls="global-settings-panel"
-                onClick={onToggleGlobalSettings}
-              >
-                <IconSettings />
-              </ShellIconButton>
-              {globalSettingsOpen ? (
-                <SettingsPopover
-                  id="global-settings-panel"
-                  title="Globalne"
-                  onClose={onCloseGlobalSettings}
-                >
-                  <GlobalSettingsFields
-                    prefs={displayPrefs}
-                    onPrefsChange={onDisplayPrefsChange}
-                  />
-                </SettingsPopover>
-              ) : null}
-            </SettingsPopoverAnchor>
-          ) : null}
-          {showBrand ? (
-            <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
-              <IconFullscreen />
-            </ShellIconButton>
-          ) : null}
-        </div>
-      </header>
-      {!showBrand && globalSettingsOpen ? (
-        <SettingsPopover
-          id="global-settings-panel"
-          title="Globalne"
-          placement="fixed-top-right"
-          onClose={onCloseGlobalSettings}
+      <strong className={styles.songTitle}>{songTitle}</strong>
+      {started ? (
+        <button
+          type="button"
+          className={styles.setlistNext}
+          disabled={!nextSetlistId || nextSongPending}
+          onClick={onNextSong}
+          title="Następny utwór setlisty"
         >
-          <GlobalSettingsFields
-            prefs={displayPrefs}
-            onPrefsChange={onDisplayPrefsChange}
-          />
-        </SettingsPopover>
+          →następny
+        </button>
       ) : null}
-    </>
+      {transportError ? (
+        <span className={styles.transportError} role="alert">
+          {transportError}
+        </span>
+      ) : null}
+      <span className={styles.takt}>
+        takt {toDisplayBar(bbt.bar)}.{bbt.beat}
+      </span>
+
+      <div className={styles.headerActions}>
+        <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
+        <SettingsPopoverAnchor>
+          <ShellIconButton
+            label="Ustawienia globalne"
+            aria-expanded={globalSettingsOpen}
+            aria-controls="global-settings-panel"
+            onClick={onToggleGlobalSettings}
+          >
+            <IconSettings />
+          </ShellIconButton>
+          {globalSettingsOpen ? (
+            <SettingsPopover
+              id="global-settings-panel"
+              title="Globalne"
+              onClose={onCloseGlobalSettings}
+            >
+              <GlobalSettingsFields
+                prefs={displayPrefs}
+                onPrefsChange={onDisplayPrefsChange}
+              />
+            </SettingsPopover>
+          ) : null}
+        </SettingsPopoverAnchor>
+        <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
+          <IconFullscreen />
+        </ShellIconButton>
+      </div>
+    </header>
   );
 }
 

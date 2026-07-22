@@ -35,7 +35,7 @@ describe("AppHeader", () => {
     expect(out).toContain('data-ss-level="1"');
   });
 
-  it("returns null on desktop shell", () => {
+  it("returns null on desktop shell by default", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     const out = html(
       <AppHeader
@@ -44,6 +44,19 @@ describe("AppHeader", () => {
       />,
     );
     expect(out).toBe("");
+  });
+
+  it("renders on desktop when hideOnDesktop is false", () => {
+    vi.mocked(isDesktopShell).mockReturnValue(true);
+    const out = html(
+      <AppHeader
+        suffix="Admin"
+        hideOnDesktop={false}
+        appJump={[{ to: "/client", label: "Klient" }]}
+      />,
+    );
+    expect(out).toContain("Admin");
+    expect(out).toContain('data-ss-level="1"');
   });
 
   it("shows dirty affordance when history.dirty", () => {

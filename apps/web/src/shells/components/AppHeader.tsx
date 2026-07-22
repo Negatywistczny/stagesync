@@ -54,11 +54,16 @@ export type AppHeaderProps = {
   extraActions?: ReactNode;
   wordmarkOnClick?: () => void;
   wordmarkTitle?: string;
+  /**
+   * When true (default), hide on desktop — OS menubar owns these actions (Timeline).
+   * Admin keeps Level 1 always visible (`hideOnDesktop={false}`).
+   */
+  hideOnDesktop?: boolean;
 };
 
 /**
  * Level 1 app chrome — Wordmark, shell jump, global actions.
- * Hidden on desktop (`isDesktopShell`) where the OS menubar owns these actions.
+ * By default hidden on desktop (`isDesktopShell`) where the OS menubar owns these actions.
  */
 export function AppHeader({
   suffix,
@@ -77,8 +82,9 @@ export function AppHeader({
   extraActions,
   wordmarkOnClick,
   wordmarkTitle,
+  hideOnDesktop = true,
 }: AppHeaderProps) {
-  if (isDesktopShell()) return null;
+  if (hideOnDesktop && isDesktopShell()) return null;
 
   const handleSettings = onSettings ?? (() => openPreferences());
 

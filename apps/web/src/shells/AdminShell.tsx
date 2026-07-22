@@ -35,7 +35,7 @@ import {
 } from "../lib/docsLinks.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconPower, IconRestart, IconSun } from "./icons.js";
+import { IconPower, IconRestart } from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
@@ -295,6 +295,7 @@ export function AdminShell() {
         <AppHeader
           suffix="Admin"
           version={APP_VERSION}
+          hideOnDesktop={false}
           appJump={[
             timelineProjectId
               ? { to: `/timeline/${timelineProjectId}`, label: "Timeline" }
@@ -328,15 +329,6 @@ export function AdminShell() {
             ))}
           </nav>
           <div className={styles.level2Aside}>
-            {isDesktopShell() ? (
-              <ShellIconButton
-                label="Wygląd"
-                aria-expanded={appearanceOpen}
-                onClick={() => setAppearanceOpen((v) => !v)}
-              >
-                <IconSun />
-              </ShellIconButton>
-            ) : null}
             <ShellIconButton
               label={restart.label}
               pressed={restart.pending}
