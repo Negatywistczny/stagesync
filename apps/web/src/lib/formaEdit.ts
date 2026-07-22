@@ -163,7 +163,7 @@ export function commitPencilSpan(
 
   const newClip: FormaClip = {
     id: `forma-${crypto.randomUUID()}`,
-    name: sectionName,
+    name: sectionName.slice(0, 120),
     kind: "section",
     startTicks: a,
     lengthTicks: b - a,
@@ -266,7 +266,7 @@ export function previewFromSession(
       clipId: null,
       startTicks: range.startTicks,
       lengthTicks: range.lengthTicks,
-      name: sectionName ?? "Sekcja",
+      name: (sectionName ?? "Sekcja").slice(0, 120),
     };
   }
 
