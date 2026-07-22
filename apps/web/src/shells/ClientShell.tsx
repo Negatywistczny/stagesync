@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
-import { toDisplayBar, ticksToBbtAlongMeterMap, type Project } from "@stagesync/shared";
+import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
 import {
   loadClientDisplayPrefs,
   setFormNotesEdit,
@@ -34,11 +34,11 @@ import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
 
-const ROLES: { id: RoleId; label: string }[] = [
-  { id: "karaoke", label: "Tekst" },
-  { id: "grid", label: "Akordy" },
-  { id: "score", label: "Partytura" },
-  { id: "drums", label: "Forma" },
+const ROLES: { id: RoleId; label: string; icon: string }[] = [
+  { id: "karaoke", label: "Tekst", icon: "🎤" },
+  { id: "grid", label: "Akordy", icon: "🎹" },
+  { id: "score", label: "Partytura", icon: "🎼" },
+  { id: "drums", label: "Forma", icon: "🥁" },
 ];
 
 export function ClientShell() {
@@ -58,33 +58,19 @@ export function ClientShell() {
     play,
     announcePresence,
   } = useTransport();
+  const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const {
     activeProject,
     setActiveProject,
     loading: projectLoading,
   } = useActiveProject(state.activeProjectId);
-  const headerBbt = activeProject
-    ? ticksToBbtAlongMeterMap(
-        displayTicks,
-        activeProject.defaultMeter,
-        activeProject.meterMap,
-        activeProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        displayTicks,
-        state.timeSignature,
-        [],
-        state.ppq,
-      );
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
-  const [vocalTapError, setVocalTapError] = useState<string | null>(null);
   const [cueVisible, setCueVisible] = useState(false);
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
-  const [uiError, setUiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!started) return;
@@ -96,8 +82,7 @@ export function ClientShell() {
 
   useEffect(() => {
     let cancelled = false;
-
-    async function refreshSetlist() {
+    void (async () => {
       try {
         const view = await fetchSetlist();
         if (cancelled) return;
@@ -109,25 +94,9 @@ export function ClientShell() {
           setSetlistEnabled(false);
         }
       }
-    }
-
-    void refreshSetlist();
-
-    function onFocus() {
-      void refreshSetlist();
-    }
-    function onVisibility() {
-      if (document.visibilityState === "visible") void refreshSetlist();
-    }
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisibility);
-    const poll = window.setInterval(() => void refreshSetlist(), 15_000);
-
+    })();
     return () => {
       cancelled = true;
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.clearInterval(poll);
     };
   }, [state.activeProjectId]);
 
@@ -136,24 +105,12 @@ export function ClientShell() {
     // Role filter: if roles listed, only show when client has that role picked
     if (stageCue.roles && stageCue.roles.length > 0) {
       const match = stageCue.roles.some((r) => picked.includes(r as RoleId));
-      if (!match) {
-        setCueVisible(false);
-        return;
-      }
+      if (!match) return;
     }
     setCueText(stageCue.text);
     setCueVisible(true);
     if (stageCue.ttlMs <= 0) return;
-    const elapsed = Math.max(
-      0,
-      Date.now() - (stageCue.sentAtMs ?? Date.now()),
-    );
-    const remaining = stageCue.ttlMs - elapsed;
-    if (remaining <= 0) {
-      setCueVisible(false);
-      return;
-    }
-    const t = window.setTimeout(() => setCueVisible(false), remaining);
+    const t = window.setTimeout(() => setCueVisible(false), stageCue.ttlMs);
     return () => window.clearTimeout(t);
   }, [stageCue, picked]);
 
@@ -169,14 +126,7 @@ export function ClientShell() {
       : null;
 
   async function onFullscreen() {
-    try {
-      await toggleAppFullscreen();
-      setUiError(null);
-    } catch (err) {
-      setUiError(
-        err instanceof Error ? err.message : "Nie udało się przełączyć pełnego ekranu",
-      );
-    }
+    await toggleAppFullscreen();
   }
 
   async function onNextSong() {
@@ -219,9 +169,7 @@ export function ClientShell() {
     started,
     songTitle,
     bbt: headerBbt,
-    beatsPerBar: state.timeSignature.numerator,
     nextSetlistId,
-    uiError,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -238,16 +186,7 @@ export function ClientShell() {
             Witaj w StageSync
           </h1>
           <p className={styles.muted}>Podaj swoje imię lub nazwę tabletu.</p>
-          <form
-            onSubmit={submitName}
-            onKeyDown={(e) => {
-              if (e.key !== "Escape") return;
-              e.preventDefault();
-              const n = nameDraft.trim() || "Gość";
-              setName(n);
-              setNameModal(false);
-            }}
-          >
+          <form onSubmit={submitName}>
             <input
               className={styles.input}
               maxLength={40}
@@ -317,6 +256,9 @@ export function ClientShell() {
                   aria-pressed={on}
                   onClick={() => toggleRole(r.id)}
                 >
+                  <span className={styles.roleIcon} aria-hidden>
+                    {r.icon}
+                  </span>
                   <strong className={styles.roleLabel}>{r.label}</strong>
                 </button>
               );
@@ -422,13 +364,7 @@ export function ClientShell() {
                   </p>
                 )
               ) : id === "karaoke" ? (
-                <>
-                  {vocalTapError ? (
-                    <p className={styles.error} role="alert">
-                      {vocalTapError}
-                    </p>
-                  ) : null}
-                  <KaraokePane
+                <KaraokePane
                   project={activeProject}
                   displayTicks={displayTicks}
                   loading={projectLoading}
@@ -443,11 +379,16 @@ export function ClientShell() {
                       setVocalTapOn(false);
                       return;
                     }
-                    setVocalTapError(null);
+                    const prev =
+                      vocalTapIndex > 0 ? queue[vocalTapIndex - 1] : null;
+                    const minStart = prev
+                      ? prev.startTicks + Math.max(1, prev.lengthTicks)
+                      : undefined;
                     const next = applyVocalTap(
                       activeProject,
                       clip.id,
                       displayTicks,
+                      minStart,
                     );
                     setActiveProject(next);
                     void putProject(state.activeProjectId, next)
@@ -460,17 +401,9 @@ export function ClientShell() {
                           setVocalTapIndex(qi);
                         }
                       })
-                      .catch((err) => {
-                        setActiveProject(activeProject);
-                        setVocalTapError(
-                          err instanceof Error
-                            ? err.message
-                            : "Zapis tap nieudany (konflikt?)",
-                        );
-                      });
+                      .catch(() => undefined);
                   }}
                 />
-                </>
               ) : id === "grid" ? (
                 <GridPane
                   project={activeProject}
@@ -511,10 +444,7 @@ type ClientHeaderProps = {
   started: boolean;
   songTitle: string;
   bbt: { bar: number; beat: number };
-  /** Live meter beat count from transport SSOT. */
-  beatsPerBar: number;
   nextSetlistId: string | null;
-  uiError: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -529,9 +459,7 @@ function ClientHeader({
   started,
   songTitle,
   bbt,
-  beatsPerBar,
   nextSetlistId,
-  uiError,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -539,7 +467,6 @@ function ClientHeader({
   onCloseGlobalSettings,
   onBack,
 }: ClientHeaderProps) {
-  const beatCount = Math.max(1, Math.min(16, Math.floor(beatsPerBar) || 4));
   return (
     <header className={styles.header}>
       <ShellWordmark
@@ -548,7 +475,7 @@ function ClientHeader({
       />
 
       <div className={styles.metronome} aria-hidden>
-        {Array.from({ length: beatCount }, (_, i) => i + 1).map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <span
             key={i}
             className={[
@@ -570,11 +497,6 @@ function ClientHeader({
         >
           →następny
         </button>
-      ) : null}
-      {uiError ? (
-        <span className={styles.uiError} role="alert">
-          {uiError}
-        </span>
       ) : null}
       <span className={styles.takt}>
         takt {toDisplayBar(bbt.bar)}.{bbt.beat}
