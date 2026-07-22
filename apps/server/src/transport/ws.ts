@@ -65,8 +65,11 @@ export function attachTransportWs(
   const unsubscribe = transport.onChange((msg) => {
     const payload = JSON.stringify(TransportTickMessageSchema.parse(msg));
     for (const client of wss.clients) {
-      if (client.readyState === client.OPEN) {
+      if (client.readyState !== client.OPEN) continue;
+      try {
         client.send(payload);
+      } catch (err) {
+        console.error("[stagesync-server] transport WS send error", err);
       }
     }
   });
@@ -74,8 +77,11 @@ export function attachTransportWs(
   const unsubStage = stageHub?.onMessage((msg) => {
     const payload = JSON.stringify(msg);
     for (const client of wss.clients) {
-      if (client.readyState === client.OPEN) {
+      if (client.readyState !== client.OPEN) continue;
+      try {
         client.send(payload);
+      } catch (err) {
+        console.error("[stagesync-server] stage WS send error", err);
       }
     }
   });
