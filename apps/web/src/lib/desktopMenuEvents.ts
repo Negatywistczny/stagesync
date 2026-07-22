@@ -1,4 +1,4 @@
-/** CustomEvent bridge: Tauri OS menu → WebView (Faza B/C). */
+/** CustomEvent bridge: Tauri OS menu → WebView (Faza B/C/D). */
 
 export const DESKTOP_MENU_EVENT = "stagesync:desktop-menu";
 
@@ -9,24 +9,46 @@ export type DesktopMenuAction =
   | "transport-prev"
   | "transport-next"
   | "host-qr"
-  | "host-restart";
+  | "host-restart"
+  | "edit-undo"
+  | "edit-redo"
+  | "edit-cut"
+  | "edit-copy"
+  | "edit-paste"
+  | "edit-delete"
+  | "view-zoom-in"
+  | "view-zoom-out"
+  | "view-zoom-reset"
+  | "help-shortcuts";
 
 export type DesktopMenuDetail = {
   action: DesktopMenuAction | string;
 };
 
+const KNOWN: ReadonlySet<string> = new Set([
+  "save",
+  "transport-play",
+  "transport-stop",
+  "transport-prev",
+  "transport-next",
+  "host-qr",
+  "host-restart",
+  "edit-undo",
+  "edit-redo",
+  "edit-cut",
+  "edit-copy",
+  "edit-paste",
+  "edit-delete",
+  "view-zoom-in",
+  "view-zoom-out",
+  "view-zoom-reset",
+  "help-shortcuts",
+]);
+
 export function isDesktopMenuAction(
   value: string,
 ): value is DesktopMenuAction {
-  return (
-    value === "save" ||
-    value === "transport-play" ||
-    value === "transport-stop" ||
-    value === "transport-prev" ||
-    value === "transport-next" ||
-    value === "host-qr" ||
-    value === "host-restart"
-  );
+  return KNOWN.has(value);
 }
 
 export function parseDesktopMenuDetail(ev: Event): DesktopMenuDetail | null {

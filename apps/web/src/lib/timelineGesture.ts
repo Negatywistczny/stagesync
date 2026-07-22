@@ -15,8 +15,56 @@ export const CLIP_EDGE_HIT_PX = 12;
 /** v4 pencil click-vs-drag threshold (px). Below → 1-bar click insert. */
 export const PENCIL_DRAG_THRESHOLD_PX = 5;
 
-/** Content lanes (Tekst/Akordy/Cue): default snap = local beat (v4 quantizeAbsBeat). */
+/** Content lanes historical default (beat) — docs/tests; session starts at `bar`. */
 export const CONTENT_DEFAULT_SNAP_MODE: SnapMode = "beat";
+
+const SNAP_STORAGE_KEY = "stagesync-timeline-snap-mode";
+
+/** Session edit snap ([ADR 0007] phase 2) — not in project.json. */
+let sessionSnapMode: SnapMode = DEFAULT_SNAP_MODE;
+
+export function getSessionSnapMode(): SnapMode {
+  return sessionSnapMode;
+}
+
+export function setSessionSnapMode(mode: SnapMode): void {
+  sessionSnapMode = mode;
+}
+
+export function snapModeToStorageKey(mode: SnapMode): string {
+  if (typeof mode === "string") return mode;
+  return `subdivision:${mode.parts}`;
+}
+
+export function snapModeFromStorageKey(raw: string | null): SnapMode | null {
+  if (raw == null || raw === "") return null;
+  if (raw === "off" || raw === "bar" || raw === "beat") return raw;
+  const m = /^subdivision:(2|4|8|16)$/.exec(raw);
+  if (!m) return null;
+  return { kind: "subdivision", parts: Number(m[1]) as 2 | 4 | 8 | 16 };
+}
+
+export function loadSessionSnapModeFromStorage(): SnapMode {
+  try {
+    const parsed = snapModeFromStorageKey(localStorage.getItem(SNAP_STORAGE_KEY));
+    if (parsed) {
+      sessionSnapMode = parsed;
+      return parsed;
+    }
+  } catch {
+    /* ignore */
+  }
+  return sessionSnapMode;
+}
+
+export function persistSessionSnapMode(mode: SnapMode): void {
+  sessionSnapMode = mode;
+  try {
+    localStorage.setItem(SNAP_STORAGE_KEY, snapModeToStorageKey(mode));
+  } catch {
+    /* ignore */
+  }
+}
 
 /**
  * Resolve pencil gesture range (v4 `resolvePencilRange` in ticks).
@@ -76,22 +124,26 @@ export function toolIsPencilDraw(tool: FormaToolId): boolean {
 /**
  * Resolve snap mode from keyboard modifiers.
  * Re-evaluate on every pointermove (Cmd/Ctrl = off).
+ * `baseMode` = session picker ([ADR 0007] phase 2); default = current session.
  */
 export function snapModeFromModifiers(
   metaKey: boolean,
   ctrlKey: boolean,
+  baseMode: SnapMode = getSessionSnapMode(),
 ): SnapMode {
-  return metaKey || ctrlKey ? "off" : DEFAULT_SNAP_MODE;
+  return metaKey || ctrlKey ? "off" : baseMode;
 }
 
 /**
- * Content / map lanes: beat grid when snap on; Cmd/Ctrl = off (v4 snapDragDelta).
+ * Content / map / audio lanes: session snap when on; Cmd/Ctrl = off.
+ * Default session = `bar` ([ADR 0007]); picker may select beat/subdivision.
  */
 export function contentSnapModeFromModifiers(
   metaKey: boolean,
   ctrlKey: boolean,
+  baseMode: SnapMode = getSessionSnapMode(),
 ): SnapMode {
-  return metaKey || ctrlKey ? "off" : CONTENT_DEFAULT_SNAP_MODE;
+  return metaKey || ctrlKey ? "off" : baseMode;
 }
 
 export function snapModeFromPointerEvent(e: {

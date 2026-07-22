@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   audioClipBufferOffsetSec,
   audioClipPlayableMs,
+  audioFadeGainAtMs,
   clampAudioClipToAsset,
+  clampAudioFades,
   gainDbToLinear,
   lengthTicksFromAssetWindow,
   maxAudioLengthTicks,
@@ -19,6 +21,21 @@ describe("gainDbToLinear", () => {
     expect(gainDbToLinear(0)).toBe(1);
     expect(gainDbToLinear(undefined)).toBe(1);
     expect(gainDbToLinear(-6)).toBeCloseTo(0.501, 2);
+  });
+});
+
+describe("audioFadeGainAtMs", () => {
+  it("ramps in and out linearly", () => {
+    expect(audioFadeGainAtMs(0, 1000, 100, 200)).toBe(0);
+    expect(audioFadeGainAtMs(50, 1000, 100, 200)).toBeCloseTo(0.5, 5);
+    expect(audioFadeGainAtMs(500, 1000, 100, 200)).toBe(1);
+    expect(audioFadeGainAtMs(900, 1000, 100, 200)).toBeCloseTo(0.5, 5);
+    expect(audioFadeGainAtMs(1000, 1000, 100, 200)).toBe(0);
+  });
+
+  it("clampAudioFades scales when fades exceed playable", () => {
+    const c = clampAudioFades({ fadeInMs: 800, fadeOutMs: 800 }, 1000);
+    expect(c.fadeInMs + c.fadeOutMs).toBeCloseTo(1000, 5);
   });
 });
 

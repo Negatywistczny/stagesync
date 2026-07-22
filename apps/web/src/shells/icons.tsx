@@ -24,15 +24,20 @@ import {
   RotateCw,
   Power,
   Save,
+  Scaling,
   Scissors,
   Settings,
   Square,
   SquareCheck,
   SquareMousePointer,
+  StretchHorizontal,
+  StretchVertical,
   Sun,
   Undo2,
   Wand2,
   X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 type IconProps = { className?: string; title?: string };
@@ -178,4 +183,25 @@ export function IconChecked(p: IconProps) {
 
 export function IconUnchecked(p: IconProps) {
   return withIcon(Square, p);
+}
+
+export function IconZoomIn(p: IconProps) {
+  return withIcon(ZoomIn, p);
+}
+
+export function IconZoomOut(p: IconProps) {
+  return withIcon(ZoomOut, p);
+}
+
+export function IconZoomH(p: IconProps) {
+  return withIcon(StretchHorizontal, p);
+}
+
+export function IconZoomV(p: IconProps) {
+  return withIcon(StretchVertical, p);
+}
+
+/** UI chrome scale (not time axis). */
+export function IconZoomUi(p: IconProps) {
+  return withIcon(Scaling, p);
 }
