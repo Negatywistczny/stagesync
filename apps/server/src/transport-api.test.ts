@@ -6,7 +6,6 @@ import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 import {
-  TransportStateSchema,
   TransportTickMessageSchema,
 } from "@stagesync/shared";
 import { createApp } from "./app.js";
@@ -40,12 +39,14 @@ describe("transport REST + WS", () => {
     });
   });
 
-  it("GET /api/transport returns idle snapshot", async () => {
+  it("GET /api/transport returns idle tick envelope", async () => {
     const res = await fetch(`${baseUrl}/api/transport`);
     expect(res.status).toBe(200);
-    const state = TransportStateSchema.parse(await res.json());
-    expect(state.playing).toBe(false);
-    expect(state.positionTicks).toBe(0);
+    const tick = TransportTickMessageSchema.parse(await res.json());
+    expect(tick.type).toBe("transport_tick");
+    expect(typeof tick.serverTimeMs).toBe("number");
+    expect(tick.playing).toBe(false);
+    expect(tick.positionTicks).toBe(0);
   });
 
   it("play → pause → seek via REST", async () => {
@@ -55,7 +56,7 @@ describe("transport REST + WS", () => {
       body: JSON.stringify({}),
     });
     expect(playRes.status).toBe(200);
-    expect(TransportStateSchema.parse(await playRes.json()).playing).toBe(
+    expect(TransportTickMessageSchema.parse(await playRes.json()).playing).toBe(
       true,
     );
 
@@ -63,9 +64,9 @@ describe("transport REST + WS", () => {
       method: "POST",
     });
     expect(pauseRes.status).toBe(200);
-    expect(TransportStateSchema.parse(await pauseRes.json()).playing).toBe(
-      false,
-    );
+    expect(
+      TransportTickMessageSchema.parse(await pauseRes.json()).playing,
+    ).toBe(false);
 
     const seekRes = await fetch(`${baseUrl}/api/transport/seek`, {
       method: "POST",
@@ -73,7 +74,7 @@ describe("transport REST + WS", () => {
       body: JSON.stringify({ positionTicks: 1920 }),
     });
     expect(seekRes.status).toBe(200);
-    const sought = TransportStateSchema.parse(await seekRes.json());
+    const sought = TransportTickMessageSchema.parse(await seekRes.json());
     expect(sought.playing).toBe(false);
     expect(sought.positionTicks).toBe(1920);
   });
@@ -111,10 +112,12 @@ describe("transport REST + WS", () => {
         body: JSON.stringify({ projectId: project.id }),
       });
       expect(playRes.status).toBe(200);
-      const state = TransportStateSchema.parse(await playRes.json());
+      const state = TransportTickMessageSchema.parse(await playRes.json());
       expect(state.activeProjectId).toBe(project.id);
       expect(state.bpm).toBe(120);
       expect(state.playing).toBe(true);
+      expect(state.type).toBe("transport_tick");
+      expect(typeof state.serverTimeMs).toBe("number");
     } finally {
       await new Promise<void>((resolve) => localServer.close(() => resolve()));
       await rm(dataDir, { recursive: true, force: true });
@@ -161,9 +164,10 @@ describe("transport REST + WS", () => {
         method: "POST",
       });
       expect(stopRes.status).toBe(200);
-      const stopped = TransportStateSchema.parse(await stopRes.json());
+      const stopped = TransportTickMessageSchema.parse(await stopRes.json());
       expect(stopped.playing).toBe(false);
       expect(stopped.positionTicks).toBe(cdStart);
+      expect(stopped.type).toBe("transport_tick");
     } finally {
       transport.dispose();
       await new Promise<void>((resolve) => localServer.close(() => resolve()));

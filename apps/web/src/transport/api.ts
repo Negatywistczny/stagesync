@@ -3,7 +3,7 @@ import {
   TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
-  TransportTickMessageSchema,
+  parseTransportTickPayload,
   type TransportLoopBody,
   type TransportPlayBody,
   type TransportState,
@@ -26,7 +26,7 @@ async function parseTick(res: Response): Promise<TransportCommandResult> {
     }
     throw new Error(message.slice(0, 500));
   }
-  const msg = TransportTickMessageSchema.parse(await res.json());
+  const msg = parseTransportTickPayload(await res.json());
   return {
     state: transportStateFromTick(msg),
     serverTimeMs: msg.serverTimeMs,
