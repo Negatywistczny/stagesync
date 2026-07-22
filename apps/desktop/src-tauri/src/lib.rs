@@ -180,6 +180,13 @@ fn truncate_menu_label(name: &str, max_chars: usize) -> String {
 
 fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Result<Menu<tauri::Wry>> {
     let about = MenuItem::with_id(app, "about", "O programie StageSync", true, None::<&str>)?;
+    let preferences = MenuItem::with_id(
+        app,
+        "preferences",
+        "Preferencje…",
+        true,
+        Some("CmdOrCtrl+,"),
+    )?;
     let check_updates = MenuItem::with_id(
         app,
         "check_updates",
@@ -189,11 +196,12 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
     )?;
     let quit = PredefinedMenuItem::quit(app, Some("Zakończ"))?;
     let app_sep = PredefinedMenuItem::separator(app)?;
+    let app_sep_2 = PredefinedMenuItem::separator(app)?;
     let app_submenu = Submenu::with_items(
         app,
         "StageSync",
         true,
-        &[&about, &check_updates, &app_sep, &quit],
+        &[&about, &preferences, &app_sep, &check_updates, &app_sep_2, &quit],
     )?;
 
     let recent = nav_state
@@ -448,6 +456,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
         }
         match id {
             "about" | "help_about" => navigate_main(&app, "/admin?section=host"),
+            "preferences" => dispatch_menu_action(&app, "preferences"),
             "check_updates" => navigate_main(&app, "/admin?section=host&action=check-update"),
             "file_save" => dispatch_menu_action(&app, "save"),
             "file_close" => navigate_main(&app, "/admin"),

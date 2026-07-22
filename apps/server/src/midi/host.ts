@@ -16,6 +16,11 @@ import {
   type TransportTickMessage,
 } from "@stagesync/shared";
 import type { MidiBackend, MidiRealtimeMessage } from "./backend.js";
+import {
+  loadMidiHostConfigFile,
+  resolveBootMidiConfig,
+  saveMidiHostConfigFile,
+} from "./config-persist.js";
 import { createDefaultMidiBackend } from "./native-backend.js";
 import type { TransportEngine } from "../transport/engine.js";
 
@@ -52,6 +57,10 @@ export type MidiHostOptions = {
   onBeatToWs?: () => void;
   /** Optional: Program Change on input → load project by midiProgramId. */
   onProgramChange?: (program: number) => void;
+  /** Absolute path to midi-config.json — load at boot, save on setConfig. */
+  configFile?: string;
+  /** Override initial config (tests); otherwise env + optional file. */
+  initialConfig?: MidiHostConfig;
 };
 
 export function createMidiHost(
@@ -61,11 +70,21 @@ export function createMidiHost(
   const backend = options.backend ?? createDefaultMidiBackend();
   const now = options.now ?? (() => Date.now());
 
-  let config: MidiHostConfig = {
-    inputId: process.env.STAGESYNC_MIDI_INPUT?.trim() || null,
-    outputId: process.env.STAGESYNC_MIDI_OUTPUT?.trim() || null,
-    clockOutEnabled: true,
-  };
+  let config: MidiHostConfig = (() => {
+    if (options.initialConfig) {
+      return { ...options.initialConfig };
+    }
+    let fromFile: MidiHostConfig | null = null;
+    if (options.configFile) {
+      try {
+        fromFile = loadMidiHostConfigFile(options.configFile);
+      } catch (err) {
+        const raw = err instanceof Error ? err.message : String(err);
+        console.error(`[midi] invalid config file ${options.configFile}: ${raw}`);
+      }
+    }
+    return resolveBootMidiConfig(fromFile);
+  })();
 
   let lastError: string | null = null;
   let clockOutActive = false;
@@ -285,6 +304,13 @@ export function createMidiHost(
             : config.clockOutEnabled,
       };
       applyPorts();
+      if (options.configFile) {
+        try {
+          saveMidiHostConfigFile(options.configFile, config);
+        } catch (err) {
+          setError(err);
+        }
+      }
       return { ...config };
     },
 

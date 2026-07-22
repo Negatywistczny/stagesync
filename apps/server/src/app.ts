@@ -19,7 +19,7 @@ import { createSystemRouter } from "./routes/system.js";
 import { createTransportRouter } from "./routes/transport.js";
 import { sendError } from "./routes/errors.js";
 import { createStores, type Stores } from "./storage/index.js";
-import { defaultDataDir } from "./storage/paths.js";
+import { defaultDataDir, resolveDataPaths } from "./storage/paths.js";
 import { mountStaticWeb, resolveStaticDir } from "./static-web.js";
 import {
   createTransportEngine,
@@ -89,10 +89,12 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
         : undefined,
     });
   const presence = options.presence ?? createClientPresence();
+  const midiPaths = resolveDataPaths(dataDir);
   const midi =
     options.midi ??
     createMidiHost(transport, {
       onProgramChange: createMidiProgramChangeHandler(transport, stores),
+      configFile: midiPaths.midiConfigFile,
     });
   wirePauseAtSongEnd(transport, stores);
   wireSetlistAutoAdvance(transport, stores);

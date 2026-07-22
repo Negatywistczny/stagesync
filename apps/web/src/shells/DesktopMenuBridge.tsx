@@ -22,8 +22,17 @@ import {
   postSystemRestart,
 } from "../lib/setlistApi.js";
 import { suppressAudioPlayback } from "../lib/audioPlayback.js";
+import { restoreAudioOutputSink } from "../lib/audioOutputPrefs.js";
+import {
+  OPEN_PREFERENCES_EVENT,
+  parseOpenPreferencesDetail,
+} from "../lib/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
+import {
+  PreferencesModal,
+  type PreferencesTab,
+} from "./PreferencesModal.js";
 import styles from "./DesktopMenuBridge.module.css";
 
 function Modal({
@@ -195,6 +204,8 @@ export function DesktopMenuBridge() {
   const { play, stop, state, commandPending } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
+  const [prefsTab, setPrefsTab] = useState<PreferencesTab>("audio");
   const [restartPending, setRestartPending] = useState(false);
   const restartPendingRef = useRef(false);
   const [restartError, setRestartError] = useState<string | null>(null);
@@ -203,6 +214,10 @@ export function DesktopMenuBridge() {
     if (!isDesktopShell()) return;
     void syncNavRecentProjects(getRecentTimelineProjects());
     void syncNavTimelineProjectId(getLastTimelineProjectId());
+  }, []);
+
+  useEffect(() => {
+    void restoreAudioOutputSink();
   }, []);
 
   const goSetlistNeighbor = useCallback(
@@ -300,6 +315,10 @@ export function DesktopMenuBridge() {
             /* menu is best-effort */
           });
           break;
+        case "preferences":
+          setPrefsTab("audio");
+          setPrefsOpen(true);
+          break;
         default:
           break;
       }
@@ -307,6 +326,37 @@ export function DesktopMenuBridge() {
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
   }, [goSetlistNeighbor, onTransportPlay, onTransportStop]);
+
+  useEffect(() => {
+    function onOpenPrefs(ev: Event) {
+      const detail = parseOpenPreferencesDetail(ev);
+      if (detail?.tab) setPrefsTab(detail.tab);
+      else setPrefsTab("audio");
+      setPrefsOpen(true);
+    }
+    function onKey(ev: KeyboardEvent) {
+      if (!(ev.metaKey || ev.ctrlKey) || ev.altKey) return;
+      if (ev.key !== "," && ev.code !== "Comma") return;
+      if (
+        ev.target instanceof HTMLElement &&
+        (ev.target.isContentEditable ||
+          ev.target.tagName === "INPUT" ||
+          ev.target.tagName === "TEXTAREA" ||
+          ev.target.tagName === "SELECT")
+      ) {
+        return;
+      }
+      ev.preventDefault();
+      setPrefsTab("audio");
+      setPrefsOpen(true);
+    }
+    window.addEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   return (
     <>
@@ -320,6 +370,13 @@ export function DesktopMenuBridge() {
           onConfirm={() => void onRestartConfirm()}
           pending={restartPending}
           error={restartError}
+        />
+      ) : null}
+      {prefsOpen ? (
+        <PreferencesModal
+          key={prefsTab}
+          initialTab={prefsTab}
+          onClose={() => setPrefsOpen(false)}
         />
       ) : null}
     </>

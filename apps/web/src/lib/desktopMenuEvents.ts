@@ -19,7 +19,8 @@ export type DesktopMenuAction =
   | "view-zoom-in"
   | "view-zoom-out"
   | "view-zoom-reset"
-  | "help-shortcuts";
+  | "help-shortcuts"
+  | "preferences";
 
 export type DesktopMenuDetail = {
   action: DesktopMenuAction | string;
@@ -43,6 +44,7 @@ const KNOWN: ReadonlySet<string> = new Set([
   "view-zoom-out",
   "view-zoom-reset",
   "help-shortcuts",
+  "preferences",
 ]);
 
 export function isDesktopMenuAction(
