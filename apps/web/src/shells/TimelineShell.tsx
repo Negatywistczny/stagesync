@@ -3914,62 +3914,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       <div className={styles.toolbar} data-ss-level="2">
-        <div className={styles.songCluster} role="group" aria-label="Setlista">
-          <ShellIconButton
-            label="Metadane utworu"
-            disabled={!draftProject}
-            pressed={songMetaOpen}
-            onClick={() => {
-              if (!draftProject) return;
-              clearClipSelection();
-              clearMapSelection();
-              setSongMetaOpen(true);
-            }}
-          >
-            <IconInfo />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Poprzedni utwór setlisty"
-            disabled={!prevSetlistId}
-            onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
-          >
-            <IconChevronLeft />
-          </ShellIconButton>
-          <button
-            type="button"
-            className={styles.songPicker}
-            onClick={() => setSongScreenOpen(true)}
-            aria-haspopup="dialog"
-            aria-expanded={songScreenOpen}
-          >
-            {draftProject?.name ?? "Wybierz utwór"}
-          </button>
-          <ShellIconButton
-            label="Następny utwór setlisty"
-            disabled={!nextSetlistId}
-            onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
-          >
-            <IconChevronRight />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Auto-setlista"
-            disabled={!setlistEnabled || commandPending}
-            pressed={autoAdvance}
-            onClick={() => {
-              void (async () => {
-                try {
-                  const v = await patchSetlistAutoAdvance(!autoAdvance);
-                  setAutoAdvance(v.autoAdvance.enabled);
-                } catch {
-                  /* ignore */
-                }
-              })();
-            }}
-          >
-            <IconAutoAdvance />
-          </ShellIconButton>
-        </div>
-
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
           {TOOLS.map(({ id, title, Icon, disabled }) => (
             <ShellIconButton
@@ -4091,6 +4035,62 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <IconFollow />
             </ShellIconButton>
           </div>
+        </div>
+
+        <div className={styles.songCluster} role="group" aria-label="Setlista">
+          <ShellIconButton
+            label="Metadane utworu"
+            disabled={!draftProject}
+            pressed={songMetaOpen}
+            onClick={() => {
+              if (!draftProject) return;
+              clearClipSelection();
+              clearMapSelection();
+              setSongMetaOpen(true);
+            }}
+          >
+            <IconInfo />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Poprzedni utwór setlisty"
+            disabled={!prevSetlistId}
+            onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
+          >
+            <IconChevronLeft />
+          </ShellIconButton>
+          <button
+            type="button"
+            className={styles.songPicker}
+            onClick={() => setSongScreenOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={songScreenOpen}
+          >
+            {draftProject?.name ?? "Wybierz utwór"}
+          </button>
+          <ShellIconButton
+            label="Następny utwór setlisty"
+            disabled={!nextSetlistId}
+            onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
+          >
+            <IconChevronRight />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Auto-setlista"
+            disabled={!setlistEnabled || commandPending}
+            pressed={autoAdvance}
+            onClick={() => {
+              void (async () => {
+                try {
+                  const v = await patchSetlistAutoAdvance(!autoAdvance);
+                  setAutoAdvance(v.autoAdvance.enabled);
+                } catch {
+                  /* ignore */
+                }
+              })();
+            }}
+          >
+            <IconAutoAdvance />
+          </ShellIconButton>
         </div>
 
         {isDesktopShell() && dirty ? (
