@@ -4,12 +4,9 @@ set -euo pipefail
 
 pr="$1"
 title=$(gh pr view "$pr" --json title -q .title)
-# commitlint subject-case: lowercase first char after type(scope):
-if [[ "$title" =~ ^([a-z]+\([^)]+\):[[:space:]]+)(.+)$ ]]; then
-  commit_msg="${BASH_REMATCH[1]}${BASH_REMATCH[2],}"
-else
-  commit_msg="$title"
-fi
+
+# commitlint subject-case: lowercase first char after "type(scope): "
+commit_msg=$(python3 -c "import sys; t=sys.argv[1]; i=t.find(': '); print(t if i<0 else t[:i+2]+t[i+2].lower()+t[i+3:])" "$title")
 
 echo "=== Integrating PR #$pr: $title ==="
 
