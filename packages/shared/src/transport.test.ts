@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
-  TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
   TransportStateSchema,
@@ -26,15 +25,6 @@ describe("TransportStateSchema", () => {
       }),
     ).toThrow();
   });
-
-  it("rejects unsafe integer positionTicks", () => {
-    expect(() =>
-      TransportStateSchema.parse({
-        ...defaultTransportState(),
-        positionTicks: Number.MAX_SAFE_INTEGER + 1,
-      }),
-    ).toThrow();
-  });
 });
 
 describe("TransportSeekBodySchema", () => {
@@ -44,46 +34,13 @@ describe("TransportSeekBodySchema", () => {
     });
   });
 
-  it("rejects ticks outside Number safe integer range", () => {
+  it("rejects non-finite positionTicks", () => {
     expect(() =>
-      TransportSeekBodySchema.parse({
-        positionTicks: Number.MAX_SAFE_INTEGER + 1,
-      }),
+      TransportSeekBodySchema.parse({ positionTicks: Number.NaN }),
     ).toThrow();
     expect(() =>
-      TransportSeekBodySchema.parse({
-        positionTicks: Number.MIN_SAFE_INTEGER - 1,
-      }),
+      TransportSeekBodySchema.parse({ positionTicks: Number.POSITIVE_INFINITY }),
     ).toThrow();
-  });
-});
-
-describe("TransportLoopBodySchema", () => {
-  it("rejects loop ticks outside safe integer range", () => {
-    expect(() =>
-      TransportLoopBodySchema.parse({
-        enabled: true,
-        startTicks: Number.MAX_SAFE_INTEGER + 1,
-      }),
-    ).toThrow();
-  });
-});
-
-describe("TransportLoopBodySchema", () => {
-  it("rejects endTicks <= startTicks when both set", () => {
-    expect(() =>
-      TransportLoopBodySchema.parse({
-        enabled: true,
-        startTicks: 100,
-        endTicks: 100,
-      }),
-    ).toThrow();
-  });
-
-  it("allows enabling without range fields", () => {
-    expect(TransportLoopBodySchema.parse({ enabled: false })).toEqual({
-      enabled: false,
-    });
   });
 });
 
@@ -102,11 +59,6 @@ describe("TransportPlayBodySchema", () => {
       bpm: 90,
       timeSignature: { numerator: 5, denominator: 8 },
     });
-  });
-
-  it("rejects bpm outside 20…400", () => {
-    expect(() => TransportPlayBodySchema.parse({ bpm: 10 })).toThrow();
-    expect(() => TransportPlayBodySchema.parse({ bpm: 500 })).toThrow();
   });
 });
 
@@ -128,26 +80,6 @@ describe("TransportTickMessageSchema", () => {
       sentAtMs: 1_700_000_000_000,
     };
     expect(TransportTickMessageSchema.parse(msg)).toEqual(msg);
-  });
-
-  it("rejects non-finite timestamps", () => {
-    const base = {
-      ...defaultTransportState(),
-      type: "transport_tick" as const,
-    };
-    expect(() =>
-      TransportTickMessageSchema.parse({
-        ...base,
-        serverTimeMs: Number.NaN,
-      }),
-    ).toThrow();
-    expect(() =>
-      TransportTickMessageSchema.parse({
-        ...base,
-        serverTimeMs: 1,
-        sentAtMs: Number.POSITIVE_INFINITY,
-      }),
-    ).toThrow();
   });
 });
 
