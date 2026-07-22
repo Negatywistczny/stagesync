@@ -6,10 +6,6 @@ import {
   patchSetlistAutoAdvance,
   putSetlist,
 } from "../../lib/setlistApi.js";
-import {
-  DESKTOP_MENU_EVENT,
-  parseDesktopMenuDetail,
-} from "../../lib/desktopMenuEvents.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import styles from "../AdminShell.module.css";
 
@@ -25,32 +21,33 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const [enabled, setEnabled] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
   const [pickIds, setPickIds] = useState<string[]>([]);
-  const reloadGenRef = useRef(0);
 
   const reload = useCallback(async () => {
-    const gen = ++reloadGenRef.current;
-    try {
-      const next = await fetchSetlist();
-      if (gen !== reloadGenRef.current) return;
-      setView(next);
-      setDraftIds(next.projectIds);
-      setEnabled(next.enabled);
-      setDirty(false);
-      setError(null);
-    } catch (err) {
-      if (gen !== reloadGenRef.current) return;
-      setError(err instanceof Error ? err.message : "Błąd setlisty");
-    }
+    const next = await fetchSetlist();
+    setView(next);
+    setDraftIds(next.projectIds);
+    setEnabled(next.enabled);
+    setDirty(false);
   }, []);
 
   useEffect(() => {
-    void reload();
+    let cancelled = false;
+    void (async () => {
+      try {
+        await reload();
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Błąd setlisty");
+        }
+      }
+    })();
     return () => {
-      reloadGenRef.current += 1;
+      cancelled = true;
     };
   }, [reload]);
 
@@ -104,7 +101,9 @@ export function SetView({ library, selectedId }: SetViewProps) {
     setDirty(true);
   };
 
-  const onSave = useCallback(async () => {
+  const onSave = async () => {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     setPending(true);
     setError(null);
     try {
@@ -116,46 +115,24 @@ export function SetView({ library, selectedId }: SetViewProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Zapis nieudany");
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
-  }, [draftIds, enabled]);
-
-  useEffect(() => {
-    function onMenu(ev: Event) {
-      const detail = parseDesktopMenuDetail(ev);
-      if (detail?.action !== "save") return;
-      if (!dirty || pending) return;
-      void onSave();
-    }
-    window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
-    return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [dirty, pending, onSave]);
+  };
 
   const onClear = () => {
     setDraftIds([]);
     setDirty(true);
   };
 
-  const onToggleEnabled = async (next: boolean) => {
-    setPending(true);
-    setError(null);
-    try {
-      // Persist enabled immediately (parity with Auto-setlista). Keep local draft
-      // order if the list is still dirty — do not write draftIds until Zapisz.
-      const v = await putSetlist({
-        enabled: next,
-        projectIds: view?.projectIds ?? [],
-      });
-      setView(v);
-      setEnabled(v.enabled);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Aktywny set");
-    } finally {
-      setPending(false);
-    }
+  const onToggleEnabled = (next: boolean) => {
+    setEnabled(next);
+    setDirty(true);
   };
 
   const onAutoAdvance = async (next: boolean) => {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     setPending(true);
     setError(null);
     try {
@@ -164,6 +141,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Auto-setlista");
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   };
@@ -221,12 +199,6 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 placeholder="Filtr…"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape" && filter) {
-                    e.preventDefault();
-                    setFilter("");
-                  }
-                }}
                 aria-label="Filtr utworów"
               />
             </div>
