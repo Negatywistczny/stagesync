@@ -810,7 +810,7 @@ export function TimelineShell() {
     if (!draft || !clipSelection.items.length) return false;
     // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
     const lane = primaryLane(clipSelection);
-    if (!lane || isAudioSelectionLane(lane)) return false;
+    if (!lane) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
     let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
     if (lane === "forma") {
@@ -823,6 +823,8 @@ export function TimelineShell() {
       clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
     } else if (lane === "cue") {
       clips = draft.cue.clips.filter((c) => idSet.has(c.id));
+    } else if (isAudioSelectionLane(lane)) {
+      clips = draft.audioClips.filter((c) => idSet.has(c.id));
     } else {
       return false;
     }
@@ -876,7 +878,12 @@ export function TimelineShell() {
           ? draft.tekst.clips.filter((c) => idSet.has(c.id))
           : lane === "akordy"
             ? draft.akordy.clips.filter((c) => idSet.has(c.id))
-            : draft.cue.clips.filter((c) => idSet.has(c.id));
+            : lane === "cue"
+              ? draft.cue.clips.filter((c) => idSet.has(c.id))
+              : isAudioSelectionLane(lane)
+                ? draft.audioClips.filter((c) => idSet.has(c.id))
+                : [];
+    if (!clips.length) return false;
     return pasteClipClipboard(selectionMaxEndTicks(clips));
   }, [clipSelection, copyClipSelection, pasteClipClipboard]);
 
@@ -1726,13 +1733,13 @@ export function TimelineShell() {
       session.clipId &&
       preview.startTicks !== session.originClipStart
     ) {
-      if (isAudioLaneId(lane)) return;
       const moveIds = session.moveIds?.length
         ? session.moveIds
         : [session.clipId];
       const idSet = new Set(moveIds);
-      const clips =
-        lane === "forma"
+      const clips = isAudioLaneId(lane)
+        ? draft.audioClips.filter((c) => idSet.has(c.id))
+        : lane === "forma"
           ? draft.forma.clips.filter(
               (c) => idSet.has(c.id) && c.kind === "section",
             )
@@ -2133,6 +2140,7 @@ export function TimelineShell() {
       lane,
       originClientX: e.clientX,
       moveIds: kind === "move" ? moveIds : undefined,
+      optionCopy: kind === "move" ? Boolean(e.altKey) : undefined,
     };
     beginFormaGesture(
       session,
