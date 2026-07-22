@@ -861,21 +861,20 @@ export function TimelineShell() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      // Overlay Escape runs even while focus is in inputs (UG paste field).
       if (e.key === "Escape") {
-        if (ugModalOpen) {
+        if (tempoEditOpen) {
           e.preventDefault();
-          setUgModalOpen(false);
+          setTempoEditOpen(false);
           return;
         }
-        if (songScreenOpen) {
+        if (meterEditOpen) {
           e.preventDefault();
-          setSongScreenOpen(false);
+          setMeterEditOpen(false);
           return;
         }
-        if (songMetaOpen) {
+        if (keyEditOpen) {
           e.preventDefault();
-          setSongMetaOpen(false);
+          setKeyEditOpen(false);
           return;
         }
         if (helpOpen) {
@@ -883,6 +882,11 @@ export function TimelineShell() {
           setHelpOpen(false);
           return;
         }
+      }
+
+      // Map-edit dialogs own the keyboard (BPM/meter inputs + no transport).
+      if (tempoEditOpen || meterEditOpen || keyEditOpen) {
+        return;
       }
 
       const t = e.target as HTMLElement | null;
@@ -897,6 +901,7 @@ export function TimelineShell() {
       const h = keyHandlersRef.current;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
+
       if (
         !mod &&
         !e.altKey &&
@@ -1045,9 +1050,9 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
-    ugModalOpen,
-    songScreenOpen,
-    songMetaOpen,
+    tempoEditOpen,
+    meterEditOpen,
+    keyEditOpen,
     toolMenu,
   ]);
 
@@ -2834,7 +2839,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
     try {
-      const project = await uploadProjectAudio(projectId, file, { trackId });
+      const next = await uploadProjectAudio(projectId, file);
+      // Prefer the uploaded clip on the chosen track when server put it on track 0
+      let project = next;
+      if (trackId && next.audioClips.length) {
+        const last = next.audioClips[next.audioClips.length - 1]!;
+        if (last.trackId !== trackId) {
+          project = {
+            ...next,
+            audioClips: next.audioClips.map((c) =>
+              c.id === last.id ? { ...c, trackId } : c,
+            ),
+          };
+        }
+      }
       setSavedProject(project);
       setDraftProject(project);
       setDraftHistory((h) =>
@@ -5330,9 +5348,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         : null}
 
       {tempoEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="tempo-edit-title"
+        >
           <div className={styles.overlayPanel}>
-            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id="tempo-edit-title">
+              Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <label className={styles.inspField}>
               BPM
               <input
@@ -5365,9 +5390,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {meterEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="meter-edit-title"
+        >
           <div className={styles.overlayPanel}>
-            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id="meter-edit-title">
+              Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <div
               className={styles.meterEditRow}
               role="group"
@@ -5434,9 +5466,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {keyEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="key-edit-title"
+        >
           <div className={styles.overlayPanel}>
-            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id="key-edit-title">
+              Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <div
               className={styles.keyEditRow}
               role="group"
