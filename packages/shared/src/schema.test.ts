@@ -144,6 +144,19 @@ describe("ProjectSchemaV5", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects more than 64 audio tracks", () => {
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    expect(() =>
+      ProjectSchemaV5.parse({
+        ...seed,
+        audioTracks: Array.from({ length: 65 }, (_, i) => ({
+          id: `t${i}`,
+          name: `Audio ${i}`,
+        })),
+      }),
+    ).toThrow();
+  });
 });
 
 describe("CreateProjectBodySchema", () => {

@@ -294,9 +294,9 @@ const ProjectSchemaV5Object = z
     tempoMap: z.array(TempoEventSchema),
     meterMap: z.array(MeterEventSchema),
     keyMap: z.array(KeyEventSchema),
-    assets: z.array(ProjectAssetSchema),
-    audioTracks: z.array(AudioTrackSchema),
-    audioClips: z.array(AudioClipSchema),
+    assets: z.array(ProjectAssetSchema).max(256),
+    audioTracks: z.array(AudioTrackSchema).max(64),
+    audioClips: z.array(AudioClipSchema).max(512),
     tekst: z.object({
       clips: z.array(TekstClipSchema),
     }),
