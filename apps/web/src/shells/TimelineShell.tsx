@@ -490,6 +490,8 @@ export function TimelineShell() {
   /** Forma/content multi-select (v4 selectedIds + primaryId). */
   const [clipSelection, setClipSelection] =
     useState<ClipSelection>(EMPTY_CLIP_SELECTION);
+  const clipSelectionRef = useRef(clipSelection);
+  clipSelectionRef.current = clipSelection;
   const primaryId = clipSelection.primaryId;
   const selectionLane = primaryLane(clipSelection);
   const selectedClipId = selectionLane === "forma" ? primaryId : null;
@@ -604,8 +606,11 @@ export function TimelineShell() {
     setTrackVisibility((prev) =>
       ensureAudioTrackVisibility(prev, next.audioTracks),
     );
+    const selection = clipSelectionRef.current;
     setDraftHistory((h) =>
-      h ? pushDraftHistory(h, next) : createDraftHistory(next),
+      h
+        ? pushDraftHistory(h, next, selection)
+        : createDraftHistory(next, selection),
     );
   }, []);
 
@@ -1529,7 +1534,9 @@ export function TimelineShell() {
     setDraftHistory((h) => {
       if (!h || !canUndo(h)) return h;
       const next = undoDraft(h);
-      setDraftProject(next.present);
+      setDraftProject(next.present.project);
+      setClipSelection(next.present.clipSelection);
+      setSelectedSubsectionIdx(null);
       return next;
     });
   }
@@ -1538,7 +1545,9 @@ export function TimelineShell() {
     setDraftHistory((h) => {
       if (!h || !canRedo(h)) return h;
       const next = redoDraft(h);
-      setDraftProject(next.present);
+      setDraftProject(next.present.project);
+      setClipSelection(next.present.clipSelection);
+      setSelectedSubsectionIdx(null);
       return next;
     });
   }
