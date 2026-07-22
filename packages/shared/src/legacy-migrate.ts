@@ -316,7 +316,7 @@ export function migrateLegacySong(
   let tempoMap = tempoMapRaw.map((ev, i) => ({
     id: asString(ev.id, `tempo-${i}`),
     startTicks: toTicks(asFiniteNumber(ev.startAbs, 0), shiftQuarters, ppq),
-    bpm: Math.max(1, asFiniteNumber(ev.bpm, defaultBpm)),
+    bpm: Math.min(400, Math.max(20, asFiniteNumber(ev.bpm, defaultBpm))),
   }));
   if (tempoMap.length === 0) {
     tempoMap = [{ id: "tempo-0", startTicks: 0, bpm: defaultBpm }];
