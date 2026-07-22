@@ -27,6 +27,7 @@ export function ProjectFilesPanel({
   const [assets, setAssets] = useState<ProjectAsset[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,7 +58,8 @@ export function ProjectFilesPanel({
   }, [projectId, reload]);
 
   const onUpload = async (file: File | undefined) => {
-    if (!projectId || !file || busy || locked) return;
+    if (!projectId || !file || busyRef.current || locked) return;
+    busyRef.current = true;
     setBusy(true);
     setError(null);
     try {
@@ -66,20 +68,22 @@ export function ProjectFilesPanel({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload nieudany");
     } finally {
+      busyRef.current = false;
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
     }
   };
 
   const onDelete = (assetId: string) => {
-    if (!projectId || busy || locked) return;
+    if (!projectId || busyRef.current || locked) return;
     setDeleteAssetId(assetId);
   };
 
   const confirmDelete = async () => {
-    if (!projectId || !deleteAssetId || busy || locked) return;
+    if (!projectId || !deleteAssetId || busyRef.current || locked) return;
     const assetId = deleteAssetId;
     setDeleteAssetId(null);
+    busyRef.current = true;
     setBusy(true);
     setError(null);
     try {
@@ -88,6 +92,7 @@ export function ProjectFilesPanel({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Usuwanie nieudane");
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
