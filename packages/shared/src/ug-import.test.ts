@@ -15,6 +15,15 @@ describe("importUgText", () => {
     expect(result.akordy.clips.some((c) => c.symbol === "G")).toBe(true);
   });
 
+  it("accepts altered chord tokens like Am7b5 and C7b9", () => {
+    const result = importUgText("[Am7b5]line\n[C7b9]more [G7#9]end");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.akordy.clips.some((c) => c.symbol === "Am7b5")).toBe(true);
+    expect(result.akordy.clips.some((c) => c.symbol === "C7b9")).toBe(true);
+    expect(result.akordy.clips.some((c) => c.symbol === "G7#9")).toBe(true);
+  });
+
   it("returns Polish message for empty / broken input", () => {
     expect(importUgText("").ok).toBe(false);
     expect(importUgText("   ").ok).toBe(false);
