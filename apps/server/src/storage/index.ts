@@ -588,13 +588,18 @@ export function createStores(dataDir?: string) {
             track = { id: randomUUID(), name: "Audio 1" };
             audioTracks = [track];
           }
+          // Append after existing audio so re-uploads do not stack at tick 0.
+          const startTicks = audioClips.reduce(
+            (max, c) => Math.max(max, c.startTicks + c.lengthTicks),
+            0,
+          );
           audioClips = [
             ...audioClips,
             {
               id: randomUUID(),
               trackId: track.id,
               assetId: asset.id,
-              startTicks: 0,
+              startTicks,
               lengthTicks: 7680,
             },
           ];
