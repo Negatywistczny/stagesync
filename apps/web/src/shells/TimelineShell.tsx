@@ -1461,6 +1461,7 @@ export function TimelineShell() {
   async function onSave() {
     if (!projectId || !draftProject) return;
     setSavePending(true);
+    setLoadError(null);
     try {
       const next = await putProject(projectId, draftProject);
       setSavedProject(next);
@@ -2864,6 +2865,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
+    setLoadError(null);
     try {
       const next = await uploadProjectAudio(projectId, file);
       // Prefer the uploaded clip on the chosen track when server put it on track 0
@@ -4005,6 +4007,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
       </div>
+
+      {loadError && draftProject ? (
+        <p className={styles.saveError} role="alert">
+          {loadError}
+        </p>
+      ) : null}
 
       <div
         className={styles.main}
