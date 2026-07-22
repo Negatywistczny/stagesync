@@ -1417,6 +1417,7 @@ export function TimelineShell() {
   async function onSave() {
     if (!projectId || !draftProject) return;
     setSavePending(true);
+    setLoadError(null);
     try {
       const next = await putProject(projectId, draftProject);
       setSavedProject(next);
@@ -3953,6 +3954,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
       </div>
+
+      {loadError && draftProject ? (
+        <p className={styles.saveError} role="alert">
+          {loadError}
+        </p>
+      ) : null}
 
       <div
         className={styles.main}
