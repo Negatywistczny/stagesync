@@ -59,6 +59,27 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("re-emits SPP + Continue on seek while playing", () => {
+    const transport = createTransportEngine({
+      now: () => performance.now(),
+    });
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({
+      outputId: "mock-out-1",
+      clockOutEnabled: true,
+    });
+
+    transport.play({ bpm: 120 });
+    backend.sent.length = 0;
+    transport.seek(7680);
+    expect(backend.sent.some((m) => m.type === "spp")).toBe(true);
+    expect(backend.sent.some((m) => m.type === "continue")).toBe(true);
+
+    host.dispose();
+    transport.dispose();
+  });
+
   it("meters clock / spp / pc / beat→ws from input", () => {
     const t = 1_000_000;
     const transport = createTransportEngine();

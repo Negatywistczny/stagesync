@@ -71,6 +71,7 @@ export function createMidiHost(
   let clockTimer: ReturnType<typeof setInterval> | null = null;
   let wasPlaying = false;
   let lastBpm: number | null = null;
+  let lastTicks: number | null = null;
   let inputClockCount = 0;
 
   const clockIn = new RateMeter();
@@ -130,6 +131,7 @@ export function createMidiHost(
         stopClockOutTimer();
       }
       wasPlaying = msg.playing;
+      lastTicks = msg.positionTicks;
       return;
     }
 
@@ -142,8 +144,16 @@ export function createMidiHost(
       if (lastBpm !== msg.bpm) {
         startClockOutTimer(msg.bpm);
       }
+      // Seek while playing: position jumped more than a quarter → re-SPP + Continue.
+      if (
+        lastTicks != null &&
+        Math.abs(msg.positionTicks - lastTicks) > msg.ppq
+      ) {
+        sendTransportEdge(msg, "continue");
+      }
     }
     wasPlaying = msg.playing;
+    lastTicks = msg.positionTicks;
   }
 
   function onInputMessage(msg: MidiRealtimeMessage): void {
