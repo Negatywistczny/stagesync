@@ -6,6 +6,7 @@ import {
   audioClipPlayableMs,
   applyAbutCrossfade,
   clampAudioClipToAsset,
+  clampAudioFades,
   findAbutNeighbor,
   lengthTicksFromAssetWindow,
   moveClipNoOverlap,
@@ -15,6 +16,7 @@ import {
   resizeAudioClipStart,
   resolveMeterAt,
   resolveTempoAt,
+  ticksToMs,
   type AudioClip,
   type FormaClip,
   type Project,
@@ -382,6 +384,16 @@ export function commitAudioGesture(
         preview.startTicks + preview.lengthTicks,
         mode,
       );
+    case "fade-in":
+      if (!session.clipId || preview.fadeInMs == null) return project;
+      return setAudioClipFadeMs(project, session.clipId, {
+        fadeInMs: preview.fadeInMs,
+      });
+    case "fade-out":
+      if (!session.clipId || preview.fadeOutMs == null) return project;
+      return setAudioClipFadeMs(project, session.clipId, {
+        fadeOutMs: preview.fadeOutMs,
+      });
     default:
       return project;
   }
@@ -396,6 +408,69 @@ export function previewAudioFromSession(
 ): FormaGesturePreview {
   const mode = contentSnapModeFromModifiers(metaKey, ctrlKey);
   const floor = contentFloorTicks(project.forma.clips);
+
+  if (session.kind === "fade-in" || session.kind === "fade-out") {
+    const clip = project.audioClips.find((c) => c.id === session.clipId);
+    if (!clip) {
+      return {
+        kind: session.kind,
+        clipId: session.clipId,
+        startTicks: session.originClipStart,
+        lengthTicks: session.originClipLength,
+      };
+    }
+    const ctx = {
+      bpm: resolveTempoAt(project, clip.startTicks),
+      meter: resolveMeterAt(project, clip.startTicks),
+      ppq: project.ppq,
+    };
+    const asset = project.assets.find((a) => a.id === clip.assetId);
+    const playableMs = audioClipPlayableMs(clip, asset, ctx);
+    const intoMs = Math.max(
+      0,
+      ticksToMs(
+        Math.max(0, rawTicks - clip.startTicks),
+        ctx.bpm,
+        ctx.meter,
+        ctx.ppq,
+      ),
+    );
+    const fromEndMs = Math.max(
+      0,
+      ticksToMs(
+        Math.max(0, clip.startTicks + clip.lengthTicks - rawTicks),
+        ctx.bpm,
+        ctx.meter,
+        ctx.ppq,
+      ),
+    );
+    if (session.kind === "fade-in") {
+      const fades = clampAudioFades(
+        { fadeInMs: intoMs, fadeOutMs: clip.fadeOutMs },
+        playableMs,
+      );
+      return {
+        kind: "fade-in",
+        clipId: clip.id,
+        startTicks: clip.startTicks,
+        lengthTicks: clip.lengthTicks,
+        fadeInMs: fades.fadeInMs,
+        fadeOutMs: clip.fadeOutMs,
+      };
+    }
+    const fades = clampAudioFades(
+      { fadeInMs: clip.fadeInMs, fadeOutMs: fromEndMs },
+      playableMs,
+    );
+    return {
+      kind: "fade-out",
+      clipId: clip.id,
+      startTicks: clip.startTicks,
+      lengthTicks: clip.lengthTicks,
+      fadeInMs: clip.fadeInMs,
+      fadeOutMs: fades.fadeOutMs,
+    };
+  }
 
   if (session.kind === "move") {
     const delta = rawTicks - session.originTicks;
