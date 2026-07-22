@@ -20,13 +20,16 @@ export function createStageHub() {
     },
 
     broadcast(
-      partial: Omit<StageCueMessage, "sentAtMs"> & { sentAtMs?: number },
+      partial: Omit<StageCueMessage, "sentAtMs" | "ttlMs"> & {
+        ttlMs?: number;
+        sentAtMs?: number;
+      },
     ): StageCueMessage {
       const msg: StageCueMessage = {
         type: "stage_cue",
         text: partial.text,
         roles: partial.roles,
-        ttlMs: partial.ttlMs,
+        ttlMs: partial.ttlMs ?? 6000,
         sentAtMs: partial.sentAtMs ?? Date.now(),
       };
       for (const listener of listeners) {
