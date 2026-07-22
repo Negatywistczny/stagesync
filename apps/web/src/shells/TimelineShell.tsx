@@ -911,7 +911,7 @@ export function TimelineShell() {
         (e.key === "?" || (e.shiftKey && e.key === "/"))
       ) {
         e.preventDefault();
-        setHelpOpen(true);
+        setHelpOpen((open) => !open);
         return;
       }
 
