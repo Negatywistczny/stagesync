@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "migrate:legacy": "tsx src/cli/migrate-legacy.ts"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.1",
     "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.39.5",
     "tsx": "^4.20.3",
     "typescript": "5.9.3",

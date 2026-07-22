@@ -42,7 +42,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Should
 
-- [ ] [#418](https://github.com/Negatywistyczny/stagesync/issues/418) — Vitest coverage + Codecov (fail soft)
 - [ ] [#365](https://github.com/Negatywistyczny/stagesync/issues/365) — audio preload gate + cache clear + decode warning
 - [ ] [#351](https://github.com/Negatywistyczny/stagesync/issues/351) — file logs, crash handlers, diagnostics export
 - [ ] Playwright Forma drag E2E (defer z overnight)

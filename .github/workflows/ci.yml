@@ -49,6 +49,19 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Coverage (shared + server + web)
+        run: pnpm test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          files: |
+            packages/shared/coverage/lcov.info
+            apps/server/coverage/lcov.info
+            apps/web/coverage/lcov.info
+
       - name: Migrate legacy dry-run (M9)
         run: |
           pnpm migrate:legacy -- --input docs/examples/legacy/database.sample.json --dry-run

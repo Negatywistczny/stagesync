@@ -9,6 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Features
 
+- **CI Codecov (#418):** Vitest coverage (lcov) dla shared/server/web; `codecov-action@v5` z `fail_ci_if_error: false`.
 - **README (#419 / #417):** landing ~60–80 linii; badges CI/release/license/version (bez Tailwind / visitorbadge).
 - **Timeline:** zoom H/V/UI z ikonami; snap picker (off / bar / beat / subdivision); rozszerzona Pomoc z kartami sekcji, miniaturami narzędzi / transportu / ścieżek i czytelnymi skrótami klawiszowymi; zoom sesji zapisywany lokalnie.
 - **Audio:** fade in/out (envelope WebAudio + uchwyty Smart na klipie); crossfade przy styku; region loop klipu; kontrolki w inspectorze; kopiuj/wklej na ścieżce audio.

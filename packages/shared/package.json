@@ -18,7 +18,8 @@
     "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "zod": "^3.25.76"
@@ -27,6 +28,7 @@
     "@stagesync/eslint-config": "workspace:*",
     "@stagesync/typescript-config": "workspace:*",
     "@types/node": "^26.1.1",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.39.1",
     "typescript": "5.9.3",
     "vitest": "^3.2.4"
