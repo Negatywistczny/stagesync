@@ -120,6 +120,8 @@ struct RecentProject {
 struct NavState {
     timeline_project_id: Arc<Mutex<Option<String>>>,
     recent_projects: Arc<Mutex<Vec<RecentProject>>>,
+    can_undo: Arc<Mutex<bool>>,
+    can_redo: Arc<Mutex<bool>>,
 }
 
 fn nav_url(path: &str) -> String {
@@ -249,22 +251,40 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         &[&open_recent, &file_sep, &file_save, &file_close],
     )?;
 
-    // macOS routes ⌘C/X/V/A through the app menu First Responder chain.
     // Timeline draft undo/redo: custom items (not PredefinedMenuItem::undo) so
     // WebView receives stagesync:desktop-menu instead of native text undo.
-    let edit_undo =
-        MenuItem::with_id(app, "edit_undo", "Cofnij", true, Some("CmdOrCtrl+Z"))?;
+    // Enabled state synced from Timeline via set_edit_history_state.
+    let can_undo = nav_state
+        .can_undo
+        .lock()
+        .ok()
+        .map(|g| *g)
+        .unwrap_or(false);
+    let can_redo = nav_state
+        .can_redo
+        .lock()
+        .ok()
+        .map(|g| *g)
+        .unwrap_or(false);
+    let edit_undo = MenuItem::with_id(
+        app,
+        "edit_undo",
+        "Cofnij",
+        can_undo,
+        Some("CmdOrCtrl+Z"),
+    )?;
     let edit_redo = MenuItem::with_id(
         app,
         "edit_redo",
         "Ponów",
-        true,
+        can_redo,
         Some("CmdOrCtrl+Shift+Z"),
     )?;
     let edit_sep = PredefinedMenuItem::separator(app)?;
     let edit_cut = PredefinedMenuItem::cut(app, Some("Wytnij"))?;
     let edit_copy = PredefinedMenuItem::copy(app, Some("Kopiuj"))?;
     let edit_paste = PredefinedMenuItem::paste(app, Some("Wklej"))?;
+    let edit_delete = MenuItem::with_id(app, "edit_delete", "Usuń", true, None::<&str>)?;
     let edit_select_all = PredefinedMenuItem::select_all(app, Some("Zaznacz wszystko"))?;
     let edit_submenu = Submenu::with_items(
         app,
@@ -277,6 +297,7 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
             &edit_cut,
             &edit_copy,
             &edit_paste,
+            &edit_delete,
             &edit_select_all,
         ],
     )?;
@@ -304,8 +325,30 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
     let fullscreen_accel = Some("F11");
     let fullscreen =
         MenuItem::with_id(app, "fullscreen", "Pełny ekran", true, fullscreen_accel)?;
+    let view_zoom_in = MenuItem::with_id(
+        app,
+        "view_zoom_in",
+        "Powiększ",
+        true,
+        Some("CmdOrCtrl+="),
+    )?;
+    let view_zoom_out = MenuItem::with_id(
+        app,
+        "view_zoom_out",
+        "Pomniejsz",
+        true,
+        Some("CmdOrCtrl+-"),
+    )?;
+    let view_zoom_reset = MenuItem::with_id(
+        app,
+        "view_zoom_reset",
+        "Rzeczywisty rozmiar",
+        true,
+        Some("CmdOrCtrl+0"),
+    )?;
     let view_sep_1 = PredefinedMenuItem::separator(app)?;
     let view_sep_2 = PredefinedMenuItem::separator(app)?;
+    let view_sep_3 = PredefinedMenuItem::separator(app)?;
 
     let view_submenu = Submenu::with_items(
         app,
@@ -318,6 +361,10 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
             &view_sep_1,
             &admin_tabs,
             &view_sep_2,
+            &view_zoom_in,
+            &view_zoom_out,
+            &view_zoom_reset,
+            &view_sep_3,
             &fullscreen,
         ],
     )?;
@@ -402,6 +449,13 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         true,
         None::<&str>,
     )?;
+    let help_shortcuts = MenuItem::with_id(
+        app,
+        "help_shortcuts",
+        "Skróty klawiszowe…",
+        true,
+        Some("CmdOrCtrl+/"),
+    )?;
     let help_export = MenuItem::with_id(
         app,
         "help_export_diagnostics",
@@ -425,6 +479,7 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         "Pomoc",
         true,
         &[
+            &help_shortcuts,
             &help_docs,
             &help_issues,
             &help_export,
@@ -437,7 +492,7 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         app,
         "Pomoc",
         true,
-        &[&help_docs, &help_issues, &help_export],
+        &[&help_shortcuts, &help_docs, &help_issues, &help_export],
     )?;
 
     Menu::with_items(
@@ -478,6 +533,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "file_save" => dispatch_menu_action(&app, "save"),
             "edit_undo" => dispatch_menu_action(&app, "edit-undo"),
             "edit_redo" => dispatch_menu_action(&app, "edit-redo"),
+            "edit_delete" => dispatch_menu_action(&app, "edit-delete"),
             "file_close" => navigate_main(&app, "/admin"),
             "nav_admin" => navigate_main(&app, "/admin"),
             "nav_timeline" => {
@@ -493,6 +549,9 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "admin_set" => navigate_main(&app, "/admin?section=set"),
             "admin_stage" => navigate_main(&app, "/admin?section=stage"),
             "admin_host" => navigate_main(&app, "/admin?section=host"),
+            "view_zoom_in" => dispatch_menu_action(&app, "view-zoom-in"),
+            "view_zoom_out" => dispatch_menu_action(&app, "view-zoom-out"),
+            "view_zoom_reset" => dispatch_menu_action(&app, "view-zoom-reset"),
             "transport_play" => dispatch_menu_action(&app, "transport-play"),
             "transport_stop" => dispatch_menu_action(&app, "transport-stop"),
             "transport_prev" => dispatch_menu_action(&app, "transport-prev"),
@@ -501,6 +560,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "host_clients" => navigate_main(&app, "/admin?section=stage"),
             "host_qr" => dispatch_menu_action(&app, "host-qr"),
             "host_restart" => dispatch_menu_action(&app, "host-restart"),
+            "help_shortcuts" => dispatch_menu_action(&app, "help-shortcuts"),
             "help_export_diagnostics" => {
                 dispatch_menu_action(&app, "diagnostics-export")
             }
@@ -690,6 +750,8 @@ pub fn run() {
     let nav_state = NavState {
         timeline_project_id: Arc::new(Mutex::new(None)),
         recent_projects: Arc::new(Mutex::new(Vec::new())),
+        can_undo: Arc::new(Mutex::new(false)),
+        can_redo: Arc::new(Mutex::new(false)),
     };
     let nav_state_setup = nav_state.clone();
 
@@ -957,6 +1019,7 @@ pub fn run() {
             toggle_window_fullscreen,
             set_nav_timeline_project_id,
             set_nav_recent_projects,
+            set_edit_history_state,
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
@@ -1004,6 +1067,27 @@ fn set_nav_recent_projects(
             .filter(|p| !p.id.is_empty())
             .take(8)
             .collect();
+    }
+    refresh_desktop_menu(&app, &state);
+    Ok(())
+}
+
+/// Sync Timeline draft undo/redo availability to native Edycja menu (Faza D).
+#[tauri::command]
+fn set_edit_history_state(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, NavState>,
+    can_undo: bool,
+    can_redo: bool,
+) -> Result<(), String> {
+    {
+        let mut undo = state.can_undo.lock().map_err(|e| e.to_string())?;
+        let mut redo = state.can_redo.lock().map_err(|e| e.to_string())?;
+        if *undo == can_undo && *redo == can_redo {
+            return Ok(());
+        }
+        *undo = can_undo;
+        *redo = can_redo;
     }
     refresh_desktop_menu(&app, &state);
     Ok(())

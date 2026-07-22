@@ -24,6 +24,7 @@
     "allow-open-external-url",
     "allow-nav-timeline-sync",
     "allow-nav-recent-sync",
+    "allow-edit-history-sync",
     "allow-desktop-update",
     "shell:allow-kill",
     {

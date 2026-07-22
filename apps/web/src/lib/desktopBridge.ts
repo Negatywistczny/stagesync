@@ -239,6 +239,15 @@ export function syncNavRecentProjects(
   return tauriInvoke<void>("set_nav_recent_projects", { projects });
 }
 
+/** Sync Timeline draft undo/redo availability to native Edycja menu (Faza D). */
+export function syncEditHistoryState(
+  canUndo: boolean,
+  canRedo: boolean,
+): Promise<void> {
+  if (!isDesktopShell()) return Promise.resolve();
+  return tauriInvoke<void>("set_edit_history_state", { canUndo, canRedo });
+}
+
 /** Open a URL in the system browser (Tauri) or a new tab (web). */
 export function openExternalUrl(url: string): Promise<void> {
   const raw = String(url ?? "").trim();

@@ -19,7 +19,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — domyślnie ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline — Level 2 toolbar z song clusterem (po prawej).
-- **Desktop ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** menu Edycja — Cofnij/Ponów (`edit-undo` / `edit-redo`) dla draftu Timeline przy ukrytym AppHeader.
+- **Desktop ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** menu Edycja — Cofnij/Ponów (`edit-undo` / `edit-redo`) dla draftu Timeline przy ukrytym AppHeader; synchroniczne wyszarzanie gdy brak historii (`set_edit_history_state`).
 - **Preferencje ([#432](https://github.com/Negatywistczny/stagesync/issues/432)):** modal Audio/MIDI (Cmd/Ctrl+, / menu StageSync); `setSinkId` + localStorage; porty MIDI persistowane w `data/host/midi-config.json`; bez Panic (ROADMAP OUT).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** contextual inspector Track vs Clip (gain/fader wyłącznie `Slider`; trim/fade/loop w klipie; nazwa/M/S/fader w ścieżce).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** zaznaczenie ścieżki audio w docku, Solo (S) oraz kompaktowy fader `Slider`; solo wycisza inne ścieżki w playback WebAudio (bez zmiany SSOT czasu).
@@ -34,7 +34,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Transport i setlista:** pauza i zatrzymanie playheadu na końcu utworu; opcjonalne auto-advance setlisty; nawigacja `[` / `]` między utworami; WS reconnect z exponential backoff+jitter; baner offline Client + refetch projektu po reconnect ([#358](https://github.com/Negatywistczny/stagesync/issues/358)).
 - **Release MSI ([#396](https://github.com/Negatywistczny/stagesync/issues/396)):** instalator Windows publikowany jako `StageSync_{version}_x64.msi` (bez `_en-US`); sekcja updatera w `RELEASE_BODY` zwinięta w `<details>`; `latest.json` dopasowywany przy rename.
 - **MIDI (host):** Start/Stop/Continue/SPP z MIDI IN; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po `midiProgramId` (SSOT serwera).
-- **Desktop:** menu OS — Edycja (m.in. Cmd/Ctrl+C), zoom w Widok, otwarcie Pomocy; czytelniejsze błędy transportu i sąsiadów setlisty.
+- **Desktop Faza D:** menu OS — Edycja → Usuń (`edit-delete`); Widok → Powiększ / Pomniejsz / Rzeczywisty rozmiar (`view-zoom-*`); Pomoc → Skróty klawiszowe (`help-shortcuts`); czytelniejsze błędy transportu i sąsiadów setlisty.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
 - **Forma:** kaskadowe przesuwanie późniejszych klipów; luka Intro po Countdown przy pierwszym przeciągnięciu sekcji; nożyczki tną pod kursorem.
 - **API / docs:** domknięta dokumentacja REST; smoke E2E (health, zapis Formy, seek, play/stop).
