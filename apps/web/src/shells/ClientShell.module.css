@@ -600,10 +600,10 @@
   margin: 0;
   width: auto;
   max-width: calc(100% - 1.5rem);
-  font-size: 0.875rem;
+  font-size: var(--ss-text-control);
   font-weight: var(--ss-font-weight-medium);
-  line-height: 1.2;
-  letter-spacing: 0.1em;
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-label);
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
   text-align: center;
@@ -813,10 +813,10 @@
 }
 
 .heroNextLabel {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--ss-tracking-label);
   color: var(--ss-color-disabled-text);
 }
 
@@ -1490,7 +1490,7 @@
   }
 
   .drumsHeroEyebrow {
-    font-size: 0.85rem;
+    font-size: var(--ss-text-sm);
   }
 
   .drumsHeroSection {
