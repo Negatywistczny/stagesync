@@ -504,6 +504,10 @@ export function migrateLegacyDatabase(
   },
 ): MigrateLegacyDatabaseResult {
   const warnings: string[] = [];
+  const pushWarning = (msg: string): void => {
+    if (warnings.length >= 64) return;
+    warnings.push(msg.slice(0, 500));
+  };
   if (!db || typeof db !== "object") {
     throw new Error("Legacy database must be an object");
   }
@@ -529,10 +533,10 @@ export function migrateLegacyDatabase(
         updatedAt: options?.updatedAt,
       });
       projects.push(result);
-      warnings.push(...result.warnings);
+      for (const w of result.warnings) pushWarning(w);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      warnings.push(`SKIP ${legacyId}: ${msg}`);
+      pushWarning(`SKIP ${legacyId}: ${msg}`);
     }
   });
 
@@ -548,7 +552,7 @@ export function migrateLegacyDatabase(
     const key = asString(sid);
     const mapped = legacyToProject.get(key);
     if (mapped) projectIds.push(mapped);
-    else warnings.push(`setlist: unknown song id ${key}`);
+    else pushWarning(`setlist: unknown song id ${key}`);
   }
 
   return {
