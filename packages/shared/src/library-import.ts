@@ -87,12 +87,18 @@ export function normalizeLibraryImport(
     if (projects.length === 0) {
       throw new Error("Pakiet v5 nie zawiera żadnych projektów (projects[] puste).");
     }
+    if (projects.length > 1024) {
+      throw new Error("Pakiet v5 zawiera zbyt wiele projektów (max 1024).");
+    }
     return { format: "v5-pack", projects, warnings: [] };
   }
 
   const migrated = migrateLegacyDatabase(raw as LegacyDatabase, {
     updatedAt: options?.updatedAt,
   });
+  if (migrated.projects.length > 1024) {
+    throw new Error("Legacy database zawiera zbyt wiele utworów (max 1024).");
+  }
   return {
     format: "legacy-database",
     projects: migrated.projects.map((r) => r.project),
