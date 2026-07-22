@@ -465,8 +465,8 @@ export const MidiHostStatusSchema = z.object({
   available: z.boolean(),
   backend: z.enum(["native", "mock", "none"]),
   config: MidiHostConfigSchema,
-  inputs: z.array(MidiPortSchema),
-  outputs: z.array(MidiPortSchema),
+  inputs: z.array(MidiPortSchema).max(128),
+  outputs: z.array(MidiPortSchema).max(128),
   rates: MidiHostRatesSchema,
   /** True while transport is playing and clock-out timer is armed. */
   clockOutActive: z.boolean(),
