@@ -360,6 +360,7 @@ export function TimelineShell() {
   const [draftProject, setDraftProject] = useState<Project | null>(null);
   const [draftHistory, setDraftHistory] = useState<DraftHistory | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [savePending, setSavePending] = useState(false);
   const [libraryNames, setLibraryNames] = useState<
@@ -3835,12 +3836,31 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </ShellIconButton>
           <ShellIconButton
             label="Pełny ekran"
-            onClick={() => void toggleAppFullscreen()}
+            onClick={() => {
+              void (async () => {
+                try {
+                  await toggleAppFullscreen();
+                  setFullscreenError(null);
+                } catch (err) {
+                  setFullscreenError(
+                    err instanceof Error
+                      ? err.message
+                      : "Nie udało się przełączyć pełnego ekranu",
+                  );
+                }
+              })();
+            }}
           >
             <IconFullscreen />
           </ShellIconButton>
         </div>
       </header>
+
+      {fullscreenError ? (
+        <p className={styles.chromeAlert} role="alert">
+          {fullscreenError}
+        </p>
+      ) : null}
 
       <div className={styles.toolbar}>
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
