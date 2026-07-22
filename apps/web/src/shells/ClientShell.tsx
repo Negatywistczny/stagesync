@@ -71,6 +71,7 @@ export function ClientShell() {
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
+  const [uiError, setUiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!started) return;
@@ -129,7 +130,14 @@ export function ClientShell() {
       : null;
 
   async function onFullscreen() {
-    await toggleAppFullscreen();
+    try {
+      await toggleAppFullscreen();
+      setUiError(null);
+    } catch (err) {
+      setUiError(
+        err instanceof Error ? err.message : "Nie udało się przełączyć pełnego ekranu",
+      );
+    }
   }
 
   async function onNextSong() {
@@ -173,6 +181,7 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
+    uiError,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -439,6 +448,7 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   nextSetlistId: string | null;
+  uiError: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -454,6 +464,7 @@ function ClientHeader({
   songTitle,
   bbt,
   nextSetlistId,
+  uiError,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -491,6 +502,11 @@ function ClientHeader({
         >
           →następny
         </button>
+      ) : null}
+      {uiError ? (
+        <span className={styles.uiError} role="alert">
+          {uiError}
+        </span>
       ) : null}
       <span className={styles.takt}>
         takt {toDisplayBar(bbt.bar)}.{bbt.beat}
