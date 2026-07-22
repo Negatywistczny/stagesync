@@ -20,8 +20,10 @@
   border-radius: var(--ss-radius-sharp);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ss-color-border);
+@media (hover: hover) {
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ss-color-border);
+  }
 }
 
 html,

@@ -429,6 +429,9 @@ export function AdminShell() {
               void runMutation(async () => {
                 setActionNotice("Wczytywanie pliku…");
                 const buf = await file.arrayBuffer();
+                if (buf.byteLength > 16 * 1024 * 1024) {
+                  throw new Error("Plik importu jest za duży (max 16 MB).");
+                }
                 if (looksLikeZipBytes(buf)) {
                   throw new Error(ZIP_IMPORT_UNSUPPORTED_PL);
                 }
@@ -1086,6 +1089,7 @@ function HostView({
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
+  const [logStreamError, setLogStreamError] = useState<string | null>(null);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
@@ -1137,20 +1141,45 @@ function HostView({
   }, [refreshMidi]);
 
   useEffect(() => {
-    const es = new EventSource("/api/system/logs/stream");
-    es.onmessage = (ev) => {
-      if (pausedRef.current) return;
-      try {
-        const line = JSON.parse(ev.data) as HostLogLine;
-        setLines((prev) => [...prev.slice(-199), line]);
-      } catch {
-        /* ignore */
-      }
+    let es: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    function connect() {
+      if (cancelled) return;
+      es?.close();
+      es = new EventSource("/api/system/logs/stream");
+      es.onopen = () => {
+        setLogStreamError(null);
+      };
+      es.onmessage = (ev) => {
+        if (pausedRef.current) return;
+        try {
+          const line = JSON.parse(ev.data) as HostLogLine;
+          setLines((prev) => [...prev.slice(-199), line]);
+        } catch {
+          /* ignore */
+        }
+      };
+      es.addEventListener("clear", () => {
+        if (!pausedRef.current) setLines([]);
+      });
+      es.onerror = () => {
+        setLogStreamError("Strumień logów przerwany — ponawiam…");
+        es?.close();
+        es = null;
+        if (cancelled) return;
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connect, 2000);
+      };
+    }
+
+    connect();
+    return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      es?.close();
     };
-    es.addEventListener("clear", () => {
-      if (!pausedRef.current) setLines([]);
-    });
-    return () => es.close();
   }, []);
 
   const applyMidiConfig = useCallback(
@@ -1258,6 +1287,11 @@ function HostView({
               </Button>
             </div>
           </div>
+          {logStreamError ? (
+            <p className={styles.error} role="status">
+              {logStreamError}
+            </p>
+          ) : null}
           <pre className={styles.terminal} aria-live="polite">
             {lines.length === 0
               ? "Oczekiwanie na logi…"

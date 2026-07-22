@@ -1,6 +1,62 @@
-import { useEffect, useId, useRef, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  type FormEvent,
+  type RefObject,
+} from "react";
 import { Button } from "@stagesync/ui";
 import styles from "./ShellBlockingDialog.module.css";
+
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function useDialogFocusTrap(
+  open: boolean,
+  panelRef: RefObject<HTMLElement | null>,
+  focusSelector?: string,
+) {
+  useEffect(() => {
+    if (!open) return;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const initial = focusSelector
+      ? panel.querySelector<HTMLElement>(focusSelector)
+      : panel.querySelector<HTMLElement>(FOCUSABLE);
+    initial?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const nodes = [
+        ...panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
+      ];
+      if (nodes.length === 0) return;
+      const first = nodes[0]!;
+      const last = nodes[nodes.length - 1]!;
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !panelRef.current.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !panelRef.current.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [open, panelRef, focusSelector]);
+}
 
 type ShellConfirmDialogProps = {
   open: boolean;
@@ -21,12 +77,15 @@ export function ShellConfirmDialog({
   onConfirm,
   onCancel,
 }: ShellConfirmDialogProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogFocusTrap(open, panelRef, ".ss-btn--primary");
+
   if (!open) return null;
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-confirm-title">
       <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
-      <div className={styles.panel}>
+      <div ref={panelRef} className={styles.panel}>
         <h2 id="shell-confirm-title" className={styles.title}>
           {title}
         </h2>
@@ -65,6 +124,8 @@ export function ShellPromptDialog({
 }: ShellPromptDialogProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLFormElement>(null);
+  useDialogFocusTrap(open, panelRef);
 
   useEffect(() => {
     if (!open) return;
@@ -86,7 +147,7 @@ export function ShellPromptDialog({
   return (
     <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-prompt-title">
       <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
-      <form className={styles.panel} onSubmit={onSubmit}>
+      <form ref={panelRef} className={styles.panel} onSubmit={onSubmit}>
         <h2 id="shell-prompt-title" className={styles.title}>
           {title}
         </h2>
@@ -123,12 +184,15 @@ type ShellAlertDialogProps = {
 
 /** Zamiennik window.alert — działa w Tauri WebView. */
 export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDialogProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogFocusTrap(open, panelRef, ".ss-btn--primary");
+
   if (!open) return null;
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-alert-title">
       <button type="button" className={styles.backdrop} aria-label="Zamknij" onClick={onClose} />
-      <div className={styles.panel}>
+      <div ref={panelRef} className={styles.panel}>
         <h2 id="shell-alert-title" className={styles.title}>
           {title}
         </h2>

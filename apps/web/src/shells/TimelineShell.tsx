@@ -16,15 +16,13 @@ import {
   formatKeySignature,
   parseLegacyMeter,
   ticksPerBar,
-  ticksToBbtAlongMeterMap,
+  ticksToBbt,
   toDisplayBar,
   importUgText,
   projectEndTicks,
   transportHomeTicks,
-  wandContentToForma,
   type FormaClip,
   type Project,
-  type WandMode,
 } from "@stagesync/shared";
 import {
   buildBarMarks,
@@ -40,7 +38,6 @@ import {
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
 import {
-  cascadeFormaMoveIds,
   commitGesture,
   commitMoveClip,
   deleteFormaClip,
@@ -159,6 +156,7 @@ import {
 } from "../lib/metronome.js";
 import {
   addAudioTrack,
+  MAX_AUDIO_TRACKS,
   applyDecodedAudioMeta,
   commitAudioGesture,
   previewAudioFromSession,
@@ -233,6 +231,14 @@ import {
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
 import {
+  loadZoomPrefs,
+  saveZoomPrefs,
+  ZOOM_H_MAX,
+  ZOOM_H_MIN,
+  ZOOM_UI_MAX,
+  ZOOM_UI_MIN,
+} from "../lib/timelineZoomPrefs.js";
+import {
   toggleAppFullscreen,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
@@ -273,7 +279,6 @@ import {
   IconTap,
   IconUnchecked,
   IconUndo,
-  IconWand,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -331,14 +336,7 @@ const TOOLS: {
     key: "c",
     Icon: IconScissors,
   },
-  {
-    id: "wand",
-    label: "Różdżka",
-    title:
-      "Różdżka — Tekst / Akordy → Forma (zaznaczenie sekcji = zakres; bez — cały utwór)",
-    key: "w",
-    Icon: IconWand,
-  },
+  // Różdżka (wand) — ukryta do naprawy zachowania (PO smoke); core `wandContentToForma` zostaje.
 ];
 
 const TOOL_BY_KEY = Object.fromEntries(TOOLS.map((t) => [t.key, t]));
@@ -366,13 +364,17 @@ export function TimelineShell() {
     setLoop,
   } = useTransport();
   const wasPlayingRef = useRef(state.playing);
+  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
 
   const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [draftProject, setDraftProject] = useState<Project | null>(null);
   const [draftHistory, setDraftHistory] = useState<DraftHistory | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [savePending, setSavePending] = useState(false);
+  const [audioUploadPending, setAudioUploadPending] = useState(false);
+  const audioUploadPendingRef = useRef(false);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
@@ -385,17 +387,11 @@ export function TimelineShell() {
     left: number;
     top: number;
   } | null>(null);
-  const [wandMenu, setWandMenu] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
   const toolMenuRef = useRef<HTMLDivElement>(null);
-  const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [songPickerFilter, setSongPickerFilter] = useState("");
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
@@ -407,9 +403,9 @@ export function TimelineShell() {
       return false;
     }
   });
-  const [zoomH, setZoomH] = useState(DEFAULT_PX_PER_BAR);
-  const [zoomV, setZoomV] = useState(DEFAULT_LANE_PX);
-  const [zoomUi, setZoomUi] = useState(100);
+  const [zoomH, setZoomH] = useState(() => loadZoomPrefs().zoomH);
+  const [zoomV, setZoomV] = useState(() => loadZoomPrefs().zoomV);
+  const [zoomUi, setZoomUi] = useState(() => loadZoomPrefs().zoomUi);
   const [laneHeights, setLaneHeights] = useState<LaneHeightsMap>(() =>
     loadLaneHeights(),
   );
@@ -430,8 +426,6 @@ export function TimelineShell() {
   const effectiveZoomV = Math.max(1, Math.round(zoomV * uiScale));
   /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
   const ZOOM_H_STEP = 4;
-  const ZOOM_H_MIN = 24;
-  const ZOOM_H_MAX = 160;
   const ZOOM_V_STEP = 4;
   const ZOOM_V_MIN = MIN_LANE_PX;
   const ZOOM_V_MAX = MAX_LANE_PX;
@@ -661,10 +655,11 @@ export function TimelineShell() {
   }, [projectId, draftProject?.name]);
 
   useEffect(() => {
-    if (!songScreenOpen) {
-      setSongPickerFilter("");
-      return;
-    }
+    saveZoomPrefs({ zoomH, zoomV, zoomUi });
+  }, [zoomH, zoomV, zoomUi]);
+
+  useEffect(() => {
+    if (!songScreenOpen) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -1220,38 +1215,16 @@ export function TimelineShell() {
 
   const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, effectiveZoomH);
 
-  const bbt = draftProject
-    ? ticksToBbtAlongMeterMap(
-        displayTicks,
-        draftProject.defaultMeter,
-        draftProject.meterMap,
-        draftProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        displayTicks,
-        state.timeSignature,
-        [],
-        state.ppq,
-      );
-
   const effectiveLocatorTicks = state.playing ? displayTicks : locatorTicks;
   const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
     : state.timeSignature;
-  const locatorBbt = draftProject
-    ? ticksToBbtAlongMeterMap(
-        effectiveLocatorTicks,
-        draftProject.defaultMeter,
-        draftProject.meterMap,
-        draftProject.ppq,
-      )
-    : ticksToBbtAlongMeterMap(
-        effectiveLocatorTicks,
-        locatorMeter,
-        [],
-        state.ppq,
-      );
+  const locatorBbt = ticksToBbt(
+    effectiveLocatorTicks,
+    locatorMeter,
+    draftProject?.ppq ?? state.ppq,
+  );
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
   // v4: cyan MIDI overlay only when external clock is live and Timeline is not the
   // transport source. Alpha: server Timeline owns play → no separate MIDI overlay (β2).
@@ -2552,18 +2525,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [toolMenu]);
 
-  useEffect(() => {
-    if (!wandMenu) return;
-    function onPointerDown(e: PointerEvent) {
-      const el = wandMenuRef.current;
-      if (el && e.target instanceof Node && el.contains(e.target)) return;
-      setWandMenu(null);
-      setTool((t) => (t === "wand" ? "pointer" : t));
-    }
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [wandMenu]);
-
   function placeLocatorAtTicks(
     ticks: number,
     opts?: {
@@ -2865,6 +2826,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   function onAddAudioTrack() {
     if (!draftProject) return;
+    if (draftProject.audioTracks.length >= MAX_AUDIO_TRACKS) {
+      setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
+      return;
+    }
     const { project } = addAudioTrack(draftProject);
     commitDraft(project);
     setEyeOpen(false);
@@ -2872,6 +2837,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
+    if (audioUploadPendingRef.current) return;
+    audioUploadPendingRef.current = true;
+    setAudioUploadPending(true);
     try {
       const next = await uploadProjectAudio(projectId, file);
       // Prefer the uploaded clip on the chosen track when server put it on track 0
@@ -2897,6 +2865,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       );
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Upload audio failed");
+    } finally {
+      audioUploadPendingRef.current = false;
+      setAudioUploadPending(false);
     }
   }
 
@@ -3184,39 +3155,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const def = TOOLS.find((t) => t.id === id);
     if (def?.disabled) return;
     setToolMenu(null);
-    if (id === "wand") {
-      setTool("wand");
-      const { x, y } = lastPointerRef.current;
-      setWandMenu({
-        left: Math.max(8, x),
-        top: Math.max(8, y),
-      });
-      return;
-    }
-    setWandMenu(null);
     setTool(id);
-  }
-
-  function applyWand(mode: WandMode) {
-    const draft = draftRef.current;
-    if (!draft) return;
-    const formaIds = idsOnLane(clipSelection, "forma");
-    const ranges = formaIds.length
-      ? draft.forma.clips
-          .filter((c) => formaIds.includes(c.id) && c.kind === "section")
-          .map((c) => ({
-            startTicks: c.startTicks,
-            endTicks: c.startTicks + c.lengthTicks,
-          }))
-      : undefined;
-    const next = wandContentToForma(
-      draft,
-      mode,
-      ranges?.length ? { ranges } : {},
-    );
-    if (next !== draft) commitDraft(next);
-    setWandMenu(null);
-    setTool("pointer");
   }
 
   function openToolMenuAt(clientX: number, clientY: number) {
@@ -3512,7 +3451,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         return (
           <>
             {draftProject.forma.clips.map((clip) => {
-              const rawMoveIds =
+              const moveIds =
                 gestureSession?.kind === "move" &&
                 (gestureSession.lane ?? "forma") === "forma"
                   ? gestureSession.moveIds?.length
@@ -3521,14 +3460,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ? [gestureSession.clipId]
                       : []
                   : [];
-              // TE-24: single-id drag previews cascade; multi-select keeps explicit ids.
-              const moveIds =
-                rawMoveIds.length === 1
-                  ? cascadeFormaMoveIds(
-                      draftProject.forma.clips,
-                      rawMoveIds[0]!,
-                    )
-                  : rawMoveIds;
               const moveDelta =
                 gesturePreview &&
                 gestureSession?.kind === "move" &&
@@ -3935,12 +3866,31 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </ShellIconButton>
           <ShellIconButton
             label="Pełny ekran"
-            onClick={() => void toggleAppFullscreen()}
+            onClick={() => {
+              void (async () => {
+                try {
+                  await toggleAppFullscreen();
+                  setFullscreenError(null);
+                } catch (err) {
+                  setFullscreenError(
+                    err instanceof Error
+                      ? err.message
+                      : "Nie udało się przełączyć pełnego ekranu",
+                  );
+                }
+              })();
+            }}
           >
             <IconFullscreen />
           </ShellIconButton>
         </div>
       </header>
+
+      {fullscreenError ? (
+        <p className={styles.chromeAlert} role="alert">
+          {fullscreenError}
+        </p>
+      ) : null}
 
       <div className={styles.toolbar}>
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
@@ -4244,12 +4194,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           >
                             M
                           </button>
-                          <label className={styles.tapBtn} title="Dodaj plik audio">
+                          <label
+                            className={styles.tapBtn}
+                            title={
+                              audioUploadPending
+                                ? "Upload w toku…"
+                                : "Dodaj plik audio"
+                            }
+                          >
                             +
                             <input
                               type="file"
                               accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
                               hidden
+                              disabled={audioUploadPending}
                               onChange={(e) => {
                                 const f = e.target.files?.[0];
                                 e.target.value = "";
@@ -5043,8 +5001,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             UI
             <input
               type="range"
-              min={50}
-              max={150}
+              min={ZOOM_UI_MIN}
+              max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
@@ -5254,29 +5212,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
-              <input
-                className={styles.nameInput}
-                type="search"
-                placeholder="Filtruj…"
-                value={songPickerFilter}
-                onChange={(e) => setSongPickerFilter(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape" && songPickerFilter) {
-                    e.preventDefault();
-                    setSongPickerFilter("");
-                  }
-                }}
-                aria-label="Filtruj utwory"
-                autoFocus
-              />
               <ul className={styles.songList}>
-                {libraryNames
-                  .filter((p) => {
-                    const q = songPickerFilter.trim().toLowerCase();
-                    if (!q) return true;
-                    return p.name.toLowerCase().includes(q);
-                  })
-                  .map((p) => (
+                {libraryNames.map((p) => (
                   <li key={p.id}>
                     <Link
                       to={`/timeline/${p.id}`}
@@ -5400,6 +5337,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 type="button"
                 role="menuitem"
                 className={styles.eyeItem}
+                disabled={
+                  (draftProject?.audioTracks.length ?? 0) >= MAX_AUDIO_TRACKS
+                }
+                title={
+                  (draftProject?.audioTracks.length ?? 0) >= MAX_AUDIO_TRACKS
+                    ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
+                    : undefined
+                }
                 onClick={onAddAudioTrack}
               >
                 + Ścieżka Audio
@@ -5435,37 +5380,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <Icon />
                   <span>{label}</span>
                   <span className={styles.toolMenuKey}>{key}</span>
-                </button>
-              ))}
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {wandMenu
-        ? createPortal(
-            <div
-              ref={wandMenuRef}
-              className={styles.toolMenu}
-              style={{ top: wandMenu.top, left: wandMenu.left }}
-              role="menu"
-              aria-label="Różdżka — źródło"
-            >
-              {(
-                [
-                  ["tekst", "Tekst → Forma"],
-                  ["akordy", "Akordy → Forma"],
-                  ["both", "Tekst + Akordy → Forma"],
-                ] as const
-              ).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  role="menuitem"
-                  className={styles.toolMenuItem}
-                  onClick={() => applyWand(mode)}
-                >
-                  <span>{label}</span>
                 </button>
               ))}
             </div>,

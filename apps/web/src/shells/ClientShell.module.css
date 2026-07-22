@@ -226,8 +226,13 @@
   transform: scale(0.98);
 }
 
+.roleIcon {
+  font-size: var(--ss-text-2xl);
+  line-height: var(--ss-leading-compact);
+}
+
 .roleLabel {
-  font-size: var(--ss-text-xl);
+  font-size: var(--ss-text-lg);
   font-weight: var(--ss-font-weight-bold);
   line-height: var(--ss-leading-tight);
 }
@@ -311,8 +316,12 @@
     padding: var(--ss-space-8);
   }
 
+  .roleIcon {
+    font-size: var(--ss-text-3xl);
+  }
+
   .roleLabel {
-    font-size: var(--ss-text-2xl);
+    font-size: var(--ss-text-xl);
   }
 }
 
@@ -325,6 +334,10 @@
     gap: var(--ss-space-3);
     min-height: 8rem;
     padding: var(--ss-space-3) var(--ss-space-2);
+  }
+
+  .roleIcon {
+    font-size: var(--ss-text-2xl);
   }
 
   .roleLabel {
@@ -586,16 +599,16 @@
 .gridSectionLabel {
   margin: 0;
   width: auto;
-  max-width: calc(100% - var(--ss-space-6));
+  max-width: calc(100% - 1.5rem);
   font-size: var(--ss-text-control);
   font-weight: var(--ss-font-weight-medium);
-  line-height: var(--ss-leading-tight);
-  letter-spacing: var(--ss-tracking-label);
+  line-height: 1.2;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
   text-align: center;
-  padding: var(--ss-space-1) var(--ss-space-3);
-  border-radius: var(--ss-radius-lg);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--ss-radius-pill);
   background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
 }
@@ -638,9 +651,9 @@
   position: relative;
   z-index: 1;
   margin: 0;
-  font-size: clamp(var(--ss-text-3xl), 12vw, 6rem);
+  font-size: clamp(3rem, 12vw, 6rem);
   font-weight: var(--ss-font-weight-bold);
-  line-height: var(--ss-leading-compact);
+  line-height: 1.1;
   color: var(--ss-color-primary);
   text-align: center;
   white-space: nowrap;
@@ -683,7 +696,7 @@
   margin: 0;
   white-space: nowrap;
   font-size: clamp(3rem, 12vw, 6rem);
-  font-weight: 800;
+  font-weight: var(--ss-font-weight-bold);
   line-height: 1.1;
   color: var(--ss-color-primary);
 }
@@ -800,18 +813,17 @@
 }
 
 .heroNextLabel {
-  font-size: var(--ss-text-xs);
+  font-size: 0.65rem;
   font-weight: var(--ss-font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: var(--ss-tracking-label);
-  line-height: var(--ss-leading-compact);
+  letter-spacing: 0.1em;
   color: var(--ss-color-disabled-text);
 }
 
 .heroNextName {
-  font-size: clamp(var(--ss-text-lg), 4.5vw, var(--ss-text-2xl));
+  font-size: clamp(1.25rem, 4.5vw, 2.25rem);
   font-weight: var(--ss-font-weight-bold);
-  line-height: var(--ss-leading-compact);
+  line-height: 1.1;
   color: color-mix(in srgb, var(--ss-color-primary) 72%, transparent);
   max-width: 100%;
   overflow: hidden;
@@ -984,7 +996,7 @@
 
 .cycleCellSymbol {
   font-size: min(2.25rem, calc(var(--phrase-bar-size) * 0.32));
-  font-weight: 800;
+  font-weight: var(--ss-font-weight-bold);
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
@@ -1135,22 +1147,20 @@
 
 .drumsHeroEyebrow {
   margin: 0;
-  font-size: clamp(var(--ss-text-md), 2.5vw, var(--ss-text-lg));
-  font-weight: var(--ss-font-weight-medium);
-  letter-spacing: var(--ss-tracking-label);
-  line-height: var(--ss-leading-compact);
+  font-size: clamp(1rem, 2.5vw, 1.35rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
 }
 
 .drumsHeroSection {
   margin: 0;
-  font-size: clamp(var(--ss-text-2xl), 12vw, 5rem);
+  font-size: clamp(2.75rem, 12vw, 5rem);
   font-weight: var(--ss-font-weight-bold);
-  line-height: var(--ss-leading-compact);
+  line-height: 1.05;
   color: var(--client-drums);
   text-transform: uppercase;
-  letter-spacing: var(--ss-tracking-label);
+  letter-spacing: 0.06em;
 }
 
 .drumsHeroCountdown .drumsHeroSection {
@@ -1158,16 +1168,15 @@
 }
 
 .drumsHeroCountdownNumber .drumsHeroSection {
-  font-size: clamp(var(--ss-text-3xl), 24vw, 10rem);
+  font-size: clamp(5rem, 24vw, 10rem);
   font-variant-numeric: tabular-nums;
-  letter-spacing: var(--ss-tracking-tight);
+  letter-spacing: 0.02em;
   text-transform: none;
 }
 
 .drumsHeroMeta {
   margin: 0;
-  font-size: clamp(var(--ss-text-lg), 4.5vw, var(--ss-text-2xl));
-  line-height: var(--ss-leading-tight);
+  font-size: clamp(1.35rem, 4.5vw, 2rem);
   color: var(--ss-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -1177,15 +1186,15 @@
 }
 
 .drumsHeroNote {
-  margin: var(--ss-space-1) 0 0;
+  margin: 0.35rem 0 0;
   max-width: 42rem;
-  padding: var(--ss-space-2) var(--ss-space-4);
-  border-radius: var(--ss-radius-md);
+  padding: 0.65rem 1rem;
+  border-radius: 0.75rem;
   border: 2px solid color-mix(in srgb, var(--client-drums) 45%, transparent);
   background: color-mix(in srgb, var(--client-drums) 8%, transparent);
-  font-size: clamp(var(--ss-text-md), 3.5vw, var(--ss-text-xl));
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
   font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-normal);
+  line-height: 1.35;
   color: color-mix(in srgb, var(--client-drums) 92%, white);
 }
 
@@ -1254,7 +1263,7 @@
 
 .drumsBeatNum {
   font-size: clamp(1rem, 4vw, 1.5rem);
-  font-weight: 800;
+  font-weight: var(--ss-font-weight-bold);
   font-variant-numeric: tabular-nums;
   color: var(--ss-color-text-muted);
   line-height: 1;
@@ -1368,7 +1377,7 @@
 
 .drumsFormSegName {
   font-size: clamp(1rem, 2.8vw, 1.45rem);
-  font-weight: 700;
+  font-weight: var(--ss-font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ss-color-primary);
@@ -1461,7 +1470,7 @@
 
 .drumsFormSegActive .drumsFormSegNote {
   color: color-mix(in srgb, var(--ss-color-primary) 88%, white);
-  font-weight: 600;
+  font-weight: var(--ss-font-weight-semibold);
 }
 
 .drumsFormSegCountdown .drumsFormSegNote,
@@ -1481,7 +1490,7 @@
   }
 
   .drumsHeroEyebrow {
-    font-size: var(--ss-text-sm);
+    font-size: 0.85rem;
   }
 
   .drumsHeroSection {
