@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~09:25 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -242,6 +242,19 @@ flowchart LR
 | [#113](https://github.com/Negatywistczny/stagesync/pull/113) | fix(shared): make HealthResponseSchema strict | https://github.com/Negatywistczny/stagesync/pull/113 | pending | `main` |
 | [#114](https://github.com/Negatywistczny/stagesync/pull/114) | fix(shared): make MIDI host status schemas strict | https://github.com/Negatywistczny/stagesync/pull/114 | pending | `main` |
 
+### Wave 19–20 (morning ~08:30–09:25 CEST — through #392)
+
+Prefer this over #297/#310/#334 for resume. Musts **#53–#60** still OPEN + CI green.
+
+| Band | Themes (open; no merge) |
+|------|-------------------------|
+| [#345](https://github.com/Negatywistczny/stagesync/pull/345)–[#357](https://github.com/Negatywistczny/stagesync/pull/357) | DATA/STATIC/SEED dir resolve; error slices; Forma pencil name; soft-clock |
+| [#359](https://github.com/Negatywistczny/stagesync/pull/359)–[#372](https://github.com/Negatywistczny/stagesync/pull/372) | RateMeter; sendError; WS stage_cue/inbound; presence/setlist/maps; handoff docs |
+| [#373](https://github.com/Negatywistczny/stagesync/pull/373)–[#384](https://github.com/Negatywistczny/stagesync/pull/384) | LAN/MIDI ports/UpdateStatus/SSE clients; metronome/wand/UG/stage TTL; audio LRU |
+| [#385](https://github.com/Negatywistczny/stagesync/pull/385)–[#392](https://github.com/Negatywistczny/stagesync/pull/392) | chord/cue/setlist warnings; legacy warnings; HOSTNAME; tap/snap; openExternalUrl |
+
+**Rules:** no merge to `main`, no `v5.0.0` tag, no G1–G10 HW green claims.
+
 ### Parallel (other agents)
 
 | # | Note |
@@ -255,7 +268,7 @@ flowchart LR
 - Stack: **#100** after **#98**; **#84** after/with **#63**.
 - C-fade stack: #57→#58 before #64/#66.
 
-Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116) (MIDI status strict / UpdateStatus strict / Client role no-emoji).
+Recent: prefer handoff **wave 19–20** above (#345–#392). Earlier: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116).
 
 ### Remaining backlog (ranked)
 
