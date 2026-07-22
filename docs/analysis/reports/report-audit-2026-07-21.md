@@ -5,7 +5,7 @@
 **Metoda:** deep-read + repro · bez fixów · bez commitów  
 **Runbook:** `working/working-audit-2026-07-21-runbook.md` (notatka robocza, poza git)  
 **Testy @02:08:** lint **PASS** · `pnpm test` **PASS** (server 44 / web 139 / shared+ui) · H03+H04 FIXED  
-**Baza:** [report-overnight-audit.md](./report-overnight-audit.md) · [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md)
+**Baza:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md)
 
 > Evidence: F01–F302 (notatki robocze lokalne, poza git; patrz runbook).
 

@@ -64,4 +64,4 @@ Admin **Set** i **inspector plików** są podłączone do serwera; użytkownik i
 
 ## Kolejność PR
 
-Zob. [report-implementation-plan-alpha6.md](./report-implementation-plan-alpha6.md).
+Zamknięte — historia w [CHANGELOG.md](../../../CHANGELOG.md).

@@ -1,7 +1,8 @@
 # QA sign-off — alpha.8
 
 **Cel:** zamknięcie `5.0.0-alpha.8` — smoke przed tagiem.  
-**Scope:** [report-scope-alpha8.md](./report-scope-alpha8.md) · [plan](./report-implementation-plan-alpha8.md).  
+**Scope:** [report-scope-alpha8.md](./report-scope-alpha8.md) · [freeze](./report-alpha8-code-freeze.md).  
+
 **Data:** 2026-07-20.
 
 ## CI

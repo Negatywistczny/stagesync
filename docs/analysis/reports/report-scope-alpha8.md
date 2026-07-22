@@ -12,7 +12,7 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 
 | # | Wycinek | Kryterium done |
 |---|---------|----------------|
-| M1 | **Scope + plan** | Ten raport + [report-implementation-plan-alpha8.md](./report-implementation-plan-alpha8.md); ROADMAP α8/α9/β1; TODO = wyłącznie α8 |
+| M1 | **Scope + plan** | Ten raport; ROADMAP α8/α9/β1; TODO = wyłącznie α8 |
 | M2 | **Akordy lane** | Pencil click (+ drag 1 clip = 1 akord); select; Delete/eraser; inspector `symbol`; no-overlap jak Forma; Client **grid** czyta clipy |
 | M3 | **Cue lane** | Pencil click; select; Delete; inspector `label`; Client cue toast nadal z Host; lane render clipów |
 | M4 | **Scissors Forma** | Split zaznaczonego / @ snap pod playhead/klik; Countdown nietykalny; shared helper + Vitest |
@@ -83,4 +83,4 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 
 ## Kolejność PR
 
-Zob. [report-implementation-plan-alpha8.md](./report-implementation-plan-alpha8.md).
+Zamknięte — historia w [CHANGELOG.md](../../../CHANGELOG.md) · freeze: [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md).
