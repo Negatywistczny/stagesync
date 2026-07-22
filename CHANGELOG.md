@@ -10,10 +10,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
+- **Parity P1:** schowek ⌘C/X/V/D także dla klipów audio; skrót **M** = mute zaznaczonej ścieżki audio (dock); badge **Live playhead** w statusie Timeline; banner multi-select w Inspectorze; Pomoc zaktualizowana (⌘S, Tap, Zoom, różdżka, audio, M).
 - **Parity closeout:** narzędzia Tap i Zoom (+ Ctrl+Alt hold-zoom); skróty różdżki 1/2/3; picker snap (off/takt/beat/subdivision) z zapisem sesji; start clipu w Inspectorze jako takt.beat; meta okładki (URL).
 - **Mobile — inspector:** na telefonie (≤768px) Właściwości jako dolny sheet (Metadane / zaznaczenie klipu lub mapy) z Zamknij i tłem — collapsible bottom sheet na `main`; desktop bez zmian układu.
 - **Tablet — nudge i gesty ([#473](https://github.com/Negatywistyczny/stagesync/pull/473)):** pasek ◀▶ + 4 przyciski krawędzi (stretch in/out) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom na osi czasu.
-- **Różdżka:** z powrotem w toolbarze / skrót W — Tekst→Forma, Akordy→Forma lub obie; zakres = zaznaczone sekcje Formy.
+- **Różdżka:** z powrotem w toolbarze / skrót W — rozmieszcza Tekst/Akordy wg sekcji Formy (1/2/3); zakres = zaznaczone sekcje lub clipy treści; Forma bez zmian.
 - **MIDI playhead:** opcjonalny wskaźnik w Wygląd (zapamiętywany lokalnie).
 - **Inspector audio ([#428](https://github.com/Negatywistyczny/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.
 - **Linijka ([#61](https://github.com/Negatywistyczny/stagesync/pull/61)):** góra — takty + region pętli (klik = cycle); dół — beaty + scrub playheada.
@@ -39,6 +40,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client — partytura ([#465](https://github.com/Negatywistyczny/stagesync/pull/465)):** render MusicXML (OSMD) z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika; wybór widocznych partii oraz oktawa (−1/0/+1) z Live Desk transpose.
 - **Client — strój i Formy:** C / B♭ / E♭ / ręczna (−6…+6); polskie nazwy sekcji Formy; Karaoke/Grid z live transpozycją akordów (w tym zespołową).
 - **Client — tap wokalu:** ↑/↓ przełącza linię kolejki (obok Spacji).
+- **Client — Karaoke remote edit:** przy Live Desk „edycja zdalna” linie tekstu są edytowalne (textarea → `putProject`).
 - **Chrome ([#443](https://github.com/Negatywistyczny/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
 
@@ -84,6 +86,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
+- **Różdżka:** rozmieszcza Tekst/Akordy wg istniejących sekcji Formy (jak v4); Forma, Countdown i cyfry CD pozostają bez zmian.
 - **Pomoc i i18n:** skróty zsynchronizowane z kodem (schowek, zoom, Fit Zoom, nożyczki, pętla); polskie etykiety narzędzi; usunięty zbędny lead o v4/OUT.
 - **Metrum i snap:** zmiana metrum od Taktu 1 przelicza przedtakt; snap do beatu odcinkowo po mapie metrum.
 - **Chrome Timeline:** przywrócony układ tools | transport | utwór; wyśrodkowany przycisk oka w docku; playhead/locator od górnej krawędzi pasa beatów; suwaki zoom w kolorze primary.

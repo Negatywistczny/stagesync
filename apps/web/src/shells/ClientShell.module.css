@@ -652,6 +652,29 @@
     color-mix(in srgb, var(--ss-color-primary) 40%, transparent);
 }
 
+.karaokeLineEdit {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
+  padding: var(--ss-space-2) var(--ss-space-3);
+  font: inherit;
+  color: inherit;
+  text-shadow: none;
+}
+
+.karaokeLineEdit:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.karaokeLineEdit.karaokeLineActive {
+  text-shadow: none;
+}
+
 .empty {
   margin: var(--ss-space-8) 0;
   text-align: center;

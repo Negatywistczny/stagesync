@@ -287,7 +287,6 @@ import {
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
 import {
-  isDesktopShell,
   toggleAppFullscreen,
   syncEditHistoryState,
   syncNavRecentProjects,
@@ -685,6 +684,8 @@ export function TimelineShell() {
   const draftRef = useRef<Project | null>(null);
   const clipSelectionRef = useRef(clipSelection);
   clipSelectionRef.current = clipSelection;
+  const trackSelectionRef = useRef(trackSelection);
+  trackSelectionRef.current = trackSelection;
   const viewSpanRef = useRef({ start: 0, end: 0 });
   const barTicksRef = useRef(3840);
   const zoomHRef = useRef(DEFAULT_PX_PER_BAR);
@@ -997,7 +998,7 @@ export function TimelineShell() {
     if (!draft || !clipSelection.items.length) return false;
     // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
     const lane = primaryLane(clipSelection);
-    if (!lane || isAudioSelectionLane(lane)) return false;
+    if (!lane) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
     let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
     if (lane === "forma") {
@@ -1010,6 +1011,11 @@ export function TimelineShell() {
       clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
     } else if (lane === "cue") {
       clips = draft.cue.clips.filter((c) => idSet.has(c.id));
+    } else if (isAudioSelectionLane(lane)) {
+      const trackId = audioTrackIdFromLane(lane);
+      clips = draft.audioClips.filter(
+        (c) => idSet.has(c.id) && (!trackId || c.trackId === trackId),
+      );
     } else {
       return false;
     }
@@ -1063,7 +1069,17 @@ export function TimelineShell() {
           ? draft.tekst.clips.filter((c) => idSet.has(c.id))
           : lane === "akordy"
             ? draft.akordy.clips.filter((c) => idSet.has(c.id))
-            : draft.cue.clips.filter((c) => idSet.has(c.id));
+            : lane === "cue"
+              ? draft.cue.clips.filter((c) => idSet.has(c.id))
+              : isAudioSelectionLane(lane)
+                ? draft.audioClips.filter((c) => {
+                    const trackId = audioTrackIdFromLane(lane);
+                    return (
+                      idSet.has(c.id) && (!trackId || c.trackId === trackId)
+                    );
+                  })
+                : [];
+    if (!clips.length) return false;
     return pasteClipClipboard(selectionMaxEndTicks(clips));
   }, [clipSelection, copyClipSelection, pasteClipClipboard]);
 
@@ -1252,6 +1268,18 @@ export function TimelineShell() {
       if (!mod && !e.altKey && key === "k") {
         e.preventDefault();
         void h.onMetronomeToggle();
+        return;
+      }
+      if (!mod && !e.altKey && key === "m") {
+        const draft = draftRef.current;
+        const trackId = trackSelectionRef.current.audioTrackId;
+        if (draft && trackId) {
+          e.preventDefault();
+          const track = draft.audioTracks.find((t) => t.id === trackId);
+          if (track) {
+            commitDraft(setAudioTrackMuted(draft, trackId, !track.muted));
+          }
+        }
         return;
       }
       if (!mod && !e.altKey && key === "z") {
@@ -1578,6 +1606,14 @@ export function TimelineShell() {
       ? scoreAnchors(draftProject).find((a) => a.id === selectedAnchorId) ??
         null
       : null;
+
+  const multiClipCount = clipSelection.items.length;
+  const multiClipBanner =
+    multiClipCount > 1 ? (
+      <p className={styles.inspMulti}>
+        Zaznaczono {multiClipCount} · edycja: aktywny clip / Delete
+      </p>
+    ) : null;
 
   /** Same conditions that populate the desktop inspector (not the empty hint). */
   const inspectorOpen =
@@ -5269,6 +5305,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedTekstClip ? (
               <div className={styles.inspBody}>
+                {multiClipBanner}
                 <label className={styles.inspField}>
                   Tekst linii
                   <textarea
@@ -5329,6 +5366,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedAkordClip ? (
               <div className={styles.inspBody}>
+                {multiClipBanner}
                 <label className={styles.inspField}>
                   Symbol akordu
                   <input
@@ -5388,6 +5426,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedCueClip ? (
               <div className={styles.inspBody}>
+                {multiClipBanner}
                 <label className={styles.inspField}>
                   Etykieta cue
                   <input
@@ -5544,6 +5583,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedAudioClip ? (
               <div className={styles.inspBody}>
+                {multiClipBanner}
                 <p className={styles.muted}>Klip audio</p>
                 <p className={styles.muted}>
                   {draftProject?.assets.find(
@@ -5774,6 +5814,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedClip ? (
               <div className={styles.inspBody}>
+                {multiClipBanner}
                 {selectedClip.kind === "section" ? (
                   <label className={styles.inspField}>
                     Nazwa sekcji
@@ -5967,6 +6008,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 ? "Łączenie…"
                 : "Rozłączony"}
           </span>
+          {projectId && state.activeProjectId === projectId ? (
+            <span
+              className={styles.liveBadge}
+              data-playing={state.playing ? "true" : undefined}
+              title="Ten utwór jest aktywny na transporcie (Live Desk)"
+            >
+              Live playhead
+            </span>
+          ) : null}
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom i snap">
           <label className={styles.snapPicker}>

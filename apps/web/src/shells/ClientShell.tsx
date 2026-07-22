@@ -33,6 +33,7 @@ import {
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
 import { putProject } from "../lib/libraryApi.js";
 import { fetchSetlist } from "../lib/setlistApi.js";
+import { setTekstClipText } from "../lib/tekstEdit.js";
 import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -568,6 +569,21 @@ export function ClientShell() {
                   teamSemitones={liveDesk.transpositionSemitones}
                   vocalTapOn={vocalTapOn && liveDesk.clientEditEnabled}
                   vocalTapIndex={vocalTapIndex}
+                  linesEdit={liveDesk.clientEditEnabled}
+                  onLineChange={(clipId, text) => {
+                    if (
+                      !activeProject ||
+                      !state.activeProjectId ||
+                      !liveDesk.clientEditEnabled
+                    )
+                      return;
+                    const prev = activeProject;
+                    const next = setTekstClipText(activeProject, clipId, text);
+                    setActiveProject(next);
+                    void putProject(state.activeProjectId, next)
+                      .then((saved) => setActiveProject(saved))
+                      .catch(() => setActiveProject(prev));
+                  }}
                   onVocalTap={() => {
                     if (
                       !activeProject ||

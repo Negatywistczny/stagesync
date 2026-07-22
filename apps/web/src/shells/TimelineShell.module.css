@@ -1957,6 +1957,22 @@
   color: var(--ss-color-text-muted);
 }
 
+.liveBadge {
+  flex-shrink: 0;
+  padding: 0 var(--ss-space-2);
+  border: 1px solid var(--ss-color-info);
+  border-radius: var(--ss-radius-sm);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-label);
+  color: var(--ss-color-info);
+}
+
+.liveBadge[data-playing="true"] {
+  background: color-mix(in srgb, var(--ss-color-info) 18%, transparent);
+}
+
 .statusGroup {
   display: flex;
   flex-direction: column;

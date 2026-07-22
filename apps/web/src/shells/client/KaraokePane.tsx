@@ -27,6 +27,9 @@ type KaraokePaneProps = {
   vocalTapIndex?: number;
   onVocalTap?: () => void;
   onVocalTapStep?: (dir: -1 | 1) => void;
+  /** Live Desk remote edit — textarea per lyric line. */
+  linesEdit?: boolean;
+  onLineChange?: (clipId: string, text: string) => void;
 };
 
 function readAutoScroll(): boolean {
@@ -125,6 +128,8 @@ export function KaraokePane({
   vocalTapIndex = 0,
   onVocalTap,
   onVocalTapStep,
+  linesEdit = false,
+  onLineChange,
 }: KaraokePaneProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const activeRef = useRef<HTMLElement | null>(null);
@@ -300,20 +305,40 @@ export function KaraokePane({
                   />
                   {sec.lines.length > 0 ? (
                     <div className={styles.karaokeSectionLines}>
-                      {sec.lines.map((line) => (
-                        <p
-                          key={line.id}
-                          ref={bindActiveRef(line.active)}
-                          className={[
-                            styles.karaokeLine,
-                            line.active ? styles.karaokeLineActive : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        >
-                          {line.text}
-                        </p>
-                      ))}
+                      {sec.lines.map((line) =>
+                        linesEdit && onLineChange ? (
+                          <textarea
+                            key={line.id}
+                            ref={bindActiveRef(line.active)}
+                            className={[
+                              styles.karaokeLine,
+                              styles.karaokeLineEdit,
+                              line.active ? styles.karaokeLineActive : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            value={line.text}
+                            aria-label="Edycja linii tekstu"
+                            rows={Math.max(1, line.text.split("\n").length)}
+                            onChange={(e) =>
+                              onLineChange(line.id, e.target.value)
+                            }
+                          />
+                        ) : (
+                          <p
+                            key={line.id}
+                            ref={bindActiveRef(line.active)}
+                            className={[
+                              styles.karaokeLine,
+                              line.active ? styles.karaokeLineActive : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          >
+                            {line.text}
+                          </p>
+                        ),
+                      )}
                     </div>
                   ) : null}
                 </section>

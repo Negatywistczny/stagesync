@@ -18,6 +18,7 @@ const SECTIONS: HelpSection[] = [
       "Zapisz / Odrzuć — zapis lub cofnięcie lokalnych zmian na serwerze. Undo / Redo dostępne ze skrótów ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z lub z natywnego menu Edycja.",
       "Metadane (ikona info) — tytuł, PC, tempo domyślne, tonacja startowa, artysta, gatunek.",
       "Linki Admin / Klient w statusie — przełączenie widoku (bez labowego ShellNav).",
+      "Live playhead — badge w statusie, gdy otwarty utwór = aktywny na transporcie.",
     ],
   },
   {
@@ -35,9 +36,10 @@ const SECTIONS: HelpSection[] = [
       "Pointer / Smart — zaznacz, przesuń, zmień długość (strefy na brzegach).",
       "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
-      "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
-      "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
-      "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
+      "Scissors — Forma: podsekcja wewnątrz sekcji (także klik pustego lane pod kursorem); Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
+      "Zoom — narzędzie Zoom (prostokąt / klik tła = Fit) + suwaki H / V / UI; Ctrl+Alt = chwilowy Zoom.",
+      "Różdżka (W) — rozmieść Tekst / Akordy wg sekcji Formy (1 / 2 / 3); Forma bez zmian; zaznaczenie = zakres.",
+      "Tap (A) — kolejka linii Tekstu; Spacja = start @ locator; ↑/↓ = poprzednia/następna linia.",
     ],
   },
   {
@@ -45,7 +47,7 @@ const SECTIONS: HelpSection[] = [
     items: [
       "Play / Pause i Stop — pasek transportu.",
       "Pętla (C / L) — przeciągnij zakres na linijce taktów, potem włącz przyciskiem lub skrótem.",
-      "Metronom — włącz/wyłącz podczas odtwarzania.",
+      "Metronom — włącz/wyłącz podczas odtwarzania (głośność w Preferencjach).",
       "Podążaj za wskaźnikiem — podczas Play przewija widok.",
       "Tempo / Metrum / Tonacja na toolbarze — edycja @ playhead; na lane’ach — Pencil / klik segmentu / Scissors.",
     ],
@@ -55,15 +57,16 @@ const SECTIONS: HelpSection[] = [
     items: [
       "Locator — klik w linijkę taktów lub przeciągnij marker.",
       "Playhead — pozycja transportu serwera (SSOT); klient tylko wygładza między tickami.",
+      "Dwuklik klipu — fokus panelu Właściwości (tablet: double-tap osi = Fit Zoom).",
     ],
   },
   {
     title: "Zaznaczanie i edycja",
     items: [
       "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
-      "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi.",
+      "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi; single-move przesuwa też późniejsze sekcje.",
       "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
-      "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; bez pencil; playback sync z transportem. Przeciąganie krawędzi zmienia Trim In/Out, uchwyty na klipie kontrolują Fade In/Out, przyciski S / M na docku włączają Solo / Mute ścieżki.",
+      "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; schowek ⌘C/V/D; M = mute zaznaczonej ścieżki; S / M na docku = Solo / Mute.",
     ],
   },
 ];
@@ -73,9 +76,10 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
     {
       heading: "Transport",
       rows: [
-        { keys: "Spacja", action: "Play / Pause" },
+        { keys: "Spacja", action: "Play / Pause (w narzędziu Tap: mark linii)" },
         { keys: "C / L", action: "Pętla / Cycle on/off" },
         { keys: "K", action: "Metronom on/off" },
+        { keys: "M", action: "Mute zaznaczonej ścieżki audio (dock)" },
       ],
     },
     {
@@ -89,16 +93,28 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
     {
       heading: "Narzędzia",
       rows: [
-        { keys: "T, a następnie C", action: "Wybranie narzędzia Nożyczki" },
-        { keys: "?", action: "Przełącz tę pomoc" },
-        { keys: "Esc", action: "Zamknij overlay / menu" },
+        { keys: "T", action: "Menu narzędzi przy kursorze" },
+        {
+          keys: "T, potem litera",
+          action:
+            "Wskaźnik T · Inteligentny S · Ołówek P · Gumka E · Nożyczki C · Zoom Z · Różdżka W · Tap A",
+        },
+        { keys: "W", action: "Różdżka — menu; 1 Tekst→Forma, 2 Akordy→Forma, 3 obie" },
+        { keys: "1 / 2 / 3", action: "(menu Różdżki) Tekst / Akordy / obie" },
+        { keys: "A", action: "Narzędzie Tap" },
+        { keys: "↑ / ↓ (Tap)", action: "Poprzednia / następna linia Tekstu" },
+        { keys: "Esc (Tap)", action: "Wróć do Wskaźnika" },
+        { keys: "⌃/Ctrl+⌥/Alt", action: "Chwilowy Zoom (przytrzymaj)" },
+        { keys: "?", action: "Otwórz tę pomoc" },
+        { keys: "Esc", action: "Zamknij overlay / menu / Tap" },
         { keys: "⌘/Ctrl przy drag", action: "Snap off" },
       ],
     },
     {
       heading: "Edycja i schowek",
       rows: [
-        { keys: "⌘/Ctrl+C", action: "Kopiuj zaznaczone klipy" },
+        { keys: "⌘/Ctrl+S", action: "Zapisz (gdy są niezapisane zmiany)" },
+        { keys: "⌘/Ctrl+C", action: "Kopiuj zaznaczone klipy (w tym audio)" },
         { keys: "⌘/Ctrl+X", action: "Wytnij zaznaczone klipy" },
         { keys: "⌘/Ctrl+V", action: "Wklej w pozycji wskaźnika (locatora)" },
         { keys: "⌘/Ctrl+D", action: "Duplikuj zaznaczone klipy" },
@@ -106,7 +122,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
           keys: "Delete / Backspace",
           action: "Usuń zaznaczony klip lub zdarzenie mapy",
         },
-        { keys: "⌘/Ctrl+Z", action: "Undo" },
+        { keys: "⌘/Ctrl+Z", action: "Undo (z zaznaczeniem)" },
         { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
       ],
     },
