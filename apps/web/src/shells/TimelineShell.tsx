@@ -379,6 +379,7 @@ export function TimelineShell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
+  const [songPickerFilter, setSongPickerFilter] = useState("");
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
@@ -644,15 +645,24 @@ export function TimelineShell() {
   }, [projectId, draftProject?.name]);
 
   useEffect(() => {
-    if (!songScreenOpen) return;
+    if (!songScreenOpen) {
+      setSongPickerFilter("");
+      return;
+    }
+    let cancelled = false;
     void (async () => {
       try {
         const lib = await fetchLibrary();
-        setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
+        if (!cancelled) {
+          setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
+        }
       } catch {
-        setLibraryNames([]);
+        if (!cancelled) setLibraryNames([]);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [songScreenOpen]);
 
   useEffect(() => {
@@ -5154,8 +5164,29 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
+              <input
+                className={styles.nameInput}
+                type="search"
+                placeholder="Filtruj…"
+                value={songPickerFilter}
+                onChange={(e) => setSongPickerFilter(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape" && songPickerFilter) {
+                    e.preventDefault();
+                    setSongPickerFilter("");
+                  }
+                }}
+                aria-label="Filtruj utwory"
+                autoFocus
+              />
               <ul className={styles.songList}>
-                {libraryNames.map((p) => (
+                {libraryNames
+                  .filter((p) => {
+                    const q = songPickerFilter.trim().toLowerCase();
+                    if (!q) return true;
+                    return p.name.toLowerCase().includes(q);
+                  })
+                  .map((p) => (
                   <li key={p.id}>
                     <Link
                       to={`/timeline/${p.id}`}
