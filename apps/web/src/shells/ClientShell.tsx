@@ -611,16 +611,30 @@ function ClientChrome({
 
 const PITCH_OPTIONS: {
   id: InstrumentPitchMode;
+  icon: string;
   label: string;
   title: string;
+  manualIcon?: boolean;
 }[] = [
-  { id: "concert", label: "C", title: "Strój koncertowy (C)" },
-  { id: "bb", label: "B♭", title: "Instrument B♭ — korekta +2 półtony" },
-  { id: "eb", label: "E♭", title: "Instrument E♭ — korekta +9 półtonów" },
+  { id: "concert", icon: "🎹", label: "C", title: "Strój koncertowy (C)" },
+  {
+    id: "bb",
+    icon: "🎺",
+    label: "B♭",
+    title: "Instrument B♭ — korekta +2 półtony",
+  },
+  {
+    id: "eb",
+    icon: "🎷",
+    label: "E♭",
+    title: "Instrument E♭ — korekta +9 półtonów",
+  },
   {
     id: "manual",
-    label: "±",
+    icon: "±",
+    label: "Ręczna",
     title: "Ręczna — korekta −6…+6 półtonów",
+    manualIcon: true,
   },
 ];
 
@@ -641,21 +655,38 @@ function GlobalSettingsFields({
         role="group"
         aria-label="Strój instrumentu transponującego"
       >
-        {PITCH_OPTIONS.map((opt) => (
-          <Button
-            key={opt.id}
-            variant="ghost"
-            selected={prefs.instrumentPitch === opt.id}
-            title={opt.title}
-            aria-label={opt.title}
-            onClick={() => {
-              setInstrumentPitch(opt.id);
-              onPrefsChange({ ...prefs, instrumentPitch: opt.id });
-            }}
-          >
-            {opt.label}
-          </Button>
-        ))}
+        {PITCH_OPTIONS.map((opt) => {
+          const on = prefs.instrumentPitch === opt.id;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              className={[styles.pitchOption, on ? styles.pitchOptionOn : ""]
+                .filter(Boolean)
+                .join(" ")}
+              title={opt.title}
+              aria-label={opt.title}
+              aria-pressed={on}
+              onClick={() => {
+                setInstrumentPitch(opt.id);
+                onPrefsChange({ ...prefs, instrumentPitch: opt.id });
+              }}
+            >
+              <span
+                className={[
+                  styles.pitchIcon,
+                  opt.manualIcon ? styles.pitchIconManual : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                aria-hidden
+              >
+                {opt.icon}
+              </span>
+              <span className={styles.pitchLabel}>{opt.label}</span>
+            </button>
+          );
+        })}
       </div>
       {prefs.instrumentPitch === "manual" ? (
         <label className={styles.field}>
