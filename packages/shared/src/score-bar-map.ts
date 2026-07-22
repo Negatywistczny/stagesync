@@ -58,10 +58,12 @@ export function normalizeAnchors(
     }))
     .sort((a, b) => a.logicBar - b.logicBar);
 
-  return anchors.filter(
-    (anchor, index) =>
-      index === 0 || anchor.logicBar > anchors[index - 1]!.logicBar,
-  );
+  return anchors
+    .filter(
+      (anchor, index) =>
+        index === 0 || anchor.logicBar > anchors[index - 1]!.logicBar,
+    )
+    .slice(0, 64);
 }
 
 export function normalizeMap(
