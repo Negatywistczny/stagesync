@@ -565,34 +565,32 @@ export function AdminShell() {
               disabled={!selectedId || commandPending || !ugText.trim()}
               loading={commandPending}
               onClick={() => {
-                void (async () => {
-                  if (!selectedId) return;
-                  setCommandPending(true);
+                if (!selectedId) return;
+                void runMutation(async () => {
                   setUgError(null);
+                  const project = await fetchProject(selectedId);
+                  const result = importUgText(ugText, {
+                    ppq: project.ppq,
+                    meter: resolveMeterAt(project, 0),
+                  });
+                  if (!result.ok) {
+                    setUgError(result.message);
+                    return;
+                  }
                   try {
-                    const project = await fetchProject(selectedId);
-                    const result = importUgText(ugText, {
-                      ppq: project.ppq,
-                      meter: resolveMeterAt(project, 0),
-                    });
-                    if (!result.ok) {
-                      setUgError(result.message);
-                      return;
-                    }
                     await putProject(selectedId, {
                       ...project,
                       tekst: result.tekst,
                       akordy: result.akordy,
                     });
-                    setImportModalOpen(false);
-                    setUgText("");
-                    await refreshLibrary(selectedId);
                   } catch (err) {
                     setUgError(errMessage(err));
-                  } finally {
-                    setCommandPending(false);
+                    throw err;
                   }
-                })();
+                  setImportModalOpen(false);
+                  setUgText("");
+                  await refreshLibrary(selectedId);
+                });
               }}
             >
               Importuj do utworu
