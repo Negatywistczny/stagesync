@@ -393,7 +393,10 @@ export type ApiError = z.infer<typeof ApiErrorSchema>;
 
 export const StageMessageBodySchema = z.object({
   text: z.string().min(1).max(200),
-  roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
+  roles: z
+    .array(z.enum(["karaoke", "grid", "score", "drums"]))
+    .max(4)
+    .optional(),
   ttlMs: z.number().int().positive().optional(),
 });
 
