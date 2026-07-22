@@ -1084,6 +1084,7 @@ function HostView({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const midiBusyRef = useRef(false);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
@@ -1145,6 +1146,8 @@ function HostView({
       outputId?: string | null;
       clockOutEnabled?: boolean;
     }) => {
+      if (midiBusyRef.current) return;
+      midiBusyRef.current = true;
       setMidiBusy(true);
       try {
         const status = await putMidiHostConfig(patch);
@@ -1153,6 +1156,7 @@ function HostView({
       } catch (err) {
         setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
       } finally {
+        midiBusyRef.current = false;
         setMidiBusy(false);
       }
     },
@@ -1597,6 +1601,7 @@ function HostSettingsModal({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const midiBusyRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -1620,6 +1625,8 @@ function HostSettingsModal({
     outputId?: string | null;
     clockOutEnabled?: boolean;
   }) => {
+    if (midiBusyRef.current) return;
+    midiBusyRef.current = true;
     setMidiBusy(true);
     try {
       const status = await putMidiHostConfig(patch);
@@ -1628,6 +1635,7 @@ function HostSettingsModal({
     } catch (err) {
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
     } finally {
+      midiBusyRef.current = false;
       setMidiBusy(false);
     }
   };
