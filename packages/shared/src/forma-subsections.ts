@@ -35,6 +35,7 @@ export function subsectionMaxChunkTicks(
  * v4 `defaultSubsections4Bar` as relative interior offsets.
  * Split every `maxChunkTicks` from clip start; last span may be shorter.
  * Sections ≤ one chunk → `[]` (single implicit band — same as v4 whole-section range).
+ * Cap at 64 boundaries so absurd `lengthTicks` cannot DOS write/upgrade paths.
  */
 export function defaultSubsections4Bar(
   lengthTicks: number,
@@ -45,6 +46,7 @@ export function defaultSubsections4Bar(
   const out: number[] = [];
   for (let t = chunk; t < len; t += chunk) {
     out.push(t);
+    if (out.length >= 64) break;
   }
   return out;
 }
