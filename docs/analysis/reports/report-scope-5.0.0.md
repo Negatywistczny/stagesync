@@ -176,9 +176,35 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~03:30 CEST)
 
-**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
+**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**. Prefer **ten** handoff nad #205/#213/#223.
+
+### Wave 13 (~03:24–03:30) — race guards + audit backlog
+
+| # | Temat | URL | CI |
+|---|--------|-----|----|
+| [#234](https://github.com/Negatywistyczny/stagesync/pull/234) | fix(admin): MIDI host config busy refs | https://github.com/Negatywistyczny/stagesync/pull/234 | pending→watch |
+| [#235](https://github.com/Negatywistyczny/stagesync/pull/235) | fix(web): Timeline auto-advance pending ref | https://github.com/Negatywistyczny/stagesync/pull/235 | pending→watch |
+| [#236](https://github.com/Negatywistyczny/stagesync/pull/236) | fix(admin): host log clear pending ref | https://github.com/Negatywistyczny/stagesync/pull/236 | pending→watch |
+| [#237](https://github.com/Negatywistyczny/stagesync/pull/237) | fix(admin): update check/apply pending refs | https://github.com/Negatywistyczny/stagesync/pull/237 | pending→watch |
+| [#238](https://github.com/Negatywistyczny/stagesync/pull/238) | fix(admin): UG import via runMutation | https://github.com/Negatywistyczny/stagesync/pull/238 | pending→watch |
+
+**Waves 10–12 (prefer latest):** [#194](https://github.com/Negatywistyczny/stagesync/pull/194)–[#233](https://github.com/Negatywistyczny/stagesync/pull/233) — see [#223](https://github.com/Negatywistyczny/stagesync/pull/223) for table through #222; #224–#233 continue Zod/race/OCC.
+
+### Ranked next PRs (post-must audit, ~03:30)
+
+| Rank | Temat | Notes |
+|------|--------|-------|
+| 1 | Fix any **red CI** on #194–#238 | Follow-up commits; no amend-after-push |
+| 2 | Behavioral/UX over more Zod `.max()` | Prefer race/OCC/banner; Zod caps mostly shipped |
+| 3 | Merge stacks (operator, not overnight) | C-fade: #57→#58→#64/#66; cue: #130→#209→#211; AA: #73+#121 |
+| 4 | Admin density deep-pass | Beyond #82/#95/#136/#137; one theme |
+| 5 | ClientShell remaining token clamps | Pair with #90/#198 |
+| 6 | docs/api trackId after #60+#197 | Small docs PR once upload honor lands |
+| 7 | Playwright Forma drag matrix | Defer — #67 smoke exists |
+| 8 | Overlap / Flex Time / AD-01…03 | OUT / skip |
+| 9 | G1–G10 HW | Soft-gate only |
 
 ### Must A–E (#53–#60) — CI green
 
@@ -259,12 +285,14 @@ Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](h
 
 ### Remaining backlog (ranked)
 
-1. Admin density deep-pass beyond #82/#95
-2. Playwright Forma drag matrix — defer
-3. Overlap drag / Flex Time — OUT
-4. AD-01…03 — skip
-5. PDF setlist / archive — OUT
-6. Full auth / multi-user — 5.1+
+1. Keep shipping small 1-theme PRs until ~**10:00** (UTC+2).
+2. Fix **red CI** on newest PRs (#234–#238+).
+3. Admin density / panel UX deep-pass (beyond #82/#95).
+4. ClientShell typography clamps (pair #90/#198).
+5. docs/api trackId note after #60+#197.
+6. Playwright Forma drag matrix — defer (#67).
+7. Overlap / Flex Time / AD-01…03 — OUT / skip.
+8. Near **10:00**: final handoff with **all** PR URLs + CI; no merge/tag/G1–G10 green.
 
 ### Blokery
 
