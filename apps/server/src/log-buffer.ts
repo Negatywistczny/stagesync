@@ -10,8 +10,9 @@ export type LogLine = {
   msg: string;
 };
 
-export function createLogBuffer(options: { maxLines?: number } = {}) {
+export function createLogBuffer(options: { maxLines?: number; maxClients?: number } = {}) {
   const maxLines = options.maxLines ?? 200;
+  const maxClients = options.maxClients ?? 32;
   const lines: LogLine[] = [];
   const clients = new Set<Response>();
 
@@ -47,6 +48,9 @@ export function createLogBuffer(options: { maxLines?: number } = {}) {
       }
     },
     addSseClient(res: Response): () => void {
+      if (clients.size >= maxClients) {
+        return () => {};
+      }
       clients.add(res);
       for (const line of lines) {
         res.write(`data: ${JSON.stringify(line)}\n\n`);
