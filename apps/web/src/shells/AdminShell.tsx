@@ -144,6 +144,15 @@ export function AdminShell() {
       if (!next.get("section")) next.set("section", "host");
       setSearchParams(next, { replace: true });
     }
+    // Native menu: Host → Ustawienia…
+    if (searchParams.get("action") === "host-settings") {
+      setSection("host");
+      setSettingsOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("action");
+      if (!next.get("section")) next.set("section", "host");
+      setSearchParams(next, { replace: true });
+    }
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
