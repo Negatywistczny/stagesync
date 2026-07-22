@@ -24,6 +24,30 @@ import {
 
 export type ContentLaneId = "tekst" | "akordy" | "cue";
 
+/** Clip whose span covers `ticks` (half-open [start, start+length)). */
+export function contentClipCoveringTicks(
+  project: Project,
+  lane: ContentLaneId,
+  ticks: number,
+): { id: string; startTicks: number; lengthTicks: number } | null {
+  const clips =
+    lane === "tekst"
+      ? project.tekst.clips
+      : lane === "akordy"
+        ? project.akordy.clips
+        : project.cue.clips;
+  for (const c of clips) {
+    if (ticks >= c.startTicks && ticks < c.startTicks + c.lengthTicks) {
+      return {
+        id: c.id,
+        startTicks: c.startTicks,
+        lengthTicks: c.lengthTicks,
+      };
+    }
+  }
+  return null;
+}
+
 export function defaultPencilLabel(lane: ContentLaneId): string {
   if (lane === "tekst") return "…";
   if (lane === "akordy") return "C";
