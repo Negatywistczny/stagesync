@@ -394,7 +394,8 @@ export type ApiError = z.infer<typeof ApiErrorSchema>;
 export const StageMessageBodySchema = z.object({
   text: z.string().min(1).max(200),
   roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
-  ttlMs: z.number().int().positive().optional(),
+  /** Positive TTL capped at 24h; omit → server default. Pair with Admin ∞ = 0 (PR #130). */
+  ttlMs: z.number().int().positive().max(86_400_000).optional(),
 });
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;

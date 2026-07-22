@@ -8,6 +8,7 @@ import {
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
+  StageMessageBodySchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -163,6 +164,23 @@ describe("PutProjectBodySchema", () => {
     void id;
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
+    ).toThrow();
+  });
+});
+
+describe("StageMessageBodySchema", () => {
+  it("accepts ttlMs within 24h", () => {
+    expect(
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 10_000 }),
+    ).toEqual({ text: "Go!", ttlMs: 10_000 });
+  });
+
+  it("rejects ttlMs above 24h and non-positive", () => {
+    expect(() =>
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 86_400_001 }),
+    ).toThrow();
+    expect(() =>
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 0 }),
     ).toThrow();
   });
 });
