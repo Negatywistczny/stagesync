@@ -178,6 +178,9 @@ export {
   TransportLoopSchema,
   TransportLoopBodySchema,
   TransportTickMessageSchema,
+  StageCueMessageSchema,
+  TransportWsServerMessageSchema,
+  parseTransportTickPayload,
   DEFAULT_TRANSPORT_BPM,
   DEFAULT_TRANSPORT_METER,
   TRANSPORT_TICK_INTERVAL_MS,
@@ -191,6 +194,8 @@ export {
   type TransportLoop,
   type TransportLoopBody,
   type TransportTickMessage,
+  type StageCueMessage,
+  type TransportWsServerMessage,
 } from "./transport.js";
 
 export {

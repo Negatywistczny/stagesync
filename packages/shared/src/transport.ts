@@ -75,6 +75,48 @@ export const TransportTickMessageSchema = TransportStateSchema.extend({
 
 export type TransportTickMessage = z.infer<typeof TransportTickMessageSchema>;
 
+/** Outbound WS cue on `/ws/transport` (multiplexed with ticks). */
+export const StageCueMessageSchema = z.object({
+  type: z.literal("stage_cue"),
+  text: z.string().min(1).max(200),
+  roles: z
+    .array(z.enum(["karaoke", "grid", "score", "drums"]))
+    .max(4)
+    .optional(),
+  ttlMs: z.number().finite().positive(),
+  sentAtMs: z.number().finite(),
+});
+
+export type StageCueMessage = z.infer<typeof StageCueMessageSchema>;
+
+/** Server → client frames on `/ws/transport`. */
+export const TransportWsServerMessageSchema = z.discriminatedUnion("type", [
+  TransportTickMessageSchema,
+  StageCueMessageSchema,
+]);
+
+export type TransportWsServerMessage = z.infer<
+  typeof TransportWsServerMessageSchema
+>;
+
+/**
+ * Parse REST/WS tick payloads. Accepts a full tick, or a legacy bare
+ * `TransportState` (pre-envelope hosts) coerced to a tick with `serverTimeMs: 0`.
+ */
+export function parseTransportTickPayload(data: unknown): TransportTickMessage {
+  const asTick = TransportTickMessageSchema.safeParse(data);
+  if (asTick.success) return asTick.data;
+  const asState = TransportStateSchema.safeParse(data);
+  if (asState.success) {
+    return {
+      type: "transport_tick",
+      ...asState.data,
+      serverTimeMs: 0,
+    };
+  }
+  throw asTick.error;
+}
+
 export const DEFAULT_TRANSPORT_BPM = 120;
 export const DEFAULT_TRANSPORT_METER = {
   numerator: 4,

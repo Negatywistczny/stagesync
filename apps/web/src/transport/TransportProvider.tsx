@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import {
-  TransportTickMessageSchema,
+  TransportWsServerMessageSchema,
   defaultTransportState,
   getDisplayTicks,
   type TransportAnchor,
@@ -197,41 +197,52 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
       ws.onmessage = (event) => {
         if (cancelled) return;
+        let raw: unknown;
         try {
-          const raw = JSON.parse(String(event.data)) as {
-            type?: string;
-            text?: string;
-            ttlMs?: number;
-            sentAtMs?: number;
-            roles?: Array<"karaoke" | "grid" | "score" | "drums">;
-          };
-          if (raw.type === "stage_cue" && typeof raw.text === "string") {
-            setStageCue({
-              text: raw.text.slice(0, 200),
-              ttlMs: raw.ttlMs ?? 6000,
-              sentAtMs: raw.sentAtMs ?? Date.now(),
-              roles: raw.roles,
-            });
-            return;
-          }
-          const msg = TransportTickMessageSchema.parse(raw);
-          if (msg.sentAtMs != null && Number.isFinite(msg.sentAtMs)) {
-            const next = noteLatencySample(latencyEmaRef.current, msg.sentAtMs);
-            latencyEmaRef.current = next;
-            setLatencyMs((prev) => (prev === next ? prev : next));
-          }
-          applyAnchor(
-            transportStateFromTick(msg),
-            performance.now(),
-            msg.serverTimeMs,
-          );
-          if (msg.playing) {
-            startRaf();
-          } else {
-            stopRaf();
-          }
+          raw = JSON.parse(String(event.data));
         } catch (err) {
           setError(formatTransportError(err, "Nieprawidłowy tick"));
+          return;
+        }
+        const parsed = TransportWsServerMessageSchema.safeParse(raw);
+        if (!parsed.success) {
+          const type =
+            raw && typeof raw === "object" && "type" in raw
+              ? (raw as { type?: unknown }).type
+              : undefined;
+          // Only surface malformed ticks; ignore unknown / non-tick frames.
+          if (type === "transport_tick") {
+            setError(
+              formatTransportError(parsed.error, "Nieprawidłowy tick"),
+            );
+          }
+          return;
+        }
+        if (parsed.data.type === "stage_cue") {
+          const cue = parsed.data;
+          setStageCue({
+            text: cue.text.slice(0, 200),
+            ttlMs: cue.ttlMs,
+            sentAtMs: cue.sentAtMs,
+            roles: cue.roles,
+          });
+          return;
+        }
+        const msg = parsed.data;
+        if (msg.sentAtMs != null && Number.isFinite(msg.sentAtMs)) {
+          const next = noteLatencySample(latencyEmaRef.current, msg.sentAtMs);
+          latencyEmaRef.current = next;
+          setLatencyMs((prev) => (prev === next ? prev : next));
+        }
+        applyAnchor(
+          transportStateFromTick(msg),
+          performance.now(),
+          msg.serverTimeMs,
+        );
+        if (msg.playing) {
+          startRaf();
+        } else {
+          stopRaf();
         }
       };
 

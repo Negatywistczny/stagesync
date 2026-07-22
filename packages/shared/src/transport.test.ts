@@ -5,8 +5,10 @@ import {
   TransportSeekBodySchema,
   TransportStateSchema,
   TransportTickMessageSchema,
+  TransportWsServerMessageSchema,
   createProjectV5Seed,
   defaultTransportState,
+  parseTransportTickPayload,
   transportHomeTicks,
 } from "./index.js";
 
@@ -99,6 +101,62 @@ describe("TransportTickMessageSchema", () => {
         serverTimeMs: 1,
         sentAtMs: Number.POSITIVE_INFINITY,
       }),
+    ).toThrow();
+  });
+});
+
+describe("TransportWsServerMessageSchema", () => {
+  it("parses transport_tick and stage_cue by type", () => {
+    const tick = {
+      ...defaultTransportState(),
+      type: "transport_tick" as const,
+      serverTimeMs: 1,
+    };
+    const cue = {
+      type: "stage_cue" as const,
+      text: "TERAZ",
+      ttlMs: 6000,
+      sentAtMs: 1_700_000_000_000,
+    };
+    expect(TransportWsServerMessageSchema.parse(tick)).toEqual(tick);
+    expect(TransportWsServerMessageSchema.parse(cue)).toEqual(cue);
+  });
+
+  it("does not treat stage_cue as a tick", () => {
+    const cue = {
+      type: "stage_cue" as const,
+      text: "GO",
+      ttlMs: 1000,
+      sentAtMs: 1,
+    };
+    expect(TransportTickMessageSchema.safeParse(cue).success).toBe(false);
+    expect(TransportWsServerMessageSchema.parse(cue).type).toBe("stage_cue");
+  });
+});
+
+describe("parseTransportTickPayload", () => {
+  it("parses full ticks", () => {
+    const msg = {
+      ...defaultTransportState(),
+      type: "transport_tick" as const,
+      serverTimeMs: 42,
+      sentAtMs: 99,
+    };
+    expect(parseTransportTickPayload(msg)).toEqual(msg);
+  });
+
+  it("coerces legacy bare TransportState (no type / serverTimeMs)", () => {
+    const state = defaultTransportState();
+    expect(parseTransportTickPayload(state)).toEqual({
+      ...state,
+      type: "transport_tick",
+      serverTimeMs: 0,
+    });
+  });
+
+  it("rejects unrelated payloads", () => {
+    expect(() =>
+      parseTransportTickPayload({ type: "stage_cue", text: "x" }),
     ).toThrow();
   });
 });
