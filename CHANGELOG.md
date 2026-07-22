@@ -71,6 +71,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Preferencje:** Audio / MIDI jako zakładki z podkreśleniem (nie segmented control).
 - **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
 
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop:** upuszczanie plików (HTML5 DnD) w WebView Tauri — import biblioteki i przeciąganie setlisty znów działają (natywny handler okna blokował HTML5 `dataTransfer`).
+
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
 > **β2:** Audio 0…N + MIDI I/O serwera + menu OS Faza B+C + Countdown Stop; updater `latest.json` darwin+windows. Ręczna bramka **G1–G10** — residual operatorski (nie green na HW przy cutcie); następny etap → **5.0.0**.
