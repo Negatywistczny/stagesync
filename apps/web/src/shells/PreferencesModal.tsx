@@ -185,10 +185,7 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
               ))}
             </select>
           </label>
-          <p className={styles.muted}>
-            Wybór zapisywany lokalnie (<code>localStorage</code>) i stosowany do
-            wspólnego <code>AudioContext</code> (metronom / klipy).
-          </p>
+          <p className={styles.muted}>Wybór zapisywany lokalnie.</p>
         </div>
       ) : (
         <div className={styles.body} role="tabpanel">
@@ -255,10 +252,6 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
                 />
                 <span>Clock OUT</span>
               </label>
-              <p className={styles.muted}>
-                Porty zapisywane na serwerze (<code>data/host/midi-config.json</code>
-                ). Panic / MUTE ALL — must parity v4 przed tagiem 5.0.0 (ADR 0011 §1a).
-              </p>
             </>
           ) : midiError ? null : (
             <p className={styles.muted}>Wczytywanie…</p>
