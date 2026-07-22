@@ -38,8 +38,10 @@ export function attachTransportWs(
 
     ws.on("message", (data) => {
       if (!presence) return;
+      const text = String(data);
+      if (text.length > 8192) return;
       try {
-        const raw = JSON.parse(String(data)) as {
+        const raw = JSON.parse(text) as {
           type?: string;
           displayName?: unknown;
           roles?: unknown;
