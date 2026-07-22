@@ -4,6 +4,12 @@ set -euo pipefail
 
 pr="$1"
 title=$(gh pr view "$pr" --json title -q .title)
+# commitlint subject-case: lowercase first char after type(scope):
+if [[ "$title" =~ ^([a-z]+\([^)]+\):[[:space:]]+)(.+)$ ]]; then
+  commit_msg="${BASH_REMATCH[1]}${BASH_REMATCH[2],}"
+else
+  commit_msg="$title"
+fi
 
 echo "=== Integrating PR #$pr: $title ==="
 
@@ -22,5 +28,5 @@ else
   fi
 fi
 
-git commit -m "$title"
+git commit -m "$commit_msg"
 echo "  OK"

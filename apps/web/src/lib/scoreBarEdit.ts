@@ -3,13 +3,11 @@
  */
 
 import {
-  bbtToTicks,
   fromDisplayBar,
   normalizeAnchors,
   resolveMeterAt,
   snapTicksToBarStart,
   ticksPerBar,
-  ticksToBbt,
   toDisplayBar,
   type Project,
   type ScoreBarAnchor,
@@ -20,14 +18,33 @@ export function scoreAnchors(project: Project): ScoreBarAnchor[] {
 }
 
 export function logicBarFromTicks(project: Project, ticks: number): number {
-  const meter = resolveMeterAt(project, ticks);
-  const bbt = ticksToBbt(ticks, meter, project.ppq);
-  return Math.max(1, toDisplayBar(bbt.bar));
+  if (!Number.isFinite(ticks) || ticks <= 0) {
+    return 1;
+  }
+  let cursor = 0;
+  let bar = 0;
+  while (cursor < ticks) {
+    const meter = resolveMeterAt(project, cursor);
+    const barLen = ticksPerBar(meter, project.ppq);
+    if (cursor + barLen > ticks) break;
+    cursor += barLen;
+    bar += 1;
+    if (bar > 100_000) break;
+  }
+  return Math.max(1, toDisplayBar(bar));
 }
 
+/**
+ * Song display bar → tick at bar start, walking `meterMap` (not meter@0 only).
+ */
 export function ticksFromLogicBar(project: Project, logicBar: number): number {
-  const meter = resolveMeterAt(project, 0);
-  return bbtToTicks(fromDisplayBar(logicBar), 1, 0, meter, project.ppq);
+  const targetBar = fromDisplayBar(Math.max(1, Math.floor(logicBar)));
+  let ticks = 0;
+  for (let bar = 0; bar < targetBar; bar += 1) {
+    const meter = resolveMeterAt(project, ticks);
+    ticks += ticksPerBar(meter, project.ppq);
+  }
+  return ticks;
 }
 
 export function canEditKotwice(project: Project): boolean {
