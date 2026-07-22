@@ -690,7 +690,7 @@ function GlobalSettingsFields({
       </div>
       {prefs.instrumentPitch === "manual" ? (
         <label className={styles.field}>
-          Korekta ({prefs.instrumentPitchManual > 0 ? "+" : ""}
+          Transpozycja ({prefs.instrumentPitchManual > 0 ? "+" : ""}
           {prefs.instrumentPitchManual})
           <input
             type="range"
