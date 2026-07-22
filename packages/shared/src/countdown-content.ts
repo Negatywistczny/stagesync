@@ -23,7 +23,7 @@ export type CountdownDigitLabel = {
  * Pure — no ticks; callers map via CD `startTicks` + `barTicks`.
  */
 export function countdownDigitLabels(bars: number): CountdownDigitLabel[] {
-  const n = Math.max(0, Math.trunc(bars));
+  const n = Math.min(32, Math.max(0, Math.trunc(bars)));
   const out: CountdownDigitLabel[] = [];
   for (let i = 0; i < n; i++) {
     out.push({ barOffset: i, label: String(n - i) });
