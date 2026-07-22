@@ -110,9 +110,9 @@ export const AudioClipSchema = z.object({
   assetId: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  trimInMs: z.number().nonnegative().finite().optional(),
+  trimInMs: z.number().nonnegative().finite().max(24 * 60 * 60 * 1000).optional(),
   /** Trim from source file end (ms); with trimInMs bounds playable window. */
-  trimOutMs: z.number().nonnegative().finite().optional(),
+  trimOutMs: z.number().nonnegative().finite().max(24 * 60 * 60 * 1000).optional(),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().optional(),
 });
