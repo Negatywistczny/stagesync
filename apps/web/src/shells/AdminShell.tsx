@@ -1073,17 +1073,28 @@ function LibraryFilesCard({
 
 function useDoubleConfirm(action: () => Promise<void>, label: string) {
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
+  const actionInFlightRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const arm = useCallback(() => {
-    if (pending) {
+    if (actionInFlightRef.current) return;
+    if (pendingRef.current) {
       if (timerRef.current) clearTimeout(timerRef.current);
+      pendingRef.current = false;
       setPending(false);
-      void action();
+      actionInFlightRef.current = true;
+      void action().finally(() => {
+        actionInFlightRef.current = false;
+      });
       return;
     }
+    pendingRef.current = true;
     setPending(true);
-    timerRef.current = setTimeout(() => setPending(false), 4000);
-  }, [action, pending]);
+    timerRef.current = setTimeout(() => {
+      pendingRef.current = false;
+      setPending(false);
+    }, 4000);
+  }, [action]);
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
