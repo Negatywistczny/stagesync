@@ -34,6 +34,14 @@ describe("forma-subsections", () => {
     ]);
   });
 
+  it("defaultSubsections4Bar caps at 64 boundaries for huge lengthTicks", () => {
+    const huge = 10_000 * CHUNK4;
+    const out = defaultSubsections4Bar(huge, CHUNK4);
+    expect(out).toHaveLength(64);
+    expect(out[0]).toBe(CHUNK4);
+    expect(out[63]).toBe(64 * CHUNK4);
+  });
+
   it("ensureFormaSubsections fills empty sections; skips Countdown + existing", () => {
     const seed = createProjectV5Seed(
       "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
