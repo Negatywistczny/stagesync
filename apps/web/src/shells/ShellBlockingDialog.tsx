@@ -97,7 +97,7 @@ export function ShellPromptDialog({
             id={inputId}
             className={styles.input}
             defaultValue={defaultValue}
-            maxLength={120}
+            maxLength={200}
             autoComplete="off"
           />
         </label>
