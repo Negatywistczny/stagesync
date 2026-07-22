@@ -1277,7 +1277,7 @@ function HostView({
                     </span>
                   </div>
                   <div className={styles.midiCard}>
-                    <span className={styles.midiLabel}>Beat→WS</span>
+                    <span className={styles.midiLabel}>Beat → WS</span>
                     <span className={styles.midiValue}>
                       {rateLabel(midi.rates.beatToWsPerSec)}
                     </span>
@@ -1290,7 +1290,7 @@ function HostView({
                       className={styles.select}
                       disabled={midiBusy || !midi.available}
                       value={midi.config.inputId ?? ""}
-                      aria-label="MIDI input"
+                      aria-label="Wejście MIDI"
                       onChange={(e) => {
                         const v = e.target.value;
                         void applyMidiConfig({ inputId: v === "" ? null : v });
@@ -1310,7 +1310,7 @@ function HostView({
                       className={styles.select}
                       disabled={midiBusy || !midi.available}
                       value={midi.config.outputId ?? ""}
-                      aria-label="MIDI output"
+                      aria-label="Wyjście MIDI"
                       onChange={(e) => {
                         const v = e.target.value;
                         void applyMidiConfig({ outputId: v === "" ? null : v });
@@ -1325,12 +1325,12 @@ function HostView({
                     </select>
                   </label>
                   <label className={styles.midiPortRow}>
-                    <span className={styles.midiLabel}>Clock OUT</span>
+                    <span className={styles.midiLabel}>Clock wyjście</span>
                     <input
                       type="checkbox"
                       checked={midi.config.clockOutEnabled}
                       disabled={midiBusy || !midi.available}
-                      aria-label="MIDI clock out"
+                      aria-label="Clock MIDI wyjście"
                       onChange={(e) => {
                         void applyMidiConfig({
                           clockOutEnabled: e.target.checked,
@@ -1649,7 +1649,7 @@ function HostSettingsModal({
                 className={styles.select}
                 disabled={midiBusy || !midi.available}
                 value={midi.config.inputId ?? ""}
-                aria-label="MIDI input"
+                aria-label="Wejście MIDI"
                 onChange={(e) => {
                   const v = e.target.value;
                   void applyMidiConfig({ inputId: v === "" ? null : v });
@@ -1669,7 +1669,7 @@ function HostSettingsModal({
                 className={styles.select}
                 disabled={midiBusy || !midi.available}
                 value={midi.config.outputId ?? ""}
-                aria-label="MIDI output"
+                aria-label="Wyjście MIDI"
                 onChange={(e) => {
                   const v = e.target.value;
                   void applyMidiConfig({ outputId: v === "" ? null : v });
@@ -1684,12 +1684,12 @@ function HostSettingsModal({
               </select>
             </label>
             <label className={styles.midiPortRow}>
-              <span className={styles.midiLabel}>Clock OUT</span>
+              <span className={styles.midiLabel}>Clock wyjście</span>
               <input
                 type="checkbox"
                 checked={midi.config.clockOutEnabled}
                 disabled={midiBusy || !midi.available}
-                aria-label="MIDI clock out"
+                aria-label="Clock MIDI wyjście"
                 onChange={(e) => {
                   void applyMidiConfig({ clockOutEnabled: e.target.checked });
                 }}
