@@ -98,11 +98,28 @@ jobs:
           if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
             echo "Release $TAG already exists — reusing for asset upload"
           else
+            RELEASE_BODY="$(cat <<EOF
+          ### 📦 Pobierz StageSync
+
+          | System operacyjny | Plik instalacyjny |
+          | :--- | :--- |
+          | 🍎 **macOS** (Apple Silicon) | \`StageSync_${{ env.VERSION }}_aarch64.dmg\` |
+          | 🪟 **Windows** (64-bit) | \`StageSync_${{ env.VERSION }}_x64_en-US.msi\` |
+
+          > ℹ️ **Uwaga dotycząca pozostałych plików:**  
+          > Pliki z rozszerzeniami \`.sig\`, \`.app.tar.gz\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są plikami technicznymi używanymi przez wbudowany mechanizm automatycznych aktualizacji (in-app updater) oraz weryfikacji spójności. Nie musisz ich pobierać ręcznie.
+
+          ---
+
+          ### 🚀 Co nowego w tym wydaniu?
+          EOF
+          )"
             gh release create "$TAG" \
               -R "$REPO" \
               --draft \
               --title "StageSync $TAG" \
-              --notes "Release build in progress."
+              --generate-notes \
+              --notes "$RELEASE_BODY"
           fi
           # drafts are invisible to /releases/tags/{tag}; use gh view (works for draft + published)
           ID=$(gh release view "$TAG" -R "$REPO" --json databaseId --jq .databaseId)
@@ -265,24 +282,4 @@ jobs:
             -R "$REPO" \
             --draft=false \
             --latest \
-            --title "StageSync v${{ env.VERSION }}" \
-            --notes "$(cat <<EOF
-          ## StageSync v${{ env.VERSION }}
-
-          ### Desktop standalone (operator)
-          Pobierz instalator dla swojej platformy poniżej.
-          Aktualizacja in-app: Admin → O aplikacji → **Sprawdź aktualizacje** (wymaga \`latest.json\` + podpisanych bundle na tym release).
-          Instalacja bez podpisu: [DESKTOP.md](https://github.com/Negatywistczny/stagesync/blob/main/docs/DESKTOP.md).
-          Po uruchomieniu aplikacja startuje lokalny serwer wbudowanym Node sidecarem (bez potrzeby Dockera/Node u użytkownika).
-
-          ---
-          Pełna instrukcja: [INSTALL.md](https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md)
-
-          ### Docker (serwer / scena — ścieżka drugorzędna)
-          \`\`\`sh
-          docker login ghcr.io
-          STAGESYNC_VERSION=${{ env.VERSION }} docker compose -f compose.prod.yml up -d
-          \`\`\`
-          Obraz: \`ghcr.io/negatywistczny/stagesync:${{ env.VERSION }}\`
-          EOF
-          )"
+            --title "StageSync v${{ env.VERSION }}"
