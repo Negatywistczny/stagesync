@@ -11,7 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
-- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline/Admin/Client — Level 2 toolbary; song cluster w Timeline L2; Admin sekcje w L2.
+- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline/Admin/Client — Level 2 toolbary; song cluster w Timeline L2 (po prawej); Admin sekcje w L2.
 - **Desktop ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** menu Edycja — Cofnij/Ponów (`edit-undo` / `edit-redo`) dla draftu Timeline przy ukrytym AppHeader.
 - **Preferencje ([#432](https://github.com/Negatywistczny/stagesync/issues/432)):** modal Audio/MIDI (Cmd/Ctrl+, / menu StageSync); `setSinkId` + localStorage; porty MIDI persistowane w `data/host/midi-config.json`; bez Panic (ROADMAP OUT).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** contextual inspector Track vs Clip (gain/fader wyłącznie `Slider`; trim/fade/loop w klipie; nazwa/M/S/fader w ścieżce).
@@ -34,6 +34,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Timeline toolbar:** przywrócony układ tools | transport (środek) | song (prawo) — regresja po przeniesieniu song cluster do L2.
 - **Timeline:** przycisk widoczności ścieżek (eye) wyśrodkowany w docku linijki (poziomo i pionowo).
 - **Timeline:** playhead i locator zaczynają się od górnej krawędzi BeatLane (nie LoopLane); obie linie w delikatnym odcieniu względem canvas (`--tl-marker-line`).
 - **Timeline setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
