@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@stagesync/ui";
 import type { Library, SetlistView } from "@stagesync/shared";
 import {
@@ -29,28 +29,28 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
   const [pickIds, setPickIds] = useState<string[]>([]);
+  const reloadGenRef = useRef(0);
 
   const reload = useCallback(async () => {
-    const next = await fetchSetlist();
-    setView(next);
-    setDraftIds(next.projectIds);
-    setEnabled(next.enabled);
-    setDirty(false);
+    const gen = ++reloadGenRef.current;
+    try {
+      const next = await fetchSetlist();
+      if (gen !== reloadGenRef.current) return;
+      setView(next);
+      setDraftIds(next.projectIds);
+      setEnabled(next.enabled);
+      setDirty(false);
+      setError(null);
+    } catch (err) {
+      if (gen !== reloadGenRef.current) return;
+      setError(err instanceof Error ? err.message : "Błąd setlisty");
+    }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await reload();
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Błąd setlisty");
-        }
-      }
-    })();
+    void reload();
     return () => {
-      cancelled = true;
+      reloadGenRef.current += 1;
     };
   }, [reload]);
 
