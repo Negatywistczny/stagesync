@@ -102,7 +102,7 @@ export function upsertTempoAt(
   startTicks: number,
   bpm: number,
 ): Project {
-  if (!(bpm > 0) || !Number.isFinite(bpm)) return project;
+  if (!Number.isFinite(bpm) || bpm < 20 || bpm > 400) return project;
   const map = [...project.tempoMap].sort(
     (a, b) => a.startTicks - b.startTicks,
   );
