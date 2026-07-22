@@ -86,12 +86,14 @@ export function advanceMetronomeClicks(
   const currentBeat = Math.floor(input.displayTicks / perBeat);
   let beat = lastScheduledBeat;
   const now = ctx.currentTime;
-  const MAX_BEATS_PER_ADVANCE = 64;
-  let scheduled = 0;
 
-  while (beat < currentBeat && scheduled < MAX_BEATS_PER_ADVANCE) {
+  // After tab blur / large seek, skip backlog — one click storm is worse than a gap.
+  if (currentBeat - beat > 2) {
+    return currentBeat;
+  }
+
+  while (beat < currentBeat) {
     beat += 1;
-    scheduled += 1;
     const beatStartTicks = beat * perBeat;
     // Schedule slightly ahead; if late, play ASAP
     const aheadMs = ticksToMs(
@@ -106,11 +108,6 @@ export function advanceMetronomeClicks(
         input.timeSignature.numerator) %
       input.timeSignature.numerator;
     scheduleClick(ctx, when, beatInBar === 0);
-  }
-
-  // Large seek/jump: skip ahead without scheduling every missed click.
-  if (beat < currentBeat) {
-    beat = currentBeat;
   }
 
   return beat;
