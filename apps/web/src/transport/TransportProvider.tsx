@@ -53,6 +53,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [commandPending, setCommandPending] = useState(false);
+  const commandPendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
 
@@ -60,7 +61,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
-  const loopRef = useRef<TransportState["loop"]>(null);
   const rafIdRef = useRef(0);
   const wsRef = useRef<WebSocket | null>(null);
   const latencyEmaRef = useRef(0);
@@ -91,7 +91,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
       playingRef.current = next.playing;
-      loopRef.current = next.loop;
       setState(next);
       setDisplayTicks(anchor.positionTicks);
     },
@@ -111,7 +110,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           frameTime,
           receiptMsRef.current,
           true,
-          loopRef.current,
         ),
       );
       rafIdRef.current = requestAnimationFrame(loop);
@@ -231,7 +229,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       try {
         const initial = await getTransport();
         if (cancelled) return;
-        applyAnchor(initial.state, performance.now(), initial.serverTimeMs);
+        applyAnchor(initial, performance.now());
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load");
@@ -262,12 +260,14 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   );
 
   const runCommand = useCallback(
-    async (fn: () => Promise<{ state: TransportState; serverTimeMs: number }>) => {
+    async (fn: () => Promise<TransportState>) => {
+      if (commandPendingRef.current) return;
+      commandPendingRef.current = true;
       setCommandPending(true);
       setError(null);
       try {
-        const { state: next, serverTimeMs } = await fn();
-        applyAnchor(next, performance.now(), serverTimeMs);
+        const next = await fn();
+        applyAnchor(next, performance.now());
         if (next.playing) {
           startRaf();
         } else {
@@ -276,6 +276,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         setError(err instanceof Error ? err.message : "Command failed");
       } finally {
+        commandPendingRef.current = false;
         setCommandPending(false);
       }
     },
