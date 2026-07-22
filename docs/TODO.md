@@ -42,7 +42,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Should
 
-- [ ] [#358](https://github.com/Negatywistyczny/stagesync/issues/358) — WS backoff+jitter + baner offline Client + refetch projektu
 - [ ] [#396](https://github.com/Negatywistyczny/stagesync/issues/396) — MSI bez `_en-US` + RELEASE_BODY `<details>`
 - [ ] [#419](https://github.com/Negatywistyczny/stagesync/issues/419) / [#417](https://github.com/Negatywistyczny/stagesync/issues/417) — README landing + okrojone badges (bez Tailwind / visitorbadge)
 - [ ] [#418](https://github.com/Negatywistyczny/stagesync/issues/418) — Vitest coverage + Codecov (fail soft)
