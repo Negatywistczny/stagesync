@@ -4,6 +4,7 @@
 
 import {
   insertSpanOverwrite,
+  type AudioClip,
   type FormaClip,
   type Project,
 } from "@stagesync/shared";
@@ -14,6 +15,7 @@ import {
 } from "./contentLaneEdit.js";
 import type { ClipSelectionLane } from "./timelineSelection.js";
 import { isAudioSelectionLane } from "./timelineSelection.js";
+import { audioTrackIdFromLane } from "./timelineTracks.js";
 
 export type ClipboardPayload = {
   name?: string;
@@ -22,6 +24,13 @@ export type ClipboardPayload = {
   text?: string;
   symbol?: string;
   label?: string;
+  /** Audio clip fields (same-lane paste). */
+  trackId?: string;
+  assetId?: string;
+  trimInMs?: number;
+  trimOutMs?: number;
+  muted?: boolean;
+  gainDb?: number;
 };
 
 export type ClipboardItem = {
@@ -47,6 +56,12 @@ type TimedPayloadClip = {
   text?: string;
   symbol?: string;
   label?: string;
+  trackId?: string;
+  assetId?: string;
+  trimInMs?: number;
+  trimOutMs?: number;
+  muted?: boolean;
+  gainDb?: number;
 };
 
 export function buildClipboardFromClips(
@@ -54,7 +69,11 @@ export function buildClipboardFromClips(
   clips: TimedPayloadClip[],
 ): TimelineClipboard | null {
   if (!clips.length) return null;
-  const ordered = [...clips].sort(
+  const source = isAudioSelectionLane(lane)
+    ? clips.filter((c) => Boolean(c.assetId && c.trackId))
+    : clips;
+  if (!source.length) return null;
+  const ordered = [...source].sort(
     (a, b) =>
       a.startTicks - b.startTicks || String(a.id).localeCompare(String(b.id)),
   );
@@ -85,6 +104,21 @@ export function buildClipboardFromClips(
         startTicks: c.startTicks,
         lengthTicks: c.lengthTicks,
         payload: { symbol: c.symbol || "C" },
+      };
+    }
+    if (isAudioSelectionLane(lane)) {
+      return {
+        lane,
+        startTicks: c.startTicks,
+        lengthTicks: c.lengthTicks,
+        payload: {
+          trackId: c.trackId!,
+          assetId: c.assetId!,
+          ...(c.trimInMs != null ? { trimInMs: c.trimInMs } : {}),
+          ...(c.trimOutMs != null ? { trimOutMs: c.trimOutMs } : {}),
+          ...(c.muted != null ? { muted: c.muted } : {}),
+          ...(c.gainDb != null ? { gainDb: c.gainDb } : {}),
+        },
       };
     }
     return {
@@ -162,6 +196,36 @@ export function pasteClipboardAt(
         contentFloorTicks: floor,
       });
       next = { ...next, forma: { clips } };
+      newIds.push(id);
+      continue;
+    }
+
+    if (isAudioSelectionLane(clipboard.lane)) {
+      const assetId = item.payload.assetId;
+      const trackId =
+        item.payload.trackId ?? audioTrackIdFromLane(clipboard.lane);
+      if (!assetId || !trackId) continue;
+      if (!next.audioTracks.some((tr) => tr.id === trackId)) continue;
+      if (!next.assets.some((a) => a.id === assetId && a.kind === "audio")) {
+        continue;
+      }
+      const id = mintId("audio");
+      const clip: AudioClip = {
+        id,
+        trackId,
+        assetId,
+        startTicks: start,
+        lengthTicks: length,
+        ...(item.payload.trimInMs != null
+          ? { trimInMs: item.payload.trimInMs }
+          : {}),
+        ...(item.payload.trimOutMs != null
+          ? { trimOutMs: item.payload.trimOutMs }
+          : {}),
+        ...(item.payload.muted != null ? { muted: item.payload.muted } : {}),
+        ...(item.payload.gainDb != null ? { gainDb: item.payload.gainDb } : {}),
+      };
+      next = { ...next, audioClips: [...next.audioClips, clip] };
       newIds.push(id);
       continue;
     }
