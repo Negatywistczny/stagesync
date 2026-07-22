@@ -52,7 +52,14 @@ export type BarBoundary = {
 
 export function contentFloorTicks(clips: FormaClip[]): number {
   const countdown = clips.find((c) => c.kind === "countdown");
-  return countdown ? countdown.startTicks + countdown.lengthTicks : 0;
+  if (
+    !countdown ||
+    !Number.isFinite(countdown.startTicks) ||
+    !Number.isFinite(countdown.lengthTicks)
+  ) {
+    return 0;
+  }
+  return countdown.startTicks + countdown.lengthTicks;
 }
 
 export function computeFormaViewSpan(clips: FormaClip[]): ViewSpan {
