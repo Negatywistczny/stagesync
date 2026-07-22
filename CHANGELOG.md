@@ -7,10 +7,16 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+- **App chrome:** Client i Admin wracają do jednego zawsze widocznego nagłówka (bez L1/L2); dwupoziomowy chrome zostaje w Timeline.
+
 ### Dodano
 
-- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
-- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline/Admin/Client — Level 2 toolbary; song cluster w Timeline L2; Admin sekcje w L2.
+- **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
+- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — domyślnie ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
+- **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline — Level 2 toolbar z song clusterem (po prawej).
+- **Desktop ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** menu Edycja — Cofnij/Ponów (`edit-undo` / `edit-redo`) dla draftu Timeline przy ukrytym AppHeader.
 - **Preferencje ([#432](https://github.com/Negatywistczny/stagesync/issues/432)):** modal Audio/MIDI (Cmd/Ctrl+, / menu StageSync); `setSinkId` + localStorage; porty MIDI persistowane w `data/host/midi-config.json`; bez Panic (ROADMAP OUT).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** contextual inspector Track vs Clip (gain/fader wyłącznie `Slider`; trim/fade/loop w klipie; nazwa/M/S/fader w ścieżce).
 - **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** zaznaczenie ścieżki audio w docku, Solo (S) oraz kompaktowy fader `Slider`; solo wycisza inne ścieżki w playback WebAudio (bez zmiany SSOT czasu).
@@ -32,6 +38,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Client:** strój instrumentu — ikony v4 (🎹 / 🎺 / 🎷 / ±) nad etykietami C / B♭ / E♭ / Ręczna.
+- **Timeline:** suwaki zoom UI/H/V w kolorze primary (amber); klasa `.zoomRange` podpięta do inputów.
+- **Timeline Pomoc:** usunięty lead o v4/OUT/MIDI (zostają karty i skróty).
+- **Preferencje:** Audio / MIDI jako zakładki ustawień (pasek z podkreśleniem), nie segmented control / przełączniki.
+- **Timeline toolbar:** przywrócony układ tools | transport (środek) | song (prawo) — regresja po przeniesieniu song cluster do L2.
+- **Timeline:** przycisk widoczności ścieżek (eye) wyśrodkowany w docku linijki (poziomo i pionowo).
+- **Timeline:** playhead i locator zaczynają się od górnej krawędzi BeatLane (nie LoopLane); obie linie w delikatnym odcieniu względem canvas (`--tl-marker-line`).
 - **Timeline setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
 - **Client Space ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skrót Spacji (vocal tap) ignoruje fokus w polach tekstowych (`INPUT` / `TEXTAREA` / `SELECT` / contentEditable); wspólny helper też w Timeline.
 - **Audio Timeline przy Pause/Stop:** odtwarzanie WebAudio gaśnie od razu w UI (bez dźwięku w trakcie oczekiwania na potwierdzenie serwera).

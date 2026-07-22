@@ -37,7 +37,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Must (residual przed tagiem)
 
-- [ ] **Desktop OS menu — Faza D:** pełna Edycja (Undo/Redo/…); zoom w Widok; rozbudowa Pomoc — [ROADMAP](./ROADMAP.md) (częściowo wyparte przez Predefined Edit pod ⌘C)
+- [ ] **Desktop OS menu — Faza D:** Undo/Redo menu wired ([#443](https://github.com/Negatywistczny/stagesync/issues/443)); residual: zoom w Widok, rozbudowa Pomoc — [ROADMAP](./ROADMAP.md)
 - [ ] Operator: domknięcie **G1–G10** na instalatorach β2 → green przed / przy stable ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — **bez claim green bez HW**
 
 ### Should

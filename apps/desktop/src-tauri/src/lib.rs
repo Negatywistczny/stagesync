@@ -250,9 +250,18 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
     )?;
 
     // macOS routes ⌘C/X/V/A through the app menu First Responder chain.
-    // Without these PredefinedMenuItems, WebView text selection only copies via
-    // context menu — keyboard shortcuts are silent. (Full Undo/Redo → Timeline
-    // stays Faza D; do not steal ⌘Z with PredefinedMenuItem::undo here.)
+    // Timeline draft undo/redo: custom items (not PredefinedMenuItem::undo) so
+    // WebView receives stagesync:desktop-menu instead of native text undo.
+    let edit_undo =
+        MenuItem::with_id(app, "edit_undo", "Cofnij", true, Some("CmdOrCtrl+Z"))?;
+    let edit_redo = MenuItem::with_id(
+        app,
+        "edit_redo",
+        "Ponów",
+        true,
+        Some("CmdOrCtrl+Shift+Z"),
+    )?;
+    let edit_sep = PredefinedMenuItem::separator(app)?;
     let edit_cut = PredefinedMenuItem::cut(app, Some("Wytnij"))?;
     let edit_copy = PredefinedMenuItem::copy(app, Some("Kopiuj"))?;
     let edit_paste = PredefinedMenuItem::paste(app, Some("Wklej"))?;
@@ -261,7 +270,15 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         app,
         "Edycja",
         true,
-        &[&edit_cut, &edit_copy, &edit_paste, &edit_select_all],
+        &[
+            &edit_undo,
+            &edit_redo,
+            &edit_sep,
+            &edit_cut,
+            &edit_copy,
+            &edit_paste,
+            &edit_select_all,
+        ],
     )?;
 
     let nav_admin = MenuItem::with_id(app, "nav_admin", "Admin", true, Some("CmdOrCtrl+1"))?;
@@ -459,6 +476,8 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "preferences" => dispatch_menu_action(&app, "preferences"),
             "check_updates" => navigate_main(&app, "/admin?section=host&action=check-update"),
             "file_save" => dispatch_menu_action(&app, "save"),
+            "edit_undo" => dispatch_menu_action(&app, "edit-undo"),
+            "edit_redo" => dispatch_menu_action(&app, "edit-redo"),
             "file_close" => navigate_main(&app, "/admin"),
             "nav_admin" => navigate_main(&app, "/admin"),
             "nav_timeline" => {

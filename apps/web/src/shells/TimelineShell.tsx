@@ -1480,9 +1480,21 @@ export function TimelineShell() {
   useEffect(() => {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
-      if (detail?.action !== "save") return;
+      if (!detail) return;
       const h = keyHandlersRef.current;
-      if (h.dirty && !h.savePending) void h.onSave();
+      switch (detail.action) {
+        case "save":
+          if (h.dirty && !h.savePending) void h.onSave();
+          break;
+        case "edit-undo":
+          h.onUndo();
+          break;
+        case "edit-redo":
+          h.onRedo();
+          break;
+        default:
+          break;
+      }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
@@ -3902,62 +3914,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       <div className={styles.toolbar} data-ss-level="2">
-        <div className={styles.songCluster} role="group" aria-label="Setlista">
-          <ShellIconButton
-            label="Metadane utworu"
-            disabled={!draftProject}
-            pressed={songMetaOpen}
-            onClick={() => {
-              if (!draftProject) return;
-              clearClipSelection();
-              clearMapSelection();
-              setSongMetaOpen(true);
-            }}
-          >
-            <IconInfo />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Poprzedni utwór setlisty"
-            disabled={!prevSetlistId}
-            onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
-          >
-            <IconChevronLeft />
-          </ShellIconButton>
-          <button
-            type="button"
-            className={styles.songPicker}
-            onClick={() => setSongScreenOpen(true)}
-            aria-haspopup="dialog"
-            aria-expanded={songScreenOpen}
-          >
-            {draftProject?.name ?? "Wybierz utwór"}
-          </button>
-          <ShellIconButton
-            label="Następny utwór setlisty"
-            disabled={!nextSetlistId}
-            onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
-          >
-            <IconChevronRight />
-          </ShellIconButton>
-          <ShellIconButton
-            label="Auto-setlista"
-            disabled={!setlistEnabled || commandPending}
-            pressed={autoAdvance}
-            onClick={() => {
-              void (async () => {
-                try {
-                  const v = await patchSetlistAutoAdvance(!autoAdvance);
-                  setAutoAdvance(v.autoAdvance.enabled);
-                } catch {
-                  /* ignore */
-                }
-              })();
-            }}
-          >
-            <IconAutoAdvance />
-          </ShellIconButton>
-        </div>
-
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
           {TOOLS.map(({ id, title, Icon, disabled }) => (
             <ShellIconButton
@@ -4079,6 +4035,62 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <IconFollow />
             </ShellIconButton>
           </div>
+        </div>
+
+        <div className={styles.songCluster} role="group" aria-label="Setlista">
+          <ShellIconButton
+            label="Metadane utworu"
+            disabled={!draftProject}
+            pressed={songMetaOpen}
+            onClick={() => {
+              if (!draftProject) return;
+              clearClipSelection();
+              clearMapSelection();
+              setSongMetaOpen(true);
+            }}
+          >
+            <IconInfo />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Poprzedni utwór setlisty"
+            disabled={!prevSetlistId}
+            onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
+          >
+            <IconChevronLeft />
+          </ShellIconButton>
+          <button
+            type="button"
+            className={styles.songPicker}
+            onClick={() => setSongScreenOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={songScreenOpen}
+          >
+            {draftProject?.name ?? "Wybierz utwór"}
+          </button>
+          <ShellIconButton
+            label="Następny utwór setlisty"
+            disabled={!nextSetlistId}
+            onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
+          >
+            <IconChevronRight />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Auto-setlista"
+            disabled={!setlistEnabled || commandPending}
+            pressed={autoAdvance}
+            onClick={() => {
+              void (async () => {
+                try {
+                  const v = await patchSetlistAutoAdvance(!autoAdvance);
+                  setAutoAdvance(v.autoAdvance.enabled);
+                } catch {
+                  /* ignore */
+                }
+              })();
+            }}
+          >
+            <IconAutoAdvance />
+          </ShellIconButton>
         </div>
 
         {isDesktopShell() && dirty ? (
@@ -5317,6 +5329,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <label className={styles.zoomLab}>
             UI
             <input
+              className={styles.zoomRange}
               type="range"
               min={50}
               max={150}
@@ -5327,6 +5340,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <label className={styles.zoomLab}>
             H
             <input
+              className={styles.zoomRange}
               type="range"
               min={ZOOM_H_MIN}
               max={ZOOM_H_MAX}
@@ -5337,6 +5351,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <label className={styles.zoomLab}>
             V
             <input
+              className={styles.zoomRange}
               type="range"
               min={ZOOM_V_MIN}
               max={ZOOM_V_MAX}

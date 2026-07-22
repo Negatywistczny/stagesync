@@ -36,7 +36,7 @@
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
 }
 
-/* Legacy header grid unused — Level 1 is AppHeader; song lives in .toolbar. */
+/* Legacy header grid unused — Level 1 is AppHeader; song lives in .toolbar (right). */
 .headerBrand {
   min-width: 0;
 }
@@ -219,8 +219,12 @@
   z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "song tools transport";
+  /*
+   * Equal side tracks so toolbarCenter shares the shell centerline
+   * (asymmetric tools vs song must not shift the middle).
+   */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: "tools center song";
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-5);
   padding: var(--ss-space-2) var(--ss-space-5);
@@ -229,31 +233,32 @@
   backdrop-filter: blur(10px);
 }
 
-.songCluster {
-  grid-area: song;
-  position: relative;
-  z-index: 1;
-  justify-self: start;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
 .toolBar {
   grid-area: tools;
-  justify-self: center;
+  justify-self: start;
   position: relative;
   min-width: 0;
 }
 
 .toolbarCenter {
-  grid-area: transport;
+  grid-area: center;
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.songCluster {
+  grid-area: song;
   position: relative;
   z-index: 1;
   justify-self: end;
-  flex-wrap: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ss-space-2);
   min-width: 0;
 }
 
@@ -270,13 +275,8 @@
 @media (max-width: 900px) {
   .toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--ss-space-2) var(--ss-space-3);
-  }
-
-  .songCluster {
-    flex: 1 1 100%;
-    justify-content: flex-start;
   }
 
   .toolBar {
@@ -288,6 +288,11 @@
   .toolbarCenter {
     flex: 0 0 auto;
     margin-left: auto;
+    justify-content: flex-end;
+  }
+
+  .songCluster {
+    flex: 0 0 auto;
     justify-content: flex-end;
   }
 }
@@ -513,6 +518,15 @@
 }
 
 .markerOverlay {
+  --tl-ruler-lane-h: calc(
+    (var(--ss-space-6) + var(--ss-space-1)) * var(--tl-zoom-ui)
+  );
+  /* Subtle rail vs canvas — not primary/info accents. */
+  --tl-marker-line: color-mix(
+    in srgb,
+    var(--ss-color-text-muted) 72%,
+    var(--ss-color-bg)
+  );
   position: absolute;
   left: var(--tl-dock-w);
   right: 0;
@@ -525,15 +539,15 @@
 
 .playheadMidi {
   position: absolute;
-  top: 0;
+  /* Start at BeatLane top (below LoopLane). */
+  top: var(--tl-ruler-lane-h);
   bottom: 0;
   width: 2px;
   margin-left: -1px;
-  background: var(--ss-color-info);
+  background: var(--tl-marker-line);
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.95;
   z-index: 1;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ss-color-info) 35%, transparent);
 }
 
 .playheadMidi::before {
@@ -544,14 +558,14 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid var(--ss-color-info);
+  border-top: 8px solid var(--tl-marker-line);
 }
 
 .locator {
   position: absolute;
-  top: 0;
-  /* Hit target only over ruler — full-height steal blocked Forma/Tekst drag (v4 regression). */
-  height: calc(var(--ss-space-6) + var(--ss-space-2));
+  top: var(--tl-ruler-lane-h);
+  /* Hit target over BeatLane only — LoopLane owns cycle gestures. */
+  height: var(--tl-ruler-lane-h);
   width: 12px;
   margin-left: -6px;
   background: transparent;
@@ -570,7 +584,7 @@
   left: 50%;
   width: 2px;
   margin-left: -1px;
-  background: var(--ss-color-primary);
+  background: var(--tl-marker-line);
   pointer-events: none;
 }
 
@@ -582,7 +596,7 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 8px solid var(--ss-color-primary);
+  border-bottom: 8px solid var(--tl-marker-line);
   pointer-events: none;
 }
 
@@ -594,7 +608,7 @@
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
   font-variant-numeric: tabular-nums;
-  color: var(--ss-color-primary);
+  color: var(--ss-color-text-muted);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -611,7 +625,8 @@
   /* Above grid (--ss-z-grid) and playhead/locator (--ss-z-playhead). */
   z-index: var(--ss-z-sticky);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   /* Two equal ruler lanes (loop / beat) — Logic-style split. */
   min-height: calc((var(--ss-space-6) + var(--ss-space-1)) * 2 * var(--tl-zoom-ui));
   padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
@@ -1202,13 +1217,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-4);
-}
-
-.helpLead {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-relaxed);
-  color: var(--ss-color-text-muted);
 }
 
 .helpGrid {
@@ -1965,8 +1973,74 @@
 }
 
 .zoomRange {
+  -webkit-appearance: none;
+  appearance: none;
   width: var(--ss-space-16);
+  height: var(--ss-space-4);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
   accent-color: var(--ss-color-primary);
+}
+
+.zoomRange:focus {
+  outline: none;
+}
+
+.zoomRange:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--ss-radius-sm);
+}
+
+.zoomRange::-webkit-slider-runnable-track {
+  height: var(--ss-space-1);
+  border-radius: var(--ss-radius-pill);
+  background: var(--ss-color-border);
+}
+
+.zoomRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--ss-space-3);
+  height: var(--ss-space-3);
+  margin-top: calc((var(--ss-space-1) - var(--ss-space-3)) / 2);
+  border-radius: var(--ss-radius-pill);
+  border: 1px solid var(--ss-color-border);
+  background: var(--ss-color-primary);
+}
+
+.zoomRange:active::-webkit-slider-thumb {
+  background: var(--ss-color-primary-active);
+}
+
+.zoomRange::-moz-range-track {
+  height: var(--ss-space-1);
+  border-radius: var(--ss-radius-pill);
+  background: var(--ss-color-border);
+}
+
+.zoomRange::-moz-range-thumb {
+  width: var(--ss-space-3);
+  height: var(--ss-space-3);
+  border-radius: var(--ss-radius-pill);
+  border: 1px solid var(--ss-color-border);
+  background: var(--ss-color-primary);
+}
+
+.zoomRange:active::-moz-range-thumb {
+  background: var(--ss-color-primary-active);
+}
+
+@media (hover: hover) {
+  .zoomRange:hover::-webkit-slider-thumb {
+    background: var(--ss-color-primary-hover);
+  }
+
+  .zoomRange:hover::-moz-range-thumb {
+    background: var(--ss-color-primary-hover);
+  }
 }
 
 .touchNudge {
