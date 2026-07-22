@@ -156,6 +156,7 @@ import {
 } from "../lib/metronome.js";
 import {
   addAudioTrack,
+  MAX_AUDIO_TRACKS,
   applyDecodedAudioMeta,
   commitAudioGesture,
   previewAudioFromSession,
@@ -2805,6 +2806,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   function onAddAudioTrack() {
     if (!draftProject) return;
+    if (draftProject.audioTracks.length >= MAX_AUDIO_TRACKS) {
+      setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
+      return;
+    }
     const { project } = addAudioTrack(draftProject);
     commitDraft(project);
     setEyeOpen(false);
@@ -5279,6 +5284,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 type="button"
                 role="menuitem"
                 className={styles.eyeItem}
+                disabled={
+                  (draftProject?.audioTracks.length ?? 0) >= MAX_AUDIO_TRACKS
+                }
+                title={
+                  (draftProject?.audioTracks.length ?? 0) >= MAX_AUDIO_TRACKS
+                    ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
+                    : undefined
+                }
                 onClick={onAddAudioTrack}
               >
                 + Ścieżka Audio

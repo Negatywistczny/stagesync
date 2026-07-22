@@ -130,10 +130,15 @@ export function setAudioTrackGainDb(
   };
 }
 
+export const MAX_AUDIO_TRACKS = 64;
+
 export function addAudioTrack(
   project: Project,
   name?: string,
 ): { project: Project; trackId: string } {
+  if (project.audioTracks.length >= MAX_AUDIO_TRACKS) {
+    throw new RangeError(`Audio tracks limited to ${MAX_AUDIO_TRACKS}`);
+  }
   const n = project.audioTracks.length + 1;
   const trackId = crypto.randomUUID();
   return {
