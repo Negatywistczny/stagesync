@@ -1,4 +1,4 @@
-import { resolve, sep } from "node:path";
+import { isAbsolute, resolve, sep } from "node:path";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ProjectIdSchema } from "@stagesync/shared";
@@ -40,7 +40,10 @@ export function resolveDataPaths(dataDir = defaultDataDir()): DataPaths {
  * 4. Fallback — repo `data/` (no HOME detected; server-less environments).
  */
 export function defaultDataDir(): string {
-  if (process.env.STAGESYNC_DATA_DIR) return process.env.STAGESYNC_DATA_DIR;
+  if (process.env.STAGESYNC_DATA_DIR) {
+    const dir = process.env.STAGESYNC_DATA_DIR;
+    return isAbsolute(dir) ? dir : resolve(REPO_ROOT, dir);
+  }
   if (process.env.STAGESYNC_REPO_DEV) return join(REPO_ROOT, "data");
   const home = process.env.HOME ?? process.env.USERPROFILE ?? null;
   if (home) return join(home, "Documents", "StageSync");
