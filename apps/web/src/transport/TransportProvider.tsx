@@ -158,7 +158,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        if (!cancelled) setWsStatus("connected");
+        if (cancelled) return;
+        lastServerTimeMsRef.current = Number.NEGATIVE_INFINITY;
+        setWsStatus("connected");
         sendHello();
         // Keep Admin presence latency fresh while connected (v4 interval).
         helloTimer = setInterval(() => {
