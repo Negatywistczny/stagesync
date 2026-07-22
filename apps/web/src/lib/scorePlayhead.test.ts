@@ -52,7 +52,7 @@ describe("scorePlayhead", () => {
 describe("score seek wiring", () => {
   it("click measure 16 calls seek with precise ticks", async () => {
     const project = projectWithMap();
-    const seek = vi.fn(async (_ticks: number) => undefined);
+    const seek = vi.fn<(ticks: number) => Promise<void>>();
     const ticks = seekTicksFromScoreBar(project, 16, 0);
     await seek(ticks);
     expect(seek).toHaveBeenCalledWith(17 * 4 * 960);
