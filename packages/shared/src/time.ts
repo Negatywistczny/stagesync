@@ -223,6 +223,9 @@ export function bbtToTicks(
  * toDisplayBar(-1) // 0 — count-in / pre-roll
  */
 export function toDisplayBar(bar: number): number {
+  if (!Number.isFinite(bar)) {
+    throw new RangeError("bar must be finite");
+  }
   return bar + 1;
 }
 
@@ -234,6 +237,9 @@ export function toDisplayBar(bar: number): number {
  * fromDisplayBar(0) // -1
  */
 export function fromDisplayBar(displayBar: number): number {
+  if (!Number.isFinite(displayBar)) {
+    throw new RangeError("displayBar must be finite");
+  }
   return displayBar - 1;
 }
 
