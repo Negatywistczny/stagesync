@@ -27,8 +27,8 @@ export function normalizeLoop(
   const startTicks = Math.trunc(Number(raw.startTicks));
   const endTicks = Math.trunc(Number(raw.endTicks));
   if (
-    !Number.isFinite(startTicks) ||
-    !Number.isFinite(endTicks) ||
+    !Number.isSafeInteger(startTicks) ||
+    !Number.isSafeInteger(endTicks) ||
     endTicks <= startTicks
   ) {
     return null;
