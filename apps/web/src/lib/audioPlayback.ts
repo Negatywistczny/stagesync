@@ -75,11 +75,15 @@ export async function loadAudioBuffer(
 export function clearAudioBufferCache(projectId?: string): void {
   if (!projectId) {
     bufferCache.clear();
+    inflight.clear();
     return;
   }
   const prefix = `${projectId}:`;
   for (const key of [...bufferCache.keys()]) {
     if (key.startsWith(prefix)) bufferCache.delete(key);
+  }
+  for (const key of [...inflight.keys()]) {
+    if (key.startsWith(prefix)) inflight.delete(key);
   }
 }
 
