@@ -16,11 +16,7 @@ export function createLogBuffer(options: { maxLines?: number } = {}) {
   const clients = new Set<Response>();
 
   function push(level: string, msg: string): LogLine {
-    const entry: LogLine = {
-      t: Date.now(),
-      level: String(level).trim().slice(0, 16) || "info",
-      msg: String(msg).slice(0, 500),
-    };
+    const entry: LogLine = { t: Date.now(), level, msg: String(msg).slice(0, 500) };
     lines.push(entry);
     while (lines.length > maxLines) lines.shift();
     const payload = `data: ${JSON.stringify(entry)}\n\n`;
@@ -53,12 +49,7 @@ export function createLogBuffer(options: { maxLines?: number } = {}) {
     addSseClient(res: Response): () => void {
       clients.add(res);
       for (const line of lines) {
-        try {
-          res.write(`data: ${JSON.stringify(line)}\n\n`);
-        } catch {
-          clients.delete(res);
-          break;
-        }
+        res.write(`data: ${JSON.stringify(line)}\n\n`);
       }
       return () => {
         clients.delete(res);
