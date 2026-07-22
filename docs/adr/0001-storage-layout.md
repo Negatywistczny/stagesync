@@ -22,6 +22,8 @@ data/
     <projectId>/
       project.json          # dokument projektu (formatVersion 2+)
       assets/               # pliki mediów per projekt (α6+; izolacja folderu)
+  host/
+    midi-config.json        # wybór portów MIDI Host (gitignore runtime)
   logs/                     # logi serwera / aplikacji
 ```
 

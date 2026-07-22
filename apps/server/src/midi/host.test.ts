@@ -31,6 +31,44 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("persists config to configFile on setConfig", async () => {
+    const { mkdtemp, readFile, rm } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const dir = await mkdtemp(join(tmpdir(), "ss-midi-host-"));
+    const file = join(dir, "midi-config.json");
+    try {
+      const transport = createTransportEngine();
+      const backend = createMockMidiBackend();
+      const host = createMidiHost(transport, { backend, configFile: file });
+      host.setConfig({
+        inputId: "mock-in-1",
+        outputId: "mock-out-1",
+        clockOutEnabled: false,
+      });
+      const raw = JSON.parse(await readFile(file, "utf8")) as {
+        inputId: string;
+        clockOutEnabled: boolean;
+      };
+      expect(raw.inputId).toBe("mock-in-1");
+      expect(raw.clockOutEnabled).toBe(false);
+      host.dispose();
+      transport.dispose();
+
+      const transport2 = createTransportEngine();
+      const host2 = createMidiHost(transport2, {
+        backend: createMockMidiBackend(),
+        configFile: file,
+      });
+      expect(host2.getConfig().inputId).toBe("mock-in-1");
+      expect(host2.getConfig().clockOutEnabled).toBe(false);
+      host2.dispose();
+      transport2.dispose();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("emits Start + SPP + Clock on play, Stop on stop", () => {
     vi.useFakeTimers();
     const transport = createTransportEngine({

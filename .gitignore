@@ -37,6 +37,8 @@ data/library/*
 !data/library/library.template.json
 !data/library/seed-projects/
 !data/library/seed-projects/**/*
+data/host/*
+!data/host/.gitkeep
 
 # Tauri
 apps/desktop/src-tauri/gen/
