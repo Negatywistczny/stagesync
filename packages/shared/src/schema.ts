@@ -18,7 +18,7 @@ export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;
 /** Skeleton library catalog — validated at every edge (API / disk). */
 export const LibrarySchema = z.object({
   version: z.literal(1),
-  projects: z.array(LibraryProjectEntrySchema),
+  projects: z.array(LibraryProjectEntrySchema).max(1024),
 });
 
 export type Library = z.infer<typeof LibrarySchema>;
