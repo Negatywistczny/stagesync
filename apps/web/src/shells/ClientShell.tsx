@@ -335,6 +335,7 @@ export function ClientShell() {
                     notesEdit={displayPrefs.formNotesEdit}
                     onNoteChange={(clipId, note) => {
                       if (!state.activeProjectId) return;
+                      const prev = activeProject;
                       const next: Project = {
                         ...activeProject,
                         forma: {
@@ -349,9 +350,9 @@ export function ClientShell() {
                         },
                       };
                       setActiveProject(next);
-                      void putProject(state.activeProjectId, next).catch(
-                        () => undefined,
-                      );
+                      void putProject(state.activeProjectId, next)
+                        .then((saved) => setActiveProject(saved))
+                        .catch(() => setActiveProject(prev));
                     }}
                   />
                 ) : (
@@ -379,6 +380,7 @@ export function ClientShell() {
                       setVocalTapOn(false);
                       return;
                     }
+                    const prev = activeProject;
                     const next = applyVocalTap(
                       activeProject,
                       clip.id,
@@ -386,7 +388,8 @@ export function ClientShell() {
                     );
                     setActiveProject(next);
                     void putProject(state.activeProjectId, next)
-                      .then(() => {
+                      .then((saved) => {
+                        setActiveProject(saved);
                         const qi = vocalTapIndex + 1;
                         if (qi >= queue.length) {
                           setVocalTapOn(false);
@@ -395,7 +398,7 @@ export function ClientShell() {
                           setVocalTapIndex(qi);
                         }
                       })
-                      .catch(() => undefined);
+                      .catch(() => setActiveProject(prev));
                   }}
                 />
               ) : id === "grid" ? (
