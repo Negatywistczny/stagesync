@@ -15,6 +15,7 @@ import {
   resolveKeyAt,
   formatKeySignature,
   KEY_TONICS,
+  normalizeKeyTonic,
   parseLegacyMeter,
   ticksPerBar,
   ticksToBbt,
@@ -4477,7 +4478,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           resolveKeyAt(draftProject, 0)?.mode ?? "major";
                         commitDraft(
                           upsertKeyAt(draftProject, 0, {
-                            tonic: e.target.value || "C",
+                            tonic: normalizeKeyTonic(e.target.value),
                             mode,
                           }),
                         );
@@ -5459,7 +5460,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   const modeEl = document.getElementById(
                     "key-mode",
                   ) as HTMLSelectElement | null;
-                  const tonic = tonicEl?.value || "C";
+                  const tonic = normalizeKeyTonic(tonicEl?.value);
                   const mode =
                     modeEl?.value === "minor"
                       ? ("minor" as const)
