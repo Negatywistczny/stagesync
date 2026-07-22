@@ -17,15 +17,14 @@ import {
   parseLegacyMeter,
   ticksPerBar,
   ticksToBbt,
-  ticksToMs,
   toDisplayBar,
   importUgText,
   projectEndTicks,
   transportHomeTicks,
+  wandContentToForma,
   type FormaClip,
   type Project,
-  type SnapMode,
-  DEFAULT_SNAP_MODE,
+  type WandMode,
 } from "@stagesync/shared";
 import {
   buildBarMarks,
@@ -163,9 +162,6 @@ import {
   commitAudioGesture,
   previewAudioFromSession,
   setAudioClipGainDb,
-  setAudioClipFadeMs,
-  setAudioClipLoop,
-  applyAbutCrossfadeForClip,
   setAudioClipMuted,
   setAudioTrackGainDb,
   setAudioTrackMuted,
@@ -204,18 +200,12 @@ import {
 import {
   contentSnapModeFromModifiers,
   cursorForHitZone,
-  hitTestAudioClipZone,
   hitTestClipZone,
-  loadSessionSnapModeFromStorage,
-  persistSessionSnapMode,
-  snapModeFromStorageKey,
-  snapModeToStorageKey,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
-  type ClipHitZone,
 } from "../lib/timelineGesture.js";
 import {
   audioTrackIdFromLane,
@@ -281,11 +271,7 @@ import {
   IconTap,
   IconUnchecked,
   IconUndo,
-  IconZoomH,
-  IconZoomIn,
-  IconZoomOut,
-  IconZoomUi,
-  IconZoomV,
+  IconWand,
 } from "./icons.js";
 import { ShellWordmark } from "./ShellWordmark.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -343,7 +329,14 @@ const TOOLS: {
     key: "c",
     Icon: IconScissors,
   },
-  // Różdżka (wand) — ukryta do naprawy zachowania (PO smoke); core `wandContentToForma` zostaje.
+  {
+    id: "wand",
+    label: "Różdżka",
+    title:
+      "Różdżka — Tekst / Akordy → Forma (zaznaczenie sekcji = zakres; bez — cały utwór)",
+    key: "w",
+    Icon: IconWand,
+  },
 ];
 
 const TOOL_BY_KEY = Object.fromEntries(TOOLS.map((t) => [t.key, t]));
@@ -391,11 +384,13 @@ export function TimelineShell() {
     left: number;
     top: number;
   } | null>(null);
+  const [wandMenu, setWandMenu] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
   const toolMenuRef = useRef<HTMLDivElement>(null);
+  const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
-  const [snapMode, setSnapMode] = useState<SnapMode>(() =>
-    loadSessionSnapModeFromStorage(),
-  );
   const [helpOpen, setHelpOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
@@ -803,7 +798,7 @@ export function TimelineShell() {
     if (!draft || !clipSelection.items.length) return false;
     // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
     const lane = primaryLane(clipSelection);
-    if (!lane) return false;
+    if (!lane || isAudioSelectionLane(lane)) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
     let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
     if (lane === "forma") {
@@ -816,8 +811,6 @@ export function TimelineShell() {
       clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
     } else if (lane === "cue") {
       clips = draft.cue.clips.filter((c) => idSet.has(c.id));
-    } else if (isAudioSelectionLane(lane)) {
-      clips = draft.audioClips.filter((c) => idSet.has(c.id));
     } else {
       return false;
     }
@@ -871,12 +864,7 @@ export function TimelineShell() {
           ? draft.tekst.clips.filter((c) => idSet.has(c.id))
           : lane === "akordy"
             ? draft.akordy.clips.filter((c) => idSet.has(c.id))
-            : lane === "cue"
-              ? draft.cue.clips.filter((c) => idSet.has(c.id))
-              : isAudioSelectionLane(lane)
-                ? draft.audioClips.filter((c) => idSet.has(c.id))
-                : [];
-    if (!clips.length) return false;
+            : draft.cue.clips.filter((c) => idSet.has(c.id));
     return pasteClipClipboard(selectionMaxEndTicks(clips));
   }, [clipSelection, copyClipSelection, pasteClipClipboard]);
 
@@ -1461,56 +1449,13 @@ export function TimelineShell() {
   useEffect(() => {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
-      if (!detail) return;
+      if (detail?.action !== "save") return;
       const h = keyHandlersRef.current;
-      switch (detail.action) {
-        case "save":
-          if (h.dirty && !h.savePending) void h.onSave();
-          break;
-        case "edit-undo":
-          h.onUndo();
-          break;
-        case "edit-redo":
-          h.onRedo();
-          break;
-        case "edit-cut":
-          cutClipSelection();
-          break;
-        case "edit-copy":
-          copyClipSelection();
-          break;
-        case "edit-paste":
-          pasteClipClipboard(locatorTicks);
-          break;
-        case "edit-delete":
-          deleteSelectedFormaClip();
-          break;
-        case "view-zoom-in":
-          h.zoomHorizontalBySteps(1);
-          break;
-        case "view-zoom-out":
-          h.zoomHorizontalBySteps(-1);
-          break;
-        case "view-zoom-reset":
-          h.fitZoom();
-          setZoomUi(100);
-          break;
-        case "help-shortcuts":
-          setHelpOpen(true);
-          break;
-        default:
-          break;
-      }
+      if (h.dirty && !h.savePending) void h.onSave();
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [
-    copyClipSelection,
-    cutClipSelection,
-    deleteSelectedFormaClip,
-    locatorTicks,
-    pasteClipClipboard,
-  ]);
+  }, []);
 
   function onDiscard() {
     if (!savedProject) {
@@ -2087,34 +2032,18 @@ export function TimelineShell() {
       setClipSelection((prev) => setSelection(prev.items, clip.id));
     }
     const rect = e.currentTarget.getBoundingClientRect();
-    const zone = hitTestAudioClipZone(
-      e.clientX - rect.left,
-      e.clientY - rect.top,
-      rect.width,
-      rect.height,
-      true,
-      tool === "smart",
-    );
+    const zone = hitTestClipZone(e.clientX - rect.left, rect.width, true);
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     const kind =
-      zone === "fade-in"
-        ? "fade-in"
-        : zone === "fade-out"
-          ? "fade-out"
-          : zone === "start"
-            ? "resize-start"
-            : zone === "end"
-              ? "resize-end"
-              : "move";
+      zone === "start" ? "resize-start" : zone === "end" ? "resize-end" : "move";
     const moveIds =
       kind === "move"
         ? inMulti
           ? resolveMoveIds(clipSelection, clip.id, lane)
           : [clip.id]
         : [clip.id];
-    const fullClip = draftProject.audioClips.find((c) => c.id === clip.id);
     const session: FormaGestureSession = {
       kind,
       clipId: clip.id,
@@ -2125,12 +2054,6 @@ export function TimelineShell() {
       lane,
       originClientX: e.clientX,
       moveIds: kind === "move" ? moveIds : undefined,
-      originFadeMs:
-        kind === "fade-in"
-          ? fullClip?.fadeInMs ?? 0
-          : kind === "fade-out"
-            ? fullClip?.fadeOutMs ?? 0
-            : undefined,
     };
     beginFormaGesture(
       session,
@@ -2595,6 +2518,18 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [toolMenu]);
+
+  useEffect(() => {
+    if (!wandMenu) return;
+    function onPointerDown(e: PointerEvent) {
+      const el = wandMenuRef.current;
+      if (el && e.target instanceof Node && el.contains(e.target)) return;
+      setWandMenu(null);
+      setTool((t) => (t === "wand" ? "pointer" : t));
+    }
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [wandMenu]);
 
   function placeLocatorAtTicks(
     ticks: number,
@@ -3216,7 +3151,39 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const def = TOOLS.find((t) => t.id === id);
     if (def?.disabled) return;
     setToolMenu(null);
+    if (id === "wand") {
+      setTool("wand");
+      const { x, y } = lastPointerRef.current;
+      setWandMenu({
+        left: Math.max(8, x),
+        top: Math.max(8, y),
+      });
+      return;
+    }
+    setWandMenu(null);
     setTool(id);
+  }
+
+  function applyWand(mode: WandMode) {
+    const draft = draftRef.current;
+    if (!draft) return;
+    const formaIds = idsOnLane(clipSelection, "forma");
+    const ranges = formaIds.length
+      ? draft.forma.clips
+          .filter((c) => formaIds.includes(c.id) && c.kind === "section")
+          .map((c) => ({
+            startTicks: c.startTicks,
+            endTicks: c.startTicks + c.lengthTicks,
+          }))
+      : undefined;
+    const next = wandContentToForma(
+      draft,
+      mode,
+      ranges?.length ? { ranges } : {},
+    );
+    if (next !== draft) commitDraft(next);
+    setWandMenu(null);
+    setTool("pointer");
   }
 
   function openToolMenuAt(clientX: number, clientY: number) {
@@ -3317,33 +3284,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               peaks && peaks.length
                 ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
                 : "";
-            const fadeInMs =
-              previewing &&
-              gesturePreview &&
-              (gesturePreview.kind === "fade-in" ||
-                gesturePreview.kind === "fade-out") &&
-              gesturePreview.clipId === clip.id
-                ? (gesturePreview.fadeInMs ?? clip.fadeInMs ?? 0)
-                : (clip.fadeInMs ?? 0);
-            const fadeOutMs =
-              previewing &&
-              gesturePreview &&
-              (gesturePreview.kind === "fade-in" ||
-                gesturePreview.kind === "fade-out") &&
-              gesturePreview.clipId === clip.id
-                ? (gesturePreview.fadeOutMs ?? clip.fadeOutMs ?? 0)
-                : (clip.fadeOutMs ?? 0);
-            const clipMs = Math.max(
-              1,
-              ticksToMs(
-                styleClip.lengthTicks,
-                resolveTempoAt(draftProject, styleClip.startTicks),
-                resolveMeterAt(draftProject, styleClip.startTicks),
-                draftProject.ppq,
-              ),
-            );
-            const fadeInPct = Math.min(50, (fadeInMs / clipMs) * 100);
-            const fadeOutPct = Math.min(50, (fadeOutMs / clipMs) * 100);
             return (
               <button
                 key={clip.id}
@@ -3357,31 +3297,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     ? styles.clipSelected
                     : "",
                   clip.muted ? styles.audioClipMuted : "",
-                  clip.loop ? styles.audioClipLoop : "",
                   previewing ? styles.formaClipDim : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
                 style={style}
-                title={`${asset?.originalName ?? "Audio"} — move/trim; Smart: fade corners`}
+                title={`${asset?.originalName ?? "Audio"} — move/trim`}
                 onPointerDown={(e) => onAudioClipPointerDown(e, lane, clip)}
                 onPointerMove={onFormaClipPointerMove}
                 onPointerUp={onFormaClipPointerUp}
               >
-                {fadeInPct > 0 ? (
-                  <span
-                    className={styles.audioFadeIn}
-                    style={{ width: `${fadeInPct}%` }}
-                    aria-hidden
-                  />
-                ) : null}
-                {fadeOutPct > 0 ? (
-                  <span
-                    className={styles.audioFadeOut}
-                    style={{ width: `${fadeOutPct}%` }}
-                    aria-hidden
-                  />
-                ) : null}
                 {poly ? (
                   <svg
                     className={styles.audioWaveform}
@@ -3989,28 +3914,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <Icon />
             </ShellIconButton>
           ))}
-          <label className={styles.snapPicker} title="Siatka edycji (snap)">
-            <span className={styles.snapPickerLab}>Snap</span>
-            <select
-              className={styles.snapPickerSelect}
-              aria-label="Tryb snap"
-              value={snapModeToStorageKey(snapMode)}
-              onChange={(e) => {
-                const next =
-                  snapModeFromStorageKey(e.target.value) ?? DEFAULT_SNAP_MODE;
-                setSnapMode(next);
-                persistSessionSnapMode(next);
-              }}
-            >
-              <option value="off">Off</option>
-              <option value="bar">Takt</option>
-              <option value="beat">Beat</option>
-              <option value="subdivision:2">1/2</option>
-              <option value="subdivision:4">1/4</option>
-              <option value="subdivision:8">1/8</option>
-              <option value="subdivision:16">1/16</option>
-            </select>
-          </label>
         </div>
 
         <div className={styles.toolbarCenter}>
@@ -4024,14 +3927,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             </ShellIconButton>
             <button
               type="button"
-              className={[
-                styles.playBtn,
-                state.playing ? styles.playBtnPlaying : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              aria-label={state.playing ? "Pauza" : "Odtwórz"}
-              aria-pressed={state.playing}
+              className={styles.playBtn}
+              aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
               disabled={commandPending}
               onClick={() =>
                 void (state.playing ? pause() : onPlayClick())
@@ -4040,20 +3937,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               {state.playing ? <IconPause /> : <IconPlay />}
             </button>
             <ShellIconButton
-              label="Pętla (C) — zakres na linijce, potem włącz"
+              label="Pętla — przeciągnij zakres na linijce, potem włącz"
               pressed={loopOn}
               onClick={onLoopToggle}
             >
               <IconLoop />
             </ShellIconButton>
-            <span className={styles.bbt} aria-live="polite" title="Pozycja BBT">
+            <span className={styles.bbt} aria-live="polite">
               {toDisplayBar(bbt.bar)}.{bbt.beat}
             </span>
             <button
               type="button"
               className={styles.metaBtn}
-              title="Tempo @ playhead — kliknij, aby edytować"
-              aria-label={`Tempo ${tempoAtPlayhead} BPM`}
+              title="Tempo — kliknij, aby edytować @ playhead"
               onClick={() => {
                 openMapEdit("tempo", displayTicks);
               }}
@@ -4063,8 +3959,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <button
               type="button"
               className={styles.metaBtn}
-              title="Metrum @ playhead — kliknij, aby edytować"
-              aria-label={`Metrum ${meterAtPlayhead.numerator}/${meterAtPlayhead.denominator}`}
+              title="Metrum — kliknij, aby edytować @ playhead"
               onClick={() => {
                 openMapEdit("metrum", displayTicks);
               }}
@@ -4074,12 +3969,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <button
               type="button"
               className={styles.metaBtn}
-              title="Tonacja @ playhead — kliknij, aby edytować"
-              aria-label={`Tonacja ${
-                draftProject
-                  ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
-                  : "brak"
-              }`}
+              title="Tonacja — kliknij, aby edytować"
               onClick={() => openMapEdit("tonacja", displayTicks)}
             >
               {draftProject
@@ -4873,78 +4763,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
                 <label className={styles.inspField}>
-                  Fade in (ms)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={0}
-                    step={10}
-                    value={selectedAudioClip.fadeInMs ?? 0}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n) || n < 0) return;
-                      commitDraft(
-                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
-                          fadeInMs: n,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Fade out (ms)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={0}
-                    step={10}
-                    value={selectedAudioClip.fadeOutMs ?? 0}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n) || n < 0) return;
-                      commitDraft(
-                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
-                          fadeOutMs: n,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(selectedAudioClip.loop)}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioClipLoop(
-                          draftProject,
-                          selectedAudioClip.id,
-                          e.target.checked,
-                        ),
-                      );
-                    }}
-                  />{" "}
-                  Loop region (w obrębie clipu)
-                </label>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    if (!draftProject) return;
-                    const next = applyAbutCrossfadeForClip(
-                      draftProject,
-                      selectedAudioClip.id,
-                      80,
-                    );
-                    if (next !== draftProject) commitDraft(next);
-                  }}
-                >
-                  Crossfade z sąsiadem (80 ms)
-                </Button>
-                <label className={styles.inspField}>
                   <input
                     type="checkbox"
                     checked={Boolean(selectedAudioTrack.muted)}
@@ -5180,93 +4998,36 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom">
-          <div className={styles.zoomControl} title="Skala interfejsu Timeline">
-            <span className={styles.zoomLab}>
-              <IconZoomUi />
-              UI
-            </span>
-            <ShellIconButton
-              label="Zmniejsz skalę UI"
-              disabled={zoomUi <= 50}
-              onClick={() => setZoomUi((z) => Math.max(50, z - 10))}
-            >
-              <IconZoomOut />
-            </ShellIconButton>
+          <label className={styles.zoomLab}>
+            UI
             <input
               type="range"
-              className={styles.zoomRange}
               min={50}
               max={150}
               value={zoomUi}
-              aria-label="Skala UI"
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
-            <ShellIconButton
-              label="Zwiększ skalę UI"
-              disabled={zoomUi >= 150}
-              onClick={() => setZoomUi((z) => Math.min(150, z + 10))}
-            >
-              <IconZoomIn />
-            </ShellIconButton>
-          </div>
-          <div className={styles.zoomControl} title="Zoom poziomy (oś czasu)">
-            <span className={styles.zoomLab}>
-              <IconZoomH />
-              H
-            </span>
-            <ShellIconButton
-              label="Oddal poziomo"
-              disabled={zoomH <= ZOOM_H_MIN}
-              onClick={() => zoomHorizontalBySteps(-1)}
-            >
-              <IconZoomOut />
-            </ShellIconButton>
+          </label>
+          <label className={styles.zoomLab}>
+            H
             <input
               type="range"
-              className={styles.zoomRange}
               min={ZOOM_H_MIN}
               max={ZOOM_H_MAX}
               value={zoomH}
-              aria-label="Zoom poziomy"
               onChange={(e) => setZoomH(Number(e.target.value))}
             />
-            <ShellIconButton
-              label="Przybliż poziomo"
-              disabled={zoomH >= ZOOM_H_MAX}
-              onClick={() => zoomHorizontalBySteps(1)}
-            >
-              <IconZoomIn />
-            </ShellIconButton>
-          </div>
-          <div className={styles.zoomControl} title="Zoom pionowy (wysokość ścieżek)">
-            <span className={styles.zoomLab}>
-              <IconZoomV />
-              V
-            </span>
-            <ShellIconButton
-              label="Oddal pionowo"
-              disabled={zoomV <= ZOOM_V_MIN}
-              onClick={() => zoomVerticalBySteps(-1)}
-            >
-              <IconZoomOut />
-            </ShellIconButton>
+          </label>
+          <label className={styles.zoomLab}>
+            V
             <input
               type="range"
-              className={styles.zoomRange}
               min={ZOOM_V_MIN}
               max={ZOOM_V_MAX}
               value={zoomV}
-              aria-label="Zoom pionowy"
               onChange={(e) => setVerticalZoom(Number(e.target.value))}
             />
-            <ShellIconButton
-              label="Przybliż pionowo"
-              disabled={zoomV >= ZOOM_V_MAX}
-              onClick={() => zoomVerticalBySteps(1)}
-            >
-              <IconZoomIn />
-            </ShellIconButton>
-          </div>
+          </label>
         </div>
       </footer>
 
@@ -5619,6 +5380,37 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           )
         : null}
 
+      {wandMenu
+        ? createPortal(
+            <div
+              ref={wandMenuRef}
+              className={styles.toolMenu}
+              style={{ top: wandMenu.top, left: wandMenu.left }}
+              role="menu"
+              aria-label="Różdżka — źródło"
+            >
+              {(
+                [
+                  ["tekst", "Tekst → Forma"],
+                  ["akordy", "Akordy → Forma"],
+                  ["both", "Tekst + Akordy → Forma"],
+                ] as const
+              ).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  role="menuitem"
+                  className={styles.toolMenuItem}
+                  onClick={() => applyWand(mode)}
+                >
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
+
       {tempoEditOpen && draftProject ? (
         <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
@@ -5839,7 +5631,7 @@ function FormaClipButton({
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
-  const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
+  const [hoverZone, setHoverZone] = useState<"body" | "start" | "end">("body");
   const countdown = clip.kind === "countdown";
   const cursor = pencilActive
     ? "crosshair"
