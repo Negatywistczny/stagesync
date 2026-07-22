@@ -8,6 +8,8 @@ import {
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
+  PutSetlistBodySchema,
+  SetlistSchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -134,6 +136,31 @@ describe("CreateProjectBodySchema", () => {
     });
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
+  });
+});
+
+describe("SetlistSchema", () => {
+  it("rejects more than 256 project ids", () => {
+    const ids = Array.from({ length: 257 }, () => crypto.randomUUID());
+    expect(() =>
+      SetlistSchema.parse({
+        version: 1,
+        enabled: true,
+        projectIds: ids,
+        autoAdvance: { enabled: false },
+      }),
+    ).toThrow();
+    expect(
+      SetlistSchema.parse({
+        version: 1,
+        enabled: true,
+        projectIds: ids.slice(0, 256),
+        autoAdvance: { enabled: false },
+      }).projectIds,
+    ).toHaveLength(256);
+    expect(() =>
+      PutSetlistBodySchema.parse({ enabled: true, projectIds: ids }),
+    ).toThrow();
   });
 });
 

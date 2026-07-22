@@ -123,7 +123,7 @@ export type AudioClip = z.infer<typeof AudioClipSchema>;
 export const SetlistSchema = z.object({
   version: z.literal(1),
   enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()),
+  projectIds: z.array(z.string().uuid()).max(256),
   autoAdvance: z.object({
     enabled: z.boolean(),
   }),
@@ -133,7 +133,7 @@ export type Setlist = z.infer<typeof SetlistSchema>;
 
 export const PutSetlistBodySchema = z.object({
   enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()),
+  projectIds: z.array(z.string().uuid()).max(256),
 });
 
 export type PutSetlistBody = z.infer<typeof PutSetlistBodySchema>;
