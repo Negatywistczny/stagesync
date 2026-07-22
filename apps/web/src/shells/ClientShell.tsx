@@ -335,6 +335,7 @@ export function ClientShell() {
                     notesEdit={displayPrefs.formNotesEdit}
                     onNoteChange={(clipId, note) => {
                       if (!state.activeProjectId) return;
+                      const prev = activeProject;
                       const next: Project = {
                         ...activeProject,
                         forma: {
@@ -349,9 +350,9 @@ export function ClientShell() {
                         },
                       };
                       setActiveProject(next);
-                      void putProject(state.activeProjectId, next).catch(
-                        () => undefined,
-                      );
+                      void putProject(state.activeProjectId, next)
+                        .then((saved) => setActiveProject(saved))
+                        .catch(() => setActiveProject(prev));
                     }}
                   />
                 ) : (
@@ -379,20 +380,16 @@ export function ClientShell() {
                       setVocalTapOn(false);
                       return;
                     }
-                    const prev =
-                      vocalTapIndex > 0 ? queue[vocalTapIndex - 1] : null;
-                    const minStart = prev
-                      ? prev.startTicks + Math.max(1, prev.lengthTicks)
-                      : undefined;
+                    const prev = activeProject;
                     const next = applyVocalTap(
                       activeProject,
                       clip.id,
                       displayTicks,
-                      minStart,
                     );
                     setActiveProject(next);
                     void putProject(state.activeProjectId, next)
-                      .then(() => {
+                      .then((saved) => {
+                        setActiveProject(saved);
                         const qi = vocalTapIndex + 1;
                         if (qi >= queue.length) {
                           setVocalTapOn(false);
@@ -401,7 +398,7 @@ export function ClientShell() {
                           setVocalTapIndex(qi);
                         }
                       })
-                      .catch(() => undefined);
+                      .catch(() => setActiveProject(prev));
                   }}
                 />
               ) : id === "grid" ? (
@@ -537,7 +534,7 @@ function GlobalSettingsFields() {
       <p className={styles.fieldLab}>Wygląd</p>
       <ShellAppearanceFields />
       <p className={styles.muted}>
-        Tonacja koncertowa / polskie nazwy — poza 5.0.0 (kolejne etapy).
+        Tonacja koncertowa / polskie nazwy — później (β).
       </p>
     </>
   );
@@ -687,7 +684,7 @@ function RoleSettingsFields({
           </Button>
         </div>
         <p className={styles.muted}>
-          Zoom lokalny (stub OSMD). Partie / oktawa — poza 5.0.0.
+          Zoom lokalny (stub OSMD). Partie / oktawa — później.
         </p>
       </>
     );
