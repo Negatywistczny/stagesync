@@ -16,6 +16,7 @@ import {
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
 import {
+  downloadDiagnosticsExport,
   fetchNetworkInfo,
   fetchSetlist,
   postSystemRestart,
@@ -293,6 +294,11 @@ export function DesktopMenuBridge() {
         case "host-restart":
           setRestartError(null);
           setRestartOpen(true);
+          break;
+        case "diagnostics-export":
+          void downloadDiagnosticsExport().catch(() => {
+            /* menu is best-effort */
+          });
           break;
         default:
           break;

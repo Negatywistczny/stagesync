@@ -25,7 +25,7 @@ import {
   updateProject,
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
-import { fetchSetlist, clearHostLogs, fetchNetworkInfo, fetchMidiHostStatus, putMidiHostConfig, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus, type MidiHostStatus } from "../lib/setlistApi.js";
+import { fetchSetlist, clearHostLogs, downloadDiagnosticsExport, fetchNetworkInfo, fetchMidiHostStatus, putMidiHostConfig, postSystemRestart, postSystemShutdown, fetchHostUpdateStatus, postApplyHostUpdate, type HostLogLine, type NetworkInfo, type HostUpdateStatus, type MidiHostStatus } from "../lib/setlistApi.js";
 import { isDesktopShell, checkDesktopUpdate, installDesktopUpdate, openExternalUrl, syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen, formatUnknownError, type DesktopUpdateInfo } from "../lib/desktopBridge.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import {
@@ -1081,6 +1081,8 @@ function HostView({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const [diagBusy, setDiagBusy] = useState(false);
+  const [diagError, setDiagError] = useState<string | null>(null);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
@@ -1223,8 +1225,36 @@ function HostView({
               >
                 Wyczyść
               </Button>
+              <Button
+                variant="ghost"
+                loading={diagBusy}
+                onClick={() => {
+                  void (async () => {
+                    setDiagBusy(true);
+                    setDiagError(null);
+                    try {
+                      await downloadDiagnosticsExport();
+                    } catch (err) {
+                      setDiagError(
+                        err instanceof Error
+                          ? err.message
+                          : "Eksport diagnostyki nieudany",
+                      );
+                    } finally {
+                      setDiagBusy(false);
+                    }
+                  })();
+                }}
+              >
+                Pobierz paczkę (.zip)
+              </Button>
             </div>
           </div>
+          {diagError ? (
+            <p className={styles.error} role="alert">
+              {diagError}
+            </p>
+          ) : null}
           <pre className={styles.terminal} aria-live="polite">
             {lines.length === 0
               ? "Oczekiwanie na logi…"

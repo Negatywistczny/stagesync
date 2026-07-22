@@ -97,3 +97,10 @@ void main();
 
 process.on("SIGINT", () => lifecycle.gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => lifecycle.gracefulShutdown("SIGTERM"));
+
+process.on("uncaughtException", (err) => {
+  console.error("[CRITICAL UNCAUGHT EXCEPTION]", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[CRITICAL UNHANDLED REJECTION]", reason);
+});

@@ -9,6 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Features
 
+- **Diagnostics (#351):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
 - **Audio preload (#365):** `ensureAudioBuffered` przed Play (spinner na przycisku); ostrzeżenie UI przy błędzie decode; `clearAudioBufferCache` przy zmianie/odmontowaniu utworu.
 - **CI Codecov (#418):** Vitest coverage (lcov) dla shared/server/web; `codecov-action@v5` z `fail_ci_if_error: false`.
 - **README (#419 / #417):** landing ~60–80 linii; badges CI/release/license/version (bez Tailwind / visitorbadge).

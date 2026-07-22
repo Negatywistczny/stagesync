@@ -7,6 +7,13 @@ import "./index.css";
 
 initAppearance();
 
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("[UNHANDLED PROMISE REJECTION]", event.reason);
+});
+window.addEventListener("error", (event) => {
+  console.error("[UNCAUGHT ERROR]", event.error || event.message);
+});
+
 const root = document.getElementById("root");
 if (!root) {
   throw new Error("Root element #root not found");
