@@ -218,6 +218,7 @@ export {
 export {
   clampFormaSubsections,
   deleteClip,
+  insertGapSectionAfterCountdown,
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
