@@ -235,7 +235,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       try {
         const initial = await getTransport();
         if (cancelled) return;
-        applyAnchor(initial, performance.now());
+        applyAnchor(initial.state, performance.now(), initial.serverTimeMs);
       } catch (err) {
         if (!cancelled) {
           setError(formatTransportError(err, "Failed to load"));
@@ -266,14 +266,14 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   );
 
   const runCommand = useCallback(
-    async (fn: () => Promise<TransportState>) => {
+    async (fn: () => Promise<{ state: TransportState; serverTimeMs: number }>) => {
       if (commandPendingRef.current) return;
       commandPendingRef.current = true;
       setCommandPending(true);
       setError(null);
       try {
-        const next = await fn();
-        applyAnchor(next, performance.now());
+        const { state: next, serverTimeMs } = await fn();
+        applyAnchor(next, performance.now(), serverTimeMs);
         if (next.playing) {
           startRaf();
         } else {
