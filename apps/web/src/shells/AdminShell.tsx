@@ -1661,6 +1661,14 @@ function HostSettingsModal({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const [hostToken, setHostToken] = useState(() => {
+    try {
+      return localStorage.getItem("stagesync.hostToken") ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const [hostTokenNotice, setHostTokenNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1768,6 +1776,55 @@ function HostSettingsModal({
         ) : midiError ? null : (
           <p className={styles.muted}>Wczytywanie…</p>
         )}
+      </fieldset>
+      <fieldset className={styles.fieldset}>
+        <legend>LAN restart / shutdown</legend>
+        <p className={styles.muted}>
+          Token wysyłany jako Bearer przy restarcie z sieci LAN (pary z{" "}
+          <code>STAGESYNC_HOST_TOKEN</code> na serwerze). Loopback nie wymaga
+          tokenu. Zob. docs/INSTALL.md.
+        </p>
+        {hostTokenNotice ? (
+          <p className={styles.muted} role="status">
+            {hostTokenNotice}
+          </p>
+        ) : null}
+        <label className={styles.midiPortRow}>
+          <span className={styles.midiLabel}>Host token</span>
+          <input
+            className={styles.input}
+            type="password"
+            autoComplete="off"
+            maxLength={256}
+            value={hostToken}
+            aria-label="Host lifecycle token"
+            placeholder="opcjonalny"
+            onChange={(e) => setHostToken(e.target.value)}
+          />
+        </label>
+        <div className={styles.actions}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              try {
+                const trimmed = hostToken.trim();
+                if (trimmed) {
+                  localStorage.setItem("stagesync.hostToken", trimmed);
+                } else {
+                  localStorage.removeItem("stagesync.hostToken");
+                }
+                setHostToken(trimmed);
+                setHostTokenNotice(
+                  trimmed ? "Token zapisany w przeglądarce." : "Token usunięty.",
+                );
+              } catch {
+                setHostTokenNotice("Nie udało się zapisać tokenu.");
+              }
+            }}
+          >
+            Zapisz token
+          </Button>
+        </div>
       </fieldset>
       <fieldset className={styles.fieldset}>
         <legend>Sieć</legend>
