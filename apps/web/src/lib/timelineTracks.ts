@@ -76,13 +76,20 @@ export function defaultTrackVisibility(
   return out;
 }
 
-/** Merge new audio track ids into visibility (default visible). */
+/** Merge new audio track ids into visibility (default visible); drop stale audio:* keys. */
 export function ensureAudioTrackVisibility(
   visibility: TrackVisibilityMap,
   audioTracks: AudioTrackLike[],
 ): TrackVisibilityMap {
   let changed = false;
   const next = { ...visibility };
+  const live = new Set(audioTracks.map((t) => audioLaneId(t.id)));
+  for (const key of Object.keys(next)) {
+    if (key.startsWith("audio:") && !live.has(key)) {
+      delete next[key];
+      changed = true;
+    }
+  }
   for (const t of audioTracks) {
     const id = audioLaneId(t.id);
     if (!(id in next)) {
