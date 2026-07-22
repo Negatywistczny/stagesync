@@ -43,7 +43,7 @@ export async function migrateVolumeOnBoot(
     projectsScanned += 1;
     const rewritten = await stores.migrateProjectOnDisk(name, {
       onBackup: (file) => {
-        backups.push(file);
+        if (backups.length < 64) backups.push(file);
       },
     });
     if (rewritten) projectsRewritten += 1;
