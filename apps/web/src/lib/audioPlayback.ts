@@ -73,6 +73,7 @@ export async function loadAudioBuffer(
       const res = await fetch(assetFileUrl(projectId, assetId));
       if (!res.ok) return null;
       const raw = await res.arrayBuffer();
+      if (raw.byteLength > 100 * 1024 * 1024) return null;
       const decoded = await ctx.decodeAudioData(raw.slice(0));
       rememberBuffer(key, decoded);
       return decoded;
