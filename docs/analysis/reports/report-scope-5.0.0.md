@@ -176,9 +176,42 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~03:38 CEST)
 
-**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
+**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**. Prefer **ten** handoff nad #205/#213/#223/#239.
+
+### Waves 13–14 (~03:24–03:38) — race guards + UX + bounds
+
+| # | Temat | URL | CI (~03:38) |
+|---|--------|-----|-------------|
+| [#234](https://github.com/Negatywistyczny/stagesync/pull/234) | Admin MIDI host config busy refs | https://github.com/Negatywistyczny/stagesync/pull/234 | green |
+| [#235](https://github.com/Negatywistyczny/stagesync/pull/235) | Timeline auto-advance pending ref | https://github.com/Negatywistyczny/stagesync/pull/235 | green |
+| [#236](https://github.com/Negatywistyczny/stagesync/pull/236) | Host log clear pending ref | https://github.com/Negatywistyczny/stagesync/pull/236 | green |
+| [#237](https://github.com/Negatywistyczny/stagesync/pull/237) | Update check/apply pending refs | https://github.com/Negatywistyczny/stagesync/pull/237 | green |
+| [#238](https://github.com/Negatywistyczny/stagesync/pull/238) | UG import via runMutation | https://github.com/Negatywistyczny/stagesync/pull/238 | green |
+| [#239](https://github.com/Negatywistyczny/stagesync/pull/239) | docs handoff wave 13 | https://github.com/Negatywistyczny/stagesync/pull/239 | green |
+| [#240](https://github.com/Negatywistyczny/stagesync/pull/240) | Client setlist next ↔ commandPending | https://github.com/Negatywistyczny/stagesync/pull/240 | green |
+| [#241](https://github.com/Negatywistyczny/stagesync/pull/241) | Admin library Play ↔ transportPending | https://github.com/Negatywistyczny/stagesync/pull/241 | green |
+| [#242](https://github.com/Negatywistyczny/stagesync/pull/242) | Desktop OS transport menu ↔ pending | https://github.com/Negatywistyczny/stagesync/pull/242 | green |
+| [#243](https://github.com/Negatywistyczny/stagesync/pull/243) | Stage cue ttlMs max 24h | https://github.com/Negatywistyczny/stagesync/pull/243 | pending→watch |
+| [#244](https://github.com/Negatywistyczny/stagesync/pull/244) | Admin copy Host network URLs | https://github.com/Negatywistyczny/stagesync/pull/244 | pending→watch |
+| [#245](https://github.com/Negatywistyczny/stagesync/pull/245) | Timeline inspector maxLength caps | https://github.com/Negatywistyczny/stagesync/pull/245 | pending→watch |
+| [#246](https://github.com/Negatywistyczny/stagesync/pull/246) | Project/library name max 200 | https://github.com/Negatywistyczny/stagesync/pull/246 | pending→watch |
+
+**Earlier overnight:** [#194](https://github.com/Negatywistyczny/stagesync/pull/194)–[#233](https://github.com/Negatywistyczny/stagesync/pull/233) (see #223 through #222).
+
+### Ranked next (post-must; continue to 10:00)
+
+| Rank | Temat | Notes |
+|------|--------|-------|
+| 1 | Fix **red CI** on #243–#246+ | Follow-up commits |
+| 2 | Behavioral/UX over more Zod `.max()` | Prefer race/OCC/banner |
+| 3 | Merge stacks (operator) | C-fade #57→#58→#64/#66; cue #130→#209→#211+#243; AA #73+#121 |
+| 4 | Admin density deep-pass | Beyond #82/#95/#136/#137/#244 |
+| 5 | ClientShell remaining clamps | Pair #90/#198 |
+| 6 | docs/api trackId after #60+#197 | Small docs |
+| 7 | Playwright Forma drag | Defer (#67) |
+| 8 | Overlap / Flex / AD-01…03 / G1–G10 HW | OUT / soft-gate |
 
 ### Must A–E (#53–#60) — CI green
 
@@ -259,12 +292,13 @@ Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](h
 
 ### Remaining backlog (ranked)
 
-1. Admin density deep-pass beyond #82/#95
-2. Playwright Forma drag matrix — defer
-3. Overlap drag / Flex Time — OUT
-4. AD-01…03 — skip
-5. PDF setlist / archive — OUT
-6. Full auth / multi-user — 5.1+
+1. Keep shipping 1-theme PRs until ~**10:00** UTC+2.
+2. Fix **red CI** on newest PRs.
+3. Admin density / panel UX (beyond #82/#95/#244).
+4. ClientShell typography clamps (pair #90/#198).
+5. docs/api trackId after #60+#197.
+6. Playwright Forma drag — defer (#67).
+7. Near **10:00**: final handoff with **all** PR URLs + CI; no merge/tag/G1–G10 green.
 
 ### Blokery
 
