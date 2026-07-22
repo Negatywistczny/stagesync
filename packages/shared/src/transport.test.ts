@@ -33,6 +33,15 @@ describe("TransportSeekBodySchema", () => {
       positionTicks: -100,
     });
   });
+
+  it("rejects non-finite positionTicks", () => {
+    expect(() =>
+      TransportSeekBodySchema.parse({ positionTicks: Number.NaN }),
+    ).toThrow();
+    expect(() =>
+      TransportSeekBodySchema.parse({ positionTicks: Number.POSITIVE_INFINITY }),
+    ).toThrow();
+  });
 });
 
 describe("TransportPlayBodySchema", () => {

@@ -27,7 +27,7 @@ export const TransportStateSchema = z.object({
 export type TransportState = z.infer<typeof TransportStateSchema>;
 
 export const TransportSeekBodySchema = z.object({
-  positionTicks: z.number().int(),
+  positionTicks: z.number().int().finite(),
 });
 
 export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
