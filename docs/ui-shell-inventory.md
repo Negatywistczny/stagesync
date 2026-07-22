@@ -48,7 +48,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 - [x] `smart` / `pointer` / `pencil` / `eraser` / `scissors` (Forma + Tekst/Akordy/Cue)
 - [x] Zoom — suwaki H/V/UI w statusie (+ Ctrl/Meta+wheel); **bez** narzędzia lupy na pasku
 - [ ] `gain` / `mute` — β2
-- [ ] `wand` + menu — **ukryte** do naprawy (PO smoke 2026-07-21); core zostaje
+- [x] `wand` + menu — Tekst→Forma / Akordy→Forma / obie (zakres = zaznaczone sekcje)
 - [x] `tap` na docku Tekst (tempo)
 - [x] Panel narzędzi **T** (PO verified)
 
@@ -58,7 +58,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 - [x] Setlista ← / picker / → · Auto-setlista
 - [x] Undo / Redo / Odrzuć / Zapisz · Pomoc · Wygląd · Pełny ekran
 - [x] Stop / Play · Loop (region + server SSOT) · BBT · Tempo / Metrum / Tonacja edit @ playhead
-- [x] Metronom · Follow playhead · Dirty · Zoom UI/H/V
+- [x] Metronom · Follow playhead · MIDI playhead (Wygląd) · Dirty · Zoom UI/H/V
 - [x] Chrome booth language aligned with Admin (tokens / ShellIconButton / status groups)
 
 ### Canvas

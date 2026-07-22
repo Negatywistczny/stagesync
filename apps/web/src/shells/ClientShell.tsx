@@ -434,7 +434,7 @@ export function ClientShell() {
                   displayTicks={displayTicks}
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
-                  sectionNamesPolish={displayPrefs.sectionNamesPolish}
+                  prefs={displayPrefs}
                   vocalTapOn={vocalTapOn}
                   vocalTapIndex={vocalTapIndex}
                   onVocalTap={() => {
