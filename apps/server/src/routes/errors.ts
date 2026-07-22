@@ -13,10 +13,11 @@ export function sendError(
   error: string,
   details?: ApiErrorDetail[],
 ): void {
+  const message = String(error).slice(0, 500);
   res.status(status).json(
     details && details.length > 0
-      ? { ok: false, error, details }
-      : { ok: false, error },
+      ? { ok: false, error: message, details }
+      : { ok: false, error: message },
   );
 }
 
