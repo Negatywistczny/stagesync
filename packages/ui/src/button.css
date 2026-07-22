@@ -91,8 +91,8 @@
 /* icon-only — dense 36×36 hit target */
 .ss-btn--icon {
   padding: var(--ss-space-2);
-  width: 36px;
-  height: 36px;
+  width: var(--ss-touch-min);
+  height: var(--ss-touch-min);
 }
 
 /* loading */

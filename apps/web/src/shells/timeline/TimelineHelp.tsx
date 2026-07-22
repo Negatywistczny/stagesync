@@ -24,8 +24,8 @@ const SECTIONS: HelpSection[] = [
     title: "Utwory i setlista",
     items: [
       "Tytuł utworu — biblioteka / setlista.",
-      "[ / ] lub Alt+← / Alt+→ — poprzedni / następny utwór setlisty (gdy setlista włączona).",
-      "Auto-setlista — przełącznik współdzielony z Adminem (advance na końcu utworu — residual serwera).",
+      "← / → — poprzedni / następny utwór setlisty (gdy setlista włączona).",
+      "Auto-setlista — serwer po końcu utworu wczytuje następny (zatrzymany, takt 1.1); stan współdzielony z Adminem.",
     ],
   },
   {
@@ -35,7 +35,7 @@ const SECTIONS: HelpSection[] = [
       "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
       "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
-      "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji Forma = zakres; bez zaznaczenia — cały utwór.",
+      "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji = zakres; bez zaznaczenia — cały utwór.",
       "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
       "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
     ],
@@ -44,7 +44,7 @@ const SECTIONS: HelpSection[] = [
     title: "Transport i pętla",
     items: [
       "Play / Pause i Stop — pasek transportu.",
-      "Pętla — przeciągnij zakres na linijce taktów, potem włącz przyciskiem.",
+      "Pętla (L) — przeciągnij zakres na linijce taktów, potem włącz przyciskiem.",
       "Metronom — włącz/wyłącz podczas odtwarzania.",
       "Podążaj za wskaźnikiem — podczas Play przewija widok.",
       "Tempo / Metrum / Tonacja na toolbarze — edycja @ playhead; na lane’ach — Pencil / klik segmentu / Scissors.",
@@ -74,7 +74,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       heading: "Transport",
       rows: [
         { keys: "Spacja", action: "Play / Pause" },
-        { keys: "C", action: "Pętla on/off" },
+        { keys: "L", action: "Pętla on/off" },
         { keys: "K", action: "Metronom on/off" },
       ],
     },
@@ -83,12 +83,12 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       rows: [
         { keys: "← / →", action: "Locator ±1 beat" },
         { keys: "[ / ]", action: "Poprzedni / następny utwór setlisty" },
-        { keys: "Alt+← / Alt+→", action: "Poprzedni / następny utwór setlisty" },
       ],
     },
     {
       heading: "Narzędzia",
       rows: [
+        { keys: "C", action: "Scissors" },
         { keys: "W", action: "Różdżka — menu" },
         { keys: "?", action: "Przełącz tę pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },

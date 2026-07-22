@@ -34,8 +34,9 @@ export function buildNetworkInfo(port: number): {
   urls: string[];
 } {
   const lan = getLanAddresses();
-  const hostname = process.env.HOSTNAME || "localhost";
-  const addresses = lan.map((r) => r.address).slice(0, 16);
+  const hostname =
+    (process.env.HOSTNAME ?? "localhost").trim().slice(0, 64) || "localhost";
+  const addresses = lan.map((r) => r.address);
   const urls = [
     `http://localhost:${port}`,
     ...addresses.map((a) => `http://${a}:${port}`),

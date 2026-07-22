@@ -24,4 +24,37 @@ describe("projectEndTicks", () => {
     );
     expect(projectEndTicks(p)).toBe(2 * 4 * DEFAULT_PPQ);
   });
+
+  it("includes audio clips that extend past forma", () => {
+    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    const trackId = p.audioTracks[0]?.id ?? "track-1";
+    if (!p.audioTracks.length) {
+      p.audioTracks = [{ id: trackId, name: "Audio" }];
+    }
+    p.audioClips = [
+      {
+        id: "ac-1",
+        trackId,
+        assetId: "asset-1",
+        startTicks: 0,
+        lengthTicks: 20_000,
+      },
+    ];
+    expect(projectEndTicks(p)).toBe(20_000);
+  });
+
+  it("includes tekst clips that extend past forma", () => {
+    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    p.tekst = {
+      clips: [
+        {
+          id: "tx-1",
+          text: "outro",
+          startTicks: 10_000,
+          lengthTicks: 5_000,
+        },
+      ],
+    };
+    expect(projectEndTicks(p)).toBe(15_000);
+  });
 });

@@ -84,7 +84,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.uiError {
+.transportError {
   flex-shrink: 1;
   min-width: 0;
   overflow: hidden;
@@ -587,6 +587,19 @@
   color: var(--ss-color-text-muted);
 }
 
+.liveSaveError {
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-4);
+  text-align: center;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-tight);
+  color: var(--ss-color-danger);
+  background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--ss-color-danger) 35%, transparent);
+}
+
 /* —— Grid / Akordy (v4 #grid-scroll / chord-hero / phrase slots) —— */
 .gridPane {
   display: flex;
@@ -612,13 +625,13 @@
   max-width: calc(100% - 1.5rem);
   font-size: var(--ss-text-control);
   font-weight: var(--ss-font-weight-medium);
-  line-height: 1.2;
-  letter-spacing: 0.1em;
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-label);
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
   text-align: center;
   padding: 0.3rem 0.75rem;
-  border-radius: var(--ss-radius-pill);
+  border-radius: 9999px;
   background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
 }
@@ -662,7 +675,7 @@
   z-index: 1;
   margin: 0;
   font-size: clamp(3rem, 12vw, 6rem);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 800;
   line-height: 1.1;
   color: var(--ss-color-primary);
   text-align: center;
@@ -706,7 +719,7 @@
   margin: 0;
   white-space: nowrap;
   font-size: clamp(3rem, 12vw, 6rem);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 800;
   line-height: 1.1;
   color: var(--ss-color-primary);
 }
@@ -823,16 +836,16 @@
 }
 
 .heroNextLabel {
-  font-size: 0.65rem;
+  font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--ss-tracking-label);
   color: var(--ss-color-disabled-text);
 }
 
 .heroNextName {
   font-size: clamp(1.25rem, 4.5vw, 2.25rem);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 700;
   line-height: 1.1;
   color: color-mix(in srgb, var(--ss-color-primary) 72%, transparent);
   max-width: 100%;
@@ -1006,7 +1019,7 @@
 
 .cycleCellSymbol {
   font-size: min(2.25rem, calc(var(--phrase-bar-size) * 0.32));
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
@@ -1166,7 +1179,7 @@
 .drumsHeroSection {
   margin: 0;
   font-size: clamp(2.75rem, 12vw, 5rem);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 800;
   line-height: 1.05;
   color: var(--client-drums);
   text-transform: uppercase;
@@ -1203,7 +1216,7 @@
   border: 2px solid color-mix(in srgb, var(--client-drums) 45%, transparent);
   background: color-mix(in srgb, var(--client-drums) 8%, transparent);
   font-size: clamp(1.1rem, 3.5vw, 1.5rem);
-  font-weight: var(--ss-font-weight-semibold);
+  font-weight: 600;
   line-height: 1.35;
   color: color-mix(in srgb, var(--client-drums) 92%, white);
 }
@@ -1273,7 +1286,7 @@
 
 .drumsBeatNum {
   font-size: clamp(1rem, 4vw, 1.5rem);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--ss-color-text-muted);
   line-height: 1;
@@ -1387,7 +1400,7 @@
 
 .drumsFormSegName {
   font-size: clamp(1rem, 2.8vw, 1.45rem);
-  font-weight: var(--ss-font-weight-bold);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ss-color-primary);
@@ -1480,7 +1493,7 @@
 
 .drumsFormSegActive .drumsFormSegNote {
   color: color-mix(in srgb, var(--ss-color-primary) 88%, white);
-  font-weight: var(--ss-font-weight-semibold);
+  font-weight: 600;
 }
 
 .drumsFormSegCountdown .drumsFormSegNote,
@@ -1500,7 +1513,7 @@
   }
 
   .drumsHeroEyebrow {
-    font-size: 0.85rem;
+    font-size: var(--ss-text-sm);
   }
 
   .drumsHeroSection {

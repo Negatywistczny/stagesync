@@ -46,10 +46,18 @@ function transportWsUrl(): string {
 }
 
 /** v4-style EMA of one-way delay from wall-clock `sentAtMs`. */
-function noteLatencySample(prev: number, sentAtMs: number): number {
-  const sample = Math.max(0, Date.now() - sentAtMs);
+const MAX_LATENCY_MS = 60_000;
+
+export function noteLatencySample(prev: number, sentAtMs: number): number {
+  const sample = Math.min(
+    MAX_LATENCY_MS,
+    Math.max(0, Date.now() - sentAtMs),
+  );
   if (!prev) return sample;
-  return Math.round(prev * 0.82 + sample * 0.18);
+  return Math.min(
+    MAX_LATENCY_MS,
+    Math.round(prev * 0.82 + sample * 0.18),
+  );
 }
 
 export function TransportProvider({ children }: { children: ReactNode }) {

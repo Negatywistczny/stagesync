@@ -8,15 +8,19 @@ async function readApiError(res: Response): Promise<string> {
   } catch {
     /* ignore */
   }
-  return message;
+  return message.slice(0, 500);
 }
 
 export async function uploadProjectAudio(
   projectId: string,
   file: File,
+  opts?: { trackId?: string },
 ): Promise<Project> {
   const form = new FormData();
   form.append("file", file);
+  if (opts?.trackId) {
+    form.append("trackId", opts.trackId);
+  }
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/assets`,
     { method: "POST", body: form },

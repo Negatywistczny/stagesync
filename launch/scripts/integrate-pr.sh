@@ -25,5 +25,9 @@ else
   fi
 fi
 
-git commit -m "$commit_msg"
+if git diff --cached --quiet; then
+  echo "  SKIP (no changes — already included)"
+else
+  git commit -m "$commit_msg"
+fi
 echo "  OK"

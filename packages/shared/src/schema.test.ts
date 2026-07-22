@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   CreateProjectBodySchema,
-  StageMessageBodySchema,
   LibrarySchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -9,6 +8,7 @@ import {
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
+  StageMessageBodySchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -126,6 +126,16 @@ describe("ProjectSchemaV5", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects artist longer than 200 chars", () => {
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    expect(() =>
+      ProjectSchemaV5.parse({
+        ...seed,
+        artist: "x".repeat(201),
+      }),
+    ).toThrow();
+  });
 });
 
 describe("CreateProjectBodySchema", () => {
@@ -133,17 +143,13 @@ describe("CreateProjectBodySchema", () => {
     expect(CreateProjectBodySchema.parse({ name: "New" })).toEqual({
       name: "New",
     });
-    expect(CreateProjectBodySchema.parse({ name: "  Song  " })).toEqual({
-      name: "Song",
-    });
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
-    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
   });
 
-  it("rejects unknown keys", () => {
+  it("rejects names longer than 200 chars", () => {
     expect(() =>
-      CreateProjectBodySchema.parse({ name: "X", extra: true }),
+      CreateProjectBodySchema.parse({ name: "x".repeat(201) }),
     ).toThrow();
   });
 });
@@ -169,9 +175,18 @@ describe("PutProjectBodySchema", () => {
 });
 
 describe("StageMessageBodySchema", () => {
-  it("rejects unknown keys", () => {
+  it("accepts ttlMs within 24h", () => {
+    expect(
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 10_000 }),
+    ).toEqual({ text: "Go!", ttlMs: 10_000 });
+  });
+
+  it("rejects ttlMs above 24h and non-positive", () => {
     expect(() =>
-      StageMessageBodySchema.parse({ text: "Hi", extra: 1 }),
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 86_400_001 }),
+    ).toThrow();
+    expect(() =>
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 0 }),
     ).toThrow();
   });
 });

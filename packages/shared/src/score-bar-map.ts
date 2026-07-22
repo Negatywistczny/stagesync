@@ -47,7 +47,9 @@ export function normalizeAnchors(
       : [];
   if (raw.length === 0) return [];
 
-  const anchors = raw
+  const limited = raw.length > 256 ? raw.slice(0, 256) : raw;
+
+  const anchors = limited
     .map((anchor, i) => ({
       id:
         typeof anchor.id === "string" && anchor.id.length > 0
@@ -58,10 +60,12 @@ export function normalizeAnchors(
     }))
     .sort((a, b) => a.logicBar - b.logicBar);
 
-  return anchors.filter(
-    (anchor, index) =>
-      index === 0 || anchor.logicBar > anchors[index - 1]!.logicBar,
-  );
+  return anchors
+    .filter(
+      (anchor, index) =>
+        index === 0 || anchor.logicBar > anchors[index - 1]!.logicBar,
+    )
+    .slice(0, 64);
 }
 
 export function normalizeMap(

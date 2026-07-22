@@ -16,10 +16,7 @@ async function readApiError(res: Response): Promise<string> {
   } catch {
     /* ignore */
   }
-  if (res.status === 409) {
-    return `Konflikt zapisu (409): projekt zmieniony na serwerze — odśwież i zapisz ponownie. (${message})`;
-  }
-  return message;
+  return message.slice(0, 500);
 }
 
 export async function fetchLibrary(): Promise<Library> {

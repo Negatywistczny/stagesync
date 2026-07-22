@@ -57,6 +57,10 @@
   --ss-space-x: var(--ss-space-3);
   --ss-space-y: var(--ss-space-2);
   --ss-scrollbar-width: var(--ss-space-2);
+  /** Desktop min hit target (ui-density §5) — 36 on 4pt grid. */
+  --ss-touch-min: 36px;
+  /** Client PWA min hit target (ui-density §5). */
+  --ss-touch-min-client: 44px;
 
   --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
   /* Type scale — size / weight / leading / tracking (no ad-hoc values in UI). */
@@ -68,12 +72,29 @@
   --ss-text-xl: 1.5rem;
   --ss-text-2xl: 2rem;
   --ss-text-3xl: 3rem;
+  /* Client stage / scenic fluid type (vw clamps live only here). */
+  --ss-text-stage-micro: clamp(0.65rem, 1.8vw, 0.75rem);
+  --ss-text-stage-xs: clamp(0.85rem, 2.4vw, 1.1rem);
+  --ss-text-stage-sm: clamp(1rem, 2.8vw, 1.35rem);
+  --ss-text-stage-md: clamp(1.25rem, 4.5vw, 2.25rem);
+  --ss-text-stage-lg: clamp(1.75rem, 6vw, 3rem);
+  --ss-text-stage-xl: clamp(2rem, 7vw, 3.75rem);
+  --ss-text-stage-2xl: clamp(2.75rem, 12vw, 5rem);
+  --ss-text-stage-3xl: clamp(3rem, 12vw, 6rem);
+  --ss-text-stage-4xl: clamp(4rem, 18vw, 9rem);
+  --ss-text-stage-5xl: clamp(5rem, 24vw, 10rem);
+  --ss-text-stage-hero-sm: clamp(3.75rem, 22vw, 6.5rem);
+  --ss-text-stage-hero-lg: clamp(5rem, 28vw, 8rem);
   --ss-font-size: var(--ss-text-control);
   --ss-font-weight-regular: 400;
   --ss-font-weight-medium: 500;
   --ss-font-weight-semibold: 600;
   --ss-font-weight-bold: 650;
+  --ss-font-weight-heavy: 700;
+  --ss-font-weight-black: 800;
+  --ss-leading-display: 1.1;
   --ss-leading-compact: 1.15;
+  --ss-leading-snug: 1.2;
   --ss-leading-tight: 1.25;
   --ss-leading-normal: 1.35;
   --ss-leading-relaxed: 1.5;
@@ -81,6 +102,7 @@
   --ss-tracking-normal: 0;
   --ss-tracking-tight: -0.02em;
   --ss-tracking-label: 0.06em;
+  --ss-tracking-wide: 0.1em;
 
   /* Motion */
   --ss-duration-fast: 120ms;

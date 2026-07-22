@@ -17,19 +17,25 @@ function describeError(error: unknown): { message: string; detail?: string } {
         : error.data != null
           ? JSON.stringify(error.data)
           : undefined;
+    const message = (data || statusLine || "Nieoczekiwany błąd trasy.").slice(
+      0,
+      500,
+    );
     return {
-      message: data || statusLine || "Nieoczekiwany błąd trasy.",
-      detail: import.meta.env.DEV ? statusLine : undefined,
+      message,
+      detail: import.meta.env.DEV ? statusLine.slice(0, 500) : undefined,
     };
   }
   if (error instanceof Error) {
     return {
-      message: error.message || "Nieoczekiwany błąd.",
-      detail: import.meta.env.DEV ? error.stack : undefined,
+      message: (error.message || "Nieoczekiwany błąd.").slice(0, 500),
+      detail: import.meta.env.DEV
+        ? error.stack?.slice(0, 4000)
+        : undefined,
     };
   }
   if (typeof error === "string" && error.length > 0) {
-    return { message: error };
+    return { message: error.slice(0, 500) };
   }
   return { message: "Nieoczekiwany błąd." };
 }

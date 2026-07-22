@@ -16,6 +16,8 @@ describe("client-presence", () => {
     expect(list[0]?.displayName).toBe("Zosia");
     expect(list[0]?.roles).toEqual(["drums", "karaoke"]);
     expect(list[0]?.latencyMs).toBe(19);
+    presence.upsert("a", { latencyMs: 999_999 });
+    expect(presence.list()[0]?.latencyMs).toBe(60_000);
     presence.remove("a");
     expect(presence.list()).toHaveLength(0);
   });

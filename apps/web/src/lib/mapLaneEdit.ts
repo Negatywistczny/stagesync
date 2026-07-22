@@ -4,6 +4,7 @@
  */
 
 import {
+  assertValidTimeSignature,
   resolveKeyAt,
   resolveMeterAt,
   resolveTempoAt,
@@ -102,7 +103,7 @@ export function upsertTempoAt(
   startTicks: number,
   bpm: number,
 ): Project {
-  if (!(bpm > 0) || !Number.isFinite(bpm)) return project;
+  if (!Number.isFinite(bpm) || bpm < 20 || bpm > 400) return project;
   const map = [...project.tempoMap].sort(
     (a, b) => a.startTicks - b.startTicks,
   );
@@ -119,12 +120,9 @@ export function upsertMeterAt(
   numerator: number,
   denominator: number,
 ): Project {
-  if (
-    !Number.isFinite(numerator) ||
-    !Number.isFinite(denominator) ||
-    numerator < 1 ||
-    denominator < 1
-  ) {
+  try {
+    assertValidTimeSignature({ numerator, denominator }, project.ppq);
+  } catch {
     return project;
   }
   const map = [...project.meterMap].sort(

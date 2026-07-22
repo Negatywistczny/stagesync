@@ -3,7 +3,8 @@
  * Pure — no Date.now() / AudioContext. Callers supply bpm/meter/ppq for ticks↔ms.
  */
 
-import type { AudioClip, ProjectAsset } from "./schema.js";
+import type { AudioClip, Project, ProjectAsset } from "./schema.js";
+import { ticksToMsAlongTempoMap } from "./tempo-map-ms.js";
 import {
   DEFAULT_PPQ,
   elapsedToTicks,
@@ -24,7 +25,8 @@ function ppqOf(ctx: AudioTempoCtx): number {
 /** Convert gain dB to linear amplitude (0 dB → 1). */
 export function gainDbToLinear(gainDb: number | undefined): number {
   if (gainDb == null || !Number.isFinite(gainDb)) return 1;
-  return Math.pow(10, gainDb / 20);
+  const clamped = Math.min(24, Math.max(-60, gainDb));
+  return Math.pow(10, clamped / 20);
 }
 
 export function trimInMsOf(clip: Pick<AudioClip, "trimInMs">): number {
@@ -222,6 +224,35 @@ export function audioClipBufferOffsetSec(
   return (trimInMsOf(clip) + intoClipMs) / 1000;
 }
 
+/**
+ * Like {@link audioClipBufferOffsetSec}, but converts into-clip ticks via
+ * tempoMap / meterMap (correct when tempo changes under the clip).
+ */
+export function audioClipBufferOffsetSecAlongMaps(
+  clip: Pick<
+    AudioClip,
+    "startTicks" | "lengthTicks" | "trimInMs" | "trimOutMs"
+  >,
+  playheadTicks: number,
+  project: Pick<
+    Project,
+    "defaultBpm" | "defaultMeter" | "tempoMap" | "meterMap" | "ppq"
+  >,
+): number | null {
+  if (
+    playheadTicks < clip.startTicks ||
+    playheadTicks >= clip.startTicks + clip.lengthTicks
+  ) {
+    return null;
+  }
+  const intoClipMs = ticksToMsAlongTempoMap(
+    clip.startTicks,
+    playheadTicks,
+    project,
+  );
+  return (trimInMsOf(clip) + intoClipMs) / 1000;
+}
+
 /** Remaining playable duration (seconds) from playhead within the clip. */
 export function audioClipRemainingSec(
   clip: Pick<
@@ -235,6 +266,34 @@ export function audioClipRemainingSec(
   const offset = audioClipBufferOffsetSec(clip, playheadTicks, ctx);
   if (offset == null) return 0;
   const playableMs = audioClipPlayableMs(clip, asset, ctx);
+  const intoMs = offset * 1000 - trimInMsOf(clip);
+  return Math.max(0, (playableMs - intoMs) / 1000);
+}
+
+/**
+ * Remaining playable seconds using map-aware into-clip offset.
+ * Playable window still uses constant tempo at clip start (asset ms SSOT).
+ */
+export function audioClipRemainingSecAlongMaps(
+  clip: Pick<
+    AudioClip,
+    "startTicks" | "lengthTicks" | "trimInMs" | "trimOutMs"
+  >,
+  asset: Pick<ProjectAsset, "durationMs"> | null | undefined,
+  playheadTicks: number,
+  project: Pick<
+    Project,
+    "defaultBpm" | "defaultMeter" | "tempoMap" | "meterMap" | "ppq"
+  >,
+  ctxAtClipStart: AudioTempoCtx,
+): number {
+  const offset = audioClipBufferOffsetSecAlongMaps(
+    clip,
+    playheadTicks,
+    project,
+  );
+  if (offset == null) return 0;
+  const playableMs = audioClipPlayableMs(clip, asset, ctxAtClipStart);
   const intoMs = offset * 1000 - trimInMsOf(clip);
   return Math.max(0, (playableMs - intoMs) / 1000);
 }

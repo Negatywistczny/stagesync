@@ -124,7 +124,7 @@ export function createNativeMidiBackend(): MidiBackend {
       port.on("continue", () => forward({ type: "continue" }));
       port.on("position", (msg) => {
         const value = Number(msg.value);
-        if (Number.isInteger(value) && value >= 0) {
+        if (Number.isInteger(value) && value >= 0 && value <= 16_383) {
           forward({ type: "spp", value });
         }
       });

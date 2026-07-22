@@ -7,13 +7,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Naprawiono
+### Zmieniono
 
-- **Web — linki „Pełna instrukcja / Zgłoś błąd”:** na `http://127.0.0.1:4000` heurystyka `isDesktopShell()` traktowała zwykłą przeglądarkę jak Tauri, więc `openExternalUrl` wołało brakujące `invoke` zamiast `window.open`. Fallback gdy invoke niedostępne.
-
-### Usunięto
-
-- **Docs hygiene:** archiwalne plany PR / QA sign-off α3–α7 / briefy i audyty przejściowe α3–α4 (historia w CHANGELOG + `report-scope-*`); odchudzony ROADMAP (bez checklist „orientacyjnych” zamkniętych cutów); indeks `docs/analysis` → aktywny etap **5.0.0**.
+- **Timeline Pomoc:** overlay jak w v4 — accent chrome, karty sekcji, miniatury ikon narzędzi / transportu / ścieżek, czytelniejsze skróty `kbd` (treść operatora 5.0.0).
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
@@ -31,7 +27,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
-- **Web fullscreen:** przycisk Pełny ekran w przeglądarce na `http://127.0.0.1:4000` — hostname/port heurystyka `isDesktopShell` nie blokuje już HTML Fullscreen API (ścieżka natywna tylko gdy Tauri invoke jest dostępne).
 - **Transport Stop / Countdown (#41):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
 - **Desktop updater:** `Could not fetch a valid release JSON` — endpoint Tauri (`…/releases/latest/download/latest.json`) 404, bo wszystkie alpha/beta były GitHub **prerelease** (API `/releases/latest` je pomija). Release `v5.0.0-beta.1.1` odznaczony; `release.yml` zawsze publikuje jako `--latest`. Poprawiona literówka ownera `Negatywistyczny` → `Negatywistczny` w URL-ach runtime (host update-status, docs links, menu Pomoc).
 - **Desktop updater (darwin w `latest.json`):** target bundle `app` obok `dmg` — bez `app` bundler nie tworzy `.app.tar.gz`/`.sig`, więc macOS nie trafia do manifestu (zostaje Windows-only / last-writer). Sidecar health reject przy mismatch wersji.

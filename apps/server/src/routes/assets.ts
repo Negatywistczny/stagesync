@@ -11,6 +11,28 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 },
 });
 
+function uploadSingleFile(
+  req: import("express").Request,
+  res: import("express").Response,
+  next: import("express").NextFunction,
+): void {
+  upload.single("file")(req, res, (err: unknown) => {
+    if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+      sendError(res, 413, "File too large");
+      return;
+    }
+    if (err) {
+      sendError(
+        res,
+        400,
+        err instanceof Error ? err.message : "Upload failed",
+      );
+      return;
+    }
+    next();
+  });
+}
+
 const AUDIO_EXT = new Set([
   ".mp3",
   ".wav",
@@ -83,7 +105,7 @@ export function createAssetsRouter(stores: Stores): Router {
     }
   });
 
-  router.post("/", upload.single("file"), async (req, res) => {
+  router.post("/", uploadSingleFile, async (req, res) => {
     try {
       const projectId = projectIdFrom(req);
       const file = req.file;
@@ -103,6 +125,11 @@ export function createAssetsRouter(stores: Stores): Router {
         );
         return;
       }
+      const trackIdField = req.body?.trackId;
+      const audioTrackId =
+        typeof trackIdField === "string" && trackIdField.length > 0
+          ? trackIdField
+          : undefined;
       const assetId = randomUUID();
       const storageName = `${assetId}${ext}`;
       const project = await stores.addProjectAsset(
@@ -116,7 +143,7 @@ export function createAssetsRouter(stores: Stores): Router {
           sizeBytes: file.size,
         },
         file.buffer,
-        { createAudioClip: isAudio },
+        { createAudioClip: isAudio, audioTrackId },
       );
       res.status(201).json(project);
     } catch (err) {
@@ -147,7 +174,15 @@ export function createAssetsRouter(stores: Stores): Router {
         "Content-Disposition",
         `inline; filename="${encodeURIComponent(asset.originalName)}"`,
       );
-      createReadStream(filePath).pipe(res);
+      const stream = createReadStream(filePath);
+      stream.on("error", (err) => {
+        if (!res.headersSent) {
+          handleRouteError(res, err);
+          return;
+        }
+        res.destroy(err instanceof Error ? err : undefined);
+      });
+      stream.pipe(res);
     } catch (err) {
       handleRouteError(res, err);
     }

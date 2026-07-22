@@ -79,13 +79,31 @@ jobs:
           mkdir -p data/library data/projects data/logs
           chmod -R a+rwX data
           docker compose up -d
-          # Wait for healthcheck to pass (up to 40s)
-          for i in $(seq 1 8); do
+          # Wait for healthcheck (up to ~2 min on slow runners)
+          STATUS="missing"
+          for i in $(seq 1 24); do
             sleep 5
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q stagesync)" 2>/dev/null || echo "missing")
-            echo "health: $STATUS"
-            if [ "$STATUS" = "healthy" ]; then break; fi
+            CID=$(docker compose ps -q stagesync 2>/dev/null || true)
+            if [ -z "$CID" ]; then
+              STATUS="missing"
+            else
+              STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$CID" 2>/dev/null || echo "missing")
+            fi
+            echo "health attempt $i: $STATUS"
+            if [ "$STATUS" = "healthy" ]; then
+              break
+            fi
+            if [ "$STATUS" = "unhealthy" ]; then
+              echo "container reported unhealthy"
+              docker compose logs
+              exit 1
+            fi
           done
+          if [ "$STATUS" != "healthy" ]; then
+            echo "timed out waiting for healthy (last=$STATUS)"
+            docker compose logs
+            exit 1
+          fi
           curl -sf http://localhost:4000/api/health || (docker compose logs && exit 1)
           docker compose down
 
@@ -102,9 +120,17 @@ jobs:
 
       - name: Install system deps (Tauri)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file \
-            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            sudo apt-get update -y && \
+              sudo apt-get install -y --no-install-recommends \
+                libwebkit2gtk-4.1-dev build-essential curl wget file \
+                libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev \
+              && break
+            echo "apt attempt $attempt failed; retrying…"
+            sleep $((attempt * 5))
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

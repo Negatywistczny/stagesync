@@ -137,13 +137,17 @@ export function wandContentToForma(
     if (span.startTicks + span.lengthTicks <= floor && span.startTicks < floor) {
       continue;
     }
+    const startTicks = Math.max(floor, span.startTicks);
+    const endTicks = span.startTicks + span.lengthTicks;
+    const lengthTicks = Math.max(0, endTicks - startTicks);
+    if (lengthTicks < 1) continue;
     n += 1;
     const section: FormaClip = {
       id: `forma-wand-${n}-${span.startTicks}`,
       name: span.name || `Sekcja ${n}`,
       kind: "section",
-      startTicks: Math.max(floor, span.startTicks),
-      lengthTicks: span.lengthTicks,
+      startTicks,
+      lengthTicks,
     };
     clips = insertSpanOverwrite(clips, section, { contentFloorTicks: floor });
   }

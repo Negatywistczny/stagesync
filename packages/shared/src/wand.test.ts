@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed, wandContentToForma } from "@stagesync/shared";
+import { createProjectV5Seed } from "./project-seed.js";
+import { wandContentToForma } from "./wand.js";
 
 describe("wandContentToForma", () => {
   it("builds Forma sections from Tekst clips", () => {
@@ -24,54 +25,28 @@ describe("wandContentToForma", () => {
     expect(next.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
   });
 
-  it("scopes to selected Forma ranges and keeps outside sections", () => {
+  it("shrinks length when clamping a span that starts before content floor", () => {
     let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    // Seed Countdown ends at 0 → floor 0. Span straddles floor.
     p = {
       ...p,
-      forma: {
-        clips: [
-          ...p.forma.clips.filter((c) => c.kind === "countdown"),
-          {
-            id: "keep",
-            name: "Keep",
-            kind: "section" as const,
-            startTicks: 0,
-            lengthTicks: 1920,
-          },
-          {
-            id: "replace",
-            name: "Replace",
-            kind: "section" as const,
-            startTicks: 3840,
-            lengthTicks: 3840,
-          },
-        ],
-      },
       tekst: {
         clips: [
           {
-            id: "t1",
-            startTicks: 3840,
-            lengthTicks: 1920,
-            text: "Scoped",
-          },
-          {
-            id: "t2",
-            startTicks: 0,
-            lengthTicks: 1920,
-            text: "Outside",
+            id: "t-straddle",
+            startTicks: -1920,
+            lengthTicks: 3840,
+            text: "Straddle",
           },
         ],
       },
     };
-    const next = wandContentToForma(p, "tekst", {
-      ranges: [{ startTicks: 3840, endTicks: 7680 }],
-    });
-    const sections = next.forma.clips.filter((c) => c.kind === "section");
-    expect(sections.some((c) => c.id === "keep" || c.name === "Keep")).toBe(
-      true,
+    const next = wandContentToForma(p, "tekst");
+    const section = next.forma.clips.find(
+      (c) => c.kind === "section" && c.name.includes("Straddle"),
     );
-    expect(sections.some((c) => c.name.includes("Scoped"))).toBe(true);
-    expect(sections.some((c) => c.name.includes("Outside"))).toBe(false);
+    expect(section).toBeDefined();
+    expect(section!.startTicks).toBe(0);
+    expect(section!.lengthTicks).toBe(1920);
   });
 });

@@ -5,8 +5,9 @@
 import type { Project } from "@stagesync/shared";
 
 const MAX_INTERVALS = 8;
-const MIN_BPM = 40;
-const MAX_BPM = 300;
+/** Align with Zod BPM edge (#93): 20–400. */
+const MIN_BPM = 20;
+const MAX_BPM = 400;
 
 export type TapTempoState = {
   tapsMs: number[];
@@ -23,6 +24,9 @@ export function recordTap(
   state: TapTempoState,
   nowMs: number,
 ): { state: TapTempoState; bpm: number | null } {
+  if (!Number.isFinite(nowMs)) {
+    return { state, bpm: null };
+  }
   const taps = [...state.tapsMs, nowMs];
   while (taps.length > MAX_INTERVALS + 1) taps.shift();
 

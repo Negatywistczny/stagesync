@@ -22,7 +22,7 @@ export async function shadowBackup(
     }
     throw err;
   }
-  const bak = `${filePath}.${label}-${Date.now()}.bak`;
+  const bak = `${filePath}.${label}.bak`;
   await copyFile(filePath, bak);
   return bak;
 }

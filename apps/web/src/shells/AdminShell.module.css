@@ -911,6 +911,10 @@
   font-size: var(--ss-text-sm);
 }
 
+.actionsFollow {
+  margin-top: var(--ss-space-2);
+}
+
 /* —— Modal —— */
 
 .overlay {
@@ -961,7 +965,10 @@
 .songRow:focus-visible,
 .appJump a:focus-visible,
 .chip:focus-visible,
-.chipOn:focus-visible {
+.chipOn:focus-visible,
+.editLink:focus-visible,
+.input:focus-visible,
+.select:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
 }

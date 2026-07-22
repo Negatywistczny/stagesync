@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useId, type ReactNode } from "react";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
 import styles from "./SettingsPopover.module.css";
@@ -35,6 +35,19 @@ export function SettingsPopover({
   onClose,
   placement = "anchor",
 }: SettingsPopoverProps) {
+  const titleId = useId();
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
     <div
       id={id}
@@ -45,10 +58,13 @@ export function SettingsPopover({
         .filter(Boolean)
         .join(" ")}
       role="dialog"
-      aria-label={title}
+      aria-modal
+      aria-labelledby={titleId}
     >
       <div className={styles.head}>
-        <span className={styles.title}>{title}</span>
+        <span id={titleId} className={styles.title}>
+          {title}
+        </span>
         <ShellIconButton label="Zamknij" onClick={onClose}>
           ×
         </ShellIconButton>

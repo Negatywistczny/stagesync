@@ -18,15 +18,17 @@ Runtime data: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 | `GET` | `/api/projects/:id` | Odczyt pełnego `project.json` (v2; auto-upgrade v1→v2) |
 | `PUT` | `/api/projects/:id` | **Pełny dokument** (bez `id`; z `updatedAt` klienta = OCC; mismatch → **409**; strict — unknown keys → 400) |
 | `DELETE` | `/api/projects/:id` | Usuń projekt + wpis w indeksie |
-| `GET` | `/api/transport` | Snapshot = kształt ticka (`transport_tick` + `serverTimeMs`) |
+| `GET` | `/api/transport` | Snapshot transportu SSOT |
 | `POST` | `/api/transport/play` | Play (+ opcjonalne `projectId`, `bpm`, `timeSignature`) |
 | `POST` | `/api/transport/load` | Ustaw `activeProjectId`, apply mapy, bez play |
 | `POST` | `/api/transport/pause` | Pause |
 | `POST` | `/api/transport/seek` | Seek `{ positionTicks }`; po seek resolve map aktywnego projektu |
 
-Sukces = dokument domenowy (library / project / **transport tick**).  
-Błędy `400` / `404` / `409` / `500` → `{ ok: false, error, details? }`.  
-`details` (opcjonalne): tablica `{ path, message, code? }` z Zod przy walidacji body.
+Sukces = dokument domenowy (library / project / transport state).  
+Błędy `400` / `404` / `409` / `413` / `500` → `{ ok: false, error, details? }`.  
+`details` (opcjonalne): tablica `{ path, message, code? }` z Zod przy walidacji body.  
+Nieznane ścieżki pod `/api/*` → **404** JSON (nie HTML SPA).  
+Body JSON powyżej limitu (`express.json` ~2 MB) → **413** `Payload too large`.
 
 ### Project v2 (`ProjectSchema`)
 
@@ -39,9 +41,8 @@ Create seed: Countdown `startTicks: -7680`, Intro @ `0`.
 - **Play** (`TransportPlayBody`): opcjonalne `projectId`, `bpm`, `timeSignature`.
 - **Load** (`TransportLoadBody`): wymagane `projectId`.
 - **Seek** (`TransportSeekBody`): wymagane `positionTicks` (int).
-- **REST + WS** odpowiadają kształtem `TransportTickMessage`: pola `TransportState` +
-  `type: "transport_tick"` + `serverTimeMs` (+ opcjonalne `sentAtMs`) — soft-clock
-  klienta porządkuje anchory względem ticków WS.
+- **Snapshot** (`TransportState`): `playing`, `positionTicks`, `bpm`,
+  `timeSignature`, `ppq`, `activeProjectId` (`null` gdy brak).
 
 ## WebSocket
 

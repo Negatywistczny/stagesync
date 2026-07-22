@@ -66,6 +66,52 @@ type GitHubReleaseListItem = {
   created_at?: string;
 };
 
+type ParsedSemver = {
+  core: [number, number, number];
+  pre: string[] | null;
+};
+
+function parseSemver(raw: string): ParsedSemver | null {
+  const m = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/i.exec(raw.trim());
+  if (!m) return null;
+  return {
+    core: [Number(m[1]), Number(m[2]), Number(m[3])],
+    pre: m[4] ? m[4].split(".") : null,
+  };
+}
+
+function comparePreIds(a: string, b: string): number {
+  const an = /^\d+$/.test(a) ? Number(a) : null;
+  const bn = /^\d+$/.test(b) ? Number(b) : null;
+  if (an != null && bn != null) return an - bn;
+  if (an != null) return -1;
+  if (bn != null) return 1;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/** True when `candidate` is a newer SemVer than `current` (not merely unequal). */
+export function isSemverNewer(candidate: string, current: string): boolean {
+  const a = parseSemver(candidate);
+  const b = parseSemver(current);
+  if (!a || !b) return candidate !== current;
+  for (let i = 0; i < 3; i++) {
+    if (a.core[i]! !== b.core[i]!) return a.core[i]! > b.core[i]!;
+  }
+  if (a.pre == null && b.pre == null) return false;
+  if (a.pre == null) return true;
+  if (b.pre == null) return false;
+  const n = Math.max(a.pre.length, b.pre.length);
+  for (let i = 0; i < n; i++) {
+    const ai = a.pre[i];
+    const bi = b.pre[i];
+    if (ai == null) return false;
+    if (bi == null) return true;
+    const cmp = comparePreIds(ai, bi);
+    if (cmp !== 0) return cmp > 0;
+  }
+  return false;
+}
+
 /**
  * Resolve newest published GitHub release semver (includes prereleases).
  *
@@ -192,7 +238,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     res.json({
       current: version,
       latest,
-      updateAvailable: latest !== null && latest !== version,
+      updateAvailable: latest !== null && isSemverNewer(latest, version),
       error,
     });
   });
@@ -224,14 +270,19 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         signal: AbortSignal.timeout(15000),
       });
       if (!wtRes.ok) {
-        const text = await wtRes.text().catch(() => "");
-        res.status(502).json({ ok: false, error: `Watchtower error ${wtRes.status}: ${text}` });
+        const text = (await wtRes.text().catch(() => "")).slice(0, 500);
+        res.status(502).json({
+          ok: false,
+          error: `Watchtower error ${wtRes.status}: ${text}`,
+        });
         return;
       }
       // Respond before the container restarts (Watchtower may kill us).
       res.json({ ok: true, action: "host-update-triggered" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = (
+        err instanceof Error ? err.message : String(err)
+      ).slice(0, 500);
       res.status(502).json({ ok: false, error: `Watchtower unreachable: ${msg}` });
     }
   });

@@ -18,7 +18,6 @@ import {
   nextMidiProgramId,
   normalizeSetlist,
   pruneSetlistToLibrary,
-  scrubCountdownDigitClips,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
@@ -296,9 +295,7 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV5.parse(
-      scrubCountdownDigitClips(ensureFormaSubsections(project)),
-    );
+    const parsed = ProjectSchemaV5.parse(ensureFormaSubsections(project));
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
@@ -314,7 +311,7 @@ export function createStores(dataDir?: string) {
     paths,
 
     async getLibrary(): Promise<Library> {
-      return withLibraryLock(() => ensureLibrary());
+      return ensureLibrary();
     },
 
     async getSetlist(): Promise<Setlist> {
@@ -432,8 +429,8 @@ export function createStores(dataDir?: string) {
         }
 
         library.projects.push(libraryEntryFromProject(project));
-        await writeProject(project);
         await saveLibrary(library);
+        await writeProject(project);
         return project;
       });
     },
@@ -456,10 +453,12 @@ export function createStores(dataDir?: string) {
           ...body,
           id: safeId,
           updatedAt,
-          // Assets: preserve server-only uploads mid-OCC; clips/tracks: client list is SSOT (deletes stick).
           assets: mergePreserveById(existing.assets, body.assets),
-          audioTracks: body.audioTracks,
-          audioClips: body.audioClips,
+          audioTracks: mergePreserveById(
+            existing.audioTracks,
+            body.audioTracks,
+          ),
+          audioClips: mergePreserveById(existing.audioClips, body.audioClips),
         });
         await writeProject(next);
         const library = await ensureLibrary();
@@ -563,7 +562,7 @@ export function createStores(dataDir?: string) {
       projectId: string,
       asset: ProjectAsset,
       fileBytes: Buffer,
-      opts?: { createAudioClip?: boolean },
+      opts?: { createAudioClip?: boolean; audioTrackId?: string },
     ): Promise<Project> {
       return withLibraryLock(async () => {
         const safeId = assertSafeProjectId(paths, projectId);
@@ -578,18 +577,28 @@ export function createStores(dataDir?: string) {
         let audioClips = [...project.audioClips];
 
         if (opts?.createAudioClip !== false && asset.kind === "audio") {
-          let track = audioTracks[0];
+          let track =
+            (opts?.audioTrackId
+              ? audioTracks.find((t) => t.id === opts.audioTrackId)
+              : undefined) ?? audioTracks[0];
           if (!track) {
             track = { id: randomUUID(), name: "Audio 1" };
             audioTracks = [track];
           }
+          // Append after clips on the target track so re-uploads do not stack.
+          const startTicks = audioClips
+            .filter((c) => c.trackId === track.id)
+            .reduce(
+              (max, c) => Math.max(max, c.startTicks + c.lengthTicks),
+              0,
+            );
           audioClips = [
             ...audioClips,
             {
               id: randomUUID(),
               trackId: track.id,
               assetId: asset.id,
-              startTicks: 0,
+              startTicks,
               lengthTicks: 7680,
             },
           ];

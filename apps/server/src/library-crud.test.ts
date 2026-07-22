@@ -388,4 +388,37 @@ describe("library / projects CRUD", () => {
     );
     expect(project.name).toBe("Pack Sample");
   });
+
+  it("clears transport activeProjectId when that project is deleted", async () => {
+    const createRes = await fetch(`${baseUrl}/api/projects`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Live" }),
+    });
+    const created = ProjectSchema.parse(await createRes.json());
+    const playRes = await fetch(`${baseUrl}/api/transport/play`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ projectId: created.id }),
+    });
+    expect(playRes.status).toBe(200);
+    const playing = await playRes.json();
+    expect(playing.activeProjectId).toBe(created.id);
+
+    const del = await fetch(`${baseUrl}/api/projects/${created.id}`, {
+      method: "DELETE",
+    });
+    expect(del.status).toBe(204);
+
+    const snap = await fetch(`${baseUrl}/api/transport`);
+    expect(snap.status).toBe(200);
+    const state = await snap.json();
+    expect(state.activeProjectId ?? null).toBeNull();
+    expect(state.playing).toBe(false);
+
+    const stop = await fetch(`${baseUrl}/api/transport/stop`, {
+      method: "POST",
+    });
+    expect(stop.status).toBe(200);
+  });
 });

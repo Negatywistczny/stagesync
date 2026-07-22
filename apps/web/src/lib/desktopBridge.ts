@@ -239,16 +239,25 @@ export function syncNavRecentProjects(
   return tauriInvoke<void>("set_nav_recent_projects", { projects });
 }
 
-/**
- * Open a URL in the system browser (Tauri) or a new tab (web).
- *
- * Browser on :4000 can match `isDesktopShell()` via hostname heuristic without
- * Tauri inject — only invoke when available, otherwise `window.open`.
- */
+/** Open a URL in the system browser (Tauri) or a new tab (web). */
 export function openExternalUrl(url: string): Promise<void> {
-  if (isDesktopShell() && tauriInvokeAvailable()) {
-    return tauriInvoke<void>("open_external_url", { url });
+  const raw = String(url ?? "").trim();
+  if (!raw || raw.length > 2048) {
+    return Promise.reject(new Error("Invalid external URL"));
   }
-  window.open(url, "_blank", "noopener,noreferrer");
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return Promise.reject(new Error("Invalid external URL"));
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return Promise.reject(new Error("External URL must be http(s)"));
+  }
+  const safe = parsed.toString();
+  if (isDesktopShell() && tauriInvokeAvailable()) {
+    return tauriInvoke<void>("open_external_url", { url: safe });
+  }
+  window.open(safe, "_blank", "noopener,noreferrer");
   return Promise.resolve();
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchLatestReleaseVersion } from "./routes/system.js";
+import { fetchLatestReleaseVersion, isSemverNewer } from "./routes/system.js";
 import { createApp } from "./app.js";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -11,6 +11,24 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.STAGESYNC_SHELL;
   delete process.env.STAGESYNC_GITHUB_TOKEN;
+});
+
+describe("isSemverNewer", () => {
+  it("treats equal versions as not newer", () => {
+    expect(isSemverNewer("5.0.0", "5.0.0")).toBe(false);
+    expect(isSemverNewer("5.0.0-beta.2", "5.0.0-beta.2")).toBe(false);
+  });
+
+  it("does not treat an older prerelease as an update", () => {
+    expect(isSemverNewer("5.0.0-beta.1", "5.0.0")).toBe(false);
+    expect(isSemverNewer("5.0.0-alpha.13", "5.0.0-beta.2")).toBe(false);
+  });
+
+  it("detects newer patch and prerelease", () => {
+    expect(isSemverNewer("5.0.1", "5.0.0")).toBe(true);
+    expect(isSemverNewer("5.0.0", "5.0.0-beta.2")).toBe(true);
+    expect(isSemverNewer("5.0.0-beta.3", "5.0.0-beta.2")).toBe(true);
+  });
 });
 
 describe("fetchLatestReleaseVersion", () => {

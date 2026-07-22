@@ -418,12 +418,20 @@ export function cycleGridTemplateColumns(
   steps: readonly { bars: number }[],
 ): string {
   if (steps.length === 0) return "";
-  return steps.map((s) => `${Math.max(1, Math.round(s.bars))}fr`).join(" ");
+  return steps
+    .map((s) => {
+      const bars = Number.isFinite(s.bars) ? Math.max(1, Math.round(s.bars)) : 1;
+      return `${bars}fr`;
+    })
+    .join(" ");
 }
 
 /** Sum of bar units in the cycle — drives proportional tile columns. */
 export function cycleTotalBars(cycle: readonly GridCycleStep[]): number {
-  return cycle.reduce((sum, step) => sum + Math.max(0, step.bars), 0);
+  return cycle.reduce((sum, step) => {
+    const bars = Number.isFinite(step.bars) ? Math.max(0, step.bars) : 0;
+    return sum + bars;
+  }, 0);
 }
 
 const emptyContext = (emptyReason: string | null): GridLiveContext => ({

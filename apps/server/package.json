@@ -24,9 +24,9 @@
     "@stagesync/typescript-config": "workspace:*",
     "@types/express": "^5.0.3",
     "@types/multer": "^2.2.0",
-    "@types/node": "^22.15.3",
+    "@types/node": "^26.1.1",
     "@types/ws": "^8.18.1",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.5",
     "tsx": "^4.20.3",
     "typescript": "5.9.3",
     "vitest": "^3.2.4"

@@ -37,6 +37,8 @@ export {
   MeterEventSchema,
   KeySignatureSchema,
   KeyEventSchema,
+  KEY_TONICS,
+  normalizeKeyTonic,
   ScoreBarAnchorSchema,
   ScoreBarMapSchema,
   ProjectAssetKindSchema,
@@ -55,6 +57,7 @@ export {
   PutProjectBodySchema,
   CreateProjectBodySchema,
   BatchMidiPcBodySchema,
+  ExportLibraryBodySchema,
   UpdateProjectBodySchema,
   HealthResponseSchema,
   ApiErrorDetailSchema,
@@ -83,12 +86,14 @@ export {
   type ProjectV5,
   type Project,
   type KeySignature,
+  type KeyTonic,
   type KeyEvent,
   type ScoreBarAnchor,
   type ScoreBarMap,
   type PutProjectBody,
   type CreateProjectBody,
   type BatchMidiPcBody,
+  type ExportLibraryBody,
   type UpdateProjectBody,
   type HealthResponse,
   type ApiErrorDetail,
@@ -146,7 +151,7 @@ export {
   resolveFormaClipAt,
 } from "./project-resolve.js";
 
-
+export { ticksToMsAlongTempoMap } from "./tempo-map-ms.js";
 export {
   projectEndTicks,
   emptyProjectEndTicks,
@@ -249,9 +254,11 @@ export {
 export {
   audioClipAbutGapTicks,
   audioClipBufferOffsetSec,
+  audioClipBufferOffsetSecAlongMaps,
   audioClipEndTicks,
   audioClipPlayableMs,
   audioClipRemainingSec,
+  audioClipRemainingSecAlongMaps,
   audioFadeGainAtMs,
   applyAbutCrossfade,
   clampAudioClipToAsset,

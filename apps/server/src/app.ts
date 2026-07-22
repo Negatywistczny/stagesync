@@ -11,6 +11,7 @@ import { createSetlistRouter } from "./routes/setlist.js";
 import { createStageRouter } from "./routes/stage.js";
 import { createSystemRouter } from "./routes/system.js";
 import { createTransportRouter } from "./routes/transport.js";
+import { sendError } from "./routes/errors.js";
 import { createStores, type Stores } from "./storage/index.js";
 import { defaultDataDir } from "./storage/paths.js";
 import { mountStaticWeb, resolveStaticDir } from "./static-web.js";
@@ -71,7 +72,26 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   wireMidiProgramChangeOut(transport, stores, midi);
   const app: Express = express();
 
-  app.use(express.json());
+  app.use(express.json({ limit: "2mb" }));
+  app.use(
+    (
+      err: unknown,
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      const e = err as { type?: string; status?: number; statusCode?: number };
+      if (
+        e?.type === "entity.too.large" ||
+        e?.status === 413 ||
+        e?.statusCode === 413
+      ) {
+        sendError(res, 413, "Payload too large");
+        return;
+      }
+      next(err);
+    },
+  );
 
   app.get("/api/health", (_req, res) => {
     const body: HealthResponse = {
@@ -83,7 +103,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   });
 
   app.use("/api/library", createLibraryRouter(stores));
-  app.use("/api/projects", createProjectsRouter(stores));
+  app.use("/api/projects", createProjectsRouter(stores, transport));
   app.use("/api/setlist", createSetlistRouter(stores, transport));
   app.use("/api/stage", createStageRouter(stageHub, presence));
   app.use(
@@ -97,6 +117,11 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   );
   app.use("/api/transport", createTransportRouter(transport, stores));
   app.use("/api/midi", createMidiRouter(midi));
+
+  // After all API routers: unknown /api/* must be JSON, never SPA HTML.
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ ok: false, error: "Not found" });
+  });
 
   const staticDir =
     options.staticDir === undefined ? resolveStaticDir() : options.staticDir;

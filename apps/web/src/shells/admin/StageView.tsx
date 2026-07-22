@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@stagesync/ui";
 import {
   fetchStageClients,
@@ -59,33 +59,25 @@ export function StageView() {
   const [clients, setClients] = useState<PresenceClient[]>([]);
   const [clientsError, setClientsError] = useState<string | null>(null);
   const [clientsLoading, setClientsLoading] = useState(false);
-  const clientsGenRef = useRef(0);
 
   const refreshClients = useCallback(async () => {
-    const gen = ++clientsGenRef.current;
     setClientsLoading(true);
     setClientsError(null);
     try {
-      const list = await fetchStageClients();
-      if (gen !== clientsGenRef.current) return;
-      setClients(list);
+      setClients(await fetchStageClients());
     } catch (err) {
-      if (gen !== clientsGenRef.current) return;
-      setClientsError(
-        err instanceof Error ? err.message : "Nie udało się pobrać klientów",
-      );
+      const message =
+        err instanceof Error ? err.message : "Nie udało się pobrać klientów";
+      setClientsError(message.slice(0, 500));
     } finally {
-      if (gen === clientsGenRef.current) setClientsLoading(false);
+      setClientsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void refreshClients();
     const id = window.setInterval(() => void refreshClients(), 4000);
-    return () => {
-      window.clearInterval(id);
-      clientsGenRef.current += 1;
-    };
+    return () => window.clearInterval(id);
   }, [refreshClients]);
 
   function toggleRole(id: RoleId) {
@@ -112,7 +104,9 @@ export function StageView() {
           : "Wysłano do wszystkich.",
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Wysyłka nieudana");
+      const message =
+        err instanceof Error ? err.message : "Wysyłka nieudana";
+      setError(message.slice(0, 500));
     } finally {
       setPending(false);
     }
@@ -156,11 +150,7 @@ export function StageView() {
               {error}
             </p>
           ) : null}
-          {status ? (
-            <p className={styles.muted} role="status" aria-live="polite">
-              {status}
-            </p>
-          ) : null}
+          {status ? <p className={styles.muted}>{status}</p> : null}
           <textarea
             className={styles.textarea}
             maxLength={200}

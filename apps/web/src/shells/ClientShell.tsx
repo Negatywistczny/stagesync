@@ -34,11 +34,11 @@ import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
 
-const ROLES: { id: RoleId; label: string }[] = [
-  { id: "karaoke", label: "Tekst" },
-  { id: "grid", label: "Akordy" },
-  { id: "score", label: "Partytura" },
-  { id: "drums", label: "Forma" },
+const ROLES: { id: RoleId; label: string; icon: string }[] = [
+  { id: "karaoke", label: "Tekst", icon: "🎤" },
+  { id: "grid", label: "Akordy", icon: "🎹" },
+  { id: "score", label: "Partytura", icon: "🎼" },
+  { id: "drums", label: "Forma", icon: "🥁" },
 ];
 
 export function ClientShell() {
@@ -56,6 +56,8 @@ export function ClientShell() {
     latencyMs,
     stageCue,
     play,
+    commandPending,
+    error: transportError,
     announcePresence,
   } = useTransport();
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
@@ -67,11 +69,11 @@ export function ClientShell() {
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
+  const [drumsNoteError, setDrumsNoteError] = useState<string | null>(null);
   const [cueVisible, setCueVisible] = useState(false);
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
-  const [uiError, setUiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!started) return;
@@ -113,8 +115,12 @@ export function ClientShell() {
     }
     setCueText(stageCue.text);
     setCueVisible(true);
-    if (stageCue.ttlMs <= 0) return;
-    const t = window.setTimeout(() => setCueVisible(false), stageCue.ttlMs);
+    const ttl = stageCue.ttlMs;
+    // 0 = infinite (Admin ∞); missing/non-finite → same default as server (6s).
+    if (ttl === 0) return;
+    const delayMs =
+      typeof ttl === "number" && Number.isFinite(ttl) && ttl > 0 ? ttl : 6000;
+    const t = window.setTimeout(() => setCueVisible(false), delayMs);
     return () => window.clearTimeout(t);
   }, [stageCue, picked]);
 
@@ -130,23 +136,12 @@ export function ClientShell() {
       : null;
 
   async function onFullscreen() {
-    try {
-      await toggleAppFullscreen();
-      setUiError(null);
-    } catch (err) {
-      setUiError(
-        err instanceof Error ? err.message : "Nie udało się przełączyć pełnego ekranu",
-      );
-    }
+    await toggleAppFullscreen();
   }
 
   async function onNextSong() {
-    if (!nextSetlistId) return;
-    try {
-      await play({ projectId: nextSetlistId });
-    } catch {
-      /* ignore */
-    }
+    if (!nextSetlistId || commandPending) return;
+    await play({ projectId: nextSetlistId });
   }
 
   function toggleRole(id: RoleId) {
@@ -181,7 +176,8 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     nextSetlistId,
-    uiError,
+    nextSongPending: commandPending,
+    transportError,
     onNextSong: () => void onNextSong(),
     onFullscreen: () => void onFullscreen(),
     globalSettingsOpen: globalSettings,
@@ -198,16 +194,7 @@ export function ClientShell() {
             Witaj w StageSync
           </h1>
           <p className={styles.muted}>Podaj swoje imię lub nazwę tabletu.</p>
-          <form
-            onSubmit={submitName}
-            onKeyDown={(e) => {
-              if (e.key !== "Escape") return;
-              e.preventDefault();
-              const n = nameDraft.trim() || "Gość";
-              setName(n);
-              setNameModal(false);
-            }}
-          >
+          <form onSubmit={submitName}>
             <input
               className={styles.input}
               maxLength={40}
@@ -277,6 +264,9 @@ export function ClientShell() {
                   aria-pressed={on}
                   onClick={() => toggleRole(r.id)}
                 >
+                  <span className={styles.roleIcon} aria-hidden>
+                    {r.icon}
+                  </span>
                   <strong className={styles.roleLabel}>{r.label}</strong>
                 </button>
               );
@@ -303,6 +293,12 @@ export function ClientShell() {
   return (
     <div className={styles.page}>
       <ClientHeader {...headerProps} started />
+
+      {drumsNoteError ? (
+        <p className={styles.liveSaveError} role="alert">
+          {drumsNoteError}
+        </p>
+      ) : null}
 
       <div
         className={[
@@ -353,6 +349,7 @@ export function ClientShell() {
                     notesEdit={displayPrefs.formNotesEdit}
                     onNoteChange={(clipId, note) => {
                       if (!state.activeProjectId) return;
+                      const prev = activeProject;
                       const next: Project = {
                         ...activeProject,
                         forma: {
@@ -366,10 +363,18 @@ export function ClientShell() {
                           ),
                         },
                       };
+                      setDrumsNoteError(null);
                       setActiveProject(next);
-                      void putProject(state.activeProjectId, next).catch(
-                        () => undefined,
-                      );
+                      void putProject(state.activeProjectId, next)
+                        .then((saved) => setActiveProject(saved))
+                        .catch((err) => {
+                          setActiveProject(prev);
+                          setDrumsNoteError(
+                            err instanceof Error
+                              ? err.message
+                              : "Nie udało się zapisać notatki perkusji",
+                          );
+                        });
                     }}
                   />
                 ) : (
@@ -457,7 +462,8 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   nextSetlistId: string | null;
-  uiError: string | null;
+  nextSongPending: boolean;
+  transportError: string | null;
   onNextSong: () => void;
   onFullscreen: () => void;
   globalSettingsOpen: boolean;
@@ -473,7 +479,8 @@ function ClientHeader({
   songTitle,
   bbt,
   nextSetlistId,
-  uiError,
+  nextSongPending,
+  transportError,
   onNextSong,
   onFullscreen,
   globalSettingsOpen,
@@ -505,16 +512,16 @@ function ClientHeader({
         <button
           type="button"
           className={styles.setlistNext}
-          disabled={!nextSetlistId}
+          disabled={!nextSetlistId || nextSongPending}
           onClick={onNextSong}
           title="Następny utwór setlisty"
         >
           →następny
         </button>
       ) : null}
-      {uiError ? (
-        <span className={styles.uiError} role="alert">
-          {uiError}
+      {transportError ? (
+        <span className={styles.transportError} role="alert">
+          {transportError}
         </span>
       ) : null}
       <span className={styles.takt}>

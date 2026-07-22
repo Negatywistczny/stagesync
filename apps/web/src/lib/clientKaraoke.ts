@@ -4,7 +4,7 @@ import {
   resolveTempoAt,
   syntheticCountdownDisplayFromProject,
   ticksPerBar,
-  ticksToBbt,
+  ticksToBbtAlongMeterMap,
   toDisplayBar,
   type FormaClip,
   type Project,
@@ -273,7 +273,12 @@ export function buildKaraokeLiveContext(
   const section = resolveFormaClipAt(project, displayTicks);
   const meter = resolveMeterAt(project, displayTicks);
   const tempo = resolveTempoAt(project, displayTicks);
-  const bbt = ticksToBbt(displayTicks, meter, project.ppq);
+  const bbt = ticksToBbtAlongMeterMap(
+    displayTicks,
+    project.defaultMeter,
+    project.meterMap,
+    project.ppq,
+  );
   const clips = mergeTekstWithCountdownDigits(project, displayTicks).filter(
     (c) => c.text.trim().length > 0,
   );

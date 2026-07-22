@@ -150,9 +150,13 @@ function shiftAllProjectTicks(project: Project, deltaTicks: number): Project {
  * Mirrors v4 `setCountdownLengthBeats`: shift post-CD content by Δ, then renorm
  * so CD ends at tick 0 (pre-roll ≤ 0).
  */
+export const MAX_COUNTDOWN_BARS = 32;
+
 export function setCountdownBars(project: Project, bars: number): Project {
-  if (!Number.isInteger(bars) || bars < 1) {
-    throw new RangeError("Countdown length must be at least 1 bar");
+  if (!Number.isInteger(bars) || bars < 1 || bars > MAX_COUNTDOWN_BARS) {
+    throw new RangeError(
+      `Countdown length must be 1…${MAX_COUNTDOWN_BARS} bars`,
+    );
   }
   const cd = project.forma.clips.find((c) => c.kind === "countdown");
   if (!cd) return project;
@@ -212,7 +216,10 @@ export function applyCountdownLengthFromBoundary(
   const barTicks = ticksPerBar(meter, project.ppq);
   const rawLen = Number(newEndTicks) - cd.startTicks;
   if (!Number.isFinite(rawLen)) return project;
-  const bars = Math.max(1, Math.round(rawLen / barTicks));
+  const bars = Math.max(
+    1,
+    Math.min(MAX_COUNTDOWN_BARS, Math.round(rawLen / barTicks)),
+  );
   return setCountdownBars(project, bars);
 }
 

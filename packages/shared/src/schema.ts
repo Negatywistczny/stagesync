@@ -30,8 +30,8 @@ export const LibraryProjectEntrySchema = z.object({
   updatedAt: z.string().datetime().optional(),
   midiProgramId: z.number().int().min(0).max(127).optional(),
   isTemplate: z.boolean().optional(),
-  artist: z.string().optional(),
-  genre: z.string().optional(),
+  artist: z.string().max(200).optional(),
+  genre: z.string().max(200).optional(),
   hasMusicXml: z.boolean().optional(),
 });
 
@@ -41,7 +41,7 @@ export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;
 export const LibrarySchema = z
   .object({
     version: z.literal(1),
-    projects: z.array(LibraryProjectEntrySchema),
+    projects: z.array(LibraryProjectEntrySchema).max(1024),
   })
   .strict();
 
@@ -53,17 +53,17 @@ export const FormaClipKindSchema = z.enum(["countdown", "section"]);
 
 export const FormaClipSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
+  name: z.string().min(1).max(120),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
   kind: FormaClipKindSchema.default("section"),
   /** Optional per-section note (Client Forma / drums). */
-  note: z.string().optional(),
+  note: z.string().max(500).optional(),
   /**
    * Interior subsection boundaries as offsets from clip.startTicks (v4 scissors).
    * Relative so move keeps cuts; resize clamps via helpers.
    */
-  subsections: z.array(z.number().int().positive()).optional(),
+  subsections: z.array(z.number().int().positive()).max(64).optional(),
 });
 
 export type FormaClip = z.infer<typeof FormaClipSchema>;
@@ -78,7 +78,7 @@ export const ScoreBarAnchorSchema = z.object({
 export type ScoreBarAnchor = z.infer<typeof ScoreBarAnchorSchema>;
 
 export const ScoreBarMapSchema = z.object({
-  anchors: z.array(ScoreBarAnchorSchema),
+  anchors: z.array(ScoreBarAnchorSchema).max(512),
 });
 
 export type ScoreBarMap = z.infer<typeof ScoreBarMapSchema>;
@@ -114,12 +114,17 @@ export const ProjectAssetKindSchema = z.enum(["audio", "cover", "musicxml"]);
 
 export const ProjectAssetSchema = z.object({
   id: z.string().min(1),
-  storageName: z.string().min(1),
-  originalName: z.string().min(1),
+  storageName: z.string().min(1).max(200),
+  originalName: z.string().min(1).max(512),
   kind: ProjectAssetKindSchema,
-  mimeType: z.string().min(1),
-  sizeBytes: z.number().int().nonnegative(),
-  durationMs: z.number().positive().finite().optional(),
+  mimeType: z.string().min(1).max(128),
+  sizeBytes: z.number().int().nonnegative().max(100 * 1024 * 1024),
+  durationMs: z
+    .number()
+    .positive()
+    .finite()
+    .max(24 * 60 * 60 * 1000)
+    .optional(),
   /** Static peak envelope for Timeline waveform (0…1); max 512 bins. */
   waveformPeaks: z.array(z.number().min(0).max(1)).max(512).optional(),
   /** Optional mean RMS of the full file (0…1). */
@@ -130,9 +135,9 @@ export type ProjectAsset = z.infer<typeof ProjectAssetSchema>;
 
 export const AudioTrackSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
+  name: z.string().min(1).max(80),
   muted: z.boolean().optional(),
-  gainDb: z.number().finite().optional(),
+  gainDb: z.number().finite().min(-60).max(24).optional(),
 });
 
 export type AudioTrack = z.infer<typeof AudioTrackSchema>;
@@ -143,11 +148,21 @@ export const AudioClipSchema = z.object({
   assetId: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  trimInMs: z.number().nonnegative().finite().optional(),
+  trimInMs: z
+    .number()
+    .nonnegative()
+    .finite()
+    .max(24 * 60 * 60 * 1000)
+    .optional(),
   /** Trim from source file end (ms); with trimInMs bounds playable window. */
-  trimOutMs: z.number().nonnegative().finite().optional(),
+  trimOutMs: z
+    .number()
+    .nonnegative()
+    .finite()
+    .max(24 * 60 * 60 * 1000)
+    .optional(),
   muted: z.boolean().optional(),
-  gainDb: z.number().finite().optional(),
+  gainDb: z.number().finite().min(-60).max(24).optional(),
   /** Fade-in length from clip start (ms of playable window). */
   fadeInMs: z.number().nonnegative().finite().optional(),
   /** Fade-out length ending at clip end (ms of playable window). */
@@ -238,9 +253,9 @@ export const ProjectSchemaV3 = z
     }),
     tempoMap: z.array(TempoEventSchema),
     meterMap: z.array(MeterEventSchema),
-    assets: z.array(ProjectAssetSchema),
-    audioTracks: z.array(AudioTrackSchema),
-    audioClips: z.array(AudioClipSchema),
+    assets: z.array(ProjectAssetSchema).max(256),
+    audioTracks: z.array(AudioTrackSchema).max(64),
+    audioClips: z.array(AudioClipSchema).max(512),
   })
   .strict();
 
@@ -251,7 +266,7 @@ export const TekstClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  text: z.string(),
+  text: z.string().max(2000),
 });
 
 export type TekstClip = z.infer<typeof TekstClipSchema>;
@@ -261,7 +276,7 @@ export const AkordClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  symbol: z.string().min(1),
+  symbol: z.string().min(1).max(64),
 });
 
 export type AkordClip = z.infer<typeof AkordClipSchema>;
@@ -271,7 +286,7 @@ export const CueClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
-  label: z.string().min(1),
+  label: z.string().min(1).max(200),
 });
 
 export type CueClip = z.infer<typeof CueClipSchema>;
@@ -287,13 +302,13 @@ export const ProjectSchemaV4 = z
     defaultBpm: BpmSchema,
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
-      clips: z.array(FormaClipSchema),
+      clips: z.array(FormaClipSchema).max(256),
     }),
     tempoMap: z.array(TempoEventSchema),
     meterMap: z.array(MeterEventSchema),
-    assets: z.array(ProjectAssetSchema),
-    audioTracks: z.array(AudioTrackSchema),
-    audioClips: z.array(AudioClipSchema),
+    assets: z.array(ProjectAssetSchema).max(256),
+    audioTracks: z.array(AudioTrackSchema).max(64),
+    audioClips: z.array(AudioClipSchema).max(512),
     tekst: z.object({
       clips: z.array(TekstClipSchema),
     }),
@@ -308,8 +323,40 @@ export const ProjectSchemaV4 = z
 
 export type ProjectV4 = z.infer<typeof ProjectSchemaV4>;
 
+export const KEY_TONICS = [
+  "C",
+  "C#",
+  "Db",
+  "D",
+  "Eb",
+  "E",
+  "F",
+  "F#",
+  "Gb",
+  "G",
+  "Ab",
+  "A",
+  "Bb",
+  "B",
+] as const;
+
+export type KeyTonic = (typeof KEY_TONICS)[number];
+
+export function normalizeKeyTonic(
+  raw: unknown,
+  fallback: KeyTonic = "C",
+): KeyTonic {
+  if (
+    typeof raw === "string" &&
+    (KEY_TONICS as readonly string[]).includes(raw)
+  ) {
+    return raw as KeyTonic;
+  }
+  return fallback;
+}
+
 export const KeySignatureSchema = z.object({
-  tonic: z.string().min(1),
+  tonic: z.enum(KEY_TONICS),
   mode: z.enum(["major", "minor"]),
 });
 
@@ -329,21 +376,21 @@ export type KeyEvent = z.infer<typeof KeyEventSchema>;
 const ProjectSchemaV5Object = z
   .object({
     id: z.string().min(1),
-    name: z.string().min(1),
+    name: z.string().trim().min(1).max(200),
     formatVersion: z.literal(5),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
     defaultBpm: BpmSchema,
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
-      clips: z.array(FormaClipSchema),
+      clips: z.array(FormaClipSchema).max(256),
     }),
     tempoMap: z.array(TempoEventSchema).max(256),
     meterMap: z.array(MeterEventSchema).max(256),
     keyMap: z.array(KeyEventSchema).max(256),
-    assets: z.array(ProjectAssetSchema),
-    audioTracks: z.array(AudioTrackSchema),
-    audioClips: z.array(AudioClipSchema),
+    assets: z.array(ProjectAssetSchema).max(256),
+    audioTracks: z.array(AudioTrackSchema).max(64),
+    audioClips: z.array(AudioClipSchema).max(512),
     tekst: z.object({
       clips: z.array(TekstClipSchema),
     }),
@@ -356,9 +403,9 @@ const ProjectSchemaV5Object = z
     scoreBarMap: ScoreBarMapSchema.default({ anchors: [] }),
     midiProgramId: z.number().int().min(0).max(127).optional(),
     isTemplate: z.boolean().optional(),
-    artist: z.string().optional(),
-    genre: z.string().optional(),
-    year: z.number().int().optional(),
+    artist: z.string().max(200).optional(),
+    genre: z.string().max(200).optional(),
+    year: z.number().int().min(1000).max(9999).optional(),
   })
   .strict();
 
@@ -402,18 +449,27 @@ export type CreateProjectBody = z.infer<typeof CreateProjectBodySchema>;
 
 export const BatchMidiPcBodySchema = z
   .object({
-    assignments: z.array(
-      z
-        .object({
-          id: z.string().min(1),
-          midiProgramId: z.number().int().min(0).max(127),
-        })
-        .strict(),
-    ),
+    assignments: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            midiProgramId: z.number().int().min(0).max(127),
+          })
+          .strict(),
+      )
+      .max(1024),
   })
   .strict();
 
 export type BatchMidiPcBody = z.infer<typeof BatchMidiPcBodySchema>;
+
+/** Optional selection for POST /api/library/export — omit / empty → all non-template. */
+export const ExportLibraryBodySchema = z.object({
+  projectIds: z.array(z.string().uuid()).max(1024).optional(),
+});
+
+export type ExportLibraryBody = z.infer<typeof ExportLibraryBodySchema>;
 
 /** @deprecated Use PutProjectBodySchema for full-document PUT. */
 export const UpdateProjectBodySchema = PutProjectBodySchema;
@@ -453,7 +509,7 @@ export const StageMessageBodySchema = z
     .array(z.enum(["karaoke", "grid", "score", "drums"]))
     .max(4)
     .optional(),
-    ttlMs: z.number().int().positive().optional(),
+    ttlMs: z.number().int().positive().max(86_400_000).optional(),
   })
   .strict();
 
@@ -546,8 +602,8 @@ export const MidiHostStatusSchema = z
     available: z.boolean(),
     backend: z.enum(["native", "mock", "none"]),
     config: MidiHostConfigSchema,
-    inputs: z.array(MidiPortSchema),
-    outputs: z.array(MidiPortSchema),
+    inputs: z.array(MidiPortSchema).max(128),
+    outputs: z.array(MidiPortSchema).max(128),
     rates: MidiHostRatesSchema,
     /** True while transport is playing and clock-out timer is armed. */
     clockOutActive: z.boolean(),

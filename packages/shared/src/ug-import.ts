@@ -46,7 +46,7 @@ export type UgImportOptions = {
 };
 
 const CHORD_TOKEN =
-  /^[A-G](?:#|b)?(?:maj|min|m|sus|dim|aug|add)?[0-9]*(?:\/[A-G](?:#|b)?)?$/i;
+  /^[A-G](?:#|b)?(?:maj|min|m|sus|dim|aug|add)?[0-9]*(?:(?:#|b)(?:5|9|11|13))*(?:\/[A-G](?:#|b)?)?$/i;
 
 function stripBracketChords(line: string): string {
   return line.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();

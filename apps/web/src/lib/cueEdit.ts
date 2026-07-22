@@ -35,7 +35,7 @@ export function pencilCueClick(
     id: `cue-${crypto.randomUUID()}`,
     startTicks,
     lengthTicks: barTicks,
-    label: label.trim() || "Cue",
+    label: (label.trim() || "Cue").slice(0, 120),
   };
 
   const synthetic = project.cue.clips.map(asFormaLike);
@@ -47,7 +47,10 @@ export function pencilCueClick(
     .filter((c) => c.kind === "section")
     .map((c) => {
       if (c.id === newClip.id) return newClip;
-      const prev = project.cue.clips.find((t) => t.id === c.id);
+      const parentId = c.id.endsWith("-r") ? c.id.replace(/(-r)+$/, "") : c.id;
+      const prev =
+        project.cue.clips.find((t) => t.id === c.id) ??
+        project.cue.clips.find((t) => t.id === parentId);
       return {
         id: c.id,
         startTicks: c.startTicks,
@@ -70,7 +73,7 @@ export function setCueClipLabel(
   clipId: string,
   label: string,
 ): Project {
-  const next = label.trim() || "Cue";
+  const next = (label.trim() || "Cue").slice(0, 120);
   const clips = project.cue.clips.map((c) =>
     c.id === clipId ? { ...c, label: next } : c,
   );

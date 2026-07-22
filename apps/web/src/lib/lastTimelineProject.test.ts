@@ -27,28 +27,41 @@ describe("lastTimelineProject", () => {
     vi.unstubAllGlobals();
   });
 
+  const ID_A = "00000000-0000-4000-8000-00000000000a";
+  const ID_B = "00000000-0000-4000-8000-00000000000b";
+
   it("persists and reads project id", () => {
     const store = stubStorage();
 
     expect(getLastTimelineProjectId()).toBeNull();
-    setLastTimelineProjectId("abc");
-    expect(getLastTimelineProjectId()).toBe("abc");
-    expect(store.get(LAST_TIMELINE_PROJECT_KEY)).toBe("abc");
+    setLastTimelineProjectId(ID_A);
+    expect(getLastTimelineProjectId()).toBe(ID_A);
+    expect(store.get(LAST_TIMELINE_PROJECT_KEY)).toBe(ID_A);
     setLastTimelineProjectId(null);
     expect(getLastTimelineProjectId()).toBeNull();
   });
 
+  it("rejects non-uuid last project ids", () => {
+    const store = stubStorage();
+    setLastTimelineProjectId("abc");
+    expect(getLastTimelineProjectId()).toBeNull();
+    expect(store.has(LAST_TIMELINE_PROJECT_KEY)).toBe(false);
+    store.set(LAST_TIMELINE_PROJECT_KEY, "not-a-uuid");
+    expect(getLastTimelineProjectId()).toBeNull();
+    expect(store.has(LAST_TIMELINE_PROJECT_KEY)).toBe(false);
+  });
+
   it("pushes recent projects to the front and caps length", () => {
     const store = stubStorage();
-    pushRecentTimelineProject("a", "Alpha");
-    pushRecentTimelineProject("b", "Beta");
-    pushRecentTimelineProject("a", "Alpha 2");
+    pushRecentTimelineProject(ID_A, "Alpha");
+    pushRecentTimelineProject(ID_B, "Beta");
+    pushRecentTimelineProject(ID_A, "Alpha 2");
 
     expect(getRecentTimelineProjects()).toEqual([
-      { id: "a", name: "Alpha 2" },
-      { id: "b", name: "Beta" },
+      { id: ID_A, name: "Alpha 2" },
+      { id: ID_B, name: "Beta" },
     ]);
-    expect(getLastTimelineProjectId()).toBe("a");
+    expect(getLastTimelineProjectId()).toBe(ID_A);
     expect(store.get(RECENT_TIMELINE_PROJECTS_KEY)).toContain("Alpha 2");
   });
 });

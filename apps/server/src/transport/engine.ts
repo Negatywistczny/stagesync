@@ -100,7 +100,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   function notify(): void {
     const msg = tickMessage();
     for (const listener of listeners) {
-      listener(msg);
+      try {
+        listener(msg);
+      } catch (err) {
+        console.error("[stagesync-server] transport listener error", err);
+      }
     }
   }
 
@@ -150,11 +154,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
     loadProject(projectId: string, project: Project): TransportState {
       activeProjectId = projectId;
+      positionTicks = samplePosition();
       playing = false;
       stopTimer();
-      const home = transportHomeTicks(project);
-      positionTicks = home;
-      applyMapsFromProject(project, home);
+      loop = null; // loop is per-song — never carry into the next project
+      applyMapsFromProject(project, 0);
       notify();
       return snapshot();
     },
@@ -167,10 +171,14 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
         assertValidTimeSignature(opts.timeSignature, ppq);
       }
 
+      const prevProjectId = activeProjectId;
       positionTicks = samplePosition();
 
       if (opts.projectId !== undefined) {
         activeProjectId = opts.projectId;
+        if (opts.projectId !== prevProjectId) {
+          loop = null;
+        }
       }
 
       if (project && opts.bpm === undefined && opts.timeSignature === undefined) {
@@ -259,6 +267,21 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
           ? { ...next, enabled: body.enabled && isUsableLoop(next) }
           : null;
       }
+      notify();
+      return snapshot();
+    },
+
+    /**
+     * When a library project is deleted, drop it from transport so stop/seek/play
+     * do not 404 on a missing activeProjectId.
+     */
+    clearActiveIf(projectId: string): TransportState | null {
+      if (activeProjectId !== projectId) return null;
+      activeProjectId = null;
+      positionTicks = samplePosition();
+      playing = false;
+      stopTimer();
+      loop = null;
       notify();
       return snapshot();
     },

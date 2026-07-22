@@ -190,15 +190,12 @@ function RestartConfirmModal({
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { play, stop, state } = useTransport();
+  const { play, stop, state, commandPending } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
   const [restartPending, setRestartPending] = useState(false);
+  const restartPendingRef = useRef(false);
   const [restartError, setRestartError] = useState<string | null>(null);
-  const [setlistNeighborError, setSetlistNeighborError] = useState<string | null>(
-    null,
-  );
-  const setlistNeighborPendingRef = useRef(false);
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -208,9 +205,7 @@ export function DesktopMenuBridge() {
 
   const goSetlistNeighbor = useCallback(
     async (direction: "prev" | "next") => {
-      if (setlistNeighborPendingRef.current) return;
-      setlistNeighborPendingRef.current = true;
-      setSetlistNeighborError(null);
+      if (commandPending) return;
       try {
         const view = await fetchSetlist();
         if (!view.enabled || view.entries.length === 0) return;
@@ -225,20 +220,15 @@ export function DesktopMenuBridge() {
         if (location.pathname.startsWith("/timeline")) {
           navigate(`/timeline/${targetId}`);
         }
-      } catch (err) {
-        setSetlistNeighborError(
-          err instanceof Error
-            ? err.message
-            : "Nie udało się przełączyć utworu setlisty",
-        );
-      } finally {
-        setlistNeighborPendingRef.current = false;
+      } catch {
+        /* ignore — menu is best-effort */
       }
     },
-    [location.pathname, navigate, play],
+    [commandPending, location.pathname, navigate, play],
   );
 
   const onTransportPlay = useCallback(async () => {
+    if (commandPending) return;
     try {
       const projectId =
         state.activeProjectId ??
@@ -249,17 +239,20 @@ export function DesktopMenuBridge() {
     } catch {
       /* ignore */
     }
-  }, [location.pathname, play, state.activeProjectId]);
+  }, [commandPending, location.pathname, play, state.activeProjectId]);
 
   const onTransportStop = useCallback(async () => {
+    if (commandPending) return;
     try {
       await stop();
     } catch {
       /* ignore */
     }
-  }, [stop]);
+  }, [commandPending, stop]);
 
   const onRestartConfirm = useCallback(async () => {
+    if (restartPendingRef.current) return;
+    restartPendingRef.current = true;
     setRestartPending(true);
     setRestartError(null);
     try {
@@ -270,6 +263,7 @@ export function DesktopMenuBridge() {
         err instanceof Error ? err.message : "Restart nieudany",
       );
     } finally {
+      restartPendingRef.current = false;
       setRestartPending(false);
     }
   }, []);
@@ -309,19 +303,6 @@ export function DesktopMenuBridge() {
   return (
     <>
       <Outlet />
-      {setlistNeighborError ? (
-        <p className={styles.toastError} role="alert">
-          {setlistNeighborError}
-          <button
-            type="button"
-            className={styles.toastDismiss}
-            onClick={() => setSetlistNeighborError(null)}
-            aria-label="Zamknij komunikat"
-          >
-            ×
-          </button>
-        </p>
-      ) : null}
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
         <RestartConfirmModal

@@ -11,7 +11,7 @@ import {
   ticksPerBar,
   type TimeSignature,
 } from "./time.js";
-import { ProjectSchema, type Project, type FormaClip } from "./schema.js";
+import { ProjectSchema, normalizeKeyTonic, type Project, type FormaClip } from "./schema.js";
 import { sealAkordyLengths } from "./ug-import.js";
 import { scrubCountdownDigitClips } from "./countdown-content.js";
 import {
@@ -276,7 +276,10 @@ export function migrateLegacySong(
 
   const endAbs = songEndAbs(song, sections);
   const defaultMeter = parseLegacyMeter(song.chords?.timeSignature);
-  const defaultBpm = Math.max(1, asFiniteNumber(song.tempo, 120));
+  const defaultBpm = Math.min(
+    400,
+    Math.max(20, asFiniteNumber(song.tempo, 120)),
+  );
   const minBarBeats =
     (defaultMeter.numerator * 4) / defaultMeter.denominator;
   /** One beat in quarters — dense chords must not use min=full bar (legacy deriveClipLengths). */
@@ -313,7 +316,7 @@ export function migrateLegacySong(
   let tempoMap = tempoMapRaw.map((ev, i) => ({
     id: asString(ev.id, `tempo-${i}`),
     startTicks: toTicks(asFiniteNumber(ev.startAbs, 0), shiftQuarters, ppq),
-    bpm: Math.max(1, asFiniteNumber(ev.bpm, defaultBpm)),
+    bpm: Math.min(400, Math.max(20, asFiniteNumber(ev.bpm, defaultBpm))),
   }));
   if (tempoMap.length === 0) {
     tempoMap = [{ id: "tempo-0", startTicks: 0, bpm: defaultBpm }];
@@ -343,7 +346,7 @@ export function migrateLegacySong(
 
   // Key map
   const keyFallback = {
-    tonic: asString(song.key?.tonic, "C"),
+    tonic: normalizeKeyTonic(song.key?.tonic, "C"),
     mode:
       asString(song.key?.mode, "major").toLowerCase() === "minor"
         ? ("minor" as const)
@@ -351,7 +354,7 @@ export function migrateLegacySong(
   };
   const keyMapRaw = Array.isArray(song.keyMap) ? song.keyMap : [];
   let keyMap = keyMapRaw.map((ev, i) => {
-    const tonic = asString(ev.key?.tonic, keyFallback.tonic);
+    const tonic = normalizeKeyTonic(ev.key?.tonic, keyFallback.tonic);
     const mode =
       asString(ev.key?.mode, keyFallback.mode).toLowerCase() === "minor"
         ? ("minor" as const)
@@ -501,6 +504,10 @@ export function migrateLegacyDatabase(
   },
 ): MigrateLegacyDatabaseResult {
   const warnings: string[] = [];
+  const pushWarning = (msg: string): void => {
+    if (warnings.length >= 64) return;
+    warnings.push(msg.slice(0, 500));
+  };
   if (!db || typeof db !== "object") {
     throw new Error("Legacy database must be an object");
   }
@@ -526,10 +533,10 @@ export function migrateLegacyDatabase(
         updatedAt: options?.updatedAt,
       });
       projects.push(result);
-      warnings.push(...result.warnings);
+      for (const w of result.warnings) pushWarning(w);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      warnings.push(`SKIP ${legacyId}: ${msg}`);
+      pushWarning(`SKIP ${legacyId}: ${msg}`);
     }
   });
 
@@ -545,7 +552,7 @@ export function migrateLegacyDatabase(
     const key = asString(sid);
     const mapped = legacyToProject.get(key);
     if (mapped) projectIds.push(mapped);
-    else warnings.push(`setlist: unknown song id ${key}`);
+    else pushWarning(`setlist: unknown song id ${key}`);
   }
 
   return {

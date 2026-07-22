@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   BatchMidiPcBodySchema,
+  ExportLibraryBodySchema,
   normalizeLibraryImport,
   ProjectSchemaV5,
   type PutProjectBody,
@@ -32,11 +33,8 @@ export function createLibraryRouter(stores: Stores): Router {
 
   router.post("/export", async (req, res) => {
     try {
-      const ids = Array.isArray(req.body?.projectIds)
-        ? (req.body.projectIds as unknown[]).filter(
-            (id): id is string => typeof id === "string",
-          )
-        : null;
+      const body = ExportLibraryBodySchema.parse(req.body ?? {});
+      const ids = body.projectIds;
       const library = await stores.getLibrary();
       const selected = ids
         ? library.projects.filter((p) => ids.includes(p.id))
@@ -84,25 +82,34 @@ export function createLibraryRouter(stores: Stores): Router {
             ? src.name
             : "Import";
         const project = await stores.createProject(name);
-        const candidate = {
-          ...project,
-          ...src,
-          id: project.id,
-          name,
-          updatedAt: project.updatedAt,
-          formatVersion: 5 as const,
-          ppq: project.ppq,
-          midiProgramId: project.midiProgramId,
-          isTemplate: undefined,
-          assets: [],
-          audioTracks: [],
-          audioClips: [],
-        };
-        const parsed = ProjectSchemaV5.parse(candidate);
-        const { id: _id, ...body } = parsed;
-        void _id;
-        await stores.putProject(project.id, body as PutProjectBody);
-        created.push(project.id);
+        try {
+          const candidate = {
+            ...project,
+            ...src,
+            id: project.id,
+            name,
+            updatedAt: project.updatedAt,
+            formatVersion: 5 as const,
+            ppq: project.ppq,
+            midiProgramId: project.midiProgramId,
+            isTemplate: undefined,
+            assets: [],
+            audioTracks: [],
+            audioClips: [],
+          };
+          const parsed = ProjectSchemaV5.parse(candidate);
+          const { id: _id, ...body } = parsed;
+          void _id;
+          await stores.putProject(project.id, body as PutProjectBody);
+          created.push(project.id);
+        } catch (err) {
+          try {
+            await stores.deleteProject(project.id);
+          } catch {
+            /* best-effort cleanup of partial import */
+          }
+          throw err;
+        }
       }
       if (created.length === 0) {
         sendError(res, 400, "Import nie utworzył żadnego utworu");

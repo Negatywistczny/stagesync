@@ -4,10 +4,14 @@ import {
   PutProjectBodySchema,
 } from "@stagesync/shared";
 import type { Stores } from "../storage/index.js";
+import type { TransportEngine } from "../transport/engine.js";
 import { createAssetsRouter } from "./assets.js";
 import { handleRouteError } from "./errors.js";
 
-export function createProjectsRouter(stores: Stores): Router {
+export function createProjectsRouter(
+  stores: Stores,
+  transport?: TransportEngine,
+): Router {
   const router = Router();
 
   router.post("/", async (req, res) => {
@@ -46,7 +50,9 @@ export function createProjectsRouter(stores: Stores): Router {
 
   router.delete("/:id", async (req, res) => {
     try {
-      await stores.deleteProject(req.params.id);
+      const id = req.params.id;
+      await stores.deleteProject(id);
+      transport?.clearActiveIf(id);
       res.status(204).send();
     } catch (err) {
       handleRouteError(res, err);
