@@ -1,4 +1,5 @@
 import { readdir } from "node:fs/promises";
+import { ProjectIdSchema } from "@stagesync/shared";
 import type { Stores } from "./index.js";
 
 export type MigrateVolumeResult = {
@@ -40,6 +41,7 @@ export async function migrateVolumeOnBoot(
 
   for (const name of entries) {
     if (name.startsWith(".")) continue;
+    if (!ProjectIdSchema.safeParse(name).success) continue;
     projectsScanned += 1;
     const rewritten = await stores.migrateProjectOnDisk(name, {
       onBackup: (file) => {
