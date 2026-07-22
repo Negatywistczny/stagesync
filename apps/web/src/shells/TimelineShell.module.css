@@ -206,8 +206,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
+  width: var(--ss-touch-min);
+  height: var(--ss-touch-min);
   padding: 0;
   border: 1px solid var(--ss-color-primary);
   border-radius: var(--ss-radius-sm);
