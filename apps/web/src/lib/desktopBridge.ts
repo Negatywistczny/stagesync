@@ -80,27 +80,37 @@ export function isDesktopShell(): boolean {
 
 /** Normalize Tauri / Promise rejection reasons into a readable message. */
 export function formatUnknownError(err: unknown): string {
-  const cap = (s: string) => s.slice(0, 500);
+  let message: string;
   if (err instanceof Error) {
-    return cap(err.message || err.name || "Unknown error");
+    message = err.message || err.name || "Unknown error";
+  } else if (typeof err === "string") {
+    message = err || "Unknown error";
+  } else if (err && typeof err === "object" && "message" in err) {
+    const raw = (err as { message: unknown }).message;
+    if (typeof raw === "string" && raw.trim()) {
+      message = raw;
+    } else {
+      message = "";
+    }
+  } else {
+    message = "";
   }
-  if (typeof err === "string") {
-    return cap(err || "Unknown error");
+  if (!message) {
+    try {
+      const json = JSON.stringify(err);
+      if (json && json !== "{}") message = json;
+    } catch {
+      /* ignore */
+    }
   }
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message: unknown }).message;
-    if (typeof message === "string" && message.trim()) return cap(message);
+  if (!message) {
+    const fallback = String(err);
+    message =
+      fallback === "undefined" || fallback === "null"
+        ? "Unknown error"
+        : fallback;
   }
-  try {
-    const json = JSON.stringify(err);
-    if (json && json !== "{}") return cap(json);
-  } catch {
-    /* ignore */
-  }
-  const fallback = String(err);
-  return cap(
-    fallback === "undefined" || fallback === "null" ? "Unknown error" : fallback,
-  );
+  return message.slice(0, 500);
 }
 
 function asError(err: unknown): Error {
