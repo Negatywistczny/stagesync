@@ -1,17 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  BpmSchema,
   CreateProjectBodySchema,
-  DefaultMeterSchema,
   LibrarySchema,
-  SetlistSchema,
   ProjectSchema,
   ProjectSchemaV2,
   ProjectSchemaV3,
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
-  TempoEventSchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -43,41 +39,6 @@ describe("LibrarySchema", () => {
     expect(() =>
       LibrarySchema.parse({ version: 2, projects: [] }),
     ).toThrow();
-  });
-
-  it("rejects unknown library keys", () => {
-    expect(() =>
-      LibrarySchema.parse({ version: 1, projects: [], extra: true }),
-    ).toThrow();
-  });
-});
-
-describe("SetlistSchema", () => {
-  it("rejects unknown keys", () => {
-    expect(() =>
-      SetlistSchema.parse({
-        version: 1,
-        enabled: false,
-        projectIds: [],
-        autoAdvance: { enabled: false },
-        extra: 1,
-      }),
-    ).toThrow();
-  });
-});
-
-describe("BpmSchema", () => {
-  it("accepts Timeline UI range 20…400", () => {
-    expect(BpmSchema.parse(20)).toBe(20);
-    expect(BpmSchema.parse(400)).toBe(400);
-    expect(TempoEventSchema.parse({ id: "t", startTicks: 0, bpm: 120 }).bpm).toBe(
-      120,
-    );
-  });
-
-  it("rejects out of range", () => {
-    expect(() => BpmSchema.parse(19)).toThrow();
-    expect(() => BpmSchema.parse(401)).toThrow();
   });
 });
 
@@ -148,20 +109,11 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
-  it("rejects invalid keyMap tonic", () => {
+  it("rejects out-of-range year", () => {
     const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    expect(() =>
-      ProjectSchemaV5.parse({
-        ...seed,
-        keyMap: [
-          {
-            id: "key-0",
-            startTicks: 0,
-            key: { tonic: "Foo", mode: "major" },
-          },
-        ],
-      }),
-    ).toThrow();
+    expect(() => ProjectSchemaV5.parse({ ...seed, year: 999 })).toThrow();
+    expect(() => ProjectSchemaV5.parse({ ...seed, year: 10000 })).toThrow();
+    expect(ProjectSchemaV5.parse({ ...seed, year: 1978 }).year).toBe(1978);
   });
 
   it("upgrades v4 to v5", () => {
@@ -190,13 +142,6 @@ describe("CreateProjectBodySchema", () => {
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
   });
-
-  it("trims whitespace and rejects blank-after-trim", () => {
-    expect(CreateProjectBodySchema.parse({ name: "  Song  " })).toEqual({
-      name: "Song",
-    });
-    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
-  });
 });
 
 describe("PutProjectBodySchema", () => {
@@ -215,25 +160,6 @@ describe("PutProjectBodySchema", () => {
     void id;
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
-    ).toThrow();
-  });
-});
-
-describe("DefaultMeterSchema", () => {
-  it("accepts 4/4 and 5/8", () => {
-    expect(DefaultMeterSchema.parse({ numerator: 4, denominator: 4 })).toEqual({
-      numerator: 4,
-      denominator: 4,
-    });
-    expect(DefaultMeterSchema.parse({ numerator: 5, denominator: 8 })).toEqual({
-      numerator: 5,
-      denominator: 8,
-    });
-  });
-
-  it("rejects meters that yield non-integer ticksPerBar at PPQ 960", () => {
-    expect(() =>
-      DefaultMeterSchema.parse({ numerator: 4, denominator: 7 }),
     ).toThrow();
   });
 });

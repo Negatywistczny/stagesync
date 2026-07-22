@@ -381,7 +381,7 @@ const ProjectSchemaV5Object = z
     isTemplate: z.boolean().optional(),
     artist: z.string().optional(),
     genre: z.string().optional(),
-    year: z.number().int().optional(),
+    year: z.number().int().min(1000).max(9999).optional(),
   })
   .strict();
 
