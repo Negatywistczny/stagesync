@@ -5329,6 +5329,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <label className={styles.zoomLab}>
             UI
             <input
+              className={styles.zoomRange}
               type="range"
               min={50}
               max={150}
@@ -5339,6 +5340,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <label className={styles.zoomLab}>
             H
             <input
+              className={styles.zoomRange}
               type="range"
               min={ZOOM_H_MIN}
               max={ZOOM_H_MAX}
@@ -5349,6 +5351,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <label className={styles.zoomLab}>
             V
             <input
+              className={styles.zoomRange}
               type="range"
               min={ZOOM_V_MIN}
               max={ZOOM_V_MAX}
