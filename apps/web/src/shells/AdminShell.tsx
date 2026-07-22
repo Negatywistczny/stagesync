@@ -1967,7 +1967,7 @@ function MusicXmlModal({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal title="MusicXML" onClose={onClose}>
+    <Modal title="MusicXML" onClose={onClose} closeDisabled={busy}>
       {!projectId ? (
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (
@@ -2006,7 +2006,7 @@ function MusicXmlModal({
         </>
       )}
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose} disabled={busy}>
           Anuluj
         </Button>
         <Button
@@ -2054,7 +2054,7 @@ function BatchPcModal({
   };
 
   return (
-    <Modal title="Batch PC" onClose={onClose}>
+    <Modal title="Batch PC" onClose={onClose} closeDisabled={busy}>
       <p className={styles.muted}>
         Numeracja Program Change (0–127) dla utworów (bez wzorów).
       </p>
@@ -2071,10 +2071,11 @@ function BatchPcModal({
           min={0}
           max={127}
           value={start}
+          disabled={busy}
           onChange={(e) => setStart(Number(e.target.value))}
         />
       </label>
-      <Button variant="secondary" onClick={renumber}>
+      <Button variant="secondary" onClick={renumber} disabled={busy}>
         Numeruj od startu
       </Button>
       <ul className={styles.list}>
@@ -2091,6 +2092,7 @@ function BatchPcModal({
               max={127}
               value={draft[p.id] ?? 0}
               aria-label={`PC ${p.name}`}
+              disabled={busy}
               onChange={(e) =>
                 setDraft((d) => ({
                   ...d,
@@ -2102,7 +2104,7 @@ function BatchPcModal({
         ))}
       </ul>
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose} disabled={busy}>
           Anuluj
         </Button>
         <Button
@@ -2140,10 +2142,12 @@ function Modal({
   title,
   children,
   onClose,
+  closeDisabled = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  closeDisabled?: boolean;
 }) {
   return (
     <div className={styles.overlay} role="dialog" aria-modal>
@@ -2151,12 +2155,17 @@ function Modal({
         type="button"
         className={styles.backdrop}
         aria-label="Zamknij"
+        disabled={closeDisabled}
         onClick={onClose}
       />
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
           <h2>{title}</h2>
-          <ShellIconButton label="Zamknij" onClick={onClose}>
+          <ShellIconButton
+            label="Zamknij"
+            disabled={closeDisabled}
+            onClick={onClose}
+          >
             ×
           </ShellIconButton>
         </div>
