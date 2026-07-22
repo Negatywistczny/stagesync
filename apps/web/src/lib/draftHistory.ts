@@ -58,21 +58,31 @@ export function canRedo(history: DraftHistory): boolean {
   return history.future.length > 0;
 }
 
-export function undoDraft(history: DraftHistory): DraftHistory {
+export function undoDraft(
+  history: DraftHistory,
+  maxDepth: number = DEFAULT_MAX,
+): DraftHistory {
   if (history.past.length === 0) return history;
   const previous = history.past[history.past.length - 1]!;
+  const future = [history.present, ...history.future];
+  while (future.length > maxDepth) future.pop();
   return {
     past: history.past.slice(0, -1),
     present: previous,
-    future: [history.present, ...history.future],
+    future,
   };
 }
 
-export function redoDraft(history: DraftHistory): DraftHistory {
+export function redoDraft(
+  history: DraftHistory,
+  maxDepth: number = DEFAULT_MAX,
+): DraftHistory {
   if (history.future.length === 0) return history;
   const next = history.future[0]!;
+  const past = [...history.past, history.present];
+  while (past.length > maxDepth) past.shift();
   return {
-    past: [...history.past, history.present],
+    past,
     present: next,
     future: history.future.slice(1),
   };
