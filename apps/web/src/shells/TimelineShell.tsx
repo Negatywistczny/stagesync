@@ -362,6 +362,7 @@ export function TimelineShell() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [savePending, setSavePending] = useState(false);
+  const savePendingRef = useRef(false);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
@@ -1415,7 +1416,8 @@ export function TimelineShell() {
   }, [projectId, audioAssetDecodeKey, draftProject]);
 
   async function onSave() {
-    if (!projectId || !draftProject) return;
+    if (!projectId || !draftProject || savePendingRef.current) return;
+    savePendingRef.current = true;
     setSavePending(true);
     try {
       const next = await putProject(projectId, draftProject);
@@ -1427,6 +1429,7 @@ export function TimelineShell() {
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Zapis nie powiódł się");
     } finally {
+      savePendingRef.current = false;
       setSavePending(false);
     }
   }
@@ -5067,7 +5070,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 loading={savePending}
                 onClick={() => {
                   void (async () => {
-                    if (!projectId || !draftProject) return;
+                    if (!projectId || !draftProject || savePendingRef.current) {
+                      return;
+                    }
+                    savePendingRef.current = true;
                     setSavePending(true);
                     try {
                       const next = await putProject(projectId, draftProject);
@@ -5086,6 +5092,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           : "Zapis nie powiódł się",
                       );
                     } finally {
+                      savePendingRef.current = false;
                       setSavePending(false);
                     }
                   })();
