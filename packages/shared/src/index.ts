@@ -230,14 +230,18 @@ export {
 } from "./clip-collision.js";
 
 export {
+  audioClipAbutGapTicks,
   audioClipBufferOffsetSec,
+  audioClipEndTicks,
   audioClipPlayableMs,
   audioClipRemainingSec,
   audioFadeGainAtMs,
+  applyAbutCrossfade,
   clampAudioClipToAsset,
   clampAudioFades,
   fadeInMsOf,
   fadeOutMsOf,
+  findAbutNeighbor,
   gainDbToLinear,
   lengthTicksFromAssetWindow,
   maxAudioLengthTicks,

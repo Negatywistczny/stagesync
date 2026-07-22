@@ -84,6 +84,85 @@ export function clampAudioFades(
   return { fadeInMs: fi, fadeOutMs: fo };
 }
 
+
+/** End exclusive tick of a clip. */
+export function audioClipEndTicks(
+  clip: Pick<AudioClip, "startTicks" | "lengthTicks">,
+): number {
+  return clip.startTicks + clip.lengthTicks;
+}
+
+/**
+ * Gap in ticks between left (earlier) and right (later) on the same lane.
+ * 0 = abut; negative = overlap (not allowed by default no-overlap policy).
+ */
+export function audioClipAbutGapTicks(
+  left: Pick<AudioClip, "startTicks" | "lengthTicks">,
+  right: Pick<AudioClip, "startTicks" | "lengthTicks">,
+): number {
+  return right.startTicks - audioClipEndTicks(left);
+}
+
+/**
+ * Apply symmetric crossfade at an abutting pair (gap === 0).
+ * Sets left.fadeOutMs and right.fadeInMs to the same clamped value.
+ * Does not change geometry (still no-overlap). Perceptual X-fade comes from
+ * simultaneous envelopes at the join ([ADR 0008] 5.0.0 polish).
+ */
+export function applyAbutCrossfade(
+  left: AudioClip,
+  right: AudioClip,
+  crossfadeMs: number,
+  leftPlayableMs: number,
+  rightPlayableMs: number,
+): { left: AudioClip; right: AudioClip } | null {
+  if (audioClipAbutGapTicks(left, right) !== 0) return null;
+  const ms = Math.max(0, crossfadeMs);
+  if (!(ms > 0)) return null;
+  const leftFades = clampAudioFades(
+    { fadeInMs: left.fadeInMs, fadeOutMs: ms },
+    leftPlayableMs,
+  );
+  const rightFades = clampAudioFades(
+    { fadeInMs: ms, fadeOutMs: right.fadeOutMs },
+    rightPlayableMs,
+  );
+  const shared = Math.min(leftFades.fadeOutMs, rightFades.fadeInMs);
+  if (!(shared > 0)) return null;
+  return {
+    left: {
+      ...left,
+      fadeOutMs: shared > 0 ? shared : undefined,
+    },
+    right: {
+      ...right,
+      fadeInMs: shared > 0 ? shared : undefined,
+    },
+  };
+}
+
+/**
+ * Find the next abutting neighbor on the same track (gap 0), if any.
+ */
+export function findAbutNeighbor(
+  clips: AudioClip[],
+  clipId: string,
+): { left: AudioClip; right: AudioClip } | null {
+  const sorted = [...clips].sort((a, b) => a.startTicks - b.startTicks);
+  const idx = sorted.findIndex((c) => c.id === clipId);
+  if (idx < 0) return null;
+  const cur = sorted[idx]!;
+  const next = sorted[idx + 1];
+  if (next && audioClipAbutGapTicks(cur, next) === 0) {
+    return { left: cur, right: next };
+  }
+  const prev = sorted[idx - 1];
+  if (prev && audioClipAbutGapTicks(prev, cur) === 0) {
+    return { left: prev, right: cur };
+  }
+  return null;
+}
+
 /**
  * Playable source window in ms (after trims).
  * When `durationMs` is unknown, falls back to timeline length converted at ctx tempo.

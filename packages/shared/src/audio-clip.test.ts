@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  audioClipAbutGapTicks,
   audioClipBufferOffsetSec,
   audioClipPlayableMs,
   audioFadeGainAtMs,
+  applyAbutCrossfade,
   clampAudioClipToAsset,
   clampAudioFades,
   gainDbToLinear,
@@ -36,6 +38,47 @@ describe("audioFadeGainAtMs", () => {
   it("clampAudioFades scales when fades exceed playable", () => {
     const c = clampAudioFades({ fadeInMs: 800, fadeOutMs: 800 }, 1000);
     expect(c.fadeInMs + c.fadeOutMs).toBeCloseTo(1000, 5);
+  });
+});
+
+describe("applyAbutCrossfade", () => {
+  it("pairs fadeOut/fadeIn when clips abut", () => {
+    const left = {
+      id: "a",
+      trackId: "t",
+      assetId: "x",
+      startTicks: 0,
+      lengthTicks: 1920,
+    };
+    const right = {
+      id: "b",
+      trackId: "t",
+      assetId: "y",
+      startTicks: 1920,
+      lengthTicks: 1920,
+    };
+    expect(audioClipAbutGapTicks(left, right)).toBe(0);
+    const pair = applyAbutCrossfade(left, right, 80, 1000, 1000);
+    expect(pair?.left.fadeOutMs).toBe(80);
+    expect(pair?.right.fadeInMs).toBe(80);
+  });
+
+  it("returns null when gap is not zero", () => {
+    const left = {
+      id: "a",
+      trackId: "t",
+      assetId: "x",
+      startTicks: 0,
+      lengthTicks: 1920,
+    };
+    const right = {
+      id: "b",
+      trackId: "t",
+      assetId: "y",
+      startTicks: 2000,
+      lengthTicks: 1920,
+    };
+    expect(applyAbutCrossfade(left, right, 80, 1000, 1000)).toBeNull();
   });
 });
 
