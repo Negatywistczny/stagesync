@@ -56,6 +56,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Admin Utwory — master-detail:** lewa kolumna (szukaj / sort / + Nowy Utwór + rozciągana lista + zwijane Wzory); prawa tylko inspector wybranego utworu (tytuł, Otwórz / Odtwórz / Usuń, assety); import/eksport JSON i UG w menu **Zarządzaj bazą ▾** (poza panelem utworu).
+- **Admin Set:** pasek `Set (N) — Łączny czas` z budżetem czasu (domyślnie 45 min); pusty stan z podpowiedzią przeciągania oraz **+ Dodaj przerwę** / **Wczytaj szablon**; pozycje **Przerwa / Zapowiedź** z czasem w minutach (liczą się do sumy, bez auto-advance).
 - **Admin Scena — układ reżyserski:** Master Bar **Korekta na scenie** (pełna szerokość, kompaktowy rząd suwaków) nad siatką **Komunikaty** | **Klienci** (≈60/40), bez martwej przestrzeni pod kartami.
 - **Admin Host — diagnostyka:** układ 2-kolumnowy (Sieć & QR / telemetria MIDI/Audio / O aplikacji | pełna wysokość konsoli logów); kopiowanie URL LAN; bez podwójnego scrolla.
 - **Preferencje Audio:** sekcje **Urządzenia Wyjściowe** i **Parametry Silnika** (fieldset); usunięty zbędny hint „Wybór zapisywany lokalnie.” pod wyborem wyjścia.

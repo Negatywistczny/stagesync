@@ -236,6 +236,10 @@
   overflow: auto;
 }
 
+.cardBodyFill {
+  overflow: hidden;
+}
+
 /* Host → O aplikacji: info | actions + updates */
 .aboutGrid {
   display: grid;
@@ -566,6 +570,64 @@
   flex-shrink: 0;
   padding-top: var(--ss-space-1);
   border-top: 1px solid var(--ss-color-border);
+}
+
+.templatesSummary {
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  padding: var(--ss-space-1) 0;
+  color: var(--ss-color-text);
+}
+
+.templatesSummary::-webkit-details-marker {
+  display: none;
+}
+
+.templatesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  margin: var(--ss-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 10rem;
+  overflow: auto;
+}
+
+.inspectorHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.inspectorIdQuiet {
+  margin: 0;
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dbManageBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+}
+
+.dropZoneCompact {
+  display: grid;
+  place-items: center;
+  min-height: 4rem;
+  padding: var(--ss-space-3);
+  border: 1px dashed var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 60%, transparent);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  text-align: center;
 }
 
 .subTitle {

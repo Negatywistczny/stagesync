@@ -28,6 +28,7 @@ import {
   type ProjectAsset,
   type PutProjectBody,
   type Setlist,
+  type SetlistItem,
 } from "@stagesync/shared";
 import { writeJsonAtomic } from "./atomic-write.js";
 import { shadowBackup } from "./shadow-backup.js";
@@ -354,15 +355,20 @@ export function createStores(dataDir?: string) {
 
     async putSetlist(body: {
       enabled: boolean;
-      projectIds: string[];
+      items?: SetlistItem[];
+      projectIds?: string[];
+      timeBudgetMinutes?: number;
     }): Promise<Setlist> {
       return withLibraryLock(async () => {
         const library = await ensureLibrary();
         const current = await readSetlist();
         const normalized = normalizeSetlist({
           enabled: body.enabled,
+          items: body.items,
           projectIds: body.projectIds,
           autoAdvance: current.autoAdvance,
+          timeBudgetMinutes:
+            body.timeBudgetMinutes ?? current.timeBudgetMinutes,
         });
         const pruned = pruneSetlistToLibrary(normalized, library);
         const next = SetlistSchema.parse({
@@ -540,8 +546,22 @@ export function createStores(dataDir?: string) {
         const setlist = await readSetlist();
         const pruned = pruneSetlistToLibrary(setlist, library);
         if (
-          pruned.projectIds.length !== setlist.projectIds.length ||
-          pruned.projectIds.some((pid, i) => pid !== setlist.projectIds[i])
+          pruned.items.length !== setlist.items.length ||
+          pruned.items.some((item, i) => {
+            const prev = setlist.items[i];
+            if (!prev || prev.type !== item.type) return true;
+            if (item.type === "project" && prev.type === "project") {
+              return item.projectId !== prev.projectId;
+            }
+            if (item.type === "break" && prev.type === "break") {
+              return (
+                item.id !== prev.id ||
+                item.durationMinutes !== prev.durationMinutes ||
+                item.label !== prev.label
+              );
+            }
+            return true;
+          })
         ) {
           await saveSetlist(
             SetlistSchema.parse({ version: 1 as const, ...pruned }),

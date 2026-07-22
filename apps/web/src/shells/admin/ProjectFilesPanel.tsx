@@ -103,7 +103,7 @@ export function ProjectFilesPanel({
 
   return (
     <div>
-      <h3 className={styles.subTitle}>Pliki projektu</h3>
+      <h3 className={styles.subTitle}>Assety projektu</h3>
       {error ? (
         <p className={styles.error} role="alert">
           {error}
@@ -112,7 +112,7 @@ export function ProjectFilesPanel({
       {assets.length === 0 ? (
         <p className={styles.muted}>Brak plików w projekcie.</p>
       ) : (
-        <ul className={styles.list} aria-label="Pliki projektu">
+        <ul className={styles.list} aria-label="Assety projektu">
           {assets.map((a) => (
             <li
               key={a.id}

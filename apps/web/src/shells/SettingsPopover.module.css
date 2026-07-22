@@ -9,7 +9,7 @@
   right: 0;
   z-index: 20;
   min-width: min(16rem, calc(100vw - var(--ss-space-8)));
-  max-width: 18rem;
+  max-width: min(22rem, calc(100vw - var(--ss-space-8)));
   max-height: min(70vh, calc(100dvh - 6rem));
   overflow-y: auto;
   border: 1px solid var(--ss-color-border);

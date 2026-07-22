@@ -36,6 +36,7 @@ import {
 } from "./ConnectionIndicator.js";
 import {
   SettingsPopover,
+  SettingsPopoverAnchor,
   ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
@@ -677,6 +678,7 @@ function SongsView({
   const nameDirty = Boolean(selected && draftName !== selected.name);
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
+  const [dbMenuOpen, setDbMenuOpen] = useState(false);
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -704,23 +706,49 @@ function SongsView({
     return list;
   }, [library?.projects, filter, sort]);
 
+  const templates = useMemo(
+    () => (library?.projects ?? []).filter((p) => p.isTemplate),
+    [library?.projects],
+  );
+
   return (
     <div className={styles.split}>
       <section className={styles.card} aria-label="Utwory">
         <div className={styles.cardHead}>
           <h1 className={styles.cardTitle}>Utwory</h1>
           <div className={styles.actions}>
-            <Button
-              variant="secondary"
-              loading={commandPending}
-              disabled={locked}
-              onClick={onCreate}
-            >
-              Nowy
-            </Button>
+            <SettingsPopoverAnchor>
+              <Button
+                variant="ghost"
+                disabled={locked}
+                aria-expanded={dbMenuOpen}
+                onClick={() => setDbMenuOpen((o) => !o)}
+              >
+                Zarządzaj bazą ▾
+              </Button>
+              {dbMenuOpen ? (
+                <SettingsPopover
+                  title="Baza plików"
+                  onClose={() => setDbMenuOpen(false)}
+                >
+                  <LibraryFilesCard
+                    compact
+                    locked={locked}
+                    error={actionError}
+                    notice={actionNotice}
+                    onOpenImport={() => {
+                      setDbMenuOpen(false);
+                      onImport();
+                    }}
+                    onExport={onExportLibrary}
+                    onImportFile={onImportFile}
+                  />
+                </SettingsPopover>
+              ) : null}
+            </SettingsPopoverAnchor>
           </div>
         </div>
-        <div className={styles.cardBody}>
+        <div className={[styles.cardBody, styles.cardBodyFill].join(" ")}>
           <div className={styles.toolbar}>
             <input
               className={styles.input}
@@ -742,6 +770,14 @@ function SongsView({
               <option value="title">Tytuł A–Z</option>
               <option value="pc">PC</option>
             </select>
+            <Button
+              variant="secondary"
+              loading={commandPending}
+              disabled={locked}
+              onClick={onCreate}
+            >
+              + Nowy Utwór
+            </Button>
             <Button variant="ghost" disabled={locked} onClick={onBatchPc}>
               Batch PC
             </Button>
@@ -750,11 +786,6 @@ function SongsView({
           {libraryError ? (
             <p className={styles.error} role="alert">
               {libraryError}
-            </p>
-          ) : null}
-          {actionError ? (
-            <p className={styles.error} role="alert">
-              {actionError}
             </p>
           ) : null}
 
@@ -795,141 +826,138 @@ function SongsView({
             ) : null}
           </div>
 
-          <div className={styles.templates}>
-            <h2 className={styles.subTitle}>Wzory</h2>
-            {(library?.projects ?? []).filter((p) => p.isTemplate).length === 0 ? (
+          <details className={styles.templates}>
+            <summary className={styles.templatesSummary}>
+              Wzory ({templates.length})
+            </summary>
+            {templates.length === 0 ? (
               <p className={styles.muted}>
                 Brak wzorów.{" "}
-                <button type="button" className={styles.editLink} disabled={locked} onClick={onCreateTemplate}>
+                <button
+                  type="button"
+                  className={styles.editLink}
+                  disabled={locked}
+                  onClick={onCreateTemplate}
+                >
                   Utwórz wzór
                 </button>
               </p>
             ) : (
-              <ul className={styles.list}>
-                {(library?.projects ?? [])
-                  .filter((p) => p.isTemplate)
-                  .map((t) => (
-                    <li
-                      key={t.id}
-                      className={[styles.songRow, styles.songRowPair].join(" ")}
+              <ul className={styles.templatesList}>
+                {templates.map((t) => (
+                  <li
+                    key={t.id}
+                    className={[styles.songRow, styles.songRowPair].join(" ")}
+                  >
+                    <span className={styles.songName}>{t.name}</span>
+                    <Button
+                      variant="secondary"
+                      disabled={locked}
+                      onClick={() => onCreateFromTemplate(t.id)}
                     >
-                      <span className={styles.songName}>{t.name}</span>
-                      <Button
-                        variant="secondary"
-                        disabled={locked}
-                        onClick={() => onCreateFromTemplate(t.id)}
-                      >
-                        Nowy z wzoru
-                      </Button>
-                    </li>
-                  ))}
+                      Nowy z wzoru
+                    </Button>
+                  </li>
+                ))}
               </ul>
             )}
-          </div>
+          </details>
         </div>
       </section>
 
-      <div className={styles.splitAside}>
-        <aside className={styles.card} aria-label="Wybrany utwór">
-          <div className={styles.cardHead}>
-            <h2 className={styles.cardTitle}>Wybrany</h2>
-          </div>
-          <div className={styles.cardBody}>
-            {selected ? (
-              <>
-                <div className={styles.field}>
-                  <label htmlFor="admin-project-name">Nazwa</label>
-                  <div className={styles.nameRow}>
-                    <input
-                      id="admin-project-name"
-                      className={styles.input}
-                      value={draftName}
-                      maxLength={200}
-                      disabled={locked}
-                      aria-label="Nazwa projektu"
-                      onChange={(e) => onDraftNameChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && nameDirty && !locked) {
-                          e.preventDefault();
-                          onRename();
-                        }
-                      }}
-                    />
-                    <Button
-                      variant="primary"
-                      loading={commandPending}
-                      disabled={locked || !nameDirty}
-                      onClick={onRename}
-                    >
-                      Zapisz nazwę
-                    </Button>
-                  </div>
-                </div>
-                <p className={styles.inspectorId}>{selected.id}</p>
-                <div className={styles.actions}>
-                  <Button variant="secondary" disabled={locked} onClick={onXml}>
-                    XML
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    disabled={locked || !selected?.hasMusicXml}
-                    title={selected?.hasMusicXml ? "Ma MusicXML" : "Brak MusicXML — użyj XML"}
-                    onClick={onXml}
+      <aside className={styles.card} aria-label="Wybrany utwór">
+        <div className={styles.cardHead}>
+          {selected ? (
+            <div className={styles.inspectorHead}>
+              <div className={styles.nameRow}>
+                <input
+                  id="admin-project-name"
+                  className={styles.input}
+                  value={draftName}
+                  maxLength={200}
+                  disabled={locked}
+                  aria-label="Nazwa projektu"
+                  title={selected.id}
+                  onChange={(e) => onDraftNameChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && nameDirty && !locked) {
+                      e.preventDefault();
+                      onRename();
+                    }
+                  }}
+                />
+                <Button
+                  variant="primary"
+                  loading={commandPending}
+                  disabled={locked || !nameDirty}
+                  onClick={onRename}
+                >
+                  Zapisz
+                </Button>
+              </div>
+              <p className={styles.inspectorIdQuiet} title={selected.id}>
+                ID · {selected.id.slice(0, 8)}…
+              </p>
+            </div>
+          ) : (
+            <h2 className={styles.cardTitle}>Wybrany utwór</h2>
+          )}
+        </div>
+        <div className={styles.cardBody}>
+          {selected ? (
+            <>
+              <div className={styles.actions}>
+                {locked ? (
+                  <span className={styles.editLinkMuted} aria-disabled>
+                    Otwórz w Timeline
+                  </span>
+                ) : (
+                  <Link
+                    className={styles.editLink}
+                    to={`/timeline/${selected.id}`}
                   >
-                    Partytura
-                  </Button>
-                  {locked ? (
-                    <span className={styles.editLinkMuted} aria-disabled>
-                      Otwórz w Timeline
-                    </span>
-                  ) : (
-                    <Link
-                      className={styles.editLink}
-                      to={selected ? `/timeline/${selected.id}` : "#"}
-                      aria-disabled={!selected}
-                    >
-                      Otwórz w Timeline
-                    </Link>
-                  )}
-                  <Button
-                    variant="secondary"
-                    disabled={!selectedId || commandPending || transportPending}
-                    loading={transportPending}
-                    onClick={() => selectedId && onPlay(selectedId)}
-                  >
-                    Odtwórz
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    loading={commandPending}
-                    disabled={locked}
-                    onClick={onDelete}
-                  >
-                    Usuń
-                  </Button>
-                </div>
-                <div>
-                  <ProjectFilesPanel
-                    projectId={selectedId}
-                    locked={locked}
-                  />
-                </div>
-              </>
-            ) : (
-              <p className={styles.muted}>Wybierz utwór z listy.</p>
-            )}
-          </div>
-        </aside>
-
-        <LibraryFilesCard
-          locked={locked}
-          error={actionError}
-          notice={actionNotice}
-          onOpenImport={onImport}
-          onExport={onExportLibrary}
-          onImportFile={onImportFile}
-        />
-      </div>
+                    Otwórz w Timeline
+                  </Link>
+                )}
+                <Button
+                  variant="secondary"
+                  disabled={!selectedId || commandPending || transportPending}
+                  loading={transportPending}
+                  onClick={() => selectedId && onPlay(selectedId)}
+                >
+                  Odtwórz
+                </Button>
+                <Button
+                  variant="ghost"
+                  loading={commandPending}
+                  disabled={locked}
+                  onClick={onDelete}
+                >
+                  Usuń
+                </Button>
+                <Button variant="ghost" disabled={locked} onClick={onXml}>
+                  XML
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={locked || !selected.hasMusicXml}
+                  title={
+                    selected.hasMusicXml
+                      ? "Ma MusicXML"
+                      : "Brak MusicXML — użyj XML"
+                  }
+                  onClick={onXml}
+                >
+                  Partytura
+                </Button>
+              </div>
+              <ProjectFilesPanel projectId={selectedId} locked={locked} />
+            </>
+          ) : (
+            <p className={styles.muted}>Wybierz utwór z listy.</p>
+          )}
+        </div>
+      </aside>
     </div>
   );
 }
@@ -941,6 +969,7 @@ function LibraryFilesCard({
   locked,
   error,
   notice,
+  compact = false,
 }: {
   onOpenImport: () => void;
   onExport: () => void;
@@ -948,66 +977,81 @@ function LibraryFilesCard({
   locked?: boolean;
   error?: string | null;
   notice?: string | null;
+  compact?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const body = (
+    <>
+      <div
+        className={compact ? styles.dropZoneCompact : styles.dropZone}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const f = e.dataTransfer.files?.[0];
+          if (f) onImportFile(f);
+        }}
+      >
+        Upuść .stagesync.json (v5) albo legacy database.json
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".json,.stagesync.json,application/json,.zip,.stagesync"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onImportFile(f);
+          e.target.value = "";
+        }}
+      />
+      {error ? (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      ) : null}
+      {notice && !error ? (
+        <p className={styles.muted} role="status" aria-live="polite">
+          {notice}
+        </p>
+      ) : null}
+      {!compact ? (
+        <p className={styles.muted}>
+          Archiwa ZIP / binarne .stagesync — na razie niewspierane (tylko JSON).
+        </p>
+      ) : null}
+      <div className={styles.actions}>
+        <Button
+          variant="secondary"
+          disabled={locked}
+          loading={locked}
+          onClick={() => inputRef.current?.click()}
+        >
+          Z pliku…
+        </Button>
+        <Button variant="ghost" disabled={locked} onClick={onOpenImport}>
+          Import UG
+        </Button>
+        <Button variant="ghost" disabled={locked} onClick={onExport}>
+          Eksport biblioteki
+        </Button>
+      </div>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <div className={styles.dbManageBody} aria-label="Pliki bazy">
+        {body}
+      </div>
+    );
+  }
+
   return (
     <section className={styles.card} aria-label="Pliki">
       <div className={styles.cardHead}>
         <h2 className={styles.cardTitle}>Pliki</h2>
       </div>
-      <div className={styles.cardBody}>
-        <div
-          className={styles.dropZone}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const f = e.dataTransfer.files?.[0];
-            if (f) onImportFile(f);
-          }}
-        >
-          Upuść .stagesync.json (v5) albo legacy database.json
-        </div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".json,.stagesync.json,application/json,.zip,.stagesync"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onImportFile(f);
-            e.target.value = "";
-          }}
-        />
-        {error ? (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        ) : null}
-        {notice && !error ? (
-          <p className={styles.muted} role="status" aria-live="polite">
-            {notice}
-          </p>
-        ) : null}
-        <p className={styles.muted}>
-          Archiwa ZIP / binarne .stagesync — na razie niewspierane (tylko JSON).
-        </p>
-        <div className={styles.actions}>
-          <Button
-            variant="secondary"
-            disabled={locked}
-            loading={locked}
-            onClick={() => inputRef.current?.click()}
-          >
-            Z pliku…
-          </Button>
-          <Button variant="ghost" disabled={locked} onClick={onOpenImport}>
-            Import UG
-          </Button>
-          <Button variant="ghost" disabled={locked} onClick={onExport}>
-            Eksport biblioteki
-          </Button>
-        </div>
-      </div>
+      <div className={styles.cardBody}>{body}</div>
     </section>
   );
 }
