@@ -72,6 +72,26 @@ describe("TransportTickMessageSchema", () => {
     };
     expect(TransportTickMessageSchema.parse(msg)).toEqual(msg);
   });
+
+  it("rejects non-finite timestamps", () => {
+    const base = {
+      ...defaultTransportState(),
+      type: "transport_tick" as const,
+    };
+    expect(() =>
+      TransportTickMessageSchema.parse({
+        ...base,
+        serverTimeMs: Number.NaN,
+      }),
+    ).toThrow();
+    expect(() =>
+      TransportTickMessageSchema.parse({
+        ...base,
+        serverTimeMs: 1,
+        sentAtMs: Number.POSITIVE_INFINITY,
+      }),
+    ).toThrow();
+  });
 });
 
 describe("transportHomeTicks", () => {
