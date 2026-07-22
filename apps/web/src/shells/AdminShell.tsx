@@ -1069,6 +1069,7 @@ function HostView({
   const [paused, setPaused] = useState(false);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
@@ -1170,8 +1171,24 @@ function HostView({
               </p>
               <ul className={styles.list}>
                 {network.urls.map((u) => (
-                  <li key={u} className={styles.songMeta}>
-                    {u}
+                  <li key={u} className={styles.networkUrlRow}>
+                    <span className={styles.songMeta}>{u}</span>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        void (async () => {
+                          try {
+                            await navigator.clipboard.writeText(u);
+                            setCopiedUrl(u);
+                          } catch {
+                            setCopiedUrl(null);
+                            setNetworkError("Nie udało się skopiować URL");
+                          }
+                        })();
+                      }}
+                    >
+                      {copiedUrl === u ? "Skopiowano" : "Kopiuj"}
+                    </Button>
                   </li>
                 ))}
               </ul>
