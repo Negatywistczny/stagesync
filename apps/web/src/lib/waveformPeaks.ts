@@ -13,8 +13,11 @@ export function computeWaveformFromAudioBuffer(
   binCount = 128,
 ): WaveformMeta {
   const bins = Math.max(8, Math.min(512, Math.floor(binCount)));
-  const channels = Math.max(1, buffer.numberOfChannels);
   const length = buffer.length;
+  if (length <= 0) {
+    return { peaks: [], rms: 0, durationMs: 0 };
+  }
+  const channels = Math.max(1, buffer.numberOfChannels);
   const peaks = new Array<number>(bins).fill(0);
   let sumSq = 0;
   let samples = 0;
