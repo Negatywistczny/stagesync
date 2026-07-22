@@ -42,6 +42,22 @@ import { DrumsPane } from "./client/DrumsPane.js";
 import { GridPane } from "./client/GridPane.js";
 import { KaraokePane } from "./client/KaraokePane.js";
 import { ScorePane } from "./client/ScorePane.js";
+import {
+  clampScoreOctave,
+  loadScoreHiddenParts,
+  loadScoreOctave,
+  saveScoreHiddenParts,
+  saveScoreOctave,
+  type ScoreOctave,
+  type ScorePartInfo,
+} from "../lib/scoreOsmd.js";
+import {
+  SCORE_ZOOM_DEFAULT,
+  SCORE_ZOOM_MAX,
+  SCORE_ZOOM_MIN,
+  SCORE_ZOOM_STEP,
+  clampScoreZoom,
+} from "../lib/scorePlayhead.js";
 import { IconFullscreen, IconSettings } from "./icons.js";
 import {
   SettingsPopover,
@@ -113,8 +129,23 @@ export function ClientShell() {
   const [cueFlashId, setCueFlashId] = useState<string | null>(null);
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
-  const [scoreZoom, setScoreZoom] = useState(100);
+  const [scoreZoom, setScoreZoom] = useState(SCORE_ZOOM_DEFAULT);
   const [scoreFollowPlayhead, setScoreFollowPlayhead] = useState(true);
+  const [scoreOctave, setScoreOctave] = useState<ScoreOctave>(0);
+  const [scoreParts, setScoreParts] = useState<ScorePartInfo[]>([]);
+  const [scoreHiddenPartIds, setScoreHiddenPartIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const projectId = activeProject?.id ?? state.activeProjectId;
+    if (!projectId) {
+      setScoreOctave(0);
+      setScoreHiddenPartIds([]);
+      setScoreParts([]);
+      return;
+    }
+    setScoreOctave(loadScoreOctave(projectId));
+    setScoreHiddenPartIds(loadScoreHiddenParts(projectId));
+  }, [activeProject?.id, state.activeProjectId]);
 
   useEffect(() => {
     if (!started) return;
@@ -444,6 +475,36 @@ export function ClientShell() {
                       onScoreZoomChange={setScoreZoom}
                       scoreFollowPlayhead={scoreFollowPlayhead}
                       onScoreFollowPlayheadChange={setScoreFollowPlayhead}
+                      scoreOctave={scoreOctave}
+                      onScoreOctaveChange={(next) => {
+                        setScoreOctave(next);
+                        if (activeProject?.id) {
+                          saveScoreOctave(activeProject.id, next);
+                        }
+                      }}
+                      scoreParts={scoreParts}
+                      scoreHiddenPartIds={scoreHiddenPartIds}
+                      onScorePartVisible={(partId, visible) => {
+                        setScoreHiddenPartIds((prev) => {
+                          let next = visible
+                            ? prev.filter((pid) => pid !== partId)
+                            : prev.includes(partId)
+                              ? prev
+                              : [...prev, partId];
+                          if (
+                            scoreParts.length > 0 &&
+                            next.length >= scoreParts.length
+                          ) {
+                            next = scoreParts
+                              .filter((p) => p.id !== partId)
+                              .map((p) => p.id);
+                          }
+                          if (activeProject?.id) {
+                            saveScoreHiddenParts(activeProject.id, next);
+                          }
+                          return next;
+                        });
+                      }}
                     />
                   </SettingsPopover>
                 ) : null}
@@ -563,9 +624,10 @@ export function ClientShell() {
                   hasActiveProjectId={Boolean(state.activeProjectId)}
                   displayTicks={displayTicks}
                   scoreZoom={scoreZoom}
-                  onScoreZoomChange={setScoreZoom}
                   followPlayhead={scoreFollowPlayhead}
-                  onFollowPlayheadChange={setScoreFollowPlayhead}
+                  scoreOctave={scoreOctave}
+                  hiddenPartIds={scoreHiddenPartIds}
+                  onPartsChange={setScoreParts}
                   teamSemitones={liveDesk.transpositionSemitones}
                   onSeek={(ticks) => {
                     void seek(ticks);
@@ -864,6 +926,11 @@ function RoleSettingsFields({
   onScoreZoomChange,
   scoreFollowPlayhead,
   onScoreFollowPlayheadChange,
+  scoreOctave,
+  onScoreOctaveChange,
+  scoreParts,
+  scoreHiddenPartIds,
+  onScorePartVisible,
 }: {
   role: RoleId;
   prefs: ClientDisplayPrefs;
@@ -874,6 +941,11 @@ function RoleSettingsFields({
   onScoreZoomChange: (percent: number) => void;
   scoreFollowPlayhead: boolean;
   onScoreFollowPlayheadChange: (on: boolean) => void;
+  scoreOctave: ScoreOctave;
+  onScoreOctaveChange: (octave: ScoreOctave) => void;
+  scoreParts: ScorePartInfo[];
+  scoreHiddenPartIds: readonly string[];
+  onScorePartVisible: (partId: string, visible: boolean) => void;
 }) {
   const [textScale, setTextScale] = useState(() => {
     try {
@@ -985,32 +1057,80 @@ function RoleSettingsFields({
     );
   }
   if (role === "score") {
+    const bumpZoom = (delta: number) => {
+      onScoreZoomChange(clampScoreZoom(scoreZoom + delta));
+    };
     return (
       <>
-        <div className={styles.row}>
+        <div className={styles.scoreZoomRow}>
           <Button
             variant="ghost"
-            onClick={() => onScoreZoomChange(Math.max(50, scoreZoom - 10))}
+            aria-label="Pomniejsz partyturę"
+            onClick={() => bumpZoom(-SCORE_ZOOM_STEP)}
+            disabled={scoreZoom <= SCORE_ZOOM_MIN}
           >
             −
           </Button>
-          <span>{scoreZoom}%</span>
+          <span className={styles.scoreZoomLabel}>{scoreZoom}%</span>
           <Button
             variant="ghost"
-            onClick={() => onScoreZoomChange(Math.min(200, scoreZoom + 10))}
+            aria-label="Powiększ partyturę"
+            onClick={() => bumpZoom(SCORE_ZOOM_STEP)}
+            disabled={scoreZoom >= SCORE_ZOOM_MAX}
           >
             +
           </Button>
-          <Button variant="ghost" onClick={() => onScoreZoomChange(100)}>
+          <Button
+            variant="ghost"
+            onClick={() => onScoreZoomChange(SCORE_ZOOM_DEFAULT)}
+          >
             Reset
           </Button>
         </div>
+        <label className={styles.scoreOctaveField}>
+          Oktawa
+          <select
+            className={styles.scoreOctaveSelect}
+            aria-label="Transpozycja oktawy partytury"
+            value={String(scoreOctave)}
+            onChange={(e) =>
+              onScoreOctaveChange(clampScoreOctave(e.target.value))
+            }
+          >
+            <option value="-1">−1</option>
+            <option value="0">0</option>
+            <option value="1">+1</option>
+          </select>
+        </label>
         <ShellSwitchRow
           checked={scoreFollowPlayhead}
           onChange={(e) => onScoreFollowPlayheadChange(e.target.checked)}
         >
           Śledź wskaźnik odtwarzania
         </ShellSwitchRow>
+        {scoreParts.length > 1 ? (
+          <div
+            className={styles.scoreParts}
+            role="group"
+            aria-label="Widoczne partie"
+          >
+            {scoreParts.map((part) => {
+              const on = !scoreHiddenPartIds.includes(part.id);
+              return (
+                <label key={part.id} className={styles.scorePartItem}>
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    onChange={(e) =>
+                      onScorePartVisible(part.id, e.target.checked)
+                    }
+                  />
+                  <span>{part.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        ) : null}
       </>
     );
   }

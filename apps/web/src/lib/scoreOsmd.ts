@@ -8,6 +8,26 @@ import {
   type Cursor,
 } from "opensheetmusicdisplay";
 
+/**
+ * Fetch MusicXML / MXL bytes as a Blob for `osmd.load(blob)`.
+ *
+ * Do **not** pass our asset API URL to `osmd.load(url)`: OSMD's XHR only uses
+ * binary-safe `charset=x-user-defined` when the URL contains `.mxl`. StageSync
+ * serves `/api/.../assets/:id/file` without an extension, so compressed `.mxl`
+ * (ZIP) was decoded as XML text and rejected with "Invalid MXL file".
+ * Passing a Blob lets OSMD unzip MXL or fall back to plain MusicXML text.
+ */
+export async function fetchScoreBlob(
+  url: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Blob> {
+  const res = await fetchImpl(url);
+  if (!res.ok) {
+    throw new Error(`Nie można pobrać partytury (HTTP ${res.status})`);
+  }
+  return res.blob();
+}
+
 /** Amber measure highlight + cyan beat cursor (v4 parity colors, local to OSMD). */
 const MEASURE_CURSOR = {
   type: 3,

@@ -58,6 +58,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Client — partytura:** ustawienia (zoom, oktawa, śledzenie playheada, widoczne partie) w oknie **Partytura** (⚙️), bez pływającego toolbara nad nutami.
 - **Admin chrome:** przycisk **Ustawienia** (zamiast Wygląd) otwiera Preferencje; motyw/kontrast w Ogólne.
 - **Admin Utwory — master-detail:** lewa kolumna (szukaj / sort / + Nowy Utwór + rozciągana lista + zwijane Wzory); prawa tylko inspector wybranego utworu (tytuł, Otwórz / Odtwórz / Usuń, assety); import/eksport JSON i UG w menu **Zarządzaj bazą ▾** (poza panelem utworu).
 - **Admin Set:** etykieta limitu czasu w pasku podsumowania: **Czas** (zamiast Budżet).
@@ -91,6 +92,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST zawierają czas serwera; klient nie parsuje cue scenicznego jako ticka i toleruje legacy REST bez `type`/`serverTimeMs`.
 
 #### 🖥️ App Shell & UI
+- **Client — partytura (.mxl):** ładowanie skompresowanego MusicXML przez `Blob` zamiast URL bez `.mxl` — OSMD nie psuje już bajtów ZIP i nie zgłasza „Invalid MXL file”.
 - **Admin Host — QR:** kod QR i domyślny URL połączenia używają adresu LAN (nie `localhost`), żeby telefon muzyków mógł się połączyć.
 - **Client / Komunikaty:** klipy Cue z Timeline pokazują się jako `TERAZ` / `ZA N` (~5 s lookahead); live komunikat wygrywa slot `TERAZ`; pusty stan = ukryty host (bez placeholdera).
 - **Admin Set:** „Aktywny set” i „Auto-setlista” obok siebie (z zawijaniem na wąskim ekranie).

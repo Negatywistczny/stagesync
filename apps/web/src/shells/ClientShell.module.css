@@ -1649,15 +1649,6 @@
   gap: var(--ss-space-2);
 }
 
-.scoreToolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-3);
-  flex-shrink: 0;
-}
-
 .scoreZoomRow {
   display: flex;
   align-items: center;
@@ -1700,8 +1691,7 @@
   flex-wrap: wrap;
   gap: var(--ss-space-2) var(--ss-space-3);
   flex-shrink: 0;
-  padding: var(--ss-space-2) 0;
-  border-bottom: 1px solid var(--ss-color-border-muted);
+  padding: var(--ss-space-2) 0 0;
 }
 
 .scorePartItem {
