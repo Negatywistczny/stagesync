@@ -9,6 +9,7 @@
 import {
   MIDI_CLOCK_PPQN,
   midiClockIntervalMs,
+  sppToTicks,
   ticksToSpp,
   type MidiHostConfig,
   type MidiHostStatus,
@@ -71,7 +72,10 @@ export function createMidiHost(
   let clockTimer: ReturnType<typeof setInterval> | null = null;
   let wasPlaying = false;
   let lastBpm: number | null = null;
+  let lastTicks: number | null = null;
   let inputClockCount = 0;
+  /** Last Song Position Pointer (ticks) from MIDI IN — applied on Start/Continue. */
+  let lastSppTicks: number | null = null;
 
   const clockIn = new RateMeter();
   const sppIn = new RateMeter();
@@ -130,6 +134,7 @@ export function createMidiHost(
         stopClockOutTimer();
       }
       wasPlaying = msg.playing;
+      lastTicks = msg.positionTicks;
       return;
     }
 
@@ -142,8 +147,16 @@ export function createMidiHost(
       if (lastBpm !== msg.bpm) {
         startClockOutTimer(msg.bpm);
       }
+      // Seek while playing: position jumped more than a quarter → re-SPP + Continue.
+      if (
+        lastTicks != null &&
+        Math.abs(msg.positionTicks - lastTicks) > msg.ppq
+      ) {
+        sendTransportEdge(msg, "continue");
+      }
     }
     wasPlaying = msg.playing;
+    lastTicks = msg.positionTicks;
   }
 
   function onInputMessage(msg: MidiRealtimeMessage): void {
@@ -159,6 +172,7 @@ export function createMidiHost(
         break;
       case "spp":
         sppIn.hit(t);
+        lastSppTicks = sppToTicks(msg.value, transport.getState().ppq);
         break;
       case "program":
         pcIn.hit(t);
@@ -166,9 +180,33 @@ export function createMidiHost(
         break;
       case "start":
         inputClockCount = 0;
+        try {
+          if (lastSppTicks != null) {
+            transport.seek(lastSppTicks);
+          } else {
+            transport.seek(0);
+          }
+          transport.play();
+        } catch (err) {
+          setError(err);
+        }
+        break;
+      case "continue":
+        try {
+          if (lastSppTicks != null) {
+            transport.seek(lastSppTicks);
+          }
+          transport.play();
+        } catch (err) {
+          setError(err);
+        }
         break;
       case "stop":
-      case "continue":
+        try {
+          transport.pause();
+        } catch (err) {
+          setError(err);
+        }
         break;
     }
   }
@@ -252,6 +290,19 @@ export function createMidiHost(
 
     handleInputMessage(msg: MidiRealtimeMessage): void {
       onInputMessage(msg);
+    },
+
+    /** Program Change on the configured output (song load / patch recall). */
+    sendProgramChange(program: number, channel = 0): void {
+      if (!Number.isInteger(program) || program < 0 || program > 127) return;
+      if (!Number.isInteger(channel) || channel < 0 || channel > 15) return;
+      if (!config.outputId) return;
+      try {
+        backend.send({ type: "program", channel, program });
+        clearError();
+      } catch (err) {
+        setError(err);
+      }
     },
 
     dispose(): void {

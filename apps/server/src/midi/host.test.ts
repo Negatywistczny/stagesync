@@ -59,6 +59,27 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("re-emits SPP + Continue on seek while playing", () => {
+    const transport = createTransportEngine({
+      now: () => performance.now(),
+    });
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({
+      outputId: "mock-out-1",
+      clockOutEnabled: true,
+    });
+
+    transport.play({ bpm: 120 });
+    backend.sent.length = 0;
+    transport.seek(7680);
+    expect(backend.sent.some((m) => m.type === "spp")).toBe(true);
+    expect(backend.sent.some((m) => m.type === "continue")).toBe(true);
+
+    host.dispose();
+    transport.dispose();
+  });
+
   it("meters clock / spp / pc / beat→ws from input", () => {
     const t = 1_000_000;
     const transport = createTransportEngine();
@@ -91,6 +112,21 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("sendProgramChange writes program to output", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ outputId: "mock-out-1" });
+    host.sendProgramChange(42);
+    expect(backend.sent).toContainEqual({
+      type: "program",
+      channel: 0,
+      program: 42,
+    });
+    host.dispose();
+    transport.dispose();
+  });
+
   it("rejects unknown device ids without crashing status", () => {
     const transport = createTransportEngine();
     const backend = createMockMidiBackend();
@@ -98,6 +134,29 @@ describe("midi host", () => {
     host.setConfig({ inputId: "missing" });
     const status = host.getStatus();
     expect(status.lastError).toMatch(/Unknown MIDI input/);
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("MIDI IN Start/Stop/Continue/SPP drive transport", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ inputId: "mock-in-1" });
+
+    backend.emitInput({ type: "spp", value: 4 }); // 960 ticks @ PPQ 960
+    backend.emitInput({ type: "continue" });
+    expect(transport.getState().playing).toBe(true);
+    expect(transport.getState().positionTicks).toBe(960);
+
+    backend.emitInput({ type: "stop" });
+    expect(transport.getState().playing).toBe(false);
+    expect(transport.getState().positionTicks).toBe(960);
+
+    backend.emitInput({ type: "start" });
+    expect(transport.getState().playing).toBe(true);
+    expect(transport.getState().positionTicks).toBe(960);
+
     host.dispose();
     transport.dispose();
   });
