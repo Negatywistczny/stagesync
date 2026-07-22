@@ -445,6 +445,7 @@ export function TimelineShell() {
   const [tapBpmHint, setTapBpmHint] = useState<number | null>(null);
   const [touchAlertOpen, setTouchAlertOpen] = useState(false);
   const metroBeatRef = useRef(0);
+  const metroMeterKeyRef = useRef("");
   const loopDragRef = useRef<{
     pointerId: number;
     originTicks: number;
@@ -1371,6 +1372,16 @@ export function TimelineShell() {
     : state.bpm;
 
   useEffect(() => {
+    const meterKey = `${state.timeSignature.numerator}/${state.timeSignature.denominator}:${state.ppq}`;
+    if (metroMeterKeyRef.current !== meterKey) {
+      metroMeterKeyRef.current = meterKey;
+      // Meter/ppq change invalidates beat index — reset to avoid click burst.
+      metroBeatRef.current = metronomeBeatIndex(
+        displayTicks,
+        state.timeSignature,
+        state.ppq,
+      );
+    }
     if (!metronomeOn || !state.playing) {
       metroBeatRef.current = metronomeBeatIndex(
         displayTicks,
