@@ -287,7 +287,6 @@ import {
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
 import {
-  isDesktopShell,
   toggleAppFullscreen,
   syncEditHistoryState,
   syncNavRecentProjects,

@@ -5,7 +5,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   normalizeIncomingValue,
   parseEnvContent,
-  readManagedSettings,
   releaseMatchesUpdateChannel,
   SETTINGS_SCHEMA,
   writeManagedSettings,
