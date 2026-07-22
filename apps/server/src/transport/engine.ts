@@ -46,10 +46,6 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     ...defaultTransportState().timeSignature,
   };
   let activeProjectId: string | null = null;
-  /** Bound project for mid-play tempo/meter map follow. */
-  let boundProject: Project | null = null;
-  /** When false, explicit play overrides freeze maps until next bind. */
-  let followMaps = false;
   let loop: TransportLoop | null = null;
   const ppq = DEFAULT_PPQ;
 
@@ -57,24 +53,6 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   let originTicks = 0;
   let timer: ReturnType<typeof setInterval> | null = null;
   const listeners = new Set<Listener>();
-
-  function meterEquals(a: TimeSignature, b: TimeSignature): boolean {
-    return a.numerator === b.numerator && a.denominator === b.denominator;
-  }
-
-  /** Re-resolve maps at ticks; reanchor when BPM/meter changes mid-play (no jump). */
-  function syncMapsAt(ticks: number): void {
-    if (!followMaps || !boundProject) return;
-    const nextBpm = resolveTempoAt(boundProject, ticks);
-    const nextMeter = resolveMeterAt(boundProject, ticks);
-    if (nextBpm === bpm && meterEquals(nextMeter, timeSignature)) return;
-    positionTicks = ticks;
-    bpm = nextBpm;
-    timeSignature = { ...nextMeter };
-    if (playing) {
-      reanchor();
-    }
-  }
 
   function samplePosition(): number {
     if (!playing) return positionTicks;
@@ -86,22 +64,10 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       positionTicks = wrap;
       reanchor();
     }
-    const prevBpm = bpm;
-    const prevMeter = timeSignature;
-    syncMapsAt(ticks);
-    if (bpm !== prevBpm || !meterEquals(timeSignature, prevMeter)) {
-      return positionTicks;
-    }
     return ticks;
   }
 
-  function bindProject(project: Project, maps: boolean): void {
-    boundProject = project;
-    followMaps = maps;
-  }
-
   function applyMapsFromProject(project: Project, atTicks?: number): void {
-    bindProject(project, true);
     const ticks = atTicks ?? samplePosition();
     positionTicks = ticks;
     bpm = resolveTempoAt(project, ticks);
@@ -184,11 +150,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
     loadProject(projectId: string, project: Project): TransportState {
       activeProjectId = projectId;
+      positionTicks = samplePosition();
       playing = false;
       stopTimer();
-      const home = transportHomeTicks(project);
-      positionTicks = home;
-      applyMapsFromProject(project, home);
+      loop = null; // loop is per-song — never carry into the next project
+      applyMapsFromProject(project, 0);
       notify();
       return snapshot();
     },
@@ -206,23 +172,14 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
 
       if (opts.projectId !== undefined) {
         activeProjectId = opts.projectId;
-      }
-
-      // Switching songs via play({ projectId }) must not keep mid-song ticks.
-      if (
-        project &&
-        opts.projectId !== undefined &&
-        opts.projectId !== prevProjectId
-      ) {
-        positionTicks = transportHomeTicks(project);
+        if (opts.projectId !== prevProjectId) {
+          loop = null;
+        }
       }
 
       if (project && opts.bpm === undefined && opts.timeSignature === undefined) {
         applyMapsFromProject(project, positionTicks);
       } else {
-        if (project) {
-          bindProject(project, false);
-        }
         if (opts.bpm !== undefined) {
           bpm = opts.bpm;
         }
@@ -268,9 +225,8 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       }
       positionTicks = nextTicks;
       if (project) {
-        applyMapsFromProject(project, positionTicks);
-      } else if (followMaps && boundProject) {
-        syncMapsAt(positionTicks);
+        bpm = resolveTempoAt(project, positionTicks);
+        timeSignature = { ...resolveMeterAt(project, positionTicks) };
       }
       if (playing) {
         reanchor();

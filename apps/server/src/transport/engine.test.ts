@@ -3,7 +3,6 @@ import {
   createProjectV5Seed,
   DEFAULT_PPQ,
   elapsedToTicks,
-  transportHomeTicks,
 } from "@stagesync/shared";
 import { createTransportEngine } from "./engine.js";
 
@@ -131,63 +130,6 @@ describe("TransportEngine", () => {
     expect(state.playing).toBe(false);
     expect(state.activeProjectId).toBe(project.id);
     expect(state.bpm).toBe(90);
-    const cd = project.forma.clips.find((c) => c.kind === "countdown");
-    expect(state.positionTicks).toBe(cd!.startTicks);
-    engine.dispose();
-  });
-
-  it("mid-play tempo map change updates bpm without jumping (follow maps)", () => {
-    let t = 0;
-    const project = createProjectV5Seed(
-      "00000000-0000-4000-8000-000000000003",
-      "P",
-      "2026-07-20T00:00:00.000Z",
-      { midiProgramId: 1 },
-    );
-    project.defaultBpm = 120;
-    project.tempoMap = [
-      { id: "t0", startTicks: 0, bpm: 120 },
-      { id: "t1", startTicks: 1920, bpm: 60 },
-    ];
-    const engine = createTransportEngine({ now: () => t });
-    engine.loadProject(project.id, project);
-    engine.seek(0, project);
-    engine.play({}, project);
-
-    t = 1000; // 2 beats @ 120 → 1920 ticks (tempo change)
-    const atChange = engine.getState();
-    expect(atChange.positionTicks).toBe(1920);
-    expect(atChange.bpm).toBe(60);
-
-    t = 2000; // +1 beat @ 60 → 960 ticks
-    const after = engine.getState();
-    expect(after.positionTicks).toBe(2880);
-    expect(after.bpm).toBe(60);
-    engine.dispose();
-  });
-
-  it("explicit play bpm override does not follow tempo map", () => {
-    let t = 0;
-    const project = createProjectV5Seed(
-      "00000000-0000-4000-8000-000000000004",
-      "P",
-      "2026-07-20T00:00:00.000Z",
-      { midiProgramId: 1 },
-    );
-    project.defaultBpm = 120;
-    project.tempoMap = [
-      { id: "t0", startTicks: 0, bpm: 120 },
-      { id: "t1", startTicks: 1920, bpm: 60 },
-    ];
-    const engine = createTransportEngine({ now: () => t });
-    engine.loadProject(project.id, project);
-    engine.seek(0, project);
-    engine.play({ bpm: 120 }, project);
-
-    t = 2000; // frozen 120 → 4 beats = 3840
-    const state = engine.getState();
-    expect(state.bpm).toBe(120);
-    expect(state.positionTicks).toBe(3840);
     engine.dispose();
   });
 
@@ -224,7 +166,7 @@ describe("TransportEngine", () => {
     engine.dispose();
   });
 
-  it("play with a new projectId seeks to transport home", () => {
+  it("loadProject clears transport loop from the previous song", () => {
     const a = createProjectV5Seed(
       "00000000-0000-4000-8000-00000000000a",
       "A",
@@ -237,14 +179,12 @@ describe("TransportEngine", () => {
       "2026-07-20T00:00:00.000Z",
       { midiProgramId: 2 },
     );
-    const homeB = transportHomeTicks(b);
     const engine = createTransportEngine();
     engine.loadProject(a.id, a);
-    engine.seek(4800, a);
-    const state = engine.play({ projectId: b.id }, b);
-    expect(state.activeProjectId).toBe(b.id);
-    expect(state.positionTicks).toBe(homeB);
-    expect(state.playing).toBe(true);
+    engine.setLoop({ enabled: true, startTicks: 0, endTicks: 1920 });
+    expect(engine.getState().loop?.enabled).toBe(true);
+    engine.loadProject(b.id, b);
+    expect(engine.getState().loop).toBeNull();
     engine.dispose();
   });
 });
