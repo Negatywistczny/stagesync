@@ -84,6 +84,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+.uiError {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-danger);
+}
+
 .takt {
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
