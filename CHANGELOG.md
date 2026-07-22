@@ -7,20 +7,30 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Dodano
+### Features
 
-- **Merge trains 0–8 (squash na `main`):** integracja overnight PR-ów 5.0.0 w kolejności hotspotów — must Timeline/audio (#408), should + smoke (#409), shared/timebase (#410–#411), server/transport (#412–#413), web/admin (#414), MIDI/desktop (#415), residual hardening + tokeny UI (#416). Zamknięto **266** źródłowych PR-ów; otwarte świadomie: [#61](https://github.com/Negatywistyczny/stagesync/pull/61), [#63](https://github.com/Negatywistyczny/stagesync/pull/63).
+- **Timeline:** zoom H/V/UI z ikonami; snap picker (off / bar / beat / subdivision); rozszerzona Pomoc z kartami sekcji, miniaturami narzędzi / transportu / ścieżek i czytelnymi skrótami klawiszowymi; zoom sesji zapisywany lokalnie.
+- **Audio:** fade in/out (envelope WebAudio + uchwyty Smart na klipie); crossfade przy styku; region loop klipu; kontrolki w inspectorze; kopiuj/wklej na ścieżce audio.
+- **Transport i setlista:** pauza i zatrzymanie playheadu na końcu utworu; opcjonalne auto-advance setlisty; nawigacja `[` / `]` między utworami.
+- **MIDI (host):** Start/Stop/Continue/SPP z MIDI IN; Program Change OUT przy załadowaniu projektu; Program Change IN może załadować projekt.
+- **Desktop:** menu OS — Edycja (m.in. Cmd/Ctrl+C), zoom w Widok, otwarcie Pomocy; czytelniejsze błędy transportu i sąsiadów setlisty.
+- **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
+- **Forma:** kaskadowe przesuwanie późniejszych klipów; luka Intro po Countdown przy pierwszym przeciągnięciu sekcji; nożyczki tną pod kursorem.
+- **API / docs:** domknięta dokumentacja REST; smoke E2E (health, zapis Formy, seek, play/stop).
 
-### Zmieniono
+### Bug Fixes
 
-- **Timeline Pomoc:** overlay jak w v4 — accent chrome, karty sekcji, miniatury ikon narzędzi / transportu / ścieżek, czytelniejsze skróty `kbd` (treść operatora 5.0.0).
-- **Hardening Zod (train 8):** bezpieczne `.max()` na krawędziach (projekt, biblioteka, MIDI, stage cue, transport) bez regresji pól fade / BPM / `ClientHello` z train 0.
-- **UI tokeny:** typografia/spacing `--ss-*` w shellach Admin/Client/Timeline; touch targets; client typography polish.
+- **Audio Timeline przy Pause/Stop:** odtwarzanie WebAudio gaśnie od razu w UI (bez dźwięku w trakcie oczekiwania na potwierdzenie serwera).
+- **Timeline:** ochrona przed nakładającymi się komendami transportu; jaśniejszy konflikt zapisu OCC; anulowanie fetchy pickera utworu / uploadu audio przy zamknięciu; limit 64 ścieżek audio w UI.
+- **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
+- **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST transportu zawierają czas serwera.
 
-### Naprawiono
+### Hardening & Backend
 
-- **Timeline audio po Pause/Stop (#352):** natychmiastowy `suppressAudioPlayback()` przy Pause/Stop (UI + menu), żeby WebAudio nie grał w trakcie RTT zanim SSOT ustawi `playing: false`; sync nie re-schedule’uje przy suppress.
-- **Train 8 schema repair:** przywrócono baseline `schema.ts` z `main` po regresji `--theirs`; zachowano `fadeInMs`/`fadeOutMs`/`loop`, `KEY_TONICS`, `ExportLibraryBodySchema`, `serverTimeMs` w `TransportProvider`, `ClipHitZone` w `TimelineShell`.
+- **Walidacja:** ściślejsze schematy i limity długości / BPM / metrum na krawędziach (projekt, biblioteka, setlista, MIDI, cue sceniczny, transport); odrzucanie niepoprawnych metrum; BPM 20–400.
+- **Timebase:** konwersje ticks↔BBT i snap do taktów uwzględniają mapę metrum; ochrona przed nie-skończonymi tickami.
+- **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WS; skracanie komunikatów błędów; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
+- **UI:** typografia i odstępy wyłącznie tokenami `--ss-*` w Admin / Client / Timeline; touch targety zgodne z gęstością design systemu.
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
