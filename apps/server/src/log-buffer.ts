@@ -16,7 +16,7 @@ export function createLogBuffer(options: { maxLines?: number } = {}) {
   const clients = new Set<Response>();
 
   function push(level: string, msg: string): LogLine {
-    const entry: LogLine = { t: Date.now(), level, msg };
+    const entry: LogLine = { t: Date.now(), level, msg: String(msg).slice(0, 500) };
     lines.push(entry);
     while (lines.length > maxLines) lines.shift();
     const payload = `data: ${JSON.stringify(entry)}\n\n`;
