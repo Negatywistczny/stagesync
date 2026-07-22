@@ -1,52 +1,34 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.0.0-beta.2` na `main` + **merge trains 0–8** + residual closeout (2026-07-22: Faza D [#460](https://github.com/Negatywistyczny/stagesync/pull/460), audio fade/loop [#462](https://github.com/Negatywistyczny/stagesync/pull/462), help/skróty [#468](https://github.com/Negatywistyczny/stagesync/pull/468), mobile [#464](https://github.com/Negatywistyczny/stagesync/pull/464), tablet nudge [#473](https://github.com/Negatywistyczny/stagesync/pull/473), mobile inspector sheet); tag **`5.0.0` tylko na prośbę**.  
-Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
+**Stan:** `5.0.0-beta.2` na `main`; residual closeout przed tagiem `5.0.0` (**tylko na prośbę**).  
+Historia zrealizowanego: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md).
 
 **Polityka 5.0 (PO 2026-07-22):** funkcja **dostępna w v4** → must w **`5.0.0`** (chyba że
-jawnie usunięta z produktu). **Zakaz stubów** / atrap / „poza 5.0”. Szczegóły:
+jawnie usunięta z produktu). **Zakaz stubów** / atrap. Szczegóły:
 [ADR 0011 §1a](./adr/0011-ui-parity-behavior.md).
 
 **P8:** green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).  
-**β2 / 5.0.0 must A–E (kod):** polish UI, zoom/snap/help, audio fade/loop (WebAudio), Faza D, mobile breakpoints, tablet nudge, mobile inspector sheet, i18n tools, Client OSMD, `docs/api` v5 + smoke — **w kodzie na `main`** (API docs zsynchronizowane z routes).  
-**Residual operatorski:** ręczna bramka **G1–G10** na instalatorach β2 — nadal ⬜ na HW (**bez claim green**); [report-beta-gate.md](./analysis/reports/report-beta-gate.md).  
-**Residual drafty OSMD/migration/wand:** zamknięte na `main` (#465–#467); wand + menu `T` w toolbarze.
+**Residual operatorski:** ręczna bramka **G1–G10** na instalatorach β2 — nadal ⬜ na HW (**bez claim green**); [report-beta-gate.md](./analysis/reports/report-beta-gate.md).
+
+## Higiena tego pliku
+
+- Tylko **otwarte** Must / Should / 5.1+ / Release — **bez** sekcji „Dostarczone”, **bez** `[x]`.
+- Zrealizowane → wyłącznie [CHANGELOG.md](../CHANGELOG.md) (weryfikuj kod na dysku, zero fałszywych Done).
+- Odhaczone = **usuń** z listy; nie trzymaj archiwum w TODO.
 
 ## Procedura zamykania etapu
 
 Przy tagu `v5.0.0` (analogicznie `alpha.N`, `beta.N`):
 
 1. Przenieś zrealizowane pozycje do [CHANGELOG.md](../CHANGELOG.md).
-2. **Wyczyść całą checklistę** w tym pliku — bez starych sekcji i odhaczonych bulletów.
-3. Zastąp plik **wyłącznie** sekcją kolejnego etapu (nagłówek, link do scope report, must/should/release).
-4. Zaktualizuj `**Stan:**` na górze.
-5. Ustal **nazwę hero** linii 5.0 (versioning) i dopisz do CHANGELOG / ROADMAP.
-
-W trakcie etapu: odhaczone = usuń z listy (historia tylko w CHANGELOG), nie trzymaj `[x]` jako archiwum.
+2. **Wyczyść checklistę** — zostaw tylko otwarte Must / Should / 5.1+ następnego etapu.
+3. Zaktualizuj `**Stan:**` na górze.
+4. Ustal **nazwę hero** linii 5.0 (versioning) i dopisz do CHANGELOG / ROADMAP.
 
 ## 5.0.0 — Stabilne wydanie + kompletny parytet v4
 
 Hero: **stabilne 5.0.0** = zachowanie operatorskie v4 **bez stubów** + nazwa hero linii.  
 Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md) · [ADR 0011](./adr/0011-ui-parity-behavior.md).
-
-### Dostarczone (kod na `main` — nie powtarzać)
-
-- Polish UI na żywych kontrolkach + tokeny `--ss-*` (trains 0, 6, 8)
-- Timeline: zoom H/V z ikonami; snap picker; Pomoc + skróty zsynchronizowane z kodem (trains 0–1, 5; [#468](https://github.com/Negatywistyczny/stagesync/pull/468))
-- Audio: fade / crossfade / loop-region schema + UI + WebAudio envelope ([#462](https://github.com/Negatywistyczny/stagesync/pull/462), ADR 0008)
-- Mobile / tablet: progi `≤768` / `≤1024`, Client touch 44×44, Timeline phone = player RO (dock; meta RO; wrap ≤768) ([#464](https://github.com/Negatywistyczny/stagesync/pull/464) + follow-up na `main`)
-- Mobile inspector ≤768: dolny sheet (Metadane / zaznaczenie) z Zamknij i tłem — na `main`
-- Tablet nudge: ◀▶ + stretch krawędzi, pinch-zoom, double-tap Fit Zoom ([#473](https://github.com/Negatywistyczny/stagesync/pull/473))
-- i18n: polskie etykiety narzędzi Timeline + błędy API / upload / transport (w [#468](https://github.com/Negatywistyczny/stagesync/pull/468); [#463](https://github.com/Negatywistyczny/stagesync/pull/463) zamknięty jako superseded)
-- `docs/api` — powierzchnia REST + WS pod `formatVersion: 5` (train 1 + rewrite closeout)
-- MIDI host I/O, PC OUT, transport IN (trains 4, 7); PC → load / Client Space / `[` `]` setlist
-- Desktop menu Faza B/C + **Faza D** (Usuń + Zoom + Skróty + Undo grey-out) — [#460](https://github.com/Negatywistyczny/stagesync/pull/460)
-- Overnight Zod caps + UI token hygiene (train 8)
-- **266** overnight PR-ów zamkniętych (trains 0–8)
-- Client OSMD score nav + playhead/seek/zoom — [#465](https://github.com/Negatywistyczny/stagesync/pull/465)
-- Migracja assets/meta (`year`/`coverUrl`/MusicXML) — [#466](https://github.com/Negatywistyczny/stagesync/pull/466)
-- Wand w toolbarze + karaoke transpose + MIDI playhead (opcjonalny w Wygląd) — [#467](https://github.com/Negatywistyczny/stagesync/pull/467)
-- Menu narzędzi `T` + litery narzędzi (jak v4)
 
 ### Must (parity v4 — przed tagiem `5.0.0`)
 
@@ -58,10 +40,11 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 - [ ] Playwright Forma drag E2E (defer z overnight)
 - [ ] ADR 0002 pre-roll tempo/metrum — jeśli nadal otwarte
 - [ ] AD-01…03 Transpozycja / Lead / Edycja zdalna — pull-forward jeśli PO
-
 - [ ] **Zmienne metrum:** CD przejmuje metrum Taktu 1; live grid/snap tick↔px zgodne z `meterMap`
 - [ ] **Live badge** / równoważny sygnał „live playhead” (CH-02)
 - [ ] **Meta okładka** (asset `cover` + UI jak v4 workflow)
+
+### 5.1+ / poza zakresem
 
 - Motywy / auth / multi-user → **5.1+**
 - [#430](https://github.com/Negatywistyczny/stagesync/issues/430) Cues Sampler → **5.1+** (scope + ADR przed kodem)

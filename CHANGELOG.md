@@ -10,7 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Mobile — inspector:** na telefonie (≤768px) Właściwości otwierają się jako dolny sheet (Metadane / zaznaczenie klipu lub mapy) z Zamknij i tłem; desktop bez zmian układu.
+- **Mobile — inspector:** na telefonie (≤768px) Właściwości jako dolny sheet (Metadane / zaznaczenie klipu lub mapy) z Zamknij i tłem — collapsible bottom sheet na `main`; desktop bez zmian układu.
 - **Tablet — nudge i gesty ([#473](https://github.com/Negatywistyczny/stagesync/pull/473)):** pasek ◀▶ + 4 przyciski krawędzi (stretch in/out) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom na osi czasu.
 - **Różdżka:** z powrotem w toolbarze / skrót W — Tekst→Forma, Akordy→Forma lub obie; zakres = zaznaczone sekcje Formy.
 - **MIDI playhead:** opcjonalny wskaźnik w Wygląd (zapamiętywany lokalnie).
@@ -26,7 +26,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **MIDI (host):** Start/Stop/Continue/SPP z wejścia; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po numerze programu (SSOT serwera).
 
 #### 🖥️ App Shell & UI
-- **Client — partytura:** render MusicXML z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika w pasku roli.
+- **Client — partytura ([#465](https://github.com/Negatywistyczny/stagesync/pull/465)):** render MusicXML (OSMD) z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika w pasku roli.
 - **Client — strój i Formy:** C / B♭ / E♭ / ręczna (−6…+6); polskie nazwy sekcji Formy; Karaoke z tym samym strojem i formatem akordów co Grid (live transpozycja).
 - **Chrome ([#443](https://github.com/Negatywistyczny/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.

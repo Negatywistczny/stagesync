@@ -1,0 +1,30 @@
+---
+description: docs/TODO.md — tylko otwarte Must/Should; bez Dostarczone i bez [x]
+globs: docs/TODO.md
+alwaysApply: false
+---
+
+# TODO hygiene (StageSync v5)
+
+`docs/TODO.md` = **otwarta checklista**, nie archiwum.
+
+## Zakaz
+
+- Sekcja **„Dostarczone”** / „Done” / lista zrealizowanego
+- Checkboxy `[x]` (odhaczonych nie trzymaj — **usuń**)
+- Claim „Done” bez weryfikacji kodu na dysku
+
+## Dozwolone sekcje
+
+1. Krótki `**Stan:**` + linki do CHANGELOG / ROADMAP (bez laundry listy feature’ów)
+2. **Must** — otwarte before tag
+3. **Should** — otwarte, nie blokujące bez decyzji
+4. **5.1+ / poza zakresem** — OUT / later
+5. **Release** — tag / bump tylko na prośbę
+
+Zrealizowane → wyłącznie [CHANGELOG.md](../../CHANGELOG.md) (styl: [changelog.mdc](changelog.mdc)).
+
+## Trunk
+
+Docs / chore TODO + CHANGELOG: commit na `main` (bez nowego PR, chyba że użytkownik prosi).
+Feature’y produktowe nadal wg [constitution.mdc](constitution.mdc) (`feat/…` + PR).
