@@ -352,12 +352,14 @@ export const CreateProjectBodySchema = z.object({
 export type CreateProjectBody = z.infer<typeof CreateProjectBodySchema>;
 
 export const BatchMidiPcBodySchema = z.object({
-  assignments: z.array(
-    z.object({
-      id: z.string().min(1),
-      midiProgramId: z.number().int().min(0).max(127),
-    }),
-  ),
+  assignments: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        midiProgramId: z.number().int().min(0).max(127),
+      }),
+    )
+    .max(1024),
 });
 
 export type BatchMidiPcBody = z.infer<typeof BatchMidiPcBodySchema>;
