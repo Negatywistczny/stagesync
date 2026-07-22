@@ -115,6 +115,12 @@ export const AudioClipSchema = z.object({
   trimOutMs: z.number().nonnegative().finite().optional(),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().optional(),
+  /** Fade-in length from clip start (ms of playable window). */
+  fadeInMs: z.number().nonnegative().finite().optional(),
+  /** Fade-out length ending at clip end (ms of playable window). */
+  fadeOutMs: z.number().nonnegative().finite().optional(),
+  /** Loop source within clip span while playhead is inside ([ADR 0008]). */
+  loop: z.boolean().optional(),
 });
 
 export type AudioClip = z.infer<typeof AudioClipSchema>;
