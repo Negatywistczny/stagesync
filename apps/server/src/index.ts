@@ -4,7 +4,20 @@ import { createLifecycle } from "./lifecycle.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { attachTransportWs } from "./transport/ws.js";
 
-const PORT = Number(process.env.PORT ?? 4000);
+function resolveListenPort(): number {
+  const raw = process.env.PORT;
+  if (raw == null || raw === "") return 4000;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1 || n > 65535) {
+    console.error(
+      `[stagesync-server] invalid PORT=${JSON.stringify(raw)} (need integer 1…65535); using 4000`,
+    );
+    return 4000;
+  }
+  return n;
+}
+
+const PORT = resolveListenPort();
 /** Hot-reload races (tsx watch) often hit EADDRINUSE briefly — retry instead of crashing. */
 const LISTEN_RETRY_MS = 250;
 const LISTEN_RETRY_MAX = 40;
