@@ -22,6 +22,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Cue:** role sceniczne + priorytet Alert w schemacie, migracji i Inspectorze.
 
 #### 🎛️ Audio / MIDI / Transport
+- **Preferencje — MIDI Panic:** przycisk **MIDI Panic / Reset Controllers** wysyła All Sound Off / Reset Controllers / All Notes Off na 16 kanałach hosta (`POST /api/midi/panic`); potwierdzenie „Wysłano sygnał Reset”.
+- **Preferencje — Audio:** informacje silnika (Sample Rate, latencja sieci) oraz kompensacja latencji wyjścia (−100…+500 ms, `localStorage`) jako offset ticków przy odtwarzaniu WebAudio (SSOT serwera bez zmian).
 - **Live Desk:** transpozycja zespołu, kompensacja sync-lead i przełącznik edycji zdalnej — API `/api/live-desk`, broadcast WS, Admin Scena + Client.
 - **Audio na klipie:** fade in/out z uchwytami Smart, crossfade przy styku, region loop, kopiuj/wklej; buforowanie przed Play ze spinnerem i ostrzeżeniem przy błędzie decode ([#365](https://github.com/Negatywistyczny/stagesync/issues/365)).
 - **Preferencje Audio/MIDI ([#432](https://github.com/Negatywistyczny/stagesync/issues/432)):** modal (Cmd/Ctrl+, / menu StageSync) — wyjście audio i porty MIDI zapamiętywane na hoście.
@@ -44,6 +46,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Migracja v4→v5:** rok i okładka; MusicXML oraz lokalne okładki/audio → assets (ścieżki audio); CLI z katalogiem uploadów kopiuje pliki.
 
 #### 📚 Dokumentacja
+- **API MIDI:** `POST /api/midi/panic` (MUTE ALL) w dokumentacji REST.
 - **README ([#417](https://github.com/Negatywistyczny/stagesync/issues/417)):** treść po polsku, pełniejszy zestaw badge i sekcja stosu.
 - **API:** dokumentacja REST + WebSocket pod `formatVersion: 5` (Project, Assets, Transport, Setlist, Stage, MIDI, System; ticki + `stage_cue` + presence).
 
@@ -51,7 +54,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Admin Scena — układ reżyserski:** Master Bar **Korekta na scenie** (pełna szerokość, kompaktowy rząd suwaków) nad siatką **Komunikaty** | **Klienci** (≈60/40), bez martwej przestrzeni pod kartami.
-- **Preferencje Audio:** usunięty zbędny hint „Wybór zapisywany lokalnie.” pod wyborem wyjścia.
+- **Preferencje Audio:** sekcje **Urządzenia Wyjściowe** i **Parametry Silnika** (fieldset); usunięty zbędny hint „Wybór zapisywany lokalnie.” pod wyborem wyjścia.
 - **Admin Host:** usunięty przycisk i okno „Ustawienia hosta” (Preferencje MIDI/Audio przez Cmd/Ctrl+,); sekcja **MIDI/Audio**; bez etykiety backendu MIDI i bloku „Kopie zapasowe” / atrap path pickera.
 - **Client / Komunikaty:** większe toasty sceniczne (`TERAZ` / `ZA N`) z typografią `--ss-text-stage-*`, kolorami success/alert i animacją wejścia — układ jak w v4, bez klonowania HTML.
 - **Admin Scena:** panel **Komunikaty** z priorytetem Alert/Normal oraz TTL 6/10/15/30/∞ (∞ faktycznie bez auto-hide).

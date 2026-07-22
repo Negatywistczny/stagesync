@@ -1,4 +1,4 @@
-import type { SetlistView } from "@stagesync/shared";
+import type { SetlistItem, SetlistView } from "@stagesync/shared";
 
 async function readApiError(res: Response): Promise<string> {
   let message = `HTTP ${res.status}`;
@@ -21,7 +21,9 @@ export async function fetchSetlist(): Promise<SetlistView> {
 
 export async function putSetlist(body: {
   enabled: boolean;
-  projectIds: string[];
+  items?: SetlistItem[];
+  projectIds?: string[];
+  timeBudgetMinutes?: number;
 }): Promise<SetlistView> {
   const res = await fetch("/api/setlist", {
     method: "PUT",
@@ -225,6 +227,25 @@ export async function putMidiHostConfig(body: {
     throw new Error(await readApiError(res));
   }
   return (await res.json()) as MidiHostStatus;
+}
+
+export type MidiPanicResult = {
+  ok: true;
+  sent: boolean;
+  channels: number;
+  status: MidiHostStatus;
+};
+
+/** Host MIDI Panic / MUTE ALL (All Notes Off + Reset Controllers). */
+export async function postMidiPanic(): Promise<MidiPanicResult> {
+  const res = await fetch("/api/midi/panic", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as MidiPanicResult;
 }
 
 export async function postSystemRestart(): Promise<void> {

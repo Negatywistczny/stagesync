@@ -14,7 +14,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 ### Must (Blokery wydania 5.0.0)
 
 - [ ] **G1–G10** na instalatorach β2
-- [ ] **MIDI Panic / MUTE ALL**
 - [ ] Tag / bump `5.0.0` **tylko na prośbę**; CHANGELOG + nazwa hero linii 5.0
 
 ### Should / Weryfikacja

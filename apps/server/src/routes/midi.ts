@@ -44,5 +44,21 @@ export function createMidiRouter(midi: MidiHost): Router {
     }
   });
 
+  /** Panic / MUTE ALL — All Notes Off + Reset Controllers on all 16 channels. */
+  router.post("/panic", (_req, res) => {
+    try {
+      const result = midi.panic();
+      res.set("Cache-Control", "no-store");
+      res.json({
+        ok: true,
+        sent: result.sent,
+        channels: result.channels,
+        status: MidiHostStatusSchema.parse(midi.getStatus()),
+      });
+    } catch (err) {
+      handleRouteError(res, err);
+    }
+  });
+
   return router;
 }

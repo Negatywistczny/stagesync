@@ -16,7 +16,13 @@ export type MidiRealtimeMessage =
   | { type: "stop" }
   | { type: "continue" }
   | { type: "spp"; value: number }
-  | { type: "program"; channel: number; program: number };
+  | { type: "program"; channel: number; program: number }
+  | {
+      type: "cc";
+      channel: number;
+      controller: number;
+      value: number;
+    };
 
 export type MidiBackendKind = "native" | "mock" | "none";
 

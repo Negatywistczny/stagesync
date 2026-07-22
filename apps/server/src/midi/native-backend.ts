@@ -198,6 +198,13 @@ export function createNativeMidiBackend(): MidiBackend {
             channel: msg.channel,
           });
           break;
+        case "cc":
+          output.send("cc", {
+            controller: msg.controller,
+            value: msg.value,
+            channel: msg.channel,
+          });
+          break;
       }
     },
 

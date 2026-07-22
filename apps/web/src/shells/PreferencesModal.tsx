@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Slider } from "@stagesync/ui";
 import {
   applyAudioOutputSink,
   getStoredAudioOutputDeviceId,
@@ -7,10 +7,20 @@ import {
   setStoredAudioOutputDeviceId,
 } from "../lib/audioOutputPrefs.js";
 import {
+  AUDIO_LATENCY_MAX_MS,
+  AUDIO_LATENCY_MIN_MS,
+  clampLatencyCompensationMs,
+  getStoredLatencyCompensationMs,
+  setStoredLatencyCompensationMs,
+} from "../lib/audioLatencyPrefs.js";
+import { getMetronomeAudioContext } from "../lib/metronome.js";
+import {
   fetchMidiHostStatus,
+  postMidiPanic,
   putMidiHostConfig,
   type MidiHostStatus,
 } from "../lib/setlistApi.js";
+import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./PreferencesModal.module.css";
 
@@ -52,10 +62,15 @@ function ModalShell({
 }
 
 export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
+  const { latencyMs } = useTransport();
   const [tab, setTab] = useState<PreferencesTab>(initialTab);
   const [outputs, setOutputs] = useState<MediaDeviceInfo[]>([]);
   const [sinkId, setSinkId] = useState<string>(
     () => getStoredAudioOutputDeviceId() ?? "",
+  );
+  const [sampleRate, setSampleRate] = useState<number | null>(null);
+  const [latencyCompMs, setLatencyCompMs] = useState(
+    () => getStoredLatencyCompensationMs(),
   );
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioBusy, setAudioBusy] = useState(false);
@@ -63,6 +78,8 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const [panicBusy, setPanicBusy] = useState(false);
+  const [panicConfirm, setPanicConfirm] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +95,11 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
         }
       }
     })();
+    try {
+      setSampleRate(getMetronomeAudioContext().sampleRate);
+    } catch {
+      setSampleRate(null);
+    }
     return () => {
       cancelled = true;
     };
@@ -132,6 +154,32 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
     }
   };
 
+  const onLatencyChange = (next: number) => {
+    const clamped = clampLatencyCompensationMs(next);
+    setLatencyCompMs(clamped);
+    setStoredLatencyCompensationMs(clamped);
+  };
+
+  const onPanic = async () => {
+    setPanicBusy(true);
+    setPanicConfirm(false);
+    try {
+      const result = await postMidiPanic();
+      if (result.status) setMidi(result.status);
+      setMidiError(null);
+      setPanicConfirm(true);
+    } catch (err) {
+      setMidiError(err instanceof Error ? err.message : "Błąd MIDI Panic");
+    } finally {
+      setPanicBusy(false);
+    }
+  };
+
+  const networkLatencyLabel =
+    latencyMs != null && Number.isFinite(latencyMs)
+      ? `${Math.round(latencyMs)} ms`
+      : "—";
+
   return (
     <ModalShell title="Preferencje" onClose={onClose}>
       <div className={styles.tabs} role="tablist" aria-label="Preferencje">
@@ -166,25 +214,77 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
               {audioError}
             </p>
           ) : null}
-          <label className={styles.field}>
-            <span className={styles.label}>Wyjście audio</span>
-            <select
-              className={styles.select}
-              disabled={audioBusy}
-              value={sinkId}
-              aria-label="Wyjście audio"
-              onChange={(e) => {
-                void onSinkChange(e.target.value);
-              }}
-            >
-              <option value="">Domyślne systemu</option>
-              {outputs.map((d) => (
-                <option key={d.deviceId} value={d.deviceId}>
-                  {d.label || d.deviceId}
-                </option>
-              ))}
-            </select>
-          </label>
+
+          <fieldset className={styles.fieldset}>
+            <legend className={styles.legend}>Urządzenia Wyjściowe</legend>
+            <label className={styles.field}>
+              <span className={styles.label}>Wyjście audio</span>
+              <select
+                className={styles.select}
+                disabled={audioBusy}
+                value={sinkId}
+                aria-label="Wyjście audio"
+                onChange={(e) => {
+                  void onSinkChange(e.target.value);
+                }}
+              >
+                <option value="">Domyślne systemu</option>
+                {outputs.map((d) => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label || d.deviceId}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset className={styles.fieldset}>
+            <legend className={styles.legend}>Parametry Silnika</legend>
+            <dl className={styles.infoList}>
+              <div className={styles.infoRow}>
+                <dt>Sample Rate</dt>
+                <dd>
+                  {sampleRate != null
+                    ? `${Math.round(sampleRate)} Hz`
+                    : "—"}
+                </dd>
+              </div>
+              <div className={styles.infoRow}>
+                <dt>Latencja sieci</dt>
+                <dd>{networkLatencyLabel}</dd>
+              </div>
+            </dl>
+
+            <label className={styles.field}>
+              <span className={styles.label}>
+                Kompensacja latencji ({latencyCompMs > 0 ? "+" : ""}
+                {latencyCompMs} ms)
+              </span>
+              <div className={styles.latencyRow}>
+                <Slider
+                  className={styles.latencySlider}
+                  min={AUDIO_LATENCY_MIN_MS}
+                  max={AUDIO_LATENCY_MAX_MS}
+                  step={1}
+                  value={latencyCompMs}
+                  aria-label="Kompensacja latencji wyjścia"
+                  onValueChange={onLatencyChange}
+                />
+                <input
+                  className={styles.number}
+                  type="number"
+                  min={AUDIO_LATENCY_MIN_MS}
+                  max={AUDIO_LATENCY_MAX_MS}
+                  step={1}
+                  value={latencyCompMs}
+                  aria-label="Kompensacja latencji (ms)"
+                  onChange={(e) => {
+                    onLatencyChange(Number(e.target.value));
+                  }}
+                />
+              </div>
+            </label>
+          </fieldset>
         </div>
       ) : (
         <div className={styles.body} role="tabpanel">
@@ -252,6 +352,28 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
                 />
                 <span>Clock OUT</span>
               </label>
+              <div className={styles.panicBlock}>
+                <Button
+                  variant="primary"
+                  disabled={
+                    panicBusy ||
+                    midiBusy ||
+                    !midi.available ||
+                    !midi.config.outputId
+                  }
+                  loading={panicBusy}
+                  onClick={() => {
+                    void onPanic();
+                  }}
+                >
+                  MIDI Panic / Reset Controllers
+                </Button>
+                {panicConfirm ? (
+                  <p className={styles.confirm} role="status">
+                    Wysłano sygnał Reset
+                  </p>
+                ) : null}
+              </div>
             </>
           ) : midiError ? null : (
             <p className={styles.muted}>Wczytywanie…</p>

@@ -165,6 +165,18 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("panic sends All Sound Off / Reset Controllers / All Notes Off", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ outputId: "mock-out-1" });
+    backend.sent.length = 0;
+    expect(host.panic()).toEqual({ sent: true, channels: 16 });
+    expect(backend.sent.filter((m) => m.type === "cc")).toHaveLength(48);
+    host.dispose();
+    transport.dispose();
+  });
+
   it("rejects unknown device ids without crashing status", () => {
     const transport = createTransportEngine();
     const backend = createMockMidiBackend();

@@ -201,6 +201,11 @@ import {
   suppressAudioPlayback,
   syncAudioPlayback,
 } from "../lib/audioPlayback.js";
+import {
+  AUDIO_LATENCY_CHANGED_EVENT,
+  getStoredLatencyCompensationMs,
+} from "../lib/audioLatencyPrefs.js";
+import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { isEditableKeyboardTarget } from "../lib/isEditableKeyboardTarget.js";
 import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
 import {
@@ -418,7 +423,20 @@ export function TimelineShell() {
     setLoop,
   } = useTransport();
   const wasPlayingRef = useRef(state.playing);
+  const [latencyCompMs, setLatencyCompMs] = useState(
+    () => getStoredLatencyCompensationMs(),
+  );
   const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
+
+  useEffect(() => {
+    const onLatency = () => {
+      setLatencyCompMs(getStoredLatencyCompensationMs());
+    };
+    window.addEventListener(AUDIO_LATENCY_CHANGED_EVENT, onLatency);
+    return () => {
+      window.removeEventListener(AUDIO_LATENCY_CHANGED_EVENT, onLatency);
+    };
+  }, []);
 
   const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [draftProject, setDraftProject] = useState<Project | null>(null);
@@ -1563,6 +1581,7 @@ export function TimelineShell() {
   ]);
 
   // WebAudio clip playback — sync to server ticks (ADR 0008 / 0002).
+  // Latency compensation is a client-only tick offset (Preferences); SSOT unchanged.
   useEffect(() => {
     if (!projectId || !draftProject) {
       stopAudioPlayback();
@@ -1574,10 +1593,13 @@ export function TimelineShell() {
       stopAudioPlayback();
       return;
     }
+    const audioTicks =
+      displayTicks +
+      ticksFromSyncLeadMs(latencyCompMs, state.bpm, state.ppq);
     syncAudioPlayback(projectId, {
       project: draftProject,
       playing: state.playing,
-      displayTicks,
+      displayTicks: audioTicks,
       soloTrackIds: soloAudioTrackIds,
     });
   }, [
@@ -1585,6 +1607,9 @@ export function TimelineShell() {
     draftProject,
     state.playing,
     displayTicks,
+    state.bpm,
+    state.ppq,
+    latencyCompMs,
     soloAudioTrackIds,
   ]);
 
@@ -1760,7 +1785,10 @@ export function TimelineShell() {
       restartAudioPlayback(projectId, {
         project: draftProject,
         playing: true,
-        displayTicks: locatorTicks,
+        displayTicks:
+          locatorTicks +
+          ticksFromSyncLeadMs(latencyCompMs, state.bpm, state.ppq),
+        soloTrackIds: soloAudioTrackIds,
       });
     }
     const startTicks = locatorTicks;

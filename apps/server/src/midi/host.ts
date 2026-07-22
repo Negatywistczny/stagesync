@@ -331,6 +331,43 @@ export function createMidiHost(
       }
     },
 
+    /**
+     * Panic / MUTE ALL — All Sound Off, Reset Controllers, All Notes Off
+     * on every MIDI channel (0–15) of the configured output.
+     */
+    panic(): { sent: boolean; channels: number } {
+      if (!config.outputId) {
+        return { sent: false, channels: 0 };
+      }
+      try {
+        for (let channel = 0; channel < 16; channel += 1) {
+          backend.send({
+            type: "cc",
+            channel,
+            controller: 120,
+            value: 0,
+          });
+          backend.send({
+            type: "cc",
+            channel,
+            controller: 121,
+            value: 0,
+          });
+          backend.send({
+            type: "cc",
+            channel,
+            controller: 123,
+            value: 0,
+          });
+        }
+        clearError();
+        return { sent: true, channels: 16 };
+      } catch (err) {
+        setError(err);
+        return { sent: false, channels: 0 };
+      }
+    },
+
     dispose(): void {
       unsub();
       stopClockOutTimer();

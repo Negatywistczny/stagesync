@@ -106,6 +106,7 @@ Wszystkie odpowiedzi sukcesu = **`TransportTickMessage`** (stan + `type` +
 | `GET` | `/api/midi` | Status hosta (`MidiHostStatus`: ports, config, rates, `clockOutActive`) |
 | `GET` | `/api/midi/devices` | Skrót: `available`, `backend`, `inputs`, `outputs`, `lastError` |
 | `PUT` | `/api/midi/config` | `{ inputId?, outputId?, clockOutEnabled? }` → status |
+| `POST` | `/api/midi/panic` | MUTE ALL: CC 120/121/123 na 16 kanałach wyjścia → `{ ok, sent, channels, status }` |
 
 Bez MIDI w procesie Tauri ([ADR 0010](../adr/0010-desktop-shell-tauri.md)).
 
