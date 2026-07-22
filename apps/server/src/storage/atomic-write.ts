@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
@@ -7,7 +8,8 @@ export async function writeJsonAtomic(
   value: unknown,
 ): Promise<void> {
   await mkdir(dirname(filePath), { recursive: true });
-  const tmpPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+  const nonce = randomBytes(6).toString("hex");
+  const tmpPath = `${filePath}.${process.pid}.${Date.now()}.${nonce}.tmp`;
   const payload = `${JSON.stringify(value, null, 2)}\n`;
   await writeFile(tmpPath, payload, "utf8");
   await rename(tmpPath, filePath);

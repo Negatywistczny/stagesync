@@ -1,4 +1,4 @@
-import { resolve, sep } from "node:path";
+import { isAbsolute, resolve, sep } from "node:path";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ProjectIdSchema } from "@stagesync/shared";
@@ -55,7 +55,9 @@ export function defaultDataDir(): string {
  *   inside the application package.
  */
 export function defaultSeedDir(): string {
-  return process.env.STAGESYNC_SEED_DIR ?? join(REPO_ROOT, "data/library");
+  const fromEnv = process.env.STAGESYNC_SEED_DIR;
+  if (!fromEnv) return join(REPO_ROOT, "data/library");
+  return isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv);
 }
 
 export class InvalidProjectIdError extends Error {

@@ -18,6 +18,7 @@ import {
   nextMidiProgramId,
   normalizeSetlist,
   pruneSetlistToLibrary,
+  scrubCountdownDigitClips,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
@@ -295,7 +296,9 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV5.parse(ensureFormaSubsections(project));
+    const parsed = ProjectSchemaV5.parse(
+      scrubCountdownDigitClips(ensureFormaSubsections(project)),
+    );
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
@@ -311,7 +314,7 @@ export function createStores(dataDir?: string) {
     paths,
 
     async getLibrary(): Promise<Library> {
-      return ensureLibrary();
+      return withLibraryLock(() => ensureLibrary());
     },
 
     async getSetlist(): Promise<Setlist> {
@@ -429,8 +432,8 @@ export function createStores(dataDir?: string) {
         }
 
         library.projects.push(libraryEntryFromProject(project));
-        await saveLibrary(library);
         await writeProject(project);
+        await saveLibrary(library);
         return project;
       });
     },
@@ -453,12 +456,10 @@ export function createStores(dataDir?: string) {
           ...body,
           id: safeId,
           updatedAt,
+          // Assets: preserve server-only uploads mid-OCC; clips/tracks: client list is SSOT (deletes stick).
           assets: mergePreserveById(existing.assets, body.assets),
-          audioTracks: mergePreserveById(
-            existing.audioTracks,
-            body.audioTracks,
-          ),
-          audioClips: mergePreserveById(existing.audioClips, body.audioClips),
+          audioTracks: body.audioTracks,
+          audioClips: body.audioClips,
         });
         await writeProject(next);
         const library = await ensureLibrary();

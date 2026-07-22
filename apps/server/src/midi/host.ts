@@ -24,16 +24,19 @@ class RateMeter {
   private stamps: number[] = [];
 
   hit(now: number): void {
+    if (!Number.isFinite(now)) return;
     this.stamps.push(now);
     this.prune(now);
   }
 
   rate(now: number): number {
+    if (!Number.isFinite(now)) return 0;
     this.prune(now);
     return this.stamps.length;
   }
 
   private prune(now: number): void {
+    if (!Number.isFinite(now)) return;
     const cutoff = now - WINDOW_MS;
     while (this.stamps.length > 0 && this.stamps[0]! < cutoff) {
       this.stamps.shift();
@@ -76,7 +79,8 @@ export function createMidiHost(
   const beatToWs = new RateMeter();
 
   function setError(err: unknown): void {
-    lastError = err instanceof Error ? err.message : String(err);
+    const raw = err instanceof Error ? err.message : String(err);
+    lastError = raw.slice(0, 500);
   }
 
   function clearError(): void {

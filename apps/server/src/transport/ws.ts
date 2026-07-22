@@ -1,7 +1,7 @@
 import type { Server as HttpServer } from "node:http";
 import { randomUUID } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
-import { ClientHelloMessageSchema, TransportTickMessageSchema } from "@stagesync/shared";
+import { TransportTickMessageSchema } from "@stagesync/shared";
 import type { ClientPresence } from "../client-presence.js";
 import type { TransportEngine } from "./engine.js";
 import type { StageHub } from "./stage-hub.js";
@@ -38,15 +38,22 @@ export function attachTransportWs(
 
     ws.on("message", (data) => {
       if (!presence) return;
+      const text = String(data);
+      if (text.length > 8192) return;
       try {
-        const raw: unknown = JSON.parse(String(data));
-        const parsed = ClientHelloMessageSchema.safeParse(raw);
-        if (!parsed.success) return;
-        presence.upsert(id, {
-          displayName: parsed.data.displayName,
-          roles: parsed.data.roles,
-          latencyMs: parsed.data.latencyMs,
-        });
+        const raw = JSON.parse(text) as {
+          type?: string;
+          displayName?: unknown;
+          roles?: unknown;
+          latencyMs?: unknown;
+        };
+        if (raw?.type === "client_hello") {
+          presence.upsert(id, {
+            displayName: raw.displayName,
+            roles: raw.roles,
+            latencyMs: raw.latencyMs,
+          });
+        }
       } catch {
         /* ignore malformed */
       }

@@ -30,7 +30,8 @@ Dane użytkownika: volume `./data` → `/app/data` w kontenerze (`STAGESYNC_DATA
 `POST /api/system/restart` i `shutdown` są dozwolone z loopback bez tokenu.
 Z LAN wymagają `Authorization: Bearer <STAGESYNC_HOST_TOKEN>` **albo**
 `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1` (tylko zaufane sieci). Admin wysyła token
-z `localStorage.stagesync.hostToken` gdy ustawiony.
+z `localStorage.stagesync.hostToken` gdy ustawiony — w UI: **Ustawienia hosta →
+LAN restart / shutdown** (PR [#257](https://github.com/Negatywistyczny/stagesync/pull/257)).
 
 ## Produkcja z GHCR (compose.prod.yml)
 
@@ -166,5 +167,11 @@ w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
 | `STAGESYNC_UPDATER_URL` | — | URL Watchtower (`http://watchtower:8080`) |
 | `STAGESYNC_UPDATER_TOKEN` | — | = `WATCHTOWER_TOKEN` (używany przez serwer) |
 | `STAGESYNC_GITHUB_TOKEN` | — | PAT do GitHub Releases API (update-status na Docker/host; desktop sidecar pomija) |
+| `STAGESYNC_HOST_TOKEN` | — | Bearer / `X-Stagesync-Host-Token` dla restart/shutdown z LAN |
+| `STAGESYNC_ALLOW_REMOTE_LIFECYCLE` | — | `1` = pozwól na restart/shutdown spoza localhost bez tokenu |
 
 Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).
+
+**Host restart/shutdown:** z `localhost` zawsze dozwolone (desktop / Tauri). Z innej maszyny w LAN —
+ustaw `STAGESYNC_HOST_TOKEN` (Admin: `localStorage.stagesync.hostToken`) albo świadomie
+`STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`.

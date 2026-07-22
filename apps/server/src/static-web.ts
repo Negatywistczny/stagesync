@@ -1,8 +1,9 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 import type { Express } from "express";
 import express from "express";
+import { REPO_ROOT } from "./storage/paths.js";
 
 const DESKTOP_SHELL_MARKER =
   '<meta name="stagesync-shell" content="desktop" />' +
@@ -24,8 +25,10 @@ export function injectDesktopShellMarker(html: string): string {
 /** Resolve static web root: env override, then common Docker / monorepo paths. */
 export function resolveStaticDir(): string | null {
   const fromEnv = process.env.STAGESYNC_STATIC_DIR?.trim();
-  if (fromEnv && existsSync(join(fromEnv, "index.html"))) {
-    return fromEnv;
+  if (!fromEnv) return null;
+  const dir = isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv);
+  if (existsSync(join(dir, "index.html"))) {
+    return dir;
   }
   return null;
 }

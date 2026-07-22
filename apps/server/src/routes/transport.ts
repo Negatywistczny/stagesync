@@ -9,6 +9,11 @@ import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "../transport/engine.js";
 import { handleRouteError } from "./errors.js";
 
+/** REST responses include serverTimeMs (same clock as WS ticks) for soft-clock ordering. */
+function respondTick(res: import("express").Response, transport: TransportEngine) {
+  res.json(transport.toTickMessage());
+}
+
 export function createTransportRouter(
   transport: TransportEngine,
   stores: Stores,
@@ -17,7 +22,7 @@ export function createTransportRouter(
 
   router.get("/", (_req, res) => {
     try {
-      res.json(transport.getState());
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -32,7 +37,8 @@ export function createTransportRouter(
       if (projectId) {
         project = await stores.getProject(projectId);
       }
-      res.json(transport.play(body, project));
+      transport.play(body, project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -42,7 +48,8 @@ export function createTransportRouter(
     try {
       const body = TransportLoadBodySchema.parse(req.body ?? {});
       const project = await stores.getProject(body.projectId);
-      res.json(transport.loadProject(body.projectId, project));
+      transport.loadProject(body.projectId, project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -50,7 +57,8 @@ export function createTransportRouter(
 
   router.post("/pause", (_req, res) => {
     try {
-      res.json(transport.pause());
+      transport.pause();
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -63,7 +71,8 @@ export function createTransportRouter(
       if (activeId) {
         project = await stores.getProject(activeId);
       }
-      res.json(transport.stop(project));
+      transport.stop(project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -77,7 +86,8 @@ export function createTransportRouter(
       if (activeId) {
         project = await stores.getProject(activeId);
       }
-      res.json(transport.seek(body.positionTicks, project));
+      transport.seek(body.positionTicks, project);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -86,7 +96,8 @@ export function createTransportRouter(
   router.post("/loop", (req, res) => {
     try {
       const body = TransportLoopBodySchema.parse(req.body ?? {});
-      res.json(transport.setLoop(body));
+      transport.setLoop(body);
+      respondTick(res, transport);
     } catch (err) {
       handleRouteError(res, err);
     }
