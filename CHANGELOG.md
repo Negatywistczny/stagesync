@@ -18,6 +18,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- **Timeline:** Różdżka (Wand) z powrotem w toolbarze / menu W (Tekst→Forma, Akordy→Forma, obie); zakres = zaznaczone sekcje Formy.
+- **Client Karaoke:** ten sam strój instrumentu / format akordów co Grid — bieżący akord z lane Akordy z live transpozycją.
+- **Timeline:** wskaźnik MIDI playhead (cyan) + przełącznik w Wygląd (localStorage).
 - **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — domyślnie ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline — Level 2 toolbar z song clusterem (po prawej).

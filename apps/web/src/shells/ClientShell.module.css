@@ -463,6 +463,15 @@
   --client-active: var(--ss-color-info);
 }
 
+.karaokeChordNow {
+  margin: 0 var(--ss-space-4);
+  font-size: var(--ss-text-2xl);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-primary);
+  letter-spacing: var(--ss-tracking-wide);
+}
+
 .karaokePlaceholder {
   margin: auto 0;
   padding: var(--ss-space-4);
