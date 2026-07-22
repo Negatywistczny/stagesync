@@ -176,7 +176,7 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~09:03 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
 
@@ -242,6 +242,21 @@ flowchart LR
 | [#113](https://github.com/Negatywistczny/stagesync/pull/113) | fix(shared): make HealthResponseSchema strict | https://github.com/Negatywistczny/stagesync/pull/113 | pending | `main` |
 | [#114](https://github.com/Negatywistczny/stagesync/pull/114) | fix(shared): make MIDI host status schemas strict | https://github.com/Negatywistczny/stagesync/pull/114 | pending | `main` |
 
+### Wave 19 (morning ~08:30–09:05 CEST — through #371)
+
+Prefer this over older handoff docs PRs (#297/#310/#334) for resume context.
+
+| Band | Themes (open; no merge) |
+|------|-------------------------|
+| [#345](https://github.com/Negatywistczny/stagesync/pull/345)–[#357](https://github.com/Negatywistczny/stagesync/pull/357) | `STAGESYNC_{DATA,STATIC,SEED}_DIR` resolve; assets/log/MIDI error slices; Forma pencil name; soft-clock finite |
+| [#346](https://github.com/Negatywistczny/stagesync/pull/346)–[#350](https://github.com/Negatywistczny/stagesync/pull/350) | draft undo/redo depth; seek finite; batch MIDI PC max; soft-clock |
+| [#359](https://github.com/Negatywistczny/stagesync/pull/359)–[#362](https://github.com/Negatywistczny/stagesync/pull/362) | RateMeter finite; `sendError` slice; WS stage_cue text; WS inbound 8 KiB |
+| [#364](https://github.com/Negatywistczny/stagesync/pull/364)–[#371](https://github.com/Negatywistczny/stagesync/pull/371) | desktop `formatUnknownError`; stage roles max; setlist 256; presence 256; tick timestamps finite; Forma bar walks 4096; tempo/meter/key maps 256 |
+
+**Musts #53–#60:** still OPEN + CI green (rechecked ~08:36).
+
+**Rules still binding:** no merge to `main`, no `v5.0.0` tag, no G1–G10 HW green claims, small 1-theme PRs, constitution/ADRs.
+
 ### Parallel (other agents)
 
 | # | Note |
@@ -255,7 +270,7 @@ flowchart LR
 - Stack: **#100** after **#98**; **#84** after/with **#63**.
 - C-fade stack: #57→#58 before #64/#66.
 
-Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116) (MIDI status strict / UpdateStatus strict / Client role no-emoji).
+Recent: prefer handoff **wave 19** above (#345–#371 morning band). Earlier: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116).
 
 ### Remaining backlog (ranked)
 
