@@ -472,13 +472,15 @@ export const ClientHelloMessageSchema = z
 export type ClientHelloMessage = z.infer<typeof ClientHelloMessageSchema>;
 
 /** GET /api/system/update-status response */
-export const UpdateStatusSchema = z.object({
-  current: z.string(),
-  latest: z.string().nullable(),
-  updateAvailable: z.boolean(),
-  /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
-  error: z.string().nullable().optional(),
-});
+export const UpdateStatusSchema = z
+  .object({
+    current: z.string(),
+    latest: z.string().nullable(),
+    updateAvailable: z.boolean(),
+    /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
+    error: z.string().nullable().optional(),
+  })
+  .strict();
 
 export type UpdateStatus = z.infer<typeof UpdateStatusSchema>;
 
