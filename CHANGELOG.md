@@ -9,14 +9,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Features
 
-- **Diagnostics (#351):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
-- **Audio preload (#365):** `ensureAudioBuffered` przed Play (spinner na przycisku); ostrzeżenie UI przy błędzie decode; `clearAudioBufferCache` przy zmianie/odmontowaniu utworu.
-- **CI Codecov (#418):** Vitest coverage (lcov) dla shared/server/web; `codecov-action@v5` z `fail_ci_if_error: false`.
-- **README (#419 / #417):** landing ~60–80 linii; badges CI/release/license/version (bez Tailwind / visitorbadge).
+- **Diagnostics ([#351](https://github.com/Negatywistczny/stagesync/issues/351)):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
+- **Audio preload ([#365](https://github.com/Negatywistczny/stagesync/issues/365)):** `ensureAudioBuffered` przed Play (spinner na przycisku); ostrzeżenie UI przy błędzie decode; `clearAudioBufferCache` przy zmianie/odmontowaniu utworu.
+- **CI Codecov ([#418](https://github.com/Negatywistczny/stagesync/issues/418)):** Vitest coverage (lcov) dla shared/server/web; `codecov-action@v5` z `fail_ci_if_error: false`.
+- **README ([#419](https://github.com/Negatywistczny/stagesync/issues/419) / [#417](https://github.com/Negatywistczny/stagesync/issues/417)):** landing ~60–80 linii; badges CI/release/license/version (bez Tailwind / visitorbadge).
 - **Timeline:** zoom H/V/UI z ikonami; snap picker (off / bar / beat / subdivision); rozszerzona Pomoc z kartami sekcji, miniaturami narzędzi / transportu / ścieżek i czytelnymi skrótami klawiszowymi; zoom sesji zapisywany lokalnie.
 - **Audio:** fade in/out (envelope WebAudio + uchwyty Smart na klipie); crossfade przy styku; region loop klipu; kontrolki w inspectorze; kopiuj/wklej na ścieżce audio.
-- **Transport i setlista:** pauza i zatrzymanie playheadu na końcu utworu; opcjonalne auto-advance setlisty; nawigacja `[` / `]` między utworami; WS reconnect z exponential backoff+jitter; baner offline Client + refetch projektu po reconnect (#358).
-- **Release MSI (#396):** instalator Windows publikowany jako `StageSync_{version}_x64.msi` (bez `_en-US`); sekcja updatera w `RELEASE_BODY` zwinięta w `<details>`; `latest.json` dopasowywany przy rename.
+- **Transport i setlista:** pauza i zatrzymanie playheadu na końcu utworu; opcjonalne auto-advance setlisty; nawigacja `[` / `]` między utworami; WS reconnect z exponential backoff+jitter; baner offline Client + refetch projektu po reconnect ([#358](https://github.com/Negatywistczny/stagesync/issues/358)).
+- **Release MSI ([#396](https://github.com/Negatywistczny/stagesync/issues/396)):** instalator Windows publikowany jako `StageSync_{version}_x64.msi` (bez `_en-US`); sekcja updatera w `RELEASE_BODY` zwinięta w `<details>`; `latest.json` dopasowywany przy rename.
 - **MIDI (host):** Start/Stop/Continue/SPP z MIDI IN; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po `midiProgramId` (SSOT serwera).
 - **Desktop:** menu OS — Edycja (m.in. Cmd/Ctrl+C), zoom w Widok, otwarcie Pomocy; czytelniejsze błędy transportu i sąsiadów setlisty.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
@@ -25,8 +25,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Bug Fixes
 
-- **Timeline setlista (#363):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
-- **Client Space (#363):** skrót Spacji (vocal tap) ignoruje fokus w polach tekstowych (`INPUT` / `TEXTAREA` / `SELECT` / contentEditable); wspólny helper też w Timeline.
+- **Timeline setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
+- **Client Space ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** skrót Spacji (vocal tap) ignoruje fokus w polach tekstowych (`INPUT` / `TEXTAREA` / `SELECT` / contentEditable); wspólny helper też w Timeline.
 - **Audio Timeline przy Pause/Stop:** odtwarzanie WebAudio gaśnie od razu w UI (bez dźwięku w trakcie oczekiwania na potwierdzenie serwera).
 - **Timeline:** ochrona przed nakładającymi się komendami transportu; jaśniejszy konflikt zapisu OCC; anulowanie fetchy pickera utworu / uploadu audio przy zamknięciu; limit 64 ścieżek audio w UI.
 - **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
@@ -45,21 +45,21 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
-- **Docs / scope β2:** [#41](https://github.com/Negatywistyczny/stagesync/issues/41) Countdown Play/Stop oraz [#42](https://github.com/Negatywistyczny/stagesync/issues/42) Audio lane — **must** w strumieniu `5.0.0-beta.2` (nie defer); [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md).
+- **Docs / scope β2:** [#41](https://github.com/Negatywistczny/stagesync/issues/41) Countdown Play/Stop oraz [#42](https://github.com/Negatywistczny/stagesync/issues/42) Audio lane — **must** w strumieniu `5.0.0-beta.2` (nie defer); [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md).
 
 ### Dodano
 
 - **Desktop OS menu — Faza B + C ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **Plik** (Otwórz ostatnie / Zapisz / Zamknij), **Host** (status, klienci, QR z LAN URL, restart, ustawienia), **Transport** (Play/Stop/prev/next → SSOT serwera). Mostek WebView: `CustomEvent` + dialog QR (`uqr`).
 - **Host MIDI I/O + clock (`apps/server`):** lista / wybór urządzeń, clock OUT zsynchronizowany z transportem SSOT (Start/Continue/Stop/SPP/Clock), metryki Admin → Host (Clock/SPP/PC/Beat→WS); API `GET /api/midi`, `PUT /api/midi/config`. Bez MIDI w procesie Tauri ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md) / [ADR 0002](docs/adr/0002-timebase-ssot.md)).
-- **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; WebAudio playback sync do ticków serwera ([ADR 0008](docs/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistyczny/stagesync/issues/42)).
+- **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; WebAudio playback sync do ticków serwera ([ADR 0008](docs/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistczny/stagesync/issues/42)).
 
 ### Naprawiono
 
-- **Transport Stop / Countdown (#41):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
+- **Transport Stop / Countdown ([#41](https://github.com/Negatywistczny/stagesync/issues/41)):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
 - **Desktop updater:** `Could not fetch a valid release JSON` — endpoint Tauri (`…/releases/latest/download/latest.json`) 404, bo wszystkie alpha/beta były GitHub **prerelease** (API `/releases/latest` je pomija). Release `v5.0.0-beta.1.1` odznaczony; `release.yml` zawsze publikuje jako `--latest`. Poprawiona literówka ownera `Negatywistyczny` → `Negatywistczny` w URL-ach runtime (host update-status, docs links, menu Pomoc).
 - **Desktop updater (darwin w `latest.json`):** target bundle `app` obok `dmg` — bez `app` bundler nie tworzy `.app.tar.gz`/`.sig`, więc macOS nie trafia do manifestu (zostaje Windows-only / last-writer). Sidecar health reject przy mismatch wersji.
 
-## [5.0.0-beta.1.1](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
+## [5.0.0-beta.1.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
 
 > **β1.1:** docs cut — residual β1 (menu OS Faza B, ręczna bramka G1–G10) oraz menu Faza C przeniesione jako **must β2**; scope report β2. Bez nowych features produktowych.
 
@@ -69,7 +69,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Scope:** nowy [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md) (Audio, MIDI serwera, menu B+C, G1–G10; OUT: fade / Faza D / MIDI w Tauri).
 - **Versioning:** bump `5.0.0-beta.1.1`; WiX mapuje nested `beta.N.M` (np. `.10101`) z zachowaniem shipped `beta.1` = `.10001`.
 
-## [5.0.0-beta.1](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.13...v5.0.0-beta.1) - 2026-07-21
+## [5.0.0-beta.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.13...v5.0.0-beta.1) - 2026-07-21
 
 > **β1:** milestone dystrybucyjny hosta (Tauri + Node sidecar, Docker secondary, updater). Must H1–H12 zrealizowane w α10–α13; ten cut zamyka etap tagiem. **Menu OS Faza B** oraz pełna ręczna bramka **G1–G10** → carry β2 / operator ([report-beta-gate.md](docs/analysis/reports/report-beta-gate.md)).
 
@@ -77,15 +77,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Admin → aktualizacje (desktop):** Host/Watchtower nie jest już czerwonym „twardym” błędem w shellu Tauri (sidecar pomija GitHub Releases; Watchtower = Docker). `Aplikacja: undefined` — normalize rejectów Tauri (`String` / brak `.message`). Porównanie hosta używa listy Releases **z prerelease** (nie `/releases/latest`, które 404 przy samych alpha).
 
-## [5.0.0-alpha.13](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.12...v5.0.0-alpha.13) - 2026-07-21
+## [5.0.0-alpha.13](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.12...v5.0.0-alpha.13) - 2026-07-21
 
 > **α13:** hotfix Windows sidecar — `EISDIR` / `lstat 'C:'` przy starcie z MSI; następny etap → β1.
 
 ### Naprawiono
 
-- **Desktop (Windows):** sidecar Node padał przy starcie z MSI z `EISDIR: lstat 'C:'` — Tauri `resource_dir()` zwraca ścieżki Win32 `\\?\C:\…`, a Node przy takim main module path zawodzi (nodejs/node#62446). Shell spawnuje teraz względne `dist/index.js` + cwd bez prefiksu verbatim; assert ścieżek + self-test w `build-desktop-sidecar.mjs`.
+- **Desktop (Windows):** sidecar Node padał przy starcie z MSI z `EISDIR: lstat 'C:'` — Tauri `resource_dir()` zwraca ścieżki Win32 `\\?\C:\…`, a Node przy takim main module path zawodzi ([nodejs/node#62446](https://github.com/nodejs/node/issues/62446)). Shell spawnuje teraz względne `dist/index.js` + cwd bez prefiksu verbatim; assert ścieżek + self-test w `build-desktop-sidecar.mjs`.
 
-## [5.0.0-alpha.12](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.11...v5.0.0-alpha.12) - 2026-07-21
+## [5.0.0-alpha.12](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.11...v5.0.0-alpha.12) - 2026-07-21
 
 > **α12:** domknięcie — Desktop OS menu Faza A + hotfixy shelła; Faza B+ → β1.
 
@@ -97,7 +97,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](docs/DESKTOP.md).
 
-## [5.0.0-alpha.11](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
+## [5.0.0-alpha.11](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
 > **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.
 
@@ -124,7 +124,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 - **Desktop:** wykrywanie shella Tauri na `http://127.0.0.1:4000` (fallback hostname/port, meta `stagesync-shell`, marker na początku `<head>`, `Cache-Control: no-store` na HTML) — fullscreen / updater / `openExternalUrl` przy cache WebView bez injectu.
-- **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle (`tauri#13219`) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. `build-desktop-sidecar.mjs` spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
+- **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle ([tauri#13219](https://github.com/tauri-apps/tauri/issues/13219)) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. `build-desktop-sidecar.mjs` spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
 - **CI / Release:** nieużywane importy + `STAGESYNC_SHELL` w `turbo.json` globalEnv; `gh -R` w `create-draft-release` / publish (bez checkout); ID draftu przez `gh release view` (API `/releases/tags` nie widzi draftów); test migrate z `isTemplate` (bez drugiego seedu).
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
 
