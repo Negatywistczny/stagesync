@@ -33,6 +33,7 @@ export type StageCue = {
   ttlMs: number;
   sentAtMs: number;
   roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+  priority?: "normal" | "alert";
 };
 
 export const TransportContext = createContext<TransportContextValue | null>(

@@ -18,6 +18,7 @@ export function createStageRouter(
         text: body.text,
         roles: body.roles,
         ttlMs: body.ttlMs ?? 6000,
+        priority: body.priority,
       });
       res.status(201).json(msg);
     } catch (err) {

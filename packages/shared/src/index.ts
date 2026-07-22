@@ -158,6 +158,17 @@ export {
 } from "./project-bounds.js";
 
 export {
+  STAGE_CUE_DEFAULT_LOOKAHEAD_MS,
+  resolveStageCueBanner,
+  stageCueBannerLabel,
+  type StageCueBannerClip,
+  type StageCueBannerItem,
+  type StageCueBannerPriority,
+  type StageCueBannerRole,
+  type StageCueBannerSession,
+} from "./stage-cue-banner.js";
+
+export {
   defaultSetlist,
   normalizeSetlist,
   pruneSetlistToLibrary,

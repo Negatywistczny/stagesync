@@ -52,6 +52,7 @@ export async function sendStageMessage(body: {
   text: string;
   ttlMs?: number;
   roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+  priority?: "normal" | "alert";
 }): Promise<void> {
   const res = await fetch("/api/stage/message", {
     method: "POST",

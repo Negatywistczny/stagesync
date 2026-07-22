@@ -4,10 +4,15 @@ import { Button } from "@stagesync/ui";
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
   INSTRUMENT_PITCH_MANUAL_MIN,
+  resolveMeterAt,
+  resolveStageCueBanner,
+  resolveTempoAt,
+  stageCueBannerLabel,
   toDisplayBar,
   ticksToBbt,
   type InstrumentPitchMode,
   type Project,
+  type StageCueBannerItem,
 } from "@stagesync/shared";
 import {
   loadClientDisplayPrefs,
@@ -83,8 +88,15 @@ export function ClientShell() {
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
   const [drumsNoteError, setDrumsNoteError] = useState<string | null>(null);
-  const [cueVisible, setCueVisible] = useState(false);
-  const [cueText, setCueText] = useState("");
+  const [sessionCue, setSessionCue] = useState<{
+    text: string;
+    ttlMs: number;
+    sentAtMs: number;
+    roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+    priority?: "normal" | "alert";
+  } | null>(null);
+  const cueAlertSeenRef = useRef<Set<string>>(new Set());
+  const [cueFlashId, setCueFlashId] = useState<string | null>(null);
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
   const [scoreZoom, setScoreZoom] = useState(100);
@@ -128,25 +140,54 @@ export function ClientShell() {
   }, [state.activeProjectId]);
 
   useEffect(() => {
-    if (!stageCue) return;
-    // Role filter: if roles listed, only show when client has that role picked
-    if (stageCue.roles && stageCue.roles.length > 0) {
-      const match = stageCue.roles.some((r) => picked.includes(r as RoleId));
-      if (!match) {
-        setCueVisible(false);
-        return;
-      }
+    if (!stageCue) {
+      setSessionCue(null);
+      return;
     }
-    setCueText(stageCue.text);
-    setCueVisible(true);
+    setSessionCue({
+      text: stageCue.text,
+      ttlMs: stageCue.ttlMs,
+      sentAtMs: stageCue.sentAtMs,
+      roles: stageCue.roles,
+      priority: stageCue.priority,
+    });
     const ttl = stageCue.ttlMs;
     // 0 = infinite (Admin ∞); missing/non-finite → same default as server (6s).
     if (ttl === 0) return;
     const delayMs =
       typeof ttl === "number" && Number.isFinite(ttl) && ttl > 0 ? ttl : 6000;
-    const t = window.setTimeout(() => setCueVisible(false), delayMs);
+    const t = window.setTimeout(() => setSessionCue(null), delayMs);
     return () => window.clearTimeout(t);
-  }, [stageCue, picked]);
+  }, [stageCue]);
+
+  const cueMeter = activeProject
+    ? resolveMeterAt(activeProject, displayTicks)
+    : state.timeSignature;
+  const cueBpm = activeProject
+    ? resolveTempoAt(activeProject, displayTicks)
+    : state.bpm;
+  const { now: cueNow, next: cueNext } = resolveStageCueBanner({
+    cueClips: activeProject?.cue.clips ?? [],
+    sessionCue,
+    playheadTicks: displayTicks,
+    bpm: cueBpm,
+    ppq: activeProject?.ppq ?? state.ppq,
+    meter: cueMeter,
+    activeRoles: picked,
+  });
+
+  useEffect(() => {
+    if (!cueNow || cueNow.priority !== "alert") return;
+    if (cueAlertSeenRef.current.has(cueNow.id)) return;
+    cueAlertSeenRef.current.add(cueNow.id);
+    setCueFlashId(cueNow.id);
+    const t = window.setTimeout(() => setCueFlashId(null), 2200);
+    return () => window.clearTimeout(t);
+  }, [cueNow]);
+
+  useEffect(() => {
+    cueAlertSeenRef.current.clear();
+  }, [state.activeProjectId]);
 
   const songTitle = activeProject?.name ?? "Brak utworu";
   const setlistIndex = state.activeProjectId
@@ -504,11 +545,51 @@ export function ClientShell() {
         ) : null}
       </div>
 
-      <div className={styles.cueHost} aria-live="polite">
-        <div className={styles.cueToast} hidden={!cueVisible}>
-          {cueText || "TERAZ — cue"}
+      <div
+        className={styles.cueHost}
+        data-empty={!cueNow && !cueNext ? "true" : undefined}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <div className={styles.cueStack}>
+          {cueNow ? (
+            <CueToast
+              item={cueNow}
+              flash={cueFlashId === cueNow.id}
+              styles={styles}
+            />
+          ) : null}
+          {cueNext ? (
+            <CueToast item={cueNext} flash={false} styles={styles} />
+          ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+function CueToast({
+  item,
+  flash,
+  styles: s,
+}: {
+  item: StageCueBannerItem;
+  flash: boolean;
+  styles: typeof styles;
+}) {
+  const className = [
+    s.cueToast,
+    item.slot === "upcoming" ? s.cueToastNext : s.cueToastNow,
+    item.priority === "alert" && item.slot === "now" ? s.cueToastAlert : "",
+    flash ? s.cueToastFlash : "",
+    s.cueToastVisible,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return (
+    <div className={className} role="status">
+      <span className={s.cueToastLabel}>{stageCueBannerLabel(item)}</span>
+      <span className={s.cueToastText}>{item.text}</span>
     </div>
   );
 }

@@ -4,6 +4,7 @@ export type StageCueMessage = {
   roles?: string[];
   ttlMs: number;
   sentAtMs: number;
+  priority?: "normal" | "alert";
 };
 
 type Listener = (msg: StageCueMessage) => void;
@@ -23,6 +24,7 @@ export function createStageHub() {
       partial: Omit<StageCueMessage, "sentAtMs" | "ttlMs"> & {
         ttlMs?: number;
         sentAtMs?: number;
+        priority?: "normal" | "alert";
       },
     ): StageCueMessage {
       const msg: StageCueMessage = {
@@ -31,6 +33,7 @@ export function createStageHub() {
         roles: partial.roles,
         ttlMs: partial.ttlMs ?? 6000,
         sentAtMs: partial.sentAtMs ?? Date.now(),
+        priority: partial.priority,
       };
       for (const listener of listeners) {
         listener(msg);

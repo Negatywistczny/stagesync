@@ -83,8 +83,10 @@ export const StageCueMessageSchema = z.object({
     .array(z.enum(["karaoke", "grid", "score", "drums"]))
     .max(4)
     .optional(),
-  ttlMs: z.number().finite().positive(),
+  /** Wall-clock TTL; `0` = infinite (UI ∞). */
+  ttlMs: z.number().finite().nonnegative(),
   sentAtMs: z.number().finite(),
+  priority: z.enum(["normal", "alert"]).optional(),
 });
 
 export type StageCueMessage = z.infer<typeof StageCueMessageSchema>;

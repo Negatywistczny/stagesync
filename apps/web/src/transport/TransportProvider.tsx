@@ -225,6 +225,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
             ttlMs: cue.ttlMs,
             sentAtMs: cue.sentAtMs,
             roles: cue.roles,
+            priority: cue.priority,
           });
           return;
         }

@@ -20,6 +20,7 @@ const CLIENT_STALE_MS = 10_000;
 type RoleId = (typeof ROLE_OPTIONS)[number]["id"];
 type ClientPhase = "awaiting-data" | "awaiting-role" | "stale" | "ready";
 type HeaderPresence = "online" | "empty" | "error";
+type CuePriority = "normal" | "alert";
 
 function resolveClientPhase(
   client: PresenceClient,
@@ -52,6 +53,7 @@ function presenceTitle(phase: ClientPhase): string {
 export function StageView() {
   const [text, setText] = useState("");
   const [ttlMs, setTtlMs] = useState(6000);
+  const [priority, setPriority] = useState<CuePriority>("normal");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -95,8 +97,9 @@ export function StageView() {
     try {
       await sendStageMessage({
         text: trimmed,
-        ttlMs: ttlMs > 0 ? ttlMs : undefined,
+        ttlMs,
         roles: roles.length > 0 ? roles : undefined,
+        priority: priority === "alert" ? "alert" : undefined,
       });
       setStatus(
         roles.length > 0
@@ -140,9 +143,9 @@ export function StageView() {
 
   return (
     <div className={[styles.twoUp, styles.twoUpStage].join(" ")}>
-      <section className={styles.card} aria-label="Komunikat">
+      <section className={styles.card} aria-label="Komunikaty">
         <div className={styles.cardHead}>
-          <h1 className={styles.cardTitle}>Komunikat</h1>
+          <h1 className={styles.cardTitle}>Komunikaty</h1>
         </div>
         <div className={styles.cardBody}>
           {error ? (
@@ -178,6 +181,20 @@ export function StageView() {
             })}
           </div>
           <div className={styles.actions}>
+            <button
+              type="button"
+              className={
+                priority === "alert" ? styles.chipOn : styles.chip
+              }
+              disabled={pending}
+              aria-pressed={priority === "alert"}
+              title="Priorytet alert"
+              onClick={() =>
+                setPriority((p) => (p === "alert" ? "normal" : "alert"))
+              }
+            >
+              {priority === "alert" ? "Alert" : "Normal"}
+            </button>
             <select
               className={styles.select}
               value={String(ttlMs)}
@@ -186,7 +203,9 @@ export function StageView() {
             >
               <option value="6000">TTL 6 s</option>
               <option value="10000">10 s</option>
-              <option value="0">∞ (UI)</option>
+              <option value="15000">15 s</option>
+              <option value="30000">30 s</option>
+              <option value="0">∞</option>
             </select>
             <Button
               variant="primary"

@@ -508,10 +508,12 @@ export const StageMessageBodySchema = z
   .object({
     text: z.string().min(1).max(200),
     roles: z
-    .array(z.enum(["karaoke", "grid", "score", "drums"]))
-    .max(4)
-    .optional(),
-    ttlMs: z.number().int().positive().max(86_400_000).optional(),
+      .array(z.enum(["karaoke", "grid", "score", "drums"]))
+      .max(4)
+      .optional(),
+    /** Wall-clock TTL; `0` = infinite (UI ∞). Omit → server default 6 s. */
+    ttlMs: z.number().int().nonnegative().max(86_400_000).optional(),
+    priority: z.enum(["normal", "alert"]).optional(),
   })
   .strict();
 

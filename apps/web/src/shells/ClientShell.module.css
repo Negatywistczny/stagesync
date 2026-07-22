@@ -1745,18 +1745,112 @@
 .cueHost {
   position: fixed;
   left: 50%;
-  bottom: var(--ss-space-6);
+  bottom: max(var(--ss-space-5), env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
-  z-index: 15;
+  z-index: var(--ss-z-overlay);
+  width: min(36rem, calc(100vw - var(--ss-space-6)));
   pointer-events: none;
 }
 
+.cueHost[data-empty="true"] {
+  display: none;
+}
+
+.cueStack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: var(--ss-space-2);
+}
+
 .cueToast {
-  padding: var(--ss-space-3) var(--ss-space-4);
-  border-radius: var(--ss-radius-sm);
-  border: 1px solid var(--ss-color-primary);
-  background: var(--ss-color-surface);
-  font-size: var(--ss-text-sm);
+  pointer-events: none;
+  display: flex;
+  align-items: baseline;
+  gap: var(--ss-space-3);
+  padding: var(--ss-space-4) var(--ss-space-5);
+  border-radius: var(--ss-radius-md);
+  border: 1px solid color-mix(in srgb, var(--ss-color-success) 42%, transparent);
+  background: color-mix(in srgb, var(--ss-color-elevated) 94%, transparent);
+  color: var(--ss-color-success);
+  box-shadow:
+    0 10px 28px color-mix(in srgb, var(--ss-color-bg) 55%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ss-color-success) 8%, transparent);
+  opacity: 0;
+  transform: translateY(var(--ss-space-3)) scale(0.97);
+  transition:
+    opacity var(--ss-duration-normal) ease,
+    transform var(--ss-duration-normal) ease;
+}
+
+.cueToastVisible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.cueToastNow {
+  background: color-mix(in srgb, var(--ss-color-success) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-success) 55%, transparent);
+  color: var(--ss-color-success);
+}
+
+.cueToastNext {
+  background: color-mix(in srgb, var(--ss-color-elevated) 92%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-success) 28%, transparent);
+  color: color-mix(in srgb, var(--ss-color-success) 90%, transparent);
+}
+
+.cueToastAlert {
+  background: color-mix(in srgb, var(--ss-color-warning) 22%, transparent);
+  border-color: color-mix(in srgb, var(--ss-color-warning) 75%, transparent);
+  color: var(--ss-color-warning);
+}
+
+.cueToastFlash {
+  animation: cueToastPulse 1.1s ease-in-out 2;
+}
+
+.cueToastLabel {
+  flex-shrink: 0;
+  font-size: var(--ss-text-stage-micro);
+  font-weight: var(--ss-font-weight-black);
+  letter-spacing: var(--ss-tracking-label);
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.9;
+}
+
+.cueToastNext .cueToastLabel {
+  opacity: 0.7;
+  font-weight: var(--ss-font-weight-heavy);
+}
+
+.cueToastText {
+  min-width: 0;
+  flex: 1;
+  font-size: var(--ss-text-stage-sm);
+  font-weight: var(--ss-font-weight-heavy);
+  line-height: var(--ss-leading-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+@keyframes cueToastPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 28px color-mix(in srgb, var(--ss-color-bg) 55%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--ss-color-warning) 12%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 12px 32px color-mix(in srgb, var(--ss-color-bg) 60%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--ss-color-warning) 40%, transparent);
+  }
 }
 
 .modal {

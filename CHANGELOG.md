@@ -51,6 +51,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WebSocket; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
 
 #### 🖥️ App Shell & UI
+- **Client / Komunikaty:** większe toasty sceniczne (`TERAZ` / `ZA N`) z typografią `--ss-text-stage-*`, kolorami success/alert i animacją wejścia — układ jak w v4, bez klonowania HTML.
+- **Admin Scena:** panel **Komunikaty** z priorytetem Alert/Normal oraz TTL 6/10/15/30/∞ (∞ faktycznie bez auto-hide).
 - **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
 - **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, inspector jako dolny sheet, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
 
@@ -68,6 +70,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST zawierają czas serwera; klient nie parsuje cue scenicznego jako ticka i toleruje legacy REST bez `type`/`serverTimeMs`.
 
 #### 🖥️ App Shell & UI
+- **Client / Komunikaty:** klipy Cue z Timeline pokazują się jako `TERAZ` / `ZA N` (~5 s lookahead); live komunikat wygrywa slot `TERAZ`; pusty stan = ukryty host (bez placeholdera).
 - **Admin Set:** „Aktywny set” i „Auto-setlista” obok siebie (z zawijaniem na wąskim ekranie).
 - **Client — partytura (OSMD):** brak crasha przy otwarciu Score — kursory włączane dopiero po pierwszym load+render.
 - **Client — suwaki ustawień:** transpozycja (strój ręczny) i skala tekstu Karaoke w kolorze primary (amber), jak zoom Timeline.

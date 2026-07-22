@@ -181,12 +181,22 @@ describe("StageMessageBodySchema", () => {
     ).toEqual({ text: "Go!", ttlMs: 10_000 });
   });
 
-  it("rejects ttlMs above 24h and non-positive", () => {
+  it("rejects ttlMs above 24h and negative", () => {
     expect(() =>
       StageMessageBodySchema.parse({ text: "Go!", ttlMs: 86_400_001 }),
     ).toThrow();
     expect(() =>
-      StageMessageBodySchema.parse({ text: "Go!", ttlMs: 0 }),
+      StageMessageBodySchema.parse({ text: "Go!", ttlMs: -1 }),
     ).toThrow();
+  });
+
+  it("accepts ttlMs 0 as infinite and optional priority", () => {
+    expect(
+      StageMessageBodySchema.parse({
+        text: "Hold",
+        ttlMs: 0,
+        priority: "alert",
+      }),
+    ).toEqual({ text: "Hold", ttlMs: 0, priority: "alert" });
   });
 });
