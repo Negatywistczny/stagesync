@@ -1,5 +1,5 @@
 /**
- * Cue lane edit — pencil click insert + label/delete (α8).
+ * Cue lane edit — pencil click insert + label/roles/priority/delete (v4 parity).
  */
 
 import {
@@ -7,9 +7,12 @@ import {
   resolveMeterAt,
   ticksPerBar,
   type CueClip,
+  type CueClipRole,
   type Project,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
+
+const CUE_ROLES: CueClipRole[] = ["karaoke", "grid", "score", "drums"];
 
 function asFormaLike(clip: CueClip) {
   return {
@@ -18,6 +21,18 @@ function asFormaLike(clip: CueClip) {
     kind: "section" as const,
     startTicks: clip.startTicks,
     lengthTicks: clip.lengthTicks,
+  };
+}
+
+function mergeCueFields(
+  base: CueClip,
+  layout: { id: string; startTicks: number; lengthTicks: number },
+): CueClip {
+  return {
+    ...base,
+    id: layout.id,
+    startTicks: layout.startTicks,
+    lengthTicks: layout.lengthTicks,
   };
 }
 
@@ -51,11 +66,18 @@ export function pencilCueClick(
       const prev =
         project.cue.clips.find((t) => t.id === c.id) ??
         project.cue.clips.find((t) => t.id === parentId);
+      if (prev) {
+        return mergeCueFields(prev, {
+          id: c.id,
+          startTicks: c.startTicks,
+          lengthTicks: c.lengthTicks,
+        });
+      }
       return {
         id: c.id,
         startTicks: c.startTicks,
         lengthTicks: c.lengthTicks,
-        label: prev?.label ?? "Cue",
+        label: "Cue",
       };
     });
 
@@ -79,3 +101,40 @@ export function setCueClipLabel(
   );
   return { ...project, cue: { clips } };
 }
+
+export function setCueClipRoles(
+  project: Project,
+  clipId: string,
+  roles: CueClipRole[],
+): Project {
+  const normalized = CUE_ROLES.filter((r) => roles.includes(r));
+  const clips = project.cue.clips.map((c) => {
+    if (c.id !== clipId) return c;
+    if (normalized.length === 0) {
+      const { roles: _drop, ...rest } = c;
+      void _drop;
+      return rest;
+    }
+    return { ...c, roles: normalized };
+  });
+  return { ...project, cue: { clips } };
+}
+
+export function setCueClipPriority(
+  project: Project,
+  clipId: string,
+  priority: "normal" | "alert",
+): Project {
+  const clips = project.cue.clips.map((c) => {
+    if (c.id !== clipId) return c;
+    if (priority === "normal") {
+      const { priority: _drop, ...rest } = c;
+      void _drop;
+      return rest;
+    }
+    return { ...c, priority: "alert" as const };
+  });
+  return { ...project, cue: { clips } };
+}
+
+export { CUE_ROLES };

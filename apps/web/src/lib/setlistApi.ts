@@ -82,6 +82,34 @@ export async function fetchStageClients(): Promise<PresenceClient[]> {
   return body.clients;
 }
 
+export type LiveDeskSettingsDto = {
+  transpositionSemitones: number;
+  syncLeadMs: number;
+  clientEditEnabled: boolean;
+};
+
+export async function fetchLiveDesk(): Promise<LiveDeskSettingsDto> {
+  const res = await fetch("/api/live-desk");
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as LiveDeskSettingsDto;
+}
+
+export async function patchLiveDesk(
+  body: Partial<LiveDeskSettingsDto>,
+): Promise<LiveDeskSettingsDto> {
+  const res = await fetch("/api/live-desk", {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as LiveDeskSettingsDto;
+}
+
 export type HostLogLine = {
   t: number;
   level: string;

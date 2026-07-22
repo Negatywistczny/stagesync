@@ -148,6 +148,8 @@ function mapFormaBack(
         startTicks: c.startTicks,
         lengthTicks: c.lengthTicks,
         label: prev?.label ?? "Cue",
+        ...(prev?.roles?.length ? { roles: prev.roles } : {}),
+        ...(prev?.priority === "alert" ? { priority: "alert" as const } : {}),
       };
     });
   return { ...project, cue: { clips } };
@@ -348,6 +350,8 @@ export function commitPencilContentSpan(
         startTicks: c.startTicks,
         lengthTicks: c.lengthTicks,
         label: prev?.label ?? "Cue",
+        ...(prev?.roles?.length ? { roles: prev.roles } : {}),
+        ...(prev?.priority === "alert" ? { priority: "alert" as const } : {}),
       };
     });
   return { ...project, cue: { clips } };

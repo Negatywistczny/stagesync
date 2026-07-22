@@ -465,6 +465,15 @@
   --client-active: var(--ss-color-info);
 }
 
+.karaokeChordNow {
+  margin: 0 var(--ss-space-4);
+  font-size: var(--ss-text-2xl);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-primary);
+  letter-spacing: var(--ss-tracking-wide);
+}
+
 .karaokePlaceholder {
   margin: auto 0;
   padding: var(--ss-space-4);
@@ -1660,6 +1669,46 @@
   text-align: center;
   font-size: var(--ss-text-sm);
   font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text);
+}
+
+.scoreOctaveField {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.scoreOctaveSelect {
+  min-width: 3.5rem;
+  padding: var(--ss-space-1) var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text);
+  background: var(--ss-color-surface);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+}
+
+.scoreOctaveSelect:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.scoreParts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2) var(--ss-space-3);
+  flex-shrink: 0;
+  padding: var(--ss-space-2) 0;
+  border-bottom: 1px solid var(--ss-color-border-muted);
+}
+
+.scorePartItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-1);
+  font-size: var(--ss-text-sm);
   color: var(--ss-color-text);
 }
 

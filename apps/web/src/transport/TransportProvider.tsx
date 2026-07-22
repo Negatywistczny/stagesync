@@ -23,9 +23,10 @@ import {
   setTransportLoop,
   stopTransport,
 } from "./api.js";
-import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
+import { TransportContext, type StageCue, type WsStatus, DEFAULT_LIVE_DESK, type LiveDeskState } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 import { wsReconnectDelayMs } from "./wsReconnect.js";
+import { fetchLiveDesk } from "../lib/setlistApi.js";
 
 function formatTransportError(err: unknown, fallback: string): string {
   const message = err instanceof Error ? err.message : fallback;
@@ -70,6 +71,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const commandPendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
+  const [liveDesk, setLiveDesk] = useState<LiveDeskState>(DEFAULT_LIVE_DESK);
 
   const anchorRef = useRef<TransportAnchor>(toAnchor(defaultTransportState()));
   const receiptMsRef = useRef(0);
@@ -229,6 +231,15 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           });
           return;
         }
+        if (parsed.data.type === "live_desk") {
+          const desk = parsed.data;
+          setLiveDesk({
+            transpositionSemitones: desk.transpositionSemitones,
+            syncLeadMs: desk.syncLeadMs,
+            clientEditEnabled: desk.clientEditEnabled,
+          });
+          return;
+        }
         const msg = parsed.data;
         if (msg.sentAtMs != null && Number.isFinite(msg.sentAtMs)) {
           const next = noteLatencySample(latencyEmaRef.current, msg.sentAtMs);
@@ -277,6 +288,18 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setError(formatTransportError(err, "Nie udało się wczytać"));
         }
+      }
+      try {
+        const desk = await fetchLiveDesk();
+        if (!cancelled) {
+          setLiveDesk({
+            transpositionSemitones: desk.transpositionSemitones,
+            syncLeadMs: desk.syncLeadMs,
+            clientEditEnabled: desk.clientEditEnabled,
+          });
+        }
+      } catch {
+        /* WS snapshot may still arrive */
       }
       connect();
     })();
@@ -369,6 +392,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       seek,
       setLoop,
       stageCue,
+      liveDesk,
       announcePresence,
     }),
     [
@@ -384,6 +408,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       seek,
       setLoop,
       stageCue,
+      liveDesk,
       announcePresence,
     ],
   );

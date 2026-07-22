@@ -25,6 +25,7 @@ import {
   wandContentToForma,
   type FormaClip,
   type Project,
+  type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
 import {
@@ -122,6 +123,9 @@ import {
 import {
   deleteCueClip,
   setCueClipLabel,
+  setCueClipRoles,
+  setCueClipPriority,
+  CUE_ROLES,
 } from "../lib/cueEdit.js";
 import {
   commitContentGesture,
@@ -227,6 +231,10 @@ import {
   contentSnapModeFromModifiers,
   cursorForHitZone,
   hitTestClipZone,
+  loadSessionSnapModeFromStorage,
+  persistSessionSnapMode,
+  snapModeFromStorageKey,
+  snapModeToStorageKey,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
   type ClipHitZone,
@@ -234,6 +242,13 @@ import {
   type FormaGestureSession,
   type FormaToolId,
 } from "../lib/timelineGesture.js";
+import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
+import {
+  clampBeatForProject,
+  formatStartBarBeat,
+  moveClipStartKeepLength,
+  parseStartBarBeat,
+} from "../lib/clipStartEdit.js";
 import {
   audioTrackIdFromLane,
   buildTrackList,
@@ -294,6 +309,7 @@ import {
   IconTap,
   IconUnchecked,
   IconWand,
+  IconZoomIn,
 } from "./icons.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import {
@@ -353,12 +369,27 @@ const TOOLS: {
     Icon: IconScissors,
   },
   {
+    id: "zoom",
+    label: "Zoom",
+    title: "Zoom — przeciągnij prostokąt na osi; klik tła = Fit; Ctrl+Alt = tymczasowo",
+    key: "z",
+    Icon: IconZoomIn,
+  },
+  {
     id: "wand",
     label: "Różdżka",
     title:
       "Różdżka — Tekst / Akordy → Forma (zaznaczenie sekcji = zakres; bez — cały utwór)",
     key: "w",
     Icon: IconWand,
+  },
+  {
+    id: "tap",
+    label: "Tap",
+    title:
+      "Tap — Spacja ustawia start linii Tekstu na locator; ↑/↓ pomija; Esc wychodzi",
+    key: "a",
+    Icon: IconTap,
   },
 ];
 
@@ -408,6 +439,21 @@ export function TimelineShell() {
   const [autoAdvance, setAutoAdvance] = useState(false);
 
   const [tool, setTool] = useState<ToolId>("pointer");
+  const toolRef = useRef<ToolId>("pointer");
+  toolRef.current = tool;
+  const [tapLineIndex, setTapLineIndex] = useState(0);
+  const tapLineIndexRef = useRef(0);
+  tapLineIndexRef.current = tapLineIndex;
+  const [heldZoom, setHeldZoom] = useState(false);
+  const heldZoomRef = useRef(false);
+  heldZoomRef.current = heldZoom;
+  const [snapMode, setSnapMode] = useState<SnapMode>(() =>
+    loadSessionSnapModeFromStorage(),
+  );
+
+  useEffect(() => {
+    persistSessionSnapMode(snapMode);
+  }, [snapMode]);
   const [toolMenu, setToolMenu] = useState<{
     left: number;
     top: number;
@@ -416,6 +462,8 @@ export function TimelineShell() {
     left: number;
     top: number;
   } | null>(null);
+  const wandMenuOpenRef = useRef(false);
+  wandMenuOpenRef.current = Boolean(wandMenu);
   const toolMenuRef = useRef<HTMLDivElement>(null);
   const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
@@ -605,6 +653,9 @@ export function TimelineShell() {
     onLoopToggle: () => {},
     onTool: (id: ToolId) => {
       void id;
+    },
+    applyWand: (mode: WandMode) => {
+      void mode;
     },
     nudgeLocator: (dir: -1 | 1) => {
       void dir;
@@ -1041,8 +1092,61 @@ export function TimelineShell() {
       }
       if (!mod && !e.altKey && (e.key === " " || e.code === "Space")) {
         e.preventDefault();
+        if (toolRef.current === "tap") {
+          const draft = draftRef.current;
+          if (!draft) return;
+          const queue = vocalTapQueue(draft);
+          const clip = queue[tapLineIndexRef.current];
+          if (!clip) return;
+          const next = applyVocalTap(draft, clip.id, locatorTicks);
+          commitDraft(next);
+          setTapLineIndex((i) => Math.min(i + 1, Math.max(0, queue.length - 1)));
+          return;
+        }
         h.onPlayOrPause();
         return;
+      }
+      if (toolRef.current === "tap" && !mod && !e.altKey) {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+          e.preventDefault();
+          const draft = draftRef.current;
+          const queue = draft ? vocalTapQueue(draft) : [];
+          const max = Math.max(0, queue.length - 1);
+          setTapLineIndex((i) =>
+            e.key === "ArrowUp"
+              ? Math.max(0, i - 1)
+              : Math.min(max, i + 1),
+          );
+          return;
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setTool("pointer");
+          return;
+        }
+      }
+      if (wandMenuOpenRef.current && !mod) {
+        if (e.key === "1") {
+          e.preventDefault();
+          h.applyWand("tekst");
+          return;
+        }
+        if (e.key === "2") {
+          e.preventDefault();
+          h.applyWand("akordy");
+          return;
+        }
+        if (e.key === "3") {
+          e.preventDefault();
+          h.applyWand("both");
+          return;
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setWandMenu(null);
+          setTool("pointer");
+          return;
+        }
       }
       if (!mod && !e.altKey && key === "t") {
         e.preventDefault();
@@ -1129,6 +1233,7 @@ export function TimelineShell() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [
+    commitDraft,
     copyClipSelection,
     cutClipSelection,
     deleteSelectedFormaClip,
@@ -2581,6 +2686,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const dx = clientX - drag.startX;
     const dy = clientY - drag.startY;
     if (isMarqueeClick(dx, dy)) {
+      if (toolRef.current === "zoom" || heldZoomRef.current) {
+        fitZoom();
+        return;
+      }
       clearClipSelection();
       clearMapSelection();
       setSelectedAnchorId(null);
@@ -2595,6 +2704,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       top: Math.min(a.y, b.y),
       bottom: Math.max(a.y, b.y),
     };
+    if (toolRef.current === "zoom" || heldZoomRef.current) {
+      const boxW = box.right - box.left;
+      const scroll = canvasScrollRef.current;
+      if (scroll && boxW > 16) {
+        const ratio = scroll.clientWidth / boxW;
+        const next = Math.round(zoomHBaseRef.current * ratio);
+        setZoomH(Math.min(ZOOM_H_MAX, Math.max(ZOOM_H_MIN, next)));
+        requestAnimationFrame(() => {
+          scroll.scrollLeft = Math.max(0, box.left * ratio - 24);
+        });
+      }
+      return;
+    }
     const overlay = lanesCoordRef.current;
     const root = overlay?.parentElement;
     if (!overlay || !root) {
@@ -2674,9 +2796,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   useEffect(() => {
     function onPointerMove(e: PointerEvent) {
       lastPointerRef.current = { x: e.clientX, y: e.clientY };
+      const nextHeld = e.ctrlKey && e.altKey;
+      if (nextHeld !== heldZoomRef.current) {
+        heldZoomRef.current = nextHeld;
+        setHeldZoom(nextHeld);
+      }
+    }
+    function onKeyChange(e: KeyboardEvent) {
+      if (e.key !== "Control" && e.key !== "Alt" && e.key !== "Meta") return;
+      const nextHeld = e.ctrlKey && e.altKey;
+      if (nextHeld !== heldZoomRef.current) {
+        heldZoomRef.current = nextHeld;
+        setHeldZoom(nextHeld);
+      }
     }
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onPointerMove);
+    window.addEventListener("keydown", onKeyChange);
+    window.addEventListener("keyup", onKeyChange);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("keydown", onKeyChange);
+      window.removeEventListener("keyup", onKeyChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -3452,6 +3593,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     onMetronomeToggle,
     onLoopToggle,
     onTool,
+    applyWand,
     nudgeLocator,
     fitZoom,
     zoomHorizontalBySteps,
@@ -4865,6 +5007,21 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
                 <label className={styles.inspField}>
+                  Okładka (URL)
+                  <input
+                    className={styles.nameInput}
+                    value={draftProject.coverUrl ?? ""}
+                    placeholder="https://…"
+                    aria-label="URL okładki"
+                    onChange={(e) =>
+                      commitDraft({
+                        ...draftProject,
+                        coverUrl: e.target.value.trim() || undefined,
+                      })
+                    }
+                  />
+                </label>
+                <label className={styles.inspField}>
                   Rok wydania
                   <input
                     className={styles.lengthInput}
@@ -4989,6 +5146,40 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     }}
                   />
                 </label>
+                <label className={styles.inspField}>
+                  Start (takt.beat)
+                  <input
+                    className={styles.nameInput}
+                    defaultValue={formatStartBarBeat(
+                      draftProject!,
+                      selectedTekstClip.startTicks,
+                    )}
+                    key={`tekst-start-${selectedTekstClip.id}-${selectedTekstClip.startTicks}`}
+                    aria-label="Start tekst takt.beat"
+                    onBlur={(e) => {
+                      if (!draftProject) return;
+                      const parsed = parseStartBarBeat(e.target.value);
+                      if (!parsed) return;
+                      const beat = clampBeatForProject(
+                        draftProject,
+                        parsed.bar,
+                        parsed.beat,
+                      );
+                      commitDraft({
+                        ...draftProject,
+                        tekst: {
+                          clips: moveClipStartKeepLength(
+                            draftProject,
+                            draftProject.tekst.clips,
+                            selectedTekstClip.id,
+                            parsed.bar,
+                            beat,
+                          ),
+                        },
+                      });
+                    }}
+                  />
+                </label>
                 <p>
                   start {selectedTekstClip.startTicks}, długość{" "}
                   {selectedTekstClip.lengthTicks} ticks
@@ -5014,6 +5205,40 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     }}
                   />
                 </label>
+                <label className={styles.inspField}>
+                  Start (takt.beat)
+                  <input
+                    className={styles.nameInput}
+                    defaultValue={formatStartBarBeat(
+                      draftProject!,
+                      selectedAkordClip.startTicks,
+                    )}
+                    key={`akord-start-${selectedAkordClip.id}-${selectedAkordClip.startTicks}`}
+                    aria-label="Start akord takt.beat"
+                    onBlur={(e) => {
+                      if (!draftProject) return;
+                      const parsed = parseStartBarBeat(e.target.value);
+                      if (!parsed) return;
+                      const beat = clampBeatForProject(
+                        draftProject,
+                        parsed.bar,
+                        parsed.beat,
+                      );
+                      commitDraft({
+                        ...draftProject,
+                        akordy: {
+                          clips: moveClipStartKeepLength(
+                            draftProject,
+                            draftProject.akordy.clips,
+                            selectedAkordClip.id,
+                            parsed.bar,
+                            beat,
+                          ),
+                        },
+                      });
+                    }}
+                  />
+                </label>
                 <p>
                   start {selectedAkordClip.startTicks}, długość{" "}
                   {selectedAkordClip.lengthTicks} ticks
@@ -5036,6 +5261,93 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           e.target.value,
                         ),
                       );
+                    }}
+                  />
+                </label>
+                <fieldset className={styles.inspFieldset}>
+                  <legend>Role (puste = wszyscy)</legend>
+                  <div className={styles.inspChecks}>
+                    {CUE_ROLES.map((role) => {
+                      const on = (selectedCueClip.roles ?? []).includes(role);
+                      return (
+                        <label key={role} className={styles.inspCheck}>
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() => {
+                              if (!draftProject) return;
+                              const cur = selectedCueClip.roles ?? [];
+                              const next = on
+                                ? cur.filter((r) => r !== role)
+                                : [...cur, role];
+                              commitDraft(
+                                setCueClipRoles(
+                                  draftProject,
+                                  selectedCueClip.id,
+                                  next,
+                                ),
+                              );
+                            }}
+                          />
+                          {role}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+                <label className={styles.inspField}>
+                  Priorytet
+                  <select
+                    className={styles.nameInput}
+                    value={selectedCueClip.priority ?? "normal"}
+                    aria-label="Priorytet cue"
+                    onChange={(e) => {
+                      if (!draftProject) return;
+                      const v = e.target.value === "alert" ? "alert" : "normal";
+                      commitDraft(
+                        setCueClipPriority(
+                          draftProject,
+                          selectedCueClip.id,
+                          v,
+                        ),
+                      );
+                    }}
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="alert">Alert</option>
+                  </select>
+                </label>
+                <label className={styles.inspField}>
+                  Start (takt.beat)
+                  <input
+                    className={styles.nameInput}
+                    defaultValue={formatStartBarBeat(
+                      draftProject!,
+                      selectedCueClip.startTicks,
+                    )}
+                    key={`cue-start-${selectedCueClip.id}-${selectedCueClip.startTicks}`}
+                    aria-label="Start cue takt.beat"
+                    onBlur={(e) => {
+                      if (!draftProject) return;
+                      const parsed = parseStartBarBeat(e.target.value);
+                      if (!parsed) return;
+                      const beat = clampBeatForProject(
+                        draftProject,
+                        parsed.bar,
+                        parsed.beat,
+                      );
+                      commitDraft({
+                        ...draftProject,
+                        cue: {
+                          clips: moveClipStartKeepLength(
+                            draftProject,
+                            draftProject.cue.clips,
+                            selectedCueClip.id,
+                            parsed.bar,
+                            beat,
+                          ),
+                        },
+                      });
                     }}
                   />
                 </label>
@@ -5514,7 +5826,27 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 : "Rozłączony"}
           </span>
         </div>
-        <div className={styles.zooms} role="group" aria-label="Zoom">
+        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
+          <label className={styles.snapPicker}>
+            <span className={styles.snapPickerLab}>Snap</span>
+            <select
+              className={styles.snapPickerSelect}
+              aria-label="Tryb snap"
+              value={snapModeToStorageKey(snapMode)}
+              onChange={(e) => {
+                const next = snapModeFromStorageKey(e.target.value);
+                if (next) setSnapMode(next);
+              }}
+            >
+              <option value="off">Off</option>
+              <option value="bar">Takt</option>
+              <option value="beat">Beat</option>
+              <option value="subdivision:2">1/2</option>
+              <option value="subdivision:4">1/4</option>
+              <option value="subdivision:8">1/8</option>
+              <option value="subdivision:16">1/16</option>
+            </select>
+          </label>
           <label className={styles.zoomLab}>
             UI
             <input
@@ -6005,11 +6337,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               {(
                 [
-                  ["tekst", "Tekst → Forma"],
-                  ["akordy", "Akordy → Forma"],
-                  ["both", "Tekst + Akordy → Forma"],
+                  ["tekst", "Tekst → Forma", "1"],
+                  ["akordy", "Akordy → Forma", "2"],
+                  ["both", "Tekst + Akordy → Forma", "3"],
                 ] as const
-              ).map(([mode, label]) => (
+              ).map(([mode, label, keyHint]) => (
                 <button
                   key={mode}
                   type="button"
@@ -6018,6 +6350,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   onClick={() => applyWand(mode)}
                 >
                   <span>{label}</span>
+                  <span className={styles.toolMenuKey}>{keyHint}</span>
                 </button>
               ))}
             </div>,

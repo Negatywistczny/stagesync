@@ -118,7 +118,9 @@ export type FormaToolId =
   | "pencil"
   | "eraser"
   | "scissors"
-  | "wand";
+  | "wand"
+  | "zoom"
+  | "tap";
 
 /** Hit zones only for Pointer / Smart — Pencil is exclusive draw. */
 export function toolAllowsClipHitZones(tool: FormaToolId): boolean {
@@ -127,6 +129,16 @@ export function toolAllowsClipHitZones(tool: FormaToolId): boolean {
 
 export function toolIsPencilDraw(tool: FormaToolId): boolean {
   return tool === "pencil";
+}
+
+/** Ctrl+Alt hold → temporary Zoom (v4 `effectiveToolId`). */
+export function effectiveTimelineTool(
+  tool: FormaToolId,
+  ctrlKey: boolean,
+  altKey: boolean,
+): FormaToolId {
+  if (ctrlKey && altKey) return "zoom";
+  return tool;
 }
 
 /**

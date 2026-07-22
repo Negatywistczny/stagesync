@@ -91,10 +91,49 @@ export const StageCueMessageSchema = z.object({
 
 export type StageCueMessage = z.infer<typeof StageCueMessageSchema>;
 
+/** Live Desk — team transpose / sync-lead / remote edit (v4 AD-01…03). */
+export const LiveDeskSettingsSchema = z
+  .object({
+    transpositionSemitones: z.number().int().min(-12).max(12).default(0),
+    syncLeadMs: z.number().int().min(-500).max(500).default(200),
+    clientEditEnabled: z.boolean().default(true),
+  })
+  .strict();
+
+export type LiveDeskSettings = z.infer<typeof LiveDeskSettingsSchema>;
+
+export const LiveDeskPatchBodySchema = z
+  .object({
+    transpositionSemitones: z.number().int().min(-12).max(12).optional(),
+    syncLeadMs: z.number().int().min(-500).max(500).optional(),
+    clientEditEnabled: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (b) =>
+      b.transpositionSemitones != null ||
+      b.syncLeadMs != null ||
+      b.clientEditEnabled != null,
+    { message: "At least one live-desk field required" },
+  );
+
+export type LiveDeskPatchBody = z.infer<typeof LiveDeskPatchBodySchema>;
+
+export const LiveDeskMessageSchema = z.object({
+  type: z.literal("live_desk"),
+  transpositionSemitones: z.number().int().min(-12).max(12),
+  syncLeadMs: z.number().int().min(-500).max(500),
+  clientEditEnabled: z.boolean(),
+  sentAtMs: z.number().finite(),
+});
+
+export type LiveDeskMessage = z.infer<typeof LiveDeskMessageSchema>;
+
 /** Server → client frames on `/ws/transport`. */
 export const TransportWsServerMessageSchema = z.discriminatedUnion("type", [
   TransportTickMessageSchema,
   StageCueMessageSchema,
+  LiveDeskMessageSchema,
 ]);
 
 export type TransportWsServerMessage = z.infer<

@@ -1,11 +1,15 @@
 import {
+  applyInstrumentPitchToChord,
+  formatChordForDisplay,
   formatSectionNameForDisplay,
+  resolveKeyAt,
   type Project,
 } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
   type KaraokeSectionGroup,
 } from "../../lib/clientKaraoke.js";
+import { resolveAkordClipAt } from "../../lib/akordyEdit.js";
 import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
 import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js";
 import styles from "../ClientShell.module.css";
@@ -18,9 +22,11 @@ type KaraokePaneProps = {
   loading: boolean;
   hasActiveProjectId: boolean;
   prefs: ClientDisplayPrefs;
+  teamSemitones?: number;
   vocalTapOn?: boolean;
   vocalTapIndex?: number;
   onVocalTap?: () => void;
+  onVocalTapStep?: (dir: -1 | 1) => void;
 };
 
 function readAutoScroll(): boolean {
@@ -114,9 +120,11 @@ export function KaraokePane({
   loading,
   hasActiveProjectId,
   prefs,
+  teamSemitones = 0,
   vocalTapOn = false,
   vocalTapIndex = 0,
   onVocalTap,
+  onVocalTapStep,
 }: KaraokePaneProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const activeRef = useRef<HTMLElement | null>(null);
@@ -137,14 +145,20 @@ export function KaraokePane({
   useEffect(() => {
     if (!vocalTapOn || !onVocalTap) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "Space" && e.key !== " ") return;
       if (isEditableKeyboardTarget(e.target)) return;
-      e.preventDefault();
-      onVocalTap();
+      if (e.code === "Space" || e.key === " ") {
+        e.preventDefault();
+        onVocalTap();
+        return;
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        onVocalTapStep?.(e.key === "ArrowUp" ? -1 : 1);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [vocalTapOn, onVocalTap]);
+  }, [vocalTapOn, onVocalTap, onVocalTapStep]);
 
   const ctx =
     project != null ? buildKaraokeLiveContext(project, displayTicks) : null;
@@ -206,6 +220,24 @@ export function KaraokePane({
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
 
+  const key = resolveKeyAt(project, displayTicks);
+  const fmtChord = (symbol: string) =>
+    formatChordForDisplay(
+      applyInstrumentPitchToChord(
+        symbol,
+        prefs.instrumentPitch,
+        prefs.instrumentPitchManual,
+        key,
+        teamSemitones,
+      ),
+      {
+        literalQuality: prefs.literalQuality,
+        hybridPolishB: prefs.hybridPolishB,
+      },
+    );
+  const activeChord = resolveAkordClipAt(project, displayTicks);
+  const chordDisplay = activeChord ? fmtChord(activeChord.symbol) : null;
+
   const hasContent =
     ctx.sections.length > 0 &&
     (ctx.hasLyricLines || ctx.sections.some((s) => s.useProgress));
@@ -221,6 +253,11 @@ export function KaraokePane({
             Tap
           </Button>
         </div>
+      ) : null}
+      {chordDisplay ? (
+        <p className={styles.karaokeChordNow} aria-live="polite">
+          {chordDisplay}
+        </p>
       ) : null}
       {hasContent ? (
         <div

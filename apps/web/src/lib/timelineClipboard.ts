@@ -24,6 +24,8 @@ export type ClipboardPayload = {
   text?: string;
   symbol?: string;
   label?: string;
+  roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+  priority?: "normal" | "alert";
   /** Audio clip fields (same-lane paste). */
   trackId?: string;
   assetId?: string;
@@ -56,6 +58,8 @@ type TimedPayloadClip = {
   text?: string;
   symbol?: string;
   label?: string;
+  roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+  priority?: "normal" | "alert";
   trackId?: string;
   assetId?: string;
   trimInMs?: number;
@@ -125,7 +129,11 @@ export function buildClipboardFromClips(
       lane,
       startTicks: c.startTicks,
       lengthTicks: c.lengthTicks,
-      payload: { label: c.label || "Cue" },
+      payload: {
+        label: c.label || "Cue",
+        ...(c.roles?.length ? { roles: c.roles } : {}),
+        ...(c.priority === "alert" ? { priority: "alert" as const } : {}),
+      },
     };
   });
   return { lane, items };
@@ -304,6 +312,12 @@ export function pasteClipboardAt(
               startTicks: c.startTicks,
               lengthTicks: c.lengthTicks,
               label: item.payload.label || "Cue",
+              ...(item.payload.roles?.length
+                ? { roles: item.payload.roles }
+                : {}),
+              ...(item.payload.priority === "alert"
+                ? { priority: "alert" as const }
+                : {}),
             };
           }
           const prev = byId.get(c.id);
@@ -312,6 +326,10 @@ export function pasteClipboardAt(
             startTicks: c.startTicks,
             lengthTicks: c.lengthTicks,
             label: prev?.label ?? "Cue",
+            ...(prev?.roles?.length ? { roles: prev.roles } : {}),
+            ...(prev?.priority === "alert"
+              ? { priority: "alert" as const }
+              : {}),
           };
         });
       next = { ...next, cue: { clips } };

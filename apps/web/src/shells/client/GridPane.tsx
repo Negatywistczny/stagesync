@@ -73,6 +73,7 @@ type Props = {
   loading: boolean;
   hasActiveProjectId: boolean;
   prefs: ClientDisplayPrefs;
+  teamSemitones?: number;
 };
 
 export function GridPane({
@@ -81,6 +82,7 @@ export function GridPane({
   loading,
   hasActiveProjectId,
   prefs,
+  teamSemitones = 0,
 }: Props) {
   if (!hasActiveProjectId) {
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
@@ -105,6 +107,7 @@ export function GridPane({
         prefs.instrumentPitch,
         prefs.instrumentPitchManual,
         key,
+        teamSemitones,
       ),
       {
         literalQuality: prefs.literalQuality,

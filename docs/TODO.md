@@ -20,9 +20,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 ### Should / Weryfikacja
 
 - [ ] Playwright Forma drag E2E
-- [ ] AD-01…03 Transpozycja / Lead / Edycja zdalna
 - [ ] **Live badge** / sygnał „live playhead”
-- [ ] **Meta okładka**
 
 ### Etap 5.1+ (Przyszłość)
 
