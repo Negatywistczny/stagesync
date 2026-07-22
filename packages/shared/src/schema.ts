@@ -18,6 +18,11 @@ function refineMeterForPpq(
   }
 }
 
+/** UI + API range for tempo (Timeline inputs use 20…400). */
+export const BPM_MIN = 20;
+export const BPM_MAX = 400;
+export const BpmSchema = z.number().finite().min(BPM_MIN).max(BPM_MAX);
+
 /** Catalog entry — denormalized fields for Admin list / Batch PC / Ostrzeżenia. */
 export const LibraryProjectEntrySchema = z.object({
   id: z.string().min(1),
@@ -79,7 +84,7 @@ export type ScoreBarMap = z.infer<typeof ScoreBarMapSchema>;
 export const TempoEventSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
-  bpm: z.number().positive().finite(),
+  bpm: BpmSchema,
 });
 
 export const MeterEventSchema = z
@@ -190,7 +195,7 @@ export const ProjectSchemaV2 = z
     formatVersion: z.literal(2),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: z.number().positive().finite(),
+    defaultBpm: BpmSchema,
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
@@ -210,7 +215,7 @@ export const ProjectSchemaV3 = z
     formatVersion: z.literal(3),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: z.number().positive().finite(),
+    defaultBpm: BpmSchema,
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
@@ -263,7 +268,7 @@ export const ProjectSchemaV4 = z
     formatVersion: z.literal(4),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: z.number().positive().finite(),
+    defaultBpm: BpmSchema,
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),
@@ -312,7 +317,7 @@ const ProjectSchemaV5Object = z
     formatVersion: z.literal(5),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
-    defaultBpm: z.number().positive().finite(),
+    defaultBpm: BpmSchema,
     defaultMeter: DefaultMeterSchema,
     forma: z.object({
       clips: z.array(FormaClipSchema),

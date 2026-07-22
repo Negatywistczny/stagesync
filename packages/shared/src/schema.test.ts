@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  BpmSchema,
   CreateProjectBodySchema,
   DefaultMeterSchema,
   LibrarySchema,
@@ -9,6 +10,7 @@ import {
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
+  TempoEventSchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -40,6 +42,21 @@ describe("LibrarySchema", () => {
     expect(() =>
       LibrarySchema.parse({ version: 2, projects: [] }),
     ).toThrow();
+  });
+});
+
+describe("BpmSchema", () => {
+  it("accepts Timeline UI range 20…400", () => {
+    expect(BpmSchema.parse(20)).toBe(20);
+    expect(BpmSchema.parse(400)).toBe(400);
+    expect(TempoEventSchema.parse({ id: "t", startTicks: 0, bpm: 120 }).bpm).toBe(
+      120,
+    );
+  });
+
+  it("rejects out of range", () => {
+    expect(() => BpmSchema.parse(19)).toThrow();
+    expect(() => BpmSchema.parse(401)).toThrow();
   });
 });
 
