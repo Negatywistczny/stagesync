@@ -80,24 +80,27 @@ export function isDesktopShell(): boolean {
 
 /** Normalize Tauri / Promise rejection reasons into a readable message. */
 export function formatUnknownError(err: unknown): string {
+  const cap = (s: string) => s.slice(0, 500);
   if (err instanceof Error) {
-    return err.message || err.name || "Unknown error";
+    return cap(err.message || err.name || "Unknown error");
   }
   if (typeof err === "string") {
-    return err || "Unknown error";
+    return cap(err || "Unknown error");
   }
   if (err && typeof err === "object" && "message" in err) {
     const message = (err as { message: unknown }).message;
-    if (typeof message === "string" && message.trim()) return message;
+    if (typeof message === "string" && message.trim()) return cap(message);
   }
   try {
     const json = JSON.stringify(err);
-    if (json && json !== "{}") return json;
+    if (json && json !== "{}") return cap(json);
   } catch {
     /* ignore */
   }
   const fallback = String(err);
-  return fallback === "undefined" || fallback === "null" ? "Unknown error" : fallback;
+  return cap(
+    fallback === "undefined" || fallback === "null" ? "Unknown error" : fallback,
+  );
 }
 
 function asError(err: unknown): Error {
