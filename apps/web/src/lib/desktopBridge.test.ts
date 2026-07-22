@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   formatUnknownError,
   isDesktopShell,
+  openExternalUrl,
   toggleAppFullscreen,
 } from "./desktopBridge.js";
 
@@ -91,6 +92,63 @@ describe("toggleAppFullscreen", () => {
 
     expect(exitFullscreen).toHaveBeenCalledOnce();
     expect(requestFullscreen).not.toHaveBeenCalled();
+  });
+});
+
+describe("openExternalUrl", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("opens a new tab in a plain browser", async () => {
+    const open = vi.fn();
+    vi.stubGlobal("window", { open });
+    vi.stubGlobal("document", { querySelector: () => null });
+
+    await openExternalUrl("https://example.com/docs");
+
+    expect(open).toHaveBeenCalledWith(
+      "https://example.com/docs",
+      "_blank",
+      "noopener,noreferrer",
+    );
+  });
+
+  it("falls back to window.open when :4000 looks like desktop but Tauri invoke is missing", async () => {
+    const open = vi.fn();
+    // Same false-positive as browser → http://127.0.0.1:4000 (server without shell inject).
+    vi.stubGlobal("window", {
+      location: { hostname: "127.0.0.1", port: "4000" },
+      open,
+    });
+    vi.stubGlobal("document", { querySelector: () => null });
+
+    expect(isDesktopShell()).toBe(true);
+    await openExternalUrl("https://github.com/Negatywistczny/stagesync/issues");
+
+    expect(open).toHaveBeenCalledWith(
+      "https://github.com/Negatywistczny/stagesync/issues",
+      "_blank",
+      "noopener,noreferrer",
+    );
+  });
+
+  it("invokes Tauri when desktop shell has invoke", async () => {
+    const invoke = vi.fn().mockResolvedValue(undefined);
+    const open = vi.fn();
+    vi.stubGlobal("window", {
+      __STAGESYNC_SHELL__: "desktop",
+      __TAURI__: { core: { invoke } },
+      open,
+    });
+    vi.stubGlobal("document", { querySelector: () => null });
+
+    await openExternalUrl("https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md");
+
+    expect(invoke).toHaveBeenCalledWith("open_external_url", {
+      url: "https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md",
+    });
+    expect(open).not.toHaveBeenCalled();
   });
 });
 
