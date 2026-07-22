@@ -42,7 +42,6 @@ import {
 } from "../lib/formaCanvas.js";
 import {
   commitGesture,
-  commitMoveClip,
   deleteFormaClip,
   previewFromSession,
   splitFormaClipAt,
@@ -131,6 +130,12 @@ import {
   splitContentClipAt,
   type ContentLaneId,
 } from "../lib/contentLaneEdit.js";
+import {
+  applyTimelineNudge,
+  nudgeShowsLeftEdge,
+  shouldShowTouchNudge,
+} from "../lib/timelineTouchNudge.js";
+import { useTimelineTouchGestures } from "../lib/useTimelineTouchGestures.js";
 import {
   anchorBarWidthTicks,
   canEditKotwice,
@@ -468,6 +473,7 @@ export function TimelineShell() {
   const [touchTier, setTouchTier] = useState<TimelineTouchTier>(() =>
     typeof window !== "undefined" ? detectTimelineTier() : "desktop",
   );
+  const canvasScrollRef = useRef<HTMLDivElement | null>(null);
   const gesturePolicy = timelineGesturesAllowed(touchTier);
   const [tempoEditOpen, setTempoEditOpen] = useState(false);
   const [tempoDraft, setTempoDraft] = useState("");
@@ -606,6 +612,10 @@ export function TimelineShell() {
     fitZoom: () => {},
     zoomHorizontalBySteps: (steps: number, anchorViewportX?: number) => {
       void steps;
+      void anchorViewportX;
+    },
+    applyAbsoluteZoomH: (next: number, anchorViewportX?: number) => {
+      void next;
       void anchorViewportX;
     },
     zoomVerticalBySteps: (steps: number) => {
@@ -787,6 +797,20 @@ export function TimelineShell() {
       window.removeEventListener("resize", syncTier);
     };
   }, []);
+
+  useTimelineTouchGestures({
+    enabled: touchTier === "tablet",
+    scrollRef: canvasScrollRef,
+    getZoomH: () => zoomHBaseRef.current,
+    applyZoomH: (next, anchor) => {
+      keyHandlersRef.current.applyAbsoluteZoomH?.(next, anchor);
+    },
+    onDoubleTap: () => {
+      keyHandlersRef.current.fitZoom();
+    },
+    zoomMin: ZOOM_H_MIN,
+    zoomMax: ZOOM_H_MAX,
+  });
 
   useEffect(() => {
     gestureSessionRef.current = gestureSession;
@@ -2844,18 +2868,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     void setLoop({ enabled: true, startTicks: 0, endTicks: end });
   }
 
-  function zoomHorizontalBySteps(
-    steps: number,
-    anchorViewportX?: number,
-  ) {
-    if (!steps) return;
-    const scroll = document.querySelector(
-      "[data-canvas-scroll]",
-    ) as HTMLElement | null;
+  function applyAbsoluteZoomH(nextBaseRaw: number, anchorViewportX?: number) {
+    const scroll =
+      canvasScrollRef.current ??
+      (document.querySelector("[data-canvas-scroll]") as HTMLElement | null);
     const oldEff = zoomHRef.current;
     const nextBase = Math.min(
       ZOOM_H_MAX,
-      Math.max(ZOOM_H_MIN, zoomHBaseRef.current + steps * ZOOM_H_STEP),
+      Math.max(ZOOM_H_MIN, Math.round(nextBaseRaw)),
     );
     const newEff = nextBase * uiScaleRef.current;
     if (nextBase === zoomHBaseRef.current || !(oldEff > 0) || !(newEff > 0)) {
@@ -2873,6 +2893,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         scroll.scrollLeft = Math.max(0, newScroll);
       });
     }
+  }
+
+  function zoomHorizontalBySteps(
+    steps: number,
+    anchorViewportX?: number,
+  ) {
+    if (!steps) return;
+    applyAbsoluteZoomH(
+      zoomHBaseRef.current + steps * ZOOM_H_STEP,
+      anchorViewportX,
+    );
   }
 
   function setVerticalZoom(nextLanePx: number) {
@@ -3404,6 +3435,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     nudgeLocator,
     fitZoom,
     zoomHorizontalBySteps,
+    applyAbsoluteZoomH,
     zoomVerticalBySteps,
     dirty,
     savePending,
@@ -4220,7 +4252,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         }}
       >
         <div className={styles.timelinePane}>
-          <div className={styles.canvasScroll} data-canvas-scroll>
+          <div
+            ref={canvasScrollRef}
+            className={styles.canvasScroll}
+            data-canvas-scroll
+          >
             <div
               className={styles.canvasInner}
               style={{ width: canvasInnerWidth }}
@@ -5470,28 +5506,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
       </footer>
 
-      {touchTier === "tablet" &&
-      draftProject &&
-      selectedClipId &&
-      draftProject.forma.clips.some(
-        (c) => c.id === selectedClipId && c.kind === "section",
-      ) ? (
-        <div className={styles.touchNudge} role="toolbar" aria-label="Przesuń clip">
+      {shouldShowTouchNudge(
+        touchTier,
+        selectionLane,
+        primaryId,
+        draftProject,
+      ) && draftProject && selectionLane && primaryId ? (
+        <div
+          className={styles.touchNudge}
+          role="toolbar"
+          aria-label="Przesuń i rozciągnij clip"
+        >
           <button
             type="button"
             className={styles.touchNudgeBtn}
-            aria-label="Przesuń w lewo o takt"
+            aria-label="Przesuń w lewo"
             onClick={() => {
-              const clip = draftProject.forma.clips.find(
-                (c) => c.id === selectedClipId,
-              );
-              if (!clip || clip.kind === "countdown") return;
               commitDraft(
-                commitMoveClip(
+                applyTimelineNudge(
                   draftProject,
-                  clip.id,
-                  clip.startTicks - barTicks,
-                  "bar",
+                  selectionLane,
+                  primaryId,
+                  "move-left",
                 ),
               );
             }}
@@ -5501,23 +5537,92 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <button
             type="button"
             className={styles.touchNudgeBtn}
-            aria-label="Przesuń w prawo o takt"
+            aria-label="Przesuń w prawo"
             onClick={() => {
-              const clip = draftProject.forma.clips.find(
-                (c) => c.id === selectedClipId,
-              );
-              if (!clip || clip.kind === "countdown") return;
               commitDraft(
-                commitMoveClip(
+                applyTimelineNudge(
                   draftProject,
-                  clip.id,
-                  clip.startTicks + barTicks,
-                  "bar",
+                  selectionLane,
+                  primaryId,
+                  "move-right",
                 ),
               );
             }}
           >
             ▶
+          </button>
+          <span className={styles.touchNudgeSep} aria-hidden />
+          {nudgeShowsLeftEdge(draftProject, selectionLane, primaryId) ? (
+            <>
+              <button
+                type="button"
+                className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+                aria-label="Wydłuż lewą krawędź"
+                onClick={() => {
+                  commitDraft(
+                    applyTimelineNudge(
+                      draftProject,
+                      selectionLane,
+                      primaryId,
+                      "stretch-left-out",
+                    ),
+                  );
+                }}
+              >
+                ◂|
+              </button>
+              <button
+                type="button"
+                className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+                aria-label="Skróć od lewej"
+                onClick={() => {
+                  commitDraft(
+                    applyTimelineNudge(
+                      draftProject,
+                      selectionLane,
+                      primaryId,
+                      "stretch-left-in",
+                    ),
+                  );
+                }}
+              >
+                |▸
+              </button>
+            </>
+          ) : null}
+          <button
+            type="button"
+            className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+            aria-label="Skróć od prawej"
+            onClick={() => {
+              commitDraft(
+                applyTimelineNudge(
+                  draftProject,
+                  selectionLane,
+                  primaryId,
+                  "stretch-right-in",
+                ),
+              );
+            }}
+          >
+            ◂|
+          </button>
+          <button
+            type="button"
+            className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+            aria-label="Wydłuż prawą krawędź"
+            onClick={() => {
+              commitDraft(
+                applyTimelineNudge(
+                  draftProject,
+                  selectionLane,
+                  primaryId,
+                  "stretch-right-out",
+                ),
+              );
+            }}
+          >
+            |▸
           </button>
         </div>
       ) : null}
