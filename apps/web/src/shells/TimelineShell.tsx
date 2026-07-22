@@ -1015,6 +1015,19 @@ export function TimelineShell() {
         }
         return;
       }
+      if (
+        !mod &&
+        !e.altKey &&
+        !e.shiftKey &&
+        (e.key === "[" || e.key === "]")
+      ) {
+        const id = e.key === "]" ? h.nextSetlistId : h.prevSetlistId;
+        if (id) {
+          e.preventDefault();
+          navigate(`/timeline/${id}`);
+        }
+        return;
+      }
       if (e.key !== "Delete" && e.key !== "Backspace") return;
       e.preventDefault();
       deleteSelectedFormaClip();

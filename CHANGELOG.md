@@ -20,6 +20,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Bug Fixes
 
+- **Timeline setlista (#363):** skróty `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc ujednolicona z kodem.
 - **Client Space (#363):** skrót Spacji (vocal tap) ignoruje fokus w polach tekstowych (`INPUT` / `TEXTAREA` / `SELECT` / contentEditable); wspólny helper też w Timeline.
 - **Audio Timeline przy Pause/Stop:** odtwarzanie WebAudio gaśnie od razu w UI (bez dźwięku w trakcie oczekiwania na potwierdzenie serwera).
 - **Timeline:** ochrona przed nakładającymi się komendami transportu; jaśniejszy konflikt zapisu OCC; anulowanie fetchy pickera utworu / uploadu audio przy zamknięciu; limit 64 ścieżek audio w UI.
