@@ -429,8 +429,8 @@ export function createStores(dataDir?: string) {
         }
 
         library.projects.push(libraryEntryFromProject(project));
-        await saveLibrary(library);
         await writeProject(project);
+        await saveLibrary(library);
         return project;
       });
     },
