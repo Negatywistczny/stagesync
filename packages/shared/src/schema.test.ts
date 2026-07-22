@@ -135,6 +135,13 @@ describe("CreateProjectBodySchema", () => {
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
   });
+
+  it("trims whitespace and rejects blank-after-trim", () => {
+    expect(CreateProjectBodySchema.parse({ name: "  Song  " })).toEqual({
+      name: "Song",
+    });
+    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
+  });
 });
 
 describe("PutProjectBodySchema", () => {

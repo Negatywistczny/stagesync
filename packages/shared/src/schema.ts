@@ -282,7 +282,7 @@ export type KeyEvent = z.infer<typeof KeyEventSchema>;
 const ProjectSchemaV5Object = z
   .object({
     id: z.string().min(1),
-    name: z.string().min(1),
+    name: z.string().trim().min(1).max(200),
     formatVersion: z.literal(5),
     updatedAt: z.string().datetime(),
     ppq: z.literal(DEFAULT_PPQ),
@@ -344,7 +344,7 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 
 export const CreateProjectBodySchema = z.object({
-  name: z.string().min(1),
+  name: z.string().trim().min(1).max(200),
   fromTemplateId: z.string().min(1).optional(),
   isTemplate: z.boolean().optional(),
 });
