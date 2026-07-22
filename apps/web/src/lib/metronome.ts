@@ -87,6 +87,11 @@ export function advanceMetronomeClicks(
   let beat = lastScheduledBeat;
   const now = ctx.currentTime;
 
+  // After tab blur / large seek, skip backlog — one click storm is worse than a gap.
+  if (currentBeat - beat > 2) {
+    return currentBeat;
+  }
+
   while (beat < currentBeat) {
     beat += 1;
     const beatStartTicks = beat * perBeat;
