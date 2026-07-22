@@ -295,38 +295,44 @@ export function PreferencesModal({ onClose, initialTab = "general" }: Props) {
         <div className={styles.body} role="tabpanel">
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>Wygląd</legend>
-            <ShellAppearanceFields
-              value={draft.appearance}
-              onChange={(appearance) => setDraft((d) => ({ ...d, appearance }))}
-            />
+            <div className={styles.controlStack}>
+              <ShellAppearanceFields
+                value={draft.appearance}
+                onChange={(appearance) =>
+                  setDraft((d) => ({ ...d, appearance }))
+                }
+              />
+            </div>
           </fieldset>
 
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>Format zegara</legend>
-            <label className={styles.radioRow}>
-              <input
-                type="radio"
-                name="clock-format"
-                checked={draft.clockFormat === "bbt"}
-                aria-label="BBT Takt.Beat.Tick"
-                onChange={() =>
-                  setDraft((d) => ({ ...d, clockFormat: "bbt" }))
-                }
-              />
-              <span>BBT (Takt.Beat.Tick)</span>
-            </label>
-            <label className={styles.radioRow}>
-              <input
-                type="radio"
-                name="clock-format"
-                checked={draft.clockFormat === "time"}
-                aria-label="MM:SS.ms"
-                onChange={() =>
-                  setDraft((d) => ({ ...d, clockFormat: "time" }))
-                }
-              />
-              <span>MM:SS.ms</span>
-            </label>
+            <div className={styles.controlStack}>
+              <label className={styles.radioRow}>
+                <input
+                  type="radio"
+                  name="clock-format"
+                  checked={draft.clockFormat === "bbt"}
+                  aria-label="BBT Takt.Beat.Tick"
+                  onChange={() =>
+                    setDraft((d) => ({ ...d, clockFormat: "bbt" }))
+                  }
+                />
+                <span>BBT (Takt.Beat.Tick)</span>
+              </label>
+              <label className={styles.radioRow}>
+                <input
+                  type="radio"
+                  name="clock-format"
+                  checked={draft.clockFormat === "time"}
+                  aria-label="MM:SS.ms"
+                  onChange={() =>
+                    setDraft((d) => ({ ...d, clockFormat: "time" }))
+                  }
+                />
+                <span>MM:SS.ms</span>
+              </label>
+            </div>
           </fieldset>
         </div>
       ) : null}
