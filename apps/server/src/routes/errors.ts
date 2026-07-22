@@ -44,12 +44,12 @@ function zodDetails(err: unknown): {
       }>;
     }
   ).issues;
-  const details: ApiErrorDetail[] = issues.map((issue) => ({
-    path: issue.path.map(String).join(".") || "(root)",
-    message: issue.message,
+  const details: ApiErrorDetail[] = issues.slice(0, 32).map((issue) => ({
+    path: issue.path.map(String).join(".").slice(0, 200) || "(root)",
+    message: issue.message.slice(0, 200),
     ...(issue.code ? { code: issue.code } : {}),
   }));
-  const message = details.map((d) => d.message).join("; ");
+  const message = details.map((d) => d.message).join("; ").slice(0, 2000);
   return { message, details };
 }
 
