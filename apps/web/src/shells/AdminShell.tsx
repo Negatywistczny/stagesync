@@ -6,7 +6,7 @@ import {
   looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
-  ticksToBbt,
+  ticksToBbtAlongMeterMap,
   toDisplayBar,
   ZIP_IMPORT_UNSUPPORTED_PL,
   type Library,
@@ -78,7 +78,6 @@ export function AdminShell() {
   const [section, setSection] = useState<SectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
-  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
@@ -99,9 +98,7 @@ export function AdminShell() {
     try {
       await postSystemRestart();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Restart nieudany";
-      setHostStatusMsg(message.slice(0, 500));
+      setHostStatusMsg(err instanceof Error ? err.message : "Restart nieudany");
     }
   }, "Restart");
 
@@ -110,31 +107,29 @@ export function AdminShell() {
     try {
       await postSystemShutdown();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Wyłączenie nieudane";
-      setHostStatusMsg(message.slice(0, 500));
+      setHostStatusMsg(
+        err instanceof Error ? err.message : "Wyłączenie nieudane",
+      );
     }
   }, "Wyłącz");
 
   const { state, displayTicks, wsStatus, play } = useTransport();
-  const goSection = useCallback(
-    (id: SectionId) => {
-      setSection(id);
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          next.set("section", id);
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-  const bbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [setlistView, setSetlistView] = useState<SetlistView | null>(null);
+  const bbt = activeProject
+    ? ticksToBbtAlongMeterMap(
+        displayTicks,
+        activeProject.defaultMeter,
+        activeProject.meterMap,
+        activeProject.ppq,
+      )
+    : ticksToBbtAlongMeterMap(
+        displayTicks,
+        state.timeSignature,
+        [],
+        state.ppq,
+      );
 
   const sectionProjectId = state.activeProjectId ?? selectedId;
   const activeSection = activeProject
@@ -144,9 +139,8 @@ export function AdminShell() {
     library?.projects.find((p) => p.id === state.activeProjectId) ?? null;
   const nowName = nowProject?.name ?? "—";
   const nextName = setlistView?.enabled
-    ? (setlistView.next?.name ??
-      (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
-    : "—";
+    ? (setlistView.next?.name ?? (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
+    : "z setu";
 
   useEffect(() => {
     const sectionParam = searchParams.get("section");
@@ -157,15 +151,6 @@ export function AdminShell() {
     if (searchParams.get("action") === "check-update") {
       setSection("host");
       setMenuCheckUpdate(true);
-      const next = new URLSearchParams(searchParams);
-      next.delete("action");
-      if (!next.get("section")) next.set("section", "host");
-      setSearchParams(next, { replace: true });
-    }
-    // Native menu: Host → Ustawienia…
-    if (searchParams.get("action") === "host-settings") {
-      setSection("host");
-      setSettingsOpen(true);
       const next = new URLSearchParams(searchParams);
       next.delete("action");
       if (!next.get("section")) next.set("section", "host");
@@ -205,14 +190,10 @@ export function AdminShell() {
     return () => {
       cancelled = true;
     };
-  }, [sectionProjectId, state.activeProjectId]);
-
-  const libraryGenRef = useRef(0);
+  }, [sectionProjectId, state.activeProjectId, displayTicks]);
 
   const refreshLibrary = useCallback(async (preferId?: string | null) => {
-    const gen = ++libraryGenRef.current;
     const data = await fetchLibrary();
-    if (gen !== libraryGenRef.current) return data;
     setLibrary(data);
     setLibraryError(null);
     setSelectedId((prev) => {
@@ -230,21 +211,21 @@ export function AdminShell() {
   }, []);
 
   useEffect(() => {
-    const gen = ++libraryGenRef.current;
+    let cancelled = false;
     void (async () => {
       try {
         const data = await fetchLibrary();
-        if (gen !== libraryGenRef.current) return;
+        if (cancelled) return;
         setLibrary(data);
         setSelectedId(data.projects[0]?.id ?? null);
       } catch (err) {
-        if (gen === libraryGenRef.current) {
+        if (!cancelled) {
           setLibraryError(errMessage(err));
         }
       }
     })();
     return () => {
-      libraryGenRef.current += 1;
+      cancelled = true;
     };
   }, []);
 
@@ -337,7 +318,7 @@ export function AdminShell() {
                   .filter(Boolean)
                   .join(" ")}
                 aria-pressed={section === item.id}
-                onClick={() => goSection(item.id)}
+                onClick={() => setSection(item.id)}
               >
                 {item.label}
               </button>
@@ -384,31 +365,12 @@ export function AdminShell() {
             </ShellIconButton>
             <ShellIconButton
               label="Pełny ekran"
-              onClick={() => {
-                void (async () => {
-                  try {
-                    await toggleAppFullscreen();
-                    setFullscreenError(null);
-                  } catch (err) {
-                    setFullscreenError(
-                      err instanceof Error
-                        ? err.message
-                        : "Nie udało się przełączyć pełnego ekranu",
-                    );
-                  }
-                })();
-              }}
+              onClick={() => void toggleAppFullscreen()}
             >
               <IconFullscreen />
             </ShellIconButton>
           </div>
         </header>
-
-        {fullscreenError ? (
-          <p className={styles.chromeAlert} role="alert">
-            {fullscreenError}
-          </p>
-        ) : null}
 
         {appearanceOpen ? (
           <SettingsPopover
@@ -470,9 +432,6 @@ export function AdminShell() {
               void runMutation(async () => {
                 setActionNotice("Wczytywanie pliku…");
                 const buf = await file.arrayBuffer();
-                if (buf.byteLength > 16 * 1024 * 1024) {
-                  throw new Error("Plik importu jest za duży (max 16 MB).");
-                }
                 if (looksLikeZipBytes(buf)) {
                   throw new Error(ZIP_IMPORT_UNSUPPORTED_PL);
                 }
@@ -675,7 +634,12 @@ export function AdminShell() {
       ) : null}
 
       {pathPickerOpen ? (
-        <DataDirModal onClose={() => setPathPickerOpen(false)} />
+        <Modal title="Ścieżka" onClose={() => setPathPickerOpen(false)}>
+          <p className={styles.muted}>Przeglądanie katalogów — shell.</p>
+          <Button variant="ghost" onClick={() => setPathPickerOpen(false)}>
+            Zamknij
+          </Button>
+        </Modal>
       ) : null}
 
       <ShellPromptDialog
@@ -747,7 +711,6 @@ function SongsView({
   const nameDirty = Boolean(selected && draftName !== selected.name);
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
-  const [asideOpen, setAsideOpen] = useState(true);
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -776,23 +739,11 @@ function SongsView({
   }, [library?.projects, filter, sort]);
 
   return (
-    <div
-      className={[styles.split, asideOpen ? "" : styles.splitCollapsed]
-        .filter(Boolean)
-        .join(" ")}
-    >
+    <div className={styles.split}>
       <section className={styles.card} aria-label="Utwory">
         <div className={styles.cardHead}>
           <h1 className={styles.cardTitle}>Utwory</h1>
           <div className={styles.actions}>
-            <Button
-              variant="ghost"
-              aria-expanded={asideOpen}
-              aria-controls="admin-songs-aside"
-              onClick={() => setAsideOpen((v) => !v)}
-            >
-              {asideOpen ? "Ukryj panel" : "Pokaż panel"}
-            </Button>
             <Button
               variant="secondary"
               loading={commandPending}
@@ -810,12 +761,6 @@ function SongsView({
               placeholder="Filtruj…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape" && filter) {
-                  e.preventDefault();
-                  setFilter("");
-                }
-              }}
               aria-label="Filtruj utwory"
             />
             <select
@@ -918,8 +863,7 @@ function SongsView({
         </div>
       </section>
 
-      {asideOpen ? (
-      <div className={styles.splitAside} id="admin-songs-aside">
+      <div className={styles.splitAside}>
         <aside className={styles.card} aria-label="Wybrany utwór">
           <div className={styles.cardHead}>
             <h2 className={styles.cardTitle}>Wybrany</h2>
@@ -959,27 +903,14 @@ function SongsView({
                   <Button variant="secondary" disabled={locked} onClick={onXml}>
                     XML
                   </Button>
-                  {selected?.hasMusicXml && selectedId && !locked ? (
-                    <Link
-                      className={styles.editLink}
-                      to={`/timeline/${selectedId}`}
-                      title="Otwórz utwór w Timeline (partytura / OSMD)"
-                    >
-                      Partytura
-                    </Link>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      disabled
-                      title={
-                        selected?.hasMusicXml
-                          ? "Otwórz w Timeline"
-                          : "Brak MusicXML — użyj XML"
-                      }
-                    >
-                      Partytura
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    disabled={locked || !selected?.hasMusicXml}
+                    title={selected?.hasMusicXml ? "Ma MusicXML" : "Brak MusicXML — użyj XML"}
+                    onClick={onXml}
+                  >
+                    Partytura
+                  </Button>
                   {locked ? (
                     <span className={styles.editLinkMuted} aria-disabled>
                       Otwórz w Timeline
@@ -1031,7 +962,6 @@ function SongsView({
           onImportFile={onImportFile}
         />
       </div>
-      ) : null}
     </div>
   );
 }
@@ -1072,7 +1002,7 @@ function LibraryFilesCard({
         <input
           ref={inputRef}
           type="file"
-          accept=".json,.stagesync.json,application/json"
+          accept=".json,.stagesync.json,application/json,.zip,.stagesync"
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -1116,28 +1046,17 @@ function LibraryFilesCard({
 
 function useDoubleConfirm(action: () => Promise<void>, label: string) {
   const [pending, setPending] = useState(false);
-  const pendingRef = useRef(false);
-  const actionInFlightRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const arm = useCallback(() => {
-    if (actionInFlightRef.current) return;
-    if (pendingRef.current) {
+    if (pending) {
       if (timerRef.current) clearTimeout(timerRef.current);
-      pendingRef.current = false;
       setPending(false);
-      actionInFlightRef.current = true;
-      void action().finally(() => {
-        actionInFlightRef.current = false;
-      });
+      void action();
       return;
     }
-    pendingRef.current = true;
     setPending(true);
-    timerRef.current = setTimeout(() => {
-      pendingRef.current = false;
-      setPending(false);
-    }, 4000);
-  }, [action]);
+    timerRef.current = setTimeout(() => setPending(false), 4000);
+  }, [action, pending]);
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -1160,32 +1079,20 @@ function HostView({
 }) {
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
-  const [logStreamError, setLogStreamError] = useState<string | null>(null);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
-  const midiRefreshGenRef = useRef(0);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
-  useEffect(() => {
-    if (!copiedUrl) return;
-    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
-    return () => window.clearTimeout(t);
-  }, [copiedUrl]);
-
   const refreshMidi = useCallback(async () => {
-    const gen = ++midiRefreshGenRef.current;
     try {
       const status = await fetchMidiHostStatus();
-      if (gen !== midiRefreshGenRef.current) return;
       setMidi(status);
       setMidiError(null);
     } catch (err) {
-      if (gen !== midiRefreshGenRef.current) return;
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
     }
   }, []);
@@ -1212,52 +1119,24 @@ function HostView({
     const id = window.setInterval(() => {
       void refreshMidi();
     }, 1000);
-    return () => {
-      window.clearInterval(id);
-      midiRefreshGenRef.current += 1;
-    };
+    return () => window.clearInterval(id);
   }, [refreshMidi]);
 
   useEffect(() => {
-    let es: EventSource | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let cancelled = false;
-
-    function connect() {
-      if (cancelled) return;
-      es?.close();
-      es = new EventSource("/api/system/logs/stream");
-      es.onopen = () => {
-        setLogStreamError(null);
-      };
-      es.onmessage = (ev) => {
-        if (pausedRef.current) return;
-        try {
-          const line = JSON.parse(ev.data) as HostLogLine;
-          setLines((prev) => [...prev.slice(-199), line]);
-        } catch {
-          /* ignore */
-        }
-      };
-      es.addEventListener("clear", () => {
-        if (!pausedRef.current) setLines([]);
-      });
-      es.onerror = () => {
-        setLogStreamError("Strumień logów przerwany — ponawiam…");
-        es?.close();
-        es = null;
-        if (cancelled) return;
-        if (reconnectTimer) clearTimeout(reconnectTimer);
-        reconnectTimer = setTimeout(connect, 2000);
-      };
-    }
-
-    connect();
-    return () => {
-      cancelled = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      es?.close();
+    const es = new EventSource("/api/system/logs/stream");
+    es.onmessage = (ev) => {
+      if (pausedRef.current) return;
+      try {
+        const line = JSON.parse(ev.data) as HostLogLine;
+        setLines((prev) => [...prev.slice(-199), line]);
+      } catch {
+        /* ignore */
+      }
     };
+    es.addEventListener("clear", () => {
+      if (!pausedRef.current) setLines([]);
+    });
+    return () => es.close();
   }, []);
 
   const applyMidiConfig = useCallback(
@@ -1303,24 +1182,8 @@ function HostView({
               </p>
               <ul className={styles.list}>
                 {network.urls.map((u) => (
-                  <li key={u} className={styles.networkUrlRow}>
-                    <span className={styles.songMeta}>{u}</span>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        void (async () => {
-                          try {
-                            await navigator.clipboard.writeText(u);
-                            setCopiedUrl(u);
-                          } catch {
-                            setCopiedUrl(null);
-                            setNetworkError("Nie udało się skopiować URL");
-                          }
-                        })();
-                      }}
-                    >
-                      {copiedUrl === u ? "Skopiowano" : "Kopiuj"}
-                    </Button>
+                  <li key={u} className={styles.songMeta}>
+                    {u}
                   </li>
                 ))}
               </ul>
@@ -1365,11 +1228,6 @@ function HostView({
               </Button>
             </div>
           </div>
-          {logStreamError ? (
-            <p className={styles.error} role="status">
-              {logStreamError}
-            </p>
-          ) : null}
           <pre className={styles.terminal} aria-live="polite">
             {lines.length === 0
               ? "Oczekiwanie na logi…"
@@ -1506,12 +1364,12 @@ function HostView({
             </p>
             <div>
               <h3 className={styles.subTitle}>Kopie zapasowe</h3>
-              <p className={styles.muted}>
-                Przywracanie z kopii — poza 5.0.0 (shadow backup po stronie hosta).
-              </p>
               <div className={styles.actions}>
+                <Button variant="ghost" disabled>
+                  Przywróć…
+                </Button>
                 <Button variant="ghost" onClick={onPathPicker}>
-                  Folder danych…
+                  Path picker
                 </Button>
               </div>
             </div>
@@ -1636,16 +1494,15 @@ function UpdatePanel({
         <Button variant="secondary" onClick={handleCheck} disabled={checking || applying}>
           {checking ? "Sprawdzam…" : "Sprawdź aktualizacje"}
         </Button>
-        <span className={styles.muted}>Kanał: oficjalne (β2)</span>
+        <select className={styles.select} disabled aria-label="Kanał">
+          <option>Oficjalne</option>
+          <option disabled>Testowe (β2)</option>
+        </select>
       </div>
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
+      {error && <p className={styles.muted} style={{ color: "var(--ss-color-danger, red)" }}>{error}</p>}
       {done && <p className={styles.muted}>Aktualizacja hosta uruchomiona — połączenie wróci za chwilę.</p>}
       {hostStatus && (
-        <div className={[styles.actions, styles.actionsFollow].join(" ")}>
+        <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
           <span className={styles.muted}>
             {inTauri ? (
               <>Sidecar: {hostStatus.current}</>
@@ -1670,7 +1527,7 @@ function UpdatePanel({
         </p>
       )}
       {inTauri && desktopStatus && (
-        <div className={[styles.actions, styles.actionsFollow].join(" ")}>
+        <div className={styles.actions} style={{ marginTop: "var(--ss-space-2, 8px)" }}>
           <span className={styles.muted}>
             {desktopStatus.available ? (
               <>
@@ -1730,49 +1587,6 @@ function UpdatePanel({
   );
 }
 
-function DataDirModal({ onClose }: { onClose: () => void }) {
-  const [dataDir, setDataDir] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const info = await fetchNetworkInfo();
-        if (!cancelled) setDataDir(info.dataDir ?? null);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Nie udało się odczytać ścieżki");
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return (
-    <Modal title="Folder danych" onClose={onClose}>
-      <p className={styles.muted}>
-        Przeglądarka nie może wybierać katalogu hosta. Dane runtime leżą w{" "}
-        <code>STAGESYNC_DATA_DIR</code> (domyślnie <code>data/</code> na maszynie
-        serwera).
-      </p>
-      {error ? <p className={styles.muted}>{error}</p> : null}
-      {dataDir ? (
-        <p>
-          Aktualny folder: <code>{dataDir}</code>
-        </p>
-      ) : !error ? (
-        <p className={styles.muted}>Wczytywanie…</p>
-      ) : null}
-      <Button variant="ghost" onClick={onClose}>
-        Zamknij
-      </Button>
-    </Modal>
-  );
-}
-
 function HostSettingsModal({
   onClose,
   onPathPicker,
@@ -1783,14 +1597,6 @@ function HostSettingsModal({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
-  const [hostToken, setHostToken] = useState(() => {
-    try {
-      return localStorage.getItem("stagesync.hostToken") ?? "";
-    } catch {
-      return "";
-    }
-  });
-  const [hostTokenNotice, setHostTokenNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1900,61 +1706,12 @@ function HostSettingsModal({
         )}
       </fieldset>
       <fieldset className={styles.fieldset}>
-        <legend>LAN restart / shutdown</legend>
-        <p className={styles.muted}>
-          Token wysyłany jako Bearer przy restarcie z sieci LAN (pary z{" "}
-          <code>STAGESYNC_HOST_TOKEN</code> na serwerze). Loopback nie wymaga
-          tokenu. Zob. docs/INSTALL.md.
-        </p>
-        {hostTokenNotice ? (
-          <p className={styles.muted} role="status">
-            {hostTokenNotice}
-          </p>
-        ) : null}
-        <label className={styles.midiPortRow}>
-          <span className={styles.midiLabel}>Host token</span>
-          <input
-            className={styles.input}
-            type="password"
-            autoComplete="off"
-            maxLength={256}
-            value={hostToken}
-            aria-label="Host lifecycle token"
-            placeholder="opcjonalny"
-            onChange={(e) => setHostToken(e.target.value)}
-          />
-        </label>
-        <div className={styles.actions}>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              try {
-                const trimmed = hostToken.trim();
-                if (trimmed) {
-                  localStorage.setItem("stagesync.hostToken", trimmed);
-                } else {
-                  localStorage.removeItem("stagesync.hostToken");
-                }
-                setHostToken(trimmed);
-                setHostTokenNotice(
-                  trimmed ? "Token zapisany w przeglądarce." : "Token usunięty.",
-                );
-              } catch {
-                setHostTokenNotice("Nie udało się zapisać tokenu.");
-              }
-            }}
-          >
-            Zapisz token
-          </Button>
-        </div>
-      </fieldset>
-      <fieldset className={styles.fieldset}>
         <legend>Sieć</legend>
         <p className={styles.muted}>
           Port, hostname i URL-e — karta Sieć na zakładce Host.
         </p>
         <Button variant="ghost" onClick={onPathPicker}>
-          Folder danych…
+          Wybierz ścieżkę…
         </Button>
       </fieldset>
       <div className={styles.actions}>
@@ -1985,7 +1742,7 @@ function MusicXmlModal({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal title="MusicXML" onClose={onClose} closeDisabled={busy}>
+    <Modal title="MusicXML" onClose={onClose}>
       {!projectId ? (
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (
@@ -2024,7 +1781,7 @@ function MusicXmlModal({
         </>
       )}
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose} disabled={busy}>
+        <Button variant="ghost" onClick={onClose}>
           Anuluj
         </Button>
         <Button
@@ -2072,7 +1829,7 @@ function BatchPcModal({
   };
 
   return (
-    <Modal title="Batch PC" onClose={onClose} closeDisabled={busy}>
+    <Modal title="Batch PC" onClose={onClose}>
       <p className={styles.muted}>
         Numeracja Program Change (0–127) dla utworów (bez wzorów).
       </p>
@@ -2089,11 +1846,10 @@ function BatchPcModal({
           min={0}
           max={127}
           value={start}
-          disabled={busy}
           onChange={(e) => setStart(Number(e.target.value))}
         />
       </label>
-      <Button variant="secondary" onClick={renumber} disabled={busy}>
+      <Button variant="secondary" onClick={renumber}>
         Numeruj od startu
       </Button>
       <ul className={styles.list}>
@@ -2110,7 +1866,6 @@ function BatchPcModal({
               max={127}
               value={draft[p.id] ?? 0}
               aria-label={`PC ${p.name}`}
-              disabled={busy}
               onChange={(e) =>
                 setDraft((d) => ({
                   ...d,
@@ -2122,7 +1877,7 @@ function BatchPcModal({
         ))}
       </ul>
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={onClose} disabled={busy}>
+        <Button variant="ghost" onClick={onClose}>
           Anuluj
         </Button>
         <Button
@@ -2160,12 +1915,10 @@ function Modal({
   title,
   children,
   onClose,
-  closeDisabled = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
-  closeDisabled?: boolean;
 }) {
   return (
     <div className={styles.overlay} role="dialog" aria-modal>
@@ -2173,17 +1926,12 @@ function Modal({
         type="button"
         className={styles.backdrop}
         aria-label="Zamknij"
-        disabled={closeDisabled}
         onClick={onClose}
       />
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
           <h2>{title}</h2>
-          <ShellIconButton
-            label="Zamknij"
-            disabled={closeDisabled}
-            onClick={onClose}
-          >
+          <ShellIconButton label="Zamknij" onClick={onClose}>
             ×
           </ShellIconButton>
         </div>
