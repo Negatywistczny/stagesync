@@ -1727,6 +1727,7 @@ function MusicXmlModal({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -1750,8 +1751,9 @@ function MusicXmlModal({
             hidden
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (!file || !projectId) return;
+              if (!file || !projectId || busyRef.current) return;
               void (async () => {
+                busyRef.current = true;
                 setBusy(true);
                 setError(null);
                 try {
@@ -1761,6 +1763,7 @@ function MusicXmlModal({
                 } catch (err) {
                   setError(err instanceof Error ? err.message : "Upload nieudany");
                 } finally {
+                  busyRef.current = false;
                   setBusy(false);
                 }
               })();
@@ -1804,6 +1807,7 @@ function BatchPcModal({
   });
   const [start, setStart] = useState(playable[0]?.midiProgramId ?? 0);
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   const renumber = () => {
@@ -1874,6 +1878,8 @@ function BatchPcModal({
           disabled={busy || playable.length === 0}
           onClick={() => {
             void (async () => {
+              if (busyRef.current) return;
+              busyRef.current = true;
               setBusy(true);
               setError(null);
               try {
@@ -1886,6 +1892,7 @@ function BatchPcModal({
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Zapis PC nieudany");
               } finally {
+                busyRef.current = false;
                 setBusy(false);
               }
             })();
