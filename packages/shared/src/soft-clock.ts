@@ -39,6 +39,13 @@ export function getDisplayTicks(
   if (!isPlaying) {
     return anchor.positionTicks;
   }
+  if (
+    !Number.isFinite(currentTimestampMs) ||
+    !Number.isFinite(localReceiptMs) ||
+    !Number.isFinite(anchor.positionTicks)
+  ) {
+    return Number.isFinite(anchor.positionTicks) ? anchor.positionTicks : 0;
+  }
   const elapsedMs = Math.max(0, currentTimestampMs - localReceiptMs);
   const elapsedTicks = elapsedToTicks(
     elapsedMs,
