@@ -62,7 +62,7 @@ Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/repo
 - Polish UI na żywych kontrolkach (typografia, proporcje, copy, gęstość)
 - Timeline: zoom UI/H/V z ikonami; Pomoc z pełną treścią; **snap picker** (beat/subdivision)
 - Audio polish: fade, crossfade, loop-region; ewent. overlap mode
-- **Desktop OS menu — Faza D**
+- **Desktop OS menu — Faza D** (Usuń + Zoom H + Skróty + Undo grey-out)
 - Admin: drobne UX (np. panel toggle) jeśli nie w α4
 - Operator: G1–G10 green na instalatorach (soft-gate bez HW w overnight — [report-beta-gate](./analysis/reports/report-beta-gate.md))
 

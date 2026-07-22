@@ -22,3 +22,8 @@ commands.allow = ["set_nav_timeline_project_id"]
 identifier = "allow-nav-recent-sync"
 description = "Sync Open Recent project list for Plik menu (Faza B)."
 commands.allow = ["set_nav_recent_projects"]
+
+[[permission]]
+identifier = "allow-edit-history-sync"
+description = "Sync Timeline undo/redo enabled state to Edycja menu (Faza D)."
+commands.allow = ["set_edit_history_state"]

@@ -252,6 +252,7 @@ import {
 import {
   isDesktopShell,
   toggleAppFullscreen,
+  syncEditHistoryState,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
@@ -1492,12 +1493,39 @@ export function TimelineShell() {
         case "edit-redo":
           h.onRedo();
           break;
+        case "edit-delete":
+          deleteSelectedFormaClip();
+          break;
+        case "view-zoom-in":
+          h.zoomHorizontalBySteps(1);
+          break;
+        case "view-zoom-out":
+          h.zoomHorizontalBySteps(-1);
+          break;
+        case "view-zoom-reset":
+          h.fitZoom();
+          break;
+        case "help-shortcuts":
+          setHelpOpen(true);
+          break;
         default:
           break;
       }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
+  }, [deleteSelectedFormaClip]);
+
+  useEffect(() => {
+    const canU = Boolean(draftHistory && canUndo(draftHistory));
+    const canR = Boolean(draftHistory && canRedo(draftHistory));
+    void syncEditHistoryState(canU, canR);
+  }, [draftHistory]);
+
+  useEffect(() => {
+    return () => {
+      void syncEditHistoryState(false, false);
+    };
   }, []);
 
   function onDiscard() {

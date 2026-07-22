@@ -31,13 +31,13 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 - Audio: fade / crossfade / loop-region schema + UI handles (train 0, ADR 0008)
 - `docs/api` closeout + smoke E2E (train 1)
 - MIDI host I/O, PC OUT, transport IN (trains 4, 7); PC → load / Client Space / `[` `]` setlist — issues zamknięte
-- Desktop menu Faza B/C + error surfacing (trains 6–7); **Faza D** residual poniżej
+- Desktop menu Faza B/C + error surfacing (trains 6–7); **Faza D** (Usuń + Zoom + Skróty + Undo grey-out) poniżej
 - Overnight Zod caps + UI token hygiene (train 8)
 - **266** overnight PR-ów zamkniętych
 
 ### Must (residual przed tagiem)
 
-- [ ] **Desktop OS menu — Faza D:** Undo/Redo menu wired ([#443](https://github.com/Negatywistczny/stagesync/issues/443)); residual: zoom w Widok, rozbudowa Pomoc — [ROADMAP](./ROADMAP.md)
+- [x] **Desktop OS menu — Faza D:** Usuń + Zoom H (`view-zoom-*` / fitZoom) + Skróty (`help-shortcuts`) + Undo/Redo grey-out — [ROADMAP](./ROADMAP.md)
 - [ ] Operator: domknięcie **G1–G10** na instalatorach β2 → green przed / przy stable ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)) — **bez claim green bez HW**
 
 ### Should
