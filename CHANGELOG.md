@@ -68,6 +68,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST zawierają czas serwera; klient nie parsuje cue scenicznego jako ticka i toleruje legacy REST bez `type`/`serverTimeMs`.
 
 #### 🖥️ App Shell & UI
+- **Client — partytura (OSMD):** brak crasha przy otwarciu Score — kursory włączane dopiero po pierwszym load+render.
 - **Client — suwaki ustawień:** transpozycja (strój ręczny) i skala tekstu Karaoke w kolorze primary (amber), jak zoom Timeline.
 - **Client Grid (karuzela):** brak mrugnięcia na końcu przesunięcia wersów — treść wiersza jest commitowana przed zresetowaniem `translateY`.
 - **Client Karaoke:** aktywna linia znowu na środku ekranu (osobny scroll + pad jak v4); w pauzach między frazami brak podświetlenia (nie „trzyma” poprzedniej / następnej linii).

@@ -23,6 +23,9 @@ const BEAT_CURSOR = {
 };
 
 export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
+  // DrawingParameters.drawCursors defaults true; OSMD.enableOrDisableCursors() must
+  // run only after load+render (GraphicSheet + SVG backend). Calling it at construct
+  // crashes OSMD 2.x (RestoreCursorAfterRerender writes .hidden on undefined cursors).
   const osmd = new OpenSheetMusicDisplay(container, {
     autoResize: true,
     backend: "svg",
@@ -34,8 +37,13 @@ export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
     cursorsOptions: [BEAT_CURSOR, MEASURE_CURSOR],
   });
   osmd.EngravingRules.PageBackgroundColor = "#ffffff";
-  osmd.enableOrDisableCursors(true);
   return osmd;
+}
+
+/** First paint after load — cursors are created inside OSMD.render(). */
+export function renderOsmd(osmd: OpenSheetMusicDisplay): void {
+  if (!osmd.IsReadyToRender()) return;
+  osmd.render();
 }
 
 export function getMeasureCount(osmd: OpenSheetMusicDisplay): number {

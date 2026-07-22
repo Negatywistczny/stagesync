@@ -11,6 +11,7 @@ import {
   applyOsmdZoom,
   createOsmd,
   goToScoreBar,
+  renderOsmd,
   scoreBarFromClientPoint,
   scrollCursorIntoView,
 } from "../../lib/scoreOsmd.js";
@@ -78,10 +79,9 @@ export function ScorePane({
       try {
         await osmd.load(url);
         if (cancelled) return;
-        applyOsmdZoom(osmd, scoreZoom);
-        if (!osmd.IsReadyToRender()) {
-          osmd.render();
-        }
+        osmd.Zoom = Math.max(0.4, Math.min(2.5, scoreZoom / 100));
+        renderOsmd(osmd);
+        if (cancelled) return;
         setReady(true);
         const bar = scoreBarFromDisplayTicks(project, displayTicks);
         goToScoreBar(osmd, bar);
@@ -97,12 +97,12 @@ export function ScorePane({
 
     return () => {
       cancelled = true;
+      osmdRef.current = null;
       try {
         osmd.clear();
       } catch {
         /* ignore */
       }
-      osmdRef.current = null;
       host.replaceChildren();
     };
     // Reload only when project / asset identity changes — zoom/ticks sync separately.
