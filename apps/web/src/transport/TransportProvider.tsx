@@ -26,11 +26,6 @@ import {
 import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 
-function formatTransportError(err: unknown, fallback: string): string {
-  const message = err instanceof Error ? err.message : fallback;
-  return message.slice(0, 500);
-}
-
 function toAnchor(state: TransportState): TransportAnchor {
   return {
     positionTicks: state.positionTicks,
@@ -58,7 +53,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [commandPending, setCommandPending] = useState(false);
-  const commandPendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
 
@@ -184,7 +178,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           };
           if (raw.type === "stage_cue" && typeof raw.text === "string") {
             setStageCue({
-              text: raw.text.slice(0, 200),
+              text: raw.text,
               ttlMs: raw.ttlMs ?? 6000,
               sentAtMs: raw.sentAtMs ?? Date.now(),
               roles: raw.roles,
@@ -208,7 +202,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
             stopRaf();
           }
         } catch (err) {
-          setError(formatTransportError(err, "Invalid tick"));
+          setError(err instanceof Error ? err.message : "Invalid tick");
         }
       };
 
@@ -218,7 +212,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           clearInterval(helloTimer);
           helloTimer = null;
         }
-        setStageCue(null);
         setWsStatus("disconnected");
         latencyEmaRef.current = 0;
         setLatencyMs(null);
@@ -238,7 +231,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         applyAnchor(initial.state, performance.now(), initial.serverTimeMs);
       } catch (err) {
         if (!cancelled) {
-          setError(formatTransportError(err, "Failed to load"));
+          setError(err instanceof Error ? err.message : "Failed to load");
         }
       }
       connect();
@@ -267,8 +260,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const runCommand = useCallback(
     async (fn: () => Promise<{ state: TransportState; serverTimeMs: number }>) => {
-      if (commandPendingRef.current) return;
-      commandPendingRef.current = true;
       setCommandPending(true);
       setError(null);
       try {
@@ -280,9 +271,8 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           stopRaf();
         }
       } catch (err) {
-        setError(formatTransportError(err, "Command failed"));
+        setError(err instanceof Error ? err.message : "Command failed");
       } finally {
-        commandPendingRef.current = false;
         setCommandPending(false);
       }
     },
