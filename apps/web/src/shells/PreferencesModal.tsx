@@ -185,7 +185,6 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
               ))}
             </select>
           </label>
-          <p className={styles.muted}>Wybór zapisywany lokalnie.</p>
         </div>
       ) : (
         <div className={styles.body} role="tabpanel">
