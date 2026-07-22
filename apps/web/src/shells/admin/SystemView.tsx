@@ -7,6 +7,7 @@ import {
   fetchNetworkInfo,
   fetchMidiHostStatus,
   fetchHostUpdateStatus,
+  pickPrimaryJoinUrl,
   postApplyHostUpdate,
   type HostLogLine,
   type NetworkInfo,
@@ -113,7 +114,7 @@ export function SystemView({
     return () => es.close();
   }, []);
 
-  const primaryUrl = network?.urls[0] ?? null;
+  const primaryUrl = network ? pickPrimaryJoinUrl(network) : null;
   const qrSvg = useMemo(() => {
     if (!primaryUrl) return null;
     try {

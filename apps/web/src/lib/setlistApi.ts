@@ -212,6 +212,24 @@ export type NetworkInfo = {
   dataDir?: string;
 };
 
+/**
+ * Join URL for QR / default copy: first non-loopback LAN IPv4 from the host,
+ * else first listed URL (localhost fallback when no LAN).
+ */
+export function pickPrimaryJoinUrl(info: NetworkInfo): string | null {
+  const lan = info.lanAddresses[0];
+  if (lan) return `http://${lan}:${info.port}`;
+  const nonLoopback = info.urls.find((u) => {
+    try {
+      const host = new URL(u).hostname.toLowerCase();
+      return host !== "localhost" && host !== "127.0.0.1" && host !== "::1";
+    } catch {
+      return false;
+    }
+  });
+  return nonLoopback ?? info.urls[0] ?? null;
+}
+
 export async function fetchNetworkInfo(): Promise<NetworkInfo> {
   const res = await fetch("/api/system/network", { cache: "no-store" });
   if (!res.ok) {

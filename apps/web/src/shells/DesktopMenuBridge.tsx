@@ -19,6 +19,7 @@ import {
   downloadDiagnosticsExport,
   fetchNetworkInfo,
   fetchSetlist,
+  pickPrimaryJoinUrl,
   postSystemRestart,
 } from "../lib/setlistApi.js";
 import { suppressAudioPlayback } from "../lib/audioPlayback.js";
@@ -81,7 +82,7 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
         if (cancelled) return;
         const list = info.urls.length > 0 ? info.urls : [];
         setUrls(list);
-        setSelected(list[0] ?? null);
+        setSelected(pickPrimaryJoinUrl(info) ?? list[0] ?? null);
       } catch (err) {
         if (!cancelled) {
           setError(

@@ -87,6 +87,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Transport:** po załadowaniu projektu playhead wraca na początek Countdown; odpowiedzi REST zawierają czas serwera; klient nie parsuje cue scenicznego jako ticka i toleruje legacy REST bez `type`/`serverTimeMs`.
 
 #### 🖥️ App Shell & UI
+- **Admin Host — QR:** kod QR i domyślny URL połączenia używają adresu LAN (nie `localhost`), żeby telefon muzyków mógł się połączyć.
 - **Client / Komunikaty:** klipy Cue z Timeline pokazują się jako `TERAZ` / `ZA N` (~5 s lookahead); live komunikat wygrywa slot `TERAZ`; pusty stan = ukryty host (bez placeholdera).
 - **Admin Set:** „Aktywny set” i „Auto-setlista” obok siebie (z zawijaniem na wąskim ekranie).
 - **Client — partytura (OSMD):** brak crasha przy otwarciu Score — bez `enableOrDisableCursors` przy konstrukcji; kursory tylko przez `render()` po load (OSMD 2.x).
