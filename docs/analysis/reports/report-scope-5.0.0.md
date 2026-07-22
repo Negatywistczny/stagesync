@@ -176,6 +176,39 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
+## Handoff morning (2026-07-22 — overnight; update ~08:14 CEST)
+
+**Audit działa.** Tools OK (`gh`/`git`). Musts **#53–#60 OPEN + CI green**. No merge to `main`, no `5.0.0` tag, G1–G10 **not** claimed. Window → **10:00 UTC+2**. Prefer this section over older handoffs (#205/#213/#223/#239/#247/#255/#297/#310).
+
+### This agent post-must (~06:36–08:14) — open PRs
+
+| Range | Themes (1-theme each) |
+|-------|------------------------|
+| [#266](https://github.com/Negatywistyczny/stagesync/pull/266)–[#279](https://github.com/Negatywistyczny/stagesync/pull/279) | Song filter, drums maxLength, ProjectFiles races, desktop toasts, fullscreen errors, Escape name, delete pending, Stage aria-live, modal busy, focus trap |
+| [#280](https://github.com/Negatywistyczny/stagesync/pull/280)–[#296](https://github.com/Negatywistyczny/stagesync/pull/296) | Forma 64, library export/import/batch, transport mutex, asset stream, SPP/countdown/tap/SSE/SemVer/mapSegments, UG chords, Tekst/Cue -r, tempo BPM, LAN 169.254 |
+| [#297](https://github.com/Negatywistyczny/stagesync/pull/297)/[#310](https://github.com/Negatywistyczny/stagesync/pull/310) | Docs handoffs (superseded by this) |
+| [#299](https://github.com/Negatywistyczny/stagesync/pull/299)–[#315](https://github.com/Negatywistyczny/stagesync/pull/315) | Wand floor, hybrid B, metronome, import 1024, meter upsert, native SPP, waveform/forma-web/setlist/legacy BPM/Akordy, loop/anchors/recent/bar-cells/lane-heights |
+| [#321](https://github.com/Negatywistyczny/stagesync/pull/321)–[#333](https://github.com/Negatywistyczny/stagesync/pull/333) | Forma NaN span, audio visibility prune (+TS fix), selection 256, crash slice, loop/pencil finite, formatUnknownError, Zod details 32, migrate-volume skip junk, client grid bars, audio inflight clear, contentFloor finite |
+
+Earlier overnight (#194–#265) still open — do not reimplement.
+
+### Merge / rebase notes
+
+- Desktop toast: unify **#269** + **#277**.
+- **#274** `pending` vs **#279** focus trap on `ShellBlockingDialog`.
+- **#285** vs **#175**/**#186** (assets).
+- **#299** vs **#102** (wand).
+- **#308** vs **#202** (legacy-migrate).
+- **#321** + **#333** both touch `formaCanvas.ts`.
+
+### Remaining backlog (to 10:00)
+
+1. More small 1-theme PRs; watch CI (fix reds promptly — #322 type fix landed).
+2. Client setlist poll generation after #143.
+3. Admin density / Client clamps (#90/#198).
+4. `iterBarBoundariesTicks` fromTicks optimization (deferred).
+5. G1–G10 soft-gate only — **no** HW green claim.
+
 ## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
 
 **Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
