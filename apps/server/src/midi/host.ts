@@ -76,7 +76,8 @@ export function createMidiHost(
   const beatToWs = new RateMeter();
 
   function setError(err: unknown): void {
-    lastError = err instanceof Error ? err.message : String(err);
+    const raw = err instanceof Error ? err.message : String(err);
+    lastError = raw.slice(0, 500);
   }
 
   function clearError(): void {
