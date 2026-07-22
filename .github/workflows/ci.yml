@@ -7,7 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Anuluj poprzednie uruchomienia tego samego pipeline'u, jeśli wypchnięto nowy commit
+# Cancel previous runs of the same pipeline when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -82,7 +82,7 @@ jobs:
           # Wait for healthcheck to pass (up to 40s)
           for i in $(seq 1 8); do
             sleep 5
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q stagesync)" 2>/devnull || echo "missing")
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q stagesync)" 2>/dev/null || echo "missing")
             echo "health: $STATUS"
             if [ "$STATUS" = "healthy" ]; then break; fi
           done
@@ -109,7 +109,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # Cache dla zależności Cargo / Rusta
+      # Cache Cargo / Rust dependencies
       - name: Rust Cache
         uses: swatinem/rust-cache@v2
         with:
