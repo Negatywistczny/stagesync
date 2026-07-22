@@ -34,9 +34,20 @@ let lastDisplayTicks: number | null = null;
 let lastGraphKey = "";
 
 const SEEK_JUMP_TICKS = 480;
+const MAX_BUFFER_CACHE = 32;
 
 function cacheKey(projectId: string, assetId: string): string {
   return `${projectId}:${assetId}`;
+}
+
+function rememberBuffer(key: string, decoded: AudioBuffer): void {
+  if (bufferCache.has(key)) bufferCache.delete(key);
+  bufferCache.set(key, decoded);
+  while (bufferCache.size > MAX_BUFFER_CACHE) {
+    const oldest = bufferCache.keys().next().value;
+    if (oldest === undefined) break;
+    bufferCache.delete(oldest);
+  }
 }
 
 export function assetFileUrl(projectId: string, assetId: string): string {
@@ -50,7 +61,10 @@ export async function loadAudioBuffer(
 ): Promise<AudioBuffer | null> {
   const key = cacheKey(projectId, assetId);
   const hit = bufferCache.get(key);
-  if (hit) return hit;
+  if (hit) {
+    rememberBuffer(key, hit);
+    return hit;
+  }
   const pending = inflight.get(key);
   if (pending) return pending;
 
@@ -60,7 +74,7 @@ export async function loadAudioBuffer(
       if (!res.ok) return null;
       const raw = await res.arrayBuffer();
       const decoded = await ctx.decodeAudioData(raw.slice(0));
-      bufferCache.set(key, decoded);
+      rememberBuffer(key, decoded);
       return decoded;
     } catch {
       return null;
