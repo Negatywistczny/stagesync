@@ -196,4 +196,89 @@ describe("audioPlayback helpers", () => {
     clearAudioBufferCache("p1");
     expect(getFailedAudioAssetIds("p1")).toEqual([]);
   });
+
+  it("schedules fade ramps and loop window on BufferSource", async () => {
+    const fakeBuf = { duration: 2 } as AudioBuffer;
+    const gainParam = {
+      cancelScheduledValues: vi.fn(),
+      setValueAtTime: vi.fn(),
+      linearRampToValueAtTime: vi.fn(),
+      value: 1,
+    };
+    const source = {
+      buffer: null as AudioBuffer | null,
+      loop: false,
+      loopStart: 0,
+      loopEnd: 0,
+      connect: vi.fn(),
+      start: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const gainNode = {
+      gain: gainParam,
+      connect: vi.fn(),
+    };
+    const ctx = {
+      state: "running",
+      currentTime: 10,
+      destination: {},
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+      createGain: vi.fn(() => gainNode),
+    } as unknown as AudioContext;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const project = {
+      ...projectWithClipUnderPlayhead(),
+      assets: [
+        {
+          id: "asset-1",
+          storageName: "kick.wav",
+          originalName: "kick.wav",
+          kind: "audio" as const,
+          mimeType: "audio/wav",
+          sizeBytes: 100,
+          durationMs: 2000,
+        },
+      ],
+      audioClips: [
+        {
+          id: "clip-1",
+          trackId: "tr-1",
+          assetId: "asset-1",
+          startTicks: 0,
+          lengthTicks: 1920,
+          muted: false,
+          gainDb: 0,
+          trimInMs: 100,
+          trimOutMs: 200,
+          fadeInMs: 200,
+          fadeOutMs: 100,
+          loop: true,
+        },
+      ],
+    };
+
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+
+    expect(source.loop).toBe(true);
+    expect(source.loopStart).toBeCloseTo(0.1, 5);
+    expect(source.loopEnd).toBeCloseTo(1.8, 5);
+    expect(gainParam.setValueAtTime).toHaveBeenCalled();
+    expect(gainParam.linearRampToValueAtTime).toHaveBeenCalled();
+    expect(source.start).toHaveBeenCalledOnce();
+    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+  });
 });

@@ -4,10 +4,16 @@
 
 import {
   audioClipBufferOffsetSecAlongMaps,
+  audioClipPlayableMs,
   audioClipRemainingSecAlongMaps,
+  audioFadeGainAtMs,
+  fadeInMsOf,
+  fadeOutMsOf,
   gainDbToLinear,
   resolveMeterAt,
   resolveTempoAt,
+  trimInMsOf,
+  trimOutMsOf,
   type Project,
 } from "@stagesync/shared";
 import {
@@ -220,7 +226,7 @@ function graphKey(input: AudioPlaybackInput): string {
     input.project.audioClips
       .map(
         (c) =>
-          `${c.id}:${c.trackId}:${c.assetId}:${c.startTicks}:${c.lengthTicks}:${c.trimInMs ?? 0}:${c.trimOutMs ?? 0}:${c.muted}:${c.gainDb}`,
+          `${c.id}:${c.trackId}:${c.assetId}:${c.startTicks}:${c.lengthTicks}:${c.trimInMs ?? 0}:${c.trimOutMs ?? 0}:${c.muted}:${c.gainDb}:${c.fadeInMs ?? 0}:${c.fadeOutMs ?? 0}:${c.loop ?? false}`,
       )
       .join(";"),
     input.project.audioTracks
@@ -281,9 +287,51 @@ function startClip(
 
   const source = ctx.createBufferSource();
   source.buffer = buf;
-  const gain = ctx.createGain();
-  gain.gain.value =
+  if (clip.loop) {
+    source.loop = true;
+    source.loopStart = trimInMsOf(clip) / 1000;
+    source.loopEnd = Math.max(
+      source.loopStart,
+      buf.duration - trimOutMsOf(clip) / 1000,
+    );
+  }
+
+  const maxGain =
     gainDbToLinear(track?.gainDb) * gainDbToLinear(clip.gainDb);
+  const intoClipMs = offset * 1000 - trimInMsOf(clip);
+  const asset = project.assets.find((a) => a.id === clip.assetId);
+  const playableMs = audioClipPlayableMs(clip, asset, ctxTempo);
+  const fadeIn = fadeInMsOf(clip);
+  const fadeOut = fadeOutMsOf(clip);
+  const now = ctx.currentTime;
+
+  const gain = ctx.createGain();
+  const startGain =
+    audioFadeGainAtMs(intoClipMs, playableMs, fadeIn, fadeOut) * maxGain;
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.setValueAtTime(startGain, now);
+
+  if (fadeIn > 0 && intoClipMs < fadeIn) {
+    const reachMaxAt = now + (fadeIn - intoClipMs) / 1000;
+    if (reachMaxAt > now) {
+      gain.gain.linearRampToValueAtTime(maxGain, reachMaxAt);
+    }
+  }
+
+  if (fadeOut > 0 && playableMs > 0) {
+    const fadeOutStartMs = playableMs - fadeOut;
+    const fadeOutStartAt = now + (fadeOutStartMs - intoClipMs) / 1000;
+    const endAt = now + (playableMs - intoClipMs) / 1000;
+    if (fadeOutStartAt > now) {
+      gain.gain.setValueAtTime(maxGain, fadeOutStartAt);
+      if (endAt > fadeOutStartAt) {
+        gain.gain.linearRampToValueAtTime(0, endAt);
+      }
+    } else if (endAt > now) {
+      gain.gain.linearRampToValueAtTime(0, endAt);
+    }
+  }
+
   source.connect(gain);
   gain.connect(ctx.destination);
   const startAt = Math.max(0, Math.min(offset, Math.max(0, buf.duration - 0.001)));
