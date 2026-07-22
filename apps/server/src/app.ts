@@ -1,6 +1,11 @@
 import express, { type Express } from "express";
+import { join } from "node:path";
 import type { HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
+import {
+  createFileLogger,
+  installConsoleFileMirror,
+} from "./file-logger.js";
 import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
 import { createMidiProgramChangeHandler } from "./midi/program-change.js";
@@ -48,6 +53,8 @@ export type CreateAppOptions = {
   port?: number;
   /** Serve Vite `dist` (Docker / prod). Default: STAGESYNC_STATIC_DIR. */
   staticDir?: string | null;
+  /** Skip console→file mirror (unit tests). */
+  disableFileLogs?: boolean;
 };
 
 export type AppBundle = {
@@ -62,10 +69,25 @@ export type AppBundle = {
 
 export function createApp(options: CreateAppOptions = {}): AppBundle {
   const dataDir = options.dataDir ?? defaultDataDir();
+  const logsDir = join(dataDir, "logs");
+  const fileLogger =
+    options.disableFileLogs === true || process.env.NODE_ENV === "test"
+      ? null
+      : createFileLogger(logsDir);
+  if (fileLogger) {
+    installConsoleFileMirror(fileLogger);
+  }
+
   const stores = options.stores ?? createStores(dataDir);
   const transport = options.transport ?? createTransportEngine();
   const stageHub = options.stageHub ?? createStageHub();
-  const logBuffer = options.logBuffer ?? createLogBuffer();
+  const logBuffer =
+    options.logBuffer ??
+    createLogBuffer({
+      onPush: fileLogger
+        ? (entry) => fileLogger.write(entry.level, entry.msg, entry.t)
+        : undefined,
+    });
   const presence = options.presence ?? createClientPresence();
   const midi =
     options.midi ??
@@ -118,6 +140,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
       lifecycle: options.lifecycle,
       port: options.port,
       version: VERSION,
+      dataDir,
     }),
   );
   app.use("/api/transport", createTransportRouter(transport, stores));

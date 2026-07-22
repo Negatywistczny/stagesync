@@ -377,6 +377,13 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         true,
         None::<&str>,
     )?;
+    let help_export = MenuItem::with_id(
+        app,
+        "help_export_diagnostics",
+        "Eksportuj logi diagnostyczne…",
+        true,
+        None::<&str>,
+    )?;
     #[cfg(not(target_os = "macos"))]
     let help_about = MenuItem::with_id(
         app,
@@ -392,10 +399,21 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         app,
         "Pomoc",
         true,
-        &[&help_docs, &help_issues, &help_sep, &help_about],
+        &[
+            &help_docs,
+            &help_issues,
+            &help_export,
+            &help_sep,
+            &help_about,
+        ],
     )?;
     #[cfg(target_os = "macos")]
-    let help_submenu = Submenu::with_items(app, "Pomoc", true, &[&help_docs, &help_issues])?;
+    let help_submenu = Submenu::with_items(
+        app,
+        "Pomoc",
+        true,
+        &[&help_docs, &help_issues, &help_export],
+    )?;
 
     Menu::with_items(
         app,
@@ -455,6 +473,9 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "host_clients" => navigate_main(&app, "/admin?section=stage"),
             "host_qr" => dispatch_menu_action(&app, "host-qr"),
             "host_restart" => dispatch_menu_action(&app, "host-restart"),
+            "help_export_diagnostics" => {
+                dispatch_menu_action(&app, "diagnostics-export")
+            }
             "fullscreen" => {
                 if let Some(window) = app.get_webview_window("main") {
                     tauri::async_runtime::spawn(async move {
@@ -508,6 +529,20 @@ fn append_sidecar_log(log: &mut String, chunk: &str) {
     if log.len() > SIDECAR_LOG_CAP {
         let keep = &log[log.len() - SIDECAR_LOG_CAP..];
         *log = format!("…\n{keep}");
+    }
+}
+
+fn append_sidecar_file_log(path: &Path, chunk: &str) {
+    use std::io::Write;
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+    {
+        let _ = f.write_all(chunk.as_bytes());
+        if !chunk.ends_with('\n') {
+            let _ = f.write_all(b"\n");
+        }
     }
 }
 
@@ -695,6 +730,9 @@ pub fn run() {
 
             let data_dir = path_for_node(&app_data_dir.join("StageSync"));
             let _ = std::fs::create_dir_all(&data_dir);
+            let logs_dir = data_dir.join("logs");
+            let _ = std::fs::create_dir_all(&logs_dir);
+            let sidecar_log_path = logs_dir.join("sidecar.log");
 
             if let Err(msg) = assert_node_path_usable(&server_dir, "server_dir")
                 .and_then(|_| assert_node_path_usable(&static_dir, "static_dir"))
@@ -753,6 +791,7 @@ pub fn run() {
 
             let window_for_poll = window.clone();
             let sidecar_child_for_poll = sidecar_child_setup.clone();
+            let sidecar_log_for_poll = sidecar_log_path.clone();
             tauri::async_runtime::spawn(async move {
                 let deadline = Instant::now() + STARTUP_TIMEOUT;
                 let mut log_tail = String::new();
@@ -764,14 +803,15 @@ pub fn run() {
                     match tokio::time::timeout(HEALTHCHECK_INTERVAL, rx.recv()).await {
                         Ok(Some(event)) => match event {
                             CommandEvent::Stdout(bytes) | CommandEvent::Stderr(bytes) => {
-                                append_sidecar_log(
-                                    &mut log_tail,
-                                    &String::from_utf8_lossy(&bytes),
-                                );
+                                let chunk = String::from_utf8_lossy(&bytes);
+                                append_sidecar_log(&mut log_tail, &chunk);
+                                append_sidecar_file_log(&sidecar_log_for_poll, &chunk);
                                 continue;
                             }
                             CommandEvent::Error(err) => {
-                                append_sidecar_log(&mut log_tail, &format!("[shell] {err}"));
+                                let chunk = format!("[shell] {err}");
+                                append_sidecar_log(&mut log_tail, &chunk);
+                                append_sidecar_file_log(&sidecar_log_for_poll, &chunk);
                                 continue;
                             }
                             CommandEvent::Terminated(payload) => {
@@ -779,10 +819,9 @@ pub fn run() {
                                     .code
                                     .map(|c| c.to_string())
                                     .unwrap_or_else(|| "?".into());
-                                append_sidecar_log(
-                                    &mut log_tail,
-                                    &format!("[shell] sidecar exited (code {code})"),
-                                );
+                                let chunk = format!("[shell] sidecar exited (code {code})");
+                                append_sidecar_log(&mut log_tail, &chunk);
+                                append_sidecar_file_log(&sidecar_log_for_poll, &chunk);
                                 let msg = startup_failure_message(
                                     &log_tail,
                                     Some(&format!("proces hosta zakończył się (kod {code})")),
@@ -816,9 +855,27 @@ pub fn run() {
                             // Desktop = okno operatora (ADR 0010) — domyślnie Admin.
                             let url = nav_url("/admin");
                             let _ = window_for_poll.navigate(url.parse().unwrap());
-                            // Keep draining logs so the pipe does not back-pressure Node.
+                            // Keep draining logs into data/logs/sidecar.log (#351).
+                            let sidecar_log_forever = sidecar_log_for_poll.clone();
                             tauri::async_runtime::spawn(async move {
-                                while rx.recv().await.is_some() {}
+                                while let Some(event) = rx.recv().await {
+                                    match event {
+                                        CommandEvent::Stdout(bytes)
+                                        | CommandEvent::Stderr(bytes) => {
+                                            append_sidecar_file_log(
+                                                &sidecar_log_forever,
+                                                &String::from_utf8_lossy(&bytes),
+                                            );
+                                        }
+                                        CommandEvent::Error(err) => {
+                                            append_sidecar_file_log(
+                                                &sidecar_log_forever,
+                                                &format!("[shell] {err}"),
+                                            );
+                                        }
+                                        _ => {}
+                                    }
+                                }
                             });
                             return;
                         }

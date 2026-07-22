@@ -1,9 +1,12 @@
 import { Router, type Request, type Response } from "express";
+import { readFileSync, readdirSync } from "node:fs";
+import { basename, join } from "node:path";
 import type { LogBuffer } from "../log-buffer.js";
 import type { Lifecycle } from "../lifecycle.js";
 import { buildNetworkInfo } from "../network-info.js";
 import { isRunningUnderPm2 } from "../lifecycle.js";
 import { ApplyUpdateBodySchema } from "@stagesync/shared";
+import { buildStoreZip, type ZipEntry } from "../diagnostics-zip.js";
 
 export type SystemRouterDeps = {
   logBuffer: LogBuffer;
@@ -325,6 +328,75 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     setImmediate(() => {
       lifecycle.gracefulShutdown("admin_shutdown");
     });
+  });
+
+  /**
+   * GET /api/system/diagnostics/export — support ZIP (logs + env meta + RAM buffer).
+   * Loopback OK; LAN needs host token / ALLOW_REMOTE (same as restart).
+   */
+  router.get("/diagnostics/export", (req, res) => {
+    if (!assertLifecycleAllowed(req, res)) return;
+    if (!dataDir) {
+      res.status(501).json({ ok: false, error: "dataDir unavailable" });
+      return;
+    }
+
+    const logsDir = join(dataDir, "logs");
+    const entries: ZipEntry[] = [];
+    const logNames: string[] = [];
+    try {
+      for (const name of readdirSync(logsDir)) {
+        if (!/^(stagesync\.log(?:\.1)?|sidecar\.log(?:\.1)?)$/.test(name)) {
+          continue;
+        }
+        try {
+          const data = readFileSync(join(logsDir, name));
+          // Cap individual log files in the bundle (avoid huge downloads).
+          const capped =
+            data.length > 2 * 1024 * 1024 ? data.subarray(data.length - 2 * 1024 * 1024) : data;
+          entries.push({ name: `logs/${basename(name)}`, data: Buffer.from(capped) });
+          logNames.push(name);
+        } catch {
+          /* skip unreadable */
+        }
+      }
+    } catch {
+      /* empty logs dir */
+    }
+
+    const meta = {
+      exportedAt: new Date().toISOString(),
+      version,
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      uptimeSec: Math.round(process.uptime()),
+      shell: process.env.STAGESYNC_SHELL ?? null,
+      dataDir,
+      logFiles: logNames,
+      // Never include tokens / secrets.
+    };
+    entries.push({
+      name: "meta.json",
+      data: Buffer.from(`${JSON.stringify(meta, null, 2)}\n`, "utf8"),
+    });
+    entries.push({
+      name: "ring-buffer.json",
+      data: Buffer.from(
+        `${JSON.stringify({ lines: logBuffer.getLines() }, null, 2)}\n`,
+        "utf8",
+      ),
+    });
+
+    const stamp = meta.exportedAt.replace(/[:.]/g, "-");
+    const zip = buildStoreZip(entries);
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="stagesync-diagnostics-${stamp}.zip"`,
+    );
+    res.setHeader("Cache-Control", "no-store");
+    res.send(zip);
   });
 
   return router;

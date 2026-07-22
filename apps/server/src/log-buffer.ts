@@ -10,7 +10,13 @@ export type LogLine = {
   msg: string;
 };
 
-export function createLogBuffer(options: { maxLines?: number } = {}) {
+export function createLogBuffer(
+  options: {
+    maxLines?: number;
+    /** Optional sink (e.g. rotating file under data/logs/). */
+    onPush?: (entry: LogLine) => void;
+  } = {},
+) {
   const maxLines = options.maxLines ?? 200;
   const lines: LogLine[] = [];
   const clients = new Set<Response>();
@@ -23,6 +29,11 @@ export function createLogBuffer(options: { maxLines?: number } = {}) {
     };
     lines.push(entry);
     while (lines.length > maxLines) lines.shift();
+    try {
+      options.onPush?.(entry);
+    } catch {
+      /* sink must not break push */
+    }
     const payload = `data: ${JSON.stringify(entry)}\n\n`;
     for (const res of clients) {
       try {

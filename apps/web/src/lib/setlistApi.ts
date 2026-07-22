@@ -103,6 +103,33 @@ export async function clearHostLogs(): Promise<void> {
   }
 }
 
+/** Download diagnostics ZIP (logs + meta). Uses host token on LAN. */
+export async function downloadDiagnosticsExport(): Promise<void> {
+  const res = await fetch("/api/system/diagnostics/export", {
+    cache: "no-store",
+    headers: hostLifecycleHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  const blob = await res.blob();
+  const cd = res.headers.get("content-disposition") ?? "";
+  const match = /filename="([^"]+)"/i.exec(cd);
+  const filename = match?.[1] ?? `stagesync-diagnostics-${Date.now()}.zip`;
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 export type NetworkInfo = {
   port: number;
   hostname: string;
