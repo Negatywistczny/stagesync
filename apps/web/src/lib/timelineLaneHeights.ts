@@ -85,9 +85,12 @@ export function loadLaneHeights(
     if (!obj || typeof obj !== "object") return {};
     const out: LaneHeightsMap = {};
     for (const [id, val] of Object.entries(obj as Record<string, unknown>)) {
+      if (Object.keys(out).length >= 64) break;
+      const key = String(id);
+      if (!key || key.length > 128) continue;
       const n = Math.round(Number(val));
-      if (!id || !Number.isFinite(n)) continue;
-      out[String(id)] = clampLaneHeight(n);
+      if (!Number.isFinite(n)) continue;
+      out[key] = clampLaneHeight(n);
     }
     return out;
   } catch {
