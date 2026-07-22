@@ -47,6 +47,9 @@ export function snapTicksToBarStart(
   meter: TimeSignature,
   ppq: number = DEFAULT_PPQ,
 ): number {
+  if (!Number.isFinite(ticks) || !Number.isInteger(ticks)) {
+    throw new RangeError("ticks must be a finite integer");
+  }
   const perBar = ticksPerBar(meter, ppq);
   const barIndex = floorDiv(ticks, perBar);
   const start = barIndex * perBar;
@@ -64,6 +67,9 @@ export function snapTicksToBeatGrid(
   meter: TimeSignature,
   ppq: number = DEFAULT_PPQ,
 ): number {
+  if (!Number.isFinite(ticks) || !Number.isInteger(ticks)) {
+    throw new RangeError("ticks must be a finite integer");
+  }
   const step = localTicksPerBeat(meter, ppq);
   return Math.round(ticks / step) * step;
 }
@@ -76,6 +82,9 @@ export function snapTicksToSubdivision(
   parts: SnapSubdivisionParts,
   ppq: number = DEFAULT_PPQ,
 ): number {
+  if (!Number.isFinite(ticks) || !Number.isInteger(ticks)) {
+    throw new RangeError("ticks must be a finite integer");
+  }
   if (![2, 4, 8, 16].includes(parts)) {
     throw new RangeError("parts must be 2, 4, 8, or 16");
   }

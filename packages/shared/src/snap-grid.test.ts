@@ -49,4 +49,12 @@ describe("snap-grid", () => {
       quantizeTicks(500, { kind: "subdivision", parts: 4 }, { meter: M4, ppq: PPQ }),
     ).toBe(480);
   });
+
+  it("direct snap helpers reject non-finite ticks", () => {
+    expect(() => snapTicksToBarStart(Number.NaN, M4, PPQ)).toThrow(RangeError);
+    expect(() =>
+      snapTicksToBeatGrid(Number.POSITIVE_INFINITY, M4, PPQ),
+    ).toThrow(RangeError);
+    expect(() => snapTicksToSubdivision(1.5, 4, PPQ)).toThrow(RangeError);
+  });
 });

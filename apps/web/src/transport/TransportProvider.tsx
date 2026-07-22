@@ -60,6 +60,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
+  const loopRef = useRef<TransportState["loop"]>(null);
   const rafIdRef = useRef(0);
   const wsRef = useRef<WebSocket | null>(null);
   const latencyEmaRef = useRef(0);
@@ -90,6 +91,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
       playingRef.current = next.playing;
+      loopRef.current = next.loop;
       setState(next);
       setDisplayTicks(anchor.positionTicks);
     },
@@ -109,6 +111,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           frameTime,
           receiptMsRef.current,
           true,
+          loopRef.current,
         ),
       );
       rafIdRef.current = requestAnimationFrame(loop);

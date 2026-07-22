@@ -31,7 +31,7 @@ function spansFromAkordy(clips: AkordClip[]): ContentSpan[] {
   return clips.map((c, i) => ({
     startTicks: c.startTicks,
     lengthTicks: c.lengthTicks,
-    name: c.symbol || `Akord ${i + 1}`,
+    name: (String(c.symbol ?? "").trim().slice(0, 24) || `Akord ${i + 1}`).trim(),
   }));
 }
 

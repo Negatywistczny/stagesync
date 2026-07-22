@@ -51,6 +51,11 @@ describe("TransportPlayBodySchema", () => {
       timeSignature: { numerator: 5, denominator: 8 },
     });
   });
+
+  it("rejects bpm outside 20…400", () => {
+    expect(() => TransportPlayBodySchema.parse({ bpm: 10 })).toThrow();
+    expect(() => TransportPlayBodySchema.parse({ bpm: 500 })).toThrow();
+  });
 });
 
 describe("TransportTickMessageSchema", () => {
@@ -71,6 +76,26 @@ describe("TransportTickMessageSchema", () => {
       sentAtMs: 1_700_000_000_000,
     };
     expect(TransportTickMessageSchema.parse(msg)).toEqual(msg);
+  });
+
+  it("rejects non-finite timestamps", () => {
+    const base = {
+      ...defaultTransportState(),
+      type: "transport_tick" as const,
+    };
+    expect(() =>
+      TransportTickMessageSchema.parse({
+        ...base,
+        serverTimeMs: Number.NaN,
+      }),
+    ).toThrow();
+    expect(() =>
+      TransportTickMessageSchema.parse({
+        ...base,
+        serverTimeMs: 1,
+        sentAtMs: Number.POSITIVE_INFINITY,
+      }),
+    ).toThrow();
   });
 });
 

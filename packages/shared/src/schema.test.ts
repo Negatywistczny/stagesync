@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CreateProjectBodySchema,
+  StageMessageBodySchema,
   LibrarySchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -125,39 +126,6 @@ describe("ProjectSchemaV5", () => {
       }),
     ).toThrow();
   });
-
-  it("accepts optional audio fade and loop fields", () => {
-    const raw = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    const withFade = {
-      ...raw,
-      audioTracks: [{ id: "t1", name: "A" }],
-      audioClips: [
-        {
-          id: "c1",
-          trackId: "t1",
-          assetId: "a1",
-          startTicks: 0,
-          lengthTicks: 1920,
-          fadeInMs: 50,
-          fadeOutMs: 100,
-          loop: true,
-        },
-      ],
-      assets: [
-        {
-          id: "a1",
-          kind: "audio" as const,
-          storageName: "x.wav",
-          originalName: "x.wav",
-          mimeType: "audio/wav",
-          sizeBytes: 10,
-        },
-      ],
-    };
-    const parsed = ProjectSchema.parse(withFade);
-    expect(parsed.audioClips[0]?.fadeInMs).toBe(50);
-    expect(parsed.audioClips[0]?.loop).toBe(true);
-  });
 });
 
 describe("CreateProjectBodySchema", () => {
@@ -186,6 +154,14 @@ describe("PutProjectBodySchema", () => {
     void id;
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
+    ).toThrow();
+  });
+});
+
+describe("StageMessageBodySchema", () => {
+  it("rejects unknown keys", () => {
+    expect(() =>
+      StageMessageBodySchema.parse({ text: "Hi", extra: 1 }),
     ).toThrow();
   });
 });

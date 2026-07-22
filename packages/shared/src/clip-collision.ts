@@ -50,6 +50,17 @@ function sortClips(clips: FormaClip[]): FormaClip[] {
   return [...clips].sort((a, b) => a.startTicks - b.startTicks);
 }
 
+/** Allocate `${base}` or `${base}-2`, `${base}-3`, … avoiding `used`. */
+export function allocateUniqueClipId(
+  base: string,
+  used: ReadonlySet<string>,
+): string {
+  if (!used.has(base)) return base;
+  let n = 2;
+  while (used.has(`${base}-${n}`)) n += 1;
+  return `${base}-${n}`;
+}
+
 /**
  * Place `placed` into the lane: trim/split overlapping non-countdown neighbors.
  * Countdown is never modified. `placed` replaces any prior clip with the same id.
@@ -64,17 +75,31 @@ export function placeClipNoOverlap(
     return clips;
   }
 
+  // Reject intrusion into Countdown (same rule as move/resize/insert).
+  if (!isCountdown(placed)) {
+    const countdown = clips.find(isCountdown);
+    if (countdown) {
+      const cdEnd = clipEnd(countdown);
+      if (start < cdEnd && end > countdown.startTicks) {
+        return clips;
+      }
+    }
+  }
+
+  const usedIds = new Set<string>([placed.id]);
   const kept: FormaClip[] = [];
   for (const clip of clips) {
     if (clip.id === placed.id) continue;
     if (isCountdown(clip)) {
       kept.push(clip);
+      usedIds.add(clip.id);
       continue;
     }
 
     const cEnd = clipEnd(clip);
     if (cEnd <= start || clip.startTicks >= end) {
       kept.push(clip);
+      usedIds.add(clip.id);
       continue;
     }
 
@@ -88,6 +113,7 @@ export function placeClipNoOverlap(
           lengthTicks: start - clip.startTicks,
         }),
       );
+      usedIds.add(clip.id);
     }
 
     if (keepRight) {
@@ -95,11 +121,15 @@ export function placeClipNoOverlap(
       const remapped = (clip.subsections ?? [])
         .map((s) => s - offset)
         .filter((s) => s > 0);
+      const rightId = keepLeft
+        ? allocateUniqueClipId(`${clip.id}-r`, usedIds)
+        : clip.id;
+      usedIds.add(rightId);
       kept.push(
         clampFormaSubsections({
           ...clip,
-          // Split: left keeps id; right gets a fresh suffix. Trim-from-left: same id.
-          id: keepLeft ? `${clip.id}-r` : clip.id,
+          // Split: left keeps id; right gets a unique suffix. Trim-from-left: same id.
+          id: rightId,
           startTicks: end,
           lengthTicks: cEnd - end,
           subsections: remapped.length ? remapped : undefined,
@@ -388,13 +418,20 @@ export function splitClipAt(
     ...target,
     lengthTicks: leftLen,
   };
+  const without = clips.filter((c) => c.id !== id);
+  const used = new Set(without.map((c) => c.id));
+  used.add(left.id);
   const right: FormaClip = {
     ...target,
-    id: opts?.rightId ?? `${target.id}-r`,
+    id: opts?.rightId ?? allocateUniqueClipId(`${target.id}-r`, used),
     startTicks: at,
     lengthTicks: rightLen,
   };
 
-  const without = clips.filter((c) => c.id !== id);
-  return sortClips([...without, left, right]);
+  return sortClips([
+    ...without,
+    clampFormaSubsections(left),
+    clampFormaSubsections(right),
+  ]);
 }
+

@@ -195,6 +195,12 @@ export function importUgText(
     if (!raw) {
       return { ok: false, message: "Pusty tekst — wklej tabulaturę UG lub ChordPro." };
     }
+    if (raw.length > 524_288) {
+      return {
+        ok: false,
+        message: "Tekst importu jest za długi (max 512 KB).",
+      };
+    }
 
     // eslint-disable-next-line no-control-regex -- intentional binary sniff
     if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(raw)) {

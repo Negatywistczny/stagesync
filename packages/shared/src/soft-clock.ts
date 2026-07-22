@@ -1,4 +1,8 @@
 import { elapsedToTicks } from "./time.js";
+import {
+  isUsableLoop,
+  type TransportLoop,
+} from "./transport-loop.js";
 
 export type TransportAnchor = {
   positionTicks: number;
@@ -10,6 +14,9 @@ export type TransportAnchor = {
 /**
  * Soft playhead between server ticks. Pure — caller supplies timestamps
  * (rAF frameTime or performance.now for receipt). Never a musical authority.
+ *
+ * Optional `loop` wraps extrapolated ticks into the loop range (inclusive start /
+ * exclusive end) so the display matches server wrap between WS ticks.
  *
  * @example
  * // 4/4 @ 120 BPM, PPQ 960: 500 ms ≈ one quarter = 960 ticks
@@ -27,9 +34,17 @@ export function getDisplayTicks(
   currentTimestampMs: number,
   localReceiptMs: number,
   isPlaying: boolean,
+  loop?: TransportLoop | null,
 ): number {
   if (!isPlaying) {
     return anchor.positionTicks;
+  }
+  if (
+    !Number.isFinite(currentTimestampMs) ||
+    !Number.isFinite(localReceiptMs) ||
+    !Number.isFinite(anchor.positionTicks)
+  ) {
+    return Number.isFinite(anchor.positionTicks) ? anchor.positionTicks : 0;
   }
   const elapsedMs = Math.max(0, currentTimestampMs - localReceiptMs);
   const elapsedTicks = elapsedToTicks(
@@ -38,5 +53,19 @@ export function getDisplayTicks(
     anchor.timeSignature,
     anchor.ppq,
   );
-  return anchor.positionTicks + elapsedTicks;
+  const raw = anchor.positionTicks + elapsedTicks;
+  return wrapDisplayTicks(raw, loop);
+}
+
+/** Modular wrap for soft-clock display (server still reanchors via loopWrapTicks). */
+export function wrapDisplayTicks(
+  positionTicks: number,
+  loop?: TransportLoop | null,
+): number {
+  if (!loop?.enabled || !isUsableLoop(loop) || positionTicks < loop.endTicks) {
+    return positionTicks;
+  }
+  const len = loop.endTicks - loop.startTicks;
+  const offset = (positionTicks - loop.startTicks) % len;
+  return loop.startTicks + (offset < 0 ? offset + len : offset);
 }
