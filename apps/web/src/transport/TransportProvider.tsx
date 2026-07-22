@@ -25,6 +25,7 @@ import {
 } from "./api.js";
 import { TransportContext, type StageCue, type WsStatus } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
+import { wsReconnectDelayMs } from "./wsReconnect.js";
 
 function formatTransportError(err: unknown, fallback: string): string {
   const message = err instanceof Error ? err.message : fallback;
@@ -151,6 +152,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let helloTimer: ReturnType<typeof setInterval> | null = null;
+    let reconnectAttempt = 0;
 
     const connect = () => {
       if (cancelled) return;
@@ -172,8 +174,21 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        if (!cancelled) setWsStatus("connected");
+        if (cancelled) return;
+        reconnectAttempt = 0;
+        setWsStatus("connected");
         sendHello();
+        void (async () => {
+          try {
+            const snap = await getTransport();
+            if (cancelled) return;
+            applyAnchor(snap.state, performance.now(), snap.serverTimeMs);
+            if (snap.state.playing) startRaf();
+            else stopRaf();
+          } catch {
+            /* ticks will catch up */
+          }
+        })();
         // Keep Admin presence latency fresh while connected (v4 interval).
         helloTimer = setInterval(() => {
           if (!cancelled) sendHello();
@@ -231,11 +246,13 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         latencyEmaRef.current = 0;
         setLatencyMs(null);
         stopRaf();
-        reconnectTimer = setTimeout(connect, 1000);
+        const delay = wsReconnectDelayMs(reconnectAttempt);
+        reconnectAttempt += 1;
+        reconnectTimer = setTimeout(connect, delay);
       };
 
       ws.onerror = () => {
-        /* onclose handles reconnect */
+        /* onclose handles reconnect + backoff */
       };
     };
 

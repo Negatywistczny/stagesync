@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { Button } from "@stagesync/ui";
 import { toDisplayBar, ticksToBbt, type Project } from "@stagesync/shared";
@@ -65,7 +65,9 @@ export function ClientShell() {
     activeProject,
     setActiveProject,
     loading: projectLoading,
+    reload: reloadActiveProject,
   } = useActiveProject(state.activeProjectId);
+  const prevWsStatusRef = useRef(wsStatus);
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
@@ -82,6 +84,15 @@ export function ClientShell() {
       roles: picked,
     });
   }, [started, name, picked, announcePresence]);
+
+  // After WS reconnect, refetch project even if activeProjectId unchanged (#358).
+  useEffect(() => {
+    const prev = prevWsStatusRef.current;
+    prevWsStatusRef.current = wsStatus;
+    if (prev === "disconnected" && wsStatus === "connected") {
+      void reloadActiveProject();
+    }
+  }, [wsStatus, reloadActiveProject]);
 
   useEffect(() => {
     let cancelled = false;
@@ -190,6 +201,14 @@ export function ClientShell() {
     return (
       <div className={styles.page}>
         <div className={styles.modal} role="dialog" aria-modal aria-labelledby="name-title">
+          <div className={styles.modalConn}>
+            <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
+          </div>
+          {wsStatus === "disconnected" ? (
+            <p className={styles.offlineBanner} role="status">
+              Brak połączenia z serwerem. Próba ponownego łączenia…
+            </p>
+          ) : null}
           <h1 id="name-title" className={styles.modalTitle}>
             Witaj w StageSync
           </h1>
@@ -216,6 +235,11 @@ export function ClientShell() {
     return (
       <div className={styles.page}>
         <ClientHeader {...headerProps} started={false} />
+        {wsStatus === "disconnected" ? (
+          <p className={styles.offlineBanner} role="status">
+            Brak połączenia z serwerem. Próba ponownego łączenia…
+          </p>
+        ) : null}
         <main className={styles.welcome}>
           <div className={styles.welcomeHero}>
             <ShellWordmark className={styles.welcomeBrand} />
@@ -293,6 +317,11 @@ export function ClientShell() {
   return (
     <div className={styles.page}>
       <ClientHeader {...headerProps} started />
+      {wsStatus === "disconnected" ? (
+        <p className={styles.offlineBanner} role="status">
+          Brak połączenia z serwerem. Próba ponownego łączenia…
+        </p>
+      ) : null}
 
       {drumsNoteError ? (
         <p className={styles.liveSaveError} role="alert">
@@ -501,7 +530,9 @@ function ClientHeader({
             key={i}
             className={[
               styles.dot,
-              i === bbt.beat ? styles.dotActive : "",
+              wsStatus !== "disconnected" && i === bbt.beat
+                ? styles.dotActive
+                : "",
             ].join(" ")}
           />
         ))}
