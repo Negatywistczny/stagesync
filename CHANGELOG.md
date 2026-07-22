@@ -10,6 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 <<<<<<< HEAD
 ### Dodano
 
+- **UI Slider ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** komponent `Slider` w `@stagesync/ui` (tokeny `--ss-*`; stany default/hover/focus/active/disabled).
 - **Diagnostics ([#351](https://github.com/Negatywistczny/stagesync/issues/351)):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
 - **Audio preload ([#365](https://github.com/Negatywistczny/stagesync/issues/365)):** `ensureAudioBuffered` przed Play (spinner na przycisku); ostrzeżenie UI przy błędzie decode; `clearAudioBufferCache` przy zmianie/odmontowaniu utworu.
 - **CI Codecov ([#418](https://github.com/Negatywistczny/stagesync/issues/418)):** Vitest coverage (lcov) dla shared/server/web; `codecov-action@v5` z `fail_ci_if_error: false`.
