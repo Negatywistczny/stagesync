@@ -1436,6 +1436,8 @@ function UpdatePanel({
 }) {
   const [checking, setChecking] = useState(false);
   const [applying, setApplying] = useState(false);
+  const checkingRef = useRef(false);
+  const applyingRef = useRef(false);
   const [hostStatus, setHostStatus] = useState<HostUpdateStatus | null>(null);
   const [desktopStatus, setDesktopStatus] = useState<DesktopUpdateInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1445,6 +1447,8 @@ function UpdatePanel({
   const inTauri = isDesktopShell();
 
   const handleCheck = useCallback(async () => {
+    if (checkingRef.current || applyingRef.current) return;
+    checkingRef.current = true;
     setChecking(true);
     setError(null);
     setHostStatus(null);
@@ -1472,6 +1476,7 @@ function UpdatePanel({
       }
       setError(messages.length ? messages.join(" · ") : null);
     } finally {
+      checkingRef.current = false;
       setChecking(false);
     }
   }, [inTauri]);
@@ -1490,6 +1495,8 @@ function UpdatePanel({
   }, [autoCheck, handleCheck]);
 
   const handleApplyHost = useCallback(async () => {
+    if (applyingRef.current || checkingRef.current) return;
+    applyingRef.current = true;
     setApplying(true);
     setError(null);
     try {
@@ -1498,17 +1505,21 @@ function UpdatePanel({
     } catch (e) {
       setError(formatUnknownError(e));
     } finally {
+      applyingRef.current = false;
       setApplying(false);
     }
   }, []);
 
   const handleApplyDesktop = useCallback(async () => {
+    if (applyingRef.current || checkingRef.current) return;
+    applyingRef.current = true;
     setApplying(true);
     setError(null);
     try {
       await installDesktopUpdate();
     } catch (e) {
       setError(formatUnknownError(e));
+      applyingRef.current = false;
       setApplying(false);
     }
   }, []);
