@@ -35,7 +35,7 @@ export function pencilAkordyClick(
     id: `akord-${crypto.randomUUID()}`,
     startTicks,
     lengthTicks: barTicks,
-    symbol: symbol.trim() || "C",
+    symbol: (symbol.trim() || "C").slice(0, 64),
   };
 
   const synthetic = project.akordy.clips.map(asFormaLike);
