@@ -103,7 +103,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   });
 
   app.use("/api/library", createLibraryRouter(stores));
-  app.use("/api/projects", createProjectsRouter(stores));
+  app.use("/api/projects", createProjectsRouter(stores, transport));
   app.use("/api/setlist", createSetlistRouter(stores, transport));
   app.use("/api/stage", createStageRouter(stageHub, presence));
   app.use(
