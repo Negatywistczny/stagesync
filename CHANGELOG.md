@@ -43,6 +43,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Audio WebAudio:** obwiednia Fade In/Out przez `AudioParam` ramps + Loop z oknem trim; `graphKey` reaguje na zmiany fade/loop.
 - **Timeline Pomoc:** synchronizacja skrótów z kodem (schowek, zoom, Fit Zoom, nożyczki `T`→`C`); pętla `C` / `L`; usunięta Różdżka z pomocy (ukryta w TOOLS).
+- **i18n:** polskie etykiety narzędzi Timeline (Wskaźnik / Inteligentny / Ołówek / Gumka / Nożyczki) oraz komunikaty błędów API / uploadu / transportu.
 - **Timeline:** zmiana metrum @ Takt 1 przelicza długość przedtaktu (stała liczba taktów); snap `beat` odcinkowo po `meterMap`.
 - **Client:** strój instrumentu — ikony v4 (🎹 / 🎺 / 🎷 / ±) nad etykietami C / B♭ / E♭ / Ręczna.
 - **Timeline:** suwaki zoom UI/H/V w kolorze primary (amber); klasa `.zoomRange` podpięta do inputów.
