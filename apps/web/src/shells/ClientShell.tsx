@@ -67,6 +67,7 @@ export function ClientShell() {
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);
   const [vocalTapIndex, setVocalTapIndex] = useState(0);
+  const [drumsNoteError, setDrumsNoteError] = useState<string | null>(null);
   const [cueVisible, setCueVisible] = useState(false);
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
@@ -286,6 +287,12 @@ export function ClientShell() {
     <div className={styles.page}>
       <ClientHeader {...headerProps} started />
 
+      {drumsNoteError ? (
+        <p className={styles.liveSaveError} role="alert">
+          {drumsNoteError}
+        </p>
+      ) : null}
+
       <div
         className={[
           styles.stage,
@@ -349,10 +356,18 @@ export function ClientShell() {
                           ),
                         },
                       };
+                      setDrumsNoteError(null);
                       setActiveProject(next);
                       void putProject(state.activeProjectId, next)
                         .then((saved) => setActiveProject(saved))
-                        .catch(() => setActiveProject(prev));
+                        .catch((err) => {
+                          setActiveProject(prev);
+                          setDrumsNoteError(
+                            err instanceof Error
+                              ? err.message
+                              : "Nie udało się zapisać notatki perkusji",
+                          );
+                        });
                     }}
                   />
                 ) : (
@@ -380,7 +395,6 @@ export function ClientShell() {
                       setVocalTapOn(false);
                       return;
                     }
-                    const prev = activeProject;
                     const next = applyVocalTap(
                       activeProject,
                       clip.id,
@@ -388,8 +402,7 @@ export function ClientShell() {
                     );
                     setActiveProject(next);
                     void putProject(state.activeProjectId, next)
-                      .then((saved) => {
-                        setActiveProject(saved);
+                      .then(() => {
                         const qi = vocalTapIndex + 1;
                         if (qi >= queue.length) {
                           setVocalTapOn(false);
@@ -398,7 +411,7 @@ export function ClientShell() {
                           setVocalTapIndex(qi);
                         }
                       })
-                      .catch(() => setActiveProject(prev));
+                      .catch(() => undefined);
                   }}
                 />
               ) : id === "grid" ? (
