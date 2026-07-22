@@ -57,6 +57,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Admin Scena — układ reżyserski:** Master Bar **Korekta na scenie** (pełna szerokość, kompaktowy rząd suwaków) nad siatką **Komunikaty** | **Klienci** (≈60/40), bez martwej przestrzeni pod kartami.
+- **Admin Host — diagnostyka:** układ 2-kolumnowy (Sieć & QR / telemetria MIDI/Audio / O aplikacji | pełna wysokość konsoli logów); kopiowanie URL LAN; bez podwójnego scrolla.
 - **Preferencje Audio:** sekcje **Urządzenia Wyjściowe** i **Parametry Silnika** (fieldset); usunięty zbędny hint „Wybór zapisywany lokalnie.” pod wyborem wyjścia.
 - **Admin Host:** usunięty przycisk i okno „Ustawienia hosta” (Preferencje MIDI/Audio przez Cmd/Ctrl+,); sekcja **MIDI/Audio**; bez etykiety backendu MIDI i bloku „Kopie zapasowe” / atrap path pickera.
 - **Client / Komunikaty:** większe toasty sceniczne (`TERAZ` / `ZA N`) z typografią `--ss-text-stage-*`, kolorami success/alert i animacją wejścia — układ jak w v4, bez klonowania HTML.

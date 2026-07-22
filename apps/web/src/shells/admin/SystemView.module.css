@@ -1,0 +1,131 @@
+/* Admin Host — System / Diagnostics: dashboard + log console */
+
+.root {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--ss-space-4);
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-4);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.leftCard {
+  flex: 0 0 auto;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.logCard {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.networkBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+}
+
+.networkTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ss-space-3);
+}
+
+.networkMeta {
+  flex: 1 1 10rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+}
+
+.qrWrap {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: var(--ss-space-2);
+  background: var(--ss-color-bg);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+}
+
+.qrWrap :global(svg) {
+  width: 5.5rem;
+  height: auto;
+  display: block;
+}
+
+.urlList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+}
+
+.aboutBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  align-items: flex-start;
+}
+
+.updateBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+.updateRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+}
+
+.updateError {
+  margin: 0;
+  color: var(--ss-color-danger);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}
+
+@media (max-width: 768px) {
+  .root {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(12rem, 1fr);
+    overflow: auto;
+  }
+
+  .left {
+    overflow: visible;
+  }
+
+  .right {
+    min-height: 16rem;
+  }
+}
