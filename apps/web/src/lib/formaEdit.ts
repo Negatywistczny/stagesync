@@ -5,8 +5,8 @@
 import {
   deleteClip,
   insertSpanOverwrite,
-  moveClipNoOverlap,
   moveClipsRigidDelta,
+  moveSectionsFromId,
   resizeClipNoOverlap,
   resolveMeterAt,
   ticksPerBar,
@@ -183,10 +183,23 @@ export function commitMoveClip(
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
   const snapped = snapEditTicksWithMode(project, newStartTicks, mode);
-  const clips = moveClipNoOverlap(project.forma.clips, clipId, snapped, {
+  // TE-24: single-section drag cascades to all later sections (v4 parity).
+  const clips = moveSectionsFromId(project.forma.clips, clipId, snapped, {
     contentFloorTicks: floor,
   });
   return { ...project, forma: { clips } };
+}
+
+/** Section ids moved together on a single Forma drag (target + later). */
+export function cascadeFormaMoveIds(
+  clips: readonly FormaClip[],
+  clipId: string,
+): string[] {
+  const target = clips.find((c) => c.id === clipId);
+  if (!target || target.kind === "countdown") return [clipId];
+  return clips
+    .filter((c) => c.kind !== "countdown" && c.startTicks >= target.startTicks)
+    .map((c) => c.id);
 }
 
 /** Multi-move same Δ from primary preview start (v4 moveIds). */

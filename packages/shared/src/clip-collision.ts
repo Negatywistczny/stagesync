@@ -204,6 +204,31 @@ export function moveClipsRigidDelta(
 }
 
 /**
+ * Move a section and all later sections by the same Δ (v4 TE-24 cascade).
+ * Countdown never moves. Empty / unknown id → no-op.
+ */
+export function moveSectionsFromId(
+  clips: FormaClip[],
+  id: string,
+  newStartTicks: number,
+  opts?: CollisionOpts,
+): FormaClip[] {
+  const target = clips.find((c) => c.id === id);
+  if (!target || isCountdown(target)) return clips;
+
+  const floor = contentFloor(opts);
+  const desired = Math.max(floor, Math.trunc(newStartTicks));
+  if (!Number.isFinite(desired)) return clips;
+  const delta = desired - target.startTicks;
+  if (delta === 0) return clips;
+
+  const moveIds = clips
+    .filter((c) => !isCountdown(c) && c.startTicks >= target.startTicks)
+    .map((c) => c.id);
+  return moveClipsRigidDelta(clips, moveIds, delta, opts);
+}
+
+/**
  * Resize clip edge to `newEdgeTicks`. Auto-trims neighbors at contact.
  * Countdown → no-op. Start edge clamped to content floor; min length enforced.
  */
