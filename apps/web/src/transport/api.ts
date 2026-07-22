@@ -24,7 +24,7 @@ async function parseTick(res: Response): Promise<TransportCommandResult> {
     } catch {
       /* ignore */
     }
-    throw new Error(message);
+    throw new Error(message.slice(0, 500));
   }
   const msg = TransportTickMessageSchema.parse(await res.json());
   return {
