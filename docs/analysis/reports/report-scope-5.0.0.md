@@ -176,9 +176,9 @@ flowchart LR
 3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
 4. TODO → sekcja `5.1` (procedura w TODO.md).
 
-## Handoff morning (2026-07-22 — overnight; update ~00:53 CEST)
+## Handoff morning (2026-07-22 — overnight; update ~09:45 CEST)
 
-**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2**.
+**Agent:** bez merge do `main`; bez tagu `5.0.0`; G1–G10 **nie** green. Okno do **10:00 UTC+2** (końcówka).
 
 ### Must A–E (#53–#60) — CI green
 
@@ -242,6 +242,18 @@ flowchart LR
 | [#113](https://github.com/Negatywistczny/stagesync/pull/113) | fix(shared): make HealthResponseSchema strict | https://github.com/Negatywistczny/stagesync/pull/113 | pending | `main` |
 | [#114](https://github.com/Negatywistczny/stagesync/pull/114) | fix(shared): make MIDI host status schemas strict | https://github.com/Negatywistczny/stagesync/pull/114 | pending | `main` |
 
+### Wave 19–21 (morning ~08:30–09:45 CEST — through #402)
+
+Prefer this over #297/#310/#334/#372/#393 for resume. Musts **#53–#60** still OPEN + CI green.
+
+| Band | Themes (open; no merge) |
+|------|-------------------------|
+| [#345](https://github.com/Negatywistczny/stagesync/pull/345)–[#372](https://github.com/Negatywistczny/stagesync/pull/372) | env path resolve; caps/slices/finite; handoff docs |
+| [#373](https://github.com/Negatywistczny/stagesync/pull/373)–[#392](https://github.com/Negatywistczny/stagesync/pull/392) | LAN/MIDI/UpdateStatus/SSE; metronome/wand/UG; snap/URL |
+| [#393](https://github.com/Negatywistczny/stagesync/pull/393)–[#402](https://github.com/Negatywistczny/stagesync/pull/402) | handoff docs; Timeline UUID; WS reconnect/cue; StageView/Admin/log bounds |
+
+**Rules:** no merge to `main`, no `v5.0.0` tag, no G1–G10 HW green claims.
+
 ### Parallel (other agents)
 
 | # | Note |
@@ -255,7 +267,7 @@ flowchart LR
 - Stack: **#100** after **#98**; **#84** after/with **#63**.
 - C-fade stack: #57→#58 before #64/#66.
 
-Recent: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116) (MIDI status strict / UpdateStatus strict / Client role no-emoji).
+Recent: prefer handoff **wave 19–21** above (#345–#402). Earlier: [#114](https://github.com/Negatywistyczny/stagesync/pull/114)–[#116](https://github.com/Negatywistyczny/stagesync/pull/116).
 
 ### Remaining backlog (ranked)
 
