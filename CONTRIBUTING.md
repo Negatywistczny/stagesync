@@ -14,37 +14,35 @@
 
 ## Gałęzie (trunk-based)
 
-- **`main`** — linia integracyjna; przed pushem lokalnie przechodzą `pnpm test` i `pnpm build`.
-- **Docs / chore / drobne poprawki** — wolno commitować i pushować prosto na `main`.
-- **Zadania produktowe z [TODO](docs/TODO.md)** (CRUD, transport, MIDI, …) — tylko krótkie gałęzie `feat/<nazwa>` (ew. `fix/…`) → **Pull Request** → merge do `main`.
+- **`main`** — domyślna linia pracy; małe kroki kod → test → commit → push. Przed pushem lokalnie `pnpm test` i `pnpm build` gdy zmieniasz kod.
+- **Gałąź / PR** (`feat/…`, `fix/…`) — tylko gdy **użytkownik o to prosi** albo gdy jawnie potrzebna izolacja; nie „na zapas”.
 - **Bez** Git Flow: nie używamy `develop` ani `release/*`.
 - CI: workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) na `push` /
   PR do `main`.
 
+Higiena listy zadań i parytetu: [docs/TODO.md](docs/TODO.md), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
+
 ### Branch protection (właściciel repo)
 
-Polityka „docs/chore → `main` OK” zostaje. Na PR-ach do `main` — ruleset
-[main — require CI](https://github.com/Negatywistczny/stagesync/rules/19185142)
+Push na `main` OK (Admin bypass). Na PR-ach do `main` — ruleset
+[main — require CI](https://github.com/Negatywistyczny/stagesync/rules/19185142)
 (Settings → Rules → Rulesets):
 
 - [x] **Require status checks to pass before merging**
 - [x] Status check: `lint-types-test-build` (job `name:` w
       `ci.yml`; bez unicode — inaczej Actions `startup_failure`)
 - [x] **Nie** wymagaj „Require a pull request before merging”
-- [x] Bypass: rola **Admin** (`always`) — docs/chore można pushować prosto
-      na `main` (ruleset inaczej blokuje też bezpośredni push bez checka)
+- [x] Bypass: rola **Admin** (`always`) — bezpośredni push na `main` możliwy
 
 Konfiguracja w GitHub UI / API — nie w kodzie repozytorium.
 
-## Feature PR (produkt)
+## Pull Request (gdy użytkownik prosi)
 
-Zadania z [TODO](docs/TODO.md) idą przez `feat/…` → PR. W opisie PR podaj
-**problem** (1–2 zdania) oraz zaznacz **Wpływ** (model / API / UI / Granica 0)
+W opisie PR podaj **problem** (1–2 zdania) oraz zaznacz **Wpływ** (model / API / UI / Granica 0)
 w [szablonie PR](.github/PULL_REQUEST_TEMPLATE.md). Przy zmianie architektury
 lub Granicy 0 — link do ADR.
 
-**Bez** wymogu wireframe → makieta → kod. Docs / chore / kosmetyczny `fix` —
-bez tej ceremonii.
+**Bez** wymogu wireframe → makieta → kod.
 
 ## Commity
 
@@ -59,11 +57,11 @@ Linki do SemVer, Keep a Changelog, EditorConfig, ADR itd.: [docs/STANDARDS.md](d
 Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).  
 Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](docs/ui/README.md).
 
-### CHANGELOG.md (Keep a Changelog)
+### CHANGELOG.md (Keep a Changelog) + TODO
 
-Pełna reguła agenta: [`.cursor/rules/changelog.mdc`](.cursor/rules/changelog.mdc).
+Pełne reguły agenta: [`.cursor/rules/changelog.mdc`](.cursor/rules/changelog.mdc), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
 
-Skrót: ludzki opis korzyści/zachowania; kolejność H3 **Zmieniono → Dodano → Naprawiono** (jak w β2+); domeny jako emoji `####` (`⏱️ Timeline & DAW`, `🎛️ Audio / MIDI / Transport`, `🖥️ App Shell & UI`, `💻 Desktop`, `⚙️ API / Serwer`, `📚 Docs`); **nigdy** drugi ten sam H3; agreguj commity; bez nazw funkcji, tokenów CSS, CI/Vitest ani checklist G1–G10.
+Skrót CHANGELOG: ludzki opis korzyści/zachowania; kolejność H3 **Dodano → Zmieniono → Naprawiono**; domeny jako emoji `####` (`⏱️ Timeline & DAW`, `🎛️ Audio / MIDI / Transport`, `🖥️ App Shell & UI`, …); **nigdy** drugi ten sam H3; agreguj commity; bez nazw funkcji, tokenów CSS, CI/Vitest ani checklist G1–G10. Skrót TODO: tylko otwarte `[ ]`; ukończone → CHANGELOG, potem usuń z listy (bez „Dostarczone” / `[x]`).
 
 | Tak | Nie |
 |-----|-----|

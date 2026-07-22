@@ -1,0 +1,40 @@
+---
+description: Higiena docs/TODO.md — tylko aktywne zadania; trunk-based; parity first; bez fałszywych Done
+alwaysApply: true
+---
+
+# TODO hygiene + trunk-based
+
+Uzupełnia [changelog.mdc](changelog.mdc) (historia wydań) i [versioning.mdc](versioning.mdc) (tag / cut).  
+Ten plik = **jak prowadzić `docs/TODO.md`** i jak nie kłamać w docs.
+
+## Clean TODO
+
+`docs/TODO.md` trzyma **tylko** aktywne / nadchodzące zadania.
+
+- **Nigdy** nie trzymaj `[x]` ani sekcji „Dostarczone” / „Archiwum” / „Zrobione”.
+- Po domknięciu: wpisz korzyść do [CHANGELOG.md](../../CHANGELOG.md) `[Unreleased]` (styl → [changelog.mdc](changelog.mdc)), potem **usuń** pozycję z TODO.
+- Puste sekcje H3 — nie twórz. Orientacja u góry (Stan, linki ROADMAP/CHANGELOG) — krótka.
+- Kanoniczne klastry otwartych `[ ]` w etapie 5.0:
+  1. **Must (Blokery wydania 5.0.0)**
+  2. **Should / Weryfikacja**
+  3. **Etap 5.1+ (Przyszłość)**
+
+## No fake claims
+
+- **Nie** oznaczaj Done / nie przenoś do CHANGELOG bez realnego kodu + testów + parity runtime (gdy dotyczy UI/transportu).
+- Przed „domknięte w docs” — **zweryfikuj dysk** (grep / read / test), nie tylko narrację w TODO/ROADMAP.
+- Bramki operatorskie (np. G1–G10 na HW) — **bez claim green** bez dowodu z hardware.
+- Stub / atrapa ≠ done ([ADR 0011 §1a](../../docs/adr/0011-ui-parity-behavior.md)).
+
+## Trunk-based
+
+- Domyślnie pracuj **na `main`** (małe kroki: kod → test → commit → push).
+- Gałąź `feat/…` / PR — **tylko gdy użytkownik o to prosi** (albo gdy jawnie wymaga izolacji).
+- Nie otwieraj PR „na zapas”. Nie mieszaj hotfixów 4.x z tym monorepo.
+
+## Parity FIRST
+
+- Do tagu **`5.0.0`**: zachowanie **v4 must** (chyba że ADR / PO jawnie usunęło z produktu).
+- Nowości v5 **nie** przesłaniają luk parytetu v4 — najpierw domykaj dług operatorski, potem 5.1+.
+- Szczegóły: [ADR 0011](../../docs/adr/0011-ui-parity-behavior.md), [ui-parity.mdc](ui-parity.mdc).

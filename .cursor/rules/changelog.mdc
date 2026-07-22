@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Changelog (Keep a Changelog PL)
 
-Uzupełnia [versioning.mdc](versioning.mdc) (SemVer / tag / cut release). Ten plik = **jak pisać wpisy**.
+Uzupełnia [versioning.mdc](versioning.mdc) (SemVer / tag / cut release) oraz [todo-hygiene.mdc](todo-hygiene.mdc) (co wypada z TODO → tutaj). Ten plik = **jak pisać wpisy**.
 
 ## Cel
 

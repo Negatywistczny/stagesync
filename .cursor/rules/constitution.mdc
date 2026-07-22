@@ -10,7 +10,7 @@ Język docs / workflow commitów / gałęzie → [CONTRIBUTING.md](../../CONTRIB
 Mapa dokumentacji → [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).  
 Standardy zewnętrzne → [docs/STANDARDS.md](../../docs/STANDARDS.md).
 
-Feature’y z `docs/TODO.md` → gałąź `feat/…` + PR (nie prosto na `main`). Docs/chore na `main` OK.
+Trunk-based: domyślnie **`main`** (małe kroki). Gałąź / PR tylko na prośbę użytkownika — [todo-hygiene.mdc](todo-hygiene.mdc), [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Jedno źródło prawdy (SSOT)
 
