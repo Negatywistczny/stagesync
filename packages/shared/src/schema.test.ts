@@ -204,8 +204,18 @@ describe("CreateProjectBodySchema", () => {
     expect(CreateProjectBodySchema.parse({ name: "New" })).toEqual({
       name: "New",
     });
+    expect(CreateProjectBodySchema.parse({ name: "  Song  " })).toEqual({
+      name: "Song",
+    });
     expect(() => CreateProjectBodySchema.parse({ name: "" })).toThrow();
+    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
     expect(() => CreateProjectBodySchema.parse({})).toThrow();
+  });
+
+  it("rejects unknown keys", () => {
+    expect(() =>
+      CreateProjectBodySchema.parse({ name: "X", extra: true }),
+    ).toThrow();
   });
 });
 

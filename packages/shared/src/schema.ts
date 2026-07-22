@@ -386,11 +386,13 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
 
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 
-export const CreateProjectBodySchema = z.object({
-  name: z.string().min(1),
-  fromTemplateId: z.string().min(1).optional(),
-  isTemplate: z.boolean().optional(),
-});
+export const CreateProjectBodySchema = z
+  .object({
+    name: z.string().trim().min(1).max(200),
+    fromTemplateId: z.string().min(1).optional(),
+    isTemplate: z.boolean().optional(),
+  })
+  .strict();
 
 export type CreateProjectBody = z.infer<typeof CreateProjectBodySchema>;
 
