@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@stagesync/ui";
 import {
   fetchStageClients,
@@ -20,14 +20,6 @@ const CLIENT_STALE_MS = 10_000;
 type RoleId = (typeof ROLE_OPTIONS)[number]["id"];
 type ClientPhase = "awaiting-data" | "awaiting-role" | "stale" | "ready";
 type HeaderPresence = "online" | "empty" | "error";
-
-function roleLabel(id: string): string {
-  return ROLE_OPTIONS.find((r) => r.id === id)?.label ?? id;
-}
-
-function formatRoles(ids: readonly string[]): string {
-  return ids.map(roleLabel).join(", ");
-}
 
 function resolveClientPhase(
   client: PresenceClient,
@@ -61,40 +53,31 @@ export function StageView() {
   const [text, setText] = useState("");
   const [ttlMs, setTtlMs] = useState(6000);
   const [pending, setPending] = useState(false);
-  const pendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [roles, setRoles] = useState<RoleId[]>([]);
   const [clients, setClients] = useState<PresenceClient[]>([]);
   const [clientsError, setClientsError] = useState<string | null>(null);
   const [clientsLoading, setClientsLoading] = useState(false);
-  const clientsGenRef = useRef(0);
 
   const refreshClients = useCallback(async () => {
-    const gen = ++clientsGenRef.current;
     setClientsLoading(true);
     setClientsError(null);
     try {
-      const list = await fetchStageClients();
-      if (gen !== clientsGenRef.current) return;
-      setClients(list);
+      setClients(await fetchStageClients());
     } catch (err) {
-      if (gen !== clientsGenRef.current) return;
-      setClientsError(
-        err instanceof Error ? err.message : "Nie udało się pobrać klientów",
-      );
+      const message =
+        err instanceof Error ? err.message : "Nie udało się pobrać klientów";
+      setClientsError(message.slice(0, 500));
     } finally {
-      if (gen === clientsGenRef.current) setClientsLoading(false);
+      setClientsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void refreshClients();
     const id = window.setInterval(() => void refreshClients(), 4000);
-    return () => {
-      window.clearInterval(id);
-      clientsGenRef.current += 1;
-    };
+    return () => window.clearInterval(id);
   }, [refreshClients]);
 
   function toggleRole(id: RoleId) {
@@ -105,26 +88,26 @@ export function StageView() {
 
   const onSend = async () => {
     const trimmed = text.trim();
-    if (!trimmed || pendingRef.current) return;
-    pendingRef.current = true;
+    if (!trimmed) return;
     setPending(true);
     setError(null);
     setStatus(null);
     try {
       await sendStageMessage({
         text: trimmed,
-        ttlMs,
+        ttlMs: ttlMs > 0 ? ttlMs : undefined,
         roles: roles.length > 0 ? roles : undefined,
       });
       setStatus(
         roles.length > 0
-          ? `Wysłano do: ${formatRoles(roles)}.`
+          ? `Wysłano do: ${roles.join(", ")}.`
           : "Wysłano do wszystkich.",
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Wysyłka nieudana");
+      const message =
+        err instanceof Error ? err.message : "Wysyłka nieudana";
+      setError(message.slice(0, 500));
     } finally {
-      pendingRef.current = false;
       setPending(false);
     }
   };
@@ -167,11 +150,7 @@ export function StageView() {
               {error}
             </p>
           ) : null}
-          {status ? (
-            <p className={styles.muted} role="status" aria-live="polite">
-              {status}
-            </p>
-          ) : null}
+          {status ? <p className={styles.muted}>{status}</p> : null}
           <textarea
             className={styles.textarea}
             maxLength={200}
@@ -207,7 +186,7 @@ export function StageView() {
             >
               <option value="6000">TTL 6 s</option>
               <option value="10000">10 s</option>
-              <option value="0">∞ (bez limitu)</option>
+              <option value="0">∞ (UI)</option>
             </select>
             <Button
               variant="primary"
@@ -290,7 +269,7 @@ export function StageView() {
                           : phase === "stale"
                             ? "brak sygnału"
                             : c.roles.length > 0
-                              ? formatRoles(c.roles)
+                              ? c.roles.join(", ")
                               : "—",
                         phase === "ready" || phase === "awaiting-role"
                           ? c.latencyMs != null
