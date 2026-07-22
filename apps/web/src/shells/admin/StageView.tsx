@@ -21,6 +21,14 @@ type RoleId = (typeof ROLE_OPTIONS)[number]["id"];
 type ClientPhase = "awaiting-data" | "awaiting-role" | "stale" | "ready";
 type HeaderPresence = "online" | "empty" | "error";
 
+function roleLabel(id: string): string {
+  return ROLE_OPTIONS.find((r) => r.id === id)?.label ?? id;
+}
+
+function formatRoles(ids: readonly string[]): string {
+  return ids.map(roleLabel).join(", ");
+}
+
 function resolveClientPhase(
   client: PresenceClient,
   now = Date.now(),
@@ -108,7 +116,7 @@ export function StageView() {
       });
       setStatus(
         roles.length > 0
-          ? `Wysłano do: ${roles.join(", ")}.`
+          ? `Wysłano do: ${formatRoles(roles)}.`
           : "Wysłano do wszystkich.",
       );
     } catch (err) {
@@ -279,7 +287,7 @@ export function StageView() {
                           : phase === "stale"
                             ? "brak sygnału"
                             : c.roles.length > 0
-                              ? c.roles.join(", ")
+                              ? formatRoles(c.roles)
                               : "—",
                         phase === "ready" || phase === "awaiting-role"
                           ? c.latencyMs != null
