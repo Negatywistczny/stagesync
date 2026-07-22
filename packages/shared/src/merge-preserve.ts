@@ -8,11 +8,15 @@ export function mergePreserveById<T extends { id: string }>(
 ): T[] {
   const byId = new Map<string, T>();
   for (const item of client) {
+    if (!item.id) continue;
     byId.set(item.id, item);
+    if (byId.size >= 1024) break;
   }
-  for (const item of server) {
-    if (!byId.has(item.id)) {
+  if (byId.size < 1024) {
+    for (const item of server) {
+      if (!item.id || byId.has(item.id)) continue;
       byId.set(item.id, item);
+      if (byId.size >= 1024) break;
     }
   }
   return [...byId.values()];
