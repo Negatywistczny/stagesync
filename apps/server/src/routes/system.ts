@@ -270,14 +270,19 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         signal: AbortSignal.timeout(15000),
       });
       if (!wtRes.ok) {
-        const text = await wtRes.text().catch(() => "");
-        res.status(502).json({ ok: false, error: `Watchtower error ${wtRes.status}: ${text}` });
+        const text = (await wtRes.text().catch(() => "")).slice(0, 500);
+        res.status(502).json({
+          ok: false,
+          error: `Watchtower error ${wtRes.status}: ${text}`,
+        });
         return;
       }
       // Respond before the container restarts (Watchtower may kill us).
       res.json({ ok: true, action: "host-update-triggered" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = (
+        err instanceof Error ? err.message : String(err)
+      ).slice(0, 500);
       res.status(502).json({ ok: false, error: `Watchtower unreachable: ${msg}` });
     }
   });
