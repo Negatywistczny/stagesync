@@ -158,6 +158,10 @@
   align-items: stretch;
 }
 
+.splitCollapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .splitAside {
   display: flex;
   flex-direction: column;
@@ -485,6 +489,23 @@
 .songMeta {
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
+}
+
+.networkUrlRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.networkUrlRow .songMeta {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .inspectorName {

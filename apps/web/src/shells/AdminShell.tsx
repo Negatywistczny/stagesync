@@ -622,12 +622,7 @@ export function AdminShell() {
       ) : null}
 
       {pathPickerOpen ? (
-        <Modal title="Ścieżka" onClose={() => setPathPickerOpen(false)}>
-          <p className={styles.muted}>Przeglądanie katalogów — shell.</p>
-          <Button variant="ghost" onClick={() => setPathPickerOpen(false)}>
-            Zamknij
-          </Button>
-        </Modal>
+        <DataDirModal onClose={() => setPathPickerOpen(false)} />
       ) : null}
 
       <ShellPromptDialog
@@ -699,6 +694,7 @@ function SongsView({
   const nameDirty = Boolean(selected && draftName !== selected.name);
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
+  const [asideOpen, setAsideOpen] = useState(true);
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -727,11 +723,23 @@ function SongsView({
   }, [library?.projects, filter, sort]);
 
   return (
-    <div className={styles.split}>
+    <div
+      className={[styles.split, asideOpen ? "" : styles.splitCollapsed]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <section className={styles.card} aria-label="Utwory">
         <div className={styles.cardHead}>
           <h1 className={styles.cardTitle}>Utwory</h1>
           <div className={styles.actions}>
+            <Button
+              variant="ghost"
+              aria-expanded={asideOpen}
+              aria-controls="admin-songs-aside"
+              onClick={() => setAsideOpen((v) => !v)}
+            >
+              {asideOpen ? "Ukryj panel" : "Pokaż panel"}
+            </Button>
             <Button
               variant="secondary"
               loading={commandPending}
@@ -851,7 +859,8 @@ function SongsView({
         </div>
       </section>
 
-      <div className={styles.splitAside}>
+      {asideOpen ? (
+      <div className={styles.splitAside} id="admin-songs-aside">
         <aside className={styles.card} aria-label="Wybrany utwór">
           <div className={styles.cardHead}>
             <h2 className={styles.cardTitle}>Wybrany</h2>
@@ -950,6 +959,7 @@ function SongsView({
           onImportFile={onImportFile}
         />
       </div>
+      ) : null}
     </div>
   );
 }
@@ -1069,11 +1079,18 @@ function HostView({
   const [paused, setPaused] = useState(false);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+
+  useEffect(() => {
+    if (!copiedUrl) return;
+    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
+    return () => window.clearTimeout(t);
+  }, [copiedUrl]);
 
   const refreshMidi = useCallback(async () => {
     try {
@@ -1170,8 +1187,24 @@ function HostView({
               </p>
               <ul className={styles.list}>
                 {network.urls.map((u) => (
-                  <li key={u} className={styles.songMeta}>
-                    {u}
+                  <li key={u} className={styles.networkUrlRow}>
+                    <span className={styles.songMeta}>{u}</span>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        void (async () => {
+                          try {
+                            await navigator.clipboard.writeText(u);
+                            setCopiedUrl(u);
+                          } catch {
+                            setCopiedUrl(null);
+                            setNetworkError("Nie udało się skopiować URL");
+                          }
+                        })();
+                      }}
+                    >
+                      {copiedUrl === u ? "Skopiowano" : "Kopiuj"}
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -1357,7 +1390,7 @@ function HostView({
                   Przywróć…
                 </Button>
                 <Button variant="ghost" onClick={onPathPicker}>
-                  Path picker
+                  Folder danych…
                 </Button>
               </div>
             </div>
@@ -1575,6 +1608,49 @@ function UpdatePanel({
   );
 }
 
+function DataDirModal({ onClose }: { onClose: () => void }) {
+  const [dataDir, setDataDir] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const info = await fetchNetworkInfo();
+        if (!cancelled) setDataDir(info.dataDir ?? null);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Nie udało się odczytać ścieżki");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <Modal title="Folder danych" onClose={onClose}>
+      <p className={styles.muted}>
+        Przeglądarka nie może wybierać katalogu hosta. Dane runtime leżą w{" "}
+        <code>STAGESYNC_DATA_DIR</code> (domyślnie <code>data/</code> na maszynie
+        serwera).
+      </p>
+      {error ? <p className={styles.muted}>{error}</p> : null}
+      {dataDir ? (
+        <p>
+          Aktualny folder: <code>{dataDir}</code>
+        </p>
+      ) : !error ? (
+        <p className={styles.muted}>Wczytywanie…</p>
+      ) : null}
+      <Button variant="ghost" onClick={onClose}>
+        Zamknij
+      </Button>
+    </Modal>
+  );
+}
+
 function HostSettingsModal({
   onClose,
   onPathPicker,
@@ -1585,6 +1661,14 @@ function HostSettingsModal({
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [midiBusy, setMidiBusy] = useState(false);
+  const [hostToken, setHostToken] = useState(() => {
+    try {
+      return localStorage.getItem("stagesync.hostToken") ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const [hostTokenNotice, setHostTokenNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1694,12 +1778,61 @@ function HostSettingsModal({
         )}
       </fieldset>
       <fieldset className={styles.fieldset}>
+        <legend>LAN restart / shutdown</legend>
+        <p className={styles.muted}>
+          Token wysyłany jako Bearer przy restarcie z sieci LAN (pary z{" "}
+          <code>STAGESYNC_HOST_TOKEN</code> na serwerze). Loopback nie wymaga
+          tokenu. Zob. docs/INSTALL.md.
+        </p>
+        {hostTokenNotice ? (
+          <p className={styles.muted} role="status">
+            {hostTokenNotice}
+          </p>
+        ) : null}
+        <label className={styles.midiPortRow}>
+          <span className={styles.midiLabel}>Host token</span>
+          <input
+            className={styles.input}
+            type="password"
+            autoComplete="off"
+            maxLength={256}
+            value={hostToken}
+            aria-label="Host lifecycle token"
+            placeholder="opcjonalny"
+            onChange={(e) => setHostToken(e.target.value)}
+          />
+        </label>
+        <div className={styles.actions}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              try {
+                const trimmed = hostToken.trim();
+                if (trimmed) {
+                  localStorage.setItem("stagesync.hostToken", trimmed);
+                } else {
+                  localStorage.removeItem("stagesync.hostToken");
+                }
+                setHostToken(trimmed);
+                setHostTokenNotice(
+                  trimmed ? "Token zapisany w przeglądarce." : "Token usunięty.",
+                );
+              } catch {
+                setHostTokenNotice("Nie udało się zapisać tokenu.");
+              }
+            }}
+          >
+            Zapisz token
+          </Button>
+        </div>
+      </fieldset>
+      <fieldset className={styles.fieldset}>
         <legend>Sieć</legend>
         <p className={styles.muted}>
           Port, hostname i URL-e — karta Sieć na zakładce Host.
         </p>
         <Button variant="ghost" onClick={onPathPicker}>
-          Wybierz ścieżkę…
+          Folder danych…
         </Button>
       </fieldset>
       <div className={styles.actions}>

@@ -109,6 +109,8 @@ export type NetworkInfo = {
   lanAddresses: string[];
   urls: string[];
   version: string;
+  /** Absolute host data root when reported by the server. */
+  dataDir?: string;
 };
 
 export async function fetchNetworkInfo(): Promise<NetworkInfo> {

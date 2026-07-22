@@ -1,5 +1,5 @@
 /**
- * Timeline help overlay — full operator content for 5.0.0 (v4 topics adapted to v5).
+ * Timeline help overlay — content parity with v4 topics (adapted to v5 alpha).
  * No emoji chrome; text + kbd only.
  */
 
@@ -15,42 +15,37 @@ const SECTIONS: HelpSection[] = [
     title: "Podstawy",
     items: [
       "Edytuj ścieżki Forma, Tekst, Akordy, Cue. Specjalne (Tempo / Tonacja / Metrum / Kotwice) — włącz w menu oka.",
-      "Zapisz / Odrzuć — zapis lub cofnięcie lokalnych zmian na serwerze. Undo / Redo w nagłówku (stos sesji).",
+      "Zapisz / Odrzuć — zapis lub cofnięcie lokalnych zmian na serwerze. Undo / Redo w nagłówku.",
       "Metadane (ikona info) — tytuł, PC, tempo domyślne, tonacja startowa, artysta, gatunek.",
-      "Admin / Klient / Timeline — przełączanie widoku (pasek aplikacji lub menu OS Widok w desktop).",
-      "Dirty guard — przy wyjściu z Timeline z niezapisowanym draftem: Zapisz / Odrzuć / Anuluj.",
+      "Linki Admin / Klient w statusie — przełączenie widoku (bez labowego ShellNav).",
     ],
   },
   {
     title: "Utwory i setlista",
     items: [
-      "Tytuł utworu — biblioteka / setlista (picker w nagłówku).",
-      "← / → lub [ / ] — poprzedni / następny utwór setlisty (gdy setlista włączona).",
+      "Tytuł utworu — biblioteka / setlista.",
+      "← / → — poprzedni / następny utwór setlisty (gdy setlista włączona).",
       "Auto-setlista — serwer po końcu utworu wczytuje następny (zatrzymany, takt 1.1); stan współdzielony z Adminem.",
-      "Import UG — wklej tekst Ultimate Guitar → Akordy / Tekst (gdy dostępne w menu).",
     ],
   },
   {
     title: "Narzędzia",
     items: [
-      "Pointer / Smart — zaznacz, przesuń, zmień długość (strefy na brzegach; Smart = strefy Logic-style).",
+      "Pointer / Smart — zaznacz, przesuń, zmień długość (strefy na brzegach).",
       "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
-      "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; mapy: nowa zmiana w miejscu cięcia.",
-      "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji = zakres; bez zaznaczenia — cały utwór.",
-      "Snap (toolbar) — Off / Takt / Beat / 1/2…1/16 ([ADR 0007] faza 2). Domyślnie Takt; nie zapisuje się w projekcie.",
-      "Zoom — ikony + suwaki H / V / UI w statusie (± i range; nie ma narzędzia lupy na pasku).",
+      "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
+      "Różdżka (W) — Tekst → Forma, Akordy → Forma, albo obie. Zaznaczenie sekcji Forma = zakres; bez zaznaczenia — cały utwór.",
+      "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
       "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
-      "T — menu narzędzi przy kursorze (litery jak v4).",
     ],
   },
   {
     title: "Transport i pętla",
     items: [
-      "Play / Pause i Stop — pasek transportu. Autorytet czasu = serwer; playhead klienta tylko wygładza między tickami.",
-      "Countdown — Play startuje z pre-roll gdy locator w CD; Stop wraca na początek Countdown (nie snap past CD).",
-      "Pętla transportu — przeciągnij zakres na linijce taktów, potem włącz przyciskiem (C). Snap podglądu = beat (Cmd = off).",
-      "Metronom (K) — włącz/wyłącz podczas odtwarzania.",
+      "Play / Pause i Stop — pasek transportu.",
+      "Pętla — przeciągnij zakres na linijce taktów, potem włącz przyciskiem.",
+      "Metronom — włącz/wyłącz podczas odtwarzania.",
       "Podążaj za wskaźnikiem — podczas Play przewija widok.",
       "Tempo / Metrum / Tonacja na toolbarze — edycja @ playhead; na lane’ach — Pencil / klik segmentu / Scissors.",
     ],
@@ -58,49 +53,17 @@ const SECTIONS: HelpSection[] = [
   {
     title: "Locator i playhead",
     items: [
-      "Locator — klik w linijkę taktów lub przeciągnij marker (żółty).",
-      "Playhead — pozycja transportu serwera (SSOT); klient tylko wygładza między tickami ([ADR 0002]).",
-      "BBT na toolbarze — takt.beat (takt 1 = start utworu; Countdown ≤ 0).",
+      "Locator — klik w linijkę taktów lub przeciągnij marker.",
+      "Playhead — pozycja transportu serwera (SSOT); klient tylko wygładza między tickami.",
     ],
   },
   {
     title: "Zaznaczanie i edycja",
     items: [
-      "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (sesja snap zostaje bez zmian).",
-      "Marquee / multi-select — przeciągnij pusty obszar; multi-drag; Alt/⌥+drag = duplikat.",
-      "Schowek — Cut / Copy / Paste clipów na lane (overwrite no-overlap).",
+      "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
       "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi.",
       "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
-    ],
-  },
-  {
-    title: "Audio",
-    items: [
-      "Ścieżki Audio 0…N — menu oka (+ Ścieżka Audio); import plików w Admin / Pliki projektu.",
-      "Pointer / Smart: select, move, trim w granicach pliku; zakaz pencil i stretch poza materiał.",
-      "Waveform peak/RMS; gain clip + fader track; mute clip / track.",
-      "Playback WebAudio sync do ticków serwera (`ticksToMs`) — bez własnego zegara muzycznego.",
-      "Fade / crossfade / loop-region clip — w toku 5.0.0 ([ADR 0008]); Flex Time pozostaje OUT.",
-    ],
-  },
-  {
-    title: "MIDI i host",
-    items: [
-      "MIDI I/O + clock — wyłącznie w `apps/server` (Admin → Host). Nigdy w procesie Tauri.",
-      "Desktop: menu Plik / Host / Transport mostkuje do API i WebView — bez autorytetu czasu w shellu.",
-      "Status połączenia WS — kropka w statusie Timeline (Połączony / Łączenie / Rozłączony).",
-    ],
-  },
-  {
-    title: "Desktop (Tauri)",
-    items: [
-      "Menu StageSync — O programie, aktualizacje, Quit.",
-      "Plik — Otwórz ostatnie, Zapisz, Zamknij projekt.",
-      "Widok — Admin / Timeline / Klient, zakładki Admina, pełny ekran; zoom (Faza D).",
-      "Transport — Odtwórz / Stop / prev / next (API serwera).",
-      "Host — status, klienci, QR, restart, ustawienia.",
-      "Pomoc — dokumentacja online, feedback; overlay skrótów = ta pomoc (?).",
-      "Edycja (Faza D) — Undo / Redo / schowek gdy dostępne w Timeline.",
+      "Ścieżki Audio — menu oka (+ Ścieżka Audio); Pointer/Smart move/trim; bez pencil; playback sync z transportem.",
     ],
   },
 ];
@@ -123,15 +86,12 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
       ],
     },
     {
-      heading: "Narzędzia i widok",
+      heading: "Narzędzia",
       rows: [
-        { keys: "T", action: "Menu narzędzi przy kursorze" },
         { keys: "W", action: "Różdżka — menu" },
         { keys: "?", action: "Ta pomoc" },
         { keys: "Esc", action: "Zamknij overlay / menu" },
-        { keys: "Snap (toolbar)", action: "Off / Takt / Beat / podział" },
-        { keys: "⌘/Ctrl przy drag", action: "Snap off (chwilowo)" },
-        { keys: "Scroll / gesty", action: "Zoom H/V (oś + wysokości)" },
+        { keys: "⌘/Ctrl przy drag", action: "Snap off" },
       ],
     },
     {
@@ -140,9 +100,6 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
         { keys: "Delete / Backspace", action: "Usuń zaznaczony clip" },
         { keys: "⌘/Ctrl+Z", action: "Undo" },
         { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
-        { keys: "⌘/Ctrl+X / C / V", action: "Cut / Copy / Paste" },
-        { keys: "Alt/⌥+drag", action: "Duplikat clipów" },
-        { keys: "⌘/Ctrl+S", action: "Zapisz draft (desktop Plik)" },
       ],
     },
   ];
@@ -151,9 +108,9 @@ export function TimelineHelpBody() {
   return (
     <div className={styles.helpBody}>
       <p className={styles.helpLead}>
-        StageSync Timeline — pełna pomoc operatora (v5). Playhead i MIDI clock =
-        serwer; shell desktop tylko mostkuje. Świadomie OUT: Flex Time, stretch
-        audio, MIDI w procesie Tauri, clone chrome v4.
+        StageSync Timeline — skróty i narzędzia (v5). Treść jak w v4; bez funkcji
+        świadomie OUT (fade/stretch audio). Host MIDI I/O = serwer (`/api/midi`),
+        nie Timeline.
       </p>
       <div className={styles.helpGrid}>
         {SECTIONS.map((section) => (

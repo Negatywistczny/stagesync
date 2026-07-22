@@ -218,9 +218,11 @@ export {
 export {
   clampFormaSubsections,
   deleteClip,
+  insertGapSectionAfterCountdown,
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
+  moveSectionsFromId,
   placeClipNoOverlap,
   resizeClipNoOverlap,
   splitClipAt,
@@ -230,14 +232,18 @@ export {
 } from "./clip-collision.js";
 
 export {
+  audioClipAbutGapTicks,
   audioClipBufferOffsetSec,
+  audioClipEndTicks,
   audioClipPlayableMs,
   audioClipRemainingSec,
   audioFadeGainAtMs,
+  applyAbutCrossfade,
   clampAudioClipToAsset,
   clampAudioFades,
   fadeInMsOf,
   fadeOutMsOf,
+  findAbutNeighbor,
   gainDbToLinear,
   lengthTicksFromAssetWindow,
   maxAudioLengthTicks,
@@ -261,6 +267,7 @@ export {
 export {
   wandContentToForma,
   type WandMode,
+  type WandScope,
 } from "./wand.js";
 
 export {

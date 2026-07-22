@@ -1827,12 +1827,45 @@
   align-items: stretch;
   overflow: hidden;
   padding: 0;
+  position: relative;
   background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-surface));
   border-color: color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
 }
 
 .audioClipMuted {
   opacity: 0.45;
+}
+
+.audioClipLoop {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ss-color-selected-border) 70%, transparent);
+}
+
+.audioFadeIn,
+.audioFadeOut {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.audioFadeIn {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ss-color-bg) 75%, transparent),
+    transparent
+  );
+}
+
+.audioFadeOut {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--ss-color-bg) 75%, transparent),
+    transparent
+  );
 }
 
 .audioWaveform {

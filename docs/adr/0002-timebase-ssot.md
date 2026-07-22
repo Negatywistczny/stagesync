@@ -2,7 +2,8 @@
 
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-19
-- **Aktualizacja:** 2026-07-20 — float `absBeat` usunięty; kanon: ticks + PPQ
+- **Aktualizacja:** 2026-07-20 — float `absBeat` usunięty; kanon: ticks + PPQ  
+- **Aktualizacja:** 2026-07-22 — doprecyzowanie tempa/metrum w pre-roll (Countdown ≤ 0)
 
 ## Kontekst
 
@@ -28,7 +29,13 @@ Pełny „model BBT w silniku” bywa mylony z bezpieczeństwem całkowitym: **B
    - **Takt 1** = pierwszy takt właściwego utworu (partytura / Logic).  
    - Countdown / pre-roll / count-in → pozycje **≤ 0** (ujemne ticki albo BBT ≤ 0).  
    - Sekundy / sample tylko na krawędzi audio (`tempoMap` → ms → sample), nigdy jako kanon Formy / Tekstu / Cue.
-7. **Float `absBeat`** — **usunięty** z `@stagesync/shared`. Nie przywracać jako
+7. **Tempo / metrum w pre-roll (doprecyzowanie 5.0.0)**  
+   - `resolveTempoAt` / `resolveMeterAt` = ostatnie zdarzenie mapy z `startTicks ≤ positionTicks`, inaczej `defaultBpm` / `defaultMeter`.  
+   - Seed projektu kładzie pierwsze zdarzenia map zwykle @ **tick 0** (start utworu). W trakcie Countdown (`positionTicks < 0`) **nie ma** jeszcze aktywnego zdarzenia mapy → obowiązują **defaulty projektu**.  
+   - Świadoma zmiana tempa/metrum w pre-roll wymaga zdarzenia mapy z `startTicks ≤ 0` (np. @ start Countdown). Nie interpolujemy wstecz z zdarzeń @ 0.  
+   - **Stop / home:** gdy projekt ma clip Countdown → `transportHomeTicks` = jego `startTicks` (nie snap past CD na 0); bez Countdown → `0` ([#41](https://github.com/Negatywistyczny/stagesync/issues/41)).  
+   - MIDI clock / SPP: ujemne ticki mapowane na 0 po stronie serwera (`midi-clock`) — clock nie „gra” pre-rollu jako ujemnego SPP.
+8. **Float `absBeat`** — **usunięty** z `@stagesync/shared`. Nie przywracać jako
    kanonu pozycji; legacy `startAbs` tylko na granicy migratora → ticks.
 
 ## Konsekwencje

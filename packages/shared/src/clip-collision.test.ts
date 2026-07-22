@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deleteClip,
+  insertGapSectionAfterCountdown,
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
@@ -115,6 +116,32 @@ describe("moveClipNoOverlap", () => {
       contentFloorTicks: 0,
     });
     expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(0);
+  });
+});
+
+describe("insertGapSectionAfterCountdown", () => {
+  it("inserts Intro when first section moves right past Countdown end", () => {
+    const moved = moveClipNoOverlap(base(), "forma-intro", 1920, {
+      contentFloorTicks: 0,
+    });
+    const next = insertGapSectionAfterCountdown(moved, "forma-intro", {
+      contentFloorTicks: 0,
+    });
+    const gap = next.find((c) => c.id.startsWith("forma-gap-"));
+    expect(gap?.name).toBe("Intro");
+    expect(gap?.startTicks).toBe(0);
+    expect(gap?.lengthTicks).toBe(1920);
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(1920);
+  });
+
+  it("no-ops when moved clip is not the first section", () => {
+    const moved = moveClipNoOverlap(base(), "forma-verse", 7680 + 960, {
+      contentFloorTicks: 0,
+    });
+    const next = insertGapSectionAfterCountdown(moved, "forma-verse", {
+      contentFloorTicks: 0,
+    });
+    expect(next.find((c) => c.id.startsWith("forma-gap-"))).toBeUndefined();
   });
 });
 
