@@ -32,7 +32,7 @@ export function ScorePane({ project, loading, hasActiveProjectId }: Props) {
         <div className={styles.scoreEmptyCard}>
           <p className={styles.scoreEmptyTitle}>Partytura</p>
           <p className={styles.scoreEmptyText}>
-            Stub OSMD (α8). Pełna nawigacja nut → β1+.
+            Stub OSMD. Pełna nawigacja nut — poza 5.0.0.
           </p>
           {xmlAssets.length > 0 ? (
             <ul className={styles.scoreFiles}>
