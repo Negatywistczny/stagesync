@@ -422,6 +422,9 @@ export function AdminShell() {
               void runMutation(async () => {
                 setActionNotice("Wczytywanie pliku…");
                 const buf = await file.arrayBuffer();
+                if (buf.byteLength > 16 * 1024 * 1024) {
+                  throw new Error("Plik importu jest za duży (max 16 MB).");
+                }
                 if (looksLikeZipBytes(buf)) {
                   throw new Error(ZIP_IMPORT_UNSUPPORTED_PL);
                 }
