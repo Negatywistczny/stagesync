@@ -98,6 +98,11 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   app.use("/api/transport", createTransportRouter(transport, stores));
   app.use("/api/midi", createMidiRouter(midi));
 
+  // After all API routers: unknown /api/* must be JSON, never SPA HTML.
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ ok: false, error: "Not found" });
+  });
+
   const staticDir =
     options.staticDir === undefined ? resolveStaticDir() : options.staticDir;
   if (staticDir) {
