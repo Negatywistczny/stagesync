@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
   CLIP_EDGE_HIT_PX,
   CONTENT_DEFAULT_SNAP_MODE,
@@ -6,7 +7,10 @@ import {
   hitTestClipZone,
   PENCIL_DRAG_THRESHOLD_PX,
   resolvePencilRangeTicks,
+  setSessionSnapMode,
   snapModeFromModifiers,
+  snapModeFromStorageKey,
+  snapModeToStorageKey,
 } from "./timelineGesture.js";
 
 describe("resolvePencilRangeTicks", () => {
@@ -44,11 +48,38 @@ describe("resolvePencilRangeTicks", () => {
 });
 
 describe("snap modes + hit zones", () => {
-  it("Forma default snap is bar; content default is beat", () => {
+  it("session default snap is bar; Cmd/Ctrl forces off", () => {
+    setSessionSnapMode(DEFAULT_SNAP_MODE);
     expect(snapModeFromModifiers(false, false)).toBe("bar");
     expect(CONTENT_DEFAULT_SNAP_MODE).toBe("beat");
-    expect(contentSnapModeFromModifiers(false, false)).toBe("beat");
+    expect(contentSnapModeFromModifiers(false, false)).toBe("bar");
     expect(contentSnapModeFromModifiers(true, false)).toBe("off");
+    expect(
+      contentSnapModeFromModifiers(false, false, CONTENT_DEFAULT_SNAP_MODE),
+    ).toBe("beat");
+  });
+
+  it("session picker beat/subdivision is honored until Cmd-off", () => {
+    setSessionSnapMode("beat");
+    expect(snapModeFromModifiers(false, false)).toBe("beat");
+    setSessionSnapMode({ kind: "subdivision", parts: 4 });
+    expect(snapModeFromModifiers(false, false)).toEqual({
+      kind: "subdivision",
+      parts: 4,
+    });
+    expect(snapModeFromModifiers(false, true)).toBe("off");
+    setSessionSnapMode(DEFAULT_SNAP_MODE);
+  });
+
+  it("storage key round-trip", () => {
+    expect(snapModeFromStorageKey("bar")).toBe("bar");
+    expect(snapModeFromStorageKey("subdivision:8")).toEqual({
+      kind: "subdivision",
+      parts: 8,
+    });
+    expect(snapModeToStorageKey({ kind: "subdivision", parts: 2 })).toBe(
+      "subdivision:2",
+    );
   });
 
   it("hitTestClipZone uses edge px for resize", () => {

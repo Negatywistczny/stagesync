@@ -85,6 +85,46 @@
   gap: var(--ss-space-2);
 }
 
+.snapPicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  margin-left: var(--ss-space-1);
+  min-height: var(--ss-space-8);
+  padding: 0 var(--ss-space-2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+}
+
+.snapPickerLab {
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-label);
+  text-transform: uppercase;
+}
+
+.snapPickerSelect {
+  min-width: 4.5rem;
+  max-width: 6.5rem;
+  padding: var(--ss-space-1) 0;
+  border: none;
+  background: transparent;
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-compact);
+  cursor: pointer;
+}
+
+.snapPickerSelect:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
 @media (max-width: 1100px) {
   .header {
     grid-template-columns: auto 1fr;
