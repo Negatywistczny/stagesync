@@ -126,19 +126,12 @@ describe("ProjectSchemaV5", () => {
     ).toThrow();
   });
 
-  it("rejects more than 256 forma clips", () => {
+  it("rejects artist longer than 200 chars", () => {
     const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
-    const clips = Array.from({ length: 257 }, (_, i) => ({
-      id: `f${i}`,
-      name: `S${i}`,
-      kind: "section" as const,
-      startTicks: i * 100,
-      lengthTicks: 100,
-    }));
     expect(() =>
       ProjectSchemaV5.parse({
         ...seed,
-        forma: { clips },
+        artist: "x".repeat(201),
       }),
     ).toThrow();
   });
