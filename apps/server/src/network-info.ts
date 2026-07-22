@@ -16,6 +16,8 @@ export function getLanAddresses(): LanAddress[] {
       if (row.internal) continue;
       const family = String(row.family) === "IPv6" ? "IPv6" : "IPv4";
       if (family !== "IPv4") continue;
+      // Skip APIPA / link-local (mac Thunderbolt bridge noise).
+      if (row.address.startsWith("169.254.")) continue;
       out.push({
         address: row.address,
         family,
