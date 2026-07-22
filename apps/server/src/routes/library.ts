@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   BatchMidiPcBodySchema,
+  ExportLibraryBodySchema,
   normalizeLibraryImport,
   ProjectSchemaV5,
   type PutProjectBody,
@@ -32,11 +33,8 @@ export function createLibraryRouter(stores: Stores): Router {
 
   router.post("/export", async (req, res) => {
     try {
-      const ids = Array.isArray(req.body?.projectIds)
-        ? (req.body.projectIds as unknown[]).filter(
-            (id): id is string => typeof id === "string",
-          )
-        : null;
+      const body = ExportLibraryBodySchema.parse(req.body ?? {});
+      const ids = body.projectIds;
       const library = await stores.getLibrary();
       const selected = ids
         ? library.projects.filter((p) => ids.includes(p.id))
