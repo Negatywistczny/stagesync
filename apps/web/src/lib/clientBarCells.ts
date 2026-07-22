@@ -56,7 +56,8 @@ export function barsInTickRange(
         ...b,
         startTicks: Math.max(b.startTicks, start),
         endTicks: Math.min(b.endTicks, end),
-      }));
+      }))
+      .slice(0, 256);
   }
 
   const pre = iterPreRollBarBoundariesTicks(project, start, Math.min(end, 0));
@@ -77,7 +78,7 @@ export function barsInTickRange(
       startTicks: Math.max(b.startTicks, start),
       endTicks: Math.min(b.endTicks, end),
     })),
-  ];
+  ].slice(0, 256);
 }
 
 export function buildBarCellsForClip(
