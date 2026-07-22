@@ -7,9 +7,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Naprawiono
+### Zmieniono
 
-- **Desktop (Tauri):** `⌘/Ctrl+C/X/V/A` w polach tekstowych znowu działa — custom menu OS bez submenu **Edycja** nie podłączało First Responder na macOS (context-menu Kopiuj działało). Dodano `PredefinedMenuItem` cut/copy/paste/select-all.
+- **Timeline Pomoc:** overlay jak w v4 — accent chrome, karty sekcji, miniatury ikon narzędzi / transportu / ścieżek, czytelniejsze skróty `kbd` (treść operatora 5.0.0).
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 

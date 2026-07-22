@@ -5186,8 +5186,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .filter(Boolean)
               .join(" ")}
           >
-            <div className={styles.overlayHead}>
-              <h2 id="tl-help-title">Pomoc</h2>
+            <div
+              className={[styles.overlayHead, styles.helpOverlayHead]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <div className={styles.helpOverlayHeadText}>
+                <p className={styles.helpOverlayEyebrow}>StageSync Timeline</p>
+                <h2 id="tl-help-title">Pomoc</h2>
+              </div>
               <ShellIconButton label="Zamknij" onClick={() => setHelpOpen(false)}>
                 <IconClose />
               </ShellIconButton>
