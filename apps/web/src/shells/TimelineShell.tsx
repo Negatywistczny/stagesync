@@ -231,6 +231,14 @@ import {
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
 import {
+  loadZoomPrefs,
+  saveZoomPrefs,
+  ZOOM_H_MAX,
+  ZOOM_H_MIN,
+  ZOOM_UI_MAX,
+  ZOOM_UI_MIN,
+} from "../lib/timelineZoomPrefs.js";
+import {
   toggleAppFullscreen,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
@@ -392,9 +400,9 @@ export function TimelineShell() {
       return false;
     }
   });
-  const [zoomH, setZoomH] = useState(DEFAULT_PX_PER_BAR);
-  const [zoomV, setZoomV] = useState(DEFAULT_LANE_PX);
-  const [zoomUi, setZoomUi] = useState(100);
+  const [zoomH, setZoomH] = useState(() => loadZoomPrefs().zoomH);
+  const [zoomV, setZoomV] = useState(() => loadZoomPrefs().zoomV);
+  const [zoomUi, setZoomUi] = useState(() => loadZoomPrefs().zoomUi);
   const [laneHeights, setLaneHeights] = useState<LaneHeightsMap>(() =>
     loadLaneHeights(),
   );
@@ -415,8 +423,6 @@ export function TimelineShell() {
   const effectiveZoomV = Math.max(1, Math.round(zoomV * uiScale));
   /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
   const ZOOM_H_STEP = 4;
-  const ZOOM_H_MIN = 24;
-  const ZOOM_H_MAX = 160;
   const ZOOM_V_STEP = 4;
   const ZOOM_V_MIN = MIN_LANE_PX;
   const ZOOM_V_MAX = MAX_LANE_PX;
@@ -644,6 +650,10 @@ export function TimelineShell() {
     void syncNavTimelineProjectId(projectId);
     void syncNavRecentProjects(recent);
   }, [projectId, draftProject?.name]);
+
+  useEffect(() => {
+    saveZoomPrefs({ zoomH, zoomV, zoomUi });
+  }, [zoomH, zoomV, zoomUi]);
 
   useEffect(() => {
     if (!songScreenOpen) return;
@@ -4956,8 +4966,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             UI
             <input
               type="range"
-              min={50}
-              max={150}
+              min={ZOOM_UI_MIN}
+              max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
