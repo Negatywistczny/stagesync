@@ -1260,66 +1260,78 @@ function HostView({
               <>
                 <p className={styles.muted}>
                   Backend <strong>{midi.backend}</strong>
-                  {midi.clockOutActive ? " · clock OUT" : ""}
+                  {midi.clockOutActive ? " · clock OUT aktywny" : ""}
                   {midi.lastError ? ` · ${midi.lastError}` : ""}
                 </p>
-                <div className={styles.midiGrid}>
-                  <div className={styles.midiCard}>
+                <div
+                  className={styles.midiMeters}
+                  role="group"
+                  aria-label="Metryki MIDI"
+                >
+                  <div className={styles.midiMeter}>
                     <span className={styles.midiLabel}>Clock/s</span>
                     <span className={styles.midiValue}>
                       {rateLabel(midi.rates.clockPerSec)}
                     </span>
                   </div>
-                  <div className={styles.midiCard}>
+                  <div className={styles.midiMeter}>
                     <span className={styles.midiLabel}>SPP/s</span>
                     <span className={styles.midiValue}>
                       {rateLabel(midi.rates.sppPerSec)}
                     </span>
                   </div>
-                  <div className={styles.midiCard}>
+                  <div className={styles.midiMeter}>
                     <span className={styles.midiLabel}>PC/s</span>
                     <span className={styles.midiValue}>
                       {rateLabel(midi.rates.pcPerSec)}
                     </span>
                   </div>
-                  <div className={styles.midiCard}>
-                    <span className={styles.midiLabel}>Beat→WS</span>
+                  <div className={styles.midiMeter}>
+                    <span className={styles.midiLabel}>Beat → WS</span>
                     <span className={styles.midiValue}>
                       {rateLabel(midi.rates.beatToWsPerSec)}
                     </span>
                   </div>
                 </div>
                 <div className={styles.midiPorts}>
-                  <p className={styles.muted}>
-                    Wejście:{" "}
-                    <strong>
+                  <div className={styles.midiPortRow}>
+                    <span className={styles.midiLabel}>Wejście</span>
+                    <span className={styles.midiPortValue}>
                       {midi.inputs.find((p) => p.id === midi.config.inputId)
                         ?.name ??
                         midi.config.inputId ??
                         "—"}
-                    </strong>
-                    {" · "}
-                    Wyjście:{" "}
-                    <strong>
+                    </span>
+                  </div>
+                  <div className={styles.midiPortRow}>
+                    <span className={styles.midiLabel}>Wyjście</span>
+                    <span className={styles.midiPortValue}>
                       {midi.outputs.find((p) => p.id === midi.config.outputId)
                         ?.name ??
                         midi.config.outputId ??
                         "—"}
-                    </strong>
-                    {midi.config.clockOutEnabled ? " · Clock OUT" : ""}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      window.dispatchEvent(
-                        new CustomEvent("stagesync:open-preferences", {
-                          detail: { tab: "midi" },
-                        }),
-                      );
-                    }}
-                  >
-                    Preferencje MIDI…
-                  </Button>
+                    </span>
+                  </div>
+                  <div className={styles.midiPortRow}>
+                    <span className={styles.midiLabel}>Clock OUT</span>
+                    <span className={styles.midiPortValue}>
+                      {midi.config.clockOutEnabled ? "włączony" : "wyłączony"}
+                    </span>
+                  </div>
+                  <div className={styles.midiActions}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        window.dispatchEvent(
+                          new CustomEvent("stagesync:open-preferences", {
+                            detail: { tab: "midi" },
+                          }),
+                        );
+                      }}
+                    >
+                      Preferencje MIDI…
+                    </Button>
+                  </div>
                 </div>
                 {!midi.available ? (
                   <p className={styles.muted}>

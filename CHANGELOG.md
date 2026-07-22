@@ -69,6 +69,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mobile ≤768px:** toolbar Timeline, header Client oraz zakładki/karty Admin zawijają się bez poziomego overflow.
 - **Client:** ikony stroju jak w v4 nad etykietami C / B♭ / E♭ / Ręczna; Spacja (vocal tap) nie przechwytuje fokusu w polach tekstowych ([#363](https://github.com/Negatywistyczny/stagesync/issues/363)).
 - **Preferencje:** Audio / MIDI jako zakładki z podkreśleniem (nie segmented control).
+- **Admin Host MIDI:** metryki i porty w jednej kolumnie (wiersze etykieta/wartość, bez kafelków-w-kafelku); spójne wysokości i odstępy.
 - **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
