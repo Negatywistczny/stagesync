@@ -2,6 +2,20 @@ import { useEffect, useId, useRef, type FormEvent } from "react";
 import { Button } from "@stagesync/ui";
 import styles from "./ShellBlockingDialog.module.css";
 
+function useEscapeToClose(open: boolean, onClose: () => void): void {
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+}
+
 type ShellConfirmDialogProps = {
   open: boolean;
   title: string;
@@ -21,6 +35,7 @@ export function ShellConfirmDialog({
   onConfirm,
   onCancel,
 }: ShellConfirmDialogProps) {
+  useEscapeToClose(open, onCancel);
   if (!open) return null;
 
   return (
@@ -65,6 +80,7 @@ export function ShellPromptDialog({
 }: ShellPromptDialogProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  useEscapeToClose(open, onCancel);
 
   useEffect(() => {
     if (!open) return;
@@ -123,6 +139,7 @@ type ShellAlertDialogProps = {
 
 /** Zamiennik window.alert — działa w Tauri WebView. */
 export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDialogProps) {
+  useEscapeToClose(open, onClose);
   if (!open) return null;
 
   return (
