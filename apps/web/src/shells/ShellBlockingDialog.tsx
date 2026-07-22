@@ -8,6 +8,7 @@ type ShellConfirmDialogProps = {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  pending?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -18,6 +19,7 @@ export function ShellConfirmDialog({
   message,
   confirmLabel = "OK",
   cancelLabel = "Anuluj",
+  pending = false,
   onConfirm,
   onCancel,
 }: ShellConfirmDialogProps) {
@@ -25,17 +27,28 @@ export function ShellConfirmDialog({
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-confirm-title">
-      <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
+      <button
+        type="button"
+        className={styles.backdrop}
+        aria-label="Anuluj"
+        disabled={pending}
+        onClick={onCancel}
+      />
       <div className={styles.panel}>
         <h2 id="shell-confirm-title" className={styles.title}>
           {title}
         </h2>
         <p className={styles.message}>{message}</p>
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={onCancel}>
+          <Button variant="secondary" onClick={onCancel} disabled={pending}>
             {cancelLabel}
           </Button>
-          <Button variant="primary" onClick={onConfirm}>
+          <Button
+            variant="primary"
+            onClick={onConfirm}
+            disabled={pending}
+            loading={pending}
+          >
             {confirmLabel}
           </Button>
         </div>

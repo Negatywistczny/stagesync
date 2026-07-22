@@ -79,12 +79,12 @@ export function ProjectFilesPanel({
   const confirmDelete = async () => {
     if (!projectId || !deleteAssetId || busy || locked) return;
     const assetId = deleteAssetId;
-    setDeleteAssetId(null);
     setBusy(true);
     setError(null);
     try {
       const project = await deleteProjectAsset(projectId, assetId);
       setAssets(project.assets);
+      setDeleteAssetId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Usuwanie nieudane");
     } finally {
@@ -150,8 +150,11 @@ export function ProjectFilesPanel({
         title="Usuń plik"
         message="Usunąć plik z projektu?"
         confirmLabel="Usuń"
+        pending={busy}
         onConfirm={() => void confirmDelete()}
-        onCancel={() => setDeleteAssetId(null)}
+        onCancel={() => {
+          if (!busy) setDeleteAssetId(null);
+        }}
       />
     </div>
   );
