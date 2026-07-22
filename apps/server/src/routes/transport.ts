@@ -14,6 +14,16 @@ export function createTransportRouter(
   stores: Stores,
 ): Router {
   const router = Router();
+  let mutationChain: Promise<void> = Promise.resolve();
+
+  function withTransportLock<T>(fn: () => Promise<T>): Promise<T> {
+    const run = mutationChain.then(fn, fn);
+    mutationChain = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
 
   router.get("/", (_req, res) => {
     try {
@@ -25,14 +35,17 @@ export function createTransportRouter(
 
   router.post("/play", async (req, res) => {
     try {
-      const body = TransportPlayBodySchema.parse(req.body ?? {});
-      let project;
-      const projectId =
-        body.projectId ?? transport.getActiveProjectId() ?? undefined;
-      if (projectId) {
-        project = await stores.getProject(projectId);
-      }
-      res.json(transport.play(body, project));
+      const state = await withTransportLock(async () => {
+        const body = TransportPlayBodySchema.parse(req.body ?? {});
+        let project;
+        const projectId =
+          body.projectId ?? transport.getActiveProjectId() ?? undefined;
+        if (projectId) {
+          project = await stores.getProject(projectId);
+        }
+        return transport.play(body, project);
+      });
+      res.json(state);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -40,17 +53,21 @@ export function createTransportRouter(
 
   router.post("/load", async (req, res) => {
     try {
-      const body = TransportLoadBodySchema.parse(req.body ?? {});
-      const project = await stores.getProject(body.projectId);
-      res.json(transport.loadProject(body.projectId, project));
+      const state = await withTransportLock(async () => {
+        const body = TransportLoadBodySchema.parse(req.body ?? {});
+        const project = await stores.getProject(body.projectId);
+        return transport.loadProject(body.projectId, project);
+      });
+      res.json(state);
     } catch (err) {
       handleRouteError(res, err);
     }
   });
 
-  router.post("/pause", (_req, res) => {
+  router.post("/pause", async (_req, res) => {
     try {
-      res.json(transport.pause());
+      const state = await withTransportLock(async () => transport.pause());
+      res.json(state);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -58,12 +75,15 @@ export function createTransportRouter(
 
   router.post("/stop", async (_req, res) => {
     try {
-      let project;
-      const activeId = transport.getActiveProjectId();
-      if (activeId) {
-        project = await stores.getProject(activeId);
-      }
-      res.json(transport.stop(project));
+      const state = await withTransportLock(async () => {
+        let project;
+        const activeId = transport.getActiveProjectId();
+        if (activeId) {
+          project = await stores.getProject(activeId);
+        }
+        return transport.stop(project);
+      });
+      res.json(state);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -71,22 +91,28 @@ export function createTransportRouter(
 
   router.post("/seek", async (req, res) => {
     try {
-      const body = TransportSeekBodySchema.parse(req.body);
-      let project;
-      const activeId = transport.getActiveProjectId();
-      if (activeId) {
-        project = await stores.getProject(activeId);
-      }
-      res.json(transport.seek(body.positionTicks, project));
+      const state = await withTransportLock(async () => {
+        const body = TransportSeekBodySchema.parse(req.body);
+        let project;
+        const activeId = transport.getActiveProjectId();
+        if (activeId) {
+          project = await stores.getProject(activeId);
+        }
+        return transport.seek(body.positionTicks, project);
+      });
+      res.json(state);
     } catch (err) {
       handleRouteError(res, err);
     }
   });
 
-  router.post("/loop", (req, res) => {
+  router.post("/loop", async (req, res) => {
     try {
-      const body = TransportLoopBodySchema.parse(req.body ?? {});
-      res.json(transport.setLoop(body));
+      const state = await withTransportLock(async () => {
+        const body = TransportLoopBodySchema.parse(req.body ?? {});
+        return transport.setLoop(body);
+      });
+      res.json(state);
     } catch (err) {
       handleRouteError(res, err);
     }
