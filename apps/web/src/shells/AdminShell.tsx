@@ -773,6 +773,12 @@ function SongsView({
               placeholder="Filtruj…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && filter) {
+                  e.preventDefault();
+                  setFilter("");
+                }
+              }}
               aria-label="Filtruj utwory"
             />
             <select
