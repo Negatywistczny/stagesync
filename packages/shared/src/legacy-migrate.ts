@@ -276,7 +276,10 @@ export function migrateLegacySong(
 
   const endAbs = songEndAbs(song, sections);
   const defaultMeter = parseLegacyMeter(song.chords?.timeSignature);
-  const defaultBpm = Math.max(1, asFiniteNumber(song.tempo, 120));
+  const defaultBpm = Math.min(
+    400,
+    Math.max(20, asFiniteNumber(song.tempo, 120)),
+  );
   const minBarBeats =
     (defaultMeter.numerator * 4) / defaultMeter.denominator;
   /** One beat in quarters — dense chords must not use min=full bar (legacy deriveClipLengths). */
