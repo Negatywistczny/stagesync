@@ -133,7 +133,7 @@ export type Setlist = z.infer<typeof SetlistSchema>;
 
 export const PutSetlistBodySchema = z.object({
   enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()),
+  projectIds: z.array(z.string().uuid()).max(256),
 });
 
 export type PutSetlistBody = z.infer<typeof PutSetlistBodySchema>;
