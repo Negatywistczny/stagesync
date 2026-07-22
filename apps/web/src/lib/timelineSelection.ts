@@ -79,6 +79,7 @@ export function setSelection(
     if (seen.has(key)) continue;
     seen.add(key);
     list.push({ id: it.id, lane: it.lane });
+    if (list.length >= 256) break;
   }
   const primary =
     primaryId && list.some((i) => i.id === primaryId)
