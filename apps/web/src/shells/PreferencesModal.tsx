@@ -257,7 +257,7 @@ export function PreferencesModal({ onClose, initialTab = "audio" }: Props) {
               </label>
               <p className={styles.muted}>
                 Porty zapisywane na serwerze (<code>data/host/midi-config.json</code>
-                ). Panic / MUTE ALL — poza zakresem 5.0 (ROADMAP OUT).
+                ). Panic / MUTE ALL — must parity v4 przed tagiem 5.0.0 (ADR 0011 §1a).
               </p>
             </>
           ) : midiError ? null : (

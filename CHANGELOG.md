@@ -14,7 +14,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WS; skracanie komunikatów błędów; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
 - **UI:** typografia i odstępy wyłącznie tokenami `--ss-*` w Admin / Client / Timeline; touch targety zgodne z gęstością design systemu.
 - **Mobile / tablet:** ujednolicone progi `≤768px` (mobile) / `≤1024px` (tablet); Client touch 44×44 (`--ss-touch-min-client`); Timeline na telefonie = tryb odtwarzacza (bez narzędzi DAW); Admin footer kompaktowy; `stageSplit` → 1 kolumna ≤768px. Bez zmian chrome desktop (>1024px).
-- **Docs (5.0.0 closeout):** TODO / ROADMAP / scope report / beta-gate zsynchronizowane z `main` po Faza D + fade + help + mobile; G1–G10 nadal ⬜ (bez claim green); drafty OSMD/migration/wand jako residual.
+- **Docs (5.0.0 closeout):** TODO / ROADMAP / scope report / beta-gate zsynchronizowane z `main` po Faza D + fade + help + mobile; G1–G10 nadal ⬜ (bez claim green).
 
 ### Dodano
 
@@ -22,6 +22,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client Karaoke:** ten sam strój instrumentu / format akordów co Grid — bieżący akord z lane Akordy z live transpozycją.
 - **Timeline:** wskaźnik MIDI playhead (cyan) + przełącznik w Wygląd (localStorage).
 - **Migracja v4→v5:** `year` / `coverUrl`; MusicXML + lokalne okładki/audio → `assets` (+ `audioTracks`/`audioClips`); CLI `--uploads-dir` kopiuje pliki.
+- **Client score:** render MusicXML (OSMD) z synchronizacją playheada do kotwic, kliknięciem taktu → seek, zoom (−/+/Reset) oraz opcją śledzenia wskaźnika w pasku roli; mapowanie `scoreBarToSongBar` / `ticksFromScoreBar` w `@stagesync/shared`.
 - **Client:** strój instrumentu C / B♭ / E♭ / ręczna (−6…+6) oraz polskie nazwy sekcji Formy (globalne ustawienia) — parity v4 bez stubu „później (β)”.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny `AppHeader` (Level 1) — domyślnie ukrywany na Desktop (`isDesktopShell`); fundament pod dwupoziomowe nagłówki.
 - **App chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** Timeline — Level 2 toolbar z song clusterem (po prawej).

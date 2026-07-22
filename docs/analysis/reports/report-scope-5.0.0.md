@@ -1,4 +1,4 @@
-# Scope 5.0.0 — Stabilne wydanie + polish UI / Timeline / audio / Faza D
+# Scope 5.0.0 — Kompletny parytet v4 (bez stubów) + polish / Faza D
 
 **Wersja docelowa:** `5.0.0` (tag / bump **tylko na prośbę**; nazwa hero linii 5.0 przy cutcie)  
 **Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [ADR 0007](../../adr/0007-snap-grid.md) · [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [ADR 0011](../../adr/0011-ui-parity-behavior.md) · [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2.md](./report-scope-beta2.md)  
@@ -7,26 +7,29 @@
 
 ## Cel
 
-Domknąć **stabilne 5.0.0** jako linię produktową (nie kolejny beta feature dump):
+Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
+([ADR 0011 §1a](../../adr/0011-ui-parity-behavior.md)):
 
-1. **Polish UI** na żywych kontrolkach (typografia `--ss-*`, proporcje, copy PL, gęstość) — bez clone chrome v4 ([ADR 0011](../../adr/0011-ui-parity-behavior.md)).
-2. **Timeline P1:** zoom H/V z ikonami; Pomoc z pełną treścią; **snap picker** beat/subdivision ([ADR 0007](../../adr/0007-snap-grid.md) faza 2).
-3. **Audio polish:** fade, crossfade, loop-region (ewent. overlap) ([ADR 0008](../../adr/0008-timeline-clip-editing.md)).
-4. **Desktop OS menu — Faza D:** pełna Edycja; zoom w Widok; rozbudowa Pomoc ([ROADMAP](../../ROADMAP.md)).
-5. **`docs/api` domknięte** + CI + smoke E2E (automatyzowalne).
-6. **G1–G10:** checklista soft-gate dla operatora rano — **nie** claim green bez HW.
+1. **Polish UI** na żywych kontrolkach — bez clone chrome v4.
+2. **Timeline** zoom/help/snap + residual parity (wand, tool menu, metrum/CD/grid, MIDI overlay).
+3. **Audio** fade/loop (dostarczone) + brak stubów DAW v4 (Mute/Solo już są).
+4. **Client Score/OSMD** pełny — **usuń stub**; Live Desk AD-01…03; pitch w Karaoke.
+5. **MIDI** Panic/CC jeśli w v4; host nadal SSOT (nie Tauri).
+6. **Desktop OS menu — Faza D** residual.
+7. **Cues Sampler / Safety Net** — jeśli w legacy → 5.0 (ADR + kod), nie 5.1.
+8. **`docs/api` + CI + smoke**; **G1–G10** HW; tag bez stubów v4.
 
 ## Kontrakt IN / OUT
 
 | IN 5.0.0 | OUT 5.0.0 |
 |----------|-----------|
-| Polish UI żywych kontrolek (A) | Motywy / auth / multi-user → **5.1+** |
-| Zoom UI H/V + ikony; Help pełny; snap picker (B) | Clone chrome / inventarz-first ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) |
-| Fade / crossfade / loop-region; ewent. overlap (C) | Flex Time / stretch / pencil audio / MIDI w Tauri |
-| Menu OS Faza D (D) | Android shell / store auto-update |
-| `docs/api` + CI + smoke E2E (E) | git-apply (nigdy) |
-| Soft-gate G1–G10 (docs checklist; HW = operator) | Fałszywy green G1–G10 w CI |
-| Tag `5.0.0` + nazwa hero | Tag/bump **bez** prośby użytkownika |
+| Pełny parytet **zachowania v4** (bez stubów) | Stub / „poza 5.0” / atrapa inventarza |
+| Polish UI; zoom/help/snap; audio fade/loop | Clone chrome ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) |
+| Score/OSMD sync; Live Desk AD-01…03; wand UI; Panic | Flex Time / stretch / pencil audio ([ADR 0008](../../adr/0008-timeline-clip-editing.md)) |
+| Menu OS Faza D residual; migrator bez milczącej utraty krytycznych metadanych | MIDI w procesie Tauri ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) |
+| Sampler / Safety Net **jeśli były w v4** | git-apply (nigdy) ([ADR 0004](../../adr/0004-updates-docker.md)) |
+| Soft-gate G1–G10 (HW = operator) | Motywy systemowe / auth multi-user / Android (**nowości** → 5.1+) |
+| Tag `5.0.0` + nazwa hero | Tag przy otwartych stubach funkcji v4 |
 
 ## IN (must) — A: Polish UI — **done (kod)**
 

@@ -67,7 +67,7 @@ Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować dr
 - Szczegóły: `docs/adr/0011-ui-parity-behavior.md`, reguła `ui-parity.mdc`, `docs/ui/colors.md`.
 - **Zakaz β** do green PO smoke wg ADR 0011.
 
-## Poza zakresem (alpha)
+## Poza zakresem (alpha / do decyzji)
 
 Bez jawnej decyzji produktowej nie dodawaj:
 
@@ -77,3 +77,6 @@ Bez jawnej decyzji produktowej nie dodawaj:
 - Transportu / MIDI clock z autorytetem klienta
 - Sekretów, `data/projects/*` użytkownika, `node_modules` w gicie
 - Klonowania paska narzędzi / chrome z 4.x „dla parity”
+- **Stubów / atrap** funkcji dostępnych w v4 — do tagu `5.0.0` muszą wrócić jako
+  zachowanie ([ADR 0011 §1a](../../docs/adr/0011-ui-parity-behavior.md)); brak funkcji =
+  brak UI, nie `disabled` „na zapas”

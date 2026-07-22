@@ -29,7 +29,7 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 | Admin: Utwory · Set · Scena · Host | IA v5 — **Set + wybór utworów w jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)); import paczki pod Wybrany; bez „zaznacz na innej zakładce” |
 | Host MIDI I/O + meters + Tr./Lead/Edycja zdalna | **β2** (z audio; β1 = host bez MIDI) — **bez** disabled chrome stub |
 | Client: tonacja koncertowa / polskie nazwy sekcji | **Done** — C/B♭/E♭/ręczna + switch nazw |
-| Pełny OSMD sync playhead→nuty | Stub OK; upload MusicXML = wired; partie/oktawa z rendererem |
+| Pełny OSMD sync playhead→nuty | **Done** — OSMD render + kotwice + click-to-seek + zoom/follow; partie/oktawa residual |
 | Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
 | Backup restore / path picker FS | Placeholder (path picker shell) |
 | Forma scissors = subsections v4 | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×** |
@@ -86,8 +86,8 @@ Tr./Lead/Edycja zdalna / MIDI bridge → **β2** bez chrome stub; wrócą dopier
 ## Client
 
 - [x] Role + →następny + fullscreen + presence hello
-- [x] Grid live · score stub (lista MusicXML)
-- [x] Wygląd (jasny / kontrast) · karaoke skala tekstu / auto-scroll · score ± zoom lokalny
+- [x] Grid live · score OSMD (MusicXML + playhead sync + click-to-seek)
+- [x] Wygląd (jasny / kontrast) · karaoke skala tekstu / auto-scroll · score ± zoom + follow playhead
 - [x] Grid: H zamiast B / litery / animacje
 - [x] Tap wokalu (Client → tekst startTicks)
 - [x] Edycja notatek Formy
