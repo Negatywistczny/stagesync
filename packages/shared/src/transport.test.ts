@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
+  TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
   TransportStateSchema,
@@ -31,6 +32,24 @@ describe("TransportSeekBodySchema", () => {
   it("accepts integer ticks including negative", () => {
     expect(TransportSeekBodySchema.parse({ positionTicks: -100 })).toEqual({
       positionTicks: -100,
+    });
+  });
+});
+
+describe("TransportLoopBodySchema", () => {
+  it("rejects endTicks <= startTicks when both set", () => {
+    expect(() =>
+      TransportLoopBodySchema.parse({
+        enabled: true,
+        startTicks: 100,
+        endTicks: 100,
+      }),
+    ).toThrow();
+  });
+
+  it("allows enabling without range fields", () => {
+    expect(TransportLoopBodySchema.parse({ enabled: false })).toEqual({
+      enabled: false,
     });
   });
 });
