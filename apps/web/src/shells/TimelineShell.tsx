@@ -20,9 +20,9 @@ import {
   toDisplayBar,
   importUgText,
   normalizeKeyTonic,
+  placeContentFromForma,
   projectEndTicks,
   transportHomeTicks,
-  wandContentToForma,
   type FormaClip,
   type Project,
   type SnapMode,
@@ -393,7 +393,7 @@ const TOOLS: {
     id: "wand",
     label: "Różdżka",
     title:
-      "Różdżka — Tekst / Akordy → Forma (zaznaczenie sekcji = zakres; bez — cały utwór)",
+      "Różdżka — rozmieść Tekst / Akordy wg Formy (zaznaczenie sekcji lub clipów treści = zakres; bez — cały utwór)",
     key: "w",
     Icon: IconWand,
   },
@@ -3626,21 +3626,41 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   function applyWand(mode: WandMode) {
     const draft = draftRef.current;
     if (!draft) return;
-    const formaIds = idsOnLane(clipSelection, "forma");
-    const ranges = formaIds.length
-      ? draft.forma.clips
-          .filter((c) => formaIds.includes(c.id) && c.kind === "section")
-          .map((c) => ({
-            startTicks: c.startTicks,
-            endTicks: c.startTicks + c.lengthTicks,
-          }))
-      : undefined;
-    const next = wandContentToForma(
-      draft,
-      mode,
-      ranges?.length ? { ranges } : {},
-    );
-    if (next !== draft) commitDraft(next);
+    // v4 wandScopeSectionIds: Forma sections and/or enclosing sections of
+    // selected Tekst/Akordy. Empty selection → whole song. Cue-only → abort.
+    const selected = clipSelection.items;
+    let scope: { sectionIds?: string[] } = {};
+    if (selected.length > 0) {
+      const sectionIds = new Set<string>();
+      const music = draft.forma.clips.filter((c) => c.kind === "section");
+      for (const item of selected) {
+        if (item.lane === "forma") {
+          const clip = draft.forma.clips.find((c) => c.id === item.id);
+          if (clip?.kind === "section") sectionIds.add(clip.id);
+          continue;
+        }
+        if (item.lane !== "tekst" && item.lane !== "akordy") continue;
+        const content =
+          item.lane === "tekst"
+            ? draft.tekst.clips.find((c) => c.id === item.id)
+            : draft.akordy.clips.find((c) => c.id === item.id);
+        if (!content) continue;
+        const host = music.find(
+          (s) =>
+            content.startTicks >= s.startTicks &&
+            content.startTicks < s.startTicks + s.lengthTicks,
+        );
+        if (host) sectionIds.add(host.id);
+      }
+      if (sectionIds.size === 0) {
+        setWandMenu(null);
+        setTool("pointer");
+        return;
+      }
+      scope = { sectionIds: [...sectionIds] };
+    }
+    const result = placeContentFromForma(draft, mode, scope);
+    if (result.ok && result.project !== draft) commitDraft(result.project);
     setWandMenu(null);
     setTool("pointer");
   }

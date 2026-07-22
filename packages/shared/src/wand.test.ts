@@ -1,52 +1,181 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_PPQ, ticksPerBar } from "./time.js";
 import { createProjectV5Seed } from "./project-seed.js";
-import { wandContentToForma } from "./wand.js";
+import { placeContentFromForma } from "./wand.js";
+import type { Project } from "./schema.js";
 
-describe("wandContentToForma", () => {
-  it("builds Forma sections from Tekst clips", () => {
+const BAR = ticksPerBar({ numerator: 4, denominator: 4 }, DEFAULT_PPQ); // 3840
+
+function withVerse(p: Project): Project {
+  const intro = p.forma.clips.find((c) => c.name === "Intro")!;
+  return {
+    ...p,
+    forma: {
+      clips: [
+        ...p.forma.clips.filter((c) => c.id !== intro.id),
+        { ...intro, lengthTicks: 2 * BAR },
+        {
+          id: "forma-verse",
+          name: "Verse",
+          kind: "section" as const,
+          startTicks: intro.startTicks + 2 * BAR,
+          lengthTicks: 4 * BAR,
+        },
+      ],
+    },
+  };
+}
+
+describe("placeContentFromForma", () => {
+  it("places Tekst evenly across a Forma section without mutating Forma", () => {
     let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const intro0 = p.forma.clips.find((c) => c.name === "Intro")!;
     p = {
       ...p,
+      forma: {
+        clips: p.forma.clips.map((c) =>
+          c.id === intro0.id ? { ...c, lengthTicks: 4 * BAR } : c,
+        ),
+      },
       tekst: {
         clips: [
-          {
-            id: "t1",
-            startTicks: 0,
-            lengthTicks: 3840,
-            text: "Hello",
-          },
+          { id: "t1", startTicks: 0, lengthTicks: BAR, text: "Line one" },
+          { id: "t2", startTicks: 0, lengthTicks: BAR, text: "Line two" },
         ],
       },
     };
-    const next = wandContentToForma(p, "tekst");
-    const sections = next.forma.clips.filter((c) => c.kind === "section");
-    expect(sections.length).toBeGreaterThanOrEqual(1);
-    expect(sections.some((c) => c.name.includes("Hello"))).toBe(true);
-    expect(next.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
+    const formaBefore = structuredClone(p.forma);
+    const intro = p.forma.clips.find((c) => c.name === "Intro")!;
+    const result = placeContentFromForma(p, "tekst");
+    expect(result.ok).toBe(true);
+    expect(result.placed).toBe(2);
+    expect(result.project.forma).toEqual(formaBefore);
+
+    const starts = result.project.tekst.clips
+      .map((c) => c.startTicks)
+      .sort((a, b) => a - b);
+    expect(starts).toEqual([intro.startTicks, intro.startTicks + 2 * BAR]);
   });
 
-  it("shrinks length when clamping a span that starts before content floor", () => {
+  it("leaves Countdown and digit clips alone", () => {
     let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
-    // Seed Countdown ends at 0 → floor 0. Span straddles floor.
+    const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     p = {
       ...p,
       tekst: {
         clips: [
           {
-            id: "t-straddle",
-            startTicks: -1920,
-            lengthTicks: 3840,
-            text: "Straddle",
+            id: "vl-cd-2",
+            startTicks: cd.startTicks,
+            lengthTicks: BAR,
+            text: "2",
+          },
+          { id: "t1", startTicks: 0, lengthTicks: BAR, text: "Hello" },
+        ],
+      },
+    };
+    const formaBefore = structuredClone(p.forma);
+    const result = placeContentFromForma(p, "tekst");
+    expect(result.ok).toBe(true);
+    expect(result.project.forma).toEqual(formaBefore);
+    const digit = result.project.tekst.clips.find((c) => c.id === "vl-cd-2")!;
+    expect(digit.startTicks).toBe(cd.startTicks);
+  });
+
+  it("scopes placement to selected Forma section ids", () => {
+    let p = withVerse(
+      createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z"),
+    );
+    const intro = p.forma.clips.find((c) => c.name === "Intro")!;
+    const verse = p.forma.clips.find((c) => c.name === "Verse")!;
+    p = {
+      ...p,
+      tekst: {
+        clips: [
+          {
+            id: "ti",
+            startTicks: intro.startTicks,
+            lengthTicks: BAR,
+            text: "Intro line",
+          },
+          {
+            id: "tv",
+            startTicks: verse.startTicks + BAR,
+            lengthTicks: BAR,
+            text: "Verse line",
           },
         ],
       },
     };
-    const next = wandContentToForma(p, "tekst");
-    const section = next.forma.clips.find(
-      (c) => c.kind === "section" && c.name.includes("Straddle"),
-    );
-    expect(section).toBeDefined();
-    expect(section!.startTicks).toBe(0);
-    expect(section!.lengthTicks).toBe(1920);
+    const formaBefore = structuredClone(p.forma);
+    const introStartBefore = p.tekst.clips.find((c) => c.id === "ti")!
+      .startTicks;
+    const result = placeContentFromForma(p, "tekst", {
+      sectionIds: [verse.id],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.project.forma).toEqual(formaBefore);
+    const introLine = result.project.tekst.clips.find((c) => c.id === "ti")!;
+    const verseLine = result.project.tekst.clips.find((c) => c.id === "tv")!;
+    expect(introLine.startTicks).toBe(introStartBefore);
+    expect(verseLine.startTicks).toBe(verse.startTicks);
+  });
+
+  it("places Akordy across Forma without mutating Forma", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const intro0 = p.forma.clips.find((c) => c.name === "Intro")!;
+    p = {
+      ...p,
+      forma: {
+        clips: p.forma.clips.map((c) =>
+          c.id === intro0.id ? { ...c, lengthTicks: 4 * BAR } : c,
+        ),
+      },
+      akordy: {
+        clips: [
+          { id: "a1", startTicks: 0, lengthTicks: BAR, symbol: "C" },
+          { id: "a2", startTicks: 0, lengthTicks: BAR, symbol: "G" },
+        ],
+      },
+    };
+    const formaBefore = structuredClone(p.forma);
+    const intro = p.forma.clips.find((c) => c.name === "Intro")!;
+    const result = placeContentFromForma(p, "akordy");
+    expect(result.ok).toBe(true);
+    expect(result.project.forma).toEqual(formaBefore);
+    const starts = result.project.akordy.clips
+      .map((c) => c.startTicks)
+      .sort((a, b) => a - b);
+    expect(starts).toEqual([intro.startTicks, intro.startTicks + 2 * BAR]);
+  });
+
+  it("both mode runs Tekst then Akordy and keeps Forma identical", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const intro0 = p.forma.clips.find((c) => c.name === "Intro")!;
+    p = {
+      ...p,
+      forma: {
+        clips: p.forma.clips.map((c) =>
+          c.id === intro0.id ? { ...c, lengthTicks: 4 * BAR } : c,
+        ),
+      },
+      tekst: {
+        clips: [
+          { id: "t1", startTicks: 0, lengthTicks: BAR, text: "One" },
+          { id: "t2", startTicks: 0, lengthTicks: BAR, text: "Two" },
+        ],
+      },
+      akordy: {
+        clips: [
+          { id: "a1", startTicks: 0, lengthTicks: BAR, symbol: "Am" },
+          { id: "a2", startTicks: 0, lengthTicks: BAR, symbol: "F" },
+        ],
+      },
+    };
+    const formaBefore = structuredClone(p.forma);
+    const result = placeContentFromForma(p, "both");
+    expect(result.ok).toBe(true);
+    expect(result.project.forma).toEqual(formaBefore);
+    expect(result.placed).toBeGreaterThanOrEqual(4);
   });
 });

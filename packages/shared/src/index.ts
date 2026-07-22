@@ -355,9 +355,11 @@ export {
 } from "./ug-import.js";
 
 export {
+  placeContentFromForma,
   wandContentToForma,
   type WandMode,
   type WandScope,
+  type WandResult,
 } from "./wand.js";
 
 export {

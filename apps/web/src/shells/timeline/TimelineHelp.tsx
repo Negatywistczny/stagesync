@@ -36,6 +36,7 @@ const SECTIONS: HelpSection[] = [
       "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
       "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
       "Scissors — Forma: podsekcja wewnątrz sekcji; Tekst / Akordy / Cue: podział clipu; Tempo / Tonacja / Metrum: nowa zmiana w miejscu cięcia.",
+      "Różdżka (W) — rozmieść Tekst / Akordy wg sekcji Formy (1 / 2 / 3); Forma bez zmian; zaznaczenie = zakres.",
       "Zoom — suwaki H / V / UI w statusie (nie ma narzędzia lupy na pasku).",
       "Tap — przy etykiecie ścieżki Tekst (dock); tempo @ locator z kolejnych stuknięć.",
     ],
