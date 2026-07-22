@@ -102,7 +102,7 @@
   outline-offset: -2px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 768px) {
   .header {
     grid-template-columns: auto 1fr;
     grid-template-areas:
@@ -283,10 +283,10 @@
   pointer-events: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .toolbar {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: var(--ss-space-2) var(--ss-space-3);
   }
 
@@ -297,14 +297,22 @@
   }
 
   .toolbarCenter {
-    flex: 0 0 auto;
-    margin-left: auto;
-    justify-content: flex-end;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: 0;
+    justify-content: flex-start;
   }
 
   .songCluster {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    min-width: 0;
     justify-content: flex-end;
+  }
+
+  .songPicker {
+    min-width: 0;
+    flex: 1 1 8rem;
+    max-width: 100%;
   }
 }
 
@@ -1232,13 +1240,13 @@
 
 .helpGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ss-space-3);
 }
 
-@media (min-width: 52rem) {
+@media (max-width: 768px) {
   .helpGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
@@ -2097,6 +2105,32 @@
   border-top: 1px solid var(--ss-color-border);
 }
 
+.shell[data-tl-tier="mobile"] {
+  --ss-touch-min: var(--ss-touch-min-client);
+}
+
+.shell[data-tl-tier="mobile"] .canvasInner {
+  /* Narrower dock: readable lane labels without eating canvas width. */
+  --tl-dock-w: calc(5.5rem * var(--tl-zoom-ui));
+}
+
+.shell[data-tl-tier="mobile"] .main {
+  grid-template-columns: 1fr;
+}
+
+.shell[data-tl-tier="mobile"] .inspector {
+  display: none;
+}
+
+.shell[data-tl-tier="mobile"] .metaBtn {
+  pointer-events: none;
+  cursor: default;
+  color: var(--ss-color-text-muted);
+  border-color: var(--ss-color-border-muted);
+  background: transparent;
+  opacity: 0.72;
+}
+
 .shell[data-tl-tier="mobile"] .formaClip,
 .shell[data-tl-tier="mobile"] .mapSegment {
   cursor: default;
@@ -2118,13 +2152,21 @@
 
 .shell[data-tl-tier="mobile"] .toolbarCenter {
   flex: 1 1 auto;
+  min-width: 0;
   justify-content: center;
   margin-left: 0;
 }
 
 .shell[data-tl-tier="mobile"] .songCluster {
   flex: 1 1 100%;
+  min-width: 0;
   justify-content: center;
+}
+
+.shell[data-tl-tier="mobile"] .songPicker {
+  min-width: 0;
+  flex: 1 1 8rem;
+  max-width: 100%;
 }
 
 .shell[data-tl-tier="mobile"] .canvasScroll {
@@ -2264,7 +2306,7 @@
   outline-offset: -2px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .main {
     grid-template-columns: 1fr;
   }

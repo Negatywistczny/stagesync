@@ -410,7 +410,7 @@
   color: var(--ss-color-disabled-text);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .setSplit {
     grid-template-columns: 1fr;
   }
@@ -428,6 +428,16 @@
   .splitAside > .card:last-child {
     max-height: none;
     flex: 1 1 auto;
+  }
+
+  .chrome,
+  .sections {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .nameRow {
+    flex-wrap: wrap;
   }
 }
 

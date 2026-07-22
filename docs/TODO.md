@@ -34,7 +34,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 - Polish UI na żywych kontrolkach + tokeny `--ss-*` (trains 0, 6, 8)
 - Timeline: zoom H/V z ikonami; snap picker; Pomoc + skróty zsynchronizowane z kodem (trains 0–1, 5; [#468](https://github.com/Negatywistyczny/stagesync/pull/468))
 - Audio: fade / crossfade / loop-region schema + UI + WebAudio envelope ([#462](https://github.com/Negatywistyczny/stagesync/pull/462), ADR 0008)
-- Mobile / tablet: progi `≤768` / `≤1024`, Client touch 44×44, Timeline phone = player ([#464](https://github.com/Negatywistyczny/stagesync/pull/464))
+- Mobile / tablet: progi `≤768` / `≤1024`, Client touch 44×44, Timeline phone = player RO (dock/inspector/meta; wrap ≤768) ([#464](https://github.com/Negatywistyczny/stagesync/pull/464) + follow-up na `main`)
 - i18n: polskie etykiety narzędzi Timeline + błędy API / upload / transport (w [#468](https://github.com/Negatywistyczny/stagesync/pull/468); [#463](https://github.com/Negatywistyczny/stagesync/pull/463) zamknięty jako superseded)
 - `docs/api` closeout + smoke E2E (train 1)
 - MIDI host I/O, PC OUT, transport IN (trains 4, 7); PC → load / Client Space / `[` `]` setlist
