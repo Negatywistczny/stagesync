@@ -174,7 +174,15 @@ export function createAssetsRouter(stores: Stores): Router {
         "Content-Disposition",
         `inline; filename="${encodeURIComponent(asset.originalName)}"`,
       );
-      createReadStream(filePath).pipe(res);
+      const stream = createReadStream(filePath);
+      stream.on("error", (err) => {
+        if (!res.headersSent) {
+          handleRouteError(res, err);
+          return;
+        }
+        res.destroy(err instanceof Error ? err : undefined);
+      });
+      stream.pipe(res);
     } catch (err) {
       handleRouteError(res, err);
     }
