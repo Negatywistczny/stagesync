@@ -20,7 +20,7 @@ Finalne dokumenty, do ktorych mozna linkowac z `TODO`, `ROADMAP` i PR.
 | **α9** | [report-scope-alpha9](./reports/report-scope-alpha9.md) | [P8 playbook](./reports/report-po-smoke-p8.md) | — |
 | **β1** | [report-scope-beta1](./reports/report-scope-beta1.md) · [standalone spike](./reports/report-standalone-spike-beta1.md) | [beta-gate G1–G10](./reports/report-beta-gate.md) | — |
 | **β2** | [report-scope-beta2](./reports/report-scope-beta2.md) | [beta-gate](./reports/report-beta-gate.md) (residual operatorski) | — |
-| **5.0.0 (aktywny)** | [TODO.md](../TODO.md) | G1–G10 green przed / przy stable | — |
+| **5.0.0 (Overture)** | [TODO.md](../TODO.md) · [CHANGELOG](../../CHANGELOG.md) | Wydane `v5.0.0`; G1–G10 = ⬜ operator | [report-scope-5.0.0](./reports/report-scope-5.0.0.md) · [report-beta-gate](./reports/report-beta-gate.md) |
 | **Audyt 2026-07-21** | [report-audit-2026-07-21](./reports/report-audit-2026-07-21.md) | — | — |
 
 Zamknięte plany PR / QA sign-off α3–α7 / briefy α3–α4 usunięte po cutcie β2 — źródło historii: [CHANGELOG.md](../../CHANGELOG.md) + `report-scope-*`.

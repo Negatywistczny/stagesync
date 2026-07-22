@@ -1,9 +1,9 @@
 # Scope 5.0.0 — Kompletny parytet v4 (bez stubów) + polish / Faza D
 
-**Wersja docelowa:** `5.0.0` (tag / bump **tylko na prośbę**; nazwa hero linii 5.0 przy cutcie)  
+**Wersja:** `5.0.0` — **Overture** (wydane 2026-07-23, tag `v5.0.0`)  
 **Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [ADR 0007](../../adr/0007-snap-grid.md) · [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [ADR 0011](../../adr/0011-ui-parity-behavior.md) · [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2.md](./report-scope-beta2.md)  
 **Bramka wejścia:** `v5.0.0-beta.2` wydane (2026-07-21); P8 green  
-**Status kodu (2026-07-22):** must **A–E** + Faza D + mobile + help/i18n — **na `main`**. Tag **nie** wycięty. **G1–G10** = ⬜ operator HW.
+**Status (2026-07-23):** must **A–E** + Faza D + mobile + help/i18n + OSMD/migration/wand — **wydane** jako `v5.0.0` (**Overture**). **G1–G10** = ⬜ soft-gate operator HW (bez claim green).
 
 ## Cel
 
@@ -93,9 +93,9 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 | ID | Status w tym oknie | Akcja overnight |
 |----|--------------------|-----------------|
-| G1–G10 | ⬜ residual operatorski po β2 | Checklista + sekwencja w [report-beta-gate.md](./report-beta-gate.md); link z TODO; **bez** fałszywego `[x]` |
+| G1–G10 | ⬜ residual operatorski po `v5.0.0` | Checklista + sekwencja w [report-beta-gate.md](./report-beta-gate.md); link z TODO; **bez** fałszywego `[x]` |
 | G6 kod | prerequisites CI/Release done (darwin+windows `latest.json`) | Bez claim relaunch green |
-| Przed tagiem `5.0.0` | Must green na instalatorach β2 (lub artefaktach 5.0.0 RC) | Operator rano |
+| Po tagu `5.0.0` | Must green na instalatorach `v5.0.0` (baseline updater z β2) | Operator — residual |
 
 Zob. sekcja „Sekwencja weryfikacji” w [report-beta-gate.md](./report-beta-gate.md) — baseline `v5.0.0-beta.2`.
 
@@ -171,12 +171,12 @@ flowchart LR
 - Aktualizacja [report-beta-gate.md](./report-beta-gate.md): sekcja „Przed 5.0.0 / soft-gate overnight” — G1–G10 nadal ⬜; lista artefaktów β2; zakaz claim green.
 - TODO: odhaczyć „Scope report…” po merge PR 0; G1–G10 zostaje otwarte.
 
-## Kryteria zamknięcia etapu (przy tagu — tylko na prośbę)
+## Kryteria zamknięcia etapu — **spełnione w kodzie + tagu (2026-07-23)**
 
-1. Must A–E merged + CI green na `main`.
-2. G1–G10 green **operator** na HW (lub świadomy waiver w report-beta-gate).
-3. Bump `5.0.0` + CHANGELOG + **nazwa hero** linii 5.0 + tag `v5.0.0`.
-4. TODO → sekcja `5.1` (procedura w TODO.md).
+1. Must A–E merged + CI green na `main` — ✓
+2. G1–G10 green **operator** na HW — ⬜ residual (świadomy soft-gate; bez claim green)
+3. Bump `5.0.0` + CHANGELOG + **Overture** + tag `v5.0.0` — ✓
+4. TODO → sekcja `5.1+` + residual G1–G10 — ✓
 
 ## Handoff morning (2026-07-22 — overnight; update ~01:36 CEST)
 
@@ -236,7 +236,7 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 | 8 | [#416](https://github.com/Negatywistyczny/stagesync/pull/416) | Residual hardening + UI token hygiene |
 
 **Weryfikacja po merge:** `pnpm lint && pnpm check-types && pnpm test && pnpm build` green lokalnie i w CI (#416).  
-**Następne kroki:** PO smoke na `main`; operator G1–G10; tag `v5.0.0` + nazwa hero **tylko na prośbę**.
+**Po cutcie:** operator G1–G10 na instalatorach `5.0.0` (⬜); planowanie 5.1+ na prośbę.
 
 ---
 
@@ -251,12 +251,16 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 | Faza D | ✓ #460 |
 | Mobile breakpoints | ✓ #464 |
 | G1–G10 | ⬜ **operator HW — bez claim green** |
-| Tag / bump `5.0.0` | ⛔ tylko na prośbę |
+| Tag / bump `5.0.0` | ✓ **Overture** `v5.0.0` (2026-07-23) |
 
 | Draft residual | Status |
 |----------------|--------|
-| [#465](https://github.com/Negatywistyczny/stagesync/pull/465) OSMD score nav | OPEN draft, **CI red** — nie merge |
-| [#466](https://github.com/Negatywistyczny/stagesync/pull/466) migration assets meta | OPEN draft, **CI red** — nie merge |
-| [#467](https://github.com/Negatywistyczny/stagesync/pull/467) wand karaoke MIDI | OPEN draft, CI green — zostaje draft do stabilizacji TimelineShell |
+| [#465](https://github.com/Negatywistyczny/stagesync/pull/465) OSMD score nav | ✓ merged przed cuttem |
+| [#466](https://github.com/Negatywistyczny/stagesync/pull/466) migration assets meta | ✓ merged przed cuttem |
+| [#467](https://github.com/Negatywistyczny/stagesync/pull/467) wand karaoke MIDI | ✓ merged przed cuttem |
 
 **Świadome OUT / 5.1+:** Safety Net [#437](https://github.com/Negatywistyczny/stagesync/issues/437), Cues Sampler [#430](https://github.com/Negatywistyczny/stagesync/issues/430), motywy/auth — bez kodu w 5.0.0.
+
+### Cut release (2026-07-23) — Overture
+
+Tag `v5.0.0` na jawną prośbę. Hero linii 5.0 = **Overture**. G1–G10 pozostają ⬜.

@@ -21,7 +21,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — H1–H12 (α10–α13); residual (menu Faza B, G1–G10) → **must β2** (docs cut `5.0.0-beta.1.1`) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
-| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny (kod A–E + Faza D + OSMD/migration/wand na `main`)** — brak tagu; residual = **G1–G10** operator; hero przy cutcie | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
+| **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
 
 ### Zamknięte etapy (α3–β1)
@@ -56,26 +56,17 @@ Tag `v5.0.0-beta.2`. Scope: [report-scope-beta2.md](./analysis/reports/report-sc
 - **G1–G10** — residual operatorski przy cutcie (⬜ na HW); must green przed / przy **5.0.0** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md))
 - **OUT β2:** fade/crossfade/loop-region; Faza D menu; Android native; MIDI w procesie Tauri; Flex Time
 
-### 5.0.0 — zakres orientacyjny — **aktywny (kod domknięty; brak tagu)**
+### 5.0.0 — **Overture** — **wydane 2026-07-23**
 
-Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md).  
-**Polityka (2026-07-22):** parytet **zachowania v4** kompletny w `5.0.0` — bez stubów;
-funkcja z v4 nie idzie na 5.1+ ([ADR 0011 §1a](./adr/0011-ui-parity-behavior.md)).
+Tag `v5.0.0`. Scope: [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md).  
+**Polityka:** parytet **zachowania v4** kompletny — bez stubów
+([ADR 0011 §1a](./adr/0011-ui-parity-behavior.md)).
 
-**W kodzie na `main` (must A–E + residual closeout 2026-07-22):**
+**Dostarczone w kodzie:** polish UI; Timeline zoom/help/snap; Audio fade/loop; menu OS Faza D;
+mobile/tablet; Client Score/OSMD; Preferencje; Live Desk; migrator; `docs/api` + CI + smoke.
 
-- Polish UI na żywych kontrolkach (typografia, proporcje, copy, gęstość)
-- Timeline: zoom UI/H/V z ikonami; Pomoc + skróty; **snap picker** (beat/subdivision)
-- Audio polish: fade, crossfade, loop-region (+ WebAudio envelope)
-- **Desktop OS menu — Faza D** — done ([#460](https://github.com/Negatywistyczny/stagesync/pull/460))
-- Mobile / tablet breakpoints + Client touch targets ([#464](https://github.com/Negatywistyczny/stagesync/pull/464))
-- `docs/api` + CI + smoke E2E
-
-**Operator / przed tagiem (nie claim green w docs):**
-
-- G1–G10 na instalatorach β2 — [report-beta-gate](./analysis/reports/report-beta-gate.md)
-- OSMD / migration assets / wand karaoke — merged (#465–#467)
-- Nazwa hero linii 5.0 + bump/tag — **tylko na prośbę**
+**Residual operatorski (bez claim green):** **G1–G10** na HW — [report-beta-gate](./analysis/reports/report-beta-gate.md);
+checklista w [TODO.md](./TODO.md).
 
 ### Po 5.0.0
 

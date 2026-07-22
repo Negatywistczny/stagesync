@@ -225,11 +225,11 @@ export function readManagedSettings(envPath = ENV_PATH): {
   const parsed = parseEnvContent(content);
   const values = {} as ManagedSettingsValues;
   for (const key of Object.keys(SETTINGS_SCHEMA) as SettingsKey[]) {
-    const spec = SETTINGS_SCHEMA[key];
-    values[key] = toFormValue(
+    const spec = SETTINGS_SCHEMA[key] as SettingSpec;
+    (values as Record<SettingsKey, string | boolean>)[key] = toFormValue(
       parsed[key],
       spec,
-    ) as ManagedSettingsValues[typeof key];
+    );
   }
   return { values, envExists: existsSync(envPath) };
 }
@@ -300,7 +300,7 @@ export function getSettingsSchemaForClient(): Record<
 > {
   return Object.fromEntries(
     (Object.keys(SETTINGS_SCHEMA) as SettingsKey[]).map((key) => {
-      const spec = SETTINGS_SCHEMA[key];
+      const spec = SETTINGS_SCHEMA[key] as SettingSpec;
       return [
         key,
         {

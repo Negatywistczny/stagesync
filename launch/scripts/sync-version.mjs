@@ -75,11 +75,19 @@ const updates = [
   },
   {
     path: "apps/server/src/app.ts",
-    transform: (c) =>
-      c.replace(
+    transform: (c) => {
+      // Current: resolveServiceVersion() fallback string.
+      const next = c.replace(
+        /(function resolveServiceVersion\(\): string \{[\s\S]*?return ")[^"]+(";)/,
+        `$1${version}$2`,
+      );
+      if (next !== c) return next;
+      // Legacy: const VERSION = process.env.npm_package_version ?? "…";
+      return c.replace(
         /const VERSION = process\.env\.npm_package_version \?\? "[^"]+";/,
         `const VERSION = process.env.npm_package_version ?? "${version}";`,
-      ),
+      );
+    },
   },
   {
     path: "Dockerfile",
