@@ -18,27 +18,33 @@ Changelog jest dla **użytownika i operatora**, nie dla gita ani agenta.
 
 ## Struktura `[Unreleased]`
 
-Kolejność H3 (jak w wydanych sekcjach β2+):
+Kolejność H3 (szablon użytkownika — **nie** kolejność z cutów β2+):
 
-1. `### Zmieniono`
-2. `### Dodano`
+1. `### Dodano`
+2. `### Zmieniono`
 3. `### Naprawiono`
 
 Opcjonalnie `### Usunięto` / `### Bezpieczeństwo` tylko gdy naprawdę potrzebne — też **jedna** sekcja każdego typu.
 
-Pod H3 grupuj domenowo przez `####` **z emoji** (gdy ≥ ~4 bulletów w sekcji). Tytuły muszą być **dokładnie** jak w tabeli (emoji + spacja + nazwa):
+Pod H3 grupuj domenowo przez `####` **z emoji** (gdy ≥ ~4 bulletów w sekcji). Używaj **tylko** kategorii z realnymi zmianami — typowo **2–5** nagłówków `####` na sekcję H3. Tytuły muszą być **dokładnie** jak w tabeli (emoji + spacja + nazwa):
 
 | `####` (kanoniczny) | Zakres |
 |---------------------|--------|
 | `#### ⏱️ Timeline & DAW` | edycja, linijka, Formy, inspector, narzędzia, Pomoc Timeline |
 | `#### 🎛️ Audio / MIDI / Transport` | playback, fade, MIDI I/O, playhead, setlista, WS |
 | `#### 🖥️ App Shell & UI` | Admin / Client chrome, preferencje, i18n widoczne w UI |
-| `#### 💻 Desktop` | Tauri, menu OS, updater, DnD shelła |
-| `#### ⚙️ API / Serwer` | HTTP, persystencja, walidacja krawędzi, migracja |
-| `#### 📚 Docs` | tylko publiczna infra (README, INSTALL) — nie wewnętrzne checklisty |
+| `#### ⚙️ Serwer & API` | HTTP, persystencja, walidacja krawędzi, migracja |
+| `#### 📚 Dokumentacja` | przewodniki użytkownika, schematy API, skróty, instalacja |
+| `#### 📦 Packaging & Desktop (Tauri / Docker)` | Tauri, menu OS, updater, DnD shelła, instalatory, obrazy Docker |
+| `#### 🛠️ Infrastruktura & Build` | env/porty wpływające na deploy, formaty .msi/.dmg, pipeline build |
 
 Puste H3 — **nie twórz**. Brakujące H3 — dodaj **raz**, w kanonicznej kolejności.
 Nagłówki `####` **bez** emoji albo z inną nazwą domeny — **zakazane** (używaj tabeli powyżej).
+
+### Inclusion: Dokumentacja vs Infrastruktura
+
+1. **Dokumentacja:** wpisuj przewodniki użytkownika, schematy API, podręczniki skrótów, instalację. Pomijaj notatki wewnętrzne, arkusze QA, same literówki / kaskady TODO.
+2. **Infrastruktura:** wpisuj zmienne env / porty wpływające na deploy, formaty `.msi` / `.dmg`, obrazy Docker. Pomijaj trywialne bumpy akcji CI, kosmetykę lintera, polerowanie skryptów pomocniczych.
 
 ### Zakaz drugiego tego samego H3
 

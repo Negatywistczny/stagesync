@@ -7,23 +7,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Zmieniono
-
-#### ⚙️ API / Serwer
-
-- **Walidacja:** ściślejsze limity długości, BPM (20–400) i metrum na krawędziach API; odrzucanie niepoprawnego metrum.
-- **Timebase:** konwersje ticks↔BBT i snap do taktów respektują mapę metrum; ochrona przed nieprawidłowymi tickami.
-- **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WebSocket; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
-
-#### 🖥️ App Shell & UI
-
-- **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
-- **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, ukryty inspector, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
-
-#### 📚 Docs
-
-- **Dokumentacja produktowa:** TODO, ROADMAP i raporty scope zsynchronizowane z postępem po menu Faza D, fade, Pomocy i mobile.
-
 ### Dodano
 
 #### ⏱️ Timeline & DAW
@@ -49,20 +32,37 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Chrome ([#443](https://github.com/Negatywistyczny/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
 
-#### 💻 Desktop
+#### 📦 Packaging & Desktop (Tauri / Docker)
 
 - **Menu OS ([#443](https://github.com/Negatywistyczny/stagesync/issues/443), Faza D):** Edycja — Cofnij/Ponów/Usuń (z wyszarzaniem bez historii); Widok — Powiększ / Pomniejsz / Rzeczywisty rozmiar; Pomoc — Skróty; czytelniejsze błędy transportu i sąsiadów setlisty.
 - **Diagnostyka ([#351](https://github.com/Negatywistyczny/stagesync/issues/351)):** rotujący log hosta, handlery crashy, eksport ZIP z Admin Host / menu Pomoc; osobny log sidecara.
-
-#### ⚙️ API / Serwer
-
-- **Migracja v4→v5:** rok i okładka; MusicXML oraz lokalne okładki/audio → assets (ścieżki audio); CLI z katalogiem uploadów kopiuje pliki.
 - **Instalator Windows ([#396](https://github.com/Negatywistyczny/stagesync/issues/396)):** `StageSync_{version}_x64.msi` (bez `_en-US`); zwinięte notatki updatera w release; `latest.json` przy rename.
 
-#### 📚 Docs
+#### ⚙️ Serwer & API
+
+- **Migracja v4→v5:** rok i okładka; MusicXML oraz lokalne okładki/audio → assets (ścieżki audio); CLI z katalogiem uploadów kopiuje pliki.
+
+#### 📚 Dokumentacja
 
 - **README ([#417](https://github.com/Negatywistyczny/stagesync/issues/417)):** treść po polsku, pełniejszy zestaw badge i sekcja stosu.
 - **API:** domknięta dokumentacja powierzchni REST.
+
+### Zmieniono
+
+#### ⚙️ Serwer & API
+
+- **Walidacja:** ściślejsze limity długości, BPM (20–400) i metrum na krawędziach API; odrzucanie niepoprawnego metrum.
+- **Timebase:** konwersje ticks↔BBT i snap do taktów respektują mapę metrum; ochrona przed nieprawidłowymi tickami.
+- **Serwer:** restart/shutdown LAN za tokenem lifecycle; limity ramek WebSocket; atomowy zapis JSON; blokada cold-seed biblioteki; PUT nie przywraca usuniętych klipów audio.
+
+#### 🖥️ App Shell & UI
+
+- **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
+- **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, ukryty inspector, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
+
+#### 📚 Dokumentacja
+
+- **Dokumentacja produktowa:** TODO, ROADMAP i raporty scope zsynchronizowane z postępem po menu Faza D, fade, Pomocy i mobile.
 
 ### Naprawiono
 
