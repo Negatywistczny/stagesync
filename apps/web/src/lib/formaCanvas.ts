@@ -190,7 +190,7 @@ export function iterBarBoundariesTicks(
   const bars: BarBoundary[] = [];
   let startTicks = 0;
   let bar = 1;
-  const maxBars = 100_000;
+  const maxBars = 4096;
 
   while (startTicks < end && bar <= maxBars) {
     const meter = meterAtTicks(project, startTicks);
