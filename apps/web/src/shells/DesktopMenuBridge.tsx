@@ -20,6 +20,7 @@ import {
   fetchSetlist,
   postSystemRestart,
 } from "../lib/setlistApi.js";
+import { suppressAudioPlayback } from "../lib/audioPlayback.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./DesktopMenuBridge.module.css";
@@ -244,6 +245,7 @@ export function DesktopMenuBridge() {
   const onTransportStop = useCallback(async () => {
     if (commandPending) return;
     try {
+      suppressAudioPlayback();
       await stop();
     } catch {
       /* ignore */

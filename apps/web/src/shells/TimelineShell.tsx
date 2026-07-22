@@ -167,10 +167,12 @@ import {
   setAudioTrackMuted,
 } from "../lib/audioLaneEdit.js";
 import {
+  allowAudioPlayback,
   clearAudioBufferCache,
   loadAudioBuffer,
   restartAudioPlayback,
   stopAudioPlayback,
+  suppressAudioPlayback,
   syncAudioPlayback,
 } from "../lib/audioPlayback.js";
 import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
@@ -1355,16 +1357,17 @@ export function TimelineShell() {
       stopAudioPlayback();
       return;
     }
-    const input = {
-      project: draftProject,
-      playing: state.playing,
-      displayTicks,
-    };
     if (!state.playing) {
+      // SSOT paused/stopped — clear local suppress from Pause/Stop click RTT.
+      allowAudioPlayback();
       stopAudioPlayback();
       return;
     }
-    syncAudioPlayback(projectId, input);
+    syncAudioPlayback(projectId, {
+      project: draftProject,
+      playing: state.playing,
+      displayTicks,
+    });
   }, [
     projectId,
     draftProject,
@@ -1479,6 +1482,7 @@ export function TimelineShell() {
   }
 
   async function onPlayClick() {
+    allowAudioPlayback();
     await resumeMetronomeAudio(getMetronomeAudioContext());
     if (projectId && draftProject) {
       restartAudioPlayback(projectId, {
@@ -1500,7 +1504,14 @@ export function TimelineShell() {
     await play({ projectId });
   }
 
+  async function onPauseClick() {
+    // Halt WebAudio immediately — do not wait for pause RTT (#352).
+    suppressAudioPlayback();
+    await pause();
+  }
+
   async function onStopClick() {
+    suppressAudioPlayback();
     await stop();
     // Match server home (Countdown start / pre-roll), not tick 0 past CD (#41).
     setLocatorTicks(transportHomeTicks(draftRef.current));
@@ -3171,7 +3182,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     onUndo,
     onRedo,
     onPlayOrPause: () => {
-      void (state.playing ? pause() : onPlayClick());
+      void (state.playing ? onPauseClick() : onPlayClick());
     },
     onMetronomeToggle,
     onLoopToggle,
@@ -3909,7 +3920,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               aria-label={state.playing ? "Pauza" : "Odtwarzaj"}
               disabled={commandPending}
               onClick={() =>
-                void (state.playing ? pause() : onPlayClick())
+                void (state.playing ? onPauseClick() : onPlayClick())
               }
             >
               {state.playing ? <IconPause /> : <IconPlay />}

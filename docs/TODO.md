@@ -42,7 +42,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § 5.0.0 · [report-scope-5.0.0.md](./ana
 
 ### Should
 
-- [ ] [#352](https://github.com/Negatywistyczny/stagesync/issues/352) — audio stop/pause zatrzymuje WebAudio
 - [ ] [#363](https://github.com/Negatywistyczny/stagesync/issues/363) — Client Space focus; Timeline `[`/`]` setlista; MIDI PC → load project
 - [ ] [#358](https://github.com/Negatywistyczny/stagesync/issues/358) — WS backoff+jitter + baner offline Client + refetch projektu
 - [ ] [#396](https://github.com/Negatywistyczny/stagesync/issues/396) — MSI bez `_en-US` + RELEASE_BODY `<details>`
