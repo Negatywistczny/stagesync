@@ -958,6 +958,32 @@
   color: color-mix(in srgb, var(--ss-color-text-muted) 65%, var(--ss-color-surface));
 }
 
+.dockSelected {
+  color: var(--ss-color-text);
+  box-shadow:
+    inset 0 -1px 0 0 var(--ss-color-border-muted),
+    inset 3px 0 0 0 var(--ss-color-primary);
+}
+
+.dockTools {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ss-space-1);
+}
+
+.dockFader {
+  width: calc(var(--ss-space-16) * var(--tl-zoom-ui));
+  min-width: calc(var(--ss-space-12) * var(--tl-zoom-ui));
+}
+
+.tapBtnSelected {
+  color: var(--ss-color-text);
+  background: var(--ss-color-selected);
+  border-color: var(--ss-color-primary);
+}
+
+
 .eyeBtn {
   display: inline-flex;
   flex-shrink: 0;

@@ -233,3 +233,46 @@ export function isMarqueeClick(dxPx: number, dyPx: number): boolean {
     Math.abs(dyPx) < MARQUEE_CLICK_THRESHOLD_PX
   );
 }
+
+/** Audio track header selection (DAW dock) — mutually exclusive with clip focus in UI. */
+export type TrackSelection = {
+  audioTrackId: string | null;
+};
+
+export const EMPTY_TRACK_SELECTION: TrackSelection = { audioTrackId: null };
+
+export function selectAudioTrack(audioTrackId: string): TrackSelection {
+  return { audioTrackId };
+}
+
+export function clearTrackSelection(): TrackSelection {
+  return EMPTY_TRACK_SELECTION;
+}
+
+export function isAudioTrackSelected(
+  sel: TrackSelection,
+  audioTrackId: string,
+): boolean {
+  return sel.audioTrackId === audioTrackId;
+}
+
+/** Solo set: when non-empty, only listed track ids are audible (client playback). */
+export function toggleSoloTrackId(
+  soloIds: readonly string[],
+  trackId: string,
+): string[] {
+  if (soloIds.includes(trackId)) {
+    return soloIds.filter((id) => id !== trackId);
+  }
+  return [...soloIds, trackId].slice(0, 64);
+}
+
+export function isTrackAudibleWithSolo(
+  trackId: string,
+  trackMuted: boolean | undefined,
+  soloIds: readonly string[],
+): boolean {
+  if (trackMuted) return false;
+  if (soloIds.length === 0) return true;
+  return soloIds.includes(trackId);
+}

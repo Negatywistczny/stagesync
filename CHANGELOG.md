@@ -9,6 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+- **Timeline DAW ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** zaznaczenie ścieżki audio w docku, Solo (S) oraz kompaktowy fader `Slider`; solo wycisza inne ścieżki w playback WebAudio (bez zmiany SSOT czasu).
 - **UI Slider ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** komponent `Slider` w `@stagesync/ui` (tokeny `--ss-*`; stany default/hover/focus/active/disabled).
 - **Timeline ruler ([#61](https://github.com/Negatywistczny/stagesync/pull/61)):** linijka podzielona na dwie połowy — góra: numery taktów + tworzenie/przesuwanie regionu pętli; dół: podziałka beatów + scrub playheada. Klik w region na górze przełącza cycle on/off.
 - **Diagnostics ([#351](https://github.com/Negatywistczny/stagesync/issues/351)):** rotujący `data/logs/stagesync.log`; crash handlers (web/server); `GET /api/system/diagnostics/export` (ZIP); przycisk Admin Host + menu Pomoc; sidecar → `sidecar.log`.
