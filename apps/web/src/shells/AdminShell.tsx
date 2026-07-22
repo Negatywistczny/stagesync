@@ -496,14 +496,14 @@ export function AdminShell() {
             {activeSection?.name ?? "—"}
           </span>
         </div>
-        <div className={styles.statusGroup}>
+        <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
           <span className={styles.statusLab}>Pozycja</span>
           <span className={[styles.statusVal, styles.statusMono].join(" ")}>
             {toDisplayBar(bbt.bar)}.{bbt.beat} · {state.bpm} BPM ·{" "}
             {state.timeSignature.numerator}/{state.timeSignature.denominator}
           </span>
         </div>
-        <div className={styles.statusGroup}>
+        <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
           <span className={styles.statusLab}>Dalej</span>
           <span className={[styles.statusVal, styles.statusMuted].join(" ")}>
             {nextName}

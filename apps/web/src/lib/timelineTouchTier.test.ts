@@ -19,6 +19,12 @@ describe("timelineTouchTier", () => {
     ).toBe("tablet");
   });
 
+  it("detects tablet on width ≤1024 when not mobile", () => {
+    expect(
+      detectTimelineTier((q) => q.includes("max-width: 1024")),
+    ).toBe("tablet");
+  });
+
   it("defaults to desktop", () => {
     expect(detectTimelineTier(() => false)).toBe("desktop");
   });

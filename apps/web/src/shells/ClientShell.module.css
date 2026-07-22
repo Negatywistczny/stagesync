@@ -5,6 +5,8 @@
   overflow: hidden;
   color: var(--ss-color-text);
   background: var(--ss-color-bg);
+  /* Client scenic: 44×44 touch targets (inherits into ShellIconButton / Button). */
+  --ss-touch-min: var(--ss-touch-min-client);
 }
 
 .header {
@@ -23,6 +25,32 @@
   background: var(--ss-color-surface);
   min-height: var(--ss-space-8);
   min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    row-gap: var(--ss-space-1);
+  }
+
+  .songTitle {
+    flex: 1 1 8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .metronome,
+  .setlistNext {
+    display: none;
+  }
+
+  .takt {
+    font-size: var(--ss-text-xs);
+  }
+
+  .headerActions {
+    gap: var(--ss-space-1);
+  }
 }
 
 .headerActions {
@@ -63,6 +91,12 @@
 
 .setlistNext {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ss-touch-min-client);
+  min-height: var(--ss-touch-min-client);
+  padding-inline: var(--ss-space-2);
   border: none;
   background: transparent;
   color: var(--ss-color-primary);
@@ -353,7 +387,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .welcomeHint {
     display: none;
   }
@@ -1072,7 +1106,7 @@
   transform: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .gridPane {
     --phrase-bar-size: clamp(3.5rem, 28vw, 6rem);
     gap: 1rem;
@@ -1519,7 +1553,7 @@
   color: color-mix(in srgb, var(--client-active) 88%, white);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .drumsView {
     gap: 1.25rem;
     padding-bottom: 1.5rem;
@@ -1784,7 +1818,7 @@
   align-items: center;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .stageSplit {
     grid-template-columns: 1fr;
   }

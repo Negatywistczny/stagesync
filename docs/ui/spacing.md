@@ -29,7 +29,18 @@ kontrolek — tylko siatka poniżej.
 | `--ss-space-y` | `space-2` | Pionowy rytm |
 | `--ss-scrollbar-width` | `space-2` | Scenic scrollbary — nie redefiniuj w shellach |
 | `--ss-touch-min` | `36px` | Min. hit desktop (icon / Play) — ui-density §5 |
-| `--ss-touch-min-client` | `44px` | Min. hit Client PWA |
+| `--ss-touch-min-client` | `44px` | Min. hit Client PWA (Client `.page` nadpisuje `--ss-touch-min`) |
+
+## Breakpointy layoutu (v5.0.0)
+
+Źródło JS: [`apps/web/src/lib/breakpoints.ts`](../../apps/web/src/lib/breakpoints.ts).
+
+| Próg | Media query | Typowe użycie |
+|------|-------------|---------------|
+| Mobile | `max-width: 768px` | Telefony; Timeline `data-tl-tier="mobile"` |
+| Tablet | `max-width: 1024px` | Tablety / wąskie okna; Timeline `data-tl-tier="tablet"` (lub `pointer: coarse`) |
+
+Zmiany layoutu tylko w `@media (max-width: …)` albo pod `[data-tl-tier="mobile"|"tablet"]` — bez restylowania domyślnego chrome desktop.
 
 ## Soft-px (wyjątek)
 
