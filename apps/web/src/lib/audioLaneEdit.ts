@@ -104,6 +104,45 @@ export function setAudioClipGainDb(
   };
 }
 
+export function setAudioClipFadeMs(
+  project: Project,
+  clipId: string,
+  fade: { fadeInMs?: number; fadeOutMs?: number },
+): Project {
+  return {
+    ...project,
+    audioClips: project.audioClips.map((c) => {
+      if (c.id !== clipId) return c;
+      const fadeInMs =
+        fade.fadeInMs === undefined
+          ? c.fadeInMs
+          : fade.fadeInMs > 0
+            ? fade.fadeInMs
+            : undefined;
+      const fadeOutMs =
+        fade.fadeOutMs === undefined
+          ? c.fadeOutMs
+          : fade.fadeOutMs > 0
+            ? fade.fadeOutMs
+            : undefined;
+      return { ...c, fadeInMs, fadeOutMs };
+    }),
+  };
+}
+
+export function setAudioClipLoop(
+  project: Project,
+  clipId: string,
+  loop: boolean,
+): Project {
+  return {
+    ...project,
+    audioClips: project.audioClips.map((c) =>
+      c.id === clipId ? { ...c, loop: loop || undefined } : c,
+    ),
+  };
+}
+
 export function setAudioTrackMuted(
   project: Project,
   trackId: string,
