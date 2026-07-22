@@ -1628,26 +1628,80 @@
   }
 }
 
-/* —— Score stub (v4 .score-wrap empty chrome) —— */
+/* —— Score / OSMD —— */
 .scorePane {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
   flex: 1;
   min-height: 0;
-  padding: var(--ss-space-4);
+  padding: var(--ss-space-3);
+  gap: var(--ss-space-2);
+}
+
+.scoreToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-3);
+  flex-shrink: 0;
+}
+
+.scoreZoomRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+}
+
+.scoreZoomLabel {
+  min-width: 3.5rem;
+  text-align: center;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text);
 }
 
 .scoreWrap {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   background: var(--ss-color-surface);
   border: 1px solid var(--ss-color-border-muted);
   border-radius: var(--ss-radius-md);
   min-height: 12rem;
+  overflow: hidden;
+}
+
+.scoreScroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  cursor: pointer;
+  /* OSMD paper — always light (engraving), independent of app chrome theme */
+  background: #ffffff;
+}
+
+.scoreHost {
+  min-height: 100%;
+}
+
+.scoreHost :global(svg) {
+  max-width: none;
+}
+
+.scoreLoading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  pointer-events: none;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+  background: color-mix(in srgb, #ffffff 88%, transparent);
 }
 
 .scoreEmptyCard {

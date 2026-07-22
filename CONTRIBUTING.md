@@ -59,6 +59,20 @@ Linki do SemVer, Keep a Changelog, EditorConfig, ADR itd.: [docs/STANDARDS.md](d
 Mapa „gdzie co żyje”: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).  
 Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](docs/ui/README.md).
 
+### CHANGELOG.md (Keep a Changelog)
+
+Pisz wyłącznie **efekty w produkcie/API/kodzie** — z perspektywy użytkownika, operatora
+lub dewelopera integrującego API.
+
+| Tak | Nie |
+|-----|-----|
+| Co się zmienia w zachowaniu systemu | Żargon czatu / AI (`stub`, `residual`, `must w strumieniu`, `ROADMAP OUT`) |
+| Fakt względem ostatniego wydania | Fałszywy „powrót” do stanu, którego nie było w wydanej wersji |
+| Kategorie: Dodano / Zmieniono / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO (to żyje w ADR / CONTRIBUTING / TODO) |
+| Zwięzły opis + opcjonalny link `#issue` / `#pr` | Relacja przebiegu prac („fundament pod…”, „parity bez stubu…”) |
+
+Polityka parytetu v4 → `5.0.0`: [ADR 0011 §1a](docs/adr/0011-ui-parity-behavior.md).
+
 ## Checklista przed release
 
 - [ ] [CHANGELOG.md](CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione; **bez** sekcji `[Unreleased]` w trakcie cut release (dopiero po pierwszych zmianach post-release)

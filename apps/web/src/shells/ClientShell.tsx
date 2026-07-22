@@ -66,6 +66,7 @@ export function ClientShell() {
     latencyMs,
     stageCue,
     play,
+    seek,
     commandPending,
     error: transportError,
     announcePresence,
@@ -86,6 +87,8 @@ export function ClientShell() {
   const [cueText, setCueText] = useState("");
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
+  const [scoreZoom, setScoreZoom] = useState(100);
+  const [scoreFollowPlayhead, setScoreFollowPlayhead] = useState(true);
 
   useEffect(() => {
     if (!started) return;
@@ -378,6 +381,10 @@ export function ClientShell() {
                         setVocalTapOn(on);
                         setVocalTapIndex(0);
                       }}
+                      scoreZoom={scoreZoom}
+                      onScoreZoomChange={setScoreZoom}
+                      scoreFollowPlayhead={scoreFollowPlayhead}
+                      onScoreFollowPlayheadChange={setScoreFollowPlayhead}
                     />
                   </SettingsPopover>
                 ) : null}
@@ -477,6 +484,14 @@ export function ClientShell() {
                   project={activeProject}
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
+                  displayTicks={displayTicks}
+                  scoreZoom={scoreZoom}
+                  onScoreZoomChange={setScoreZoom}
+                  followPlayhead={scoreFollowPlayhead}
+                  onFollowPlayheadChange={setScoreFollowPlayhead}
+                  onSeek={(ticks) => {
+                    void seek(ticks);
+                  }}
                 />
               ) : (
                 <p className={styles.empty}>Oczekiwanie na utwór…</p>
@@ -726,12 +741,20 @@ function RoleSettingsFields({
   onPrefsChange,
   vocalTapOn,
   onVocalTapToggle,
+  scoreZoom,
+  onScoreZoomChange,
+  scoreFollowPlayhead,
+  onScoreFollowPlayheadChange,
 }: {
   role: RoleId;
   prefs: ClientDisplayPrefs;
   onPrefsChange: (prefs: ClientDisplayPrefs) => void;
   vocalTapOn: boolean;
   onVocalTapToggle: (on: boolean) => void;
+  scoreZoom: number;
+  onScoreZoomChange: (percent: number) => void;
+  scoreFollowPlayhead: boolean;
+  onScoreFollowPlayheadChange: (on: boolean) => void;
 }) {
   const [textScale, setTextScale] = useState(() => {
     try {
@@ -748,7 +771,6 @@ function RoleSettingsFields({
       return true;
     }
   });
-  const [scoreZoom, setScoreZoom] = useState(100);
 
   if (role === "karaoke") {
     return (
@@ -848,24 +870,27 @@ function RoleSettingsFields({
         <div className={styles.row}>
           <Button
             variant="ghost"
-            onClick={() => setScoreZoom((z) => Math.max(50, z - 10))}
+            onClick={() => onScoreZoomChange(Math.max(50, scoreZoom - 10))}
           >
             −
           </Button>
           <span>{scoreZoom}%</span>
           <Button
             variant="ghost"
-            onClick={() => setScoreZoom((z) => Math.min(200, z + 10))}
+            onClick={() => onScoreZoomChange(Math.min(200, scoreZoom + 10))}
           >
             +
           </Button>
-          <Button variant="ghost" onClick={() => setScoreZoom(100)}>
-            Fit
+          <Button variant="ghost" onClick={() => onScoreZoomChange(100)}>
+            Reset
           </Button>
         </div>
-        <p className={styles.muted}>
-          Zoom lokalny (ustawienie zapamiętane po stronie OSMD — poza 5.0.0).
-        </p>
+        <ShellSwitchRow
+          checked={scoreFollowPlayhead}
+          onChange={(e) => onScoreFollowPlayheadChange(e.target.checked)}
+        >
+          Śledź wskaźnik odtwarzania
+        </ShellSwitchRow>
       </>
     );
   }

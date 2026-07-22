@@ -18,6 +18,9 @@ alwaysApply: false
    każda nietrywialna decyzja UI wymaga **pisemnego uzasadnienia** (referencja
    zachowania v4 **albo** jawna prośba PO). Preferuj **zostaw jak jest** / **zapytaj**
    zamiast cichej „poprawy”.
+6. **Kompletność 5.0.0:** funkcja z v4 → must najpóźniej w `5.0.0` (chyba że jawnie
+   usunięta z produktu). **Zakaz stubów** / „poza 5.0” / atrap — [ADR 0011 §1a](../../docs/adr/0011-ui-parity-behavior.md).
+   5.1+ tylko dla rzeczy **nie** z v4 albo „nigdy” (ADR 0004 / 0010).
 
 ## Co wolno z legacy
 

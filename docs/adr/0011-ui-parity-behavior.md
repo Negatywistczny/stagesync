@@ -39,6 +39,20 @@ Referencja zachowania: `STAGESYNC-APP-LEGACY`
 **Done** funkcji Timeline = PO może wykonać ten sam workflow co w 4.x
 (w granicach jawnego OUT), nie „kod wired / partial”.
 
+### 1a. Kompletność linii 5.0.0 (2026-07-22)
+
+Decyzja produktowa (PO):
+
+1. **Funkcja dostępna w v4** (`STAGESYNC-APP-LEGACY`) musi wrócić jako **działające
+   zachowanie** najpóźniej w **`5.0.0`**, chyba że jest **jawnie i trwale usunięta**
+   (wpis w ROADMAP/TODO „usunięte z produktu” + uzasadnienie — nie „defer 5.1”).
+2. **Zakaz stubów** na ścieżce do tagu `5.0.0`: brak UI / „Stub… poza 5.0” /
+   `disabled` „na zapas” / copy „później (β)” = **niedokończone 5.0**, nie OK do cut.
+3. **5.1+** tylko dla rzeczy **nieobecnych w v4** (np. nowe motywy systemowe,
+   auth multi-user) albo architektury „nigdy” (MIDI w Tauri, git-apply, clone chrome).
+4. Brak funkcji na scenie = **brak UI** do czasu pełnego portu — potem pełny wiring,
+   nie atrapa.
+
 ### 2. Zakaz clone chrome / gotowców UI
 
 - Chrome (toolbar, header, status) tylko przez **`@stagesync/ui`** + CSS Modules +

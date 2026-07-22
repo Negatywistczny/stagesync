@@ -205,7 +205,10 @@ export {
   normalizeMap,
   songBarToScoreBar,
   logicBarToScoreBar,
+  scoreBarToSongBar,
+  ticksFromScoreBar,
   type ScoreBarMapLike,
+  type ScoreBarToSongBarOptions,
   type NormalizedScoreAnchor,
 } from "./score-bar-map.js";
 

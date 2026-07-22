@@ -21,7 +21,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.1** | Host / dystrybucja | **Wydane 2026-07-21** — H1–H12 (α10–α13); residual (menu Faza B, G1–G10) → **must β2** (docs cut `5.0.0-beta.1.1`) | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
-| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny (kod A–E + Faza D na `main`)** — brak tagu; residual = **G1–G10** operator + drafty OSMD/migration/wand; hero przy cutcie | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
+| **5.0.0** | Stabilne wydanie + nazwa hero linii 5.0 | **Aktywny (kod A–E + Faza D + OSMD/migration/wand na `main`)** — brak tagu; residual = **G1–G10** operator; hero przy cutcie | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
 
 ### Zamknięte etapy (α3–β1)
@@ -41,7 +41,8 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 | **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** (wydane) |
 | **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Usuń; Zoom H; Skróty; Undo grey-out (PDF setlisty / archiwum / motyw — OUT jeśli nie API) | **5.0.0** (wydane w kodzie — [#460](https://github.com/Negatywistyczny/stagesync/pull/460)) |
 
-**OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; MUTE ALL / PANIC; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik).
+**OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik). **MUTE ALL / PANIC** — zachowanie v4 = must **5.0.0** (host/UI; nie defer 5.1); pozycja w menubarze opcjonalna.
+
 
 Propozycja pełnej struktury (referencja produktowa): StageSync · Plik · Edycja · Widok · Setlista · Transport · Host · Pomoc — realizowana przez fazy A→D, nie jednym PR.
 
@@ -57,7 +58,9 @@ Tag `v5.0.0-beta.2`. Scope: [report-scope-beta2.md](./analysis/reports/report-sc
 
 ### 5.0.0 — zakres orientacyjny — **aktywny (kod domknięty; brak tagu)**
 
-Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md).
+Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/reports/report-scope-5.0.0.md).  
+**Polityka (2026-07-22):** parytet **zachowania v4** kompletny w `5.0.0` — bez stubów;
+funkcja z v4 nie idzie na 5.1+ ([ADR 0011 §1a](./adr/0011-ui-parity-behavior.md)).
 
 **W kodzie na `main` (must A–E + residual closeout 2026-07-22):**
 
@@ -71,16 +74,15 @@ Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/repo
 **Operator / przed tagiem (nie claim green w docs):**
 
 - G1–G10 na instalatorach β2 — [report-beta-gate](./analysis/reports/report-beta-gate.md)
-- Draft residual: OSMD [#465](https://github.com/Negatywistyczny/stagesync/pull/465), migration [#466](https://github.com/Negatywistyczny/stagesync/pull/466) (CI red); wand [#467](https://github.com/Negatywistyczny/stagesync/pull/467) (draft, CI green)
+- OSMD / migration assets / wand karaoke — merged (#465–#467)
 - Nazwa hero linii 5.0 + bump/tag — **tylko na prośbę**
 
 ### Po 5.0.0
 
-- Motywy (`data-theme` + switcher)
+- Motywy (`data-theme` + switcher) — **nowość** (nie dług v4)
 - Auth / multi-user (speculative)
 - Android (PWA / Capacitor) — jeśli produkt wymaga sklepu
-- **Cues Sampler** ([#430](https://github.com/Negatywistczny/stagesync/issues/430)) — ścieżka Sampler Cue z Formy / voice cues z wyprzedzeniem taktowym; wymaga scope report + ADR (routing Cue vs main) przed kodem → **5.1+**
-- **Safety Net** ([#437](https://github.com/Negatywistczny/stagesync/issues/437)) — redundancja Master/Slave (failover LAN); wymaga ADR względem SSOT czasu ([ADR 0002](./adr/0002-timebase-ssot.md)) — bez drugiego autorytetu playhead w 5.0.0 → **5.1+**
+- Inne **nowe** minor bez długu operatorskiego v4
 
 
 ## Zasady operacyjne
@@ -100,7 +102,7 @@ Checklista: [TODO.md](./TODO.md). Scope: [report-scope-5.0.0.md](./analysis/repo
 9. **Desktop** ([ADR 0010](./adr/0010-desktop-shell-tauri.md)): Tauri w β1; audio/MIDI nie w procesie shella.
 10. **Parity vs v4** ([ADR 0011](./adr/0011-ui-parity-behavior.md)): źródło = zachowanie w
     `STAGESYNC-APP-LEGACY`; **nie** clone chrome; inventarz wtórny; zakaz *engineering ready*
-    bez PO smoke. Wyjątki tylko jako świadome OUT.
+    bez PO smoke. **§1a:** funkcja v4 → must `5.0.0` (chyba że usunięta); **zakaz stubów**.
     Audyt: [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) ·
     UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 
