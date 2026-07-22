@@ -102,7 +102,7 @@ export function buildSetlistView(
     warnings.push({
       code: "SETLIST_MISSING_PROJECT",
       message: `Pozycje setlisty bez projektu w bibliotece: ${missing.length}.`,
-      projectIds: missing,
+      projectIds: missing.slice(0, 8),
     });
   }
 
