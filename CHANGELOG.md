@@ -59,6 +59,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
+#### ⏱️ Timeline & DAW
+- **Pomoc:** zakładki **⌨️ Skróty Klawiszowe** (domyślna, zwarta siatka 3 kolumn bez scrolla) i **📖 Opis Narzędzi & Ścieżek** (kafelki Podstawy / Locator / Zaznaczanie / Ścieżki Audio); skrót `?` i ikona pomocy bez zmian.
+
 #### 🖥️ App Shell & UI
 - **Ustawienia (Admin):** jedno okno **Ustawienia** (Audio/MIDI/Metronom + Serwer: port/bind/mDNS, logi, kanał Stable/Beta/RC, ścieżki z pickerem); Odrzuć/Zapisz dla draftu lokalnego i `.env`.
 - **Dirty draft:** usunięta etykieta „niezapisane” z nagłówka / toolbara; przy niezapisanych zmianach wyróżnione **Zapisz** (akcent) i **Odrzuć** (danger) — Preferencje oraz chrome Timeline.

@@ -1,0 +1,191 @@
+/**
+ * Timeline help — tabbed layout (shortcuts / tools).
+ * Section tiles + overlay chrome base stay on TimelineShell.module.css.
+ */
+
+.headMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  border-bottom: 1px solid var(--ss-color-border);
+}
+
+.tab {
+  flex: 0 0 auto;
+  min-height: var(--ss-space-8);
+  padding: var(--ss-space-2) var(--ss-space-3);
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-control);
+  font-weight: var(--ss-font-weight-medium);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .tab:hover {
+    color: var(--ss-color-text);
+    background: var(--ss-color-ghost-hover);
+  }
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.tabSelected {
+  color: var(--ss-color-text);
+  background: transparent;
+  border-bottom-color: var(--ss-color-primary);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+@media (hover: hover) {
+  .tabSelected:hover {
+    background: var(--ss-color-ghost-hover);
+  }
+}
+
+.bodyNoScroll {
+  overflow: hidden;
+}
+
+.shortcutsPanel {
+  overflow: hidden;
+}
+
+.keysGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ss-space-2) var(--ss-space-3);
+  align-content: start;
+}
+
+@media (max-width: 900px) {
+  .keysGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bodyNoScroll {
+    overflow: auto;
+  }
+
+  .shortcutsPanel {
+    overflow: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .keysGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.keysGroup {
+  margin: 0;
+  min-width: 0;
+}
+
+.keysHeading {
+  margin: 0 0 var(--ss-space-1);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-bold);
+  letter-spacing: var(--ss-tracking-label);
+  text-transform: uppercase;
+  color: var(--ss-color-primary);
+}
+
+.keysDl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.keyRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, auto) 1fr;
+  gap: var(--ss-space-1) var(--ss-space-2);
+  align-items: center;
+  min-height: var(--ss-space-6);
+  padding: 2px var(--ss-space-1);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 45%, transparent);
+}
+
+.keyRow dt {
+  margin: 0;
+  min-width: 0;
+}
+
+.keyRow dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-tight);
+  color: var(--ss-color-text-muted);
+}
+
+.chord {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.chordAlt {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.chordPart {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.keyPlus,
+.keySlash {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--ss-space-5) - 2px);
+  padding: 0 var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-bottom-width: 2px;
+  border-radius: var(--ss-radius-sm);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ss-color-elevated) 80%, var(--ss-color-surface)) 0%,
+    var(--ss-color-surface) 100%
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ss-color-text) 8%, transparent);
+  font-family: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text);
+  white-space: nowrap;
+}

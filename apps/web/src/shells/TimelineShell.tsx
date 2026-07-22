@@ -104,7 +104,7 @@ import {
   segmentStylePx,
   tempoMapSegments,
 } from "../lib/mapSegments.js";
-import { TimelineHelpBody } from "./timeline/TimelineHelp.js";
+import { TimelineHelp } from "./timeline/TimelineHelp.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -6253,19 +6253,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .filter(Boolean)
               .join(" ")}
           >
-            <div className={styles.overlayHead}>
-              <h2 id="tl-help-title">Pomoc</h2>
-              <ShellIconButton label="Zamknij" onClick={() => setHelpOpen(false)}>
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div
-              className={[styles.overlayBody, styles.helpOverlayBody]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              <TimelineHelpBody />
-            </div>
+            <TimelineHelp onClose={() => setHelpOpen(false)} />
           </div>
         </div>
       ) : null}
