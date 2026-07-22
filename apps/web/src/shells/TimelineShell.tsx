@@ -861,6 +861,30 @@ export function TimelineShell() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      // Overlay Escape runs even while focus is in inputs (UG paste field).
+      if (e.key === "Escape") {
+        if (ugModalOpen) {
+          e.preventDefault();
+          setUgModalOpen(false);
+          return;
+        }
+        if (songScreenOpen) {
+          e.preventDefault();
+          setSongScreenOpen(false);
+          return;
+        }
+        if (songMetaOpen) {
+          e.preventDefault();
+          setSongMetaOpen(false);
+          return;
+        }
+        if (helpOpen) {
+          e.preventDefault();
+          setHelpOpen(false);
+          return;
+        }
+      }
+
       const t = e.target as HTMLElement | null;
       if (
         t &&
@@ -873,12 +897,6 @@ export function TimelineShell() {
       const h = keyHandlersRef.current;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
-
-      if (helpOpen && e.key === "Escape") {
-        e.preventDefault();
-        setHelpOpen(false);
-        return;
-      }
       if (
         !mod &&
         !e.altKey &&
@@ -1027,6 +1045,9 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
+    ugModalOpen,
+    songScreenOpen,
+    songMetaOpen,
     toolMenu,
   ]);
 
