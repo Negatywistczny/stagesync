@@ -78,6 +78,7 @@ export function AdminShell() {
   const [section, setSection] = useState<SectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
@@ -353,12 +354,31 @@ export function AdminShell() {
             </ShellIconButton>
             <ShellIconButton
               label="Pełny ekran"
-              onClick={() => void toggleAppFullscreen()}
+              onClick={() => {
+                void (async () => {
+                  try {
+                    await toggleAppFullscreen();
+                    setFullscreenError(null);
+                  } catch (err) {
+                    setFullscreenError(
+                      err instanceof Error
+                        ? err.message
+                        : "Nie udało się przełączyć pełnego ekranu",
+                    );
+                  }
+                })();
+              }}
             >
               <IconFullscreen />
             </ShellIconButton>
           </div>
         </header>
+
+        {fullscreenError ? (
+          <p className={styles.chromeAlert} role="alert">
+            {fullscreenError}
+          </p>
+        ) : null}
 
         {appearanceOpen ? (
           <SettingsPopover
