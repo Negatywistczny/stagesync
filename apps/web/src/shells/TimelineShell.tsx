@@ -4617,10 +4617,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       }
                       commitDraft(
                         upsertMeterAt(
-                          {
-                            ...draftProject,
-                            defaultMeter: parsed,
-                          },
+                          draftProject,
                           0,
                           parsed.numerator,
                           parsed.denominator,

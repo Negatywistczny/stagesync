@@ -213,6 +213,20 @@ describe("formaCanvas", () => {
     expect(snapEditTicks(project, 500, "beat")).toBe(960);
   });
 
+  it("snapEditTicks beat mode is piece-wise across 4/4 → 3/4", () => {
+    const withMeter: typeof project = {
+      ...project,
+      meterMap: [
+        { id: "m0", startTicks: 0, numerator: 4, denominator: 4 },
+        { id: "m1", startTicks: 7680, numerator: 3, denominator: 4 },
+      ],
+    };
+    const zone = 7680;
+    expect(snapEditTicks(withMeter, zone + 400, "beat")).toBe(zone);
+    expect(snapEditTicks(withMeter, zone + 1000, "beat")).toBe(zone + 960);
+    expect(snapEditTicks(withMeter, zone + 1900, "beat")).toBe(zone + 1920);
+  });
+
   it("pencilFormaClick overwrites occupied bar (v4), not skip-ahead", () => {
     const next = pencilFormaClick(project, 960, "Nowa sekcja");
     const inserted = next.forma.clips.find(

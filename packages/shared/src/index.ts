@@ -250,6 +250,7 @@ export {
   snapTicksToBarStart,
   snapTicksToBarStartAlongMeterMap,
   snapTicksToBeatGrid,
+  snapTicksToBeatGridAlongMeterMap,
   snapTicksToSubdivision,
   DEFAULT_SNAP_MODE,
   type SnapMode,

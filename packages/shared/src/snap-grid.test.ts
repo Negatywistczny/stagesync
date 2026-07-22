@@ -9,6 +9,7 @@ import {
   snapTicksToBarStart,
   snapTicksToBarStartAlongMeterMap,
   snapTicksToBeatGrid,
+  snapTicksToBeatGridAlongMeterMap,
   snapTicksToSubdivision,
 } from "./snap-grid.js";
 
@@ -37,6 +38,55 @@ describe("snap-grid", () => {
 
   it("snapTicksToBeatGrid quantizes to local beat in 4/4", () => {
     expect(snapTicksToBeatGrid(500, M4, PPQ)).toBe(960);
+  });
+
+  it("snapTicksToBeatGridAlongMeterMap snaps within 3/4 after 4/4", () => {
+    const bar4 = 3840;
+    const map = [
+      { startTicks: 0, numerator: 4, denominator: 4 },
+      { startTicks: bar4 * 2, numerator: 3, denominator: 4 },
+    ];
+    const zone = bar4 * 2; // first 3/4 bar: 7680…10560 (beats @ +0,+960,+1920)
+    expect(snapTicksToBeatGridAlongMeterMap(zone + 400, M4, map, PPQ)).toBe(
+      zone,
+    );
+    expect(snapTicksToBeatGridAlongMeterMap(zone + 1000, M4, map, PPQ)).toBe(
+      zone + 960,
+    );
+    expect(snapTicksToBeatGridAlongMeterMap(zone + 1900, M4, map, PPQ)).toBe(
+      zone + 1920,
+    );
+  });
+
+  it("snapTicksToBeatGridAlongMeterMap differs from absolute grid when bar start is off-beat", () => {
+    // 5/8 bars are 2400 ticks; first 4/4 bar after that starts at 2400 (2400 % 960 ≠ 0).
+    const map = [
+      { startTicks: 0, numerator: 5, denominator: 8 },
+      { startTicks: 2400, numerator: 4, denominator: 4 },
+    ];
+    const zone = 2400;
+    const m44 = { numerator: 4, denominator: 4 } as const;
+    const at = zone + 400; // closer to bar start than to beat 2
+    const piece = snapTicksToBeatGridAlongMeterMap(at, M4, map, PPQ);
+    expect(piece).toBe(zone);
+    expect(piece).not.toBe(snapTicksToBeatGrid(at, m44, PPQ)); // absolute → 2880
+  });
+
+  it("quantizeTicks beat mode uses meterMap when provided", () => {
+    const bar4 = 3840;
+    const map = [
+      { startTicks: 0, numerator: 4, denominator: 4 },
+      { startTicks: bar4 * 2, numerator: 3, denominator: 4 },
+    ];
+    const zone = bar4 * 2;
+    expect(
+      quantizeTicks(zone + 1000, "beat", {
+        meter: { numerator: 3, denominator: 4 },
+        defaultMeter: M4,
+        meterMap: map,
+        ppq: PPQ,
+      }),
+    ).toBe(zone + 960);
   });
 
   it("snapTicksToSubdivision quantizes to eighth of quarter", () => {

@@ -38,6 +38,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **Timeline:** zmiana metrum @ Takt 1 przelicza długość przedtaktu (stała liczba taktów); snap `beat` odcinkowo po `meterMap`.
 - **Client:** strój instrumentu — ikony v4 (🎹 / 🎺 / 🎷 / ±) nad etykietami C / B♭ / E♭ / Ręczna.
 - **Timeline:** suwaki zoom UI/H/V w kolorze primary (amber); klasa `.zoomRange` podpięta do inputów.
 - **Timeline Pomoc:** usunięty lead o v4/OUT/MIDI (zostają karty i skróty).

@@ -248,7 +248,9 @@ export function iterPreRollBarBoundariesTicks(
   let t = start;
   const maxBars = 4096;
   while (t < end && out.length < maxBars) {
-    const meter = t < 0 ? project.defaultMeter : meterAtTicks(project, t);
+    // Pre-roll uses song-start meter (meterMap @ 0 / defaultMeter), not a
+    // separate axis — keeps CD bars aligned when Takt 1 meter changes.
+    const meter = t < 0 ? meterAtTicks(project, 0) : meterAtTicks(project, t);
     const len = ticksPerBar(meter, project.ppq);
     const barEnd = Math.min(t + len, end);
     out.push({
@@ -351,6 +353,8 @@ export function snapEditTicks(
     meter,
     ppq: project.ppq,
     contentFloorTicks: floor,
+    defaultMeter: project.defaultMeter,
+    meterMap: project.meterMap,
   });
 }
 

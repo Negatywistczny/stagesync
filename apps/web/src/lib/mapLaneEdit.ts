@@ -13,6 +13,7 @@ import {
   type SnapMode,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
+import { countdownBars, setCountdownBars } from "./formaInspector.js";
 import { contentSnapModeFromModifiers } from "./timelineGesture.js";
 
 export type MapLaneId = "tempo" | "metrum" | "tonacja";
@@ -144,7 +145,23 @@ export function upsertMeterAt(
           denominator,
         },
       ];
-  return { ...project, meterMap: nextMap };
+
+  // Capture CD bar count against the *current* song-start meter before apply.
+  const cd = project.forma.clips.find((c) => c.kind === "countdown");
+  const cdBars =
+    startTicks === 0 && cd != null ? countdownBars(project, cd) : null;
+
+  let next: Project = { ...project, meterMap: nextMap };
+  if (startTicks === 0) {
+    next = {
+      ...next,
+      defaultMeter: { numerator, denominator },
+    };
+    if (cdBars != null) {
+      next = setCountdownBars(next, cdBars);
+    }
+  }
+  return next;
 }
 
 export function upsertKeyAt(

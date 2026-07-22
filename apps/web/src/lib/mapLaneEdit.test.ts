@@ -28,11 +28,15 @@ describe("mapLaneEdit", () => {
     expect(novel[0]!.bpm).toBe(p.defaultBpm);
   });
 
-  it("insertMapEventAt is no-op when event already at snapped ticks", () => {
+  it("upsertMeterAt @ 0 resyncs countdown length for new meter (2 bars 4/4→3/4)", () => {
     const p = seed();
-    const once = insertMapEventAt(p, "metrum", 7680, "bar");
-    const twice = insertMapEventAt(once, "metrum", 7680, "bar");
-    expect(twice).toBe(once);
+    const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(cd.lengthTicks).toBe(7680); // 2 × 4/4
+    const next = upsertMeterAt(p, 0, 3, 4);
+    expect(next.defaultMeter).toEqual({ numerator: 3, denominator: 4 });
+    const cdNext = next.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(cdNext.lengthTicks).toBe(5760); // 2 × 3/4 @ PPQ 960
+    expect(cdNext.startTicks + cdNext.lengthTicks).toBe(0);
   });
 
   it("splitMapAt equals insert for map lanes", () => {
