@@ -33,6 +33,19 @@ describe("TransportSeekBodySchema", () => {
       positionTicks: -100,
     });
   });
+
+  it("rejects ticks outside Number safe integer range", () => {
+    expect(() =>
+      TransportSeekBodySchema.parse({
+        positionTicks: Number.MAX_SAFE_INTEGER + 1,
+      }),
+    ).toThrow();
+    expect(() =>
+      TransportSeekBodySchema.parse({
+        positionTicks: Number.MIN_SAFE_INTEGER - 1,
+      }),
+    ).toThrow();
+  });
 });
 
 describe("TransportPlayBodySchema", () => {

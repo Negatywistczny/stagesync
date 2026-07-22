@@ -27,8 +27,15 @@ export const TransportStateSchema = z.object({
 
 export type TransportState = z.infer<typeof TransportStateSchema>;
 
+/** Musical position ticks — fail-fast outside JS safe integer range. */
+export const SafeTicksSchema = z
+  .number()
+  .int()
+  .min(Number.MIN_SAFE_INTEGER)
+  .max(Number.MAX_SAFE_INTEGER);
+
 export const TransportSeekBodySchema = z.object({
-  positionTicks: z.number().int(),
+  positionTicks: SafeTicksSchema,
 });
 
 export type TransportSeekBody = z.infer<typeof TransportSeekBodySchema>;
