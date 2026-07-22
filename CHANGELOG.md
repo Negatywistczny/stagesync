@@ -60,10 +60,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Design system:** typografia, odstępy i touch targety w Admin / Client / Timeline zgodne z gęstością `@stagesync/ui`.
 - **Mobile / tablet:** wspólne progi telefon (≤768px) / tablet (≤1024px); na telefonie Timeline — większe cele dotykowe, wąski dock, ukryty inspector, Tempo/Metrum/Tonacja tylko do odczytu; chrome bez poziomego overflow. Desktop (>1024px) bez zmian układu.
 
-#### 📚 Dokumentacja
-
-- **Dokumentacja produktowa:** TODO, ROADMAP i raporty scope zsynchronizowane z postępem po menu Faza D, fade, Pomocy i mobile.
-
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
