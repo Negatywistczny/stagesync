@@ -29,7 +29,7 @@ export async function fetchLibrary(): Promise<Library> {
 
 export async function fetchProject(id: string): Promise<Project> {
   if (!id.trim()) {
-    throw new Error("Missing project id");
+    throw new Error("Brak identyfikatora projektu");
   }
   const res = await fetch(`/api/projects/${encodeURIComponent(id)}`);
   if (!res.ok) {
@@ -132,7 +132,7 @@ function toPutBody(project: Project): PutProjectBody {
 /** Full-document PUT (strict v3). */
 export async function putProject(id: string, project: Project): Promise<Project> {
   if (!id.trim()) {
-    throw new Error("Missing project id");
+    throw new Error("Brak identyfikatora projektu");
   }
   const body = toPutBody(project);
   const res = await fetch(`/api/projects/${encodeURIComponent(id)}`, {
@@ -153,7 +153,7 @@ export async function updateProject(
 ): Promise<Project> {
   const name = raw.name.trim();
   if (!name) {
-    throw new Error("Name is required");
+    throw new Error("Nazwa projektu jest wymagana");
   }
   const current = await fetchProject(id);
   return putProject(id, { ...current, name });
@@ -161,7 +161,7 @@ export async function updateProject(
 
 export async function deleteProject(id: string): Promise<void> {
   if (!id.trim()) {
-    throw new Error("Missing project id");
+    throw new Error("Brak identyfikatora projektu");
   }
   const res = await fetch(`/api/projects/${encodeURIComponent(id)}`, {
     method: "DELETE",

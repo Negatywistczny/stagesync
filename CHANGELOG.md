@@ -38,6 +38,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+- **i18n:** polskie etykiety narzędzi Timeline (Wskaźnik / Inteligentny / Ołówek / Gumka / Nożyczki) oraz komunikaty błędów API / uploadu / transportu.
 - **Timeline:** zmiana metrum @ Takt 1 przelicza długość przedtaktu (stała liczba taktów); snap `beat` odcinkowo po `meterMap`.
 - **Client:** strój instrumentu — ikony v4 (🎹 / 🎺 / 🎷 / ±) nad etykietami C / B♭ / E♭ / Ręczna.
 - **Timeline:** suwaki zoom UI/H/V w kolorze primary (amber); klasa `.zoomRange` podpięta do inputów.
