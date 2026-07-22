@@ -21,9 +21,11 @@ export type CountdownDigitLabel = {
 /**
  * One digit per bar, counting down from the left (bars=2 → "2","1").
  * Pure — no ticks; callers map via CD `startTicks` + `barTicks`.
+ * Cap at 32 bars (match Countdown UI ceiling) so absurd lengthTicks
+ * cannot synthesize huge ephemeral Tekst/Akordy arrays.
  */
 export function countdownDigitLabels(bars: number): CountdownDigitLabel[] {
-  const n = Math.max(0, Math.trunc(bars));
+  const n = Math.min(32, Math.max(0, Math.trunc(bars)));
   const out: CountdownDigitLabel[] = [];
   for (let i = 0; i < n; i++) {
     out.push({ barOffset: i, label: String(n - i) });
