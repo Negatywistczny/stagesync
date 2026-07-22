@@ -34,11 +34,11 @@ import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
 
-const ROLES: { id: RoleId; label: string; icon: string }[] = [
-  { id: "karaoke", label: "Tekst", icon: "🎤" },
-  { id: "grid", label: "Akordy", icon: "🎹" },
-  { id: "score", label: "Partytura", icon: "🎼" },
-  { id: "drums", label: "Forma", icon: "🥁" },
+const ROLES: { id: RoleId; label: string }[] = [
+  { id: "karaoke", label: "Tekst" },
+  { id: "grid", label: "Akordy" },
+  { id: "score", label: "Partytura" },
+  { id: "drums", label: "Forma" },
 ];
 
 export function ClientShell() {
@@ -256,9 +256,6 @@ export function ClientShell() {
                   aria-pressed={on}
                   onClick={() => toggleRole(r.id)}
                 >
-                  <span className={styles.roleIcon} aria-hidden>
-                    {r.icon}
-                  </span>
                   <strong className={styles.roleLabel}>{r.label}</strong>
                 </button>
               );
