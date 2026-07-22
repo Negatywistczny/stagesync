@@ -69,6 +69,24 @@ describe("TransportLoopBodySchema", () => {
   });
 });
 
+describe("TransportLoopBodySchema", () => {
+  it("rejects endTicks <= startTicks when both set", () => {
+    expect(() =>
+      TransportLoopBodySchema.parse({
+        enabled: true,
+        startTicks: 100,
+        endTicks: 100,
+      }),
+    ).toThrow();
+  });
+
+  it("allows enabling without range fields", () => {
+    expect(TransportLoopBodySchema.parse({ enabled: false })).toEqual({
+      enabled: false,
+    });
+  });
+});
+
 describe("TransportPlayBodySchema", () => {
   it("allows empty body", () => {
     expect(TransportPlayBodySchema.parse({})).toEqual({});

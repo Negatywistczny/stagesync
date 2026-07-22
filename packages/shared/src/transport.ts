@@ -43,7 +43,20 @@ export const TransportLoopBodySchema = z
     startTicks: z.number().int().optional(),
     endTicks: z.number().int().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((val, ctx) => {
+    if (
+      val.startTicks != null &&
+      val.endTicks != null &&
+      val.endTicks <= val.startTicks
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "endTicks must be greater than startTicks",
+        path: ["endTicks"],
+      });
+    }
+  });
 
 export type TransportLoopBody = z.infer<typeof TransportLoopBodySchema>;
 
