@@ -441,7 +441,8 @@ export type ApiError = z.infer<typeof ApiErrorSchema>;
 export const StageMessageBodySchema = z.object({
   text: z.string().min(1).max(200),
   roles: z.array(z.enum(["karaoke", "grid", "score", "drums"])).optional(),
-  ttlMs: z.number().int().positive().optional(),
+  /** 0 = no auto-hide on Client; omit → server default 6000. */
+  ttlMs: z.number().int().min(0).optional(),
 });
 
 export type StageMessageBody = z.infer<typeof StageMessageBodySchema>;
