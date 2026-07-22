@@ -556,12 +556,17 @@ export function TimelineShell() {
     nextSetlistId: null as string | null,
   });
 
+  const reloadGenRef = useRef(0);
+
   const reloadProject = useCallback(async (id: string) => {
+    const gen = ++reloadGenRef.current;
     setLoading(true);
     setLoadError(null);
     try {
       const project = await fetchProject(id);
+      if (gen !== reloadGenRef.current) return;
       await loadTransport(id);
+      if (gen !== reloadGenRef.current) return;
       setSavedProject(project);
       setDraftProject(project);
       setDraftHistory(createDraftHistory(project));
@@ -578,12 +583,15 @@ export function TimelineShell() {
       );
       setSelectedSubsectionIdx(null);
     } catch (err) {
+      if (gen !== reloadGenRef.current) return;
       setLoadError(err instanceof Error ? err.message : "Nie udało się wczytać");
       setSavedProject(null);
       setDraftProject(null);
       setDraftHistory(null);
     } finally {
-      setLoading(false);
+      if (gen === reloadGenRef.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
