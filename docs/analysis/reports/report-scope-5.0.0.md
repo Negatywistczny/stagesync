@@ -211,3 +211,27 @@ flowchart LR
 ### Blokery
 
 G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
+
+---
+
+## Final handoff — merge trains 0–8 (2026-07-22)
+
+**Status:** wszystkie squash PR-y zmergowane na `main`. **Merge SHA train 8:** `81a86a17e9982dad09a1e9ced91b9fa307fd94cb`.  
+**Źródłowe PR-y zamknięte:** 266 (komentarz `merged via train-8 PR #416`).  
+**Otwarte świadomie:** [#61](https://github.com/Negatywistyczny/stagesync/pull/61) (ruler split), [#63](https://github.com/Negatywistyczny/stagesync/pull/63) (visual help overlay).  
+**G1–G10:** ⬜ — operator HW; **bez claim green** w docs/CI.
+
+| Train | Squash PR | Temat (skrót) |
+|-------|-----------|----------------|
+| 0 | [#408](https://github.com/Negatywistyczny/stagesync/pull/408) | Must 5.0.0: fade schema/UI, TimelineHelp, audio crossfade |
+| 1 | [#409](https://github.com/Negatywistyczny/stagesync/pull/409) | Should: smoke E2E, docs/api, forma cascade |
+| 2 | [#410](https://github.com/Negatywistyczny/stagesync/pull/410) | Shared: timebase, meter map, clip collision |
+| 3 | [#411](https://github.com/Negatywistyczny/stagesync/pull/411) | Shared: schema hardening wave 1 |
+| 4 | [#412](https://github.com/Negatywistyczny/stagesync/pull/412) | Server: routes, WS, transport engine |
+| 5 | [#413](https://github.com/Negatywistyczny/stagesync/pull/413) | Web: Timeline/admin polish, zoom, snap |
+| 6 | [#414](https://github.com/Negatywistyczny/stagesync/pull/414) | Web/admin + desktop menu wave |
+| 7 | [#415](https://github.com/Negatywistyczny/stagesync/pull/415) | MIDI + desktop transport surfacing |
+| 8 | [#416](https://github.com/Negatywistyczny/stagesync/pull/416) | Residual hardening + UI token hygiene |
+
+**Weryfikacja po merge:** `pnpm lint && pnpm check-types && pnpm test && pnpm build` green lokalnie i w CI (#416).  
+**Następne kroki:** PO smoke na `main`; operator G1–G10; tag `v5.0.0` + nazwa hero **tylko na prośbę**.

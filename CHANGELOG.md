@@ -7,9 +7,19 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+- **Merge trains 0–8 (squash na `main`):** integracja overnight PR-ów 5.0.0 w kolejności hotspotów — must Timeline/audio (#408), should + smoke (#409), shared/timebase (#410–#411), server/transport (#412–#413), web/admin (#414), MIDI/desktop (#415), residual hardening + tokeny UI (#416). Zamknięto **266** źródłowych PR-ów; otwarte świadomie: [#61](https://github.com/Negatywistyczny/stagesync/pull/61), [#63](https://github.com/Negatywistyczny/stagesync/pull/63).
+
 ### Zmieniono
 
 - **Timeline Pomoc:** overlay jak w v4 — accent chrome, karty sekcji, miniatury ikon narzędzi / transportu / ścieżek, czytelniejsze skróty `kbd` (treść operatora 5.0.0).
+- **Hardening Zod (train 8):** bezpieczne `.max()` na krawędziach (projekt, biblioteka, MIDI, stage cue, transport) bez regresji pól fade / BPM / `ClientHello` z train 0.
+- **UI tokeny:** typografia/spacing `--ss-*` w shellach Admin/Client/Timeline; touch targets; client typography polish.
+
+### Naprawiono
+
+- **Train 8 schema repair:** przywrócono baseline `schema.ts` z `main` po regresji `--theirs`; zachowano `fadeInMs`/`fadeOutMs`/`loop`, `KEY_TONICS`, `ExportLibraryBodySchema`, `serverTimeMs` w `TransportProvider`, `ClipHitZone` w `TimelineShell`.
 
 ## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
