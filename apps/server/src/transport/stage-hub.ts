@@ -22,11 +22,15 @@ export function createStageHub() {
     broadcast(
       partial: Omit<StageCueMessage, "sentAtMs"> & { sentAtMs?: number },
     ): StageCueMessage {
+      const ttlRaw = partial.ttlMs ?? 6_000;
+      const ttlMs = Number.isFinite(ttlRaw)
+        ? Math.min(300_000, Math.max(1, Math.trunc(ttlRaw)))
+        : 6_000;
       const msg: StageCueMessage = {
         type: "stage_cue",
-        text: partial.text,
+        text: String(partial.text).slice(0, 200),
         roles: partial.roles,
-        ttlMs: partial.ttlMs,
+        ttlMs,
         sentAtMs: partial.sentAtMs ?? Date.now(),
       };
       for (const listener of listeners) {
