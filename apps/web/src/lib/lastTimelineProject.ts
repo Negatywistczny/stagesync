@@ -45,7 +45,10 @@ function parseRecent(raw: string | null): RecentTimelineProject[] {
       if (typeof id !== "string" || !id.trim()) continue;
       out.push({
         id: id.trim(),
-        name: typeof name === "string" && name.trim() ? name.trim() : id.trim(),
+        name:
+          typeof name === "string" && name.trim()
+            ? name.trim().slice(0, 200)
+            : id.trim().slice(0, 200),
       });
     }
     return out;
@@ -75,7 +78,7 @@ export function pushRecentTimelineProject(
   if (!trimmedId) return getRecentTimelineProjects();
   const entry: RecentTimelineProject = {
     id: trimmedId,
-    name: name.trim() || trimmedId,
+    name: (name.trim() || trimmedId).slice(0, 200),
   };
   const next = [
     entry,
