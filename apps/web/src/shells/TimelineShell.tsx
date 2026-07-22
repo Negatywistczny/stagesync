@@ -42,8 +42,10 @@ import {
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
 import {
+  cascadeFormaMoveIds,
   commitGesture,
   deleteFormaClip,
+  formaSectionCoveringTicks,
   previewFromSession,
   splitFormaClipAt,
 } from "../lib/formaEdit.js";
@@ -129,6 +131,7 @@ import {
 } from "../lib/cueEdit.js";
 import {
   commitContentGesture,
+  contentClipCoveringTicks,
   defaultPencilLabel,
   previewContentFromSession,
   splitContentClipAt,
@@ -680,6 +683,8 @@ export function TimelineShell() {
   /** After CD-length gesture ends → jump viewport to timeline start. */
   const cdScrollToStartPendingRef = useRef(false);
   const draftRef = useRef<Project | null>(null);
+  const clipSelectionRef = useRef(clipSelection);
+  clipSelectionRef.current = clipSelection;
   const viewSpanRef = useRef({ start: 0, end: 0 });
   const barTicksRef = useRef(3840);
   const zoomHRef = useRef(DEFAULT_PX_PER_BAR);
@@ -755,12 +760,13 @@ export function TimelineShell() {
   }, []);
 
   const commitDraft = useCallback((next: Project) => {
+    const sel = clipSelectionRef.current;
     setDraftProject(next);
     setTrackVisibility((prev) =>
       ensureAudioTrackVisibility(prev, next.audioTracks),
     );
     setDraftHistory((h) =>
-      h ? pushDraftHistory(h, next) : createDraftHistory(next),
+      h ? pushDraftHistory(h, next, sel) : createDraftHistory(next, sel),
     );
   }, []);
 
@@ -783,6 +789,22 @@ export function TimelineShell() {
     setSelectedMapIds([]);
     setSelectedMapLane(null);
     setPrimaryMapId(null);
+  }, []);
+
+  /** Desktop dblclick → focus Właściwości (v4); tablet canvas double-tap stays Fit Zoom. */
+  const focusInspectorPanel = useCallback(() => {
+    setSongMetaOpen(false);
+    requestAnimationFrame(() => {
+      const panel = document.querySelector<HTMLElement>(
+        'aside[aria-label="Właściwości"]',
+      );
+      if (!panel) return;
+      panel.scrollIntoView({ block: "nearest" });
+      const field = panel.querySelector<HTMLElement>(
+        "input:not([disabled]), textarea:not([disabled]), select:not([disabled])",
+      );
+      field?.focus({ preventScroll: true });
+    });
   }, []);
 
   const closeMobileInspector = useCallback(() => {
@@ -2399,10 +2421,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
     if (tool === "scissors") {
       e.preventDefault();
-      if (!selectedClipId) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      const next = splitFormaClipAt(draftProject, selectedClipId, raw);
+      const hit =
+        formaSectionCoveringTicks(draftProject, raw) ??
+        (selectedClipId
+          ? draftProject.forma.clips.find(
+              (c) => c.id === selectedClipId && c.kind === "section",
+            )
+          : null);
+      if (!hit) return;
+      clearMapSelection();
+      selectLaneClip("forma", hit.id);
+      const next = splitFormaClipAt(draftProject, hit.id, raw);
       if (next !== draftProject) commitDraft(next);
       return;
     }
@@ -2671,7 +2702,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       kind === "move"
         ? inMulti
           ? resolveMoveIds(clipSelection, clip.id, "forma")
-          : [clip.id]
+          : cascadeFormaMoveIds(draftProject.forma.clips, clip.id)
         : [clip.id];
     const session: FormaGestureSession = {
       kind,
@@ -3799,6 +3830,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
             onPointerCancel={onMapSegmentPointerUp}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSongMetaOpen(false);
+              if (!seg.eventId.endsWith("-default")) {
+                setMapSelection("tempo", [seg.eventId], seg.eventId);
+              }
+              openMapEdit("tempo", seg.eventStartTicks);
+            }}
           >
             {seg.label}
           </button>
@@ -3821,6 +3861,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
             onPointerCancel={onMapSegmentPointerUp}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSongMetaOpen(false);
+              if (!seg.eventId.endsWith("-default")) {
+                setMapSelection("metrum", [seg.eventId], seg.eventId);
+              }
+              openMapEdit("metrum", seg.eventStartTicks);
+            }}
           >
             {seg.label}
           </button>
@@ -3846,6 +3895,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
             onPointerCancel={onMapSegmentPointerUp}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSongMetaOpen(false);
+              if (!seg.eventId.endsWith("-default")) {
+                setMapSelection("tonacja", [seg.eventId], seg.eventId);
+              }
+              openMapEdit("tonacja", seg.eventStartTicks);
+            }}
           >
             {seg.label}
           </button>
@@ -3978,6 +4036,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   onPointerDown={(e) => onFormaClipPointerDown(e, clip)}
                   onPointerMove={onFormaClipPointerMove}
                   onPointerUp={onFormaClipPointerUp}
+                  onDoubleClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clearMapSelection();
+                    selectLaneClip("forma", clip.id);
+                    focusInspectorPanel();
+                  }}
                 />
               );
             })}
@@ -4126,6 +4191,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   }
                   onPointerMove={onFormaClipPointerMove}
                   onPointerUp={onFormaClipPointerUp}
+                  onDoubleClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clearMapSelection();
+                    selectLaneClip(lane, clip.id);
+                    focusInspectorPanel();
+                  }}
                 />
               );
             })}
@@ -4829,6 +4901,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                                 track.id === "cue"
                               ? (e) => {
                                   if (e.button !== 0 || !draftProject) return;
+                                  if (tool === "scissors") {
+                                    e.preventDefault();
+                                    const raw = rawTicksAtClientX(e.clientX);
+                                    if (raw == null) return;
+                                    const lane = track.id as ContentLaneId;
+                                    const hit = contentClipCoveringTicks(
+                                      draftProject,
+                                      lane,
+                                      raw,
+                                    );
+                                    if (!hit) return;
+                                    clearMapSelection();
+                                    selectLaneClip(lane, hit.id);
+                                    const next = splitContentClipAt(
+                                      draftProject,
+                                      lane,
+                                      hit.id,
+                                      raw,
+                                    );
+                                    if (next !== draftProject) commitDraft(next);
+                                    return;
+                                  }
                                   if (!toolIsPencilDraw(tool)) {
                                     if (toolAllowsClipHitZones(tool)) {
                                       beginMarquee(e);
@@ -6618,6 +6712,7 @@ function FormaClipButton({
   onPointerDown,
   onPointerMove,
   onPointerUp,
+  onDoubleClick,
 }: {
   clip: FormaClip;
   selected: boolean;
@@ -6630,6 +6725,7 @@ function FormaClipButton({
   onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
+  onDoubleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
   const countdown = clip.kind === "countdown";
@@ -6673,6 +6769,7 @@ function FormaClipButton({
         onPointerMove(e);
       }}
       onPointerUp={onPointerUp}
+      onDoubleClick={onDoubleClick}
       onPointerLeave={() => setHoverZone("body")}
     >
       {ranges.length > 1 ? (

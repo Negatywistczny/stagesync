@@ -48,6 +48,23 @@ export function deleteFormaClip(project: Project, clipId: string): Project {
 }
 
 /**
+ * Section (not countdown) whose span covers `ticks` (half-open).
+ * Used for empty-lane scissors hit-test.
+ */
+export function formaSectionCoveringTicks(
+  project: Project,
+  ticks: number,
+): FormaClip | null {
+  for (const c of project.forma.clips) {
+    if (c.kind !== "section") continue;
+    if (ticks >= c.startTicks && ticks < c.startTicks + c.lengthTicks) {
+      return c;
+    }
+  }
+  return null;
+}
+
+/**
  * Scissors on Forma — insert subsection boundary (v4 insertSubsectionBoundary).
  * Does **not** split into two section clips (legacy parity).
  */

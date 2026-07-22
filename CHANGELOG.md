@@ -18,8 +18,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Inspector audio ([#428](https://github.com/Negatywistyczny/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.
 - **Linijka ([#61](https://github.com/Negatywistyczny/stagesync/pull/61)):** góra — takty + region pętli (klik = cycle); dół — beaty + scrub playheada.
 - **Nawigacja i Pomoc:** zoom H/V/UI z ikonami; snap (off / takt / beat / subdivision); Pomoc z kartami sekcji, miniaturami i skrótami; zoom sesji lokalnie.
-- **Forma:** kaskadowe przesuwanie późniejszych klipów; luka Intro po Countdown przy pierwszym przeciągnięciu; nożyczki tną pod kursorem.
-- **Cue:** role sceniczne + priorytet Alert w schemacie, migracji i Inspectorze.
+- **Forma:** kaskadowe przesuwanie późniejszych sekcji przy drag (single-select); luka Intro po Countdown; nożyczki tną pod kursorem także na pustym lane (Forma + Tekst/Akordy/Cue).
+- **Cue:** role sceniczne + priorytet Alert w schemacie, migracji, Inspectorze **i** bannerze Client (klipy Timeline jak session).
+- **Timeline — Inspector:** dwuklik klipu Formy/content lub segmentu mapy otwiera/fokusuje Właściwości (tablet canvas double-tap nadal = Fit Zoom).
+- **Timeline — Undo:** przywraca zaznaczenie klipów razem z projektem.
 
 #### 🎛️ Audio / MIDI / Transport
 - **Preferencje (4 zakładki):** Ogólne (motyw/kontrast, format zegara BBT ↔ MM:SS.ms), Audio, MIDI i Metronom (głośność akcentu/beatów + dźwięk: domyślny/woodblock/bell) — lokalne `localStorage`; MIDI porty/Clock OUT dopiero po **Zapisz**.
@@ -92,7 +94,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Admin Host — QR:** kod QR i domyślny URL połączenia używają adresu LAN (nie `localhost`), żeby telefon muzyków mógł się połączyć.
-- **Client / Komunikaty:** klipy Cue z Timeline pokazują się jako `TERAZ` / `ZA N` (~5 s lookahead); live komunikat wygrywa slot `TERAZ`; pusty stan = ukryty host (bez placeholdera).
+- **Client / Komunikaty:** klipy Cue z Timeline pokazują się jako `TERAZ` / `ZA N` (~5 s lookahead) z filtrem `roles` i priorytetem Alert; live komunikat wygrywa slot `TERAZ`; pusty stan = ukryty host (bez placeholdera).
 - **Admin Set:** „Aktywny set” i „Auto-setlista” obok siebie (z zawijaniem na wąskim ekranie).
 - **Client — partytura (OSMD):** brak crasha przy otwarciu Score — bez `enableOrDisableCursors` przy konstrukcji; kursory tylko przez `render()` po load (OSMD 2.x).
 - **Client — suwaki ustawień:** transpozycja (strój ręczny) i skala tekstu Karaoke w kolorze primary (amber), jak zoom Timeline.

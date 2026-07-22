@@ -15,6 +15,9 @@ export type StageCueBannerClip = {
   startTicks: number;
   lengthTicks: number;
   label: string;
+  /** Empty / omitted = all roles (same as session cues). */
+  roles?: StageCueBannerRole[];
+  priority?: StageCueBannerPriority;
 };
 
 export type StageCueBannerSession = {
@@ -107,6 +110,7 @@ export function resolveStageCueBanner(opts: {
   const songUpcoming: Ranked[] = [];
 
   for (const clip of opts.cueClips) {
+    if (!roleMatches(opts.activeRoles, clip.roles)) continue;
     const start = clip.startTicks;
     const end = start + clip.lengthTicks;
     const text = clip.label.trim().slice(0, 200);
@@ -115,7 +119,7 @@ export function resolveStageCueBanner(opts: {
       id: `song:${clip.id}`,
       text,
       slot: "now",
-      priority: "normal",
+      priority: clip.priority === "alert" ? "alert" : "normal",
       source: "song",
       startRank: start,
     };

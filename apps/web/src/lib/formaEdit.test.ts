@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createProjectV5Seed } from "@stagesync/shared";
 import {
+  cascadeFormaMoveIds,
   commitGesture,
   commitPencilSpan,
   deleteFormaClip,
+  formaSectionCoveringTicks,
   insertFormaSubsectionAt,
   previewFromSession,
   splitFormaClipAt,
@@ -188,5 +190,23 @@ describe("formaEdit", () => {
     const cd = next.forma.clips.find((c) => c.id === "forma-cd")!;
     expect(cd.lengthTicks).toBe(3840);
     expect(cd.startTicks).toBe(-3840);
+  });
+
+  it("formaSectionCoveringTicks finds section under cursor, not countdown", () => {
+    const p = seed();
+    expect(formaSectionCoveringTicks(p, -100)).toBeNull();
+    expect(formaSectionCoveringTicks(p, 100)?.id).toBe("forma-intro");
+    expect(formaSectionCoveringTicks(p, 50_000)).toBeNull();
+  });
+
+  it("cascadeFormaMoveIds includes target and later sections, not countdown", () => {
+    const p = commitPencilSpan(seed(), 7680, 7680, "A", "bar");
+    const ids = cascadeFormaMoveIds(p.forma.clips, "forma-intro");
+    expect(ids).toContain("forma-intro");
+    expect(ids.some((id) => p.forma.clips.find((c) => c.id === id)?.name === "A")).toBe(
+      true,
+    );
+    expect(ids).not.toContain("forma-cd");
+    expect(cascadeFormaMoveIds(p.forma.clips, "forma-cd")).toEqual(["forma-cd"]);
   });
 });
