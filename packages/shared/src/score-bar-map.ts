@@ -47,7 +47,9 @@ export function normalizeAnchors(
       : [];
   if (raw.length === 0) return [];
 
-  const anchors = raw
+  const limited = raw.length > 256 ? raw.slice(0, 256) : raw;
+
+  const anchors = limited
     .map((anchor, i) => ({
       id:
         typeof anchor.id === "string" && anchor.id.length > 0
