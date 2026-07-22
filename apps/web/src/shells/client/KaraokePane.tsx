@@ -1,15 +1,11 @@
 import {
-  applyInstrumentPitchToChord,
-  formatChordForDisplay,
   formatSectionNameForDisplay,
-  resolveKeyAt,
   type Project,
 } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
   type KaraokeSectionGroup,
 } from "../../lib/clientKaraoke.js";
-import { resolveAkordClipAt } from "../../lib/akordyEdit.js";
 import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
 import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js";
 import styles from "../ClientShell.module.css";
@@ -206,23 +202,6 @@ export function KaraokePane({
     return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
   }
 
-  const key = resolveKeyAt(project, displayTicks);
-  const fmtChord = (symbol: string) =>
-    formatChordForDisplay(
-      applyInstrumentPitchToChord(
-        symbol,
-        prefs.instrumentPitch,
-        prefs.instrumentPitchManual,
-        key,
-      ),
-      {
-        literalQuality: prefs.literalQuality,
-        hybridPolishB: prefs.hybridPolishB,
-      },
-    );
-  const activeChord = resolveAkordClipAt(project, displayTicks);
-  const chordDisplay = activeChord ? fmtChord(activeChord.symbol) : null;
-
   const hasContent =
     ctx.sections.length > 0 &&
     (ctx.hasLyricLines || ctx.sections.some((s) => s.useProgress));
@@ -238,11 +217,6 @@ export function KaraokePane({
             Tap
           </Button>
         </div>
-      ) : null}
-      {chordDisplay ? (
-        <p className={styles.karaokeChordNow} aria-live="polite">
-          {chordDisplay}
-        </p>
       ) : null}
       {hasContent ? (
         <div
