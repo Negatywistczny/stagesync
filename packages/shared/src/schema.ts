@@ -174,16 +174,20 @@ export const SetlistSchema = z
 
 export type Setlist = z.infer<typeof SetlistSchema>;
 
-export const PutSetlistBodySchema = z.object({
-  enabled: z.boolean(),
-  projectIds: z.array(z.string().uuid()),
-});
+export const PutSetlistBodySchema = z
+  .object({
+    enabled: z.boolean(),
+    projectIds: z.array(z.string().uuid()),
+  })
+  .strict();
 
 export type PutSetlistBody = z.infer<typeof PutSetlistBodySchema>;
 
-export const PatchSetlistAutoAdvanceBodySchema = z.object({
-  enabled: z.boolean(),
-});
+export const PatchSetlistAutoAdvanceBodySchema = z
+  .object({
+    enabled: z.boolean(),
+  })
+  .strict();
 
 export type PatchSetlistAutoAdvanceBody = z.infer<
   typeof PatchSetlistAutoAdvanceBodySchema
