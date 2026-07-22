@@ -2813,6 +2813,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
+    setLoadError(null);
     try {
       const next = await uploadProjectAudio(projectId, file);
       // Prefer the uploaded clip on the chosen track when server put it on track 0
