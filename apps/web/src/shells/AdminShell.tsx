@@ -1133,6 +1133,8 @@ function HostView({
       outputId?: string | null;
       clockOutEnabled?: boolean;
     }) => {
+      if (midiBusyRef.current) return;
+      midiBusyRef.current = true;
       setMidiBusy(true);
       try {
         const status = await putMidiHostConfig(patch);
@@ -1141,6 +1143,7 @@ function HostView({
       } catch (err) {
         setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
       } finally {
+        midiBusyRef.current = false;
         setMidiBusy(false);
       }
     },
@@ -1608,6 +1611,8 @@ function HostSettingsModal({
     outputId?: string | null;
     clockOutEnabled?: boolean;
   }) => {
+    if (midiBusyRef.current) return;
+    midiBusyRef.current = true;
     setMidiBusy(true);
     try {
       const status = await putMidiHostConfig(patch);
@@ -1616,6 +1621,7 @@ function HostSettingsModal({
     } catch (err) {
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
     } finally {
+      midiBusyRef.current = false;
       setMidiBusy(false);
     }
   };
