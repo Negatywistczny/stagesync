@@ -95,6 +95,20 @@ function midiDraftEqual(a: MidiDraft | null, b: MidiDraft | null): boolean {
   );
 }
 
+function prefsEqual(a: PrefsSnapshot, b: PrefsSnapshot): boolean {
+  return (
+    a.appearance.light === b.appearance.light &&
+    a.appearance.highContrast === b.appearance.highContrast &&
+    a.clockFormat === b.clockFormat &&
+    a.sinkId === b.sinkId &&
+    a.latencyCompMs === b.latencyCompMs &&
+    a.metro.accentVolume === b.metro.accentVolume &&
+    a.metro.beatVolume === b.metro.beatVolume &&
+    a.metro.timbre === b.metro.timbre &&
+    midiDraftEqual(a.midi, b.midi)
+  );
+}
+
 function ModalShell({
   title,
   children,
@@ -271,6 +285,7 @@ export function PreferencesModal({ onClose, initialTab = "general" }: Props) {
 
   const midiDraft = draft.midi;
   const midiReady = midiStatus != null && midiDraft != null;
+  const dirty = !prefsEqual(draft, snapshotRef.current);
 
   return (
     <ModalShell title="Preferencje" onDiscard={onDiscard}>
@@ -676,13 +691,18 @@ export function PreferencesModal({ onClose, initialTab = "general" }: Props) {
       ) : null}
 
       <div className={styles.actions}>
-        <Button variant="ghost" disabled={saveBusy} onClick={onDiscard}>
+        <Button
+          variant="ghost"
+          className={dirty ? styles.discardHot : undefined}
+          disabled={saveBusy}
+          onClick={onDiscard}
+        >
           Odrzuć
         </Button>
         <Button
-          variant="primary"
+          variant={dirty ? "primary" : "ghost"}
           loading={saveBusy}
-          disabled={saveBusy}
+          disabled={saveBusy || !dirty}
           onClick={() => {
             void onSave();
           }}

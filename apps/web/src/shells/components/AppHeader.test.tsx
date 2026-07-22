@@ -59,7 +59,7 @@ describe("AppHeader", () => {
     expect(out).toContain('data-ss-level="1"');
   });
 
-  it("shows dirty affordance when history.dirty", () => {
+  it("emphasizes Zapisz when history.dirty — no niezapisane copy", () => {
     const out = html(
       <AppHeader
         suffix="Timeline"
@@ -71,10 +71,14 @@ describe("AppHeader", () => {
           onUndo: () => {},
           onRedo: () => {},
           onSave: () => {},
+          onDiscard: () => {},
         }}
       />,
     );
-    expect(out).toContain("niezapisane");
+    expect(out).not.toMatch(/niezapisane/i);
+    expect(out).toContain("Zapisz");
+    expect(out).toContain("Odrzuć");
+    expect(out).toContain("aria-pressed=\"true\"");
     expect(out).toContain("Cofnij");
   });
 });

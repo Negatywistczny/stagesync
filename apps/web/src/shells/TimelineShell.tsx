@@ -4523,11 +4523,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
 
-        {isDesktopShell() && dirty ? (
-          <span className={styles.toolbarDirty} aria-live="polite">
-            Niezapisane zmiany
-          </span>
-        ) : null}
       </div>
 
       <div

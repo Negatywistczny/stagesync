@@ -139,6 +139,11 @@ export function AppHeader({
             {history.onDiscard ? (
               <ShellIconButton
                 label="Odrzuć zmiany"
+                className={
+                  history.dirty && !history.savePending
+                    ? styles.historyDiscardHot
+                    : undefined
+                }
                 disabled={!history.dirty || Boolean(history.savePending)}
                 onClick={history.onDiscard}
               >
@@ -147,16 +152,17 @@ export function AppHeader({
             ) : null}
             <ShellIconButton
               label="Zapisz (⌘/Ctrl+S)"
+              pressed={history.dirty && !history.savePending}
+              className={
+                history.dirty && !history.savePending
+                  ? styles.historySaveHot
+                  : undefined
+              }
               disabled={!history.dirty || Boolean(history.savePending)}
               onClick={history.onSave}
             >
               <IconSave />
             </ShellIconButton>
-            {history.dirty ? (
-              <span className={styles.dirty} aria-live="polite">
-                niezapisane
-              </span>
-            ) : null}
           </>
         ) : null}
 

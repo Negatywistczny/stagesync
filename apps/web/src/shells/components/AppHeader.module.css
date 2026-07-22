@@ -70,10 +70,34 @@
   }
 }
 
-.dirty {
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-  line-height: var(--ss-leading-compact);
+/** Dirty draft: emphasize Zapisz (accent) without “niezapisane” copy. */
+.historySaveHot:not(:disabled) {
+  color: var(--ss-color-on-primary);
+  background: var(--ss-color-primary);
+  border-color: var(--ss-color-primary);
+}
+
+@media (hover: hover) {
+  .historySaveHot:hover:not(:disabled) {
+    background: var(--ss-color-primary-hover);
+    border-color: var(--ss-color-primary-hover);
+    color: var(--ss-color-on-primary);
+  }
+}
+
+/** Dirty draft: emphasize Odrzuć (danger) via tokens only. */
+.historyDiscardHot:not(:disabled) {
+  color: var(--ss-color-danger);
+  border-color: color-mix(in srgb, var(--ss-color-danger) 55%, var(--ss-color-border));
+  background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
+}
+
+@media (hover: hover) {
+  .historyDiscardHot:hover:not(:disabled) {
+    color: var(--ss-color-danger);
+    background: color-mix(in srgb, var(--ss-color-danger) 20%, transparent);
+    border-color: var(--ss-color-danger);
+  }
 }
 
 @media (max-width: 768px) {

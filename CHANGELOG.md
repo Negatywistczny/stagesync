@@ -60,6 +60,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Dirty draft:** usunięta etykieta „niezapisane” z nagłówka / toolbara; przy niezapisanych zmianach wyróżnione **Zapisz** (akcent) i **Odrzuć** (danger) — Preferencje oraz chrome Timeline.
 - **Client — partytura:** ustawienia (zoom, oktawa, śledzenie playheada, widoczne partie) w oknie **Partytura** (⚙️), bez pływającego toolbara nad nutami.
 - **Admin chrome:** przycisk **Ustawienia** (zamiast Wygląd) otwiera Preferencje; motyw/kontrast w Ogólne.
 - **Admin Utwory — master-detail:** lewa kolumna (szukaj / sort / + Nowy Utwór + rozciągana lista + zwijane Wzory); prawa tylko inspector wybranego utworu (tytuł, Otwórz / Odtwórz / Usuń, assety); import/eksport JSON i UG w menu **Zarządzaj bazą ▾** (poza panelem utworu).
