@@ -65,8 +65,8 @@ export function ticksToSpp(ticks: number, ppq: number = DEFAULT_PPQ): number {
 
 /** SPP → domain ticks (start of that 16th). */
 export function sppToTicks(spp: number, ppq: number = DEFAULT_PPQ): number {
-  if (!Number.isInteger(spp) || spp < 0) {
-    throw new RangeError("spp must be an integer >= 0");
+  if (!Number.isInteger(spp) || spp < 0 || spp > 16_383) {
+    throw new RangeError("spp must be an integer in 0…16383");
   }
   if (!Number.isInteger(ppq) || ppq <= 0) {
     throw new RangeError("ppq must be a positive integer");

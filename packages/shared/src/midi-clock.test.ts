@@ -35,6 +35,8 @@ describe("midi-clock", () => {
     expect(ticksToSpp(240)).toBe(1);
     expect(sppToTicks(4)).toBe(960);
     expect(sppToTicks(1)).toBe(240);
+    expect(sppToTicks(16_383)).toBeGreaterThan(0);
+    expect(() => sppToTicks(16_384)).toThrow(/0…16383/);
   });
 
   it("computes clock interval from BPM", () => {
