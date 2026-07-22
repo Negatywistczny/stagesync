@@ -14,8 +14,6 @@ import {
   resolveTempoAt,
   resolveKeyAt,
   formatKeySignature,
-  KEY_TONICS,
-  normalizeKeyTonic,
   parseLegacyMeter,
   ticksPerBar,
   ticksToBbt,
@@ -231,14 +229,6 @@ import {
   type LaneHeightsMap,
 } from "../lib/timelineLaneHeights.js";
 import {
-  loadZoomPrefs,
-  saveZoomPrefs,
-  ZOOM_H_MAX,
-  ZOOM_H_MIN,
-  ZOOM_UI_MAX,
-  ZOOM_UI_MIN,
-} from "../lib/timelineZoomPrefs.js";
-import {
   toggleAppFullscreen,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
@@ -372,15 +362,14 @@ export function TimelineShell() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [savePending, setSavePending] = useState(false);
-  const savePendingRef = useRef(false);
+  const [audioUploadPending, setAudioUploadPending] = useState(false);
+  const audioUploadPendingRef = useRef(false);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
   const [setlistIds, setSetlistIds] = useState<string[]>([]);
   const [setlistEnabled, setSetlistEnabled] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(false);
-  const [autoAdvancePending, setAutoAdvancePending] = useState(false);
-  const autoAdvancePendingRef = useRef(false);
 
   const [tool, setTool] = useState<ToolId>("pointer");
   const [toolMenu, setToolMenu] = useState<{
@@ -395,13 +384,7 @@ export function TimelineShell() {
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [ugText, setUgText] = useState("");
   const [ugError, setUgError] = useState<string | null>(null);
-  const [metronomeOn, setMetronomeOn] = useState(() => {
-    try {
-      return localStorage.getItem("stagesync-timeline-metronome") === "1";
-    } catch {
-      return false;
-    }
-  });
+  const [metronomeOn, setMetronomeOn] = useState(false);
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
       return localStorage.getItem("stagesync-timeline-follow-playhead") === "1";
@@ -409,9 +392,9 @@ export function TimelineShell() {
       return false;
     }
   });
-  const [zoomH, setZoomH] = useState(() => loadZoomPrefs().zoomH);
-  const [zoomV, setZoomV] = useState(() => loadZoomPrefs().zoomV);
-  const [zoomUi, setZoomUi] = useState(() => loadZoomPrefs().zoomUi);
+  const [zoomH, setZoomH] = useState(DEFAULT_PX_PER_BAR);
+  const [zoomV, setZoomV] = useState(DEFAULT_LANE_PX);
+  const [zoomUi, setZoomUi] = useState(100);
   const [laneHeights, setLaneHeights] = useState<LaneHeightsMap>(() =>
     loadLaneHeights(),
   );
@@ -432,6 +415,8 @@ export function TimelineShell() {
   const effectiveZoomV = Math.max(1, Math.round(zoomV * uiScale));
   /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
   const ZOOM_H_STEP = 4;
+  const ZOOM_H_MIN = 24;
+  const ZOOM_H_MAX = 160;
   const ZOOM_V_STEP = 4;
   const ZOOM_V_MIN = MIN_LANE_PX;
   const ZOOM_V_MAX = MAX_LANE_PX;
@@ -573,17 +558,12 @@ export function TimelineShell() {
     nextSetlistId: null as string | null,
   });
 
-  const reloadGenRef = useRef(0);
-
   const reloadProject = useCallback(async (id: string) => {
-    const gen = ++reloadGenRef.current;
     setLoading(true);
     setLoadError(null);
     try {
       const project = await fetchProject(id);
-      if (gen !== reloadGenRef.current) return;
       await loadTransport(id);
-      if (gen !== reloadGenRef.current) return;
       setSavedProject(project);
       setDraftProject(project);
       setDraftHistory(createDraftHistory(project));
@@ -600,15 +580,12 @@ export function TimelineShell() {
       );
       setSelectedSubsectionIdx(null);
     } catch (err) {
-      if (gen !== reloadGenRef.current) return;
       setLoadError(err instanceof Error ? err.message : "Nie udało się wczytać");
       setSavedProject(null);
       setDraftProject(null);
       setDraftHistory(null);
     } finally {
-      if (gen === reloadGenRef.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   }, []);
 
@@ -669,25 +646,15 @@ export function TimelineShell() {
   }, [projectId, draftProject?.name]);
 
   useEffect(() => {
-    saveZoomPrefs({ zoomH, zoomV, zoomUi });
-  }, [zoomH, zoomV, zoomUi]);
-
-  useEffect(() => {
     if (!songScreenOpen) return;
-    let cancelled = false;
     void (async () => {
       try {
         const lib = await fetchLibrary();
-        if (!cancelled) {
-          setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
-        }
+        setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
       } catch {
-        if (!cancelled) setLibraryNames([]);
+        setLibraryNames([]);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
   }, [songScreenOpen]);
 
   useEffect(() => {
@@ -896,34 +863,6 @@ export function TimelineShell() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        if (tempoEditOpen) {
-          e.preventDefault();
-          setTempoEditOpen(false);
-          return;
-        }
-        if (meterEditOpen) {
-          e.preventDefault();
-          setMeterEditOpen(false);
-          return;
-        }
-        if (keyEditOpen) {
-          e.preventDefault();
-          setKeyEditOpen(false);
-          return;
-        }
-        if (helpOpen) {
-          e.preventDefault();
-          setHelpOpen(false);
-          return;
-        }
-      }
-
-      // Map-edit dialogs own the keyboard (BPM/meter inputs + no transport).
-      if (tempoEditOpen || meterEditOpen || keyEditOpen) {
-        return;
-      }
-
       const t = e.target as HTMLElement | null;
       if (
         t &&
@@ -937,6 +876,11 @@ export function TimelineShell() {
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
 
+      if (helpOpen && e.key === "Escape") {
+        e.preventDefault();
+        setHelpOpen(false);
+        return;
+      }
       if (
         !mod &&
         !e.altKey &&
@@ -1085,9 +1029,6 @@ export function TimelineShell() {
     navigate,
     pasteClipClipboard,
     helpOpen,
-    tempoEditOpen,
-    meterEditOpen,
-    keyEditOpen,
     toolMenu,
   ]);
 
@@ -1476,10 +1417,8 @@ export function TimelineShell() {
   }, [projectId, audioAssetDecodeKey, draftProject]);
 
   async function onSave() {
-    if (!projectId || !draftProject || savePendingRef.current) return;
-    savePendingRef.current = true;
+    if (!projectId || !draftProject) return;
     setSavePending(true);
-    setLoadError(null);
     try {
       const next = await putProject(projectId, draftProject);
       setSavedProject(next);
@@ -1490,7 +1429,6 @@ export function TimelineShell() {
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Zapis nie powiódł się");
     } finally {
-      savePendingRef.current = false;
       setSavePending(false);
     }
   }
@@ -1573,14 +1511,6 @@ export function TimelineShell() {
       );
     }
     setMetronomeOn(next);
-    try {
-      localStorage.setItem(
-        "stagesync-timeline-metronome",
-        next ? "1" : "0",
-      );
-    } catch {
-      /* ignore */
-    }
   }
 
   function onTap() {
@@ -2884,7 +2814,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   async function onUploadAudioToTrack(trackId: string, file: File) {
     if (!projectId || !draftProject) return;
-    setLoadError(null);
+    if (audioUploadPendingRef.current) return;
+    audioUploadPendingRef.current = true;
+    setAudioUploadPending(true);
     try {
       const next = await uploadProjectAudio(projectId, file);
       // Prefer the uploaded clip on the chosen track when server put it on track 0
@@ -2910,6 +2842,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       );
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Upload audio failed");
+    } finally {
+      audioUploadPendingRef.current = false;
+      setAudioUploadPending(false);
     }
   }
 
@@ -3840,27 +3775,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </ShellIconButton>
           <ShellIconButton
             label="Auto-setlista"
-            disabled={
-              !setlistEnabled || commandPending || autoAdvancePending
-            }
+            disabled={!setlistEnabled || commandPending}
             pressed={autoAdvance}
             onClick={() => {
               void (async () => {
-                if (autoAdvancePendingRef.current) return;
-                autoAdvancePendingRef.current = true;
-                setAutoAdvancePending(true);
                 try {
                   const v = await patchSetlistAutoAdvance(!autoAdvance);
                   setAutoAdvance(v.autoAdvance.enabled);
-                } catch (err) {
-                  setLoadError(
-                    err instanceof Error
-                      ? err.message
-                      : "Nie udało się zmienić auto-setlisty",
-                  );
-                } finally {
-                  autoAdvancePendingRef.current = false;
-                  setAutoAdvancePending(false);
+                } catch {
+                  /* ignore */
                 }
               })();
             }}
@@ -4038,12 +3961,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
       </div>
-
-      {loadError && draftProject ? (
-        <p className={styles.saveError} role="alert">
-          {loadError}
-        </p>
-      ) : null}
 
       <div
         className={styles.main}
@@ -4235,12 +4152,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           >
                             M
                           </button>
-                          <label className={styles.tapBtn} title="Dodaj plik audio">
+                          <label
+                            className={styles.tapBtn}
+                            title={
+                              audioUploadPending
+                                ? "Upload w toku…"
+                                : "Dodaj plik audio"
+                            }
+                          >
                             +
                             <input
                               type="file"
                               accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
                               hidden
+                              disabled={audioUploadPending}
                               onChange={(e) => {
                                 const f = e.target.files?.[0];
                                 e.target.value = "";
@@ -4421,7 +4346,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={draftProject.name}
-                    maxLength={200}
                     aria-label="Tytuł utworu"
                     onChange={(e) => {
                       commitDraft({
@@ -4510,7 +4434,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={draftProject.artist ?? ""}
-                    maxLength={200}
                     onChange={(e) =>
                       commitDraft({
                         ...draftProject,
@@ -4524,7 +4447,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={draftProject.genre ?? ""}
-                    maxLength={200}
                     onChange={(e) =>
                       commitDraft({
                         ...draftProject,
@@ -4538,8 +4460,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.lengthInput}
                     type="number"
-                    min={1000}
-                    max={9999}
+                    min={1900}
+                    max={2100}
                     placeholder="1978"
                     value={draftProject.year ?? ""}
                     aria-label="Rok wydania"
@@ -4551,11 +4473,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       }
                       const n = Number(raw);
                       if (!Number.isFinite(n)) return;
-                      const year = Math.round(n);
-                      if (year < 1000 || year > 9999) return;
                       commitDraft({
                         ...draftProject,
-                        year,
+                        year: Math.round(n),
                       });
                     }}
                   />
@@ -4572,13 +4492,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           resolveKeyAt(draftProject, 0)?.mode ?? "major";
                         commitDraft(
                           upsertKeyAt(draftProject, 0, {
-                            tonic: normalizeKeyTonic(e.target.value),
+                            tonic: e.target.value || "C",
                             mode,
                           }),
                         );
                       }}
                     >
-                      {KEY_TONICS.map((t) => (
+                      {[
+                        "C",
+                        "C#",
+                        "Db",
+                        "D",
+                        "Eb",
+                        "E",
+                        "F",
+                        "F#",
+                        "Gb",
+                        "G",
+                        "Ab",
+                        "A",
+                        "Bb",
+                        "B",
+                      ].map((t) => (
                         <option key={t} value={t}>
                           {t}
                         </option>
@@ -4631,7 +4566,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <textarea
                     className={styles.nameInput}
                     value={selectedTekstClip.text}
-                    maxLength={2000}
                     aria-label="Tekst linii"
                     rows={3}
                     onChange={(e) => {
@@ -4658,7 +4592,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={selectedAkordClip.symbol}
-                    maxLength={64}
                     aria-label="Symbol akordu"
                     onChange={(e) => {
                       if (!draftProject) return;
@@ -4684,7 +4617,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <input
                     className={styles.nameInput}
                     value={selectedCueClip.label}
-                    maxLength={200}
                     aria-label="Etykieta cue"
                     onChange={(e) => {
                       if (!draftProject) return;
@@ -4834,7 +4766,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     <input
                       className={styles.nameInput}
                       value={selectedClip.name}
-                      maxLength={120}
                       aria-label="Nazwa sekcji"
                       onChange={(e) => onClipRename(e.target.value)}
                     />
@@ -4852,7 +4783,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       className={styles.nameInput}
                       rows={2}
                       value={selectedClip.note ?? ""}
-                      maxLength={500}
                       aria-label="Notatka sekcji"
                       onChange={(e) => {
                         if (!draftProject || !selectedClip) return;
@@ -4991,7 +4921,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       className={styles.lengthInput}
                       type="number"
                       min={1}
-                      max={32}
                       step={1}
                       value={countdownBars(draftProject!, selectedClip)}
                       aria-label="Długość Countdown w taktach"
@@ -5030,8 +4959,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             UI
             <input
               type="range"
-              min={ZOOM_UI_MIN}
-              max={ZOOM_UI_MAX}
+              min={50}
+              max={150}
               value={zoomUi}
               onChange={(e) => setZoomUi(Number(e.target.value))}
             />
@@ -5154,10 +5083,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 loading={savePending}
                 onClick={() => {
                   void (async () => {
-                    if (!projectId || !draftProject || savePendingRef.current) {
-                      return;
-                    }
-                    savePendingRef.current = true;
+                    if (!projectId || !draftProject) return;
                     setSavePending(true);
                     try {
                       const next = await putProject(projectId, draftProject);
@@ -5176,7 +5102,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           : "Zapis nie powiódł się",
                       );
                     } finally {
-                      savePendingRef.current = false;
                       setSavePending(false);
                     }
                   })();
@@ -5413,16 +5338,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         : null}
 
       {tempoEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="tempo-edit-title"
-        >
+        <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2 id="tempo-edit-title">
-              Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
-            </h2>
+            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
             <label className={styles.inspField}>
               BPM
               <input
@@ -5455,16 +5373,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {meterEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="meter-edit-title"
-        >
+        <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2 id="meter-edit-title">
-              Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
-            </h2>
+            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
             <div
               className={styles.meterEditRow}
               role="group"
@@ -5531,16 +5442,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {keyEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="key-edit-title"
-        >
+        <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2 id="key-edit-title">
-              Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
-            </h2>
+            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
             <div
               className={styles.keyEditRow}
               role="group"
@@ -5554,7 +5458,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }
               >
-                {KEY_TONICS.map((t) => (
+                {[
+                  "C",
+                  "C#",
+                  "Db",
+                  "D",
+                  "Eb",
+                  "E",
+                  "F",
+                  "F#",
+                  "Gb",
+                  "G",
+                  "Ab",
+                  "A",
+                  "Bb",
+                  "B",
+                ].map((t) => (
                   <option key={t} value={t}>
                     {t}
                   </option>
@@ -5585,7 +5504,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   const modeEl = document.getElementById(
                     "key-mode",
                   ) as HTMLSelectElement | null;
-                  const tonic = normalizeKeyTonic(tonicEl?.value);
+                  const tonic = tonicEl?.value || "C";
                   const mode =
                     modeEl?.value === "minor"
                       ? ("minor" as const)
