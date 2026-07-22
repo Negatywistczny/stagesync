@@ -11,7 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 - **Mobile — inspector:** na telefonie (≤768px) Właściwości otwierają się jako dolny sheet (Metadane / zaznaczenie klipu lub mapy) z Zamknij i tłem; desktop bez zmian układu.
-- **Tablet — nudge i gesty:** pasek ◀▶ + 4 przyciski krawędzi (stretch in/out) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom na osi czasu.
+- **Tablet — nudge i gesty ([#473](https://github.com/Negatywistyczny/stagesync/pull/473)):** pasek ◀▶ + 4 przyciski krawędzi (stretch in/out) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom na osi czasu.
 - **Różdżka:** z powrotem w toolbarze / skrót W — Tekst→Forma, Akordy→Forma lub obie; zakres = zaznaczone sekcje Formy.
 - **MIDI playhead:** opcjonalny wskaźnik w Wygląd (zapamiętywany lokalnie).
 - **Inspector audio ([#428](https://github.com/Negatywistyczny/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.
@@ -41,7 +41,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📚 Dokumentacja
 - **README ([#417](https://github.com/Negatywistyczny/stagesync/issues/417)):** treść po polsku, pełniejszy zestaw badge i sekcja stosu.
-- **API:** domknięta dokumentacja powierzchni REST.
+- **API:** dokumentacja REST + WebSocket pod `formatVersion: 5` (Project, Assets, Transport, Setlist, Stage, MIDI, System; ticki + `stage_cue` + presence).
 
 ### Zmieniono
 
