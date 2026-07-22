@@ -4,7 +4,7 @@
 # Immutable image; mount ./data → /app/data.
 # Version injected via ARG APP_VERSION at build time (release.yml / compose).
 
-FROM node:26-bookworm-slim AS build
+FROM node:20-bookworm-slim AS build
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 WORKDIR /app
 
