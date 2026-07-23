@@ -218,13 +218,13 @@ describe("mapLaneEdit remaining", () => {
     expect(updated.defaultMeter).toEqual({ numerator: 5, denominator: 4 });
     const again = upsertMeterAt(updated, 0, 6, 8);
     expect(again.defaultMeter).toEqual({ numerator: 6, denominator: 8 });
-    const withExtra = insertMapEventAt(again, "metrum", 7680, "bar");
-    const patched = upsertMeterAt(withExtra, 7680, 7, 8);
+    const baseMeter = insertMapEventAt(seed(), "metrum", 7680, "bar");
+    const patched = upsertMeterAt(baseMeter, 7680, 3, 4);
     expect(patched.meterMap.find((e) => e.startTicks === 7680)).toMatchObject({
-      numerator: 7,
-      denominator: 8,
+      numerator: 3,
+      denominator: 4,
     });
-    expect(patched.meterMap.find((e) => e.startTicks === 0)?.numerator).toBe(6);
+    expect(patched.meterMap.find((e) => e.startTicks === 0)?.numerator).toBe(4);
 
     let p = seed();
     p = insertMapEventAt(p, "tempo", 7680, "bar");
