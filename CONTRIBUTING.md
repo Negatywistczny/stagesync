@@ -59,15 +59,19 @@ Roadmapa (kierunek): [docs/ROADMAP.md](docs/ROADMAP.md). Design UI: [docs/ui/](d
 
 ### CHANGELOG.md (Keep a Changelog) + TODO
 
-Pełne reguły agenta: [`.cursor/rules/changelog.mdc`](.cursor/rules/changelog.mdc), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
+Pełne reguły: [`.cursor/rules/changelog.mdc`](.cursor/rules/changelog.mdc), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
 
-Skrót CHANGELOG: ludzki opis korzyści/zachowania; kolejność H3 **Dodano → Zmieniono → Naprawiono**; domeny jako emoji `####` (`⏱️ Timeline & DAW`, `🎛️ Audio / MIDI / Transport`, `🖥️ App Shell & UI`, …); **nigdy** drugi ten sam H3; agreguj commity; bez nazw funkcji, tokenów CSS, CI/Vitest ani checklist G1–G10. Skrót TODO: tylko otwarte `[ ]`; ukończone → CHANGELOG, potem usuń z listy (bez „Dostarczone” / `[x]`).
+**Złota zasada:** wpis tylko gdy użytkownik/realizator zauważyłby różnicę w działaniu aplikacji. Domknięcie TODO ≠ automatyczny wpis.
+
+Skrót CHANGELOG: ludzki opis korzyści/zachowania; kolejność H3 **Dodano → Zmieniono → Naprawiono**; domeny jako emoji `####`; **nigdy** drugi ten sam H3; agreguj commity. **Poza CHANGELOG:** ADR/reporty/ROADMAP/TODO, CI/CD (`.github/`, skrypty release), testy, czysty refactor, bumpy narzędzi, żargon bramek (G1–G10). Wyjątki: Pomoc in-app / INSTALL·DESKTOP·API; instalator/updater widoczny dla użytkownika; krytyczne security w runtime.
+
+Skrót TODO: tylko otwarte `[ ]`; ukończone → ewentualnie CHANGELOG (gdy złota zasada), potem usuń z listy (bez „Dostarczone” / `[x]`).
 
 | Tak | Nie |
 |-----|-----|
 | Co się zmienia w zachowaniu systemu | Żargon czatu / AI (`stub`, `residual`, `must w strumieniu`, `ROADMAP OUT`) |
 | Fakt względem ostatniego wydania | Fałszywy „powrót” do stanu, którego nie było w wydanej wersji |
-| Kategorie: Zmieniono / Dodano / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO (to żyje w ADR / CONTRIBUTING / TODO) |
+| Kategorie: Zmieniono / Dodano / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO, CI, skrypty build |
 | Zwięzły opis + opcjonalny link `#issue` / `#pr` | Relacja przebiegu prac („fundament pod…”, „parity bez stubu…”) |
 
 Polityka parytetu v4 → `5.0.0`: [ADR 0011 §1a](docs/adr/0011-ui-parity-behavior.md).

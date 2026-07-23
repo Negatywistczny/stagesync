@@ -12,12 +12,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Admin Host (desktop):** w O aplikacji tylko wersja aplikacji — bez etykiety Sidecar i bez notki o Watchtower/Docker.
 
-#### 📦 Packaging & Desktop (Tauri / Docker)
-- **GitHub Release:** opis z tabelą pobierania + treść z `CHANGELOG.md` (bez auto-notes z PR); tytuł wydania = sam tag (`vX.Y.Z`), jak w liniach beta.
-
 ## [5.0.0](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-beta.2...v5.0.0) - 2026-07-23 — Overture
 
-> **Overture:** pierwsze stabilne 5.0 — kompletny parytet zachowania v4 (bez stubów), polish UI, Audio fade/loop, menu OS Faza D, Client Score/OSMD, Preferencje, Live Desk. **G1–G10** na HW = residual operatorski (⬜; bez claim green przy cutcie).
+> **Overture:** pierwsze stabilne 5.0 — pełny parytet zachowania v4, odświeżony UI, Audio fade/loop, rozszerzone menu OS, partytura Client (MusicXML), Preferencje oraz Live Desk.
 
 ### Dodano
 
@@ -57,7 +54,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📚 Dokumentacja
 - **API:** REST + WebSocket (Project, Assets, Transport, Setlist, Stage, MIDI, System) — w tym komunikaty sesji, `POST /api/midi/panic` i presence.
-- **README ([#417](https://github.com/Negatywistyczny/stagesync/issues/417)):** treść po polsku, pełniejszy zestaw badge i sekcja stosu.
 
 ### Zmieniono
 
@@ -112,17 +108,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [5.0.0-beta.2](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
-> **β2:** Audio 0…N + MIDI I/O serwera + menu OS Faza B+C + Countdown Stop; updater `latest.json` darwin+windows. Ręczna bramka **G1–G10** — residual operatorski (nie green na HW przy cutcie); następny etap → **5.0.0**.
+> **β2:** ścieżki Audio 0…N, MIDI I/O na hoście, menu OS Plik / Host / Transport, Stop wracający do Countdown; aktualizacje desktop dla macOS i Windows.
 
 ### Dodano
 
-- **Desktop OS menu — Faza B + C ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **Plik** (Otwórz ostatnie / Zapisz / Zamknij), **Host** (status, klienci, QR z LAN URL, restart, ustawienia), **Transport** (Play/Stop/prev/next → SSOT serwera). Mostek WebView: dialog QR z URL LAN.
+- **Desktop OS menu:** natywne **Plik** (Otwórz ostatnie / Zapisz / Zamknij), **Host** (status, klienci, QR z LAN URL, restart, ustawienia), **Transport** (Play/Stop/prev/next). Dialog QR z URL LAN w aplikacji.
 - **Host MIDI I/O + clock:** lista / wybór urządzeń, clock OUT zsynchronizowany z transportem SSOT (Start/Continue/Stop/SPP/Clock), metryki Admin → Host; API MIDI config. Bez MIDI w procesie Tauri ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md) / [ADR 0002](docs/adr/0002-timebase-ssot.md)).
 - **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; odtwarzanie sync do ticków serwera ([ADR 0008](docs/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistyczny/stagesync/issues/42)).
-
-### Zmieniono
-
-- **Docs / scope β2:** [#41](https://github.com/Negatywistyczny/stagesync/issues/41) Countdown Play/Stop oraz [#42](https://github.com/Negatywistyczny/stagesync/issues/42) Audio lane — **must** w strumieniu `5.0.0-beta.2` (nie defer); [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md).
 
 ### Naprawiono
 
@@ -132,17 +124,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [5.0.0-beta.1.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
 
-> **β1.1:** docs cut — residual β1 (menu OS Faza B, ręczna bramka G1–G10) oraz menu Faza C przeniesione jako **must β2**; scope report β2. Bez nowych features produktowych.
+> **β1.1:** poprawka numeracji instalatora Windows dla zagnieżdżonych wersji `beta.N.M`; bez nowych funkcji produktowych.
 
 ### Zmieniono
 
-- **Docs / release hygiene:** TODO + ROADMAP + beta-gate + scope β1 — residual jasno → must β2 (nie soft carry); aktywny etap = β2.
-- **Scope:** nowy [report-scope-beta2.md](docs/analysis/reports/report-scope-beta2.md) (Audio, MIDI serwera, menu B+C, G1–G10; OUT: fade / Faza D / MIDI w Tauri).
-- **Versioning:** bump `5.0.0-beta.1.1`; WiX mapuje nested `beta.N.M` (np. `.10101`) z zachowaniem shipped `beta.1` = `.10001`.
+- **Instalator Windows:** WiX poprawnie mapuje zagnieżdżone wersje `beta.N.M` (np. `.10101`), z zachowaniem shipped `beta.1` = `.10001`.
 
 ## [5.0.0-beta.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.13...v5.0.0-beta.1) - 2026-07-21
 
-> **β1:** milestone dystrybucyjny hosta (Tauri + Node sidecar, Docker secondary, updater). Must H1–H12 zrealizowane w α10–α13; ten cut zamyka etap tagiem. **Menu OS Faza B** oraz pełna ręczna bramka **G1–G10** → carry β2 / operator ([report-beta-gate.md](docs/analysis/reports/report-beta-gate.md)).
+> **β1:** pierwszy milestone dystrybucyjny — aplikacja desktop (Tauri + wbudowany host), Docker jako wariant dodatkowy oraz aktualizacje na żądanie.
 
 ### Naprawiono
 
@@ -150,7 +140,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [5.0.0-alpha.13](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.12...v5.0.0-alpha.13) - 2026-07-21
 
-> **α13:** hotfix Windows sidecar — `EISDIR` / `lstat 'C:'` przy starcie z MSI; następny etap → β1.
+> **α13:** hotfix — aplikacja Windows (.msi) znów startuje po instalacji.
 
 ### Naprawiono
 
@@ -162,7 +152,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Desktop OS menu — Faza A ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** natywne **StageSync** | **Widok** | **Pomoc** — O programie / Sprawdź aktualizacje…; Admin·Timeline·Klient (`CmdOrCtrl+1…3`); zakładki Admina (`Alt+1…4`); pełny ekran; docs + Issues. Faza B+ → β1 ([ROADMAP.md](docs/ROADMAP.md)).
+- **Desktop OS menu:** natywne **StageSync** | **Widok** | **Pomoc** — O programie / Sprawdź aktualizacje…; Admin·Timeline·Klient; zakładki Admina; pełny ekran; linki do dokumentacji i Issues.
 
 ### Naprawiono
 
@@ -172,35 +162,28 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 > **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.
 
-
 ### Dodano
 
 - **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ**; ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
 - **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed `library.template.json` + `seed-projects/`; parity z legacy v4).
 - **Admin → O aplikacji:** przycisk „Zgłoś błąd lub pomysł” (GitHub Issues).
 
-
 ### Zmieniono
 
-- **Release pipeline:** draft release przed buildem Tauri; upload `latest.json` + podpisanych artefaktów updatera (`createUpdaterArtifacts`); publikacja release z SHA256SUMS (bez duplikatu dmg/msi).
 - **Admin → aktualizacje (desktop):** błędy sprawdzania aplikacji widoczne w UI; „Aktualizuj host” ukryte w standalone (Watchtower = Docker).
 - **Desktop:** domyślne wejście `/admin` (Klient pod `/client`); natywny pełny ekran okna w shellu Tauri zamiast HTML Fullscreen API; layout bundla sidecara (`resources/sidecar` + symlink compat).
 - **Shell:** modalne dialogi in-app zamiast `window.prompt` / `confirm` / `alert` (Admin, Timeline, pliki projektu).
 - **Admin → O aplikacji:** układ dwukolumnowy (wersja / kopie zapasowe | dokumentacja / zgłoszenia / aktualizacje).
 
-
 ### Naprawiono
 
 - **Desktop:** wykrywanie shella Tauri na `http://127.0.0.1:4000` (fallback hostname/port, meta `stagesync-shell`, marker na początku `<head>`, `Cache-Control: no-store` na HTML) — fullscreen / updater / `openExternalUrl` przy cache WebView bez injectu.
 - **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle ([tauri#13219](https://github.com/tauri-apps/tauri/issues/13219)) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. `build-desktop-sidecar.mjs` spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
-- **CI / Release:** nieużywane importy + `STAGESYNC_SHELL` w `turbo.json` globalEnv; `gh -R` w `create-draft-release` / publish (bez checkout); ID draftu przez `gh release view` (API `/releases/tags` nie widzi draftów); test migrate z `isTemplate` (bez drugiego seedu).
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
-
 
 ## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
 
 > **α10:** standalone desktop (Tauri + Node sidecar) — pierwszy build β1 host.
-
 
 ### Dodano
 
@@ -210,12 +193,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/adr/0012-user-data-location.md)).
 - **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); `compose.prod.yml` + Watchtower HTTP-only (update na żądanie, bez auto-poll).
 - **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; `desktopBridge.ts` + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
-- `launch/scripts/sync-version.mjs` — propagacja wersji do `appVersion.ts`, `tauri.conf.json`, `Cargo.toml` przy release.
-- `Dockerfile` ARG `APP_VERSION` — wersja wstrzykiwana w build-time (nie hardcoded w runtime stage).
 - Pełny zestaw ikon Tauri (`icons/icon.icns`, `icon.ico`, `32x32.png` itd.) z marki [stagesync-mark.svg](apps/web/public/brand/stagesync-mark.svg).
-- Scope: [report-scope-beta1.md](docs/analysis/reports/report-scope-beta1.md) · bramka release: [report-beta-gate.md](docs/analysis/reports/report-beta-gate.md).
 - **Dokumentacja in-app vs GitHub ([ADR 0013](docs/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w `build-desktop-sidecar.mjs`.
-
 
 ### Zmieniono
 
@@ -223,11 +202,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - `PUT /api/projects/:id`: body wymaga `updatedAt` (token OCC); mismatch → 409.
 - `@stagesync/shared` package exports → `dist/` (Node runtime / Docker).
 
-
 ## [5.0.0-alpha.9](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.8...v5.0.0-alpha.9) - 2026-07-21
 
-> **α9:** migrator M1–M9 + **PO smoke P8 green** ([playbook](docs/analysis/reports/report-po-smoke-p8.md)).
-
+> **α9:** migrator legacy v4→v5 (M1–M9) oraz domknięcie parytetu zachowania Client / Timeline / Admin.
 
 ### Usunięto
 
@@ -237,9 +214,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Utwory:** filtr Wszystkie / Ostrzeżenia — lista zawsze pokazuje wszystkie utwory.
 - **Admin:** zakładka **Pliki** — kafelek importu (`.stagesync.json` / legacy) przeniesiony pod **Wybrany** na Utwory.
 - **Admin Utwory:** przełącznik Ukryj/Pokaż panel (split) — prawy panel „Wybrany” zawsze widoczny.
-- **Admin footer:** atrapy inventarz-first — disabled „MIDI / Timeline” oraz Tr. / Lead / Edycja zdalna (brak API; wrócą z Live Desk / β2). Status Teraz/Sekcja/Pozycja/Dalej/Połączenie bez zmian.
+- **Admin footer:** usunięte atrapy disabled „MIDI / Timeline” oraz Tr. / Lead / Edycja zdalna (brak API; wrócą z Live Desk). Status Teraz/Sekcja/Pozycja/Dalej/Połączenie bez zmian.
 - **Timeline:** przełącznik Ukryj/Pokaż Właściwości — panel inspector zawsze widoczny.
-
 
 ### Dodano
 
@@ -250,10 +226,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
 - **Admin Utwory (pod Wybrany):** import legacy `database.json` z auto-detect (v5 pack vs 4.x `songs[]`) + migracja `migrateLegacy`* przy `POST /api/library/import`; ZIP odroczony (komunikat PL).
 - **Timeline:** marquee + multi-select (`items` id+lane / `primaryId`; zaznaczenie **cross-lane** jak v4) + multi-drag same lane (live preview całej grupy; po puścieniu zachowane zaznaczenie) + clipboard ⌘C/X/V/D (Forma/Tekst/Akordy/Cue; paste @ locator; copy = primary lane); hit-test `data-clip-lane`; pusty obszar pod trackami = marquee/clear — parity zachowania v4, nie clone CSS.
-- SSOT luk behawioralnych: [report-v4-v5-gap-audit.md](docs/analysis/reports/report-v4-v5-gap-audit.md) (TE/KB/AD/CL); szacunek ~~55–65% uznany za zbyt optymistyczny (~~35–45%).
 - **Timeline:** ręczna wysokość ścieżki (drag na dolnej krawędzi docka; dwuklik = Zoom V; `localStorage`; Zoom V zachowuje proporcje) — jak v4 `laneHeights`.
 - **Web:** ekran błędu trasy (`errorElement`) + root ErrorBoundary — Odśwież / Client / Admin zamiast białego ekranu.
-- [ADR 0011](docs/adr/0011-ui-parity-behavior.md) — parity = zachowanie v4; zakaz clone chrome; zakaz disabled-for-inventory w chrome; inventarz wtórny.
 - **Host Restart / Wyłącz:** `POST /api/system/restart|shutdown` + potwierdzenie 2× (jak v4); sieć `GET /api/system/network`.
 - **Schema v5:** `keyMap`, `midiProgramId`, `isTemplate`, `artist` / `genre` / `year`; katalog biblioteki z PC / wzorami / `hasMusicXml`.
 - **Admin parity:** Batch PC, Ostrzeżenia, kolumna PC, Wzory (nowy z wzoru), Eksport/Import `.stagesync.json`, MusicXML upload.
@@ -263,8 +237,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline parity follow-up:** Metadane (tytuł / defaultBpm), Loop (region na linijce + `POST /api/transport/loop` SSOT), Follow playhead, Tekst/Akordy/Cue move/resize/pencil, Kotwice (`scoreBarMap`), scissors content, Client H/B + Tap wokalu + notatki Formy.
 - **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` ([MIGRATION.md](docs/MIGRATION.md)); drop legacy `vl-cd-`* (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
 - **Admin:** Host logi SSE (`/api/system/logs/stream` + Pauza/Wyczyść); Scena **presence** (`GET /api/stage/clients` + WS `client_hello`).
-- [ADR 0010](docs/adr/0010-desktop-shell-tauri.md) — desktop shell Tauri (thin WebView, SSOT na serwerze).
-
 
 ### Zmieniono
 
@@ -294,9 +266,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Client — wybór roli: hover/selected tylko black/amber (`selected`); usunięte tęczowe `--ss-color-role-*` (mapowanie na success/warning/focus-ring).
 - **Rebuild alpha:** ADR 0003 + konstytucja + TODO / parity-blocker / inventarz — inventarz-first i „engineering READY” **odrzucone**; done = PO smoke zachowania; Admin Set + wybór utworów w jednym flow.
 - Client — ekran wyboru roli: duże kafle z ikonami (układ jak v4), hero „Wybierz rolę”, dynamiczny hint i pasek Rozpocznij.
-- ROADMAP: β1 = host (Docker + Tauri + stabilność); β2 = audio + MIDI; α8 = reset/rebuild wg ADR 0011.
 - **Timeline:** ukryte lane’y audio / `+ Audio` / eye-toggle audio do β2 (schema v3 refs bez zmian).
-
 
 ### Naprawiono
 
@@ -318,9 +288,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline chrome (korekta bez decyzji PO):** Odrzuć/Zapisz z powrotem jako **ikony**; metronom + follow w **center** przy transporcie; footer bez dublowania Utwór/Pozycja/Połączenie/Stan (conn-dot + zoom jak v4).
 - **Timeline sterowanie:** Ctrl/Meta+wheel (H zoom), Alt+wheel (V/H), Shift+wheel (scroll H); skróty Space / K / C / ⌘S / Z-fit / ←→ locator.
 
-
 ## [5.0.0-alpha.8](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.7...v5.0.0-alpha.8) - 2026-07-20
-
 
 ### Dodano
 
@@ -333,17 +301,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Metronom:** Web Audio klik sync z transportem; `AudioContext.resume()` na Play / toggle.
 - **Client:** →następny (setlista), fullscreen; **score** stub MusicXML (OSMD wire).
 - **Admin:** filtr + sort utworów; Scena filtr ról w cue; Import UG do zaznaczonego utworu.
-- Scope + plan + QA: [report-scope-alpha8](docs/analysis/reports/report-scope-alpha8.md).
-
 
 ### Zmieniono
 
-- ROADMAP: α8 parity / α9 migrator / β1 bez migratora.
 - Inventarz UI: odhaczone must α8; świadome delty (zoom, Host MIDI, audio tracks, Batch PC bez schematu).
 
-
 ## [5.0.0-alpha.7](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.6...v5.0.0-alpha.7) - 2026-07-20
-
 
 ### Dodano
 
@@ -352,16 +315,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Snap:** Cmd/Ctrl = chwilowy snap off, ewaluacja `metaKey`/`ctrlKey` na każdym `pointermove` ([ADR 0007](docs/adr/0007-snap-grid.md) faza 3).
 - **Schema v4:** lane’y `tekst` / `akordy` / `cue`; upgrade v3→v4; seed puste tablice.
 - **Lane Tekst MVP:** pencil click, select, Delete, inspector tekst; Client karaoke czyta linię z clipu.
-- Scope + plan + QA: [report-scope-alpha7](docs/analysis/reports/report-scope-alpha7.md); ADR 0008 → Zaakceptowany.
-
 
 ### Zmieniono
 
 - Canonical `Project` = v4; Tap / UG / Różdżka / Scissors / Zoom pozostają disabled (cut α7).
 
-
 ## [5.0.0-alpha.6](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.5...v5.0.0-alpha.6) - 2026-07-20
-
 
 ### Dodano
 
@@ -371,14 +330,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline:** lane’y audio read-only z v3 (placeholder bez playback); Stop; prev/next / auto-setlista w headerze.
 - **Scena (minimal):** `POST /api/stage/message` + cue na Client przez WS.
 - **Client:** empty states `grid` / `score` (α7); toast komunikatu sceny.
-- ADR [0009](docs/adr/0009-project-schema-v3.md); uzupełnienie [ADR 0001](docs/adr/0001-storage-layout.md) (`assets/`, `setlist.json`).
-- ADR [0008](docs/adr/0008-timeline-clip-editing.md) — edycja klipów Timeline (Forma α7, audio β1, Smart Tool, no overlap).
-- ADR [0007](docs/adr/0007-snap-grid.md) — uzupełnienie: Cmd/Ctrl = chwilowy snap off.
-- Branch protection na `main`: wymagany status check CI (`lint-types-test-build`) przed merge PR.
-
 
 ## [5.0.0-alpha.5](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.4...v5.0.0-alpha.5) - 2026-07-20
-
 
 ### Dodano
 
@@ -386,15 +339,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client shell:** `useActiveProject`, `DrumsPane`; ikony kart ról na ekranie welcome (parity v4).
 - **Timeline:** tokeny warstw `--ss-z-`*; locator (bursztynowy) + playhead MIDI (cyjan) na linijce w stylu v4.
 
-
 ### Naprawiono
 
 - Timeline: warstwy z-index (playhead nad clipami); eye w ruler dock (bez pustego wiersza ścieżki); menu widoczności przez portal (bez clipu scroll).
 - Timeline: przeciąganie locatora po linijce; typografia numerów taktów (`tabular-nums`, semibold).
 
-
 ## [5.0.0-alpha.4](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.3...v5.0.0-alpha.4) - 2026-07-20
-
 
 ### Dodano
 
@@ -416,7 +366,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [5.0.0-alpha.3](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3) - 2026-07-20
 
-
 ### Dodano
 
 - **ProjectSchema v2** (strict): `forma.clips`, `tempoMap`, `meterMap`, seed Countdown
@@ -431,29 +380,21 @@ Client — jednolinijkowy nagłówek, popovery ustawień (v4-style).
 - **Snap grid (faza 1):** `quantizeTicks` @ shared, domyślnie takt; ADR [0007](docs/adr/0007-snap-grid.md).
 - **Stabilność storage/transport:** H1/H5 engine, H2–H4 library CRUD, `ProjectIdSchema` (UUID).
 - Dokumentacja: [docs/api/](docs/api/README.md) (PUT v2 + transport z map).
-- Dokumentacja DS: [typography](docs/ui/typography.md) / [spacing](docs/ui/spacing.md);
 tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide.
-
 
 ## [5.0.0-alpha.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2) - 2026-07-20
 
-
 ### Dodano
 
-- Higiena repo: `[.env.example](.env.example)` (`PORT`, `STAGESYNC_DATA_DIR`);
 Dependabot (npm + github-actions, weekly); [CODEOWNERS](.github/CODEOWNERS).
-- DX: pin Node 20 (`.nvmrc`, `engines` `>=20 <21`, CI `node-version-file`);
 checklista branch protection (status checks) w CONTRIBUTING; JSDoc `@example`
 na helperach czasu / soft playhead (`@stagesync/shared`).
 - Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
 [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [docs/ROADMAP.md](docs/ROADMAP.md);
 checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.
-- CI GitHub Actions (lint, check-types, test, build) + szablony PR / Issues;
 [LICENSE](LICENSE) (MIT); [SECURITY.md](SECURITY.md).
-- [ADR 0005](docs/adr/0005-domain-axioms.md) — Granica 0 (domain axioms: czas +
 foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
 audio.
-- [ADR 0006](docs/adr/0006-no-json-api.md) — świadome odrzucenie JSON:API;
 indeks ADR + słownik statusów ([docs/adr/README.md](docs/adr/README.md)).
 - Fundament gęstości UI: skala `--ss-space-1…16`, elevation
 (`surface` / `elevated`), `border-muted`, scenic scrollbary, reguła
@@ -484,33 +425,14 @@ helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
 - CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
 `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
 `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
-- Dokumentacja produktowa i reguły agenta po polsku (commity i kod pozostają EN).
-- [docs/STANDARDS.md](docs/STANDARDS.md) — linki do zewnętrznych standardów (bez vendoringu).
-- `[.editorconfig](.editorconfig)` — spójny styl edytora (jak legacy).
-- Workflow gałęzi (trunk-based): docs/chore na `main`; feature z TODO → `feat/*` + PR
 ([CONTRIBUTING.md](CONTRIBUTING.md)).
-- [ADR 0003](docs/adr/0003-ui-direction-booth.md) — black/amber domyślnie; layout nowy;
 inventarz kontrolek = parity v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)).
-- [ADR 0004](docs/adr/0004-updates-docker.md) — aktualizacje przez Docker (bez git-apply).
-
-
-### Zmieniono
-
-- [ADR 0002](docs/adr/0002-timebase-ssot.md) — kanon timebase: integer ticks + PPQ;
-BBT tylko jako widok.
-- [ADR 0003](docs/adr/0003-ui-direction-booth.md) — layout ≠ inventarz; zakaz
-ucinania kontrolek v4 „bo placeholder”.
-- Podział dokumentacji bez dublowania (README = start, TODO = tylko przyszłość,
-ARCHITECTURE = mapa + monorepo, historia = CHANGELOG); usunięte odhaczone day-0 z TODO.
-
 
 ### Usunięto
 
 - Float `absBeat` z `@stagesync/shared` (kanon pozycji = ticks + PPQ).
 
-
 ## [5.0.0-alpha.1](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-alpha.1) - 2026-07-19
-
 
 ### Dodano
 
@@ -520,6 +442,3 @@ ARCHITECTURE = mapa + monorepo, historia = CHANGELOG); usunięte odhaczone day-0
 - `packages/shared` — schematy Zod i czyste helpery czasu
 - `packages/ui` — kanoniczny `Button` (7 stanów) i tokeny `--ss-*`
 - Układ `data/`: `library/`, `projects/`, `logs/` + szablon biblioteki
-- Konstytucja, ADR (storage, timebase SSOT), architektura i TODO
-- Conventional Commits przez commitlint + husky
-

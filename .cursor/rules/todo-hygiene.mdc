@@ -13,7 +13,7 @@ Ten plik = **jak prowadzić `docs/TODO.md`** i jak nie kłamać w docs.
 `docs/TODO.md` trzyma **tylko** aktywne / nadchodzące zadania.
 
 - **Nigdy** nie trzymaj `[x]` ani sekcji „Dostarczone” / „Archiwum” / „Zrobione”.
-- Po domknięciu: wpisz korzyść do [CHANGELOG.md](../../CHANGELOG.md) `[Unreleased]` (styl → [changelog.mdc](changelog.mdc)), potem **usuń** pozycję z TODO.
+- Po domknięciu: jeśli zmiana jest widoczna dla użytkownika/realizatora (złota zasada w [changelog.mdc](changelog.mdc)), wpisz korzyść do [CHANGELOG.md](../../CHANGELOG.md) `[Unreleased]`; potem **usuń** pozycję z TODO. Domknięcie chore/docs/ci/test **bez** wpisu w CHANGELOG.
 - Puste sekcje H3 — nie twórz. Orientacja u góry (Stan, linki ROADMAP/CHANGELOG) — krótka.
 - Kanoniczne klastry otwartych `[ ]` w etapie 5.0:
   1. **Must (Blokery wydania 5.0.0)**
