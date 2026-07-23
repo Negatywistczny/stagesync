@@ -43,4 +43,83 @@ describe("midi-clock", () => {
     expect(midiClockIntervalMs(120)).toBeCloseTo(60_000 / (120 * 24), 5);
     expect(elapsedMsToMidiClocks(1000, 120)).toBeCloseTo(48, 5);
   });
+
+  it.each([
+    { label: "non-positive ppq", fn: () => ticksPerMidiClock(0), re: /multiple/ },
+    { label: "negative ppq", fn: () => ticksPerMidiClock(-24), re: /multiple/ },
+    { label: "non-integer ppq", fn: () => ticksPerMidiClock(24.5), re: /multiple/ },
+  ] as const)("ticksPerMidiClock rejects $label", ({ fn, re }) => {
+    expect(fn).toThrow(re);
+  });
+
+  it.each([
+    { ticks: Number.NaN },
+    { ticks: Number.POSITIVE_INFINITY },
+    { ticks: Number.NEGATIVE_INFINITY },
+  ] as const)("ticksToMidiClockIndex rejects non-finite ticks ($ticks)", ({ ticks }) => {
+    expect(() => ticksToMidiClockIndex(ticks)).toThrow(/ticks must be finite/);
+  });
+
+  it.each([
+    { clockIndex: 1.5 },
+    { clockIndex: Number.NaN },
+    { clockIndex: Number.POSITIVE_INFINITY },
+  ] as const)(
+    "midiClockIndexToTicks rejects non-integer clockIndex ($clockIndex)",
+    ({ clockIndex }) => {
+      expect(() => midiClockIndexToTicks(clockIndex)).toThrow(/integer/);
+    },
+  );
+
+  it.each([
+    { ticks: Number.NaN, ppq: DEFAULT_PPQ, re: /ticks must be finite/ },
+    {
+      ticks: Number.POSITIVE_INFINITY,
+      ppq: DEFAULT_PPQ,
+      re: /ticks must be finite/,
+    },
+    { ticks: 100, ppq: 0, re: /ppq must be a positive integer/ },
+    { ticks: 100, ppq: -960, re: /ppq must be a positive integer/ },
+    { ticks: 100, ppq: 960.5, re: /ppq must be a positive integer/ },
+  ] as const)("ticksToSpp rejects $re", ({ ticks, ppq, re }) => {
+    expect(() => ticksToSpp(ticks, ppq)).toThrow(re);
+  });
+
+  it.each([
+    { spp: -1, ppq: DEFAULT_PPQ, re: /0…16383/ },
+    { spp: 1.5, ppq: DEFAULT_PPQ, re: /0…16383/ },
+    { spp: 4, ppq: 0, re: /ppq must be a positive integer/ },
+    { spp: 4, ppq: 960.5, re: /ppq must be a positive integer/ },
+  ] as const)("sppToTicks rejects invalid spp/ppq", ({ spp, ppq, re }) => {
+    expect(() => sppToTicks(spp, ppq)).toThrow(re);
+  });
+
+  it.each([
+    { bpm: 0 },
+    { bpm: -120 },
+    { bpm: Number.NaN },
+    { bpm: Number.POSITIVE_INFINITY },
+  ] as const)("midiClockIntervalMs rejects bpm=$bpm", ({ bpm }) => {
+    expect(() => midiClockIntervalMs(bpm)).toThrow(/bpm must be a finite number > 0/);
+  });
+
+  it.each([
+    {
+      elapsedMs: Number.NaN,
+      bpm: 120,
+      re: /elapsedMs must be finite/,
+    },
+    {
+      elapsedMs: Number.POSITIVE_INFINITY,
+      bpm: 120,
+      re: /elapsedMs must be finite/,
+    },
+    { elapsedMs: 1000, bpm: 0, re: /bpm must be a finite number > 0/ },
+    { elapsedMs: 1000, bpm: Number.NaN, re: /bpm must be a finite number > 0/ },
+  ] as const)(
+    "elapsedMsToMidiClocks rejects invalid elapsed/bpm",
+    ({ elapsedMs, bpm, re }) => {
+      expect(() => elapsedMsToMidiClocks(elapsedMs, bpm)).toThrow(re);
+    },
+  );
 });
