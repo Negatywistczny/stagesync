@@ -36,7 +36,7 @@ function createMockEasyMidi(options?: {
     send = vi.fn();
     close = vi.fn();
     constructor(public name: string) {
-      lastOutput = this;
+      lastOutput = { send: this.send, close: this.close };
     }
   }
 
