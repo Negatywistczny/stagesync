@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_PPQ } from "./time.js";
 import {
   isLegacyCountdownSection,
+  legacyAssetId,
   legacySongIdToProjectId,
+  mapLegacySubsectionOffsets,
   migrateLegacyDatabase,
   migrateLegacySong,
+  mimeForLegacyAsset,
+  onsetLengthsForStarts,
   parseLegacyMeter,
   type LegacyDatabase,
   type LegacySong,
@@ -281,5 +285,153 @@ describe("migrateLegacyDatabase", () => {
 
   it("throws when songs[] missing", () => {
     expect(() => migrateLegacyDatabase({})).toThrow(/no songs/);
+  });
+
+  it("skips bad songs, maps unknown setlist ids, rejects empty success", () => {
+    const db: LegacyDatabase = {
+      songs: [
+        templateSong(),
+        { id: "bad", title: "Bad", sections: [{ id: 1, name: "A", startAbs: 0 }] },
+      ],
+      setlist: { enabled: true, songIds: ["song-template", "missing-song"] },
+    };
+    const ok = migrateLegacyDatabase(db, {
+      updatedAt: FIXED_AT,
+      idForSong: (id) => (id === "song-template" ? PID : ""),
+    });
+    expect(ok.projects.length).toBeGreaterThanOrEqual(1);
+    expect(ok.warnings.some((w) => /SKIP bad|setlist: unknown/.test(w))).toBe(
+      true,
+    );
+
+    expect(() =>
+      migrateLegacyDatabase(
+        {
+          songs: [
+            { id: "x", title: "Bad", sections: [{ id: 1, name: "A", startAbs: 0 }] },
+          ],
+        },
+        { idForSong: () => "" },
+      ),
+    ).toThrow(/No songs migrated successfully/);
+
+    expect(() => migrateLegacyDatabase(null as unknown as LegacyDatabase)).toThrow(
+      /must be an object/,
+    );
+  });
+});
+
+describe("legacy-migrate asset mime + helpers", () => {
+  it("mimeForLegacyAsset covers musicxml / cover / audio extensions", () => {
+    expect(mimeForLegacyAsset("musicxml", "a.mxl")).toContain("musicxml");
+    expect(mimeForLegacyAsset("musicxml", "a.xml")).toContain("musicxml+xml");
+    expect(mimeForLegacyAsset("cover", "a.webp")).toBe("image/webp");
+    expect(mimeForLegacyAsset("cover", "a.gif")).toBe("image/gif");
+    expect(mimeForLegacyAsset("cover", "a.svg")).toBe("image/svg+xml");
+    expect(mimeForLegacyAsset("cover", "a.bmp")).toBe("image/jpeg");
+    expect(mimeForLegacyAsset("audio", "a.aiff")).toBe("audio/aiff");
+    expect(mimeForLegacyAsset("audio", "a.m4a")).toBe("audio/mp4");
+    expect(mimeForLegacyAsset("audio", "a.flac")).toBe("audio/flac");
+    expect(mimeForLegacyAsset("audio", "a.ogg")).toBe("audio/ogg");
+    expect(mimeForLegacyAsset("audio", "a.xyz")).toBe("application/octet-stream");
+    expect(legacyAssetId(PID, "audio", "x.wav")).toMatch(/^[/0-9a-f-]{36}$/i);
+  });
+
+  it("parseLegacyMeter accepts object shape", () => {
+    expect(parseLegacyMeter({ numerator: 7, denominator: 8 })).toEqual({
+      numerator: 7,
+      denominator: 8,
+    });
+  });
+
+  it("onsetLengthsForStarts and mapLegacySubsectionOffsets", () => {
+    expect(onsetLengthsForStarts([0, 4], 8, 1)).toEqual([4, 4]);
+    const offsets = mapLegacySubsectionOffsets(
+      {
+        id: 1,
+        name: "Verse",
+        startAbs: 0,
+        subsections: [{ startAbs: 4 }, 8, { startAbs: -1 }],
+      },
+      0,
+      16 * DEFAULT_PPQ,
+      DEFAULT_PPQ,
+    );
+    expect(offsets?.length).toBeGreaterThan(0);
+  });
+});
+
+describe("migrateLegacySong rich maps", () => {
+  it("maps tempoMap / meterMap / keyMap / score anchors / cue roles", () => {
+    const song: LegacySong = {
+      ...templateSong(),
+      isTemplate: false,
+      midiProgramId: 12,
+      year: 99,
+      musicxmlFile: "bad.txt",
+      audioFiles: ["extra.aiff"],
+      tempoMap: [{ id: "t1", startAbs: 8, bpm: 140 }],
+      meterMap: [
+        { id: "m1", startAbs: 8, meter: { numerator: 3, denominator: 4 } },
+      ],
+      keyMap: [
+        {
+          id: "k1",
+          startAbs: 8,
+          key: { tonic: "G", mode: "minor" },
+        },
+      ],
+      scoreBarMap: {
+        anchors: [
+          { id: "a1", logicBar: 3, scoreBar: 1 },
+          { songBar: 10, scoreBar: 5 },
+        ],
+      },
+      cues: [
+        {
+          id: "cue-alert",
+          startAbs: 16,
+          text: "Go",
+          lengthBeats: 2,
+          roles: ["vocal", "karaoke", "nope"],
+          priority: "alert",
+        },
+      ],
+      vocal: {
+        lines: [
+          { id: "vl-hi", text: "Hello", startAbs: 8 },
+          { id: "vl-2", text: "World", startAbs: 12 },
+        ],
+      },
+    };
+    const { project, warnings } = migrateLegacySong(song, {
+      projectId: PID,
+      updatedAt: FIXED_AT,
+    });
+    expect(project.tempoMap.some((t) => t.bpm === 140)).toBe(true);
+    expect(project.meterMap.some((m) => m.numerator === 3)).toBe(true);
+    expect(project.keyMap.some((k) => k.key.tonic === "G")).toBe(true);
+    expect(project.scoreBarMap.anchors.length).toBeGreaterThan(0);
+    expect(project.midiProgramId).toBe(12);
+    expect(project.cue.clips.some((c) => c.priority === "alert")).toBe(true);
+    expect(warnings.some((w) => /invalid year|unsupported extension/.test(w))).toBe(
+      true,
+    );
+    expect(project.assets.some((a) => a.originalName === "extra.aiff")).toBe(
+      true,
+    );
+  });
+
+  it("warns when Forma has no sections", () => {
+    const { warnings } = migrateLegacySong(
+      {
+        id: "empty-forma",
+        title: "Empty",
+        sections: [],
+        markers: [{ id: "mk-end", kind: "END", startAbs: 4 }],
+      },
+      { projectId: PID, updatedAt: FIXED_AT },
+    );
+    expect(warnings.some((w) => /no sections/.test(w))).toBe(true);
   });
 });
