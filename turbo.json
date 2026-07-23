@@ -2,6 +2,7 @@
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
   "globalEnv": [
+    "CI",
     "PORT",
     "STAGESYNC_DATA_DIR",
     "STAGESYNC_SEED_DIR",
