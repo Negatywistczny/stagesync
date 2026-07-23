@@ -27,6 +27,7 @@ import {
   setCountdownBars,
 } from "./formaInspector.js";
 import { getSessionSnapMode } from "./timelineGesture.js";
+import { getSessionSnapMode } from "./timelineGesture.js";
 import {
   isAudioSelectionLane,
   type ClipSelectionLane,
@@ -134,11 +135,7 @@ function applyMove(
       Math.min(MAX_COUNTDOWN_BARS, bars + dir),
     );
     if (nextBars === bars) return project;
-    try {
-      return setCountdownBars(project, nextBars);
-    } catch {
-      return project;
-    }
+    return setCountdownBars(project, nextBars);
   }
 
   const step = nudgeStepTicks(project, span.startTicks, mode);
@@ -151,16 +148,14 @@ function applyMove(
   if (contentLane) {
     return commitMoveContentClip(project, contentLane, clipId, newStart, mode);
   }
-  if (isAudioSelectionLane(lane)) {
-    return commitMoveAudioClip(
-      project,
-      audioTrackIdFromLane(lane),
-      clipId,
-      newStart,
-      mode,
-    );
-  }
-  return project;
+  // Remaining selection lanes are audio-* (clipSpan already verified the clip).
+  return commitMoveAudioClip(
+    project,
+    audioTrackIdFromLane(lane as Parameters<typeof audioTrackIdFromLane>[0]),
+    clipId,
+    newStart,
+    mode,
+  );
 }
 
 function applyStretch(
@@ -206,17 +201,15 @@ function applyStretch(
       mode,
     );
   }
-  if (isAudioSelectionLane(lane)) {
-    return commitResizeAudioClip(
-      project,
-      audioTrackIdFromLane(lane),
-      clipId,
-      edge,
-      edgeTicks,
-      mode,
-    );
-  }
-  return project;
+  // Remaining selection lanes are audio-* (clipSpan already verified the clip).
+  return commitResizeAudioClip(
+    project,
+    audioTrackIdFromLane(lane as Parameters<typeof audioTrackIdFromLane>[0]),
+    clipId,
+    edge,
+    edgeTicks,
+    mode,
+  );
 }
 
 /**

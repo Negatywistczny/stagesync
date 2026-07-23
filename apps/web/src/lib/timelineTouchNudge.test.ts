@@ -17,6 +17,7 @@ import {
   nudgeShowsLeftEdge,
   shouldShowTouchNudge,
 } from "./timelineTouchNudge.js";
+import { MAX_COUNTDOWN_BARS, setCountdownBars } from "./formaInspector.js";
 import {
   isDoubleTap,
   pinchZoomFromRatio,
@@ -123,6 +124,81 @@ describe("timelineTouchNudge", () => {
     const next = applyTimelineNudge(p, "forma", cd.id, "move-right", "bar");
     const cdNext = next.forma.clips.find((c) => c.kind === "countdown")!;
     expect(countdownBars(next, cdNext)).toBe(bars + 1);
+  });
+
+  it("nudgeStepTicks covers beat/off/subdivision modes", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    expect(nudgeStepTicks(p, 0, "beat")).toBe(960);
+    expect(nudgeStepTicks(p, 0, "off")).toBe(960);
+    expect(nudgeStepTicks(p, 0, { kind: "subdivision", parts: 4 })).toBe(240);
+  });
+
+  it("moves cue clips and covers left move / stretch-out", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = {
+      ...p,
+      cue: {
+        clips: [
+          {
+            id: "cue-1",
+            startTicks: 7680,
+            lengthTicks: 3840,
+            label: "Go",
+            roles: [],
+            priority: "normal",
+          },
+        ],
+      },
+    };
+    const step = nudgeStepTicks(p, 7680, "bar");
+    p = applyTimelineNudge(p, "cue", "cue-1", "move-left", "bar");
+    expect(p.cue.clips[0]!.startTicks).toBe(7680 - step);
+    const afterMove = p.cue.clips[0]!.startTicks;
+    p = applyTimelineNudge(p, "cue", "cue-1", "stretch-left-out", "bar");
+    expect(p.cue.clips[0]!.startTicks).toBeLessThan(afterMove);
+    expect(p.cue.clips[0]!.lengthTicks).toBeGreaterThan(3840);
+  });
+
+  it("Countdown stretch-right changes length; unknown action no-ops", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
+    const bars = countdownBars(p, cd);
+    const stretched = applyTimelineNudge(
+      p,
+      "forma",
+      cd.id,
+      "stretch-right-out",
+      "bar",
+    );
+    expect(
+      countdownBars(
+        stretched,
+        stretched.forma.clips.find((c) => c.kind === "countdown")!,
+      ),
+    ).toBe(bars + 1);
+    expect(
+      applyTimelineNudge(p, "forma", cd.id, "not-a-nudge" as never, "bar"),
+    ).toBe(p);
+  });
+
+  it("missing clip and unknown lane are no-ops", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    expect(applyTimelineNudge(p, "forma", "missing", "move-right", "bar")).toBe(
+      p,
+    );
+    expect(nudgeShowsLeftEdge(p, "forma", "missing")).toBe(false);
+    expect(
+      applyTimelineNudge(p, "not-a-lane" as never, "x", "move-right", "bar"),
+    ).toBe(p);
+  });
+
+  it("Countdown at max bars move-right is a no-op", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = setCountdownBars(p, MAX_COUNTDOWN_BARS);
+    const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
+    expect(applyTimelineNudge(p, "forma", cd.id, "move-right", "bar")).toEqual(
+      p,
+    );
   });
 });
 
