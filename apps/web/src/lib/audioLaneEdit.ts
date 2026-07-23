@@ -417,6 +417,7 @@ export function setAudioTrackPan(
       if (t.pan === next) return t;
       if (next === undefined) {
         const { pan: _drop, ...rest } = t;
+        void _drop;
         return rest;
       }
       return { ...t, pan: next };
@@ -440,6 +441,7 @@ export function setAudioTrackChannelMode(
       if (next === "stereo") {
         if (t.channelMode == null || t.channelMode === "stereo") return t;
         const { channelMode: _drop, ...rest } = t;
+        void _drop;
         return rest;
       }
       return { ...t, channelMode: next };
@@ -454,6 +456,7 @@ export function setMasterGainDb(project: Project, gainDb: number): Project {
   if (project.masterGainDb === next) return project;
   if (next === undefined) {
     const { masterGainDb: _drop, ...rest } = project;
+    void _drop;
     return rest;
   }
   return { ...project, masterGainDb: next };
@@ -520,6 +523,7 @@ export function setAudioTrackOutput(
       if (next == null) {
         if (t.output == null) return t;
         const { output: _drop, ...rest } = t;
+        void _drop;
         return rest;
       }
       return { ...t, output: next };
@@ -579,6 +583,7 @@ export function setAudioBusPan(
       if (b.pan === next) return b;
       if (next === undefined) {
         const { pan: _drop, ...rest } = b;
+        void _drop;
         return rest;
       }
       return { ...b, pan: next };
@@ -602,6 +607,7 @@ export function setAudioBusChannelMode(
       if (next === "stereo") {
         if (b.channelMode == null || b.channelMode === "stereo") return b;
         const { channelMode: _drop, ...rest } = b;
+        void _drop;
         return rest;
       }
       return { ...b, channelMode: next };
@@ -623,6 +629,7 @@ export function setAudioBusMuted(
       if (!muted) {
         if (b.muted == null) return b;
         const { muted: _drop, ...rest } = b;
+        void _drop;
         return rest;
       }
       return { ...b, muted: true };
@@ -658,6 +665,7 @@ export function removeAudioBus(project: Project, busId: string): Project {
     audioTracks: project.audioTracks.map((t) => {
       if (t.output?.kind === "bus" && t.output.busId === busId) {
         const { output: _drop, ...rest } = t;
+        void _drop;
         return rest;
       }
       return t;

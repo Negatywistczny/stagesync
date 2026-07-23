@@ -64,7 +64,7 @@ export function MixerSurface({
   onEmptyDoubleClick,
 }: MixerSurfaceProps) {
   const trackIds = project.audioTracks.map((t) => t.id);
-  const busses = project.audioBusses ?? [];
+  const busses = useMemo(() => project.audioBusses ?? [], [project.audioBusses]);
   const busIds = busses.map((b) => b.id);
   const meters = useMixerMeterLevels(trackIds, true, { playing, busIds });
   const [metroPrefs, setMetroPrefs] = useState<MetronomePrefs>(() =>

@@ -413,7 +413,6 @@ import {
   IconStop,
   IconTap,
   IconUnchecked,
-  IconWand,
   IconZoomIn,
 } from "./icons.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -861,6 +860,7 @@ export function TimelineShell() {
     onUndo: () => {},
     onRedo: () => {},
     onPlayOrPause: () => {},
+    onStop: async () => {},
     onMetronomeToggle: async () => {},
     onLoopToggle: () => {},
     onTool: (id: ToolId) => {
@@ -1574,7 +1574,7 @@ export function TimelineShell() {
           void playFromSelectionOrLocator();
           return;
         case "stop-home":
-          void onStopClick();
+          void h.onStop();
           return;
         case "cycle-toggle":
           h.onLoopToggle();
@@ -4173,7 +4173,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         if (!draftProject) return;
         const bus = draftProject.audioBusses?.find((b) => b.id === busId);
         commitDraft(
-          setAudioBusMuted(draftProject, busId, !Boolean(bus?.muted)),
+          setAudioBusMuted(draftProject, busId, !bus?.muted),
         );
       },
       onGainChange: (v) => {
@@ -4650,6 +4650,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       if (audioBuffering) return;
       void (state.playing ? onPauseClick() : onPlayClick());
     },
+    onStop: onStopClick,
     onMetronomeToggle,
     onLoopToggle,
     onTool,
