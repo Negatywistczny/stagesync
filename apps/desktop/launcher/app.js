@@ -1,4 +1,4 @@
-/** @typedef {{ name: string, host: string, port: number, version?: string | null, url: string }} DiscoveredHost */
+/** @typedef {{ name: string, host: string, port: number, version?: string | null, url: string, hostname?: string | null, project?: string | null, status?: string | null }} DiscoveredHost */
 /** @typedef {{ url: string, label: string }} RecentHost */
 /** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null }} LauncherBootstrap */
 
@@ -6,6 +6,7 @@ const SCAN_MIN_MS = 900;
 const LABEL_LOCAL_IDLE = "Uruchom lokalny host";
 const LABEL_LOCAL_RETRY = "Ponów uruchomienie";
 const VERSION_MISMATCH_PREFIX = "VERSION_MISMATCH:";
+const NO_PROJECT = "Brak projektu";
 
 const invoke = async (cmd, args = {}) => {
   const core = window.__TAURI__?.core;
@@ -223,23 +224,115 @@ function showManualVersionWarn(found, expected, retryUrl) {
   if (retryUrl) el.manualUrl.value = retryUrl;
 }
 
-function hostButton(host, onClick) {
+/** @param {string | null | undefined} status */
+function transportStatusClass(status) {
+  const raw = String(status || "").toUpperCase();
+  if (raw === "PLAYING") return "is-playing";
+  if (raw === "PAUSED") return "is-paused";
+  return "is-stopped";
+}
+
+/** @param {string | null | undefined} status */
+function transportStatusLabel(status) {
+  const raw = String(status || "").toUpperCase();
+  if (raw === "PLAYING") return "Odtwarzanie";
+  if (raw === "PAUSED") return "Pauza";
+  return "Stop";
+}
+
+/**
+ * Discovered host tile: hostname title, project badge + transport diode, IP · version.
+ * @param {DiscoveredHost} host
+ * @param {() => void} onClick
+ */
+function discoveredHostButton(host, onClick) {
   const li = document.createElement("li");
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = "host";
-  const name = document.createElement("span");
-  name.className = "name";
-  name.textContent = host.name || host.label || host.url;
+  btn.className = "host hostTile";
+
+  const title = document.createElement("span");
+  title.className = "name";
+  title.textContent =
+    (host.hostname && String(host.hostname).trim()) ||
+    host.name ||
+    host.url;
+
+  const mid = document.createElement("span");
+  mid.className = "hostMid";
+
+  const diode = document.createElement("span");
+  diode.className = `statusDiode ${transportStatusClass(host.status)}`;
+  diode.title = transportStatusLabel(host.status);
+  diode.setAttribute("aria-label", transportStatusLabel(host.status));
+
+  const badge = document.createElement("span");
+  badge.className = "projectBadge";
+  badge.textContent =
+    (host.project && String(host.project).trim()) || NO_PROJECT;
+
+  mid.append(diode, badge);
+
   const meta = document.createElement("span");
   meta.className = "meta";
   const bits = [host.url || `http://${host.host}:${host.port}`];
   if (host.version) bits.push(`v${host.version}`);
   meta.textContent = bits.join(" · ");
-  btn.append(name, meta);
+
+  btn.append(title, mid, meta);
   btn.addEventListener("click", onClick);
   li.append(btn);
   return li;
+}
+
+/**
+ * Recent host tile with live online/offline probe diode.
+ * @param {RecentHost} item
+ * @param {() => void} onClick
+ */
+function recentHostButton(item, onClick) {
+  const li = document.createElement("li");
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "host hostTile hostRecent";
+
+  const row = document.createElement("span");
+  row.className = "recentRow";
+
+  const diode = document.createElement("span");
+  diode.className = "healthDiode is-unknown";
+  diode.title = "Sprawdzam…";
+  diode.setAttribute("aria-label", "Sprawdzam dostępność");
+  diode.dataset.url = item.url;
+
+  const name = document.createElement("span");
+  name.className = "name";
+  name.textContent = item.label || item.url;
+
+  row.append(diode, name);
+
+  const meta = document.createElement("span");
+  meta.className = "meta";
+  meta.textContent = item.url;
+
+  btn.append(row, meta);
+  btn.addEventListener("click", onClick);
+  li.append(btn);
+  return { li, diode };
+}
+
+/** @param {HTMLElement} diode @param {boolean} online */
+function setHealthDiode(diode, online) {
+  diode.classList.remove("is-unknown", "is-online", "is-offline");
+  if (online) {
+    diode.classList.add("is-online");
+    diode.title = "Online";
+    diode.setAttribute("aria-label", "Online");
+  } else {
+    diode.classList.add("is-offline");
+    diode.title = "Offline";
+    diode.setAttribute("aria-label", "Offline");
+  }
 }
 
 async function refreshDiscovery() {
@@ -267,7 +360,7 @@ async function refreshDiscovery() {
     }
     for (const host of hosts) {
       el.hostList.append(
-        hostButton(host, () => connectRemote(host.url)),
+        discoveredHostButton(host, () => connectRemote(host.url)),
       );
     }
   } catch (err) {
@@ -293,14 +386,23 @@ async function refreshRecent() {
       return;
     }
     el.recentBlock.hidden = false;
+    /** @type {{ url: string, diode: HTMLElement }[]} */
+    const probes = [];
     for (const item of recent) {
-      el.recentList.append(
-        hostButton(
-          { name: item.label, url: item.url, host: "", port: 0 },
-          () => connectRemote(item.url),
-        ),
-      );
+      const { li, diode } = recentHostButton(item, () => connectRemote(item.url));
+      el.recentList.append(li);
+      probes.push({ url: item.url, diode });
     }
+    await Promise.all(
+      probes.map(async ({ url, diode }) => {
+        try {
+          const online = await invoke("probe_host_health", { url });
+          setHealthDiode(diode, Boolean(online));
+        } catch {
+          setHealthDiode(diode, false);
+        }
+      }),
+    );
   } catch {
     el.recentBlock.hidden = true;
   }

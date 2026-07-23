@@ -23,10 +23,23 @@ import {
   setAudioClipLoop,
   setAudioClipMuted,
   setAudioClipTrimMs,
+  setAudioTrackColor,
   setAudioTrackGainDb,
+  setAudioTrackIcon,
+  setAudioTrackOutput,
   setAudioTrackMuted,
+  setAudioTrackPan,
+  setAudioTrackChannelMode,
   setAudioTracksMuted,
   setAudioTrackName,
+  addAudioBus,
+  removeAudioBus,
+  setMasterGainDb,
+  splitAudioClipAt,
+  joinAdjacentAudioClips,
+  toggleAudioClipMute,
+  gainDbFromPointerDelta,
+  GAIN_TOOL_DB_PER_PX,
 } from "./audioLaneEdit.js";
 import { audioLaneId } from "./timelineTracks.js";
 import type {
@@ -286,6 +299,22 @@ describe("audioLaneEdit", () => {
     p = setAudioTrackGainDb(p, trackId, -3);
     expect(p.audioTracks[0]!.gainDb).toBe(-3);
 
+    p = setAudioTrackPan(p, trackId, -0.5);
+    expect(p.audioTracks[0]!.pan).toBe(-0.5);
+    p = setAudioTrackPan(p, trackId, 0);
+    expect(p.audioTracks[0]!.pan).toBeUndefined();
+
+    expect(p.audioTracks[0]!.channelMode).toBe("stereo");
+    p = setAudioTrackChannelMode(p, trackId, "mono");
+    expect(p.audioTracks[0]!.channelMode).toBe("mono");
+    p = setAudioTrackChannelMode(p, trackId, "stereo");
+    expect(p.audioTracks[0]!.channelMode).toBeUndefined();
+
+    p = setMasterGainDb(p, -6);
+    expect(p.masterGainDb).toBe(-6);
+    p = setMasterGainDb(p, 0);
+    expect(p.masterGainDb).toBeUndefined();
+
     p = setAudioTrackName(p, trackId, "  Lead  ");
     expect(p.audioTracks[0]!.name).toBe("Lead");
     expect(setAudioTrackName(p, trackId, "   ")).toBe(p);
@@ -375,6 +404,8 @@ describe("audioLaneEdit", () => {
     let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
     const first = addAudioTrack(p);
     expect(first.project.audioTracks[0]!.name).toBe("Audio 1");
+    expect(first.project.audioTracks[0]!.color).toBeTruthy();
+    expect(first.project.audioTracks[0]!.icon).toBe("mic");
     p = addAudioTrack(p, "  Named  ").project;
     expect(p.audioTracks[0]!.name).toBe("Named");
     for (let i = p.audioTracks.length; i < MAX_AUDIO_TRACKS; i++) {
@@ -382,6 +413,36 @@ describe("audioLaneEdit", () => {
     }
     expect(p.audioTracks).toHaveLength(MAX_AUDIO_TRACKS);
     expect(() => addAudioTrack(p)).toThrow(RangeError);
+  });
+
+  it("setAudioTrackColor / setAudioTrackIcon persist closed palette", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    const { project, trackId } = addAudioTrack(p, "Vox");
+    p = setAudioTrackColor(project, trackId, "#E74C3C");
+    expect(p.audioTracks[0]!.color).toBe("#E74C3C");
+    p = setAudioTrackIcon(p, trackId, "vocal");
+    expect(p.audioTracks[0]!.icon).toBe("vocal");
+  });
+
+  it("addAudioBus / route track / removeAudioBus reassigns to Master", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    const track = addAudioTrack(p, "Gtr");
+    p = track.project;
+    const bus = addAudioBus(p);
+    p = bus.project;
+    expect(p.audioBusses).toHaveLength(1);
+    expect(p.audioBusses![0]!.name).toBe("Bus 1");
+    p = setAudioTrackOutput(p, track.trackId, {
+      kind: "bus",
+      busId: bus.busId,
+    });
+    expect(p.audioTracks[0]!.output).toEqual({
+      kind: "bus",
+      busId: bus.busId,
+    });
+    p = removeAudioBus(p, bus.busId);
+    expect(p.audioBusses ?? []).toHaveLength(0);
+    expect(p.audioTracks[0]!.output).toBeUndefined();
   });
 
   it("removeAudioTrack drops track and its clips; no-op missing", () => {
@@ -724,5 +785,71 @@ describe("audioLaneEdit", () => {
       false,
     );
     expect(clampEnd.lengthTicks).toBe(1);
+  });
+});
+
+describe("split / join / mute / gain tools", () => {
+  it("splitAudioClipAt halves a clip and preserves source trims", () => {
+    const p = projectWithAudio();
+    const clip = p.audioClips[0]!;
+    const mid = clip.startTicks + Math.floor(clip.lengthTicks / 2);
+    const next = splitAudioClipAt(p, clip.id, mid);
+    expect(next.audioClips).toHaveLength(2);
+    const [left, right] = [...next.audioClips].sort(
+      (a, b) => a.startTicks - b.startTicks,
+    );
+    expect(left!.lengthTicks + right!.lengthTicks).toBe(clip.lengthTicks);
+    expect(right!.startTicks).toBe(mid);
+    expect(splitAudioClipAt(p, clip.id, clip.startTicks)).toBe(p);
+    expect(splitAudioClipAt(p, "missing", mid)).toBe(p);
+  });
+
+  it("joinAdjacentAudioClips merges split halves; rejects non-contiguous", () => {
+    const p = projectWithAudio();
+    const clip = p.audioClips[0]!;
+    const mid = clip.startTicks + Math.floor(clip.lengthTicks / 2);
+    const split = splitAudioClipAt(p, clip.id, mid);
+    expect(split.audioClips).toHaveLength(2);
+    const joined = joinAdjacentAudioClips(split, split.audioClips[0]!.id);
+    expect(joined.audioClips).toHaveLength(1);
+    expect(joined.audioClips[0]!.lengthTicks).toBe(clip.lengthTicks);
+    const abut = abutProject();
+    expect(joinAdjacentAudioClips(abut, "left")).toBe(abut);
+    expect(joinAdjacentAudioClips(p, "missing")).toBe(p);
+  });
+
+  it("toggleAudioClipMute and gainDbFromPointerDelta", () => {
+    const p = projectWithAudio();
+    const muted = toggleAudioClipMute(p, "clip-1");
+    expect(muted.audioClips[0]!.muted).toBe(true);
+    expect(toggleAudioClipMute(muted, "clip-1").audioClips[0]!.muted).toBeFalsy();
+    expect(gainDbFromPointerDelta(0, 100, 80)).toBeCloseTo(
+      20 * GAIN_TOOL_DB_PER_PX,
+    );
+    expect(gainDbFromPointerDelta(0, 0, -10_000)).toBe(24);
+    expect(gainDbFromPointerDelta(0, 0, 10_000)).toBe(-60);
+  });
+
+  it("gain gesture preview + commit", () => {
+    const p = projectWithAudio();
+    const lane = audioLaneId(p.audioTracks[0]!.id);
+    const session = baseSession({
+      kind: "gain",
+      originGainDb: 0,
+      originClientY: 100,
+      lane,
+    });
+    const preview = previewAudioFromSession(p, session, 0, false, false, 60);
+    expect(preview.kind).toBe("gain");
+    expect(preview.gainDb).toBeCloseTo(40 * GAIN_TOOL_DB_PER_PX);
+    const next = commitAudioGesture(
+      p,
+      lane,
+      session,
+      preview,
+      false,
+      false,
+    );
+    expect(next.audioClips[0]!.gainDb).toBeCloseTo(40 * GAIN_TOOL_DB_PER_PX);
   });
 });

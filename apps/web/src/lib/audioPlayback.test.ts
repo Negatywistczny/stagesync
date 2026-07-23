@@ -13,6 +13,50 @@ import {
   syncAudioPlayback,
 } from "./audioPlayback.js";
 
+function mockAudioParam(value = 1) {
+  return {
+    value,
+    cancelScheduledValues: vi.fn(),
+    setValueAtTime: vi.fn(),
+    linearRampToValueAtTime: vi.fn(),
+  };
+}
+
+function mockConnectable() {
+  return { connect: vi.fn(), disconnect: vi.fn() };
+}
+
+/** Minimal WebAudio graph stubs for sync / bus wiring. */
+function mockAudioContext(
+  overrides: Record<string, unknown> = {},
+): AudioContext {
+  return {
+    state: "running",
+    currentTime: 0,
+    destination: {},
+    createBufferSource: vi.fn(),
+    createGain: vi.fn(() => ({
+      ...mockConnectable(),
+      gain: mockAudioParam(1),
+    })),
+    createStereoPanner: vi.fn(() => ({
+      ...mockConnectable(),
+      pan: mockAudioParam(0),
+    })),
+    createAnalyser: vi.fn(() => ({
+      ...mockConnectable(),
+      fftSize: 256,
+      smoothingTimeConstant: 0.35,
+      getFloatTimeDomainData: vi.fn((buf: Float32Array) => {
+        buf.fill(0);
+      }),
+    })),
+    createChannelSplitter: vi.fn(() => mockConnectable()),
+    createChannelMerger: vi.fn(() => mockConnectable()),
+    ...overrides,
+  } as unknown as AudioContext;
+}
+
 function projectWithClipUnderPlayhead() {
   const project = createProjectV5Seed("p1", "Test", "2026-07-22T00:00:00.000Z");
   return {
@@ -66,15 +110,11 @@ describe("audioPlayback helpers", () => {
   });
 
   it("suppress blocks re-schedule while playing flag still true (#352)", () => {
-    const ctx = {
-      state: "running",
-      currentTime: 0,
-      destination: {},
+    const ctx = mockAudioContext({
       createBufferSource: vi.fn(() => {
         throw new Error("must not schedule while suppressed");
       }),
-      createGain: vi.fn(),
-    } as unknown as AudioContext;
+    });
 
     suppressAudioPlayback();
     expect(getAudioPlaybackDebugState().suppressed).toBe(true);
@@ -102,15 +142,11 @@ describe("audioPlayback helpers", () => {
   });
 
   it("sync with playing false does not schedule", () => {
-    const ctx = {
-      state: "running",
-      currentTime: 0,
-      destination: {},
+    const ctx = mockAudioContext({
       createBufferSource: vi.fn(() => {
         throw new Error("must not schedule when paused");
       }),
-      createGain: vi.fn(),
-    } as unknown as AudioContext;
+    });
 
     const project = createProjectV5Seed("p1", "Test", "2026-07-22T00:00:00.000Z");
     syncAudioPlayback(
@@ -124,14 +160,9 @@ describe("audioPlayback helpers", () => {
 
   it("ensureAudioBuffered decodes clips under playhead (#365)", async () => {
     const fakeBuf = { duration: 1 } as AudioBuffer;
-    const ctx = {
-      state: "running",
-      currentTime: 0,
-      destination: {},
+    const ctx = mockAudioContext({
       decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(),
-      createGain: vi.fn(),
-    } as unknown as AudioContext;
+    });
 
     vi.stubGlobal(
       "fetch",
@@ -149,16 +180,11 @@ describe("audioPlayback helpers", () => {
   });
 
   it("ensureAudioBuffered marks decode failures (#365)", async () => {
-    const ctx = {
-      state: "running",
-      currentTime: 0,
-      destination: {},
+    const ctx = mockAudioContext({
       decodeAudioData: vi.fn(async () => {
         throw new Error("bad wav");
       }),
-      createBufferSource: vi.fn(),
-      createGain: vi.fn(),
-    } as unknown as AudioContext;
+    });
 
     vi.stubGlobal(
       "fetch",
@@ -177,12 +203,11 @@ describe("audioPlayback helpers", () => {
   });
 
   it("clearAudioBufferCache drops failed markers for project", async () => {
-    const ctx = {
-      state: "running",
+    const ctx = mockAudioContext({
       decodeAudioData: vi.fn(async () => {
         throw new Error("bad");
       }),
-    } as unknown as AudioContext;
+    });
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
@@ -198,34 +223,43 @@ describe("audioPlayback helpers", () => {
   });
 
   it("schedules fade ramps and loop window on BufferSource", async () => {
-    const fakeBuf = { duration: 2 } as AudioBuffer;
-    const gainParam = {
-      cancelScheduledValues: vi.fn(),
-      setValueAtTime: vi.fn(),
-      linearRampToValueAtTime: vi.fn(),
-      value: 1,
-    };
+    const fakeBuf = { duration: 2, numberOfChannels: 2 } as AudioBuffer;
+    const gainParam = mockAudioParam(1);
     const source = {
       buffer: null as AudioBuffer | null,
       loop: false,
       loopStart: 0,
       loopEnd: 0,
       connect: vi.fn(),
+      disconnect: vi.fn(),
       start: vi.fn(),
+      stop: vi.fn(),
       onended: null as (() => void) | null,
     };
-    const gainNode = {
+    const clipGainNode = {
       gain: gainParam,
       connect: vi.fn(),
+      disconnect: vi.fn(),
     };
-    const ctx = {
-      state: "running",
+    const busGains: unknown[] = [];
+    const ctx = mockAudioContext({
       currentTime: 10,
-      destination: {},
       decodeAudioData: vi.fn(async () => fakeBuf),
       createBufferSource: vi.fn(() => source),
-      createGain: vi.fn(() => gainNode),
-    } as unknown as AudioContext;
+      createGain: vi.fn(() => {
+        const node = {
+          gain: mockAudioParam(1),
+          connect: vi.fn(),
+          disconnect: vi.fn(),
+        };
+        busGains.push(node);
+        // Master(1) + stereo track (gain, L, R, route) = 5; clip envelope next.
+        if (busGains.length > 5) {
+          return clipGainNode;
+        }
+        return node;
+      }),
+    });
 
     vi.stubGlobal(
       "fetch",
@@ -280,5 +314,64 @@ describe("audioPlayback helpers", () => {
     expect(gainParam.linearRampToValueAtTime).toHaveBeenCalled();
     expect(source.start).toHaveBeenCalledOnce();
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+    // Default stereo track → True Balance (splitter + merger), not StereoPanner.
+    expect(ctx.createChannelSplitter).toHaveBeenCalled();
+    expect(ctx.createChannelMerger).toHaveBeenCalled();
+    expect(ctx.createStereoPanner).not.toHaveBeenCalled();
+  });
+
+  it("mono track uses StereoPanner; stereo file gets −3 dB downmix", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      loop: false,
+      loopStart: 0,
+      loopEnd: 0,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const project = {
+      ...projectWithClipUnderPlayhead(),
+      audioTracks: [
+        {
+          id: "tr-1",
+          name: "A1",
+          muted: false,
+          gainDb: 0,
+          channelMode: "mono" as const,
+        },
+      ],
+    };
+
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+
+    expect(ctx.createStereoPanner).toHaveBeenCalled();
+    // Master meter split + stereo→mono downmix splitter.
+    expect(ctx.createChannelSplitter).toHaveBeenCalled();
+    expect(
+      (ctx.createChannelSplitter as ReturnType<typeof vi.fn>).mock.calls
+        .length,
+    ).toBeGreaterThanOrEqual(2);
+    expect(source.start).toHaveBeenCalledOnce();
   });
 });

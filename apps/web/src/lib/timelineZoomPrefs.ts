@@ -9,8 +9,9 @@ export const TIMELINE_ZOOM_KEY = "stagesync-timeline-zoom";
 
 export const ZOOM_H_MIN = 24;
 export const ZOOM_H_MAX = 160;
-export const ZOOM_UI_MIN = 50;
-export const ZOOM_UI_MAX = 150;
+/** UI scale % — 0.85–1.25 keeps Timeline chrome from exploding layout. */
+export const ZOOM_UI_MIN = 85;
+export const ZOOM_UI_MAX = 125;
 export const DEFAULT_ZOOM_UI = 100;
 
 export type TimelineZoomPrefs = {

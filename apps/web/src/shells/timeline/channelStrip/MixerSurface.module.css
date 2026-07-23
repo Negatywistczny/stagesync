@@ -4,16 +4,136 @@
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
-  overflow: auto;
-  padding: var(--ss-space-4);
-  background: var(--ss-color-bg);
+  overflow: hidden;
+  padding: var(--ss-space-3);
+  background: color-mix(in srgb, var(--ss-color-bg) 92%, var(--ss-color-surface));
+}
+
+.bank {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  gap: 0;
+}
+
+/* Audio + Busy: one H-scroll pane; strips never squash under Click/Master. */
+.scrollBank {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.zone {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
+  padding-right: var(--ss-space-2);
+  margin-right: var(--ss-space-2);
+  border-right: 2px solid var(--ss-color-border);
+}
+
+.busZone {
+  /* Same content-sized flex as Audio — no max-width hole / squeeze. */
+  flex: 0 0 auto;
+  max-width: none;
+  /* Separator to pinned Click/Master is `.masterRail` left border. */
+  border-right: none;
+  margin-right: 0;
+}
+
+.zoneHead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+  margin-bottom: var(--ss-space-2);
+  min-height: var(--ss-space-8);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.zoneTitle {
+  flex: 0 0 auto;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+  color: var(--ss-color-text-muted);
+}
+
+.addBusBtn {
+  margin: 0;
+  padding: 1px var(--ss-space-1);
+  max-width: calc(var(--ss-space-16) + var(--ss-space-4));
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-primary) 18%, var(--ss-color-bg));
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.addBusBtn:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .addBusBtn:hover {
+    border-color: var(--ss-color-primary);
+    background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-bg));
+  }
 }
 
 .strips {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
   align-items: stretch;
-  gap: var(--ss-space-3);
+  gap: var(--ss-space-2);
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  /* H-scroll lives on `.scrollBank` so Audio|Busy stay adjacent while scrolling. */
+  overflow: visible;
+  padding-bottom: var(--ss-space-1);
+}
+
+/* Pinned Click + Master — sibling of scroll pane (opaque over scrolled strips). */
+.masterRail {
+  display: flex;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  align-items: stretch;
+  gap: var(--ss-space-2);
+  padding-left: var(--ss-space-2);
+  margin-left: 0;
+  border-left: 2px solid var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-bg) 92%, var(--ss-color-surface));
+  z-index: var(--ss-z-sticky);
 }
 
 .empty {
@@ -21,4 +141,6 @@
   color: var(--ss-color-text-muted);
   font-size: var(--ss-text-sm);
   line-height: var(--ss-leading-normal);
+  align-self: center;
+  white-space: nowrap;
 }

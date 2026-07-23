@@ -18,6 +18,7 @@ import {
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
 import {
   applyCountdownLengthFromBoundary,
+  deleteFormaSubsection,
   setCountdownBars,
 } from "./formaInspector.js";
 import {
@@ -153,6 +154,62 @@ export function splitFormaClipAt(
   mode: SnapMode = "bar",
 ): Project {
   return insertFormaSubsectionAt(project, clipId, atTicks, mode);
+}
+
+/**
+ * Join tool on Forma: remove nearest subsection boundary when present;
+ * otherwise merge abutting section clips (keep left name / id).
+ */
+export function joinFormaAtClick(
+  project: Project,
+  clipId: string,
+  atTicks: number,
+): Project {
+  const clip = project.forma.clips.find((c) => c.id === clipId);
+  if (!clip || clip.kind !== "section") return project;
+
+  const offsets = clip.subsections ?? [];
+  if (offsets.length > 0) {
+    const rel = atTicks - clip.startTicks;
+    let bestBand = 1;
+    let bestDist = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < offsets.length; i++) {
+      const d = Math.abs(offsets[i]! - rel);
+      if (d < bestDist) {
+        bestDist = d;
+        bestBand = i + 1;
+      }
+    }
+    const removed = deleteFormaSubsection(project, clipId, bestBand);
+    if (removed) return removed.project;
+  }
+
+  const sections = project.forma.clips
+    .filter((c) => c.kind === "section")
+    .sort((a, b) => a.startTicks - b.startTicks);
+  const idx = sections.findIndex((c) => c.id === clipId);
+  if (idx < 0) return project;
+  const cur = sections[idx]!;
+  const next = sections[idx + 1];
+  const prev = sections[idx - 1];
+  let left = cur;
+  let right: FormaClip | null = null;
+  if (next && next.startTicks === cur.startTicks + cur.lengthTicks) {
+    right = next;
+  } else if (prev && cur.startTicks === prev.startTicks + prev.lengthTicks) {
+    left = prev;
+    right = cur;
+  }
+  if (!right) return project;
+  const merged: FormaClip = {
+    ...left,
+    lengthTicks: left.lengthTicks + right.lengthTicks,
+    subsections: undefined,
+  };
+  const clips = project.forma.clips
+    .filter((c) => c.id !== left.id && c.id !== right!.id)
+    .concat(merged);
+  return { ...project, forma: { clips } };
 }
 
 export function commitPencilSpan(

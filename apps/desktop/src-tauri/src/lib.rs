@@ -899,9 +899,18 @@ fn parse_health_version(resp: &str) -> Option<String> {
 
 /// `Ok(None)` = TCP up but not HTTP 200 yet; `Ok(Some)` = healthy StageSync.
 pub(crate) async fn check_health_at(host: &str, port: u16) -> Result<Option<HealthOk>, String> {
+    check_health_at_timeout(host, port, Duration::from_secs(3)).await
+}
+
+/// Same as [`check_health_at`] with a custom per-step timeout (connect / write / read).
+pub(crate) async fn check_health_at_timeout(
+    host: &str,
+    port: u16,
+    timeout: Duration,
+) -> Result<Option<HealthOk>, String> {
     let addr = format!("{host}:{port}");
     let connect = TcpStream::connect(&addr);
-    let mut stream = tokio::time::timeout(Duration::from_secs(3), connect)
+    let mut stream = tokio::time::timeout(timeout, connect)
         .await
         .map_err(|_| format!("timeout połączenia z {addr}"))?
         .map_err(|e| format!("connect failed: {e}"))?;
@@ -909,13 +918,13 @@ pub(crate) async fn check_health_at(host: &str, port: u16) -> Result<Option<Heal
     let req = format!(
         "GET /api/health HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
     );
-    tokio::time::timeout(Duration::from_secs(3), stream.write_all(req.as_bytes()))
+    tokio::time::timeout(timeout, stream.write_all(req.as_bytes()))
         .await
         .map_err(|_| "timeout zapisu health".to_string())?
         .map_err(|e| format!("write failed: {e}"))?;
 
     let mut buf = Vec::new();
-    tokio::time::timeout(Duration::from_secs(3), stream.read_to_end(&mut buf))
+    tokio::time::timeout(timeout, stream.read_to_end(&mut buf))
         .await
         .map_err(|_| "timeout odczytu health".to_string())?
         .map_err(|e| format!("read failed: {e}"))?;
@@ -979,6 +988,7 @@ pub fn run() {
             launcher::get_sidecar_log_tail,
             launcher::cancel_local_host,
             launcher::discover_lan_hosts,
+            launcher::probe_host_health,
             launcher::connect_remote_host,
             launcher::start_local_host,
             launcher::return_to_launcher,

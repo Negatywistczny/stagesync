@@ -46,16 +46,18 @@
 .toolbarRight,
 .transport {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--ss-space-2);
+  gap: var(--ss-space-1);
 }
 
 .transportExtras {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--ss-space-2);
+  gap: var(--ss-space-1);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .songClusterExtra {
@@ -138,8 +140,9 @@
 }
 
 .songPicker {
-  min-width: 9rem;
+  min-width: 0;
   max-width: 16rem;
+  flex: 1 1 9rem;
   padding: var(--ss-space-2) var(--ss-space-3);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
@@ -170,6 +173,7 @@
 
 .playBtn {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: var(--ss-touch-min);
@@ -233,12 +237,14 @@
   /*
    * Equal side tracks so toolbarCenter shares the shell centerline
    * (asymmetric tools vs song must not shift the middle).
+   * Single row only — clusters scroll horizontally instead of wrapping.
    */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas: "tools center song";
   align-items: center;
-  gap: var(--ss-space-3) var(--ss-space-5);
-  padding: var(--ss-space-2) var(--ss-space-5);
+  gap: var(--ss-space-2) var(--ss-space-3);
+  min-height: var(--ss-space-12);
+  padding: var(--ss-space-1) var(--ss-space-4);
   border-bottom: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
   backdrop-filter: blur(10px);
@@ -249,6 +255,13 @@
   justify-self: start;
   position: relative;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.toolBar::-webkit-scrollbar {
+  display: none;
 }
 
 .toolbarCenter {
@@ -258,6 +271,32 @@
   justify-self: center;
   flex-wrap: nowrap;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.toolbarCenter::-webkit-scrollbar {
+  display: none;
+}
+
+.transport {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.transport::-webkit-scrollbar {
+  display: none;
+}
+
+.transportExtras {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.transportExtras::-webkit-scrollbar {
+  display: none;
 }
 
 .songCluster {
@@ -266,11 +305,18 @@
   z-index: 1;
   justify-self: end;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--ss-space-2);
+  gap: var(--ss-space-1);
   min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.songCluster::-webkit-scrollbar {
+  display: none;
 }
 
 .toolbarDirty {
@@ -286,8 +332,14 @@
 @media (max-width: 768px) {
   .toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--ss-space-2) var(--ss-space-3);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .toolbar::-webkit-scrollbar {
+    display: none;
   }
 
   .toolBar {
@@ -304,7 +356,7 @@
   }
 
   .songCluster {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
     justify-content: flex-end;
   }
@@ -408,7 +460,9 @@
 
 .bbt {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
+  justify-content: center;
   margin: 0 var(--ss-space-1);
   padding: 0 var(--ss-space-1);
   font-variant-numeric: tabular-nums;
@@ -416,7 +470,9 @@
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-compact);
   letter-spacing: var(--ss-tracking-tight);
-  min-width: var(--ss-space-12);
+  /* Worst-case BBT `9999.9` (6ch) + horizontal padding under border-box */
+  min-width: calc(6ch + 2 * var(--ss-space-1));
+  white-space: nowrap;
   color: var(--ss-color-text);
 }
 
@@ -506,10 +562,20 @@
   display: grid;
   grid-template-columns: 1fr minmax(200px, 240px);
   min-height: 0;
+  overflow: hidden;
   /* Zoom UI: unitless multiplier on chrome (v4 `--tl-ui-scale`). */
   --tl-zoom-ui: 1;
   --tl-row-h: var(--ss-space-10);
   font-size: calc(var(--ss-text-md) * var(--tl-zoom-ui));
+}
+
+/* Bare I / Właściwości — collapse inspector column (desktop + tablet). */
+.mainInspectorHidden {
+  grid-template-columns: 1fr;
+}
+
+.mainInspectorHidden .inspector {
+  display: none;
 }
 
 .timelinePane {
@@ -517,17 +583,18 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .canvasScroll {
   overflow: auto;
   min-height: 0;
-  flex: 1;
+  flex: 1 1 auto;
 }
 
 .canvasInner {
   /*
-   * Compact dock: name+S/M on row 1, fader on row 2 — never widen for tools.
+   * Dock width driven from JS (`--tl-dock-w` inline) — fallback matches DEFAULT_DOCK_WIDTH_PX.
    * Solo yellow is brighter than primary amber (#fbbf24) — classic DAW S affordance.
    */
   --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
@@ -669,6 +736,37 @@
   border-right: 1px solid var(--ss-color-border);
 }
 
+/* Edge hit target on ruler corner (pairs with sticky `.dockWidthResize` on tracks). */
+.dockWidthResizeEdge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--ss-space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+  appearance: none;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  .dockWidthResizeEdge:hover {
+    background: color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  }
+}
+
+.dockWidthResizing .dockWidthResizeEdge {
+  background: color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
+}
+
+.shell[data-tl-tier="mobile"] .dockWidthResizeEdge {
+  display: none;
+}
+
 .ruler {
   position: relative;
   display: flex;
@@ -789,9 +887,13 @@
 /*
  * Continuous sticky dock column (v4 `.timeline-dock` solid elevated rail).
  * Per-cell `.dockCell` backgrounds alone leave hairline seams under H-scroll /
- * fractional zoom where lanes peek through. Sticky + padding/neg-margin paints
- * full content height without taking flex space (avoids scrollHeight blow-up
- * vs a literal tall box). Bar-grid stays in `.laneOverlay` (left: dock-w).
+ * fractional zoom where lanes peek through.
+ *
+ * Height is synced to `.trackRows` via `--tl-track-rows-h` (ResizeObserver in
+ * TimelineShell). Negative margin cancels flex space. Do NOT use a huge
+ * padding-bottom “paint” — that still inflates the scrollport’s scrollHeight
+ * (WebKit/Tauri), so the canvas could scroll far past the last track.
+ * Bar-grid stays in `.laneOverlay` (left: dock-w).
  */
 .dockColumnRail {
   position: sticky;
@@ -800,10 +902,10 @@
   flex: 0 0 auto;
   align-self: flex-start;
   width: var(--tl-dock-w);
-  height: 0;
-  margin: 0 0 -100000px;
-  padding: 0 0 100000px;
-  box-sizing: content-box;
+  height: var(--tl-track-rows-h, 0px);
+  margin: 0 0 calc(0px - var(--tl-track-rows-h, 0px));
+  padding: 0;
+  box-sizing: border-box;
   pointer-events: none;
   background-color: var(--ss-color-surface);
   background-clip: padding-box;
@@ -917,7 +1019,8 @@
 
 .marquee {
   position: absolute;
-  z-index: var(--ss-z-overlay);
+  /* Above clips/grid; below sticky dock so selection ghost never covers rail. */
+  z-index: var(--ss-z-playhead);
   pointer-events: none;
   border: 1px solid var(--ss-color-selected-border);
   background: color-mix(in srgb, var(--ss-color-primary) 18%, transparent);
@@ -973,9 +1076,6 @@
   left: 0;
   /* Above grid (--ss-z-grid) and playhead/locator (--ss-z-playhead). */
   z-index: var(--ss-z-sticky);
-  /* Width CQ for channel-strip fader hide (see ChannelStripControls). */
-  container-type: inline-size;
-  container-name: tl-dock;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -984,7 +1084,10 @@
   min-height: var(--tl-row-h);
   max-width: var(--tl-dock-w);
   box-sizing: border-box;
-  padding: 0 calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  /* pl clears yellow selection accent (inset 4px) so label/icon never sit under it. */
+  padding-block: 0;
+  padding-inline: calc(var(--ss-space-3) * var(--tl-zoom-ui))
+    calc(var(--ss-space-2) * var(--tl-zoom-ui));
   overflow: hidden;
   border-right: 1px solid var(--ss-color-border);
   /* Opaque — no opacity on this node (see .dockMuted); v4 dock was solid. */
@@ -1006,6 +1109,7 @@
   justify-content: center;
   gap: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   padding-block: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  overflow: hidden;
 }
 
 .dockAudioRow {
@@ -1027,6 +1131,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* Avoid WKWebView Look Up / Translate on dock text. */
+  user-select: none;
   /* Audio dock: MiddleTruncateLabel replaces end-ellipsis with middle cut. */
 }
 
@@ -1094,6 +1200,54 @@
   display: none;
 }
 
+/*
+ * Dock column width splitter — sticky hit target on the dock/lane seam
+ * (same measured-height + neg-margin contract as `.dockColumnRail`).
+ */
+.dockWidthResize {
+  position: sticky;
+  left: calc(var(--tl-dock-w) - var(--ss-space-1));
+  z-index: calc(var(--ss-z-sticky) + 3);
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: var(--ss-space-2);
+  height: var(--tl-track-rows-h, 0px);
+  margin: 0 0 calc(0px - var(--tl-track-rows-h, 0px));
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+  appearance: none;
+  pointer-events: auto;
+}
+
+.dockWidthResize:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .dockWidthResize:hover {
+    background: color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  }
+}
+
+.dockWidthResizing .dockWidthResize {
+  background: color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
+}
+
+.dockWidthResizing,
+.dockWidthResizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+.shell[data-tl-tier="mobile"] .dockWidthResize {
+  display: none;
+}
+
 /* Mute label only — never opacity on .dockCell (would punch through surface). */
 .dockMuted {
   color: color-mix(in srgb, var(--ss-color-text-muted) 65%, var(--ss-color-surface));
@@ -1103,7 +1257,7 @@
   color: var(--ss-color-text);
   box-shadow:
     inset 0 -1px 0 0 var(--ss-color-border-muted),
-    inset 3px 0 0 0 var(--ss-color-primary);
+    inset 4px 0 0 0 var(--ss-color-primary);
 }
 
 .dockTools {
@@ -1135,11 +1289,47 @@
   cursor: pointer;
 }
 
+/* Narrow chip right of tools — configure which tools stay on the strip. */
+.toolsVisBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--ss-space-5) * var(--tl-zoom-ui));
+  height: var(--ss-touch-min);
+  margin-left: var(--ss-space-1);
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  cursor: pointer;
+}
+
+.toolsVisBtnOpen {
+  color: var(--ss-color-text);
+  border-color: var(--ss-color-selected-border);
+  background: var(--ss-color-selected);
+}
+
+@media (hover: hover) {
+  .toolsVisBtn:hover {
+    color: var(--ss-color-text);
+    background: var(--ss-color-ghost-hover);
+    border-color: var(--ss-color-primary);
+  }
+}
+
 /* Lucide defaults to fixed 18px — scale glyph with Zoom UI (v4 lane-tool svg). */
 .eyeBtn svg,
 .tapBtn svg {
   width: calc(18px * var(--tl-zoom-ui));
   height: calc(18px * var(--tl-zoom-ui));
+}
+
+.toolsVisBtn svg {
+  width: calc(14px * var(--tl-zoom-ui));
+  height: calc(14px * var(--tl-zoom-ui));
 }
 
 .eyeMenu {
@@ -1898,15 +2088,22 @@
 .inspector {
   position: relative;
   z-index: var(--ss-z-panel);
-  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
   border-left: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
   padding: var(--ss-space-2);
-  overflow: auto;
+  /* Scroll inside the middle column — never overlap the status bar. */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .inspHead {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--ss-space-2);
@@ -2105,19 +2302,22 @@
   z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-4);
   padding: var(--ss-space-2) var(--ss-space-5);
   border-top: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
+  min-width: 0;
 }
 
 .statusLeft {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--ss-space-2);
   min-width: 0;
+  overflow: hidden;
 }
 
 .statusConnLab {
@@ -2126,6 +2326,10 @@
   line-height: var(--ss-leading-compact);
   letter-spacing: var(--ss-tracking-label);
   color: var(--ss-color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .statusGroup {
@@ -2161,11 +2365,16 @@
 }
 
 .zooms {
+  position: relative;
+  z-index: 1;
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-4);
   margin-left: auto;
+  padding-left: var(--ss-space-2);
+  background: var(--ss-color-surface);
 }
 
 .zoomControl {
@@ -2199,6 +2408,11 @@
   background: transparent;
   cursor: pointer;
   accent-color: var(--ss-color-primary);
+}
+
+.zoomRange:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .zoomRange:focus {
@@ -2322,8 +2536,8 @@
 }
 
 .shell[data-tl-tier="mobile"] .canvasInner {
-  /* Narrower dock on phone — same compact column, not widened for tools. */
-  --tl-dock-w: calc(5.5rem * var(--tl-zoom-ui));
+  /* Narrower dock fallback on phone when JS width not yet applied. */
+  --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
 }
 
 .shell[data-tl-tier="mobile"] .main {
@@ -2367,10 +2581,6 @@
 }
 
 .inspClose {
-  display: none;
-}
-
-.shell[data-tl-tier="mobile"] .inspClose {
   display: inline-flex;
 }
 
@@ -2400,6 +2610,7 @@
   justify-content: center;
   gap: var(--ss-space-2);
   padding: var(--ss-space-2) var(--ss-space-3);
+  overflow-x: visible;
 }
 
 .shell[data-tl-tier="mobile"] .toolbarCenter {
@@ -2471,7 +2682,8 @@
   display: flex;
   flex-direction: column;
   width: min(72rem, calc(100vw - var(--ss-space-8)));
-  max-height: min(92dvh, 56rem);
+  max-height: min(85vh, 56rem);
+  min-height: 0;
   overflow: hidden;
   border-color: color-mix(in srgb, var(--ss-color-primary) 35%, var(--ss-color-border));
   background:
@@ -2493,32 +2705,6 @@
   margin-bottom: var(--ss-space-3);
 }
 
-.helpOverlayHead {
-  align-items: flex-start;
-  flex-shrink: 0;
-  margin: calc(var(--ss-space-4) * -1) calc(var(--ss-space-4) * -1) var(--ss-space-3);
-  padding: var(--ss-space-4) var(--ss-space-4) var(--ss-space-3);
-  border-bottom: 1px solid color-mix(in srgb, var(--ss-color-primary) 22%, var(--ss-color-border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--ss-color-primary) 10%, transparent) 0%,
-    transparent 100%
-  );
-}
-
-.helpOverlayHeadText {
-  min-width: 0;
-}
-
-.helpOverlayEyebrow {
-  margin: 0 0 var(--ss-space-1);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-bold);
-  letter-spacing: var(--ss-tracking-label);
-  text-transform: uppercase;
-  color: var(--ss-color-primary);
-}
-
 .overlayHead h2 {
   margin: 0;
   font-size: var(--ss-text-lg);
@@ -2527,14 +2713,6 @@
 .overlayBody {
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
-}
-
-.helpOverlayBody {
-  min-width: 0;
-  flex: 1 1 auto;
-  overflow: auto;
-  margin: 0 calc(var(--ss-space-4) * -1) calc(var(--ss-space-4) * -1);
-  padding: 0 var(--ss-space-4) var(--ss-space-4);
 }
 
 .overlayActions {
@@ -2550,20 +2728,6 @@
   color: var(--ss-color-text-muted);
 }
 
-.laneEmptyDrop {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: var(--ss-space-2);
-  pointer-events: none;
-  text-align: center;
-  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
-  color: var(--ss-color-text-muted);
-}
-
 .laneCellDropActive {
   outline: 2px dashed var(--ss-color-primary);
   outline-offset: -2px;
@@ -2572,6 +2736,7 @@
 
 .playBtn:focus-visible,
 .eyeBtn:focus-visible,
+.toolsVisBtn:focus-visible,
 .clip:focus-visible,
 .metaBtn:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
@@ -2600,8 +2765,16 @@
   overflow: hidden;
   padding: 0;
   position: relative;
-  background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-surface));
-  border-color: color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--tl-track-color, var(--ss-color-primary)) 28%,
+    var(--ss-color-surface)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--tl-track-color, var(--ss-color-primary)) 55%,
+    transparent
+  );
 }
 
 .audioClipMuted {

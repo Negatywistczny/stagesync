@@ -33,8 +33,26 @@ describe("timelineZoomPrefs", () => {
     expect(clampZoomH(ZOOM_H_MAX + 10)).toBe(ZOOM_H_MAX);
     expect(clampZoomV(MIN_LANE_PX - 1)).toBe(MIN_LANE_PX);
     expect(clampZoomV(MAX_LANE_PX + 1)).toBe(MAX_LANE_PX);
+    expect(clampZoomUi(50)).toBe(ZOOM_UI_MIN);
+    expect(clampZoomUi(200)).toBe(ZOOM_UI_MAX);
     expect(clampZoomUi(ZOOM_UI_MIN - 1)).toBe(ZOOM_UI_MIN);
     expect(clampZoomUi(ZOOM_UI_MAX + 1)).toBe(ZOOM_UI_MAX);
+  });
+
+  it("loadZoomPrefs clamps legacy extreme zoomUi", () => {
+    const storage = memoryStorage({
+      [TIMELINE_ZOOM_KEY]: JSON.stringify({
+        zoomH: 64,
+        zoomV: 96,
+        zoomUi: 50,
+      }),
+    });
+    expect(loadZoomPrefs(storage).zoomUi).toBe(ZOOM_UI_MIN);
+    storage.setItem(
+      TIMELINE_ZOOM_KEY,
+      JSON.stringify({ zoomH: 64, zoomV: 96, zoomUi: 150 }),
+    );
+    expect(loadZoomPrefs(storage).zoomUi).toBe(ZOOM_UI_MAX);
   });
 
   it("loadZoomPrefs returns defaults for missing/garbage", () => {

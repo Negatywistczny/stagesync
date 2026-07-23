@@ -114,6 +114,7 @@ function prefsEqual(a: PrefsSnapshot, b: PrefsSnapshot): boolean {
     a.metro.accentVolume === b.metro.accentVolume &&
     a.metro.beatVolume === b.metro.beatVolume &&
     a.metro.timbre === b.metro.timbre &&
+    a.metro.masterGainDb === b.metro.masterGainDb &&
     midiDraftEqual(a.midi, b.midi)
   );
 }
@@ -383,12 +384,12 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   type="radio"
                   name="clock-format"
                   checked={draft.clockFormat === "bbt"}
-                  aria-label="BBT Takt.Beat.Tick"
+                  aria-label="BBT Takt.Beat"
                   onChange={() =>
                     setDraft((d) => ({ ...d, clockFormat: "bbt" }))
                   }
                 />
-                <span>BBT (Takt.Beat.Tick)</span>
+                <span>BBT (Takt.Beat)</span>
               </label>
               <label className={styles.radioRow}>
                 <input

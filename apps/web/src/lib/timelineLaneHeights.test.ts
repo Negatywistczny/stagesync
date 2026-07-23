@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
   clearLaneHeightOverride,
   clampLaneHeight,
+  DEFAULT_LANE_PX,
+  DEFAULT_META_LANE_PX,
   DOCK_COMPACT_MAX_PX,
+  defaultLaneHeightForTrack,
   laneHeightBase,
   laneHeightEffective,
   loadLaneHeights,
@@ -21,9 +24,30 @@ describe("timelineLaneHeights", () => {
     expect(clampLaneHeight(72.4)).toBe(72);
   });
 
-  it("laneHeightBase prefers override else zoomV", () => {
-    expect(laneHeightBase("forma", {}, 72)).toBe(72);
+  it("meta default is compact below audio and within dock single-row", () => {
+    expect(DEFAULT_META_LANE_PX).toBeLessThan(DEFAULT_LANE_PX);
+    expect(DEFAULT_META_LANE_PX).toBeLessThanOrEqual(DOCK_COMPACT_MAX_PX);
+    expect(DEFAULT_META_LANE_PX).toBeGreaterThanOrEqual(MIN_LANE_PX);
+  });
+
+  it("defaultLaneHeightForTrack: meta compact, audio follows zoomV", () => {
+    expect(defaultLaneHeightForTrack("forma", DEFAULT_LANE_PX)).toBe(
+      DEFAULT_META_LANE_PX,
+    );
+    expect(defaultLaneHeightForTrack("tempo", DEFAULT_LANE_PX)).toBe(
+      DEFAULT_META_LANE_PX,
+    );
+    expect(defaultLaneHeightForTrack("audio:t1", DEFAULT_LANE_PX)).toBe(
+      DEFAULT_LANE_PX,
+    );
+    expect(defaultLaneHeightForTrack("tekst", 96)).toBe(64);
+    expect(defaultLaneHeightForTrack("audio:t1", 96)).toBe(96);
+  });
+
+  it("laneHeightBase prefers override else type default", () => {
+    expect(laneHeightBase("forma", {}, 72)).toBe(DEFAULT_META_LANE_PX);
     expect(laneHeightBase("forma", { forma: 96 }, 72)).toBe(96);
+    expect(laneHeightBase("audio:t1", {}, 72)).toBe(72);
   });
 
   it("laneHeightEffective applies UI scale", () => {
@@ -35,6 +59,9 @@ describe("timelineLaneHeights", () => {
     expect(DOCK_COMPACT_MAX_PX).toBeGreaterThan(MIN_LANE_PX);
     expect(DOCK_COMPACT_MAX_PX).toBeLessThan(72);
     expect(laneHeightEffective(MIN_LANE_PX, 1)).toBeLessThanOrEqual(
+      DOCK_COMPACT_MAX_PX,
+    );
+    expect(laneHeightEffective(DEFAULT_META_LANE_PX, 1)).toBeLessThanOrEqual(
       DOCK_COMPACT_MAX_PX,
     );
   });

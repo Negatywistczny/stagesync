@@ -49,6 +49,18 @@ describe("TransportEngine", () => {
     engine.dispose();
   });
 
+  it("getPlaybackStatus distinguishes play / pause / stop", () => {
+    const engine = createTransportEngine();
+    expect(engine.getPlaybackStatus()).toBe("STOPPED");
+    engine.play();
+    expect(engine.getPlaybackStatus()).toBe("PLAYING");
+    engine.pause();
+    expect(engine.getPlaybackStatus()).toBe("PAUSED");
+    engine.stop();
+    expect(engine.getPlaybackStatus()).toBe("STOPPED");
+    engine.dispose();
+  });
+
   it("seek sets ticks and re-anchors while playing", () => {
     let t = 0;
     const engine = createTransportEngine({ now: () => t });

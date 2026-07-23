@@ -4,8 +4,8 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 
 **Start (Launcher):** po włączeniu aplikacji widać ekran wyboru hosta (nie od razu Admin):
 - **Uruchom lokalny host** — spawnuje wbudowany Node sidecar na `http://127.0.0.1:4000`, czeka na `/api/health`, potem otwiera Admin;
-- **Wykryte w sieci** — lista hostów z mDNS (`_stagesync._tcp`); wymaga włączonego mDNS na hoście i bind ≠ tylko localhost; wybór IP preferuje LAN (pomija loopback / link-local, odsuwa most Docker `172.17`);
-- **Połącz ręcznie** / **Ostatnio używane** — wpisz `http://host:port` (probe health, timeout ~3 s → Admin). Przy różnicy wersji host/aplikacja — ostrzeżenie (nie twardy blok).
+- **Wykryte w sieci** — lista hostów z mDNS (`_stagesync._tcp`); kafle pokazują hostname OS, projekt (lub „Brak projektu”), diodę transportu (Play / Pauza / Stop) oraz IP + wersję; wymaga włączonego mDNS na hoście i bind ≠ tylko localhost; wybór IP preferuje LAN (pomija loopback / link-local, odsuwa most Docker `172.17`);
+- **Połącz ręcznie** / **Ostatnio używane** — wpisz `http://host:port` (probe health, timeout ~3 s → Admin); przy ostatnich hostach szybki probe `/api/health` (~1,5 s) z diodą online/offline. Przy różnicy wersji host/aplikacja — ostrzeżenie (nie twardy blok).
 
 Błędy startu lokalnego hosta (port zajęty, timeout, uprawnienia, zła wersja, crash sidecara) pokazuje Launcher z logiem i **Ponów** — bez białego ekranu. Gdy lokalny host padnie w trakcie sesji, shell wraca do Launchera z komunikatem. Przy utracie WS: banner „Utracono połączenie…” + **Wróć do wyboru hosta** (gdy IPC Tauri dostępne, zwykle lokalny `127.0.0.1:4000`).
 

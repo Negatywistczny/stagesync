@@ -40,6 +40,8 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   const tickIntervalMs = options.tickIntervalMs ?? TRANSPORT_TICK_INTERVAL_MS;
 
   let playing = false;
+  /** Distinguishes pause vs stop while `playing` is false (mDNS / UI). */
+  let idleReason: "paused" | "stopped" = "stopped";
   let positionTicks = 0;
   let bpm = defaultTransportState().bpm;
   let timeSignature: TimeSignature = {
@@ -132,6 +134,12 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
+    /** Playback status for LAN discovery TXT (`PLAYING` | `PAUSED` | `STOPPED`). */
+    getPlaybackStatus(): "PLAYING" | "PAUSED" | "STOPPED" {
+      if (playing) return "PLAYING";
+      return idleReason === "paused" ? "PAUSED" : "STOPPED";
+    },
+
     getActiveProjectId(): string | null {
       return activeProjectId;
     },
@@ -156,6 +164,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       activeProjectId = projectId;
       positionTicks = samplePosition();
       playing = false;
+      idleReason = "stopped";
       stopTimer();
       loop = null; // loop is per-song — never carry into the next project
       applyMapsFromProject(project, 0);
@@ -202,6 +211,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
     pause(): TransportState {
       positionTicks = samplePosition();
       playing = false;
+      idleReason = "paused";
       stopTimer();
       notify();
       return snapshot();
@@ -213,6 +223,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
      */
     stop(project?: Project): TransportState {
       playing = false;
+      idleReason = "stopped";
       stopTimer();
       const home = transportHomeTicks(project);
       positionTicks = home;
@@ -280,6 +291,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       activeProjectId = null;
       positionTicks = samplePosition();
       playing = false;
+      idleReason = "stopped";
       stopTimer();
       loop = null;
       notify();

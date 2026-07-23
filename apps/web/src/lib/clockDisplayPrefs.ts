@@ -83,5 +83,6 @@ export function formatClockDisplay(input: FormatClockDisplayInput): string {
     return formatMmSsMs(ms);
   }
   const bbt = ticksToBbt(input.ticks, input.timeSignature, input.ppq);
-  return `${toDisplayBar(bbt.bar)}.${bbt.beat}.${bbt.tick}`;
+  // Display bar.beat only — ticks stay in the engine, not the chrome readout.
+  return `${toDisplayBar(bbt.bar)}.${bbt.beat}`;
 }

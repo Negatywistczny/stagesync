@@ -347,6 +347,67 @@ export {
 } from "./audio-clip.js";
 
 export {
+  balanceGains,
+  clampFaderGainDb,
+  clampPan,
+  dbToFaderTaper,
+  emptyPeakHold,
+  faderTaperToDb,
+  FADER_GAIN_FLOOR_DB,
+  FADER_TAPER_DB_MAX,
+  FADER_TAPER_UNITY_T,
+  FADER_TICK_DBS,
+  formatFaderTickLabel,
+  formatPeakHoldDb,
+  isClipPeakDb,
+  linearPeakToMeterDb,
+  meterDbPeakBand,
+  meterDbToUnit,
+  METER_DB_MAX,
+  METER_DB_MIN,
+  PAN_MAX,
+  PAN_MIN,
+  STEREO_DOWNMIX_LINEAR,
+  updatePeakHold,
+  type MeterPeakBand,
+  type PeakHoldState,
+} from "./mixer-math.js";
+
+export {
+  DEFAULT_TRACK_COLOR,
+  DEFAULT_TRACK_ICON,
+  TRACK_COLORS,
+  TRACK_ICONS,
+  TRACK_ICON_LABELS,
+  TrackColorSchema,
+  TrackIconSchema,
+  resolveTrackColor,
+  resolveTrackIcon,
+  trackColorForIndex,
+  type TrackColor,
+  type TrackIcon,
+} from "./track-appearance.js";
+
+export {
+  AudioBusSchema,
+  BusOutputDestSchema,
+  ChannelModeSchema,
+  MASTER_OUTPUT,
+  MAX_AUDIO_BUSSES,
+  MixerOutputDestSchema,
+  channelModeFromChannelCount,
+  isTrackRoutedToBus,
+  nextBusName,
+  resolveBusOutputDest,
+  resolveChannelMode,
+  resolveTrackOutputDest,
+  type AudioBus,
+  type BusOutputDest,
+  type ChannelMode,
+  type MixerOutputDest,
+} from "./mixer-routing.js";
+
+export {
   importUgText,
   sealAkordyLengths,
   chordOnsetsInBar,

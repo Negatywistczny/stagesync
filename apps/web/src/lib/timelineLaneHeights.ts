@@ -1,13 +1,20 @@
 /**
  * Per-track lane height overrides — v4 `laneHeights` behavior (not chrome clone).
- * Base px before UI scale; missing → global Zoom V (`lanePx` / `zoomV`).
+ * Base px before UI scale; missing → Zoom V for audio, compact default for meta lanes.
  */
+
+import { isAudioLaneId } from "./timelineTracks.js";
 
 export const LANE_HEIGHTS_KEY = "stagesync-timeline-lane-heights";
 
 export const MIN_LANE_PX = 40;
 export const MAX_LANE_PX = 160;
 export const DEFAULT_LANE_PX = 72;
+/**
+ * Default base height for non-audio lanes (Tempo…Cue) at Zoom V = {@link DEFAULT_LANE_PX}.
+ * Below audio default and at/under {@link DOCK_COMPACT_MAX_PX} so dock stays single-row.
+ */
+export const DEFAULT_META_LANE_PX = 48;
 /** Effective lane height at/under this → dock single-row (hide fader). */
 export const DOCK_COMPACT_MAX_PX = 56;
 
@@ -17,7 +24,20 @@ export function clampLaneHeight(px: number): number {
   return Math.max(MIN_LANE_PX, Math.min(MAX_LANE_PX, Math.round(Number(px) || DEFAULT_LANE_PX)));
 }
 
-/** Base (unscaled) height for a track — custom override or global Zoom V. */
+/** Unset-lane default: audio follows Zoom V; meta lanes stay compact vs audio. */
+export function defaultLaneHeightForTrack(
+  trackId: string,
+  zoomV: number,
+): number {
+  if (isAudioLaneId(trackId)) {
+    return clampLaneHeight(zoomV);
+  }
+  // Keep meta/audio ratio when global ↕ zoom changes (unset lanes only).
+  const ratio = DEFAULT_META_LANE_PX / DEFAULT_LANE_PX;
+  return clampLaneHeight(zoomV * ratio);
+}
+
+/** Base (unscaled) height for a track — custom override or type default. */
 export function laneHeightBase(
   trackId: string,
   laneHeights: LaneHeightsMap,
@@ -27,7 +47,7 @@ export function laneHeightBase(
   if (custom != null && Number.isFinite(Number(custom))) {
     return clampLaneHeight(custom);
   }
-  return clampLaneHeight(zoomV);
+  return defaultLaneHeightForTrack(trackId, zoomV);
 }
 
 /** Painted height after UI scale (v4 `laneHeightEffective`). */

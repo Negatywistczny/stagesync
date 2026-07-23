@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { hostname as osHostname } from "node:os";
 import { createApp } from "./app.js";
 import { loadDotenvIntoProcess } from "./env-settings.js";
 import { createLifecycle } from "./lifecycle.js";
@@ -108,12 +109,41 @@ function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
       port: PORT,
       bindHost: BIND_HOST,
       version,
+      getMeta: async () => {
+        const activeId = transport.getActiveProjectId();
+        let project = "Brak projektu";
+        if (activeId) {
+          try {
+            const library = await stores.getLibrary();
+            const entry = library.projects.find((p) => p.id === activeId);
+            if (entry?.name?.trim()) project = entry.name;
+          } catch {
+            /* keep fallback */
+          }
+        }
+        return {
+          hostname: osHostname(),
+          version,
+          project,
+          status: transport.getPlaybackStatus(),
+        };
+      },
       log: (msg) => {
         logBuffer.push("info", msg);
         console.log(`[stagesync-server] ${msg}`);
       },
     });
-    disposeMdns = () => mdns.stop();
+    let lastMdnsKey = "";
+    const unsubMdns = transport.onChange(() => {
+      const key = `${transport.getPlaybackStatus()}:${transport.getActiveProjectId() ?? ""}`;
+      if (key === lastMdnsKey) return;
+      lastMdnsKey = key;
+      mdns.refresh();
+    });
+    disposeMdns = () => {
+      unsubMdns();
+      mdns.stop();
+    };
   });
 }
 

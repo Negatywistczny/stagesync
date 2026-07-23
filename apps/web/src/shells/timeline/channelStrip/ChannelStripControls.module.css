@@ -5,45 +5,73 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  gap: calc(var(--ss-space-1) * var(--tl-zoom-ui, 1));
+  gap: 0;
   min-width: 0;
   min-height: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dockRow {
   display: flex;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
+  width: 100%;
   overflow: hidden;
   align-items: center;
-  gap: var(--ss-space-1);
+  gap: var(--ss-space-2);
+}
+
+/* Icon only — must NOT be width:100% (that starved the name to ".."). */
+.dockIconAnchor {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
 }
 
 .dockFaderRow {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   max-width: 100%;
+  width: 100%;
   overflow: hidden;
   align-items: center;
-  /* Priority 2: fader shrinks with dock before Priority 3 hides it. */
   min-height: 0;
+  margin-top: calc(var(--ss-space-1) * var(--tl-zoom-ui, 1));
 }
 
+/* ——— Vertical Mixer strip (Logic-like console) ——— */
+
 .mixerStrip {
+  /* Fixed console width — never squash; mixer H-scrolls instead. */
+  --mixer-strip-w: calc(84px * var(--tl-zoom-ui, 1));
+
   display: flex;
   flex-direction: column;
-  gap: var(--ss-space-2);
-  min-width: calc(var(--ss-space-16, 4rem) * 2);
-  max-width: 12rem;
-  padding: var(--ss-space-3);
+  align-items: stretch;
+  gap: calc(var(--ss-space-2) * var(--tl-zoom-ui, 1));
+  flex: 0 0 var(--mixer-strip-w);
+  flex-shrink: 0;
+  width: var(--mixer-strip-w);
+  min-width: var(--mixer-strip-w);
+  max-width: var(--mixer-strip-w);
+  min-height: 0;
+  height: 100%;
+  padding: calc(var(--ss-space-2) * var(--tl-zoom-ui, 1))
+    calc(var(--ss-space-1) * var(--tl-zoom-ui, 1));
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-surface);
+  background: color-mix(in srgb, var(--ss-color-surface) 88%, var(--ss-color-bg));
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .mixerSelected {
@@ -51,10 +79,617 @@
   border-color: var(--ss-color-primary);
 }
 
-.mixerNameRow {
+.mixerMuted {
+  opacity: 0.72;
+}
+
+.masterStrip {
+  cursor: default;
+  border-color: var(--ss-color-border-muted);
+  background: color-mix(in srgb, var(--ss-color-surface) 70%, var(--ss-color-bg));
+  box-shadow: inset 3px 0 0 0
+    color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
+}
+
+.masterPanSpacer {
+  flex: 0 0 auto;
+  /* Match pan knob + label + readout stack so fader rows line up. */
+  height: calc(var(--ss-space-8) + var(--ss-space-4) + var(--ss-text-xs) * var(--ss-leading-compact));
+}
+
+.mixerToolsSpacer {
+  flex: 0 0 auto;
+  /* Match `.mixerTools` + `.tapBtn` row on track / Click strips. */
+  height: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
+}
+
+.outputSelectSpacer {
+  flex: 0 0 auto;
+  /* Match OutputSelector (label + select) so Click/Master align with tracks. */
+  height: calc(var(--ss-text-xs) * var(--ss-leading-compact) + var(--ss-space-5) + 2px);
+}
+
+.channelModeSpacer {
+  flex: 0 0 auto;
+  /* Match M / ST channel-mode chips height. */
+  height: calc(var(--ss-space-5) + 2px);
+}
+
+.channelModeToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  padding: 2px;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 70%, transparent);
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+.channelModeBtn {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  min-height: calc(var(--ss-space-5) - 2px);
+  border: 0;
+  border-radius: var(--ss-radius-sharp);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-normal);
+  text-align: center;
+  cursor: pointer;
+}
+
+.channelModeBtnActive {
+  background: color-mix(in srgb, var(--ss-color-primary) 32%, var(--ss-color-surface));
+  color: var(--ss-color-text);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+}
+
+.channelModeBtn:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.panLabel {
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text-muted);
+  letter-spacing: var(--ss-tracking-wide);
+}
+
+.outputSelectLabel {
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text-muted);
+  text-align: center;
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+}
+
+.outputSelect {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 70%, transparent);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-compact);
+  cursor: pointer;
+}
+
+.outputSelect:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.outputSelect:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+.busStrip {
+  border-color: color-mix(in srgb, var(--ss-color-info) 40%, var(--ss-color-border));
+  box-shadow: inset 3px 0 0 0
+    color-mix(in srgb, var(--ss-color-info) 70%, transparent);
+}
+
+.busBanner {
+  --tl-track-color: var(--ss-color-info);
+  background: color-mix(
+    in srgb,
+    var(--ss-color-info) 18%,
+    var(--ss-color-elevated)
+  );
+  color: var(--ss-color-text);
+}
+
+.busBadge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--ss-space-1);
+  min-height: var(--ss-space-5);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 45%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--ss-color-info) 45%, var(--ss-color-border));
+  color: var(--ss-color-info);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-compact);
+  letter-spacing: var(--ss-tracking-wide);
+}
+
+.panBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.panKnob {
+  position: relative;
+  width: var(--ss-space-8);
+  height: var(--ss-space-8);
+  border-radius: var(--ss-radius-pill);
+  border: 1px solid var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, var(--ss-color-surface));
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--ss-color-text) 12%, transparent);
+  cursor: ew-resize;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.panKnob:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.panKnobIndicator {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 2px;
+  height: 42%;
+  transform-origin: bottom center;
+  background: var(--ss-color-primary);
+  border-radius: var(--ss-radius-pill);
+  pointer-events: none;
+}
+
+.panValue {
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  font-variant-numeric: tabular-nums;
+}
+
+.gainBox {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 2px var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 70%, transparent);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  cursor: pointer;
+}
+
+.gainBox:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.dualReadout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.dualReadout .gainBox,
+.peakHoldBox {
+  min-width: 0;
+  padding-inline: 2px;
+}
+
+.peakHoldBox {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 2px 2px;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  cursor: pointer;
+}
+
+.peakHoldBox:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.peakHoldClipped {
+  color: var(--ss-color-danger);
+  border-color: var(--ss-color-danger);
+  background: color-mix(in srgb, var(--ss-color-danger) 18%, var(--ss-color-bg));
+}
+
+.faderMeterRow {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--ss-space-1);
+  min-height: 160px;
+  min-width: 0;
+}
+
+.faderColumn {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.tickRail {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--ss-space-6);
+  min-height: 0;
+  height: 100%;
+}
+
+.tick {
+  position: absolute;
+  right: 0;
+  transform: translateY(50%);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: 1;
+  color: var(--ss-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tickUnity {
+  color: var(--ss-color-text);
+  font-weight: var(--ss-font-weight-bold);
+}
+
+.faderTrack {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--ss-space-5);
+  min-height: 0;
+  height: 100%;
+  cursor: ns-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.faderTrack:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--ss-radius-sm);
+}
+
+.faderGroove {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--ss-space-1);
+  margin-left: calc(var(--ss-space-1) / -2);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 40%, var(--ss-color-border));
+  box-shadow: inset 0 0 0 1px var(--ss-color-border-muted);
+  pointer-events: none;
+}
+
+/* ~18×12 rectangular cap with horizontal indicator line */
+.faderCap {
+  position: absolute;
+  left: 50%;
+  width: calc(var(--ss-space-4) + var(--ss-space-1) / 2);
+  height: var(--ss-space-3);
+  margin-left: calc((var(--ss-space-4) + var(--ss-space-1) / 2) / -2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sharp);
+  background: color-mix(in srgb, var(--ss-color-surface) 80%, var(--ss-color-bg));
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ss-color-bg) 80%, transparent);
   display: flex;
   align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.faderCapLine {
+  display: block;
+  width: 70%;
+  height: 1px;
+  background: var(--ss-color-primary);
+}
+
+.mixerTools {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
   gap: var(--ss-space-1);
+}
+
+.mixerBanner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ss-space-1);
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: calc(var(--ss-space-8) + var(--ss-space-1));
+  padding: calc(var(--ss-space-1) + var(--ss-space-1)) var(--ss-space-1)
+    var(--ss-space-1);
+  overflow: hidden;
+  background: color-mix(
+    in srgb,
+    var(--ss-color-elevated) 88%,
+    var(--ss-color-bg)
+  );
+  border-radius: 0 0 var(--ss-radius-sm) var(--ss-radius-sm);
+  margin: 0 calc(var(--ss-space-1) * -1) calc(var(--ss-space-2) * -1);
+  color: var(--ss-color-text);
+}
+
+/* Thin track-color accent (~4px) — not a full neon fill. */
+.mixerBannerAccent::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--ss-space-1);
+  background: var(--tl-track-color, var(--ss-color-primary));
+  pointer-events: none;
+}
+
+.mixerBannerColor {
+  background: color-mix(
+    in srgb,
+    var(--tl-track-color, var(--ss-color-primary)) 24%,
+    var(--ss-color-elevated)
+  );
+  color: var(--ss-color-text);
+}
+
+.mixerBanner .label,
+.mixerBanner .renameInput {
+  text-align: center;
+  width: 100%;
+  color: inherit;
+}
+
+.mixerBannerColor .label {
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text);
+}
+
+.mixerBanner .renameInput {
+  color: var(--ss-color-text);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.iconBadge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--ss-space-6);
+  height: var(--ss-space-6);
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 28%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.mixerBannerColor .iconBadge {
+  color: var(--tl-track-color, var(--ss-color-primary));
+  border-color: color-mix(
+    in srgb,
+    var(--tl-track-color, var(--ss-color-primary)) 45%,
+    var(--ss-color-border)
+  );
+  background: color-mix(in srgb, var(--ss-color-bg) 45%, transparent);
+}
+
+.iconBadge:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.iconBadgeDock {
+  width: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
+  height: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
+  border-color: var(--ss-color-border);
+  background: color-mix(
+    in srgb,
+    var(--tl-track-color, var(--ss-color-surface)) 55%,
+    var(--ss-color-bg)
+  );
+  color: var(--ss-color-text);
+}
+
+.clickStrip {
+  cursor: default;
+  border-color: color-mix(in srgb, var(--ss-color-warning) 35%, var(--ss-color-border));
+  box-shadow: inset 3px 0 0 0
+    color-mix(in srgb, var(--ss-color-warning) 55%, transparent);
+}
+
+.clickBanner {
+  --tl-track-color: var(--ss-color-warning);
+  background: color-mix(
+    in srgb,
+    var(--ss-color-warning) 16%,
+    var(--ss-color-elevated)
+  );
+  color: var(--ss-color-text);
+}
+
+.masterBanner {
+  --tl-track-color: var(--ss-color-primary);
+  background: color-mix(
+    in srgb,
+    var(--ss-color-primary) 14%,
+    var(--ss-color-elevated)
+  );
+  color: var(--ss-color-text);
+}
+
+.masterBanner .label {
+  font-weight: var(--ss-font-weight-bold);
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+}
+
+.appearancePopover {
+  /* Portaled to body — above sticky dock / strip scroll, below modals. */
+  position: fixed;
+  z-index: var(--ss-z-dropdown);
+  width: calc(var(--ss-space-8) * 12);
+  max-width: min(280px, 70vw);
+  padding: var(--ss-space-2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-md);
+  background: var(--ss-color-surface);
+  box-shadow: var(--ss-shadow-md, 0 8px 24px color-mix(in srgb, var(--ss-color-bg) 55%, transparent));
+  color: var(--ss-color-text);
+}
+
+.appearanceSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  margin-bottom: var(--ss-space-2);
+}
+
+.appearanceSection:last-child {
+  margin-bottom: 0;
+}
+
+.appearanceLabel {
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--ss-tracking-wide);
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--ss-space-1);
+}
+
+.colorSwatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: var(--ss-radius-sm);
+  cursor: pointer;
+  padding: 0;
+}
+
+.colorSwatchSelected {
+  border-color: var(--ss-color-text);
+  box-shadow: 0 0 0 1px var(--ss-color-primary);
+}
+
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--ss-space-1);
+}
+
+.iconPick {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: calc(var(--ss-space-8) + var(--ss-space-2));
+  padding: var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-compact);
+}
+
+.iconPickSelected {
+  border-color: var(--ss-color-primary);
+  background: color-mix(in srgb, var(--ss-color-primary) 18%, var(--ss-color-bg));
+}
+
+/* Mixer banner row — full width; dock uses `.dockIconAnchor` instead. */
+.bannerAnchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ss-space-1);
+  width: 100%;
   min-width: 0;
 }
 
@@ -64,8 +699,10 @@
   overflow: hidden;
   white-space: nowrap;
   /* Middle truncation via MiddleTruncateLabel (not CSS end-ellipsis). */
+  /* Avoid WKWebView Look Up / Translate on selectable dock text. */
+  user-select: none;
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
-  font-weight: var(--ss-font-weight-semibold);
+  font-weight: var(--ss-font-weight-medium);
   line-height: var(--ss-leading-compact);
   color: inherit;
 }
@@ -91,6 +728,7 @@
 
 .tools {
   display: flex;
+  flex: 0 0 auto;
   flex-shrink: 0;
   align-items: center;
   gap: var(--ss-space-1);
@@ -106,38 +744,6 @@
 .fader {
   width: 100%;
   min-width: 0;
-}
-
-/*
- * Width CQ: ancestor `.dockCell` (`container-type: inline-size; container-name: tl-dock`).
- * Priority 1: name + S + M always visible.
- * Priority 3: hide fader when dock content box is critically narrow.
- *
- * Threshold 100px (brief ~130px): `--tl-dock-w` is already 7.5rem ≈ 120px border-box;
- * after padding the content box is ~100–104px. 130px would hide the fader at default.
- */
-@container tl-dock (max-width: 100px) {
-  .dockFaderRow {
-    display: none;
-  }
-}
-
-/* Height compression: prop from lane height (Forma rows must still grow freely). */
-.dockStripCompact {
-  gap: 0;
-}
-
-.dockStripCompact .dockFaderRow {
-  display: none;
-}
-
-.gainLabel {
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-medium);
-  line-height: var(--ss-leading-compact);
-  color: var(--ss-color-text-muted);
-  text-align: center;
-  font-variant-numeric: tabular-nums;
 }
 
 .tapBtn {
@@ -158,6 +764,25 @@
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-compact);
+}
+
+/* Dock S/M — element selector so TimelineShell `tapBtn` class still shrinks. */
+.dockStrip .tools > button {
+  width: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
+  height: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
+  min-height: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
+}
+
+/* Height compression: hide fader; shrink S/M further. */
+.dockStripCompact .dockFaderRow {
+  display: none;
+}
+
+.dockStripCompact .tools > button {
+  width: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
+  height: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
+  min-height: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
 }
 
 @media (hover: hover) {

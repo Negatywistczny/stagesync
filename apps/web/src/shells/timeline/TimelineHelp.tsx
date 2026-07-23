@@ -1,155 +1,304 @@
 /**
- * Timeline help overlay — tabbed shortcuts + tools/tracks (v4 topic parity).
+ * Timeline help overlay — sticky header/tabs, scrollable card body (v4 topic parity).
  */
 
-import { useId, useState } from "react";
-import shellStyles from "../TimelineShell.module.css";
+import { useId, useMemo, useState } from "react";
 import { IconClose } from "../icons.js";
 import { ShellIconButton } from "../ShellIconButton.js";
 import styles from "./TimelineHelp.module.css";
 
-type HelpSection = {
-  title: string;
-  items: string[];
-};
-
 type HelpTab = "shortcuts" | "tools";
 
+type ShortcutRow = { keys: string; action: string };
+type ShortcutGroup = { heading: string; rows: ShortcutRow[] };
+
+type ToolBullet = { term: string; detail: string };
+type ToolSection = { title: string; bullets: ToolBullet[] };
+
 const TABS: { id: HelpTab; label: string }[] = [
-  { id: "shortcuts", label: "⌨️ Skróty Klawiszowe" },
-  { id: "tools", label: "📖 Opis Narzędzi & Ścieżek" },
+  { id: "shortcuts", label: "Skróty klawiszowe" },
+  { id: "tools", label: "Narzędzia i ścieżki" },
 ];
 
-const SECTIONS: HelpSection[] = [
+const KEY_GROUPS: ShortcutGroup[] = [
   {
-    title: "Podstawy",
-    items: [
-      "Edytuj ścieżki Forma, Tekst, Akordy, Cue. Specjalne (Tempo / Tonacja / Metrum / Kotwice) — włącz w menu oka.",
-      "Zapisz / Odrzuć — zapis lub cofnięcie lokalnych zmian na serwerze. Undo / Redo ze skrótów ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z lub z menu Edycja.",
-      "Metadane (ikona info) — tytuł, PC, tempo domyślne, tonacja startowa, artysta, gatunek.",
-      "Linki Admin / Klient w statusie — przełączenie widoku (bez labowego ShellNav).",
-      "Live playhead — badge w statusie, gdy otwarty utwór = aktywny na transporcie.",
-      "Utwory / setlista — tytuł otwiera bibliotekę; [ / ] lub Alt+←/→ = poprzedni / następny; auto-setlista po końcu utworu (współdzielona z Adminem).",
-      "Transport — Play / Pause / Stop; pętla (C / L) po zakresie na linijce; metronom (głośność w Preferencjach); Podążaj za wskaźnikiem.",
-      "Tempo / Metrum / Tonacja na toolbarze — edycja @ playhead; na lane’ach — Pencil / klik segmentu / Scissors.",
-      "Pointer / Smart — zaznacz, przesuń, zmień długość (strefy na brzegach).",
-      "Pencil — klik: 1 takt; przeciągnięcie: zakres z nadpisaniem (Forma + Tekst / Akordy / Cue). Na Tempo / Tonacja / Metrum: nowa zmiana mapy @ snap.",
-      "Eraser — usuń clip (Forma / treść) lub zdarzenie mapy.",
-      "Scissors — Forma: podsekcja (także pusty lane); Tekst / Akordy / Cue: podział clipu; mapy: nowa zmiana w miejscu cięcia.",
-      "Zoom — narzędzie (prostokąt / klik tła = Fit) + suwaki H / V / UI; Ctrl+Alt = chwilowy Zoom.",
-      "Różdżka (W) — Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3 w menu).",
-      "Tap (A) — kolejka linii Tekstu; Spacja = start @ locator; ↑/↓ = poprzednia/następna linia.",
+    heading: "Widok",
+    rows: [
+      { keys: "X", action: "Mixer on/off" },
+      {
+        keys: "I",
+        action:
+          "Inspector / Właściwości on/off (Timeline; × w panelu; ukryte w Mixerze)",
+      },
+      { keys: "? / Shift+/", action: "Otwórz tę pomoc" },
     ],
   },
   {
-    title: "Locator i playhead",
-    items: [
-      "Locator — klik w linijkę taktów lub przeciągnij marker.",
-      "Playhead — pozycja transportu serwera (SSOT); klient tylko wygładza między tickami.",
-      "Dwuklik klipu — fokus panelu Właściwości (tablet: double-tap osi = Fit Zoom).",
+    heading: "Narzędzia",
+    rows: [
+      { keys: "T", action: "Otwórz menu narzędzi (akord)" },
+      {
+        keys: "T, potem T/P/E/I/J/M/S/A/G/R/Y",
+        action: "Wybór narzędzia (T T = Wskaźnik, T I = Nożyczki)",
+      },
+      { keys: "W", action: "Różdżka (1/2/3 w menu)" },
+      { keys: "1 / 2 / 3", action: "Tekst / Akordy / obie (menu Różdżki)" },
+      {
+        keys: "Przycisk Tap (Tekst)",
+        action: "Tryb Tap + tempo BPM (bez skrótu)",
+      },
+      { keys: "↑ / ↓", action: "Tap: poprzednia / następna linia" },
+      { keys: "Esc", action: "Anuluj akord / odznacz / Tap→Wskaźnik" },
+      { keys: "⌃/Ctrl+⌥/Alt", action: "Chwilowy Zoom" },
+      { keys: "⌘/Ctrl+drag", action: "Snap off przy przeciąganiu" },
     ],
   },
   {
-    title: "Zaznaczanie i edycja",
-    items: [
-      "Prawy przycisk myszy — menu kontekstowe: na klipie (wytnij / kopiuj / wklej / duplikuj / usuń / mute audio / rozdziel / Inspector); na pustej lane (wklej @ kursor, dodaj sekcję/cue/treść, import audio); na nagłówku ścieżki audio (nazwa / duplikuj / usuń).",
-      "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
-      "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi; single-move przesuwa też późniejsze sekcje.",
-      "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
+    heading: "Edycja",
+    rows: [
+      { keys: "⌘/Ctrl+S", action: "Zapisz (gdy dirty)" },
+      { keys: "⌘/Ctrl+A", action: "Zaznacz wszystkie klipy" },
+      { keys: "⌘/Ctrl+C", action: "Kopiuj klipy (w tym audio)" },
+      { keys: "⌘/Ctrl+X", action: "Wytnij zaznaczone klipy" },
+      { keys: "⌘/Ctrl+V", action: "Wklej @ locator" },
+      { keys: "⌘/Ctrl+D", action: "Duplikuj zaznaczone" },
+      { keys: "⌘/Ctrl+T", action: "Podziel zaznaczony klip @ playhead" },
+      { keys: "⌘/Ctrl+J", action: "Połącz sąsiednie zaznaczone klipy" },
+      { keys: "⌥/Alt+← / →", action: "Nudge zaznaczonego klipu ±1 siatka" },
+      { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę audio" },
+      { keys: "⌘/Ctrl+Z", action: "Undo (z zaznaczeniem)" },
+      { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
     ],
   },
   {
-    title: "Ścieżki Audio",
-    items: [
-      "+ Dodaj Ścieżkę pod listą ścieżek (dock) — nowa pusta lane audio; dwuklik pustego miejsca w kolumnie docku też dodaje ścieżkę.",
-      "PPM na nagłówku ścieżki — zmień nazwę / duplikuj / usuń; Delete/⌫ przy zaznaczonej ścieżce (także multi).",
-      "Dwuklik nazwy w docku — zmiana nazwy w miejscu (Enter/blur = zapis, Esc = anuluj); PPM „Zmień nazwę” to samo.",
-      "Zaznaczanie ścieżek: klik = jedna; Shift+klik = zakres; ⌘/Ctrl+klik = przełącz w zestawie.",
-      "S / M na docku = Solo / Mute; przy multi — na wszystkich zaznaczonych. ⌘/Ctrl+S/M = wszystkie ścieżki; ⌥/Alt+S = solo wyłącznie tej ścieżki.",
-      "Dwuklik fadera — reset do 0.0 dB. Przycisk Mixer w transporcie — paski kanałów (te same S/M/fader).",
-      "Dock responsywny: nazwa ze skracaniem środka (nie ellipsis na końcu); przy wąskiej kolumnie / niskiej wysokości ścieżki zostają nazwa + S/M (fader się chowa).",
-      "Pusta lane — upuść plik audio lub PPM → Importuj plik audio; import też z Inspectora.",
-      "Pointer / Smart — move i trim krawędzi; bez Pencil na lane audio.",
-      "Schowek ⌘C / ⌘X / ⌘V / ⌘D — także dla klipów audio (także z PPM).",
-      "Uchwyty Smart — fade in/out, region loop; crossfade przy styku klipów.",
+    heading: "Transport",
+    rows: [
+      { keys: "Spacja", action: "Play / Pause (Tap: mark linii)" },
+      { keys: "Shift+Spacja", action: "Play od startu zaznaczonego klipu" },
+      { keys: "Enter / Home", action: "Stop + początek utworu" },
+      { keys: "C", action: "Pętla / Cycle on/off" },
+      {
+        keys: "U / ⌘/Ctrl+U",
+        action: "Cycle = długość zaznaczonego klipu audio",
+      },
+      { keys: "K", action: "Metronom on/off" },
+      {
+        keys: "⌘/Ctrl+klik S/M",
+        action: "Solo/Mute wszystkich ścieżek (dock)",
+      },
+      { keys: "⌥/Alt+klik S", action: "Solo wyłącznie tej ścieżki" },
+      {
+        keys: "Shift / ⌘+klik",
+        action: "Zakres / przełącz zaznaczenie ścieżek",
+      },
+    ],
+  },
+  {
+    heading: "Nawigacja",
+    rows: [
+      { keys: "← / →", action: "Locator ±1 beat" },
+      { keys: "[ / ]", action: "Poprzedni / następny utwór" },
+      { keys: "⌘/Ctrl+← / →", action: "Zoom H" },
+      { keys: "⌘/Ctrl+↑ / ↓", action: "Zoom V (lane)" },
+      { keys: "Z", action: "Fit Zoom (cały utwór)" },
+      { keys: "Shift+Wheel", action: "Poziome przewijanie" },
     ],
   },
 ];
 
-/** Column order: tall groups first so 3-col row fits without vertical scroll. */
-const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[] =
-  [
-    {
-      heading: "Narzędzia",
-      rows: [
-        { keys: "T", action: "Menu narzędzi przy kursorze" },
-        {
-          keys: "T, potem litera",
-          action: "T·S·P·E·C·Z·W·A — narzędzia",
-        },
-        { keys: "W", action: "Różdżka (1/2/3 w menu)" },
-        { keys: "1 / 2 / 3", action: "Tekst / Akordy / obie" },
-        { keys: "A", action: "Narzędzie Tap" },
-        { keys: "↑ / ↓", action: "Tap: poprzednia / następna linia" },
-        { keys: "Esc", action: "Zamknij overlay / menu / Tap" },
-        { keys: "⌃/Ctrl+⌥/Alt", action: "Chwilowy Zoom" },
-        { keys: "?", action: "Otwórz tę pomoc" },
-        { keys: "⌘/Ctrl+drag", action: "Snap off" },
-      ],
-    },
-    {
-      heading: "Edycja i schowek",
-      rows: [
-        { keys: "⌘/Ctrl+S", action: "Zapisz (gdy dirty)" },
-        { keys: "⌘/Ctrl+C", action: "Kopiuj klipy (w tym audio)" },
-        { keys: "⌘/Ctrl+X", action: "Wytnij zaznaczone klipy" },
-        { keys: "⌘/Ctrl+V", action: "Wklej @ locator" },
-        { keys: "⌘/Ctrl+D", action: "Duplikuj zaznaczone" },
-        { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę audio" },
-        { keys: "⌘/Ctrl+Z", action: "Undo (z zaznaczeniem)" },
-        { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
-      ],
-    },
-    {
-      heading: "Transport",
-      rows: [
-        { keys: "Spacja", action: "Play / Pause (Tap: mark linii)" },
-        { keys: "C / L", action: "Pętla / Cycle on/off" },
-        { keys: "K", action: "Metronom on/off" },
-        { keys: "M", action: "Mute ścieżki audio (dock)" },
-        { keys: "S", action: "Solo ścieżki audio (dock)" },
-        {
-          keys: "⌘/Ctrl+klik S/M",
-          action: "Solo/Mute wszystkich ścieżek audio",
-        },
-        {
-          keys: "⌥/Alt+klik S",
-          action: "Solo wyłącznie tej ścieżki",
-        },
-        {
-          keys: "Shift / ⌘+klik",
-          action: "Zakres / przełącz zaznaczenie ścieżek",
-        },
-      ],
-    },
-    {
-      heading: "Locator i utwory",
-      rows: [
-        { keys: "← / →", action: "Locator ±1 beat" },
-        { keys: "[ / ]", action: "Poprzedni / następny utwór" },
-        { keys: "Alt+← / Alt+→", action: "Poprzedni / następny utwór" },
-      ],
-    },
-    {
-      heading: "Nawigacja i Zoom",
-      rows: [
-        { keys: "⌘/Ctrl+← / →", action: "Zoom H" },
-        { keys: "⌘/Ctrl+↑ / ↓", action: "Zoom V" },
-        { keys: "Z", action: "Fit Zoom (cały utwór)" },
-        { keys: "Shift+Wheel", action: "Poziome przewijanie" },
-      ],
-    },
-  ];
+const TOOL_SECTIONS: ToolSection[] = [
+  {
+    title: "Podstawy & Transport",
+    bullets: [
+      {
+        term: "Ścieżki",
+        detail:
+          "edytuj Forma, Tekst, Akordy, Cue; specjalne (Tempo / Tonacja / Metrum / Kotwice) włącz w menu oka.",
+      },
+      {
+        term: "Zapisz / Odrzuć",
+        detail:
+          "zapis lub cofnięcie lokalnych zmian; Undo/Redo: ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z lub menu Edycja.",
+      },
+      {
+        term: "Metadane",
+        detail:
+          "ikona info ⓘ (nie klawisz I) — tytuł, PC, tempo, tonacja, artysta, gatunek.",
+      },
+      {
+        term: "Widok",
+        detail:
+          "X = Mixer (bez panelu Właściwości); I / Właściwości = Inspector w Timeline; ? = ta pomoc.",
+      },
+      {
+        term: "Transport",
+        detail:
+          "Play / Pause / Stop (Enter/Home = stop + początek); pętla C; U = cycle z klipu audio; metronom K; Podążaj za wskaźnikiem.",
+      },
+      {
+        term: "Utwory",
+        detail:
+          "tytuł otwiera bibliotekę; [ / ] = poprzedni / następny; auto-setlista po końcu utworu.",
+      },
+      {
+        term: "Playhead",
+        detail:
+          "pozycja transportu serwera (SSOT); klient tylko wygładza między tickami. Locator — klik w linijkę lub przeciągnij marker.",
+      },
+      {
+        term: "Shift+Spacja",
+        detail: "odtwarzanie od startu zaznaczonego klipu (lub locatora).",
+      },
+    ],
+  },
+  {
+    title: "Zaznaczanie i gesty myszy",
+    bullets: [
+      {
+        term: "PPM",
+        detail:
+          "menu kontekstowe na klipie (wytnij / kopiuj / wklej / duplikuj / usuń / mute / rozdziel / Inspector), pustej lane i nagłówku ścieżki audio.",
+      },
+      {
+        term: "⌘/Ctrl+drag",
+        detail: "chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
+      },
+      {
+        term: "Schowek",
+        detail:
+          "⌘/Ctrl+A zaznacz wszystkie; ⌘/Ctrl+T podział @ playhead; ⌘/Ctrl+J scal; ⌥/Alt+←/→ nudge.",
+      },
+      {
+        term: "Dwuklik klipu",
+        detail: "fokus Inspectora; tablet: double-tap osi = Fit Zoom.",
+      },
+      {
+        term: "Forma",
+        detail:
+          "Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi; single-move przesuwa też późniejsze sekcje.",
+      },
+      {
+        term: "Kotwice",
+        detail:
+          "Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
+      },
+    ],
+  },
+  {
+    title: "Ścieżki Audio i Dock",
+    bullets: [
+      {
+        term: "+ Dodaj Ścieżkę",
+        detail:
+          "pod listą w docku; dwuklik pustego miejsca w kolumnie docku też dodaje ścieżkę.",
+      },
+      {
+        term: "Zaznaczanie ścieżek",
+        detail:
+          "klik = jedna; Shift+klik = zakres; ⌘/Ctrl+klik = przełącz w zestawie.",
+      },
+      {
+        term: "S / M",
+        detail:
+          "Solo / Mute w docku; przy multi — na zaznaczonych. ⌘/Ctrl+S/M = wszystkie; ⌥/Alt+S = solo wyłącznie tej.",
+      },
+      {
+        term: "Fader",
+        detail: "dwuklik fadera / dB = reset 0.0 dB.",
+      },
+      {
+        term: "Mixer (X)",
+        detail:
+          "pionowe paski: M / ST (PAN vs True Balance BAL), ciemny baner z cienkim paskiem koloru ścieżki, fader z podziałką, peak LED (mono 1 pasek / stereo L+R; zielony / żółty −6 / czerwony clip), S/M; Out = Master|Bus; Busy / Click / Master z muted banerami; przypięty Stereo Out.",
+      },
+      {
+        term: "Dock",
+        detail:
+          "nazwa + S/M w pierwszym rzędzie, fader na pełną szerokość w drugim; przeciągnij prawą krawędź kolumny (zapamiętane).",
+      },
+      {
+        term: "Import",
+        detail:
+          "upuść plik na pustą lane, PPM → Importuj, albo z Inspectora.",
+      },
+      {
+        term: "Schowek audio",
+        detail: "⌘C / ⌘X / ⌘V / ⌘D także dla klipów audio (i z PPM).",
+      },
+    ],
+  },
+  {
+    title: "Lista narzędzi audio",
+    bullets: [
+      {
+        term: "Menu T",
+        detail:
+          "Logic-style: T otwiera menu przy kursorze; druga litera wybiera narzędzie. Same litery nie przełączają narzędzi.",
+      },
+      {
+        term: "Pasek",
+        detail:
+          "domyślnie Wskaźnik / Ołówek / Gumka / Nożyczki; kafelek ustawień wybiera widoczne (lokalnie). Pełny zestaw zawsze przez T + litera.",
+      },
+      {
+        term: "Pointer (T T)",
+        detail:
+          "zaznacz, przesuń, zmień długość (strefy na brzegach). Esc = anuluj / Wskaźnik / odznacz.",
+      },
+      {
+        term: "Pencil (T P)",
+        detail:
+          "klik: 1 takt / marker; przeciągnięcie: zakres z nadpisaniem. Na mapach: nowa zmiana @ snap. Bez pencil na audio.",
+      },
+      {
+        term: "Eraser (T E)",
+        detail: "usuń kliknięty clip (Forma / treść / audio) lub zdarzenie mapy.",
+      },
+      {
+        term: "Scissors (T I)",
+        detail:
+          "podział clipu / podsekcja Formy / nowa zmiana mapy. Samo I = Inspector (nie nożyczki).",
+      },
+      {
+        term: "Join (T J)",
+        detail:
+          "scal sąsiednie clipy albo usuń najbliższą granicę podsekcji Formy.",
+      },
+      {
+        term: "Mute (T M) / Solo (T S)",
+        detail:
+          "klik = mute clipu; przytrzymaj LMB = chwilowe solo ścieżki. Dock S/M bez zmian.",
+      },
+      {
+        term: "Fade (T A)",
+        detail: "przeciągnij na krawędzi clipu: fade in / out.",
+      },
+      {
+        term: "Gain (T G)",
+        detail: "przeciągnij w pionie na clipie: poziom dB.",
+      },
+      {
+        term: "Marquee (T R)",
+        detail: "prostokąt zaznaczenia na siatce (także clipy audio).",
+      },
+      {
+        term: "Zoom (T Y)",
+        detail:
+          "przeciągnij prostokąt na osi; klik tła = Fit; Ctrl+Alt = chwilowy Zoom. Z = Fit Zoom.",
+      },
+      {
+        term: "Różdżka (W)",
+        detail:
+          "Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3); poza akordem T.",
+      },
+      {
+        term: "Tap",
+        detail:
+          "tylko przycisk przy warstwie Tekst: kolejka linii; Spacja = start @ playhead; ↑/↓ = linie; Esc wychodzi.",
+      },
+    ],
+  },
+];
 
 /** Phrases that should stay as a single kbd chip. */
 function isAtomicKeys(keys: string): boolean {
@@ -165,7 +314,10 @@ function KeyChord({ keys }: { keys: string }) {
   return (
     <span className={styles.chord}>
       {alternatives.map((alt, altIdx) => {
-        const parts = alt.split("+").map((p) => p.trim()).filter(Boolean);
+        const parts = alt
+          .split("+")
+          .map((p) => p.trim())
+          .filter(Boolean);
         return (
           <span key={`${alt}-${altIdx}`} className={styles.chordAlt}>
             {altIdx > 0 ? <span className={styles.keySlash}>/</span> : null}
@@ -182,6 +334,11 @@ function KeyChord({ keys }: { keys: string }) {
   );
 }
 
+function matchesQuery(haystack: string, query: string): boolean {
+  if (!query) return true;
+  return haystack.toLowerCase().includes(query);
+}
+
 type TimelineHelpProps = {
   onClose: () => void;
 };
@@ -189,19 +346,65 @@ type TimelineHelpProps = {
 /** Full help panel (header tabs + body). `?` / help icon wiring stays in TimelineShell. */
 export function TimelineHelp({ onClose }: TimelineHelpProps) {
   const baseId = useId();
+  const searchId = `${baseId}-search`;
   const [tab, setTab] = useState<HelpTab>("shortcuts");
+  const [query, setQuery] = useState("");
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const filteredGroups = useMemo(() => {
+    if (!normalizedQuery) return KEY_GROUPS;
+    return KEY_GROUPS.map((group) => ({
+      ...group,
+      rows: group.rows.filter(
+        (row) =>
+          matchesQuery(group.heading, normalizedQuery) ||
+          matchesQuery(row.keys, normalizedQuery) ||
+          matchesQuery(row.action, normalizedQuery),
+      ),
+    })).filter((group) => group.rows.length > 0);
+  }, [normalizedQuery]);
+
+  const filteredTools = useMemo(() => {
+    if (!normalizedQuery) return TOOL_SECTIONS;
+    return TOOL_SECTIONS.map((section) => ({
+      ...section,
+      bullets: section.bullets.filter(
+        (b) =>
+          matchesQuery(section.title, normalizedQuery) ||
+          matchesQuery(b.term, normalizedQuery) ||
+          matchesQuery(b.detail, normalizedQuery),
+      ),
+    })).filter((section) => section.bullets.length > 0);
+  }, [normalizedQuery]);
+
+  const isEmpty =
+    tab === "shortcuts"
+      ? filteredGroups.length === 0
+      : filteredTools.length === 0;
 
   return (
-    <>
-      <div
-        className={[shellStyles.overlayHead, shellStyles.helpOverlayHead]
-          .filter(Boolean)
-          .join(" ")}
-      >
+    <div className={styles.root}>
+      <div className={styles.head}>
         <div className={styles.headMain}>
-          <div className={shellStyles.helpOverlayHeadText}>
-            <p className={shellStyles.helpOverlayEyebrow}>Timeline</p>
-            <h2 id="tl-help-title">Pomoc</h2>
+          <div className={styles.headText}>
+            <p className={styles.eyebrow}>Timeline</p>
+            <h2 id="tl-help-title" className={styles.title}>
+              Pomoc
+            </h2>
+          </div>
+          <div className={styles.searchRow}>
+            <input
+              id={searchId}
+              className={styles.search}
+              type="search"
+              placeholder="Szukaj skrótów i opisów…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              aria-label="Filtruj pomoc"
+            />
           </div>
           <div
             className={styles.tabs}
@@ -234,61 +437,69 @@ export function TimelineHelp({ onClose }: TimelineHelpProps) {
           <IconClose />
         </ShellIconButton>
       </div>
-      <div
-        className={[
-          shellStyles.overlayBody,
-          shellStyles.helpOverlayBody,
-          tab === "shortcuts" ? styles.bodyNoScroll : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {tab === "shortcuts" ? (
+
+      <div className={styles.body}>
+        {isEmpty ? (
+          <p className={styles.empty} role="status">
+            Brak wyników dla „{query.trim()}”.
+          </p>
+        ) : null}
+
+        {tab === "shortcuts" && !isEmpty ? (
           <div
-            className={styles.shortcutsPanel}
+            className={styles.keysGrid}
             role="tabpanel"
             id={`${baseId}-shortcuts-panel`}
             aria-labelledby={`${baseId}-shortcuts`}
           >
-            <div className={styles.keysGrid}>
-              {KEY_GROUPS.map((group) => (
-                <div key={group.heading} className={styles.keysGroup}>
-                  <h3 className={styles.keysHeading}>{group.heading}</h3>
-                  <dl className={styles.keysDl}>
-                    {group.rows.map((row) => (
-                      <div key={row.keys} className={styles.keyRow}>
-                        <dt>
-                          <KeyChord keys={row.keys} />
-                        </dt>
-                        <dd>{row.action}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              ))}
-            </div>
+            {filteredGroups.map((group) => (
+              <section key={group.heading} className={styles.keysCard}>
+                <h3 className={styles.keysHeading}>{group.heading}</h3>
+                <dl className={styles.keysDl}>
+                  {group.rows.map((row) => (
+                    <div key={row.keys} className={styles.keyRow}>
+                      <dt>
+                        <KeyChord keys={row.keys} />
+                      </dt>
+                      <dd>{row.action}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ))}
           </div>
-        ) : (
+        ) : null}
+
+        {tab === "tools" && !isEmpty ? (
           <div
+            className={styles.toolsGrid}
             role="tabpanel"
             id={`${baseId}-tools-panel`}
             aria-labelledby={`${baseId}-tools`}
           >
-            <div className={shellStyles.helpGrid}>
-              {SECTIONS.map((section) => (
-                <section key={section.title} className={shellStyles.helpSection}>
-                  <h3 className={shellStyles.helpSectionTitle}>{section.title}</h3>
-                  <ul className={shellStyles.helpList}>
-                    {section.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </section>
-              ))}
-            </div>
+            {filteredTools.map((section) => (
+              <section key={section.title} className={styles.toolCard}>
+                <h3 className={styles.toolCardTitle}>{section.title}</h3>
+                <ul className={styles.toolList}>
+                  {section.bullets.map((bullet) => (
+                    <li
+                      key={`${bullet.term}-${bullet.detail.slice(0, 24)}`}
+                      className={styles.toolItem}
+                    >
+                      <span className={styles.toolBullet} aria-hidden />
+                      <span className={styles.toolItemText}>
+                        <span className={styles.term}>{bullet.term}</span>
+                        {" — "}
+                        {bullet.detail}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
           </div>
-        )}
+        ) : null}
       </div>
-    </>
+    </div>
   );
 }

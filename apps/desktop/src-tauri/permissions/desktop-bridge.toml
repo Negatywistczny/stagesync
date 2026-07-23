@@ -37,6 +37,7 @@ commands.allow = [
   "get_sidecar_log_tail",
   "cancel_local_host",
   "discover_lan_hosts",
+  "probe_host_health",
   "connect_remote_host",
   "start_local_host",
   "return_to_launcher",

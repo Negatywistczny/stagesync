@@ -12,8 +12,8 @@ use tauri_plugin_shell::ShellExt;
 
 use crate::{
     append_sidecar_file_log, append_sidecar_log, assert_node_path_usable, check_health_at,
-    format_sidecar_failure, nav_url, path_for_node, startup_failure_message, UI_PORT,
-    HEALTHCHECK_INTERVAL, SERVER_ENTRY_REL, STARTUP_TIMEOUT,
+    check_health_at_timeout, format_sidecar_failure, nav_url, path_for_node, startup_failure_message,
+    UI_PORT, HEALTHCHECK_INTERVAL, SERVER_ENTRY_REL, STARTUP_TIMEOUT,
 };
 
 const RECENT_CAP: usize = 5;
@@ -21,6 +21,7 @@ const MDNS_BROWSE_MS: u64 = 2_500;
 const MDNS_TOTAL_BUDGET_MS: u64 = 4_000;
 const SERVICE_TYPE: &str = "_stagesync._tcp.local.";
 const VERSION_MISMATCH_PREFIX: &str = "VERSION_MISMATCH:";
+const RECENT_HEALTH_TIMEOUT_MS: u64 = 1_500;
 
 #[derive(Default)]
 pub struct SidecarRuntime {
@@ -69,6 +70,9 @@ pub struct DiscoveredHost {
     pub port: u16,
     pub version: Option<String>,
     pub url: String,
+    pub hostname: Option<String>,
+    pub project: Option<String>,
+    pub status: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -322,11 +326,18 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
                 Ok(ServiceEvent::ServiceResolved(info)) => {
                     let host = info.get_hostname().trim_end_matches('.').to_string();
                     let port = info.get_port();
-                    let version = info
-                        .get_properties()
-                        .iter()
-                        .find(|p| p.key() == "version")
-                        .map(|p| p.val_str().to_string());
+                    let props = info.get_properties();
+                    let txt = |key: &str| -> Option<String> {
+                        props
+                            .iter()
+                            .find(|p| p.key() == key)
+                            .map(|p| p.val_str().to_string())
+                            .filter(|s| !s.trim().is_empty())
+                    };
+                    let version = txt("version");
+                    let hostname = txt("hostname");
+                    let project = txt("project");
+                    let status = txt("status");
                     let ip = pick_mdns_ipv4(info.get_addresses().iter())
                         .unwrap_or_else(|| host.clone());
                     let url = format!("http://{ip}:{port}");
@@ -339,6 +350,9 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
                         port,
                         version,
                         url,
+                        hostname,
+                        project,
+                        status,
                     });
                 }
                 Ok(_) => {}
@@ -356,6 +370,29 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
         Ok(Ok(result)) => result,
         Ok(Err(join_err)) => Err(format!("mDNS task: {join_err}")),
         Err(_) => Err("Skan mDNS przekroczył limit czasu.".into()),
+    }
+}
+
+/// Quick online probe for Launcher "Ostatnio używane" (1.5 s). Errors → offline.
+#[tauri::command]
+pub async fn probe_host_health(url: String) -> Result<bool, String> {
+    let origin = match normalize_origin(&url) {
+        Ok(o) => o,
+        Err(_) => return Ok(false),
+    };
+    let parsed = match url::Url::parse(&origin) {
+        Ok(u) => u,
+        Err(_) => return Ok(false),
+    };
+    let host = match parsed.host_str() {
+        Some(h) => h.to_string(),
+        None => return Ok(false),
+    };
+    let port = parsed.port_or_known_default().unwrap_or(80) as u16;
+    let timeout = Duration::from_millis(RECENT_HEALTH_TIMEOUT_MS);
+    match check_health_at_timeout(&host, port, timeout).await {
+        Ok(Some(_)) => Ok(true),
+        _ => Ok(false),
     }
 }
 

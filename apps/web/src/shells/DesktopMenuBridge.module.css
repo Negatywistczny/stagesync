@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: var(--ss-z-modal);
   display: grid;
   place-items: center;
   padding: var(--ss-space-4);
@@ -123,7 +123,7 @@
   position: fixed;
   bottom: var(--ss-space-4);
   left: 50%;
-  z-index: 70;
+  z-index: var(--ss-z-toast);
   transform: translateX(-50%);
   margin: 0;
   padding: var(--ss-space-2) var(--ss-space-4);

@@ -14,6 +14,7 @@
   --ss-color-ghost-hover: rgba(250, 250, 250, 0.08);
   --ss-color-border: #3f3f46;
   --ss-color-danger: #ef4444;
+  --ss-color-online: #22c55e;
   --ss-color-focus-ring: #22d3ee;
   --ss-radius-sm: 6px;
   --ss-radius-md: 12px;
@@ -353,6 +354,12 @@ body {
   border-color: var(--ss-color-primary);
 }
 
+.hostList button.hostTile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+}
+
 .hostList .name {
   display: block;
   font-weight: var(--ss-font-weight-semibold);
@@ -360,9 +367,69 @@ body {
 
 .hostList .meta {
   display: block;
-  margin-top: 2px;
   color: var(--ss-color-text-muted);
   font-size: var(--ss-text-sm);
+}
+
+.hostMid {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.recentRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.recentRow .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectBadge {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px var(--ss-space-2);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-secondary);
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-compact);
+}
+
+.statusDiode,
+.healthDiode {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ss-color-border);
+}
+
+.statusDiode.is-playing,
+.healthDiode.is-online {
+  background: var(--ss-color-online);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ss-color-online) 25%, transparent);
+}
+
+.statusDiode.is-paused {
+  background: var(--ss-color-primary);
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.25);
+}
+
+.statusDiode.is-stopped,
+.healthDiode.is-offline,
+.healthDiode.is-unknown {
+  background: var(--ss-color-border);
 }
 
 .manual {

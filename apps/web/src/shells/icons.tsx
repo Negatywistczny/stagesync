@@ -3,20 +3,33 @@
 import type { ComponentType } from "react";
 import type { LucideProps } from "lucide-react";
 import {
+  AudioLines,
+  AudioWaveform,
+  Blend,
   ChevronLeft,
   ChevronRight,
   CircleDot,
   CircleHelp,
+  Combine,
   Crosshair,
+  Drum,
+  Drumstick,
   Eraser,
   Eye,
+  Guitar,
+  Headphones,
   Info,
+  KeyboardMusic,
   ListEnd,
   Maximize2,
+  Mic,
+  MicVocal,
   MousePointer2,
+  Music,
   Music2,
   Pause,
   Pencil,
+  Piano,
   Play,
   Redo2,
   Repeat,
@@ -27,18 +40,23 @@ import {
   Scaling,
   Scissors,
   Settings,
+  Sparkles,
+  Speaker,
   Square,
   SquareCheck,
-  SquareMousePointer,
+  SquareDashedMousePointer,
   StretchHorizontal,
   StretchVertical,
   Sun,
   Undo2,
+  Volume2,
+  VolumeX,
   Wand2,
   X,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
+import type { TrackIcon } from "@stagesync/shared";
 
 type IconProps = { className?: string; title?: string };
 
@@ -79,8 +97,28 @@ export function IconWand(p: IconProps) {
   return withIcon(Wand2, p);
 }
 
-export function IconSmart(p: IconProps) {
-  return withIcon(SquareMousePointer, p);
+export function IconJoin(p: IconProps) {
+  return withIcon(Combine, p);
+}
+
+export function IconMute(p: IconProps) {
+  return withIcon(VolumeX, p);
+}
+
+export function IconSolo(p: IconProps) {
+  return withIcon(Headphones, p);
+}
+
+export function IconFade(p: IconProps) {
+  return withIcon(Blend, p);
+}
+
+export function IconGain(p: IconProps) {
+  return withIcon(Volume2, p);
+}
+
+export function IconMarquee(p: IconProps) {
+  return withIcon(SquareDashedMousePointer, p);
 }
 
 export function IconTap(p: IconProps) {
@@ -204,4 +242,30 @@ export function IconZoomV(p: IconProps) {
 /** UI chrome scale (not time axis). */
 export function IconZoomUi(p: IconProps) {
   return withIcon(Scaling, p);
+}
+
+const TRACK_ICON_MAP: Record<TrackIcon, ComponentType<LucideProps>> = {
+  mic: Mic,
+  vocal: MicVocal,
+  guitar: Guitar,
+  bass: AudioLines,
+  drums: Drum,
+  perc: Drumstick,
+  keys: KeyboardMusic,
+  piano: Piano,
+  synth: AudioWaveform,
+  brass: Music,
+  strings: Music2,
+  click: CircleDot,
+  fx: Sparkles,
+  amp: Speaker,
+  other: CircleDot,
+};
+
+/** Closed track.icon enum → Lucide glyph (Mixer badge + dock). */
+export function IconTrack({
+  icon,
+  ...p
+}: IconProps & { icon: TrackIcon }) {
+  return withIcon(TRACK_ICON_MAP[icon], p);
 }

@@ -5,7 +5,7 @@
  */
 
 import type { AudioLaneId } from "./timelineTracks.js";
-import { isAudioLaneId } from "./timelineTracks.js";
+import { audioLaneId, isAudioLaneId } from "./timelineTracks.js";
 
 export type ClipSelectionLane =
   | "forma"
@@ -99,6 +99,34 @@ export function selectSingle(
 
 export function clearSelection(): ClipSelection {
   return EMPTY_CLIP_SELECTION;
+}
+
+/** Select every Forma section + content + audio clip (⌘A). */
+export function selectAllProjectClips(project: {
+  forma: { clips: { id: string; kind: string }[] };
+  tekst: { clips: { id: string }[] };
+  akordy: { clips: { id: string }[] };
+  cue: { clips: { id: string }[] };
+  audioClips: { id: string; trackId: string }[];
+}): ClipSelection {
+  const items: SelectedClip[] = [];
+  for (const c of project.forma.clips) {
+    if (c.kind === "section") items.push({ id: c.id, lane: "forma" });
+  }
+  for (const c of project.tekst.clips) {
+    items.push({ id: c.id, lane: "tekst" });
+  }
+  for (const c of project.akordy.clips) {
+    items.push({ id: c.id, lane: "akordy" });
+  }
+  for (const c of project.cue.clips) {
+    items.push({ id: c.id, lane: "cue" });
+  }
+  for (const c of project.audioClips) {
+    items.push({ id: c.id, lane: audioLaneId(c.trackId) });
+  }
+  if (!items.length) return clearSelection();
+  return setSelection(items, items[items.length - 1]!.id);
 }
 
 /**

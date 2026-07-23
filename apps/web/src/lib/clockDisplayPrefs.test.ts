@@ -47,7 +47,7 @@ describe("clockDisplayPrefs", () => {
     expect(formatMmSsMs(-500)).toBe("-00:00.500");
   });
 
-  it("formats BBT with tick and time projection", () => {
+  it("formats BBT as bar.beat and time projection", () => {
     expect(
       formatClockDisplay({
         ticks: 0,
@@ -56,7 +56,17 @@ describe("clockDisplayPrefs", () => {
         ppq: 960,
         format: "bbt",
       }),
-    ).toBe("1.1.0");
+    ).toBe("1.1");
+
+    expect(
+      formatClockDisplay({
+        ticks: 960,
+        bpm: 120,
+        timeSignature: TS_4_4,
+        ppq: 960,
+        format: "bbt",
+      }),
+    ).toBe("1.2");
 
     expect(
       formatClockDisplay({

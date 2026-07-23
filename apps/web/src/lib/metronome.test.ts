@@ -24,7 +24,7 @@ function mockAudioContext(state: AudioContextState = "running") {
     connect: ReturnType<typeof vi.fn>;
   }> = [];
 
-  const ctx = {
+  const ctx: Record<string, unknown> = {
     state,
     currentTime: 1,
     sampleRate: 48_000,
@@ -59,6 +59,13 @@ function mockAudioContext(state: AudioContextState = "running") {
       return gain;
     }),
   };
+  ctx.createAnalyser = vi.fn(() => ({
+    fftSize: 256,
+    smoothingTimeConstant: 0.2,
+    connect: vi.fn(),
+    getFloatTimeDomainData: vi.fn(),
+    context: ctx,
+  }));
 
   return { ctx: ctx as unknown as AudioContext, oscillators, gains };
 }

@@ -1,0 +1,76 @@
+/* Vertical peak meter — tokens only. LED zones fixed to track height. */
+
+.root {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 2px;
+  height: 100%;
+  min-height: 0;
+  flex: 0 0 auto;
+  width: var(--ss-space-3);
+}
+
+.dual {
+  gap: var(--ss-space-1);
+  width: calc(var(--ss-space-3) * 2 + var(--ss-space-1));
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.track {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 6px;
+  max-width: 10px;
+  min-height: 0;
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 70%, var(--ss-color-border));
+  overflow: hidden;
+}
+
+/*
+ * Full-track LED scale (−60…+6):
+ * green until −6 dB (54/66), yellow to 0 dB (60/66), red above.
+ */
+.leds {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--ss-color-success) 0%,
+    var(--ss-color-success) calc(100% * 54 / 66),
+    var(--ss-color-warning) calc(100% * 54 / 66),
+    var(--ss-color-warning) calc(100% * 60 / 66),
+    var(--ss-color-danger) calc(100% * 60 / 66),
+    var(--ss-color-danger) 100%
+  );
+}
+
+/* Covers unused top of the LED scale (level = 100% − dim). */
+.dim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--ss-color-bg) 78%, var(--ss-color-border));
+  transition: height 50ms linear;
+  pointer-events: none;
+}
+
+.chLabel {
+  flex: 0 0 auto;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text-muted);
+}

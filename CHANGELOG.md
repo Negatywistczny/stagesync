@@ -10,17 +10,37 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Menu kontekstowe (PPM):** na klipie Forma / Tekst / Akordy / Cue / Audio — wytnij, kopiuj, wklej, duplikuj, usuń, mute (audio), rozdziel w miejscu kursora (gdzie dostępne), pokaż w Inspectorze; na pustej lane — wklej @ kursor, dodaj sekcję/treść/cue albo import audio; na nagłówku ścieżki audio — zmień nazwę / duplikuj / usuń (także w Mixerze).
-- **Dock ścieżek audio:** multi-select (Shift = zakres, ⌘/Ctrl = przełącz); Solo/Mute na wszystkich zaznaczonych; ⌘/Ctrl+S/M na wszystkich ścieżkach; ⌥/Alt+S = solo wyłącznie tej ścieżki; dwuklik nazwy = zmiana w miejscu; dwuklik pustego docku = nowa ścieżka; dwuklik fadera = 0.0 dB; widok Mixer z tymi samymi kontrolkami kanału; w wąskiej kolumnie / niskiej wysokości ścieżki — nazwa ze skracaniem środka + S/M (fader się chowa, bez poszerzania docku).
+- **Menu narzędzi (T):** zestaw live-show (Wskaźnik, Ołówek, Gumka, Nożyczki, Połącz, Mute, Solo, Fade, Gain, Zaznaczanie, Zoom). Skrót jak w Logic: T otwiera menu przy kursorze, druga litera wybiera narzędzie (T T = Wskaźnik, T P/E/I/J/M/S/A/G/R/Y = pozostałe; T I = Nożyczki, T A = Fade); same litery nie przełączają narzędzi. Esc anuluje akord/menu. Na pasku domyślnie tylko Wskaźnik / Ołówek / Gumka / Nożyczki — wąski kafelek obok wybiera widoczne narzędzia (zapamiętane lokalnie); reszta zostaje w menu T. Na audio: podział / scalanie sąsiadów, mute clipu, chwilowe solo ścieżki przytrzymaniem, fade i gain myszą; marquee obejmuje też clipy audio. Różdżka (W) poza akordem T; Tap bez skrótu — tylko przycisk przy warstwie Tekst (tryb linii + tempo BPM).
+- **Skróty globalne Timeline:** X = Mixer; I = Właściwości / Inspector on/off (nie Metadane — te zostają na ikonie info; panel zamyka też × w nagłówku); ? = Pomoc; Spacja = Play/Pause; Shift+Spacja = play od zaznaczonego klipu; Enter/Home = Stop + początek; C = Cycle (bez L); K = metronom; U/⌘U = cycle z długości klipu audio; ⌘←→/↑↓ = zoom H/V; Z = Fit; ⌘T/⌘J/⌘A/⌘D = split/join/select-all/duplikuj; ⌥←→ = nudge; Esc = odznacz + zamknij menu. Pomoc Timeline zsynchronizowana.
+- **Menu kontekstowe (PPM):** na klipie Forma / Tekst / Akordy / Cue / Audio — wytnij, kopiuj, wklej, duplikuj, usuń, mute (audio), rozdziel w miejscu kursora (gdzie dostępne), pokaż w Inspectorze; na pustej lane — wklej @ kursor, dodaj sekcję/treść/cue albo import audio; na nagłówku ścieżki audio (także bezpośrednio na nazwie) — zmień nazwę / duplikuj / usuń (także w Mixerze), bez natywnego Look Up / Inspect.
+- **Dock ścieżek audio:** LPM na nazwie / tle nagłówka zaznacza ścieżkę; multi-select (Shift = zakres, ⌘/Ctrl = przełącz); Solo/Mute na wszystkich zaznaczonych; ⌘/Ctrl+S/M na wszystkich ścieżkach; ⌥/Alt+S = solo wyłącznie tej ścieżki; dwuklik nazwy = zmiana w miejscu; dwuklik pustego docku = nowa ścieżka; dwuklik fadera = 0.0 dB; układ 2-rzędowy (ikona + czytelna nazwa + S/M / fader na pełną szerokość; długa nazwa skracana w środku, pełna w podpowiedzi po najechaniu; zaznaczenie z żółtym akcentem bez nachodzenia na tekst); przeciąganie prawej krawędzi kolumny zmienia szerokość (120–350 px, zapamiętywane); przy niskiej wysokości ścieżki — pojedynczy rząd bez fadera i mniejsze S/M.
+- **Mixer:** 4 strefy L→R (Audio | Busy | Click | Master) z pionowymi separatorami. Stała szerokość stripu (~84 px, bez ściskania) — przy nadmiarze ścieżek/busów przewijanie poziome Audio+Busy; Click i Master przypięte po prawej (osobny panel, nie sticky w overflow). Ścieżki: kompaktowy przełącznik M / ST (nowa ścieżka = stereo; przy imporcie audio z liczby kanałów pliku), **PAN** (mono, StereoPanner bez dodatkowego prawa −3 dB) albo **BAL** True Balance (stereo — tłumienie przeciwnej strony, środek = unity), Set dB + Peak Hold (auto-reset przy Play, clear kliknięciem; czerwony latch > 0 dBFS), fader z podziałką (+6…−∞), miernik LED (mono 1 pasek / stereo L+R), S/M; ciemny baner z cienkim paskiem koloru ścieżki + ikona w tym kolorze (paleta ~16 kolorów / enum ikon; picker nad stripami i dockiem, bez przycinania przez sticky/overflow); selektor Out = Master | Bus (bez atrap Out 3–4 — brak multi-out w modelu). **Busy:** „+ Dodaj Bus” (kompaktowy, bez rozlewania nagłówka), stripy z cyanowym akcentem i badge BUS, M / ST + pan/balance, fader/S/M/metry, Out = Master; usuwanie z menu kontekstowego (ścieżki wracają na Master). **Click** przed Stereo Out (ciemny baner z akcentem warning, master fader Click, Mute = metronom off z zapisem sesji; Direct Cue, poza Master). **Stereo Out** dual L+R, ciemny baner Master. Przełącznik Mixer (X); w Mixerze bez Właściwości. Zoom UI skaluje szerokość stripów spójnie z chrome; Zoom H/V w Mixerze wyłączone (tylko oś czasu). Kolor/ikona też w docku Timeline i na waveformie.
 
 #### 🖥️ App Shell & UI
 - **Menu kontekstowe systemu:** natywne menu przeglądarki / Inspect Element wyłączone w całej aplikacji; w polach tekstowych (input / textarea) nadal dostępne wycinasie i wklejanie systemowe.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Launcher:** ekran startowy przed Adminem (wordmark StageSync) — uruchom lokalny host, wykryj StageSync w LAN (mDNS wybiera adres LAN, nie most Dockera / link-local) albo wpisz adres; czytelny status błędów (brak sieci, uprawnienia, log sidecara) zamiast białego ekranu; bezpieczne pomijanie uszkodzonej listy ostatnich hostów.
+- **Launcher:** ekran startowy przed Adminem (wordmark StageSync) — uruchom lokalny host, wykryj StageSync w LAN (mDNS: hostname komputera, nazwa wczytanego projektu, status Play/Pauza/Stop; wybór adresu LAN, nie most Dockera / link-local) albo wpisz adres; ostatnio używane z diodą online/offline (szybki probe health); czytelny status błędów (brak sieci, uprawnienia, log sidecara) zamiast białego ekranu; bezpieczne pomijanie uszkodzonej listy ostatnich hostów.
 - **Launcher / sesja:** przy utracie połączenia z hostem komunikat z ponawianiem łączenia oraz (na desktopie lokalnym) powrót do wyboru hosta; crash lokalnego hosta wraca do Launchera zamiast zawieszenia; ostrzeżenie przy różnicy wersji aplikacji i zdalnego hosta.
 
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Transport — licznik BBT:** odczyt tylko takt.miara (bez ticków); węższa stała szerokość, bez skoków layoutu.
+- **Wysokość ścieżek:** Tempo, Tonacja, Metrum, Kotwice, Forma, Tekst, Akordy i Cue startują wąsko (niżej niż Audio); ręcznie zmieniona wysokość zostaje zapamiętana. Zoom V zachowuje proporcję.
+- **Inspector ścieżki audio:** Solo/Mute usunięte z Właściwości — zostają w docku ChannelStrip i Mixerze (Mute clipu w Inspectorze bez zmian).
+
+#### 📚 Dokumentacja
+- **Pomoc Timeline:** skróty w kartach kategorii (Widok / Narzędzia / Edycja / Transport / Nawigacja); zakładka narzędzi w sekcjach z wypunktowaniem zamiast ściany tekstu; wyszukiwanie w nagłówku filtruje skróty i opisy na żywo.
+
 ### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Canvas:** przewijanie w pionie zatrzymuje się na dole treści (ścieżki + „Dodaj ścieżkę”) — bez uciekania w pustkę pod ostatnim wierszem.
+- **UI Scale:** pasek transportu zostaje w jednym rzędzie (scroll poziomy w klastrach zamiast zawijania); Inspector przewija się wewnątrz kolumny bez nachodzenia na pasek statusu; ścieżki pozostają osiągalne pionowym scrollem przy powiększonym UI; Zoom UI ograniczony do 85–125%; pasek statusu trzyma Snap / UI / H / V zawsze widoczne (opaque, bez owijania pod długi tekst statusu).
+
+#### 📚 Dokumentacja
+- **Pomoc Timeline:** treść w modalu znów się przewija (przyklejony nagłówek i zakładki, scrollowalny korpus) — nic nie jest obcinane na dole.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Desktop / lokalny host:** zamknięcie okna albo wyjście z aplikacji zatrzymuje wbudowany host (port 4000 nie zostaje zajęty po Force Quit / samym zamknięciu okna na macOS); przy kolejnym „Uruchom lokalny host” porzucony proces hosta jest sprzątany automatycznie.

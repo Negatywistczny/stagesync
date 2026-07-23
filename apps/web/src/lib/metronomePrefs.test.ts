@@ -2,9 +2,14 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import {
   DEFAULT_METRONOME_PREFS,
   METRONOME_ACCENT_VOLUME_KEY,
+  METRONOME_MASTER_GAIN_DB_KEY,
+  METRONOME_ON_KEY,
   METRONOME_TIMBRE_KEY,
   clampMetronomeVolume,
+  getMetronomeOn,
   getMetronomePrefs,
+  masterClickGainLinear,
+  setMetronomeOn,
   setMetronomePrefs,
 } from "./metronomePrefs.js";
 
@@ -49,6 +54,7 @@ describe("metronomePrefs", () => {
       accentVolume: 80,
       beatVolume: 40,
       timbre: "woodblock",
+      masterGainDb: 0,
     });
     expect(store.get(METRONOME_ACCENT_VOLUME_KEY)).toBe("80");
     expect(store.get(METRONOME_TIMBRE_KEY)).toBe("woodblock");
@@ -61,6 +67,22 @@ describe("metronomePrefs", () => {
     });
     expect(store.has(METRONOME_ACCENT_VOLUME_KEY)).toBe(false);
     expect(store.has(METRONOME_TIMBRE_KEY)).toBe(false);
+  });
+
+  it("persists master Click gain and on/off across session", () => {
+    expect(getMetronomeOn()).toBe(false);
+    setMetronomeOn(true);
+    expect(store.get(METRONOME_ON_KEY)).toBe("1");
+    expect(getMetronomeOn()).toBe(true);
+    setMetronomeOn(false);
+    expect(store.has(METRONOME_ON_KEY)).toBe(false);
+
+    setMetronomePrefs({ masterGainDb: -6 });
+    expect(store.get(METRONOME_MASTER_GAIN_DB_KEY)).toBe("-6");
+    expect(getMetronomePrefs().masterGainDb).toBe(-6);
+    expect(masterClickGainLinear()).toBeCloseTo(0.501, 2);
+    setMetronomePrefs({ masterGainDb: 0 });
+    expect(store.has(METRONOME_MASTER_GAIN_DB_KEY)).toBe(false);
   });
 
   it("get/set tolerate private-mode throws", () => {

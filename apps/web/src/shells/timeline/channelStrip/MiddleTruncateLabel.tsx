@@ -13,6 +13,7 @@ export type MiddleTruncateLabelProps = {
   className?: string;
   title?: string;
   onDoubleClick?: (e: MouseEvent) => void;
+  onContextMenu?: (e: MouseEvent) => void;
 };
 
 export function MiddleTruncateLabel({
@@ -20,6 +21,7 @@ export function MiddleTruncateLabel({
   className,
   title,
   onDoubleClick,
+  onContextMenu,
 }: MiddleTruncateLabelProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(text);
@@ -52,6 +54,7 @@ export function MiddleTruncateLabel({
       className={className}
       title={title ?? text}
       onDoubleClick={onDoubleClick}
+      onContextMenu={onContextMenu}
     >
       {display}
     </span>

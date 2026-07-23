@@ -1,7 +1,7 @@
 .banner {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--ss-z-overlay);
   padding: var(--ss-space-2) var(--ss-space-4);
   border-bottom: 1px solid var(--ss-color-danger);
   background: var(--ss-color-surface);

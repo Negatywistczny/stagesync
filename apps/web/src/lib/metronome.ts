@@ -1,15 +1,20 @@
 /**
  * Metronome click scheduler — Web Audio + transport SSOT ticks (α8).
  * Call `resume()` on first Play or metronome toggle (autoplay policy).
+ *
+ * Click routing: Direct Cue — Osc → Gain → analyser → destination.
+ * NEVER through the project Master bus (Stereo Out).
  */
 
 import {
   localTicksPerBeat,
+  linearPeakToMeterDb,
   ticksToMs,
   type TimeSignature,
 } from "@stagesync/shared";
 import {
   getMetronomePrefs,
+  masterClickGainLinear,
   type MetronomeTimbre,
 } from "./metronomePrefs.js";
 
@@ -18,6 +23,8 @@ export type MetronomeDeps = {
 };
 
 let sharedCtx: AudioContext | null = null;
+let clickAnalyser: AnalyserNode | null = null;
+let clickAnalyserBuf: Float32Array | null = null;
 
 export function getMetronomeAudioContext(): AudioContext {
   if (!sharedCtx) {
@@ -30,6 +37,17 @@ export function getMetronomeAudioContext(): AudioContext {
   return sharedCtx;
 }
 
+function ensureClickAnalyser(ctx: AudioContext): AnalyserNode {
+  if (clickAnalyser && clickAnalyser.context === ctx) return clickAnalyser;
+  const a = ctx.createAnalyser();
+  a.fftSize = 256;
+  a.smoothingTimeConstant = 0.2;
+  a.connect(ctx.destination);
+  clickAnalyser = a;
+  clickAnalyserBuf = null;
+  return a;
+}
+
 /** Unlock / resume suspended AudioContext (user gesture). */
 export async function resumeMetronomeAudio(
   ctx: AudioContext = getMetronomeAudioContext(),
@@ -37,6 +55,7 @@ export async function resumeMetronomeAudio(
   if (ctx.state === "suspended") {
     await ctx.resume();
   }
+  ensureClickAnalyser(ctx);
   // iOS unlock: play a near-silent buffer once
   try {
     const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
@@ -82,6 +101,9 @@ const TIMBRE_PROFILES: Record<MetronomeTimbre, TimbreProfile> = {
 
 function scheduleClick(ctx: AudioContext, when: number, accent: boolean) {
   const prefs = getMetronomePrefs();
+  const masterLin = masterClickGainLinear(prefs);
+  if (masterLin <= 0) return;
+
   const profile = TIMBRE_PROFILES[prefs.timbre];
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -89,16 +111,36 @@ function scheduleClick(ctx: AudioContext, when: number, accent: boolean) {
   osc.frequency.value = accent ? profile.accentHz : profile.beatHz;
   const level =
     (accent ? BASE_ACCENT_GAIN : BASE_BEAT_GAIN) *
-    ((accent ? prefs.accentVolume : prefs.beatVolume) / 100);
+    ((accent ? prefs.accentVolume : prefs.beatVolume) / 100) *
+    masterLin;
   gain.gain.value = Math.max(0.0001, level);
   gain.gain.exponentialRampToValueAtTime(
     0.0001,
     when + profile.durationSec * 0.85,
   );
+  const cue = ensureClickAnalyser(ctx);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  // Direct Cue path — bypass Master Stereo Out.
+  gain.connect(cue);
   osc.start(when);
   osc.stop(when + profile.durationSec);
+}
+
+/** Live Click cue peak dB (not Master). Missing analyser → floor. */
+export function readClickMeterDb(): number {
+  if (!clickAnalyser) return linearPeakToMeterDb(0);
+  const n = clickAnalyser.fftSize;
+  if (!clickAnalyserBuf || clickAnalyserBuf.length !== n) {
+    clickAnalyserBuf = new Float32Array(n);
+  }
+  const buf = clickAnalyserBuf;
+  clickAnalyser.getFloatTimeDomainData(buf as Float32Array<ArrayBuffer>);
+  let peak = 0;
+  for (let i = 0; i < buf.length; i++) {
+    const v = Math.abs(buf[i]!);
+    if (v > peak) peak = v;
+  }
+  return linearPeakToMeterDb(peak);
 }
 
 export type MetronomeTickInput = {

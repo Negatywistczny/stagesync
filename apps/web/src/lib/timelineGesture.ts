@@ -114,21 +114,60 @@ export type ClipHitZone = "body" | "start" | "end" | "fade-in" | "fade-out";
 
 export type FormaToolId =
   | "pointer"
-  | "smart"
   | "pencil"
   | "eraser"
   | "scissors"
-  | "wand"
+  | "join"
+  | "mute"
+  | "solo"
+  | "fade"
+  | "gain"
+  | "marquee"
   | "zoom"
+  | "wand"
   | "tap";
 
-/** Hit zones only for Pointer / Smart — Pencil is exclusive draw. */
+/** Hit zones (trim / move) only for Pointer. */
 export function toolAllowsClipHitZones(tool: FormaToolId): boolean {
-  return tool === "pointer" || tool === "smart";
+  return tool === "pointer";
 }
 
 export function toolIsPencilDraw(tool: FormaToolId): boolean {
   return tool === "pencil";
+}
+
+/** Empty-lane drag draws a marquee (select) or zoom rect. */
+export function toolUsesMarqueeGesture(tool: FormaToolId): boolean {
+  return tool === "pointer" || tool === "marquee" || tool === "zoom";
+}
+
+/** CSS cursor for the active timeline tool on the grid / lanes. */
+export function cursorForTimelineTool(tool: FormaToolId): string {
+  switch (tool) {
+    case "pencil":
+    case "eraser":
+      return "crosshair";
+    case "scissors":
+      return "col-resize";
+    case "join":
+      return "cell";
+    case "mute":
+    case "solo":
+      return "pointer";
+    case "fade":
+      return "col-resize";
+    case "gain":
+      return "ns-resize";
+    case "marquee":
+      return "crosshair";
+    case "zoom":
+      return "zoom-in";
+    case "wand":
+    case "tap":
+      return "default";
+    default:
+      return "default";
+  }
 }
 
 /** Ctrl+Alt hold → temporary Zoom (v4 `effectiveToolId`). */
@@ -191,8 +230,8 @@ export function hitTestClipZone(
 }
 
 /**
- * Audio Smart Tool zones ([ADR 0008] §6): top corners = fade; lower edges = trim.
- * Pointer tool keeps classic start/end/body (no fade corners).
+ * Audio Smart/Fade Tool zones ([ADR 0008] §6): top corners = fade; lower edges = trim.
+ * Pointer tool keeps classic start/end/body (no fade corners). Fade tool uses fades.
  */
 export function hitTestAudioClipZone(
   localX: number,
@@ -220,6 +259,7 @@ export type FormaGestureKind =
   | "resize-end"
   | "fade-in"
   | "fade-out"
+  | "gain"
   | "countdown-length"
   | "subsection-boundary";
 
@@ -254,6 +294,10 @@ export type FormaGestureSession = {
   optionCopy?: boolean;
   /** Fade gesture: fade ms at pointerdown. */
   originFadeMs?: number;
+  /** Gain gesture: gainDb at pointerdown. */
+  originGainDb?: number;
+  /** Gain gesture: clientY at pointerdown. */
+  originClientY?: number;
 };
 
 export type FormaGesturePreview = {
@@ -267,9 +311,11 @@ export type FormaGesturePreview = {
   name?: string;
   /** Live subsection offsets during boundary drag. */
   subsections?: number[];
-  /** Live fade ms while dragging Smart fade handles. */
+  /** Live fade ms while dragging fade tool / handles. */
   fadeInMs?: number;
   fadeOutMs?: number;
+  /** Live clip gain while dragging Gain tool. */
+  gainDb?: number;
 };
 
 export function cursorForHitZone(

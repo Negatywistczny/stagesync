@@ -118,6 +118,8 @@
   --ss-z-dropdown: 20;
   --ss-z-panel: 20;
   --ss-z-overlay: 40;
+  --ss-z-modal: 60;
+  --ss-z-toast: 70;
 }
 
 /* Light theme — v4 parity via data-theme */

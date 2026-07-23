@@ -1,5 +1,19 @@
 /**
  * Client WebAudio playback synced to server transport ticks ([ADR 0008]).
+ *
+ * Graph (routing still Track → Master | Bus, Bus → Master):
+ *
+ * Mono track:
+ *   BufferSource → [stereo→mono −3 dB downmix?] → clipGain → trackGain
+ *     → StereoPanner → analyser → (masterGain | groupBusGain)
+ *
+ * Stereo track (True Balance — not StereoPanner):
+ *   BufferSource → clipGain → trackGain → ChannelSplitter
+ *     → gainL / gainR → ChannelMerger → meterSplit → analyserL/R
+ *     merger → (masterGain | groupBusGain)
+ *
+ * Bus mirrors track mono/stereo topology; bus always → Master.
+ * Click / metronome stays on a separate Direct Cue path (never through Master).
  */
 
 import {
@@ -7,13 +21,20 @@ import {
   audioClipPlayableMs,
   audioClipRemainingSecAlongMaps,
   audioFadeGainAtMs,
+  balanceGains,
+  clampPan,
   fadeInMsOf,
   fadeOutMsOf,
   gainDbToLinear,
+  linearPeakToMeterDb,
+  resolveChannelMode,
   resolveMeterAt,
   resolveTempoAt,
+  resolveTrackOutputDest,
+  STEREO_DOWNMIX_LINEAR,
   trimInMsOf,
   trimOutMsOf,
+  type ChannelMode,
   type Project,
 } from "@stagesync/shared";
 import {
@@ -27,12 +48,49 @@ export type AudioPlaybackInput = {
   displayTicks: number;
   /** When non-empty, only these audio track ids are audible (client Solo). */
   soloTrackIds?: readonly string[];
+  /** When non-empty (and no track solo), only tracks feeding these busses. */
+  soloBusIds?: readonly string[];
 };
 
 type ActiveSource = {
   clipId: string;
+  trackId: string;
   source: AudioBufferSourceNode;
   gain: GainNode;
+  /** Extra nodes for stereo→mono downmix (disconnected on stop). */
+  extras: AudioNode[];
+};
+
+type TrackBusMono = {
+  mode: "mono";
+  gain: GainNode;
+  pan: StereoPannerNode;
+  analyser: AnalyserNode;
+  /** Reconnected to Master / bus; meters stay upstream. */
+  route: GainNode;
+};
+
+type TrackBusStereo = {
+  mode: "stereo";
+  gain: GainNode;
+  splitter: ChannelSplitterNode;
+  gainL: GainNode;
+  gainR: GainNode;
+  merger: ChannelMergerNode;
+  meterSplit: ChannelSplitterNode;
+  analyserL: AnalyserNode;
+  analyserR: AnalyserNode;
+  route: GainNode;
+};
+
+type TrackBus = TrackBusMono | TrackBusStereo;
+type GroupBusNode = TrackBus;
+
+type MasterBus = {
+  gain: GainNode;
+  splitter: ChannelSplitterNode;
+  analyserL: AnalyserNode;
+  analyserR: AnalyserNode;
 };
 
 const bufferCache = new Map<string, AudioBuffer>();
@@ -46,8 +104,13 @@ let lastGraphKey = "";
 let playbackSuppressed = false;
 let stopEpoch = 0;
 
+const trackBuses = new Map<string, TrackBus>();
+const groupBuses = new Map<string, GroupBusNode>();
+let masterBus: MasterBus | null = null;
+
 const SEEK_JUMP_TICKS = 480;
 const MAX_BUFFER_CACHE = 32;
+const ANALYSER_FFT = 256;
 
 function cacheKey(projectId: string, assetId: string): string {
   return `${projectId}:${assetId}`;
@@ -186,12 +249,307 @@ export function clearAudioBufferCache(projectId?: string): void {
   }
 }
 
+function makeAnalyser(ctx: AudioContext): AnalyserNode {
+  const a = ctx.createAnalyser();
+  a.fftSize = ANALYSER_FFT;
+  a.smoothingTimeConstant = 0.35;
+  return a;
+}
+
+function outputNode(bus: TrackBus): AudioNode {
+  return bus.route;
+}
+
+function disconnectBusNodes(bus: TrackBus): void {
+  disconnectSafe(bus.gain);
+  disconnectSafe(bus.route);
+  if (bus.mode === "mono") {
+    disconnectSafe(bus.pan);
+    disconnectSafe(bus.analyser);
+  } else {
+    disconnectSafe(bus.splitter);
+    disconnectSafe(bus.gainL);
+    disconnectSafe(bus.gainR);
+    disconnectSafe(bus.merger);
+    disconnectSafe(bus.meterSplit);
+    disconnectSafe(bus.analyserL);
+    disconnectSafe(bus.analyserR);
+  }
+}
+
+function createChannelBus(ctx: AudioContext, mode: ChannelMode): TrackBus {
+  const gain = ctx.createGain();
+  gain.gain.value = 1;
+  const route = ctx.createGain();
+  route.gain.value = 1;
+  if (mode === "mono") {
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = 0;
+    const analyser = makeAnalyser(ctx);
+    gain.connect(pan);
+    pan.connect(analyser);
+    analyser.connect(route);
+    return { mode: "mono", gain, pan, analyser, route };
+  }
+  const splitter = ctx.createChannelSplitter(2);
+  const gainL = ctx.createGain();
+  const gainR = ctx.createGain();
+  gainL.gain.value = 1;
+  gainR.gain.value = 1;
+  const merger = ctx.createChannelMerger(2);
+  const meterSplit = ctx.createChannelSplitter(2);
+  const analyserL = makeAnalyser(ctx);
+  const analyserR = makeAnalyser(ctx);
+  gain.connect(splitter);
+  splitter.connect(gainL, 0);
+  splitter.connect(gainR, 1);
+  gainL.connect(merger, 0, 0);
+  gainR.connect(merger, 0, 1);
+  merger.connect(route);
+  merger.connect(meterSplit);
+  meterSplit.connect(analyserL, 0);
+  meterSplit.connect(analyserR, 1);
+  return {
+    mode: "stereo",
+    gain,
+    splitter,
+    gainL,
+    gainR,
+    merger,
+    meterSplit,
+    analyserL,
+    analyserR,
+    route,
+  };
+}
+
+function applyBalanceOrPan(bus: TrackBus, pan: number): void {
+  const p = clampPan(pan);
+  if (bus.mode === "mono") {
+    bus.pan.pan.value = p;
+    return;
+  }
+  const { l, r } = balanceGains(p);
+  bus.gainL.gain.value = l;
+  bus.gainR.gain.value = r;
+}
+
+function ensureMasterBus(ctx: AudioContext): MasterBus {
+  if (masterBus) return masterBus;
+  const gain = ctx.createGain();
+  gain.gain.value = 1;
+  const splitter = ctx.createChannelSplitter(2);
+  const analyserL = makeAnalyser(ctx);
+  const analyserR = makeAnalyser(ctx);
+  gain.connect(ctx.destination);
+  gain.connect(splitter);
+  splitter.connect(analyserL, 0);
+  splitter.connect(analyserR, 1);
+  masterBus = { gain, splitter, analyserL, analyserR };
+  return masterBus;
+}
+
+function ensureGroupBus(
+  ctx: AudioContext,
+  busId: string,
+  mode: ChannelMode,
+): GroupBusNode {
+  const hit = groupBuses.get(busId);
+  if (hit && hit.mode === mode) return hit;
+  if (hit) {
+    disconnectBusNodes(hit);
+    groupBuses.delete(busId);
+  }
+  const master = ensureMasterBus(ctx);
+  const node = createChannelBus(ctx, mode);
+  outputNode(node).connect(master.gain);
+  groupBuses.set(busId, node);
+  return node;
+}
+
+function ensureTrackBus(
+  ctx: AudioContext,
+  trackId: string,
+  mode: ChannelMode,
+): TrackBus {
+  const hit = trackBuses.get(trackId);
+  if (hit && hit.mode === mode) return hit;
+  if (hit) {
+    disconnectBusNodes(hit);
+    trackBuses.delete(trackId);
+  }
+  const master = ensureMasterBus(ctx);
+  const bus = createChannelBus(ctx, mode);
+  outputNode(bus).connect(master.gain);
+  trackBuses.set(trackId, bus);
+  return bus;
+}
+
+function disconnectSafe(node: AudioNode): void {
+  try {
+    node.disconnect();
+  } catch {
+    /* */
+  }
+}
+
+/**
+ * Apply gain/pan/balance/mute/solo and (re)wire outputs to Master or group bus.
+ * Gain/pan/balance/routing update live — no graph restart.
+ * Channel-mode change rebuilds topology (caller includes mode in graphKey).
+ */
+function applyBusParams(
+  project: Project,
+  ctx: AudioContext,
+  soloBusIds?: readonly string[],
+): void {
+  const master = ensureMasterBus(ctx);
+  master.gain.gain.value = gainDbToLinear(project.masterGainDb);
+
+  const busses = project.audioBusses ?? [];
+  const busIdSet = new Set(busses.map((b) => b.id));
+  const soloBusses =
+    soloBusIds && soloBusIds.length > 0 ? new Set(soloBusIds) : null;
+
+  for (const bus of busses) {
+    const mode = resolveChannelMode(bus.channelMode);
+    const node = ensureGroupBus(ctx, bus.id, mode);
+    let lin = gainDbToLinear(bus.gainDb);
+    if (bus.muted) lin = 0;
+    if (soloBusses && !soloBusses.has(bus.id)) lin = 0;
+    node.gain.gain.value = lin;
+    applyBalanceOrPan(node, bus.pan ?? 0);
+    // Bus always → Master (physical outs not in model).
+    const out = outputNode(node);
+    disconnectSafe(out);
+    out.connect(master.gain);
+  }
+  for (const id of [...groupBuses.keys()]) {
+    if (busIdSet.has(id)) continue;
+    const node = groupBuses.get(id);
+    if (!node) continue;
+    disconnectBusNodes(node);
+    groupBuses.delete(id);
+  }
+
+  const alive = new Set(project.audioTracks.map((t) => t.id));
+  for (const track of project.audioTracks) {
+    const mode = resolveChannelMode(track.channelMode);
+    const tBus = ensureTrackBus(ctx, track.id, mode);
+    tBus.gain.gain.value = gainDbToLinear(track.gainDb);
+    applyBalanceOrPan(tBus, track.pan ?? 0);
+    const dest = resolveTrackOutputDest(track.output, busIdSet);
+    const out = outputNode(tBus);
+    disconnectSafe(out);
+    if (dest.kind === "bus") {
+      const g = ensureGroupBus(
+        ctx,
+        dest.busId,
+        resolveChannelMode(
+          busses.find((b) => b.id === dest.busId)?.channelMode,
+        ),
+      );
+      out.connect(g.gain);
+    } else {
+      out.connect(master.gain);
+    }
+  }
+  for (const id of [...trackBuses.keys()]) {
+    if (alive.has(id)) continue;
+    const bus = trackBuses.get(id);
+    if (!bus) continue;
+    disconnectBusNodes(bus);
+    trackBuses.delete(id);
+  }
+}
+
+function peakDbFromAnalyser(analyser: AnalyserNode): number {
+  const buf = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buf);
+  let peak = 0;
+  for (let i = 0; i < buf.length; i++) {
+    const v = Math.abs(buf[i]!);
+    if (v > peak) peak = v;
+  }
+  return linearPeakToMeterDb(peak);
+}
+
+export type ChannelMeterPeaks = {
+  l: number;
+  /** Present for stereo buses; omit for mono. */
+  r?: number;
+};
+
+/** Live peak dB per track (−60 floor). Missing bus → floor. */
+export function readTrackMeterDb(trackId: string): ChannelMeterPeaks {
+  const bus = trackBuses.get(trackId);
+  const floor = linearPeakToMeterDb(0);
+  if (!bus) return { l: floor };
+  if (bus.mode === "mono") return { l: peakDbFromAnalyser(bus.analyser) };
+  return {
+    l: peakDbFromAnalyser(bus.analyserL),
+    r: peakDbFromAnalyser(bus.analyserR),
+  };
+}
+
+/** Live peak dB per group bus. */
+export function readGroupBusMeterDb(busId: string): ChannelMeterPeaks {
+  const bus = groupBuses.get(busId);
+  const floor = linearPeakToMeterDb(0);
+  if (!bus) return { l: floor };
+  if (bus.mode === "mono") return { l: peakDbFromAnalyser(bus.analyser) };
+  return {
+    l: peakDbFromAnalyser(bus.analyserL),
+    r: peakDbFromAnalyser(bus.analyserR),
+  };
+}
+
+/** Stereo Out L/R peak dB. */
+export function readMasterMeterDb(): { l: number; r: number } {
+  if (!masterBus) {
+    const floor = linearPeakToMeterDb(0);
+    return { l: floor, r: floor };
+  }
+  return {
+    l: peakDbFromAnalyser(masterBus.analyserL),
+    r: peakDbFromAnalyser(masterBus.analyserR),
+  };
+}
+
 function stopAll(): void {
   for (const a of active) {
-    try { a.source.stop(); } catch { /* */ }
-    try { a.source.disconnect(); a.gain.disconnect(); } catch { /* */ }
+    try {
+      a.source.stop();
+    } catch {
+      /* */
+    }
+    try {
+      a.source.disconnect();
+      a.gain.disconnect();
+      for (const n of a.extras) disconnectSafe(n);
+    } catch {
+      /* */
+    }
   }
   active = [];
+}
+
+function disposeBuses(): void {
+  for (const bus of trackBuses.values()) {
+    disconnectBusNodes(bus);
+  }
+  trackBuses.clear();
+  for (const bus of groupBuses.values()) {
+    disconnectBusNodes(bus);
+  }
+  groupBuses.clear();
+  if (masterBus) {
+    disconnectSafe(masterBus.gain);
+    disconnectSafe(masterBus.splitter);
+    disconnectSafe(masterBus.analyserL);
+    disconnectSafe(masterBus.analyserR);
+    masterBus = null;
+  }
 }
 
 /** Immediate local mute (Pause/Stop click) — blocks re-schedule until cleared. */
@@ -221,6 +579,10 @@ export function getAudioPlaybackDebugState(): {
   };
 }
 
+/**
+ * Structural graph key — mute/solo/clip geometry / routing / channel mode.
+ * Gain/pan/balance/master update live via {@link applyBusParams} (no restart).
+ */
 function graphKey(input: AudioPlaybackInput): string {
   return [
     input.project.audioClips
@@ -230,9 +592,19 @@ function graphKey(input: AudioPlaybackInput): string {
       )
       .join(";"),
     input.project.audioTracks
-      .map((t) => `${t.id}:${t.muted}:${t.gainDb}`)
+      .map(
+        (t) =>
+          `${t.id}:${t.muted}:${resolveChannelMode(t.channelMode)}:${t.output?.kind === "bus" ? t.output.busId : "master"}`,
+      )
+      .join(";"),
+    (input.project.audioBusses ?? [])
+      .map(
+        (b) =>
+          `${b.id}:${b.muted}:${resolveChannelMode(b.channelMode)}`,
+      )
       .join(";"),
     (input.soloTrackIds ?? []).join(","),
+    (input.soloBusIds ?? []).join(","),
   ].join("|");
 }
 
@@ -240,13 +612,49 @@ function isClipAudible(
   track: Project["audioTracks"][number] | undefined,
   clipMuted: boolean | undefined,
   soloTrackIds: readonly string[] | undefined,
+  soloBusIds: readonly string[] | undefined,
+  busIds: ReadonlySet<string>,
 ): boolean {
   if (clipMuted) return false;
   if (track?.muted) return false;
   if (soloTrackIds && soloTrackIds.length > 0) {
     return track != null && soloTrackIds.includes(track.id);
   }
+  if (soloBusIds && soloBusIds.length > 0) {
+    if (!track) return false;
+    const dest = resolveTrackOutputDest(track.output, busIds);
+    return dest.kind === "bus" && soloBusIds.includes(dest.busId);
+  }
   return true;
+}
+
+/**
+ * Stereo file on mono track: L+R each × −3 dB into clip gain.
+ * Returns extra nodes to disconnect on stop.
+ */
+function connectWithOptionalDownmix(
+  ctx: AudioContext,
+  source: AudioBufferSourceNode,
+  clipGain: GainNode,
+  trackMode: ChannelMode,
+  bufferChannels: number,
+): AudioNode[] {
+  if (trackMode === "mono" && bufferChannels >= 2) {
+    const splitter = ctx.createChannelSplitter(2);
+    const gL = ctx.createGain();
+    const gR = ctx.createGain();
+    gL.gain.value = STEREO_DOWNMIX_LINEAR;
+    gR.gain.value = STEREO_DOWNMIX_LINEAR;
+    source.connect(splitter);
+    splitter.connect(gL, 0);
+    splitter.connect(gR, 1);
+    gL.connect(clipGain);
+    gR.connect(clipGain);
+    return [splitter, gL, gR];
+  }
+  // Mono→stereo: browser upmix into True Balance path; stereo→stereo direct.
+  source.connect(clipGain);
+  return [];
 }
 
 function startClip(
@@ -256,11 +664,15 @@ function startClip(
   displayTicks: number,
   ctx: AudioContext,
   soloTrackIds?: readonly string[],
+  soloBusIds?: readonly string[],
 ): void {
   const clip = project.audioClips.find((c) => c.id === clipId);
   if (!clip) return;
   const track = project.audioTracks.find((t) => t.id === clip.trackId);
-  if (!isClipAudible(track, clip.muted, soloTrackIds)) return;
+  const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
+  if (!isClipAudible(track, clip.muted, soloTrackIds, soloBusIds, busIds)) {
+    return;
+  }
 
   const ctxTempo = {
     bpm: resolveTempoAt(project, clip.startTicks),
@@ -296,8 +708,8 @@ function startClip(
     );
   }
 
-  const maxGain =
-    gainDbToLinear(track?.gainDb) * gainDbToLinear(clip.gainDb);
+  // Track gain lives on the bus; clip node is fade × clip.gainDb only.
+  const maxGain = gainDbToLinear(clip.gainDb);
   const intoClipMs = offset * 1000 - trimInMsOf(clip);
   const asset = project.assets.find((a) => a.id === clip.assetId);
   const playableMs = audioClipPlayableMs(clip, asset, ctxTempo);
@@ -332,9 +744,20 @@ function startClip(
     }
   }
 
-  source.connect(gain);
-  gain.connect(ctx.destination);
-  const startAt = Math.max(0, Math.min(offset, Math.max(0, buf.duration - 0.001)));
+  const trackMode = resolveChannelMode(track?.channelMode);
+  const trackBus = ensureTrackBus(ctx, clip.trackId, trackMode);
+  const extras = connectWithOptionalDownmix(
+    ctx,
+    source,
+    gain,
+    trackMode,
+    buf.numberOfChannels,
+  );
+  gain.connect(trackBus.gain);
+  const startAt = Math.max(
+    0,
+    Math.min(offset, Math.max(0, buf.duration - 0.001)),
+  );
   try {
     source.start(ctx.currentTime, startAt, remaining);
   } catch {
@@ -343,7 +766,7 @@ function startClip(
   source.onended = () => {
     active = active.filter((a) => a.clipId !== clipId);
   };
-  active.push({ clipId, source, gain });
+  active.push({ clipId, trackId: clip.trackId, source, gain, extras });
 }
 
 export function syncAudioPlayback(
@@ -351,6 +774,8 @@ export function syncAudioPlayback(
   input: AudioPlaybackInput,
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
+  applyBusParams(input.project, ctx, input.soloBusIds);
+
   if (playbackSuppressed || !input.playing || ctx.state !== "running") {
     stopAll();
     lastDisplayTicks = input.displayTicks;
@@ -370,12 +795,23 @@ export function syncAudioPlayback(
   lastGraphKey = gKey;
 
   const trackById = new Map(input.project.audioTracks.map((t) => [t.id, t]));
+  const busIds = new Set((input.project.audioBusses ?? []).map((b) => b.id));
   const stillNeeded = new Set<string>();
 
   for (const clip of input.project.audioClips) {
     if (epochAtStart !== stopEpoch || playbackSuppressed) break;
     const track = trackById.get(clip.trackId);
-    if (!isClipAudible(track, clip.muted, input.soloTrackIds)) continue;
+    if (
+      !isClipAudible(
+        track,
+        clip.muted,
+        input.soloTrackIds,
+        input.soloBusIds,
+        busIds,
+      )
+    ) {
+      continue;
+    }
     const offset = audioClipBufferOffsetSecAlongMaps(
       clip,
       input.displayTicks,
@@ -391,12 +827,24 @@ export function syncAudioPlayback(
       input.displayTicks,
       ctx,
       input.soloTrackIds,
+      input.soloBusIds,
     );
   }
 
   for (const a of [...active]) {
     if (!stillNeeded.has(a.clipId)) {
-      try { a.source.stop(); } catch { /* */ }
+      try {
+        a.source.stop();
+      } catch {
+        /* */
+      }
+      try {
+        a.source.disconnect();
+        a.gain.disconnect();
+        for (const n of a.extras) disconnectSafe(n);
+      } catch {
+        /* */
+      }
       active = active.filter((x) => x.clipId !== a.clipId);
     }
   }
@@ -405,6 +853,7 @@ export function syncAudioPlayback(
 export function stopAudioPlayback(): void {
   stopEpoch += 1;
   stopAll();
+  disposeBuses();
   lastDisplayTicks = null;
   lastGraphKey = "";
 }

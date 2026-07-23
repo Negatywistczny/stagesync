@@ -176,6 +176,38 @@ export function splitContentClipAt(
   return mapFormaBack(project, lane, clips);
 }
 
+/**
+ * Join abutting content clips on a lane (gap 0). Keeps left payload / id.
+ */
+export function joinAdjacentContentClips(
+  project: Project,
+  lane: ContentLaneId,
+  clipId: string,
+): Project {
+  const before = contentAsForma(project, lane);
+  const sorted = [...before].sort((a, b) => a.startTicks - b.startTicks);
+  const idx = sorted.findIndex((c) => c.id === clipId);
+  if (idx < 0) return project;
+  const cur = sorted[idx]!;
+  const next = sorted[idx + 1];
+  const prev = sorted[idx - 1];
+  let left = cur;
+  let right: FormaClip | null = null;
+  if (next && next.startTicks === cur.startTicks + cur.lengthTicks) {
+    right = next;
+  } else if (prev && cur.startTicks === prev.startTicks + prev.lengthTicks) {
+    left = prev;
+    right = cur;
+  }
+  if (!right) return project;
+  const merged: FormaClip = {
+    ...left,
+    lengthTicks: left.lengthTicks + right.lengthTicks,
+  };
+  const without = before.filter((c) => c.id !== left.id && c.id !== right!.id);
+  return mapFormaBack(project, lane, [...without, merged]);
+}
+
 export function commitMoveContentClip(
   project: Project,
   lane: ContentLaneId,

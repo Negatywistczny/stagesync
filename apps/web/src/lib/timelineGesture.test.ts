@@ -18,8 +18,10 @@ import {
   snapModeFromPointerEvent,
   snapModeFromStorageKey,
   snapModeToStorageKey,
+  cursorForTimelineTool,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
+  toolUsesMarqueeGesture,
 } from "./timelineGesture.js";
 
 describe("resolvePencilRangeTicks", () => {
@@ -143,8 +145,15 @@ describe("timelineGesture remaining", () => {
   it("storage load/persist, tools, cursor, pointer snap", () => {
     expect(toolAllowsClipHitZones("pointer")).toBe(true);
     expect(toolAllowsClipHitZones("pencil")).toBe(false);
+    expect(toolAllowsClipHitZones("fade")).toBe(false);
     expect(toolIsPencilDraw("pencil")).toBe(true);
     expect(toolIsPencilDraw("eraser")).toBe(false);
+    expect(toolUsesMarqueeGesture("marquee")).toBe(true);
+    expect(toolUsesMarqueeGesture("zoom")).toBe(true);
+    expect(toolUsesMarqueeGesture("eraser")).toBe(false);
+    expect(cursorForTimelineTool("scissors")).toBe("col-resize");
+    expect(cursorForTimelineTool("gain")).toBe("ns-resize");
+    expect(cursorForTimelineTool("zoom")).toBe("zoom-in");
     expect(effectiveTimelineTool("pointer", true, true)).toBe("zoom");
     expect(effectiveTimelineTool("pencil", true, false)).toBe("pencil");
     expect(snapModeFromPointerEvent({ metaKey: true, ctrlKey: false })).toBe("off");

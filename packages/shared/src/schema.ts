@@ -1,5 +1,14 @@
 import { z } from "zod";
 import { assertValidTimeSignature, DEFAULT_PPQ } from "./time.js";
+import {
+  TrackColorSchema,
+  TrackIconSchema,
+} from "./track-appearance.js";
+import {
+  AudioBusSchema,
+  ChannelModeSchema,
+  MixerOutputDestSchema,
+} from "./mixer-routing.js";
 
 function refineMeterForPpq(
   ts: { numerator: number; denominator: number },
@@ -138,6 +147,22 @@ export const AudioTrackSchema = z.object({
   name: z.string().min(1).max(80),
   muted: z.boolean().optional(),
   gainDb: z.number().finite().min(-60).max(24).optional(),
+  /** Stereo pan / balance −1 (L) … +1 (R); omit / undefined = center. */
+  pan: z.number().finite().min(-1).max(1).optional(),
+  /**
+   * Mono = StereoPanner; stereo = True Balance (not pan law).
+   * Omit → stereo (empty tracks); set from file channel count on import.
+   */
+  channelMode: ChannelModeSchema.optional(),
+  /** Closed DAW palette — Mixer banner + Timeline dock / waveform. */
+  color: TrackColorSchema.optional(),
+  /** Closed instrument badge enum — Mixer + dock. */
+  icon: TrackIconSchema.optional(),
+  /**
+   * Mix destination: Master (omit) or a project bus.
+   * Physical multi-outs are not in the model yet — no fake Out N–M.
+   */
+  output: MixerOutputDestSchema.optional(),
 });
 
 export type AudioTrack = z.infer<typeof AudioTrackSchema>;
@@ -504,7 +529,11 @@ const ProjectSchemaV5Object = z
     keyMap: z.array(KeyEventSchema).max(256),
     assets: z.array(ProjectAssetSchema).max(256),
     audioTracks: z.array(AudioTrackSchema).max(64),
+    /** Group busses (Mixer zone); omit / [] = none. */
+    audioBusses: z.array(AudioBusSchema).max(16).optional(),
     audioClips: z.array(AudioClipSchema).max(512),
+    /** Project sum / Stereo Out fader (dB); omit = 0 dB. */
+    masterGainDb: z.number().finite().min(-60).max(24).optional(),
     tekst: z.object({
       clips: z.array(TekstClipSchema),
     }),
@@ -534,6 +563,17 @@ export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
         path: ["midiProgramId"],
       });
     }
+    const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
+    project.audioTracks.forEach((track, i) => {
+      if (track.output?.kind !== "bus") return;
+      if (!busIds.has(track.output.busId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Track output busId not found: ${track.output.busId}`,
+          path: ["audioTracks", i, "output", "busId"],
+        });
+      }
+    });
   },
 );
 
