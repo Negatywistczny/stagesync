@@ -22,7 +22,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane 2026-07-21** — residual β1 → must β2; scope report β2 | [TODO.md](./TODO.md) · [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
-| **5.1+** | Motywy, auth, kolejne minor features | TBD przy planowaniu linii 5.1 | — |
+| **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
+| **5.2+** | Motywy, auth, multi-out HW, bus→bus, kolejne minor | TBD przy planowaniu linii 5.2 | [TODO.md](./TODO.md) |
 
 ### Zamknięte etapy (α3–β1)
 
@@ -68,10 +69,19 @@ mobile/tablet; Client Score/OSMD; Preferencje; Live Desk; migrator; `docs/api` +
 **Residual operatorski (bez claim green):** **G1–G10** na HW — [report-beta-gate](./analysis/reports/report-beta-gate.md);
 checklista w [TODO.md](./TODO.md).
 
-### Po 5.0.0
+### 5.1.0 — **Launch & Mix** — **wydane 2026-07-24**
+
+Tag `v5.1.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
+
+**Dostarczone:** Desktop Launcher ([ADR 0014](./adr/0014-desktop-launcher.md)); Mixer Timeline (strefy Audio / Busy / Click / Master, Out = Master\|Bus); menu narzędzi T + skróty / kontekst / dock; polish UI Timeline.
+
+**Świadome OUT → 5.2+:** fizyczne Out 3–4 (HW); routing bus→bus; motywy / auth / Android / Sampler / Safety Net — [TODO.md](./TODO.md).
+
+### Po 5.1.0 (linia 5.2+)
 
 - Motywy (`data-theme` + switcher) — **nowość** (nie dług v4)
 - Auth / multi-user (speculative)
+- Mixer: multi-out HW (Out 3–4) + bus→bus
 - Android (PWA / Capacitor) — jeśli produkt wymaga sklepu
 - Inne **nowe** minor bez długu operatorskiego v4
 

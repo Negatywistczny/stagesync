@@ -101,18 +101,19 @@ jobs:
           REPO="${{ github.repository }}"
           NOTES_FILE="$(mktemp)"
           node launch/scripts/build-release-notes.mjs "${{ env.VERSION }}" > "$NOTES_FILE"
+          TITLE="$(node launch/scripts/release-title.mjs "${{ env.VERSION }}")"
 
           if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
             echo "Release $TAG already exists — refreshing notes/title for asset upload"
             gh release edit "$TAG" \
               -R "$REPO" \
-              --title "$TAG" \
+              --title "$TITLE" \
               --notes-file "$NOTES_FILE"
           else
             gh release create "$TAG" \
               -R "$REPO" \
               --draft \
-              --title "$TAG" \
+              --title "$TITLE" \
               --notes-file "$NOTES_FILE"
           fi
           # drafts are invisible to /releases/tags/{tag}; use gh view (works for draft + published)
@@ -320,6 +321,7 @@ jobs:
           REPO="${{ github.repository }}"
           NOTES_FILE="$(mktemp)"
           node launch/scripts/build-release-notes.mjs "${{ env.VERSION }}" > "$NOTES_FILE"
+          TITLE="$(node launch/scripts/release-title.mjs "${{ env.VERSION }}")"
 
           gh release upload "$TAG" dist/SHA256SUMS.txt -R "$REPO" --clobber
 
@@ -327,5 +329,5 @@ jobs:
             -R "$REPO" \
             --draft=false \
             --latest \
-            --title "$TAG" \
+            --title "$TITLE" \
             --notes-file "$NOTES_FILE"

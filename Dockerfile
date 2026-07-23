@@ -27,7 +27,7 @@ ENV NODE_ENV=production
 ENV PORT=4000
 ENV STAGESYNC_DATA_DIR=/app/data
 ENV STAGESYNC_STATIC_DIR=/app/web
-ENV npm_package_version=${APP_VERSION:-5.0.1}
+ENV npm_package_version=${APP_VERSION:-5.1.0}
 
 RUN mkdir -p /app/data/library /app/data/projects /app/data/logs \
  && chown -R node:node /app/data

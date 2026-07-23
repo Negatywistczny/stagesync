@@ -2,7 +2,7 @@
 
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-23
-- **Etap:** `5.0.x` (post-Overture)
+- **Etap:** `5.1.0` — **Launch & Mix**
 
 ## Kontekst
 

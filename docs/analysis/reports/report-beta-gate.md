@@ -36,7 +36,7 @@ Tag na jawną prośbę po closeout kodu 5.0.0 na `main`:
 - **G1–G10:** nadal **⬜** — residual **operatorski** na HW przy cutcie (brak pełnego green na mac/Win przy tagu). Nie udajemy green.
 - Krytyczne G1–G5 / G7: brak czerwonego raportu z HW; CI green na `main` + Release buduje instalatory `v5.0.0`.
 - G6: baseline β2 → **5.0.0** po artefaktach Release; relaunch = **Operator**.
-- Następny etap: **5.1+** — [TODO.md](../../TODO.md); G1–G10 pozostaje checklistą operatorską.
+- Następny etap: **5.2+** — [TODO.md](../../TODO.md); G1–G10 pozostaje checklistą operatorską (baseline instalatorów: `v5.1.0`).
 
 ## Checklista G1–G10
 
@@ -106,16 +106,17 @@ Wykonane (2026-07-21):
 - Desktop update (G6): wymaga tag push z `latest.json` (pełny publish Release).
 - Jeśli Actions `github-release` padnie na limicie wydatków GitHub — dokończ publish ręcznie przez `gh` (jak przy α13).
 
-## Po tagu `v5.0.0` (Overture)
+## Po tagu `v5.1.0` (Launch & Mix)
 
-Aktywny etap w [TODO.md](../../TODO.md) = **5.1+** + residual **G1–G10** operator.  
-Scope kodu 5.0.0: [report-scope-5.0.0.md](./report-scope-5.0.0.md) — **wydane**.
+Aktywny etap w [TODO.md](../../TODO.md) = **5.2+** + residual **G1–G10** operator.  
+Linia 5.1: Launcher + Mixer + narzędzia Timeline — **wydane** (`v5.1.0`).
 
 | Reguła | Status |
 |--------|--------|
 | G1–G10 w tabeli powyżej | nadal **⬜** — **zakaz** odhaczania bez weryfikacji operatora |
 | Must kodu 5.0.0 (A–E) | **done** w tagu `v5.0.0` |
+| Launch & Mix (5.1.0) | **done** w tagu `v5.1.0` |
 | Claim „G green” w CHANGELOG / release notes | **Zakaz** do czasu sekwencji operatora |
-| Artefakty do weryfikacji | Release [`v5.0.0`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0) (`.dmg` / `.msi` / `latest.json`); baseline updater z [`v5.0.0-beta.2`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-beta.2) |
+| Artefakty do weryfikacji | Release [`v5.1.0`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.0) (`.dmg` / `.msi` / `latest.json`); poprzedni stable [`v5.0.1`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.1) |
 
 **Operator:** wykonaj „Sekwencja weryfikacji” powyżej na artefaktach `v5.0.0`. Dopiero wtedy G1–G10 → green w docs.

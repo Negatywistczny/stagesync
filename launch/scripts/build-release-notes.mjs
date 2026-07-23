@@ -30,12 +30,18 @@ if (result.status !== 0) {
 }
 
 const section = result.stdout;
+const repo = process.env.GITHUB_REPOSITORY ?? "Negatywistczny/stagesync";
+const tag = `v${version}`;
+const base = `https://github.com/${repo}/releases/download/${tag}`;
+const dmgUrl = `${base}/StageSync_${version}_aarch64.dmg`;
+const msiUrl = `${base}/StageSync_${version}_x64.msi`;
+
 process.stdout.write(`### 📦 Pobierz StageSync
 
 | System operacyjny | Plik instalacyjny |
 | :--- | :--- |
-| 🍎 **macOS** (Apple Silicon) | \`StageSync_${version}_aarch64.dmg\` |
-| 🪟 **Windows** (64-bit) | \`StageSync_${version}_x64.msi\` |
+| 🍎 **macOS** (Apple Silicon) | [macOS (Apple Silicon)](${dmgUrl}) |
+| 🪟 **Windows** (64-bit) | [Windows (64-bit)](${msiUrl}) |
 
 <details>
 <summary>Pliki automatycznych aktualizacji i checksumy</summary>
