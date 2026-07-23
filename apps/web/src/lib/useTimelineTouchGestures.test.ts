@@ -24,12 +24,18 @@ function createScrollEl() {
     removeEventListener: (type: string, fn: Listener) => {
       listeners.get(type)?.delete(fn);
     },
-    emit(type: string, event: Partial<TouchEvent> & { touches: Touch[]; changedTouches?: Touch[] }) {
+    emit(
+      type: string,
+      event: {
+        touches: Touch[];
+        changedTouches?: Touch[];
+      },
+    ) {
       const payload = {
         preventDefault: vi.fn(),
-        ...event,
+        touches: event.touches,
         changedTouches: event.changedTouches ?? event.touches,
-      } as TouchEvent;
+      } as unknown as TouchEvent;
       for (const fn of listeners.get(type) ?? []) fn(payload);
       return payload;
     },
