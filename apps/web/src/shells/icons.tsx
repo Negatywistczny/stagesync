@@ -40,6 +40,7 @@ import {
   Scaling,
   Scissors,
   Settings,
+  SlidersVertical,
   Sparkles,
   Speaker,
   Square,
@@ -195,6 +196,11 @@ export function IconLoop(p: IconProps) {
 
 export function IconMetronome(p: IconProps) {
   return withIcon(Music2, p);
+}
+
+/** Timeline Mixer surface toggle (channel strips). */
+export function IconMixer(p: IconProps) {
+  return withIcon(SlidersVertical, p);
 }
 
 export function IconFollow(p: IconProps) {

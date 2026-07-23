@@ -151,7 +151,8 @@ export function AppHeader({
               </ShellIconButton>
             ) : null}
             <ShellIconButton
-              label="Zapisz (⌘/Ctrl+S)"
+              label="Zapisz"
+              aria-keyshortcuts="Meta+S Control+S"
               pressed={history.dirty && !history.savePending}
               className={
                 history.dirty && !history.savePending
@@ -169,6 +170,7 @@ export function AppHeader({
         {onHelp ? (
           <ShellIconButton
             label="Pomoc"
+            aria-keyshortcuts="Shift+/"
             pressed={helpPressed}
             onClick={onHelp}
           >

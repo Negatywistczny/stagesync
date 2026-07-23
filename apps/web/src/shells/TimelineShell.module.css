@@ -510,12 +510,6 @@
   }
 }
 
-.metaBtnPressed {
-  color: var(--ss-color-text);
-  background: var(--ss-color-selected);
-  border-color: var(--ss-color-primary);
-}
-
 .dirty {
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);

@@ -401,6 +401,7 @@ import {
   IconLoop,
   IconMarquee,
   IconMetronome,
+  IconMixer,
   IconMute,
   IconPause,
   IconPencil,
@@ -441,80 +442,77 @@ const TOOLS: {
   {
     id: "pointer",
     label: "Wskaźnik",
-    title: "Wskaźnik — zaznacz, przesuń, zmień długość (T T; Esc = powrót)",
+    title: "Wskaźnik — zaznacz, przesuń, zmień długość",
     key: "t",
     Icon: IconPointer,
   },
   {
     id: "pencil",
     label: "Ołówek",
-    title: "Ołówek — klik: 1 takt / marker; przeciągnij: zakres (T P)",
+    title: "Ołówek — klik: 1 takt / marker; przeciągnij: zakres",
     key: "p",
     Icon: IconPencil,
   },
   {
     id: "eraser",
     label: "Gumka",
-    title: "Gumka — usuń kliknięty element (T E)",
+    title: "Gumka — usuń kliknięty element",
     key: "e",
     Icon: IconEraser,
   },
   {
     id: "scissors",
     label: "Nożyczki",
-    title:
-      "Nożyczki — podział clipu / podsekcja Formy / zmiana mapy (T I; samo I = Inspector)",
+    title: "Nożyczki — podział clipu / podsekcja Formy / zmiana mapy",
     key: "i",
     Icon: IconScissors,
   },
   {
     id: "join",
     label: "Połącz",
-    title: "Połącz — scal sąsiednie clipy / usuń granicę podsekcji (T J)",
+    title: "Połącz — scal sąsiednie clipy / usuń granicę podsekcji",
     key: "j",
     Icon: IconJoin,
   },
   {
     id: "mute",
     label: "Mute",
-    title: "Mute — przełącz wyciszenie klikniętego clipu audio (T M)",
+    title: "Mute — przełącz wyciszenie klikniętego clipu audio",
     key: "m",
     Icon: IconMute,
   },
   {
     id: "solo",
     label: "Solo",
-    title:
-      "Solo — chwilowe solo ścieżki clipu audio przytrzymaniem LMB (T S)",
+    title: "Solo — chwilowe solo ścieżki clipu audio przytrzymaniem LMB",
     key: "s",
     Icon: IconSolo,
   },
   {
     id: "fade",
     label: "Fade",
-    title: "Fade — przeciągnij na krawędzi clipu audio: fade in/out (T A)",
+    title: "Fade — przeciągnij na krawędzi clipu audio: fade in/out",
     key: "a",
     Icon: IconFade,
   },
   {
     id: "gain",
     label: "Gain",
-    title: "Gain — przeciągnij w pionie na clipie audio: poziom dB (T G)",
+    title: "Gain — przeciągnij w pionie na clipie audio: poziom dB",
     key: "g",
     Icon: IconGain,
   },
   {
     id: "marquee",
     label: "Zaznaczanie",
-    title: "Zaznaczanie — prostokąt na siatce (T R)",
+    title: "Zaznaczanie — prostokąt na siatce",
     key: "r",
     Icon: IconMarquee,
   },
   {
     id: "zoom",
     label: "Zoom",
-    title:
-      "Zoom — przeciągnij prostokąt; klik tła = Fit; Ctrl+Alt = chwilowo (T Y)",
+    title: "Zoom — przeciągnij prostokąt; klik tła = Fit",
     key: "y",
     Icon: IconZoomIn,
   },
@@ -1905,6 +1903,14 @@ export function TimelineShell() {
     locatorTicks,
   );
   effectiveLocatorTicksRef.current = effectiveLocatorTicks;
+
+  /** v4: while Tap is active, highlight the queue line Space will mark next. */
+  const tapActiveClipId = useMemo(() => {
+    if (tool !== "tap" || !draftProject) return null;
+    const queue = vocalTapQueue(draftProject);
+    if (queue.length === 0) return null;
+    return queue[Math.min(tapLineIndex, queue.length - 1)]?.id ?? null;
+  }, [tool, draftProject, tapLineIndex]);
   const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
@@ -5424,12 +5430,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     : gesturePreview!.lengthTicks
                   : clip.lengthTicks,
               };
+              const tapTarget =
+                lane === "tekst" && tapActiveClipId === clip.id;
               return (
                 <FormaClipButton
                   key={clip.id}
                   clip={styleClip}
                   dataClipLane={lane}
-                  selected={isClipSelected(clipSelection, clip.id, lane)}
+                  selected={
+                    isClipSelected(clipSelection, clip.id, lane) || tapTarget
+                  }
                   selectedSubsectionIdx={null}
                   style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
                   pencilActive={toolIsPencilDraw(tool)}
@@ -5704,9 +5714,26 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               {tempoAtPlayhead} BPM
             </button>
+            <ShellIconButton
+              label={
+                timelineSurface === "mixer"
+                  ? "Wróć do Timeline"
+                  : "Mikser"
+              }
+              aria-keyshortcuts="x"
+              pressed={timelineSurface === "mixer"}
+              onClick={() =>
+                setTimelineSurface((s) =>
+                  s === "mixer" ? "timeline" : "mixer",
+                )
+              }
+            >
+              <IconMixer />
+            </ShellIconButton>
             <div className={styles.transportExtras}>
               <ShellIconButton
                 label="Pętla — przeciągnij zakres na linijce, potem włącz"
+                aria-keyshortcuts="c"
                 pressed={loopOn}
                 onClick={onLoopToggle}
               >
@@ -5733,7 +5760,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   : "—"}
               </button>
               <ShellIconButton
-                label="Metronom (K)"
+                label="Metronom"
+                aria-keyshortcuts="k"
                 pressed={metronomeOn}
                 onClick={() => void onMetronomeToggle()}
               >
@@ -5759,28 +5787,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               >
                 <IconFollow />
               </ShellIconButton>
-              <button
-                type="button"
-                className={[
-                  styles.metaBtn,
-                  timelineSurface === "mixer" ? styles.metaBtnPressed : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                title={
-                  timelineSurface === "mixer"
-                    ? "Wróć do Timeline (X)"
-                    : "Mixer — paski kanałów audio (X)"
-                }
-                aria-pressed={timelineSurface === "mixer"}
-                onClick={() =>
-                  setTimelineSurface((s) =>
-                    s === "mixer" ? "timeline" : "mixer",
-                  )
-                }
-              >
-                Mixer
-              </button>
             </div>
           </div>
         </div>
@@ -6185,8 +6191,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                             .join(" ")}
                           title={
                             tapBpmHint
-                              ? `Tap — linie Tekstu + tempo (${tapBpmHint} BPM); Esc = wyjście`
-                              : "Tap — linie Tekstu (Spacja = start) + tempo @ locator; Esc = wyjście"
+                              ? `Tap — linie Tekstu + tempo (${tapBpmHint} BPM)`
+                              : "Tap — linie Tekstu + tempo @ locator"
                           }
                           aria-label="Tap — linie Tekstu i tempo"
                           aria-pressed={tool === "tap"}

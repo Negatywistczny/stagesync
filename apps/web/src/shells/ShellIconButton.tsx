@@ -7,7 +7,13 @@ export type ShellIconButtonProps = {
   pressed?: boolean;
 } & Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
-  "disabled" | "onClick" | "aria-expanded" | "aria-controls" | "className" | "type"
+  | "disabled"
+  | "onClick"
+  | "aria-expanded"
+  | "aria-controls"
+  | "aria-keyshortcuts"
+  | "className"
+  | "type"
 >;
 
 export function ShellIconButton({
@@ -20,6 +26,7 @@ export function ShellIconButton({
   type = "button",
   "aria-expanded": ariaExpanded,
   "aria-controls": ariaControls,
+  "aria-keyshortcuts": ariaKeyshortcuts,
 }: ShellIconButtonProps) {
   return (
     <button
@@ -36,6 +43,7 @@ export function ShellIconButton({
       aria-pressed={pressed}
       aria-expanded={ariaExpanded}
       aria-controls={ariaControls}
+      aria-keyshortcuts={ariaKeyshortcuts}
       disabled={disabled}
       onClick={onClick}
     >

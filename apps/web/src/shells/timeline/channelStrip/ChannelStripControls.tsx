@@ -344,7 +344,11 @@ export function ChannelStripControls({
             styles.mixerBannerAccent,
             isBus ? styles.busBanner : styles.mixerBannerColor,
           ].join(" ")}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            callbacks.onSelect(e);
+            // Banner used to stopPropagation alone — LMB never selected.
+            e.stopPropagation();
+          }}
         >
           <div className={styles.bannerAnchor}>
             {isBus ? (

@@ -24,7 +24,7 @@ const KEY_GROUPS: ShortcutGroup[] = [
   {
     heading: "Widok",
     rows: [
-      { keys: "X", action: "Mixer on/off" },
+      { keys: "X", action: "Mikser on/off (ikona obok Tempo)" },
       {
         keys: "I",
         action:
@@ -39,7 +39,8 @@ const KEY_GROUPS: ShortcutGroup[] = [
       { keys: "T", action: "Otwórz menu narzędzi (akord)" },
       {
         keys: "T, potem T/P/E/I/J/M/S/A/G/R/Y",
-        action: "Wybór narzędzia (T T = Wskaźnik, T I = Nożyczki)",
+        action:
+          "Wybór narzędzia: T T Wskaźnik, T P Ołówek, T E Gumka, T I Nożyczki, T J Połącz, T M Mute, T S Solo, T A Fade, T G Gain, T R Zaznaczanie, T Y Zoom",
       },
       { keys: "W", action: "Różdżka (1/2/3 w menu)" },
       { keys: "1 / 2 / 3", action: "Tekst / Akordy / obie (menu Różdżki)" },
@@ -123,12 +124,12 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Metadane",
         detail:
-          "ikona info ⓘ (nie klawisz I) — tytuł, PC, tempo, tonacja, artysta, gatunek.",
+          "ikona info ⓘ — tytuł, PC, tempo, tonacja, artysta, gatunek.",
       },
       {
         term: "Widok",
         detail:
-          "X = Mixer (bez panelu Właściwości); I / Właściwości = Inspector w Timeline; ? = ta pomoc.",
+          "X = Mikser (bez panelu Właściwości); I / Właściwości = Inspector w Timeline; ? = ta pomoc.",
       },
       {
         term: "Transport",
@@ -207,9 +208,9 @@ const TOOL_SECTIONS: ToolSection[] = [
         detail: "dwuklik fadera / dB = reset 0.0 dB.",
       },
       {
-        term: "Mixer (X)",
+        term: "Mikser",
         detail:
-          "pionowe paski: M / ST (PAN vs True Balance BAL), ciemny baner z cienkim paskiem koloru ścieżki, fader z podziałką, peak LED (mono 1 pasek / stereo L+R; zielony / żółty −6 / czerwony clip), S/M; Out = Master|Bus; Busy / Click / Master z muted banerami; przypięty Stereo Out.",
+          "ikona obok Tempo (X); pionowe paski: M / ST (PAN vs True Balance BAL), ciemny baner z cienkim paskiem koloru ścieżki, fader z podziałką, peak LED (mono 1 pasek / stereo L+R; zielony / żółty −6 / czerwony clip), S/M; Out = Master|Bus; Busy / Click / Master z muted banerami; przypięty Stereo Out.",
       },
       {
         term: "Dock",
