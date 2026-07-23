@@ -18,8 +18,23 @@ describe("client-presence", () => {
     expect(list[0]?.latencyMs).toBe(19);
     presence.upsert("a", { latencyMs: 999_999 });
     expect(presence.list()[0]?.latencyMs).toBe(60_000);
+    presence.upsert("a", { latencyMs: -3 });
+    expect(presence.list()[0]?.latencyMs).toBeNull();
     presence.remove("a");
     expect(presence.list()).toHaveLength(0);
+  });
+
+  it("evicts oldest client when at capacity", () => {
+    const presence = createClientPresence();
+    for (let i = 0; i < 256; i++) {
+      presence.connect(`c${i}`);
+    }
+    expect(presence.list()).toHaveLength(256);
+    presence.connect("c-new");
+    const ids = new Set(presence.list().map((c) => c.id));
+    expect(ids.size).toBe(256);
+    expect(ids.has("c-new")).toBe(true);
+    expect(ids.has("c0")).toBe(false);
   });
 });
 

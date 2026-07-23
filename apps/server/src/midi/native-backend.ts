@@ -68,8 +68,12 @@ export function createNoneMidiBackend(): MidiBackend {
   };
 }
 
-export function createNativeMidiBackend(): MidiBackend {
-  const easymidi = tryLoadEasyMidi();
+/** @param easymidiOverride — inject a mock in tests; omit to load real easymidi. */
+export function createNativeMidiBackend(
+  easymidiOverride?: EasyMidiModule | null,
+): MidiBackend {
+  const easymidi =
+    easymidiOverride === undefined ? tryLoadEasyMidi() : easymidiOverride;
   if (!easymidi) {
     return createNoneMidiBackend();
   }
