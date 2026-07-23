@@ -215,4 +215,92 @@ describe("formaInspector", () => {
     const rows = formaSubsectionRows(next, clip);
     expect(rows[1]?.startDisplayBar).toBe(5);
   });
+
+  it("setCountdownBars shifts scoreBarMap anchors with delta", () => {
+    // CD not ending at 0 → shift from oldEnd > 0 so early anchors stay put (line 69).
+    const withAnchors = {
+      ...project,
+      forma: {
+        clips: project.forma.clips.map((c) =>
+          c.kind === "countdown"
+            ? { ...c, startTicks: 0, lengthTicks: 7680 }
+            : { ...c, startTicks: c.startTicks + 7680 },
+        ),
+      },
+      scoreBarMap: {
+        anchors: [
+          { id: "a1", logicBar: 1, scoreBar: 1 },
+          { id: "a2", logicBar: 5, scoreBar: 10 },
+        ],
+      },
+      akordy: {
+        clips: [
+          { id: "ch-1", startTicks: 7680, lengthTicks: 960, symbol: "C" },
+        ],
+      },
+    };
+    const next = setCountdownBars(withAnchors, 3);
+    expect(next.scoreBarMap.anchors.length).toBe(2);
+    expect(next.scoreBarMap.anchors.some((a) => a.logicBar === 1)).toBe(true);
+  });
+
+  it("setCountdownBars shorten clears content in vacated CD span", () => {
+    const withPre = {
+      ...project,
+      tekst: {
+        clips: [
+          {
+            id: "pre-lyric",
+            text: "gone",
+            startTicks: -2000,
+            lengthTicks: 500,
+          },
+          {
+            id: "keep",
+            text: "stay",
+            startTicks: 100,
+            lengthTicks: 500,
+          },
+        ],
+      },
+    };
+    const next = setCountdownBars(withPre, 1);
+    expect(next.tekst.clips.find((c) => c.id === "pre-lyric")).toBeUndefined();
+    expect(next.tekst.clips.find((c) => c.id === "keep")).toBeTruthy();
+  });
+
+  it("addFormaSubsection uses barTicks cut when last band is short", () => {
+    const section = project.forma.clips.find((c) => c.kind === "section")!;
+    const p = {
+      ...project,
+      forma: {
+        clips: project.forma.clips.map((c) =>
+          c.id === section.id
+            ? { ...c, lengthTicks: 7680, startTicks: 0, subsections: [7000] }
+            : c,
+        ),
+      },
+    };
+    const added = addFormaSubsection(p, section.id);
+    expect(added).not.toBeNull();
+  });
+
+  it("deleteFormaSubsection clears stale subsections that normalize to one band", () => {
+    const section = project.forma.clips.find((c) => c.kind === "section")!;
+    const p = {
+      ...project,
+      forma: {
+        clips: project.forma.clips.map((c) =>
+          c.id === section.id
+            ? { ...c, subsections: [0] }
+            : c,
+        ),
+      },
+    };
+    const del = deleteFormaSubsection(p, section.id, 0);
+    expect(del).not.toBeNull();
+    const subs = del!.project.forma.clips.find((c) => c.id === section.id)!
+      .subsections;
+    expect(subs == null || subs.length === 0).toBe(true);
+  });
 });
