@@ -77,7 +77,6 @@ Must be funny`;
     if (!result.ok) return;
 
     const bar = 3840; // 4/4 @ ppq 960
-    // Two lyric lines → two bars of timeline
     expect(result.tekst.clips).toHaveLength(2);
     expect(result.tekst.clips[0]!.startTicks).toBe(0);
     expect(result.tekst.clips[0]!.lengthTicks).toBe(bar);
@@ -87,7 +86,6 @@ Must be funny`;
       (a, b) => a.startTicks - b.startTicks,
     );
     expect(chords.map((c) => c.symbol)).toEqual(["Am", "F", "C", "G"]);
-    // Am + F share bar 0; C + G share bar 1
     expect(chords[0]!.startTicks).toBe(0);
     expect(chords[1]!.startTicks).toBeGreaterThan(0);
     expect(chords[1]!.startTicks).toBeLessThan(bar);
@@ -116,5 +114,68 @@ Must be funny`;
     for (let i = 1; i < onsets.length; i++) {
       expect(onsets[i]!).toBeGreaterThan(onsets[i - 1]!);
     }
+  });
+
+  it("chordOnsetsInBar packs when many chords crowd a short bar", () => {
+    const onsets = chordOnsetsInBar(40, 0, 200, 4, 50);
+    expect(onsets).toHaveLength(40);
+    for (let i = 1; i < onsets.length; i++) {
+      expect(onsets[i]!).toBeGreaterThan(onsets[i - 1]!);
+    }
+  });
+
+  it("chordOnsetsInBar first-pass packs duplicate beat indices", () => {
+    // chordCount > barTicks → floor spacing collapses to duplicate onsets
+    const onsets = chordOnsetsInBar(10, 0, 5, 4, 1);
+    expect(onsets).toHaveLength(10);
+    for (let i = 1; i < onsets.length; i++) {
+      expect(onsets[i]!).toBeGreaterThan(onsets[i - 1]!);
+    }
+  });
+
+  it("chordOnsetsInBar re-packs after clamping past bar end", () => {
+    const onsets = chordOnsetsInBar(4, 0, 50, 4, 100);
+    expect(onsets).toHaveLength(4);
+    for (let i = 1; i < onsets.length; i++) {
+      expect(onsets[i]!).toBeGreaterThan(onsets[i - 1]!);
+    }
+  });
+
+  it("rejects non-string, oversized, and invalid-meter inputs", () => {
+    expect(importUgText(null as unknown as string).ok).toBe(false);
+    const huge = importUgText("x".repeat(524_289));
+    expect(huge.ok).toBe(false);
+    if (!huge.ok) expect(huge.message).toMatch(/za długi/);
+    const badMeter = importUgText("C\nhello", {
+      meter: { numerator: 0, denominator: 4 },
+    });
+    expect(badMeter.ok).toBe(false);
+    if (!badMeter.ok) expect(badMeter.message).toMatch(/Nie udało się sparsować/);
+  });
+
+  it("skips invalid lone brackets; pending chords flush at EOF", () => {
+    const skip = importUgText("[notachord]\n[C][G]");
+    expect(skip.ok).toBe(true);
+    if (!skip.ok) return;
+    expect(skip.akordy.clips.map((c) => c.symbol)).toEqual(["C", "G"]);
+    expect(skip.tekst.clips).toEqual([]);
+  });
+
+  it("imports lyric-only lines and chord+lyric without pending", () => {
+    const lyric = importUgText("only words here");
+    expect(lyric.ok).toBe(true);
+    if (!lyric.ok) return;
+    expect(lyric.tekst.clips[0]!.text).toBe("only words here");
+    expect(lyric.akordy.clips).toEqual([]);
+
+    const mixed = importUgText("[C]Hello there");
+    expect(mixed.ok).toBe(true);
+  });
+
+  it("fails schema validation when a lyric exceeds max length", () => {
+    const r = importUgText(`[C]${"A".repeat(2001)}`);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.message).toMatch(/walidacji schematu/);
   });
 });
