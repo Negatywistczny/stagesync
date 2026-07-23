@@ -27,7 +27,6 @@ import {
   setCountdownBars,
 } from "./formaInspector.js";
 import { getSessionSnapMode } from "./timelineGesture.js";
-import { getSessionSnapMode } from "./timelineGesture.js";
 import {
   isAudioSelectionLane,
   type ClipSelectionLane,

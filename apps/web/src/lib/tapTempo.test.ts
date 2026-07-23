@@ -62,13 +62,7 @@ describe("tapTempo", () => {
       tempoMap: [{ id: "t0", startTicks: 0, bpm: 120 }],
     };
     // Branch: events.length===1 && Math.abs(events[0].startTicks - atTicks) < 1
-    const next = applyTapBpm(near, 0, 88);
-    // first branch updates existing at exact start — already covered.
-    // Create event at startTicks 0, call with atTicks that differs by 0 via float coerce:
-    const slightlyOff = {
-      ...project,
-      tempoMap: [{ id: "t0", startTicks: 0, bpm: 120 }],
-    };
+    expect(applyTapBpm(near, 0, 88).tempoMap[0]?.bpm).toBe(88);
     // Use Object to force startTicks that abs-diff < 1 with atTicks=0 when event at 0.5? 
     // applyTapBpm uses === for existing first; then abs < 1 branch.
     const fractional = {

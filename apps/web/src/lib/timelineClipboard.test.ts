@@ -340,10 +340,8 @@ describe("timelineClipboard", () => {
       { id: "a2", startTicks: 0, lengthTicks: 100 },
     ])!;
     expect(
-      pasteClipboardAt(p, defaultAkord, 10000)!.project.akordy.clips.find(
-        (c) => true,
-      ),
-    ).toBeTruthy();
+      pasteClipboardAt(p, defaultAkord, 10000)!.project.akordy.clips.length,
+    ).toBeGreaterThan(0);
 
     const cueBoard = buildClipboardFromClips("cue", [
       {

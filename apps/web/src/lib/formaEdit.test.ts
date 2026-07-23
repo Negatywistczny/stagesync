@@ -376,11 +376,6 @@ describe("formaEdit remaining coverage", () => {
     );
     expect(moved.forma.clips.find((c) => c.id === "forma-intro")!.startTicks).toBe(3840);
 
-    const multiIds = cascadeFormaMoveIds(p.forma.clips, "forma-intro");
-    const multiSession: FormaGestureSession = {
-      ...moveOk,
-      moveIds: multiIds.length > 1 ? multiIds : ["forma-intro", "x"],
-    };
     // ensure multi path: add another section
     const withB = commitPencilSpan(p, 7680, 15360, "B", "bar");
     const ids = cascadeFormaMoveIds(withB.forma.clips, "forma-intro");

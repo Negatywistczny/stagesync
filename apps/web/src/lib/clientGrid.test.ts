@@ -480,7 +480,7 @@ describe("clientGrid", () => {
   });
 
   it("sectionBarChords barIndex past last bar uses fallthrough", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const intro = p.forma.clips.find((c) => c.kind === "section")!;
     // Playhead just inside exclusive end-1 so still in section; last bar index fallthrough
     // when displayTicks equals a bar end inside the subsection range.

@@ -63,14 +63,16 @@ describe("formaSubsections", () => {
       2 * BAR,
       CHUNK4,
     );
+    expect(next).not.toBeNull();
     expect(next).toContain(2 * BAR);
-    expect(next.some((t) => t > 2 * BAR)).toBe(true);
+    expect(next!.some((t) => t > 2 * BAR)).toBe(true);
   });
 
   it("interior4BarStartsFromRight caps at 64 fills", () => {
     // Huge span with tiny chunk → hits 64-cap break
     const next = moveSubsectionBoundary([100], 10_000, 1, 50, 1);
-    expect(next.length).toBeLessThanOrEqual(64);
+    expect(next).not.toBeNull();
+    expect(next!.length).toBeLessThanOrEqual(64);
   });
 
 });
