@@ -25,7 +25,7 @@ Higiena listy zadań i parytetu: [docs/TODO.md](docs/TODO.md), [`.cursor/rules/t
 ### Branch protection (właściciel repo)
 
 Push na `main` OK (Admin bypass). Na PR-ach do `main` — ruleset
-[main — require CI](https://github.com/Negatywistyczny/stagesync/rules/19185142)
+[main — require CI](https://github.com/Negatywistczny/stagesync/rules/19185142)
 (Settings → Rules → Rulesets):
 
 - [x] **Require status checks to pass before merging**

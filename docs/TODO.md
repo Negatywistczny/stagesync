@@ -22,8 +22,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.0.0.
 ### Etap 5.1+ (Przyszłość)
 
 - [ ] Motywy / auth / multi-user
-- [ ] [#430](https://github.com/Negatywistyczny/stagesync/issues/430) Cues Sampler
-- [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
+- [ ] [#430](https://github.com/Negatywistczny/stagesync/issues/430) Cues Sampler
+- [ ] [#437](https://github.com/Negatywistczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
 - [ ] Android shell / store auto-update
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 - [ ] TODO → checklista `5.1` **na prośbę** przy planowaniu linii

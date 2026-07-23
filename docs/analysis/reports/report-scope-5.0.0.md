@@ -39,7 +39,7 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 |---|---------|--------|
 | A1 | Audyt żywych kontrolek Timeline / Admin / Client | ✓ trains + residual |
 | A2 | Typografia / spacing wyłącznie `--ss-*` | ✓ |
-| A3 | Copy PL + proporcje / gęstość | ✓ (+ help/i18n [#468](https://github.com/Negatywistyczny/stagesync/pull/468)) |
+| A3 | Copy PL + proporcje / gęstość | ✓ (+ help/i18n [#468](https://github.com/Negatywistczny/stagesync/pull/468)) |
 | A4 | Bez nowych wariantów `Button` | ✓ |
 
 **Powierzchnie (orientacja):** `TimelineShell.tsx` (+ module CSS), Admin (`SetView` / `StageView` / Host), Client shells, `packages/ui` tokeny.
@@ -52,12 +52,12 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 |---|---------|--------|
 | B1 | Zoom H/V (+ UI) z **ikonami** | ✓ |
 | B2 | Snap picker UI: `off` / `bar` / `beat` / `subdivision` | ✓ |
-| B3 | Pomoc Timeline — pełna treść + skróty sync | ✓ [#468](https://github.com/Negatywistyczny/stagesync/pull/468) |
+| B3 | Pomoc Timeline — pełna treść + skróty sync | ✓ [#468](https://github.com/Negatywistczny/stagesync/pull/468) |
 | B4 | Wiring snap mode → `quantizeTicks` / edycja | ✓ |
 
 ## IN (must) — C: Audio polish (fade / crossfade / loop-region) — **done (kod)**
 
-Źródło: [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [#462](https://github.com/Negatywistyczny/stagesync/pull/462).
+Źródło: [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [#462](https://github.com/Negatywistczny/stagesync/pull/462).
 
 | # | Wycinek | Status |
 |---|---------|--------|
@@ -70,7 +70,7 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 ## IN (must) — D: Desktop OS menu Faza D — **done (kod)**
 
-Źródło: [ROADMAP](../../ROADMAP.md) · [#460](https://github.com/Negatywistyczny/stagesync/pull/460).
+Źródło: [ROADMAP](../../ROADMAP.md) · [#460](https://github.com/Negatywistczny/stagesync/pull/460).
 
 | # | Wycinek | Status |
 |---|---------|--------|
@@ -186,13 +186,13 @@ flowchart LR
 
 ### Wave 3–6 PRs (this overnight stretch)
 
-**Transport / MIDI:** [#120](https://github.com/Negatywistyczny/stagesync/pull/120)–[#123](https://github.com/Negatywistyczny/stagesync/pull/123), [#127](https://github.com/Negatywistyczny/stagesync/pull/127), [#140](https://github.com/Negatywistyczny/stagesync/pull/140), [#150](https://github.com/Negatywistyczny/stagesync/pull/150)–[#151](https://github.com/Negatywistyczny/stagesync/pull/151), [#154](https://github.com/Negatywistyczny/stagesync/pull/154)
+**Transport / MIDI:** [#120](https://github.com/Negatywistczny/stagesync/pull/120)–[#123](https://github.com/Negatywistczny/stagesync/pull/123), [#127](https://github.com/Negatywistczny/stagesync/pull/127), [#140](https://github.com/Negatywistczny/stagesync/pull/140), [#150](https://github.com/Negatywistczny/stagesync/pull/150)–[#151](https://github.com/Negatywistczny/stagesync/pull/151), [#154](https://github.com/Negatywistczny/stagesync/pull/154)
 
-**Forma / audio / metro:** [#124](https://github.com/Negatywistyczny/stagesync/pull/124)–[#125](https://github.com/Negatywistyczny/stagesync/pull/125), [#142](https://github.com/Negatywistyczny/stagesync/pull/142), [#144](https://github.com/Negatywistyczny/stagesync/pull/144)
+**Forma / audio / metro:** [#124](https://github.com/Negatywistczny/stagesync/pull/124)–[#125](https://github.com/Negatywistczny/stagesync/pull/125), [#142](https://github.com/Negatywistczny/stagesync/pull/142), [#144](https://github.com/Negatywistczny/stagesync/pull/144)
 
-**Admin / Client / desktop:** [#128](https://github.com/Negatywistyczny/stagesync/pull/128)–[#139](https://github.com/Negatywistyczny/stagesync/pull/139), [#141](https://github.com/Negatywistyczny/stagesync/pull/141), [#143](https://github.com/Negatywistyczny/stagesync/pull/143), [#145](https://github.com/Negatywistyczny/stagesync/pull/145)–[#146](https://github.com/Negatywistyczny/stagesync/pull/146), [#148](https://github.com/Negatywistyczny/stagesync/pull/148)–[#149](https://github.com/Negatywistyczny/stagesync/pull/149), [#152](https://github.com/Negatywistyczny/stagesync/pull/152)–[#153](https://github.com/Negatywistyczny/stagesync/pull/153)
+**Admin / Client / desktop:** [#128](https://github.com/Negatywistczny/stagesync/pull/128)–[#139](https://github.com/Negatywistczny/stagesync/pull/139), [#141](https://github.com/Negatywistczny/stagesync/pull/141), [#143](https://github.com/Negatywistczny/stagesync/pull/143), [#145](https://github.com/Negatywistczny/stagesync/pull/145)–[#146](https://github.com/Negatywistczny/stagesync/pull/146), [#148](https://github.com/Negatywistczny/stagesync/pull/148)–[#149](https://github.com/Negatywistczny/stagesync/pull/149), [#152](https://github.com/Negatywistczny/stagesync/pull/152)–[#153](https://github.com/Negatywistczny/stagesync/pull/153)
 
-**Docs handoff:** [#126](https://github.com/Negatywistyczny/stagesync/pull/126), [#138](https://github.com/Negatywistyczny/stagesync/pull/138), [#147](https://github.com/Negatywistyczny/stagesync/pull/147), this PR
+**Docs handoff:** [#126](https://github.com/Negatywistczny/stagesync/pull/126), [#138](https://github.com/Negatywistczny/stagesync/pull/138), [#147](https://github.com/Negatywistczny/stagesync/pull/147), this PR
 
 ### Merge hotspots
 
@@ -220,20 +220,20 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 
 **Status:** wszystkie squash PR-y zmergowane na `main`. **Merge SHA train 8:** `81a86a17e9982dad09a1e9ced91b9fa307fd94cb`.  
 **Źródłowe PR-y zamknięte:** 266 (komentarz `merged via train-8 PR #416`).  
-**Otwarte świadomie:** [#61](https://github.com/Negatywistyczny/stagesync/pull/61) (ruler split), [#63](https://github.com/Negatywistyczny/stagesync/pull/63) (visual help overlay).  
+**Otwarte świadomie:** [#61](https://github.com/Negatywistczny/stagesync/pull/61) (ruler split), [#63](https://github.com/Negatywistczny/stagesync/pull/63) (visual help overlay).  
 **G1–G10:** ⬜ — operator HW; **bez claim green** w docs/CI.
 
 | Train | Squash PR | Temat (skrót) |
 |-------|-----------|----------------|
-| 0 | [#408](https://github.com/Negatywistyczny/stagesync/pull/408) | Must 5.0.0: fade schema/UI, TimelineHelp, audio crossfade |
-| 1 | [#409](https://github.com/Negatywistyczny/stagesync/pull/409) | Should: smoke E2E, docs/api, forma cascade |
-| 2 | [#410](https://github.com/Negatywistyczny/stagesync/pull/410) | Shared: timebase, meter map, clip collision |
-| 3 | [#411](https://github.com/Negatywistyczny/stagesync/pull/411) | Shared: schema hardening wave 1 |
-| 4 | [#412](https://github.com/Negatywistyczny/stagesync/pull/412) | Server: routes, WS, transport engine |
-| 5 | [#413](https://github.com/Negatywistyczny/stagesync/pull/413) | Web: Timeline/admin polish, zoom, snap |
-| 6 | [#414](https://github.com/Negatywistyczny/stagesync/pull/414) | Web/admin + desktop menu wave |
-| 7 | [#415](https://github.com/Negatywistyczny/stagesync/pull/415) | MIDI + desktop transport surfacing |
-| 8 | [#416](https://github.com/Negatywistyczny/stagesync/pull/416) | Residual hardening + UI token hygiene |
+| 0 | [#408](https://github.com/Negatywistczny/stagesync/pull/408) | Must 5.0.0: fade schema/UI, TimelineHelp, audio crossfade |
+| 1 | [#409](https://github.com/Negatywistczny/stagesync/pull/409) | Should: smoke E2E, docs/api, forma cascade |
+| 2 | [#410](https://github.com/Negatywistczny/stagesync/pull/410) | Shared: timebase, meter map, clip collision |
+| 3 | [#411](https://github.com/Negatywistczny/stagesync/pull/411) | Shared: schema hardening wave 1 |
+| 4 | [#412](https://github.com/Negatywistczny/stagesync/pull/412) | Server: routes, WS, transport engine |
+| 5 | [#413](https://github.com/Negatywistczny/stagesync/pull/413) | Web: Timeline/admin polish, zoom, snap |
+| 6 | [#414](https://github.com/Negatywistczny/stagesync/pull/414) | Web/admin + desktop menu wave |
+| 7 | [#415](https://github.com/Negatywistczny/stagesync/pull/415) | MIDI + desktop transport surfacing |
+| 8 | [#416](https://github.com/Negatywistczny/stagesync/pull/416) | Residual hardening + UI token hygiene |
 
 **Weryfikacja po merge:** `pnpm lint && pnpm check-types && pnpm test && pnpm build` green lokalnie i w CI (#416).  
 **Po cutcie:** operator G1–G10 na instalatorach `5.0.0` (⬜); planowanie 5.1+ na prośbę.
@@ -242,8 +242,8 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 
 ## Closeout residual (2026-07-22) — docs + kod must
 
-**Kod zmergowany po trains (kolejność):** [#462](https://github.com/Negatywistyczny/stagesync/pull/462) audio fade/loop → [#460](https://github.com/Negatywistyczny/stagesync/pull/460) Faza D → [#468](https://github.com/Negatywistyczny/stagesync/pull/468) help/skróty + i18n → [#464](https://github.com/Negatywistyczny/stagesync/pull/464) mobile.  
-**Zamknięty bez merge:** [#463](https://github.com/Negatywistyczny/stagesync/pull/463) (superseded by #468).
+**Kod zmergowany po trains (kolejność):** [#462](https://github.com/Negatywistczny/stagesync/pull/462) audio fade/loop → [#460](https://github.com/Negatywistczny/stagesync/pull/460) Faza D → [#468](https://github.com/Negatywistczny/stagesync/pull/468) help/skróty + i18n → [#464](https://github.com/Negatywistczny/stagesync/pull/464) mobile.  
+**Zamknięty bez merge:** [#463](https://github.com/Negatywistczny/stagesync/pull/463) (superseded by #468).
 
 | Must | Status |
 |------|--------|
@@ -255,11 +255,11 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 
 | Draft residual | Status |
 |----------------|--------|
-| [#465](https://github.com/Negatywistyczny/stagesync/pull/465) OSMD score nav | ✓ merged przed cuttem |
-| [#466](https://github.com/Negatywistyczny/stagesync/pull/466) migration assets meta | ✓ merged przed cuttem |
-| [#467](https://github.com/Negatywistyczny/stagesync/pull/467) wand karaoke MIDI | ✓ merged przed cuttem |
+| [#465](https://github.com/Negatywistczny/stagesync/pull/465) OSMD score nav | ✓ merged przed cuttem |
+| [#466](https://github.com/Negatywistczny/stagesync/pull/466) migration assets meta | ✓ merged przed cuttem |
+| [#467](https://github.com/Negatywistczny/stagesync/pull/467) wand karaoke MIDI | ✓ merged przed cuttem |
 
-**Świadome OUT / 5.1+:** Safety Net [#437](https://github.com/Negatywistyczny/stagesync/issues/437), Cues Sampler [#430](https://github.com/Negatywistyczny/stagesync/issues/430), motywy/auth — bez kodu w 5.0.0.
+**Świadome OUT / 5.1+:** Safety Net [#437](https://github.com/Negatywistczny/stagesync/issues/437), Cues Sampler [#430](https://github.com/Negatywistczny/stagesync/issues/430), motywy/auth — bez kodu w 5.0.0.
 
 ### Cut release (2026-07-23) — Overture
 

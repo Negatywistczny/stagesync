@@ -31,7 +31,7 @@ Dane użytkownika: volume `./data` → `/app/data` w kontenerze (`STAGESYNC_DATA
 Z LAN wymagają `Authorization: Bearer <STAGESYNC_HOST_TOKEN>` **albo**
 `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1` (tylko zaufane sieci). Admin wysyła token
 z `localStorage.stagesync.hostToken` gdy ustawiony — w UI: zakładka **Host**
-(przyciski restart / shutdown w nagłówku Admina; PR [#257](https://github.com/Negatywistyczny/stagesync/pull/257)).
+(przyciski restart / shutdown w nagłówku Admina; PR [#257](https://github.com/Negatywistczny/stagesync/pull/257)).
 
 ## Produkcja z GHCR (compose.prod.yml)
 

@@ -39,7 +39,7 @@ Mapa docelowa menu operatora. Implementacja warstwami; **bez** disabled „na za
 | **A** | StageSync, Widok, Pomoc | O programie; aktualizacje; Quit; Admin/Timeline/Klient; zakładki Admina; fullscreen; docs/issues | **α12** (wydane) |
 | **B** | + Plik, + Host | Open Recent; Zapisz (Timeline draft); status hosta / klienci WS / QR (gdy API); restart wg istniejącego API; Ustawienia… → Host | **β2** (wydane) |
 | **C** | + Transport; ścieżki w Plik/Set | Play/Stop/next/prev przez serwer; Import audio (już Admin); MIDI I/O gdy serwer (nie w shellu) | **β2** (wydane) |
-| **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Usuń; Zoom H; Skróty; Undo grey-out (PDF setlisty / archiwum / motyw — OUT jeśli nie API) | **5.0.0** (wydane w kodzie — [#460](https://github.com/Negatywistyczny/stagesync/pull/460)) |
+| **D** | pełna Edycja; zoom w Widok; rozbudowa Pomoc | Usuń; Zoom H; Skróty; Undo grey-out (PDF setlisty / archiwum / motyw — OUT jeśli nie API) | **5.0.0** (wydane w kodzie — [#460](https://github.com/Negatywistczny/stagesync/pull/460)) |
 
 **OUT menu do czasu właściwego etapu:** Audio / MIDI / DMX settings w menubarze; Tap Tempo / Pre-count w menu; osobne top-level Setlista (Set zostaje w Admin / Faza B Host lub Plik). **MUTE ALL / PANIC** — must 5.0.0 (host/UI; menubar opcjonalny).
 

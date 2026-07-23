@@ -16,7 +16,7 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 | **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
 | **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
 
-**Faza A** = StageSync / Widok / Pomoc (**α12**). **Faza B+C** = Plik / Host / Transport (**β2**). **Faza D** = Edycja (Usuń + Undo grey-out) / Widok zoom / Pomoc skróty — **wydane w `v5.0.0` Overture** ([#460](https://github.com/Negatywistyczny/stagesync/pull/460)) — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
+**Faza A** = StageSync / Widok / Pomoc (**α12**). **Faza B+C** = Plik / Host / Transport (**β2**). **Faza D** = Edycja (Usuń + Undo grey-out) / Widok zoom / Pomoc skróty — **wydane w `v5.0.0` Overture** ([#460](https://github.com/Negatywistczny/stagesync/pull/460)) — [ROADMAP.md](./ROADMAP.md) § Desktop OS menu.  
 **Bez** MIDI / zegara muzycznego w procesie Tauri — Host MIDI I/O + clock żyje wyłącznie w `apps/server` (`GET/PUT /api/midi`, [ADR 0010](./adr/0010-desktop-shell-tauri.md) / [ADR 0002](./adr/0002-timebase-ssot.md)). Akcje menu → `navigate` albo `CustomEvent` w WebView (shell nie jest autorytetem czasu); Admin → Host pokazuje status MIDI.
 
 > **Dane projektów** są przechowywane przez serwer w katalogu użytkownika (OS standard) —

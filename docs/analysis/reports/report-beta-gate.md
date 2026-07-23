@@ -84,7 +84,7 @@ Wykonane (2026-07-21):
 
 ## Sekwencja weryfikacji (operator)
 
-1. Pobierz instalatory z [GitHub Release](https://github.com/Negatywistyczny/stagesync/releases) (`v5.0.0`):
+1. Pobierz instalatory z [GitHub Release](https://github.com/Negatywistczny/stagesync/releases) (`v5.0.0`):
    - `.dmg` → otwórz na macOS (unsigned, prawy klik → Otwórz). → **G1**
    - `.msi` → zainstaluj na Windows. → **G2**
 2. Weryfikuj:
@@ -116,6 +116,6 @@ Scope kodu 5.0.0: [report-scope-5.0.0.md](./report-scope-5.0.0.md) — **wydane*
 | G1–G10 w tabeli powyżej | nadal **⬜** — **zakaz** odhaczania bez weryfikacji operatora |
 | Must kodu 5.0.0 (A–E) | **done** w tagu `v5.0.0` |
 | Claim „G green” w CHANGELOG / release notes | **Zakaz** do czasu sekwencji operatora |
-| Artefakty do weryfikacji | Release [`v5.0.0`](https://github.com/Negatywistyczny/stagesync/releases/tag/v5.0.0) (`.dmg` / `.msi` / `latest.json`); baseline updater z [`v5.0.0-beta.2`](https://github.com/Negatywistyczny/stagesync/releases/tag/v5.0.0-beta.2) |
+| Artefakty do weryfikacji | Release [`v5.0.0`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0) (`.dmg` / `.msi` / `latest.json`); baseline updater z [`v5.0.0-beta.2`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-beta.2) |
 
 **Operator:** wykonaj „Sekwencja weryfikacji” powyżej na artefaktach `v5.0.0`. Dopiero wtedy G1–G10 → green w docs.
