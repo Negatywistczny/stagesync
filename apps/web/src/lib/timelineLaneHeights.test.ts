@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   clearLaneHeightOverride,
   clampLaneHeight,
@@ -61,4 +61,52 @@ describe("timelineLaneHeights", () => {
     };
     expect(loadLaneHeights(storage)).toEqual({});
   });
+
+  it("load/save tolerate null storage and filter bad keys", () => {
+    expect(loadLaneHeights(null)).toEqual({});
+    expect(() => saveLaneHeights({ a: 1 }, null)).not.toThrow();
+    const longKey = "k".repeat(200);
+    const storage = {
+      getItem: () =>
+        JSON.stringify({
+          ok: 72,
+          "": 50,
+          [longKey]: 60,
+          bad: "x",
+          ...Object.fromEntries(
+            Array.from({ length: 70 }, (_, i) => [`id${i}`, 50]),
+          ),
+        }),
+      setItem: () => {
+        throw new Error("quota");
+      },
+    };
+    const loaded = loadLaneHeights(storage);
+    expect(loaded.ok).toBe(72);
+    expect(Object.keys(loaded).length).toBeLessThanOrEqual(64);
+    expect(() => saveLaneHeights(loaded, storage)).not.toThrow();
+    expect(setLaneHeightOverride({}, "", 90)).toEqual({});
+  });
+
+
+  it("default storage arg uses localStorage when defined", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        store.set(k, v);
+      },
+    });
+    saveLaneHeights({ forma: 80 });
+    expect(loadLaneHeights().forma).toBe(80);
+    vi.unstubAllGlobals();
+  });
+
+  it("default storage arg is null when localStorage is undefined", () => {
+    vi.stubGlobal("localStorage", undefined);
+    expect(loadLaneHeights()).toEqual({});
+    expect(() => saveLaneHeights({ forma: 72 })).not.toThrow();
+    vi.unstubAllGlobals();
+  });
+
 });

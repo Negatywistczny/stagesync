@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   clampZoomH,
   clampZoomUi,
   clampZoomV,
   DEFAULT_ZOOM_UI,
+  defaultZoomPrefs,
   loadZoomPrefs,
   saveZoomPrefs,
   TIMELINE_ZOOM_KEY,
@@ -58,4 +59,39 @@ describe("timelineZoomPrefs", () => {
       zoomUi: 120,
     });
   });
+
+  it("load/save tolerate null storage and JSON errors", () => {
+    expect(loadZoomPrefs(null)).toEqual(defaultZoomPrefs());
+    expect(() => saveZoomPrefs(defaultZoomPrefs(), null)).not.toThrow();
+    const bad = {
+      getItem: () => "{bad",
+      setItem: () => {
+        throw new Error("quota");
+      },
+    };
+    expect(loadZoomPrefs(bad)).toEqual(defaultZoomPrefs());
+    expect(() => saveZoomPrefs(defaultZoomPrefs(), bad)).not.toThrow();
+  });
+
+
+  it("default storage arg uses localStorage when defined", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        store.set(k, v);
+      },
+    });
+    saveZoomPrefs({ zoomH: 48, zoomV: 72, zoomUi: 100 });
+    expect(loadZoomPrefs().zoomH).toBe(48);
+    vi.unstubAllGlobals();
+  });
+
+  it("default storage arg is null when localStorage is undefined", () => {
+    vi.stubGlobal("localStorage", undefined);
+    expect(loadZoomPrefs()).toEqual(defaultZoomPrefs());
+    expect(() => saveZoomPrefs(defaultZoomPrefs())).not.toThrow();
+    vi.unstubAllGlobals();
+  });
+
 });
