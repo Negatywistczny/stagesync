@@ -11,6 +11,7 @@ import {
   isPlaceholderLyric,
   mergeTekstWithCountdownDigits,
   resolveFormaClipForLyric,
+  resolveFormaClipForLyricStart,
 } from "./clientKaraoke.js";
 
 const BAR = ticksPerBar({ numerator: 4, denominator: 4 }, DEFAULT_PPQ); // 3840
@@ -269,5 +270,55 @@ describe("clientKaraoke", () => {
       digit,
     );
     expect(host?.kind).toBe("countdown");
+  });
+
+  it("resolveFormaClipForLyricStart keeps lyric past last section end on last clip", () => {
+    const forma = [
+      {
+        id: "only",
+        name: "Only",
+        kind: "section" as const,
+        startTicks: 0,
+        lengthTicks: BAR,
+      },
+    ];
+    expect(resolveFormaClipForLyricStart(forma, BAR + 100)?.id).toBe("only");
+    expect(resolveFormaClipForLyricStart([], 0)).toBeNull();
+  });
+
+  it("groups orphan lyrics outside any Forma span", () => {
+    const orphanProj = {
+      ...project,
+      forma: { clips: [] },
+      tekst: {
+        clips: [
+          {
+            id: "orphan-1",
+            text: "Lost",
+            startTicks: 0,
+            lengthTicks: BEAT,
+          },
+        ],
+      },
+    };
+    const groups = groupKaraokeSections(
+      orphanProj,
+      orphanProj.tekst.clips,
+      0,
+      "orphan-1",
+    );
+    expect(groups.some((g) => g.id === "__orphan__")).toBe(true);
+    expect(groups.find((g) => g.id === "__orphan__")?.lines[0]?.text).toBe("Lost");
+  });
+
+  it("activeGroup is null when playhead is past all Forma clips", () => {
+    const p = {
+      ...project,
+      tekst: { clips: [] as typeof project.tekst.clips },
+    };
+    const ctx = buildKaraokeLiveContext(p, 500_000);
+    expect(ctx).not.toBeNull();
+    expect(ctx!.sectionBars).toEqual([]);
+    expect(ctx!.sectionName).toBe("—");
   });
 });
