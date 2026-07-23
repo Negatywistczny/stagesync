@@ -57,4 +57,32 @@ describe("projectEndTicks", () => {
     };
     expect(projectEndTicks(p)).toBe(15_000);
   });
+
+  it("includes cue and akordy clips that extend past forma", () => {
+    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    p.forma.clips = [];
+    p.cue = {
+      clips: [
+        {
+          id: "cue-1",
+          label: "Go",
+          startTicks: 1_000,
+          lengthTicks: 500,
+        },
+      ],
+    };
+    expect(projectEndTicks(p)).toBe(1_500);
+    p.cue = { clips: [] };
+    p.akordy = {
+      clips: [
+        {
+          id: "ak-1",
+          text: "C",
+          startTicks: 2_000,
+          lengthTicks: 3_000,
+        },
+      ],
+    };
+    expect(projectEndTicks(p)).toBe(5_000);
+  });
 });

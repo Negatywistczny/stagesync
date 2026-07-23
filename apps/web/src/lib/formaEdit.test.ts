@@ -3,6 +3,10 @@ import { createProjectV5Seed } from "@stagesync/shared";
 import {
   cascadeFormaMoveIds,
   commitGesture,
+  commitMoveClip,
+  commitMoveClips,
+  commitResizeClip,
+  commitSubsectionBoundaryMove,
   commitPencilSpan,
   deleteFormaClip,
   formaSectionCoveringTicks,
@@ -208,5 +212,277 @@ describe("formaEdit", () => {
     );
     expect(ids).not.toContain("forma-cd");
     expect(cascadeFormaMoveIds(p.forma.clips, "forma-cd")).toEqual(["forma-cd"]);
+  });
+});
+
+describe("formaEdit remaining coverage", () => {
+  it("commitSubsectionBoundaryMove updates and no-ops", () => {
+    const p = seed();
+    const withSub = insertFormaSubsectionAt(p, "forma-intro", 3840);
+    const moved = commitSubsectionBoundaryMove(withSub, "forma-intro", 1, 1920, "off");
+    expect(moved.forma.clips.find((c) => c.id === "forma-intro")?.subsections).toEqual([1920]);
+    expect(commitSubsectionBoundaryMove(withSub, "forma-cd", 1, 0)).toBe(withSub);
+    expect(commitSubsectionBoundaryMove(withSub, "missing", 1, 0)).toBe(withSub);
+    expect(commitSubsectionBoundaryMove(withSub, "forma-intro", 1, 3840)).toBe(withSub);
+    expect(commitSubsectionBoundaryMove(withSub, "forma-intro", 99, 100)).toBe(withSub);
+  });
+
+  it("commitPencilSpan swaps inverted range and min bar length", () => {
+    const p = seed();
+    const swapped = commitPencilSpan(p, 7680, 0, "Swap", "bar");
+    expect(swapped.forma.clips.find((c) => c.name === "Swap")?.startTicks).toBe(0);
+    const tiny = commitPencilSpan(p, 7680, 7680, "Tiny", "off");
+    expect(tiny.forma.clips.find((c) => c.name === "Tiny")!.lengthTicks).toBeGreaterThanOrEqual(1);
+  });
+
+  it("commitMoveClip / commitMoveClips / commitResizeClip", () => {
+    let p = commitPencilSpan(seed(), 7680, 15360, "B", "bar");
+    const intro = p.forma.clips.find((c) => c.id === "forma-intro")!;
+    p = commitMoveClip(p, intro.id, 3840, "bar");
+    expect(p.forma.clips.find((c) => c.id === intro.id)!.startTicks).toBeGreaterThanOrEqual(0);
+
+    const multi = commitMoveClips(p, ["forma-intro"], "forma-intro", 0, "bar");
+    expect(multi.forma.clips.find((c) => c.id === "forma-intro")).toBeTruthy();
+
+    const ids = cascadeFormaMoveIds(p.forma.clips, "forma-intro");
+    const introStart = p.forma.clips.find((c) => c.id === "forma-intro")!.startTicks;
+    expect(commitMoveClips(p, ids, "forma-intro", introStart, "off")).toBe(p);
+    expect(commitMoveClips(p, ids, "forma-cd", 0, "off")).toBe(p);
+    const shifted = commitMoveClips(p, ids, "forma-intro", introStart + 7680, "bar");
+    expect(shifted).not.toBe(p);
+
+    const alone = seed();
+    const resized = commitResizeClip(alone, "forma-intro", "end", 15360, "bar");
+    expect(resized.forma.clips.find((c) => c.id === "forma-intro")!.lengthTicks).toBe(15360);
+    const startEdge = commitResizeClip(alone, "forma-intro", "start", 1920, "off");
+    expect(startEdge.forma.clips.find((c) => c.id === "forma-intro")!.startTicks).toBe(1920);
+  });
+
+  it("previewFromSession covers pencil/resize/countdown clientX paths", () => {
+    const p = seed();
+    const pencil: FormaGestureSession = {
+      kind: "pencil-draw",
+      clipId: null,
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: 0,
+      originClipLength: 0,
+      originClientX: 10,
+    };
+    const same = previewFromSession(p, pencil, 0, false, false, "N", 10);
+    expect(same.lengthTicks).toBeGreaterThan(0);
+    const dragged = previewFromSession(p, pencil, 7680, false, false, "N", 40);
+    expect(dragged.startTicks).toBe(0);
+    const noClient = previewFromSession(
+      p,
+      { ...pencil, originClientX: undefined },
+      7680,
+      false,
+      false,
+      "N",
+    );
+    expect(noClient.lengthTicks).toBeGreaterThan(0);
+
+    const resizeStart: FormaGestureSession = {
+      kind: "resize-start",
+      clipId: "forma-intro",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: 0,
+      originClipLength: 7680,
+    };
+    const rs = previewFromSession(p, resizeStart, 1920, true, false);
+    expect(rs.kind).toBe("resize-start");
+    const clamp = previewFromSession(p, resizeStart, 20_000, true, false);
+    expect(clamp.lengthTicks).toBeGreaterThan(0);
+
+    const subMissing: FormaGestureSession = {
+      kind: "subsection-boundary",
+      clipId: "missing",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: 0,
+      originClipLength: 7680,
+    };
+    expect(previewFromSession(p, subMissing, 100, false, false).kind).toBe(
+      "subsection-boundary",
+    );
+
+    const cd: FormaGestureSession = {
+      kind: "countdown-length",
+      clipId: "forma-cd",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: -7680,
+      originClipLength: 7680,
+      originClientX: 100,
+    };
+    const viaPx = previewFromSession(p, cd, 0, false, false, undefined, 150, 48);
+    expect(viaPx.kind).toBe("countdown-length");
+    const off = previewFromSession(p, cd, 3840, true, false);
+    expect(off.lengthTicks % 3840).toBe(0);
+
+    const re: FormaGestureSession = {
+      kind: "resize-end",
+      clipId: "forma-intro",
+      pointerId: 1,
+      originTicks: 7680,
+      originClipStart: 0,
+      originClipLength: 7680,
+    };
+    const tinyEnd = previewFromSession(p, re, -100, true, false);
+    expect(tinyEnd.lengthTicks).toBe(3840);
+  });
+
+  it("commitGesture covers move/resize/subsection/default guards", () => {
+    const p = seed();
+    const withSub = insertFormaSubsectionAt(p, "forma-intro", 3840);
+    const moveSession: FormaGestureSession = {
+      kind: "move",
+      clipId: null,
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: 0,
+      originClipLength: 7680,
+    };
+    expect(
+      commitGesture(p, moveSession, { kind: "move", clipId: null, startTicks: 0, lengthTicks: 7680 }, false, false),
+    ).toBe(p);
+
+    const moveOk: FormaGestureSession = {
+      kind: "move",
+      clipId: "forma-intro",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: 0,
+      originClipLength: 7680,
+    };
+    const moved = commitGesture(
+      p,
+      moveOk,
+      { kind: "move", clipId: "forma-intro", startTicks: 3840, lengthTicks: 7680 },
+      false,
+      false,
+    );
+    expect(moved.forma.clips.find((c) => c.id === "forma-intro")!.startTicks).toBe(3840);
+
+    const multiIds = cascadeFormaMoveIds(p.forma.clips, "forma-intro");
+    const multiSession: FormaGestureSession = {
+      ...moveOk,
+      moveIds: multiIds.length > 1 ? multiIds : ["forma-intro", "x"],
+    };
+    // ensure multi path: add another section
+    const withB = commitPencilSpan(p, 7680, 15360, "B", "bar");
+    const ids = cascadeFormaMoveIds(withB.forma.clips, "forma-intro");
+    const multi = commitGesture(
+      withB,
+      { ...moveOk, moveIds: ids },
+      { kind: "move", clipId: "forma-intro", startTicks: 3840, lengthTicks: 7680 },
+      false,
+      false,
+    );
+    expect(multi).not.toBe(withB);
+
+    for (const kind of ["resize-start", "resize-end"] as const) {
+      expect(
+        commitGesture(
+          p,
+          { kind, clipId: null, pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+          { kind, clipId: null, startTicks: 0, lengthTicks: 7680 },
+          false,
+          false,
+        ),
+      ).toBe(p);
+    }
+    const rs = commitGesture(
+      p,
+      { kind: "resize-start", clipId: "forma-intro", pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+      { kind: "resize-start", clipId: "forma-intro", startTicks: 1920, lengthTicks: 5760 },
+      true,
+      false,
+    );
+    expect(rs.forma.clips.find((c) => c.id === "forma-intro")!.startTicks).toBe(1920);
+    const re = commitGesture(
+      p,
+      { kind: "resize-end", clipId: "forma-intro", pointerId: 1, originTicks: 7680, originClipStart: 0, originClipLength: 7680 },
+      { kind: "resize-end", clipId: "forma-intro", startTicks: 0, lengthTicks: 11520 },
+      false,
+      false,
+    );
+    expect(re.forma.clips.find((c) => c.id === "forma-intro")!.lengthTicks).toBe(11520);
+
+    expect(
+      commitGesture(
+        p,
+        { kind: "countdown-length", clipId: null, pointerId: 1, originTicks: 0, originClipStart: -7680, originClipLength: 7680 },
+        { kind: "countdown-length", clipId: null, startTicks: -7680, lengthTicks: 7680 },
+        false,
+        false,
+      ),
+    ).toBe(p);
+
+    // fallback setCountdownBars when boundary apply returns same project
+    const cdSame = commitGesture(
+      p,
+      { kind: "countdown-length", clipId: "forma-cd", pointerId: 1, originTicks: 0, originClipStart: -7680, originClipLength: 7680 },
+      { kind: "countdown-length", clipId: "forma-cd", startTicks: -7680, lengthTicks: 7680 },
+      false,
+      false,
+    );
+    expect(cdSame.forma.clips.find((c) => c.kind === "countdown")!.lengthTicks).toBe(7680);
+
+    expect(
+      commitGesture(
+        withSub,
+        { kind: "subsection-boundary", clipId: null, pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+        { kind: "subsection-boundary", clipId: null, startTicks: 0, lengthTicks: 7680, subsections: [1920] },
+        false,
+        false,
+      ),
+    ).toBe(withSub);
+    expect(
+      commitGesture(
+        withSub,
+        { kind: "subsection-boundary", clipId: "missing", pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+        { kind: "subsection-boundary", clipId: "missing", startTicks: 0, lengthTicks: 7680, subsections: [1] },
+        false,
+        false,
+      ),
+    ).toBe(withSub);
+    expect(
+      commitGesture(
+        withSub,
+        { kind: "subsection-boundary", clipId: "forma-intro", pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+        { kind: "subsection-boundary", clipId: "forma-intro", startTicks: 0, lengthTicks: 7680, subsections: [3840] },
+        false,
+        false,
+      ),
+    ).toBe(withSub);
+    const subChanged = commitGesture(
+      withSub,
+      { kind: "subsection-boundary", clipId: "forma-intro", pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+      { kind: "subsection-boundary", clipId: "forma-intro", startTicks: 0, lengthTicks: 7680, subsections: [1920] },
+      false,
+      false,
+    );
+    expect(subChanged.forma.clips.find((c) => c.id === "forma-intro")?.subsections).toEqual([1920]);
+    const cleared = commitGesture(
+      withSub,
+      { kind: "subsection-boundary", clipId: "forma-intro", pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 7680 },
+      { kind: "subsection-boundary", clipId: "forma-intro", startTicks: 0, lengthTicks: 7680, subsections: [] },
+      false,
+      false,
+    );
+    expect(cleared.forma.clips.find((c) => c.id === "forma-intro")?.subsections).toBeUndefined();
+
+    expect(
+      commitGesture(
+        p,
+        { kind: "fade-in", clipId: "x", pointerId: 1, originTicks: 0, originClipStart: 0, originClipLength: 1 },
+        { kind: "fade-in", clipId: "x", startTicks: 0, lengthTicks: 1 },
+        false,
+        false,
+      ),
+    ).toBe(p);
   });
 });

@@ -59,6 +59,16 @@ describe("detectLibraryImportFormat", () => {
       expect(r.reason).toMatch(/projects|songs/);
     }
   });
+
+  it("rejects null, arrays, and non-objects as unknown", () => {
+    for (const raw of [null, [], 42, "x"]) {
+      const r = detectLibraryImportFormat(raw);
+      expect(r.format).toBe("unknown");
+      if (r.format === "unknown") {
+        expect(r.reason).toMatch(/Oczekiwano obiektu JSON/);
+      }
+    }
+  });
 });
 
 describe("normalizeLibraryImport", () => {
