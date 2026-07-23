@@ -32,7 +32,9 @@
     "pm_id",
     "PM2_HOME",
     "DEV",
-    "NODE_ENV"
+    "NODE_ENV",
+    "SS_TEST_A",
+    "SS_TEST_B"
   ],
   "tasks": {
     "build": {
