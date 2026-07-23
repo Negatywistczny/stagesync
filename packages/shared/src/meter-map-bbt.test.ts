@@ -106,4 +106,10 @@ describe("ticksToBbtAlongMeterMap", () => {
     );
   });
 
+  it("throws when tick walk exceeds max bars", () => {
+    const huge = 100_001 * ticksPerBar(TS_4_4, DEFAULT_PPQ);
+    expect(() => ticksToBbtAlongMeterMap(huge, TS_4_4, [])).toThrow(
+      /exceeded max bars/,
+    );
+  });
 });
