@@ -34,4 +34,11 @@ describe("clientBarCells", () => {
     expect(cells[0]!.beatProgress).toBeCloseTo(480 / 3840);
     expect(cells[1]!.beatProgress).toBe(0);
   });
+
+  it("beatProgress is 0 outside cell and for non-positive span", () => {
+    const past = buildBarCellsForClip(project, 0, 7680, -100);
+    expect(past.every((c) => c.beatProgress === 0 || c.past)).toBe(true);
+    const cells = buildBarCellsForClip(project, 0, 7680, 9000);
+    expect(cells.every((c) => !c.current || c.beatProgress >= 0)).toBe(true);
+  });
 });

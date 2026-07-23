@@ -64,5 +64,22 @@ describe("draftHistory", () => {
     h = undoDraft(h);
     h = redoDraft(h, 1);
     expect(h.past.length).toBeLessThanOrEqual(1);
+
+    // undo with existing future → trims future via pop
+    let g = createDraftHistory(a);
+    g = pushDraftHistory(g, { ...a, name: "B" }, sel("b"));
+    g = pushDraftHistory(g, { ...a, name: "C" }, sel("c"));
+    g = undoDraft(g); // future=[C]
+    g = undoDraft(g, 1); // future=[B,C] then pop to length 1
+    expect(g.future.length).toBe(1);
+
+    // redo with deep past → trims past via shift
+    let r = createDraftHistory(a);
+    for (let i = 0; i < 4; i++) {
+      r = pushDraftHistory(r, { ...a, name: `r${i}` }, sel(`r${i}`), 10);
+    }
+    r = undoDraft(r);
+    r = redoDraft(r, 2); // past grows then shifts to max 2
+    expect(r.past.length).toBeLessThanOrEqual(2);
   });
 });
