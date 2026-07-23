@@ -9,6 +9,8 @@ import {
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
+  createProjectSeed,
+  nextMidiProgramId,
 } from "./project-seed.js";
 
 describe("createProjectV2Seed", () => {
@@ -107,5 +109,32 @@ describe("upgradeProjectV3ToV4", () => {
     );
     expect(v4.formatVersion).toBe(4);
     expect(v4.tekst.clips).toEqual([]);
+  });
+});
+
+describe("createProjectSeed / nextMidiProgramId", () => {
+  it("createProjectSeed aliases createProjectV5Seed", () => {
+    const p = createProjectSeed("id", "N", "2026-07-20T00:00:00.000Z");
+    expect(p.formatVersion).toBe(5);
+    expect(p.midiProgramId).toBe(0);
+  });
+
+  it("createProjectV5Seed accepts explicit midiProgramId", () => {
+    const p = createProjectV5Seed("id", "N", "2026-07-20T00:00:00.000Z", {
+      midiProgramId: 7,
+    });
+    expect(p.midiProgramId).toBe(7);
+  });
+
+  it("nextMidiProgramId skips used ids and templates", () => {
+    expect(
+      nextMidiProgramId([
+        { midiProgramId: 0 },
+        { midiProgramId: 1, isTemplate: true },
+        { midiProgramId: 2 },
+      ]),
+    ).toBe(1);
+    const full = Array.from({ length: 128 }, (_, i) => ({ midiProgramId: i }));
+    expect(nextMidiProgramId(full)).toBeNull();
   });
 });
