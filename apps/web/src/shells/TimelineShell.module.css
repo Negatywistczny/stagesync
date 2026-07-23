@@ -589,13 +589,13 @@
 .canvasInner {
   /*
    * Dock width driven from JS (`--tl-dock-w` inline) — fallback matches DEFAULT_DOCK_WIDTH_PX.
-   * Solo yellow is brighter than primary amber (#fbbf24) — classic DAW S affordance.
+   * Solo yellow is brighter than primary amber — classic DAW S affordance (--ss-color-solo).
    */
   --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
-  --tl-solo-bg: #ffcc00;
-  --tl-solo-fg: #0a0a0a;
-  --tl-mute-bg: #ff3b30;
-  --tl-mute-fg: #ffffff;
+  --tl-solo-bg: var(--ss-color-solo);
+  --tl-solo-fg: var(--ss-color-solo-fg);
+  --tl-mute-bg: var(--ss-color-mute);
+  --tl-mute-fg: var(--ss-color-mute-fg);
   flex-shrink: 0;
   /* Fill scrollport when content is shorter/narrower (v4 `.timeline-canvas`). */
   min-width: 100%;

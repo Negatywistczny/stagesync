@@ -35,6 +35,14 @@
   --ss-color-success: #22c55e;
   --ss-color-warning: #fb923c;
   --ss-color-info: #38bdf8;
+  /** Classic DAW Solo (brighter than primary amber). */
+  --ss-color-solo: #ffcc00;
+  --ss-color-solo-fg: #0a0a0a;
+  /** Classic DAW Mute. */
+  --ss-color-mute: #ff3b30;
+  --ss-color-mute-fg: #ffffff;
+  /** OSMD / MusicXML paper — always light, independent of chrome theme. */
+  --ss-color-osmd-paper: #ffffff;
 
   /* Radii */
   --ss-radius-sharp: 2px;
