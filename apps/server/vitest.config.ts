@@ -19,6 +19,7 @@ export default defineConfig({
         "**/*.test.ts",
         "src/index.ts",
         "src/cli/**",
+        "src/midi/backend.ts", // types-only — no executable surface
       ],
     },
   },
