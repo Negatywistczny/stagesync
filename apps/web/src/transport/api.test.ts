@@ -108,11 +108,68 @@ describe("transport api", () => {
     await expect(getTransport()).rejects.toThrow("busy");
   });
 
+  it("falls back to HTTP status when json() rejects", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 502,
+        json: async () => {
+          throw new Error("not json");
+        },
+      }),
+    );
+    await expect(getTransport()).rejects.toThrow("HTTP 502");
+  });
+
+  it("falls back to HTTP status when body has no error field", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      }),
+    );
+    await expect(getTransport()).rejects.toThrow("HTTP 500");
+  });
+
+  it("rejects invalid tick payload on success", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ type: "not_a_tick" }),
+      }),
+    );
+    await expect(getTransport()).rejects.toThrow();
+  });
+
+  it("playTransport default body posts empty object", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okTick({ playing: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    await playTransport();
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toEqual({});
+  });
+
   it("rejects invalid play body before fetch", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await expect(
       playTransport({ bpm: -1 } as never),
+    ).rejects.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects seek / load / loop before fetch on bad input", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(seekTransport(Number.NaN)).rejects.toThrow();
+    await expect(loadTransport("not-a-uuid")).rejects.toThrow();
+    await expect(
+      setTransportLoop({ enabled: true, startTicks: 1.5 } as never),
     ).rejects.toThrow();
     expect(fetchMock).not.toHaveBeenCalled();
   });
