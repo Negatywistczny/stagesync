@@ -1,5 +1,10 @@
 Business Source License 1.1
 
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+-----------------------------------------------------------------------------
+
 Parameters
 
 Licensor:             Negatywistyczny
@@ -24,18 +29,7 @@ Change License:       Apache License, Version 2.0
 For information about alternative licensing arrangements for the Software,
 please contact the Licensor.
 
-Notice
-
-The Business Source License (this document, or the "License") is not an Open
-Source license. However, the Licensed Work will eventually be made available
-under an Open Source License, as stated in this License.
-
-License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
-"Business Source License" is a trademark of MariaDB Corporation Ab.
-
 -----------------------------------------------------------------------------
-
-Business Source License 1.1
 
 Terms
 
@@ -83,6 +77,8 @@ MariaDB hereby grants you permission to use this License's text to license
 your works, and to refer to it using the trademark "Business Source License",
 as long as you comply with the Covenants of Licensor below.
 
+-----------------------------------------------------------------------------
+
 Covenants of Licensor
 
 In consideration of the right to use this License's text and the "Business
@@ -103,3 +99,11 @@ other recipients of the licensed work to be provided by Licensor:
 3. To specify a Change Date.
 
 4. Not to modify this License in any other way.
+
+-----------------------------------------------------------------------------
+
+Notice
+
+The Business Source License (this document, or the "License") is not an Open
+Source license. However, the Licensed Work will eventually be made available
+under an Open Source License, as stated in this License.

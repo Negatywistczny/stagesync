@@ -6,7 +6,7 @@
 [![Downloads](https://img.shields.io/github/downloads/Negatywistczny/stagesync/total?label=downloads)](https://github.com/Negatywistczny/stagesync/releases)
 [![Stars](https://img.shields.io/github/stars/Negatywistczny/stagesync)](https://github.com/Negatywistczny/stagesync/stargazers)
 [![Forks](https://img.shields.io/github/forks/Negatywistczny/stagesync)](https://github.com/Negatywistczny/stagesync/network/members)
-[![License](https://img.shields.io/github/license/Negatywistczny/stagesync)](LICENSE)
+[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-informational)](LICENSE)
 
 **StageSync** — scentralizowany transport sceniczny, Timeline oraz synchronizacja Clientów muzyków podczas koncertów na żywo.
 
@@ -78,3 +78,5 @@ cd stagesync && pnpm install && pnpm dev
 StageSync jest **source-available** na [Business Source License 1.1](LICENSE) (SPDX: `BUSL-1.1`).
 Produkcyjne użycie jako własny host sceniczny jest dozwolone; Competing Offering wymaga osobnej licencji komercyjnej — szczegóły w `LICENSE`.
 Od **Change Date** `2030-07-23` kod tej linii przechodzi na **Apache License 2.0**.
+
+GitHub może w nagłówku repozytorium pokazać **Other** zamiast BUSL — detektor [Licensee](https://github.com/licensee/licensee) nie rozpoznaje `BUSL-1.1` (jak u Uniswap czy Terraform). Wiążący tekst jest w `LICENSE`; `package.json` ma SPDX `BUSL-1.1`.
