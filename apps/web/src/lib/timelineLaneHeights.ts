@@ -8,6 +8,8 @@ export const LANE_HEIGHTS_KEY = "stagesync-timeline-lane-heights";
 export const MIN_LANE_PX = 40;
 export const MAX_LANE_PX = 160;
 export const DEFAULT_LANE_PX = 72;
+/** Effective lane height at/under this → dock single-row (hide fader). */
+export const DOCK_COMPACT_MAX_PX = 56;
 
 export type LaneHeightsMap = Record<string, number>;
 

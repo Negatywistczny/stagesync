@@ -1,0 +1,206 @@
+/* Channel strip — shared by dock + Mixer. Tokens only (--ss-* / --tl-*). */
+
+.dockStrip {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: calc(var(--ss-space-1) * var(--tl-zoom-ui, 1));
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.dockRow {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  align-items: center;
+  gap: var(--ss-space-1);
+}
+
+.dockFaderRow {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  align-items: center;
+  /* Priority 2: fader shrinks with dock before Priority 3 hides it. */
+  min-height: 0;
+}
+
+.mixerStrip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  min-width: calc(var(--ss-space-16, 4rem) * 2);
+  max-width: 12rem;
+  padding: var(--ss-space-3);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-surface);
+  cursor: pointer;
+}
+
+.mixerSelected {
+  box-shadow: inset 3px 0 0 0 var(--ss-color-primary);
+  border-color: var(--ss-color-primary);
+}
+
+.mixerNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-1);
+  min-width: 0;
+}
+
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  /* Middle truncation via MiddleTruncateLabel (not CSS end-ellipsis). */
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: inherit;
+}
+
+.renameInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding: calc(var(--ss-space-1) / 2) var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
+  line-height: var(--ss-leading-compact);
+}
+
+.renameInput:focus {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.tools {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ss-space-1);
+}
+
+.faderWrap {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
+  max-width: 100%;
+}
+
+.fader {
+  width: 100%;
+  min-width: 0;
+}
+
+/*
+ * Width CQ: ancestor `.dockCell` (`container-type: inline-size; container-name: tl-dock`).
+ * Priority 1: name + S + M always visible.
+ * Priority 3: hide fader when dock content box is critically narrow.
+ *
+ * Threshold 100px (brief ~130px): `--tl-dock-w` is already 7.5rem ≈ 120px border-box;
+ * after padding the content box is ~100–104px. 130px would hide the fader at default.
+ */
+@container tl-dock (max-width: 100px) {
+  .dockFaderRow {
+    display: none;
+  }
+}
+
+/* Height compression: prop from lane height (Forma rows must still grow freely). */
+.dockStripCompact {
+  gap: 0;
+}
+
+.dockStripCompact .dockFaderRow {
+  display: none;
+}
+
+.gainLabel {
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text-muted);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tapBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
+  height: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
+  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+}
+
+@media (hover: hover) {
+  .tapBtn:hover {
+    color: var(--ss-color-text);
+    background: var(--ss-color-ghost-hover);
+    border-color: var(--ss-color-primary);
+  }
+}
+
+.tapBtn:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.tapBtnSolo {
+  color: var(--tl-solo-fg, var(--ss-color-text));
+  background: var(--tl-solo-bg, var(--ss-color-warning));
+  border-color: var(--tl-solo-bg, var(--ss-color-warning));
+}
+
+.tapBtnMute {
+  color: var(--tl-mute-fg, var(--ss-color-text));
+  background: var(--tl-mute-bg, var(--ss-color-danger));
+  border-color: var(--tl-mute-bg, var(--ss-color-danger));
+}
+
+@media (hover: hover) {
+  .tapBtnSolo:hover {
+    color: var(--tl-solo-fg, var(--ss-color-text));
+    background: color-mix(
+      in srgb,
+      var(--tl-solo-bg, var(--ss-color-warning)) 88%,
+      var(--ss-color-text)
+    );
+  }
+
+  .tapBtnMute:hover {
+    color: var(--tl-mute-fg, var(--ss-color-text));
+    background: color-mix(
+      in srgb,
+      var(--tl-mute-bg, var(--ss-color-danger)) 88%,
+      var(--ss-color-text)
+    );
+  }
+}

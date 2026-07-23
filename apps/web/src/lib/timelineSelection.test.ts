@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applySoloButtonClick,
   clearSelection,
   clearTrackSelection,
   isAudioTrackSelected,
@@ -8,15 +9,20 @@ import {
   isMultiSelectClick,
   isTrackAudibleWithSolo,
   marqueeSelectFromHits,
+  primaryAudioTrackId,
   primaryLane,
+  pruneTrackSelection,
   rectsIntersect,
   resolveMoveIds,
+  resolveMuteButtonClick,
   selectAudioTrack,
+  selectAudioTrackRange,
   selectRangeTo,
   selectSingle,
   selectedIds,
   selectionSameLane,
   setSelection,
+  toggleAudioTrackSelected,
   toggleSelected,
   toggleSoloTrackId,
 } from "./timelineSelection.js";
@@ -130,6 +136,7 @@ describe("timelineSelection", () => {
     const trackSel = selectAudioTrack("tr-a");
     expect(isAudioTrackSelected(trackSel, "tr-a")).toBe(true);
     expect(isAudioTrackSelected(trackSel, "tr-b")).toBe(false);
+    expect(primaryAudioTrackId(trackSel)).toBe("tr-a");
     let solo = toggleSoloTrackId([], "tr-a");
     expect(solo).toEqual(["tr-a"]);
     solo = toggleSoloTrackId(solo, "tr-b");
@@ -140,6 +147,76 @@ describe("timelineSelection", () => {
     expect(isTrackAudibleWithSolo("tr-a", true, [])).toBe(false);
     expect(isTrackAudibleWithSolo("tr-a", false, ["tr-b"])).toBe(false);
     expect(isTrackAudibleWithSolo("tr-b", false, ["tr-b"])).toBe(true);
+  });
+
+  it("toggleAudioTrackSelected + selectAudioTrackRange", () => {
+    const ordered = ["a", "b", "c", "d"];
+    let sel = selectAudioTrack("a");
+    sel = toggleAudioTrackSelected(sel, "c");
+    expect(sel.ids).toEqual(["a", "c"]);
+    expect(sel.primaryId).toBe("c");
+    sel = toggleAudioTrackSelected(sel, "a");
+    expect(sel.ids).toEqual(["c"]);
+    expect(sel.primaryId).toBe("c");
+    const ranged = selectAudioTrackRange(
+      selectAudioTrack("b"),
+      "d",
+      ordered,
+    );
+    expect(ranged.ids).toEqual(["b", "c", "d"]);
+    expect(ranged.primaryId).toBe("d");
+    expect(selectAudioTrackRange(clearTrackSelection(), "c", ordered)).toEqual(
+      selectAudioTrack("c"),
+    );
+    expect(
+      pruneTrackSelection(
+        { ids: ["a", "b", "gone"], primaryId: "gone" },
+        new Set(["a", "b"]),
+      ),
+    ).toEqual({ ids: ["a", "b"], primaryId: "b" });
+  });
+
+  it("applySoloButtonClick: exclusive / global / multi", () => {
+    const all = ["a", "b", "c"];
+    expect(
+      applySoloButtonClick([], "b", all, ["b"], { altKey: true }),
+    ).toEqual(["b"]);
+    expect(
+      applySoloButtonClick(["b"], "b", all, ["b"], { altKey: true }),
+    ).toEqual([]);
+    expect(
+      applySoloButtonClick(["a"], "b", all, ["a", "b"], { altKey: true }),
+    ).toEqual(["b"]);
+    expect(
+      applySoloButtonClick([], "a", all, ["a"], { metaKey: true }),
+    ).toEqual(all);
+    expect(
+      applySoloButtonClick(all, "a", all, ["a"], { ctrlKey: true }),
+    ).toEqual([]);
+    expect(
+      applySoloButtonClick([], "b", all, ["a", "b", "c"], {}),
+    ).toEqual(["a", "b", "c"]);
+    expect(
+      applySoloButtonClick(["a", "b", "c"], "b", all, ["a", "b"], {}),
+    ).toEqual(["c"]);
+    expect(applySoloButtonClick([], "a", all, [], {})).toEqual(["a"]);
+  });
+
+  it("resolveMuteButtonClick: global / multi / single", () => {
+    const all = ["a", "b", "c"];
+    expect(
+      resolveMuteButtonClick("a", false, all, ["a"], { metaKey: true }),
+    ).toEqual({ trackIds: all, muted: true });
+    expect(
+      resolveMuteButtonClick("a", true, all, ["a"], { ctrlKey: true }),
+    ).toEqual({ trackIds: all, muted: false });
+    expect(
+      resolveMuteButtonClick("b", false, all, ["a", "b"], {}),
+    ).toEqual({ trackIds: ["a", "b"], muted: true });
+    expect(resolveMuteButtonClick("c", true, all, ["a"], {})).toEqual({
+      trackIds: ["c"],
+      muted: false,
+    });
   });
 
   it("rectsIntersect and track/solo helpers", () => {
@@ -155,8 +232,8 @@ describe("timelineSelection", () => {
         { left: 2, right: 3, top: 2, bottom: 3 },
       ),
     ).toBe(false);
-    expect(clearTrackSelection()).toEqual({ audioTrackId: null });
-    expect(selectAudioTrack("t1").audioTrackId).toBe("t1");
+    expect(clearTrackSelection()).toEqual({ ids: [], primaryId: null });
+    expect(selectAudioTrack("t1").ids).toEqual(["t1"]);
     expect(isAudioTrackSelected(selectAudioTrack("t1"), "t1")).toBe(true);
     expect(marqueeSelectFromHits([])).toEqual(clearSelection());
     expect(primaryLane(clearSelection())).toBeNull();

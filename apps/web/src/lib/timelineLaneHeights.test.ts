@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   clearLaneHeightOverride,
   clampLaneHeight,
+  DOCK_COMPACT_MAX_PX,
   laneHeightBase,
   laneHeightEffective,
   loadLaneHeights,
@@ -28,6 +29,14 @@ describe("timelineLaneHeights", () => {
   it("laneHeightEffective applies UI scale", () => {
     expect(laneHeightEffective(72, 1)).toBe(72);
     expect(laneHeightEffective(72, 1.25)).toBe(90);
+  });
+
+  it("dock compact threshold sits between min and default lane", () => {
+    expect(DOCK_COMPACT_MAX_PX).toBeGreaterThan(MIN_LANE_PX);
+    expect(DOCK_COMPACT_MAX_PX).toBeLessThan(72);
+    expect(laneHeightEffective(MIN_LANE_PX, 1)).toBeLessThanOrEqual(
+      DOCK_COMPACT_MAX_PX,
+    );
   });
 
   it("scaleLaneHeights keeps proportions on Zoom V change", () => {

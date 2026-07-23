@@ -215,12 +215,26 @@ export function setAudioTrackMuted(
   trackId: string,
   muted: boolean,
 ): Project {
-  return {
-    ...project,
-    audioTracks: project.audioTracks.map((t) =>
-      t.id === trackId ? { ...t, muted: muted || undefined } : t,
-    ),
-  };
+  return setAudioTracksMuted(project, [trackId], muted);
+}
+
+/** Batch mute/unmute (multi-select / Cmd+M). */
+export function setAudioTracksMuted(
+  project: Project,
+  trackIds: readonly string[],
+  muted: boolean,
+): Project {
+  if (!trackIds.length) return project;
+  const set = new Set(trackIds);
+  let changed = false;
+  const audioTracks = project.audioTracks.map((t) => {
+    if (!set.has(t.id)) return t;
+    const nextMuted = muted || undefined;
+    if (t.muted === nextMuted) return t;
+    changed = true;
+    return { ...t, muted: nextMuted };
+  });
+  return changed ? { ...project, audioTracks } : project;
 }
 
 export function setAudioTrackGainDb(
@@ -271,6 +285,60 @@ export function addAudioTrack(
       ],
     },
     trackId,
+  };
+}
+
+/** Remove a track and all clips on it (assets stay shared). */
+export function removeAudioTrack(project: Project, trackId: string): Project {
+  if (!project.audioTracks.some((t) => t.id === trackId)) return project;
+  return {
+    ...project,
+    audioTracks: project.audioTracks.filter((t) => t.id !== trackId),
+    audioClips: project.audioClips.filter((c) => c.trackId !== trackId),
+  };
+}
+
+/**
+ * Duplicate track + clips (new ids; shared assets). Inserts after the source.
+ * Name defaults to `${name} (kopia)` truncated to schema max.
+ */
+export function duplicateAudioTrack(
+  project: Project,
+  trackId: string,
+): { project: Project; trackId: string } | null {
+  if (project.audioTracks.length >= MAX_AUDIO_TRACKS) {
+    throw new RangeError(`Audio tracks limited to ${MAX_AUDIO_TRACKS}`);
+  }
+  const idx = project.audioTracks.findIndex((t) => t.id === trackId);
+  if (idx < 0) return null;
+  const src = project.audioTracks[idx]!;
+  const newTrackId = crypto.randomUUID();
+  const baseName = src.name.trim() || `Audio ${idx + 1}`;
+  const copyName = `${baseName} (kopia)`.slice(0, 80);
+  const newTrack = {
+    ...src,
+    id: newTrackId,
+    name: copyName,
+  };
+  const clonedClips = project.audioClips
+    .filter((c) => c.trackId === trackId)
+    .map((c) => ({
+      ...c,
+      id: crypto.randomUUID(),
+      trackId: newTrackId,
+    }));
+  const audioTracks = [
+    ...project.audioTracks.slice(0, idx + 1),
+    newTrack,
+    ...project.audioTracks.slice(idx + 1),
+  ];
+  return {
+    project: {
+      ...project,
+      audioTracks,
+      audioClips: [...project.audioClips, ...clonedClips],
+    },
+    trackId: newTrackId,
   };
 }
 

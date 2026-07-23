@@ -6,9 +6,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
-import { Button, Slider } from "@stagesync/ui";
+import { Button, Slider, useContextMenu } from "@stagesync/ui";
 import {
   resolveMeterAt,
   resolveTempoAt,
@@ -35,6 +35,7 @@ import {
   computeCanvasWidthPx,
   computeFormaViewSpan,
   DEFAULT_PX_PER_BAR,
+  pencilFormaClick,
   projectContentEqual,
   scrollCanvasToStart,
   snapEditTicks,
@@ -58,6 +59,7 @@ import {
   type TimelineClipboard,
 } from "../lib/timelineClipboard.js";
 import {
+  applySoloButtonClick,
   clearSelection,
   clearTrackSelection,
   EMPTY_CLIP_SELECTION,
@@ -69,17 +71,22 @@ import {
   isMarqueeClick,
   isMultiSelectClick,
   marqueeSelectFromHits,
+  primaryAudioTrackId,
   primaryLane,
+  pruneTrackSelection,
   rectsIntersect,
   resolveMoveIds,
+  resolveMuteButtonClick,
   selectAudioTrack,
+  selectAudioTrackRange,
   selectRangeTo,
   selectSingle,
   setSelection,
+  toggleAudioTrackSelected,
   toggleSelected,
-  toggleSoloTrackId,
   type ClipSelection,
   type ClipSelectionLane,
+  type TimelineSurface,
   type TrackSelection,
 } from "../lib/timelineSelection.js";
 import {
@@ -116,14 +123,17 @@ import {
 } from "../lib/formaInspector.js";
 import {
   deleteTekstClip,
+  pencilTekstClick,
   setTekstClipText,
 } from "../lib/tekstEdit.js";
 import {
   deleteAkordyClip,
+  pencilAkordyClick,
   setAkordyClipSymbol,
 } from "../lib/akordyEdit.js";
 import {
   deleteCueClip,
+  pencilCueClick,
   setCueClipLabel,
   setCueClipRoles,
   setCueClipPriority,
@@ -137,6 +147,14 @@ import {
   splitContentClipAt,
   type ContentLaneId,
 } from "../lib/contentLaneEdit.js";
+import {
+  buildAudioTrackContextMenuItems,
+  buildClipContextMenuItems,
+  buildEmptyLaneContextMenuItems,
+  clipboardMatchesEmptyLane,
+  type ClipMenuLane,
+  type EmptyLaneMenuKind,
+} from "../lib/timelineContextMenus.js";
 import {
   applyTimelineNudge,
   nudgeShowsLeftEdge,
@@ -179,19 +197,26 @@ import {
 } from "../lib/metronome.js";
 import {
   addAudioTrack,
+  duplicateAudioTrack,
   MAX_AUDIO_TRACKS,
   applyDecodedAudioMeta,
   commitAudioGesture,
   previewAudioFromSession,
+  removeAudioTrack,
   setAudioClipFadeMs,
   setAudioClipGainDb,
   setAudioClipLoop,
   setAudioClipMuted,
   setAudioClipTrimMs,
   setAudioTrackGainDb,
-  setAudioTrackMuted,
+  setAudioTracksMuted,
   setAudioTrackName,
 } from "../lib/audioLaneEdit.js";
+import {
+  ChannelStripControls,
+  MixerSurface,
+} from "./timeline/channelStrip/index.js";
+import type { ChannelStripCallbacks } from "./timeline/channelStrip/channelStripTypes.js";
 import {
   allowAudioPlayback,
   clearAudioBufferCache,
@@ -274,12 +299,14 @@ import {
   ensureAudioTrackVisibility,
   isAudioLaneId,
   isTrackVisible,
+  TRACKS,
   type AudioLaneId,
   type TrackVisibilityMap,
 } from "../lib/timelineTracks.js";
 import {
   clearLaneHeightOverride,
   DEFAULT_LANE_PX,
+  DOCK_COMPACT_MAX_PX,
   laneHeightBase,
   laneHeightEffective,
   loadLaneHeights,
@@ -435,6 +462,7 @@ export function TimelineShell() {
     seek,
     setLoop,
   } = useTransport();
+  const { openAt: openContextMenu } = useContextMenu();
   const wasPlayingRef = useRef(state.playing);
   const [latencyCompMs, setLatencyCompMs] = useState(
     () => getStoredLatencyCompensationMs(),
@@ -479,6 +507,7 @@ export function TimelineShell() {
   const [savePending, setSavePending] = useState(false);
   const [audioUploadPending, setAudioUploadPending] = useState(false);
   const audioUploadPendingRef = useRef(false);
+  const inspAudioFileRef = useRef<HTMLInputElement>(null);
   const [audioBuffering, setAudioBuffering] = useState(false);
   const [failedAudioAssetIds, setFailedAudioAssetIds] = useState<string[]>([]);
   const [libraryNames, setLibraryNames] = useState<
@@ -638,6 +667,17 @@ export function TimelineShell() {
   const [trackSelection, setTrackSelection] =
     useState<TrackSelection>(EMPTY_TRACK_SELECTION);
   const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
+  const [timelineSurface, setTimelineSurface] =
+    useState<TimelineSurface>("timeline");
+  const [trackRename, setTrackRename] = useState<{
+    trackId: string;
+    name: string;
+  } | null>(null);
+  const [audioLaneDropId, setAudioLaneDropId] = useState<string | null>(null);
+  const laneImportTrackIdRef = useRef<string | null>(null);
+  const laneAudioFileRef = useRef<HTMLInputElement>(null);
+  const trackSelectionRef = useRef(trackSelection);
+  trackSelectionRef.current = trackSelection;
   const primaryId = clipSelection.primaryId;
   const selectionLane = primaryLane(clipSelection);
 
@@ -960,7 +1000,22 @@ export function TimelineShell() {
       }
       return;
     }
-    if (!clipSelection.items.length) return;
+    if (!clipSelection.items.length) {
+      const ids = trackSelectionRef.current.ids;
+      if (!ids.length) return;
+      let next = draft;
+      for (const trackId of ids) {
+        next = removeAudioTrack(next, trackId);
+      }
+      if (next === draft) return;
+      commitDraft(next);
+      setTrackSelection(clearTrackSelection());
+      setSoloAudioTrackIds((prev) => prev.filter((id) => !ids.includes(id)));
+      setTrackVisibility((prev) =>
+        ensureAudioTrackVisibility(prev, next.audioTracks),
+      );
+      return;
+    }
     let next = draft;
     const lanes = [
       ...new Set(clipSelection.items.map((i) => i.lane)),
@@ -1002,7 +1057,7 @@ export function TimelineShell() {
     if (!draft || !clipSelection.items.length) return false;
     // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
     const lane = primaryLane(clipSelection);
-    if (!lane || isAudioSelectionLane(lane)) return false;
+    if (!lane) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
     let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
     if (lane === "forma") {
@@ -1015,6 +1070,8 @@ export function TimelineShell() {
       clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
     } else if (lane === "cue") {
       clips = draft.cue.clips.filter((c) => idSet.has(c.id));
+    } else if (isAudioSelectionLane(lane)) {
+      clips = draft.audioClips.filter((c) => idSet.has(c.id));
     } else {
       return false;
     }
@@ -1061,8 +1118,9 @@ export function TimelineShell() {
     if (!draft || !lane || !clipSelection.items.length) return false;
     if (!copyClipSelection()) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
-    const clips =
-      lane === "forma"
+    const clips = isAudioSelectionLane(lane)
+      ? draft.audioClips.filter((c) => idSet.has(c.id))
+      : lane === "forma"
         ? draft.forma.clips.filter((c) => idSet.has(c.id) && c.kind === "section")
         : lane === "tekst"
           ? draft.tekst.clips.filter((c) => idSet.has(c.id))
@@ -1582,9 +1640,9 @@ export function TimelineShell() {
       ? draftProject.audioClips.find((c) => c.id === selectedAudioClipId) ?? null
       : null;
   const selectedDockAudioTrack =
-    draftProject && trackSelection.audioTrackId
+    draftProject && primaryAudioTrackId(trackSelection)
       ? draftProject.audioTracks.find(
-          (tr) => tr.id === trackSelection.audioTrackId,
+          (tr) => tr.id === primaryAudioTrackId(trackSelection),
         ) ?? null
       : null;
   const selectedAnchor =
@@ -3295,9 +3353,170 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
       return;
     }
-    const { project } = addAudioTrack(draftProject);
+    const { project, trackId } = addAudioTrack(draftProject);
     commitDraft(project);
+    setClipSelection(clearSelection());
+    setTrackSelection(selectAudioTrack(trackId));
     setEyeOpen(false);
+    setTrackVisibility((prev) =>
+      ensureAudioTrackVisibility(prev, project.audioTracks),
+    );
+  }
+
+  function onRemoveAudioTrack(trackId: string) {
+    if (!draftProject) return;
+    const next = removeAudioTrack(draftProject, trackId);
+    if (next === draftProject) return;
+    commitDraft(next);
+    setClipSelection(clearSelection());
+    setTrackSelection(
+      pruneTrackSelection(
+        trackSelection,
+        new Set(next.audioTracks.map((t) => t.id)),
+      ),
+    );
+    setSoloAudioTrackIds((prev) => prev.filter((id) => id !== trackId));
+    setTrackVisibility((prev) =>
+      ensureAudioTrackVisibility(prev, next.audioTracks),
+    );
+    if (trackRename?.trackId === trackId) setTrackRename(null);
+  }
+
+  function onDuplicateAudioTrack(trackId: string) {
+    if (!draftProject) return;
+    if (draftProject.audioTracks.length >= MAX_AUDIO_TRACKS) {
+      setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
+      return;
+    }
+    try {
+      const result = duplicateAudioTrack(draftProject, trackId);
+      if (!result) return;
+      commitDraft(result.project);
+      setClipSelection(clearSelection());
+      setTrackSelection(selectAudioTrack(result.trackId));
+      setTrackVisibility((prev) =>
+        ensureAudioTrackVisibility(prev, result.project.audioTracks),
+      );
+    } catch (err) {
+      setLoadError(
+        err instanceof Error ? err.message : "Nie udało się zduplikować ścieżki",
+      );
+    }
+  }
+
+  function openTrackRename(trackId: string) {
+    const name =
+      draftProject?.audioTracks.find((t) => t.id === trackId)?.name ?? "";
+    setTrackRename({ trackId, name });
+  }
+
+  function openAudioTrackContextMenu(
+    trackId: string,
+    clientX: number,
+    clientY: number,
+  ) {
+    setClipSelection(clearSelection());
+    if (!isAudioTrackSelected(trackSelection, trackId)) {
+      setTrackSelection(selectAudioTrack(trackId));
+    }
+    openContextMenu({
+      x: clientX,
+      y: clientY,
+      label: "Menu ścieżki audio",
+      items: buildAudioTrackContextMenuItems({
+        canDuplicate:
+          (draftProject?.audioTracks.length ?? 0) < MAX_AUDIO_TRACKS,
+        onRename: () => openTrackRename(trackId),
+        onDuplicate: () => onDuplicateAudioTrack(trackId),
+        onRemove: () => onRemoveAudioTrack(trackId),
+      }),
+    });
+  }
+
+  function commitTrackRename() {
+    if (!draftProject || !trackRename) return;
+    const next = setAudioTrackName(
+      draftProject,
+      trackRename.trackId,
+      trackRename.name,
+    );
+    if (next !== draftProject) commitDraft(next);
+    setTrackRename(null);
+  }
+
+  function cancelTrackRename() {
+    setTrackRename(null);
+  }
+
+  function onAudioTrackHeaderClick(
+    e: React.MouseEvent,
+    trackId: string,
+  ) {
+    if ((e.target as HTMLElement).closest("button, label, input")) {
+      return;
+    }
+    setClipSelection(clearSelection());
+    const orderedIds = (draftProject?.audioTracks ?? []).map((t) => t.id);
+    if (e.shiftKey) {
+      setTrackSelection(
+        selectAudioTrackRange(trackSelection, trackId, orderedIds),
+      );
+    } else if (isMultiSelectClick(e)) {
+      setTrackSelection(toggleAudioTrackSelected(trackSelection, trackId));
+    } else {
+      setTrackSelection(selectAudioTrack(trackId));
+    }
+  }
+
+  function onAudioTrackSoloClick(e: React.MouseEvent, trackId: string) {
+    const allIds = (draftProject?.audioTracks ?? []).map((t) => t.id);
+    setSoloAudioTrackIds((prev) =>
+      applySoloButtonClick(prev, trackId, allIds, trackSelection.ids, e),
+    );
+  }
+
+  function onAudioTrackMuteClick(e: React.MouseEvent, trackId: string) {
+    if (!draftProject) return;
+    const track = draftProject.audioTracks.find((t) => t.id === trackId);
+    if (!track) return;
+    const allIds = draftProject.audioTracks.map((t) => t.id);
+    const { trackIds, muted } = resolveMuteButtonClick(
+      trackId,
+      Boolean(track.muted),
+      allIds,
+      trackSelection.ids,
+      e,
+    );
+    commitDraft(setAudioTracksMuted(draftProject, trackIds, muted));
+  }
+
+  function buildChannelStripCallbacks(trackId: string): ChannelStripCallbacks {
+    return {
+      onSelect: (e) => onAudioTrackHeaderClick(e, trackId),
+      onContextMenu: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openAudioTrackContextMenu(trackId, e.clientX, e.clientY);
+      },
+      onSoloClick: (e) => onAudioTrackSoloClick(e, trackId),
+      onMuteClick: (e) => onAudioTrackMuteClick(e, trackId),
+      onGainChange: (v) => {
+        if (!draftProject) return;
+        commitDraft(setAudioTrackGainDb(draftProject, trackId, v));
+      },
+      onGainReset: () => {
+        if (!draftProject) return;
+        commitDraft(setAudioTrackGainDb(draftProject, trackId, 0));
+      },
+      onNameDoubleClick: () => openTrackRename(trackId),
+      onRenameChange: (name) => {
+        setTrackRename((prev) =>
+          prev && prev.trackId === trackId ? { ...prev, name } : prev,
+        );
+      },
+      onRenameCommit: commitTrackRename,
+      onRenameCancel: cancelTrackRename,
+    };
   }
 
   async function onUploadAudioToTrack(trackId: string, file: File) {
@@ -3754,6 +3973,238 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   const canvasInnerWidth = `calc(var(--tl-dock-w) + ${canvasWidthPx}px)`;
 
+  function openClipContextMenu(args: {
+    clientX: number;
+    clientY: number;
+    lane: ClipMenuLane;
+    clipId: string;
+    clipMuted?: boolean;
+    canSplit: boolean;
+    canDelete?: boolean;
+    selectionLane: Parameters<typeof selectLaneClip>[0];
+  }) {
+    const {
+      clientX,
+      clientY,
+      lane,
+      clipId,
+      clipMuted,
+      canSplit,
+      canDelete = true,
+    } = args;
+    clearMapSelection();
+    flushSync(() => {
+      selectLaneClip(args.selectionLane, clipId);
+    });
+    const board = clipboardRef.current;
+    const canPaste = Boolean(board);
+    const splitTicks = rawTicksAtClientX(clientX);
+
+    const copyThisClip = (): boolean => {
+      const draft = draftRef.current;
+      if (!draft) return false;
+      let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
+      if (lane === "forma") {
+        const c = draft.forma.clips.find(
+          (x) => x.id === clipId && x.kind === "section",
+        );
+        if (c) clips = [c];
+      } else if (lane === "tekst") {
+        const c = draft.tekst.clips.find((x) => x.id === clipId);
+        if (c) clips = [c];
+      } else if (lane === "akordy") {
+        const c = draft.akordy.clips.find((x) => x.id === clipId);
+        if (c) clips = [c];
+      } else if (lane === "cue") {
+        const c = draft.cue.clips.find((x) => x.id === clipId);
+        if (c) clips = [c];
+      } else if (lane === "audio") {
+        const c = draft.audioClips.find((x) => x.id === clipId);
+        if (c) clips = [c];
+      }
+      const nextBoard = buildClipboardFromClips(args.selectionLane, clips);
+      if (!nextBoard) return false;
+      clipboardRef.current = nextBoard;
+      return true;
+    };
+
+    const deleteThisClip = () => {
+      const draft = draftRef.current;
+      if (!draft || !canDelete) return;
+      if (lane === "forma") {
+        const next = deleteFormaClip(draft, clipId);
+        if (next !== draft) commitDraft(next);
+      } else if (lane === "tekst") {
+        commitDraft(deleteTekstClip(draft, clipId));
+      } else if (lane === "akordy") {
+        commitDraft(deleteAkordyClip(draft, clipId));
+      } else if (lane === "cue") {
+        commitDraft(deleteCueClip(draft, clipId));
+      } else if (lane === "audio") {
+        const next = deleteClipsOnLane(draft, args.selectionLane, [clipId]);
+        if (next !== draft) commitDraft(next);
+      }
+      setClipSelection(clearSelection());
+    };
+
+    openContextMenu({
+      x: clientX,
+      y: clientY,
+      label: "Menu klipu",
+      items: buildClipContextMenuItems({
+        lane,
+        canPaste,
+        canSplit: canSplit && splitTicks != null,
+        clipMuted,
+        onCopy: () => {
+          copyThisClip();
+        },
+        onCut: () => {
+          if (!canDelete) return;
+          if (!copyThisClip()) return;
+          deleteThisClip();
+        },
+        onPaste: () => {
+          pasteClipClipboard(locatorTicks);
+        },
+        onDuplicate: () => {
+          if (!copyThisClip()) return;
+          const draft = draftRef.current;
+          if (!draft) return;
+          let end = 0;
+          if (lane === "forma") {
+            const c = draft.forma.clips.find((x) => x.id === clipId);
+            if (c) end = c.startTicks + c.lengthTicks;
+          } else if (lane === "tekst") {
+            const c = draft.tekst.clips.find((x) => x.id === clipId);
+            if (c) end = c.startTicks + c.lengthTicks;
+          } else if (lane === "akordy") {
+            const c = draft.akordy.clips.find((x) => x.id === clipId);
+            if (c) end = c.startTicks + c.lengthTicks;
+          } else if (lane === "cue") {
+            const c = draft.cue.clips.find((x) => x.id === clipId);
+            if (c) end = c.startTicks + c.lengthTicks;
+          } else if (lane === "audio") {
+            const c = draft.audioClips.find((x) => x.id === clipId);
+            if (c) end = c.startTicks + c.lengthTicks;
+          }
+          pasteClipClipboard(end);
+        },
+        onDelete: () => deleteThisClip(),
+        onMuteToggle:
+          lane === "audio"
+            ? () => {
+                const draft = draftRef.current;
+                if (!draft) return;
+                const clip = draft.audioClips.find((c) => c.id === clipId);
+                if (!clip) return;
+                commitDraft(setAudioClipMuted(draft, clipId, !clip.muted));
+              }
+            : undefined,
+        onFocusInspector: () => focusInspectorPanel(),
+        onSplit:
+          canSplit && splitTicks != null
+            ? () => {
+                const draft = draftRef.current;
+                if (!draft) return;
+                if (lane === "forma") {
+                  const next = splitFormaClipAt(draft, clipId, splitTicks);
+                  if (next !== draft) commitDraft(next);
+                  return;
+                }
+                if (
+                  lane === "tekst" ||
+                  lane === "akordy" ||
+                  lane === "cue"
+                ) {
+                  const next = splitContentClipAt(
+                    draft,
+                    lane,
+                    clipId,
+                    splitTicks,
+                  );
+                  if (next !== draft) commitDraft(next);
+                }
+              }
+            : undefined,
+      }).map((item) => {
+        if (!("id" in item)) return item;
+        if (
+          !canDelete &&
+          (item.id === "cut" || item.id === "delete" || item.id === "duplicate")
+        ) {
+          return { ...item, disabled: true };
+        }
+        return item;
+      }),
+    });
+  }
+
+  function openEmptyLaneContextMenu(args: {
+    clientX: number;
+    clientY: number;
+    laneKind: EmptyLaneMenuKind;
+    audioTrackId?: string;
+  }) {
+    const { clientX, clientY, laneKind, audioTrackId } = args;
+    const ticks = rawTicksAtClientX(clientX);
+    if (ticks == null) return;
+    const board = clipboardRef.current;
+    const canPaste = clipboardMatchesEmptyLane(board?.lane, laneKind);
+    openContextMenu({
+      x: clientX,
+      y: clientY,
+      label: "Menu ścieżki",
+      items: buildEmptyLaneContextMenuItems({
+        lane: laneKind,
+        canPaste,
+        onPaste: () => {
+          pasteClipClipboard(ticks);
+        },
+        onImportAudio:
+          laneKind === "audio" && audioTrackId
+            ? () => {
+                laneImportTrackIdRef.current = audioTrackId;
+                laneAudioFileRef.current?.click();
+              }
+            : undefined,
+        onAddClip:
+          laneKind === "forma"
+            ? () => {
+                const draft = draftRef.current;
+                if (!draft) return;
+                const n =
+                  draft.forma.clips.filter((c) => c.kind === "section").length +
+                  1;
+                const next = pencilFormaClick(draft, ticks, `Sekcja ${n}`);
+                if (next !== draft) commitDraft(next);
+              }
+            : laneKind === "tekst"
+              ? () => {
+                  const draft = draftRef.current;
+                  if (!draft) return;
+                  const next = pencilTekstClick(draft, ticks, "…");
+                  if (next !== draft) commitDraft(next);
+                }
+              : laneKind === "akordy"
+                ? () => {
+                    const draft = draftRef.current;
+                    if (!draft) return;
+                    const next = pencilAkordyClick(draft, ticks, "C");
+                    if (next !== draft) commitDraft(next);
+                  }
+                : laneKind === "cue"
+                  ? () => {
+                      const draft = draftRef.current;
+                      if (!draft) return;
+                      const next = pencilCueClick(draft, ticks, "Cue");
+                      if (next !== draft) commitDraft(next);
+                    }
+                  : undefined,
+      }),
+    });
+  }
+
   function renderLaneContent(trackId: string) {
     if (!draftProject) return null;
     if (isAudioLaneId(trackId)) {
@@ -3838,6 +4289,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 onPointerDown={(e) => onAudioClipPointerDown(e, lane, clip)}
                 onPointerMove={onFormaClipPointerMove}
                 onPointerUp={onFormaClipPointerUp}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openClipContextMenu({
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                    lane: "audio",
+                    clipId: clip.id,
+                    clipMuted: Boolean(clip.muted),
+                    canSplit: false,
+                    selectionLane: lane,
+                  });
+                }}
               >
                 {poly ? (
                   <svg
@@ -3856,9 +4320,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             );
           })}
           {clips.length === 0 ? (
-            <span className={styles.muted}>
-              + Audio w docku lub menu oka — dodaj plik
-            </span>
+            <p className={styles.laneEmptyDrop}>Upuść plik audio tutaj</p>
           ) : null}
         </>
       );
@@ -4096,6 +4558,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   onPointerDown={(e) => onFormaClipPointerDown(e, clip)}
                   onPointerMove={onFormaClipPointerMove}
                   onPointerUp={onFormaClipPointerUp}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openClipContextMenu({
+                      clientX: e.clientX,
+                      clientY: e.clientY,
+                      lane: "forma",
+                      clipId: clip.id,
+                      canSplit: clip.kind === "section",
+                      canDelete: clip.kind !== "countdown",
+                      selectionLane: "forma",
+                    });
+                  }}
                   onDoubleClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -4251,6 +4726,18 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   }
                   onPointerMove={onFormaClipPointerMove}
                   onPointerUp={onFormaClipPointerUp}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openClipContextMenu({
+                      clientX: e.clientX,
+                      clientY: e.clientY,
+                      lane,
+                      clipId: clip.id,
+                      canSplit: true,
+                      selectionLane: lane,
+                    });
+                  }}
                   onDoubleClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -4354,6 +4841,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         .join(" ")}
       data-tl-tier={touchTier}
     >
+      <input
+        ref={laneAudioFileRef}
+        type="file"
+        accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
+        hidden
+        disabled={audioUploadPending}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          const trackId = laneImportTrackIdRef.current;
+          laneImportTrackIdRef.current = null;
+          if (f && trackId) {
+            void onUploadAudioToTrack(trackId, f);
+          }
+        }}
+      />
       <AppHeader
         suffix="Timeline"
         version={APP_VERSION}
@@ -4523,6 +5026,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               >
                 <IconFollow />
               </ShellIconButton>
+              <button
+                type="button"
+                className={[
+                  styles.metaBtn,
+                  timelineSurface === "mixer" ? styles.metaBtnPressed : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                title={
+                  timelineSurface === "mixer"
+                    ? "Wróć do Timeline"
+                    : "Mixer — paski kanałów audio"
+                }
+                aria-pressed={timelineSurface === "mixer"}
+                onClick={() =>
+                  setTimelineSurface((s) =>
+                    s === "mixer" ? "timeline" : "mixer",
+                  )
+                }
+              >
+                Mixer
+              </button>
             </div>
           </div>
         </div>
@@ -4596,6 +5121,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         }}
       >
         <div className={styles.timelinePane}>
+          {timelineSurface === "mixer" && draftProject ? (
+            <MixerSurface
+              project={draftProject}
+              trackSelection={trackSelection}
+              soloAudioTrackIds={soloAudioTrackIds}
+              renamingTrackId={trackRename?.trackId ?? null}
+              renameValue={trackRename?.name ?? ""}
+              buildCallbacks={buildChannelStripCallbacks}
+              onEmptyDoubleClick={(e) => {
+                if ((e.target as HTMLElement).closest("button, input")) return;
+                onAddAudioTrack();
+              }}
+            />
+          ) : (
           <div
             ref={canvasScrollRef}
             className={styles.canvasScroll}
@@ -4768,6 +5307,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     <div
                       className={[
                         styles.dockCell,
+                        track.group === "audio" ? styles.dockCellAudio : "",
                         track.group === "special" ? styles.dockMuted : "",
                         track.group === "audio" &&
                         track.audioTrackId &&
@@ -4779,118 +5319,72 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         .join(" ")}
                       onClick={(e) => {
                         if (track.group !== "audio" || !track.audioTrackId) return;
-                        if ((e.target as HTMLElement).closest("button, label, input")) {
-                          return;
-                        }
-                        setClipSelection(clearSelection());
-                        setTrackSelection(selectAudioTrack(track.audioTrackId));
+                        onAudioTrackHeaderClick(e, track.audioTrackId);
+                      }}
+                      onContextMenu={(e) => {
+                        if (track.group !== "audio" || !track.audioTrackId) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openAudioTrackContextMenu(
+                          track.audioTrackId,
+                          e.clientX,
+                          e.clientY,
+                        );
                       }}
                     >
-                      <span>{track.label}</span>
                       {track.group === "audio" && track.audioTrackId ? (
-                        <div
-                          className={styles.dockTools}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            className={[
-                              styles.tapBtn,
-                              soloAudioTrackIds.includes(track.audioTrackId)
-                                ? styles.tapBtnSelected
-                                : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            title={
-                              soloAudioTrackIds.includes(track.audioTrackId)
-                                ? "Wyłącz solo"
-                                : "Solo ścieżki"
+                        <>
+                          <ChannelStripControls
+                            layout="dock"
+                            compact={
+                              laneHeightEffective(
+                                laneHeightBase(track.id, laneHeights, zoomV),
+                                uiScale,
+                              ) <= DOCK_COMPACT_MAX_PX
                             }
-                            onClick={() => {
-                              setSoloAudioTrackIds((prev) =>
-                                toggleSoloTrackId(prev, track.audioTrackId!),
-                              );
+                            strip={{
+                              trackId: track.audioTrackId,
+                              name: track.label,
+                              muted: Boolean(
+                                draftProject?.audioTracks.find(
+                                  (a) => a.id === track.audioTrackId,
+                                )?.muted,
+                              ),
+                              gainDb:
+                                draftProject?.audioTracks.find(
+                                  (a) => a.id === track.audioTrackId,
+                                )?.gainDb ?? 0,
+                              soloed: soloAudioTrackIds.includes(
+                                track.audioTrackId,
+                              ),
+                              selected: isAudioTrackSelected(
+                                trackSelection,
+                                track.audioTrackId,
+                              ),
                             }}
-                          >
-                            S
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.tapBtn}
-                            title={
-                              draftProject?.audioTracks.find(
-                                (a) => a.id === track.audioTrackId,
-                              )?.muted
-                                ? "Włącz ścieżkę"
-                                : "Wycisz ścieżkę"
+                            callbacks={buildChannelStripCallbacks(
+                              track.audioTrackId,
+                            )}
+                            renaming={
+                              trackRename?.trackId === track.audioTrackId
                             }
-                            onClick={() => {
-                              if (!draftProject || !track.audioTrackId) return;
-                              const muted = !draftProject.audioTracks.find(
-                                (a) => a.id === track.audioTrackId,
-                              )?.muted;
-                              commitDraft(
-                                setAudioTrackMuted(
-                                  draftProject,
-                                  track.audioTrackId,
-                                  muted,
-                                ),
-                              );
-                            }}
-                          >
-                            M
-                          </button>
-                          <Slider
-                            className={styles.dockFader}
-                            aria-label={`Fader ${track.label}`}
-                            min={-24}
-                            max={12}
-                            step={0.5}
-                            value={
-                              draftProject?.audioTracks.find(
-                                (a) => a.id === track.audioTrackId,
-                              )?.gainDb ?? 0
+                            renameValue={
+                              trackRename?.trackId === track.audioTrackId
+                                ? trackRename.name
+                                : track.label
                             }
-                            onValueChange={(v) => {
-                              if (!draftProject || !track.audioTrackId) return;
-                              commitDraft(
-                                setAudioTrackGainDb(
-                                  draftProject,
-                                  track.audioTrackId,
-                                  v,
-                                ),
-                              );
-                            }}
+                            soloClassName={styles.tapBtn}
+                            muteClassName={styles.tapBtn}
+                            soloActiveClassName={styles.tapBtnSolo}
+                            muteActiveClassName={styles.tapBtnMute}
+                            labelClassName={styles.dockLabel}
+                            faderClassName={styles.dockFader}
+                            renameInputClassName={styles.dockRenameInput}
                           />
-                          <label
-                            className={styles.tapBtn}
-                            title={
-                              audioUploadPending
-                                ? "Przesyłanie w toku…"
-                                : "Dodaj plik audio"
-                            }
-                          >
-                            +
-                            <input
-                              type="file"
-                              accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
-                              hidden
-                              disabled={audioUploadPending}
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                e.target.value = "";
-                                if (f && track.audioTrackId) {
-                                  void onUploadAudioToTrack(
-                                    track.audioTrackId,
-                                    f,
-                                  );
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      ) : null}
+                        </>
+                      ) : (
+                        <span className={styles.dockLabel}>{track.label}</span>
+                      )}
                       {track.id === "tekst" ? (
                         <button
                           type="button"
@@ -5050,17 +5544,121 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         isMapLaneId(track.id) || track.id === "kotwice"
                           ? styles.mapLaneCell
                           : "",
+                        isAudioLaneId(track.id) &&
+                        audioLaneDropId === track.audioTrackId
+                          ? styles.laneCellDropActive
+                          : "",
                       ]
                         .filter(Boolean)
                         .join(" ")}
                       data-track={track.id}
+                      onContextMenu={(e) => {
+                        // Clips stopPropagation; this handles empty lane area.
+                        if (
+                          (e.target as HTMLElement).closest(
+                            "button[data-clip-id]",
+                          )
+                        ) {
+                          return;
+                        }
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (track.group === "audio" && track.audioTrackId) {
+                          openEmptyLaneContextMenu({
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            laneKind: "audio",
+                            audioTrackId: track.audioTrackId,
+                          });
+                          return;
+                        }
+                        if (
+                          track.id === "forma" ||
+                          track.id === "tekst" ||
+                          track.id === "akordy" ||
+                          track.id === "cue"
+                        ) {
+                          openEmptyLaneContextMenu({
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            laneKind: track.id,
+                          });
+                        }
+                      }}
+                      onDragOver={
+                        track.group === "audio" && track.audioTrackId
+                          ? (e) => {
+                              e.preventDefault();
+                              e.dataTransfer.dropEffect = "copy";
+                              setAudioLaneDropId(track.audioTrackId!);
+                            }
+                          : undefined
+                      }
+                      onDragLeave={
+                        track.group === "audio" && track.audioTrackId
+                          ? (e) => {
+                              if (
+                                e.currentTarget.contains(e.relatedTarget as Node)
+                              ) {
+                                return;
+                              }
+                              setAudioLaneDropId((id) =>
+                                id === track.audioTrackId ? null : id,
+                              );
+                            }
+                          : undefined
+                      }
+                      onDrop={
+                        track.group === "audio" && track.audioTrackId
+                          ? (e) => {
+                              e.preventDefault();
+                              setAudioLaneDropId(null);
+                              const file = e.dataTransfer.files?.[0];
+                              if (file && track.audioTrackId) {
+                                void onUploadAudioToTrack(
+                                  track.audioTrackId,
+                                  file,
+                                );
+                              }
+                            }
+                          : undefined
+                      }
                     >
                       {renderLaneContent(track.id)}
                     </div>
                   </div>
                 ))}
                 <div className={styles.rowsFill}>
-                  <div className={styles.dockColumnFill} aria-hidden />
+                  <div
+                    className={styles.dockColumnFill}
+                    onDoubleClick={(e) => {
+                      if ((e.target as HTMLElement).closest("button")) return;
+                      onAddAudioTrack();
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className={styles.dockAddTrack}
+                      disabled={
+                        !draftProject ||
+                        draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
+                      }
+                      title={
+                        !draftProject
+                          ? undefined
+                          : draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
+                            ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
+                            : "Dodaj pustą ścieżkę audio"
+                      }
+                      onClick={onAddAudioTrack}
+                    >
+                      + Dodaj Ścieżkę
+                    </button>
+                    <div
+                      className={styles.dockFillHit}
+                      title="Dwuklik — dodaj pustą ścieżkę"
+                    />
+                  </div>
                   <div
                     className={styles.laneFillHit}
                     onPointerDown={(e) => {
@@ -5074,6 +5672,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {touchTier === "mobile" && inspectorOpen ? (
@@ -5778,10 +6377,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     checked={Boolean(selectedDockAudioTrack.muted)}
                     onChange={(e) => {
                       if (!draftProject) return;
+                      const targets =
+                        trackSelection.ids.includes(selectedDockAudioTrack.id) &&
+                        trackSelection.ids.length > 1
+                          ? trackSelection.ids
+                          : [selectedDockAudioTrack.id];
                       commitDraft(
-                        setAudioTrackMuted(
+                        setAudioTracksMuted(
                           draftProject,
-                          selectedDockAudioTrack.id,
+                          targets,
                           e.target.checked,
                         ),
                       );
@@ -5796,8 +6400,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedDockAudioTrack.id,
                     )}
                     onChange={() => {
+                      const allIds = (draftProject?.audioTracks ?? []).map(
+                        (t) => t.id,
+                      );
                       setSoloAudioTrackIds((prev) =>
-                        toggleSoloTrackId(prev, selectedDockAudioTrack.id),
+                        applySoloButtonClick(
+                          prev,
+                          selectedDockAudioTrack.id,
+                          allIds,
+                          trackSelection.ids,
+                          {},
+                        ),
                       );
                     }}
                   />{" "}
@@ -5805,29 +6418,45 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 </label>
                 <label className={styles.inspField}>
                   Fader (dB)
-                  <Slider
-                    aria-label="Fader ścieżki"
-                    min={-24}
-                    max={12}
-                    step={0.5}
-                    value={selectedDockAudioTrack.gainDb ?? 0}
-                    onValueChange={(v) => {
+                  <div
+                    onDoubleClick={(e) => {
+                      e.preventDefault();
                       if (!draftProject) return;
                       commitDraft(
                         setAudioTrackGainDb(
                           draftProject,
                           selectedDockAudioTrack.id,
-                          v,
+                          0,
                         ),
                       );
                     }}
-                  />
+                    title="Dwuklik — 0.0 dB"
+                  >
+                    <Slider
+                      aria-label="Fader ścieżki"
+                      min={-24}
+                      max={12}
+                      step={0.5}
+                      value={selectedDockAudioTrack.gainDb ?? 0}
+                      onValueChange={(v) => {
+                        if (!draftProject) return;
+                        commitDraft(
+                          setAudioTrackGainDb(
+                            draftProject,
+                            selectedDockAudioTrack.id,
+                            v,
+                          ),
+                        );
+                      }}
+                    />
+                  </div>
                 </label>
-                <label className={styles.inspField}>
-                  Dodaj plik audio
+                <div className={styles.inspField}>
                   <input
+                    ref={inspAudioFileRef}
                     type="file"
                     accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
+                    hidden
                     disabled={audioUploadPending}
                     onChange={(e) => {
                       const f = e.target.files?.[0];
@@ -5840,7 +6469,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       }
                     }}
                   />
-                </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={audioUploadPending}
+                    onClick={() => inspAudioFileRef.current?.click()}
+                  >
+                    {audioUploadPending
+                      ? "Przesyłanie…"
+                      : "Importuj plik"}
+                  </Button>
+                </div>
               </div>
             ) : selectedClip ? (
               <div className={styles.inspBody}>
@@ -6446,7 +7085,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
               role="menu"
             >
-              {buildTrackList(draftProject?.audioTracks ?? []).map((track) => (
+              {TRACKS.map((track) => (
                 <button
                   key={track.id}
                   type="button"
@@ -6472,22 +7111,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   {track.locked ? " (zawsze)" : ""}
                 </button>
               ))}
-              <button
-                type="button"
-                role="menuitem"
-                className={styles.eyeItem}
-                disabled={
-                  (draftProject?.audioTracks.length ?? 0) >= MAX_AUDIO_TRACKS
-                }
-                title={
-                  (draftProject?.audioTracks.length ?? 0) >= MAX_AUDIO_TRACKS
-                    ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
-                    : undefined
-                }
-                onClick={onAddAudioTrack}
-              >
-                + Ścieżka Audio
-              </button>
             </div>,
             document.body,
           )
@@ -6766,6 +7389,7 @@ function FormaClipButton({
   onPointerMove,
   onPointerUp,
   onDoubleClick,
+  onContextMenu,
 }: {
   clip: FormaClip;
   selected: boolean;
@@ -6779,6 +7403,7 @@ function FormaClipButton({
   onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
   onDoubleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onContextMenu?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
   const countdown = clip.kind === "countdown";
@@ -6823,6 +7448,7 @@ function FormaClipButton({
       }}
       onPointerUp={onPointerUp}
       onDoubleClick={onDoubleClick}
+      onContextMenu={onContextMenu}
       onPointerLeave={() => setHoverZone("body")}
     >
       {ranges.length > 1 ? (

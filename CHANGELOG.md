@@ -9,6 +9,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+#### ⏱️ Timeline & DAW
+- **Menu kontekstowe (PPM):** na klipie Forma / Tekst / Akordy / Cue / Audio — wytnij, kopiuj, wklej, duplikuj, usuń, mute (audio), rozdziel w miejscu kursora (gdzie dostępne), pokaż w Inspectorze; na pustej lane — wklej @ kursor, dodaj sekcję/treść/cue albo import audio; na nagłówku ścieżki audio — zmień nazwę / duplikuj / usuń (także w Mixerze).
+- **Dock ścieżek audio:** multi-select (Shift = zakres, ⌘/Ctrl = przełącz); Solo/Mute na wszystkich zaznaczonych; ⌘/Ctrl+S/M na wszystkich ścieżkach; ⌥/Alt+S = solo wyłącznie tej ścieżki; dwuklik nazwy = zmiana w miejscu; dwuklik pustego docku = nowa ścieżka; dwuklik fadera = 0.0 dB; widok Mixer z tymi samymi kontrolkami kanału; w wąskiej kolumnie / niskiej wysokości ścieżki — nazwa ze skracaniem środka + S/M (fader się chowa, bez poszerzania docku).
+
+#### 🖥️ App Shell & UI
+- **Menu kontekstowe systemu:** natywne menu przeglądarki / Inspect Element wyłączone w całej aplikacji; w polach tekstowych (input / textarea) nadal dostępne wycinasie i wklejanie systemowe.
+
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher:** ekran startowy przed Adminem (wordmark StageSync) — uruchom lokalny host, wykryj StageSync w LAN (mDNS wybiera adres LAN, nie most Dockera / link-local) albo wpisz adres; czytelny status błędów (brak sieci, uprawnienia, log sidecara) zamiast białego ekranu; bezpieczne pomijanie uszkodzonej listy ostatnich hostów.
 - **Launcher / sesja:** przy utracie połączenia z hostem komunikat z ponawianiem łączenia oraz (na desktopie lokalnym) powrót do wyboru hosta; crash lokalnego hosta wraca do Launchera zamiast zawieszenia; ostrzeżenie przy różnicy wersji aplikacji i zdalnego hosta.

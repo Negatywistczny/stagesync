@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@stagesync/ui";
+import { Button, ContextMenuProvider } from "@stagesync/ui";
 import { renderSVG } from "uqr";
 import {
   getLastTimelineProjectId,
@@ -15,6 +15,7 @@ import {
   syncNavRecentProjects,
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
+import { isEditableKeyboardTarget } from "../lib/isEditableKeyboardTarget.js";
 import {
   downloadDiagnosticsExport,
   fetchNetworkInfo,
@@ -359,8 +360,17 @@ export function DesktopMenuBridge() {
     };
   }, []);
 
+  useEffect(() => {
+    function onContextMenu(ev: MouseEvent) {
+      if (isEditableKeyboardTarget(ev.target)) return;
+      ev.preventDefault();
+    }
+    window.addEventListener("contextmenu", onContextMenu);
+    return () => window.removeEventListener("contextmenu", onContextMenu);
+  }, []);
+
   return (
-    <>
+    <ContextMenuProvider>
       <Outlet />
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
@@ -380,6 +390,6 @@ export function DesktopMenuBridge() {
           onClose={() => setPrefsOpen(false)}
         />
       ) : null}
-    </>
+    </ContextMenuProvider>
   );
 }

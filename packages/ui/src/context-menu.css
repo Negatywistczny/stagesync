@@ -1,0 +1,74 @@
+.ss-context-menu {
+  position: fixed;
+  z-index: var(--ss-z-dropdown);
+  display: flex;
+  flex-direction: column;
+  min-width: 14rem;
+  max-width: min(20rem, calc(100vw - var(--ss-space-4)));
+  padding: var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
+  box-shadow: 0 8px 28px
+    color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+  outline: none;
+}
+
+.ss-context-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  width: 100%;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: none;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-control);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-compact);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ss-context-menu__item:disabled {
+  color: var(--ss-color-disabled-text);
+  cursor: not-allowed;
+}
+
+.ss-context-menu__item--danger:not(:disabled) {
+  color: var(--ss-color-danger);
+}
+
+.ss-context-menu__item:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .ss-context-menu__item:hover:not(:disabled) {
+    color: var(--ss-color-text);
+    background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+  }
+
+  .ss-context-menu__item--danger:hover:not(:disabled) {
+    color: var(--ss-color-danger);
+    background: color-mix(in srgb, var(--ss-color-danger) 14%, transparent);
+  }
+}
+
+.ss-context-menu__shortcut {
+  margin-left: auto;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.ss-context-menu__separator {
+  height: 1px;
+  margin: var(--ss-space-1) var(--ss-space-2);
+  background: var(--ss-color-border);
+  border: none;
+}

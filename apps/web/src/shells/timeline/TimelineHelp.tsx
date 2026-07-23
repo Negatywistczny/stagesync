@@ -52,6 +52,7 @@ const SECTIONS: HelpSection[] = [
   {
     title: "Zaznaczanie i edycja",
     items: [
+      "Prawy przycisk myszy — menu kontekstowe: na klipie (wytnij / kopiuj / wklej / duplikuj / usuń / mute audio / rozdziel / Inspector); na pustej lane (wklej @ kursor, dodaj sekcję/cue/treść, import audio); na nagłówku ścieżki audio (nazwa / duplikuj / usuń).",
       "⌘/Ctrl przy przeciąganiu — chwilowo wyłącza snap (Forma: takt; treść/mapy: beat).",
       "Forma: Countdown zablokowany (bez pencil / scissors / delete); długość przez resize prawej krawędzi; single-move przesuwa też późniejsze sekcje.",
       "Kotwice — Pencil gdy jest MusicXML / mapa; przeciąganie kotwicy zmienia logicBar.",
@@ -60,10 +61,16 @@ const SECTIONS: HelpSection[] = [
   {
     title: "Ścieżki Audio",
     items: [
-      "Menu oka (+ Ścieżka Audio) — dodaj / pokaż ścieżki audio.",
+      "+ Dodaj Ścieżkę pod listą ścieżek (dock) — nowa pusta lane audio; dwuklik pustego miejsca w kolumnie docku też dodaje ścieżkę.",
+      "PPM na nagłówku ścieżki — zmień nazwę / duplikuj / usuń; Delete/⌫ przy zaznaczonej ścieżce (także multi).",
+      "Dwuklik nazwy w docku — zmiana nazwy w miejscu (Enter/blur = zapis, Esc = anuluj); PPM „Zmień nazwę” to samo.",
+      "Zaznaczanie ścieżek: klik = jedna; Shift+klik = zakres; ⌘/Ctrl+klik = przełącz w zestawie.",
+      "S / M na docku = Solo / Mute; przy multi — na wszystkich zaznaczonych. ⌘/Ctrl+S/M = wszystkie ścieżki; ⌥/Alt+S = solo wyłącznie tej ścieżki.",
+      "Dwuklik fadera — reset do 0.0 dB. Przycisk Mixer w transporcie — paski kanałów (te same S/M/fader).",
+      "Dock responsywny: nazwa ze skracaniem środka (nie ellipsis na końcu); przy wąskiej kolumnie / niskiej wysokości ścieżki zostają nazwa + S/M (fader się chowa).",
+      "Pusta lane — upuść plik audio lub PPM → Importuj plik audio; import też z Inspectora.",
       "Pointer / Smart — move i trim krawędzi; bez Pencil na lane audio.",
-      "Schowek ⌘C / ⌘X / ⌘V / ⌘D — także dla klipów audio.",
-      "M = mute zaznaczonej ścieżki; S / M na docku = Solo / Mute.",
+      "Schowek ⌘C / ⌘X / ⌘V / ⌘D — także dla klipów audio (także z PPM).",
       "Uchwyty Smart — fade in/out, region loop; crossfade przy styku klipów.",
     ],
   },
@@ -98,7 +105,7 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
         { keys: "⌘/Ctrl+X", action: "Wytnij zaznaczone klipy" },
         { keys: "⌘/Ctrl+V", action: "Wklej @ locator" },
         { keys: "⌘/Ctrl+D", action: "Duplikuj zaznaczone" },
-        { keys: "Delete / ⌫", action: "Usuń klip / zdarzenie mapy" },
+        { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę audio" },
         { keys: "⌘/Ctrl+Z", action: "Undo (z zaznaczeniem)" },
         { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
       ],
@@ -110,6 +117,19 @@ const KEY_GROUPS: { heading: string; rows: { keys: string; action: string }[] }[
         { keys: "C / L", action: "Pętla / Cycle on/off" },
         { keys: "K", action: "Metronom on/off" },
         { keys: "M", action: "Mute ścieżki audio (dock)" },
+        { keys: "S", action: "Solo ścieżki audio (dock)" },
+        {
+          keys: "⌘/Ctrl+klik S/M",
+          action: "Solo/Mute wszystkich ścieżek audio",
+        },
+        {
+          keys: "⌥/Alt+klik S",
+          action: "Solo wyłącznie tej ścieżki",
+        },
+        {
+          keys: "Shift / ⌘+klik",
+          action: "Zakres / przełącz zaznaczenie ścieżek",
+        },
       ],
     },
     {

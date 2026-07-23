@@ -1,0 +1,24 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: var(--ss-space-4);
+  background: var(--ss-color-bg);
+}
+
+.strips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--ss-space-3);
+}
+
+.empty {
+  margin: var(--ss-space-4) 0 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}

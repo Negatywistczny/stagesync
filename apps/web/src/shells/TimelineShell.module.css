@@ -454,6 +454,12 @@
   }
 }
 
+.metaBtnPressed {
+  color: var(--ss-color-text);
+  background: var(--ss-color-selected);
+  border-color: var(--ss-color-primary);
+}
+
 .dirty {
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
@@ -520,7 +526,15 @@
 }
 
 .canvasInner {
+  /*
+   * Compact dock: name+S/M on row 1, fader on row 2 — never widen for tools.
+   * Solo yellow is brighter than primary amber (#fbbf24) — classic DAW S affordance.
+   */
   --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
+  --tl-solo-bg: #ffcc00;
+  --tl-solo-fg: #0a0a0a;
+  --tl-mute-bg: #ff3b30;
+  --tl-mute-fg: #ffffff;
   flex-shrink: 0;
   /* Fill scrollport when content is shorter/narrower (v4 `.timeline-canvas`). */
   min-width: 100%;
@@ -803,13 +817,87 @@
 .dockColumnFill {
   position: sticky;
   left: 0;
-  z-index: calc(var(--ss-z-sticky) - 1);
+  /* Match dock cells — above rail paint so „+ Dodaj Ścieżkę” stays clickable. */
+  z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  box-sizing: border-box;
   width: var(--tl-dock-w);
   min-height: var(--ss-space-2);
+  padding: calc(var(--ss-space-2) * var(--tl-zoom-ui))
+    calc(var(--ss-space-2) * var(--tl-zoom-ui));
   pointer-events: none;
   background-color: var(--ss-color-surface);
   border-right: 1px solid var(--ss-color-border);
+}
+
+.dockAddTrack {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
+  padding: calc(var(--ss-space-1) * var(--tl-zoom-ui))
+    calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  border: 1px dashed var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .dockAddTrack:hover:not(:disabled) {
+    color: var(--ss-color-text);
+    border-color: var(--ss-color-primary);
+    background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+  }
+}
+
+.dockAddTrack:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.dockAddTrack:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Empty dock space below add button — dblclick adds a track. */
+.dockFillHit {
+  pointer-events: auto;
+  flex: 1 1 auto;
+  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
+  cursor: default;
+}
+
+.dockRenameInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding: calc(var(--ss-space-1) / 2) var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
+  line-height: var(--ss-leading-compact);
+}
+
+.dockRenameInput:focus {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
 }
 
 /* Empty area under last track — marquee / clear+locator (v4 canvas empty). */
@@ -885,12 +973,19 @@
   left: 0;
   /* Above grid (--ss-z-grid) and playhead/locator (--ss-z-playhead). */
   z-index: var(--ss-z-sticky);
+  /* Width CQ for channel-strip fader hide (see ChannelStripControls). */
+  container-type: inline-size;
+  container-name: tl-dock;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ss-space-1);
+  min-width: 0;
   min-height: var(--tl-row-h);
+  max-width: var(--tl-dock-w);
+  box-sizing: border-box;
   padding: 0 calc(var(--ss-space-2) * var(--tl-zoom-ui));
+  overflow: hidden;
   border-right: 1px solid var(--ss-color-border);
   /* Opaque — no opacity on this node (see .dockMuted); v4 dock was solid. */
   background-color: var(--ss-color-surface);
@@ -903,6 +998,38 @@
   font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
   color: var(--ss-color-text-muted);
 }
+
+/* Audio: row1 name+S/M, row2 fader — tools clip inside --tl-dock-w. */
+.dockCellAudio {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  padding-block: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+}
+
+.dockAudioRow {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  align-items: center;
+  gap: var(--ss-space-1);
+}
+
+.dockAudioRowFader {
+  width: 100%;
+}
+
+.dockLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Audio dock: MiddleTruncateLabel replaces end-ellipsis with middle cut. */
+}
+
 
 /* Hit target stays on sticky dock; highlight spans full track row via :has(). */
 .laneResize {
@@ -980,23 +1107,18 @@
 }
 
 .dockTools {
-  display: inline-flex;
+  display: flex;
   flex-shrink: 0;
   align-items: center;
   gap: var(--ss-space-1);
 }
 
 .dockFader {
-  width: calc(var(--ss-space-16) * var(--tl-zoom-ui));
-  min-width: calc(var(--ss-space-12) * var(--tl-zoom-ui));
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
 }
-
-.tapBtnSelected {
-  color: var(--ss-color-text);
-  background: var(--ss-color-selected);
-  border-color: var(--ss-color-primary);
-}
-
 
 .eyeBtn {
   display: inline-flex;
@@ -1086,6 +1208,45 @@
 .tapBtn:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
+}
+
+/* Selected modifiers after .tapBtn so they win cascade (Tap / Solo / Mute). */
+.tapBtn.tapBtnSelected {
+  color: var(--ss-color-text);
+  background: var(--ss-color-selected);
+  border-color: var(--ss-color-primary);
+}
+
+.tapBtn.tapBtnSolo {
+  color: var(--tl-solo-fg);
+  background: var(--tl-solo-bg);
+  border-color: var(--tl-solo-bg);
+}
+
+.tapBtn.tapBtnMute {
+  color: var(--tl-mute-fg);
+  background: var(--tl-mute-bg);
+  border-color: var(--tl-mute-bg);
+}
+
+@media (hover: hover) {
+  .tapBtn.tapBtnSelected:hover {
+    color: var(--ss-color-text);
+    background: var(--ss-color-selected);
+    border-color: var(--ss-color-primary);
+  }
+
+  .tapBtn.tapBtnSolo:hover {
+    color: var(--tl-solo-fg);
+    background: color-mix(in srgb, var(--tl-solo-bg) 88%, var(--ss-color-text));
+    border-color: var(--tl-solo-bg);
+  }
+
+  .tapBtn.tapBtnMute:hover {
+    color: var(--tl-mute-fg);
+    background: color-mix(in srgb, var(--tl-mute-bg) 88%, var(--ss-color-text));
+    border-color: var(--tl-mute-bg);
+  }
 }
 
 .laneCell {
@@ -2161,7 +2322,7 @@
 }
 
 .shell[data-tl-tier="mobile"] .canvasInner {
-  /* Narrower dock: readable lane labels without eating canvas width. */
+  /* Narrower dock on phone — same compact column, not widened for tools. */
   --tl-dock-w: calc(5.5rem * var(--tl-zoom-ui));
 }
 
@@ -2387,6 +2548,26 @@
   margin: 0;
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
+}
+
+.laneEmptyDrop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--ss-space-2);
+  pointer-events: none;
+  text-align: center;
+  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui));
+  color: var(--ss-color-text-muted);
+}
+
+.laneCellDropActive {
+  outline: 2px dashed var(--ss-color-primary);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--ss-color-primary) 10%, var(--ss-color-surface));
 }
 
 .playBtn:focus-visible,

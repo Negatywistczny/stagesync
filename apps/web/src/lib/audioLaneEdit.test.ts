@@ -14,8 +14,10 @@ import {
   commitMoveAudioClips,
   commitResizeAudioClip,
   deleteAudioClip,
+  duplicateAudioTrack,
   MAX_AUDIO_TRACKS,
   previewAudioFromSession,
+  removeAudioTrack,
   setAudioClipFadeMs,
   setAudioClipGainDb,
   setAudioClipLoop,
@@ -23,6 +25,7 @@ import {
   setAudioClipTrimMs,
   setAudioTrackGainDb,
   setAudioTrackMuted,
+  setAudioTracksMuted,
   setAudioTrackName,
 } from "./audioLaneEdit.js";
 import { audioLaneId } from "./timelineTracks.js";
@@ -273,6 +276,13 @@ describe("audioLaneEdit", () => {
     p = setAudioTrackMuted(p, trackId, false);
     expect(p.audioTracks[0]!.muted).toBeUndefined();
 
+    const second = addAudioTrack(p, "B");
+    p = second.project;
+    p = setAudioTracksMuted(p, [trackId, second.trackId], true);
+    expect(p.audioTracks.every((t) => t.muted === true)).toBe(true);
+    p = setAudioTracksMuted(p, [trackId, second.trackId], false);
+    expect(p.audioTracks.every((t) => t.muted === undefined)).toBe(true);
+
     p = setAudioTrackGainDb(p, trackId, -3);
     expect(p.audioTracks[0]!.gainDb).toBe(-3);
 
@@ -372,6 +382,48 @@ describe("audioLaneEdit", () => {
     }
     expect(p.audioTracks).toHaveLength(MAX_AUDIO_TRACKS);
     expect(() => addAudioTrack(p)).toThrow(RangeError);
+  });
+
+  it("removeAudioTrack drops track and its clips; no-op missing", () => {
+    const p0 = projectWithAudio();
+    const trackId = p0.audioTracks[0]!.id;
+    const other = addAudioTrack(p0, "Other").project;
+    const withBoth = {
+      ...other,
+      audioClips: [
+        ...other.audioClips,
+        {
+          ...other.audioClips[0]!,
+          id: "clip-other",
+          trackId: other.audioTracks[1]!.id,
+        },
+      ],
+    };
+    const next = removeAudioTrack(withBoth, trackId);
+    expect(next.audioTracks.map((t) => t.id)).toEqual([
+      other.audioTracks[1]!.id,
+    ]);
+    expect(next.audioClips.map((c) => c.id)).toEqual(["clip-other"]);
+    expect(removeAudioTrack(p0, "missing")).toBe(p0);
+  });
+
+  it("duplicateAudioTrack clones track+clips with new ids", () => {
+    const p0 = projectWithAudio();
+    const srcId = p0.audioTracks[0]!.id;
+    const dup = duplicateAudioTrack(p0, srcId);
+    expect(dup).not.toBeNull();
+    expect(dup!.trackId).not.toBe(srcId);
+    expect(dup!.project.audioTracks).toHaveLength(2);
+    expect(dup!.project.audioTracks[1]!.id).toBe(dup!.trackId);
+    expect(dup!.project.audioTracks[1]!.name).toBe("Backing (kopia)");
+    expect(dup!.project.audioClips).toHaveLength(2);
+    const clone = dup!.project.audioClips.find(
+      (c) => c.trackId === dup!.trackId,
+    )!;
+    expect(clone.id).not.toBe("clip-1");
+    expect(clone.assetId).toBe(p0.audioClips[0]!.assetId);
+    expect(clone.startTicks).toBe(p0.audioClips[0]!.startTicks);
+    expect(duplicateAudioTrack(p0, "missing")).toBeNull();
   });
 
   it("commitAudioGesture covers move/resize/fade and guards", () => {

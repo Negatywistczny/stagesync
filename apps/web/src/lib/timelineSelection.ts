@@ -234,15 +234,22 @@ export function isMarqueeClick(dxPx: number, dyPx: number): boolean {
   );
 }
 
+/** Timeline canvas vs Mixer surface (channel-strip foundations). */
+export type TimelineSurface = "timeline" | "mixer";
+
 /** Audio track header selection (DAW dock) — mutually exclusive with clip focus in UI. */
 export type TrackSelection = {
-  audioTrackId: string | null;
+  ids: string[];
+  primaryId: string | null;
 };
 
-export const EMPTY_TRACK_SELECTION: TrackSelection = { audioTrackId: null };
+export const EMPTY_TRACK_SELECTION: TrackSelection = {
+  ids: [],
+  primaryId: null,
+};
 
 export function selectAudioTrack(audioTrackId: string): TrackSelection {
-  return { audioTrackId };
+  return { ids: [audioTrackId], primaryId: audioTrackId };
 }
 
 export function clearTrackSelection(): TrackSelection {
@@ -253,7 +260,88 @@ export function isAudioTrackSelected(
   sel: TrackSelection,
   audioTrackId: string,
 ): boolean {
-  return sel.audioTrackId === audioTrackId;
+  return sel.ids.includes(audioTrackId);
+}
+
+/** Primary track for inspector / single-target ops (last selected if primary missing). */
+export function primaryAudioTrackId(sel: TrackSelection): string | null {
+  if (sel.primaryId && sel.ids.includes(sel.primaryId)) return sel.primaryId;
+  return sel.ids.length ? sel.ids[sel.ids.length - 1]! : null;
+}
+
+/** Cmd/Ctrl+click toggle track in multi-select set. */
+export function toggleAudioTrackSelected(
+  current: TrackSelection,
+  trackId: string,
+): TrackSelection {
+  if (!trackId) return current;
+  if (current.ids.includes(trackId)) {
+    const ids = current.ids.filter((id) => id !== trackId);
+    if (!ids.length) return clearTrackSelection();
+    const primary =
+      current.primaryId === trackId
+        ? ids[ids.length - 1]!
+        : current.primaryId && ids.includes(current.primaryId)
+          ? current.primaryId
+          : ids[ids.length - 1]!;
+    return { ids, primaryId: primary };
+  }
+  return {
+    ids: [...current.ids, trackId].slice(0, 64),
+    primaryId: trackId,
+  };
+}
+
+/**
+ * Shift+click range from primary (last active) to clicked, by dock order.
+ * No usable anchor → selectSingle.
+ */
+export function selectAudioTrackRange(
+  current: TrackSelection,
+  trackId: string,
+  orderedTrackIds: readonly string[],
+): TrackSelection {
+  if (!trackId || !orderedTrackIds.includes(trackId)) {
+    return selectAudioTrack(trackId);
+  }
+  const anchorId = current.primaryId;
+  if (!anchorId || !orderedTrackIds.includes(anchorId)) {
+    return selectAudioTrack(trackId);
+  }
+  const i0 = orderedTrackIds.indexOf(anchorId);
+  const i1 = orderedTrackIds.indexOf(trackId);
+  if (i0 < 0 || i1 < 0) return selectAudioTrack(trackId);
+  const lo = Math.min(i0, i1);
+  const hi = Math.max(i0, i1);
+  return {
+    ids: orderedTrackIds.slice(lo, hi + 1),
+    primaryId: trackId,
+  };
+}
+
+/** Drop deleted ids; keep primary if still present. */
+export function pruneTrackSelection(
+  sel: TrackSelection,
+  remainingIds: ReadonlySet<string>,
+): TrackSelection {
+  const ids = sel.ids.filter((id) => remainingIds.has(id));
+  if (!ids.length) return clearTrackSelection();
+  const primary =
+    sel.primaryId && ids.includes(sel.primaryId)
+      ? sel.primaryId
+      : ids[ids.length - 1]!;
+  return { ids, primaryId: primary };
+}
+
+export type ModifierKeys = {
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+};
+
+export function isModClick(e: ModifierKeys): boolean {
+  return Boolean(e.metaKey || e.ctrlKey);
 }
 
 /** Solo set: when non-empty, only listed track ids are audible (client playback). */
@@ -265,6 +353,63 @@ export function toggleSoloTrackId(
     return soloIds.filter((id) => id !== trackId);
   }
   return [...soloIds, trackId].slice(0, 64);
+}
+
+/**
+ * Next solo set from dock/inspector S click.
+ * Priority: Alt exclusive → Cmd/Ctrl global → multi-select → single toggle.
+ */
+export function applySoloButtonClick(
+  soloIds: readonly string[],
+  clickedId: string,
+  allTrackIds: readonly string[],
+  selectedIds: readonly string[],
+  mods: ModifierKeys,
+): string[] {
+  if (!clickedId) return [...soloIds];
+  if (mods.altKey) {
+    if (soloIds.length === 1 && soloIds[0] === clickedId) return [];
+    return [clickedId];
+  }
+  const turnOn = !soloIds.includes(clickedId);
+  if (isModClick(mods)) {
+    return turnOn ? allTrackIds.slice(0, 64) : [];
+  }
+  const targets =
+    selectedIds.includes(clickedId) && selectedIds.length > 1
+      ? selectedIds
+      : [clickedId];
+  if (turnOn) {
+    const next = new Set(soloIds);
+    for (const id of targets) next.add(id);
+    return [...next].slice(0, 64);
+  }
+  const drop = new Set(targets);
+  return soloIds.filter((id) => !drop.has(id));
+}
+
+/**
+ * Mute targets + desired muted flag from dock/inspector M click.
+ * Priority: Cmd/Ctrl global → multi-select → single.
+ * (Alt exclusive applies only to Solo.)
+ */
+export function resolveMuteButtonClick(
+  clickedId: string,
+  clickedMuted: boolean,
+  allTrackIds: readonly string[],
+  selectedIds: readonly string[],
+  mods: ModifierKeys,
+): { trackIds: string[]; muted: boolean } {
+  const muted = !clickedMuted;
+  if (!clickedId) return { trackIds: [], muted };
+  if (isModClick(mods)) {
+    return { trackIds: allTrackIds.slice(0, 64), muted };
+  }
+  const trackIds =
+    selectedIds.includes(clickedId) && selectedIds.length > 1
+      ? [...selectedIds]
+      : [clickedId];
+  return { trackIds, muted };
 }
 
 export function isTrackAudibleWithSolo(
