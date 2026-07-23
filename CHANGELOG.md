@@ -9,10 +9,6 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
-#### 📦 Packaging & Desktop (Tauri / Docker)
-- **Licencja:** MIT → **Business Source License 1.1** (source-available; Change Date `2030-07-23` → Apache 2.0); produkcyjne użycie własnego hosta dozwolone, Competing Offering wymaga licencji komercyjnej.
-- **CI:** na PR tylko `lint-types-test-build` (bez `cargo check` / Tauri); `compose-build` wyłącznie na push do `main` lub `workflow_dispatch`.
-
 #### 🖥️ App Shell & UI
 - **Admin Host (desktop):** w O aplikacji tylko wersja aplikacji — bez etykiety Sidecar i bez notki o Watchtower/Docker.
 
