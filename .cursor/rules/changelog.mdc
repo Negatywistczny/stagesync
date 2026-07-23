@@ -93,6 +93,11 @@ Kolejność H3 (szablon użytkownika — **nie** kolejność z cutów β2+):
 
 Opcjonalnie `### Usunięto` / `### Bezpieczeństwo` tylko gdy naprawdę potrzebne — też **jedna** sekcja każdego typu.
 
+#### Feature nowe w `[Unreleased]` — bez osobnego polish
+
+Jeśli funkcja **jeszcze nie wyszła** (jest tylko w `[Unreleased]` / nigdy w tagged release): doprecyzowania UX, edge-case’y i poprawki w trakcie rozwoju **wplataj w istniejący bullet `### Dodano`** (albo go rozszerz). **Nie** otwieraj osobnych `### Zmieniono` / `### Naprawiono` dla tego samego feature.
+`Zmieniono` / `Naprawiono` = zmiany względem **już wydanego** zachowania (poprzedni tag / cut).
+
 Pod H3 grupuj domenowo przez `####` **z emoji** (gdy ≥ ~4 bulletów w sekcji). Używaj **tylko** kategorii z realnymi zmianami — typowo **2–5** nagłówków `####` na sekcję H3. Tytuły muszą być **dokładnie** jak w tabeli (emoji + spacja + nazwa):
 
 | `####` (kanoniczny) | Zakres |

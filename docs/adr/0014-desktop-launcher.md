@@ -18,6 +18,7 @@ SPA web jest **same-origin** — nie da się pokazać React Launchera *zanim* is
 4. **Discovery = mDNS** — serwer advertise `_stagesync._tcp` (gdy mDNS włączone i bind ≠ loopback); shell browse w Rust (`mdns-sd`).
 5. **Diagnostyka** w Launcherze (status, log sidecara, Ponów) — bez whitescreen data-URL.
 6. SSOT czasu / transport / MIDI **pozostają** w Node sidecarie / zdalnym hoście — shell nie staje się zegarem.
+7. **Odporność:** health/probe z twardym timeoutem (~3 s); mDNS z budżetem ~4 s i preferencją IP LAN; uszkodzona lista „ostatnio” jest ignorowana; crash sidecara w trakcie sesji → powrót do Launchera; różnica wersji remote = ostrzeżenie (nie twardy blok).
 
 ## Konsekwencje
 

@@ -55,9 +55,29 @@ body {
 }
 
 .shell {
+  box-sizing: border-box;
+  min-height: 100vh;
   max-width: 520px;
   margin: 0 auto;
   padding: var(--ss-space-8) var(--ss-space-6);
+  display: flex;
+  flex-direction: column;
+}
+
+.shell > .panel {
+  flex: 1 1 auto;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: var(--ss-space-8);
+  text-align: center;
+}
+
+.footerVersion {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
 }
 
 .hero {
@@ -65,12 +85,10 @@ body {
 }
 
 .brand {
-  margin: 0 0 var(--ss-space-2);
-  color: var(--ss-color-primary);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  display: block;
+  margin: 0 0 var(--ss-space-4);
+  height: 2.25rem;
+  width: auto;
 }
 
 .hero h1 {
@@ -91,10 +109,78 @@ body {
   margin-top: var(--ss-space-2);
 }
 
+/* Local host block — error above primary, clear is ghost only */
+.localBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+}
+
+.localBlock .btn.primary {
+  width: 100%;
+}
+
+.localClear {
+  align-self: flex-start;
+}
+
+.localLog {
+  max-height: 140px;
+}
+
+.localBlock .inlineError,
+.localBlock .inlineStatus {
+  min-height: 1.35em;
+}
+
+.hint {
+  margin-top: var(--ss-space-2);
+}
+
 .panel {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-4);
+}
+
+.manualState {
+  min-height: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  justify-content: center;
+}
+
+#manualIdle {
+  min-height: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#manualIdle[hidden],
+.manualState[hidden] {
+  display: none;
+}
+
+.inlineStatus {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.inlineError {
+  margin: 0;
+  color: var(--ss-color-danger);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}
+
+.inlineWarn {
+  margin: 0;
+  color: var(--ss-color-primary);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
 }
 
 .block {
@@ -199,6 +285,43 @@ body {
   border-color: var(--ss-color-danger);
 }
 
+#btnRefresh {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  position: relative;
+}
+
+#btnRefresh .spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ss-color-border);
+  border-top-color: var(--ss-color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+#btnRefresh[aria-busy="true"] .btnRefreshLabel {
+  opacity: 0.55;
+}
+
+#btnRefresh[aria-busy="true"] .spinner {
+  display: inline-block;
+}
+
+.hostList.is-scanning {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity var(--ss-duration-fast) ease;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .hostList {
   list-style: none;
   margin: 0;
@@ -261,16 +384,6 @@ body {
 .manual input:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: 1px;
-}
-
-.statusLabel {
-  margin: 0;
-  font-size: var(--ss-text-lg);
-  font-weight: var(--ss-font-weight-semibold);
-}
-
-.statusLabel.error {
-  color: var(--ss-color-danger);
 }
 
 .log {

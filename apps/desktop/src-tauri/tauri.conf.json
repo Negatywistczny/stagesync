@@ -6,7 +6,7 @@
   "build": {
     "frontendDist": "../launcher",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeDevCommand": "npx --yes serve ../launcher -l 1420 --no-clipboard",
+    "beforeDevCommand": "npx --yes serve ./launcher -l 1420 --no-clipboard",
     "beforeBuildCommand": ""
   },
   "app": {

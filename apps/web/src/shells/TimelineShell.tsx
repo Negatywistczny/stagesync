@@ -329,6 +329,7 @@ import {
   IconZoomIn,
 } from "./icons.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
+import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import {
   SettingsPopover,
   ShellAppearanceFields,
@@ -4391,6 +4392,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           })();
         }}
       />
+
+      <ConnectionLostBanner status={wsStatus} />
 
       {fullscreenError ? (
         <p className={styles.chromeAlert} role="alert">

@@ -1,0 +1,24 @@
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ss-space-3);
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-4);
+  background: var(--ss-color-elevated);
+  border-bottom: 1px solid var(--ss-color-warning);
+  color: var(--ss-color-warning);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  text-align: center;
+}
+
+.action {
+  flex-shrink: 0;
+}

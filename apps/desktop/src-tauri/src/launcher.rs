@@ -1,5 +1,6 @@
 //! Desktop Launcher commands — local sidecar start, remote connect, mDNS browse, recent hosts.
 
+use std::net::{IpAddr, Ipv4Addr};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -17,7 +18,9 @@ use crate::{
 
 const RECENT_CAP: usize = 5;
 const MDNS_BROWSE_MS: u64 = 2_500;
+const MDNS_TOTAL_BUDGET_MS: u64 = 4_000;
 const SERVICE_TYPE: &str = "_stagesync._tcp.local.";
+const VERSION_MISMATCH_PREFIX: &str = "VERSION_MISMATCH:";
 
 #[derive(Default)]
 pub struct SidecarRuntime {
@@ -25,6 +28,14 @@ pub struct SidecarRuntime {
     pub log_tail: Mutex<String>,
     pub log_path: Mutex<Option<PathBuf>>,
     pub starting: Mutex<bool>,
+    /// Surfaced once on next Launcher bootstrap (e.g. mid-session sidecar crash).
+    pub pending_error: Mutex<Option<String>>,
+}
+
+/// Origin URL of the bundled Launcher (captured at setup before any navigate).
+#[derive(Default)]
+pub struct LauncherNav {
+    pub url: Mutex<Option<String>>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -33,6 +44,7 @@ pub struct LauncherBootstrap {
     pub has_sidecar: bool,
     pub stagesync_url: Option<String>,
     pub expected_version: String,
+    pub last_error: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -99,12 +111,45 @@ fn admin_url(origin: &str) -> String {
     format!("{}/admin", origin.trim_end_matches('/'))
 }
 
-fn push_recent(app: &AppHandle, url: &str, label: &str) -> Result<(), String> {
-    let path = recent_path(app)?;
-    let mut list: Vec<RecentHost> = std::fs::read_to_string(&path)
+fn sanitize_recent_list(raw: Vec<RecentHost>) -> Vec<RecentHost> {
+    let mut out: Vec<RecentHost> = Vec::new();
+    for item in raw {
+        let Ok(url) = normalize_origin(&item.url) else {
+            continue;
+        };
+        if out.iter().any(|h| h.url == url) {
+            continue;
+        }
+        let label = item.label.trim();
+        out.push(RecentHost {
+            url,
+            label: if label.is_empty() {
+                "StageSync".into()
+            } else {
+                label.to_string()
+            },
+        });
+        if out.len() >= RECENT_CAP {
+            break;
+        }
+    }
+    out
+}
+
+fn load_recent(app: &AppHandle) -> Vec<RecentHost> {
+    let Ok(path) = recent_path(app) else {
+        return Vec::new();
+    };
+    let list: Vec<RecentHost> = std::fs::read_to_string(path)
         .ok()
         .and_then(|s| serde_json::from_str(&s).ok())
         .unwrap_or_default();
+    sanitize_recent_list(list)
+}
+
+fn push_recent(app: &AppHandle, url: &str, label: &str) -> Result<(), String> {
+    let path = recent_path(app)?;
+    let mut list = load_recent(app);
     list.retain(|h| h.url != url);
     list.insert(
         0,
@@ -115,11 +160,85 @@ fn push_recent(app: &AppHandle, url: &str, label: &str) -> Result<(), String> {
     );
     list.truncate(RECENT_CAP);
     let json = serde_json::to_string_pretty(&list).map_err(|e| e.to_string())?;
-    std::fs::write(path, json).map_err(|e| e.to_string())
+    std::fs::write(path, json).map_err(|e| {
+        let lower = e.to_string().to_ascii_lowercase();
+        if lower.contains("permission") || lower.contains("eacces") || lower.contains("access is denied") {
+            "Brak uprawnień do zapisu listy ostatnich hostów.".into()
+        } else {
+            e.to_string()
+        }
+    })
+}
+
+fn fallback_launcher_url() -> String {
+    #[cfg(dev)]
+    {
+        return "http://127.0.0.1:1420/".into();
+    }
+    #[cfg(not(dev))]
+    {
+        if cfg!(windows) || cfg!(target_os = "android") {
+            "http://tauri.localhost/".into()
+        } else {
+            "tauri://localhost/".into()
+        }
+    }
+}
+
+fn navigate_to_launcher(app: &AppHandle, nav: &LauncherNav) -> Result<(), String> {
+    let stored = nav
+        .url
+        .lock()
+        .ok()
+        .and_then(|g| g.clone())
+        .filter(|s| !s.trim().is_empty());
+    let target = stored.unwrap_or_else(fallback_launcher_url);
+    let window = app
+        .get_webview_window("main")
+        .ok_or("Brak okna głównego")?;
+    window
+        .navigate(target.parse().map_err(|e| format!("{e}"))?)
+        .map_err(|e| e.to_string())
+}
+
+/// Prefer private LAN IPv4; skip loopback / link-local; deprioritize Docker bridge `172.17/16`.
+pub(crate) fn pick_mdns_ipv4<'a, I>(addrs: I) -> Option<String>
+where
+    I: IntoIterator<Item = &'a IpAddr>,
+{
+    let mut usable: Vec<Ipv4Addr> = Vec::new();
+    let mut fallback: Vec<Ipv4Addr> = Vec::new();
+    for addr in addrs {
+        let IpAddr::V4(v4) = addr else {
+            continue;
+        };
+        if v4.is_unspecified() || v4.is_multicast() || v4.is_broadcast() {
+            continue;
+        }
+        if v4.is_loopback() || v4.is_link_local() {
+            fallback.push(*v4);
+            continue;
+        }
+        usable.push(*v4);
+    }
+    let pool = if !usable.is_empty() { usable } else { fallback };
+    if pool.is_empty() {
+        return None;
+    }
+    let mut ranked = pool;
+    ranked.sort_by_key(|ip| {
+        let docker = ip.octets()[0] == 172 && ip.octets()[1] == 17;
+        let private = ip.is_private();
+        (docker, !private)
+    });
+    ranked.first().map(|ip| ip.to_string())
 }
 
 #[tauri::command]
-pub fn get_launcher_bootstrap(app: AppHandle) -> Result<LauncherBootstrap, String> {
+pub fn get_launcher_bootstrap(
+    app: AppHandle,
+    runtime: State<'_, Arc<SidecarRuntime>>,
+) -> Result<LauncherBootstrap, String> {
     let expected_version = app.package_info().version.to_string();
     let resource_dir = app.path().resource_dir().ok();
     let has_sidecar = resource_dir
@@ -130,21 +249,22 @@ pub fn get_launcher_bootstrap(app: AppHandle) -> Result<LauncherBootstrap, Strin
         })
         .unwrap_or(false);
     let stagesync_url = std::env::var("STAGESYNC_URL").ok().filter(|s| !s.trim().is_empty());
+    let last_error = runtime
+        .pending_error
+        .lock()
+        .ok()
+        .and_then(|mut g| g.take());
     Ok(LauncherBootstrap {
         has_sidecar,
         stagesync_url,
         expected_version,
+        last_error,
     })
 }
 
 #[tauri::command]
 pub fn launcher_list_recent(app: AppHandle) -> Result<Vec<RecentHost>, String> {
-    let path = recent_path(&app)?;
-    let list: Vec<RecentHost> = std::fs::read_to_string(path)
-        .ok()
-        .and_then(|s| serde_json::from_str(&s).ok())
-        .unwrap_or_default();
-    Ok(list)
+    Ok(load_recent(&app))
 }
 
 #[tauri::command]
@@ -166,9 +286,27 @@ pub async fn cancel_local_host(runtime: State<'_, Arc<SidecarRuntime>>) -> Resul
     Ok(())
 }
 
+/// Kill local sidecar (if any) and navigate WebView back to the bundled Launcher.
+#[tauri::command]
+pub async fn return_to_launcher(
+    app: AppHandle,
+    runtime: State<'_, Arc<SidecarRuntime>>,
+    nav: State<'_, Arc<LauncherNav>>,
+) -> Result<(), String> {
+    if let Ok(mut guard) = runtime.child.lock() {
+        if let Some(child) = guard.take() {
+            let _ = child.kill();
+        }
+    }
+    if let Ok(mut g) = runtime.starting.lock() {
+        *g = false;
+    }
+    navigate_to_launcher(&app, nav.as_ref())
+}
+
 #[tauri::command]
 pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
-    tokio::task::spawn_blocking(|| {
+    let browse = tokio::task::spawn_blocking(|| {
         let daemon = ServiceDaemon::new().map_err(|e| format!("mDNS: {e}"))?;
         let receiver = daemon
             .browse(SERVICE_TYPE)
@@ -177,6 +315,9 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
         let mut out: Vec<DiscoveredHost> = Vec::new();
         while Instant::now() < deadline {
             let wait = deadline.saturating_duration_since(Instant::now());
+            if wait.is_zero() {
+                break;
+            }
             match receiver.recv_timeout(wait) {
                 Ok(ServiceEvent::ServiceResolved(info)) => {
                     let host = info.get_hostname().trim_end_matches('.').to_string();
@@ -186,11 +327,7 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
                         .iter()
                         .find(|p| p.key() == "version")
                         .map(|p| p.val_str().to_string());
-                    let ip = info
-                        .get_addresses()
-                        .iter()
-                        .find(|a| a.is_ipv4())
-                        .map(|a| a.to_string())
+                    let ip = pick_mdns_ipv4(info.get_addresses().iter())
                         .unwrap_or_else(|| host.clone());
                     let url = format!("http://{ip}:{port}");
                     if out.iter().any(|h| h.url == url) {
@@ -209,15 +346,25 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
                 Err(_) => break,
             }
         }
-        let _ = daemon.shutdown();
+        // Avoid daemon.shutdown() — can block indefinitely on some platforms.
+        drop(receiver);
+        drop(daemon);
         Ok(out)
-    })
-    .await
-    .map_err(|e| e.to_string())?
+    });
+
+    match tokio::time::timeout(Duration::from_millis(MDNS_TOTAL_BUDGET_MS), browse).await {
+        Ok(Ok(result)) => result,
+        Ok(Err(join_err)) => Err(format!("mDNS task: {join_err}")),
+        Err(_) => Err("Skan mDNS przekroczył limit czasu.".into()),
+    }
 }
 
 #[tauri::command]
-pub async fn connect_remote_host(app: AppHandle, url: String) -> Result<(), String> {
+pub async fn connect_remote_host(
+    app: AppHandle,
+    url: String,
+    force: Option<bool>,
+) -> Result<(), String> {
     let origin = normalize_origin(&url)?;
     let parsed = url::Url::parse(&origin).map_err(|e| e.to_string())?;
     let host = parsed.host_str().ok_or("Brak hosta")?.to_string();
@@ -232,6 +379,14 @@ pub async fn connect_remote_host(app: AppHandle, url: String) -> Result<(), Stri
             "Host {origin} nie odpowiada na /api/health (HTTP ≠ 200)."
         ));
     };
+
+    let expected = app.package_info().version.to_string();
+    if health.version != expected && !force.unwrap_or(false) {
+        return Err(format!(
+            "{VERSION_MISMATCH_PREFIX}{}:{}",
+            health.version, expected
+        ));
+    }
 
     let label = format!("StageSync {}", health.version);
     let _ = push_recent(&app, &origin, &label);
@@ -280,6 +435,9 @@ async fn start_local_host_inner(
     if let Ok(mut log) = runtime.log_tail.lock() {
         log.clear();
     }
+    if let Ok(mut err) = runtime.pending_error.lock() {
+        *err = None;
+    }
 
     let resource_dir = app
         .path()
@@ -302,7 +460,16 @@ async fn start_local_host_inner(
         .app_data_dir()
         .map_err(|e| format!("Brak app_data_dir: {e}"))?;
     let data_dir = path_for_node(&app_data_dir.join("StageSync"));
-    let _ = std::fs::create_dir_all(&data_dir);
+    if let Err(e) = std::fs::create_dir_all(&data_dir) {
+        let lower = e.to_string().to_ascii_lowercase();
+        if lower.contains("permission") || lower.contains("eacces") || lower.contains("access is denied") {
+            return Err(
+                "Brak uprawnień do katalogu danych StageSync. Sprawdź uprawnienia folderu aplikacji."
+                    .into(),
+            );
+        }
+        return Err(format!("Nie można utworzyć katalogu danych: {e}"));
+    }
     let logs_dir = data_dir.join("logs");
     let _ = std::fs::create_dir_all(&logs_dir);
     let sidecar_log_path = logs_dir.join("sidecar.log");
@@ -336,6 +503,14 @@ async fn start_local_host_inner(
                 .spawn()
         })
         .map_err(|err| {
+            let raw = err.to_string();
+            let lower = raw.to_ascii_lowercase();
+            if lower.contains("eacces")
+                || lower.contains("permission denied")
+                || lower.contains("access is denied")
+            {
+                return "Brak uprawnień do uruchomienia lokalnego hosta (stagesync-host). Sprawdź Secure / Defender i uprawnienia instalacji.".into();
+            }
             format!(
                 "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy stagesync-host nie jest blokowany przez Defender/SmartScreen."
             )
@@ -422,14 +597,41 @@ async fn start_local_host_inner(
                     .map_err(|e| e.to_string())?;
 
                 let log_path = sidecar_log_path.clone();
+                let runtime_watch = runtime.clone();
+                let app_watch = app.clone();
                 tauri::async_runtime::spawn(async move {
                     while let Some(event) = rx.recv().await {
                         match event {
                             CommandEvent::Stdout(bytes) | CommandEvent::Stderr(bytes) => {
-                                append_sidecar_file_log(&log_path, &String::from_utf8_lossy(&bytes));
+                                append_sidecar_file_log(
+                                    &log_path,
+                                    &String::from_utf8_lossy(&bytes),
+                                );
                             }
                             CommandEvent::Error(err) => {
                                 append_sidecar_file_log(&log_path, &format!("[shell] {err}"));
+                            }
+                            CommandEvent::Terminated(payload) => {
+                                let code = payload
+                                    .code
+                                    .map(|c| c.to_string())
+                                    .unwrap_or_else(|| "?".into());
+                                append_sidecar_file_log(
+                                    &log_path,
+                                    &format!("[shell] sidecar exited (code {code})"),
+                                );
+                                if let Ok(mut guard) = runtime_watch.child.lock() {
+                                    let _ = guard.take();
+                                }
+                                let msg = format!(
+                                    "Lokalny host zatrzymał się niespodziewanie (kod {code}). Uruchom ponownie albo sprawdź log."
+                                );
+                                if let Ok(mut pending) = runtime_watch.pending_error.lock() {
+                                    *pending = Some(msg);
+                                }
+                                let nav = app_watch.state::<Arc<LauncherNav>>();
+                                let _ = navigate_to_launcher(&app_watch, nav.as_ref());
+                                break;
                             }
                             _ => {}
                         }
@@ -480,5 +682,42 @@ async fn start_local_host_inner(
             let detail = (!last_health_err.is_empty()).then_some(last_health_err.as_str());
             return Err(startup_failure_message(&log_tail, detail));
         }
+    }
+}
+
+#[cfg(test)]
+mod pick_mdns_ipv4_tests {
+    use super::*;
+    use std::net::IpAddr;
+
+    #[test]
+    fn prefers_private_over_docker_bridge() {
+        let addrs = [
+            IpAddr::V4(Ipv4Addr::new(172, 17, 0, 2)),
+            IpAddr::V4(Ipv4Addr::new(192, 168, 1, 20)),
+        ];
+        assert_eq!(
+            pick_mdns_ipv4(addrs.iter()).as_deref(),
+            Some("192.168.1.20")
+        );
+    }
+
+    #[test]
+    fn skips_loopback_and_link_local_when_lan_exists() {
+        let addrs = [
+            IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+            IpAddr::V4(Ipv4Addr::new(169, 254, 1, 1)),
+            IpAddr::V4(Ipv4Addr::new(10, 0, 0, 5)),
+        ];
+        assert_eq!(pick_mdns_ipv4(addrs.iter()).as_deref(), Some("10.0.0.5"));
+    }
+
+    #[test]
+    fn falls_back_to_link_local_when_no_lan() {
+        let addrs = [IpAddr::V4(Ipv4Addr::new(169, 254, 10, 2))];
+        assert_eq!(
+            pick_mdns_ipv4(addrs.iter()).as_deref(),
+            Some("169.254.10.2")
+        );
     }
 }

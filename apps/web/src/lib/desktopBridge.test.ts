@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  canReturnToLauncher,
   formatUnknownError,
   isDesktopShell,
   openExternalUrl,
+  returnToLauncher,
   toggleAppFullscreen,
 } from "./desktopBridge.js";
 
@@ -169,5 +171,29 @@ describe("formatUnknownError", () => {
 
   it("does not render literal undefined", () => {
     expect(formatUnknownError(undefined)).toBe("Unknown error");
+  });
+});
+
+describe("returnToLauncher", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("is unavailable without Tauri invoke", () => {
+    vi.stubGlobal("window", {
+      location: { hostname: "127.0.0.1", port: "4000" },
+    });
+    expect(canReturnToLauncher()).toBe(false);
+  });
+
+  it("invokes return_to_launcher when IPC is present", async () => {
+    const invoke = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("window", {
+      __STAGESYNC_SHELL__: "desktop",
+      __TAURI__: { core: { invoke } },
+    });
+    expect(canReturnToLauncher()).toBe(true);
+    await returnToLauncher();
+    expect(invoke).toHaveBeenCalledWith("return_to_launcher", {});
   });
 });

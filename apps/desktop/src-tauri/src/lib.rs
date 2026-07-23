@@ -623,10 +623,24 @@ pub(crate) fn format_sidecar_failure(kind: &str, detail: &str, log_tail: &str) -
 
 pub(crate) fn startup_failure_message(log_tail: &str, last_health_err: Option<&str>) -> String {
     let lower = log_tail.to_ascii_lowercase();
+    let health_lower = last_health_err.unwrap_or("").to_ascii_lowercase();
     if lower.contains("eaddrinuse") || lower.contains("address already in use") {
         return format_sidecar_failure(
             "port 4000 jest zajęty",
             "Zamknij inne instancje StageSync (albo proces na porcie 4000) i spróbuj ponownie.",
+            log_tail,
+        );
+    }
+    if lower.contains("eacces")
+        || lower.contains("permission denied")
+        || lower.contains("access is denied")
+        || health_lower.contains("eacces")
+        || health_lower.contains("permission denied")
+        || health_lower.contains("access is denied")
+    {
+        return format_sidecar_failure(
+            "brak uprawnień",
+            "StageSync nie może otworzyć portu lub katalogu danych. Sprawdź uprawnienia folderu aplikacji i spróbuj ponownie.",
             log_tail,
         );
     }
@@ -672,22 +686,24 @@ fn parse_health_version(resp: &str) -> Option<String> {
 /// `Ok(None)` = TCP up but not HTTP 200 yet; `Ok(Some)` = healthy StageSync.
 pub(crate) async fn check_health_at(host: &str, port: u16) -> Result<Option<HealthOk>, String> {
     let addr = format!("{host}:{port}");
-    let mut stream = TcpStream::connect(&addr)
+    let connect = TcpStream::connect(&addr);
+    let mut stream = tokio::time::timeout(Duration::from_secs(3), connect)
         .await
+        .map_err(|_| format!("timeout połączenia z {addr}"))?
         .map_err(|e| format!("connect failed: {e}"))?;
 
     let req = format!(
         "GET /api/health HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
     );
-    stream
-        .write_all(req.as_bytes())
+    tokio::time::timeout(Duration::from_secs(3), stream.write_all(req.as_bytes()))
         .await
+        .map_err(|_| "timeout zapisu health".to_string())?
         .map_err(|e| format!("write failed: {e}"))?;
 
     let mut buf = Vec::new();
-    stream
-        .read_to_end(&mut buf)
+    tokio::time::timeout(Duration::from_secs(3), stream.read_to_end(&mut buf))
         .await
+        .map_err(|_| "timeout odczytu health".to_string())?
         .map_err(|e| format!("read failed: {e}"))?;
 
     let resp = String::from_utf8_lossy(&buf);
@@ -707,6 +723,8 @@ pub(crate) async fn check_health_at(host: &str, port: u16) -> Result<Option<Heal
 pub fn run() {
     let sidecar_runtime = Arc::new(launcher::SidecarRuntime::default());
     let sidecar_runtime_run = sidecar_runtime.clone();
+    let launcher_nav = Arc::new(launcher::LauncherNav::default());
+    let launcher_nav_setup = launcher_nav.clone();
     let nav_state = NavState {
         timeline_project_id: Arc::new(Mutex::new(None)),
         recent_projects: Arc::new(Mutex::new(Vec::new())),
@@ -720,8 +738,17 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(nav_state)
         .manage(sidecar_runtime)
+        .manage(launcher_nav)
         .setup(move |app| {
             let _ = install_desktop_menu(app.handle(), nav_state_setup.clone());
+            // Capture Launcher origin before any navigate to sidecar/remote (return path).
+            if let Some(window) = app.get_webview_window("main") {
+                if let Ok(url) = window.url() {
+                    if let Ok(mut guard) = launcher_nav_setup.url.lock() {
+                        *guard = Some(url.to_string());
+                    }
+                }
+            }
             // Window loads bundled Launcher (frontendDist). Sidecar starts only via invoke.
             Ok(())
         })
@@ -740,6 +767,7 @@ pub fn run() {
             launcher::discover_lan_hosts,
             launcher::connect_remote_host,
             launcher::start_local_host,
+            launcher::return_to_launcher,
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")

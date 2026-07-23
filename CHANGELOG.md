@@ -10,7 +10,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Launcher:** ekran startowy przed Adminem — uruchom lokalny host, wykryj StageSync w LAN (mDNS) albo wpisz adres; czytelny status błędów z logiem sidecara zamiast białego ekranu.
+- **Launcher:** ekran startowy przed Adminem (wordmark StageSync) — uruchom lokalny host, wykryj StageSync w LAN (mDNS wybiera adres LAN, nie most Dockera / link-local) albo wpisz adres; czytelny status błędów (brak sieci, uprawnienia, log sidecara) zamiast białego ekranu; bezpieczne pomijanie uszkodzonej listy ostatnich hostów.
+- **Launcher / sesja:** przy utracie połączenia z hostem komunikat z ponawianiem łączenia oraz (na desktopie lokalnym) powrót do wyboru hosta; crash lokalnego hosta wraca do Launchera zamiast zawieszenia; ostrzeżenie przy różnicy wersji aplikacji i zdalnego hosta.
 
 ## [5.0.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0...v5.0.1) - 2026-07-23
 

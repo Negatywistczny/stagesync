@@ -38,6 +38,7 @@ import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
+import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { DrumsPane } from "./client/DrumsPane.js";
 import { GridPane } from "./client/GridPane.js";
 import { KaraokePane } from "./client/KaraokePane.js";
@@ -309,11 +310,7 @@ export function ClientShell() {
           <div className={styles.modalConn}>
             <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
           </div>
-          {wsStatus === "disconnected" ? (
-            <p className={styles.offlineBanner} role="status">
-              Brak połączenia z serwerem. Próba ponownego łączenia…
-            </p>
-          ) : null}
+          <ConnectionLostBanner status={wsStatus} />
           <h1 id="name-title" className={styles.modalTitle}>
             Witaj w StageSync
           </h1>
@@ -340,11 +337,7 @@ export function ClientShell() {
     return (
       <div className={styles.page}>
         <ClientChrome {...headerProps} started={false} />
-        {wsStatus === "disconnected" ? (
-          <p className={styles.offlineBanner} role="status">
-            Brak połączenia z serwerem. Próba ponownego łączenia…
-          </p>
-        ) : null}
+        <ConnectionLostBanner status={wsStatus} />
         <main className={styles.welcome}>
           <div className={styles.welcomeHero}>
             <ShellWordmark className={styles.welcomeBrand} />
@@ -422,11 +415,7 @@ export function ClientShell() {
   return (
     <div className={styles.page}>
       <ClientChrome {...headerProps} started />
-      {wsStatus === "disconnected" ? (
-        <p className={styles.offlineBanner} role="status">
-          Brak połączenia z serwerem. Próba ponownego łączenia…
-        </p>
-      ) : null}
+      <ConnectionLostBanner status={wsStatus} />
 
       {drumsNoteError ? (
         <p className={styles.liveSaveError} role="alert">

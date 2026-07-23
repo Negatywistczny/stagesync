@@ -30,7 +30,7 @@ commands.allow = ["set_edit_history_state"]
 
 [[permission]]
 identifier = "allow-desktop-launcher"
-description = "Launcher: bootstrap, local host, remote connect, mDNS browse, recent hosts."
+description = "Launcher: bootstrap, local host, remote connect, mDNS browse, recent hosts, return."
 commands.allow = [
   "get_launcher_bootstrap",
   "launcher_list_recent",
@@ -39,4 +39,5 @@ commands.allow = [
   "discover_lan_hosts",
   "connect_remote_host",
   "start_local_host",
+  "return_to_launcher",
 ]

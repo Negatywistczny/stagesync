@@ -39,6 +39,7 @@ import { IconFullscreen, IconPower, IconRestart, IconSettings } from "./icons.js
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
+import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import {
   SettingsPopover,
   SettingsPopoverAnchor,
@@ -308,6 +309,7 @@ export function AdminShell() {
 
   return (
     <div className={styles.shell}>
+      <ConnectionLostBanner status={wsStatus} />
       <div className={styles.chromeWrap}>
         <header className={styles.chrome}>
           <ShellWordmark suffix="Admin" version={APP_VERSION} />

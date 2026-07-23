@@ -118,7 +118,7 @@ function asError(err: unknown): Error {
 }
 
 /** True when the page can actually call into Tauri (not just hostname heuristics). */
-function tauriInvokeAvailable(): boolean {
+export function tauriInvokeAvailable(): boolean {
   return Boolean(tauriGlobal()?.core?.invoke ?? tauriInternals()?.invoke);
 }
 
@@ -269,4 +269,17 @@ export function openExternalUrl(url: string): Promise<void> {
   }
   window.open(safe, "_blank", "noopener,noreferrer");
   return Promise.resolve();
+}
+
+/** True when desktop can navigate back to the bundled Launcher (IPC available). */
+export function canReturnToLauncher(): boolean {
+  return isDesktopShell() && tauriInvokeAvailable();
+}
+
+/** Kill local sidecar (if any) and return WebView to the host picker. */
+export function returnToLauncher(): Promise<void> {
+  if (!canReturnToLauncher()) {
+    return Promise.reject(new Error("Powrót do Launchera niedostępny w tej sesji"));
+  }
+  return tauriInvoke<void>("return_to_launcher", {});
 }
