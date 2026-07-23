@@ -282,6 +282,16 @@ describe("formaEdit remaining coverage", () => {
       "N",
     );
     expect(noClient.lengthTicks).toBeGreaterThan(0);
+    const sameTick = previewFromSession(
+      p,
+      { ...pencil, originClientX: undefined },
+      0,
+      false,
+      false,
+      "N",
+    );
+    expect(sameTick.lengthTicks).toBeGreaterThan(0);
+
 
     const resizeStart: FormaGestureSession = {
       kind: "resize-start",
