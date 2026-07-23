@@ -187,4 +187,26 @@ describe("TransportEngine", () => {
     expect(engine.getState().loop).toBeNull();
     engine.dispose();
   });
+
+  it("wraps position when looping while playing", () => {
+    let t = 0;
+    const engine = createTransportEngine({ now: () => t });
+    engine.setLoop({ enabled: true, startTicks: 0, endTicks: 960 });
+    engine.play();
+    t = 2000; // past one loop window @ 120bpm
+    const pos = engine.getState().positionTicks;
+    expect(pos).toBeGreaterThanOrEqual(0);
+    expect(pos).toBeLessThan(960);
+    engine.dispose();
+  });
+
+  it("play applies explicit timeSignature override", () => {
+    const engine = createTransportEngine();
+    engine.play({ timeSignature: { numerator: 3, denominator: 4 } });
+    expect(engine.getState().timeSignature).toEqual({
+      numerator: 3,
+      denominator: 4,
+    });
+    engine.dispose();
+  });
 });
