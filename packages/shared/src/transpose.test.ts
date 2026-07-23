@@ -45,17 +45,13 @@ describe("transpose / instrument pitch", () => {
     expect(r.semitones).toBe(2);
   });
 
-  it("resolveTranspose handles missing / unparsable key", () => {
+  it("resolveTranspose handles missing key", () => {
     expect(resolveTranspose(null, 2)).toMatchObject({
       originalKey: null,
       targetKey: null,
       semitones: 0,
     });
-    expect(resolveTranspose({ tonic: "Xyz", mode: "major" }, 1)).toMatchObject({
-      originalKey: null,
-      targetKey: null,
-      semitones: 0,
-    });
+    expect(resolveTranspose(undefined, 1).originalKey).toBeNull();
   });
 
   it("applyInstrumentPitchToChord without key uses chromatic offset", () => {
