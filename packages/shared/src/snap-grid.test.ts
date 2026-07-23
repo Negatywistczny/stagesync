@@ -158,4 +158,42 @@ describe("snap-grid", () => {
       /ticks must be a finite integer/,
     );
   });
+
+  it("AlongMeterMap helpers use constant meter in pre-roll", () => {
+    expect(snapTicksToBarStartAlongMeterMap(-100, M4, [], PPQ)).toBe(
+      snapTicksToBarStart(-100, M4, PPQ),
+    );
+    expect(snapTicksToBeatGridAlongMeterMap(-500, M4, [], PPQ)).toBe(
+      snapTicksToBeatGrid(-500, M4, PPQ),
+    );
+  });
+
+  it("quantizeTicks bar mode uses meterMap when provided", () => {
+    const bar4 = 3840;
+    const map = [
+      { startTicks: 0, numerator: 4, denominator: 4 },
+      { startTicks: bar4 * 2, numerator: 5, denominator: 8 },
+    ];
+    const mid5 = bar4 * 2 + 1200;
+    expect(
+      quantizeTicks(mid5, "bar", {
+        meter: M4,
+        defaultMeter: M4,
+        meterMap: map,
+        ppq: PPQ,
+      }),
+    ).toBe(bar4 * 2);
+  });
+
+  it("quantizeTicks beat mode without meterMap uses constant grid", () => {
+    expect(
+      quantizeTicks(500, "beat", { meter: M4, ppq: PPQ }),
+    ).toBe(960);
+  });
+
+  it("AlongMeterMap helpers accept exact barline ticks", () => {
+    const map = [{ startTicks: 0, numerator: 4, denominator: 4 }];
+    expect(snapTicksToBarStartAlongMeterMap(3840, M4, map, PPQ)).toBe(3840);
+    expect(snapTicksToBeatGridAlongMeterMap(3840, M4, map, PPQ)).toBe(3840);
+  });
 });
