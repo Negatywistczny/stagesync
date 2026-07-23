@@ -11,7 +11,8 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@stagesync/shared": "workspace:*",
@@ -24,6 +25,7 @@
     "uqr": "^0.1.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@stagesync/eslint-config": "workspace:*",
     "@stagesync/typescript-config": "workspace:*",
     "@types/react": "19.2.17",

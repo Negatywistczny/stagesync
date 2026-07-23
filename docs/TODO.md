@@ -15,10 +15,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.0.0.
 
 - [ ] **G1–G10** na instalatorach `v5.0.0` (mac/Win HW) — bez claim green w docs
 
-### Should / Weryfikacja
-
-- [ ] Playwright Forma drag E2E
-
 ### Etap 5.1+ (Przyszłość)
 
 - [ ] Motywy / auth / multi-user
