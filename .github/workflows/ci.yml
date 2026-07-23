@@ -69,7 +69,7 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Coverage (shared + server + web)
+      - name: Coverage (shared + server + web + ui)
         run: pnpm test:coverage
 
       # Separate uploads so Codecov flags map 1:1 to packages (see codecov.yml).
@@ -102,6 +102,16 @@ jobs:
           files: apps/web/coverage/lcov.info
           flags: web
           name: web
+
+      - name: Upload coverage (ui)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          disable_search: true
+          files: packages/ui/coverage/lcov.info
+          flags: ui
+          name: ui
 
       - name: Migrate legacy dry-run (M9)
         run: |

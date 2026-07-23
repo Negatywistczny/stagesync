@@ -17,8 +17,8 @@ coverage:
         flags:
           - shared
       server:
-        # Interim ≥70%; raise to 75% after server route/storage coverage (Phase 3).
-        target: "70%"
+        # Phase 3: routes/storage/live-desk/midi native ≥75%.
+        target: "75%"
         threshold: "2%"
         flags:
           - server
@@ -28,6 +28,11 @@ coverage:
         threshold: "5%"
         flags:
           - web
+      ui:
+        target: "70%"
+        threshold: "5%"
+        flags:
+          - ui
     patch:
       default:
         informational: true
@@ -37,7 +42,7 @@ coverage:
         flags:
           - shared
       server:
-        target: "70%"
+        target: "75%"
         threshold: "2%"
         flags:
           - server
@@ -46,6 +51,11 @@ coverage:
         threshold: "5%"
         flags:
           - web
+      ui:
+        target: "70%"
+        threshold: "5%"
+        flags:
+          - ui
 
 # Shells and CSS modules must not fail patch/project status.
 ignore:
@@ -67,7 +77,7 @@ flags:
       - apps/web/src/lib/**
       - apps/web/src/transport/**
     carryforward: true
-  # Ready when packages/ui gains test:coverage + CI upload (Phase 5).
+  # Wired in CI (Phase 5). Soft gate ≥70%.
   ui:
     paths:
       - packages/ui/**
