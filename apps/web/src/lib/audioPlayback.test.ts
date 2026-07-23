@@ -374,4 +374,37 @@ describe("audioPlayback helpers", () => {
     ).toBeGreaterThanOrEqual(2);
     expect(source.start).toHaveBeenCalledOnce();
   });
+
+  it("restartAudioPlayback re-arms graph after stop", async () => {
+    const { restartAudioPlayback } = await import("./audioPlayback.js");
+    const fakeBuf = { duration: 1, numberOfChannels: 1, sampleRate: 48000 };
+    const source = {
+      buffer: null as unknown,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    stopAudioPlayback();
+    restartAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+    expect(source.start).toHaveBeenCalled();
+  });
 });

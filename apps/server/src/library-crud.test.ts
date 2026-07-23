@@ -421,4 +421,98 @@ describe("library / projects CRUD", () => {
     });
     expect(stop.status).toBe(200);
   });
+
+  it("POST /api/library/export returns pack and filters by ids", async () => {
+    const a = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: "Export A" }),
+        })
+      ).json(),
+    );
+    const b = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: "Export B" }),
+        })
+      ).json(),
+    );
+
+    const all = await fetch(`${baseUrl}/api/library/export`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(all.status).toBe(200);
+    const packAll = (await all.json()) as {
+      stagesyncExportVersion: number;
+      projects: Array<{ id: string }>;
+    };
+    expect(packAll.stagesyncExportVersion).toBe(3);
+    expect(packAll.projects.some((p) => p.id === a.id)).toBe(true);
+    expect(packAll.projects.some((p) => p.id === b.id)).toBe(true);
+
+    const one = await fetch(`${baseUrl}/api/library/export`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ projectIds: [a.id] }),
+    });
+    expect(one.status).toBe(200);
+    const packOne = (await one.json()) as { projects: Array<{ id: string }> };
+    expect(packOne.projects).toHaveLength(1);
+    expect(packOne.projects[0]?.id).toBe(a.id);
+  });
+
+  it("POST /api/library/import rejects empty project list", async () => {
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        stagesyncExportVersion: 3,
+        exportedAt: new Date().toISOString(),
+        projects: [],
+      }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/library/import rejects pack with only non-object projects", async () => {
+    const res = await fetch(`${baseUrl}/api/library/import`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        stagesyncExportVersion: 3,
+        exportedAt: new Date().toISOString(),
+        projects: [null, "skip", 3],
+      }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/library/batch-midi-pc assigns program ids", async () => {
+    const created = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: "PC Song" }),
+        })
+      ).json(),
+    );
+    const res = await fetch(`${baseUrl}/api/library/batch-midi-pc`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        assignments: [{ id: created.id, midiProgramId: 42 }],
+      }),
+    });
+    expect(res.status).toBe(200);
+    const library = LibrarySchema.parse(await res.json());
+    const entry = library.projects.find((p) => p.id === created.id);
+    expect(entry?.midiProgramId).toBe(42);
+  });
 });

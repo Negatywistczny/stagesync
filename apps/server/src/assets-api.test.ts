@@ -174,4 +174,84 @@ describe("project assets API", () => {
     const after = ProjectSchema.parse(await del.json());
     expect(after.assets).toHaveLength(0);
   });
+
+  it("serves asset file with mime + rejects bad uploads", async () => {
+    const form = new FormData();
+    form.append(
+      "file",
+      new Blob([new Uint8Array([10, 20, 30])], { type: "audio/flac" }),
+      "pad.flac",
+    );
+    const up = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: form,
+    });
+    expect(up.status).toBe(201);
+    const project = ProjectSchema.parse(await up.json());
+    const assetId = project.assets[0]!.id;
+
+    const file = await fetch(
+      `${baseUrl}/api/projects/${projectId}/assets/${assetId}/file`,
+    );
+    expect(file.status).toBe(200);
+    expect(file.headers.get("content-type")).toMatch(/audio\/flac|octet/i);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    expect([...bytes]).toEqual([10, 20, 30]);
+
+    const missing = await fetch(
+      `${baseUrl}/api/projects/${projectId}/assets/00000000-0000-4000-8000-000000000099/file`,
+    );
+    expect(missing.status).toBeGreaterThanOrEqual(400);
+
+    const bad = new FormData();
+    bad.append(
+      "file",
+      new Blob([new Uint8Array([1])], { type: "text/plain" }),
+      "notes.txt",
+    );
+    const reject = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: bad,
+    });
+    expect(reject.status).toBe(400);
+
+    const xml = new FormData();
+    xml.append(
+      "file",
+      new Blob(["<?xml version='1.0'?><score-partwise/>"], {
+        type: "application/xml",
+      }),
+      "score.musicxml",
+    );
+    const xmlUp = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: xml,
+    });
+    expect(xmlUp.status).toBe(201);
+    const withXml = ProjectSchema.parse(await xmlUp.json());
+    expect(withXml.assets.some((a) => a.kind === "musicxml")).toBe(true);
+
+    for (const [name, type] of [
+      ["a.ogg", ""],
+      ["b.aiff", ""],
+      ["c.m4a", ""],
+      ["d.mp3", ""],
+      ["e.mxl", ""],
+    ] as const) {
+      const f = new FormData();
+      f.append("file", new Blob([new Uint8Array([1])], { type }), name);
+      const r = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+        method: "POST",
+        body: f,
+      });
+      expect(r.status).toBe(201);
+    }
+
+    const empty = new FormData();
+    const noFile = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: empty,
+    });
+    expect(noFile.status).toBe(400);
+  });
 });

@@ -41,16 +41,30 @@ describe("assertLifecycleAllowed", () => {
     vi.unstubAllEnvs();
   });
 
-  it("allows remote with matching bearer token", () => {
+  it("allows remote when STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1", () => {
+    vi.stubEnv("STAGESYNC_ALLOW_REMOTE_LIFECYCLE", "1");
+    vi.stubEnv("STAGESYNC_HOST_TOKEN", "");
+    const res = mockRes();
+    expect(assertLifecycleAllowed(mockReq("10.0.0.2"), res)).toBe(true);
+    vi.unstubAllEnvs();
+  });
+
+  it("allows remote via x-stagesync-host-token header", () => {
     vi.stubEnv("STAGESYNC_HOST_TOKEN", "secret");
     vi.stubEnv("STAGESYNC_ALLOW_REMOTE_LIFECYCLE", "");
     const res = mockRes();
     expect(
       assertLifecycleAllowed(
-        mockReq("192.168.1.10", { authorization: "Bearer secret" }),
+        mockReq("10.0.0.2", { "x-stagesync-host-token": "secret" }),
         res,
       ),
     ).toBe(true);
     vi.unstubAllEnvs();
+  });
+
+  it("allows ::1 and ::ffff:127.0.0.1 as loopback", () => {
+    const res = mockRes();
+    expect(assertLifecycleAllowed(mockReq("::1"), res)).toBe(true);
+    expect(assertLifecycleAllowed(mockReq("::ffff:127.0.0.1"), res)).toBe(true);
   });
 });

@@ -214,4 +214,23 @@ describe("midi host", () => {
     host.dispose();
     transport.dispose();
   });
+
+  it("sendProgramChange / panic guard missing output and bad args", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+
+    host.sendProgramChange(42);
+    expect(backend.sent).toHaveLength(0);
+    expect(host.panic()).toEqual({ sent: false, channels: 0 });
+
+    host.setConfig({ outputId: "mock-out-1" });
+    backend.sent.length = 0;
+    host.sendProgramChange(-1);
+    host.sendProgramChange(42, 99);
+    expect(backend.sent).toHaveLength(0);
+
+    host.dispose();
+    transport.dispose();
+  });
 });

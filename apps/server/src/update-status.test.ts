@@ -81,6 +81,60 @@ describe("fetchLatestReleaseVersion", () => {
     expect(result.error).toMatch(/nieosiągalne|sieć|timeout/i);
     expect(result.error).not.toMatch(/token/i);
   });
+
+  it("maps GitHub auth / empty / non-array responses", async () => {
+    expect(
+      (
+        await fetchLatestReleaseVersion(
+          "tok",
+          async () => new Response("{}", { status: 403 }) as never,
+        )
+      ).error,
+    ).toMatch(/token|uprawnienia/i);
+
+    expect(
+      (
+        await fetchLatestReleaseVersion(
+          "tok",
+          async () => new Response("{}", { status: 404 }) as never,
+        )
+      ).error,
+    ).toMatch(/niedostępne/i);
+
+    expect(
+      (
+        await fetchLatestReleaseVersion(
+          undefined,
+          async () => new Response("{}", { status: 503 }) as never,
+        )
+      ).error,
+    ).toMatch(/HTTP 503/);
+
+    expect(
+      (
+        await fetchLatestReleaseVersion(
+          "tok",
+          async () => Response.json({ not: "array" }) as never,
+        )
+      ).error,
+    ).toMatch(/nieoczekiwana/);
+
+    expect(
+      (
+        await fetchLatestReleaseVersion(
+          "tok",
+          async () => Response.json([]) as never,
+          "stable",
+        )
+      ).error,
+    ).toMatch(/Brak opublikowanych/);
+  });
+
+  it("falls back when semver parse fails on either side", () => {
+    expect(isSemverNewer("not-semver", "also-bad")).toBe(true);
+    expect(isSemverNewer("not-semver", "not-semver")).toBe(false);
+    expect(isSemverNewer("1.0.0-beta.2", "1.0.0-beta.1")).toBe(true);
+  });
 });
 
 describe("GET /api/system/update-status", () => {
