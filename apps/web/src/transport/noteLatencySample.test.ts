@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { noteLatencySample } from "./TransportProvider.js";
+import { noteLatencySample } from "./transportReducer.js";
 
 describe("noteLatencySample", () => {
   afterEach(() => {

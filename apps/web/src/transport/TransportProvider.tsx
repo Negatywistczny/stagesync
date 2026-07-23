@@ -10,7 +10,6 @@ import {
   TransportWsServerMessageSchema,
   defaultTransportState,
   getDisplayTicks,
-  type TransportAnchor,
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
@@ -23,44 +22,29 @@ import {
   setTransportLoop,
   stopTransport,
 } from "./api.js";
-import { TransportContext, type StageCue, type WsStatus, DEFAULT_LIVE_DESK, type LiveDeskState } from "./transportContext.js";
+import {
+  TransportContext,
+  DEFAULT_LIVE_DESK,
+  type LiveDeskState,
+  type StageCue,
+  type WsStatus,
+} from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 import { wsReconnectDelayMs } from "./wsReconnect.js";
 import { fetchLiveDesk } from "../lib/setlistApi.js";
+import {
+  dismissStageCues,
+  formatTransportError,
+  liveDeskFromPayload,
+  noteLatencySample,
+  shouldAcceptServerTick,
+  stageCueFromWs,
+  toTransportAnchor,
+  transportWsUrl,
+  upsertStageCue,
+} from "./transportReducer.js";
 
-function formatTransportError(err: unknown, fallback: string): string {
-  const message = err instanceof Error ? err.message : fallback;
-  return message.slice(0, 500);
-}
-
-function toAnchor(state: TransportState): TransportAnchor {
-  return {
-    positionTicks: state.positionTicks,
-    bpm: state.bpm,
-    timeSignature: state.timeSignature,
-    ppq: state.ppq,
-  };
-}
-
-function transportWsUrl(): string {
-  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${window.location.host}/ws/transport`;
-}
-
-/** v4-style EMA of one-way delay from wall-clock `sentAtMs`. */
-const MAX_LATENCY_MS = 60_000;
-
-export function noteLatencySample(prev: number, sentAtMs: number): number {
-  const sample = Math.min(
-    MAX_LATENCY_MS,
-    Math.max(0, Date.now() - sentAtMs),
-  );
-  if (!prev) return sample;
-  return Math.min(
-    MAX_LATENCY_MS,
-    Math.round(prev * 0.82 + sample * 0.18),
-  );
-}
+export { noteLatencySample } from "./transportReducer.js";
 
 export function TransportProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<TransportState>(defaultTransportState);
@@ -74,7 +58,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [stageCues, setStageCues] = useState<StageCue[]>([]);
   const [liveDesk, setLiveDesk] = useState<LiveDeskState>(DEFAULT_LIVE_DESK);
 
-  const anchorRef = useRef<TransportAnchor>(toAnchor(defaultTransportState()));
+  const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
@@ -95,16 +79,13 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const applyAnchor = useCallback(
     (next: TransportState, receiptMs: number, serverTimeMs?: number) => {
-      if (
-        serverTimeMs !== undefined &&
-        serverTimeMs < lastServerTimeMsRef.current
-      ) {
+      if (!shouldAcceptServerTick(serverTimeMs, lastServerTimeMsRef.current)) {
         return;
       }
       if (serverTimeMs !== undefined) {
         lastServerTimeMsRef.current = serverTimeMs;
       }
-      const anchor = toAnchor(next);
+      const anchor = toTransportAnchor(next);
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
       playingRef.current = next.playing;
@@ -173,7 +154,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       setWsStatus("connecting");
       latencyEmaRef.current = 0;
       setLatencyMs(null);
-      ws = new WebSocket(transportWsUrl());
+      ws = new WebSocket(transportWsUrl(window.location));
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -222,26 +203,8 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           return;
         }
         if (parsed.data.type === "stage_cue") {
-          const cue = parsed.data;
-          const nextCue: StageCue = {
-            id: cue.id,
-            text: cue.text.slice(0, 200),
-            ttlMs: cue.ttlMs,
-            sentAtMs: cue.sentAtMs,
-            roles: cue.roles,
-            priority: cue.priority,
-          };
-          setStageCues((prev) => {
-            if (nextCue.id) {
-              const idx = prev.findIndex((c) => c.id === nextCue.id);
-              if (idx >= 0) {
-                const copy = [...prev];
-                copy[idx] = nextCue;
-                return copy;
-              }
-            }
-            return [...prev, nextCue];
-          });
+          const nextCue = stageCueFromWs(parsed.data);
+          setStageCues((prev) => upsertStageCue(prev, nextCue));
           setStageCue(nextCue);
           return;
         }
@@ -254,20 +217,17 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           }
           if (dismiss.id) {
             setStageCues((prev) => {
-              const next = prev.filter((c) => c.id !== dismiss.id);
-              setStageCue(next.length > 0 ? next[next.length - 1]! : null);
-              return next;
+              const { cues, latest } = dismissStageCues(prev, {
+                id: dismiss.id,
+              });
+              setStageCue(latest);
+              return cues;
             });
           }
           return;
         }
         if (parsed.data.type === "live_desk") {
-          const desk = parsed.data;
-          setLiveDesk({
-            transpositionSemitones: desk.transpositionSemitones,
-            syncLeadMs: desk.syncLeadMs,
-            clientEditEnabled: desk.clientEditEnabled,
-          });
+          setLiveDesk(liveDeskFromPayload(parsed.data));
           return;
         }
         const msg = parsed.data;
@@ -323,11 +283,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       try {
         const desk = await fetchLiveDesk();
         if (!cancelled) {
-          setLiveDesk({
-            transpositionSemitones: desk.transpositionSemitones,
-            syncLeadMs: desk.syncLeadMs,
-            clientEditEnabled: desk.clientEditEnabled,
-          });
+          setLiveDesk(liveDeskFromPayload(desk));
         }
       } catch {
         /* WS snapshot may still arrive */
