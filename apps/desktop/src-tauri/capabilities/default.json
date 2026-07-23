@@ -1,10 +1,14 @@
 {
   "$schema": "https://schema.tauri.app/config/2/capability",
   "identifier": "default",
-  "description": "Default StageSync desktop capability (thin shell + sidecar UI at localhost)",
+  "description": "Default StageSync desktop capability (Launcher + local sidecar UI)",
   "windows": ["main"],
   "remote": {
     "urls": [
+      "http://127.0.0.1:1420",
+      "http://127.0.0.1:1420/*",
+      "http://localhost:1420",
+      "http://localhost:1420/*",
       "http://127.0.0.1:4000",
       "http://127.0.0.1:4000/*",
       "http://localhost:4000",
@@ -13,6 +17,7 @@
   },
   "permissions": [
     "core:default",
+    "core:event:default",
     "core:window:allow-set-fullscreen",
     "core:window:allow-is-fullscreen",
     "core:window:allow-set-simple-fullscreen",
@@ -26,6 +31,7 @@
     "allow-nav-recent-sync",
     "allow-edit-history-sync",
     "allow-desktop-update",
+    "allow-desktop-launcher",
     "shell:allow-kill",
     {
       "identifier": "shell:allow-spawn",

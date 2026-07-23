@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StageSync — Launcher</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell" id="app">
+      <header class="hero">
+        <p class="brand">StageSync</p>
+        <h1>Wybierz host</h1>
+        <p class="sub">Lokalny serwer albo host w sieci LAN</p>
+      </header>
+
+      <section class="panel" id="statusPanel" hidden>
+        <p class="statusLabel" id="statusLabel"></p>
+        <pre class="log" id="statusLog" hidden></pre>
+        <div class="row" id="statusActions"></div>
+      </section>
+
+      <section class="panel" id="mainPanel">
+        <button type="button" class="btn primary" id="btnLocal" disabled>
+          Uruchom lokalny host
+        </button>
+        <p class="hint" id="localHint"></p>
+
+        <div class="divider"><span>lub</span></div>
+
+        <div class="block">
+          <div class="blockHead">
+            <h2>Wykryte w sieci</h2>
+            <button type="button" class="btn ghost" id="btnRefresh">Odśwież</button>
+          </div>
+          <ul class="hostList" id="hostList">
+            <li class="empty">Szukam hostów StageSync…</li>
+          </ul>
+        </div>
+
+        <div class="block">
+          <h2>Połącz ręcznie</h2>
+          <form class="manual" id="manualForm">
+            <input
+              type="url"
+              id="manualUrl"
+              placeholder="http://192.168.1.10:4000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button type="submit" class="btn secondary">Połącz</button>
+          </form>
+        </div>
+
+        <div class="block" id="recentBlock" hidden>
+          <h2>Ostatnio używane</h2>
+          <ul class="hostList" id="recentList"></ul>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

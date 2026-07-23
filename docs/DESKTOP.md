@@ -1,9 +1,16 @@
 # StageSync — desktop shell (Tauri)
 
-Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-desktop-shell-tauri.md).
+Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md).
 
-**β1:** aplikacja uruchamia wbudowany serwer w postaci **Node sidecar**, wystawia lokalny API na `http://127.0.0.1:4000`, a shell ładuje UI z tego adresu.  
-**Domyślny widok desktop:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/client`) w shellu; w przeglądarce / Dockerze root `/` nadal to Client.  
+**Start (Launcher):** po włączeniu aplikacji widać ekran wyboru hosta (nie od razu Admin):
+- **Uruchom lokalny host** — spawnuje wbudowany Node sidecar na `http://127.0.0.1:4000`, czeka na `/api/health`, potem otwiera Admin;
+- **Wykryte w sieci** — lista hostów z mDNS (`_stagesync._tcp`); wymaga włączonego mDNS na hoście i bind ≠ tylko localhost;
+- **Połącz ręcznie** / **Ostatnio używane** — wpisz `http://host:port` (probe health → Admin).
+
+Błędy startu lokalnego hosta (port zajęty, timeout, zła wersja, crash sidecara) pokazuje Launcher z logiem i **Ponów** — bez białego ekranu.
+
+**β1+:** lokalny API sidecara na `http://127.0.0.1:4000` gdy wybrano lokalny host.  
+**Domyślny widok po połączeniu:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/client`) w shellu; w przeglądarce / Dockerze root `/` nadal to Client.  
 **Nawigacja desktop ([ADR 0010](./adr/0010-desktop-shell-tauri.md)):** menu OS **StageSync** | **Plik** | **Edycja** | **Widok** | **Transport** | **Host** | **Pomoc** — bez osobnego chrome `ShellModeNav`.
 
 | Menu | Pozycje |
@@ -52,9 +59,11 @@ Alternatywy: prawy klik na `.app` → **Otwórz** → **Otwórz**; albo System S
 
 ### Windows — host nie startuje
 
+Od Launchera (ADR 0014): UI pokazuje **status + log sidecara** z akcją **Ponów** (nie surowy whitescreen).
+
 Komunikat o zajętym porcie `4000` bywał **mylący**: shell czekał na `GET /api/health`, a prawdziwy błąd (crash sidecara Node, `ERR_MODULE_NOT_FOUND`, blokada Defendera) był ignorowany.
 
-Od α12+:
+Od α12+ / Launcher:
 - przy awarii hosta UI pokazuje **log sidecara** (nie zakładaj od razu zajętego portu);
 - pierwsze uruchomienie na Windows może potrwać dłużej (skan Defendera) — timeout startu to ~2 min.
 

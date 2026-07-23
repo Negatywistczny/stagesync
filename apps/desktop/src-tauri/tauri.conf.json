@@ -4,9 +4,9 @@
   "version": "5.0.1",
   "identifier": "com.stagesync.app",
   "build": {
-    "frontendDist": "../ui-placeholder",
-    "devUrl": "http://127.0.0.1:4000/admin",
-    "beforeDevCommand": "",
+    "frontendDist": "../launcher",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeDevCommand": "npx --yes serve ../launcher -l 1420 --no-clipboard",
     "beforeBuildCommand": ""
   },
   "app": {
@@ -19,7 +19,7 @@
         "height": 800,
         "resizable": true,
         "fullscreen": false,
-        "url": "http://127.0.0.1:4000/admin",
+        "url": "index.html",
         "dragDropEnabled": false
       }
     ],

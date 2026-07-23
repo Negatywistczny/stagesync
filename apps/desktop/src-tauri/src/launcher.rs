@@ -1,0 +1,484 @@
+//! Desktop Launcher commands — local sidecar start, remote connect, mDNS browse, recent hosts.
+
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
+use mdns_sd::{ServiceDaemon, ServiceEvent};
+use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_shell::process::{CommandChild, CommandEvent};
+use tauri_plugin_shell::ShellExt;
+
+use crate::{
+    append_sidecar_file_log, append_sidecar_log, assert_node_path_usable, check_health_at,
+    format_sidecar_failure, nav_url, path_for_node, startup_failure_message, UI_PORT,
+    HEALTHCHECK_INTERVAL, SERVER_ENTRY_REL, STARTUP_TIMEOUT,
+};
+
+const RECENT_CAP: usize = 5;
+const MDNS_BROWSE_MS: u64 = 2_500;
+const SERVICE_TYPE: &str = "_stagesync._tcp.local.";
+
+#[derive(Default)]
+pub struct SidecarRuntime {
+    pub child: Mutex<Option<CommandChild>>,
+    pub log_tail: Mutex<String>,
+    pub log_path: Mutex<Option<PathBuf>>,
+    pub starting: Mutex<bool>,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LauncherBootstrap {
+    pub has_sidecar: bool,
+    pub stagesync_url: Option<String>,
+    pub expected_version: String,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscoveredHost {
+    pub name: String,
+    pub host: String,
+    pub port: u16,
+    pub version: Option<String>,
+    pub url: String,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentHost {
+    pub url: String,
+    pub label: String,
+}
+
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LauncherStatusPayload {
+    message: String,
+    error: bool,
+}
+
+fn emit_status(app: &AppHandle, message: impl Into<String>, error: bool) {
+    let _ = app.emit(
+        "launcher-status",
+        LauncherStatusPayload {
+            message: message.into(),
+            error,
+        },
+    );
+}
+
+fn recent_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let data = dir.join("StageSync");
+    let _ = std::fs::create_dir_all(&data);
+    Ok(data.join("launcher-recent.json"))
+}
+
+fn normalize_origin(raw: &str) -> Result<String, String> {
+    let trimmed = raw.trim().trim_end_matches('/');
+    if trimmed.is_empty() {
+        return Err("Podaj adres hosta (np. http://192.168.1.10:4000)".into());
+    }
+    let with_scheme = if trimmed.contains("://") {
+        trimmed.to_string()
+    } else {
+        format!("http://{trimmed}")
+    };
+    let parsed = url::Url::parse(&with_scheme).map_err(|e| format!("Nieprawidłowy URL: {e}"))?;
+    if parsed.scheme() != "http" && parsed.scheme() != "https" {
+        return Err("Dozwolone tylko http:// lub https://".into());
+    }
+    let host = parsed.host_str().ok_or("Brak hosta w URL")?;
+    let port = parsed.port_or_known_default().unwrap_or(80);
+    Ok(format!("{}://{}:{}", parsed.scheme(), host, port))
+}
+
+fn admin_url(origin: &str) -> String {
+    format!("{}/admin", origin.trim_end_matches('/'))
+}
+
+fn push_recent(app: &AppHandle, url: &str, label: &str) -> Result<(), String> {
+    let path = recent_path(app)?;
+    let mut list: Vec<RecentHost> = std::fs::read_to_string(&path)
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_default();
+    list.retain(|h| h.url != url);
+    list.insert(
+        0,
+        RecentHost {
+            url: url.to_string(),
+            label: label.to_string(),
+        },
+    );
+    list.truncate(RECENT_CAP);
+    let json = serde_json::to_string_pretty(&list).map_err(|e| e.to_string())?;
+    std::fs::write(path, json).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_launcher_bootstrap(app: AppHandle) -> Result<LauncherBootstrap, String> {
+    let expected_version = app.package_info().version.to_string();
+    let resource_dir = app.path().resource_dir().ok();
+    let has_sidecar = resource_dir
+        .as_ref()
+        .map(|rd| {
+            path_for_node(&rd.join("resources").join("sidecar").join("server").join(SERVER_ENTRY_REL))
+                .exists()
+        })
+        .unwrap_or(false);
+    let stagesync_url = std::env::var("STAGESYNC_URL").ok().filter(|s| !s.trim().is_empty());
+    Ok(LauncherBootstrap {
+        has_sidecar,
+        stagesync_url,
+        expected_version,
+    })
+}
+
+#[tauri::command]
+pub fn launcher_list_recent(app: AppHandle) -> Result<Vec<RecentHost>, String> {
+    let path = recent_path(&app)?;
+    let list: Vec<RecentHost> = std::fs::read_to_string(path)
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_default();
+    Ok(list)
+}
+
+#[tauri::command]
+pub fn get_sidecar_log_tail(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<String, String> {
+    let guard = runtime.log_tail.lock().map_err(|e| e.to_string())?;
+    Ok(guard.clone())
+}
+
+#[tauri::command]
+pub async fn cancel_local_host(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<(), String> {
+    if let Ok(mut guard) = runtime.child.lock() {
+        if let Some(child) = guard.take() {
+            let _ = child.kill();
+        }
+    }
+    if let Ok(mut g) = runtime.starting.lock() {
+        *g = false;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
+    tokio::task::spawn_blocking(|| {
+        let daemon = ServiceDaemon::new().map_err(|e| format!("mDNS: {e}"))?;
+        let receiver = daemon
+            .browse(SERVICE_TYPE)
+            .map_err(|e| format!("mDNS browse: {e}"))?;
+        let deadline = Instant::now() + Duration::from_millis(MDNS_BROWSE_MS);
+        let mut out: Vec<DiscoveredHost> = Vec::new();
+        while Instant::now() < deadline {
+            let wait = deadline.saturating_duration_since(Instant::now());
+            match receiver.recv_timeout(wait) {
+                Ok(ServiceEvent::ServiceResolved(info)) => {
+                    let host = info.get_hostname().trim_end_matches('.').to_string();
+                    let port = info.get_port();
+                    let version = info
+                        .get_properties()
+                        .iter()
+                        .find(|p| p.key() == "version")
+                        .map(|p| p.val_str().to_string());
+                    let ip = info
+                        .get_addresses()
+                        .iter()
+                        .find(|a| a.is_ipv4())
+                        .map(|a| a.to_string())
+                        .unwrap_or_else(|| host.clone());
+                    let url = format!("http://{ip}:{port}");
+                    if out.iter().any(|h| h.url == url) {
+                        continue;
+                    }
+                    out.push(DiscoveredHost {
+                        name: info.get_fullname().to_string(),
+                        host: ip,
+                        port,
+                        version,
+                        url,
+                    });
+                }
+                Ok(_) => {}
+                Err(flume::RecvTimeoutError::Timeout) => break,
+                Err(_) => break,
+            }
+        }
+        let _ = daemon.shutdown();
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn connect_remote_host(app: AppHandle, url: String) -> Result<(), String> {
+    let origin = normalize_origin(&url)?;
+    let parsed = url::Url::parse(&origin).map_err(|e| e.to_string())?;
+    let host = parsed.host_str().ok_or("Brak hosta")?.to_string();
+    let port = parsed.port_or_known_default().unwrap_or(80);
+    emit_status(&app, format!("Sprawdzam {origin}…"), false);
+
+    let health = check_health_at(&host, port as u16)
+        .await
+        .map_err(|e| format!("Nie można połączyć z {origin}: {e}"))?;
+    let Some(health) = health else {
+        return Err(format!(
+            "Host {origin} nie odpowiada na /api/health (HTTP ≠ 200)."
+        ));
+    };
+
+    let label = format!("StageSync {}", health.version);
+    let _ = push_recent(&app, &origin, &label);
+
+    let target = admin_url(&origin);
+    let window = app
+        .get_webview_window("main")
+        .ok_or("Brak okna głównego")?;
+    window
+        .navigate(target.parse().map_err(|e| format!("{e}"))?)
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn start_local_host(
+    app: AppHandle,
+    runtime: State<'_, Arc<SidecarRuntime>>,
+) -> Result<(), String> {
+    {
+        let mut starting = runtime.starting.lock().map_err(|e| e.to_string())?;
+        if *starting {
+            return Err("Lokalny host już się uruchamia…".into());
+        }
+        *starting = true;
+    }
+
+    let result = start_local_host_inner(app.clone(), runtime.inner().clone()).await;
+
+    if let Ok(mut starting) = runtime.starting.lock() {
+        *starting = false;
+    }
+    result
+}
+
+async fn start_local_host_inner(
+    app: AppHandle,
+    runtime: Arc<SidecarRuntime>,
+) -> Result<(), String> {
+    // Kill previous child if any.
+    if let Ok(mut guard) = runtime.child.lock() {
+        if let Some(child) = guard.take() {
+            let _ = child.kill();
+        }
+    }
+    if let Ok(mut log) = runtime.log_tail.lock() {
+        log.clear();
+    }
+
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("Brak katalogu resources: {e}"))?;
+    let static_dir = path_for_node(&resource_dir.join("resources").join("sidecar").join("web"));
+    let seed_dir = path_for_node(&resource_dir.join("resources").join("sidecar").join("seed"));
+    let server_dir = path_for_node(&resource_dir.join("resources").join("sidecar").join("server"));
+    let server_entry = server_dir.join(SERVER_ENTRY_REL);
+
+    if !server_entry.exists() {
+        return Err(
+            "Brak bundla lokalnego hosta. W trybie deweloperskim połącz się ręcznie do uruchomionego serwera."
+                .into(),
+        );
+    }
+
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Brak app_data_dir: {e}"))?;
+    let data_dir = path_for_node(&app_data_dir.join("StageSync"));
+    let _ = std::fs::create_dir_all(&data_dir);
+    let logs_dir = data_dir.join("logs");
+    let _ = std::fs::create_dir_all(&logs_dir);
+    let sidecar_log_path = logs_dir.join("sidecar.log");
+    if let Ok(mut p) = runtime.log_path.lock() {
+        *p = Some(sidecar_log_path.clone());
+    }
+
+    assert_node_path_usable(&server_dir, "server_dir")?;
+    assert_node_path_usable(&static_dir, "static_dir")?;
+    assert_node_path_usable(&seed_dir, "seed_dir")?;
+    assert_node_path_usable(&data_dir, "data_dir")?;
+
+    let expected_version = app.package_info().version.to_string();
+    emit_status(&app, "Uruchamiam lokalny host…", false);
+
+    let (mut rx, child) = app
+        .shell()
+        .sidecar("stagesync-host")
+        .and_then(|cmd| {
+            cmd.args([SERVER_ENTRY_REL])
+                .current_dir(&server_dir)
+                .env("PORT", UI_PORT.to_string())
+                .env(
+                    "STAGESYNC_STATIC_DIR",
+                    static_dir.to_string_lossy().to_string(),
+                )
+                .env("STAGESYNC_DATA_DIR", data_dir.to_string_lossy().to_string())
+                .env("STAGESYNC_SEED_DIR", seed_dir.to_string_lossy().to_string())
+                .env("npm_package_version", expected_version.clone())
+                .env("STAGESYNC_SHELL", "desktop")
+                .spawn()
+        })
+        .map_err(|err| {
+            format!(
+                "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy stagesync-host nie jest blokowany przez Defender/SmartScreen."
+            )
+        })?;
+
+    *runtime.child.lock().map_err(|e| e.to_string())? = Some(child);
+
+    let deadline = Instant::now() + STARTUP_TIMEOUT;
+    #[allow(unused_assignments)]
+    let mut last_health_err = String::new();
+
+    loop {
+        match tokio::time::timeout(HEALTHCHECK_INTERVAL, rx.recv()).await {
+            Ok(Some(event)) => match event {
+                CommandEvent::Stdout(bytes) | CommandEvent::Stderr(bytes) => {
+                    let chunk = String::from_utf8_lossy(&bytes);
+                    if let Ok(mut log) = runtime.log_tail.lock() {
+                        append_sidecar_log(&mut log, &chunk);
+                    }
+                    append_sidecar_file_log(&sidecar_log_path, &chunk);
+                    continue;
+                }
+                CommandEvent::Error(err) => {
+                    let chunk = format!("[shell] {err}");
+                    if let Ok(mut log) = runtime.log_tail.lock() {
+                        append_sidecar_log(&mut log, &chunk);
+                    }
+                    append_sidecar_file_log(&sidecar_log_path, &chunk);
+                    continue;
+                }
+                CommandEvent::Terminated(payload) => {
+                    let code = payload
+                        .code
+                        .map(|c| c.to_string())
+                        .unwrap_or_else(|| "?".into());
+                    let chunk = format!("[shell] sidecar exited (code {code})");
+                    if let Ok(mut log) = runtime.log_tail.lock() {
+                        append_sidecar_log(&mut log, &chunk);
+                    }
+                    append_sidecar_file_log(&sidecar_log_path, &chunk);
+                    let log_tail = runtime
+                        .log_tail
+                        .lock()
+                        .map(|g| g.clone())
+                        .unwrap_or_default();
+                    if let Ok(mut guard) = runtime.child.lock() {
+                        let _ = guard.take();
+                    }
+                    return Err(startup_failure_message(
+                        &log_tail,
+                        Some(&format!("proces hosta zakończył się (kod {code})")),
+                    ));
+                }
+                _ => continue,
+            },
+            Ok(None) => {
+                let log_tail = runtime
+                    .log_tail
+                    .lock()
+                    .map(|g| g.clone())
+                    .unwrap_or_default();
+                if let Ok(mut guard) = runtime.child.lock() {
+                    let _ = guard.take();
+                }
+                return Err(startup_failure_message(
+                    &log_tail,
+                    Some("utracono połączenie ze strumieniem sidecara"),
+                ));
+            }
+            Err(_elapsed) => {}
+        }
+
+        emit_status(&app, "Czekam na /api/health…", false);
+
+        match check_health_at("127.0.0.1", UI_PORT).await {
+            Ok(Some(health)) if health.version == expected_version => {
+                let origin = format!("http://127.0.0.1:{UI_PORT}");
+                let _ = push_recent(&app, &origin, &format!("Lokalny host {}", health.version));
+                let window = app
+                    .get_webview_window("main")
+                    .ok_or("Brak okna głównego")?;
+                window
+                    .navigate(nav_url("/admin").parse().map_err(|e| format!("{e}"))?)
+                    .map_err(|e| e.to_string())?;
+
+                let log_path = sidecar_log_path.clone();
+                tauri::async_runtime::spawn(async move {
+                    while let Some(event) = rx.recv().await {
+                        match event {
+                            CommandEvent::Stdout(bytes) | CommandEvent::Stderr(bytes) => {
+                                append_sidecar_file_log(&log_path, &String::from_utf8_lossy(&bytes));
+                            }
+                            CommandEvent::Error(err) => {
+                                append_sidecar_file_log(&log_path, &format!("[shell] {err}"));
+                            }
+                            _ => {}
+                        }
+                    }
+                });
+                return Ok(());
+            }
+            Ok(Some(health)) => {
+                let log_tail = runtime
+                    .log_tail
+                    .lock()
+                    .map(|g| g.clone())
+                    .unwrap_or_default();
+                if let Ok(mut guard) = runtime.child.lock() {
+                    if let Some(child) = guard.take() {
+                        let _ = child.kill();
+                    }
+                }
+                return Err(format_sidecar_failure(
+                    "port 4000 jest zajęty przez inną wersję StageSync",
+                    &format!(
+                        "Działa host {found}, a ta aplikacja to {expected}.\nZamknij stare procesy StageSync i spróbuj ponownie.",
+                        found = health.version,
+                        expected = expected_version,
+                    ),
+                    &log_tail,
+                ));
+            }
+            Ok(None) => {
+                last_health_err = "odpowiedź HTTP bez statusu 200".into();
+            }
+            Err(e) => {
+                last_health_err = e;
+            }
+        }
+
+        if Instant::now() >= deadline {
+            let log_tail = runtime
+                .log_tail
+                .lock()
+                .map(|g| g.clone())
+                .unwrap_or_default();
+            if let Ok(mut guard) = runtime.child.lock() {
+                if let Some(child) = guard.take() {
+                    let _ = child.kill();
+                }
+            }
+            let detail = (!last_health_err.is_empty()).then_some(last_health_err.as_str());
+            return Err(startup_failure_message(&log_tail, detail));
+        }
+    }
+}

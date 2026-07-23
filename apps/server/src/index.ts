@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { loadDotenvIntoProcess } from "./env-settings.js";
 import { createLifecycle } from "./lifecycle.js";
+import { startMdnsAdvertiser } from "./mdns-advertise.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { attachTransportWs } from "./transport/ws.js";
 
@@ -40,9 +41,15 @@ const server = createServer();
 
 let disposeMidi: (() => void) | null = null;
 let disposeTransport: (() => void) | null = null;
+let disposeMdns: (() => void) | null = null;
 const lifecycle = createLifecycle(server, {
   log: (msg) => console.log(`[stagesync-server] ${msg}`),
   onBeforeClose: () => {
+    try {
+      disposeMdns?.();
+    } catch {
+      /* ignore */
+    }
     try {
       disposeTransport?.();
     } catch {
@@ -93,6 +100,20 @@ function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
     console.log(
       `[stagesync-server] transport WS ws://localhost:${PORT}/ws/transport`,
     );
+    const version =
+      process.env.npm_package_version?.trim() ||
+      process.env.STAGESYNC_VERSION?.trim() ||
+      "0.0.0";
+    const mdns = startMdnsAdvertiser({
+      port: PORT,
+      bindHost: BIND_HOST,
+      version,
+      log: (msg) => {
+        logBuffer.push("info", msg);
+        console.log(`[stagesync-server] ${msg}`);
+      },
+    });
+    disposeMdns = () => mdns.stop();
   });
 }
 

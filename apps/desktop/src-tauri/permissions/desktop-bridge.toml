@@ -27,3 +27,16 @@ commands.allow = ["set_nav_recent_projects"]
 identifier = "allow-edit-history-sync"
 description = "Sync Timeline undo/redo enabled state to Edycja menu (Faza D)."
 commands.allow = ["set_edit_history_state"]
+
+[[permission]]
+identifier = "allow-desktop-launcher"
+description = "Launcher: bootstrap, local host, remote connect, mDNS browse, recent hosts."
+commands.allow = [
+  "get_launcher_bootstrap",
+  "launcher_list_recent",
+  "get_sidecar_log_tail",
+  "cancel_local_host",
+  "discover_lan_hosts",
+  "connect_remote_host",
+  "start_local_host",
+]

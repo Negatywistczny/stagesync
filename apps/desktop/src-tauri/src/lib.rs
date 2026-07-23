@@ -1,32 +1,32 @@
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::Manager;
-use tauri_plugin_shell::process::{CommandChild, CommandEvent};
-use tauri_plugin_shell::ShellExt;
 use tauri_plugin_updater::UpdaterExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
-const UI_PORT: u16 = 4000;
+pub(crate) const UI_PORT: u16 = 4000;
 /// First Windows launch often waits on Defender scanning the Node sidecar tree.
 #[cfg(target_os = "windows")]
-const STARTUP_TIMEOUT: Duration = Duration::from_secs(120);
+pub(crate) const STARTUP_TIMEOUT: Duration = Duration::from_secs(120);
 #[cfg(not(target_os = "windows"))]
-const STARTUP_TIMEOUT: Duration = Duration::from_secs(45);
-const HEALTHCHECK_INTERVAL: Duration = Duration::from_millis(250);
-const SIDECAR_LOG_CAP: usize = 6_000;
+pub(crate) const STARTUP_TIMEOUT: Duration = Duration::from_secs(45);
+pub(crate) const HEALTHCHECK_INTERVAL: Duration = Duration::from_millis(250);
+pub(crate) const SIDECAR_LOG_CAP: usize = 6_000;
 /// Relative to sidecar `server/` cwd — avoids passing Win32 `\\?\` absolute paths as Node's main module.
-const SERVER_ENTRY_REL: &str = "dist/index.js";
+pub(crate) const SERVER_ENTRY_REL: &str = "dist/index.js";
+
+mod launcher;
 
 /// Strip Win32 extended-length / verbatim prefixes so Node can realpath the entry.
 ///
 /// Tauri `resource_dir()` often yields `\\?\C:\…`. Passing that as Node argv makes
 /// `realpathSync` collapse to bare `C:` → `EISDIR` (nodejs/node#62446, #60435).
 /// Logic is OS-agnostic so unit tests cover it on macOS/Linux CI.
-fn path_for_node(path: &Path) -> PathBuf {
+pub(crate) fn path_for_node(path: &Path) -> PathBuf {
     let s = path.to_string_lossy();
     const VERBATIM: &str = r"\\?\";
     if let Some(rest) = s.strip_prefix(VERBATIM) {
@@ -39,7 +39,7 @@ fn path_for_node(path: &Path) -> PathBuf {
 }
 
 /// Reject bare drive roots (`C:`) that Node treats as a directory main module.
-fn assert_node_path_usable(path: &Path, label: &str) -> Result<(), String> {
+pub(crate) fn assert_node_path_usable(path: &Path, label: &str) -> Result<(), String> {
     let raw = path.to_string_lossy();
     let trimmed = raw.trim_end_matches(['\\', '/']);
     if trimmed.len() == 2 && trimmed.as_bytes()[1] == b':' {
@@ -124,7 +124,7 @@ struct NavState {
     can_redo: Arc<Mutex<bool>>,
 }
 
-fn nav_url(path: &str) -> String {
+pub(crate) fn nav_url(path: &str) -> String {
     format!("http://127.0.0.1:{UI_PORT}{path}")
 }
 
@@ -584,32 +584,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
     Ok(())
 }
 
-fn escape_html(input: &str) -> String {
-    input
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-}
-
-fn to_data_html_url(html: &str) -> String {
-    // Encode as a data URL so we don't depend on local files for startup errors.
-    let mut encoded = String::new();
-    for &b in html.as_bytes() {
-        let c = b as char;
-        let is_unreserved = matches!(
-            c,
-            'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_' | '.' | '~'
-        );
-        if is_unreserved {
-            encoded.push(c);
-        } else {
-            encoded.push_str(&format!("%{:02X}", b));
-        }
-    }
-    format!("data:text/html;charset=utf-8,{}", encoded)
-}
-
-fn append_sidecar_log(log: &mut String, chunk: &str) {
+pub(crate) fn append_sidecar_log(log: &mut String, chunk: &str) {
     log.push_str(chunk);
     if !chunk.ends_with('\n') {
         log.push('\n');
@@ -620,7 +595,7 @@ fn append_sidecar_log(log: &mut String, chunk: &str) {
     }
 }
 
-fn append_sidecar_file_log(path: &Path, chunk: &str) {
+pub(crate) fn append_sidecar_file_log(path: &Path, chunk: &str) {
     use std::io::Write;
     if let Ok(mut f) = std::fs::OpenOptions::new()
         .create(true)
@@ -634,7 +609,7 @@ fn append_sidecar_file_log(path: &Path, chunk: &str) {
     }
 }
 
-fn format_sidecar_failure(kind: &str, detail: &str, log_tail: &str) -> String {
+pub(crate) fn format_sidecar_failure(kind: &str, detail: &str, log_tail: &str) -> String {
     let mut msg = format!(
         "StageSync: {kind}\nhttp://127.0.0.1:{UI_PORT}\n\n{detail}"
     );
@@ -646,7 +621,7 @@ fn format_sidecar_failure(kind: &str, detail: &str, log_tail: &str) -> String {
     msg
 }
 
-fn startup_failure_message(log_tail: &str, last_health_err: Option<&str>) -> String {
+pub(crate) fn startup_failure_message(log_tail: &str, last_health_err: Option<&str>) -> String {
     let lower = log_tail.to_ascii_lowercase();
     if lower.contains("eaddrinuse") || lower.contains("address already in use") {
         return format_sidecar_failure(
@@ -680,8 +655,8 @@ fn startup_failure_message(log_tail: &str, last_health_err: Option<&str>) -> Str
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct HealthOk {
-    version: String,
+pub(crate) struct HealthOk {
+    pub version: String,
 }
 
 /// Parse `version` from an HTTP response to `GET /api/health` (body after headers).
@@ -695,14 +670,14 @@ fn parse_health_version(resp: &str) -> Option<String> {
 }
 
 /// `Ok(None)` = TCP up but not HTTP 200 yet; `Ok(Some)` = healthy StageSync.
-async fn check_health(port: u16) -> Result<Option<HealthOk>, String> {
-    let addr = format!("127.0.0.1:{port}");
-    let mut stream = TcpStream::connect(addr)
+pub(crate) async fn check_health_at(host: &str, port: u16) -> Result<Option<HealthOk>, String> {
+    let addr = format!("{host}:{port}");
+    let mut stream = TcpStream::connect(&addr)
         .await
         .map_err(|e| format!("connect failed: {e}"))?;
 
     let req = format!(
-        "GET /api/health HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n"
+        "GET /api/health HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
     );
     stream
         .write_all(req.as_bytes())
@@ -721,32 +696,17 @@ async fn check_health(port: u16) -> Result<Option<HealthOk>, String> {
         return Ok(None);
     }
     let version = parse_health_version(&resp).ok_or_else(|| {
-        "odpowiedź /api/health bez pola version (obcy proces na porcie 4000?)".to_string()
+        "odpowiedź /api/health bez pola version (obcy proces na porcie?)".to_string()
     })?;
     Ok(Some(HealthOk { version }))
 }
 
-fn show_startup_error(
-    window: &tauri::WebviewWindow,
-    sidecar_child: &Arc<Mutex<Option<CommandChild>>>,
-    msg: String,
-) {
-    let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
-    let _ = window.navigate(err_url.parse().unwrap());
-    if let Ok(mut guard) = sidecar_child.lock() {
-        if let Some(child) = guard.take() {
-            let _ = child.kill();
-        }
-    }
-}
-
-/// Standalone desktop: WebView loads UI after local StageSync server is healthy.
+/// Standalone desktop: Launcher UI first; local sidecar or remote host on demand (ADR 0014).
 /// No musical clock / MIDI in this process (ADR 0010).
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let sidecar_child: Arc<Mutex<Option<CommandChild>>> = Arc::new(Mutex::new(None));
-    let sidecar_child_setup = sidecar_child.clone();
-    let sidecar_child_run = sidecar_child.clone();
+    let sidecar_runtime = Arc::new(launcher::SidecarRuntime::default());
+    let sidecar_runtime_run = sidecar_runtime.clone();
     let nav_state = NavState {
         timeline_project_id: Arc::new(Mutex::new(None)),
         recent_projects: Arc::new(Mutex::new(Vec::new())),
@@ -759,257 +719,10 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(nav_state)
+        .manage(sidecar_runtime)
         .setup(move |app| {
             let _ = install_desktop_menu(app.handle(), nav_state_setup.clone());
-
-            let Some(window) = app.get_webview_window("main") else {
-                return Ok(());
-            };
-
-            // Provide visible feedback while the server starts.
-            let start_url = to_data_html_url(
-                "<!doctype html><meta charset=\"utf-8\"/><pre>StageSync: uruchamiam lokalny host…</pre>",
-            );
-            let _ = window.navigate(start_url.parse().unwrap());
-
-            let Ok(resource_dir) = app.handle().path().resource_dir() else {
-                let msg = "Brak katalogu resources (bundle misconfigured)".to_string();
-                let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
-                let _ = window.navigate(err_url.parse().unwrap());
-                return Ok(());
-            };
-
-            // Join with OS separators (not a single "a/b/c" string) so Windows never
-            // treats a segment as absolute / drive-relative.
-            let static_dir = path_for_node(
-                &resource_dir
-                    .join("resources")
-                    .join("sidecar")
-                    .join("web"),
-            );
-            let seed_dir = path_for_node(
-                &resource_dir
-                    .join("resources")
-                    .join("sidecar")
-                    .join("seed"),
-            );
-            let server_dir = path_for_node(
-                &resource_dir
-                    .join("resources")
-                    .join("sidecar")
-                    .join("server"),
-            );
-            let server_entry = server_dir.join(SERVER_ENTRY_REL);
-
-            // Dev fallback: if sidecar resources aren't bundled, keep the old thin-shell flow.
-            if !server_entry.exists() {
-                let url = std::env::var("STAGESYNC_URL")
-                    .unwrap_or_else(|_| nav_url("/admin"));
-                if let Ok(parsed) = url.parse() {
-                    let _ = window.navigate(parsed);
-                }
-                return Ok(());
-            }
-
-            let Ok(app_data_dir) = app.handle().path().app_data_dir() else {
-                let msg = "Brak katalogu aplikacji (app_data_dir)".to_string();
-                let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
-                let _ = window.navigate(err_url.parse().unwrap());
-                return Ok(());
-            };
-
-            let data_dir = path_for_node(&app_data_dir.join("StageSync"));
-            let _ = std::fs::create_dir_all(&data_dir);
-            let logs_dir = data_dir.join("logs");
-            let _ = std::fs::create_dir_all(&logs_dir);
-            let sidecar_log_path = logs_dir.join("sidecar.log");
-
-            if let Err(msg) = assert_node_path_usable(&server_dir, "server_dir")
-                .and_then(|_| assert_node_path_usable(&static_dir, "static_dir"))
-                .and_then(|_| assert_node_path_usable(&seed_dir, "seed_dir"))
-                .and_then(|_| assert_node_path_usable(&data_dir, "data_dir"))
-            {
-                let err_url = to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
-                let _ = window.navigate(err_url.parse().unwrap());
-                return Ok(());
-            }
-
-            // Relative entry + cwd: Node never sees a `\\?\C:\…` absolute main path.
-            let expected_version = app.package_info().version.to_string();
-            let sidecar = app
-                .handle()
-                .shell()
-                .sidecar("stagesync-host")
-                .and_then(|cmd| {
-                    cmd.args([SERVER_ENTRY_REL])
-                        .current_dir(&server_dir)
-                        .env("PORT", UI_PORT.to_string())
-                        .env(
-                            "STAGESYNC_STATIC_DIR",
-                            static_dir.to_string_lossy().to_string(),
-                        )
-                        .env(
-                            "STAGESYNC_DATA_DIR",
-                            data_dir.to_string_lossy().to_string(),
-                        )
-                        .env(
-                            "STAGESYNC_SEED_DIR",
-                            seed_dir.to_string_lossy().to_string(),
-                        )
-                        .env("npm_package_version", expected_version.clone())
-                        .env("STAGESYNC_SHELL", "desktop")
-                        .spawn()
-                })
-                .map_err(|err| {
-                    format!(
-                        "Nie udało się uruchomić lokalnego hosta: {err}\nSprawdź czy stagesync-host nie jest blokowany przez Defender/SmartScreen.\nentry={SERVER_ENTRY_REL}\ncwd={}",
-                        server_dir.display()
-                    )
-                });
-
-            let (mut rx, child) = match sidecar {
-                Ok(pair) => pair,
-                Err(msg) => {
-                    let err_url =
-                        to_data_html_url(&format!("<pre>{}</pre>", escape_html(&msg)));
-                    let _ = window.navigate(err_url.parse().unwrap());
-                    return Ok(());
-                }
-            };
-
-            *sidecar_child_setup.lock().unwrap() = Some(child);
-
-            let window_for_poll = window.clone();
-            let sidecar_child_for_poll = sidecar_child_setup.clone();
-            let sidecar_log_for_poll = sidecar_log_path.clone();
-            tauri::async_runtime::spawn(async move {
-                let deadline = Instant::now() + STARTUP_TIMEOUT;
-                let mut log_tail = String::new();
-                #[allow(unused_assignments)]
-                let mut last_health_err = String::new();
-
-                loop {
-                    // Drain sidecar stdout/stderr between health polls (and fail fast on exit).
-                    match tokio::time::timeout(HEALTHCHECK_INTERVAL, rx.recv()).await {
-                        Ok(Some(event)) => match event {
-                            CommandEvent::Stdout(bytes) | CommandEvent::Stderr(bytes) => {
-                                let chunk = String::from_utf8_lossy(&bytes);
-                                append_sidecar_log(&mut log_tail, &chunk);
-                                append_sidecar_file_log(&sidecar_log_for_poll, &chunk);
-                                continue;
-                            }
-                            CommandEvent::Error(err) => {
-                                let chunk = format!("[shell] {err}");
-                                append_sidecar_log(&mut log_tail, &chunk);
-                                append_sidecar_file_log(&sidecar_log_for_poll, &chunk);
-                                continue;
-                            }
-                            CommandEvent::Terminated(payload) => {
-                                let code = payload
-                                    .code
-                                    .map(|c| c.to_string())
-                                    .unwrap_or_else(|| "?".into());
-                                let chunk = format!("[shell] sidecar exited (code {code})");
-                                append_sidecar_log(&mut log_tail, &chunk);
-                                append_sidecar_file_log(&sidecar_log_for_poll, &chunk);
-                                let msg = startup_failure_message(
-                                    &log_tail,
-                                    Some(&format!("proces hosta zakończył się (kod {code})")),
-                                );
-                                show_startup_error(
-                                    &window_for_poll,
-                                    &sidecar_child_for_poll,
-                                    msg,
-                                );
-                                return;
-                            }
-                            _ => continue,
-                        },
-                        Ok(None) => {
-                            let msg = startup_failure_message(
-                                &log_tail,
-                                Some("utracono połączenie ze strumieniem sidecara"),
-                            );
-                            show_startup_error(
-                                &window_for_poll,
-                                &sidecar_child_for_poll,
-                                msg,
-                            );
-                            return;
-                        }
-                        Err(_elapsed) => {}
-                    }
-
-                    match check_health(UI_PORT).await {
-                        Ok(Some(health)) if health.version == expected_version => {
-                            // Desktop = okno operatora (ADR 0010) — domyślnie Admin.
-                            let url = nav_url("/admin");
-                            let _ = window_for_poll.navigate(url.parse().unwrap());
-                            // Keep draining logs into data/logs/sidecar.log (#351).
-                            let sidecar_log_forever = sidecar_log_for_poll.clone();
-                            tauri::async_runtime::spawn(async move {
-                                while let Some(event) = rx.recv().await {
-                                    match event {
-                                        CommandEvent::Stdout(bytes)
-                                        | CommandEvent::Stderr(bytes) => {
-                                            append_sidecar_file_log(
-                                                &sidecar_log_forever,
-                                                &String::from_utf8_lossy(&bytes),
-                                            );
-                                        }
-                                        CommandEvent::Error(err) => {
-                                            append_sidecar_file_log(
-                                                &sidecar_log_forever,
-                                                &format!("[shell] {err}"),
-                                            );
-                                        }
-                                        _ => {}
-                                    }
-                                }
-                            });
-                            return;
-                        }
-                        Ok(Some(health)) => {
-                            // Stale host on :4000 (e.g. orphaned alpha sidecar after upgrade).
-                            // Do not adopt it — health would otherwise race ahead of our
-                            // child's EADDRINUSE exit and show the wrong version in logs/UI.
-                            let msg = format_sidecar_failure(
-                                "port 4000 jest zajęty przez inną wersję StageSync",
-                                &format!(
-                                    "Działa host {found}, a ta aplikacja to {expected}.\nZamknij stare procesy StageSync (Activity Monitor → stagesync-host) i uruchom ponownie.",
-                                    found = health.version,
-                                    expected = expected_version,
-                                ),
-                                &log_tail,
-                            );
-                            show_startup_error(
-                                &window_for_poll,
-                                &sidecar_child_for_poll,
-                                msg,
-                            );
-                            return;
-                        }
-                        Ok(None) => {
-                            last_health_err = "odpowiedź HTTP bez statusu 200".into();
-                        }
-                        Err(e) => {
-                            last_health_err = e;
-                        }
-                    }
-
-                    if Instant::now() >= deadline {
-                        let detail = (!last_health_err.is_empty()).then_some(last_health_err.as_str());
-                        let msg = startup_failure_message(&log_tail, detail);
-                        show_startup_error(
-                            &window_for_poll,
-                            &sidecar_child_for_poll,
-                            msg,
-                        );
-                        return;
-                    }
-                }
-            });
-
+            // Window loads bundled Launcher (frontendDist). Sidecar starts only via invoke.
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -1020,12 +733,19 @@ pub fn run() {
             set_nav_timeline_project_id,
             set_nav_recent_projects,
             set_edit_history_state,
+            launcher::get_launcher_bootstrap,
+            launcher::launcher_list_recent,
+            launcher::get_sidecar_log_tail,
+            launcher::cancel_local_host,
+            launcher::discover_lan_hosts,
+            launcher::connect_remote_host,
+            launcher::start_local_host,
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
         .run(move |_app_handle, event| {
             if let tauri::RunEvent::ExitRequested { .. } = event {
-                if let Ok(mut guard) = sidecar_child_run.lock() {
+                if let Ok(mut guard) = sidecar_runtime_run.child.lock() {
                     if let Some(child) = guard.take() {
                         let _ = child.kill();
                     }
