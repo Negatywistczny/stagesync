@@ -97,4 +97,30 @@ describe("timelineLocator", () => {
     });
     expect(state.loop).toBeNull();
   });
+
+  it("ticksInLoopRegion rejects non-finite / inverted ranges", () => {
+    expect(ticksInLoopRegion(Number.NaN, { startTicks: 0, endTicks: 10 })).toBe(false);
+    expect(ticksInLoopRegion(5, { startTicks: 10, endTicks: 0 })).toBe(false);
+    expect(ticksInLoopRegion(5, null)).toBe(false);
+  });
+
+  it("snapLoopRange expands collapsed drag and falls back to ppq", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const collapsed = snapLoopRange(p, 0, 0, "bar");
+    expect(collapsed.endTicks).toBeGreaterThan(collapsed.startTicks);
+    const off = snapLoopRange(p, 100, 100, "off");
+    expect(off.endTicks).toBeGreaterThan(off.startTicks);
+  });
+
+  it("snapMovedLoopRange off preserves raw move", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const moved = snapMovedLoopRange(
+      p,
+      { startTicks: 0, endTicks: 960 },
+      100,
+      "off",
+    );
+    expect(moved).toEqual({ startTicks: 100, endTicks: 1060 });
+  });
+
 });

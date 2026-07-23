@@ -62,4 +62,30 @@ describe("metronomePrefs", () => {
     expect(store.has(METRONOME_ACCENT_VOLUME_KEY)).toBe(false);
     expect(store.has(METRONOME_TIMBRE_KEY)).toBe(false);
   });
+
+  it("get/set tolerate private-mode throws", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(getMetronomePrefs()).toEqual(DEFAULT_METRONOME_PREFS);
+    expect(() =>
+      setMetronomePrefs({ accentVolume: 50, timbre: "bell" }),
+    ).not.toThrow();
+  });
+
+
+  it("invalid timbre keeps current", () => {
+    setMetronomePrefs({ timbre: "woodblock" });
+    const next = setMetronomePrefs({ timbre: "nope" as never });
+    expect(next.timbre).toBe("woodblock");
+  });
+
 });

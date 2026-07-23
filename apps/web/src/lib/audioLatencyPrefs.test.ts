@@ -43,4 +43,21 @@ describe("audioLatencyPrefs", () => {
     expect(getStoredLatencyCompensationMs()).toBe(0);
     expect(store.has(AUDIO_LATENCY_STORAGE_KEY)).toBe(false);
   });
+
+  it("get/set tolerate private-mode localStorage throws", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(getStoredLatencyCompensationMs()).toBe(0);
+    expect(() => setStoredLatencyCompensationMs(40)).not.toThrow();
+  });
+
 });

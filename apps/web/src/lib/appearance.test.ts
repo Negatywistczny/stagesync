@@ -81,4 +81,21 @@ describe("appearance", () => {
     applyAppearance({ light: false, highContrast: false });
     expect(rootAttrs.has("data-theme")).toBe(false);
   });
+
+  it("read/set tolerate private-mode localStorage throws", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(readAppearance()).toEqual({ light: false, highContrast: false });
+    expect(() => setAppearance({ light: true })).not.toThrow();
+  });
+
 });

@@ -50,4 +50,36 @@ describe("clientForma / bar cells", () => {
     expect(ctx!.countdownNumber).toMatch(/^\d+$/);
     expect(ctx!.heroTitle).toBe(ctx!.countdownNumber);
   });
+
+  it("hero falls back when active section missing and uses note", () => {
+    const emptyForma = {
+      ...project,
+      forma: { clips: [] },
+    };
+    const ctxEmpty = buildFormaLiveContext(emptyForma, 100);
+    // may be null without clips
+    if (ctxEmpty) {
+      expect(ctxEmpty.heroTitle).toBeTruthy();
+    }
+
+    const withNote = {
+      ...project,
+      forma: {
+        clips: project.forma.clips.map((c) =>
+          c.kind === "section" && c.name === "Intro"
+            ? { ...c, note: "  watch the band  " }
+            : c,
+        ),
+      },
+    };
+    const ctx = buildFormaLiveContext(withNote, 100)!;
+    expect(ctx.activeNote).toBe("watch the band");
+
+    // No active name → segment fallback path: play past all sections
+    const past = buildFormaLiveContext(project, 1_000_000);
+    if (past) {
+      expect(past.heroTitle.length).toBeGreaterThan(0);
+    }
+  });
+
 });

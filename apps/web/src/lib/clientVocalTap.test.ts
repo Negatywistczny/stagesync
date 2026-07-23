@@ -79,4 +79,17 @@ describe("clientVocalTap", () => {
     const clamped = applyVocalTap(project, "line", 100, 2000);
     expect(clamped.tekst.clips[0]!.startTicks).toBe(2000);
   });
+
+  it("non-finite minStartTicks falls back to floor", () => {
+    const base = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const project = {
+      ...base,
+      tekst: {
+        clips: [{ id: "line", text: "hi", startTicks: 0, lengthTicks: 1920 }],
+      },
+    };
+    const moved = applyVocalTap(project, "line", 3000, Number.NaN);
+    expect(moved.tekst.clips[0]!.startTicks).toBe(3000);
+  });
+
 });

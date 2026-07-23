@@ -68,4 +68,21 @@ describe("clockDisplayPrefs", () => {
       }),
     ).toBe("00:00.500");
   });
+
+  it("get/set tolerate private-mode localStorage throws", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(getStoredClockDisplayFormat()).toBe("bbt");
+    expect(() => setStoredClockDisplayFormat("time")).not.toThrow();
+  });
+
 });

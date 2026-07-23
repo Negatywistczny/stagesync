@@ -64,4 +64,57 @@ describe("lastTimelineProject", () => {
     expect(getLastTimelineProjectId()).toBe(ID_A);
     expect(store.get(RECENT_TIMELINE_PROJECTS_KEY)).toContain("Alpha 2");
   });
+
+  it("tolerates private-mode throws and invalid payloads", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(getLastTimelineProjectId()).toBeNull();
+    expect(() => setLastTimelineProjectId("00000000-0000-4000-8000-000000000001")).not.toThrow();
+    expect(getRecentTimelineProjects()).toEqual([]);
+    // Returns in-memory list even when persist throws
+    expect(
+      pushRecentTimelineProject("00000000-0000-4000-8000-000000000001", "A"),
+    ).toEqual([
+      { id: "00000000-0000-4000-8000-000000000001", name: "A" },
+    ]);
+  });
+
+  it("clears invalid last id and skips bad recent JSON entries", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        store.set(k, v);
+      },
+      removeItem: (k: string) => {
+        store.delete(k);
+      },
+    });
+    store.set(LAST_TIMELINE_PROJECT_KEY, "not-a-uuid");
+    expect(getLastTimelineProjectId()).toBeNull();
+    store.set(RECENT_TIMELINE_PROJECTS_KEY, "{bad");
+    expect(getRecentTimelineProjects()).toEqual([]);
+    store.set(
+      RECENT_TIMELINE_PROJECTS_KEY,
+      JSON.stringify([
+        null,
+        { id: 1 },
+        { id: "bad" },
+        { id: "00000000-0000-4000-8000-000000000002", name: "  " },
+        { id: "00000000-0000-4000-8000-000000000003", name: "Ok" },
+      ]),
+    );
+    const recent = getRecentTimelineProjects();
+    expect(recent.some((r) => r.id.endsWith("0003"))).toBe(true);
+  });
+
 });

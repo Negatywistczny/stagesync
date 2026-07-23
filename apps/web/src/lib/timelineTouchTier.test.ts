@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   detectTimelineTier,
   isMobileTier,
@@ -38,4 +38,21 @@ describe("timelineTouchTier", () => {
     expect(isTouchTier("tablet")).toBe(true);
     expect(isMobileTier("mobile")).toBe(true);
   });
+
+  it("default matches uses window.matchMedia when available", () => {
+    vi.stubGlobal("window", {
+      matchMedia: (q: string) => ({ matches: q.includes("max-width: 768") }),
+    });
+    expect(detectTimelineTier()).toBe("mobile");
+    vi.unstubAllGlobals();
+  });
+
+  it("default matches returns false when window undefined", () => {
+    const prev = globalThis.window;
+    // @ts-expect-error test isolation
+    delete globalThis.window;
+    expect(detectTimelineTier()).toBe("desktop");
+    globalThis.window = prev;
+  });
+
 });

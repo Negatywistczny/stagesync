@@ -72,4 +72,33 @@ describe("projectAssetsApi", () => {
       uploadProjectAudio(project.id, new File([""], "x.wav")),
     ).rejects.toThrow("too large");
   });
+
+  it("falls back to HTTP status when error body is non-JSON", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => {
+          throw new Error("no json");
+        },
+      }),
+    );
+    await expect(
+      uploadProjectAudio(project.id, new File([""], "x.wav")),
+    ).rejects.toThrow("HTTP 500");
+  });
+
+  it("throws when deleteProjectAsset fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: "missing" }),
+      }),
+    );
+    await expect(deleteProjectAsset(project.id, "a1")).rejects.toThrow("missing");
+  });
+
 });

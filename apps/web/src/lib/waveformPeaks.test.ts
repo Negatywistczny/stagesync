@@ -29,4 +29,15 @@ describe("waveformPeaks", () => {
   it("peaksToPolylinePoints returns paired coordinates", () => {
     expect(peaksToPolylinePoints([0, 1, 0.5], 100, 40).split(" ")).toHaveLength(6);
   });
+
+  it("empty AudioBuffer returns empty peaks", () => {
+    const empty = fakeBuffer([]);
+    Object.defineProperty(empty, "length", { value: 0 });
+    expect(computeWaveformFromAudioBuffer(empty)).toEqual({
+      peaks: [],
+      rms: 0,
+      durationMs: 0,
+    });
+  });
+
 });

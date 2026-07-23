@@ -53,4 +53,24 @@ describe("formaSubsections", () => {
     );
     expect(next).toEqual([CHUNK4, 2 * CHUNK4]);
   });
+
+  it("moveSubsectionBoundary drag left fills from right", () => {
+    // 8-bar clip, boundary at 4 bars; drag left to 2 bars → fill remaining right span
+    const next = moveSubsectionBoundary(
+      [CHUNK4],
+      8 * BAR,
+      1,
+      2 * BAR,
+      CHUNK4,
+    );
+    expect(next).toContain(2 * BAR);
+    expect(next.some((t) => t > 2 * BAR)).toBe(true);
+  });
+
+  it("interior4BarStartsFromRight caps at 64 fills", () => {
+    // Huge span with tiny chunk → hits 64-cap break
+    const next = moveSubsectionBoundary([100], 10_000, 1, 50, 1);
+    expect(next.length).toBeLessThanOrEqual(64);
+  });
+
 });

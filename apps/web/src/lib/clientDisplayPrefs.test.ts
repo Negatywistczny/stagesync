@@ -65,4 +65,20 @@ describe("clientDisplayPrefs", () => {
     store.set("stagesync-instrument-pitch", "nope");
     expect(loadClientDisplayPrefs().instrumentPitch).toBe("concert");
   });
+
+  it("loaders and setters tolerate private-mode throws", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(loadClientDisplayPrefs().instrumentPitch).toBe("concert");
+    expect(() => setHybridPolishB(true)).not.toThrow();
+    expect(() => setInstrumentPitch("bb")).not.toThrow();
+    expect(() => setInstrumentPitchManual(3)).not.toThrow();
+  });
+
 });
