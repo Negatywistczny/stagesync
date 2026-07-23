@@ -92,6 +92,7 @@
   --ss-font-weight-bold: 650;
   --ss-font-weight-heavy: 700;
   --ss-font-weight-black: 800;
+  --ss-leading-none: 1;
   --ss-leading-display: 1.1;
   --ss-leading-compact: 1.15;
   --ss-leading-snug: 1.2;
