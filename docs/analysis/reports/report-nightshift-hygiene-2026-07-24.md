@@ -14,21 +14,24 @@
 | [#483](https://github.com/Negatywistczny/stagesync/pull/483) | Timeline meta a11y | Tempo / meter / key transport meta `aria-label` |
 | [#484](https://github.com/Negatywistczny/stagesync/pull/484) | Solo/Mute + OSMD paper tokens | `--ss-color-solo|mute|osmd-paper`; Timeline + Client score paper |
 | [#485](https://github.com/Negatywistczny/stagesync/pull/485) | Rename `focus-visible` | Dock + mixer rename inputs |
+| [#486](https://github.com/Negatywistczny/stagesync/pull/486) | Night-shift handoff + RFC | This report + `docs/rfc-v5.1-proposals.md` |
+| [#487](https://github.com/Negatywistczny/stagesync/pull/487) | Map-lane segment a11y | Tempo / meter / key map segment `aria-label` |
+| [#488](https://github.com/Negatywistczny/stagesync/pull/488) | Connection-lost alert | `ConnectionLostBanner` `role="alert"` |
 
-Merge order tip: **481 before 484** reduces token conflict risk on `packages/ui/src/tokens.css` / ClientShell CSS. A11y PRs (480/483/485) are independent.
+Merge order tip: **481 before 484** reduces token conflict risk on `packages/ui/src/tokens.css` / ClientShell CSS. A11y PRs are mostly independent.
 
 ## Ranked backlog (next)
 
-1. **Map-lane segment buttons** — tempo/meter/key clips have `title` only; add matching `aria-label` (TimelineShell ~5060+).
-2. **Residual shell typography** — `ChannelStripControls` / `SetView` `line-height: 1` → `--ss-leading-none` (after #481).
-3. **OSMD cursor hex in JS** — `scoreOsmd.ts` still needs concrete `#fbbf24` / `#22d3ee` for OSMD API; document or read from computed `--ss-*` once.
-4. **Admin template menu** — ensure `aria-controls` / escape dismiss parity with other popovers.
-5. **`ConnectionLostBanner`** — consider `role="alert"` (vs `status`) for disconnect urgency.
-6. **Server edges** — dedicated unit tests for `program-change*.ts` message shaping (not clock math).
-7. **Dead CSS audit** — purge unused Timeline/Client module classes (knip/purify pass).
-8. **Icon-only Timeline tool overflow** — verify every tools-vis / eye / dock-add path has accessible name on narrow widths.
-9. **i18n consistency** — PL labels on a11y strings vs EN storage IDs (audit only).
-10. **Codecov gaps** — `apps/server` route handlers still thin outside happy-path API tests.
+1. **Residual shell typography** — `ChannelStripControls` / `SetView` `line-height: 1` → `--ss-leading-none` (after #481).
+2. **OSMD cursor hex in JS** — `scoreOsmd.ts` still needs concrete `#fbbf24` / `#22d3ee` for OSMD API; document or read from computed `--ss-*` once.
+3. **Admin template menu** — ensure `aria-controls` / escape dismiss parity with other popovers.
+4. **Server edges** — dedicated unit tests for `program-change*.ts` message shaping (not clock math).
+5. **Dead CSS audit** — purge unused Timeline/Client module classes (knip/purify pass).
+6. **Icon-only Timeline tool overflow** — verify every tools-vis / eye / dock-add path has accessible name on narrow widths.
+7. **i18n consistency** — PL labels on a11y strings vs EN storage IDs (audit only).
+8. **Codecov gaps** — `apps/server` route handlers still thin outside happy-path API tests.
+9. **ShellBlockingDialog** — unit-test focus trap Tab cycle (jsdom).
+10. **Desktop Launcher shell** — audit return-to-host control names in Tauri (outside web bundle).
 
 ## Skipped / off-limits
 
