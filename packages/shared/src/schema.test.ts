@@ -263,4 +263,29 @@ describe("DefaultMeter refine + Setlist coerce", () => {
       }).projectIds,
     ).toHaveLength(1);
   });
+
+  it("SetlistSchema keeps object when both items and projectIds present", () => {
+    const both = SetlistSchema.parse({
+      version: 1,
+      enabled: true,
+      items: [
+        {
+          type: "project",
+          projectId: "11111111-1111-4111-8111-111111111111",
+        },
+      ],
+      projectIds: ["11111111-1111-4111-8111-111111111111"],
+      autoAdvance: { enabled: false },
+      timeBudgetMinutes: 60,
+    });
+    expect(both.items).toHaveLength(1);
+    expect(both.projectIds).toHaveLength(1);
+  });
+
+  it("normalizeKeyTonic validates and falls back", async () => {
+    const { normalizeKeyTonic } = await import("./schema.js");
+    expect(normalizeKeyTonic("G")).toBe("G");
+    expect(normalizeKeyTonic("nope", "D")).toBe("D");
+    expect(normalizeKeyTonic(1)).toBe("C");
+  });
 });
