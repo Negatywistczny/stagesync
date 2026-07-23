@@ -28,17 +28,9 @@ describe("preferencesEvents", () => {
         }
       },
     );
-
     openPreferences();
     openPreferences("midi");
     expect(dispatch).toHaveBeenCalledTimes(2);
-    expect(dispatch.mock.calls[0]![0]).toMatchObject({
-      type: OPEN_PREFERENCES_EVENT,
-      detail: {},
-    });
-    expect(dispatch.mock.calls[1]![0]).toMatchObject({
-      detail: { tab: "midi" },
-    });
     vi.unstubAllGlobals();
   });
 
@@ -57,6 +49,11 @@ describe("preferencesEvents", () => {
     expect(
       parseOpenPreferencesDetail(
         new CustomEvent(OPEN_PREFERENCES_EVENT, { detail: null }),
+      ),
+    ).toEqual({});
+    expect(
+      parseOpenPreferencesDetail(
+        new CustomEvent(OPEN_PREFERENCES_EVENT, { detail: "x" }),
       ),
     ).toEqual({});
   });

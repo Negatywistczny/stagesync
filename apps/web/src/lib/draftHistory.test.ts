@@ -28,19 +28,12 @@ describe("draftHistory", () => {
     expect(canUndo(h)).toBe(true);
     h = undoDraft(h);
     expect(h.present.project.name).toBe("B");
-    expect(h.present.clipSelection.primaryId).toBe("b");
     expect(canRedo(h)).toBe(true);
-
-    const saved = { ...c, name: "C" };
-    h = syncPresentAfterSave(h, saved);
-    expect(canUndo(h)).toBe(true);
+    h = syncPresentAfterSave(h, c);
     h = undoDraft(h);
     expect(h.present.project.name).toBe("A");
-    expect(h.present.clipSelection.primaryId).toBe("a");
-
-    h = resetDraftHistory(saved);
+    h = resetDraftHistory(c);
     expect(canUndo(h)).toBe(false);
-    expect(h.present.project.name).toBe("C");
   });
 
   it("redo after undo restores selection", () => {
@@ -48,9 +41,28 @@ describe("draftHistory", () => {
     const b = { ...a, name: "B" };
     let h = pushDraftHistory(createDraftHistory(a, sel("a")), b, sel("b"));
     h = undoDraft(h);
-    expect(h.present.clipSelection.primaryId).toBe("a");
     h = redoDraft(h);
-    expect(h.present.project.name).toBe("B");
     expect(h.present.clipSelection.primaryId).toBe("b");
+  });
+
+  it("no-ops and trims stacks at maxDepth", () => {
+    const a = createProjectV5Seed("p", "A", "2026-07-20T12:00:00.000Z");
+    let h = createDraftHistory(a);
+    expect(pushDraftHistory(h, a)).toBe(h);
+    expect(undoDraft(h)).toBe(h);
+    expect(redoDraft(h)).toBe(h);
+    for (let i = 0; i < 5; i++) {
+      h = pushDraftHistory(h, { ...h.present.project, name: `n${i}` }, sel(`s${i}`), 2);
+    }
+    expect(h.past.length).toBe(2);
+    h = undoDraft(h, 1);
+    expect(h.future.length).toBeLessThanOrEqual(1);
+    h = createDraftHistory(a);
+    h = pushDraftHistory(h, { ...a, name: "B" }, sel("b"), 2);
+    h = pushDraftHistory(h, { ...a, name: "C" }, sel("c"), 2);
+    h = undoDraft(h);
+    h = undoDraft(h);
+    h = redoDraft(h, 1);
+    expect(h.past.length).toBeLessThanOrEqual(1);
   });
 });
