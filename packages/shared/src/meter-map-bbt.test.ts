@@ -94,4 +94,16 @@ describe("ticksToBbtAlongMeterMap", () => {
       ).toThrow(/bar, beat, and tick must be finite integers/);
     },
   );
+
+  it("uses constant-meter helpers for pre-roll (negative bar/ticks)", () => {
+    expect(ticksToBbtAlongMeterMap(-DEFAULT_PPQ, TS_4_4, [])).toEqual({
+      bar: -1,
+      beat: 4,
+      tick: 0,
+    });
+    expect(bbtToTicksAlongMeterMap(-1, 1, 0, TS_4_4, [])).toBe(
+      -ticksPerBar(TS_4_4, DEFAULT_PPQ),
+    );
+  });
+
 });
