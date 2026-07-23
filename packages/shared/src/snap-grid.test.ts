@@ -121,4 +121,41 @@ describe("snap-grid", () => {
     ).toThrow(RangeError);
     expect(() => snapTicksToSubdivision(1.5, 4, PPQ)).toThrow(RangeError);
   });
+
+  it.each([
+    { ticks: Number.NaN },
+    { ticks: 1.5 },
+  ] as const)(
+    "AlongMeterMap helpers reject non-int ticks ($ticks)",
+    ({ ticks }) => {
+      expect(() =>
+        snapTicksToBarStartAlongMeterMap(ticks, M4, [], PPQ),
+      ).toThrow(/ticks must be a finite integer/);
+      expect(() =>
+        snapTicksToBeatGridAlongMeterMap(ticks, M4, [], PPQ),
+      ).toThrow(/ticks must be a finite integer/);
+    },
+  );
+
+  it.each([
+    { parts: 3 as 2 | 4 | 8 | 16, re: /parts must be 2, 4, 8, or 16/ },
+    { parts: 32 as 2 | 4 | 8 | 16, re: /parts must be 2, 4, 8, or 16/ },
+  ] as const)("snapTicksToSubdivision rejects parts=$parts", ({ parts, re }) => {
+    expect(() => snapTicksToSubdivision(0, parts, PPQ)).toThrow(re);
+  });
+
+  it("snapTicksToSubdivision rejects PPQ not divisible by parts", () => {
+    expect(() => snapTicksToSubdivision(0, 8, 100)).toThrow(
+      /PPQ must be divisible by subdivision parts/,
+    );
+  });
+
+  it.each([
+    { ticks: Number.NaN },
+    { ticks: 10.5 },
+  ] as const)("quantizeTicks rejects non-int ticks ($ticks)", ({ ticks }) => {
+    expect(() => quantizeTicks(ticks, "bar", { meter: M4, ppq: PPQ })).toThrow(
+      /ticks must be a finite integer/,
+    );
+  });
 });
