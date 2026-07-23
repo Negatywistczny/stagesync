@@ -735,6 +735,16 @@
 }
 
 .kotwiceClip {
+  /* Absolute on the tick axis — same layout contract as .formaClip / .mapSegment (#477). */
+  position: absolute;
+  top: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  touch-action: none;
+  user-select: none;
   /* Skin via [data-track="kotwice"]; keep compact type. */
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);

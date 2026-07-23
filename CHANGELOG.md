@@ -12,6 +12,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Admin Host (desktop):** w O aplikacji tylko wersja aplikacji — bez etykiety Sidecar i bez notki o Watchtower/Docker.
 
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Kotwice XML:** bloczki synchronizacji taktów pozycjonowane na osi czasu (drag zmienia takt logiczny, bez pakowania jeden za drugim) ([#477](https://github.com/Negatywistczny/stagesync/issues/477)).
+
+#### 🖥️ App Shell & UI
+- **Client / Akordy:** import UG respektuje złożone i polskie akordy (`Edim`, `G/A`, `G/H` → zapis `G/B`; na scenie znów `H` przy „H zamiast B”) ([#478](https://github.com/Negatywistczny/stagesync/issues/478)).
+
 ## [5.0.0](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.2...v5.0.0) - 2026-07-23 — Overture
 
 > **Overture:** pierwsze stabilne 5.0 — pełny parytet zachowania v4, odświeżony UI, Audio fade/loop, rozszerzone menu OS, partytura Client (MusicXML), Preferencje oraz Live Desk.

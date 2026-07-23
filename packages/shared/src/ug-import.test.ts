@@ -24,6 +24,35 @@ describe("importUgText", () => {
     expect(result.akordy.clips.some((c) => c.symbol === "G7#9")).toBe(true);
   });
 
+  it("accepts complex + Polish H chords; stores H as B (#478)", () => {
+    const result = importUgText("Edim G/A G/H Cmaj7 D7 C7sus4\nlyrics here");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.akordy.clips.map((c) => c.symbol)).toEqual([
+      "Edim",
+      "G/A",
+      "G/B",
+      "Cmaj7",
+      "D7",
+      "C7sus4",
+    ]);
+  });
+
+  it("chord-only line with only G/H is not dropped as lyrics", () => {
+    const result = importUgText("G/H\ntekst");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.akordy.clips.some((c) => c.symbol === "G/B")).toBe(true);
+    expect(result.tekst.clips.some((c) => c.text === "tekst")).toBe(true);
+  });
+
+  it("bracket [Hdim] canonicalizes to Bdim", () => {
+    const result = importUgText("[Hdim]line");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.akordy.clips.some((c) => c.symbol === "Bdim")).toBe(true);
+  });
+
   it("returns Polish message for empty / broken input", () => {
     expect(importUgText("").ok).toBe(false);
     expect(importUgText("   ").ok).toBe(false);

@@ -3979,11 +3979,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 .join(" ")}
               style={{
                 left: `${tickToPx(start, viewSpan, barTicks, effectiveZoomH)}px`,
-                width: `${Math.max(
+                width: `${
                   tickToPx(start + width, viewSpan, barTicks, effectiveZoomH) -
-                    tickToPx(start, viewSpan, barTicks, effectiveZoomH),
-                  24,
-                )}px`,
+                  tickToPx(start, viewSpan, barTicks, effectiveZoomH)
+                }px`,
               }}
               onPointerDown={(e) => {
                 if (e.button !== 0) return;
@@ -5025,7 +5024,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         (toolIsPencilDraw(tool) || tool === "scissors")
                           ? styles.formaLanePencil
                           : "",
-                        isMapLaneId(track.id) ? styles.mapLaneCell : "",
+                        isMapLaneId(track.id) || track.id === "kotwice"
+                          ? styles.mapLaneCell
+                          : "",
                       ]
                         .filter(Boolean)
                         .join(" ")}

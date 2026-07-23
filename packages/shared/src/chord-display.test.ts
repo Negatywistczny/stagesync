@@ -26,4 +26,13 @@ describe("chord-display", () => {
       "HΔ7",
     );
   });
+
+  it("complex qualities and slash for Client display (#478)", () => {
+    expect(formatChordForDisplay("Edim")).toBe("E°");
+    expect(formatChordForDisplay("G/A")).toBe("G/A");
+    expect(formatChordForDisplay("G/B", { hybridPolishB: true })).toBe("G/H");
+    expect(formatChordForDisplay("Edim", { literalQuality: true })).toBe(
+      "Edim",
+    );
+  });
 });

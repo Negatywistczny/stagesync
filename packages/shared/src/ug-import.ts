@@ -45,8 +45,31 @@ export type UgImportOptions = {
   barsPerLine?: number;
 };
 
+/** Pitch letter A–G plus Polish H (= B). Quality allows sus after digits (C7sus4). */
 const CHORD_TOKEN =
-  /^[A-G](?:#|b)?(?:maj|min|m|sus|dim|aug|add)?[0-9]*(?:(?:#|b)(?:5|9|11|13))*(?:\/[A-G](?:#|b)?)?$/i;
+  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add)?[0-9]*(?:sus[0-9]*)?(?:(?:#|b)(?:5|9|11|13))*(?:\/[A-H](?:#|b)?)?$/i;
+
+/**
+ * Polish H → Western B for storage (transpose / Client hybridPolishB).
+ * Root and slash-bass pitch letters only (first char of each side).
+ */
+export function canonicalizePolishH(symbol: string): string {
+  const raw = String(symbol ?? "").trim();
+  if (!raw) return raw;
+  const slash = raw.indexOf("/");
+  const head = slash >= 0 ? raw.slice(0, slash) : raw;
+  const bass = slash >= 0 ? raw.slice(slash + 1) : null;
+  const fixPitch = (part: string) =>
+    /^[Hh]/.test(part) ? `B${part.slice(1)}` : part;
+  if (bass == null) return fixPitch(head);
+  return `${fixPitch(head)}/${fixPitch(bass)}`;
+}
+
+function acceptChordToken(raw: string): string | null {
+  const t = raw.trim();
+  if (!t || !CHORD_TOKEN.test(t)) return null;
+  return canonicalizePolishH(t);
+}
 
 function stripBracketChords(line: string): string {
   return line.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();
@@ -57,8 +80,8 @@ function extractBracketChords(line: string): string[] {
   const re = /\[([^\]]+)\]/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(line)) !== null) {
-    const raw = m[1]!.trim();
-    if (raw && CHORD_TOKEN.test(raw)) out.push(raw);
+    const accepted = acceptChordToken(m[1] ?? "");
+    if (accepted) out.push(accepted);
   }
   return out;
 }
@@ -70,7 +93,10 @@ function isChordOnlyLine(line: string): boolean {
 }
 
 function parseChordOnlyLine(line: string): string[] {
-  return line.split(/\s+/).filter((t) => CHORD_TOKEN.test(t));
+  return line
+    .split(/\s+/)
+    .map((t) => acceptChordToken(t))
+    .filter((t): t is string => t != null);
 }
 
 function dedupeConsecutive(chords: string[]): string[] {

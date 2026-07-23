@@ -94,7 +94,15 @@ export function moveScoreAnchor(
     project.ppq,
   );
   const logicBar = logicBarFromTicks(project, snapped);
-  const anchors = scoreAnchors(project).map((a) =>
+  const existing = scoreAnchors(project);
+  const target = existing.find((a) => a.id === anchorId);
+  if (!target) return project;
+  if (target.logicBar === logicBar) return project;
+  // Occupied bar → no-op (do not let normalizeAnchors silently drop a peer).
+  if (existing.some((a) => a.id !== anchorId && a.logicBar === logicBar)) {
+    return project;
+  }
+  const anchors = existing.map((a) =>
     a.id === anchorId ? { ...a, logicBar } : a,
   );
   return {
