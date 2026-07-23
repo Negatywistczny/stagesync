@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { createProjectV5Seed } from "@stagesync/shared";
-import { applyVocalTap, vocalTapQueue } from "./clientVocalTap.js";
+import {
+  applyVocalTap,
+  vocalTapMarkTicks,
+  vocalTapQueue,
+} from "./clientVocalTap.js";
 
 describe("clientVocalTap", () => {
+  it("vocalTapMarkTicks uses display while playing, locator when paused", () => {
+    expect(vocalTapMarkTicks(true, 5000, 0)).toBe(5000);
+    expect(vocalTapMarkTicks(false, 5000, 1200)).toBe(1200);
+  });
+
   it("queues non-empty tekst clips on/after content floor", () => {
     const base = createProjectV5Seed(
       "p",

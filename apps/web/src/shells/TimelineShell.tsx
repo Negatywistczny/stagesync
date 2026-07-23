@@ -256,7 +256,11 @@ import {
   type FormaGestureSession,
   type FormaToolId,
 } from "../lib/timelineGesture.js";
-import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
+import {
+  applyVocalTap,
+  vocalTapMarkTicks,
+  vocalTapQueue,
+} from "../lib/clientVocalTap.js";
 import {
   clampBeatForProject,
   formatStartBarBeat,
@@ -486,6 +490,7 @@ export function TimelineShell() {
   const [tool, setTool] = useState<ToolId>("pointer");
   const toolRef = useRef<ToolId>("pointer");
   toolRef.current = tool;
+  const effectiveLocatorTicksRef = useRef(0);
   const [tapLineIndex, setTapLineIndex] = useState(0);
   const tapLineIndexRef = useRef(0);
   tapLineIndexRef.current = tapLineIndex;
@@ -1162,7 +1167,11 @@ export function TimelineShell() {
           const queue = vocalTapQueue(draft);
           const clip = queue[tapLineIndexRef.current];
           if (!clip) return;
-          const next = applyVocalTap(draft, clip.id, locatorTicks);
+          const next = applyVocalTap(
+            draft,
+            clip.id,
+            effectiveLocatorTicksRef.current,
+          );
           commitDraft(next);
           setTapLineIndex((i) => Math.min(i + 1, Math.max(0, queue.length - 1)));
           return;
@@ -1467,7 +1476,12 @@ export function TimelineShell() {
 
   const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, effectiveZoomH);
 
-  const effectiveLocatorTicks = state.playing ? displayTicks : locatorTicks;
+  const effectiveLocatorTicks = vocalTapMarkTicks(
+    state.playing,
+    displayTicks,
+    locatorTicks,
+  );
+  effectiveLocatorTicksRef.current = effectiveLocatorTicks;
   const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
@@ -4877,13 +4891,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       {track.id === "tekst" ? (
                         <button
                           type="button"
-                          className={styles.tapBtn}
+                          className={[
+                            styles.tapBtn,
+                            tool === "tap" ? styles.tapBtnSelected : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
                           title={
                             tapBpmHint
                               ? `Tap tempo — ${tapBpmHint} BPM`
                               : "Tap — tempo @ locator"
                           }
                           aria-label="Tap tempo"
+                          aria-pressed={tool === "tap"}
                           onClick={onTap}
                         >
                           <IconTap />

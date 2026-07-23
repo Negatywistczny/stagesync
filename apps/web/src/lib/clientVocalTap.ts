@@ -12,6 +12,15 @@ export function vocalTapQueue(project: Project): TekstClip[] {
     .sort((a, b) => a.startTicks - b.startTicks);
 }
 
+/** Mark position for vocal Tap: live playhead while playing, else parked locator. */
+export function vocalTapMarkTicks(
+  playing: boolean,
+  displayTicks: number,
+  locatorTicks: number,
+): number {
+  return playing ? displayTicks : locatorTicks;
+}
+
 /**
  * Set clip startTicks (keep length); clamp to content floor and optional
  * minimum (previous tap line end) so taps do not stack.
