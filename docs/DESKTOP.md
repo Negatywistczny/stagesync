@@ -10,6 +10,7 @@ Thin **WebView** window for Admin / Timeline / Client — [ADR 0010](./adr/0010-
 Błędy startu lokalnego hosta (port zajęty, timeout, uprawnienia, zła wersja, crash sidecara) pokazuje Launcher z logiem i **Ponów** — bez białego ekranu. Gdy lokalny host padnie w trakcie sesji, shell wraca do Launchera z komunikatem. Przy utracie WS: banner „Utracono połączenie…” + **Wróć do wyboru hosta** (gdy IPC Tauri dostępne, zwykle lokalny `127.0.0.1:4000`).
 
 **β1+:** lokalny API sidecara na `http://127.0.0.1:4000` gdy wybrano lokalny host.  
+Zamknięcie okna albo **Zakończ** (⌘/Ctrl+Q) zatrzymuje lokalny host; przy kolejnym starcie shell sprząta porzucony `stagesync-host` na porcie 4000 (np. po Force Quit).  
 **Domyślny widok po połączeniu:** **Admin** (`/admin`) — okno operatora (ADR 0010). Klient (`/client`) w shellu; w przeglądarce / Dockerze root `/` nadal to Client.  
 **Nawigacja desktop ([ADR 0010](./adr/0010-desktop-shell-tauri.md)):** menu OS **StageSync** | **Plik** | **Edycja** | **Widok** | **Transport** | **Host** | **Pomoc** — bez osobnego chrome `ShellModeNav`.
 

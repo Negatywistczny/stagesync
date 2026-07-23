@@ -32,6 +32,20 @@ pub struct SidecarRuntime {
     pub pending_error: Mutex<Option<String>>,
 }
 
+impl SidecarRuntime {
+    /// Stop the managed local host (no-op if none). Safe to call from exit / window-close paths.
+    pub fn kill_child(&self) {
+        if let Ok(mut guard) = self.child.lock() {
+            if let Some(child) = guard.take() {
+                let _ = child.kill();
+            }
+        }
+        if let Ok(mut g) = self.starting.lock() {
+            *g = false;
+        }
+    }
+}
+
 /// Origin URL of the bundled Launcher (captured at setup before any navigate).
 #[derive(Default)]
 pub struct LauncherNav {
@@ -275,14 +289,7 @@ pub fn get_sidecar_log_tail(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<S
 
 #[tauri::command]
 pub async fn cancel_local_host(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<(), String> {
-    if let Ok(mut guard) = runtime.child.lock() {
-        if let Some(child) = guard.take() {
-            let _ = child.kill();
-        }
-    }
-    if let Ok(mut g) = runtime.starting.lock() {
-        *g = false;
-    }
+    runtime.kill_child();
     Ok(())
 }
 
@@ -293,14 +300,7 @@ pub async fn return_to_launcher(
     runtime: State<'_, Arc<SidecarRuntime>>,
     nav: State<'_, Arc<LauncherNav>>,
 ) -> Result<(), String> {
-    if let Ok(mut guard) = runtime.child.lock() {
-        if let Some(child) = guard.take() {
-            let _ = child.kill();
-        }
-    }
-    if let Ok(mut g) = runtime.starting.lock() {
-        *g = false;
-    }
+    runtime.kill_child();
     navigate_to_launcher(&app, nav.as_ref())
 }
 
@@ -426,11 +426,16 @@ async fn start_local_host_inner(
     app: AppHandle,
     runtime: Arc<SidecarRuntime>,
 ) -> Result<(), String> {
-    // Kill previous child if any.
-    if let Ok(mut guard) = runtime.child.lock() {
-        if let Some(child) = guard.take() {
-            let _ = child.kill();
-        }
+    // Kill previous managed child, then any orphaned stagesync-host still on :4000
+    // (Force Quit / crash leaves PPID 1 and blocks the next local start).
+    runtime.kill_child();
+    let reclaimed = crate::reclaim_ui_port_orphan();
+    if reclaimed > 0 {
+        emit_status(
+            &app,
+            format!("Zatrzymano porzucony lokalny host (port {UI_PORT})…"),
+            false,
+        );
     }
     if let Ok(mut log) = runtime.log_tail.lock() {
         log.clear();

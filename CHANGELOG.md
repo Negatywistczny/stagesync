@@ -13,6 +13,16 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Launcher:** ekran startowy przed Adminem (wordmark StageSync) — uruchom lokalny host, wykryj StageSync w LAN (mDNS wybiera adres LAN, nie most Dockera / link-local) albo wpisz adres; czytelny status błędów (brak sieci, uprawnienia, log sidecara) zamiast białego ekranu; bezpieczne pomijanie uszkodzonej listy ostatnich hostów.
 - **Launcher / sesja:** przy utracie połączenia z hostem komunikat z ponawianiem łączenia oraz (na desktopie lokalnym) powrót do wyboru hosta; crash lokalnego hosta wraca do Launchera zamiast zawieszenia; ostrzeżenie przy różnicy wersji aplikacji i zdalnego hosta.
 
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Dock audio:** wąska kolumna (bez poszerzania); nazwa + S/M w pierwszym rzędzie, fader pod spodem; Solo żółty / Mute czerwony; „+ Dodaj Ścieżkę” pod listą; usunięty „+” upload z nagłówka — import przez Inspector, DnD na pustą lane („Upuść plik audio tutaj”) oraz menu kontekstowe (usuń / zmień nazwę / duplikuj).
+- **Menu oka:** tylko warstwy systemowe (Forma, Tekst, Akordy, Cue, Tempo, Tonacja, Metrum, Kotwice) — bez pozycji Audio N i „+ Ścieżka Audio”.
+- **Timeline:** wyłączone natywne menu kontekstowe przeglądarki; Delete/⌫ usuwa zaznaczoną ścieżkę audio (gdy nie edytujesz pola tekstowego).
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop / lokalny host:** zamknięcie okna albo wyjście z aplikacji zatrzymuje wbudowany host (port 4000 nie zostaje zajęty po Force Quit / samym zamknięciu okna na macOS); przy kolejnym „Uruchom lokalny host” porzucony proces hosta jest sprzątany automatycznie.
+
 ## [5.0.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0...v5.0.1) - 2026-07-23
 
 ### Zmieniono

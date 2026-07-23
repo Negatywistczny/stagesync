@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri::Manager;
+use tauri::{Manager, RunEvent, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -108,6 +108,28 @@ mod path_for_node_tests {
         let resp = "HTTP/1.1 200 OK\r\n\r\n{\"ok\":true}";
         assert_eq!(parse_health_version(resp), None);
     }
+
+    #[test]
+    fn detects_stagesync_host_command_line() {
+        assert!(looks_like_stagesync_host(
+            "/Applications/StageSync.app/Contents/MacOS/stagesync-host dist/index.js"
+        ));
+        assert!(looks_like_stagesync_host(
+            r"C:\Program Files\StageSync\stagesync-host.exe"
+        ));
+        assert!(!looks_like_stagesync_host("node dist/index.js"));
+        assert!(!looks_like_stagesync_host("pnpm --filter @stagesync/server dev"));
+    }
+
+    #[test]
+    fn parses_netstat_local_port() {
+        assert_eq!(parse_netstat_local_port("0.0.0.0:4000"), Some(4000));
+        assert_eq!(parse_netstat_local_port("127.0.0.1:4000"), Some(4000));
+        assert_eq!(parse_netstat_local_port("[::]:4000"), Some(4000));
+        assert_eq!(parse_netstat_local_port("[::1]:4000"), Some(4000));
+        assert_eq!(parse_netstat_local_port("0.0.0.0:14000"), Some(14000));
+        assert_ne!(parse_netstat_local_port("0.0.0.0:14000"), Some(4000));
+    }
 }
 
 #[derive(Clone, serde::Deserialize, serde::Serialize)]
@@ -126,6 +148,198 @@ struct NavState {
 
 pub(crate) fn nav_url(path: &str) -> String {
     format!("http://127.0.0.1:{UI_PORT}{path}")
+}
+
+/// True when a process command line looks like our bundled Node sidecar binary.
+pub(crate) fn looks_like_stagesync_host(command_line: &str) -> bool {
+    let lower = command_line.to_ascii_lowercase();
+    lower.contains("stagesync-host")
+}
+
+/// Parse port from a netstat local-address column (`127.0.0.1:4000`, `[::1]:4000`).
+#[cfg(any(windows, test))]
+pub(crate) fn parse_netstat_local_port(local: &str) -> Option<u16> {
+    if let Some(idx) = local.rfind("]:") {
+        return local[idx + 2..].parse().ok();
+    }
+    local.rsplit_once(':').and_then(|(_, p)| p.parse().ok())
+}
+
+/// PIDs currently LISTEN on `port` (best-effort; empty if tooling unavailable).
+fn pids_listening_on_port(port: u16) -> Vec<u32> {
+    #[cfg(unix)]
+    {
+        let output = std::process::Command::new("lsof")
+            .args([
+                "-nP",
+                &format!("-iTCP:{port}"),
+                "-sTCP:LISTEN",
+                "-t",
+            ])
+            .output();
+        let Ok(output) = output else {
+            return Vec::new();
+        };
+        String::from_utf8_lossy(&output.stdout)
+            .split_whitespace()
+            .filter_map(|s| s.parse().ok())
+            .collect()
+    }
+    #[cfg(windows)]
+    {
+        let output = std::process::Command::new("netstat")
+            .args(["-ano", "-p", "TCP"])
+            .output();
+        let Ok(output) = output else {
+            return Vec::new();
+        };
+        let mut pids = Vec::new();
+        for line in String::from_utf8_lossy(&output.stdout).lines() {
+            let line = line.trim();
+            if !line.contains("LISTENING") {
+                continue;
+            }
+            let cols: Vec<&str> = line.split_whitespace().collect();
+            // Proto LocalAddress ForeignAddress State PID
+            if cols.len() < 5 {
+                continue;
+            }
+            let local = cols[1];
+            let Some(local_port) = parse_netstat_local_port(local) else {
+                continue;
+            };
+            if local_port != port {
+                continue;
+            }
+            if let Ok(pid) = cols[cols.len() - 1].parse::<u32>() {
+                if pid > 0 && !pids.contains(&pid) {
+                    pids.push(pid);
+                }
+            }
+        }
+        pids
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = port;
+        Vec::new()
+    }
+}
+
+fn process_command_line(pid: u32) -> Option<String> {
+    #[cfg(unix)]
+    {
+        let output = std::process::Command::new("ps")
+            .args(["-p", &pid.to_string(), "-o", "args="])
+            .output()
+            .ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
+    }
+    #[cfg(windows)]
+    {
+        let output = std::process::Command::new("wmic")
+            .args([
+                "process",
+                "where",
+                &format!("ProcessId={pid}"),
+                "get",
+                "CommandLine",
+                "/VALUE",
+            ])
+            .output()
+            .ok()?;
+        let text = String::from_utf8_lossy(&output.stdout);
+        for line in text.lines() {
+            if let Some(rest) = line.strip_prefix("CommandLine=") {
+                let s = rest.trim();
+                if !s.is_empty() {
+                    return Some(s.to_string());
+                }
+            }
+        }
+        // Fallback: image name only (still matches stagesync-host.exe).
+        let output = std::process::Command::new("tasklist")
+            .args([
+                "/FI",
+                &format!("PID eq {pid}"),
+                "/FO",
+                "CSV",
+                "/NH",
+            ])
+            .output()
+            .ok()?;
+        let row = String::from_utf8_lossy(&output.stdout);
+        let name = row.split(',').next()?.trim_matches('"');
+        if name.is_empty() || name.eq_ignore_ascii_case("INFO:") {
+            None
+        } else {
+            Some(name.to_string())
+        }
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = pid;
+        None
+    }
+}
+
+fn kill_pid(pid: u32) -> bool {
+    #[cfg(unix)]
+    {
+        std::process::Command::new("kill")
+            .args(["-TERM", &pid.to_string()])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    }
+    #[cfg(windows)]
+    {
+        std::process::Command::new("taskkill")
+            .args(["/PID", &pid.to_string(), "/F"])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = pid;
+        false
+    }
+}
+
+/// Kill orphaned `stagesync-host` listeners on [`UI_PORT`] (leftover after Force Quit / crash).
+/// Leaves unrelated processes alone (e.g. `node` from `pnpm dev`).
+/// Returns how many processes were signaled.
+pub(crate) fn reclaim_ui_port_orphan() -> usize {
+    let our_pid = std::process::id();
+    let mut killed = 0usize;
+    for pid in pids_listening_on_port(UI_PORT) {
+        if pid == our_pid {
+            continue;
+        }
+        let Some(cmd) = process_command_line(pid) else {
+            continue;
+        };
+        if !looks_like_stagesync_host(&cmd) {
+            continue;
+        }
+        if kill_pid(pid) {
+            killed += 1;
+        }
+    }
+    if killed > 0 {
+        // Give the OS a moment to release the listen socket before we spawn.
+        std::thread::sleep(Duration::from_millis(200));
+    }
+    killed
 }
 
 fn timeline_nav_url(state: &NavState) -> String {
@@ -771,13 +985,23 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
-        .run(move |_app_handle, event| {
-            if let tauri::RunEvent::ExitRequested { .. } = event {
-                if let Ok(mut guard) = sidecar_runtime_run.child.lock() {
-                    if let Some(child) = guard.take() {
-                        let _ = child.kill();
-                    }
+        .run(move |app_handle, event| {
+            match event {
+                // Full quit (⌘Q / Zakończ) and process teardown.
+                RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+                    sidecar_runtime_run.kill_child();
                 }
+                // Closing the main window must end the session — on macOS the app
+                // otherwise stays in the Dock while an orphaned sidecar keeps :4000.
+                RunEvent::WindowEvent {
+                    label,
+                    event: WindowEvent::CloseRequested { .. },
+                    ..
+                } if label == "main" => {
+                    sidecar_runtime_run.kill_child();
+                    app_handle.exit(0);
+                }
+                _ => {}
             }
         });
 }
