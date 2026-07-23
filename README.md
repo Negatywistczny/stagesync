@@ -72,3 +72,9 @@ cd stagesync && pnpm install && pnpm dev
 | [CHANGELOG](CHANGELOG.md) | Historia wydań |
 | [UI](docs/ui/README.md) | Design system |
 | [CONTRIBUTING](CONTRIBUTING.md) | Commity, PR-y, gałęzie |
+
+## Licencja
+
+StageSync jest **source-available** na [Business Source License 1.1](LICENSE) (SPDX: `BUSL-1.1`).
+Produkcyjne użycie jako własny host sceniczny jest dozwolone; Competing Offering wymaga osobnej licencji komercyjnej — szczegóły w `LICENSE`.
+Od **Change Date** `2030-07-23` kod tej linii przechodzi na **Apache License 2.0**.

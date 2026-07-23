@@ -82,6 +82,9 @@ Gdy jest dostępna nowa wersja:
   — https://v2.tauri.app/start/prerequisites/
 - W β1 host jest uruchamiany automatycznie przez aplikację (sidecar Node).
 - W dev / thin-shell możesz użyć zewnętrznego hosta przez `STAGESYNC_URL`.
+- **CI na PR nie odpala Rust / Tauri** — tylko `lint-types-test-build`. Pełny
+  build `.dmg` / `.msi` i `cargo` są w [Release workflow](../.github/workflows/release.yml)
+  (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shelła.
 
 ## Dev
 
@@ -109,8 +112,8 @@ pnpm --filter @stagesync/desktop tauri build
 
 | Platforma | Artefakt | CI |
 |-----------|----------|----|
-| macOS | `.dmg` | `cargo check` w CI (ubuntu) + manual mac build |
-| Windows | `.msi` | manual na Win (lub CI release workflow) |
+| macOS | `.dmg` | Release workflow (tag `v*`) — macOS runner |
+| Windows | `.msi` | Release workflow (tag `v*`) — Windows runner |
 
 ## Zakazy (ADR 0010)
 

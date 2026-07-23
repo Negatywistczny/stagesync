@@ -72,6 +72,7 @@ jobs:
 
   docker:
     name: compose-build
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: build
@@ -119,57 +120,3 @@ jobs:
           fi
           curl -sf http://localhost:4000/api/health || (docker compose logs && exit 1)
           docker compose down
-
-  tauri-smoke:
-    name: tauri-cargo-check
-    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Install system deps (Tauri)
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3; do
-            sudo apt-get update -y && \
-              sudo apt-get install -y --no-install-recommends \
-                libwebkit2gtk-4.1-dev build-essential curl wget file \
-                libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev \
-              && break
-            echo "apt attempt $attempt failed; retrying…"
-            sleep $((attempt * 5))
-            if [ "$attempt" -eq 3 ]; then exit 1; fi
-          done
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      # Cache Cargo / Rust dependencies
-      - name: Rust Cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: apps/desktop/src-tauri
-
-      - name: Stub sidecar bundle inputs (cargo check only)
-        run: |
-          sed -i.bak \
-            -e 's|^apps/desktop/src-tauri/resources/|# ci-stub: apps/desktop/src-tauri/resources/|' \
-            -e 's|^apps/desktop/src-tauri/bin/|# ci-stub: apps/desktop/src-tauri/bin/|' \
-            -e 's|^apps/desktop/src-tauri/lib/|# ci-stub: apps/desktop/src-tauri/lib/|' \
-            -e 's|^apps/desktop/src-tauri/share/|# ci-stub: apps/desktop/src-tauri/share/|' \
-            .gitignore
-
-          triple=$(rustc --print host-tuple)
-          root=apps/desktop/src-tauri
-          mkdir -p "$root/bin" "$root/resources/sidecar/web" "$root/resources/sidecar/seed" "$root/resources/sidecar/server/dist" "$root/lib" "$root/share"
-          printf '#!/bin/sh\nexit 0\n' > "$root/bin/stagesync-host-${triple}"
-          chmod +x "$root/bin/stagesync-host-${triple}"
-          touch "$root/resources/sidecar/server/dist/index.js" "$root/lib/.keep" "$root/share/.keep"
-
-      - name: Cargo check (desktop shell)
-        working-directory: apps/desktop/src-tauri
-        run: cargo check

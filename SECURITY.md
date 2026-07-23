@@ -19,3 +19,6 @@ uzgodnieniem z maintainerami.
 Dotyczy aplikacji w tym monorepo (`apps/web`, `apps/server`, `packages/*`)
 oraz domyślnego układu `data/`. Dane użytkownika i sekrety lokalne (`.env`)
 nie powinny trafiać do gita — zob. `.gitignore`.
+
+Kod objęty [LICENSE](LICENSE) (BSL 1.1); zgłaszanie podatności nie zmienia
+warunków licencji.

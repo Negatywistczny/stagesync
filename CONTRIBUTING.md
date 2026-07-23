@@ -18,7 +18,10 @@
 - **Gałąź / PR** (`feat/…`, `fix/…`) — tylko gdy **użytkownik o to prosi** albo gdy jawnie potrzebna izolacja; nie „na zapas”.
 - **Bez** Git Flow: nie używamy `develop` ani `release/*`.
 - CI: workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) na `push` /
-  PR do `main`.
+  PR do `main` — na PR wymagany job `lint-types-test-build`; Docker Compose
+  tylko na push do `main` / `workflow_dispatch`; Rust/Tauri wyłącznie w
+  [`.github/workflows/release.yml`](.github/workflows/release.yml) (tagi `v*`).
+- Wkładki (PR / patch) przyjmujemy na warunkach [LICENSE](LICENSE) (BSL 1.1).
 
 Higiena listy zadań i parytetu: [docs/TODO.md](docs/TODO.md), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
 
