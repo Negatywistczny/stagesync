@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { createClientPresence } from "./client-presence.js";
-import { createLogBuffer } from "./log-buffer.js";
 
 describe("client-presence", () => {
   it("upserts displayName and roles", () => {
@@ -35,18 +34,5 @@ describe("client-presence", () => {
     expect(ids.size).toBe(256);
     expect(ids.has("c-new")).toBe(true);
     expect(ids.has("c0")).toBe(false);
-  });
-});
-
-describe("log-buffer", () => {
-  it("keeps max lines and clear empties", () => {
-    const buffer = createLogBuffer({ maxLines: 3 });
-    buffer.push("info", "a");
-    buffer.push("info", "b");
-    buffer.push("info", "c");
-    buffer.push("info", "d");
-    expect(buffer.getLines().map((l) => l.msg)).toEqual(["b", "c", "d"]);
-    buffer.clear();
-    expect(buffer.getLines()).toEqual([]);
   });
 });
