@@ -445,26 +445,22 @@ function UpdatePanel({
     setDesktopStatus(null);
     setDone(false);
     try {
-      const [host, desktop] = await Promise.allSettled([
-        fetchHostUpdateStatus(),
-        inTauri ? checkDesktopUpdate() : Promise.reject(new Error("browser")),
-      ]);
-      const messages: string[] = [];
-      if (host.status === "fulfilled") {
-        setHostStatus(host.value);
-        // Desktop: sidecar version is informational; GitHub/Watchtower host
-        // check is Docker-only and must not surface as a hard red failure.
-        if (host.value.error && !inTauri) {
-          messages.push(`Host: ${host.value.error}`);
-        }
-      } else if (!inTauri) {
-        messages.push(`Host: ${formatUnknownError(host.reason)}`);
-      }
+      // Desktop: only the app version / Tauri updater — host/Watchtower is Docker-only.
       if (inTauri) {
-        if (desktop.status === "fulfilled") setDesktopStatus(desktop.value);
-        else messages.push(`Aplikacja: ${formatUnknownError(desktop.reason)}`);
+        try {
+          setDesktopStatus(await checkDesktopUpdate());
+        } catch (e) {
+          setError(`Aplikacja: ${formatUnknownError(e)}`);
+        }
+        return;
       }
-      setError(messages.length ? messages.join(" · ") : null);
+      try {
+        const host = await fetchHostUpdateStatus();
+        setHostStatus(host);
+        if (host.error) setError(`Host: ${host.error}`);
+      } catch (e) {
+        setError(`Host: ${formatUnknownError(e)}`);
+      }
     } finally {
       setChecking(false);
     }
@@ -529,19 +525,13 @@ function UpdatePanel({
           Aktualizacja hosta uruchomiona — połączenie wróci za chwilę.
         </p>
       ) : null}
-      {hostStatus ? (
+      {!inTauri && hostStatus ? (
         <div className={styles.updateRow}>
           <span className={shell.muted}>
-            {inTauri ? (
-              <>Sidecar: {hostStatus.current}</>
-            ) : (
-              <>
-                Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
-                {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
-              </>
-            )}
+            Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
+            {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
           </span>
-          {hostStatus.updateAvailable && !inTauri ? (
+          {hostStatus.updateAvailable ? (
             <Button
               variant="primary"
               onClick={() => setConfirmHostUpdate(true)}
@@ -551,13 +541,6 @@ function UpdatePanel({
             </Button>
           ) : null}
         </div>
-      ) : null}
-      {inTauri && hostStatus ? (
-        <p className={shell.muted}>
-          Sidecar aktualizuje się razem z instalatorem aplikacji (przycisk
-          poniżej). Porównanie hosta / Watchtower dotyczy wyłącznie wdrożeń
-          Docker — nie jest to błąd aktualizacji desktop.
-        </p>
       ) : null}
       {inTauri && desktopStatus ? (
         <div className={styles.updateRow}>

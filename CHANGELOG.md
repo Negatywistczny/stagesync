@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
+#### 🖥️ App Shell & UI
+- **Admin Host (desktop):** w O aplikacji tylko wersja aplikacji — bez etykiety Sidecar i bez notki o Watchtower/Docker.
+
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **GitHub Release:** opis z tabelą pobierania + treść z `CHANGELOG.md` (bez auto-notes z PR); tytuł wydania = sam tag (`vX.Y.Z`), jak w liniach beta.
 
