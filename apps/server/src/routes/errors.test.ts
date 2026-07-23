@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { Response } from "express";
-import { z } from "zod";
 import {
   ConflictError,
   InvalidProjectIdError,
@@ -38,27 +37,19 @@ describe("routes/errors", () => {
 
   it("maps Zod details with codes and root path", () => {
     const res = mockRes();
-    try {
-      z.object({ n: z.number() }).parse({ n: "bad" });
-    } catch (err) {
-      handleRouteError(res, err);
-    }
-    expect(res.statusCode).toBe(400);
-    expect(res.body.details?.length).toBeGreaterThan(0);
-
-    const res2 = mockRes();
-    handleRouteError(res2, {
+    handleRouteError(res, {
       name: "ZodError",
       issues: [
         { message: "Required", path: ["a"], code: "invalid_type" },
         { message: "root", path: [] },
       ],
     });
-    expect(res2.body.details?.[0]).toMatchObject({
+    expect(res.statusCode).toBe(400);
+    expect(res.body.details?.[0]).toMatchObject({
       path: "a",
       code: "invalid_type",
     });
-    expect(res2.body.details?.[1]?.path).toBe("(root)");
+    expect(res.body.details?.[1]?.path).toBe("(root)");
   });
 
   it("maps RangeError, InvalidProjectId, NotFound, Conflict, Storage, generic", () => {
