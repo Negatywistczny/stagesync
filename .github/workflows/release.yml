@@ -293,9 +293,16 @@ jobs:
             dest="${f/_en-US/}"
             mv "$f" "$dest"
             echo "Renamed $f → $dest"
-            # Replace draft asset uploaded by tauri-action (still had _en-US).
-            gh release delete-asset "$TAG" "$f" -R "$REPO" --yes 2>/dev/null || true
-            gh release upload "$TAG" "$dest" -R "$REPO" --clobber
+          done
+          # Windows job may already strip _en-US before the artifact upload.
+          # Always publish the friendly MSI name and drop the locale-suffixed copy.
+          for f in *.msi; do
+            case "$f" in
+              *_en-US.msi) continue ;;
+            esac
+            gh release delete-asset "$TAG" "${f/.msi/_en-US.msi}" -R "$REPO" --yes 2>/dev/null || true
+            gh release upload "$TAG" "$f" -R "$REPO" --clobber
+            echo "Uploaded $f"
           done
           # Keep updater manifest URLs consistent if they still mention _en-US.
           if gh release download "$TAG" -R "$REPO" -p latest.json -D . 2>/dev/null; then
