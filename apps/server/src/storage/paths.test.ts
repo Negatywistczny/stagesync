@@ -76,6 +76,10 @@ describe("storage/paths", () => {
     expect(defaultDataDir()).toBe(
       join("/Users/test", "Documents", "StageSync"),
     );
+
+    delete process.env.HOME;
+    delete process.env.USERPROFILE;
+    expect(defaultDataDir()).toMatch(/[/\\]data$/);
   });
 
   it("defaultSeedDir uses env override (absolute or relative)", () => {
