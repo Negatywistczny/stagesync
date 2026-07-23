@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
+  LiveDeskPatchBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
   TransportStateSchema,
@@ -203,5 +204,16 @@ describe("transportHomeTicks", () => {
         },
       }),
     ).toBe(0);
+  });
+});
+
+describe("LiveDeskPatchBodySchema", () => {
+  it("requires at least one live-desk field", () => {
+    expect(() => LiveDeskPatchBodySchema.parse({})).toThrow(
+      /At least one live-desk field required/,
+    );
+    expect(
+      LiveDeskPatchBodySchema.parse({ transpositionSemitones: 2 }),
+    ).toEqual({ transpositionSemitones: 2 });
   });
 });

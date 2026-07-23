@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PPQ } from "./time.js";
-import { getDisplayTicks, type TransportAnchor } from "./soft-clock.js";
+import {
+  getDisplayTicks,
+  wrapDisplayTicks,
+  type TransportAnchor,
+} from "./soft-clock.js";
 
 const anchor: TransportAnchor = {
   positionTicks: 1000,
@@ -31,5 +35,35 @@ describe("getDisplayTicks", () => {
     expect(
       getDisplayTicks(anchor, 1500, Number.POSITIVE_INFINITY, true),
     ).toBe(1000);
+  });
+
+  it("wraps soft clock into an enabled loop range", () => {
+    const loop = {
+      enabled: true,
+      startTicks: 0,
+      endTicks: 1000,
+    };
+    expect(getDisplayTicks(anchor, 1500, 1000, true, loop)).toBe(
+      wrapDisplayTicks(1000 + DEFAULT_PPQ, loop),
+    );
+  });
+});
+
+describe("wrapDisplayTicks", () => {
+  it("returns input when loop disabled or ticks before end", () => {
+    expect(wrapDisplayTicks(500, null)).toBe(500);
+    expect(
+      wrapDisplayTicks(500, { enabled: false, startTicks: 0, endTicks: 100 }),
+    ).toBe(500);
+    expect(
+      wrapDisplayTicks(50, { enabled: true, startTicks: 0, endTicks: 100 }),
+    ).toBe(50);
+  });
+
+  it("wraps positions at or past exclusive end into the loop", () => {
+    const loop = { enabled: true, startTicks: 100, endTicks: 200 };
+    expect(wrapDisplayTicks(200, loop)).toBe(100);
+    expect(wrapDisplayTicks(250, loop)).toBe(150);
+    expect(wrapDisplayTicks(399, loop)).toBe(199);
   });
 });
