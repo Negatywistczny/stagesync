@@ -144,7 +144,7 @@ describe("mapSegments", () => {
     );
     expect(
       keyMapSegments(
-        { ...project, keyMap: undefined },
+        { ...project, keyMap: undefined } as unknown as typeof project,
         { start: 0, end: 100 },
         () => "C",
       ),
@@ -163,12 +163,12 @@ describe("mapSegments", () => {
         {
           id: "k0",
           startTicks: 0,
-          key: { tonic: "C", mode: "major" as const },
+          key: { tonic: "C" as const, mode: "major" as const },
         },
         {
           id: "k1",
           startTicks: 3840,
-          key: { tonic: "G", mode: "major" as const },
+          key: { tonic: "G" as const, mode: "major" as const },
         },
       ],
     };

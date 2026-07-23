@@ -430,7 +430,7 @@ describe("placeContentFromForma", () => {
   });
 
   it("fails when selected sections have no matching lines", () => {
-    let p = withVerse(sectionProject(4, ["only-intro"]));
+    const p = withVerse(sectionProject(4, ["only-intro"]));
     const verse = p.forma.clips.find((c) => c.name === "Verse")!;
     const result = placeContentFromForma(p, "tekst", {
       sectionIds: [verse.id],
@@ -632,7 +632,7 @@ describe("placeContentFromForma", () => {
   });
 
   it("empty sections still walk placeSectionContent (no-op)", () => {
-    let p = withVerse(sectionProject(4, ["intro-only"]));
+    const p = withVerse(sectionProject(4, ["intro-only"]));
     const result = placeContentFromForma(p, "tekst");
     expect(result.ok).toBe(true);
     expect(result.placed).toBe(1);

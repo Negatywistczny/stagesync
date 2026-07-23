@@ -61,7 +61,7 @@ describe("ticksFromLogicBar / logicBarFromTicks meter walk", () => {
 describe("scoreAnchors / canEditKotwice / CRUD", () => {
   it("scoreAnchors normalizes missing map", () => {
     const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
-    expect(scoreAnchors({ ...p, scoreBarMap: undefined })).toEqual([]);
+    expect(scoreAnchors({ ...p, scoreBarMap: undefined } as unknown as typeof p)).toEqual([]);
   });
 
   it("canEditKotwice requires musicxml or existing anchors", () => {
