@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildCountdownDigitTekstClips,
   countdownDigitLabels,
   createProjectV5Seed,
   isCountdownDigitClipId,
   migrateLegacySong,
+  regenerateCountdownContent,
   scrubCountdownDigitClips,
   syntheticCountdownDisplayFromProject,
   syntheticCountdownTekstClips,
@@ -93,6 +95,77 @@ describe("countdown-content", () => {
     expect(tekst.map((c) => c.text)).toEqual(["2", "1"]);
     expect(akordy.map((c) => c.symbol)).toEqual(["2", "1"]);
     expect(tekst.every((c) => c.startTicks + c.lengthTicks <= 0)).toBe(true);
+  });
+
+  it("syntheticCountdownDisplayFromProject is empty without Countdown", () => {
+    const seed = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+    const noCd = {
+      ...seed,
+      forma: {
+        clips: seed.forma.clips.filter((c) => c.kind !== "countdown"),
+      },
+    };
+    expect(syntheticCountdownDisplayFromProject(noCd)).toEqual({
+      tekst: [],
+      akordy: [],
+    });
+  });
+
+  it("scrub drops pre-roll digit symbols and cue-in-CD; deprecated wrappers work", () => {
+    const seed = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+    const dirty = {
+      ...seed,
+      tekst: {
+        clips: [
+          {
+            id: "pre-digit",
+            text: "9",
+            startTicks: -20_000,
+            lengthTicks: 960,
+          },
+          {
+            id: "lyric",
+            text: "Hi",
+            startTicks: 0,
+            lengthTicks: 960,
+          },
+        ],
+      },
+      akordy: {
+        clips: [
+          {
+            id: "pre-chord",
+            symbol: "3",
+            startTicks: -20_000,
+            lengthTicks: 960,
+          },
+        ],
+      },
+      cue: {
+        clips: [
+          {
+            id: "cue-cd",
+            startTicks: -3840,
+            lengthTicks: 960,
+            label: "Go",
+            roles: ["vocal"] as const,
+          },
+        ],
+      },
+    };
+    const scrubbed = scrubCountdownDigitClips(dirty);
+    expect(scrubbed.tekst.clips.map((c) => c.id)).toEqual(["lyric"]);
+    expect(scrubbed.akordy.clips).toEqual([]);
+    expect(scrubbed.cue.clips).toEqual([]);
+    expect(regenerateCountdownContent(dirty)).toEqual(scrubbed);
+    expect(buildCountdownDigitTekstClips(-7680, 7680, 3840)).toEqual(
+      syntheticCountdownTekstClips(-7680, 2, 3840),
+    );
+  });
+
+  it("scrub is identity when nothing to remove", () => {
+    const seed = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+    expect(scrubCountdownDigitClips(seed)).toBe(seed);
   });
 });
 
