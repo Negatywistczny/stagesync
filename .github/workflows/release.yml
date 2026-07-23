@@ -88,42 +88,32 @@ jobs:
     outputs:
       release_id: ${{ steps.create.outputs.release_id }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
       - name: Create draft GitHub Release
         id: create
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           TAG="v${{ env.VERSION }}"
           REPO="${{ github.repository }}"
+          NOTES_FILE="$(mktemp)"
+          node launch/scripts/build-release-notes.mjs "${{ env.VERSION }}" > "$NOTES_FILE"
+
           if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
-            echo "Release $TAG already exists — reusing for asset upload"
+            echo "Release $TAG already exists — refreshing notes/title for asset upload"
+            gh release edit "$TAG" \
+              -R "$REPO" \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE"
           else
-            RELEASE_BODY="$(cat <<EOF
-          ### 📦 Pobierz StageSync
-
-          | System operacyjny | Plik instalacyjny |
-          | :--- | :--- |
-          | 🍎 **macOS** (Apple Silicon) | \`StageSync_${{ env.VERSION }}_aarch64.dmg\` |
-          | 🪟 **Windows** (64-bit) | \`StageSync_${{ env.VERSION }}_x64.msi\` |
-
-          <details>
-          <summary>Pliki automatycznych aktualizacji i checksumy</summary>
-
-          Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji i weryfikację spójności — nie musisz ich pobierać ręcznie.
-
-          </details>
-
-          ---
-
-          ### 🚀 Co nowego w tym wydaniu?
-          EOF
-          )"
             gh release create "$TAG" \
               -R "$REPO" \
               --draft \
-              --title "StageSync $TAG" \
-              --generate-notes \
-              --notes "$RELEASE_BODY"
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE"
           fi
           # drafts are invisible to /releases/tags/{tag}; use gh view (works for draft + published)
           ID=$(gh release view "$TAG" -R "$REPO" --json databaseId --jq .databaseId)
@@ -274,6 +264,9 @@ jobs:
     env:
       VERSION: ${{ needs.resolve-version.outputs.version }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
       - name: Download macOS artifact
         uses: actions/download-artifact@v8
         with:
@@ -322,12 +315,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           TAG="v${{ env.VERSION }}"
           REPO="${{ github.repository }}"
+          NOTES_FILE="$(mktemp)"
+          node launch/scripts/build-release-notes.mjs "${{ env.VERSION }}" > "$NOTES_FILE"
+
           gh release upload "$TAG" dist/SHA256SUMS.txt -R "$REPO" --clobber
 
           gh release edit "$TAG" \
             -R "$REPO" \
             --draft=false \
             --latest \
-            --title "StageSync v${{ env.VERSION }}"
+            --title "$TAG" \
+            --notes-file "$NOTES_FILE"

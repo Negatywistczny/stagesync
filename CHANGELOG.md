@@ -5,6 +5,13 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **GitHub Release:** opis z tabelą pobierania + treść z `CHANGELOG.md` (bez auto-notes z PR); tytuł wydania = sam tag (`vX.Y.Z`), jak w liniach beta.
+
 ## [5.0.0](https://github.com/Negatywistyczny/stagesync/compare/v5.0.0-beta.2...v5.0.0) - 2026-07-23 — Overture
 
 > **Overture:** pierwsze stabilne 5.0 — kompletny parytet zachowania v4 (bez stubów), polish UI, Audio fade/loop, menu OS Faza D, Client Score/OSMD, Preferencje, Live Desk. **G1–G10** na HW = residual operatorski (⬜; bez claim green przy cutcie).
