@@ -74,4 +74,22 @@ describe("score-bar-map", () => {
   it("DEFAULT_SCORE_ANCHORS hint matches v4 countdown→1", () => {
     expect(DEFAULT_SCORE_ANCHORS[0]).toEqual({ logicBar: 3, scoreBar: 1 });
   });
+
+  it("normalizeAnchors accepts raw array and synthesizes ids", () => {
+    const anchors = normalizeAnchors([
+      { logicBar: 5, scoreBar: 2 },
+      { songBar: 2, scoreBar: 1 },
+    ]);
+    expect(anchors.map((a) => a.logicBar)).toEqual([2, 5]);
+    expect(anchors[0]!.id).toMatch(/^anchor-/);
+    expect(normalizeAnchors(null)).toEqual([]);
+    expect(normalizeAnchors(undefined)).toEqual([]);
+  });
+
+  it("logicBarToScoreBar aliases songBarToScoreBar", async () => {
+    const { logicBarToScoreBar } = await import("./score-bar-map.js");
+    expect(logicBarToScoreBar(5, dualResetMap)).toBe(
+      songBarToScoreBar(5, dualResetMap),
+    );
+  });
 });

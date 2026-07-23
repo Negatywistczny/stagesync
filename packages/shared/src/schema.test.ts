@@ -8,6 +8,8 @@ import {
   ProjectSchemaV4,
   ProjectSchemaV5,
   PutProjectBodySchema,
+  PutSetlistBodySchema,
+  SetlistSchema,
   StageMessageBodySchema,
 } from "./schema.js";
 import {
@@ -198,5 +200,67 @@ describe("StageMessageBodySchema", () => {
         priority: "alert",
       }),
     ).toEqual({ text: "Hold", ttlMs: 0, priority: "alert" });
+  });
+});
+
+describe("DefaultMeter refine + Setlist coerce", () => {
+  it("rejects meters that yield non-integer ticksPerBar", () => {
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    expect(() =>
+      ProjectSchemaV5.parse({
+        ...seed,
+        defaultMeter: { numerator: 5, denominator: 7 },
+      }),
+    ).toThrow();
+  });
+
+  it("SetlistSchema coerces projectIds ↔ items", () => {
+    const fromIds = SetlistSchema.parse({
+      version: 1,
+      enabled: true,
+      projectIds: ["11111111-1111-4111-8111-111111111111"],
+      autoAdvance: { enabled: false },
+      timeBudgetMinutes: 60,
+    });
+    expect(fromIds.items).toEqual([
+      {
+        type: "project",
+        projectId: "11111111-1111-4111-8111-111111111111",
+      },
+    ]);
+
+    const fromItems = SetlistSchema.parse({
+      version: 1,
+      enabled: true,
+      items: [
+        {
+          type: "project",
+          projectId: "11111111-1111-4111-8111-111111111111",
+        },
+        {
+          type: "break",
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          label: "Break",
+          durationMinutes: 5,
+        },
+      ],
+      autoAdvance: { enabled: false },
+      timeBudgetMinutes: 60,
+    });
+    expect(fromItems.projectIds).toEqual([
+      "11111111-1111-4111-8111-111111111111",
+    ]);
+  });
+
+  it("PutSetlistBodySchema requires items or projectIds", () => {
+    expect(() =>
+      PutSetlistBodySchema.parse({ enabled: true }),
+    ).toThrow(/Provide items or projectIds/);
+    expect(
+      PutSetlistBodySchema.parse({
+        enabled: true,
+        projectIds: ["11111111-1111-4111-8111-111111111111"],
+      }).projectIds,
+    ).toHaveLength(1);
   });
 });

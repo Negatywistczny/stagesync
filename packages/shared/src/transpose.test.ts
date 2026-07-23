@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   applyInstrumentPitchToChord,
+  clampManualInstrumentPitch,
+  isInstrumentPitchMode,
   resolveInstrumentPitchOffset,
   resolveTranspose,
   transposeChord,
@@ -13,6 +15,15 @@ describe("transpose / instrument pitch", () => {
     expect(resolveInstrumentPitchOffset("eb")).toBe(9);
     expect(resolveInstrumentPitchOffset("manual", 3)).toBe(3);
     expect(resolveInstrumentPitchOffset("manual", 99)).toBe(6);
+    expect(resolveInstrumentPitchOffset("unknown-mode")).toBe(0);
+    expect(clampManualInstrumentPitch("nope")).toBe(0);
+  });
+
+  it("isInstrumentPitchMode accepts presets and manual", () => {
+    expect(isInstrumentPitchMode("bb")).toBe(true);
+    expect(isInstrumentPitchMode("manual")).toBe(true);
+    expect(isInstrumentPitchMode("xyz")).toBe(false);
+    expect(isInstrumentPitchMode(3)).toBe(false);
   });
 
   it("transposes chords with circle spelling", () => {
@@ -32,5 +43,25 @@ describe("transpose / instrument pitch", () => {
     const r = resolveTranspose({ tonic: "C", mode: "major" }, 2);
     expect(r.targetKey).toBe("D");
     expect(r.semitones).toBe(2);
+  });
+
+  it("resolveTranspose handles missing / unparsable key", () => {
+    expect(resolveTranspose(null, 2)).toMatchObject({
+      originalKey: null,
+      targetKey: null,
+      semitones: 0,
+    });
+    expect(resolveTranspose({ tonic: "Xyz", mode: "major" }, 1)).toMatchObject({
+      originalKey: null,
+      targetKey: null,
+      semitones: 0,
+    });
+  });
+
+  it("applyInstrumentPitchToChord without key uses chromatic offset", () => {
+    expect(applyInstrumentPitchToChord("C", "bb", 0, null)).toBe("D");
+    expect(
+      applyInstrumentPitchToChord(null as unknown as string, "bb", 0, null),
+    ).toBe("—");
   });
 });

@@ -38,5 +38,18 @@ describe("section-names", () => {
     expect(formatSectionNameForDisplay("Intro", { polish: false })).toBe(
       "Intro",
     );
+    expect(formatSectionNameForDisplay("Solo 2", { polish: true })).toBe(
+      "Solo 2",
+    );
+    expect(formatSectionNameForDisplay("Weird Custom", { polish: true })).toBe(
+      "Weird Custom",
+    );
+  });
+
+  it("normalizes bare Solo and free-form title case", () => {
+    expect(normalizeSectionName("solo")).toBe("Solo");
+    expect(normalizeSectionName("solo 3")).toBe("Solo 3");
+    expect(normalizeSectionName("my custom part")).toBe("My Custom Part");
+    expect(normalizeSectionName("")).toBe("Section");
   });
 });

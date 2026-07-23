@@ -165,4 +165,68 @@ describe("setlist helpers", () => {
       view.warnings.some((w) => w.code === "SETLIST_MISSING_PROJECT"),
     ).toBe(true);
   });
+
+  it("normalize defaults break label and clamps time budget", () => {
+    const n = normalizeSetlist({
+      enabled: true,
+      items: [
+        {
+          type: "break",
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          label: "   ",
+          durationMinutes: 5,
+        },
+      ],
+      timeBudgetMinutes: 9999,
+    });
+    expect(n.items[0]).toMatchObject({
+      type: "break",
+      label: "Przerwa / Zapowiedź",
+    });
+    expect(n.timeBudgetMinutes).toBe(24 * 60);
+  });
+
+  it("resolveSetlistNext returns first when current is outside list", () => {
+    const setlist = {
+      ...defaultSetlist(),
+      enabled: true,
+      projectIds: ["11111111-1111-4111-8111-111111111111"],
+      items: [
+        {
+          type: "project" as const,
+          projectId: "11111111-1111-4111-8111-111111111111",
+        },
+      ],
+    };
+    expect(resolveSetlistNext(setlist, library, "not-in-list")?.name).toBe("A");
+    expect(
+      resolveSetlistNext(
+        { ...setlist, projectIds: [], items: setlist.items },
+        library,
+        null,
+      )?.name,
+    ).toBe("A");
+  });
+
+  it("buildSetlistView uses projectIds fallback when items all pruned", () => {
+    const view = buildSetlistView(
+      {
+        version: 1,
+        enabled: true,
+        items: [
+          { type: "project", projectId: "99999999-9999-4999-8999-999999999999" },
+        ],
+        projectIds: ["99999999-9999-4999-8999-999999999999"],
+        autoAdvance: { enabled: false },
+        timeBudgetMinutes: 45,
+      },
+      library,
+      null,
+    );
+    // pruned items empty but original items non-empty → projectIds rebuild path
+    expect(view.items).toEqual([]);
+    expect(view.warnings.some((w) => w.code === "SETLIST_MISSING_PROJECT")).toBe(
+      true,
+    );
+  });
 });
