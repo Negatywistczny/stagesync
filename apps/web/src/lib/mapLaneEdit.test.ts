@@ -3,7 +3,11 @@ import { createProjectV5Seed } from "@stagesync/shared";
 import {
   deleteMapEvent,
   deleteMapEvents,
+  findMapEventAtTicks,
   insertMapEventAt,
+  isMapLaneId,
+  mapEventIds,
+  mapSnapMode,
   moveMapEvent,
   moveMapEventsByDelta,
   splitMapAt,
@@ -130,3 +134,105 @@ describe("mapLaneEdit", () => {
     expect(next.tempoMap[0]!.startTicks).toBe(0);
   });
 });
+
+describe("mapLaneEdit remaining", () => {
+  it("isMapLaneId + insert/delete/move helpers across lanes", () => {
+    expect(isMapLaneId("tempo")).toBe(true);
+    expect(isMapLaneId("forma")).toBe(false);
+    expect(mapSnapMode(true, false)).toBe("off");
+
+    let p = seed();
+    expect(insertMapEventAt(p, "tempo", 0, "bar")).toBe(p); // dup at 0
+    p = insertMapEventAt(p, "metrum", 7680, "bar");
+    expect(p.meterMap.some((e) => e.startTicks === 7680)).toBe(true);
+    expect(insertMapEventAt(p, "metrum", 7680, "bar")).toBe(p);
+    p = insertMapEventAt(p, "tonacja", 7680, "bar");
+    expect(p.keyMap?.some((e) => e.startTicks === 7680)).toBe(true);
+    expect(insertMapEventAt(p, "tonacja", 7680, "bar")).toBe(p);
+
+    expect(upsertTempoAt(p, 0, 10)).toBe(p);
+    expect(upsertMeterAt(p, 100, 0, 4)).toBe(p); // invalid
+    const keyUp = upsertKeyAt(p, 7680, { tonic: "D", mode: "minor" });
+    expect(keyUp.keyMap?.find((e) => e.startTicks === 7680)?.key.tonic).toBe("D");
+
+    const meterExtra = p.meterMap.find((e) => e.startTicks === 7680)!;
+    const keyExtra = p.keyMap!.find((e) => e.startTicks === 7680)!;
+    expect(deleteMapEvent(p, "metrum", meterExtra.id).meterMap).toHaveLength(
+      p.meterMap.length - 1,
+    );
+    expect(deleteMapEvent(p, "tonacja", keyExtra.id).keyMap).toHaveLength(
+      p.keyMap!.length - 1,
+    );
+    expect(deleteMapEvent(p, "metrum", "missing")).toBe(p);
+
+    const movedM = moveMapEvent(p, "metrum", meterExtra.id, 15360, "bar");
+    expect(movedM.meterMap.find((e) => e.id === meterExtra.id)?.startTicks).toBe(15360);
+    expect(moveMapEvent(p, "metrum", "missing", 100)).toBe(p);
+    expect(moveMapEvent(p, "metrum", meterExtra.id, 7680, "bar")).toBe(p);
+    const collideM = insertMapEventAt(p, "metrum", 15360, "bar");
+    const m7680 = collideM.meterMap.find((e) => e.startTicks === 7680)!;
+    expect(moveMapEvent(collideM, "metrum", m7680.id, 15360, "bar")).toBe(collideM);
+
+    const movedK = moveMapEvent(p, "tonacja", keyExtra.id, 15360, "bar");
+    expect(movedK.keyMap?.find((e) => e.id === keyExtra.id)?.startTicks).toBe(15360);
+    expect(moveMapEvent(p, "tonacja", "missing", 1)).toBe(p);
+    expect(moveMapEvent(p, "tonacja", keyExtra.id, 7680, "bar")).toBe(p);
+    const collideK = insertMapEventAt(p, "tonacja", 15360, "bar");
+    const k7680 = collideK.keyMap!.find((e) => e.startTicks === 7680)!;
+    expect(moveMapEvent(collideK, "tonacja", k7680.id, 15360, "bar")).toBe(collideK);
+
+    // tempo collide + same + missing
+    const withT = insertMapEventAt(seed(), "tempo", 7680, "bar");
+    const t = withT.tempoMap.find((e) => e.startTicks === 7680)!;
+    expect(moveMapEvent(withT, "tempo", t.id, 7680, "bar")).toBe(withT);
+    expect(moveMapEvent(withT, "tempo", "nope", 100)).toBe(withT);
+    const with2 = insertMapEventAt(withT, "tempo", 15360, "bar");
+    expect(moveMapEvent(with2, "tempo", t.id, 15360, "bar")).toBe(with2);
+
+    expect(findMapEventAtTicks(p, "tempo", 0)?.startTicks).toBe(0);
+    expect(findMapEventAtTicks(p, "metrum", 7680)?.id).toBe(meterExtra.id);
+    expect(findMapEventAtTicks(p, "tonacja", 999)).toBeNull();
+    expect(mapEventIds(p, "tempo").length).toBeGreaterThan(0);
+    expect(mapEventIds(p, "metrum")).toContain(meterExtra.id);
+    expect(mapEventIds(p, "tonacja")).toContain(keyExtra.id);
+
+    expect(moveMapEventsByDelta(p, "tempo", [], 100)).toBe(p);
+    expect(moveMapEventsByDelta(p, "tempo", ["x"], 0)).toBe(p);
+    const deltaM = moveMapEventsByDelta(p, "metrum", [meterExtra.id], -3840, "bar");
+    expect(deltaM.meterMap.find((e) => e.id === meterExtra.id)!.startTicks).toBeLessThan(7680);
+    const deltaK = moveMapEventsByDelta(p, "tonacja", [keyExtra.id], 3840, "bar");
+    expect(deltaK.keyMap!.find((e) => e.id === keyExtra.id)!.startTicks).toBe(11520);
+
+    expect(deleteMapEvents(p, "tempo", ["tempo-default", meterExtra.id])).toBeTruthy();
+    const onlyKey = { ...seed(), keyMap: [{ id: "k0", startTicks: 0, key: { tonic: "C" as const, mode: "major" as const } }] };
+    expect(deleteMapEvent(onlyKey, "tonacja", "k0")).toBe(onlyKey);
+  });
+});
+
+  it("covers key default, meter upsert update, negative multi-delta sort", () => {
+    const emptyKey = { ...seed(), keyMap: [] };
+    const inserted = insertMapEventAt(emptyKey, "tonacja", 3840, "bar");
+    expect(inserted.keyMap?.some((e) => e.startTicks === 3840)).toBe(true);
+
+    const updated = upsertMeterAt(seed(), 0, 5, 4);
+    expect(updated.defaultMeter).toEqual({ numerator: 5, denominator: 4 });
+    const again = upsertMeterAt(updated, 0, 6, 8);
+    expect(again.defaultMeter).toEqual({ numerator: 6, denominator: 8 });
+    const withExtra = insertMapEventAt(again, "metrum", 7680, "bar");
+    const patched = upsertMeterAt(withExtra, 7680, 7, 8);
+    expect(patched.meterMap.find((e) => e.startTicks === 7680)).toMatchObject({
+      numerator: 7,
+      denominator: 8,
+    });
+    expect(patched.meterMap.find((e) => e.startTicks === 0)?.numerator).toBe(6);
+
+    let p = seed();
+    p = insertMapEventAt(p, "tempo", 7680, "bar");
+    p = insertMapEventAt(p, "tempo", 15360, "bar");
+    const ids = p.tempoMap.filter((e) => e.startTicks !== 0).map((e) => e.id);
+    const back = moveMapEventsByDelta(p, "tempo", ids, -3840, "bar");
+    expect(
+      back.tempoMap.find((e) => e.id === ids[0])!.startTicks,
+    ).toBeLessThan(7680);
+  });
+
