@@ -108,7 +108,7 @@ export function compressBarChordsToProgression(
 export function detectCycleLength(barChords: string[]): number {
   const len = barChords.length;
   if (len <= 1) return len;
-  for (let cycleLen = 1; cycleLen <= len; cycleLen++) {
+  for (let cycleLen = 1; cycleLen < len; cycleLen++) {
     if (len % cycleLen !== 0) continue;
     let repeats = true;
     for (let i = cycleLen; i < len; i++) {
@@ -193,7 +193,8 @@ function barIndexAtDisplay(
   for (let i = 0; i < bars.length; i++) {
     const b = bars[i]!;
     if (displayTicks >= b.startTicks && displayTicks < b.endTicks) {
-      return i;
+      barIndexInSection = i;
+      break;
     }
     if (displayTicks >= b.endTicks) barIndexInSection = i;
   }
