@@ -1,17 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
   CLIP_EDGE_HIT_PX,
   CONTENT_DEFAULT_SNAP_MODE,
   contentSnapModeFromModifiers,
+  cursorForHitZone,
+  effectiveTimelineTool,
+  getSessionSnapMode,
   hitTestAudioClipZone,
   hitTestClipZone,
+  loadSessionSnapModeFromStorage,
   PENCIL_DRAG_THRESHOLD_PX,
+  persistSessionSnapMode,
   resolvePencilRangeTicks,
   setSessionSnapMode,
   snapModeFromModifiers,
+  snapModeFromPointerEvent,
   snapModeFromStorageKey,
   snapModeToStorageKey,
+  toolAllowsClipHitZones,
+  toolIsPencilDraw,
 } from "./timelineGesture.js";
 
 describe("resolvePencilRangeTicks", () => {
@@ -123,5 +131,55 @@ describe("snap modes + hit zones", () => {
     expect(hitTestAudioClipZone(118, 4, 120, 40, true, true)).toBe("fade-out");
     expect(hitTestAudioClipZone(2, 30, 120, 40, true, true)).toBe("start");
     expect(hitTestAudioClipZone(2, 4, 120, 40, true, false)).toBe("start");
+  });
+});
+
+describe("timelineGesture remaining", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("storage load/persist, tools, cursor, pointer snap", () => {
+    expect(toolAllowsClipHitZones("pointer")).toBe(true);
+    expect(toolAllowsClipHitZones("pencil")).toBe(false);
+    expect(toolIsPencilDraw("pencil")).toBe(true);
+    expect(toolIsPencilDraw("eraser")).toBe(false);
+    expect(effectiveTimelineTool("pointer", true, true)).toBe("zoom");
+    expect(effectiveTimelineTool("pencil", true, false)).toBe("pencil");
+    expect(snapModeFromPointerEvent({ metaKey: true, ctrlKey: false })).toBe("off");
+    expect(cursorForHitZone("body", false)).toBe("crosshair");
+    expect(cursorForHitZone("fade-in", true)).toBe("col-resize");
+    expect(cursorForHitZone("fade-out", true)).toBe("col-resize");
+    expect(cursorForHitZone("start", true)).toBe("ew-resize");
+    expect(cursorForHitZone("end", true)).toBe("ew-resize");
+    expect(cursorForHitZone("body", true)).toBe("grab");
+    expect(snapModeToStorageKey("off")).toBe("off");
+    expect(snapModeFromStorageKey(null)).toBeNull();
+    expect(snapModeFromStorageKey("")).toBeNull();
+    expect(snapModeFromStorageKey("nope")).toBeNull();
+
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => { store.set(k, v); },
+      removeItem: () => undefined,
+      clear: () => undefined,
+    });
+    persistSessionSnapMode("beat");
+    expect(getSessionSnapMode()).toBe("beat");
+    expect(store.get("stagesync-timeline-snap-mode")).toBe("beat");
+    store.set("stagesync-timeline-snap-mode", "subdivision:16");
+    expect(loadSessionSnapModeFromStorage()).toEqual({ kind: "subdivision", parts: 16 });
+    store.clear();
+    expect(loadSessionSnapModeFromStorage()).toBe(getSessionSnapMode());
+
+    vi.stubGlobal("localStorage", {
+      getItem: () => { throw new Error("blocked"); },
+      setItem: () => { throw new Error("blocked"); },
+    });
+    expect(loadSessionSnapModeFromStorage()).toBe(getSessionSnapMode());
+    persistSessionSnapMode("bar"); // swallows throw
+    expect(getSessionSnapMode()).toBe("bar");
   });
 });
