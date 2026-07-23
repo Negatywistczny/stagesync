@@ -25,4 +25,26 @@ describe("akordyEdit", () => {
     p = deleteAkordyClip(p, id);
     expect(p.akordy.clips).toHaveLength(0);
   });
+
+  it("overwrite creates -r remnant resolved via parent id", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = {
+      ...p,
+      akordy: {
+        clips: [
+          { id: "akord-main", symbol: "Dm", startTicks: 0, lengthTicks: 15360 },
+        ],
+      },
+    };
+    p = pencilAkordyClick(p, 3840, "G");
+    const remnant = p.akordy.clips.find((c) => c.id.endsWith("-r"));
+    expect(remnant).toBeTruthy();
+    expect(remnant!.symbol).toBe("Dm");
+  });
+
+  it("resolveAkordClipAt returns null outside clips", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    expect(resolveAkordClipAt(p, 0)).toBeNull();
+  });
+
 });

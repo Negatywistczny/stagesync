@@ -25,4 +25,21 @@ describe("tekstEdit", () => {
     p = deleteTekstClip(p, id);
     expect(p.tekst.clips).toHaveLength(0);
   });
+
+  it("overwrite creates -r remnant resolved via parent id", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = {
+      ...p,
+      tekst: {
+        clips: [
+          { id: "tekst-main", text: "KeepMe", startTicks: 0, lengthTicks: 15360 },
+        ],
+      },
+    };
+    p = pencilTekstClick(p, 3840, "New");
+    const remnant = p.tekst.clips.find((c) => c.id.endsWith("-r"));
+    expect(remnant).toBeTruthy();
+    expect(remnant!.text).toBe("KeepMe");
+  });
+
 });
