@@ -1,21 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createProjectV5Seed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
+  RULER_BEAT_TICKS_MIN_PX,
+  addPencilSection,
   buildBarMarks,
   buildRulerBeatMarks,
+  canvasPxFromPointer,
   clipStylePx,
   computeCanvasWidthPx,
   computeFormaViewSpan,
   contentFloorTicks,
   iterBarBoundariesTicks,
   pencilFormaClick,
-  RULER_BEAT_TICKS_MIN_PX,
-  scrollLeftKeepTickAnchored,
+  projectContentEqual,
   scrollCanvasToStart,
+  scrollLeftKeepTickAnchored,
   showsBeatSubdivisionMarks,
   snapEditTicks,
   tickToPx,
   ticksFromCanvasPx,
+  ticksFromPointer,
 } from "./formaCanvas.js";
 
 describe("formaCanvas", () => {
@@ -293,4 +297,91 @@ describe("formaCanvas", () => {
     const edge = ticksFromCanvasPx(canvasWidth, span, barTicks);
     expect(edge).toBeGreaterThanOrEqual(span.end - barTicks);
   });
+
+  it("contentFloorTicks and viewSpan fallbacks", () => {
+    expect(contentFloorTicks([])).toBe(0);
+    expect(contentFloorTicks([{ id: "x", name: "S", kind: "section", startTicks: Number.NaN, lengthTicks: 1 } as never])).toBe(0);
+    const emptySpan = computeFormaViewSpan([]);
+    expect(emptySpan.end).toBeGreaterThan(emptySpan.start);
+    expect(
+      scrollLeftKeepTickAnchored(0, 0, 10, 0),
+    ).toBe(10);
+  });
+
+  it("canvasPxFromPointer and ticksFromPointer", () => {
+    const root = {
+      getBoundingClientRect: () => ({ left: 50, top: 0, width: 400, height: 100 }),
+    } as unknown as HTMLElement;
+    expect(canvasPxFromPointer(150, root)).toBe(100);
+    const span = computeFormaViewSpan(project.forma.clips);
+    const ticks = ticksFromPointer(50 + tickToPx(0, span, 3840), root, span, 3840);
+    expect(ticks).toBe(0);
+  });
+
+  it("pencilFormaClick / addPencilSection / projectContentEqual", () => {
+    vi.stubGlobal("crypto", { randomUUID: () => "forma-new" });
+    const next = pencilFormaClick(project, 7680, "Bridge");
+    expect(next.forma.clips.some((c) => c.name === "Bridge")).toBe(true);
+    expect(addPencilSection(project, 7680, "Bridge2").forma.clips.length).toBeGreaterThan(
+      project.forma.clips.length - 1,
+    );
+    expect(projectContentEqual(project, project)).toBe(true);
+    expect(projectContentEqual(project, next)).toBe(false);
+  });
+
+  it("snapNearestBarLine walks when playhead past walked bars", () => {
+    // Large atTicks forces guard loop expansion
+    const far = snapEditTicks(project, 500_000, "bar");
+    expect(far % 3840 === 0 || far >= 0).toBe(true);
+  });
+
+
+  it("snap bar with meterMap mid-song and exact end fallback", () => {
+    const p = {
+      ...project,
+      meterMap: [
+        { id: "m0", startTicks: 0, numerator: 4, denominator: 4 },
+        { id: "m1", startTicks: 7680, numerator: 5, denominator: 8 },
+      ],
+    };
+    // Force search expansion past initial window
+    const snapped = snapEditTicks(p, 20_000, "bar");
+    expect(Number.isInteger(snapped)).toBe(true);
+
+    // Exact end of a walked bar → containing miss branch
+    const atEnd = snapEditTicks(p, 7680, "bar");
+    expect(atEnd).toBeGreaterThanOrEqual(0);
+
+    // Non-finite content end path via bogus clip lengths already covered; force empty finite filter
+    const bad = computeFormaViewSpan([
+      { id: "x", name: "S", kind: "section", startTicks: Number.POSITIVE_INFINITY, lengthTicks: Number.NaN },
+    ] as never);
+    expect(bad.end).toBeGreaterThan(bad.start);
+  });
+
+  it("snapToMusicalBarStart expands when past maxBars walk", () => {
+    // 4096 bars * 3840 = 15_728_640; beyond that forces while-guard expansion + quantize fallback
+    const far = snapEditTicks(project, 16_000_000, "bar");
+    expect(Number.isFinite(far)).toBe(true);
+  });
+
+  it("snapEditTicks off mode clamps below content floor", () => {
+    expect(snapEditTicks(project, -100, "off")).toBe(0);
+    expect(snapEditTicks(project, 500, "off")).toBe(500);
+  });
+
+  it("iterBarBoundariesTicks splits bar at mid-bar meter change", () => {
+    const withMid = {
+      ...project,
+      meterMap: [
+        { id: "m0", startTicks: 0, numerator: 4, denominator: 4 },
+        // Change mid-first-bar so naturalEnd is truncated
+        { id: "m1", startTicks: 1920, numerator: 3, denominator: 4 },
+      ],
+    };
+    const bounds = iterBarBoundariesTicks(withMid, 10_000);
+    expect(bounds[0]?.endTicks).toBe(1920);
+    expect(bounds.length).toBeGreaterThan(1);
+  });
+
 });

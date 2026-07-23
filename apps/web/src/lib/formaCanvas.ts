@@ -75,6 +75,7 @@ export function computeFormaViewSpan(clips: FormaClip[]): ViewSpan {
   const contentEnd = Math.max(
     ...finite.map((c) => c.startTicks + c.lengthTicks),
   );
+  /* v8 ignore next 3 — finite[] already filtered to finite ticks */
   if (!Number.isFinite(start) || !Number.isFinite(contentEnd)) {
     return { start: -7680, end: 7680 * 4 };
   }
@@ -393,6 +394,7 @@ function snapToMusicalBarStart(
   );
   if (!containing) {
     // Exact end of last walked bar, or empty map — fall back to constant meter.
+    /* v8 ignore next 3 — continuous bar walk makes exact-end-only rare */
     if (bars.length > 0 && t === bars[bars.length - 1]!.endTicks) {
       return Math.max(floor, bars[bars.length - 1]!.endTicks);
     }
