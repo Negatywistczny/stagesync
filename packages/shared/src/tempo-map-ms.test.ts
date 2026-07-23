@@ -27,4 +27,16 @@ describe("ticksToMsAlongTempoMap", () => {
     const ms = ticksToMsAlongTempoMap(0, 3840, p);
     expect(ms).toBeCloseTo(halfFast + halfSlow, 5);
   });
+
+  it.each([
+    { from: Number.NaN, to: 100 },
+    { from: 0, to: Number.NaN },
+    { from: Number.POSITIVE_INFINITY, to: 100 },
+    { from: 0, to: Number.NEGATIVE_INFINITY },
+  ] as const)("rejects non-finite ticks ($from → $to)", ({ from, to }) => {
+    const p = createProjectV5Seed("a", "S", "2026-07-20T00:00:00.000Z");
+    expect(() => ticksToMsAlongTempoMap(from, to, p)).toThrow(
+      /ticks must be finite/,
+    );
+  });
 });

@@ -68,4 +68,30 @@ describe("ticksToBbtAlongMeterMap", () => {
       });
     }
   });
+
+  it.each([
+    { ticks: Number.NaN },
+    { ticks: 1.5 },
+    { ticks: Number.POSITIVE_INFINITY },
+  ] as const)("ticksToBbtAlongMeterMap rejects non-int ticks ($ticks)", ({
+    ticks,
+  }) => {
+    expect(() => ticksToBbtAlongMeterMap(ticks, TS_4_4, [])).toThrow(
+      /ticks must be a finite integer/,
+    );
+  });
+
+  it.each([
+    { bar: Number.NaN, beat: 1, tick: 0 },
+    { bar: 0, beat: 1.5, tick: 0 },
+    { bar: 0, beat: 1, tick: Number.POSITIVE_INFINITY },
+    { bar: 0.5, beat: 1, tick: 0 },
+  ] as const)(
+    "bbtToTicksAlongMeterMap rejects non-int BBT ($bar.$beat.$tick)",
+    ({ bar, beat, tick }) => {
+      expect(() =>
+        bbtToTicksAlongMeterMap(bar, beat, tick, TS_4_4, []),
+      ).toThrow(/bar, beat, and tick must be finite integers/);
+    },
+  );
 });
