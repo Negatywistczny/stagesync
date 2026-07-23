@@ -77,6 +77,51 @@ describe("normalizeLibraryImport", () => {
     expect(() => normalizeLibraryImport({ projects: [] })).toThrow(/puste/);
   });
 
+  it("rejects v5 pack with more than 1024 projects", () => {
+    const projects = Array.from({ length: 1025 }, (_, i) => ({
+      name: `P${i}`,
+      formatVersion: 5,
+    }));
+    expect(() =>
+      normalizeLibraryImport({
+        stagesyncExportVersion: 3,
+        projects,
+      }),
+    ).toThrow(/max 1024/);
+  });
+
+  it("rejects legacy database with more than 1024 migrated songs", () => {
+    const template = {
+      id: "song-1",
+      title: "T",
+      formatVersion: 4,
+      key: { tonic: "C", mode: "major" },
+      tempo: 120,
+      markers: [{ id: "mk-end", kind: "END", startAbs: 8 }],
+      sections: [
+        { id: 0, name: "Countdown", startAbs: 0 },
+        { id: 1, name: "Verse", startAbs: 4 },
+      ],
+      vocal: { lines: [] },
+      chords: { clips: [] },
+    };
+    const songs = Array.from({ length: 1025 }, (_, i) => ({
+      ...template,
+      id: `song-${i}`,
+      title: `Song ${i}`,
+    }));
+    expect(() =>
+      normalizeLibraryImport(
+        {
+          schemaVersion: 4,
+          songFormatMigrationRev: 8,
+          songs,
+        },
+        { updatedAt: "2026-07-20T18:00:00.000Z" },
+      ),
+    ).toThrow(/max 1024/);
+  });
+
   it("migrates docs/examples legacy fixture", () => {
     const raw = JSON.parse(readFileSync(REPO_EXAMPLES, "utf8")) as unknown;
     expect(detectLibraryImportFormat(raw)).toEqual({
