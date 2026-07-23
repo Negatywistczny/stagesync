@@ -1,0 +1,82 @@
+# Coverage gates are per layer (flags). Do not chase overall %.
+# Shells → Playwright smoke, not Vitest line coverage.
+# See docs/STANDARDS.md § Coverage.
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+  status:
+    # Overall / default project+patch: informational only (shells skew %).
+    project:
+      default:
+        informational: true
+      shared:
+        target: "85%"
+        threshold: "1%"
+        flags:
+          - shared
+      server:
+        # Interim ≥70%; raise to 75% after server route/storage coverage (Phase 3).
+        target: "70%"
+        threshold: "2%"
+        flags:
+          - server
+      web:
+        # Measured against flag paths (lib + transport), not shells.
+        target: "65%"
+        threshold: "5%"
+        flags:
+          - web
+    patch:
+      default:
+        informational: true
+      shared:
+        target: "85%"
+        threshold: "0%"
+        flags:
+          - shared
+      server:
+        target: "70%"
+        threshold: "2%"
+        flags:
+          - server
+      web:
+        target: "65%"
+        threshold: "5%"
+        flags:
+          - web
+
+# Shells and CSS modules must not fail patch/project status.
+ignore:
+  - "apps/web/src/shells/**/*"
+  - "**/*.module.css"
+
+flags:
+  shared:
+    paths:
+      - packages/shared/**
+    carryforward: true
+  server:
+    paths:
+      - apps/server/**
+    carryforward: true
+  web:
+    # Lib + transport only — shells ignored above / covered by Playwright.
+    paths:
+      - apps/web/src/lib/**
+      - apps/web/src/transport/**
+    carryforward: true
+  # Ready when packages/ui gains test:coverage + CI upload (Phase 5).
+  ui:
+    paths:
+      - packages/ui/**
+    carryforward: true
+
+comment:
+  layout: "reach,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  hide_project_coverage: false

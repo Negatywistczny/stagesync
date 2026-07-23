@@ -19,6 +19,26 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  changes:
+    name: path-filter
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Detect web src changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/src/**'
+              - 'apps/web/e2e/**'
+              - 'apps/web/package.json'
+              - 'apps/web/playwright.config.*'
+
   build:
     name: lint-types-test-build
     runs-on: ubuntu-latest
@@ -52,15 +72,36 @@ jobs:
       - name: Coverage (shared + server + web)
         run: pnpm test:coverage
 
-      - name: Upload coverage to Codecov
+      # Separate uploads so Codecov flags map 1:1 to packages (see codecov.yml).
+      - name: Upload coverage (shared)
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # Surface upload/auth failures; do not hide empty Codecov dashboards.
           fail_ci_if_error: true
-          # Comma-separated — multiline YAML is passed as one path with embedded newlines.
           disable_search: true
-          files: packages/shared/coverage/lcov.info,apps/server/coverage/lcov.info,apps/web/coverage/lcov.info
+          files: packages/shared/coverage/lcov.info
+          flags: shared
+          name: shared
+
+      - name: Upload coverage (server)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          disable_search: true
+          files: apps/server/coverage/lcov.info
+          flags: server
+          name: server
+
+      - name: Upload coverage (web)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          disable_search: true
+          files: apps/web/coverage/lcov.info
+          flags: web
+          name: web
 
       - name: Migrate legacy dry-run (M9)
         run: |
@@ -69,6 +110,26 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  # Phase 6 scaffolding: path-filter + stub. Real Forma drag E2E → docs/TODO.md.
+  playwright:
+    name: playwright-smoke
+    needs: changes
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && needs.changes.outputs.web == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Playwright Forma smoke (stub)
+        run: |
+          echo "::notice::Playwright Forma drag E2E not implemented yet — see apps/web/e2e/README.md and docs/TODO.md"
+          echo "CI scaffolding OK (path-filter gated). Replace this step with pnpm exec playwright test when ready."
 
   docker:
     name: compose-build

@@ -19,8 +19,10 @@
 - **Bez** Git Flow: nie używamy `develop` ani `release/*`.
 - CI: workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) na `push` /
   PR do `main` — na PR wymagany job `lint-types-test-build`; Docker Compose
-  tylko na push do `main` / `workflow_dispatch`; Rust/Tauri wyłącznie w
-  [`.github/workflows/release.yml`](.github/workflows/release.yml) (tagi `v*`).
+  tylko na push do `main` / `workflow_dispatch`; job `playwright-smoke` na push
+  do `main` albo PR gdy zmienia się `apps/web/src/**` (docs-only → skip);
+  Rust/Tauri wyłącznie w [`.github/workflows/release.yml`](.github/workflows/release.yml)
+  (tagi `v*`). Coverage: flagi Codecov per warstwa — [docs/STANDARDS.md](docs/STANDARDS.md).
 - Wkładki (PR / patch) przyjmujemy na warunkach [LICENSE](LICENSE) (BSL 1.1).
 
 Higiena listy zadań i parytetu: [docs/TODO.md](docs/TODO.md), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
