@@ -46,6 +46,33 @@ describe("resolvePencilRangeTicks", () => {
     expect(r.startTicks).toBe(0);
     expect(r.lengthTicks).toBe(3840);
   });
+
+  it.each([
+    { downTicks: Number.NaN, upTicks: 100, barTicks: bar, dxPx: 40 },
+    { downTicks: 0, upTicks: Number.NaN, barTicks: bar, dxPx: 40 },
+    { downTicks: 0, upTicks: 100, barTicks: Number.NaN, dxPx: 40 },
+    { downTicks: 0, upTicks: 100, barTicks: bar, dxPx: Number.NaN },
+    {
+      downTicks: Number.POSITIVE_INFINITY,
+      upTicks: 100,
+      barTicks: bar,
+      dxPx: 40,
+    },
+  ] as const)(
+    "falls back to 1-bar click when ticks/dx are non-finite",
+    (opts) => {
+      const r = resolvePencilRangeTicks(opts.downTicks, opts.upTicks, {
+        barTicks: opts.barTicks,
+        dxPx: opts.dxPx,
+        floorTicks: 0,
+      });
+      expect(r.isClick).toBe(true);
+      expect(r.startTicks).toBe(0);
+      if (Number.isFinite(opts.barTicks)) {
+        expect(r.lengthTicks).toBe(Math.max(1, Math.floor(opts.barTicks)));
+      }
+    },
+  );
 });
 
 describe("snap modes + hit zones", () => {
