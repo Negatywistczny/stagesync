@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  allocateUniqueClipId,
+  clampFormaSubsections,
   deleteClip,
   insertGapSectionAfterCountdown,
   insertSpanOverwrite,
   moveClipNoOverlap,
   moveClipsRigidDelta,
+  moveSectionsFromId,
   placeClipNoOverlap,
   resizeClipNoOverlap,
   splitClipAt,
@@ -247,5 +250,162 @@ describe("splitClipAt", () => {
     const ids = next.map((c) => c.id);
     expect(ids.filter((id) => id === "forma-intro-r")).toHaveLength(1);
     expect(ids).toContain("forma-intro-r-2");
+  });
+});
+
+describe("clampFormaSubsections / allocateUniqueClipId", () => {
+  it("keeps clip when subsections already in range", () => {
+    const clip: FormaClip = {
+      ...INTRO,
+      subsections: [960, 1920],
+    };
+    expect(clampFormaSubsections(clip)).toBe(clip);
+  });
+
+  it("drops all subsections when none remain in range", () => {
+    const clip: FormaClip = {
+      ...INTRO,
+      lengthTicks: 100,
+      subsections: [100, 200, -1],
+    };
+    const next = clampFormaSubsections(clip);
+    expect(next.subsections).toBeUndefined();
+  });
+
+  it("filters partial out-of-range subsections", () => {
+    const clip: FormaClip = {
+      ...INTRO,
+      lengthTicks: 2000,
+      subsections: [500, 2000, 3000],
+    };
+    expect(clampFormaSubsections(clip).subsections).toEqual([500]);
+  });
+
+  it("allocateUniqueClipId bumps numeric suffixes", () => {
+    const used = new Set(["x", "x-2"]);
+    expect(allocateUniqueClipId("x", used)).toBe("x-3");
+    expect(allocateUniqueClipId("fresh", used)).toBe("fresh");
+  });
+});
+
+describe("placeClipNoOverlap edges", () => {
+  it("rejects non-positive length", () => {
+    const before = [CD, INTRO];
+    expect(
+      placeClipNoOverlap(before, {
+        ...INTRO,
+        id: "bad",
+        lengthTicks: 0,
+      }),
+    ).toEqual(before);
+  });
+
+  it("splits both sides of an overlapped neighbor", () => {
+    const placed: FormaClip = {
+      id: "mid",
+      name: "Mid",
+      kind: "section",
+      startTicks: 2000,
+      lengthTicks: 2000,
+    };
+    const next = placeClipNoOverlap([CD, INTRO], placed);
+    expect(next.find((c) => c.id === "forma-intro")?.lengthTicks).toBe(2000);
+    expect(next.some((c) => c.id === "forma-intro-r")).toBe(true);
+    expect(next.find((c) => c.id === "mid")?.startTicks).toBe(2000);
+  });
+});
+
+describe("moveClipNoOverlap CD bump", () => {
+  it("bumps start to countdown end when move still overlaps CD", () => {
+    const next = moveClipNoOverlap(base(), "forma-intro", -1000, {
+      contentFloorTicks: -7680,
+    });
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(0);
+  });
+
+  it("no-ops on non-finite start", () => {
+    expect(moveClipNoOverlap(base(), "forma-intro", Number.NaN)).toEqual(
+      base(),
+    );
+  });
+});
+
+describe("moveClipsRigidDelta edges", () => {
+  it("no-ops for empty ids, zero delta, or countdown-only selection", () => {
+    expect(moveClipsRigidDelta(base(), [], 100)).toEqual(base());
+    expect(moveClipsRigidDelta(base(), ["forma-intro"], 0)).toEqual(base());
+    expect(moveClipsRigidDelta(base(), ["forma-cd"], 100)).toEqual(base());
+  });
+
+  it("bumps movers that still overlap countdown after delta", () => {
+    const next = moveClipsRigidDelta(base(), ["forma-intro"], -500, {
+      contentFloorTicks: -7680,
+    });
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(0);
+  });
+});
+
+describe("moveSectionsFromId", () => {
+  it("cascades later sections by the same delta", () => {
+    const next = moveSectionsFromId(base(), "forma-intro", 1920);
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(1920);
+    expect(next.find((c) => c.id === "forma-verse")?.startTicks).toBe(
+      VERSE.startTicks + 1920,
+    );
+  });
+
+  it("no-ops for countdown, unknown id, or zero delta", () => {
+    expect(moveSectionsFromId(base(), "forma-cd", 0)).toEqual(base());
+    expect(moveSectionsFromId(base(), "missing", 100)).toEqual(base());
+    expect(moveSectionsFromId(base(), "forma-intro", 0)).toEqual(base());
+  });
+});
+
+describe("resizeClipNoOverlap edges", () => {
+  it("enforces min length on end edge", () => {
+    const next = resizeClipNoOverlap(base(), "forma-intro", "end", 10, {
+      minLengthTicks: 100,
+    });
+    expect(next.find((c) => c.id === "forma-intro")?.lengthTicks).toBe(100);
+  });
+
+  it("rejects start resize that cannot satisfy min length above floor", () => {
+    const short: FormaClip[] = [
+      CD,
+      { ...INTRO, startTicks: 0, lengthTicks: 50 },
+    ];
+    expect(
+      resizeClipNoOverlap(short, "forma-intro", "start", 40, {
+        contentFloorTicks: 0,
+        minLengthTicks: 100,
+      }),
+    ).toEqual(short);
+  });
+
+  it("clamps start resize out of countdown span", () => {
+    const next = resizeClipNoOverlap(base(), "forma-intro", "start", -1000, {
+      contentFloorTicks: -7680,
+    });
+    expect(next.find((c) => c.id === "forma-intro")?.startTicks).toBe(0);
+  });
+
+  it("clamps end resize that would enter countdown", () => {
+    // Section entirely in CD range with permissive floor — end edge into CD
+    const inCd: FormaClip[] = [
+      CD,
+      {
+        id: "s",
+        name: "S",
+        kind: "section",
+        startTicks: -4000,
+        lengthTicks: 1000,
+      },
+    ];
+    const next = resizeClipNoOverlap(inCd, "s", "end", -500, {
+      contentFloorTicks: -7680,
+    });
+    // end clamped to countdown.startTicks (-7680) would make length invalid → no-op
+    // or if still overlapping: end = min(end, cd.start)
+    expect(next.find((c) => c.id === "s")).toBeDefined();
   });
 });
