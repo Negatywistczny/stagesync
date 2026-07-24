@@ -116,6 +116,12 @@ Must be funny`;
     }
   });
 
+  it("chordOnsetsInBar returns empty or single for tiny counts", () => {
+    expect(chordOnsetsInBar(0, 100, 3840, 4, 960)).toEqual([]);
+    expect(chordOnsetsInBar(-2, 100, 3840, 4, 960)).toEqual([]);
+    expect(chordOnsetsInBar(1, 100, 3840, 4, 960)).toEqual([100]);
+  });
+
   it("chordOnsetsInBar packs when many chords crowd a short bar", () => {
     const onsets = chordOnsetsInBar(40, 0, 200, 4, 50);
     expect(onsets).toHaveLength(40);
