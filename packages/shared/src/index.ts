@@ -259,12 +259,9 @@ export {
   formatChordParts,
   parseAndFormat,
   parseAndFormatParts,
-  chordLiteralToSymbolDisplay,
-  formatChordForDisplay,
   formatHybridPolishB,
   formatMusicalAccidentals,
   resolveChordNameParts,
-  splitChordSuperscript,
   type ChordDisplayOptions,
   type ChordNameParts,
 } from "./chord-display.js";
