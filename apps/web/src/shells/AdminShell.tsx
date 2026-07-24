@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
@@ -1285,8 +1285,14 @@ function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const titleId = useId();
   return (
-    <div className={styles.overlay} role="dialog" aria-modal>
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal
+      aria-labelledby={titleId}
+    >
       <button
         type="button"
         className={styles.backdrop}
@@ -1295,7 +1301,7 @@ function Modal({
       />
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
-          <h2>{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           <ShellIconButton label="Zamknij" onClick={onClose}>
             ×
           </ShellIconButton>
