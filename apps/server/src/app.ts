@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import { join } from "node:path";
-import type { HealthResponse } from "@stagesync/shared";
+import { projectEndTicks, type HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import {
   createFileLogger,
@@ -96,11 +96,48 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
         : undefined,
     });
   const presence = options.presence ?? createClientPresence();
+  let midiSeekEndCache: { projectId: string; endTicks: number } | null = null;
+  const refreshMidiSeekEnd = (projectId: string | null): void => {
+    if (!projectId) {
+      midiSeekEndCache = null;
+      return;
+    }
+    if (midiSeekEndCache?.projectId === projectId) return;
+    void stores.getProject(projectId).then(
+      (project) => {
+        midiSeekEndCache = {
+          projectId,
+          endTicks: projectEndTicks(project),
+        };
+      },
+      () => {
+        if (midiSeekEndCache?.projectId === projectId) {
+          midiSeekEndCache = null;
+        }
+      },
+    );
+  };
+  refreshMidiSeekEnd(transport.getActiveProjectId());
+  transport.onChange((msg) => {
+    refreshMidiSeekEnd(msg.activeProjectId);
+  });
   const midi =
     options.midi ??
     createMidiHost(transport, {
       onProgramChange: createMidiProgramChangeHandler(transport, stores),
       configFile: midiPaths.midiConfigFile,
+      clampSeekTicks: (ticks) => {
+        const t = Math.max(0, ticks);
+        const id = transport.getActiveProjectId();
+        if (
+          id &&
+          midiSeekEndCache?.projectId === id &&
+          Number.isFinite(midiSeekEndCache.endTicks)
+        ) {
+          return Math.min(t, midiSeekEndCache.endTicks);
+        }
+        return t;
+      },
     });
   wirePauseAtSongEnd(transport, stores);
   wireSetlistAutoAdvance(transport, stores);

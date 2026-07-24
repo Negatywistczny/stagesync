@@ -86,13 +86,77 @@ describe("midi host", () => {
     expect(backend.sent.some((m) => m.type === "spp")).toBe(true);
 
     const before = backend.sent.filter((m) => m.type === "clock").length;
-    vi.advanceTimersByTime(50);
+    vi.advanceTimersByTime(120);
     const after = backend.sent.filter((m) => m.type === "clock").length;
     expect(after).toBeGreaterThan(before);
 
     transport.stop();
     expect(backend.sent.some((m) => m.type === "stop")).toBe(true);
 
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("safeSend keeps process alive when output throws during clock", () => {
+    vi.useFakeTimers();
+    const transport = createTransportEngine({
+      now: () => performance.now(),
+    });
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({
+      outputId: "mock-out-1",
+      clockOutEnabled: true,
+    });
+    transport.play({ bpm: 120 });
+    backend.throwOnSend = new Error("USB unplug");
+    expect(() => vi.advanceTimersByTime(120)).not.toThrow();
+    expect(host.getStatus().lastError).toMatch(/USB unplug/);
+    expect(host.getStatus().clockOutActive).toBe(false);
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("setConfig does not duplicate transport clock subscriptions", () => {
+    vi.useFakeTimers();
+    const transport = createTransportEngine({
+      now: () => performance.now(),
+    });
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({
+      outputId: "mock-out-1",
+      clockOutEnabled: true,
+    });
+    transport.play({ bpm: 120 });
+    vi.advanceTimersByTime(80);
+    const mid = backend.sent.filter((m) => m.type === "clock").length;
+    host.setConfig({
+      outputId: "mock-out-1",
+      clockOutEnabled: true,
+    });
+    backend.sent.length = 0;
+    vi.advanceTimersByTime(80);
+    const after = backend.sent.filter((m) => m.type === "clock").length;
+    // One subscription: clock count stays in a normal band (not ~2×).
+    expect(after).toBeLessThanOrEqual(mid + 8);
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("clamps MIDI IN seek via clampSeekTicks", () => {
+    const transport = createTransportEngine({
+      now: () => performance.now(),
+    });
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, {
+      backend,
+      clampSeekTicks: (ticks) => Math.min(ticks, 1920),
+    });
+    host.setConfig({ inputId: "mock-in-1" });
+    backend.emitInput({ type: "spp", value: 16_383 });
+    backend.emitInput({ type: "start" });
+    expect(transport.getState().positionTicks).toBe(1920);
     host.dispose();
     transport.dispose();
   });

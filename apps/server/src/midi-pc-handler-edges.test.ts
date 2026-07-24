@@ -112,4 +112,57 @@ describe("createMidiProgramChangeHandler edges", () => {
     expect(transport.loadProject).toHaveBeenCalledWith(song.id, song);
     expect(transport.stop).toHaveBeenCalledWith(song);
   });
+
+  it("keeps the latest Program Change while a load is in flight", async () => {
+    const a = {
+      ...createProjectV5Seed(
+        "00000000-0000-4000-8000-00000000bb10",
+        "A",
+        "2026-07-24T00:00:00.000Z",
+      ),
+      midiProgramId: 1,
+    };
+    const b = {
+      ...createProjectV5Seed(
+        "00000000-0000-4000-8000-00000000bb11",
+        "B",
+        "2026-07-24T00:00:00.000Z",
+      ),
+      midiProgramId: 2,
+    };
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const stores = mockStores([a, b]);
+    stores.getLibrary = vi.fn(async () => {
+      await gate;
+      return {
+        version: 1 as const,
+        projects: [
+          {
+            id: a.id,
+            name: a.name,
+            updatedAt: a.updatedAt,
+            midiProgramId: 1,
+            isTemplate: false,
+          },
+          {
+            id: b.id,
+            name: b.name,
+            updatedAt: b.updatedAt,
+            midiProgramId: 2,
+            isTemplate: false,
+          },
+        ],
+      };
+    });
+    const transport = mockTransport(null);
+    const onPc = createMidiProgramChangeHandler(transport, stores);
+    onPc(1);
+    onPc(2);
+    release();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(transport.loadProject).toHaveBeenCalledWith(b.id, b);
+  });
 });

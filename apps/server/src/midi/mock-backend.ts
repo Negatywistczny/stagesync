@@ -20,6 +20,8 @@ export function createMockMidiBackend(
   emitInput(msg: MidiRealtimeMessage): void;
   /** Messages sent to the open output (tests). */
   readonly sent: MidiRealtimeMessage[];
+  /** When set, `send` throws (native I/O failure simulation). */
+  throwOnSend: Error | null;
 } {
   const inputs = options.inputs ?? [
     { id: "mock-in-1", name: "Mock In 1", direction: "input" as const },
@@ -33,9 +35,10 @@ export function createMockMidiBackend(
   let openOutputId: string | null = null;
   const sent: MidiRealtimeMessage[] = [];
 
-  return {
-    kind: "mock",
+  const backend = {
+    kind: "mock" as const,
     sent,
+    throwOnSend: null as Error | null,
 
     listInputs() {
       return inputs.map((p) => ({ ...p }));
@@ -45,7 +48,7 @@ export function createMockMidiBackend(
       return outputs.map((p) => ({ ...p }));
     },
 
-    openInput(id, onMessage) {
+    openInput(id: string, onMessage: (msg: MidiRealtimeMessage) => void) {
       if (!inputs.some((p) => p.id === id)) {
         throw new Error(`Unknown MIDI input: ${id}`);
       }
@@ -58,7 +61,7 @@ export function createMockMidiBackend(
       inputHandler = null;
     },
 
-    openOutput(id) {
+    openOutput(id: string) {
       if (!outputs.some((p) => p.id === id)) {
         throw new Error(`Unknown MIDI output: ${id}`);
       }
@@ -69,12 +72,13 @@ export function createMockMidiBackend(
       openOutputId = null;
     },
 
-    send(msg) {
+    send(msg: MidiRealtimeMessage) {
       if (!openOutputId) return;
+      if (backend.throwOnSend) throw backend.throwOnSend;
       sent.push(msg);
     },
 
-    emitInput(msg) {
+    emitInput(msg: MidiRealtimeMessage) {
       if (!openInputId || !inputHandler) return;
       inputHandler(msg);
     },
@@ -86,4 +90,6 @@ export function createMockMidiBackend(
       sent.length = 0;
     },
   };
+
+  return backend;
 }

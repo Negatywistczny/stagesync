@@ -1,14 +1,15 @@
 /**
  * Host MIDI I/O + clock — SSOT = transport engine (ADR 0002 / 0010).
  *
- * - Clock OUT: Start/Continue/Stop/SPP/Clock on selected output from transport.
+ * - Clock OUT: Start/Continue/Stop/SPP from transport edges; Clock pulses from
+ *   domain tick deltas (not an independent setInterval).
  * - Clock IN: rate meters for Admin; beat boundaries for Beat→WS meter.
  * - No MIDI device I/O in Tauri.
  */
 
 import {
   MIDI_CLOCK_PPQN,
-  midiClockIntervalMs,
+  ticksToMidiClockIndex,
   sppToTicks,
   ticksToSpp,
   type MidiHostConfig,
@@ -25,6 +26,8 @@ import { createDefaultMidiBackend } from "./native-backend.js";
 import type { TransportEngine } from "../transport/engine.js";
 
 const WINDOW_MS = 1000;
+/** Max MIDI clock pulses emitted in one transport notify (anti-flood on huge jumps). */
+const MAX_CLOCK_BURST = MIDI_CLOCK_PPQN * 8;
 
 class RateMeter {
   private stamps: number[] = [];
@@ -57,6 +60,10 @@ export type MidiHostOptions = {
   onBeatToWs?: () => void;
   /** Optional: Program Change on input → load project by midiProgramId. */
   onProgramChange?: (program: number) => void;
+  /**
+   * Clamp MIDI IN seek targets (e.g. to project end). Default: max(0, ticks).
+   */
+  clampSeekTicks?: (ticks: number) => number;
   /** Absolute path to midi-config.json — load at boot, save on setConfig. */
   configFile?: string;
   /** Override initial config (tests); otherwise env + optional file. */
@@ -69,6 +76,8 @@ export function createMidiHost(
 ) {
   const backend = options.backend ?? createDefaultMidiBackend();
   const now = options.now ?? (() => Date.now());
+  const clampSeek =
+    options.clampSeekTicks ?? ((ticks: number) => Math.max(0, ticks));
 
   let config: MidiHostConfig = (() => {
     if (options.initialConfig) {
@@ -88,9 +97,9 @@ export function createMidiHost(
 
   let lastError: string | null = null;
   let clockOutActive = false;
-  let clockTimer: ReturnType<typeof setInterval> | null = null;
+  /** Last MIDI clock index emitted while clock OUT is active (tick-driven). */
+  let lastEmittedClockIndex: number | null = null;
   let wasPlaying = false;
-  let lastBpm: number | null = null;
   let lastTicks: number | null = null;
   let inputClockCount = 0;
   /** Last Song Position Pointer (ticks) from MIDI IN — applied on Start/Continue. */
@@ -110,23 +119,42 @@ export function createMidiHost(
     lastError = null;
   }
 
-  function stopClockOutTimer(): void {
-    if (clockTimer !== null) {
-      clearInterval(clockTimer);
-      clockTimer = null;
-    }
+  function stopClockOut(): void {
     clockOutActive = false;
+    lastEmittedClockIndex = null;
   }
 
-  function startClockOutTimer(bpm: number): void {
-    stopClockOutTimer();
-    if (!config.clockOutEnabled || !config.outputId) return;
-    const interval = midiClockIntervalMs(bpm);
-    clockOutActive = true;
-    lastBpm = bpm;
-    clockTimer = setInterval(() => {
-      backend.send({ type: "clock" });
-    }, interval);
+  /** Never throw from MIDI OUT — USB unplug must not kill the host process. */
+  function safeSend(msg: MidiRealtimeMessage): boolean {
+    try {
+      backend.send(msg);
+      return true;
+    } catch (err) {
+      setError(err);
+      return false;
+    }
+  }
+
+  function emitClocksThrough(positionTicks: number, ppq: number): void {
+    if (!clockOutActive || !config.outputId) return;
+    const idx = ticksToMidiClockIndex(Math.max(0, positionTicks), ppq);
+    if (lastEmittedClockIndex == null) {
+      lastEmittedClockIndex = idx;
+      return;
+    }
+    const from = lastEmittedClockIndex;
+    if (idx <= from) {
+      lastEmittedClockIndex = idx;
+      return;
+    }
+    const target = Math.min(idx, from + MAX_CLOCK_BURST);
+    for (let i = from + 1; i <= target; i += 1) {
+      if (!safeSend({ type: "clock" })) {
+        stopClockOut();
+        return;
+      }
+    }
+    lastEmittedClockIndex = idx;
   }
 
   function sendTransportEdge(
@@ -135,22 +163,34 @@ export function createMidiHost(
   ): void {
     if (!config.clockOutEnabled || !config.outputId) return;
     if (edge === "start" || edge === "continue") {
-      backend.send({
-        type: "spp",
-        value: ticksToSpp(msg.positionTicks, msg.ppq),
-      });
-      backend.send({ type: edge });
-      startClockOutTimer(msg.bpm);
+      if (
+        !safeSend({
+          type: "spp",
+          value: ticksToSpp(msg.positionTicks, msg.ppq),
+        })
+      ) {
+        stopClockOut();
+        return;
+      }
+      if (!safeSend({ type: edge })) {
+        stopClockOut();
+        return;
+      }
+      clockOutActive = true;
+      lastEmittedClockIndex = ticksToMidiClockIndex(
+        Math.max(0, msg.positionTicks),
+        msg.ppq,
+      );
     } else {
-      stopClockOutTimer();
-      backend.send({ type: "stop" });
+      stopClockOut();
+      safeSend({ type: "stop" });
     }
   }
 
   function onTransport(msg: TransportTickMessage): void {
     if (!config.clockOutEnabled || !config.outputId) {
       if (wasPlaying && !msg.playing) {
-        stopClockOutTimer();
+        stopClockOut();
       }
       wasPlaying = msg.playing;
       lastTicks = msg.positionTicks;
@@ -163,19 +203,24 @@ export function createMidiHost(
     } else if (!msg.playing && wasPlaying) {
       sendTransportEdge(msg, "stop");
     } else if (msg.playing && clockOutActive) {
-      if (lastBpm !== msg.bpm) {
-        startClockOutTimer(msg.bpm);
-      }
       // Seek while playing: position jumped more than a quarter → re-SPP + Continue.
       if (
         lastTicks != null &&
         Math.abs(msg.positionTicks - lastTicks) > msg.ppq
       ) {
         sendTransportEdge(msg, "continue");
+      } else {
+        emitClocksThrough(msg.positionTicks, msg.ppq);
       }
     }
     wasPlaying = msg.playing;
     lastTicks = msg.positionTicks;
+  }
+
+  function seekFromMidi(rawTicks: number): void {
+    const ticks = clampSeek(rawTicks);
+    if (!Number.isInteger(ticks)) return;
+    transport.seek(ticks);
   }
 
   function onInputMessage(msg: MidiRealtimeMessage): void {
@@ -201,9 +246,9 @@ export function createMidiHost(
         inputClockCount = 0;
         try {
           if (lastSppTicks != null) {
-            transport.seek(lastSppTicks);
+            seekFromMidi(lastSppTicks);
           } else {
-            transport.seek(0);
+            seekFromMidi(0);
           }
           transport.play();
         } catch (err) {
@@ -213,7 +258,7 @@ export function createMidiHost(
       case "continue":
         try {
           if (lastSppTicks != null) {
-            transport.seek(lastSppTicks);
+            seekFromMidi(lastSppTicks);
           }
           transport.play();
         } catch (err) {
@@ -254,11 +299,11 @@ export function createMidiHost(
           edge,
         );
       } else {
-        stopClockOutTimer();
+        stopClockOut();
       }
     } catch (err) {
       setError(err);
-      stopClockOutTimer();
+      stopClockOut();
     }
   }
 
@@ -323,11 +368,8 @@ export function createMidiHost(
       if (!Number.isInteger(program) || program < 0 || program > 127) return;
       if (!Number.isInteger(channel) || channel < 0 || channel > 15) return;
       if (!config.outputId) return;
-      try {
-        backend.send({ type: "program", channel, program });
+      if (safeSend({ type: "program", channel, program })) {
         clearError();
-      } catch (err) {
-        setError(err);
       }
     },
 
@@ -339,38 +381,37 @@ export function createMidiHost(
       if (!config.outputId) {
         return { sent: false, channels: 0 };
       }
-      try {
-        for (let channel = 0; channel < 16; channel += 1) {
-          backend.send({
+      for (let channel = 0; channel < 16; channel += 1) {
+        if (
+          !safeSend({
             type: "cc",
             channel,
             controller: 120,
             value: 0,
-          });
-          backend.send({
+          }) ||
+          !safeSend({
             type: "cc",
             channel,
             controller: 121,
             value: 0,
-          });
-          backend.send({
+          }) ||
+          !safeSend({
             type: "cc",
             channel,
             controller: 123,
             value: 0,
-          });
+          })
+        ) {
+          return { sent: false, channels: 0 };
         }
-        clearError();
-        return { sent: true, channels: 16 };
-      } catch (err) {
-        setError(err);
-        return { sent: false, channels: 0 };
       }
+      clearError();
+      return { sent: true, channels: 16 };
     },
 
     dispose(): void {
       unsub();
-      stopClockOutTimer();
+      stopClockOut();
       backend.dispose();
     },
   };

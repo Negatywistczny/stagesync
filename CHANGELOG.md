@@ -27,6 +27,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Audio / edycja:** split respektuje mapę tempa przy `trimIn`; resize z kolizją nie wywala UI; multi-przesuwanie trzyma klip wiodący; Gain odrzuca NaN.
 - **Akordy:** symbol w Inspectorze nie jest kanonizowany w trakcie wpisywania; normalizacja przy wyjściu z pola.
 
+#### 🎛️ Audio / MIDI / Transport
+- **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii; SPP nie seekuje poza koniec utworu.
+
 #### 🖥️ App Shell & UI
 - **Admin:** „Zarządzaj bazą”, modale, log systemowy, Zapisz / Wyczyść setlistę i toolbar Batch PC z poprawnymi etykietami i powiązaniami ARIA ([#510](https://github.com/Negatywistyczny/stagesync/pull/510), [#545](https://github.com/Negatywistyczny/stagesync/pull/545), [#575](https://github.com/Negatywistyczny/stagesync/pull/575), [#577](https://github.com/Negatywistyczny/stagesync/pull/577), [#599](https://github.com/Negatywistyczny/stagesync/pull/599)).
 - **Client:** status ładowania partytury i paneli, pusty Set oraz reset zoomu partytury ogłaszane czytnikom; wordmark z kontekstem shelła ([#578](https://github.com/Negatywistyczny/stagesync/pull/578), [#580](https://github.com/Negatywistyczny/stagesync/pull/580), [#582](https://github.com/Negatywistyczny/stagesync/pull/582), [#592](https://github.com/Negatywistyczny/stagesync/pull/592), [#596](https://github.com/Negatywistyczny/stagesync/pull/596)).
@@ -46,8 +49,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Fokus rename:** po rename ścieżki myszą w docku / Mixerze nie zostaje „przyklejony” pierścień fokusu; przy Tab pierścień nadal widać ([#485](https://github.com/Negatywistyczny/stagesync/pull/485)).
 
 #### 🎛️ Audio / MIDI / Transport
-- **Offline:** przy utracie połączenia komunikat jest ogłaszany jako alert (czytniki ekranu) ([#488](https://github.com/Negatywistyczny/stagesync/pull/488)).
-
+- **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii; SPP nie seekuje poza koniec utworu.
 #### 🖥️ App Shell & UI
 - **Client / Akordy:** zapis literowy w projekcie (`Cmaj7`, `Am7(b5)`, …); na scenie pryma na linii bazowej, a jakość i symbole (`Δ`, `°`, `ø`, `−`, `+`) w indeksie górnym — w kafelkach bas po ukośniku pod prymą, w Hero/nast. nadal w jednej linii ([#478](https://github.com/Negatywistyczny/stagesync/issues/478)).
 - **Client / etykiety AT:** następny w setliście, obecność na Scenie, wskaźnik połączenia i dodawanie busa mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/Negatywistyczny/stagesync/pull/480)).

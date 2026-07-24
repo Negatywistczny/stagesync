@@ -1,33 +1,32 @@
 # Triage: Audyt MIDI StageSync v5 (ryzyka i testy)
 
 **Źródło:** [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) (Gemini Deep Search)  
-**Status:** `open`
+**Status:** `closed`
 **Obszar:** MIDI host / PC IN·OUT / clock·SPP  
-**Data triage:** 2026-07-24
+**Data triage:** 2026-07-24 (smoke + fix)
 
 ## Werdykt przydatności
 
-**Wysoka wartość sceniczna.** Tabela RSK-MIDI-01…10 + rekomendacja clock z ticków SSOT (nie `setInterval`) jest zgodna z [ADR 0002](../../../adr/0002-timebase-ssot.md). Ton „100% pewności” zawyżony — weryfikuj kodem/testem; nie claim Done bez repro.
+**Wysoka wartość sceniczna.** RSK-06/03/01–02/08 potwierdzone i naprawione. Kanały PC (04/05) = świadomy limit bez UI. RSK-10 odrzucony (`setConfig` nie dubluje `onChange`).
 
-## Priorytet weryfikacji (kolejność)
+## Rozstrzygnięte
 
-| ID | Temat | Impact (jeśli true) | Effort | Stan |
-|----|--------|---------------------|--------|------|
-| RSK-MIDI-06 | `backend.send` w pętli clock bez catch → crash procesu po USB unplug | Krytyczny (show) | Test mock throw + safeSend | `hypothesis` |
-| RSK-MIDI-03 | Clock z `setInterval` vs tick SSOT (jitter/dryf) | Wysoki | Porównaj z `onChange` / tick delta | `hypothesis` |
-| RSK-MIDI-01 / 02 | `inFlight` drop PC IN/OUT przy szybkiej serii | Wysoki | Debounce/kolejka latest | `hypothesis` |
-| RSK-MIDI-04 / 05 | Omni IN + hardkod kanał OUT 0 | Wysoki (wrong song / no preset) | Config channel + filtr | `hypothesis` |
-| RSK-MIDI-10 | Podwójne `transport.onChange` po `setConfig` | Wysoki | Unsubscribe / idempotent wire | `hypothesis` |
-| RSK-MIDI-07 | Brak debounce/rate-limit PC/SPP flood | Średni–wysoki | Rate limit test | `hypothesis` |
-| RSK-MIDI-08 | SPP → seek poza długość projektu | Średni | Clamp do endTicks | `hypothesis` |
-| RSK-MIDI-09 | mock vs native error parity | Średni (DX/testy) | Align mock throws | `hypothesis` |
+| ID | Temat | Stan | Dowód / fix |
+|----|--------|------|-------------|
+| RSK-MIDI-06 | `backend.send` w clock bez catch → crash USB | `fixed` | `safeSend` + stop clock OUT; test throw |
+| RSK-MIDI-03 | Clock z `setInterval` vs SSOT | `fixed` | Clock z delty ticków transportu (`ticksToMidiClockIndex`) |
+| RSK-MIDI-01 | `inFlight` drop PC IN | `fixed` | Latest-wins `pending` + `pump` |
+| RSK-MIDI-02 | `inFlight` drop PC OUT | `fixed` | Latest-wins w `wireMidiProgramChangeOut` |
+| RSK-MIDI-08 | SPP seek poza koniec projektu | `fixed` | `clampSeekTicks` + cache end w `app.ts` |
+| RSK-MIDI-09 | mock vs native error parity | `fixed` | `safeSend` + mock `throwOnSend` |
+| RSK-MIDI-10 | Podwójne `onChange` po `setConfig` | `rejected` | Jedna subskrypcja przy create; test |
+| RSK-MIDI-04 / 05 | Omni IN + hardkod OUT ch 0 | `limit` | Brak pola kanału w `MidiHostConfig` / UI — 5.2+ |
+| RSK-MIDI-07 | Rate-limit PC/SPP flood | `partial` | PC: latest-wins; SPP nie seekuje aż Start — bez osobnego limitera |
 
 ## Kontekst konstytucji
 
-- MIDI **nie** jest drugim zegarem muzycznym klienta — SSOT = serwer ([ADR 0002](../../../adr/0002-timebase-ssot.md)).
-- Po potwierdzeniu: TODO Must/Should + testy brzegowe z raportu — **nie** CHANGELOG bez fixa.
+- MIDI ≠ drugi zegar klienta — SSOT serwer ([ADR 0002](../../../adr/0002-timebase-ssot.md)).
 
-## Następny krok eng
+## Następny krok
 
-1. Grep `setInterval` / `inFlight` / `sendProgramChange` w `apps/server/src/midi/`.
-2. Najpierw RSK-06 + RSK-03 (crash + SSOT clock).
+Opcjonalnie 5.2+: `pcInChannel` / `pcOutChannel` w config + Admin. Dump = provenance.
