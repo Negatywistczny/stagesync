@@ -1072,6 +1072,7 @@ function RoleSettingsFields({
           </Button>
           <Button
             variant="ghost"
+            aria-label="Resetuj zoom partytury"
             onClick={() => onScoreZoomChange(SCORE_ZOOM_DEFAULT)}
           >
             Reset
