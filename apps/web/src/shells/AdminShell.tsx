@@ -795,7 +795,12 @@ function SongsView({
             >
               + Nowy Utwór
             </Button>
-            <Button variant="ghost" disabled={locked} onClick={onBatchPc}>
+            <Button
+              variant="ghost"
+              disabled={locked}
+              aria-label="Numeracja Program Change"
+              onClick={onBatchPc}
+            >
               Batch PC
             </Button>
           </div>
