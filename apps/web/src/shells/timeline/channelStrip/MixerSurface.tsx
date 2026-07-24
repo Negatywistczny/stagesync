@@ -101,7 +101,7 @@ export function MixerSurface({
     <div
       className={styles.root}
       role="region"
-      aria-label="Mixer"
+      aria-label="Mikser"
       onDoubleClick={onEmptyDoubleClick}
     >
       <div className={styles.bank}>

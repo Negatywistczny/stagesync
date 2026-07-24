@@ -48,7 +48,7 @@ export function ClickStrip({ state, callbacks }: ClickStripProps) {
         onGainReset={callbacks.onGainReset}
         onHoldClear={callbacks.onHoldClear}
         gainAriaLabel="Fader Click"
-        holdAriaLabel="Peak Hold Click — kliknij aby wyzerować"
+        holdAriaLabel="Szczyt Click — kliknij aby wyzerować"
       />
 
       <div className={styles.faderMeterRow}>
