@@ -107,6 +107,10 @@
 | [#587](https://github.com/Negatywistyczny/stagesync/pull/587) | Timeline help empty live | aria-live on Brak wyników |
 | [#588](https://github.com/Negatywistyczny/stagesync/pull/588) | ShellIconButton test | aria-label/pressed/controls |
 | [#589](https://github.com/Negatywistyczny/stagesync/pull/589) | Hybrid Polish B edges | empty + B# / Bmaj7 |
+| [#590](https://github.com/Negatywistyczny/stagesync/pull/590) | AppHeader chrome labels | Pomoc/Wygląd/Ponów tests |
+| [#591](https://github.com/Negatywistyczny/stagesync/pull/591) | formatPanReadout edges | NaN/near-zero/clamp |
+| [#592](https://github.com/Negatywistyczny/stagesync/pull/592) | Score zoom Reset label | Resetuj zoom partytury |
+| [#593](https://github.com/Negatywistyczny/stagesync/pull/593) | Touch nudge missing clip | shouldShowTouchNudge false |
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
