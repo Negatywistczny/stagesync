@@ -127,6 +127,7 @@ describe("createProjectSeed / nextMidiProgramId", () => {
   });
 
   it("nextMidiProgramId skips used ids and templates", () => {
+    expect(nextMidiProgramId([])).toBe(0);
     expect(
       nextMidiProgramId([
         { midiProgramId: 0 },
@@ -134,6 +135,12 @@ describe("createProjectSeed / nextMidiProgramId", () => {
         { midiProgramId: 2 },
       ]),
     ).toBe(1);
+    expect(
+      nextMidiProgramId([
+        { midiProgramId: undefined },
+        { isTemplate: true, midiProgramId: 0 },
+      ]),
+    ).toBe(0);
     const full = Array.from({ length: 128 }, (_, i) => ({ midiProgramId: i }));
     expect(nextMidiProgramId(full)).toBeNull();
   });
