@@ -104,6 +104,42 @@ describe("system routes — network / logs / apply-update / settings edges", () 
     }
   });
 
+  it("POST apply-update: 400 on invalid body", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-upd-bad-"));
+    dirs.push(dataDir);
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const missingTarget = await fetch(`${baseUrl}/api/system/apply-update`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      expect(missingTarget.status).toBe(400);
+      const missingBody = (await missingTarget.json()) as {
+        ok?: boolean;
+        error?: string;
+      };
+      expect(missingBody.ok).toBe(false);
+      expect(String(missingBody.error ?? "")).toMatch(/Invalid body/i);
+
+      const badTarget = await fetch(`${baseUrl}/api/system/apply-update`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ target: "desktop" }),
+      });
+      expect(badTarget.status).toBe(400);
+
+      const unknownKey = await fetch(`${baseUrl}/api/system/apply-update`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ target: "host", extra: true }),
+      });
+      expect(unknownKey.status).toBe(400);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
   it("POST apply-update: 501 without env; 200/502 with mocked Watchtower", async () => {
     const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-upd-"));
     dirs.push(dataDir);

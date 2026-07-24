@@ -45,8 +45,10 @@ describe("appearance", () => {
         return null;
       },
     });
+    vi.stubGlobal("getComputedStyle", () => ({
+      getPropertyValue: () => "",
+    }));
   });
-
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -80,6 +82,15 @@ describe("appearance", () => {
   it("applyAppearance is idempotent for current state", () => {
     applyAppearance({ light: false, highContrast: false });
     expect(rootAttrs.has("data-theme")).toBe(false);
+  });
+
+  it("theme-color prefers --ss-color-bg when computed", () => {
+    vi.stubGlobal("getComputedStyle", () => ({
+      getPropertyValue: (name: string) =>
+        name === "--ss-color-bg" ? "#112233" : "",
+    }));
+    applyAppearance({ light: true, highContrast: false });
+    expect(themeMetaContent).toBe("#112233");
   });
 
   it("read/set tolerate private-mode localStorage throws", () => {
