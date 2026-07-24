@@ -10,7 +10,7 @@
 | [ROADMAP](./ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) | Bieżąca checklista (→ TODO) |
 | [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
-| [docs/analysis/](./analysis/README.md) | `reports/` (kanon) + `working/` (scratch) dla audytów release/alpha | Scratch-notes jako SSOT |
+| [docs/analysis/](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
 | [docs/adr/](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |

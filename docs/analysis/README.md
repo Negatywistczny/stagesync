@@ -1,15 +1,16 @@
 # StageSync v5 — Analysis
 
-Dwa typy artefaktow:
+Trzy typy artefaktów:
 
 | Typ | Katalog | Git | Wzorzec nazwy |
 |-----|---------|-----|---------------|
-| Raport kanoniczny | `reports/` | tak | `report-<temat>.md` |
-| Notatka robocza | `working/` | nie | `working-<temat>.md` |
+| Raport kanoniczny | [`reports/`](./reports/) | tak | `report-<temat>.md` |
+| Inspiracja (zewn. audyt) | [`inspiracje/`](./inspiracje/) | tak | `Audyt-<Temat>.md` + `Audyt-<Temat>.triage.md` |
+| Notatka robocza | [`working/`](./working/) | nie | `working-<temat>.md` |
 
 ## reports/
 
-Finalne dokumenty, do ktorych mozna linkowac z `TODO`, `ROADMAP` i PR.
+Finalne dokumenty, do których można linkować z `TODO`, `ROADMAP` i PR.
 
 ### Indeks (aktywne + archiwum potrzebne do bramek)
 
@@ -27,12 +28,20 @@ Zamknięte plany PR / QA sign-off α3–α7 / briefy α3–α4 usunięte po cutc
 
 Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0011](../adr/0011-ui-parity-behavior.md).
 
+## inspiracje/
+
+Eksperymentalne audyty zewnętrzne (Deep Search itd.). **Nie są kanonem** — wymagają triage i repro w kodzie.
+
+Inspiracje: [inspiracje/README.md](./inspiracje/README.md) — kategorie `historia-bootstrap/`, `audyty-silnik/`, `referencje-daw/`, `ui/`.
+
 ## working/
 
 Lokalny scratch agenta. Ignorowane przez git.
-Po syntezie wnioski przenos do `reports/report-<temat>.md`.
+Po syntezie wnioski przenieś do `reports/report-<temat>.md` (albo najpierw `inspiracje/` + triage, jeśli źródło zewnętrzne).
 
-## Zasady dla agentow
+## Zasady dla agentów
 
-1. Nowe wnioski → `reports/report-<temat>.md`
-2. Scratch sesji → `working/working-<temat>.md`
+1. Potwierdzone wnioski produktowe / bramki → `reports/report-<temat>.md`
+2. Surowy audyt zewnętrzny → `inspiracje/` + `*.triage.md` (status dokumentu `open` aż do repro; szczegóły: [inspiracje/README.md](./inspiracje/README.md))
+3. Scratch sesji → `working/working-<temat>.md`
+4. Inspiracje **nie** idą do CHANGELOG; do TODO dopiero po weryfikacji dysku
