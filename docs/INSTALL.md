@@ -47,7 +47,8 @@ docker login ghcr.io -u <twój-login-github> -p <PAT>
 ```sh
 cp .env.example .env
 # Wypełnij:
-#   STAGESYNC_VERSION=5.1.1
+#   STAGESYNC_VERSION=5.1.2
+
 #   GHCR_USER=<login>
 #   GHCR_TOKEN=<PAT read:packages>
 #   WATCHTOWER_TOKEN=<losowy secret — openssl rand -hex 32>

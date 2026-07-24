@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.1.0` wydane 2026-07-24 na `main` (`v5.1.0`) — linia **5.1** = **Launch & Mix**; linia **5.0** = **Overture** (`v5.0.0` / `v5.0.1`).  
+**Stan:** `5.1.2` wydane 2026-07-25 na `main` (`v5.1.2`) — linia **5.1** = **Launch & Mix**; linia **5.0** = **Overture** (`v5.0.0` / `v5.0.1`).  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** nowe funkcje po Launch & Mix → linia **5.2+**. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).
@@ -13,7 +13,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 
 ### Must (operator residual po 5.1.0)
 
-- [ ] **G1–G10** na instalatorach `v5.1.0` (mac/Win HW) — bez claim green w docs
+- [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — bez claim green w docs
+
 
 ### Etap 5.2+ (Przyszłość)
 
