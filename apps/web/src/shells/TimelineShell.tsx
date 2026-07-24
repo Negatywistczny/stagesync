@@ -532,8 +532,7 @@ export function TimelineShell() {
   const eyeMenuRef = useRef<HTMLDivElement>(null);
   const toolsVisBtnRef = useRef<HTMLButtonElement>(null);
   const toolsVisMenuRef = useRef<HTMLDivElement>(null);
-  const eyeMenuId = useId();
-  const toolsVisMenuId = useId();
+  const songScreenId = useId();
   const [eyeMenuPos, setEyeMenuPos] = useState<{
     top: number;
     left: number;
@@ -5663,7 +5662,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             title="Widoczne narzędzia na pasku"
             aria-expanded={toolsVisOpen}
             aria-haspopup="menu"
-            aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
             onClick={() => setToolsVisOpen((v) => !v)}
           >
             <IconSettings />
@@ -5830,6 +5828,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             onClick={() => setSongScreenOpen(true)}
             aria-haspopup="dialog"
             aria-expanded={songScreenOpen}
+            aria-controls={songScreenOpen ? songScreenId : undefined}
           >
             {draftProject?.name ?? "Wybierz utwór"}
           </button>
@@ -5953,7 +5952,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       aria-label="Widoczność ścieżek"
                       aria-expanded={eyeOpen}
                       aria-haspopup="menu"
-                      aria-controls={eyeOpen ? eyeMenuId : undefined}
                       onClick={() => setEyeOpen((v) => !v)}
                     >
                       <IconEye />
@@ -6462,12 +6460,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                             ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
                             : "Dodaj pustą ścieżkę audio"
                       }
-                      aria-label={
-                        draftProject &&
-                        draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
-                          ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
-                          : "Dodaj pustą ścieżkę audio"
-                      }
                       onClick={onAddAudioTrack}
                     >
                       + Dodaj Ścieżkę
@@ -6598,7 +6590,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     max={127}
                     value={draftProject.midiProgramId ?? ""}
                     disabled={draftProject.isTemplate === true}
-                    aria-label="PC (MIDI)"
+                    aria-label="Program Change"
                     onChange={(e) => {
                       const n = Number(e.target.value);
                       if (!Number.isFinite(n)) return;
@@ -6680,7 +6672,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <span className={styles.metaKeyRow}>
                     <select
                       className={styles.nameInput}
-                      aria-label="Tonika start"
+                      aria-label="Tonic start"
                       value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
                       onChange={(e) => {
                         const mode =
@@ -7097,7 +7089,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Gain clip (dB)
                   <Slider
-                    aria-label="Gain klipu (dB)"
+                    aria-label="Gain clip"
                     min={-24}
                     max={12}
                     step={0.5}
@@ -7117,7 +7109,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade In (ms)
                   <Slider
-                    aria-label="Fade in (ms)"
+                    aria-label="Fade in"
                     min={0}
                     max={2000}
                     step={10}
@@ -7135,7 +7127,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade Out (ms)
                   <Slider
-                    aria-label="Fade out (ms)"
+                    aria-label="Fade out"
                     min={0}
                     max={2000}
                     step={10}
@@ -7450,7 +7442,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 : "Rozłączony"}
           </span>
         </div>
-        <div className={styles.zooms} role="group" aria-label="Powiększenie i snap">
+        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
           <label className={styles.snapPicker}>
             <span className={styles.snapPickerLab}>Snap</span>
             <select
@@ -7480,16 +7472,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-              title="Powiększenie UI — gęstość chrome Timeline / Mixer (85–125%)"
-              aria-label="Powiększenie UI"
+              title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
+              aria-label="Zoom UI"
             />
           </label>
           <label
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Powiększenie H dotyczy osi czasu (niedostępne w Mixerze)"
-                : "Powiększenie poziome (oś czasu)"
+                ? "Zoom H dotyczy osi czasu (niedostępny w Mixerze)"
+                : "Zoom poziomy (oś czasu)"
             }
           >
             H
@@ -7501,15 +7493,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               value={zoomH}
               disabled={timelineSurface === "mixer"}
               onChange={(e) => setZoomH(Number(e.target.value))}
-              aria-label="Powiększenie poziome"
+              aria-label="Zoom poziomy"
             />
           </label>
           <label
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Powiększenie V dotyczy wysokości ścieżek (niedostępne w Mixerze)"
-                : "Powiększenie pionowe (wysokość ścieżek)"
+                ? "Zoom V dotyczy wysokości ścieżek (niedostępny w Mixerze)"
+                : "Zoom pionowy (wysokość ścieżek)"
             }
           >
             V
@@ -7521,7 +7513,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               value={zoomV}
               disabled={timelineSurface === "mixer"}
               onChange={(e) => setVerticalZoom(Number(e.target.value))}
-              aria-label="Powiększenie pionowe"
+              aria-label="Zoom pionowy"
             />
           </label>
         </div>
@@ -7768,7 +7760,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {songScreenOpen ? (
-        <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="song-screen-title">
+        <div
+          id={songScreenId}
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="song-screen-title"
+        >
           <button
             type="button"
             className={styles.backdrop}
@@ -7872,13 +7870,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ? createPortal(
             <div
               ref={eyeMenuRef}
-              id={eyeMenuId}
               className={[styles.eyeMenu, styles.eyeMenuFixed]
                 .filter(Boolean)
                 .join(" ")}
               style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
               role="menu"
-              aria-label="Widoczność ścieżek"
             >
               {TRACKS.map((track) => (
                 <button
@@ -7915,7 +7911,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ? createPortal(
             <div
               ref={toolsVisMenuRef}
-              id={toolsVisMenuId}
               className={[styles.eyeMenu, styles.eyeMenuFixed]
                 .filter(Boolean)
                 .join(" ")}
@@ -8144,7 +8139,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <select
                 className={styles.nameInput}
                 id="key-tonic"
-                aria-label="Tonika"
+                aria-label="Tonic"
                 defaultValue={
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }

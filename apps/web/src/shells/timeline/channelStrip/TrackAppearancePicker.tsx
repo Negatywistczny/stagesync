@@ -5,6 +5,7 @@
 
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useState,
   type MouseEvent,
@@ -26,6 +27,8 @@ export type TrackAppearancePickerProps = {
   anchorRef: RefObject<HTMLElement | null>;
   /** Prefer opening above the anchor (Mixer banner); dock opens below. */
   placement?: "above" | "below";
+  /** Optional stable id for aria-controls from the badge. */
+  id?: string;
   color: TrackColor;
   icon: TrackIcon;
   onColorChange: (color: TrackColor) => void;
@@ -48,12 +51,15 @@ function clamp(n: number, min: number, max: number): number {
 export function TrackAppearancePicker({
   anchorRef,
   placement = "above",
+  id,
   color,
   icon,
   onColorChange,
   onIconChange,
   onClose,
 }: TrackAppearancePickerProps) {
+  const generatedId = useId();
+  const dialogId = id ?? generatedId;
   const [pos, setPos] = useState<PopoverPos | null>(null);
   const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
 
@@ -133,6 +139,7 @@ export function TrackAppearancePicker({
   return createPortal(
     <div
       ref={setRootEl}
+      id={dialogId}
       className={styles.appearancePopover}
       role="dialog"
       aria-label="Kolor i ikona ścieżki"
