@@ -515,4 +515,33 @@ describe("library / projects CRUD", () => {
     const entry = library.projects.find((p) => p.id === created.id);
     expect(entry?.midiProgramId).toBe(42);
   });
+
+  it("POST /api/library/batch-midi-pc rejects out-of-range PC", async () => {
+    const created = ProjectSchema.parse(
+      await (
+        await fetch(`${baseUrl}/api/projects`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: "Bad PC" }),
+        })
+      ).json(),
+    );
+    const res = await fetch(`${baseUrl}/api/library/batch-midi-pc`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        assignments: [{ id: created.id, midiProgramId: 128 }],
+      }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/library/export rejects non-UUID projectIds", async () => {
+    const res = await fetch(`${baseUrl}/api/library/export`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ projectIds: ["not-a-uuid"] }),
+    });
+    expect(res.status).toBe(400);
+  });
 });
