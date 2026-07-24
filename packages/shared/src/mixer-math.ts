@@ -9,7 +9,9 @@ export const PAN_MAX = 1;
 
 /**
  * Linear gain for stereo → mono downmix (L+R each × this).
- * −3 dB ≈ 1/√2 so equal-power mono sum stays near unity.
+ * −3 dB ≈ 1/√2: equal-power sum ≈ unity for **uncorrelated** L/R.
+ * Fully correlated dual-mono (L=R) still sums to ≈ +3 dB — intentional;
+ * do not switch to 0.5 without a PO loudness decision.
  */
 export const STEREO_DOWNMIX_LINEAR = Math.SQRT1_2;
 
@@ -57,8 +59,10 @@ export function clampPan(pan: number | undefined | null): number {
 }
 
 /**
- * True Balance gains (−1…+1): attenuates the opposite side, center = unity.
+ * True Balance gains (−1…+1): attenuates the opposite side, center = unity (0 dB).
  * Not equal-power StereoPanner law — full left leaves R at 0, L at 1.
+ * Switching a track mono→stereo at center therefore sounds ≈ +3 dB louder
+ * (mono pan law vs unity True Balance); that jump is expected, not a wiring bug.
  */
 export function balanceGains(bal: number): { l: number; r: number } {
   const b = clampPan(bal);

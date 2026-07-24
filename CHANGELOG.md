@@ -31,6 +31,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii; SPP nie seekuje poza koniec utworu.
+- **Mixer / mono:** Peak/VU ścieżki mono nie spada przy twardej panoramie; po dekodowaniu pliku mono ścieżka bez trybu dostaje tryb mono (panorama zamiast True Balance).
 
 #### 🖥️ App Shell & UI
 - **Admin:** „Zarządzaj bazą”, modale, log systemowy, Zapisz / Wyczyść setlistę i toolbar Batch PC z poprawnymi etykietami i powiązaniami ARIA ([#510](https://github.com/Negatywistyczny/stagesync/pull/510), [#545](https://github.com/Negatywistyczny/stagesync/pull/545), [#575](https://github.com/Negatywistyczny/stagesync/pull/575), [#577](https://github.com/Negatywistyczny/stagesync/pull/577), [#599](https://github.com/Negatywistyczny/stagesync/pull/599)).

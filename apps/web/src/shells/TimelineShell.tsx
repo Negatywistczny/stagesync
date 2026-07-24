@@ -2142,6 +2142,7 @@ export function TimelineShell() {
           durationMs: meta.durationMs,
           waveformPeaks: meta.peaks,
           waveformRms: meta.rms,
+          channelCount: buf.numberOfChannels,
         });
         changed = true;
       }

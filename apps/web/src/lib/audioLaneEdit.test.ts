@@ -395,6 +395,34 @@ describe("audioLaneEdit", () => {
     );
     expect(next.audioClips.find((c) => c.id === "other")!.lengthTicks).toBe(100);
 
+    // Mono file on a track with unset channelMode → stamp mono
+    const unset = {
+      ...p,
+      audioTracks: p.audioTracks.map((t) => {
+        const { channelMode: _drop, ...rest } = t;
+        void _drop;
+        return rest;
+      }),
+    };
+    const withMode = applyDecodedAudioMeta(unset, "asset-1", {
+      durationMs: 2000,
+      channelCount: 1,
+    });
+    expect(withMode.audioTracks[0]!.channelMode).toBe("mono");
+    // Already set (incl. explicit "stereo" string) is left alone
+    const keepStereo = applyDecodedAudioMeta(
+      {
+        ...unset,
+        audioTracks: unset.audioTracks.map((t) => ({
+          ...t,
+          channelMode: "stereo" as const,
+        })),
+      },
+      "asset-1",
+      { durationMs: 2000, channelCount: 1 },
+    );
+    expect(keepStereo.audioTracks[0]!.channelMode).toBe("stereo");
+
     // missing duration after map → early return with assets only
     const noDur = applyDecodedAudioMeta(p, "missing-asset", {
       durationMs: 0,

@@ -7,6 +7,7 @@ import {
   applyAbutCrossfade,
   clampAudioClipToAsset,
   clampAudioFades,
+  channelModeFromChannelCount,
   DEFAULT_TRACK_ICON,
   findAbutNeighbor,
   lengthTicksFromAssetWindow,
@@ -1083,6 +1084,8 @@ export function applyDecodedAudioMeta(
     durationMs: number;
     waveformPeaks?: number[];
     waveformRms?: number;
+    /** When set, stamp channelMode on tracks that use this asset and have no mode yet. */
+    channelCount?: number;
   },
 ): Project {
   const assets = project.assets.map((a) =>
@@ -1109,5 +1112,21 @@ export function applyDecodedAudioMeta(
     );
   });
 
-  return { ...project, assets, audioClips };
+  let audioTracks = project.audioTracks;
+  if (
+    meta.channelCount != null &&
+    Number.isFinite(meta.channelCount)
+  ) {
+    const mode = channelModeFromChannelCount(meta.channelCount);
+    const trackIds = new Set(
+      audioClips.filter((c) => c.assetId === assetId).map((c) => c.trackId),
+    );
+    audioTracks = project.audioTracks.map((t) => {
+      if (!trackIds.has(t.id)) return t;
+      if (t.channelMode != null) return t;
+      return mode === "mono" ? { ...t, channelMode: "mono" } : t;
+    });
+  }
+
+  return { ...project, assets, audioClips, audioTracks };
 }

@@ -5,7 +5,7 @@
  *
  * Mono track:
  *   BufferSource → [stereo→mono −3 dB downmix?] → clipGain → trackGain
- *     → StereoPanner → analyser → (masterGain | groupBusGain)
+ *     → analyser (pre-pan meter) + StereoPanner → route → (master | bus)
  *
  * Stereo track (True Balance — not StereoPanner):
  *   BufferSource → clipGain → trackGain → ChannelSplitter
@@ -286,9 +286,10 @@ function createChannelBus(ctx: AudioContext, mode: ChannelMode): TrackBus {
     const pan = ctx.createStereoPanner();
     pan.pan.value = 0;
     const analyser = makeAnalyser(ctx);
+    // Meter pre-pan so Peak/VU does not sag when pan is hard L/R (equal-power).
+    gain.connect(analyser);
     gain.connect(pan);
-    pan.connect(analyser);
-    analyser.connect(route);
+    pan.connect(route);
     return { mode: "mono", gain, pan, analyser, route };
   }
   const splitter = ctx.createChannelSplitter(2);
