@@ -247,7 +247,6 @@ export {
   normalizeAnchors,
   normalizeMap,
   songBarToScoreBar,
-  logicBarToScoreBar,
   scoreBarToSongBar,
   ticksFromScoreBar,
   type ScoreBarMapLike,
@@ -427,7 +426,6 @@ export {
 
 export {
   placeContentFromForma,
-  wandContentToForma,
   type WandMode,
   type WandScope,
   type WandResult,
