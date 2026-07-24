@@ -162,6 +162,16 @@ describe("fader taper anchors", () => {
     expect(clampFaderGainDb(-100)).toBe(FADER_GAIN_FLOOR_DB);
     expect(clampFaderGainDb(0)).toBe(0);
   });
+
+  it("clamps out-of-range and non-finite taper positions", () => {
+    expect(faderTaperToDb(Number.NaN)).toBe(Number.NEGATIVE_INFINITY);
+    expect(faderTaperToDb(-1)).toBe(Number.NEGATIVE_INFINITY);
+    expect(faderTaperToDb(2)).toBe(FADER_TAPER_DB_MAX);
+    expect(dbToFaderTaper(Number.NaN)).toBe(0);
+    expect(dbToFaderTaper(100)).toBe(1);
+    expect(dbToFaderTaper(-100)).toBe(0);
+    expect(dbToFaderTaper(FADER_TAPER_DB_MAX)).toBe(1);
+  });
 });
 
 describe("formatFaderTickLabel", () => {
@@ -206,5 +216,13 @@ describe("peak hold latch", () => {
     expect(formatPeakHoldDb(-12.34)).toBe("-12.3");
     expect(formatPeakHoldDb(0)).toBe("0.0");
     expect(formatPeakHoldDb(1.25)).toBe("+1.3");
+    expect(formatPeakHoldDb(Number.NaN)).toBe("−∞");
+    expect(formatPeakHoldDb(Number.POSITIVE_INFINITY)).toBe("−∞");
+  });
+
+  it("ignores non-finite live readings without reallocating", () => {
+    const prev = updatePeakHold(emptyPeakHold(), -9);
+    expect(updatePeakHold(prev, Number.NaN)).toBe(prev);
+    expect(updatePeakHold(prev, Number.NEGATIVE_INFINITY)).toBe(prev);
   });
 });

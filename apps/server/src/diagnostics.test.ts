@@ -43,6 +43,14 @@ describe("file-logger + diagnostics zip (#351)", () => {
     expect(crc32(Buffer.from("abc"))).toBe(0x352441c2);
   });
 
+  it("buildStoreZip empty archive still has EOCD; crc32 empty is 0", () => {
+    const zip = buildStoreZip([]);
+    expect(zip.subarray(0, 2).toString("binary")).toBe("PK");
+    // End of central directory signature
+    expect(zip.includes(Buffer.from([0x50, 0x4b, 0x05, 0x06]))).toBe(true);
+    expect(crc32(Buffer.alloc(0))).toBe(0);
+  });
+
   it("logBuffer onPush forwards to sink", () => {
     const seen: string[] = [];
     const buf = createLogBuffer({
