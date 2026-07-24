@@ -162,6 +162,16 @@ describe("fader taper anchors", () => {
     expect(clampFaderGainDb(-100)).toBe(FADER_GAIN_FLOOR_DB);
     expect(clampFaderGainDb(0)).toBe(0);
   });
+
+  it("clamps out-of-range and non-finite taper positions", () => {
+    expect(faderTaperToDb(Number.NaN)).toBe(Number.NEGATIVE_INFINITY);
+    expect(faderTaperToDb(-1)).toBe(Number.NEGATIVE_INFINITY);
+    expect(faderTaperToDb(2)).toBe(FADER_TAPER_DB_MAX);
+    expect(dbToFaderTaper(Number.NaN)).toBe(0);
+    expect(dbToFaderTaper(100)).toBe(1);
+    expect(dbToFaderTaper(-100)).toBe(0);
+    expect(dbToFaderTaper(FADER_TAPER_DB_MAX)).toBe(1);
+  });
 });
 
 describe("formatFaderTickLabel", () => {
