@@ -45,6 +45,23 @@ describe("midi REST API", () => {
     expect(status.inputs[0]?.id).toBe("mock-in-1");
   });
 
+  it("GET /api/midi/devices lists ports without config", async () => {
+    const res = await fetch(`${baseUrl}/api/midi/devices`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    const body = (await res.json()) as {
+      available: boolean;
+      backend: string;
+      inputs: Array<{ id: string }>;
+      outputs: Array<{ id: string }>;
+      lastError: string | null;
+    };
+    expect(body.backend).toBe("mock");
+    expect(body.inputs.some((d) => d.id === "mock-in-1")).toBe(true);
+    expect(body.outputs.some((d) => d.id === "mock-out-1")).toBe(true);
+    expect(body).not.toHaveProperty("config");
+  });
+
   it("PUT /api/midi/config selects ports", async () => {
     const res = await fetch(`${baseUrl}/api/midi/config`, {
       method: "PUT",
@@ -68,6 +85,29 @@ describe("midi REST API", () => {
       body: JSON.stringify({ clockOutEnabled: "yes" }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it("PUT /api/midi/config fail-fast on unknown keys and null body", async () => {
+    const empty = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(empty.status).toBe(200);
+
+    const unknown = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ inputId: "mock-in-1", nope: true }),
+    });
+    expect(unknown.status).toBe(400);
+
+    const notJson = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: "null",
+    });
+    expect(notJson.status).toBe(400);
   });
 
   it("POST /api/midi/panic sends CC 120/121/123 on all channels", async () => {
