@@ -70,6 +70,10 @@ function setBusy(next) {
 function setScanning(next) {
   scanning = next;
   el.btnRefresh.setAttribute("aria-busy", next ? "true" : "false");
+  el.btnRefresh.setAttribute(
+    "aria-label",
+    next ? "Odświeżanie listy hostów…" : "Odśwież listę hostów",
+  );
   el.btnRefresh.disabled = next || busy;
   el.hostList.classList.toggle("is-scanning", next);
 }
