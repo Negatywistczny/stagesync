@@ -8017,7 +8017,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       {tempoEditOpen && draftProject ? (
         <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}</h2>
             <label className={styles.inspField}>
               BPM
               <input
@@ -8052,7 +8052,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       {meterEditOpen && draftProject ? (
         <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}</h2>
             <div
               className={styles.meterEditRow}
               role="group"
@@ -8121,7 +8121,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       {keyEditOpen && draftProject ? (
         <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}</h2>
             <div
               className={styles.keyEditRow}
               role="group"
@@ -8130,7 +8130,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <select
                 className={styles.nameInput}
                 id="key-tonic"
-                aria-label="Tonic"
+                aria-label="Tonika"
                 defaultValue={
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }
