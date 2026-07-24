@@ -83,6 +83,7 @@ import {
   listScoreParts,
   loadScoreHiddenParts,
   loadScoreOctave,
+  readOsmdCssHex,
   renderOsmd,
   saveScoreHiddenParts,
   saveScoreOctave,
@@ -136,7 +137,49 @@ describe("scoreOsmd", () => {
       expect(osmd.options).toMatchObject({
         backend: "svg",
         followCursor: false,
+        cursorsOptions: [
+          { type: 1, color: "#22d3ee", alpha: 0.85, follow: false },
+          { type: 3, color: "#fbbf24", alpha: 0.45, follow: false },
+        ],
       });
+    });
+
+    it("reads cursor / paper colors from --ss-* when set on :root", () => {
+      document.documentElement.style.setProperty(
+        "--ss-color-primary",
+        "#aabbcc",
+      );
+      document.documentElement.style.setProperty(
+        "--ss-color-focus-ring",
+        "#112233",
+      );
+      document.documentElement.style.setProperty(
+        "--ss-color-osmd-paper",
+        "#fefefe",
+      );
+      const el = document.createElement("div");
+      document.body.appendChild(el);
+      const osmd = createOsmd(el) as unknown as InstanceType<
+        typeof OpenSheetMusicDisplayMock
+      >;
+      expect(osmd.EngravingRules.PageBackgroundColor).toBe("#fefefe");
+      expect(osmd.options).toMatchObject({
+        cursorsOptions: [
+          { type: 1, color: "#112233" },
+          { type: 3, color: "#aabbcc" },
+        ],
+      });
+      el.remove();
+      document.documentElement.style.removeProperty("--ss-color-primary");
+      document.documentElement.style.removeProperty("--ss-color-focus-ring");
+      document.documentElement.style.removeProperty("--ss-color-osmd-paper");
+    });
+
+    it("readOsmdCssHex falls back for non-hex or missing vars", () => {
+      expect(readOsmdCssHex("--ss-missing-token", "#abcdef")).toBe("#abcdef");
+      document.documentElement.style.setProperty("--ss-bad", "rgb(1,2,3)");
+      expect(readOsmdCssHex("--ss-bad", "#010203")).toBe("#010203");
+      document.documentElement.style.removeProperty("--ss-bad");
     });
 
     it("renderOsmd no-ops until ready, then renders", () => {

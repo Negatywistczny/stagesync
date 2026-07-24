@@ -8,6 +8,7 @@ import {
   pruneSetlistToLibrary,
   resolveSetlistNext,
   SETLIST_SONG_DURATION_ESTIMATE_MS,
+  sumSetlistDurationMs,
 } from "./setlist.js";
 import type { Library } from "./schema.js";
 
@@ -228,5 +229,34 @@ describe("setlist helpers", () => {
     expect(view.warnings.some((w) => w.code === "SETLIST_MISSING_PROJECT")).toBe(
       true,
     );
+  });
+
+  it("formatSetDurationMs pads seconds and clamps negative", () => {
+    expect(formatSetDurationMs(0)).toBe("0:00");
+    expect(formatSetDurationMs(1000)).toBe("0:01");
+    expect(formatSetDurationMs(61_000)).toBe("1:01");
+    expect(formatSetDurationMs(-500)).toBe("0:00");
+    expect(formatSetDurationMs(1499)).toBe("0:01");
+  });
+
+  it("sumSetlistDurationMs totals item durations", () => {
+    expect(sumSetlistDurationMs([])).toBe(0);
+    expect(
+      sumSetlistDurationMs([
+        {
+          type: "project",
+          projectId: "11111111-1111-4111-8111-111111111111",
+          name: "A",
+          durationMs: 1000,
+        },
+        {
+          type: "break",
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          label: "P",
+          durationMinutes: 1,
+          durationMs: 2000,
+        },
+      ]),
+    ).toBe(3000);
   });
 });
