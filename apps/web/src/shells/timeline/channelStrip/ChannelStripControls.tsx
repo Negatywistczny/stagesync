@@ -2,7 +2,7 @@
  * Shared Solo / Mute / Fader (+ pan in Mixer) for dock + vertical channel strip.
  */
 
-import { useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { Slider } from "@stagesync/ui";
 import {
   resolveTrackColor,
@@ -67,6 +67,7 @@ export function ChannelStripControls({
 }: ChannelStripControlsProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const iconBadgeRef = useRef<HTMLButtonElement>(null);
+  const appearancePickerId = useId();
   const color = resolveTrackColor(strip.color);
   const icon = resolveTrackIcon(strip.icon);
 
@@ -176,6 +177,8 @@ export function ChannelStripControls({
       title="Kolor i ikona ścieżki"
       aria-label="Kolor i ikona ścieżki"
       aria-expanded={pickerOpen}
+      aria-haspopup="dialog"
+      aria-controls={pickerOpen ? appearancePickerId : undefined}
       onClick={(e) => {
         e.stopPropagation();
         setPickerOpen((v) => !v);
@@ -188,6 +191,7 @@ export function ChannelStripControls({
   const appearancePicker =
     pickerOpen && callbacks.onColorChange && callbacks.onIconChange ? (
       <TrackAppearancePicker
+        id={appearancePickerId}
         anchorRef={iconBadgeRef}
         placement={layout === "mixer" ? "above" : "below"}
         color={color}
