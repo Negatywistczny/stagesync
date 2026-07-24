@@ -286,6 +286,11 @@ describe("clampFormaSubsections / allocateUniqueClipId", () => {
     expect(allocateUniqueClipId("x", used)).toBe("x-3");
     expect(allocateUniqueClipId("fresh", used)).toBe("fresh");
   });
+
+  it("allocateUniqueClipId starts at -2 when only base is taken", () => {
+    expect(allocateUniqueClipId("clip", new Set(["clip"]))).toBe("clip-2");
+    expect(allocateUniqueClipId("clip", new Set())).toBe("clip");
+  });
 });
 
 describe("placeClipNoOverlap edges", () => {
