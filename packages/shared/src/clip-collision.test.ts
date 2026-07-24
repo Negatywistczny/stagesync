@@ -146,6 +146,23 @@ describe("insertGapSectionAfterCountdown", () => {
     });
     expect(next.find((c) => c.id.startsWith("forma-gap-"))).toBeUndefined();
   });
+
+  it("no-ops without countdown or when gap is below min length", () => {
+    const noCd = [INTRO, VERSE];
+    expect(insertGapSectionAfterCountdown(noCd, "forma-intro")).toBe(noCd);
+
+    const tight = [
+      CD,
+      { ...INTRO, startTicks: 1, lengthTicks: 7680 },
+      { ...VERSE, startTicks: 7681 },
+    ];
+    expect(
+      insertGapSectionAfterCountdown(tight, "forma-intro", {
+        contentFloorTicks: 0,
+        minLengthTicks: 2,
+      }),
+    ).toEqual(tight);
+  });
 });
 
 describe("resizeClipNoOverlap", () => {
