@@ -130,18 +130,6 @@
   color: var(--ss-color-danger);
 }
 
-.offlineBanner {
-  margin: 0;
-  padding: var(--ss-space-2) var(--ss-space-4);
-  background: var(--ss-color-elevated);
-  border-bottom: 1px solid var(--ss-color-warning);
-  color: var(--ss-color-warning);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-  text-align: center;
-}
-
 .modalConn {
   display: flex;
   justify-content: flex-end;
@@ -242,20 +230,6 @@
   color: var(--ss-color-primary);
 }
 
-.welcomeHint {
-  margin: 0;
-  max-width: 36rem;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-md);
-  line-height: var(--ss-leading-relaxed);
-  text-align: center;
-}
-
-.welcomeEmph {
-  color: var(--ss-color-text);
-  font-weight: var(--ss-font-weight-semibold);
-}
-
 .roleGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -301,12 +275,6 @@
   line-height: var(--ss-leading-tight);
 }
 
-.roleBlurb {
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-normal);
-  color: var(--ss-color-text-muted);
-}
-
 @media (hover: hover) {
   .roleTile:hover {
     border-color: var(--ss-color-border);
@@ -328,14 +296,6 @@
   width: min(48rem, 100%);
   flex: 0 0 auto;
   padding-bottom: max(var(--ss-space-6), env(safe-area-inset-bottom, 0px));
-}
-
-.pickHint {
-  margin: 0;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-normal);
-  text-align: center;
 }
 
 .startBtn {
@@ -365,10 +325,6 @@
     font-size: var(--ss-text-3xl);
   }
 
-  .welcomeHint {
-    font-size: var(--ss-text-lg);
-  }
-
   .roleGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--ss-space-6);
@@ -390,10 +346,6 @@
 }
 
 @media (max-width: 768px) {
-  .welcomeHint {
-    display: none;
-  }
-
   .roleTile {
     gap: var(--ss-space-3);
     min-height: 8rem;
@@ -406,10 +358,6 @@
 
   .roleLabel {
     font-size: var(--ss-text-md);
-  }
-
-  .roleBlurb {
-    display: none;
   }
 }
 
@@ -1173,10 +1121,6 @@
   font-size: min(3.5rem, calc(var(--phrase-bar-size) * 0.45));
 }
 
-.cycleCellBars {
-  display: none;
-}
-
 .gridAnimationsOff .heroName,
 .gridAnimationsOff .heroNext,
 .gridAnimationsOff .heroNextName,
@@ -1261,18 +1205,6 @@
   justify-content: center;
   gap: var(--ss-space-3);
   margin-bottom: var(--ss-space-3);
-}
-
-.noteInput {
-  width: 100%;
-  margin-top: var(--ss-space-1);
-  font: inherit;
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text);
-  background: var(--ss-color-surface);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm, 4px);
-  padding: var(--ss-space-2);
 }
 
 /* —— Forma / Drums (v4 .drums-view) —— */
@@ -1828,14 +1760,6 @@
 .scoreEmptyText {
   margin: 0 0 var(--ss-space-3);
   font-size: var(--ss-text-md);
-  color: var(--ss-color-text-muted);
-}
-
-.scoreFiles {
-  margin: var(--ss-space-3) 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
 }
 
