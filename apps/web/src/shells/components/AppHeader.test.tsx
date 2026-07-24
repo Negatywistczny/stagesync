@@ -81,4 +81,32 @@ describe("AppHeader", () => {
     expect(out).toContain("aria-pressed=\"true\"");
     expect(out).toContain("Cofnij");
   });
+
+  it("exposes PL chrome action labels for help, appearance, fullscreen", () => {
+    const out = html(
+      <AppHeader
+        suffix="Timeline"
+        appJump={[{ to: "/admin", label: "Admin" }]}
+        onHelp={() => {}}
+        helpPressed
+        onAppearance={() => {}}
+        appearancePressed
+        onFullscreen={() => {}}
+        history={{
+          canUndo: false,
+          canRedo: true,
+          dirty: false,
+          onUndo: () => {},
+          onRedo: () => {},
+          onSave: () => {},
+        }}
+      />,
+    );
+    expect(out).toContain('aria-label="Pomoc"');
+    expect(out).toContain('aria-label="Wygląd"');
+    expect(out).toContain('aria-label="Pełny ekran"');
+    expect(out).toContain('aria-label="Ustawienia"');
+    expect(out).toContain('aria-label="Ponów"');
+    expect(out).toContain('aria-label="Aplikacje"');
+  });
 });
