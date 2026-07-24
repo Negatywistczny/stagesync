@@ -166,32 +166,6 @@
   align-items: stretch;
 }
 
-.splitCollapsed {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.splitAside {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
-.splitAside > .card {
-  min-height: 0;
-}
-
-.splitAside > .card:first-child {
-  flex: 1 1 auto;
-}
-
-.splitAside > .card:last-child {
-  flex: 0 1 auto;
-  max-height: 48%;
-}
-
 .card {
   display: flex;
   flex-direction: column;
@@ -220,12 +194,6 @@
   line-height: var(--ss-leading-tight);
 }
 
-.cardHint {
-  margin: var(--ss-space-1) 0 0;
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-}
-
 .cardBody {
   display: flex;
   flex-direction: column;
@@ -241,20 +209,6 @@
 }
 
 /* Host → O aplikacji: info | actions + updates */
-.aboutGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--ss-space-4);
-  align-items: start;
-}
-
-.aboutCol {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  min-width: 0;
-  align-items: flex-start;
-}
 
 @media (max-width: 40rem) {
   .aboutGrid {
@@ -525,26 +479,6 @@
   white-space: nowrap;
 }
 
-.inspectorName {
-  margin: 0;
-  font-size: var(--ss-text-lg);
-  font-weight: var(--ss-font-weight-semibold);
-}
-
-.inspectorId {
-  margin: 0;
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.assetList {
-  margin: 0;
-  padding-left: var(--ss-space-4);
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text-muted);
-}
-
 .editLink {
   color: var(--ss-color-primary);
   font-size: var(--ss-text-control);
@@ -636,50 +570,7 @@
   font-weight: var(--ss-font-weight-semibold);
 }
 
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-4);
-  height: 100%;
-  min-height: 0;
-  overflow: auto;
-}
-
-.stack > .card {
-  flex: 0 0 auto;
-  min-height: 0;
-}
-
-.stack > .twoUp {
-  flex: 1 1 auto;
-  min-height: 8rem;
-  overflow: hidden;
-}
-
-.stack > .twoUp > .card {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.stack > .twoUp > .card:has(.terminal) {
-  display: flex;
-  flex-direction: column;
-}
-
-.twoUp {
-  display: grid;
-  /* Logi flexes; MIDI column sized for meter + port rows. */
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
-  gap: var(--ss-space-4);
-  height: 100%;
-  min-height: 0;
-  align-items: stretch;
-}
-
 /* Scena: Komunikat + Klienci — clients list needs usable width (not Host MIDI cap). */
-.twoUpStage {
-  grid-template-columns: minmax(0, 0.95fr) minmax(18rem, 1.2fr);
-}
 
 /* Presence status dots (v4 live-state-conn-dot parity). */
 .clientsHeadLead {
@@ -1007,10 +898,6 @@
   margin: 0;
   color: var(--ss-color-danger);
   font-size: var(--ss-text-sm);
-}
-
-.actionsFollow {
-  margin-top: var(--ss-space-2);
 }
 
 /* —— Modal —— */
