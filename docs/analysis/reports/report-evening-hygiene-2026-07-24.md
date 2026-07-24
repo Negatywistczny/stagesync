@@ -27,20 +27,20 @@
 | [#513](https://github.com/Negatywistyczny/stagesync/pull/513) | Mixer strip PL | Mikser / wyjście stereo / Balans / Szczyt |
 | [#514](https://github.com/Negatywistyczny/stagesync/pull/514) | Library 400 edges | batch-PC range + export non-UUID |
 | [#515](https://github.com/Negatywistyczny/stagesync/pull/515) | theme-color token | Meta from `--ss-color-bg` with fallbacks |
-| [#516](https://github.com/Negatywistyczny/stagesync/pull/516) | Evening handoff report | This document |
+| [#516](https://github.com/Negatywistyczny/stagesync/pull/516) | Evening handoff report | This document (branch misnamed `chore/admin-dead-css`) |
+| [#517](https://github.com/Negatywistyczny/stagesync/pull/517) | AdminShell dead CSS | Orphan about/split/stack/twoUp leftovers |
 
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
 
 1. **Chord scenic `font-size: Nem` → `--ss-*` scales** — `ClientShell.module.css` chord superscripts (post-#478); needs careful visual parity.
-2. **More AdminShell dead CSS** — same unused-class pass as #501.
-3. **prefsRange / zoomRange pattern** — already dual `:focus` + `:focus-visible`; document only if public/operator docs (skip CHANGELOG).
-4. **Deprecated shared countdown aliases** — unexport from `packages/shared` index if consumers stay tests-only.
-5. **Live-desk / MIDI PUT validation 400** — thin route edges beyond schema unit tests.
-6. **Post-merge smoke** — SR pass on Mixer S/M + Click, Server Settings, Admin Zarządzaj bazą, Timeline eye/tools/song picker.
-7. **i18n residual** — Snap/Off/Beat option text; Mono/Stereo channel mode (product terms OK?).
-8. **Codecov project** — continue server route unhappy paths outside library/setlist.
+2. **prefsRange / zoomRange pattern** — already dual `:focus` + `:focus-visible`; document only if public/operator docs (skip CHANGELOG).
+3. **Deprecated shared countdown aliases** — unexport from `packages/shared` index if consumers stay tests-only.
+4. **Live-desk / MIDI PUT validation 400** — thin route edges beyond schema unit tests.
+5. **Post-merge smoke** — SR pass on Mixer S/M + Click, Server Settings, Admin Zarządzaj bazą, Timeline eye/tools/song picker.
+6. **i18n residual** — Snap/Off/Beat option text; Mono/Stereo channel mode (product terms OK?).
+7. **Codecov project** — continue server route unhappy paths outside library/setlist.
 
 ## Skipped / off-limits
 
