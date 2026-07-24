@@ -97,4 +97,61 @@ describe("setlist API", () => {
     const view = (await res.json()) as { autoAdvance: { enabled: boolean } };
     expect(view.autoAdvance.enabled).toBe(true);
   });
+
+  it("rejects invalid put / auto-advance bodies", async () => {
+    const badPut = await fetch(`${baseUrl}/api/setlist`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ enabled: true, projectIds: ["not-a-uuid"] }),
+    });
+    expect(badPut.status).toBe(400);
+
+    const badPatch = await fetch(`${baseUrl}/api/setlist/auto-advance`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ enabled: "yes" }),
+    });
+    expect(badPatch.status).toBe(400);
+
+    const empty = await fetch(`${baseUrl}/api/setlist`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(empty.status).toBe(400);
+  });
+
+  it("accepts empty projectIds; unknown UUIDs stay in view without crashing", async () => {
+    const emptyOk = await fetch(`${baseUrl}/api/setlist`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ enabled: false, projectIds: [] }),
+    });
+    expect(emptyOk.status).toBe(200);
+    const emptyView = (await emptyOk.json()) as {
+      enabled: boolean;
+      entries: unknown[];
+    };
+    expect(emptyView.enabled).toBe(false);
+    expect(emptyView.entries).toEqual([]);
+
+    const ghostId = "00000000-0000-4000-8000-000000000099";
+    const missing = await fetch(`${baseUrl}/api/setlist`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        enabled: true,
+        projectIds: [ghostId],
+      }),
+    });
+    expect(missing.status).toBe(200);
+    const ghostView = (await missing.json()) as {
+      enabled: boolean;
+      entries: unknown[];
+      projectIds?: string[];
+    };
+    expect(ghostView.enabled).toBe(true);
+    // Missing library rows are omitted from the resolved view (no crash / 5xx).
+    expect(ghostView.entries).toEqual([]);
+  });
 });
