@@ -183,4 +183,79 @@ describe("resolveStageCueBanner", () => {
       source: "song",
     });
   });
+
+  it("skips blank song labels and blank session text", () => {
+    const { now, next } = resolveStageCueBanner({
+      cueClips: [
+        {
+          id: "blank",
+          startTicks: 0,
+          lengthTicks: bar,
+          label: "   ",
+        },
+        {
+          id: "soon",
+          startTicks: 2 * bar,
+          lengthTicks: bar,
+          label: "\t",
+        },
+      ],
+      sessionCue: {
+        text: "  ",
+        sentAtMs: 1,
+        ttlMs: 6000,
+      },
+      playheadTicks: 10,
+      bpm: 120,
+      ppq: DEFAULT_PPQ,
+      meter,
+      activeRoles: ["karaoke"],
+    });
+    expect(now).toBeNull();
+    expect(next).toBeNull();
+  });
+
+  it("clamps negative playhead and falls back invalid bpm", () => {
+    const start = 4 * DEFAULT_PPQ;
+    const { next } = resolveStageCueBanner({
+      cueClips: [
+        {
+          id: "c-neg",
+          startTicks: start,
+          lengthTicks: bar,
+          label: "Go",
+        },
+      ],
+      sessionCue: null,
+      playheadTicks: -100,
+      bpm: Number.NaN,
+      ppq: DEFAULT_PPQ,
+      meter,
+      activeRoles: [],
+      lookaheadMs: STAGE_CUE_DEFAULT_LOOKAHEAD_MS,
+    });
+    // NaN bpm → 120 → same 5s / 10-beat lookahead as happy path
+    expect(next).toMatchObject({ text: "Go", slot: "upcoming", barsUntil: 1 });
+  });
+
+  it("truncates song labels to 200 chars", () => {
+    const long = "x".repeat(250);
+    const { now } = resolveStageCueBanner({
+      cueClips: [
+        {
+          id: "long",
+          startTicks: 0,
+          lengthTicks: bar,
+          label: long,
+        },
+      ],
+      sessionCue: null,
+      playheadTicks: 1,
+      bpm: 120,
+      ppq: DEFAULT_PPQ,
+      meter,
+      activeRoles: [],
+    });
+    expect(now?.text).toHaveLength(200);
+  });
 });

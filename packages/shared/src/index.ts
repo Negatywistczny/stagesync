@@ -438,8 +438,6 @@ export {
   syntheticCountdownAkordClips,
   syntheticCountdownDisplayFromProject,
   scrubCountdownDigitClips,
-  regenerateCountdownContent,
-  buildCountdownDigitTekstClips,
   type CountdownDigitLabel,
 } from "./countdown-content.js";
 

@@ -161,10 +161,18 @@ export function ScorePane({
   }, [hiddenPartIds, scoreOctave, teamSemitones, ready]);
 
   if (!hasActiveProjectId) {
-    return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Oczekiwanie na utwór…
+      </p>
+    );
   }
   if (loading && !project) {
-    return <p className={styles.empty}>Wczytywanie utworu…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Wczytywanie utworu…
+      </p>
+    );
   }
   if (!project) {
     return <p className={styles.empty}>Nie udało się wczytać utworu.</p>;
@@ -206,7 +214,7 @@ export function ScorePane({
           >
             <div ref={hostRef} className={styles.scoreHost} />
             {!ready ? (
-              <p className={styles.scoreLoading} role="status">
+              <p className={styles.scoreLoading} role="status" aria-live="polite">
                 Wczytywanie MusicXML…
               </p>
             ) : null}

@@ -1,10 +1,25 @@
 const THEME_KEY = "stagesync-theme";
 const CONTRAST_KEY = "stagesync-contrast";
 
+/** Fallbacks when `--ss-color-bg` is unset (jsdom / early boot). */
+const THEME_COLOR_LIGHT = "#f4f4f5";
+const THEME_COLOR_DARK = "#000000";
+
 export type AppearanceState = {
   light: boolean;
   highContrast: boolean;
 };
+
+function readThemeColorHex(fallback: string): string {
+  if (typeof getComputedStyle === "undefined") return fallback;
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue("--ss-color-bg")
+    .trim();
+  if (/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(raw)) {
+    return raw;
+  }
+  return fallback;
+}
 
 export function readAppearance(): AppearanceState {
   try {
@@ -26,7 +41,8 @@ export function applyAppearance(state: AppearanceState): void {
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", state.light ? "#f4f4f5" : "#000000");
+    const fallback = state.light ? THEME_COLOR_LIGHT : THEME_COLOR_DARK;
+    meta.setAttribute("content", readThemeColorHex(fallback));
   }
 }
 

@@ -54,12 +54,17 @@ export function AppCrashFallback({
       <h1 className={styles.title}>{title}</h1>
       <p className={styles.message}>{message}</p>
       <div className={styles.actions}>
-        <Button type="button" onClick={() => window.location.reload()}>
+        <Button
+          type="button"
+          aria-label="Odśwież stronę"
+          onClick={() => window.location.reload()}
+        >
           Odśwież
         </Button>
         <Button
           type="button"
           variant="secondary"
+          aria-label="Przejdź do Client"
           onClick={() => window.location.assign("/")}
         >
           Client
@@ -67,6 +72,7 @@ export function AppCrashFallback({
         <Button
           type="button"
           variant="ghost"
+          aria-label="Przejdź do Admin"
           onClick={() => window.location.assign("/admin")}
         >
           Admin
