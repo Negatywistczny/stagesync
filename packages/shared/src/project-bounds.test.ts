@@ -85,4 +85,23 @@ describe("projectEndTicks", () => {
     };
     expect(projectEndTicks(p)).toBe(5_000);
   });
+
+  it("ignores countdown-only (non-positive) ends", () => {
+    const p = createProjectV5Seed("a", "CD", "2026-07-20T00:00:00.000Z");
+    p.forma.clips = [
+      {
+        id: "cd",
+        name: "Countdown",
+        kind: "countdown",
+        startTicks: -7680,
+        lengthTicks: 7680,
+      },
+    ];
+    p.tekst = { clips: [] };
+    p.akordy = { clips: [] };
+    p.cue = { clips: [] };
+    p.audioClips = [];
+    // end at 0 → fall back to empty 2 bars
+    expect(projectEndTicks(p)).toBe(2 * 4 * DEFAULT_PPQ);
+  });
 });
