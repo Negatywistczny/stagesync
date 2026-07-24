@@ -441,7 +441,7 @@ export function TimelineHelp({ onClose }: TimelineHelpProps) {
 
       <div className={styles.body}>
         {isEmpty ? (
-          <p className={styles.empty} role="status">
+          <p className={styles.empty} role="status" aria-live="polite">
             Brak wyników dla „{query.trim()}”.
           </p>
         ) : null}
