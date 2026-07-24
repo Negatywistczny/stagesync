@@ -76,6 +76,21 @@ describe("GET/PATCH /api/live-desk", () => {
         body: JSON.stringify({ transpositionSemitones: 99 }),
       });
       expect(res.status).toBe(400);
+
+      const unknown = await fetch(`${baseUrl}/api/live-desk`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ notAField: true }),
+      });
+      expect(unknown.status).toBe(400);
+
+      const empty = await fetch(`${baseUrl}/api/live-desk`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      // Empty patch fails refine — at least one live-desk field required.
+      expect(empty.status).toBe(400);
     } finally {
       await new Promise<void>((r) => server.close(() => r()));
     }

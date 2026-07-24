@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   applyInstrumentPitchToChord,
   clampManualInstrumentPitch,
+  clampSemitoneOffset,
   isInstrumentPitchMode,
+  parseTonicSymbol,
   resolveInstrumentPitchOffset,
   resolveTranspose,
   transposeChord,
@@ -17,6 +19,20 @@ describe("transpose / instrument pitch", () => {
     expect(resolveInstrumentPitchOffset("manual", 99)).toBe(6);
     expect(resolveInstrumentPitchOffset("unknown-mode")).toBe(0);
     expect(clampManualInstrumentPitch("nope")).toBe(0);
+  });
+
+  it("clamps semitone offset and parses tonic symbols", () => {
+    expect(clampSemitoneOffset(0)).toBe(0);
+    expect(clampSemitoneOffset(99)).toBe(12);
+    expect(clampSemitoneOffset(-99)).toBe(-12);
+    expect(clampSemitoneOffset("3")).toBe(3);
+    expect(clampSemitoneOffset("nope")).toBe(0);
+    expect(clampSemitoneOffset(Number.NaN)).toBe(0);
+    expect(parseTonicSymbol("")).toBeNull();
+    expect(parseTonicSymbol("H")).toBeNull();
+    expect(parseTonicSymbol("C#")).toBe(1);
+    expect(parseTonicSymbol("Bb")).toBe(10);
+    expect(parseTonicSymbol("f♯")).toBe(6);
   });
 
   it("isInstrumentPitchMode accepts presets and manual", () => {

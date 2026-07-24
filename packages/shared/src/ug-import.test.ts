@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  clipsFromOnsets,
   importUgText,
   sealAkordyLengths,
   chordOnsetsInBar,
@@ -177,5 +178,39 @@ Must be funny`;
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.message).toMatch(/walidacji schematu/);
+  });
+});
+
+describe("clipsFromOnsets", () => {
+  it("builds lengths to next onset and optional sourceLineId", () => {
+    expect(clipsFromOnsets([], [], 100, "line", 0)).toEqual({
+      clips: [],
+      nextSeq: 0,
+    });
+    const { clips, nextSeq } = clipsFromOnsets(
+      ["C", "G"],
+      [0, 960],
+      3840,
+      "L1",
+      3,
+      "  line-a  ",
+    );
+    expect(nextSeq).toBe(5);
+    expect(clips).toEqual([
+      {
+        id: "L1-akord-4",
+        startTicks: 0,
+        lengthTicks: 960,
+        symbol: "C",
+        sourceLineId: "line-a",
+      },
+      {
+        id: "L1-akord-5",
+        startTicks: 960,
+        lengthTicks: 2880,
+        symbol: "G",
+        sourceLineId: "line-a",
+      },
+    ]);
   });
 });

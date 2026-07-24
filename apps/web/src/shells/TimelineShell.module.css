@@ -37,13 +37,9 @@
 }
 
 /* Legacy header grid unused — Level 1 is AppHeader; song lives in .toolbar (right). */
-.headerBrand {
-  min-width: 0;
-}
 
 .toolBar,
 .toolbarCenter,
-.toolbarRight,
 .transport {
   display: flex;
   flex-wrap: nowrap;
@@ -319,16 +315,6 @@
   display: none;
 }
 
-.toolbarDirty {
-  position: absolute;
-  right: var(--ss-space-5);
-  bottom: calc(var(--ss-space-1) * -0.5);
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-  line-height: var(--ss-leading-compact);
-  pointer-events: none;
-}
-
 @media (max-width: 768px) {
   .toolbar {
     display: flex;
@@ -366,21 +352,6 @@
     flex: 1 1 8rem;
     max-width: 100%;
   }
-}
-
-.wandMenu {
-  position: absolute;
-  top: 100%;
-  left: var(--ss-space-5);
-  z-index: var(--ss-z-dropdown);
-  display: flex;
-  flex-direction: column;
-  min-width: 12rem;
-  padding: var(--ss-space-1);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-elevated);
-  box-shadow: 0 2px 0 color-mix(in srgb, var(--ss-color-bg) 40%, transparent);
 }
 
 .toolMenu {
@@ -430,32 +401,6 @@
     color: var(--ss-color-text);
     background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
   }
-}
-
-.wandItem {
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border: none;
-  border-radius: var(--ss-radius-sm);
-  background: transparent;
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-control);
-  font-weight: var(--ss-font-weight-medium);
-  text-align: left;
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .wandItem:hover {
-    transition: background-color var(--ss-transition), color var(--ss-transition);
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-  }
-}
-
-.wandItem:focus-visible {
-  outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: -2px;
 }
 
 .bbt {
@@ -508,45 +453,6 @@
     background: var(--ss-color-ghost-hover);
     border-color: var(--ss-color-border);
   }
-}
-
-.dirty {
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-semibold);
-  letter-spacing: var(--ss-tracking-label);
-  text-transform: uppercase;
-  color: var(--ss-color-primary);
-}
-
-.saveError {
-  margin: 0;
-  padding: var(--ss-space-2) var(--ss-space-4);
-  text-align: center;
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-medium);
-  line-height: var(--ss-leading-tight);
-  color: var(--ss-color-danger);
-  background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--ss-color-danger) 35%, transparent);
-}
-
-.discardBtn {
-  color: var(--ss-color-danger);
-  border-color: color-mix(
-    in srgb,
-    var(--ss-color-danger) 55%,
-    var(--ss-color-border)
-  );
-}
-
-.saveBtn {
-  color: var(--ss-color-primary);
-  border-color: color-mix(
-    in srgb,
-    var(--ss-color-primary) 55%,
-    var(--ss-color-border)
-  );
 }
 
 .main {
@@ -1106,19 +1012,6 @@
   overflow: hidden;
 }
 
-.dockAudioRow {
-  display: flex;
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  align-items: center;
-  gap: var(--ss-space-1);
-}
-
-.dockAudioRowFader {
-  width: 100%;
-}
-
 .dockLabel {
   flex: 1 1 auto;
   min-width: 0;
@@ -1129,7 +1022,6 @@
   user-select: none;
   /* Audio dock: MiddleTruncateLabel replaces end-ellipsis with middle cut. */
 }
-
 
 /* Hit target stays on sticky dock; highlight spans full track row via :has(). */
 .laneResize {
@@ -1252,13 +1144,6 @@
   box-shadow:
     inset 0 -1px 0 0 var(--ss-color-border-muted),
     inset 4px 0 0 0 var(--ss-color-primary);
-}
-
-.dockTools {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--ss-space-1);
 }
 
 .dockFader {
@@ -1585,307 +1470,6 @@
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-compact);
   color: inherit;
-}
-
-.helpBody {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-4);
-}
-
-.helpGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ss-space-3);
-}
-
-@media (max-width: 768px) {
-  .helpGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.helpSection {
-  margin: 0;
-  padding: var(--ss-space-3);
-  border: 1px solid var(--ss-color-border-muted);
-  border-left: 3px solid color-mix(in srgb, var(--ss-color-primary) 75%, transparent);
-  border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-surface) 55%, transparent);
-}
-
-.helpSectionKeys {
-  border-left-color: var(--ss-color-primary);
-  background: color-mix(in srgb, var(--ss-color-primary) 8%, var(--ss-color-elevated));
-}
-
-.helpSectionTitle {
-  margin: 0 0 var(--ss-space-2);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-bold);
-  letter-spacing: var(--ss-tracking-label);
-  text-transform: uppercase;
-  color: var(--ss-color-primary);
-}
-
-.helpList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-relaxed);
-  color: var(--ss-color-text-muted);
-}
-
-.helpToolItem {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.helpPreview {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: var(--ss-space-8);
-  min-height: var(--ss-space-8);
-}
-
-.helpToolText {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.helpToolText strong {
-  font-weight: var(--ss-font-weight-semibold);
-  color: var(--ss-color-text);
-}
-
-.helpBtnGroup {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-1);
-}
-
-.helpChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--ss-space-8);
-  height: var(--ss-space-8);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-surface);
-  color: var(--ss-color-text);
-}
-
-.helpChipAccent {
-  border-color: color-mix(in srgb, var(--ss-color-primary) 55%, var(--ss-color-border));
-  background: color-mix(in srgb, var(--ss-color-primary) 18%, var(--ss-color-surface));
-  color: var(--ss-color-primary);
-}
-
-.helpSongPreview {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ss-space-1);
-  max-width: 7rem;
-  padding: var(--ss-space-1) var(--ss-space-2);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-semibold);
-  white-space: nowrap;
-}
-
-.helpLaneStrip {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px;
-  max-width: 9rem;
-}
-
-.helpLaneChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: var(--ss-space-5);
-  height: var(--ss-space-5);
-  padding: 0 var(--ss-space-1);
-  border-radius: var(--ss-radius-sharp);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-  color: var(--ss-color-on-primary);
-}
-
-.helpLaneTempo,
-.helpLaneTonacja,
-.helpLaneMetrum,
-.helpLaneKotwice {
-  background: color-mix(in srgb, var(--ss-color-text-muted) 55%, var(--ss-color-surface));
-  color: var(--ss-color-text);
-}
-
-.helpLaneForma {
-  background: color-mix(in srgb, var(--ss-color-primary) 70%, var(--ss-color-surface));
-}
-
-.helpLaneTekst {
-  background: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-surface));
-}
-
-.helpLaneAkordy {
-  background: color-mix(in srgb, var(--ss-color-text-muted) 40%, var(--ss-color-surface));
-  color: var(--ss-color-text);
-}
-
-.helpLaneCue {
-  background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-surface));
-}
-
-.helpMarkerPreview {
-  position: relative;
-  display: block;
-  width: var(--ss-space-10);
-  height: var(--ss-space-8);
-  overflow: hidden;
-  border: 1px solid var(--ss-color-border-muted);
-  border-radius: var(--ss-radius-sharp);
-  background: var(--ss-color-bg);
-}
-
-.helpMarkerRuler {
-  position: absolute;
-  inset: var(--ss-space-2) 0 auto;
-  height: 1px;
-  background: var(--ss-color-border);
-}
-
-.helpMarkerDemo {
-  position: absolute;
-  top: var(--ss-space-1);
-  bottom: var(--ss-space-1);
-  left: 50%;
-  width: 2px;
-  transform: translateX(-50%);
-  border-radius: 1px;
-}
-
-.helpMarkerLocator {
-  background: var(--ss-color-primary);
-}
-
-.helpMarkerPlayhead {
-  background: var(--ss-color-info);
-}
-
-.helpInputChord {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ss-space-1);
-}
-
-.helpKeysGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: var(--ss-space-3);
-}
-
-.helpKeysGroup {
-  margin: 0;
-}
-
-.helpKeysHeading {
-  margin: 0 0 var(--ss-space-2);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-semibold);
-  color: var(--ss-color-text);
-  text-transform: uppercase;
-  letter-spacing: var(--ss-tracking-label);
-}
-
-.helpKeysRows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-1);
-}
-
-.helpKeyRow {
-  display: grid;
-  grid-template-columns: minmax(6rem, auto) 1fr;
-  gap: var(--ss-space-2);
-  align-items: center;
-  padding: var(--ss-space-1) var(--ss-space-2);
-  border: 1px solid var(--ss-color-border-muted);
-  border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-bg) 45%, transparent);
-  font-size: var(--ss-text-sm);
-  color: var(--ss-color-text-muted);
-}
-
-.helpKeyChordCell {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-1);
-  min-width: 0;
-}
-
-.helpKeyAction {
-  min-width: 0;
-  line-height: var(--ss-leading-tight);
-}
-
-.helpChord,
-.helpChordsStack {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-1);
-}
-
-.helpChordsStack {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.helpChordPart {
-  display: inline-flex;
-  align-items: center;
-}
-
-.helpKeyPlus,
-.helpKeyAlt {
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-}
-
-.helpKbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--ss-space-5);
-  padding: 0 var(--ss-space-2);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-surface);
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ss-color-border) 80%, transparent);
-  font-family: inherit;
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-  color: var(--ss-color-text);
-  white-space: nowrap;
 }
 
 .formaClip {
@@ -2371,13 +1955,6 @@
   background: var(--ss-color-surface);
 }
 
-.zoomControl {
-  display: flex;
-  align-items: center;
-  gap: var(--ss-space-1);
-  min-width: 0;
-}
-
 .zoomLab {
   display: inline-flex;
   align-items: center;
@@ -2779,10 +2356,6 @@
   background: color-mix(in srgb, var(--ss-color-warning) 28%, var(--ss-color-surface));
   border-color: color-mix(in srgb, var(--ss-color-warning) 65%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ss-color-warning) 50%, transparent);
-}
-
-.audioClipLoop {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ss-color-selected-border) 70%, transparent);
 }
 
 .audioFadeIn,

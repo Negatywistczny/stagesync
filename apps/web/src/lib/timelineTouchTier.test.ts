@@ -36,7 +36,9 @@ describe("timelineTouchTier", () => {
     expect(timelineGesturesAllowed("tablet").pencilDraw).toBe(true);
     expect(timelineGesturesAllowed("desktop").clipDragResize).toBe(true);
     expect(isTouchTier("tablet")).toBe(true);
+    expect(isTouchTier("desktop")).toBe(false);
     expect(isMobileTier("mobile")).toBe(true);
+    expect(isMobileTier("tablet")).toBe(false);
   });
 
   it("default matches uses window.matchMedia when available", () => {

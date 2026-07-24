@@ -43,7 +43,11 @@ export function DrumsPane({
   }, [ctx?.activeClipId, ctx?.segments.length]);
 
   if (!ctx) {
-    return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Oczekiwanie na utwór…
+      </p>
+    );
   }
 
   const fmtName = (name: string) =>

@@ -450,6 +450,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                   variant="primary"
                   disabled={pending || !dirty}
                   loading={pending}
+                  aria-label="Zapisz setlistę"
                   onClick={() => void onSave()}
                 >
                   Zapisz
@@ -457,6 +458,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 <Button
                   variant="ghost"
                   disabled={pending || draftItems.length === 0}
+                  aria-label="Wyczyść setlistę"
                   onClick={onClear}
                 >
                   Wyczyść
