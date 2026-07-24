@@ -4,7 +4,11 @@
 **Window:** ~18:10–21:20 Europe/Warsaw  
 **Scope:** parity / tech debt only (no 5.2+ features; no transport/timebase math; no Docker/Tauri packaging)
 
-## Open PRs (ready / near-ready)
+## Merged PRs (merge train 2026-07-24 evening→night)
+
+**Status:** wszystkie poniższe zmergowane squashem na `main` (plus follow-up [#601](https://github.com/Negatywistyczny/stagesync/pull/601) przywracający TimelineShell a11y utracone przy resolve DIRTY #512/#561). Zamknięte bez merge: #503 (duplikat #504), #598 (duplikat #522).
+
+### Lista
 
 | PR | Title | Scope |
 |---|---|---|
@@ -27,7 +31,7 @@
 | [#513](https://github.com/Negatywistyczny/stagesync/pull/513) | Mixer strip PL | Mikser / wyjście stereo / Balans / Szczyt |
 | [#514](https://github.com/Negatywistyczny/stagesync/pull/514) | Library 400 edges | batch-PC range + export non-UUID |
 | [#515](https://github.com/Negatywistyczny/stagesync/pull/515) | theme-color token | Meta from `--ss-color-bg` with fallbacks |
-| [#516](https://github.com/Negatywistyczny/stagesync/pull/516) | Evening handoff report | This document (branch misnamed `chore/admin-dead-css`) |
+| [#516](https://github.com/Negatywistyczny/stagesync/pull/516) | Evening handoff report | This document (branch misnamed `chore/admin-dead-css`; merged last) |
 | [#517](https://github.com/Negatywistyczny/stagesync/pull/517) | AdminShell dead CSS | Orphan about/split/stack/twoUp leftovers |
 | [#518](https://github.com/Negatywistyczny/stagesync/pull/518) | Live-desk PATCH edges | Unknown field + empty body refine |
 | [#519](https://github.com/Negatywistyczny/stagesync/pull/519) | Unexport deprecated CD helpers | Drop barrel exports; tests import module |
