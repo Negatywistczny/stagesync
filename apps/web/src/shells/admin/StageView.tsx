@@ -404,18 +404,27 @@ export function StageView() {
                 }
                 disabled={pending}
                 aria-pressed={priority === "alert"}
-                title="Priorytet alert"
-                aria-label="Priorytet alert"
+                title={
+                  priority === "alert"
+                    ? "Priorytet: alert (wyłącz)"
+                    : "Priorytet: normalny (włącz alert)"
+                }
+                aria-label={
+                  priority === "alert"
+                    ? "Priorytet: alert (wyłącz)"
+                    : "Priorytet: normalny (włącz alert)"
+                }
                 onClick={() =>
                   setPriority((p) => (p === "alert" ? "normal" : "alert"))
                 }
               >
-                {priority === "alert" ? "Alert" : "Normal"}
+                {priority === "alert" ? "Alert" : "Normalny"}
               </button>
               <select
                 className={shell.select}
                 value={String(ttlMs)}
                 disabled={pending}
+                aria-label="Czas wyświetlania komunikatu"
                 onChange={(e) => setTtlMs(Number(e.target.value))}
               >
                 <option value="6000">TTL 6 s</option>
@@ -476,7 +485,7 @@ export function StageView() {
                         </span>
                         <span className={styles.sessionMsgMeta}>
                           {formatSessionRoles(msg.roles)}
-                          {isAlert ? " · alert" : " · normal"}
+                          {isAlert ? " · alert" : " · normalny"}
                           {formatExpiresAt(msg)}
                         </span>
                       </div>
@@ -484,6 +493,7 @@ export function StageView() {
                         variant="ghost"
                         disabled={pending}
                         title="Usuń komunikat"
+                        aria-label="Usuń komunikat"
                         onClick={() => void onDismiss(msg.id)}
                       >
                         Usuń

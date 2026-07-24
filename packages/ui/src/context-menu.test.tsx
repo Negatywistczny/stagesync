@@ -90,6 +90,47 @@ describe("ContextMenu", () => {
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
+  it("uses Polish default menu label and custom label", () => {
+    function LabeledHarness() {
+      const { openAt } = useContextMenu();
+      return (
+        <button
+          type="button"
+          onClick={() =>
+            openAt({
+              x: 10,
+              y: 10,
+              label: "Menu ścieżki",
+              items: [{ id: "a", label: "A", onSelect: () => undefined }],
+            })
+          }
+        >
+          Open labeled
+        </button>
+      );
+    }
+
+    render(
+      <ContextMenuProvider>
+        <Harness
+          items={[{ id: "a", label: "A", onSelect: () => undefined }]}
+        />
+        <LabeledHarness />
+      </ContextMenuProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open" }));
+    expect(screen.getByRole("menu").getAttribute("aria-label")).toBe(
+      "Menu kontekstowe",
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Open labeled" }));
+    expect(screen.getByRole("menu").getAttribute("aria-label")).toBe(
+      "Menu ścieżki",
+    );
+  });
+
   it("throws outside provider", () => {
     expect(() => render(<Harness items={[]} />)).toThrow(
       /ContextMenuProvider/,

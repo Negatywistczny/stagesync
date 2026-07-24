@@ -6462,6 +6462,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                             ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
                             : "Dodaj pustą ścieżkę audio"
                       }
+                      aria-label={
+                        draftProject &&
+                        draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
+                          ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
+                          : "Dodaj pustą ścieżkę audio"
+                      }
                       onClick={onAddAudioTrack}
                     >
                       + Dodaj Ścieżkę
@@ -7444,7 +7450,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 : "Rozłączony"}
           </span>
         </div>
-        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
+        <div className={styles.zooms} role="group" aria-label="Powiększenie i snap">
           <label className={styles.snapPicker}>
             <span className={styles.snapPickerLab}>Snap</span>
             <select
@@ -7474,16 +7480,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-              title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
-              aria-label="Zoom UI"
+              title="Powiększenie UI — gęstość chrome Timeline / Mixer (85–125%)"
+              aria-label="Powiększenie UI"
             />
           </label>
           <label
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Zoom H dotyczy osi czasu (niedostępny w Mixerze)"
-                : "Zoom poziomy (oś czasu)"
+                ? "Powiększenie H dotyczy osi czasu (niedostępne w Mixerze)"
+                : "Powiększenie poziome (oś czasu)"
             }
           >
             H
@@ -7495,15 +7501,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               value={zoomH}
               disabled={timelineSurface === "mixer"}
               onChange={(e) => setZoomH(Number(e.target.value))}
-              aria-label="Zoom poziomy"
+              aria-label="Powiększenie poziome"
             />
           </label>
           <label
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Zoom V dotyczy wysokości ścieżek (niedostępny w Mixerze)"
-                : "Zoom pionowy (wysokość ścieżek)"
+                ? "Powiększenie V dotyczy wysokości ścieżek (niedostępne w Mixerze)"
+                : "Powiększenie pionowe (wysokość ścieżek)"
             }
           >
             V
@@ -7515,7 +7521,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               value={zoomV}
               disabled={timelineSurface === "mixer"}
               onChange={(e) => setVerticalZoom(Number(e.target.value))}
-              aria-label="Zoom pionowy"
+              aria-label="Powiększenie pionowe"
             />
           </label>
         </div>
