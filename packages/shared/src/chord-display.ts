@@ -48,6 +48,10 @@ function splitRealBass(raw: string): { main: string; bass: string } {
   if (REAL_BASS_RE.test(maybeBass)) {
     return { main: raw.slice(0, slashIdx), bass: maybeBass };
   }
+  // Mid-edit trailing slash (`C#m7/`) — drop incomplete bass, keep chord body
+  if (maybeBass === "/") {
+    return { main: raw.slice(0, slashIdx), bass: "" };
+  }
   return { main: raw, bass: "" };
 }
 

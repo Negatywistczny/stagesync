@@ -116,8 +116,8 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 |--------|--------|--------|--------|
 | [Logika-Edycji-Klipow-Logic-Pro.md](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.md) | Deep Search / Logic Pro | [triage](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.triage.md) | `archive` |
 | [Referencja-Zachowan-Live-MIDI.md](./referencje-daw/Referencja-Zachowan-Live-MIDI.md) | Gemini Deep Search | [triage](./referencje-daw/Referencja-Zachowan-Live-MIDI.triage.md) | `partial` |
-| [Specyfikacja-Referencji-Zachowan-Wyswietlania.md](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.md) | Gemini Deep Search | [triage](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.triage.md) | `open` |
-| [UXLogika-Show-Tools-Referencja-Zachowan.md](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.md) | Gemini Deep Search | [triage](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.triage.md) | `open` |
+| [Specyfikacja-Referencji-Zachowan-Wyswietlania.md](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.md) | Gemini Deep Search | [triage](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.triage.md) | `partial` |
+| [UXLogika-Show-Tools-Referencja-Zachowan.md](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.md) | Gemini Deep Search | [triage](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.triage.md) | `partial` |
 
 ### ui/
 

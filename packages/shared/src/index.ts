@@ -212,6 +212,7 @@ export {
   LiveDeskSettingsSchema,
   LiveDeskPatchBodySchema,
   LiveDeskMessageSchema,
+  SetlistSnapshotMessageSchema,
   TransportWsServerMessageSchema,
   parseTransportTickPayload,
   DEFAULT_TRANSPORT_BPM,
@@ -233,6 +234,7 @@ export {
   type LiveDeskSettings,
   type LiveDeskPatchBody,
   type LiveDeskMessage,
+  type SetlistSnapshotMessage,
   type TransportWsServerMessage,
 } from "./transport.js";
 

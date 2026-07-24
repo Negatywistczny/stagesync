@@ -6,11 +6,13 @@ import {
 } from "@stagesync/shared";
 import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "../transport/engine.js";
+import type { SetlistHub } from "../transport/setlist-hub.js";
 import { handleRouteError } from "./errors.js";
 
 export function createSetlistRouter(
   stores: Stores,
   transport: TransportEngine,
+  setlistHub?: SetlistHub,
 ): Router {
   const router = Router();
 
@@ -33,9 +35,13 @@ export function createSetlistRouter(
       const body = PutSetlistBodySchema.parse(req.body);
       const setlist = await stores.putSetlist(body);
       const library = await stores.getLibrary();
-      res.json(
-        buildSetlistView(setlist, library, transport.getActiveProjectId()),
+      const view = buildSetlistView(
+        setlist,
+        library,
+        transport.getActiveProjectId(),
       );
+      setlistHub?.publishFromView(view);
+      res.json(view);
     } catch (err) {
       handleRouteError(res, err);
     }
@@ -46,9 +52,13 @@ export function createSetlistRouter(
       const body = PatchSetlistAutoAdvanceBodySchema.parse(req.body);
       const setlist = await stores.patchSetlistAutoAdvance(body.enabled);
       const library = await stores.getLibrary();
-      res.json(
-        buildSetlistView(setlist, library, transport.getActiveProjectId()),
+      const view = buildSetlistView(
+        setlist,
+        library,
+        transport.getActiveProjectId(),
       );
+      setlistHub?.publishFromView(view);
+      res.json(view);
     } catch (err) {
       handleRouteError(res, err);
     }

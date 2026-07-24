@@ -160,12 +160,31 @@ export const LiveDeskMessageSchema = z.object({
 
 export type LiveDeskMessage = z.infer<typeof LiveDeskMessageSchema>;
 
+/** Setlist neighbors for Client/Admin chrome — fanout on PUT/PATCH (not full SetlistView). */
+export const SetlistSnapshotMessageSchema = z.object({
+  type: z.literal("setlist_snapshot"),
+  projectIds: z.array(z.string().min(1)),
+  enabled: z.boolean(),
+  autoAdvance: z.object({ enabled: z.boolean() }),
+  currentIndex: z.number().int(),
+  next: z
+    .object({
+      id: z.string().min(1),
+      name: z.string(),
+    })
+    .nullable(),
+  sentAtMs: z.number().finite(),
+});
+
+export type SetlistSnapshotMessage = z.infer<typeof SetlistSnapshotMessageSchema>;
+
 /** Server → client frames on `/ws/transport`. */
 export const TransportWsServerMessageSchema = z.discriminatedUnion("type", [
   TransportTickMessageSchema,
   StageCueMessageSchema,
   StageCueDismissMessageSchema,
   LiveDeskMessageSchema,
+  SetlistSnapshotMessageSchema,
 ]);
 
 export type TransportWsServerMessage = z.infer<

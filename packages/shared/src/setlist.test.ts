@@ -187,7 +187,7 @@ describe("setlist helpers", () => {
     expect(n.timeBudgetMinutes).toBe(24 * 60);
   });
 
-  it("resolveSetlistNext returns first when current is outside list", () => {
+  it("resolveSetlistNext returns null when current is outside list", () => {
     const setlist = {
       ...defaultSetlist(),
       enabled: true,
@@ -199,14 +199,14 @@ describe("setlist helpers", () => {
         },
       ],
     };
-    expect(resolveSetlistNext(setlist, library, "not-in-list")?.name).toBe("A");
+    expect(resolveSetlistNext(setlist, library, "not-in-list")).toBeNull();
     expect(
       resolveSetlistNext(
         { ...setlist, projectIds: [], items: setlist.items },
         library,
         null,
-      )?.name,
-    ).toBe("A");
+      ),
+    ).toBeNull();
   });
 
   it("buildSetlistView uses projectIds fallback when items all pruned", () => {

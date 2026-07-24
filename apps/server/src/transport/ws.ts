@@ -6,6 +6,7 @@ import type { ClientPresence } from "../client-presence.js";
 import type { LiveDeskStore } from "../live-desk.js";
 import type { TransportEngine } from "./engine.js";
 import type { StageHub } from "./stage-hub.js";
+import type { SetlistHub } from "./setlist-hub.js";
 
 export const TRANSPORT_WS_PATH = "/ws/transport";
 
@@ -17,6 +18,7 @@ export function attachTransportWs(
   stageHub?: StageHub,
   presence?: ClientPresence,
   liveDesk?: LiveDeskStore,
+  setlistHub?: SetlistHub,
 ): WebSocketServer {
   const wss = new WebSocketServer({ server, path: TRANSPORT_WS_PATH });
 
@@ -44,6 +46,10 @@ export function attachTransportWs(
     send(ws, transport.toTickMessage());
     if (liveDesk) {
       sendJson(ws, liveDesk.snapshotMessage());
+    }
+    const setlistSnap = setlistHub?.snapshotMessage();
+    if (setlistSnap) {
+      sendJson(ws, setlistSnap);
     }
     if (stageHub) {
       for (const cue of stageHub.snapshotCues()) {
@@ -106,10 +112,20 @@ export function attachTransportWs(
     }
   });
 
+  const unsubSetlist = setlistHub?.onMessage((msg) => {
+    const payload = JSON.stringify(msg);
+    for (const client of wss.clients) {
+      if (client.readyState === client.OPEN) {
+        client.send(payload);
+      }
+    }
+  });
+
   wss.on("close", () => {
     unsubscribe();
     unsubStage?.();
     unsubLive?.();
+    unsubSetlist?.();
   });
 
   return wss;

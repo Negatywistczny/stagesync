@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import { join } from "node:path";
-import { projectEndTicks, type HealthResponse } from "@stagesync/shared";
+import { buildSetlistView, projectEndTicks, type HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import {
   createFileLogger,
@@ -30,6 +30,7 @@ import {
 import { wirePauseAtSongEnd } from "./transport/pause-at-end.js";
 import { wireSetlistAutoAdvance } from "./transport/auto-advance.js";
 import { createStageHub, type StageHub } from "./transport/stage-hub.js";
+import { createSetlistHub, type SetlistHub } from "./transport/setlist-hub.js";
 
 function resolveServiceVersion(): string {
   const staged = process.env.STAGESYNC_VERSION?.trim();
@@ -47,6 +48,7 @@ export type CreateAppOptions = {
   stores?: Stores;
   transport?: TransportEngine;
   stageHub?: StageHub;
+  setlistHub?: SetlistHub;
   liveDesk?: LiveDeskStore;
   logBuffer?: LogBuffer;
   presence?: ClientPresence;
@@ -64,6 +66,7 @@ export type AppBundle = {
   app: Express;
   transport: TransportEngine;
   stageHub: StageHub;
+  setlistHub: SetlistHub;
   liveDesk: LiveDeskStore;
   stores: Stores;
   logBuffer: LogBuffer;
@@ -85,6 +88,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const stores = options.stores ?? createStores(dataDir);
   const transport = options.transport ?? createTransportEngine();
   const stageHub = options.stageHub ?? createStageHub();
+  const setlistHub = options.setlistHub ?? createSetlistHub();
   const midiPaths = resolveDataPaths(dataDir);
   const liveDesk =
     options.liveDesk ?? createLiveDeskStore(midiPaths.liveDeskFile);
@@ -118,8 +122,26 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     );
   };
   refreshMidiSeekEnd(transport.getActiveProjectId());
+  let lastSetlistActiveId: string | null | undefined =
+    transport.getActiveProjectId();
   transport.onChange((msg) => {
     refreshMidiSeekEnd(msg.activeProjectId ?? null);
+    const activeId = msg.activeProjectId ?? null;
+    if (activeId === lastSetlistActiveId) return;
+    lastSetlistActiveId = activeId;
+    void (async () => {
+      try {
+        const [setlist, library] = await Promise.all([
+          stores.getSetlist(),
+          stores.getLibrary(),
+        ]);
+        setlistHub.publishFromView(
+          buildSetlistView(setlist, library, activeId),
+        );
+      } catch {
+        /* ignore */
+      }
+    })();
   });
   const midi =
     options.midi ??
@@ -176,7 +198,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
 
   app.use("/api/library", createLibraryRouter(stores));
   app.use("/api/projects", createProjectsRouter(stores, transport));
-  app.use("/api/setlist", createSetlistRouter(stores, transport));
+  app.use("/api/setlist", createSetlistRouter(stores, transport, setlistHub));
   app.use("/api/stage", createStageRouter(stageHub, presence));
   app.use("/api/live-desk", createLiveDeskRouter(liveDesk));
   app.use(
@@ -212,5 +234,29 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   );
   logBuffer.push("info", `StageSync server ready (${VERSION})`);
 
-  return { app, transport, stageHub, liveDesk, stores, logBuffer, presence, midi };
+  void (async () => {
+    try {
+      const [setlist, library] = await Promise.all([
+        stores.getSetlist(),
+        stores.getLibrary(),
+      ]);
+      setlistHub.publishFromView(
+        buildSetlistView(setlist, library, transport.getActiveProjectId()),
+      );
+    } catch {
+      /* empty / missing data dir in tests */
+    }
+  })();
+
+  return {
+    app,
+    transport,
+    stageHub,
+    setlistHub,
+    liveDesk,
+    stores,
+    logBuffer,
+    presence,
+    midi,
+  };
 }

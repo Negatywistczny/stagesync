@@ -7,6 +7,46 @@ import type {
 
 export type WsStatus = "connecting" | "connected" | "disconnected";
 
+export type StageCue = {
+  id?: string;
+  text: string;
+  ttlMs: number;
+  sentAtMs: number;
+  roles?: Array<"karaoke" | "grid" | "score" | "drums">;
+  priority?: "normal" | "alert";
+};
+
+export type LiveDeskState = {
+  transpositionSemitones: number;
+  syncLeadMs: number;
+  clientEditEnabled: boolean;
+};
+
+/** Lightweight setlist chrome snapshot from WS (not full SetlistView items). */
+export type SetlistSnapshotState = {
+  projectIds: string[];
+  enabled: boolean;
+  autoAdvanceEnabled: boolean;
+  currentIndex: number;
+  next: { id: string; name: string } | null;
+  sentAtMs: number;
+};
+
+export const DEFAULT_LIVE_DESK: LiveDeskState = {
+  transpositionSemitones: 0,
+  syncLeadMs: 200,
+  clientEditEnabled: true,
+};
+
+export const DEFAULT_SETLIST_SNAPSHOT: SetlistSnapshotState = {
+  projectIds: [],
+  enabled: false,
+  autoAdvanceEnabled: false,
+  currentIndex: -1,
+  next: null,
+  sentAtMs: 0,
+};
+
 export type TransportContextValue = {
   state: TransportState;
   displayTicks: number;
@@ -26,32 +66,13 @@ export type TransportContextValue = {
   stageCues: StageCue[];
   /** Live Desk (team transpose / sync-lead / remote edit). */
   liveDesk: LiveDeskState;
+  /** Setlist neighbors pushed over WS after Admin edits. */
+  setlistSnapshot: SetlistSnapshotState;
   /** Announce Client identity to Admin presence (WS). */
   announcePresence: (payload: {
     displayName: string | null;
     roles: string[];
   }) => void;
-};
-
-export type StageCue = {
-  id?: string;
-  text: string;
-  ttlMs: number;
-  sentAtMs: number;
-  roles?: Array<"karaoke" | "grid" | "score" | "drums">;
-  priority?: "normal" | "alert";
-};
-
-export type LiveDeskState = {
-  transpositionSemitones: number;
-  syncLeadMs: number;
-  clientEditEnabled: boolean;
-};
-
-export const DEFAULT_LIVE_DESK: LiveDeskState = {
-  transpositionSemitones: 0,
-  syncLeadMs: 200,
-  clientEditEnabled: true,
 };
 
 export const TransportContext = createContext<TransportContextValue | null>(

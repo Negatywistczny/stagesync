@@ -4,7 +4,7 @@
  */
 
 import type { TransportAnchor, TransportState } from "@stagesync/shared";
-import type { LiveDeskState, StageCue } from "./transportContext.js";
+import type { LiveDeskState, SetlistSnapshotState, StageCue } from "./transportContext.js";
 
 const MAX_LATENCY_MS = 60_000;
 
@@ -94,6 +94,24 @@ export function liveDeskFromPayload(desk: {
     transpositionSemitones: desk.transpositionSemitones,
     syncLeadMs: desk.syncLeadMs,
     clientEditEnabled: desk.clientEditEnabled,
+  };
+}
+
+export function setlistSnapshotFromPayload(msg: {
+  projectIds: string[];
+  enabled: boolean;
+  autoAdvance: { enabled: boolean };
+  currentIndex: number;
+  next: { id: string; name: string } | null;
+  sentAtMs: number;
+}): SetlistSnapshotState {
+  return {
+    projectIds: msg.projectIds,
+    enabled: msg.enabled,
+    autoAdvanceEnabled: msg.autoAdvance.enabled,
+    currentIndex: msg.currentIndex,
+    next: msg.next,
+    sentAtMs: msg.sentAtMs,
   };
 }
 

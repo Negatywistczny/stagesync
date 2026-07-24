@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+#### 🎛️ Audio / MIDI / Transport
+- **Setlista:** zmiana kolejności lub auto-advance w Adminie od razu aktualizuje podgląd „następny utwór” na Client / Admin / Timeline przez WebSocket (bez czekania na zmianę utworu).
+
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW
@@ -27,7 +32,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mixer / Click:** Mute Clicka oraz stripy (wyjście stereo, balans, panorama, peak) z polskimi etykietami AT ([#497](https://github.com/Negatywistyczny/stagesync/pull/497), [#513](https://github.com/Negatywistyczny/stagesync/pull/513)).
 - **Menu narzędzi:** skróty jako pojedyncza litera (np. I), bez prefiksu T.
 - **Audio / edycja:** split respektuje mapę tempa przy `trimIn`; resize z kolizją nie wywala UI; multi-przesuwanie trzyma klip wiodący; Gain odrzuca NaN.
-- **Akordy:** symbol w Inspectorze nie jest kanonizowany w trakcie wpisywania; normalizacja przy wyjściu z pola.
+- **Akordy:** symbol w Inspectorze nie jest kanonizowany w trakcie wpisywania; normalizacja przy wyjściu z pola; niedokończony bas po ukośniku (`C#m7/`) nie psuje indeksu górnego na scenie.
 
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii (także przy floodzie PC); SPP nie seekuje poza koniec utworu.
@@ -36,10 +41,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mixer / Peak Hold i fader:** Peak Hold nie wraca po wyczyść przez wyścig z odświeżaniem miernika; zmiana fadera / mute / solo bez trzasków (krótka rampa wzmocnienia, bez rozłączania szyn na każdy tick transportu).
 - **Playback:** plik mono na ścieżce stereo słychać na L i R (nie tylko lewy); głośność klipu bez restartu odtwarzania; Pause w trakcie buforowania nie odpala „widmowego” dźwięku; seek na jeszcze niezaładowany plik wznawia clip po decode; przełączenie projektu nie zostawia starych buforów w cache; na końcu utworu WebAudio cichnie lokalnie, gdy ticki SSOT są już za końcem, zanim serwer dokończy pauzę albo auto-advance.
 - **Transport:** Seek / Pause FOH podczas pauzy na końcu utworu albo auto-advance nie jest nadpisywany przez spóźnione odczyty z dysku; po ponownym połączeniu WS playhead bierze świeży tick (bez skoku z opóźnionego HTTP).
+- **Setlista / auto-advance:** utwór spoza setlisty (np. bis) nie skacze automatycznie do pierwszego numeru — transport zatrzymuje się jak na końcu setu.
 
 #### 🖥️ App Shell & UI
 - **Admin:** „Zarządzaj bazą”, modale, log systemowy, Zapisz / Wyczyść setlistę i toolbar Batch PC z poprawnymi etykietami i powiązaniami ARIA ([#510](https://github.com/Negatywistyczny/stagesync/pull/510), [#545](https://github.com/Negatywistyczny/stagesync/pull/545), [#575](https://github.com/Negatywistyczny/stagesync/pull/575), [#577](https://github.com/Negatywistyczny/stagesync/pull/577), [#599](https://github.com/Negatywistyczny/stagesync/pull/599)).
 - **Client:** status ładowania partytury i paneli, pusty Set oraz reset zoomu partytury ogłaszane czytnikom; wordmark z kontekstem shelła ([#578](https://github.com/Negatywistyczny/stagesync/pull/578), [#580](https://github.com/Negatywistyczny/stagesync/pull/580), [#582](https://github.com/Negatywistyczny/stagesync/pull/582), [#592](https://github.com/Negatywistyczny/stagesync/pull/592), [#596](https://github.com/Negatywistyczny/stagesync/pull/596)).
+- **Client / Score:** zoom i transpozycja partytury są debounced, żeby uniknąć serii pełnych przebudów SVG podczas szybkich kliknięć.
 - **Scena:** priorytet i czas wyświetlania komunikatu oraz „Usuń komunikat” z czytelnymi etykietami ([#528](https://github.com/Negatywistyczny/stagesync/pull/528), [#533](https://github.com/Negatywistyczny/stagesync/pull/533)).
 - **Ustawienia / crash / dialogi:** polskie nazwy w Ustawieniach serwera; etykiety nawigacji po crashu; unikalne tytuły dialogów shelła ([#506](https://github.com/Negatywistyczny/stagesync/pull/506), [#508](https://github.com/Negatywistyczny/stagesync/pull/508), [#538](https://github.com/Negatywistyczny/stagesync/pull/538)).
 - **Desktop:** modale menu natywnego powiązane z tytułami dla AT ([#543](https://github.com/Negatywistyczny/stagesync/pull/543)).

@@ -129,10 +129,13 @@ export function ScorePane({
   useEffect(() => {
     const osmd = osmdRef.current;
     if (!osmd || !ready) return;
-    applyOsmdZoom(osmd, scoreZoom);
-    if (lastBarRef.current != null) {
-      goToScoreBar(osmd, lastBarRef.current);
-    }
+    const timer = window.setTimeout(() => {
+      applyOsmdZoom(osmd, scoreZoom);
+      if (lastBarRef.current != null) {
+        goToScoreBar(osmd, lastBarRef.current);
+      }
+    }, 120);
+    return () => window.clearTimeout(timer);
   }, [scoreZoom, ready]);
 
   useEffect(() => {
@@ -150,14 +153,17 @@ export function ScorePane({
   useEffect(() => {
     const osmd = osmdRef.current;
     if (!osmd || !ready) return;
-    applyScorePartVisibility(osmd, hiddenPartIds);
-    applyScoreSheetTranspose(
-      osmd,
-      teamSemitones + scoreOctaveToSemitones(scoreOctave),
-    );
-    if (lastBarRef.current != null) {
-      goToScoreBar(osmd, lastBarRef.current);
-    }
+    const timer = window.setTimeout(() => {
+      applyScorePartVisibility(osmd, hiddenPartIds);
+      applyScoreSheetTranspose(
+        osmd,
+        teamSemitones + scoreOctaveToSemitones(scoreOctave),
+      );
+      if (lastBarRef.current != null) {
+        goToScoreBar(osmd, lastBarRef.current);
+      }
+    }, 120);
+    return () => window.clearTimeout(timer);
   }, [hiddenPartIds, scoreOctave, teamSemitones, ready]);
 
   if (!hasActiveProjectId) {

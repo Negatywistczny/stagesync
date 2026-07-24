@@ -555,6 +555,7 @@ export function TimelineShell() {
     stop,
     seek,
     setLoop,
+    setlistSnapshot,
   } = useTransport();
   const { openAt: openContextMenu, close: closeContextMenu } = useContextMenu();
   const wasPlayingRef = useRef(state.playing);
@@ -1043,6 +1044,12 @@ export function TimelineShell() {
       }
     })();
   }, [songScreenOpen]);
+
+  useEffect(() => {
+    setSetlistIds(setlistSnapshot.projectIds);
+    setSetlistEnabled(setlistSnapshot.enabled);
+    setAutoAdvance(setlistSnapshot.autoAdvanceEnabled);
+  }, [setlistSnapshot]);
 
   useEffect(() => {
     let cancelled = false;

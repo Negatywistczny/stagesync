@@ -109,6 +109,17 @@ describe("formatChordParts / resolveChordNameParts symbolic", () => {
       plain: "G/H",
     });
   });
+
+  it("strips incomplete trailing bass slash mid-edit", () => {
+    expect(toLiteralStorage("C#m7/")).toBe("C#m7");
+    expect(formatChordParts("C#m7/")).toEqual({
+      root: "C♯",
+      sup: "−7",
+      bass: "",
+      plain: "C♯m7",
+    });
+    expect(formatChordParts("C6/9").sup).toBe("6/9");
+  });
 });
 
 describe("formatChordParts literalQuality", () => {

@@ -25,18 +25,21 @@ import {
 import {
   TransportContext,
   DEFAULT_LIVE_DESK,
+  DEFAULT_SETLIST_SNAPSHOT,
   type LiveDeskState,
+  type SetlistSnapshotState,
   type StageCue,
   type WsStatus,
 } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 import { wsReconnectDelayMs } from "./wsReconnect.js";
-import { fetchLiveDesk } from "../lib/setlistApi.js";
+import { fetchLiveDesk, fetchSetlist } from "../lib/setlistApi.js";
 import {
   dismissStageCues,
   formatTransportError,
   liveDeskFromPayload,
   noteLatencySample,
+  setlistSnapshotFromPayload,
   shouldAcceptServerTick,
   stageCueFromWs,
   toTransportAnchor,
@@ -57,6 +60,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const [stageCue, setStageCue] = useState<StageCue | null>(null);
   const [stageCues, setStageCues] = useState<StageCue[]>([]);
   const [liveDesk, setLiveDesk] = useState<LiveDeskState>(DEFAULT_LIVE_DESK);
+  const [setlistSnapshot, setSetlistSnapshot] = useState<SetlistSnapshotState>(
+    DEFAULT_SETLIST_SNAPSHOT,
+  );
 
   const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
   const receiptMsRef = useRef(0);
@@ -222,6 +228,10 @@ export function TransportProvider({ children }: { children: ReactNode }) {
           setLiveDesk(liveDeskFromPayload(parsed.data));
           return;
         }
+        if (parsed.data.type === "setlist_snapshot") {
+          setSetlistSnapshot(setlistSnapshotFromPayload(parsed.data));
+          return;
+        }
         const msg = parsed.data;
         if (msg.sentAtMs != null && Number.isFinite(msg.sentAtMs)) {
           const next = noteLatencySample(latencyEmaRef.current, msg.sentAtMs);
@@ -276,6 +286,23 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         const desk = await fetchLiveDesk();
         if (!cancelled) {
           setLiveDesk(liveDeskFromPayload(desk));
+        }
+      } catch {
+        /* WS snapshot may still arrive */
+      }
+      try {
+        const view = await fetchSetlist();
+        if (!cancelled) {
+          setSetlistSnapshot(
+            setlistSnapshotFromPayload({
+              projectIds: view.projectIds,
+              enabled: view.enabled,
+              autoAdvance: view.autoAdvance,
+              currentIndex: view.currentIndex,
+              next: view.next,
+              sentAtMs: Date.now(),
+            }),
+          );
         }
       } catch {
         /* WS snapshot may still arrive */
@@ -373,6 +400,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       stageCue,
       stageCues,
       liveDesk,
+      setlistSnapshot,
       announcePresence,
     }),
     [
@@ -390,6 +418,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       stageCue,
       stageCues,
       liveDesk,
+      setlistSnapshot,
       announcePresence,
     ],
   );

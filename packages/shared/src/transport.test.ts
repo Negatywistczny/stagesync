@@ -148,6 +148,19 @@ describe("TransportWsServerMessageSchema", () => {
     expect(TransportWsServerMessageSchema.parse(byId)).toEqual(byId);
     expect(TransportWsServerMessageSchema.parse(clearAll)).toEqual(clearAll);
   });
+
+  it("parses setlist_snapshot by type", () => {
+    const snap = {
+      type: "setlist_snapshot" as const,
+      projectIds: ["a", "b"],
+      enabled: true,
+      autoAdvance: { enabled: false },
+      currentIndex: 0,
+      next: { id: "b", name: "B" },
+      sentAtMs: 1_700_000_000_000,
+    };
+    expect(TransportWsServerMessageSchema.parse(snap)).toEqual(snap);
+  });
 });
 
 describe("parseTransportTickPayload", () => {

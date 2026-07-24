@@ -64,7 +64,7 @@ const lifecycle = createLifecycle(server, {
   },
 });
 
-const { app, transport, stageHub, liveDesk, presence, logBuffer, stores, midi } =
+const { app, transport, stageHub, setlistHub, liveDesk, presence, logBuffer, stores, midi } =
   createApp({
     lifecycle,
     port: PORT,
@@ -73,7 +73,7 @@ disposeTransport = () => transport.dispose();
 disposeMidi = () => midi.dispose();
 
 server.on("request", app);
-attachTransportWs(server, transport, stageHub, presence, liveDesk);
+attachTransportWs(server, transport, stageHub, presence, liveDesk, setlistHub);
 
 function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
   const onError = (err: NodeJS.ErrnoException) => {

@@ -183,9 +183,7 @@ export function resolveSetlistNext(
   if (currentIndex >= 0 && currentIndex < entries.length - 1) {
     return entries[currentIndex + 1] ?? null;
   }
-  if (currentIndex < 0) {
-    return entries[0] ?? null;
-  }
+  // Outside setlist (e.g. encore) → stop, do not jump to #1
   return null;
 }
 

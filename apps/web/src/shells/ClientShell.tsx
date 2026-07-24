@@ -94,6 +94,7 @@ export function ClientShell() {
     latencyMs,
     stageCues,
     liveDesk,
+    setlistSnapshot,
     play,
     seek,
     commandPending,
@@ -174,6 +175,11 @@ export function ClientShell() {
       void reloadActiveProject();
     }
   }, [wsStatus, reloadActiveProject]);
+
+  useEffect(() => {
+    setSetlistIds(setlistSnapshot.projectIds);
+    setSetlistEnabled(setlistSnapshot.enabled);
+  }, [setlistSnapshot]);
 
   useEffect(() => {
     let cancelled = false;

@@ -9,7 +9,6 @@ import {
   ZIP_IMPORT_UNSUPPORTED_PL,
   type Library,
   type Project,
-  type SetlistView,
 } from "@stagesync/shared";
 import {
   batchMidiProgramIds,
@@ -23,7 +22,7 @@ import {
   updateProject,
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
-import { fetchSetlist, postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
+import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
@@ -112,8 +111,14 @@ export function AdminShell() {
     }
   }, "Wyłącz");
 
-  const { state, displayTicks, wsStatus, play, commandPending: transportPending } =
-    useTransport();
+  const {
+    state,
+    displayTicks,
+    wsStatus,
+    play,
+    commandPending: transportPending,
+    setlistSnapshot,
+  } = useTransport();
   const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
     getStoredClockDisplayFormat(),
   );
@@ -126,7 +131,6 @@ export function AdminShell() {
   });
   const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [setlistView, setSetlistView] = useState<SetlistView | null>(null);
 
   const sectionProjectId = state.activeProjectId ?? selectedId;
   const activeSection = activeProject
@@ -135,8 +139,9 @@ export function AdminShell() {
   const nowProject =
     library?.projects.find((p) => p.id === state.activeProjectId) ?? null;
   const nowName = nowProject?.name ?? "—";
-  const nextName = setlistView?.enabled
-    ? (setlistView.next?.name ?? (setlistView.currentIndex >= 0 ? "Koniec setu" : "—"))
+  const nextName = setlistSnapshot.enabled
+    ? (setlistSnapshot.next?.name ??
+      (setlistSnapshot.currentIndex >= 0 ? "Koniec setu" : "—"))
     : "z setu";
 
   useEffect(() => {
@@ -164,21 +169,6 @@ export function AdminShell() {
       setSearchParams(next, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const view = await fetchSetlist();
-        if (!cancelled) setSetlistView(view);
-      } catch {
-        if (!cancelled) setSetlistView(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [state.activeProjectId, section]);
 
   useEffect(() => {
     if (!sectionProjectId) {
