@@ -1315,7 +1315,7 @@
   min-height: 2.75rem;
 }
 
-.drumsNoteInput:focus {
+.drumsNoteInput:focus-visible {
   outline: none;
   border-color: color-mix(in srgb, var(--client-drums) 75%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--client-drums) 20%, transparent);

@@ -991,7 +991,7 @@
   line-height: var(--ss-leading-compact);
 }
 
-.dockRenameInput:focus {
+.dockRenameInput:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
 }
