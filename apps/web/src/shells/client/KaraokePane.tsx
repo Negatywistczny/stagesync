@@ -206,19 +206,35 @@ export function KaraokePane({
   }, [scrollKey, project?.id]);
 
   if (!hasActiveProjectId) {
-    return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Oczekiwanie na utwór…
+      </p>
+    );
   }
 
   if (loading && !project) {
-    return <p className={styles.empty}>Wczytywanie utworu…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Wczytywanie utworu…
+      </p>
+    );
   }
 
   if (!project) {
-    return <p className={styles.empty}>Nie udało się wczytać utworu.</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Nie udało się wczytać utworu.
+      </p>
+    );
   }
 
   if (!ctx) {
-    return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Oczekiwanie na utwór…
+      </p>
+    );
   }
 
   const key = resolveKeyAt(project, displayTicks);

@@ -55,4 +55,17 @@ describe("shadowBackup", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("uses default pre-migrate label when omitted", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-shadow-def-"));
+    try {
+      const file = join(dir, "setlist.json");
+      await writeFile(file, '{"ok":true}\n');
+      const bak = await shadowBackup(file);
+      expect(bak).toBe(`${file}.pre-migrate.bak`);
+      expect(await readFile(bak!, "utf8")).toBe('{"ok":true}\n');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

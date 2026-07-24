@@ -776,7 +776,7 @@ function ClientChrome({
           {globalSettingsOpen ? (
             <SettingsPopover
               id="global-settings-panel"
-              title="Globalne"
+              title="Ustawienia globalne"
               onClose={onCloseGlobalSettings}
             >
               <GlobalSettingsFields
@@ -1072,6 +1072,7 @@ function RoleSettingsFields({
           </Button>
           <Button
             variant="ghost"
+            aria-label="Resetuj zoom partytury"
             onClick={() => onScoreZoomChange(SCORE_ZOOM_DEFAULT)}
           >
             Reset
