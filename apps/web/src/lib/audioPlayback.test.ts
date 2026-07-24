@@ -8,10 +8,14 @@ import {
   getAudioPlaybackDebugState,
   getFailedAudioAssetIds,
   isAudioAssetDecodeFailed,
+  loadAudioBuffer,
+  restartAudioPlayback,
+  resumeAndSyncAudioPlayback,
   stopAudioPlayback,
   suppressAudioPlayback,
   syncAudioPlayback,
 } from "./audioPlayback.js";
+import * as metronome from "./metronome.js";
 
 function mockAudioParam(value = 1) {
   return {
@@ -224,7 +228,7 @@ describe("audioPlayback helpers", () => {
 
   it("schedules fade ramps and loop window on BufferSource", async () => {
     const fakeBuf = { duration: 2, numberOfChannels: 2 } as AudioBuffer;
-    const gainParam = mockAudioParam(1);
+    const fadeParam = mockAudioParam(1);
     const source = {
       buffer: null as AudioBuffer | null,
       loop: false,
@@ -236,8 +240,8 @@ describe("audioPlayback helpers", () => {
       stop: vi.fn(),
       onended: null as (() => void) | null,
     };
-    const clipGainNode = {
-      gain: gainParam,
+    const fadeGainNode = {
+      gain: fadeParam,
       connect: vi.fn(),
       disconnect: vi.fn(),
     };
@@ -253,10 +257,8 @@ describe("audioPlayback helpers", () => {
           disconnect: vi.fn(),
         };
         busGains.push(node);
-        // Master(1) + stereo track (gain, L, R, route) = 5; clip envelope next.
-        if (busGains.length > 5) {
-          return clipGainNode;
-        }
+        // Master(1) + stereo track (gain, L, R, route) = 5; then fade + level.
+        if (busGains.length === 6) return fadeGainNode;
         return node;
       }),
     });
@@ -310,8 +312,8 @@ describe("audioPlayback helpers", () => {
     expect(source.loop).toBe(true);
     expect(source.loopStart).toBeCloseTo(0.1, 5);
     expect(source.loopEnd).toBeCloseTo(1.8, 5);
-    expect(gainParam.setValueAtTime).toHaveBeenCalled();
-    expect(gainParam.linearRampToValueAtTime).toHaveBeenCalled();
+    expect(fadeParam.setValueAtTime).toHaveBeenCalled();
+    expect(fadeParam.linearRampToValueAtTime).toHaveBeenCalled();
     expect(source.start).toHaveBeenCalledOnce();
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
     // Default stereo track → True Balance (splitter + merger), not StereoPanner.
@@ -376,7 +378,6 @@ describe("audioPlayback helpers", () => {
   });
 
   it("restartAudioPlayback re-arms graph after stop", async () => {
-    const { restartAudioPlayback } = await import("./audioPlayback.js");
     const fakeBuf = { duration: 1, numberOfChannels: 1, sampleRate: 48000 };
     const source = {
       buffer: null as unknown,
@@ -400,11 +401,318 @@ describe("audioPlayback helpers", () => {
     const project = projectWithClipUnderPlayhead();
     await ensureAudioBuffered("p1", project, 0, ctx);
     stopAudioPlayback();
+    allowAudioPlayback();
     restartAudioPlayback(
       "p1",
       { project, playing: true, displayTicks: 0 },
       ctx,
     );
     expect(source.start).toHaveBeenCalled();
+  });
+
+  it("late decode after clearAudioBufferCache does not re-pollute cache", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    let finishDecode: (buf: AudioBuffer) => void = () => {};
+    const decodePromise = new Promise<AudioBuffer>((resolve) => {
+      finishDecode = resolve;
+    });
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(() => decodePromise),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const loadPromise = loadAudioBuffer("p1", "asset-1", ctx);
+    clearAudioBufferCache("p1");
+    finishDecode(fakeBuf);
+    await expect(loadPromise).resolves.toBeNull();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: false })),
+    );
+    clearAudioBufferCache("p1");
+    await expect(loadAudioBuffer("p1", "asset-1", ctx)).resolves.toBeNull();
+  });
+
+  it("resumeAndSync skips start when suppressed during AudioContext resume", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    let finishResume: () => void = () => {};
+    const resumePromise = new Promise<void>((resolve) => {
+      finishResume = resolve;
+    });
+    const ctx = mockAudioContext({
+      state: "running",
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.spyOn(metronome, "getMetronomeAudioContext").mockReturnValue(ctx);
+    vi.spyOn(metronome, "resumeMetronomeAudio").mockImplementation(
+      () => resumePromise,
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    const pending = resumeAndSyncAudioPlayback("p1", {
+      project,
+      playing: true,
+      displayTicks: 0,
+    });
+    suppressAudioPlayback();
+    finishResume();
+    await pending;
+    expect(source.start).not.toHaveBeenCalled();
+  });
+
+  it("restartAudioPlayback is a no-op while suppressed", async () => {
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      createBufferSource: vi.fn(() => source),
+      decodeAudioData: vi.fn(async () => ({
+        duration: 1,
+        numberOfChannels: 2,
+      })),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    suppressAudioPlayback();
+    restartAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+    expect(source.start).not.toHaveBeenCalled();
+  });
+
+  it("stereo bus gain forces explicit 2-ch upmix for mono files", async () => {
+    const fakeMono = { duration: 1, numberOfChannels: 1 } as AudioBuffer;
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeMono),
+      createBufferSource: vi.fn(() => ({
+        buffer: null,
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+        onended: null,
+      })),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = {
+      ...projectWithClipUnderPlayhead(),
+      audioTracks: [
+        {
+          id: "tr-1",
+          name: "Stereo",
+          muted: false,
+          gainDb: 0,
+          channelMode: "stereo" as const,
+        },
+      ],
+    };
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    const gains = (ctx.createGain as ReturnType<typeof vi.fn>).mock.results.map(
+      (r) => r.value as { channelCount?: number; channelCountMode?: string },
+    );
+    // Master gain is [0]; stereo track input gain is [1].
+    expect(gains[1]?.channelCount).toBe(2);
+    expect(gains[1]?.channelCountMode).toBe("explicit");
+  });
+
+  it("clip gainDb change updates level live without stopping source", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const levelParams: ReturnType<typeof mockAudioParam>[] = [];
+    let gainCount = 0;
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+      createGain: vi.fn(() => {
+        gainCount += 1;
+        const param = mockAudioParam(1);
+        // Master(1) + stereo (4) + fade(6) + level(7)
+        if (gainCount === 7) levelParams.push(param);
+        return {
+          ...mockConnectable(),
+          gain: param,
+        };
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    expect(source.start).toHaveBeenCalledOnce();
+    expect(levelParams[0]?.value).toBeCloseTo(1, 5);
+
+    const quieter = structuredClone(project);
+    quieter.audioClips[0]!.gainDb = -6;
+    syncAudioPlayback(
+      "p1",
+      { project: quieter, playing: true, displayTicks: 10 },
+      ctx,
+    );
+    expect(source.stop).not.toHaveBeenCalled();
+    expect(levelParams[0]?.value).toBeCloseTo(10 ** (-6 / 20), 5);
+  });
+
+  it("cold buffer seek starts clip after decode completes", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    let finishDecode: (buf: AudioBuffer) => void = () => {};
+    const decodePromise = new Promise<AudioBuffer>((resolve) => {
+      finishDecode = resolve;
+    });
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(() => decodePromise),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    expect(source.start).not.toHaveBeenCalled();
+    finishDecode(fakeBuf);
+    await vi.waitFor(() => {
+      expect(source.start).toHaveBeenCalledOnce();
+    });
+  });
+
+  it("fade-out zone start anchors setValueAtTime below unity", async () => {
+    const fakeBuf = { duration: 2, numberOfChannels: 2 } as AudioBuffer;
+    const fadeParam = mockAudioParam(1);
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    let gainCount = 0;
+    const ctx = mockAudioContext({
+      currentTime: 10,
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+      createGain: vi.fn(() => {
+        gainCount += 1;
+        if (gainCount === 6) {
+          return { ...mockConnectable(), gain: fadeParam };
+        }
+        return { ...mockConnectable(), gain: mockAudioParam(1) };
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = {
+      ...projectWithClipUnderPlayhead(),
+      assets: [
+        {
+          id: "asset-1",
+          storageName: "kick.wav",
+          originalName: "kick.wav",
+          kind: "audio" as const,
+          mimeType: "audio/wav",
+          sizeBytes: 100,
+          durationMs: 2000,
+        },
+      ],
+      audioClips: [
+        {
+          id: "clip-1",
+          trackId: "tr-1",
+          assetId: "asset-1",
+          startTicks: 0,
+          // 2s @ 120 BPM / ppq 960 → covers fade-out zone of 500ms.
+          lengthTicks: 3840,
+          muted: false,
+          gainDb: 0,
+          fadeInMs: 0,
+          fadeOutMs: 500,
+        },
+      ],
+    };
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    // ~1.75s into clip (fade-out 500ms on 2s → envelope 0.5).
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 3360 },
+      ctx,
+    );
+    expect(fadeParam.setValueAtTime).toHaveBeenCalled();
+    const initial = fadeParam.setValueAtTime.mock.calls[0]![0] as number;
+    expect(initial).toBeLessThan(1);
+    expect(initial).toBeGreaterThanOrEqual(0);
   });
 });

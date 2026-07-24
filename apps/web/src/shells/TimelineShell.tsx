@@ -260,6 +260,7 @@ import {
   allowAudioPlayback,
   clearAudioBufferCache,
   ensureAudioBuffered,
+  getAudioPlaybackDebugState,
   getFailedAudioAssetIds,
   isAudioAssetDecodeFailed,
   loadAudioBuffer,
@@ -1383,6 +1384,7 @@ export function TimelineShell() {
     setLocatorTicks(startTicks);
     allowAudioPlayback();
     await resumeMetronomeAudio(getMetronomeAudioContext());
+    if (getAudioPlaybackDebugState().suppressed) return;
     if (projectId && draft) {
       setAudioBuffering(true);
       try {
@@ -1399,6 +1401,7 @@ export function TimelineShell() {
       } finally {
         setAudioBuffering(false);
       }
+      if (getAudioPlaybackDebugState().suppressed) return;
       restartAudioPlayback(projectId, {
         project: draft,
         playing: true,
@@ -1414,9 +1417,11 @@ export function TimelineShell() {
       state.timeSignature,
       state.ppq,
     );
+    if (getAudioPlaybackDebugState().suppressed) return;
     if (startTicks !== state.positionTicks) {
       await seek(startTicks);
     }
+    if (getAudioPlaybackDebugState().suppressed) return;
     await play({ projectId });
   }, [
     audioBuffering,
@@ -2258,6 +2263,7 @@ export function TimelineShell() {
   async function onPlayClick() {
     allowAudioPlayback();
     await resumeMetronomeAudio(getMetronomeAudioContext());
+    if (getAudioPlaybackDebugState().suppressed) return;
     if (projectId && draftProject) {
       setAudioBuffering(true);
       try {
@@ -2274,6 +2280,7 @@ export function TimelineShell() {
       } finally {
         setAudioBuffering(false);
       }
+      if (getAudioPlaybackDebugState().suppressed) return;
       restartAudioPlayback(projectId, {
         project: draftProject,
         playing: true,
@@ -2291,9 +2298,11 @@ export function TimelineShell() {
       state.ppq,
     );
     // v4: play from locator bar/beat — seek SSOT then play.
+    if (getAudioPlaybackDebugState().suppressed) return;
     if (startTicks !== state.positionTicks) {
       await seek(startTicks);
     }
+    if (getAudioPlaybackDebugState().suppressed) return;
     await play({ projectId });
   }
 

@@ -4,14 +4,15 @@
  * Graph (routing still Track → Master | Bus, Bus → Master):
  *
  * Mono track:
- *   BufferSource → [stereo→mono −3 dB downmix?] → clipGain → trackGain
+ *   BufferSource → [stereo→mono −3 dB downmix?] → fadeGain → levelGain → trackGain
  *     → analyser (pre-pan meter) + StereoPanner → route → (master | bus)
  *
  * Stereo track (True Balance — not StereoPanner):
- *   BufferSource → clipGain → trackGain → ChannelSplitter
- *     → gainL / gainR → ChannelMerger → meterSplit → analyserL/R
+ *   BufferSource → fadeGain → levelGain → trackGain (explicit 2-ch upmix)
+ *     → ChannelSplitter → gainL / gainR → ChannelMerger → meterSplit → analyserL/R
  *     merger → (masterGain | groupBusGain)
  *
+ * Mono file on a stereo bus is upmixed on trackGain before the splitter (otherwise L-only).
  * Bus mirrors track mono/stereo topology; bus always → Master.
  * Click / metronome stays on a separate Direct Cue path (never through Master).
  */
@@ -56,7 +57,10 @@ type ActiveSource = {
   clipId: string;
   trackId: string;
   source: AudioBufferSourceNode;
-  gain: GainNode;
+  /** Fade envelope 0…1 (scheduled ramps). */
+  fadeGain: GainNode;
+  /** Clip `gainDb` level — updated live without graph restart. */
+  levelGain: GainNode;
   /** Extra nodes for stereo→mono downmix (disconnected on stop). */
   extras: AudioNode[];
 };
@@ -97,9 +101,19 @@ const bufferCache = new Map<string, AudioBuffer>();
 const inflight = new Map<string, Promise<AudioBuffer | null>>();
 /** Keys (`projectId:assetId`) that failed fetch/decode — UI warning until cleared. */
 const failedAssets = new Set<string>();
+/** Bumped on full cache clear — invalidates in-flight decode for all projects. */
+let bufferCacheGlobalGen = 0;
+/** Per-project clear generation — late decode must not re-pollute after switch. */
+const bufferCacheProjectGen = new Map<string, number>();
 let active: ActiveSource[] = [];
 let lastDisplayTicks: number | null = null;
 let lastGraphKey = "";
+/** Last sync args — cold-buffer load completion may re-trigger under playhead. */
+let lastSyncArgs: {
+  projectId: string;
+  input: AudioPlaybackInput;
+  ctx: AudioContext;
+} | null = null;
 /** Local halt while pause/stop RTT still has `playing: true` from SSOT. */
 let playbackSuppressed = false;
 let stopEpoch = 0;
@@ -166,6 +180,9 @@ export async function loadAudioBuffer(
   const pending = inflight.get(key);
   if (pending) return pending;
 
+  const genGlobal = bufferCacheGlobalGen;
+  const genProject = bufferCacheProjectGen.get(projectId) ?? 0;
+
   const job = (async () => {
     try {
       const res = await fetch(assetFileUrl(projectId, assetId));
@@ -179,6 +196,13 @@ export async function loadAudioBuffer(
         return null;
       }
       const decoded = await ctx.decodeAudioData(raw.slice(0));
+      // Cleared while fetch/decode was in flight — do not re-pollute cache.
+      if (
+        genGlobal !== bufferCacheGlobalGen ||
+        (bufferCacheProjectGen.get(projectId) ?? 0) !== genProject
+      ) {
+        return null;
+      }
       rememberBuffer(key, decoded);
       return decoded;
     } catch {
@@ -232,11 +256,17 @@ export async function ensureAudioBuffered(
 
 export function clearAudioBufferCache(projectId?: string): void {
   if (!projectId) {
+    bufferCacheGlobalGen += 1;
+    bufferCacheProjectGen.clear();
     bufferCache.clear();
     inflight.clear();
     failedAssets.clear();
     return;
   }
+  bufferCacheProjectGen.set(
+    projectId,
+    (bufferCacheProjectGen.get(projectId) ?? 0) + 1,
+  );
   const prefix = `${projectId}:`;
   for (const key of [...bufferCache.keys()]) {
     if (key.startsWith(prefix)) bufferCache.delete(key);
@@ -292,6 +322,11 @@ function createChannelBus(ctx: AudioContext, mode: ChannelMode): TrackBus {
     pan.connect(route);
     return { mode: "mono", gain, pan, analyser, route };
   }
+  // Mono clip → stereo bus: Force 2-ch speakers upmix before ChannelSplitter
+  // (splitter is discrete — mono would otherwise reach only output 0 / Left).
+  gain.channelCount = 2;
+  gain.channelCountMode = "explicit";
+  gain.channelInterpretation = "speakers";
   const splitter = ctx.createChannelSplitter(2);
   const gainL = ctx.createGain();
   const gainR = ctx.createGain();
@@ -526,7 +561,8 @@ function stopAll(): void {
     }
     try {
       a.source.disconnect();
-      a.gain.disconnect();
+      a.fadeGain.disconnect();
+      a.levelGain.disconnect();
       for (const n of a.extras) disconnectSafe(n);
     } catch {
       /* */
@@ -582,14 +618,14 @@ export function getAudioPlaybackDebugState(): {
 
 /**
  * Structural graph key — mute/solo/clip geometry / routing / channel mode.
- * Gain/pan/balance/master update live via {@link applyBusParams} (no restart).
+ * Track gain/pan/balance/master and clip `gainDb` update live (no restart).
  */
 function graphKey(input: AudioPlaybackInput): string {
   return [
     input.project.audioClips
       .map(
         (c) =>
-          `${c.id}:${c.trackId}:${c.assetId}:${c.startTicks}:${c.lengthTicks}:${c.trimInMs ?? 0}:${c.trimOutMs ?? 0}:${c.muted}:${c.gainDb}:${c.fadeInMs ?? 0}:${c.fadeOutMs ?? 0}:${c.loop ?? false}`,
+          `${c.id}:${c.trackId}:${c.assetId}:${c.startTicks}:${c.lengthTicks}:${c.trimInMs ?? 0}:${c.trimOutMs ?? 0}:${c.muted}:${c.fadeInMs ?? 0}:${c.fadeOutMs ?? 0}:${c.loop ?? false}`,
       )
       .join(";"),
     input.project.audioTracks
@@ -685,7 +721,22 @@ function startClip(
 
   const buf = bufferCache.get(cacheKey(projectId, clip.assetId));
   if (!buf) {
-    void loadAudioBuffer(projectId, clip.assetId, ctx);
+    const epoch = stopEpoch;
+    void loadAudioBuffer(projectId, clip.assetId, ctx).then((loaded) => {
+      if (!loaded || epoch !== stopEpoch || playbackSuppressed) return;
+      const snap = lastSyncArgs;
+      if (!snap || snap.projectId !== projectId || !snap.input.playing) return;
+      if (active.some((a) => a.clipId === clipId)) return;
+      startClip(
+        projectId,
+        snap.input.project,
+        clipId,
+        snap.input.displayTicks,
+        snap.ctx,
+        snap.input.soloTrackIds,
+        snap.input.soloBusIds,
+      );
+    });
     return;
   }
 
@@ -701,33 +752,36 @@ function startClip(
   const source = ctx.createBufferSource();
   source.buffer = buf;
   if (clip.loop) {
-    source.loop = true;
-    source.loopStart = trimInMsOf(clip) / 1000;
-    source.loopEnd = Math.max(
-      source.loopStart,
+    const loopStart = trimInMsOf(clip) / 1000;
+    const loopEnd = Math.max(
+      loopStart,
       buf.duration - trimOutMsOf(clip) / 1000,
     );
+    // Zero-length loop window can hang some engines — skip loop in that case.
+    if (loopEnd > loopStart + 1e-4) {
+      source.loop = true;
+      source.loopStart = loopStart;
+      source.loopEnd = loopEnd;
+    }
   }
 
-  // Track gain lives on the bus; clip node is fade × clip.gainDb only.
-  const maxGain = gainDbToLinear(clip.gainDb);
-  const intoClipMs = offset * 1000 - trimInMsOf(clip);
+  // Fade envelope (0…1) separate from clip level so gainDb can update live.
+  const intoClipMs = Math.max(0, offset * 1000 - trimInMsOf(clip));
   const asset = project.assets.find((a) => a.id === clip.assetId);
   const playableMs = audioClipPlayableMs(clip, asset, ctxTempo);
   const fadeIn = fadeInMsOf(clip);
   const fadeOut = fadeOutMsOf(clip);
   const now = ctx.currentTime;
 
-  const gain = ctx.createGain();
-  const startGain =
-    audioFadeGainAtMs(intoClipMs, playableMs, fadeIn, fadeOut) * maxGain;
-  gain.gain.cancelScheduledValues(now);
-  gain.gain.setValueAtTime(startGain, now);
+  const fadeGain = ctx.createGain();
+  const startFade = audioFadeGainAtMs(intoClipMs, playableMs, fadeIn, fadeOut);
+  fadeGain.gain.cancelScheduledValues(now);
+  fadeGain.gain.setValueAtTime(startFade, now);
 
   if (fadeIn > 0 && intoClipMs < fadeIn) {
     const reachMaxAt = now + (fadeIn - intoClipMs) / 1000;
     if (reachMaxAt > now) {
-      gain.gain.linearRampToValueAtTime(maxGain, reachMaxAt);
+      fadeGain.gain.linearRampToValueAtTime(1, reachMaxAt);
     }
   }
 
@@ -736,25 +790,30 @@ function startClip(
     const fadeOutStartAt = now + (fadeOutStartMs - intoClipMs) / 1000;
     const endAt = now + (playableMs - intoClipMs) / 1000;
     if (fadeOutStartAt > now) {
-      gain.gain.setValueAtTime(maxGain, fadeOutStartAt);
+      fadeGain.gain.setValueAtTime(1, fadeOutStartAt);
       if (endAt > fadeOutStartAt) {
-        gain.gain.linearRampToValueAtTime(0, endAt);
+        fadeGain.gain.linearRampToValueAtTime(0, endAt);
       }
     } else if (endAt > now) {
-      gain.gain.linearRampToValueAtTime(0, endAt);
+      // Already in fade-out: startFade is the anchor (setValueAtTime above).
+      fadeGain.gain.linearRampToValueAtTime(0, endAt);
     }
   }
+
+  const levelGain = ctx.createGain();
+  levelGain.gain.value = gainDbToLinear(clip.gainDb);
 
   const trackMode = resolveChannelMode(track?.channelMode);
   const trackBus = ensureTrackBus(ctx, clip.trackId, trackMode);
   const extras = connectWithOptionalDownmix(
     ctx,
     source,
-    gain,
+    fadeGain,
     trackMode,
     buf.numberOfChannels,
   );
-  gain.connect(trackBus.gain);
+  fadeGain.connect(levelGain);
+  levelGain.connect(trackBus.gain);
   const startAt = Math.max(
     0,
     Math.min(offset, Math.max(0, buf.duration - 0.001)),
@@ -767,7 +826,14 @@ function startClip(
   source.onended = () => {
     active = active.filter((a) => a.clipId !== clipId);
   };
-  active.push({ clipId, trackId: clip.trackId, source, gain, extras });
+  active.push({
+    clipId,
+    trackId: clip.trackId,
+    source,
+    fadeGain,
+    levelGain,
+    extras,
+  });
 }
 
 export function syncAudioPlayback(
@@ -775,6 +841,7 @@ export function syncAudioPlayback(
   input: AudioPlaybackInput,
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
+  lastSyncArgs = { projectId, input, ctx };
   applyBusParams(input.project, ctx, input.soloBusIds);
 
   if (playbackSuppressed || !input.playing || ctx.state !== "running") {
@@ -798,6 +865,7 @@ export function syncAudioPlayback(
   const trackById = new Map(input.project.audioTracks.map((t) => [t.id, t]));
   const busIds = new Set((input.project.audioBusses ?? []).map((b) => b.id));
   const stillNeeded = new Set<string>();
+  const clipById = new Map(input.project.audioClips.map((c) => [c.id, c]));
 
   for (const clip of input.project.audioClips) {
     if (epochAtStart !== stopEpoch || playbackSuppressed) break;
@@ -832,6 +900,13 @@ export function syncAudioPlayback(
     );
   }
 
+  // Live clip gainDb (not part of graphKey).
+  for (const a of active) {
+    const clip = clipById.get(a.clipId);
+    if (!clip) continue;
+    a.levelGain.gain.value = gainDbToLinear(clip.gainDb);
+  }
+
   for (const a of [...active]) {
     if (!stillNeeded.has(a.clipId)) {
       try {
@@ -841,7 +916,8 @@ export function syncAudioPlayback(
       }
       try {
         a.source.disconnect();
-        a.gain.disconnect();
+        a.fadeGain.disconnect();
+        a.levelGain.disconnect();
         for (const n of a.extras) disconnectSafe(n);
       } catch {
         /* */
@@ -857,13 +933,18 @@ export function stopAudioPlayback(): void {
   disposeBuses();
   lastDisplayTicks = null;
   lastGraphKey = "";
+  lastSyncArgs = null;
 }
 
 export async function resumeAndSyncAudioPlayback(
   projectId: string,
   input: AudioPlaybackInput,
 ): Promise<void> {
+  const epoch = stopEpoch;
   await resumeMetronomeAudio(getMetronomeAudioContext());
+  // Pause/Stop during resume must not start sources from a stale Play snapshot.
+  if (playbackSuppressed || epoch !== stopEpoch) return;
+  if (!input.playing) return;
   syncAudioPlayback(projectId, input);
 }
 
@@ -872,7 +953,9 @@ export function restartAudioPlayback(
   input: AudioPlaybackInput,
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
-  playbackSuppressed = false;
+  // Caller must `allowAudioPlayback()` before async resume/buffer; do not clear
+  // suppress here — Pause during that window would otherwise phantom-start.
+  if (playbackSuppressed) return;
   stopEpoch += 1;
   stopAll();
   lastDisplayTicks = null;
