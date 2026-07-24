@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canonicalizePolishH,
   importUgText,
   sealAkordyLengths,
   chordOnsetsInBar,
@@ -195,5 +196,14 @@ Must be funny`;
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.message).toMatch(/walidacji schematu/);
+  });
+});
+
+describe("canonicalizePolishH", () => {
+  it("stores Polish H as B via toLiteralStorage", () => {
+    expect(canonicalizePolishH("H")).toBe("B");
+    expect(canonicalizePolishH("Hm7")).toBe("Bm7");
+    expect(canonicalizePolishH("G/H")).toBe("G/B");
+    expect(canonicalizePolishH("C")).toBe("C");
   });
 });
