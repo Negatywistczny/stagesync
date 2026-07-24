@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  BatchMidiPcBodySchema,
   CreateProjectBodySchema,
+  ExportLibraryBodySchema,
   LibrarySchema,
   ProjectSchema,
   ProjectSchemaV2,
   ProjectSchemaV3,
   ProjectSchemaV4,
   ProjectSchemaV5,
+  PutMidiHostConfigBodySchema,
   PutProjectBodySchema,
   PutSetlistBodySchema,
   SetlistSchema,
@@ -287,5 +290,47 @@ describe("DefaultMeter refine + Setlist coerce", () => {
     expect(normalizeKeyTonic("G")).toBe("G");
     expect(normalizeKeyTonic("nope", "D")).toBe("D");
     expect(normalizeKeyTonic(1)).toBe("C");
+  });
+
+  it("BatchMidiPcBodySchema accepts assignments and rejects out-of-range PC", () => {
+    expect(
+      BatchMidiPcBodySchema.parse({
+        assignments: [{ id: "p1", midiProgramId: 0 }],
+      }).assignments,
+    ).toHaveLength(1);
+    expect(() =>
+      BatchMidiPcBodySchema.parse({
+        assignments: [{ id: "p1", midiProgramId: 128 }],
+      }),
+    ).toThrow();
+    expect(() => BatchMidiPcBodySchema.parse({ assignments: "x" })).toThrow();
+  });
+
+  it("ExportLibraryBodySchema requires UUID projectIds when present", () => {
+    expect(ExportLibraryBodySchema.parse({})).toEqual({});
+    expect(
+      ExportLibraryBodySchema.parse({
+        projectIds: ["11111111-1111-4111-8111-111111111111"],
+      }).projectIds,
+    ).toHaveLength(1);
+    expect(() =>
+      ExportLibraryBodySchema.parse({ projectIds: ["not-a-uuid"] }),
+    ).toThrow();
+  });
+
+  it("PutMidiHostConfigBodySchema is partial and strict", () => {
+    expect(PutMidiHostConfigBodySchema.parse({})).toEqual({});
+    expect(
+      PutMidiHostConfigBodySchema.parse({
+        inputId: null,
+        clockOutEnabled: true,
+      }),
+    ).toEqual({ inputId: null, clockOutEnabled: true });
+    expect(() =>
+      PutMidiHostConfigBodySchema.parse({ inputId: "" }),
+    ).toThrow();
+    expect(() =>
+      PutMidiHostConfigBodySchema.parse({ extra: true }),
+    ).toThrow();
   });
 });
