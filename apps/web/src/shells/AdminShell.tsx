@@ -1208,7 +1208,7 @@ function BatchPcModal({
         </p>
       ) : null}
       <label className={styles.field}>
-        Start PC
+        Start Program Change
         <input
           className={styles.input}
           type="number"
