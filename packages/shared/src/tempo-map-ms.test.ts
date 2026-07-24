@@ -39,4 +39,29 @@ describe("ticksToMsAlongTempoMap", () => {
       /ticks must be finite/,
     );
   });
+
+  it("returns 0 for equal endpoints and negates reverse spans", () => {
+    const p = createProjectV5Seed("a", "S", "2026-07-20T00:00:00.000Z");
+    p.defaultBpm = 100;
+    p.tempoMap = [{ id: "t0", startTicks: 0, bpm: 100 }];
+    expect(ticksToMsAlongTempoMap(1920, 1920, p)).toBe(0);
+    const forward = ticksToMsAlongTempoMap(0, 1920, p);
+    const backward = ticksToMsAlongTempoMap(1920, 0, p);
+    expect(forward).toBeGreaterThan(0);
+    expect(backward).toBeCloseTo(-forward, 5);
+  });
+
+  it("splits on mid-span meter changes (same BPM)", () => {
+    const p = createProjectV5Seed("a", "S", "2026-07-20T00:00:00.000Z");
+    p.defaultBpm = 120;
+    p.defaultMeter = { numerator: 4, denominator: 4 };
+    p.tempoMap = [{ id: "t0", startTicks: 0, bpm: 120 }];
+    p.meterMap = [
+      { id: "m0", startTicks: 0, numerator: 4, denominator: 4 },
+      { id: "m1", startTicks: 1920, numerator: 3, denominator: 4 },
+    ];
+    const first = ticksToMs(1920, 120, { numerator: 4, denominator: 4 }, p.ppq);
+    const second = ticksToMs(1920, 120, { numerator: 3, denominator: 4 }, p.ppq);
+    expect(ticksToMsAlongTempoMap(0, 3840, p)).toBeCloseTo(first + second, 5);
+  });
 });
