@@ -119,7 +119,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   };
   refreshMidiSeekEnd(transport.getActiveProjectId());
   transport.onChange((msg) => {
-    refreshMidiSeekEnd(msg.activeProjectId);
+    refreshMidiSeekEnd(msg.activeProjectId ?? null);
   });
   const midi =
     options.midi ??
