@@ -32,6 +32,7 @@ Projektujesz interfejsy o wysokim nasyceniu informacją (systemy estradowe i sta
 * **Condensed Rows:** Przy małej, sztywnej wysokości rzędu (np. `space-6`) tekst wewnątrz pozycjonuj wyłącznie za pomocą `display: flex; align-items: center;`, aby uniknąć ucinania wydłużeń dolnych liter ("g", "j", "y") przez gęsty leading.
 * **Intrinsic Size:** Krótkie odznaki i chipy nie mogą rozszerzać się do `100%` szerokości. Stosuj `width: fit-content;` lub `max-width: max-content;` + `white-space: nowrap;`.
 * **Chrome vs Main Content:** Paski narzędzi i panele boczne muszą mieć zablokowane wymiary (`flex: 0 0 auto;` o stałej szerokości/wysokości). Główny obszar roboczy asymiluje wolne miejsce przez `flex: 1 1 auto;`.
+* **Chrome L1 / toolbar:** `min-height: var(--ss-space-12)` (48px) — bez magicznego `48px` w shellach. Szerokość pionowego stripu Mixer to lokalne `--mixer-strip-w` (obecnie baza 84px × `--tl-zoom-ui`); **zakaz** kopiowania szerokości 72/120px z zewnętrznych audytów DAW.
 * **Hierarchia Warstw (Z-index):** Stały chrome: Toolbar `z-index: 10`, Sidebar `z-index: 20`. Przewijana zawartość Main Content pod nimi (`z-index: 1` lub `auto` z `position: relative`). Overlaye / modale / docki **nie obniżać** do tych poziomów.
 
 ## 5. Ergonomia Sceniczna i Kontrast (Zasady APCA)

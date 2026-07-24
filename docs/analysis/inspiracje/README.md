@@ -114,4 +114,4 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
-| [Reguly-UI-dla-Cursor-V5.md](./ui/Reguly-UI-dla-Cursor-V5.md) | Deep Search / UI | [triage](./ui/Reguly-UI-dla-Cursor-V5.triage.md) | `open` |
+| [Reguly-UI-dla-Cursor-V5.md](./ui/Reguly-UI-dla-Cursor-V5.md) | Deep Search / UI | [triage](./ui/Reguly-UI-dla-Cursor-V5.triage.md) | `archive` |
