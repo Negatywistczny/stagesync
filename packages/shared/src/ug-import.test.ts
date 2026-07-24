@@ -108,6 +108,18 @@ Must be funny`;
     expect(sealed[1]!.startTicks).toBe(1920);
   });
 
+  it("sealAkordyLengths is identity for empty and sorts same-start by id", () => {
+    const empty: { id: string; startTicks: number; lengthTicks: number; symbol: string }[] = [];
+    expect(sealAkordyLengths(empty)).toBe(empty);
+    const sealed = sealAkordyLengths([
+      { id: "z", startTicks: 0, lengthTicks: 10, symbol: "G" },
+      { id: "a", startTicks: 0, lengthTicks: 10, symbol: "C" },
+    ]);
+    expect(sealed.map((c) => c.id)).toEqual(["a", "z"]);
+    expect(sealed[0]!.lengthTicks).toBe(1);
+    expect(sealed[1]!.lengthTicks).toBe(10);
+  });
+
   it("chordOnsetsInBar keeps unique increasing onsets for dense lines", () => {
     const onsets = chordOnsetsInBar(5, 0, 3840, 4, 960);
     expect(onsets).toHaveLength(5);
