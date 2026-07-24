@@ -33,7 +33,11 @@
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
 ![pnpm](https://img.shields.io/badge/pnpm-F69220?logo=pnpm&logoColor=white)
 
-<br />
+</div>
+
+---
+
+## ⚡ O projekcie
 
 **StageSync** to zaawansowany, scentralizowany system reżyserii scenicznej i synchronizacji występów na żywo (*Live Show Control*). 
 
@@ -46,8 +50,6 @@
 * 🎛️ **Reżyseria i zarządzanie setlistą:** Błyskawiczne przełączanie utworów, elastyczne szablony występów oraz pełna kontrola nad przebiegiem koncertu z poziomu panelu Admina.
 * 🔌 **Automatyzacja MIDI:** Wysyłanie komunikatów *Program Change* i *Control Change* do zewnętrznych procesorów efektów, instrumentów oraz DAW.
 * 📡 **Zero-config w sieci LAN:** Automatyczne wykrywanie urządzeń w sieci lokalnej (mDNS/WebSockets) bez konieczności dostępu do Internetu.
-
-</div>
 
 ## Szybki start
 
@@ -93,4 +95,5 @@ cd stagesync && pnpm install && pnpm dev
 ## Licencja
 
 StageSync jest **source-available** na [Business Source License 1.1](LICENSE) (SPDX: `BUSL-1.1`).
-Produkcyjne użycie jako własny host sceniczny jest dozwolone; Competing Offering wymaga osobnej licencji komercyjnej — szczegóły w `LICENSE`.
+Domyślnie dozwolone jest użycie **nieprodukcyjne** (dev / test / ewaluacja). **Produkcja** (w tym własny host sceniczny) wymaga osobnej licencji komercyjnej — szczegóły i kontakt w `LICENSE`.
+Od **Change Date** `2030-07-23` ta linia przechodzi na **Apache License 2.0**.
