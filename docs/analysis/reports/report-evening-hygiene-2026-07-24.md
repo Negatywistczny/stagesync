@@ -104,6 +104,9 @@
 | [#584](https://github.com/Negatywistyczny/stagesync/pull/584) | Button variant classes | ghost/secondary + selected=false |
 | [#585](https://github.com/Negatywistyczny/stagesync/pull/585) | Slider aria bounds | valuemin/max/now |
 | [#586](https://github.com/Negatywistyczny/stagesync/pull/586) | ContextMenu aria-label | Default PL + custom label |
+| [#587](https://github.com/Negatywistyczny/stagesync/pull/587) | Timeline help empty live | aria-live on Brak wyników |
+| [#588](https://github.com/Negatywistyczny/stagesync/pull/588) | ShellIconButton test | aria-label/pressed/controls |
+| [#589](https://github.com/Negatywistyczny/stagesync/pull/589) | Hybrid Polish B edges | empty + B# / Bmaj7 |
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
