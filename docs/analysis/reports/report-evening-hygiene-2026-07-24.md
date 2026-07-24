@@ -94,6 +94,12 @@
 | [#574](https://github.com/Negatywistyczny/stagesync/pull/574) | sendError truncate | Details + 500-char message |
 | [#575](https://github.com/Negatywistyczny/stagesync/pull/575) | System log a11y | Pause/clear/diagnostics labels |
 | [#576](https://github.com/Negatywistyczny/stagesync/pull/576) | mDNS hostname edges | .local strip + truncate |
+| [#577](https://github.com/Negatywistyczny/stagesync/pull/577) | Set Zapisz/Wyczyść | Setlista aria-labels |
+| [#578](https://github.com/Negatywistyczny/stagesync/pull/578) | ScorePane status live | Waiting/loading aria-live |
+| [#579](https://github.com/Negatywistyczny/stagesync/pull/579) | Data/seed path edges | Relative dirs + USERPROFILE |
+| [#580](https://github.com/Negatywistyczny/stagesync/pull/580) | Client pane status live | Drums/Karaoke/Grid |
+| [#581](https://github.com/Negatywistyczny/stagesync/pull/581) | ProjectId + stage schema | UUID + message rejects |
+| [#582](https://github.com/Negatywistyczny/stagesync/pull/582) | Wordmark suffix label | StageSync {suffix} |
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
