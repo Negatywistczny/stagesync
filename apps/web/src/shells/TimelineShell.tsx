@@ -709,6 +709,9 @@ export function TimelineShell() {
   const [meterEditOpen, setMeterEditOpen] = useState(false);
   const [meterNumDraft, setMeterNumDraft] = useState("4");
   const [meterDenDraft, setMeterDenDraft] = useState("4");
+  const tempoEditTitleId = useId();
+  const meterEditTitleId = useId();
+  const keyEditTitleId = useId();
   const [keyEditOpen, setKeyEditOpen] = useState(false);
   /** Ticks used by map edit modals (playhead or clicked segment). */
   const [mapEditTicks, setMapEditTicks] = useState(0);
@@ -8024,9 +8027,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         : null}
 
       {tempoEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby={tempoEditTitleId}
+        >
           <div className={styles.overlayPanel}>
-            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id={tempoEditTitleId}>
+              Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <label className={styles.inspField}>
               BPM
               <input
@@ -8059,9 +8069,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {meterEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby={meterEditTitleId}
+        >
           <div className={styles.overlayPanel}>
-            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id={meterEditTitleId}>
+              Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <div
               className={styles.meterEditRow}
               role="group"
@@ -8128,9 +8145,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {keyEditOpen && draftProject ? (
-        <div className={styles.overlay} role="dialog" aria-modal>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby={keyEditTitleId}
+        >
           <div className={styles.overlayPanel}>
-            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}</h2>
+            <h2 id={keyEditTitleId}>
+              Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
+            </h2>
             <div
               className={styles.keyEditRow}
               role="group"
