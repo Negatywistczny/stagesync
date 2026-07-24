@@ -45,6 +45,23 @@ describe("midi REST API", () => {
     expect(status.inputs[0]?.id).toBe("mock-in-1");
   });
 
+  it("GET /api/midi/devices lists ports without config", async () => {
+    const res = await fetch(`${baseUrl}/api/midi/devices`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    const body = (await res.json()) as {
+      available: boolean;
+      backend: string;
+      inputs: Array<{ id: string }>;
+      outputs: Array<{ id: string }>;
+      lastError: string | null;
+    };
+    expect(body.backend).toBe("mock");
+    expect(body.inputs.some((d) => d.id === "mock-in-1")).toBe(true);
+    expect(body.outputs.some((d) => d.id === "mock-out-1")).toBe(true);
+    expect(body).not.toHaveProperty("config");
+  });
+
   it("PUT /api/midi/config selects ports", async () => {
     const res = await fetch(`${baseUrl}/api/midi/config`, {
       method: "PUT",
