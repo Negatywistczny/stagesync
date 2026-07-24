@@ -83,6 +83,27 @@ describe("env-settings", () => {
     expect(
       normalizeIncomingValue(
         "STAGESYNC_DISABLE_MDNS",
+        "on",
+        SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
+      ),
+    ).toBe("1");
+    expect(
+      normalizeIncomingValue(
+        "STAGESYNC_DISABLE_MDNS",
+        "TRUE",
+        SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
+      ),
+    ).toBe("1");
+    expect(
+      normalizeIncomingValue(
+        "STAGESYNC_DISABLE_MDNS",
+        1,
+        SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
+      ),
+    ).toBe("1");
+    expect(
+      normalizeIncomingValue(
+        "STAGESYNC_DISABLE_MDNS",
         "no",
         SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
       ),
