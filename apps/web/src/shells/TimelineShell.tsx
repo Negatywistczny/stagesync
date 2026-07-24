@@ -7451,7 +7451,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 if (next) setSnapMode(next);
               }}
             >
-              <option value="off">Off</option>
+              <option value="off">Wyłącz</option>
               <option value="bar">Takt</option>
               <option value="beat">Beat</option>
               <option value="subdivision:2">1/2</option>
