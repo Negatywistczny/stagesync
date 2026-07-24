@@ -111,6 +111,10 @@
 | [#591](https://github.com/Negatywistyczny/stagesync/pull/591) | formatPanReadout edges | NaN/near-zero/clamp |
 | [#592](https://github.com/Negatywistyczny/stagesync/pull/592) | Score zoom Reset label | Resetuj zoom partytury |
 | [#593](https://github.com/Negatywistyczny/stagesync/pull/593) | Touch nudge missing clip | shouldShowTouchNudge false |
+| [#594](https://github.com/Negatywistyczny/stagesync/pull/594) | ShellSwitchRow test | Checkbox+label association |
+| [#595](https://github.com/Negatywistyczny/stagesync/pull/595) | Touch tier classifiers | desktop/tablet isTouch/isMobile |
+| [#596](https://github.com/Negatywistyczny/stagesync/pull/596) | Set empty status | role=status on empty copy |
+| [#597](https://github.com/Negatywistyczny/stagesync/pull/597) | clipsFromOnsets | Empty + sourceLineId |
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
