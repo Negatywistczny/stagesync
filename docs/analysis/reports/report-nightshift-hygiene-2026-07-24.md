@@ -16,9 +16,14 @@
 | [#485](https://github.com/Negatywistczny/stagesync/pull/485) | Rename `focus-visible` | Dock + mixer rename inputs |
 | [#486](https://github.com/Negatywistczny/stagesync/pull/486) | Night-shift handoff + RFC | This report + `docs/rfc-v5.1-proposals.md` |
 | [#487](https://github.com/Negatywistczny/stagesync/pull/487) | Map-lane segment a11y | Tempo / meter / key map segment `aria-label` |
-| [#488](https://github.com/Negatywistczny/stagesync/pull/488) | Connection-lost alert | `ConnectionLostBanner` `role="alert"` |
+| [#488](https://github.com/Negatywistyczny/stagesync/pull/488) | Connection-lost alert | `ConnectionLostBanner` `role="alert"` |
+| [#489](https://github.com/Negatywistczny/stagesync/pull/489) | Residual `line-height: 1` → token | SetView + ChannelStripControls → `--ss-leading-none` |
+| [#490](https://github.com/Negatywistczny/stagesync/pull/490) | MIDI PC handler edges | Unit tests for program-change handler |
+| [#491](https://github.com/Negatywistyczny/stagesync/pull/491) | Set template menu a11y | `aria-controls` / menu wiring on SetView |
+| [#492](https://github.com/Negatywistyczny/stagesync/pull/492) | MIDI PC OUT edges | Unit tests for program-change OUT |
+| [#493](https://github.com/Negatywistczny/stagesync/pull/493) | Shell dialog Escape | Dismiss ShellBlockingDialog with Escape |
 
-Merge order tip: **481 before 484** reduces token conflict risk on `packages/ui/src/tokens.css` / ClientShell CSS. A11y PRs are mostly independent.
+Merge order tip: **481 before 489/484** (tokens first); then a11y/tests; **#486 last**. Night-shift train landed #480–#485 and #487–#493 before this handoff.
 
 ## Ranked backlog (next)
 
@@ -31,7 +36,7 @@ Merge order tip: **481 before 484** reduces token conflict risk on `packages/ui/
 7. **Desktop Launcher shell** — audit return-to-host control names in Tauri (outside web bundle).
 8. **ClickStrip Mute label** — already has aria-label; verify Polish parity with channel strips.
 9. **prefsRange / zoomRange** — keep dual `:focus` + `:focus-visible` pattern documented.
-10. **Merge train** — land #481 before #484/#489 to reduce token conflicts.
+10. **Post-merge smoke** — keyboard a11y on mixer S/M, Escape dialogs, Set template menu; Client stage type tokens.
 
 ## Skipped / off-limits
 
