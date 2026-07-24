@@ -76,7 +76,11 @@ export function ClickStrip({ state, callbacks }: ClickStripProps) {
               : "Wycisz Click (metronom)"
           }
           aria-pressed={state.muted}
-          aria-label="Mute Click"
+          aria-label={
+            state.muted
+              ? "Włącz Click (metronom)"
+              : "Wycisz Click (metronom)"
+          }
           onClick={() => callbacks.onMuteClick()}
         >
           M

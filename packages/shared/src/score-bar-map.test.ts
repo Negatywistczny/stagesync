@@ -92,4 +92,30 @@ describe("score-bar-map", () => {
       songBarToScoreBar(5, dualResetMap),
     );
   });
+
+  it("normalizeAnchors caps input at 256 and output at 64", () => {
+    const many = Array.from({ length: 300 }, (_, i) => ({
+      logicBar: i + 1,
+      scoreBar: i + 1,
+    }));
+    const anchors = normalizeAnchors(many);
+    expect(anchors).toHaveLength(64);
+    expect(anchors[0]!.logicBar).toBe(1);
+    expect(anchors[63]!.logicBar).toBe(64);
+  });
+
+  it("read floors invalid bars to 1; songBar coerces strings", () => {
+    const anchors = normalizeAnchors({
+      anchors: [
+        { id: "bad", logicBar: 0, scoreBar: Number.NaN },
+        { id: "ok", songBar: "7", scoreBar: "3" },
+      ],
+    });
+    expect(anchors).toEqual([
+      { id: "bad", logicBar: 1, scoreBar: 1 },
+      { id: "ok", logicBar: 7, scoreBar: 3 },
+    ]);
+    expect(songBarToScoreBar("not-a-number", null)).toBe(1);
+    expect(songBarToScoreBar(-5, dualResetMap)).toBe(1);
+  });
 });
