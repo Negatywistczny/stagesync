@@ -307,7 +307,7 @@ export function ChannelStripControls({
           label={isStereo ? "BAL" : "PAN"}
           onPanChange={(v) => callbacks.onPanChange?.(v)}
           onPanReset={() => callbacks.onPanReset?.()}
-          aria-label={`${isStereo ? "Balance" : "Pan"} ${strip.name}`}
+          aria-label={`${isStereo ? "Balans" : "Panorama"} ${strip.name}`}
         />
 
         <DualDbReadout
@@ -316,7 +316,7 @@ export function ChannelStripControls({
           onGainReset={callbacks.onGainReset}
           onHoldClear={() => callbacks.onHoldClear?.()}
           gainAriaLabel={`Fader ${strip.name}`}
-          holdAriaLabel={`Peak Hold ${strip.name} — kliknij aby wyzerować`}
+          holdAriaLabel={`Szczyt ${strip.name} — kliknij aby wyzerować`}
         />
 
         <div className={styles.faderMeterRow} onClick={(e) => e.stopPropagation()}>
