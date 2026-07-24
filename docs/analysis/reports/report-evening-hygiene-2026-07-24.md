@@ -41,17 +41,27 @@
 | [#527](https://github.com/Negatywistyczny/stagesync/pull/527) | Settings PUT body 400 | Missing / non-object `values` |
 | [#528](https://github.com/Negatywistyczny/stagesync/pull/528) | Stage cue priority PL | State-dependent priority + TTL aria |
 | [#529](https://github.com/Negatywistyczny/stagesync/pull/529) | Countdown digit edges | Clamp bars; case-id; akord synth |
+| [#530](https://github.com/Negatywistyczny/stagesync/pull/530) | score-bar-map edges | Normalize 256→64 caps; coerce floors |
+| [#531](https://github.com/Negatywistyczny/stagesync/pull/531) | formatKeySignature edges | F#/Bb/Eb major+minor strings |
+| [#532](https://github.com/Negatywistyczny/stagesync/pull/532) | Launcher refresh a11y | Busy aria-label + recent list name |
+| [#533](https://github.com/Negatywistyczny/stagesync/pull/533) | Stage dismiss aria | Usuń komunikat aria-label |
+| [#534](https://github.com/Negatywistyczny/stagesync/pull/534) | Forma subsection edges | NaN normalize; tiny chunk; hasUsable |
+| [#535](https://github.com/Negatywistyczny/stagesync/pull/535) | sealAkordyLengths edges | Empty identity; same-start id sort |
+| [#536](https://github.com/Negatywistyczny/stagesync/pull/536) | MIDI config 400s | Unknown key + null body |
+| [#537](https://github.com/Negatywistyczny/stagesync/pull/537) | allocateUniqueClipId | Base-only → `base-2` |
+| [#538](https://github.com/Negatywistyczny/stagesync/pull/538) | Crash fallback nav | Odśwież / Client / Admin aria-labels |
 
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
 
-1. **Chord scenic relative `em` scales** — `ClientShell.module.css` chord superscripts (post-#478); keep relative to hero size unless PO wants `--ss-text-*` tokens (visual parity risk).
+1. **Chord scenic relative `em` scales** — `ClientShell.module.css` chord superscripts (post-#478); keep relative to hero size unless PO wants `--ss-text-*` (visual parity risk).
 2. **prefsRange / zoomRange pattern** — already dual `:focus` + `:focus-visible`; document only if public/operator docs (skip CHANGELOG).
-3. **Post-merge smoke** — SR pass on Mixer S/M + Click + Tryb mono/stereo, Server Settings, Admin Zarządzaj bazą / Scena priority, Timeline eye/tools/song picker.
-4. **i18n residual** — Beat/Snap product terms; inspector leftovers until #511 lands (PC / tonika / fade).
-5. **Codecov project** — continue server route unhappy paths; watch Codecov GPG flakes on upload.
-6. **More shared edges** — `score-bar-map` normalizeAnchors / `library-import` / `ug-import` unhappy paths.
+3. **Post-merge smoke** — Mixer S/M + Click + Tryb mono/stereo; Server Settings; Admin Scena priority/TTL/dismiss; Timeline eye/tools; Launcher refresh.
+4. **i18n residual** — Beat/Snap product terms; inspector leftovers until #511 lands.
+5. **Codecov project** — more server unhappy paths; watch Codecov GPG flakes.
+6. **Presence eviction** — `MAX_CLIENTS` oldest-drop unit test (optional).
+7. **More shared edges** — `library-import` ZIP bytes short buffer; `audio-clip` non-transport helpers.
 
 ## Skipped / off-limits
 
@@ -66,4 +76,4 @@ Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (w
 - Worked from `origin/main`; did not stage unrelated user WIP.
 - One parallel checkout briefly misnamed a branch (#503 → closed; #504 correct).
 - Most PRs are a11y/test/chore — **no CHANGELOG** per złota zasada (SR/label hygiene + tests).
-- Mid-session: browse HTTP 400 is soft-fallback via `resolveBrowseStartPath`; unit coverage stays in `path-browser.test.ts`.
+- Browse HTTP 400 is soft-fallback via `resolveBrowseStartPath`; unit coverage stays in `path-browser.test.ts`.
