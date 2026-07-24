@@ -68,4 +68,42 @@ describe("GET/PUT /api/system/settings + browse", () => {
       await new Promise<void>((r) => server.close(() => r()));
     }
   });
+
+  it("PUT settings returns 400 on missing values object", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-settings-body-"));
+    dirs.push(dataDir);
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/settings`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { ok?: boolean; error?: string };
+      expect(body.ok).toBe(false);
+      expect(String(body.error ?? "")).toMatch(/Invalid body/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("PUT settings returns 400 when values is not an object", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-settings-arr-"));
+    dirs.push(dataDir);
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/settings`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ values: ["PORT"] }),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { ok?: boolean; error?: string };
+      expect(body.ok).toBe(false);
+      expect(String(body.error ?? "")).toMatch(/Invalid body/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
 });
