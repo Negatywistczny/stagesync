@@ -5,6 +5,35 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Snap:** widoczna opcja wyłączenia to „Wyłącz” (zamiast „Off”) ([#521](https://github.com/Negatywistyczny/stagesync/pull/521)).
+- **Map-edit / Inspector:** w dialogach Tempo / Metrum / Tonacja „lane” → „ścieżka”, etykieta toniki „Tonika”; pola Inspectora (PC, tonika, gain, fade) z polskimi nazwami zgodnymi z chrome ([#511](https://github.com/Negatywistyczny/stagesync/pull/511), [#561](https://github.com/Negatywistyczny/stagesync/pull/561)).
+- **Mixer:** tryb kanału ogłaszany jako „Tryb mono” / „Tryb stereo” ([#525](https://github.com/Negatywistyczny/stagesync/pull/525)).
+
+#### 🖥️ App Shell & UI
+- **Client:** tytuł ustawień globalnych to „Ustawienia globalne” ([#553](https://github.com/Negatywistyczny/stagesync/pull/553)).
+- **Admin / Batch PC:** jaśniejsze tytuły modalów MusicXML i Batch PC; pole startu to „Start Program Change” ([#569](https://github.com/Negatywistyczny/stagesync/pull/569), [#573](https://github.com/Negatywistyczny/stagesync/pull/573)).
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Etykiety AT:** Dodaj ścieżkę, menu oka i narzędzi, zoom, picker utworu i wyglądu ścieżki, dialogi edycji mapy oraz grupy transportu / statusu mają czytelne nazwy i powiązania dla czytników ekranu; w Pomocy puste wyniki wyszukiwania są ogłaszane na żywo ([#500](https://github.com/Negatywistyczny/stagesync/pull/500), [#505](https://github.com/Negatywistyczny/stagesync/pull/505), [#512](https://github.com/Negatywistyczny/stagesync/pull/512), [#544](https://github.com/Negatywistyczny/stagesync/pull/544), [#551](https://github.com/Negatywistyczny/stagesync/pull/551), [#587](https://github.com/Negatywistyczny/stagesync/pull/587), [#601](https://github.com/Negatywistyczny/stagesync/pull/601)).
+- **Mixer / Click:** Mute Clicka oraz stripy (wyjście stereo, balans, panorama, peak) z polskimi etykietami AT ([#497](https://github.com/Negatywistyczny/stagesync/pull/497), [#513](https://github.com/Negatywistyczny/stagesync/pull/513)).
+
+#### 🖥️ App Shell & UI
+- **Admin:** „Zarządzaj bazą”, modale, log systemowy, Zapisz / Wyczyść setlistę i toolbar Batch PC z poprawnymi etykietami i powiązaniami ARIA ([#510](https://github.com/Negatywistyczny/stagesync/pull/510), [#545](https://github.com/Negatywistyczny/stagesync/pull/545), [#575](https://github.com/Negatywistyczny/stagesync/pull/575), [#577](https://github.com/Negatywistyczny/stagesync/pull/577), [#599](https://github.com/Negatywistyczny/stagesync/pull/599)).
+- **Client:** status ładowania partytury i paneli, pusty Set oraz reset zoomu partytury ogłaszane czytnikom; wordmark z kontekstem shelła ([#578](https://github.com/Negatywistyczny/stagesync/pull/578), [#580](https://github.com/Negatywistyczny/stagesync/pull/580), [#582](https://github.com/Negatywistyczny/stagesync/pull/582), [#592](https://github.com/Negatywistyczny/stagesync/pull/592), [#596](https://github.com/Negatywistyczny/stagesync/pull/596)).
+- **Scena:** priorytet i czas wyświetlania komunikatu oraz „Usuń komunikat” z czytelnymi etykietami ([#528](https://github.com/Negatywistyczny/stagesync/pull/528), [#533](https://github.com/Negatywistyczny/stagesync/pull/533)).
+- **Ustawienia / crash / dialogi:** polskie nazwy w Ustawieniach serwera; etykiety nawigacji po crashu; unikalne tytuły dialogów shelła ([#506](https://github.com/Negatywistyczny/stagesync/pull/506), [#508](https://github.com/Negatywistyczny/stagesync/pull/508), [#538](https://github.com/Negatywistyczny/stagesync/pull/538)).
+- **Desktop:** modale menu natywnego powiązane z tytułami dla AT ([#543](https://github.com/Negatywistyczny/stagesync/pull/543)).
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher:** pole adresu, kafelki hostów, Odśwież i lista ostatnich z etykietami AT ([#499](https://github.com/Negatywistyczny/stagesync/pull/499), [#532](https://github.com/Negatywistyczny/stagesync/pull/532)).
+
 ## [5.1.1](https://github.com/Negatywistyczny/stagesync/compare/v5.1.0...v5.1.1) - 2026-07-24
 
 ### Naprawiono
