@@ -39,6 +39,11 @@ describe("gainDbToLinear", () => {
     expect(gainDbToLinear(9999)).toBe(gainDbToLinear(24));
     expect(gainDbToLinear(-9999)).toBe(gainDbToLinear(-60));
   });
+
+  it("treats non-finite as unity", () => {
+    expect(gainDbToLinear(Number.NaN)).toBe(1);
+    expect(gainDbToLinear(Number.POSITIVE_INFINITY)).toBe(1);
+  });
 });
 
 describe("audioFadeGainAtMs", () => {

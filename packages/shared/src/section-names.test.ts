@@ -52,4 +52,19 @@ describe("section-names", () => {
     expect(normalizeSectionName("my custom part")).toBe("My Custom Part");
     expect(normalizeSectionName("")).toBe("Section");
   });
+
+  it("maps final chorus / coda numbers and Polish instruments", () => {
+    expect(normalizeSectionName("final chorus")).toBe("Final Chorus");
+    expect(normalizeSectionName("chorus last")).toBe("Final Chorus");
+    expect(normalizeSectionName("coda 2")).toBe("Outro 2");
+    expect(formatSectionNameForDisplay("Final Chorus", { polish: true })).toBe(
+      "Ostatni refren",
+    );
+    expect(formatSectionNameForDisplay("Guitar Solo", { polish: true })).toBe(
+      "Solo (gitara)",
+    );
+    expect(formatSectionNameForDisplay("Drums Solo 2", { polish: true })).toBe(
+      "Solo (perkusja) 2",
+    );
+  });
 });

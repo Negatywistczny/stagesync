@@ -13,4 +13,27 @@ describe("mergePreserveById", () => {
       { id: "b", name: "B" },
     ]);
   });
+
+  it("skips empty ids and keeps client-only entries", () => {
+    expect(
+      mergePreserveById(
+        [{ id: "", name: "bad" }, { id: "s", name: "S" }],
+        [{ id: "c", name: "C" }, { id: "", name: "also-bad" }],
+      ),
+    ).toEqual([
+      { id: "c", name: "C" },
+      { id: "s", name: "S" },
+    ]);
+  });
+
+  it("caps merged size at 1024", () => {
+    const client = Array.from({ length: 1024 }, (_, i) => ({
+      id: `c${i}`,
+      n: i,
+    }));
+    const server = [{ id: "server-only", n: -1 }];
+    const merged = mergePreserveById(server, client);
+    expect(merged).toHaveLength(1024);
+    expect(merged.some((x) => x.id === "server-only")).toBe(false);
+  });
 });
