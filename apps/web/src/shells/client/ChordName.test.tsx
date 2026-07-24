@@ -39,4 +39,33 @@ describe("ChordName (#478)", () => {
     expect(markup).toContain("ø7");
     expect(markup).toContain("/B♭");
   });
+
+  it("escapes HTML metacharacters in serialized root/sup/bass", () => {
+    const html = serializeChordNameHtml(
+      { root: 'A&B', sup: '<7>', bass: '/C"D' },
+      CLASSES,
+      "inline",
+    );
+    expect(html).toContain("A&amp;B");
+    expect(html).toContain("&lt;7&gt;");
+    expect(html).toContain('/C&quot;D');
+    expect(html).not.toContain("<7>");
+  });
+
+  it("serializes inline bass without stack wrapper", () => {
+    const parts = resolveChordNameParts("G/A");
+    const html = serializeChordNameHtml(parts, CLASSES, "inline");
+    expect(html).not.toContain('class="stack"');
+    expect(html).toContain('class="bass">/A</span>');
+  });
+
+  it("renders React inline bass without stack", () => {
+    const parts = resolveChordNameParts("G/A");
+    const markup = renderToStaticMarkup(
+      <ChordName parts={parts} classNames={CLASSES} bassLayout="inline" />,
+    );
+    expect(markup).not.toContain("stack");
+    expect(markup).toContain("/A");
+  });
+
 });
