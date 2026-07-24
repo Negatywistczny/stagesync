@@ -5,6 +5,7 @@ import {
   isCountdownDigitClipId,
   migrateLegacySong,
   scrubCountdownDigitClips,
+  syntheticCountdownAkordClips,
   syntheticCountdownDisplayFromProject,
   syntheticCountdownTekstClips,
 } from "./index.js";
@@ -39,7 +40,9 @@ describe("countdown-content", () => {
 
   it("isCountdownDigitClipId matches vl-cd-*", () => {
     expect(isCountdownDigitClipId("vl-cd-1")).toBe(true);
+    expect(isCountdownDigitClipId("VL-CD-12")).toBe(true);
     expect(isCountdownDigitClipId("vl-3")).toBe(false);
+    expect(isCountdownDigitClipId("")).toBe(false);
   });
 
   it("scrubCountdownDigitClips drops spilled digits without rewriting", () => {
@@ -168,6 +171,30 @@ describe("countdown-content", () => {
   it("scrub is identity when nothing to remove", () => {
     const seed = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
     expect(scrubCountdownDigitClips(seed)).toBe(seed);
+  });
+
+  it("countdownDigitLabels clamps negative / non-integer bars", () => {
+    expect(countdownDigitLabels(-3)).toEqual([]);
+    expect(countdownDigitLabels(2.9)).toEqual([
+      { barOffset: 0, label: "2" },
+      { barOffset: 1, label: "1" },
+    ]);
+  });
+
+  it("synthetic clips guard barTicks and expose akordy ids", () => {
+    const tekst = syntheticCountdownTekstClips(-100, 1, 0);
+    expect(tekst).toEqual([
+      { id: "vl-cd-1", text: "1", startTicks: -100, lengthTicks: 1 },
+    ]);
+    const ak = syntheticCountdownAkordClips(-200, 1, 50.7);
+    expect(ak).toEqual([
+      {
+        id: "cd-chord-1",
+        symbol: "1",
+        startTicks: -200,
+        lengthTicks: 50,
+      },
+    ]);
   });
 });
 

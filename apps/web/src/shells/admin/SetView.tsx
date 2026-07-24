@@ -450,6 +450,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                   variant="primary"
                   disabled={pending || !dirty}
                   loading={pending}
+                  aria-label="Zapisz setlistę"
                   onClick={() => void onSave()}
                 >
                   Zapisz
@@ -457,6 +458,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 <Button
                   variant="ghost"
                   disabled={pending || draftItems.length === 0}
+                  aria-label="Wyczyść setlistę"
                   onClick={onClear}
                 >
                   Wyczyść
@@ -469,7 +471,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 <span className={styles.emptyIcon} aria-hidden>
                   ♪
                 </span>
-                <p className={styles.emptyText}>
+                <p className={styles.emptyText} role="status">
                   Przeciągnij utwory z biblioteki po lewej stronie lub użyj
                   przycisku &apos;+&apos;
                 </p>
@@ -497,7 +499,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
                         id={templateMenuId}
                         className={styles.templateMenu}
                         role="menu"
-                      >                        <button
+                      >
+                        <button
                           type="button"
                           className={styles.templateItem}
                           role="menuitem"
