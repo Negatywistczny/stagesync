@@ -72,6 +72,12 @@
 | [#555](https://github.com/Negatywistyczny/stagesync/pull/555) | apply-update 400s | Invalid target / unknown keys |
 | [#556](https://github.com/Negatywistyczny/stagesync/pull/556) | Fader taper OOB | NaN and out-of-range t/dB clamps |
 
+| [#553](https://github.com/Negatywistyczny/stagesync/pull/553) | Client global settings title | `Globalne` → `Ustawienia globalne` |
+| [#554](https://github.com/Negatywistyczny/stagesync/pull/554) | Restart keys edges | Empty change + DATA_DIR restart |
+| [#555](https://github.com/Negatywistyczny/stagesync/pull/555) | apply-update 400s | Missing/bad target + unknown keys |
+| [#556](https://github.com/Negatywistyczny/stagesync/pull/556) | Fader taper OOB | NaN and out-of-range t/dB clamps |
+| [#557](https://github.com/Negatywistyczny/stagesync/pull/557) | Unexport deprecated aliases | Drop logicBarToScoreBar + wandContentToForma barrel |
+
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
