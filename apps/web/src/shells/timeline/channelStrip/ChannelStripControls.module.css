@@ -721,7 +721,7 @@
   line-height: var(--ss-leading-compact);
 }
 
-.renameInput:focus {
+.renameInput:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
 }

@@ -41,7 +41,7 @@ writeFileSync(
 
 const ok = spawnSync(process.execPath, [script, "5.1.0", path], {
   encoding: "utf8",
-  env: { ...process.env, GITHUB_REPOSITORY: "Negatywistyczny/stagesync" },
+  env: { ...process.env, GITHUB_REPOSITORY: "Negatywistczny/stagesync" },
 });
 assert.equal(ok.status, 0, ok.stderr || ok.stdout);
 assert.match(ok.stdout, /### 🚀 Highlights — Launch & Mix \(5\.1\.0\)/);

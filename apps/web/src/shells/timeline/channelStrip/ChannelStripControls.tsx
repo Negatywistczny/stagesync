@@ -131,6 +131,7 @@ export function ChannelStripControls({
         .filter(Boolean)
         .join(" ")}
       title={strip.soloed ? "Wyłącz solo" : "Solo ścieżki"}
+      aria-label={strip.soloed ? "Wyłącz solo" : "Solo ścieżki"}
       aria-pressed={strip.soloed}
       onClick={(e) => {
         e.stopPropagation();
@@ -151,6 +152,7 @@ export function ChannelStripControls({
         .filter(Boolean)
         .join(" ")}
       title={strip.muted ? "Włącz ścieżkę" : "Wycisz ścieżkę"}
+      aria-label={strip.muted ? "Włącz ścieżkę" : "Wycisz ścieżkę"}
       aria-pressed={strip.muted}
       onClick={(e) => {
         e.stopPropagation();
