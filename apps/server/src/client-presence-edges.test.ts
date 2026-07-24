@@ -30,4 +30,17 @@ describe("client-presence edges", () => {
     listed.roles.push("drums");
     expect(presence.list()[0]?.roles).toEqual(["grid"]);
   });
+
+  it("clamps latencyMs and rejects non-finite", () => {
+    const presence = createClientPresence();
+    presence.connect("lat");
+    presence.upsert("lat", { latencyMs: 90_000 });
+    expect(presence.list()[0]?.latencyMs).toBe(60_000);
+    presence.upsert("lat", { latencyMs: 12.6 });
+    expect(presence.list()[0]?.latencyMs).toBe(13);
+    presence.upsert("lat", { latencyMs: Number.NaN });
+    expect(presence.list()[0]?.latencyMs).toBeNull();
+    presence.upsert("lat", { latencyMs: -1 });
+    expect(presence.list()[0]?.latencyMs).toBeNull();
+  });
 });

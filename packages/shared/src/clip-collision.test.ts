@@ -146,6 +146,23 @@ describe("insertGapSectionAfterCountdown", () => {
     });
     expect(next.find((c) => c.id.startsWith("forma-gap-"))).toBeUndefined();
   });
+
+  it("no-ops without countdown or when gap is below min length", () => {
+    const noCd = [INTRO, VERSE];
+    expect(insertGapSectionAfterCountdown(noCd, "forma-intro")).toBe(noCd);
+
+    const tight = [
+      CD,
+      { ...INTRO, startTicks: 1, lengthTicks: 7680 },
+      { ...VERSE, startTicks: 7681 },
+    ];
+    expect(
+      insertGapSectionAfterCountdown(tight, "forma-intro", {
+        contentFloorTicks: 0,
+        minLengthTicks: 2,
+      }),
+    ).toEqual(tight);
+  });
 });
 
 describe("resizeClipNoOverlap", () => {
@@ -286,6 +303,11 @@ describe("clampFormaSubsections / allocateUniqueClipId", () => {
     expect(allocateUniqueClipId("x", used)).toBe("x-3");
     expect(allocateUniqueClipId("fresh", used)).toBe("fresh");
   });
+
+  it("allocateUniqueClipId starts at -2 when only base is taken", () => {
+    expect(allocateUniqueClipId("clip", new Set(["clip"]))).toBe("clip-2");
+    expect(allocateUniqueClipId("clip", new Set())).toBe("clip");
+  });
 });
 
 describe("placeClipNoOverlap edges", () => {
@@ -358,6 +380,15 @@ describe("moveSectionsFromId", () => {
     expect(moveSectionsFromId(base(), "forma-cd", 0)).toEqual(base());
     expect(moveSectionsFromId(base(), "missing", 100)).toEqual(base());
     expect(moveSectionsFromId(base(), "forma-intro", 0)).toEqual(base());
+  });
+
+  it("no-ops for non-finite newStartTicks", () => {
+    expect(moveSectionsFromId(base(), "forma-intro", Number.NaN)).toEqual(
+      base(),
+    );
+    expect(
+      moveSectionsFromId(base(), "forma-intro", Number.POSITIVE_INFINITY),
+    ).toEqual(base());
   });
 });
 
