@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  chordLiteralToSymbolDisplay,
   formatChordForDisplay,
   formatChordParts,
   formatHybridPolishB,
   formatMusicalAccidentals,
   parseAndFormatParts,
   resolveChordNameParts,
+  splitChordSuperscript,
   toLiteralStorage,
 } from "./chord-display.js";
 
@@ -193,5 +195,19 @@ describe("passthrough empties and bar numbers", () => {
     expect(toLiteralStorage("12")).toBe("12");
     expect(formatChordForDisplay("  ")).toBe("");
     expect(formatChordParts("Caug")).toMatchObject({ root: "C", sup: "+" });
+  });
+});
+
+describe("splitChordSuperscript / chordLiteralToSymbolDisplay", () => {
+  it("mirrors root as deprecated base and formats symbolic quality", () => {
+    expect(splitChordSuperscript("Am7/G")).toEqual({
+      root: "A",
+      base: "A",
+      sup: "m7",
+      bass: "/G",
+    });
+    expect(chordLiteralToSymbolDisplay("Cmaj7")).toBe("CΔ7");
+    expect(chordLiteralToSymbolDisplay("")).toBe("");
+    expect(chordLiteralToSymbolDisplay("—")).toBe("—");
   });
 });
