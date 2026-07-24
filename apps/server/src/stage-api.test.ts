@@ -103,6 +103,20 @@ describe("GET/POST/DELETE /api/stage", () => {
       });
       expect(bad.status).toBe(400);
 
+      const badPriority = await fetch(`${baseUrl}/api/stage/message`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: "X", priority: "urgent" }),
+      });
+      expect(badPriority.status).toBe(400);
+
+      const notObject = await fetch(`${baseUrl}/api/stage/message`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(["nope"]),
+      });
+      expect(notObject.status).toBe(400);
+
       const missing = await fetch(
         `${baseUrl}/api/stage/messages/does-not-exist`,
         { method: "DELETE" },
