@@ -92,16 +92,21 @@
   --ss-font-weight-bold: 650;
   --ss-font-weight-heavy: 700;
   --ss-font-weight-black: 800;
+  --ss-leading-none: 1;
+  --ss-leading-flush: 1.05;
   --ss-leading-display: 1.1;
   --ss-leading-compact: 1.15;
   --ss-leading-snug: 1.2;
   --ss-leading-tight: 1.25;
+  --ss-leading-cozy: 1.3;
   --ss-leading-normal: 1.35;
   --ss-leading-relaxed: 1.5;
   --ss-line-height: var(--ss-leading-normal);
   --ss-tracking-normal: 0;
   --ss-tracking-tight: -0.02em;
+  --ss-tracking-slight: 0.02em;
   --ss-tracking-label: 0.06em;
+  --ss-tracking-eyebrow: 0.08em;
   --ss-tracking-wide: 0.1em;
 
   /* Motion */
