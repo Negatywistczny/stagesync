@@ -5672,7 +5672,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
 
         <div className={styles.toolbarCenter}>
-          <div className={styles.transport} role="group" aria-label="Transport">
+          <div className={styles.transport} role="group" aria-label="Transport odtwarzania">
             <ShellIconButton
               label="Zatrzymaj"
               disabled={commandPending}
@@ -7434,7 +7434,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </aside>
       </div>
 
-      <footer className={styles.status} aria-label="Status Timeline">
+      <footer className={styles.status} aria-label="Status osi czasu">
         <div className={styles.statusLeft}>
           <ConnectionIndicator status={wsStatus} variant="dot" />
           <span className={styles.statusConnLab}>
