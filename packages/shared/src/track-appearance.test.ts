@@ -33,6 +33,17 @@ describe("track appearance palette", () => {
   it("cycles colors by index", () => {
     expect(trackColorForIndex(0)).toBe(TRACK_COLORS[0]);
     expect(trackColorForIndex(TRACK_COLORS.length)).toBe(TRACK_COLORS[0]);
+    expect(trackColorForIndex(-3)).toBe(TRACK_COLORS[0]);
+    expect(trackColorForIndex(Number.NaN)).toBe(TRACK_COLORS[0]);
+  });
+
+  it("exposes Polish labels for every icon", async () => {
+    const { TRACK_ICON_LABELS } = await import("./track-appearance.js");
+    for (const icon of TRACK_ICONS) {
+      expect(TRACK_ICON_LABELS[icon].length).toBeGreaterThan(0);
+    }
+    expect(TRACK_ICON_LABELS.drums).toBe("Perkusja");
+    expect(resolveTrackColor(TRACK_COLORS[0])).toBe(TRACK_COLORS[0]);
   });
 
   it("AudioTrackSchema accepts optional color + icon", () => {

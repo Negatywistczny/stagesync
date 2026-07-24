@@ -70,6 +70,10 @@ function setBusy(next) {
 function setScanning(next) {
   scanning = next;
   el.btnRefresh.setAttribute("aria-busy", next ? "true" : "false");
+  el.btnRefresh.setAttribute(
+    "aria-label",
+    next ? "Odświeżanie listy hostów…" : "Odśwież listę hostów",
+  );
   el.btnRefresh.disabled = next || busy;
   el.hostList.classList.toggle("is-scanning", next);
 }
@@ -251,12 +255,16 @@ function discoveredHostButton(host, onClick) {
   btn.type = "button";
   btn.className = "host hostTile";
 
-  const title = document.createElement("span");
-  title.className = "name";
-  title.textContent =
+  const titleText =
     (host.hostname && String(host.hostname).trim()) ||
     host.name ||
     host.url;
+  const urlText = host.url || `http://${host.host}:${host.port}`;
+  btn.setAttribute("aria-label", `Połącz z ${titleText} (${urlText})`);
+
+  const title = document.createElement("span");
+  title.className = "name";
+  title.textContent = titleText;
 
   const mid = document.createElement("span");
   mid.className = "hostMid";
@@ -264,7 +272,7 @@ function discoveredHostButton(host, onClick) {
   const diode = document.createElement("span");
   diode.className = `statusDiode ${transportStatusClass(host.status)}`;
   diode.title = transportStatusLabel(host.status);
-  diode.setAttribute("aria-label", transportStatusLabel(host.status));
+  diode.setAttribute("aria-hidden", "true");
 
   const badge = document.createElement("span");
   badge.className = "projectBadge";
@@ -275,7 +283,7 @@ function discoveredHostButton(host, onClick) {
 
   const meta = document.createElement("span");
   meta.className = "meta";
-  const bits = [host.url || `http://${host.host}:${host.port}`];
+  const bits = [urlText];
   if (host.version) bits.push(`v${host.version}`);
   meta.textContent = bits.join(" · ");
 
@@ -295,6 +303,8 @@ function recentHostButton(item, onClick) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "host hostTile hostRecent";
+  const label = item.label || item.url;
+  btn.setAttribute("aria-label", `Połącz z ${label} (${item.url})`);
 
   const row = document.createElement("span");
   row.className = "recentRow";
@@ -302,12 +312,12 @@ function recentHostButton(item, onClick) {
   const diode = document.createElement("span");
   diode.className = "healthDiode is-unknown";
   diode.title = "Sprawdzam…";
-  diode.setAttribute("aria-label", "Sprawdzam dostępność");
+  diode.setAttribute("aria-hidden", "true");
   diode.dataset.url = item.url;
 
   const name = document.createElement("span");
   name.className = "name";
-  name.textContent = item.label || item.url;
+  name.textContent = label;
 
   row.append(diode, name);
 
@@ -327,11 +337,9 @@ function setHealthDiode(diode, online) {
   if (online) {
     diode.classList.add("is-online");
     diode.title = "Online";
-    diode.setAttribute("aria-label", "Online");
   } else {
     diode.classList.add("is-offline");
     diode.title = "Offline";
-    diode.setAttribute("aria-label", "Offline");
   }
 }
 

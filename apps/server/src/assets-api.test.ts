@@ -175,6 +175,14 @@ describe("project assets API", () => {
     expect(after.assets).toHaveLength(0);
   });
 
+  it("DELETE unknown asset id returns 404", async () => {
+    const del = await fetch(
+      `${baseUrl}/api/projects/${projectId}/assets/00000000-0000-4000-8000-000000000099`,
+      { method: "DELETE" },
+    );
+    expect(del.status).toBe(404);
+  });
+
   it("serves asset file with mime + rejects bad uploads", async () => {
     const form = new FormData();
     form.append(

@@ -83,16 +83,17 @@ export function ShellConfirmDialog({
   onConfirm,
   onCancel,
 }: ShellConfirmDialogProps) {
+  const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   useDialogFocusTrap(open, panelRef, ".ss-btn--primary", onCancel);
 
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-confirm-title">
+    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby={titleId}>
       <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
       <div ref={panelRef} className={styles.panel}>
-        <h2 id="shell-confirm-title" className={styles.title}>
+        <h2 id={titleId} className={styles.title}>
           {title}
         </h2>
         <p className={styles.message}>{message}</p>
@@ -128,6 +129,7 @@ export function ShellPromptDialog({
   onConfirm,
   onCancel,
 }: ShellPromptDialogProps) {
+  const titleId = useId();
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLFormElement>(null);
@@ -151,10 +153,10 @@ export function ShellPromptDialog({
   }
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-prompt-title">
+    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby={titleId}>
       <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
       <form ref={panelRef} className={styles.panel} onSubmit={onSubmit}>
-        <h2 id="shell-prompt-title" className={styles.title}>
+        <h2 id={titleId} className={styles.title}>
           {title}
         </h2>
         <label className={styles.field} htmlFor={inputId}>
@@ -190,16 +192,17 @@ type ShellAlertDialogProps = {
 
 /** Zamiennik window.alert — działa w Tauri WebView. */
 export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDialogProps) {
+  const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   useDialogFocusTrap(open, panelRef, ".ss-btn--primary", onClose);
 
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="shell-alert-title">
+    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby={titleId}>
       <button type="button" className={styles.backdrop} aria-label="Zamknij" onClick={onClose} />
       <div ref={panelRef} className={styles.panel}>
-        <h2 id="shell-alert-title" className={styles.title}>
+        <h2 id={titleId} className={styles.title}>
           {title}
         </h2>
         <p className={styles.message}>{message}</p>
