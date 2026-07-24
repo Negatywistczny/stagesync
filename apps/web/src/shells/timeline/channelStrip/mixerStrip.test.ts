@@ -13,6 +13,13 @@ describe("formatPanReadout", () => {
     expect(formatPanReadout(-0.5)).toBe("L50");
     expect(formatPanReadout(1)).toBe("R100");
   });
+
+  it("clamps non-finite and near-zero to C", () => {
+    expect(formatPanReadout(Number.NaN)).toBe("C");
+    expect(formatPanReadout(0.004)).toBe("C");
+    expect(formatPanReadout(-2)).toBe("L100");
+    expect(formatPanReadout(2)).toBe("R100");
+  });
 });
 
 describe("meter LED bands (shared)", () => {
