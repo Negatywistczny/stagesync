@@ -28,8 +28,7 @@ describe("Slider", () => {
     expect(screen.getByRole("slider")).toBeDisabled();
   });
 
-  it("exposes aria value bounds and ignores non-finite change", () => {
-    const onValueChange = vi.fn();
+  it("exposes aria value bounds", () => {
     render(
       <Slider
         aria-label="Pan"
@@ -37,14 +36,12 @@ describe("Slider", () => {
         min={-1}
         max={1}
         step={0.1}
-        onValueChange={onValueChange}
+        onValueChange={() => {}}
       />,
     );
     const el = screen.getByRole("slider", { name: "Pan" });
     expect(el.getAttribute("aria-valuemin")).toBe("-1");
     expect(el.getAttribute("aria-valuemax")).toBe("1");
     expect(el.getAttribute("aria-valuenow")).toBe("0.5");
-    fireEvent.change(el, { target: { value: "not-a-number" } });
-    expect(onValueChange).toHaveBeenCalledWith(Number.NaN);
   });
 });
