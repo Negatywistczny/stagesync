@@ -5,6 +5,12 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+- **Licencja:** Additional Use Grant w BUSL-1.1 ustawione na `None` — produkcja (w tym własny host sceniczny) wymaga licencji komercyjnej; dozwolone pozostaje użycie nieprodukcyjne do Change Date.
+
 ## [5.1.0](https://github.com/Negatywistczny/stagesync/compare/v5.0.1...v5.1.0) - 2026-07-24 — Launch & Mix
 
 > **Launch & Mix:** Launcher hosta (lokalny / LAN / remote), Mixer Timeline oraz zestaw narzędzi i skrótów live-show.
