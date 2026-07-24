@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
@@ -692,6 +692,7 @@ function SongsView({
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
   const [dbMenuOpen, setDbMenuOpen] = useState(false);
+  const dbMenuId = useId();
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -735,12 +736,15 @@ function SongsView({
                 variant="ghost"
                 disabled={locked}
                 aria-expanded={dbMenuOpen}
+                aria-haspopup="dialog"
+                aria-controls={dbMenuOpen ? dbMenuId : undefined}
                 onClick={() => setDbMenuOpen((o) => !o)}
               >
                 Zarządzaj bazą ▾
               </Button>
               {dbMenuOpen ? (
                 <SettingsPopover
+                  id={dbMenuId}
                   title="Baza plików"
                   onClose={() => setDbMenuOpen(false)}
                 >
@@ -791,7 +795,12 @@ function SongsView({
             >
               + Nowy Utwór
             </Button>
-            <Button variant="ghost" disabled={locked} onClick={onBatchPc}>
+            <Button
+              variant="ghost"
+              disabled={locked}
+              aria-label="Numeracja Program Change"
+              onClick={onBatchPc}
+            >
               Batch PC
             </Button>
           </div>
@@ -1107,7 +1116,7 @@ function MusicXmlModal({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal title="MusicXML" onClose={onClose}>
+    <Modal title="Import MusicXML" onClose={onClose}>
       {!projectId ? (
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (
@@ -1194,7 +1203,7 @@ function BatchPcModal({
   };
 
   return (
-    <Modal title="Batch PC" onClose={onClose}>
+    <Modal title="Numeracja Program Change" onClose={onClose}>
       <p className={styles.muted}>
         Numeracja Program Change (0–127) dla utworów (bez wzorów).
       </p>
@@ -1204,7 +1213,7 @@ function BatchPcModal({
         </p>
       ) : null}
       <label className={styles.field}>
-        Start PC
+        Start Program Change
         <input
           className={styles.input}
           type="number"
@@ -1285,8 +1294,14 @@ function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const titleId = useId();
   return (
-    <div className={styles.overlay} role="dialog" aria-modal>
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal
+      aria-labelledby={titleId}
+    >
       <button
         type="button"
         className={styles.backdrop}
@@ -1295,7 +1310,7 @@ function Modal({
       />
       <div className={styles.modalPanel}>
         <div className={styles.modalHead}>
-          <h2>{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           <ShellIconButton label="Zamknij" onClick={onClose}>
             ×
           </ShellIconButton>

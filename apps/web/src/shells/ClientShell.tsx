@@ -776,7 +776,7 @@ function ClientChrome({
           {globalSettingsOpen ? (
             <SettingsPopover
               id="global-settings-panel"
-              title="Globalne"
+              title="Ustawienia globalne"
               onClose={onCloseGlobalSettings}
             >
               <GlobalSettingsFields
