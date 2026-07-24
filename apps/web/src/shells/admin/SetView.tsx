@@ -471,7 +471,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 <span className={styles.emptyIcon} aria-hidden>
                   ♪
                 </span>
-                <p className={styles.emptyText}>
+                <p className={styles.emptyText} role="status">
                   Przeciągnij utwory z biblioteki po lewej stronie lub użyj
                   przycisku &apos;+&apos;
                 </p>
@@ -499,7 +499,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
                         id={templateMenuId}
                         className={styles.templateMenu}
                         role="menu"
-                      >                        <button
+                      >
+                        <button
                           type="button"
                           className={styles.templateItem}
                           role="menuitem"
