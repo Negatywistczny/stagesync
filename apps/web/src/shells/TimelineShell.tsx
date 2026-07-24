@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -531,6 +532,8 @@ export function TimelineShell() {
   const eyeMenuRef = useRef<HTMLDivElement>(null);
   const toolsVisBtnRef = useRef<HTMLButtonElement>(null);
   const toolsVisMenuRef = useRef<HTMLDivElement>(null);
+  const eyeMenuId = useId();
+  const toolsVisMenuId = useId();
   const [eyeMenuPos, setEyeMenuPos] = useState<{
     top: number;
     left: number;
@@ -5660,6 +5663,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             title="Widoczne narzędzia na pasku"
             aria-expanded={toolsVisOpen}
             aria-haspopup="menu"
+            aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
             onClick={() => setToolsVisOpen((v) => !v)}
           >
             <IconSettings />
@@ -5949,6 +5953,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       aria-label="Widoczność ścieżek"
                       aria-expanded={eyeOpen}
                       aria-haspopup="menu"
+                      aria-controls={eyeOpen ? eyeMenuId : undefined}
                       onClick={() => setEyeOpen((v) => !v)}
                     >
                       <IconEye />
@@ -6456,6 +6461,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           : draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
                             ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
                             : "Dodaj pustą ścieżkę audio"
+                      }
+                      aria-label={
+                        draftProject &&
+                        draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
+                          ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
+                          : "Dodaj pustą ścieżkę audio"
                       }
                       onClick={onAddAudioTrack}
                     >
@@ -7439,7 +7450,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 : "Rozłączony"}
           </span>
         </div>
-        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
+        <div className={styles.zooms} role="group" aria-label="Powiększenie i snap">
           <label className={styles.snapPicker}>
             <span className={styles.snapPickerLab}>Snap</span>
             <select
@@ -7469,16 +7480,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-              title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
-              aria-label="Zoom UI"
+              title="Powiększenie UI — gęstość chrome Timeline / Mixer (85–125%)"
+              aria-label="Powiększenie UI"
             />
           </label>
           <label
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Zoom H dotyczy osi czasu (niedostępny w Mixerze)"
-                : "Zoom poziomy (oś czasu)"
+                ? "Powiększenie H dotyczy osi czasu (niedostępne w Mixerze)"
+                : "Powiększenie poziome (oś czasu)"
             }
           >
             H
@@ -7490,15 +7501,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               value={zoomH}
               disabled={timelineSurface === "mixer"}
               onChange={(e) => setZoomH(Number(e.target.value))}
-              aria-label="Zoom poziomy"
+              aria-label="Powiększenie poziome"
             />
           </label>
           <label
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Zoom V dotyczy wysokości ścieżek (niedostępny w Mixerze)"
-                : "Zoom pionowy (wysokość ścieżek)"
+                ? "Powiększenie V dotyczy wysokości ścieżek (niedostępne w Mixerze)"
+                : "Powiększenie pionowe (wysokość ścieżek)"
             }
           >
             V
@@ -7510,7 +7521,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               value={zoomV}
               disabled={timelineSurface === "mixer"}
               onChange={(e) => setVerticalZoom(Number(e.target.value))}
-              aria-label="Zoom pionowy"
+              aria-label="Powiększenie pionowe"
             />
           </label>
         </div>
@@ -7861,11 +7872,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ? createPortal(
             <div
               ref={eyeMenuRef}
+              id={eyeMenuId}
               className={[styles.eyeMenu, styles.eyeMenuFixed]
                 .filter(Boolean)
                 .join(" ")}
               style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
               role="menu"
+              aria-label="Widoczność ścieżek"
             >
               {TRACKS.map((track) => (
                 <button
@@ -7902,6 +7915,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ? createPortal(
             <div
               ref={toolsVisMenuRef}
+              id={toolsVisMenuId}
               className={[styles.eyeMenu, styles.eyeMenuFixed]
                 .filter(Boolean)
                 .join(" ")}
