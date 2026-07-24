@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { buildSetlistView } from "@stagesync/shared";
 import {
   createSetlistHub,
+  publishSetlistHubFromStores,
   setlistSnapshotFromView,
 } from "./setlist-hub.js";
 
@@ -70,5 +71,40 @@ describe("setlist-hub", () => {
       next: null,
       sentAtMs: 99,
     });
+  });
+
+  it("publishSetlistHubFromStores loads stores and publishes", async () => {
+    const hub = createSetlistHub();
+    const setlist = {
+      version: 1 as const,
+      enabled: true,
+      items: [
+        { type: "project" as const, projectId: "11111111-1111-4111-8111-111111111111" },
+      ],
+      projectIds: ["11111111-1111-4111-8111-111111111111"],
+      autoAdvance: { enabled: false },
+      timeBudgetMinutes: 90,
+    };
+    const library = {
+      version: 1 as const,
+      projects: [{ id: "11111111-1111-4111-8111-111111111111", name: "Solo" }],
+    };
+    const stores = {
+      getSetlist: vi.fn(async () => setlist),
+      getLibrary: vi.fn(async () => library),
+    };
+    const transport = {
+      getActiveProjectId: () => "11111111-1111-4111-8111-111111111111",
+    };
+
+    await publishSetlistHubFromStores(
+      stores as never,
+      transport as never,
+      hub,
+    );
+    const snap = hub.snapshotMessage();
+    expect(snap?.type).toBe("setlist_snapshot");
+    expect(snap?.projectIds).toEqual(setlist.projectIds);
+    expect(snap?.currentIndex).toBe(0);
   });
 });

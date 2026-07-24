@@ -5,6 +5,7 @@ import { loadDotenvIntoProcess } from "./env-settings.js";
 import { createLifecycle } from "./lifecycle.js";
 import { startMdnsAdvertiser } from "./mdns-advertise.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
+import { publishSetlistHubFromStores } from "./transport/setlist-hub.js";
 import { attachTransportWs } from "./transport/ws.js";
 
 loadDotenvIntoProcess();
@@ -159,6 +160,7 @@ async function main(): Promise<void> {
     console.error("[stagesync-server] volume migrate failed", err);
     process.exit(1);
   }
+  await publishSetlistHubFromStores(stores, transport, setlistHub);
   startListening();
 }
 

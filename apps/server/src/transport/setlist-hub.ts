@@ -2,7 +2,13 @@
  * Fanout setlist snapshots on `/ws/transport` (mirrors live_desk / stage-hub).
  */
 
-import type { SetlistSnapshotMessage, SetlistView } from "@stagesync/shared";
+import {
+  buildSetlistView,
+  type SetlistSnapshotMessage,
+  type SetlistView,
+} from "@stagesync/shared";
+import type { Stores } from "../storage/index.js";
+import type { TransportEngine } from "./engine.js";
 
 type Listener = (msg: SetlistSnapshotMessage) => void;
 
@@ -52,3 +58,22 @@ export function createSetlistHub() {
 }
 
 export type SetlistHub = ReturnType<typeof createSetlistHub>;
+
+/** Load setlist+library and publish a hub snapshot (await before listen / tests). */
+export async function publishSetlistHubFromStores(
+  stores: Stores,
+  transport: TransportEngine,
+  setlistHub: SetlistHub,
+): Promise<void> {
+  try {
+    const [setlist, library] = await Promise.all([
+      stores.getSetlist(),
+      stores.getLibrary(),
+    ]);
+    setlistHub.publishFromView(
+      buildSetlistView(setlist, library, transport.getActiveProjectId()),
+    );
+  } catch {
+    /* empty / missing data dir */
+  }
+}

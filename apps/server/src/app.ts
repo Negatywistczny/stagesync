@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import { join } from "node:path";
-import { buildSetlistView, projectEndTicks, type HealthResponse } from "@stagesync/shared";
+import { projectEndTicks, type HealthResponse } from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import {
   createFileLogger,
@@ -30,7 +30,11 @@ import {
 import { wirePauseAtSongEnd } from "./transport/pause-at-end.js";
 import { wireSetlistAutoAdvance } from "./transport/auto-advance.js";
 import { createStageHub, type StageHub } from "./transport/stage-hub.js";
-import { createSetlistHub, type SetlistHub } from "./transport/setlist-hub.js";
+import {
+  createSetlistHub,
+  publishSetlistHubFromStores,
+  type SetlistHub,
+} from "./transport/setlist-hub.js";
 
 function resolveServiceVersion(): string {
   const staged = process.env.STAGESYNC_VERSION?.trim();
@@ -129,19 +133,9 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     const activeId = msg.activeProjectId ?? null;
     if (activeId === lastSetlistActiveId) return;
     lastSetlistActiveId = activeId;
-    void (async () => {
-      try {
-        const [setlist, library] = await Promise.all([
-          stores.getSetlist(),
-          stores.getLibrary(),
-        ]);
-        setlistHub.publishFromView(
-          buildSetlistView(setlist, library, activeId),
-        );
-      } catch {
-        /* ignore */
-      }
-    })();
+    // Fire-and-forget is OK here: callers that tear down temp data dirs
+    // (unit tests) should not change activeProjectId after createApp.
+    void publishSetlistHubFromStores(stores, transport, setlistHub);
   });
   const midi =
     options.midi ??
@@ -233,20 +227,6 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
       (midiStatus.available ? "" : " (no device I/O)"),
   );
   logBuffer.push("info", `StageSync server ready (${VERSION})`);
-
-  void (async () => {
-    try {
-      const [setlist, library] = await Promise.all([
-        stores.getSetlist(),
-        stores.getLibrary(),
-      ]);
-      setlistHub.publishFromView(
-        buildSetlistView(setlist, library, transport.getActiveProjectId()),
-      );
-    } catch {
-      /* empty / missing data dir in tests */
-    }
-  })();
 
   return {
     app,
