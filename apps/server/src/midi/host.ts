@@ -223,6 +223,18 @@ export function createMidiHost(
     transport.seek(ticks);
   }
 
+  /** Last PC coalesced via microtask — flood does not call handler N times. */
+  let pendingProgram: number | null = null;
+  let programFlushScheduled = false;
+
+  function flushPendingProgram(): void {
+    programFlushScheduled = false;
+    const program = pendingProgram;
+    pendingProgram = null;
+    if (program == null) return;
+    options.onProgramChange?.(program);
+  }
+
   function onInputMessage(msg: MidiRealtimeMessage): void {
     const t = now();
     switch (msg.type) {
@@ -240,7 +252,12 @@ export function createMidiHost(
         break;
       case "program":
         pcIn.hit(t);
-        options.onProgramChange?.(msg.program);
+        // Coalesce to one handler call per turn (latest-wins); flood stays cheap.
+        pendingProgram = msg.program;
+        if (!programFlushScheduled) {
+          programFlushScheduled = true;
+          queueMicrotask(flushPendingProgram);
+        }
         break;
       case "start":
         inputClockCount = 0;

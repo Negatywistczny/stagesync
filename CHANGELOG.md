@@ -30,9 +30,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Akordy:** symbol w Inspectorze nie jest kanonizowany w trakcie wpisywania; normalizacja przy wyjściu z pola.
 
 #### 🎛️ Audio / MIDI / Transport
-- **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii; SPP nie seekuje poza koniec utworu.
+- **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii (także przy floodzie PC); SPP nie seekuje poza koniec utworu.
 - **Mixer / mono:** Peak/VU ścieżki mono nie spada przy twardej panoramie; po dekodowaniu pliku mono ścieżka bez trybu dostaje tryb mono (panorama zamiast True Balance).
 - **Mixer / Solo:** gdy Solo ścieżki jest aktywne, Solo szyny nie wycisza już wyjścia — słychać wysolowaną ścieżkę (nawet gdy idzie na inną szynę).
+- **Mixer / Peak Hold i fader:** Peak Hold nie wraca po wyczyść przez wyścig z odświeżaniem miernika; zmiana fadera / mute / solo bez trzasków (krótka rampa wzmocnienia, bez rozłączania szyn na każdy tick transportu).
 - **Playback:** plik mono na ścieżce stereo słychać na L i R (nie tylko lewy); głośność klipu bez restartu odtwarzania; Pause w trakcie buforowania nie odpala „widmowego” dźwięku; seek na jeszcze niezaładowany plik wznawia clip po decode; przełączenie projektu nie zostawia starych buforów w cache; na końcu utworu WebAudio cichnie lokalnie, gdy ticki SSOT są już za końcem, zanim serwer dokończy pauzę albo auto-advance.
 - **Transport:** Seek / Pause FOH podczas pauzy na końcu utworu albo auto-advance nie jest nadpisywany przez spóźnione odczyty z dysku; po ponownym połączeniu WS playhead bierze świeży tick (bez skoku z opóźnionego HTTP).
 

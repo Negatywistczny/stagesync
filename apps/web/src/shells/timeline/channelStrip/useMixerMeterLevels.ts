@@ -2,6 +2,9 @@
  * rAF polling of WebAudio analyser taps (Mixer meters) + peak-hold latch.
  * Hold auto-resets on Play rising edge only (not Stop); manual clear via API.
  * Stereo tracks/busses expose L+R; hold latches max(L,R).
+ *
+ * Holds live in a ref so clear (click / Play edge) cannot lose a race against
+ * a concurrent rAF `setLevels` that still had the pre-clear latch in `prev`.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -45,13 +48,35 @@ export type UseMixerMeterLevelsOptions = {
   busIds?: readonly string[];
 };
 
-function floorReading(): ChannelMeterReading {
-  return { liveDb: FLOOR, hold: emptyPeakHold() };
+type HoldLatchStore = {
+  tracks: Record<string, PeakHoldState>;
+  busses: Record<string, PeakHoldState>;
+  masterL: PeakHoldState;
+  masterR: PeakHoldState;
+  click: PeakHoldState;
+};
+
+function emptyHoldStore(): HoldLatchStore {
+  return {
+    tracks: {},
+    busses: {},
+    masterL: emptyPeakHold(),
+    masterR: emptyPeakHold(),
+    click: emptyPeakHold(),
+  };
 }
 
-function readingFromPeaks(
-  peaks: { l: number; r?: number },
+function floorReading(hold: PeakHoldState = emptyPeakHold()): ChannelMeterReading {
+  return { liveDb: FLOOR, hold };
+}
+
+/**
+ * Pure latch step — used by the hook and unit-tested for clear-vs-tick ordering.
+ * Clear must write the store *before* the next tick reads it.
+ */
+export function latchChannelPeaks(
   prevHold: PeakHoldState,
+  peaks: { l: number; r?: number },
 ): ChannelMeterReading {
   let hold = updatePeakHold(prevHold, peaks.l);
   if (peaks.r != null) hold = updatePeakHold(hold, peaks.r);
@@ -60,6 +85,13 @@ function readingFromPeaks(
     liveDbR: peaks.r,
     hold,
   };
+}
+
+/** Clear wins: empty store, then tick may re-latch only from *new* live peaks. */
+export function clearThenLatch(
+  peaks: { l: number; r?: number },
+): ChannelMeterReading {
+  return latchChannelPeaks(emptyPeakHold(), peaks);
 }
 
 export function useMixerMeterLevels(
@@ -75,6 +107,7 @@ export function useMixerMeterLevels(
   const playing = Boolean(options.playing);
   const busIds = options.busIds ?? [];
   const wasPlayingRef = useRef(playing);
+  const holdsRef = useRef<HoldLatchStore>(emptyHoldStore());
 
   const [levels, setLevels] = useState<MixerMeterLevels>(() => ({
     tracks: Object.fromEntries(trackIds.map((id) => [id, floorReading()])),
@@ -95,6 +128,16 @@ export function useMixerMeterLevels(
     const rising = playing && !wasPlayingRef.current;
     wasPlayingRef.current = playing;
     if (!rising) return;
+    const store = holdsRef.current;
+    for (const id of Object.keys(store.tracks)) {
+      store.tracks[id] = emptyPeakHold();
+    }
+    for (const id of Object.keys(store.busses)) {
+      store.busses[id] = emptyPeakHold();
+    }
+    store.masterL = emptyPeakHold();
+    store.masterR = emptyPeakHold();
+    store.click = emptyPeakHold();
     setLevels((prev) => ({
       tracks: Object.fromEntries(
         Object.keys(prev.tracks).map((id) => [
@@ -128,6 +171,7 @@ export function useMixerMeterLevels(
 
   useEffect(() => {
     if (!enabled) {
+      holdsRef.current = emptyHoldStore();
       setLevels({
         tracks: Object.fromEntries(trackIds.map((id) => [id, floorReading()])),
         busses: Object.fromEntries(busIds.map((id) => [id, floorReading()])),
@@ -144,37 +188,43 @@ export function useMixerMeterLevels(
 
     let raf = 0;
     const tick = () => {
-      setLevels((prev) => {
-        const tracks: Record<string, ChannelMeterReading> = {};
-        for (const id of trackIds) {
-          tracks[id] = readingFromPeaks(
-            readTrackMeterDb(id),
-            prev.tracks[id]?.hold ?? emptyPeakHold(),
-          );
-        }
-        const busses: Record<string, ChannelMeterReading> = {};
-        for (const id of busIds) {
-          busses[id] = readingFromPeaks(
-            readGroupBusMeterDb(id),
-            prev.busses[id]?.hold ?? emptyPeakHold(),
-          );
-        }
-        const masterLive = readMasterMeterDb();
-        const clickLive = readClickMeterDb();
-        return {
-          tracks,
-          busses,
-          master: {
-            liveL: masterLive.l,
-            liveR: masterLive.r,
-            holdL: updatePeakHold(prev.master.holdL, masterLive.l),
-            holdR: updatePeakHold(prev.master.holdR, masterLive.r),
-          },
-          click: {
-            liveDb: clickLive,
-            hold: updatePeakHold(prev.click.hold, clickLive),
-          },
-        };
+      const store = holdsRef.current;
+      const tracks: Record<string, ChannelMeterReading> = {};
+      for (const id of trackIds) {
+        const reading = latchChannelPeaks(
+          store.tracks[id] ?? emptyPeakHold(),
+          readTrackMeterDb(id),
+        );
+        store.tracks[id] = reading.hold;
+        tracks[id] = reading;
+      }
+      const busses: Record<string, ChannelMeterReading> = {};
+      for (const id of busIds) {
+        const reading = latchChannelPeaks(
+          store.busses[id] ?? emptyPeakHold(),
+          readGroupBusMeterDb(id),
+        );
+        store.busses[id] = reading.hold;
+        busses[id] = reading;
+      }
+      const masterLive = readMasterMeterDb();
+      const clickLive = readClickMeterDb();
+      store.masterL = updatePeakHold(store.masterL, masterLive.l);
+      store.masterR = updatePeakHold(store.masterR, masterLive.r);
+      store.click = updatePeakHold(store.click, clickLive);
+      setLevels({
+        tracks,
+        busses,
+        master: {
+          liveL: masterLive.l,
+          liveR: masterLive.r,
+          holdL: store.masterL,
+          holdR: store.masterR,
+        },
+        click: {
+          liveDb: clickLive,
+          hold: store.click,
+        },
       });
       raf = requestAnimationFrame(tick);
     };
@@ -184,6 +234,7 @@ export function useMixerMeterLevels(
   }, [enabled, idsKey, busKey]);
 
   function clearTrackHold(trackId: string) {
+    holdsRef.current.tracks[trackId] = emptyPeakHold();
     setLevels((prev) => {
       const cur = prev.tracks[trackId];
       if (!cur) return prev;
@@ -198,6 +249,7 @@ export function useMixerMeterLevels(
   }
 
   function clearBusHold(busId: string) {
+    holdsRef.current.busses[busId] = emptyPeakHold();
     setLevels((prev) => {
       const cur = prev.busses[busId];
       if (!cur) return prev;
@@ -212,6 +264,8 @@ export function useMixerMeterLevels(
   }
 
   function clearMasterHold() {
+    holdsRef.current.masterL = emptyPeakHold();
+    holdsRef.current.masterR = emptyPeakHold();
     setLevels((prev) => ({
       ...prev,
       master: {
@@ -223,6 +277,7 @@ export function useMixerMeterLevels(
   }
 
   function clearClickHold() {
+    holdsRef.current.click = emptyPeakHold();
     setLevels((prev) => ({
       ...prev,
       click: { ...prev.click, hold: emptyPeakHold() },

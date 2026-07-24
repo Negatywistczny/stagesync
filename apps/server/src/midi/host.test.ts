@@ -182,7 +182,7 @@ describe("midi host", () => {
     transport.dispose();
   });
 
-  it("meters clock / spp / pc / beat→ws from input", () => {
+  it("meters clock / spp / pc / beat→ws from input", async () => {
     const t = 1_000_000;
     const transport = createTransportEngine();
     const backend = createMockMidiBackend();
@@ -201,6 +201,7 @@ describe("midi host", () => {
     }
     backend.emitInput({ type: "spp", value: 4 });
     backend.emitInput({ type: "program", channel: 0, program: 7 });
+    await Promise.resolve(); // PC coalesced via queueMicrotask
 
     const rates = host.getStatus().rates;
     expect(rates.clockPerSec).toBe(24);
@@ -209,6 +210,41 @@ describe("midi host", () => {
     expect(rates.beatToWsPerSec).toBe(1);
     expect(beats).toHaveLength(1);
     expect(pcs).toEqual([7]);
+
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("RSK-07: PC flood coalesces to latest; SPP flood only caches last", async () => {
+    const transport = createTransportEngine({
+      now: () => 1_000_000,
+      tickIntervalMs: 60_000,
+    });
+    const backend = createMockMidiBackend();
+    const pcs: number[] = [];
+    const host = createMidiHost(transport, {
+      backend,
+      onProgramChange: (p) => pcs.push(p),
+    });
+    host.setConfig({ inputId: "mock-in-1" });
+
+    for (let i = 0; i < 1000; i++) {
+      backend.emitInput({ type: "spp", value: i % 64 });
+      backend.emitInput({ type: "program", channel: 0, program: i % 128 });
+    }
+    await Promise.resolve();
+
+    // One handler invocation with the last program (not 1000 disk loads).
+    expect(pcs).toEqual([999 % 128]);
+    expect(host.getStatus().rates.pcPerSec).toBe(1000);
+    expect(host.getStatus().rates.sppPerSec).toBe(1000);
+
+    backend.emitInput({ type: "continue" });
+    // Last SPP value 999 % 64 = 39 → ticks = 39 * (ppq/4); default ppq 960 → 9360
+    expect(transport.getState().playing).toBe(true);
+    expect(transport.getState().positionTicks).toBe(
+      Math.floor(((999 % 64) * transport.getState().ppq) / 4),
+    );
 
     host.dispose();
     transport.dispose();

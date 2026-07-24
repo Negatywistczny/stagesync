@@ -1,14 +1,14 @@
 # Triage: Audyt MIDI StageSync v5 (ryzyka i testy)
 
 **Źródło:** [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) (Gemini Deep Search)  
-**Status:** `partial`  
+**Status:** `closed`  
 **Obszar:** MIDI host / PC IN·OUT / clock·SPP  
 **Data triage:** 2026-07-24 (smoke + fix)  
-**Ostatnia aktualizacja:** 2026-07-25 (reopen: RSK-07 nie jest pełnym rozstrzygnięciem; kanały 04/05 = `limit`)
+**Ostatnia aktualizacja:** 2026-07-25 (RSK-07: coalesce PC + flood-test; kanały 04/05 = `limit` → TODO 5.2+)
 
 ## Werdykt przydatności
 
-**Wysoka wartość sceniczna.** RSK-06/03/01–02/08/09 potwierdzone i naprawione. RSK-10 odrzucony. Kanały PC (04/05) = świadomy limit → TODO 5.2+. **RSK-07** (rate-limit PC/SPP flood) ma częściową mitigację (latest-wins PC; SPP tylko cache do Start/Continue) — **bez** osobnego limitera ani flood-testu → dokument **nie** `closed`.
+**Wysoka wartość sceniczna.** RSK-06/03/01–02/08/09/07 potwierdzone i naprawione lub świadomie ograniczone. RSK-10 odrzucony. Kanały PC (04/05) = świadomy limit → TODO 5.2+. **RSK-07:** host skleja PC do jednego `onProgramChange` na turę (latest-wins); SPP tylko cache do Start/Continue; flood-test 1000× PC+SPP — bez osobnego Hz-limitera (wystarcza).
 
 ## Rozstrzygnięte w tej fali
 
@@ -21,13 +21,12 @@
 | RSK-MIDI-08 | SPP seek poza koniec projektu | `fixed` | `clampSeekTicks` + cache end w `app.ts` |
 | RSK-MIDI-09 | mock vs native error parity | `fixed` | `safeSend` + mock `throwOnSend` |
 | RSK-MIDI-10 | Podwójne `onChange` po `setConfig` | `rejected` | Jedna subskrypcja przy create; test |
+| RSK-MIDI-07 | Rate-limit / debounce flood PC+SPP IN | `limit` | Świadomie **bez** osobnego Hz-limitera: PC coalesce (`queueMicrotask` latest-wins) + SPP tylko cache; flood-test `RSK-07` w `host.test.ts` (1000 msg → 1 handler, ostatni SPP na Continue) |
 | RSK-MIDI-04 / 05 | Omni IN + hardkod OUT ch 0 | `limit` | → [TODO 5.2+](../../../TODO.md) (kanał PC) |
 
 ## Otwarte / hipotezy z dumpu
 
-| ID | Temat | Impact | Stan | Dlaczego ciekawe |
-|----|--------|--------|------|------------------|
-| RSK-MIDI-07 | Rate-limit / debounce flood PC+SPP IN | Wysoki (I/O / event loop) wg dumpu | `hypothesis` | PC: latest-wins ogranicza load; SPP nie seekuje aż Start/Continue — **brak** osobnego limitera i testu „1000 msg / 100 ms”. Albo `fixed`/`limit` po świadomym flood-smoke, albo dopisać debounce. |
+*(brak — priorytetowe ID rozstrzygnięte; 04/05 świadomie w TODO 5.2+)*
 
 ## Kontekst konstytucji
 
@@ -35,6 +34,5 @@
 
 ## Następny krok eng
 
-1. **Flood smoke RSK-07:** 1000× SPP + PC w krótkim oknie — czy event loop / `onProgramChange` zostaje zdrowy; potem `fixed` (mitigacja wystarczy) albo `limit` / debounce.
-2. Kanały PC (04/05): pozycja w [TODO.md](../../../TODO.md) § 5.2+ — bez atrap UI.
-3. **Nie** claim `closed` dopóki RSK-07 ma zielony/czerwony dowód albo jawny `limit`.
+1. Kanały PC (04/05): pozycja w [TODO.md](../../../TODO.md) § 5.2+ — bez atrap UI.
+2. Dokument `closed`.

@@ -135,6 +135,12 @@ let masterBus: MasterBus | null = null;
 const SEEK_JUMP_TICKS = 480;
 const MAX_BUFFER_CACHE = 32;
 const ANALYSER_FFT = 256;
+/** Short linear ramp — avoids zipper clicks on live fader / mute / solo. */
+const GAIN_DEZIPPER_SEC = 0.012;
+/** Last wired track output: `"master"` or `bus:<id>`. */
+const trackWiredDest = new Map<string, string>();
+/** Group buses always feed Master once; skip repeated disconnect/reconnect. */
+const groupWiredToMaster = new Set<string>();
 
 function cacheKey(projectId: string, assetId: string): string {
   return `${projectId}:${assetId}`;
@@ -369,15 +375,38 @@ function createChannelBus(ctx: AudioContext, mode: ChannelMode): TrackBus {
   };
 }
 
-function applyBalanceOrPan(bus: TrackBus, pan: number): void {
+/**
+ * Dezipper an AudioParam (fader / balance / mute). Instant `.value =` while
+ * signal is present (or right after local suppress) causes clicks/pops.
+ */
+function setParamDezippered(
+  param: AudioParam,
+  value: number,
+  currentTime: number,
+): void {
+  if (param.value === value) return;
+  try {
+    param.cancelScheduledValues(currentTime);
+    param.setValueAtTime(param.value, currentTime);
+    param.linearRampToValueAtTime(value, currentTime + GAIN_DEZIPPER_SEC);
+  } catch {
+    param.value = value;
+  }
+}
+
+function applyBalanceOrPan(
+  bus: TrackBus,
+  pan: number,
+  currentTime: number,
+): void {
   const p = clampPan(pan);
   if (bus.mode === "mono") {
-    bus.pan.pan.value = p;
+    setParamDezippered(bus.pan.pan, p, currentTime);
     return;
   }
   const { l, r } = balanceGains(p);
-  bus.gainL.gain.value = l;
-  bus.gainR.gain.value = r;
+  setParamDezippered(bus.gainL.gain, l, currentTime);
+  setParamDezippered(bus.gainR.gain, r, currentTime);
 }
 
 function ensureMasterBus(ctx: AudioContext): MasterBus {
@@ -405,11 +434,13 @@ function ensureGroupBus(
   if (hit) {
     disconnectBusNodes(hit);
     groupBuses.delete(busId);
+    groupWiredToMaster.delete(busId);
   }
   const master = ensureMasterBus(ctx);
   const node = createChannelBus(ctx, mode);
   outputNode(node).connect(master.gain);
   groupBuses.set(busId, node);
+  groupWiredToMaster.add(busId);
   return node;
 }
 
@@ -423,11 +454,13 @@ function ensureTrackBus(
   if (hit) {
     disconnectBusNodes(hit);
     trackBuses.delete(trackId);
+    trackWiredDest.delete(trackId);
   }
   const master = ensureMasterBus(ctx);
   const bus = createChannelBus(ctx, mode);
   outputNode(bus).connect(master.gain);
   trackBuses.set(trackId, bus);
+  trackWiredDest.set(trackId, "master");
   return bus;
 }
 
@@ -456,7 +489,8 @@ export function busSoloMutesBus(
 
 /**
  * Apply gain/pan/balance/mute/solo and (re)wire outputs to Master or group bus.
- * Gain/pan/balance/routing update live — no graph restart.
+ * Gain/pan/balance update live (dezippered) — no graph restart.
+ * Output rewire only when destination changes (avoids tick-rate reconnect clicks).
  * Channel-mode change rebuilds topology (caller includes mode in graphKey).
  */
 function applyBusParams(
@@ -466,7 +500,12 @@ function applyBusParams(
   soloBusIds?: readonly string[],
 ): void {
   const master = ensureMasterBus(ctx);
-  master.gain.gain.value = gainDbToLinear(project.masterGainDb);
+  const now = ctx.currentTime;
+  setParamDezippered(
+    master.gain.gain,
+    gainDbToLinear(project.masterGainDb),
+    now,
+  );
 
   const busses = project.audioBusses ?? [];
   const busIdSet = new Set(busses.map((b) => b.id));
@@ -477,12 +516,15 @@ function applyBusParams(
     let lin = gainDbToLinear(bus.gainDb);
     if (bus.muted) lin = 0;
     if (busSoloMutesBus(bus.id, soloTrackIds, soloBusIds)) lin = 0;
-    node.gain.gain.value = lin;
-    applyBalanceOrPan(node, bus.pan ?? 0);
-    // Bus always → Master (physical outs not in model).
-    const out = outputNode(node);
-    disconnectSafe(out);
-    out.connect(master.gain);
+    setParamDezippered(node.gain.gain, lin, now);
+    applyBalanceOrPan(node, bus.pan ?? 0, now);
+    // Bus always → Master (physical outs not in model). Wire once.
+    if (!groupWiredToMaster.has(bus.id)) {
+      const out = outputNode(node);
+      disconnectSafe(out);
+      out.connect(master.gain);
+      groupWiredToMaster.add(bus.id);
+    }
   }
   for (const id of [...groupBuses.keys()]) {
     if (busIdSet.has(id)) continue;
@@ -490,28 +532,34 @@ function applyBusParams(
     if (!node) continue;
     disconnectBusNodes(node);
     groupBuses.delete(id);
+    groupWiredToMaster.delete(id);
   }
 
   const alive = new Set(project.audioTracks.map((t) => t.id));
   for (const track of project.audioTracks) {
     const mode = resolveChannelMode(track.channelMode);
     const tBus = ensureTrackBus(ctx, track.id, mode);
-    tBus.gain.gain.value = gainDbToLinear(track.gainDb);
-    applyBalanceOrPan(tBus, track.pan ?? 0);
+    setParamDezippered(tBus.gain.gain, gainDbToLinear(track.gainDb), now);
+    applyBalanceOrPan(tBus, track.pan ?? 0, now);
     const dest = resolveTrackOutputDest(track.output, busIdSet);
+    const destKey =
+      dest.kind === "bus" ? `bus:${dest.busId}` : "master";
     const out = outputNode(tBus);
-    disconnectSafe(out);
-    if (dest.kind === "bus") {
-      const g = ensureGroupBus(
-        ctx,
-        dest.busId,
-        resolveChannelMode(
-          busses.find((b) => b.id === dest.busId)?.channelMode,
-        ),
-      );
-      out.connect(g.gain);
-    } else {
-      out.connect(master.gain);
+    if (trackWiredDest.get(track.id) !== destKey) {
+      disconnectSafe(out);
+      if (dest.kind === "bus") {
+        const g = ensureGroupBus(
+          ctx,
+          dest.busId,
+          resolveChannelMode(
+            busses.find((b) => b.id === dest.busId)?.channelMode,
+          ),
+        );
+        out.connect(g.gain);
+      } else {
+        out.connect(master.gain);
+      }
+      trackWiredDest.set(track.id, destKey);
     }
   }
   for (const id of [...trackBuses.keys()]) {
@@ -520,6 +568,7 @@ function applyBusParams(
     if (!bus) continue;
     disconnectBusNodes(bus);
     trackBuses.delete(id);
+    trackWiredDest.delete(id);
   }
 }
 
@@ -600,10 +649,12 @@ function disposeBuses(): void {
     disconnectBusNodes(bus);
   }
   trackBuses.clear();
+  trackWiredDest.clear();
   for (const bus of groupBuses.values()) {
     disconnectBusNodes(bus);
   }
   groupBuses.clear();
+  groupWiredToMaster.clear();
   if (masterBus) {
     disconnectSafe(masterBus.gain);
     disconnectSafe(masterBus.splitter);

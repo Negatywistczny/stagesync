@@ -20,12 +20,21 @@ import {
 import * as metronome from "./metronome.js";
 
 function mockAudioParam(value = 1) {
-  return {
+  const param = {
     value,
     cancelScheduledValues: vi.fn(),
-    setValueAtTime: vi.fn(),
-    linearRampToValueAtTime: vi.fn(),
+    setValueAtTime: vi.fn((v: number) => {
+      param.value = v;
+    }),
+    linearRampToValueAtTime: vi.fn((v: number) => {
+      // Snap for tests — real AudioContext interpolates over GAIN_DEZIPPER_SEC.
+      param.value = v;
+    }),
+    setTargetAtTime: vi.fn((v: number) => {
+      param.value = v;
+    }),
   };
+  return param;
 }
 
 function mockConnectable() {
@@ -889,5 +898,102 @@ describe("audioPlayback helpers", () => {
     expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-a"]).toBe(1);
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
     expect(source.start).toHaveBeenCalled();
+  });
+
+  it("fader apply dezippers GainNode (no instant .value while graph live)", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const trackGainParams: ReturnType<typeof mockAudioParam>[] = [];
+    let gainCount = 0;
+    const ctx = mockAudioContext({
+      currentTime: 1.5,
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+      createGain: vi.fn(() => {
+        gainCount += 1;
+        const param = mockAudioParam(1);
+        // Master(1) + mono track gain(2) …
+        if (gainCount === 2) trackGainParams.push(param);
+        return { ...mockConnectable(), gain: param };
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    const gainParam = trackGainParams[0]!;
+    gainParam.linearRampToValueAtTime.mockClear();
+    gainParam.setValueAtTime.mockClear();
+    gainParam.cancelScheduledValues.mockClear();
+
+    suppressAudioPlayback();
+    const quieter = structuredClone(project);
+    quieter.audioTracks[0]!.gainDb = -6;
+    syncAudioPlayback(
+      "p1",
+      { project: quieter, playing: true, displayTicks: 0 },
+      ctx,
+    );
+
+    expect(gainParam.cancelScheduledValues).toHaveBeenCalled();
+    expect(gainParam.setValueAtTime).toHaveBeenCalled();
+    expect(gainParam.linearRampToValueAtTime).toHaveBeenCalledWith(
+      expect.closeTo(10 ** (-6 / 20), 5),
+      expect.closeTo(1.5 + 0.012, 5),
+    );
+  });
+
+  it("track output rewire skips disconnect when destination unchanged", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const routeDisconnects: ReturnType<typeof vi.fn>[] = [];
+    let gainCount = 0;
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+      createGain: vi.fn(() => {
+        gainCount += 1;
+        const node = { ...mockConnectable(), gain: mockAudioParam(1) };
+        // Mono: gain(2), route(3) after master(1)
+        if (gainCount === 3) routeDisconnects.push(node.disconnect);
+        return node;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    const routeDisconnect = routeDisconnects[0]!;
+    routeDisconnect.mockClear();
+
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 10 }, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 20 }, ctx);
+    expect(routeDisconnect).not.toHaveBeenCalled();
   });
 });
