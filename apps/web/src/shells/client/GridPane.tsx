@@ -12,9 +12,10 @@ import { flushSync } from "react-dom";
 import styles from "../ClientShell.module.css";
 import {
   applyInstrumentPitchToChord,
-  formatChordForDisplay,
-  formatSectionNameForDisplay,
+  resolveChordNameParts,
   resolveKeyAt,
+  formatSectionNameForDisplay,
+  type ChordNameParts,
   type Project,
 } from "@stagesync/shared";
 import {
@@ -28,6 +29,11 @@ import {
   prefersReducedMotion,
   runHeroChordTransition,
 } from "../../lib/gridHeroMotion.js";
+import {
+  ChordName,
+  serializeChordNameHtml,
+  type ChordNameClassNames,
+} from "./ChordName.js";
 
 /** v4 `--slot-bar-units`: 1-bar = square; N-bar = N× square width. */
 function slotBarUnitsStyle(bars: number): CSSProperties {
@@ -40,6 +46,18 @@ function css(mod: string | undefined): string {
   return mod ?? "";
 }
 
+const CHORD_NAME_CLASSES: ChordNameClassNames = {
+  top: css(styles.chordNameTop),
+  root: css(styles.chordNameRoot),
+  sup: css(styles.chordNameSup),
+  bass: css(styles.chordNameBass),
+  stack: css(styles.chordNameStack),
+};
+
+function partsToInlineHtml(parts: ChordNameParts): string {
+  return serializeChordNameHtml(parts, CHORD_NAME_CLASSES, "inline");
+}
+
 /**
  * Freeze React reconciliation after mount so tick re-renders cannot wipe
  * imperative motion classes / textContent (fly, exit, slotHidden).
@@ -47,22 +65,21 @@ function css(mod: string | undefined): string {
 class StaticDomAnchor extends Component<{
   domRef: Ref<HTMLDivElement>;
   className: string;
-  initialText: string;
+  initialHtml: string;
   datasetChord?: string;
 }> {
   override shouldComponentUpdate() {
     return false;
   }
   override render(): ReactNode {
-    const { domRef, className, initialText, datasetChord } = this.props;
+    const { domRef, className, initialHtml, datasetChord } = this.props;
     return (
       <div
         ref={domRef}
         className={className}
         data-chord-display={datasetChord ?? ""}
-      >
-        {initialText}
-      </div>
+        dangerouslySetInnerHTML={{ __html: initialHtml }}
+      />
     );
   }
 }
@@ -100,8 +117,8 @@ export function GridPane({
   }
 
   const key = resolveKeyAt(project, displayTicks);
-  const fmt = (symbol: string) =>
-    formatChordForDisplay(
+  const fmtParts = (symbol: string): ChordNameParts =>
+    resolveChordNameParts(
       applyInstrumentPitchToChord(
         symbol,
         prefs.instrumentPitch,
@@ -139,7 +156,7 @@ export function GridPane({
       heroRaw={ctx.hero}
       heroNextRaw={ctx.heroNext}
       isCountdown={ctx.isCountdown}
-      fmt={fmt}
+      fmtParts={fmtParts}
       gridAnimations={prefs.gridAnimations}
     />
   );
@@ -154,7 +171,7 @@ type BodyProps = {
   heroRaw: string;
   heroNextRaw: string | null;
   isCountdown: boolean;
-  fmt: (symbol: string) => string;
+  fmtParts: (symbol: string) => ChordNameParts;
   gridAnimations: boolean;
 };
 
@@ -175,11 +192,15 @@ function GridPaneBody({
   heroRaw,
   heroNextRaw,
   isCountdown,
-  fmt,
+  fmtParts,
   gridAnimations,
 }: BodyProps) {
-  const hero = fmt(heroRaw);
-  const heroNext = heroNextRaw ? fmt(heroNextRaw) : null;
+  const heroParts = fmtParts(heroRaw);
+  const heroNextParts = heroNextRaw ? fmtParts(heroNextRaw) : null;
+  const hero = heroParts.plain;
+  const heroNext = heroNextParts?.plain ?? null;
+  const heroHtml = partsToInlineHtml(heroParts);
+  const heroNextHtml = heroNextParts ? partsToInlineHtml(heroNextParts) : null;
 
   const [display, setDisplay] = useState<CarouselDisplay>(() => ({
     key: carouselKey,
@@ -215,6 +236,8 @@ function GridPaneBody({
     countdownPreview,
     hero,
     heroNext,
+    heroHtml,
+    heroNextHtml,
     heroRaw,
     heroNextRaw,
   });
@@ -225,6 +248,8 @@ function GridPaneBody({
     countdownPreview,
     hero,
     heroNext,
+    heroHtml,
+    heroNextHtml,
     heroRaw,
     heroNextRaw,
   };
@@ -247,19 +272,19 @@ function GridPaneBody({
   };
 
   const syncHeroDom = (
-    nextHero: string,
-    nextPreview: string | null,
+    nextHeroHtml: string,
+    nextPreviewHtml: string | null,
     nextRaw: string | null,
   ) => {
-    if (heroNameRef.current) heroNameRef.current.textContent = nextHero;
+    if (heroNameRef.current) heroNameRef.current.innerHTML = nextHeroHtml;
     if (heroNextNameRef.current) {
-      heroNextNameRef.current.textContent = nextPreview ?? "—";
+      heroNextNameRef.current.innerHTML = nextPreviewHtml ?? "—";
       heroNextNameRef.current.dataset.chordDisplay = nextRaw ?? "";
     }
     if (heroNextRef.current) {
       heroNextRef.current.classList.toggle(
         css(styles.heroNextHidden),
-        !nextPreview,
+        !nextPreviewHtml,
       );
     }
   };
@@ -420,7 +445,7 @@ function GridPaneBody({
 
   // Seed / re-seed when Countdown mode remounts frozen anchors.
   useLayoutEffect(() => {
-    syncHeroDom(hero, heroNext, heroNextRaw);
+    syncHeroDom(heroHtml, heroNextHtml, heroNextRaw);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- anchor remount / mount
   }, [isCountdown]);
 
@@ -435,12 +460,12 @@ function GridPaneBody({
     if (!heroChanged && !nextChanged) {
       // Display-prefs / format-only updates (raw symbols unchanged).
       if (heroNameRef.current?.textContent !== hero) {
-        syncHeroDom(hero, heroNext, heroNextRaw);
+        syncHeroDom(heroHtml, heroNextHtml, heroNextRaw);
       } else if (
         heroNextNameRef.current &&
         heroNextNameRef.current.textContent !== (heroNext ?? "—")
       ) {
-        syncHeroDom(hero, heroNext, heroNextRaw);
+        syncHeroDom(heroHtml, heroNextHtml, heroNextRaw);
       }
       return;
     }
@@ -451,7 +476,7 @@ function GridPaneBody({
     if (reduced || !heroChanged) {
       cancelHeroRef.current?.();
       cancelHeroRef.current = null;
-      syncHeroDom(hero, heroNext, heroNextRaw);
+      syncHeroDom(heroHtml, heroNextHtml, heroNextRaw);
       return;
     }
 
@@ -471,8 +496,8 @@ function GridPaneBody({
         heroNextName: heroNextNameRef.current,
       },
       {
-        nextHeroText: hero,
-        nextPreviewText: heroNext,
+        nextHeroHtml: heroHtml,
+        nextPreviewHtml: heroNextHtml,
         fromNext: morphFromNext,
         isCountdown,
         classNames: {
@@ -501,6 +526,8 @@ function GridPaneBody({
     heroNextRaw,
     hero,
     heroNext,
+    heroHtml,
+    heroNextHtml,
     gridAnimations,
     isCountdown,
   ]);
@@ -559,7 +586,7 @@ function GridPaneBody({
                 key={`hero-${isCountdown ? "cd" : "ch"}`}
                 domRef={heroNameRef}
                 className={heroNameClass}
-                initialText={hero}
+                initialHtml={heroHtml}
               />
             </div>
           </div>
@@ -577,7 +604,7 @@ function GridPaneBody({
               key={`next-${isCountdown ? "cd" : "ch"}`}
               domRef={heroNextNameRef}
               className={heroNextNameClass}
-              initialText={heroNext ?? "—"}
+              initialHtml={heroNextHtml ?? "—"}
               datasetChord={heroNextRaw ?? ""}
             />
           </aside>
@@ -618,7 +645,7 @@ function GridPaneBody({
               {showCurrent ? (
                 <CycleRow
                   cycle={display.cycle}
-                  fmt={fmt}
+                  fmtParts={fmtParts}
                   active={!highlightNextRow}
                 />
               ) : null}
@@ -642,7 +669,7 @@ function GridPaneBody({
                   cycle={
                     highlightNextRow ? promotingCycle : display.nextCycle
                   }
-                  fmt={fmt}
+                  fmtParts={fmtParts}
                   active={highlightNextRow}
                 />
               ) : null}
@@ -656,11 +683,11 @@ function GridPaneBody({
 
 function CycleRow({
   cycle,
-  fmt,
+  fmtParts,
   active,
 }: {
   cycle: GridCycleStep[];
-  fmt: (symbol: string) => string;
+  fmtParts: (symbol: string) => ChordNameParts;
   active: boolean;
 }) {
   const totalBars = cycleTotalBars(cycle);
@@ -671,7 +698,7 @@ function CycleRow({
   return (
     <div className={styles.cycleRow} aria-label="Cykl akordów">
       {cycle.map((step, i) => {
-        const display = fmt(step.symbol);
+        const parts = fmtParts(step.symbol);
         const isCdDigit = /^\d+$/.test(step.symbol.trim());
         const cellActive =
           active && (step.active || (!hasActiveStep && i === 0));
@@ -689,11 +716,21 @@ function CycleRow({
             data-chord={step.symbol}
             title={
               step.bars > 1
-                ? `${display} · ${step.bars} takty`
-                : display
+                ? `${parts.plain} · ${step.bars} takty`
+                : parts.plain
             }
           >
-            <span className={styles.cycleCellSymbol}>{display}</span>
+            <span className={styles.cycleCellSymbol}>
+              {isCdDigit ? (
+                parts.plain
+              ) : (
+                <ChordName
+                  parts={parts}
+                  classNames={CHORD_NAME_CLASSES}
+                  bassLayout="stack"
+                />
+              )}
+            </span>
           </div>
         );
       })}

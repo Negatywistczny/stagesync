@@ -81,11 +81,16 @@ export type HeroMotionHandles = {
  * Run one hero chord transition. Returns a cancel function.
  * `fromNext` when the new hero text matches the visible “nast.” preview → fly morph.
  */
+function setChordContent(el: HTMLElement, html: string): void {
+  el.innerHTML = html;
+}
+
 export function runHeroChordTransition(
   handles: HeroMotionHandles,
   opts: {
-    nextHeroText: string;
-    nextPreviewText: string | null;
+    /** Escaped HTML from serializeChordNameHtml (plain text still OK). */
+    nextHeroHtml: string;
+    nextPreviewHtml: string | null;
     fromNext: boolean;
     isCountdown: boolean;
     classNames: {
@@ -151,17 +156,17 @@ export function runHeroChordTransition(
 
   const applyNextPreview = () => {
     if (!heroNext || !heroNextName) return;
-    if (opts.nextPreviewText) {
+    if (opts.nextPreviewHtml) {
       heroNext.classList.remove(opts.classNames.nextHidden);
-      heroNextName.textContent = opts.nextPreviewText;
+      setChordContent(heroNextName, opts.nextPreviewHtml);
     } else {
       heroNext.classList.add(opts.classNames.nextHidden);
-      heroNextName.textContent = "—";
+      setChordContent(heroNextName, "—");
     }
   };
 
   const revealNextPanel = () => {
-    if (!heroNext || !heroNextName || !opts.nextPreviewText) {
+    if (!heroNext || !heroNextName || !opts.nextPreviewHtml) {
       applyNextPreview();
       return;
     }
@@ -172,7 +177,7 @@ export function runHeroChordTransition(
     );
     heroNext.classList.add(opts.classNames.enterPrep);
     heroNextName.classList.add(opts.classNames.enterPrep);
-    heroNextName.textContent = opts.nextPreviewText;
+    setChordContent(heroNextName, opts.nextPreviewHtml);
     void heroNext.offsetWidth;
     heroNext.classList.remove(opts.classNames.enterPrep);
     heroNextName.classList.remove(opts.classNames.enterPrep);
@@ -210,7 +215,7 @@ export function runHeroChordTransition(
       fly.className = `${opts.classNames.fly} ${opts.classNames.heroName}${
         opts.isCountdown ? ` ${opts.classNames.countdown}` : ""
       }`;
-      fly.textContent = opts.nextHeroText;
+      setChordContent(fly, opts.nextHeroHtml);
       fly.setAttribute("aria-hidden", "true");
       fly.style.left = `${metrics.heroCenterX}px`;
       fly.style.top = `${metrics.heroCenterY}px`;
@@ -229,7 +234,7 @@ export function runHeroChordTransition(
 
       schedule(() => {
         fly.remove();
-        heroName.textContent = opts.nextHeroText;
+        setChordContent(heroName, opts.nextHeroHtml);
         heroName.classList.remove(opts.classNames.slotHidden);
         schedule(() => {
           revealNextPanel();
@@ -246,12 +251,12 @@ export function runHeroChordTransition(
   }
 
   // Slide exit → enter (fallback / forceSlide).
-  if (heroNext && opts.nextPreviewText) {
+  if (heroNext && opts.nextPreviewHtml) {
     heroNext.classList.remove(opts.classNames.nextHidden);
     heroNext.classList.add(opts.classNames.enterPrep);
     if (heroNextName) {
       heroNextName.classList.add(opts.classNames.enterPrep);
-      heroNextName.textContent = opts.nextPreviewText;
+      setChordContent(heroNextName, opts.nextPreviewHtml);
     }
   }
 
@@ -271,7 +276,7 @@ export function runHeroChordTransition(
 
   schedule(() => {
     exitLayer.remove();
-    heroName.textContent = opts.nextHeroText;
+    setChordContent(heroName, opts.nextHeroHtml);
     heroName.classList.remove(
       opts.classNames.slotHidden,
       opts.classNames.enterPrep,

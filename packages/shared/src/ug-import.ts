@@ -9,6 +9,7 @@
  */
 
 import { z } from "zod";
+import { toLiteralStorage } from "./chord-display.js";
 import {
   AkordClipSchema,
   TekstClipSchema,
@@ -45,30 +46,26 @@ export type UgImportOptions = {
   barsPerLine?: number;
 };
 
-/** Pitch letter A–G plus Polish H (= B). Quality allows sus after digits (C7sus4). */
+/**
+ * Pitch letter A–G plus Polish H (= B).
+ * Allows sus2/4, parenthetical alterations, alt — then `toLiteralStorage` canonicalizes.
+ */
 const CHORD_TOKEN =
-  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add)?[0-9]*(?:sus[0-9]*)?(?:(?:#|b)(?:5|9|11|13))*(?:\/[A-H](?:#|b)?)?$/i;
+  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]+\))?(?:\/[A-H](?:#|b)?)?$/i;
 
 /**
  * Polish H → Western B for storage (transpose / Client hybridPolishB).
  * Root and slash-bass pitch letters only (first char of each side).
+ * Prefer `toLiteralStorage` at write edges — kept for direct callers / tests.
  */
 export function canonicalizePolishH(symbol: string): string {
-  const raw = String(symbol ?? "").trim();
-  if (!raw) return raw;
-  const slash = raw.indexOf("/");
-  const head = slash >= 0 ? raw.slice(0, slash) : raw;
-  const bass = slash >= 0 ? raw.slice(slash + 1) : null;
-  const fixPitch = (part: string) =>
-    /^[Hh]/.test(part) ? `B${part.slice(1)}` : part;
-  if (bass == null) return fixPitch(head);
-  return `${fixPitch(head)}/${fixPitch(bass)}`;
+  return toLiteralStorage(symbol);
 }
 
 function acceptChordToken(raw: string): string | null {
   const t = raw.trim();
   if (!t || !CHORD_TOKEN.test(t)) return null;
-  return canonicalizePolishH(t);
+  return toLiteralStorage(t);
 }
 
 function stripBracketChords(line: string): string {

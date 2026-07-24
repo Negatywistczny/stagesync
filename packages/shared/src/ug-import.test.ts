@@ -19,7 +19,7 @@ describe("importUgText", () => {
     const result = importUgText("[Am7b5]line\n[C7b9]more [G7#9]end");
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.akordy.clips.some((c) => c.symbol === "Am7b5")).toBe(true);
+    expect(result.akordy.clips.some((c) => c.symbol === "Am7(b5)")).toBe(true);
     expect(result.akordy.clips.some((c) => c.symbol === "C7b9")).toBe(true);
     expect(result.akordy.clips.some((c) => c.symbol === "G7#9")).toBe(true);
   });

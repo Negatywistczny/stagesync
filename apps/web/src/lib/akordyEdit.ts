@@ -6,6 +6,7 @@ import {
   insertSpanOverwrite,
   resolveMeterAt,
   ticksPerBar,
+  toLiteralStorage,
   type AkordClip,
   type Project,
 } from "@stagesync/shared";
@@ -26,6 +27,7 @@ export function pencilAkordyClick(
   atTicks: number,
   symbol = "C",
 ): Project {
+  const normalized = toLiteralStorage(symbol.trim() || "C") || "C";
   const startTicks = snapEditTicks(project, atTicks);
   const meter = resolveMeterAt(project, startTicks);
   const barTicks = ticksPerBar(meter, project.ppq);
@@ -35,7 +37,7 @@ export function pencilAkordyClick(
     id: `akord-${crypto.randomUUID()}`,
     startTicks,
     lengthTicks: barTicks,
-    symbol: (symbol.trim() || "C").slice(0, 64),
+    symbol: normalized,
   };
 
   const synthetic = project.akordy.clips.map(asFormaLike);
@@ -73,7 +75,7 @@ export function setAkordyClipSymbol(
   clipId: string,
   symbol: string,
 ): Project {
-  const next = (symbol.trim() || "C").slice(0, 64);
+  const next = toLiteralStorage(symbol.trim() || "C") || "C";
   const clips = project.akordy.clips.map((c) =>
     c.id === clipId ? { ...c, symbol: next } : c,
   );

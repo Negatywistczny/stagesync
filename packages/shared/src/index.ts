@@ -256,10 +256,18 @@ export {
 } from "./score-bar-map.js";
 
 export {
+  toLiteralStorage,
+  formatChordParts,
+  parseAndFormat,
+  parseAndFormatParts,
   chordLiteralToSymbolDisplay,
   formatChordForDisplay,
   formatHybridPolishB,
+  formatMusicalAccidentals,
+  resolveChordNameParts,
+  splitChordSuperscript,
   type ChordDisplayOptions,
+  type ChordNameParts,
 } from "./chord-display.js";
 
 export {

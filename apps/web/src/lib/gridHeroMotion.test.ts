@@ -73,8 +73,8 @@ describe("gridHeroMotion", () => {
         heroNextName: null,
       },
       {
-        nextHeroText: "C",
-        nextPreviewText: null,
+        nextHeroHtml: "C",
+        nextPreviewHtml: null,
         fromNext: false,
         isCountdown: false,
         classNames: CLASS,
@@ -100,8 +100,8 @@ describe("gridHeroMotion", () => {
     const cancel = runHeroChordTransition(
       { heroRoot, heroName, heroNameWrap, heroNext, heroNextName },
       {
-        nextHeroText: "C",
-        nextPreviewText: "G",
+        nextHeroHtml: "C",
+        nextPreviewHtml: "G",
         fromNext: false,
         isCountdown: true,
         classNames: CLASS,
@@ -124,7 +124,7 @@ describe("gridHeroMotion", () => {
     expect(heroNameWrap.querySelector("[data-grid-hero-exit]")).toBeNull();
   });
 
-  it("hides next preview when nextPreviewText is null", () => {
+  it("hides next preview when nextPreviewHtml is null", () => {
     vi.useFakeTimers();
     const heroRoot = el();
     const heroNameWrap = el();
@@ -139,8 +139,8 @@ describe("gridHeroMotion", () => {
     runHeroChordTransition(
       { heroRoot, heroName, heroNameWrap, heroNext, heroNextName },
       {
-        nextHeroText: "D",
-        nextPreviewText: null,
+        nextHeroHtml: "D",
+        nextPreviewHtml: null,
         fromNext: false,
         isCountdown: false,
         classNames: CLASS,
@@ -201,8 +201,8 @@ describe("gridHeroMotion", () => {
     const cancel = runHeroChordTransition(
       { heroRoot, heroName, heroNameWrap, heroNext, heroNextName },
       {
-        nextHeroText: "C",
-        nextPreviewText: "G",
+        nextHeroHtml: "C",
+        nextPreviewHtml: "G",
         fromNext: true,
         isCountdown: false,
         classNames: CLASS,
@@ -238,8 +238,8 @@ describe("gridHeroMotion", () => {
     runHeroChordTransition(
       { heroRoot, heroName, heroNameWrap, heroNext, heroNextName },
       {
-        nextHeroText: "E",
-        nextPreviewText: "F",
+        nextHeroHtml: "E",
+        nextPreviewHtml: "F",
         fromNext: true,
         isCountdown: false,
         classNames: CLASS,

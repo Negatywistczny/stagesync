@@ -1,6 +1,6 @@
 import {
   applyInstrumentPitchToChord,
-  formatChordForDisplay,
+  resolveChordNameParts,
   formatSectionNameForDisplay,
   resolveKeyAt,
   type Project,
@@ -15,6 +15,7 @@ import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js"
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
 import { useEffect, useRef, type CSSProperties } from "react";
+import { ChordName } from "./ChordName.js";
 
 type KaraokePaneProps = {
   project: Project | null;
@@ -221,8 +222,8 @@ export function KaraokePane({
   }
 
   const key = resolveKeyAt(project, displayTicks);
-  const fmtChord = (symbol: string) =>
-    formatChordForDisplay(
+  const fmtChordParts = (symbol: string) =>
+    resolveChordNameParts(
       applyInstrumentPitchToChord(
         symbol,
         prefs.instrumentPitch,
@@ -236,7 +237,7 @@ export function KaraokePane({
       },
     );
   const activeChord = resolveAkordClipAt(project, displayTicks);
-  const chordDisplay = activeChord ? fmtChord(activeChord.symbol) : null;
+  const chordParts = activeChord ? fmtChordParts(activeChord.symbol) : null;
 
   const hasContent =
     ctx.sections.length > 0 &&
@@ -254,9 +255,19 @@ export function KaraokePane({
           </Button>
         </div>
       ) : null}
-      {chordDisplay ? (
+      {chordParts ? (
         <p className={styles.karaokeChordNow} aria-live="polite">
-          {chordDisplay}
+          <ChordName
+            parts={chordParts}
+            bassLayout="inline"
+            classNames={{
+              top: styles.chordNameTop ?? "",
+              root: styles.chordNameRoot ?? "",
+              sup: styles.chordNameSup ?? "",
+              bass: styles.chordNameBass ?? "",
+              stack: styles.chordNameStack ?? "",
+            }}
+          />
         </p>
       ) : null}
       {hasContent ? (

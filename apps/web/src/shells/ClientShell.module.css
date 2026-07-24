@@ -1100,6 +1100,74 @@
   text-align: center;
 }
 
+.chordNameTop {
+  display: inline-block;
+  line-height: var(--ss-leading-flush);
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.chordNameRoot {
+  font-size: 1em;
+  font-weight: var(--ss-font-weight-black);
+  line-height: var(--ss-leading-flush);
+  white-space: nowrap;
+}
+
+.chordNameSup {
+  font-size: 0.62em;
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-none);
+  letter-spacing: var(--ss-tracking-tight);
+  color: color-mix(in srgb, var(--ss-color-primary) 88%, transparent);
+  vertical-align: super;
+  position: relative;
+  top: -0.12em;
+}
+
+.chordNameStack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  line-height: var(--ss-leading-flush);
+}
+
+.chordNameBass {
+  font-size: 0.58em;
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-none);
+  color: color-mix(in srgb, var(--ss-color-primary) 85%, transparent);
+  letter-spacing: var(--ss-tracking-tight);
+}
+
+.chordNameStack .chordNameBass {
+  display: block;
+  margin-top: 0.06em;
+}
+
+.heroName .chordNameBass,
+.heroNextName .chordNameBass,
+.heroChordFly .chordNameBass {
+  font-size: 0.48em;
+}
+
+.cycleCellSymbol .chordNameBass {
+  font-size: 0.55em;
+}
+
+.heroName .chordNameSup,
+.heroNextName .chordNameSup,
+.heroChordFly .chordNameSup {
+  font-size: 0.55em;
+  top: -0.2em;
+}
+
+.cycleCellSymbol .chordNameSup {
+  font-size: 0.58em;
+}
+
 .cycleCellCountdown .cycleCellSymbol {
   color: var(--ss-color-info);
   font-size: min(3.5rem, calc(var(--phrase-bar-size) * 0.45));
