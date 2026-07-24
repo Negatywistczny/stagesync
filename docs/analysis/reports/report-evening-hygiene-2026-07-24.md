@@ -60,6 +60,13 @@
 | [#545](https://github.com/Negatywistyczny/stagesync/pull/545) | Admin modal labelledby | MusicXML/Batch PC useId titles |
 | [#546](https://github.com/Negatywistyczny/stagesync/pull/546) | Peak-hold edges | Non-finite live + format −∞ |
 
+| [#547](https://github.com/Negatywistyczny/stagesync/pull/547) | chordOnsetsInBar | Zero/negative → []; single → bar start |
+| [#548](https://github.com/Negatywistyczny/stagesync/pull/548) | Desktop toast CSS | Remove unused `.toast` |
+| [#549](https://github.com/Negatywistyczny/stagesync/pull/549) | shadowBackup default | Default `pre-migrate` label |
+| [#550](https://github.com/Negatywistyczny/stagesync/pull/550) | insertGap no-ops | No CD / short gap |
+| [#551](https://github.com/Negatywistyczny/stagesync/pull/551) | Transport/status PL | Transport odtwarzania; Status osi czasu |
+| [#552](https://github.com/Negatywistyczny/stagesync/pull/552) | atomic-write overwrite | Second write; no `.tmp` leftovers |
+
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
