@@ -52,6 +52,8 @@ export function ConnectionIndicator({
       <span
         className={[styles.label, connected ? styles.on : ""].filter(Boolean).join(" ")}
         title={titleText}
+        role="status"
+        aria-live="polite"
       >
         {label}
         {latencyText ? (

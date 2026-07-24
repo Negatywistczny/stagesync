@@ -405,6 +405,7 @@ export function StageView() {
                 disabled={pending}
                 aria-pressed={priority === "alert"}
                 title="Priorytet alert"
+                aria-label="Priorytet alert"
                 onClick={() =>
                   setPriority((p) => (p === "alert" ? "normal" : "alert"))
                 }
@@ -504,7 +505,8 @@ export function StageView() {
               <span
                 className={[shell.presenceDot, headerDotClass].join(" ")}
                 title={headerDotTitle}
-                aria-hidden
+                aria-label={headerDotTitle}
+                role="img"
               />
               <h1 className={shell.cardTitle}>Klienci</h1>
               <span className={shell.clientsHeadCount}>{headerCountLabel}</span>

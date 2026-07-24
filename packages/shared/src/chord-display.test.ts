@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  chordLiteralToSymbolDisplay,
   formatChordForDisplay,
   formatHybridPolishB,
 } from "./chord-display.js";
@@ -34,5 +35,13 @@ describe("chord-display", () => {
     expect(formatChordForDisplay("Edim", { literalQuality: true })).toBe(
       "Edim",
     );
+  });
+
+  it("passes through empties, dashes, bar numbers, and aug", () => {
+    expect(chordLiteralToSymbolDisplay("")).toBe("");
+    expect(chordLiteralToSymbolDisplay("—")).toBe("—");
+    expect(chordLiteralToSymbolDisplay("12")).toBe("12");
+    expect(chordLiteralToSymbolDisplay("Caug")).toBe("C+");
+    expect(formatChordForDisplay("  ")).toBe("");
   });
 });

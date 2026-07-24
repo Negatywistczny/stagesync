@@ -15,6 +15,7 @@ function useDialogFocusTrap(
   open: boolean,
   panelRef: RefObject<HTMLElement | null>,
   focusSelector?: string,
+  onEscape?: () => void,
 ) {
   useEffect(() => {
     if (!open) return;
@@ -31,6 +32,11 @@ function useDialogFocusTrap(
     initial?.focus();
 
     function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && onEscape) {
+        e.preventDefault();
+        onEscape();
+        return;
+      }
       if (e.key !== "Tab" || !panelRef.current) return;
       const nodes = [
         ...panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
@@ -55,7 +61,7 @@ function useDialogFocusTrap(
       document.removeEventListener("keydown", onKeyDown);
       previouslyFocused?.focus();
     };
-  }, [open, panelRef, focusSelector]);
+  }, [open, panelRef, focusSelector, onEscape]);
 }
 
 type ShellConfirmDialogProps = {
@@ -78,7 +84,7 @@ export function ShellConfirmDialog({
   onCancel,
 }: ShellConfirmDialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  useDialogFocusTrap(open, panelRef, ".ss-btn--primary");
+  useDialogFocusTrap(open, panelRef, ".ss-btn--primary", onCancel);
 
   if (!open) return null;
 
@@ -125,7 +131,7 @@ export function ShellPromptDialog({
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLFormElement>(null);
-  useDialogFocusTrap(open, panelRef);
+  useDialogFocusTrap(open, panelRef, undefined, onCancel);
 
   useEffect(() => {
     if (!open) return;
@@ -185,7 +191,7 @@ type ShellAlertDialogProps = {
 /** Zamiennik window.alert — działa w Tauri WebView. */
 export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  useDialogFocusTrap(open, panelRef, ".ss-btn--primary");
+  useDialogFocusTrap(open, panelRef, ".ss-btn--primary", onClose);
 
   if (!open) return null;
 

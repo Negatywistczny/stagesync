@@ -66,7 +66,7 @@
   background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
   color: var(--ss-color-text-muted);
   font-size: var(--ss-text-xl);
-  line-height: 1;
+  line-height: var(--ss-leading-none);
 }
 
 .emptyText {

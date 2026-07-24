@@ -20,7 +20,7 @@ export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
   const showReturn = canReturnToLauncher();
 
   return (
-    <div className={styles.banner} role="status">
+    <div className={styles.banner} role="alert">
       <p className={styles.text}>
         Utracono połączenie. Próba ponownego łączenia…
       </p>

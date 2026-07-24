@@ -17,6 +17,9 @@ describe("network-info edges", () => {
   it("treats invalid URLs via catch and picks primary", () => {
     expect(isLoopbackJoinUrl("not a url but localhost")).toBe(true);
     expect(isLoopbackJoinUrl("http://10.0.0.5:4000")).toBe(false);
+    expect(isLoopbackJoinUrl("http://127.0.0.1:4000")).toBe(true);
+    expect(isLoopbackJoinUrl("http://[::1]:4000")).toBe(true);
+    expect(isLoopbackJoinUrl("http://::1:4000")).toBe(true);
     expect(pickPrimaryJoinUrl(["http://localhost:1", "http://10.0.0.2:1"])).toBe(
       "http://10.0.0.2:1",
     );

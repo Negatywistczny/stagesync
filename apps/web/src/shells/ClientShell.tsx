@@ -750,6 +750,7 @@ function ClientChrome({
           disabled={!nextSetlistId || nextSongPending}
           onClick={onNextSong}
           title="Następny utwór setlisty"
+          aria-label="Następny utwór setlisty"
         >
           →następny
         </button>
