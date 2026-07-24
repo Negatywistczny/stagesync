@@ -28,7 +28,7 @@ export async function fetchScoreBlob(
   return res.blob();
 }
 
-/** Amber measure highlight + cyan beat cursor (v4 parity colors, local to OSMD). */
+/** Amber measure highlight + cyan beat cursor (v4 parity; match --ss-color-primary / focus-ring). */
 const MEASURE_CURSOR = {
   type: 3,
   color: "#fbbf24",
@@ -41,6 +41,9 @@ const BEAT_CURSOR = {
   alpha: 0.85,
   follow: false,
 };
+
+/** OSMD paper fill — must stay a concrete hex (OSMD API); matches --ss-color-osmd-paper. */
+const OSMD_PAPER_HEX = "#ffffff";
 
 /**
  * Construct OSMD for the score pane.
@@ -60,7 +63,7 @@ export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
     followCursor: false,
     cursorsOptions: [BEAT_CURSOR, MEASURE_CURSOR],
   });
-  osmd.EngravingRules.PageBackgroundColor = "#ffffff";
+  osmd.EngravingRules.PageBackgroundColor = OSMD_PAPER_HEX;
   // OSMD bug belt-and-suspenders: enableOrDisableCursors(true) still assigns
   // `this.cursors[i].hidden` when cursor creation was skipped (no backend yet).
   osmd.EngravingRules.RestoreCursorAfterRerender = false;

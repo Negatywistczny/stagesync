@@ -1721,7 +1721,7 @@
   overflow: auto;
   cursor: pointer;
   /* OSMD paper — always light (engraving), independent of app chrome theme */
-  background: #ffffff;
+  background: var(--ss-color-osmd-paper);
 }
 
 .scoreHost {
@@ -1741,7 +1741,7 @@
   pointer-events: none;
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text-muted);
-  background: color-mix(in srgb, #ffffff 88%, transparent);
+  background: color-mix(in srgb, var(--ss-color-osmd-paper) 88%, transparent);
 }
 
 .scoreEmptyCard {
