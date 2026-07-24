@@ -20,7 +20,7 @@
 | RSK-MIDI-08 | SPP seek poza koniec projektu | `fixed` | `clampSeekTicks` + cache end w `app.ts` |
 | RSK-MIDI-09 | mock vs native error parity | `fixed` | `safeSend` + mock `throwOnSend` |
 | RSK-MIDI-10 | Podwójne `onChange` po `setConfig` | `rejected` | Jedna subskrypcja przy create; test |
-| RSK-MIDI-04 / 05 | Omni IN + hardkod OUT ch 0 | `limit` | Brak pola kanału w `MidiHostConfig` / UI — 5.2+ |
+| RSK-MIDI-04 / 05 | Omni IN + hardkod OUT ch 0 | `limit` | → [TODO 5.2+](../../../TODO.md) (kanał PC) |
 | RSK-MIDI-07 | Rate-limit PC/SPP flood | `partial` | PC: latest-wins; SPP nie seekuje aż Start — bez osobnego limitera |
 
 ## Kontekst konstytucji
@@ -29,4 +29,4 @@
 
 ## Następny krok
 
-Opcjonalnie 5.2+: `pcInChannel` / `pcOutChannel` w config + Admin. Dump = provenance.
+Kanały PC: pozycja w [TODO.md](../../../TODO.md) § 5.2+. Dump = provenance.
