@@ -351,15 +351,18 @@ export function AdminShell() {
               <IconSettings />
             </ShellIconButton>
             <ShellIconButton
+              ref={restart.buttonRef}
               label={restart.label}
-              pressed={restart.pending}
+              confirming={restart.pending}
               onClick={restart.arm}
             >
               <IconRestart />
             </ShellIconButton>
             <ShellIconButton
+              ref={shutdown.buttonRef}
               label={shutdown.label}
-              pressed={shutdown.pending}
+              confirming={shutdown.pending}
+              danger
               onClick={shutdown.arm}
             >
               <IconPower />
@@ -1081,9 +1084,18 @@ function LibraryFilesCard({
 function useDoubleConfirm(action: () => Promise<void>, label: string) {
   const [pending, setPending] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+  const cancel = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+    setPending(false);
+  }, []);
+
   const arm = useCallback(() => {
     if (pending) {
       if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = null;
       setPending(false);
       void action();
       return;
@@ -1091,13 +1103,40 @@ function useDoubleConfirm(action: () => Promise<void>, label: string) {
     setPending(true);
     timerRef.current = setTimeout(() => setPending(false), 4000);
   }, [action, pending]);
+
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     },
     [],
   );
-  return { pending, arm, label: pending ? `Potwierdź ${label}` : label };
+
+  useEffect(() => {
+    if (!pending) return;
+    let remove: (() => void) | undefined;
+    const attachId = window.setTimeout(() => {
+      const onDocClick = (event: MouseEvent) => {
+        const el = buttonRef.current;
+        if (el && event.target instanceof Node && el.contains(event.target)) {
+          return;
+        }
+        cancel();
+      };
+      document.addEventListener("click", onDocClick);
+      remove = () => document.removeEventListener("click", onDocClick);
+    }, 0);
+    return () => {
+      window.clearTimeout(attachId);
+      remove?.();
+    };
+  }, [pending, cancel]);
+
+  return {
+    pending,
+    arm,
+    buttonRef,
+    label: pending ? `Potwierdź ${label}` : label,
+  };
 }
 
 function MusicXmlModal({

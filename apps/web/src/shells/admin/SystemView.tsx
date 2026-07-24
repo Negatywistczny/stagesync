@@ -206,10 +206,10 @@ export function SystemView({
 
         <section
           className={`${shell.card} ${styles.leftCard}`}
-          aria-label="Telemetria MIDI i Audio"
+          aria-label="Telemetria Midi"
         >
           <div className={shell.cardHead}>
-            <h2 className={shell.cardTitle}>Telemetria MIDI/Audio</h2>
+            <h2 className={shell.cardTitle}>Telemetria Midi</h2>
           </div>
           <div className={`${shell.cardBody} ${shell.midiBody}`}>
             {midiError ? (
@@ -283,20 +283,6 @@ export function SystemView({
                     <span className={shell.midiPortValue}>
                       {midi.config.clockOutEnabled ? "włączony" : "wyłączony"}
                     </span>
-                  </div>
-                  <div className={shell.midiActions}>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        window.dispatchEvent(
-                          new CustomEvent("stagesync:open-preferences", {
-                            detail: { tab: "midi" },
-                          }),
-                        );
-                      }}
-                    >
-                      Ustawienia…
-                    </Button>
                   </div>
                 </div>
                 {!midi.available ? (

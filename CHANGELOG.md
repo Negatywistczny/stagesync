@@ -17,6 +17,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Client:** tytuł ustawień globalnych to „Ustawienia globalne” ([#553](https://github.com/Negatywistyczny/stagesync/pull/553)).
 - **Admin / Batch PC:** jaśniejsze tytuły modalów MusicXML i Batch PC; pole startu to „Start Program Change” ([#569](https://github.com/Negatywistyczny/stagesync/pull/569), [#573](https://github.com/Negatywistyczny/stagesync/pull/573)).
+- **Admin / Host:** sekcja telemetrii to „Telemetria Midi” (bez skrótu do Ustawień); Restart / Wyłącz z pulsującym pierścieniem potwierdzenia i anulowaniem po kliknięciu poza przyciskiem.
+- **Ustawienia:** nagłówek „Zaawansowane — Ścieżki plików” bez zbędnego „▸”.
 
 ### Naprawiono
 

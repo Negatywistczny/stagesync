@@ -35,6 +35,57 @@
   background: var(--ss-color-selected);
 }
 
+.danger:not(:disabled) {
+  color: var(--ss-color-text-muted);
+}
+
+@media (hover: hover) {
+  .danger:hover:not(:disabled) {
+    color: var(--ss-color-danger);
+    border-color: var(--ss-color-danger);
+    background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
+  }
+}
+
+.confirming {
+  color: var(--ss-color-text);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--ss-color-primary) 45%, transparent);
+  animation: shellIconConfirmPulse 1.4s ease-in-out infinite;
+}
+
+.danger.confirming {
+  color: var(--ss-color-danger);
+  border-color: var(--ss-color-danger);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--ss-color-danger) 45%, transparent);
+  animation-name: shellIconConfirmPulseDanger;
+}
+
+@keyframes shellIconConfirmPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--ss-color-primary) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--ss-color-primary) 55%, transparent);
+  }
+}
+
+@keyframes shellIconConfirmPulseDanger {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--ss-color-danger) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--ss-color-danger) 55%, transparent);
+  }
+}
+
 .btn:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;

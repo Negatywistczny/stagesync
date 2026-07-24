@@ -804,7 +804,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 </label>
               </fieldset>
               <details className={styles.fieldset}>
-                <summary className={styles.legend}>▸ Zaawansowane — Ścieżki plików</summary>
+                <summary className={styles.legend}>Zaawansowane — Ścieżki plików</summary>
                 {([
                   ["STAGESYNC_DATA_DIR", "dataDir", serverMeta?.resolved?.dataDir],
                   ["STAGESYNC_BACKUPS_DIR", "backupDir", serverMeta?.resolved?.backupsDir],

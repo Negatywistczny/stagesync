@@ -29,4 +29,15 @@ describe("ShellIconButton", () => {
     expect(out).toContain('aria-expanded="true"');
     expect(out).toContain('aria-controls="panel-1"');
   });
+
+  it("applies confirming and danger classes", () => {
+    const out = renderToStaticMarkup(
+      <ShellIconButton label="Wyłącz" confirming danger>
+        Off
+      </ShellIconButton>,
+    );
+    expect(out).toContain("confirming");
+    expect(out).toContain("danger");
+    expect(out).not.toContain("aria-pressed");
+  });
 });
