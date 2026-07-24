@@ -692,6 +692,7 @@ function SongsView({
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
   const [dbMenuOpen, setDbMenuOpen] = useState(false);
+  const dbMenuId = useId();
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -735,12 +736,15 @@ function SongsView({
                 variant="ghost"
                 disabled={locked}
                 aria-expanded={dbMenuOpen}
+                aria-haspopup="dialog"
+                aria-controls={dbMenuOpen ? dbMenuId : undefined}
                 onClick={() => setDbMenuOpen((o) => !o)}
               >
                 Zarządzaj bazą ▾
               </Button>
               {dbMenuOpen ? (
                 <SettingsPopover
+                  id={dbMenuId}
                   title="Baza plików"
                   onClose={() => setDbMenuOpen(false)}
                 >

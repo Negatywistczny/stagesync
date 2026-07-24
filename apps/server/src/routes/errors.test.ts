@@ -35,6 +35,15 @@ describe("routes/errors", () => {
     expect(res.body).toEqual({ ok: false, error: "x" });
   });
 
+  it("sendError includes details and truncates long messages", () => {
+    const res = mockRes();
+    const long = "e".repeat(600);
+    sendError(res, 422, long, [{ path: "a", message: "bad" }]);
+    expect(res.statusCode).toBe(422);
+    expect(res.body.error).toHaveLength(500);
+    expect(res.body.details).toEqual([{ path: "a", message: "bad" }]);
+  });
+
   it("maps Zod details with codes and root path", () => {
     const res = mockRes();
     handleRouteError(res, {
