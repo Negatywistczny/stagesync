@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -531,6 +532,8 @@ export function TimelineShell() {
   const eyeMenuRef = useRef<HTMLDivElement>(null);
   const toolsVisBtnRef = useRef<HTMLButtonElement>(null);
   const toolsVisMenuRef = useRef<HTMLDivElement>(null);
+  const eyeMenuId = useId();
+  const toolsVisMenuId = useId();
   const [eyeMenuPos, setEyeMenuPos] = useState<{
     top: number;
     left: number;
@@ -5660,6 +5663,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             title="Widoczne narzędzia na pasku"
             aria-expanded={toolsVisOpen}
             aria-haspopup="menu"
+            aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
             onClick={() => setToolsVisOpen((v) => !v)}
           >
             <IconSettings />
@@ -5949,6 +5953,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       aria-label="Widoczność ścieżek"
                       aria-expanded={eyeOpen}
                       aria-haspopup="menu"
+                      aria-controls={eyeOpen ? eyeMenuId : undefined}
                       onClick={() => setEyeOpen((v) => !v)}
                     >
                       <IconEye />
@@ -7861,11 +7866,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ? createPortal(
             <div
               ref={eyeMenuRef}
+              id={eyeMenuId}
               className={[styles.eyeMenu, styles.eyeMenuFixed]
                 .filter(Boolean)
                 .join(" ")}
               style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
               role="menu"
+              aria-label="Widoczność ścieżek"
             >
               {TRACKS.map((track) => (
                 <button
@@ -7902,6 +7909,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         ? createPortal(
             <div
               ref={toolsVisMenuRef}
+              id={toolsVisMenuId}
               className={[styles.eyeMenu, styles.eyeMenuFixed]
                 .filter(Boolean)
                 .join(" ")}
