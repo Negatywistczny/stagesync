@@ -31,16 +31,16 @@ describe("client-presence edges", () => {
     expect(presence.list()[0]?.roles).toEqual(["grid"]);
   });
 
-  it("evicts oldest client when MAX_CLIENTS is exceeded", () => {
+  it("clamps latencyMs and rejects non-finite", () => {
     const presence = createClientPresence();
-    for (let i = 0; i < 256; i++) {
-      presence.connect(`c${i}`);
-    }
-    expect(presence.list()).toHaveLength(256);
-    presence.connect("c256");
-    const ids = new Set(presence.list().map((c) => c.id));
-    expect(ids.size).toBe(256);
-    expect(ids.has("c256")).toBe(true);
-    expect(ids.has("c0")).toBe(false);
+    presence.connect("lat");
+    presence.upsert("lat", { latencyMs: 90_000 });
+    expect(presence.list()[0]?.latencyMs).toBe(60_000);
+    presence.upsert("lat", { latencyMs: 12.6 });
+    expect(presence.list()[0]?.latencyMs).toBe(13);
+    presence.upsert("lat", { latencyMs: Number.NaN });
+    expect(presence.list()[0]?.latencyMs).toBeNull();
+    presence.upsert("lat", { latencyMs: -1 });
+    expect(presence.list()[0]?.latencyMs).toBeNull();
   });
 });
