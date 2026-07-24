@@ -33,9 +33,11 @@
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
 ![pnpm](https://img.shields.io/badge/pnpm-F69220?logo=pnpm&logoColor=white)
 
-</div>
+<br />
 
----
+**StageSync** — scentralizowany transport sceniczny, Timeline oraz synchronizacja stanowisk muzyków na żywo.
+
+</div>
 
 ## ⚡ O projekcie
 
@@ -43,7 +45,7 @@
 
 Łączy w sobie precyzyjny silnik transportu (SSOT), interaktywną oś czasu (Timeline) oraz wielourządzeniową synchronizację ekranów dla muzyków w sieci lokalnej — od cyfrowych partytur i akordów, po automatyzację MIDI i metronom.
 
-### ⚡ Kluczowe możliwości
+### 🎯 Kluczowe możliwości
 
 * ⏱️ **Pancerny silnik transportu (SSOT):** Jedno źródło prawdy dla zegara, tempa, metrum i osi czasu, gwarantujące idealne zsynchronizowanie całego zespołu.
 * 🎼 **Dedykowane widoki muzyków (Client Shell):** Automatyczne renderowanie i synchroniczne przewijanie partytur (OSMD), widoków akordowych, tekstów oraz sekcji perkusyjnych na tabletach i ekranach wykonawców.
@@ -51,48 +53,49 @@
 * 🔌 **Automatyzacja MIDI:** Wysyłanie komunikatów *Program Change* i *Control Change* do zewnętrznych procesorów efektów, instrumentów oraz DAW.
 * 📡 **Zero-config w sieci LAN:** Automatyczne wykrywanie urządzeń w sieci lokalnej (mDNS/WebSockets) bez konieczności dostępu do Internetu.
 
-## Szybki start
+## 🚀 Szybki start
 
-**Desktop (zalecane):** pobierz `.dmg` / `.msi` z [Releases](https://github.com/Negatywistczny/stagesync/releases), zainstaluj i uruchom. Szczegóły: [docs/DESKTOP.md](docs/DESKTOP.md).
+* 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.msi` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
+  *Instrukcja krok po kroku: [docs/DESKTOP.md](docs/DESKTOP.md)*
+* 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/INSTALL.md](docs/INSTALL.md) *(Compose, GHCR, porty)*.
+* 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 20** + **pnpm 9** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*.
 
-**Docker / host rackowy:** zobacz [docs/INSTALL.md](docs/INSTALL.md) (Compose, GHCR, porty, aktualizacje).
-
-**Ze źródeł (dev):** Node.js **20** + [pnpm](https://pnpm.io/) 9. Buildy desktop ze źródeł wymagają też **Rust** (Tauri).
-
-```sh
+```bash
 git clone https://github.com/Negatywistczny/stagesync.git
-cd stagesync && pnpm install && pnpm dev
+cd stagesync
+pnpm install
+pnpm dev
 ```
 
-`test` / `build` / `lint` oraz reguły współpracy → [CONTRIBUTING.md](CONTRIBUTING.md).
+> 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Monorepo
+## 📦 Monorepo
 
 | Ścieżka | Rola |
 | :--- | :--- |
-| `apps/server` | API, persystencja, transport SSOT |
-| `apps/web` | UI Admin / Timeline / Client |
-| `apps/desktop` | Shell Tauri + sidecar Node |
-| `packages/shared` | Schematy Zod + czyste helpery czasu |
-| `packages/ui` | Design system (tokeny `--ss-*`) |
-| `data/` | Szablony runtime (projekty użytkownika w gitignore) |
+| `apps/server` | ⚙️ API, persystencja danych, transport SSOT |
+| `apps/web` | 💻 UI Admina / Timeline / Client muzyka |
+| `apps/desktop` | 🖥️ Shell Tauri + sidecar Node.js |
+| `packages/shared` | 📐 Schematy Zod + czyste helpery czasu |
+| `packages/ui` | 🎨 Design system (tokeny `--ss-*`) |
+| `data/` | 📂 Szablony runtime *(pliki projektów użytkownika w `.gitignore`)* |
 
-## Dokumentacja
+## 📚 Dokumentacja
 
 | Dokument | Opis |
 | :--- | :--- |
-| [INSTALL](docs/INSTALL.md) | Produkcja Docker / GHCR |
-| [DESKTOP](docs/DESKTOP.md) | Instalatory Tauri i updater |
-| [ARCHITECTURE](docs/ARCHITECTURE.md) | Mapa monorepo i SSOT |
-| [docs/api](docs/api/) | Powierzchnia REST |
-| [ADR](docs/adr/) | Decyzje architektoniczne |
-| [SECURITY](SECURITY.md) | Zgłaszanie podatności |
-| [ROADMAP](docs/ROADMAP.md) / [TODO](docs/TODO.md) | Kamienie milowe i checklista |
-| [CHANGELOG](CHANGELOG.md) | Historia wydań |
-| [UI](docs/ui/README.md) | Design system |
-| [CONTRIBUTING](CONTRIBUTING.md) | Commity, PR-y, gałęzie |
+| 🚀 **[INSTALL](docs/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR |
+| 🖥️ **[DESKTOP](docs/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`) oraz automatyczny updater |
+| 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
+| 🔌 **[docs/api](docs/api/)** | Specyfikacja powierzchni REST API i punktów końcowych |
+| 💡 **[ADR](docs/adr/)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
+| 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
+| 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań, zmian i poprawek w kolejnych wersjach |
+| 🎨 **[UI](docs/ui/README.md)** | Przewodnik po Design Systemie i tokenach CSS |
+| 🔒 **[SECURITY](SECURITY.md)** | Polityka bezpieczeństwa i zgłaszanie podatności |
+| 🤝 **[CONTRIBUTING](CONTRIBUTING.md)** | Standardy commitów, obsługa PR-ów i praca na gałęziach |
 
-## Licencja
+## 📜 Licencja
 
 StageSync jest **source-available** na [Business Source License 1.1](LICENSE) (SPDX: `BUSL-1.1`).
 Domyślnie dozwolone jest użycie **nieprodukcyjne** (dev / test / ewaluacja). **Produkcja** (w tym własny host sceniczny) wymaga osobnej licencji komercyjnej — szczegóły i kontakt w `LICENSE`.
