@@ -15,16 +15,6 @@
 [![Forks](https://img.shields.io/github/forks/Negatywistczny/stagesync)](https://github.com/Negatywistczny/stagesync/network/members)
 [![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-informational)](LICENSE)
 
-<br />
-
-**StageSync** — scentralizowany transport sceniczny, Timeline oraz synchronizacja Clientów muzyków podczas koncertów na żywo.
-
-</div>
-
-## Stos technologiczny
-
-<div align="center">
-
 **Języki i frameworki**
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
@@ -42,6 +32,20 @@
 ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
 ![pnpm](https://img.shields.io/badge/pnpm-F69220?logo=pnpm&logoColor=white)
+
+<br />
+
+**StageSync** to zaawansowany, scentralizowany system reżyserii scenicznej i synchronizacji występów na żywo (*Live Show Control*). 
+
+Łączy w sobie precyzyjny silnik transportu (SSOT), interaktywną oś czasu (Timeline) oraz wielourządzeniową synchronizację ekranów dla muzyków w sieci lokalnej — od cyfrowych partytur i akordów, po automatyzację MIDI i metronom.
+
+### ⚡ Kluczowe możliwości
+
+* ⏱️ **Pancerny silnik transportu (SSOT):** Jedno źródło prawdy dla zegara, tempa, metrum i osi czasu, gwarantujące idealne zsynchronizowanie całego zespołu.
+* 🎼 **Dedykowane widoki muzyków (Client Shell):** Automatyczne renderowanie i synchroniczne przewijanie partytur (OSMD), widoków akordowych, tekstów oraz sekcji perkusyjnych na tabletach i ekranach wykonawców.
+* 🎛️ **Reżyseria i zarządzanie setlistą:** Błyskawiczne przełączanie utworów, elastyczne szablony występów oraz pełna kontrola nad przebiegiem koncertu z poziomu panelu Admina.
+* 🔌 **Automatyzacja MIDI:** Wysyłanie komunikatów *Program Change* i *Control Change* do zewnętrznych procesorów efektów, instrumentów oraz DAW.
+* 📡 **Zero-config w sieci LAN:** Automatyczne wykrywanie urządzeń w sieci lokalnej (mDNS/WebSockets) bez konieczności dostępu do Internetu.
 
 </div>
 
@@ -73,7 +77,7 @@ cd stagesync && pnpm install && pnpm dev
 
 ## Dokumentacja
 
-| Dokument | |
+| Dokument | Opis |
 | :--- | :--- |
 | [INSTALL](docs/INSTALL.md) | Produkcja Docker / GHCR |
 | [DESKTOP](docs/DESKTOP.md) | Instalatory Tauri i updater |
