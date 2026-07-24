@@ -20,4 +20,20 @@ describe("writeJsonAtomic", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("overwrites existing JSON without leaving temps", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-atomic-ow-"));
+    try {
+      const file = join(dir, "library.json");
+      await writeJsonAtomic(file, { v: 1 });
+      await writeJsonAtomic(file, { v: 2, songs: [] });
+      expect(JSON.parse(await readFile(file, "utf8"))).toEqual({
+        v: 2,
+        songs: [],
+      });
+      expect(await readdir(dir)).toEqual(["library.json"]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

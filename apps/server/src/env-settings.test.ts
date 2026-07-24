@@ -83,6 +83,27 @@ describe("env-settings", () => {
     expect(
       normalizeIncomingValue(
         "STAGESYNC_DISABLE_MDNS",
+        "on",
+        SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
+      ),
+    ).toBe("1");
+    expect(
+      normalizeIncomingValue(
+        "STAGESYNC_DISABLE_MDNS",
+        "TRUE",
+        SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
+      ),
+    ).toBe("1");
+    expect(
+      normalizeIncomingValue(
+        "STAGESYNC_DISABLE_MDNS",
+        1,
+        SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
+      ),
+    ).toBe("1");
+    expect(
+      normalizeIncomingValue(
+        "STAGESYNC_DISABLE_MDNS",
         "no",
         SETTINGS_SCHEMA.STAGESYNC_DISABLE_MDNS,
       ),
@@ -186,6 +207,25 @@ describe("env-settings", () => {
     } as ManagedSettingsValues;
     const after = { ...before, PORT: "4500", STAGESYNC_UPDATE_CHANNEL: "beta" };
     expect(listRestartRequiredKeys(before, after)).toEqual(["PORT"]);
+  });
+
+  it("returns empty when restart keys unchanged; includes data dir", () => {
+    const before = {
+      PORT: "4000",
+      STAGESYNC_BIND_HOST: "0.0.0.0",
+      STAGESYNC_DISABLE_MDNS: false,
+      LOG_LEVEL: "info",
+      STAGESYNC_DISABLE_AUTO_UPDATE: false,
+      STAGESYNC_UPDATE_CHANNEL: "stable",
+      STAGESYNC_DATA_DIR: "",
+      STAGESYNC_BACKUPS_DIR: "",
+      STAGESYNC_ASSETS_DIR: "",
+    } as ManagedSettingsValues;
+    expect(listRestartRequiredKeys(before, { ...before })).toEqual([]);
+    const after = { ...before, STAGESYNC_DATA_DIR: "./data-alt" };
+    expect(listRestartRequiredKeys(before, after)).toEqual([
+      "STAGESYNC_DATA_DIR",
+    ]);
   });
 
   it("filters update channel including rc and unknown", () => {
