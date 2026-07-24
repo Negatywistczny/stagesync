@@ -7991,7 +7991,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <Icon />
                   <span>{label}</span>
                   <span className={styles.toolMenuKey}>
-                    {key ? `T ${key.toUpperCase()}` : "—"}
+                    {key ? key.toUpperCase() : "—"}
                   </span>
                 </button>
               ))}
