@@ -254,16 +254,17 @@ describe("TransportProvider", () => {
   });
 
   describe("WS lifecycle", () => {
-    it("on open: status connected, hello interval, refreshes snapshot", async () => {
-      getTransport
-        .mockResolvedValueOnce(snap())
-        .mockResolvedValueOnce(snap({ positionTicks: 240 }, 5));
+    it("on open: status connected, hello interval; no HTTP refresh", async () => {
+      getTransport.mockResolvedValueOnce(snap({ positionTicks: 12 }, 1));
 
       const { result } = await mountProvider();
+      expect(getTransport).toHaveBeenCalledTimes(1);
       const ws = await openLatestWs();
 
       expect(result.current.wsStatus).toBe("connected");
-      expect(result.current.state.positionTicks).toBe(240);
+      // Mount snapshot only — open must not call getTransport (stale REST race).
+      expect(getTransport).toHaveBeenCalledTimes(1);
+      expect(result.current.state.positionTicks).toBe(12);
       expect(ws.send).not.toHaveBeenCalled();
 
       await act(async () => {
@@ -728,27 +729,27 @@ describe("TransportProvider", () => {
     });
   });
 
-  describe("on-open snapshot", () => {
-    it("starts rAF when open-refresh snapshot is playing", async () => {
-      getTransport
-        .mockResolvedValueOnce(snap())
-        .mockResolvedValueOnce(snap({ playing: true, positionTicks: 50 }, 3));
-
-      await mountProvider();
-      await openLatestWs();
-      expect(rafQueue.length).toBeGreaterThan(0);
-    });
-
-    it("swallows getTransport failure on open", async () => {
-      getTransport
-        .mockResolvedValueOnce(snap({ positionTicks: 12 }, 1))
-        .mockRejectedValueOnce(new Error("refresh fail"));
+  describe("welcome WS tick (no on-open HTTP)", () => {
+    it("starts rAF from welcome tick when playing", async () => {
+      getTransport.mockResolvedValueOnce(snap());
 
       const { result } = await mountProvider();
-      expect(result.current.state.positionTicks).toBe(12);
-      await openLatestWs();
-      expect(result.current.state.positionTicks).toBe(12);
-      expect(result.current.error).toBeNull();
+      const ws = await openLatestWs();
+      expect(getTransport).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        ws.triggerMessage({
+          type: "transport_tick",
+          ...snap({ playing: true, positionTicks: 50 }, 3).state,
+          serverTimeMs: 3,
+          sentAtMs: Date.now(),
+        });
+      });
+
+      expect(result.current.state.playing).toBe(true);
+      expect(result.current.state.positionTicks).toBe(50);
+      expect(rafQueue.length).toBeGreaterThan(0);
     });
   });
 });
+

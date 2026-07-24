@@ -162,17 +162,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         reconnectAttempt = 0;
         setWsStatus("connected");
         sendHello();
-        void (async () => {
-          try {
-            const snap = await getTransport();
-            if (cancelled) return;
-            applyAnchor(snap.state, performance.now(), snap.serverTimeMs);
-            if (snap.state.playing) startRaf();
-            else stopRaf();
-          } catch {
-            /* ticks will catch up */
-          }
-        })();
+        // Welcome snapshot comes from the immediate WS tick (attachTransportWs).
+        // Do not HTTP getTransport here — a late REST reply can overwrite a fresh
+        // tick with an older receiptMs and jump the playhead (ADR 0002).
         // Keep Admin presence latency fresh while connected (v4 interval).
         helloTimer = setInterval(() => {
           if (!cancelled) sendHello();

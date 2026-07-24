@@ -9,6 +9,21 @@ import { projectEndTicks, type Project } from "@stagesync/shared";
 import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "./engine.js";
 
+/** Re-check after every await — FOH Seek/Pause must win over stale I/O. */
+function stillPastEnd(
+  transport: TransportEngine,
+  projectId: string,
+  endTicks: number,
+): boolean {
+  const state = transport.getState();
+  return (
+    state.playing &&
+    state.activeProjectId === projectId &&
+    !transport.isLooping() &&
+    state.positionTicks >= endTicks
+  );
+}
+
 export function wirePauseAtSongEnd(
   transport: TransportEngine,
   stores: Stores,
@@ -38,19 +53,17 @@ export function wirePauseAtSongEnd(
           endTicks = projectEndTicks(project);
           endCache = { projectId, endTicks };
         }
-        if (msg.positionTicks < endTicks) return;
-
-        const state = transport.getState();
-        if (!state.playing || state.activeProjectId !== projectId) return;
-        if (transport.isLooping()) return;
+        if (!stillPastEnd(transport, projectId, endTicks)) return;
 
         const setlist = await stores.getSetlist();
+        if (!stillPastEnd(transport, projectId, endTicks)) return;
         if (setlist.enabled && setlist.autoAdvance.enabled) {
-          // Owned by wireSetlistAutoAdvance when that lands.
+          // Owned by wireSetlistAutoAdvance.
           return;
         }
 
         project ??= await stores.getProject(projectId);
+        if (!stillPastEnd(transport, projectId, endTicks)) return;
         transport.pause();
         transport.seek(endTicks, project);
       } catch {
