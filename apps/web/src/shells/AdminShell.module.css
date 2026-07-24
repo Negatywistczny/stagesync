@@ -208,14 +208,6 @@
   overflow: hidden;
 }
 
-/* Host → O aplikacji: info | actions + updates */
-
-@media (max-width: 40rem) {
-  .aboutGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -368,19 +360,9 @@
     grid-template-columns: 1fr;
   }
 
-  .twoUp {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
   .split {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  }
-
-  .splitAside > .card:last-child {
-    max-height: none;
-    flex: 1 1 auto;
   }
 
   .chrome,
