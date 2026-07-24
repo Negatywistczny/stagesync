@@ -172,6 +172,9 @@ describe("formatHybridPolishB / formatMusicalAccidentals", () => {
     expect(formatHybridPolishB("F/B")).toBe("F/H");
     expect(formatHybridPolishB("bm7")).toBe("bm7");
     expect(formatHybridPolishB("F/b")).toBe("F/b");
+    expect(formatHybridPolishB("")).toBe("");
+    expect(formatHybridPolishB("Bmaj7")).toBe("Hmaj7");
+    expect(formatHybridPolishB("B#")).toBe("H#");
     expect(formatChordForDisplay("Bmaj7", { hybridPolishB: true })).toBe(
       "HΔ7",
     );
