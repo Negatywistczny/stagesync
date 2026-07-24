@@ -28,15 +28,22 @@ describe("mixer routing", () => {
     expect(
       resolveTrackOutputDest({ kind: "bus", busId: "gone" }, ids),
     ).toEqual(MASTER_OUTPUT);
+    expect(
+      resolveTrackOutputDest({ kind: "bus", busId: "bus-a" }, new Set(ids)),
+    ).toEqual({ kind: "bus", busId: "bus-a" });
+    expect(resolveTrackOutputDest(null, ids)).toEqual(MASTER_OUTPUT);
     expect(resolveBusOutputDest(undefined)).toEqual({ kind: "master" });
     expect(resolveBusOutputDest({ kind: "master" })).toEqual({
       kind: "master",
     });
+    expect(resolveBusOutputDest(null)).toEqual({ kind: "master" });
   });
 
   it("nextBusName increments", () => {
     expect(nextBusName([])).toBe("Bus 1");
     expect(nextBusName(["Bus 1", "Bus 3", "Vocals"])).toBe("Bus 4");
+    expect(nextBusName(["bus 2", "Bus 2"])).toBe("Bus 3");
+    expect(nextBusName(["  Bus 9  ", "Other"])).toBe("Bus 10");
   });
 
   it("isTrackRoutedToBus", () => {

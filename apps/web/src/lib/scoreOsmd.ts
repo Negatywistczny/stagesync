@@ -28,22 +28,34 @@ export async function fetchScoreBlob(
   return res.blob();
 }
 
-/** Amber measure highlight + cyan beat cursor (v4 parity; match --ss-color-primary / focus-ring). */
-const MEASURE_CURSOR = {
-  type: 3,
-  color: "#fbbf24",
-  alpha: 0.45,
-  follow: false,
-};
-const BEAT_CURSOR = {
-  type: 1,
-  color: "#22d3ee",
-  alpha: 0.85,
-  follow: false,
-};
+/** Fallbacks when CSS tokens are unset (jsdom / early construct). Match packages/ui tokens.css. */
+const FALLBACK_MEASURE_HEX = "#fbbf24";
+const FALLBACK_BEAT_HEX = "#22d3ee";
+const FALLBACK_PAPER_HEX = "#ffffff";
 
-/** OSMD paper fill — must stay a concrete hex (OSMD API); matches --ss-color-osmd-paper. */
-const OSMD_PAPER_HEX = "#ffffff";
+const HEX_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+/**
+ * Read a `--ss-*` color token as concrete hex for OSMD (API requires a string color).
+ * Prefers `el`, then `document.documentElement`; falls back when detached / unset.
+ */
+export function readOsmdCssHex(
+  varName: string,
+  fallback: string,
+  el?: HTMLElement | null,
+): string {
+  if (typeof getComputedStyle === "undefined") return fallback;
+  const roots: Array<Element | null | undefined> = [
+    el,
+    typeof document !== "undefined" ? document.documentElement : null,
+  ];
+  for (const root of roots) {
+    if (!root) continue;
+    const raw = getComputedStyle(root).getPropertyValue(varName).trim();
+    if (HEX_RE.test(raw)) return raw;
+  }
+  return fallback;
+}
 
 /**
  * Construct OSMD for the score pane.
@@ -53,6 +65,22 @@ const OSMD_PAPER_HEX = "#ffffff";
  * when `RestoreCursorAfterRerender` writes `.hidden` on undefined cursors.
  */
 export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
+  const measureHex = readOsmdCssHex(
+    "--ss-color-primary",
+    FALLBACK_MEASURE_HEX,
+    container,
+  );
+  const beatHex = readOsmdCssHex(
+    "--ss-color-focus-ring",
+    FALLBACK_BEAT_HEX,
+    container,
+  );
+  const paperHex = readOsmdCssHex(
+    "--ss-color-osmd-paper",
+    FALLBACK_PAPER_HEX,
+    container,
+  );
+
   const osmd = new OpenSheetMusicDisplay(container, {
     autoResize: true,
     backend: "svg",
@@ -61,9 +89,12 @@ export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
     drawPartAbbreviations: true,
     drawMeasureNumbers: true,
     followCursor: false,
-    cursorsOptions: [BEAT_CURSOR, MEASURE_CURSOR],
+    cursorsOptions: [
+      { type: 1, color: beatHex, alpha: 0.85, follow: false },
+      { type: 3, color: measureHex, alpha: 0.45, follow: false },
+    ],
   });
-  osmd.EngravingRules.PageBackgroundColor = OSMD_PAPER_HEX;
+  osmd.EngravingRules.PageBackgroundColor = paperHex;
   // OSMD bug belt-and-suspenders: enableOrDisableCursors(true) still assigns
   // `this.cursors[i].hidden` when cursor creation was skipped (no backend yet).
   osmd.EngravingRules.RestoreCursorAfterRerender = false;
