@@ -4,6 +4,7 @@ import { createProjectV5Seed } from "./project-seed.js";
 import {
   defaultSubsections4Bar,
   ensureFormaSubsections,
+  hasUsableFormaSubsections,
   normalizeSubsectionOffsets,
   subsectionMaxChunkTicks,
 } from "./forma-subsections.js";
@@ -91,5 +92,32 @@ describe("forma-subsections", () => {
     );
     // Seed Intro is 2 bars — no interior 4-bar splits
     expect(ensureFormaSubsections(seed)).toBe(seed);
+  });
+
+  it("normalizeSubsectionOffsets drops NaN / negative / non-finite", () => {
+    expect(
+      normalizeSubsectionOffsets(
+        [Number.NaN, -10, Number.POSITIVE_INFINITY, 1.4, 1.6],
+        10,
+      ),
+    ).toEqual([1, 2]);
+  });
+
+  it("defaultSubsections4Bar with tiny chunk still caps and floors", () => {
+    expect(defaultSubsections4Bar(0, 0)).toEqual([]);
+    expect(defaultSubsections4Bar(5, 0)).toEqual([1, 2, 3, 4]);
+  });
+
+  it("hasUsableFormaSubsections and subsectionMaxChunkTicks", () => {
+    const seed = createProjectV5Seed(
+      "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+      "M",
+      "2026-07-21T00:00:00.000Z",
+    );
+    const intro = seed.forma.clips.find((c) => c.name === "Intro")!;
+    expect(hasUsableFormaSubsections(intro)).toBe(false);
+    expect(hasUsableFormaSubsections({ subsections: [CHUNK4] })).toBe(true);
+    expect(hasUsableFormaSubsections({ subsections: [] })).toBe(false);
+    expect(subsectionMaxChunkTicks(seed, 0)).toBe(CHUNK4);
   });
 });
