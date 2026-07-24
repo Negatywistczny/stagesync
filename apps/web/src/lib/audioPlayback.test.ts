@@ -3,6 +3,7 @@ import { createProjectV5Seed, projectEndTicks } from "@stagesync/shared";
 import {
   allowAudioPlayback,
   assetFileUrl,
+  busSoloMutesBus,
   clearAudioBufferCache,
   ensureAudioBuffered,
   getAudioPlaybackDebugState,
@@ -812,5 +813,81 @@ describe("audioPlayback helpers", () => {
     const initial = fadeParam.setValueAtTime.mock.calls[0]![0] as number;
     expect(initial).toBeLessThan(1);
     expect(initial).toBeGreaterThanOrEqual(0);
+  });
+
+  it("DEF-BUG-04: track solo wins — bus solo does not mute destination bus", async () => {
+    expect(busSoloMutesBus("bus-b", undefined, ["bus-a"])).toBe(true);
+    expect(busSoloMutesBus("bus-a", undefined, ["bus-a"])).toBe(false);
+    expect(busSoloMutesBus("bus-b", ["tr-1"], ["bus-a"])).toBe(false);
+    expect(busSoloMutesBus("bus-b", [], ["bus-a"])).toBe(true);
+
+    const fakeBuf = { duration: 10, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const base = projectWithClipUnderPlayhead();
+    const project = {
+      ...base,
+      audioBusses: [
+        { id: "bus-a", name: "Bus A", gainDb: 0 },
+        { id: "bus-b", name: "Bus B", gainDb: 0 },
+      ],
+      audioTracks: [
+        {
+          ...base.audioTracks[0]!,
+          output: { kind: "bus" as const, busId: "bus-b" },
+        },
+      ],
+    };
+
+    await ensureAudioBuffered("p1", project, 0, ctx);
+
+    // Bus-only solo on bus-a: destination bus-b is muted.
+    syncAudioPlayback(
+      "p1",
+      {
+        project,
+        playing: true,
+        displayTicks: 0,
+        soloBusIds: ["bus-a"],
+      },
+      ctx,
+    );
+    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-b"]).toBe(0);
+    expect(getAudioPlaybackDebugState().activeCount).toBe(0);
+
+    // Cross-solo: track on bus-b + bus-a solo — track wins, bus-b stays audible.
+    syncAudioPlayback(
+      "p1",
+      {
+        project,
+        playing: true,
+        displayTicks: 0,
+        soloTrackIds: ["tr-1"],
+        soloBusIds: ["bus-a"],
+      },
+      ctx,
+    );
+    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-b"]).toBe(1);
+    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-a"]).toBe(1);
+    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+    expect(source.start).toHaveBeenCalled();
   });
 });

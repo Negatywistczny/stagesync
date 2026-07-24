@@ -55,7 +55,11 @@ export type AudioPlaybackInput = {
   loopEnabled?: boolean;
   /** When non-empty, only these audio track ids are audible (client Solo). */
   soloTrackIds?: readonly string[];
-  /** When non-empty (and no track solo), only tracks feeding these busses. */
+  /**
+   * When non-empty **and no track solo**, only tracks feeding these busses.
+   * Product rule (DEF-BUG-04): track solo wins — bus solo is ignored for
+   * audibility while any track is soloed (typical DAW; avoids silent dead state).
+   */
   soloBusIds?: readonly string[];
 };
 
@@ -436,6 +440,21 @@ function disconnectSafe(node: AudioNode): void {
 }
 
 /**
+ * Whether group-bus solo should zero this bus gain.
+ * Track solo wins: when any track is soloed, bus solo does not mute buses
+ * (soloed tracks stay audible via their destination fader; DEF-BUG-04).
+ */
+export function busSoloMutesBus(
+  busId: string,
+  soloTrackIds: readonly string[] | undefined,
+  soloBusIds: readonly string[] | undefined,
+): boolean {
+  if (soloTrackIds && soloTrackIds.length > 0) return false;
+  if (!soloBusIds || soloBusIds.length === 0) return false;
+  return !soloBusIds.includes(busId);
+}
+
+/**
  * Apply gain/pan/balance/mute/solo and (re)wire outputs to Master or group bus.
  * Gain/pan/balance/routing update live — no graph restart.
  * Channel-mode change rebuilds topology (caller includes mode in graphKey).
@@ -443,6 +462,7 @@ function disconnectSafe(node: AudioNode): void {
 function applyBusParams(
   project: Project,
   ctx: AudioContext,
+  soloTrackIds?: readonly string[],
   soloBusIds?: readonly string[],
 ): void {
   const master = ensureMasterBus(ctx);
@@ -450,15 +470,13 @@ function applyBusParams(
 
   const busses = project.audioBusses ?? [];
   const busIdSet = new Set(busses.map((b) => b.id));
-  const soloBusses =
-    soloBusIds && soloBusIds.length > 0 ? new Set(soloBusIds) : null;
 
   for (const bus of busses) {
     const mode = resolveChannelMode(bus.channelMode);
     const node = ensureGroupBus(ctx, bus.id, mode);
     let lin = gainDbToLinear(bus.gainDb);
     if (bus.muted) lin = 0;
-    if (soloBusses && !soloBusses.has(bus.id)) lin = 0;
+    if (busSoloMutesBus(bus.id, soloTrackIds, soloBusIds)) lin = 0;
     node.gain.gain.value = lin;
     applyBalanceOrPan(node, bus.pan ?? 0);
     // Bus always → Master (physical outs not in model).
@@ -614,11 +632,18 @@ export function getAudioPlaybackDebugState(): {
   activeCount: number;
   suppressed: boolean;
   stopEpoch: number;
+  /** Linear gain currently applied to each group bus (post mute/solo). */
+  groupBusGainLinear: Record<string, number>;
 } {
+  const groupBusGainLinear: Record<string, number> = {};
+  for (const [id, bus] of groupBuses) {
+    groupBusGainLinear[id] = bus.gain.gain.value;
+  }
   return {
     activeCount: active.length,
     suppressed: playbackSuppressed,
     stopEpoch,
+    groupBusGainLinear,
   };
 }
 
@@ -660,6 +685,7 @@ function isClipAudible(
 ): boolean {
   if (clipMuted) return false;
   if (track?.muted) return false;
+  // Track solo wins over bus solo (same rule as busSoloMutesBus / DEF-BUG-04).
   if (soloTrackIds && soloTrackIds.length > 0) {
     return track != null && soloTrackIds.includes(track.id);
   }
@@ -858,7 +884,12 @@ export function syncAudioPlayback(
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
   lastSyncArgs = { projectId, input, ctx };
-  applyBusParams(input.project, ctx, input.soloBusIds);
+  applyBusParams(
+    input.project,
+    ctx,
+    input.soloTrackIds,
+    input.soloBusIds,
+  );
 
   if (
     playbackSuppressed ||
