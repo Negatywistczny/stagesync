@@ -4,6 +4,7 @@ import {
   CreateProjectBodySchema,
   ExportLibraryBodySchema,
   LibrarySchema,
+  ProjectIdSchema,
   ProjectSchema,
   ProjectSchemaV2,
   ProjectSchemaV3,
@@ -203,6 +204,23 @@ describe("StageMessageBodySchema", () => {
         priority: "alert",
       }),
     ).toEqual({ text: "Hold", ttlMs: 0, priority: "alert" });
+  });
+
+  it("rejects empty text and unknown priority", () => {
+    expect(() => StageMessageBodySchema.parse({ text: "" })).toThrow();
+    expect(() =>
+      StageMessageBodySchema.parse({ text: "X", priority: "urgent" }),
+    ).toThrow();
+  });
+});
+
+describe("ProjectIdSchema", () => {
+  it("accepts UUID and rejects non-uuid", () => {
+    expect(
+      ProjectIdSchema.parse("11111111-1111-4111-8111-111111111111"),
+    ).toBe("11111111-1111-4111-8111-111111111111");
+    expect(() => ProjectIdSchema.parse("not-a-uuid")).toThrow();
+    expect(() => ProjectIdSchema.parse("../escape")).toThrow();
   });
 });
 
