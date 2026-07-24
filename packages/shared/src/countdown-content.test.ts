@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildCountdownDigitTekstClips,
   countdownDigitLabels,
   createProjectV5Seed,
   isCountdownDigitClipId,
   migrateLegacySong,
-  regenerateCountdownContent,
   scrubCountdownDigitClips,
   syntheticCountdownDisplayFromProject,
   syntheticCountdownTekstClips,
 } from "./index.js";
+import {
+  buildCountdownDigitTekstClips,
+  regenerateCountdownContent,
+} from "./countdown-content.js";
 
 describe("countdown-content", () => {
   it("countdownDigitLabels counts down by barOffset", () => {
