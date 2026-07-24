@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * Extract one Keep a Changelog section from CHANGELOG.md for GitHub Release body.
+ * Extract one Keep a Changelog section from CHANGELOG.md.
+ * Used as a utility / for tests — GitHub Release bodies use
+ * build-release-notes.mjs (Highlights), not the full section.
  *
  * Usage:
  *   node launch/scripts/extract-changelog-section.mjs <version> [changelogPath]
