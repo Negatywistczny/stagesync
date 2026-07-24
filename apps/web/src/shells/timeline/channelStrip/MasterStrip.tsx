@@ -24,7 +24,7 @@ export function MasterStrip({ state, callbacks }: MasterStripProps) {
     <div
       className={[styles.mixerStrip, styles.masterStrip].join(" ")}
       role="group"
-      aria-label="Stereo Out"
+      aria-label="Wyjście stereo"
     >
       {/* Spacers align DualDb / fader with track strips (M·ST, Out, Pan). */}
       <div className={styles.channelModeSpacer} aria-hidden />
@@ -36,8 +36,8 @@ export function MasterStrip({ state, callbacks }: MasterStripProps) {
         hold={holdMerged}
         onGainReset={callbacks.onGainReset}
         onHoldClear={() => callbacks.onHoldClear?.()}
-        gainAriaLabel="Fader Stereo Out"
-        holdAriaLabel="Peak Hold Stereo Out — kliknij aby wyzerować"
+        gainAriaLabel="Fader wyjścia stereo"
+        holdAriaLabel="Szczyt wyjścia stereo — kliknij aby wyzerować"
       />
 
       <div className={styles.faderMeterRow}>
@@ -45,12 +45,12 @@ export function MasterStrip({ state, callbacks }: MasterStripProps) {
           gainDb={gainDb}
           onGainChange={callbacks.onGainChange}
           onGainReset={callbacks.onGainReset}
-          aria-label="Fader Stereo Out"
+          aria-label="Fader wyjścia stereo"
         />
         <PeakMeter
           db={state.meterL}
           dbR={state.meterR}
-          aria-label="Miernik Stereo Out"
+          aria-label="Miernik wyjścia stereo"
         />
       </div>
 

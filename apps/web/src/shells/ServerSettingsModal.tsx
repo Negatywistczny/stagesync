@@ -521,7 +521,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     className={styles.select}
                     disabled={saveBusy || !midiStatus.available}
                     value={midiDraft.inputId ?? ""}
-                    aria-label="MIDI input"
+                    aria-label="Wejście MIDI"
                     onChange={(e) => {
                       const v = e.target.value;
                       setDraft((d) =>
@@ -551,7 +551,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     className={styles.select}
                     disabled={saveBusy || !midiStatus.available}
                     value={midiDraft.outputId ?? ""}
-                    aria-label="MIDI output"
+                    aria-label="Wyjście MIDI"
                     onChange={(e) => {
                       const v = e.target.value;
                       setDraft((d) =>
@@ -580,7 +580,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     type="checkbox"
                     checked={midiDraft.clockOutEnabled}
                     disabled={saveBusy || !midiStatus.available}
-                    aria-label="MIDI clock out"
+                    aria-label="MIDI Clock OUT"
                     onChange={(e) => {
                       const checked = e.target.checked;
                       setDraft((d) =>
@@ -765,7 +765,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 <label className={styles.field}>
                   <span className={styles.label}>Bind host</span>
                   <select className={styles.select} value={server.STAGESYNC_BIND_HOST || "0.0.0.0"}
-                    onChange={(e) => setServer({ ...server, STAGESYNC_BIND_HOST: e.target.value })} aria-label="Bind host">
+                    onChange={(e) => setServer({ ...server, STAGESYNC_BIND_HOST: e.target.value })} aria-label="Host nasłuchu">
                     <option value="0.0.0.0">0.0.0.0 (LAN)</option>
                     <option value="127.0.0.1">localhost</option>
                   </select>
@@ -790,7 +790,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 </label>
                 <label className={styles.checkRow}>
                   <input type="checkbox" checked={!server.STAGESYNC_DISABLE_AUTO_UPDATE}
-                    onChange={(e) => setServer({ ...server, STAGESYNC_DISABLE_AUTO_UPDATE: !e.target.checked })} aria-label="Auto-update" />
+                    onChange={(e) => setServer({ ...server, STAGESYNC_DISABLE_AUTO_UPDATE: !e.target.checked })} aria-label="Aktualizacje automatyczne" />
                   <span>Aktualizacje z Admina</span>
                 </label>
                 <label className={styles.field}>
@@ -815,7 +815,10 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     <div className={styles.latencyRow}>
                       <input className={styles.select} style={{ flex: 1 }} type="text" value={String(server[key] ?? "")}
                         placeholder={ph ?? ""} onChange={(e) => setServer({ ...server, [key]: e.target.value })} aria-label={label} />
-                      <Button variant="secondary" onClick={() => {
+                      <Button
+                        variant="secondary"
+                        aria-label={`Przeglądaj katalog — ${label}`}
+                        onClick={() => {
                         setBrowseField(key);
                         void browseServerPath({ path: String(server[key] || ""), mode: "dir" }).then(setBrowseData).catch(() => setBrowseData(null));
                       }}>…</Button>
