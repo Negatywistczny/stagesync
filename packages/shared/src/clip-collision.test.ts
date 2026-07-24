@@ -381,6 +381,15 @@ describe("moveSectionsFromId", () => {
     expect(moveSectionsFromId(base(), "missing", 100)).toEqual(base());
     expect(moveSectionsFromId(base(), "forma-intro", 0)).toEqual(base());
   });
+
+  it("no-ops for non-finite newStartTicks", () => {
+    expect(moveSectionsFromId(base(), "forma-intro", Number.NaN)).toEqual(
+      base(),
+    );
+    expect(
+      moveSectionsFromId(base(), "forma-intro", Number.POSITIVE_INFINITY),
+    ).toEqual(base());
+  });
 });
 
 describe("resizeClipNoOverlap edges", () => {
