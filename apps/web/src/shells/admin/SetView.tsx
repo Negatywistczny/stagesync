@@ -95,6 +95,19 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const [filter, setFilter] = useState("");
   const [pickIds, setPickIds] = useState<string[]>([]);
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
+  const templateMenuId = "set-template-menu";
+
+  useEffect(() => {
+    if (!templateMenuOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setTemplateMenuOpen(false);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [templateMenuOpen]);
 
   const reload = useCallback(async () => {
     const next = await fetchSetlist();
@@ -473,13 +486,18 @@ export function SetView({ library, selectedId }: SetViewProps) {
                       variant="ghost"
                       disabled={pending}
                       aria-expanded={templateMenuOpen}
+                      aria-haspopup="menu"
+                      aria-controls={templateMenuId}
                       onClick={() => setTemplateMenuOpen((o) => !o)}
                     >
                       Wczytaj szablon ▾
                     </Button>
                     {templateMenuOpen ? (
-                      <div className={styles.templateMenu} role="menu">
-                        <button
+                      <div
+                        id={templateMenuId}
+                        className={styles.templateMenu}
+                        role="menu"
+                      >                        <button
                           type="button"
                           className={styles.templateItem}
                           role="menuitem"
