@@ -62,6 +62,7 @@ describe("timelineTouchNudge", () => {
     expect(shouldShowTouchNudge("tablet", "forma", section.id, p)).toBe(true);
     expect(shouldShowTouchNudge("desktop", "forma", section.id, p)).toBe(false);
     expect(shouldShowTouchNudge("mobile", "forma", section.id, p)).toBe(false);
+    expect(shouldShowTouchNudge("tablet", "forma", "missing", p)).toBe(false);
   });
 
   it("moves and stretches Forma section by bar", () => {
