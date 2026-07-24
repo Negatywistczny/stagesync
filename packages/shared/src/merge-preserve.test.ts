@@ -13,4 +13,19 @@ describe("mergePreserveById", () => {
       { id: "b", name: "B" },
     ]);
   });
+
+  it("skips empty ids and caps at 1024 entries", () => {
+    expect(
+      mergePreserveById([{ id: "", name: "x" }], [{ id: "", name: "y" }]),
+    ).toEqual([]);
+    const client = Array.from({ length: 1024 }, (_, i) => ({
+      id: `c${i}`,
+      name: `C${i}`,
+    }));
+    const server = [{ id: "server-only", name: "S" }];
+    const merged = mergePreserveById(server, client);
+    expect(merged).toHaveLength(1024);
+    expect(merged.some((x) => x.id === "server-only")).toBe(false);
+    expect(merged[0]?.id).toBe("c0");
+  });
 });
