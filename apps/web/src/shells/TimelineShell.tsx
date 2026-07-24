@@ -6598,7 +6598,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     max={127}
                     value={draftProject.midiProgramId ?? ""}
                     disabled={draftProject.isTemplate === true}
-                    aria-label="Program Change"
+                    aria-label="PC (MIDI)"
                     onChange={(e) => {
                       const n = Number(e.target.value);
                       if (!Number.isFinite(n)) return;
@@ -6680,7 +6680,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <span className={styles.metaKeyRow}>
                     <select
                       className={styles.nameInput}
-                      aria-label="Tonic start"
+                      aria-label="Tonika start"
                       value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
                       onChange={(e) => {
                         const mode =
@@ -7097,7 +7097,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Gain clip (dB)
                   <Slider
-                    aria-label="Gain clip"
+                    aria-label="Gain klipu (dB)"
                     min={-24}
                     max={12}
                     step={0.5}
@@ -7117,7 +7117,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade In (ms)
                   <Slider
-                    aria-label="Fade in"
+                    aria-label="Fade in (ms)"
                     min={0}
                     max={2000}
                     step={10}
@@ -7135,7 +7135,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade Out (ms)
                   <Slider
-                    aria-label="Fade out"
+                    aria-label="Fade out (ms)"
                     min={0}
                     max={2000}
                     step={10}
@@ -8144,7 +8144,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <select
                 className={styles.nameInput}
                 id="key-tonic"
-                aria-label="Tonic"
+                aria-label="Tonika"
                 defaultValue={
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }
