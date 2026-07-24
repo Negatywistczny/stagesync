@@ -20,6 +20,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 - [ ] Motywy / auth / multi-user
 - [ ] **Mixer — Out 3–4 (HW multi-out):** fizyczne wyjścia poza Master / `setSinkId` urządzenia — dopiero gdy model + WebAudio to wspierają (bez atrap w UI)
 - [ ] **Mixer — bus→bus:** routing wyjścia busa na inny bus (dziś bus → tylko Master)
+- [ ] **MIDI — kanał Program Change:** filtr IN (nie Omni) + kanał OUT w `MidiHostConfig` + Admin Host — dziś Omni IN / hardkod ch. 1 OUT ([RSK-MIDI-04/05](./analysis/inspiracje/audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md))
 - [ ] [#430](https://github.com/Negatywistczny/stagesync/issues/430) Cues Sampler
 - [ ] [#437](https://github.com/Negatywistczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
 - [ ] Android shell / store auto-update
