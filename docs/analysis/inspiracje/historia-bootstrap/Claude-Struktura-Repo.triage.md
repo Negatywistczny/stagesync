@@ -3,19 +3,20 @@
 **Źródło:** [Claude-Struktura-Repo.md](./Claude-Struktura-Repo.md)  
 **Status:** `archive`
 **Obszar:** Layout repo / DX  
-**Data triage:** 2026-07-24
+**Data triage:** 2026-07-24 (closeout vs SSOT)
 
 ## Werdykt przydatności
 
-**Niska.** Generyczny układ `src/components|pages|hooks` pod pojedynczą SPA — **superseded** przez realne monorepo (`apps/*`, `packages/*`).
+**Niska — superseded przez monorepo.** Generyczny układ SPA `src/components|pages|hooks` nie opisuje StageSync v5.
 
-## Co zachować vs overlap
+## Rozstrzygnięte
 
-| W dumpie | Stan w repo |
-|----------|-------------|
-| Drzewo SPA + `docs/adr` | Monorepo już ustalone (konstytucja, root-layout) |
-| `userdata` w gitignore | Już: `data/projects/*` |
+| ID | Temat | Stan | Dowód |
+|----|--------|------|--------|
+| HB-CL-01 | Drzewo pojedynczej SPA | `rejected` | `apps/*` + `packages/*` + root-layout |
+| HB-CL-02 | `docs/adr` w repo | `fixed` | `docs/adr/` (nie w kształcie SPA dumpa) |
+| HB-CL-03 | Userdata / uploads w gitignore | `fixed` | `data/projects/*` (+ gitkeep) — ADR 0001 |
 
 ## Następny krok
 
-Archiwum historyczne — **nie** restrukturyzować pod ten szablon.
+Brak — **nie** restrukturyzować pod szablon SPA.

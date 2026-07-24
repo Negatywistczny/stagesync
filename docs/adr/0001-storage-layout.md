@@ -36,3 +36,8 @@ data/
 - Migratory i CRUD celują w ścieżki po id projektu, bez monolitycznego pliku DB.
 - Import legacy 4.x należy do osobnego migratora później; nie dual-write starych kształtów do tego układu.
 - Usunięcie katalogu projektu usuwa też `assets/` — brak globalnego katalogu uploadów.
+
+## Powiązane (inspiracja, nie SSOT)
+
+- [Gemini-Diagnoza-V4-Fundamenty-V5.md](../analysis/inspiracje/historia-bootstrap/Gemini-Diagnoza-V4-Fundamenty-V5.md)
+  — wczesna diagnoza storage / monorepo; triage `archive`.

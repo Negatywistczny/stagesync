@@ -84,6 +84,9 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 
 ### historia-bootstrap/
 
+Wszystkie dumpy poniżej = **`archive`** (provenance bootstrapa v5). Nie TODO / nie CHANGELOG.
+Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
+
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
 | [Architektura-Oprogramowania-i-Ortogonalnosc.md](./historia-bootstrap/Architektura-Oprogramowania-i-Ortogonalnosc.md) | Deep Search / esej | [triage](./historia-bootstrap/Architektura-Oprogramowania-i-Ortogonalnosc.triage.md) | `archive` |

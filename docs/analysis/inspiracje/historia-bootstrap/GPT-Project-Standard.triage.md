@@ -3,19 +3,20 @@
 **Źródło:** [GPT-Project-Standard.md](./GPT-Project-Standard.md)  
 **Status:** `archive`
 **Obszar:** Standardy repo / layout  
-**Data triage:** 2026-07-24
+**Data triage:** 2026-07-24 (closeout vs SSOT)
 
 ## Werdykt przydatności
 
-**Częściowy overlap, niska wartość zmian.** Generyczny „Project Standard” i drzewo katalogów — część idei (ADR, docs, CI) już w StageSync; **nie** przebudowywać monorepo pod ten szablon.
+**Niska wartość zmian.** Generyczny „Project Standard” — overlap idei (ADR, docs, CI), konflikt drzewa z StageSync.
 
-## Co zachować vs overlap
+## Rozstrzygnięte
 
-| W dumpie | Stan w repo |
-|----------|-------------|
-| Jednolity PS między projektami | StageSync ma własne reguły |
-| Proponowane drzewo folderów | Konflikty z `apps/` / `packages/` / root-layout |
+| ID | Temat | Stan | Dowód |
+|----|--------|------|--------|
+| HB-PS-01 | Jednolity PS między projektami | `limit` | StageSync ma własne reguły / konstytucję |
+| HB-PS-02 | Proponowane drzewo folderów | `rejected` | Konflikty z `apps/` / `packages/` / root-layout |
+| HB-PS-03 | ADR + SemVer + CI jako praktyki | `fixed` | już w repo (własny kształt) |
 
 ## Następny krok
 
-Archiwum referencyjne — **nie** restrukturyzować pod dump.
+Brak — **nie** przebudowywać monorepo pod dump.

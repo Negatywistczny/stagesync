@@ -61,3 +61,8 @@ nie jest fundamentem domeny — jest wymienną warstwą dostarczania.
 - Agent egzekwuje Granicę 0 przez konstytucję (wskaźnik do tego ADR).
 - UI polish, motywy, CI, Docker — warstwy Stuff / Skin; nie wymagają zmiany
   aksjomatów.
+
+## Powiązane (inspiracja, nie SSOT)
+
+- [Architektura-Oprogramowania-i-Ortogonalnosc.md](../analysis/inspiracje/historia-bootstrap/Architektura-Oprogramowania-i-Ortogonalnosc.md)
+  — język pace layers / blast radius; triage `archive`.
