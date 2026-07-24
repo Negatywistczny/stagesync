@@ -100,6 +100,10 @@
 | [#580](https://github.com/Negatywistyczny/stagesync/pull/580) | Client pane status live | Drums/Karaoke/Grid |
 | [#581](https://github.com/Negatywistyczny/stagesync/pull/581) | ProjectId + stage schema | UUID + message rejects |
 | [#582](https://github.com/Negatywistyczny/stagesync/pull/582) | Wordmark suffix label | StageSync {suffix} |
+| [#583](https://github.com/Negatywistyczny/stagesync/pull/583) | Boolean env truthy | on/TRUE/1 → stored 1 |
+| [#584](https://github.com/Negatywistyczny/stagesync/pull/584) | Button variant classes | ghost/secondary + selected=false |
+| [#585](https://github.com/Negatywistyczny/stagesync/pull/585) | Slider aria bounds | valuemin/max/now |
+| [#586](https://github.com/Negatywistyczny/stagesync/pull/586) | ContextMenu aria-label | Default PL + custom label |
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
