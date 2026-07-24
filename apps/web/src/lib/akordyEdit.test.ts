@@ -4,6 +4,7 @@ import {
   deleteAkordyClip,
   pencilAkordyClick,
   resolveAkordClipAt,
+  commitAkordyClipSymbol,
   setAkordyClipSymbol,
 } from "./akordyEdit.js";
 
@@ -24,6 +25,21 @@ describe("akordyEdit", () => {
     expect(resolveAkordClipAt(p, 100)?.symbol).toBe("G");
     p = deleteAkordyClip(p, id);
     expect(p.akordy.clips).toHaveLength(0);
+  });
+
+  it("keeps incomplete maj while typing; commit collapses maj and keeps maj7", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = pencilAkordyClick(p, 0, "C");
+    const id = p.akordy.clips[0]!.id;
+    p = setAkordyClipSymbol(p, id, "Cmaj");
+    expect(p.akordy.clips[0]?.symbol).toBe("Cmaj");
+    p = setAkordyClipSymbol(p, id, "Cmaj7");
+    expect(p.akordy.clips[0]?.symbol).toBe("Cmaj7");
+    p = commitAkordyClipSymbol(p, id, "Cmaj7");
+    expect(p.akordy.clips[0]?.symbol).toBe("Cmaj7");
+    p = setAkordyClipSymbol(p, id, "Cmaj");
+    p = commitAkordyClipSymbol(p, id, "Cmaj");
+    expect(p.akordy.clips[0]?.symbol).toBe("C");
   });
 
   it("overwrite creates -r remnant resolved via parent id", () => {

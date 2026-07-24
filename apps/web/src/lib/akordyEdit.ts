@@ -70,12 +70,29 @@ export function deleteAkordyClip(project: Project, clipId: string): Project {
   return { ...project, akordy: { clips } };
 }
 
+/**
+ * Live inspector typing — keep raw text (no maj→triad collapse mid-keystroke).
+ * Call {@link commitAkordyClipSymbol} on blur / Enter.
+ */
 export function setAkordyClipSymbol(
   project: Project,
   clipId: string,
   symbol: string,
 ): Project {
-  const next = toLiteralStorage(symbol.trim() || "C") || "C";
+  const next = String(symbol ?? "").slice(0, 64);
+  const clips = project.akordy.clips.map((c) =>
+    c.id === clipId ? { ...c, symbol: next } : c,
+  );
+  return { ...project, akordy: { clips } };
+}
+
+/** Finalize symbol after edit — ASCII literal storage (`Cmaj` → `C`, `Cmaj7` stays). */
+export function commitAkordyClipSymbol(
+  project: Project,
+  clipId: string,
+  symbol: string,
+): Project {
+  const next = toLiteralStorage(String(symbol ?? "").trim() || "C") || "C";
   const clips = project.akordy.clips.map((c) =>
     c.id === clipId ? { ...c, symbol: next } : c,
   );

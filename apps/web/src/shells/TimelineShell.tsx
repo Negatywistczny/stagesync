@@ -143,6 +143,7 @@ import {
 import {
   deleteAkordyClip,
   pencilAkordyClick,
+  commitAkordyClipSymbol,
   setAkordyClipSymbol,
 } from "../lib/akordyEdit.js";
 import {
@@ -6830,6 +6831,21 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           e.target.value,
                         ),
                       );
+                    }}
+                    onBlur={(e) => {
+                      if (!draftProject) return;
+                      commitDraft(
+                        commitAkordyClipSymbol(
+                          draftProject,
+                          selectedAkordClip.id,
+                          e.target.value,
+                        ),
+                      );
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter") return;
+                      e.preventDefault();
+                      (e.currentTarget as HTMLInputElement).blur();
                     }}
                   />
                 </label>
