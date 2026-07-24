@@ -51,6 +51,15 @@
 | [#537](https://github.com/Negatywistyczny/stagesync/pull/537) | allocateUniqueClipId | Base-only → `base-2` |
 | [#538](https://github.com/Negatywistyczny/stagesync/pull/538) | Crash fallback nav | Odśwież / Client / Admin aria-labels |
 
+| [#539](https://github.com/Negatywistyczny/stagesync/pull/539) | Presence MAX_CLIENTS | Evict oldest on 257th connect |
+| [#540](https://github.com/Negatywistyczny/stagesync/pull/540) | Presence latencyMs | Clamp 0…60s; NaN/neg → null |
+| [#541](https://github.com/Negatywistyczny/stagesync/pull/541) | ZIP bytes edges | Short buffer + EOCD signatures |
+| [#542](https://github.com/Negatywistyczny/stagesync/pull/542) | gainDbToLinear NaN | Non-finite → unity |
+| [#543](https://github.com/Negatywistyczny/stagesync/pull/543) | Desktop modal labelledby | QR/Restart useId titles |
+| [#544](https://github.com/Negatywistyczny/stagesync/pull/544) | Timeline meta dialogs | Tempo/Metrum/Tonacja aria-labelledby |
+| [#545](https://github.com/Negatywistyczny/stagesync/pull/545) | Admin modal labelledby | MusicXML/Batch PC useId titles |
+| [#546](https://github.com/Negatywistyczny/stagesync/pull/546) | Peak-hold edges | Non-finite live + format −∞ |
+
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
