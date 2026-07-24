@@ -108,7 +108,7 @@ describe("ShellBlockingDialog focus trap", () => {
       <ShellAlertDialog open title="Błąd" message="Coś poszło nie tak." onClose={onClose} />,
     );
     expect(document.activeElement).toBe(
-      screen.getByRole("button", { name: "OK" }),
+      screen.getByRole("button", { name: "Rozumiem" }),
     );
     fireEvent.keyDown(document, { key: "Escape", bubbles: true });
     expect(onClose).toHaveBeenCalledOnce();

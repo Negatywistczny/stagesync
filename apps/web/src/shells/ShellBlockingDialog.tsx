@@ -208,7 +208,7 @@ export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDi
         <p className={styles.message}>{message}</p>
         <div className={styles.actions}>
           <Button variant="primary" onClick={onClose}>
-            OK
+            Rozumiem
           </Button>
         </div>
       </div>
