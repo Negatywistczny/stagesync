@@ -52,4 +52,21 @@ describe("section-names", () => {
     expect(normalizeSectionName("my custom part")).toBe("My Custom Part");
     expect(normalizeSectionName("")).toBe("Section");
   });
+
+  it("maps diacritic Polish aliases and instrument solos", () => {
+    expect(normalizeSectionName("wstęp")).toBe("Intro");
+    expect(normalizeSectionName("zakończenie")).toBe("Outro");
+    expect(normalizeSectionName("przedrefren")).toBe("Pre-Chorus");
+    expect(normalizeSectionName("guitar solo")).toBe("Guitar Solo");
+    expect(formatSectionNameForDisplay("Guitar Solo", { polish: true })).toBe(
+      "Solo (gitara)",
+    );
+    expect(formatSectionNameForDisplay("Drums Solo", { polish: true })).toBe(
+      "Solo (perkusja)",
+    );
+    expect(formatSectionNameForDisplay("Hook", { polish: true })).toBe("Hook");
+    expect(formatSectionNameForDisplay("Interlude", { polish: true })).toBe(
+      "Interludium",
+    );
+  });
 });
