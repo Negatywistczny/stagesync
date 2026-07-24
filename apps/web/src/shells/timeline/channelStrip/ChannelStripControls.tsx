@@ -271,8 +271,8 @@ export function ChannelStripControls({
             ]
               .filter(Boolean)
               .join(" ")}
-            title="Mono"
-            aria-label="Mono"
+            title="Tryb mono"
+            aria-label="Tryb mono"
             aria-pressed={channelMode === "mono"}
             onClick={() => callbacks.onChannelModeChange?.("mono")}
           >
@@ -286,8 +286,8 @@ export function ChannelStripControls({
             ]
               .filter(Boolean)
               .join(" ")}
-            title="Stereo"
-            aria-label="Stereo"
+            title="Tryb stereo"
+            aria-label="Tryb stereo"
             aria-pressed={channelMode === "stereo"}
             onClick={() => callbacks.onChannelModeChange?.("stereo")}
           >
