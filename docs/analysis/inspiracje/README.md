@@ -108,7 +108,7 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
-| [Logika-Edycji-Klipow-Logic-Pro.md](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.md) | Deep Search / Logic Pro | [triage](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.triage.md) | `open` |
+| [Logika-Edycji-Klipow-Logic-Pro.md](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.md) | Deep Search / Logic Pro | [triage](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.triage.md) | `archive` |
 
 ### ui/
 

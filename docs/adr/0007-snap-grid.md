@@ -44,6 +44,9 @@ Ten ADR dotyczy **snap grid** / **edit quantize** — siatki **czasu**, nie layo
 Tryb snap to **stan sesji Timeline** (React + opcjonalnie localStorage później).
 **Nie** zapisujemy go w `project.json` w alpha.
 
+**Model kwantyzacji:** **absolutny** (pozycja → najbliższa linia siatki; offset względem
+siatki nie jest zachowywany). Relative snap jak w Logic — patrz OUT poniżej.
+
 **Domyślny tryb (na stałe):** `DEFAULT_SNAP_MODE = "bar"` (miara) w `@stagesync/shared`.
 Timeline używa go **na sztywno** do czasu pickera UI; po dodaniu pickera `bar` pozostaje
 wartością domyślną przy starcie sesji / nowym projekcie.

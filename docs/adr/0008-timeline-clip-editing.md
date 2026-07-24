@@ -37,6 +37,9 @@ Liczba ścieżek audio (i kiedyś MIDI): **0…N** — brak twardego limitu w UI
 
 **Domyślny i jedyny tryb edycji geometrycznej:** **No Overlap** (w obrębie jednej ścieżki).
 
+**Terminologia Logic:** ten tryb = Tracks Area Drag Mode „No Overlap”. Parametr
+Inspectora „No Overlap” (Score / notacja) — **N/A** (brak Score Editor w StageSync).
+
 | Operacja | Zachowanie |
 |----------|------------|
 | Przeciągnięcie klipu na zajęty span | **Auto-trim** klipu leżącego pod spodem (Logic „No Overlap”); ewentualny split reszty |
@@ -139,7 +142,9 @@ Szczegóły checklist → [ROADMAP.md](../ROADMAP.md). Scope per etap → `repor
 - **ProjectSchema v3** ([ADR 0009](./0009-project-schema-v3.md)): refs plików α6; pola trim/gain/mute silnika → β2.
 - Shared: helpery kolizji no-overlap (Forma + generyczne dla lane) — czyste funkcje, testy Vitest.
 - [ui-shell-inventory.md](../ui-shell-inventory.md): Smart Tool, Gain Tool, Mute Tool, fader ścieżki.
-- Logic Pro spec (STAGESYNC-V5-PLAN): referencja algorytmiczna, nie checklista implementacji.
+- Logic Pro (inspiracja, **nie** SSOT):
+  [Logika-Edycji-Klipow-Logic-Pro.md](../analysis/inspiracje/referencje-daw/Logika-Edycji-Klipow-Logic-Pro.md)
+  — referencja algorytmiczna; nie checklista implementacji / TODO.
 
 ## Powiązane ADR
 

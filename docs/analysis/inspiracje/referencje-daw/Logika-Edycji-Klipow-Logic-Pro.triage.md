@@ -1,22 +1,34 @@
 # Triage: Logika edycji klipów (Logic Pro)
 
 **Źródło:** [Logika-Edycji-Klipow-Logic-Pro.md](./Logika-Edycji-Klipow-Logic-Pro.md)  
-**Status:** `open`
+**Status:** `archive`
 **Obszar:** Timeline DAW / snap / drag / overlap  
-**Data triage:** 2026-07-24
+**Data triage:** 2026-07-24 (zamknięte vs ADR 0007/0008)
 
 ## Werdykt przydatności
 
-**Wysoka wartość produktowa.** Absolute vs relative snap, tryby drag, no-overlap (tryb vs parametr) — dobre źródło luk względem [ADR 0007](../../../adr/0007-snap-grid.md) / [ADR 0008](../../../adr/0008-timeline-clip-editing.md). Nie kopiować chrome Logic; weryfikować **zachowanie**.
+**Wysoka wartość historyczna / provenance — nie backlog.** Dump zasilił [ADR 0007](../../../adr/0007-snap-grid.md) / [ADR 0008](../../../adr/0008-timeline-clip-editing.md). Nie kopiować chrome Logic; nie otwierać TODO z sekcji OUT ADR. Relative snap / Shuffle / Flex = jawne OUT do decyzji PO.
 
-## Co zachować vs overlap
+## Rozstrzygnięte
 
-| W dumpie | Stan w repo |
-|----------|-------------|
-| Absolute / relative snap | Porównać z implementacją + ADR 0008 |
-| Drag modes + no-overlap | ADR 0007/0008 — sprawdzić luki |
-| Modifiers Control/Shift jak w Logic | Tylko jeśli parity v4 / decyzja PO |
+| ID | Temat (dump) | Stan | Dowód |
+|----|--------------|------|--------|
+| LP-01 | Absolute snap | `fixed` | `quantizeTicks` — model absolutny (ADR 0007) |
+| LP-02 | Relative snap (offset modulo G) | `limit` | ADR 0007 OUT — po jawnej decyzji PO |
+| LP-03 | Modyfikatory Control / Control+Shift (finer / ticks / samples) | `limit` | ADR 0007: tylko Cmd/Ctrl = `off` |
+| LP-04 | Drag: No Overlap (Tracks Area) | `fixed` | ADR 0008 §2 — jedyny tryb |
+| LP-05 | Drag: Overlap / X-Fade / Shuffle L/R | `limit` | ADR 0008 OUT |
+| LP-06 | Parametr Inspector „No Overlap” (Score) | `rejected` | N/A — brak Score Editor |
+| LP-07 | Smart click zones (fade/trim/marquee ½H) | `partial` | ADR 0008 §6 — strefy; fade narożniki produktowo późniejsze |
+| LP-08 | Marquee advanced (transient tab, heal, silence paste) | `limit` | poza MVP / v4 must |
+| LP-09 | Time-stretch Option-drag / Flex Time | `limit` | ADR 0008 OUT |
+| LP-10 | MIDI note-off overlap / Take Folders / recording modes | `limit` | ADR 0008 OUT; MIDI clock ≠ recording |
+
+## Co wchłonięto do SSOT (ten pass)
+
+- ADR 0007: jawne „kwantyzacja **absolutna**”.
+- ADR 0008: terminologia No Overlap (tryb vs Score) + link do dumpu jako inspiracja.
 
 ## Następny krok
 
-Macierz: zachowanie Logic (dump) × ADR × kod → lista delt do TODO dopiero po weryfikacji (parity FIRST).
+Brak implementacji z dumpu. Relative snap / dodatkowe drag modes — tylko po decyzji PO w ADR, nie z tego pliku.
