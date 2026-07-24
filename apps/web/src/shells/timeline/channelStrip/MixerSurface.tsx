@@ -169,6 +169,7 @@ export function MixerSurface({
               <button
                 type="button"
                 className={styles.addBusBtn}
+                aria-label="Dodaj Bus"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddBus();
