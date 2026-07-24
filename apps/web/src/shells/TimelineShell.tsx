@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -532,7 +531,6 @@ export function TimelineShell() {
   const eyeMenuRef = useRef<HTMLDivElement>(null);
   const toolsVisBtnRef = useRef<HTMLButtonElement>(null);
   const toolsVisMenuRef = useRef<HTMLDivElement>(null);
-  const songScreenId = useId();
   const [eyeMenuPos, setEyeMenuPos] = useState<{
     top: number;
     left: number;
@@ -709,9 +707,6 @@ export function TimelineShell() {
   const [meterEditOpen, setMeterEditOpen] = useState(false);
   const [meterNumDraft, setMeterNumDraft] = useState("4");
   const [meterDenDraft, setMeterDenDraft] = useState("4");
-  const tempoEditTitleId = useId();
-  const meterEditTitleId = useId();
-  const keyEditTitleId = useId();
   const [keyEditOpen, setKeyEditOpen] = useState(false);
   /** Ticks used by map edit modals (playhead or clicked segment). */
   const [mapEditTicks, setMapEditTicks] = useState(0);
@@ -5672,7 +5667,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
 
         <div className={styles.toolbarCenter}>
-          <div className={styles.transport} role="group" aria-label="Transport odtwarzania">
+          <div className={styles.transport} role="group" aria-label="Transport">
             <ShellIconButton
               label="Zatrzymaj"
               disabled={commandPending}
@@ -5831,7 +5826,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             onClick={() => setSongScreenOpen(true)}
             aria-haspopup="dialog"
             aria-expanded={songScreenOpen}
-            aria-controls={songScreenOpen ? songScreenId : undefined}
           >
             {draftProject?.name ?? "Wybierz utwór"}
           </button>
@@ -7434,7 +7428,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </aside>
       </div>
 
-      <footer className={styles.status} aria-label="Status osi czasu">
+      <footer className={styles.status} aria-label="Status Timeline">
         <div className={styles.statusLeft}>
           <ConnectionIndicator status={wsStatus} variant="dot" />
           <span className={styles.statusConnLab}>
@@ -7457,7 +7451,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 if (next) setSnapMode(next);
               }}
             >
-              <option value="off">Wyłącz</option>
+              <option value="off">Off</option>
               <option value="bar">Takt</option>
               <option value="beat">Beat</option>
               <option value="subdivision:2">1/2</option>
@@ -7763,13 +7757,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {songScreenOpen ? (
-        <div
-          id={songScreenId}
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="song-screen-title"
-        >
+        <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="song-screen-title">
           <button
             type="button"
             className={styles.backdrop}
@@ -8027,16 +8015,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         : null}
 
       {tempoEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby={tempoEditTitleId}
-        >
+        <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2 id={tempoEditTitleId}>
-              Tempo @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
-            </h2>
+            <h2>Tempo @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}</h2>
             <label className={styles.inspField}>
               BPM
               <input
@@ -8069,16 +8050,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {meterEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby={meterEditTitleId}
-        >
+        <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2 id={meterEditTitleId}>
-              Metrum @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
-            </h2>
+            <h2>Metrum @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}</h2>
             <div
               className={styles.meterEditRow}
               role="group"
@@ -8145,16 +8119,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {keyEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby={keyEditTitleId}
-        >
+        <div className={styles.overlay} role="dialog" aria-modal>
           <div className={styles.overlayPanel}>
-            <h2 id={keyEditTitleId}>
-              Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "lane"}
-            </h2>
+            <h2>Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}</h2>
             <div
               className={styles.keyEditRow}
               role="group"
@@ -8163,7 +8130,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <select
                 className={styles.nameInput}
                 id="key-tonic"
-                aria-label="Tonic"
+                aria-label="Tonika"
                 defaultValue={
                   resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
                 }
