@@ -102,18 +102,34 @@ export function GridPane({
   teamSemitones = 0,
 }: Props) {
   if (!hasActiveProjectId) {
-    return <p className={styles.empty}>Oczekiwanie na utwór…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Oczekiwanie na utwór…
+      </p>
+    );
   }
   if (loading && !project) {
-    return <p className={styles.empty}>Wczytywanie utworu…</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Wczytywanie utworu…
+      </p>
+    );
   }
   if (!project) {
-    return <p className={styles.empty}>Nie udało się wczytać utworu.</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Nie udało się wczytać utworu.
+      </p>
+    );
   }
 
   const ctx = buildGridLiveContext(project, displayTicks);
   if (ctx.emptyReason) {
-    return <p className={styles.empty}>{ctx.emptyReason}</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        {ctx.emptyReason}
+      </p>
+    );
   }
 
   const key = resolveKeyAt(project, displayTicks);

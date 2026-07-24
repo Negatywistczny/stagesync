@@ -67,6 +67,9 @@ describe("storage/paths", () => {
     process.env.STAGESYNC_DATA_DIR = "/tmp/ss-custom-data";
     expect(defaultDataDir()).toBe("/tmp/ss-custom-data");
 
+    process.env.STAGESYNC_DATA_DIR = "relative-data";
+    expect(defaultDataDir()).toMatch(/[/\\]relative-data$/);
+
     delete process.env.STAGESYNC_DATA_DIR;
     process.env.STAGESYNC_REPO_DEV = "1";
     expect(defaultDataDir()).toMatch(/[/\\]data$/);
@@ -75,6 +78,12 @@ describe("storage/paths", () => {
     process.env.HOME = "/Users/test";
     expect(defaultDataDir()).toBe(
       join("/Users/test", "Documents", "StageSync"),
+    );
+
+    delete process.env.HOME;
+    process.env.USERPROFILE = "C:\\Users\\test";
+    expect(defaultDataDir()).toBe(
+      join("C:\\Users\\test", "Documents", "StageSync"),
     );
 
     delete process.env.HOME;
@@ -89,6 +98,9 @@ describe("storage/paths", () => {
 
     process.env.STAGESYNC_SEED_DIR = "/opt/seed";
     expect(defaultSeedDir()).toBe("/opt/seed");
+
+    process.env.STAGESYNC_SEED_DIR = "bundled-seed";
+    expect(defaultSeedDir()).toMatch(/[/\\]bundled-seed$/);
   });
 
   it("assertSafeProjectId + assetFilePath reject traversal", () => {

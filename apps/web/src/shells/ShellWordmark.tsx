@@ -21,12 +21,13 @@ export function ShellWordmark({
   onClick,
   title,
 }: ShellWordmarkProps) {
+  const brandLabel = suffix ? `StageSync ${suffix}` : "StageSync";
   const logo = (
     <span
       className={styles.logo}
       {...(onClick
         ? { "aria-hidden": true as const }
-        : { role: "img" as const, "aria-label": "StageSync" })}
+        : { role: "img" as const, "aria-label": brandLabel })}
     >
       <img
         className={`${styles.logoImg} ${styles.logoDark}`}
@@ -51,7 +52,7 @@ export function ShellWordmark({
           className={styles.wordmarkBtn}
           onClick={onClick}
           title={title}
-          aria-label={title ?? "StageSync"}
+          aria-label={title ?? brandLabel}
         >
           {logo}
         </button>

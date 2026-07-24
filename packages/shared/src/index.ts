@@ -247,7 +247,6 @@ export {
   normalizeAnchors,
   normalizeMap,
   songBarToScoreBar,
-  logicBarToScoreBar,
   scoreBarToSongBar,
   ticksFromScoreBar,
   type ScoreBarMapLike,
@@ -260,12 +259,9 @@ export {
   formatChordParts,
   parseAndFormat,
   parseAndFormatParts,
-  chordLiteralToSymbolDisplay,
-  formatChordForDisplay,
   formatHybridPolishB,
   formatMusicalAccidentals,
   resolveChordNameParts,
-  splitChordSuperscript,
   type ChordDisplayOptions,
   type ChordNameParts,
 } from "./chord-display.js";
@@ -427,7 +423,6 @@ export {
 
 export {
   placeContentFromForma,
-  wandContentToForma,
   type WandMode,
   type WandScope,
   type WandResult,
@@ -440,8 +435,6 @@ export {
   syntheticCountdownAkordClips,
   syntheticCountdownDisplayFromProject,
   scrubCountdownDigitClips,
-  regenerateCountdownContent,
-  buildCountdownDigitTekstClips,
   type CountdownDigitLabel,
 } from "./countdown-content.js";
 

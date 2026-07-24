@@ -353,12 +353,15 @@ export function SystemView({
               <Button
                 variant="ghost"
                 selected={paused}
+                aria-pressed={paused}
+                aria-label={paused ? "Wznów logi na żywo" : "Wstrzymaj logi na żywo"}
                 onClick={() => setPaused((v) => !v)}
               >
                 {paused ? "Wznów" : "Pauza"}
               </Button>
               <Button
                 variant="ghost"
+                aria-label="Wyczyść logi hosta"
                 onClick={() => {
                   void (async () => {
                     try {
@@ -375,6 +378,7 @@ export function SystemView({
               <Button
                 variant="ghost"
                 loading={diagBusy}
+                aria-label="Pobierz paczkę diagnostyki ZIP"
                 onClick={() => {
                   void (async () => {
                     setDiagBusy(true);
