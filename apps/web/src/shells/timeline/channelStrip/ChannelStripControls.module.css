@@ -388,7 +388,7 @@
   transform: translateY(50%);
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-medium);
-  line-height: 1;
+  line-height: var(--ss-leading-none);
   color: var(--ss-color-text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
