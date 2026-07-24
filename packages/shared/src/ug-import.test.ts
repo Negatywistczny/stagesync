@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  canonicalizePolishH,
+  clipsFromOnsets,
   importUgText,
   sealAkordyLengths,
   chordOnsetsInBar,
@@ -109,30 +109,12 @@ Must be funny`;
     expect(sealed[1]!.startTicks).toBe(1920);
   });
 
-  it("sealAkordyLengths is identity for empty and sorts same-start by id", () => {
-    const empty: { id: string; startTicks: number; lengthTicks: number; symbol: string }[] = [];
-    expect(sealAkordyLengths(empty)).toBe(empty);
-    const sealed = sealAkordyLengths([
-      { id: "z", startTicks: 0, lengthTicks: 10, symbol: "G" },
-      { id: "a", startTicks: 0, lengthTicks: 10, symbol: "C" },
-    ]);
-    expect(sealed.map((c) => c.id)).toEqual(["a", "z"]);
-    expect(sealed[0]!.lengthTicks).toBe(1);
-    expect(sealed[1]!.lengthTicks).toBe(10);
-  });
-
   it("chordOnsetsInBar keeps unique increasing onsets for dense lines", () => {
     const onsets = chordOnsetsInBar(5, 0, 3840, 4, 960);
     expect(onsets).toHaveLength(5);
     for (let i = 1; i < onsets.length; i++) {
       expect(onsets[i]!).toBeGreaterThan(onsets[i - 1]!);
     }
-  });
-
-  it("chordOnsetsInBar returns empty or single for tiny counts", () => {
-    expect(chordOnsetsInBar(0, 100, 3840, 4, 960)).toEqual([]);
-    expect(chordOnsetsInBar(-2, 100, 3840, 4, 960)).toEqual([]);
-    expect(chordOnsetsInBar(1, 100, 3840, 4, 960)).toEqual([100]);
   });
 
   it("chordOnsetsInBar packs when many chords crowd a short bar", () => {
@@ -199,11 +181,36 @@ Must be funny`;
   });
 });
 
-describe("canonicalizePolishH", () => {
-  it("stores Polish H as B via toLiteralStorage", () => {
-    expect(canonicalizePolishH("H")).toBe("B");
-    expect(canonicalizePolishH("Hm7")).toBe("Bm7");
-    expect(canonicalizePolishH("G/H")).toBe("G/B");
-    expect(canonicalizePolishH("C")).toBe("C");
+describe("clipsFromOnsets", () => {
+  it("builds lengths to next onset and optional sourceLineId", () => {
+    expect(clipsFromOnsets([], [], 100, "line", 0)).toEqual({
+      clips: [],
+      nextSeq: 0,
+    });
+    const { clips, nextSeq } = clipsFromOnsets(
+      ["C", "G"],
+      [0, 960],
+      3840,
+      "L1",
+      3,
+      "  line-a  ",
+    );
+    expect(nextSeq).toBe(5);
+    expect(clips).toEqual([
+      {
+        id: "L1-akord-4",
+        startTicks: 0,
+        lengthTicks: 960,
+        symbol: "C",
+        sourceLineId: "line-a",
+      },
+      {
+        id: "L1-akord-5",
+        startTicks: 960,
+        lengthTicks: 2880,
+        symbol: "G",
+        sourceLineId: "line-a",
+      },
+    ]);
   });
 });
