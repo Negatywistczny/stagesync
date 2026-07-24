@@ -102,13 +102,15 @@ Pod H3 grupuj domenowo przez `####` **z emoji** (gdy ≥ ~4 bulletów w sekcji).
 
 | `####` (kanoniczny) | Zakres |
 |---------------------|--------|
-| `#### ⏱️ Timeline & DAW` | edycja, linijka, Formy, inspector, narzędzia, Pomoc Timeline |
-| `#### 🎛️ Audio / MIDI / Transport` | playback, fade, MIDI I/O, playhead, setlista, WS |
-| `#### 🖥️ App Shell & UI` | Admin / Client chrome, preferencje, i18n widoczne w UI |
+| `#### ⏱️ Timeline & DAW` | edycja, linijka, Formy, inspector, narzędzia, Pomoc Timeline; **Mixer / dock ścieżek**; meta mapy Tempo / Metrum / Tonacja; fokus / ARIA **w Timeline** |
+| `#### 🎛️ Audio / MIDI / Transport` | playback, fade, MIDI I/O, playhead, setlista, **WS / utrata połączenia**, alerty transportu |
+| `#### 🖥️ App Shell & UI` | **Admin / Client chrome** (nie Timeline), preferencje, i18n; dialogi shelła; widok Client (np. Akordy na scenie); ARIA **tylko chrome** Admin/Client |
 | `#### ⚙️ Serwer & API` | HTTP, persystencja, walidacja krawędzi, migracja |
 | `#### 📚 Dokumentacja` | Pomoc in-app, publiczne INSTALL/DESKTOP/API — nie ADR/TODO/reporty |
 | `#### 📦 Packaging & Desktop (Tauri / Docker)` | Tauri, menu OS, updater, DnD shelła, instalatory, obrazy Docker |
 | `#### 🛠️ Infrastruktura & Build` | env/porty / ścieżki danych **widoczne dla operatora**; formaty `.msi`/`.dmg` gdy nie mieszczą się w Packaging — **bez** pipeline CI |
+
+**Podział cross-cutting (a11y, fokus, Escape):** kategoria = **powierzchnia produktu**, nie „wszystko UI → App Shell”. Jeden PR łączący Mixer + Client → **rozbij na 2 bullety** (Timeline vs App Shell) albo dwa linki PR w osobnych klastrach. **Zakaz** wrzucania Timeline/Mixer/Transportu pod `🖥️ App Shell & UI` tylko dlatego, że to „frontend”.
 
 Puste H3 — **nie twórz**. Brakujące H3 — dodaj **raz**, w kanonicznej kolejności.
 Nagłówki `####` **bez** emoji albo z inną nazwą domeny — **zakazane** (używaj tabeli powyżej).

@@ -9,8 +9,18 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+#### ⏱️ Timeline & DAW
+- **Etykiety AT:** Solo/Mute w Mixerze oraz meta transportu i segmenty mapy Tempo / Metrum / Tonacja mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/Negatywistyczny/stagesync/pull/480), [#483](https://github.com/Negatywistyczny/stagesync/pull/483), [#487](https://github.com/Negatywistyczny/stagesync/pull/487)).
+- **Fokus rename:** po rename ścieżki myszą w docku / Mixerze nie zostaje „przyklejony” pierścień fokusu; przy Tab pierścień nadal widać ([#485](https://github.com/Negatywistyczny/stagesync/pull/485)).
+
+#### 🎛️ Audio / MIDI / Transport
+- **Offline:** przy utracie połączenia komunikat jest ogłaszany jako alert (czytniki ekranu) ([#488](https://github.com/Negatywistyczny/stagesync/pull/488)).
+
 #### 🖥️ App Shell & UI
 - **Client / Akordy:** zapis literowy w projekcie (`Cmaj7`, `Am7(b5)`, …); na scenie pryma na linii bazowej, a jakość i symbole (`Δ`, `°`, `ø`, `−`, `+`) w indeksie górnym — w kafelkach bas po ukośniku pod prymą, w Hero/nast. nadal w jednej linii ([#478](https://github.com/Negatywistyczny/stagesync/issues/478)).
+- **Client / etykiety AT:** następny w setliście, obecność na Scenie, wskaźnik połączenia i dodawanie busa mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/Negatywistyczny/stagesync/pull/480)).
+- **Admin Set:** menu „Wczytaj szablon” w pustym secie z poprawnymi powiązaniami ARIA; Escape zamyka menu ([#491](https://github.com/Negatywistyczny/stagesync/pull/491)).
+- **Dialogi:** Escape zamyka okna confirm / prompt / alert jak Anuluj ([#493](https://github.com/Negatywistyczny/stagesync/pull/493)).
 
 ## [5.1.0](https://github.com/Negatywistczny/stagesync/compare/v5.0.1...v5.1.0) - 2026-07-24 — Launch & Mix
 
