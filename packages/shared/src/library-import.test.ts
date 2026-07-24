@@ -21,6 +21,23 @@ describe("looksLikeZipBytes", () => {
     );
   });
 
+  it("detects empty / central directory signatures", () => {
+    expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x05, 0x06]))).toBe(
+      true,
+    );
+    expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x07, 0x08]))).toBe(
+      true,
+    );
+  });
+
+  it("rejects short buffers and ArrayBuffer views under 4 bytes", () => {
+    expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x03]))).toBe(false);
+    expect(looksLikeZipBytes(new ArrayBuffer(0))).toBe(false);
+    expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x01, 0x02]))).toBe(
+      false,
+    );
+  });
+
   it("rejects JSON text", () => {
     const enc = new TextEncoder().encode('{"songs":[]}');
     expect(looksLikeZipBytes(enc)).toBe(false);
