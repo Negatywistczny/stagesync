@@ -22,16 +22,16 @@ Merge order tip: **481 before 484** reduces token conflict risk on `packages/ui/
 
 ## Ranked backlog (next)
 
-1. **Residual shell typography** — `ChannelStripControls` / `SetView` `line-height: 1` → `--ss-leading-none` (after #481).
-2. **OSMD cursor hex in JS** — `scoreOsmd.ts` still needs concrete `#fbbf24` / `#22d3ee` for OSMD API; document or read from computed `--ss-*` once.
-3. **Admin template menu** — ensure `aria-controls` / escape dismiss parity with other popovers.
-4. **Server edges** — dedicated unit tests for `program-change*.ts` message shaping (not clock math).
-5. **Dead CSS audit** — purge unused Timeline/Client module classes (knip/purify pass).
-6. **Icon-only Timeline tool overflow** — verify every tools-vis / eye / dock-add path has accessible name on narrow widths.
-7. **i18n consistency** — PL labels on a11y strings vs EN storage IDs (audit only).
-8. **Codecov gaps** — `apps/server` route handlers still thin outside happy-path API tests.
-9. **ShellBlockingDialog** — unit-test focus trap Tab cycle (jsdom).
-10. **Desktop Launcher shell** — audit return-to-host control names in Tauri (outside web bundle).
+1. **OSMD cursor hex in JS** — `scoreOsmd.ts` still needs concrete `#fbbf24` / `#22d3ee` for OSMD API.
+2. **Dead CSS audit** — purge unused Timeline/Client module classes (knip/purify pass).
+3. **Icon-only Timeline tool overflow** — verify tools-vis / eye / dock-add names on narrow widths.
+4. **i18n consistency** — PL a11y strings vs EN storage IDs (audit only).
+5. **Codecov gaps** — `apps/server` route handlers still thin outside happy-path API tests.
+6. **ShellBlockingDialog** — unit-test focus trap Tab cycle (jsdom).
+7. **Desktop Launcher shell** — audit return-to-host control names in Tauri (outside web bundle).
+8. **ClickStrip Mute label** — already has aria-label; verify Polish parity with channel strips.
+9. **prefsRange / zoomRange** — keep dual `:focus` + `:focus-visible` pattern documented.
+10. **Merge train** — land #481 before #484/#489 to reduce token conflicts.
 
 ## Skipped / off-limits
 
