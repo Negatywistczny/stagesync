@@ -58,7 +58,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 - **Kotwice XML:** bloczki synchronizacji taktów pozycjonowane na osi czasu (drag zmienia takt logiczny, bez pakowania jeden za drugim) ([#477](https://github.com/Negatywistczny/stagesync/issues/477)).
-- **Tap wokalu:** Spacja ustawia start linii Tekstu przy playheadzie (nie na zparkowanym locatorze / takcie 1); przycisk Tap przy warstwie Tekst podświetla aktywny tryb ([#479](https://github.com/Negatywistyczny/stagesync/issues/479)).
+- **Tap wokalu:** Spacja ustawia start linii Tekstu przy playheadzie (nie na zparkowanym locatorze / takcie 1); przycisk Tap przy warstwie Tekst podświetla aktywny tryb ([#479](https://github.com/Negatywistczny/stagesync/issues/479)).
 
 #### 🖥️ App Shell & UI
 - **Client / Akordy:** import UG respektuje złożone i polskie akordy (`Edim`, `G/A`, `G/H` → zapis `G/B`; na scenie znów `H` przy „H zamiast B”) ([#478](https://github.com/Negatywistczny/stagesync/issues/478)).
