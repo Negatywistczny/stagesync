@@ -86,6 +86,14 @@
 | [#567](https://github.com/Negatywistyczny/stagesync/pull/567) | canonicalizePolishH | Direct H→B unit coverage |
 | [#568](https://github.com/Negatywistyczny/stagesync/pull/568) | Empty diagnostics zip | EOCD + crc32 empty |
 
+| [#569](https://github.com/Negatywistyczny/stagesync/pull/569) | Admin MusicXML/Batch PC titles | Import MusicXML; Numeracja Program Change |
+| [#570](https://github.com/Negatywistyczny/stagesync/pull/570) | Section name Final/Coda/Solo | Final Chorus + instrument PL solos |
+| [#571](https://github.com/Negatywistyczny/stagesync/pull/571) | Asset DELETE 404 | Unknown asset id |
+| [#572](https://github.com/Negatywistyczny/stagesync/pull/572) | nextMidiProgramId edges | Empty / undefined entries |
+| [#573](https://github.com/Negatywistyczny/stagesync/pull/573) | Batch PC start label | Start Program Change |
+| [#574](https://github.com/Negatywistyczny/stagesync/pull/574) | sendError truncate | Details + 500-char message |
+| [#575](https://github.com/Negatywistyczny/stagesync/pull/575) | System log a11y | Pause/clear/diagnostics labels |
+| [#576](https://github.com/Negatywistyczny/stagesync/pull/576) | mDNS hostname edges | .local strip + truncate |
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
