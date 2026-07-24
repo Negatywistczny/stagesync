@@ -5712,6 +5712,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               type="button"
               className={styles.metaBtn}
               title="Tempo — kliknij, aby edytować @ playhead"
+              aria-label="Tempo — kliknij, aby edytować @ playhead"
               onClick={() => {
                 openMapEdit("tempo", displayTicks);
               }}
@@ -5747,6 +5748,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 type="button"
                 className={styles.metaBtn}
                 title="Metrum — kliknij, aby edytować @ playhead"
+                aria-label="Metrum — kliknij, aby edytować @ playhead"
                 onClick={() => {
                   openMapEdit("metrum", displayTicks);
                 }}
@@ -5757,6 +5759,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 type="button"
                 className={styles.metaBtn}
                 title="Tonacja — kliknij, aby edytować"
+                aria-label="Tonacja — kliknij, aby edytować"
                 onClick={() => openMapEdit("tonacja", displayTicks)}
               >
                 {draftProject
