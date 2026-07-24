@@ -55,8 +55,8 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 | Katalog | Po co | Typowy status dokumentu |
 |---------|--------|-------------------------|
 | [`historia-bootstrap/`](./historia-bootstrap/) | Dlaczego V5 / konstytucja / monorepo | `archive` |
-| [`audyty-silnik/`](./audyty-silnik/) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI | `open` → … |
-| [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW vs ADR | `open` → … |
+| [`audyty-silnik/`](./audyty-silnik/) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
+| [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
 | [`ui/`](./ui/) | Gęstość / kontrast vs `ui-density` / `@stagesync/ui` | `open` → … |
 
 ## Zasady
@@ -101,10 +101,13 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
+| [Audyt-Architektury-StageSync-v5.md](./audyty-silnik/Audyt-Architektury-StageSync-v5.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md) | `partial` |
 | [Audyt-Edytora-Sciezek-Audio.md](./audyty-silnik/Audyt-Edytora-Sciezek-Audio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Edytora-Sciezek-Audio.triage.md) | `closed` |
+| [Audyt-Lifecycle-StageSync-v5-Desktop.md](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md) | `open` |
 | [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md) | `partial` |
 | [Audyt-Routingu-Miksera-StageSync.md](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md) | `partial` |
 | [Audyt-Silnika-Odtwarzania-Audio-WebAudio.md](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md) | `partial` |
+| [Audyt-StageSync-v5-Race-Conditions.md](./audyty-silnik/Audyt-StageSync-v5-Race-Conditions.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-StageSync-v5-Race-Conditions.triage.md) | `partial` |
 | [Audyt-Synchronizacji-Transport-SSOT.md](./audyty-silnik/Audyt-Synchronizacji-Transport-SSOT.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Synchronizacji-Transport-SSOT.triage.md) | `partial` |
 
 ### referencje-daw/
@@ -112,6 +115,9 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
 | [Logika-Edycji-Klipow-Logic-Pro.md](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.md) | Deep Search / Logic Pro | [triage](./referencje-daw/Logika-Edycji-Klipow-Logic-Pro.triage.md) | `archive` |
+| [Referencja-Zachowan-Live-MIDI.md](./referencje-daw/Referencja-Zachowan-Live-MIDI.md) | Gemini Deep Search | [triage](./referencje-daw/Referencja-Zachowan-Live-MIDI.triage.md) | `partial` |
+| [Specyfikacja-Referencji-Zachowan-Wyswietlania.md](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.md) | Gemini Deep Search | [triage](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.triage.md) | `open` |
+| [UXLogika-Show-Tools-Referencja-Zachowan.md](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.md) | Gemini Deep Search | [triage](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.triage.md) | `open` |
 
 ### ui/
 
