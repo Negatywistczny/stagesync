@@ -24,6 +24,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Etykiety AT:** Dodaj ścieżkę, menu oka i narzędzi, zoom, picker utworu i wyglądu ścieżki, dialogi edycji mapy oraz grupy transportu / statusu mają czytelne nazwy i powiązania dla czytników ekranu; w Pomocy puste wyniki wyszukiwania są ogłaszane na żywo ([#500](https://github.com/Negatywistyczny/stagesync/pull/500), [#505](https://github.com/Negatywistyczny/stagesync/pull/505), [#512](https://github.com/Negatywistyczny/stagesync/pull/512), [#544](https://github.com/Negatywistyczny/stagesync/pull/544), [#551](https://github.com/Negatywistyczny/stagesync/pull/551), [#587](https://github.com/Negatywistyczny/stagesync/pull/587), [#601](https://github.com/Negatywistyczny/stagesync/pull/601)).
 - **Mixer / Click:** Mute Clicka oraz stripy (wyjście stereo, balans, panorama, peak) z polskimi etykietami AT ([#497](https://github.com/Negatywistyczny/stagesync/pull/497), [#513](https://github.com/Negatywistyczny/stagesync/pull/513)).
 - **Menu narzędzi:** skróty jako pojedyncza litera (np. I), bez prefiksu T.
+- **Audio / edycja:** split respektuje mapę tempa przy `trimIn`; resize z kolizją nie wywala UI; multi-przesuwanie trzyma klip wiodący; Gain odrzuca NaN.
 - **Akordy:** symbol w Inspectorze nie jest kanonizowany w trakcie wpisywania; normalizacja przy wyjściu z pola.
 
 #### 🖥️ App Shell & UI

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   createProjectSeed,
   elapsedToTicks,
+  ticksToMs,
+  ticksToMsAlongTempoMap,
   type Project,
 } from "@stagesync/shared";
 import {
@@ -828,6 +830,115 @@ describe("split / join / mute / gain tools", () => {
     );
     expect(gainDbFromPointerDelta(0, 0, -10_000)).toBe(24);
     expect(gainDbFromPointerDelta(0, 0, 10_000)).toBe(-60);
+    expect(gainDbFromPointerDelta(0, Number.NaN, 10)).toBe(0);
+    expect(setAudioClipGainDb(p, "clip-1", Number.NaN)).toBe(p);
+  });
+
+  it("BUG-01/02: split+join under fractional BPM and tempoMap change", () => {
+    let p = projectWithAudio();
+    const clip0 = p.audioClips[0]!;
+    const mid = clip0.startTicks + Math.floor(clip0.lengthTicks / 2);
+    p = {
+      ...p,
+      defaultBpm: 117.5,
+      tempoMap: [
+        { id: "t0", startTicks: 0, bpm: 117.5 },
+        {
+          id: "t1",
+          startTicks: Math.floor(clip0.lengthTicks / 3),
+          bpm: 90,
+        },
+      ],
+    };
+    const clip = p.audioClips[0]!;
+    const along = ticksToMsAlongTempoMap(clip.startTicks, mid, p);
+    const flat = ticksToMs(
+      mid - clip.startTicks,
+      117.5,
+      p.defaultMeter,
+      p.ppq,
+    );
+    expect(Math.abs(along - flat)).toBeGreaterThan(1);
+    const split = splitAudioClipAt(p, clip.id, mid);
+    expect(split.audioClips).toHaveLength(2);
+    const [left, right] = [...split.audioClips].sort(
+      (a, b) => a.startTicks - b.startTicks,
+    );
+    expect(left!.startTicks + left!.lengthTicks).toBe(right!.startTicks);
+    expect(right!.trimInMs ?? 0).toBeCloseTo(along, 0);
+    const joined = joinAdjacentAudioClips(split, left!.id);
+    expect(joined.audioClips).toHaveLength(1);
+    expect(joined.audioClips[0]!.lengthTicks).toBeGreaterThan(0);
+  });
+
+  it("BUG-03: resize overlap that splits a neighbor does not throw", () => {
+    const p0 = projectWithAudio();
+    const trackId = p0.audioTracks[0]!.id;
+    const len = p0.audioClips[0]!.lengthTicks;
+    const p: Project = {
+      ...p0,
+      audioClips: [
+        {
+          ...p0.audioClips[0]!,
+          id: "grow",
+          startTicks: 0,
+          lengthTicks: Math.floor(len / 2),
+        },
+        {
+          id: "neighbor",
+          trackId,
+          assetId: "asset-1",
+          startTicks: Math.floor(len / 2),
+          lengthTicks: len,
+        },
+      ],
+    };
+    expect(() =>
+      commitResizeAudioClip(
+        p,
+        trackId,
+        "grow",
+        "end",
+        len + Math.floor(len / 4),
+        "off",
+      ),
+    ).not.toThrow();
+    const next = commitResizeAudioClip(
+      p,
+      trackId,
+      "grow",
+      "end",
+      len + Math.floor(len / 4),
+      "off",
+    );
+    expect(next.audioClips.some((c) => c.id === "grow")).toBe(true);
+    expect(next.audioClips.some((c) => c.id.startsWith("neighbor"))).toBe(
+      true,
+    );
+  });
+
+  it("BUG-05: multi-move includes primary even when omitted from moveIds", () => {
+    const p0 = projectWithAudio();
+    const trackId = p0.audioTracks[0]!.id;
+    const len = p0.audioClips[0]!.lengthTicks;
+    const p: Project = {
+      ...p0,
+      audioClips: [
+        { ...p0.audioClips[0]!, id: "a", startTicks: 0, lengthTicks: len },
+        {
+          id: "b",
+          trackId,
+          assetId: "asset-1",
+          startTicks: len + 3840,
+          lengthTicks: len,
+        },
+      ],
+    };
+    const moved = commitMoveAudioClips(p, trackId, ["b"], "a", 7680, "bar");
+    const a = moved.audioClips.find((c) => c.id === "a")!;
+    const b = moved.audioClips.find((c) => c.id === "b")!;
+    expect(a.startTicks).toBe(7680);
+    expect(b.startTicks - a.startTicks).toBe(len + 3840);
   });
 
   it("gain gesture preview + commit", () => {

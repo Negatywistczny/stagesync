@@ -160,6 +160,8 @@ describe("contentLaneEdit remaining", () => {
     expect(defaultPencilLabel("akordy")).toBe("C");
     expect(defaultPencilLabel("cue")).toBe("Cue");
     expect(resolveSplitParentId("a-r-r")).toBe("a");
+    expect(resolveSplitParentId("clip-1-r-2")).toBe("clip-1");
+    expect(resolveSplitParentId("plain")).toBe("plain");
 
     let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilAkordyClick(p, 0, "G");

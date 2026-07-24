@@ -20,6 +20,7 @@ import {
   resolveMeterAt,
   resolveTempoAt,
   ticksToMs,
+  ticksToMsAlongTempoMap,
   trackColorForIndex,
   type AudioClip,
   type ChannelMode,
@@ -31,6 +32,7 @@ import {
   type TrackIcon,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
+import { resolveSplitParentId } from "./contentLaneEdit.js";
 import type {
   FormaGesturePreview,
   FormaGestureSession,
@@ -62,9 +64,15 @@ function mapFormaBack(
   const onTrack: AudioClip[] = formaClips
     .filter((c) => c.kind === "section")
     .map((c) => {
-      const prev = seedById.get(c.id);
+      const prev =
+        seedById.get(c.id) ?? seedById.get(resolveSplitParentId(c.id));
       if (!prev) throw new Error(`Missing audio clip seed for ${c.id}`);
-      return { ...prev, startTicks: c.startTicks, lengthTicks: c.lengthTicks };
+      return {
+        ...prev,
+        id: c.id,
+        startTicks: c.startTicks,
+        lengthTicks: c.lengthTicks,
+      };
     });
   return { ...project, audioClips: [...others, ...onTrack] };
 }
@@ -109,6 +117,7 @@ export function setAudioClipGainDb(
   clipId: string,
   gainDb: number,
 ): Project {
+  if (!Number.isFinite(gainDb)) return project;
   const clamped = Math.min(24, Math.max(-60, gainDb));
   return {
     ...project,
@@ -150,7 +159,7 @@ export function splitAudioClipAt(
   if (leftLen < 1 || rightLen < 1) return project;
 
   const ctx = tempoCtxAt(project, clip.startTicks);
-  const intoMs = ticksToMs(leftLen, ctx.bpm, ctx.meter, ctx.ppq);
+  const intoMs = ticksToMsAlongTempoMap(clip.startTicks, cut, project);
   const trimIn = clip.trimInMs ?? 0;
   const asset = assetOf(project, clip.assetId);
   const durationMs = asset?.durationMs;
@@ -254,8 +263,16 @@ export function gainDbFromPointerDelta(
   clientY: number,
   dbPerPx: number = GAIN_TOOL_DB_PER_PX,
 ): number {
+  const origin = Number.isFinite(originGainDb) ? originGainDb : 0;
+  if (
+    !Number.isFinite(originClientY) ||
+    !Number.isFinite(clientY) ||
+    !Number.isFinite(dbPerPx)
+  ) {
+    return Math.min(24, Math.max(-60, origin));
+  }
   const deltaY = originClientY - clientY;
-  const next = originGainDb + deltaY * dbPerPx;
+  const next = origin + deltaY * dbPerPx;
   return Math.min(24, Math.max(-60, next));
 }
 
@@ -782,7 +799,10 @@ export function commitMoveAudioClips(
   primaryNewStartTicks: number,
   mode: SnapMode,
 ): Project {
-  if (moveIds.length <= 1) {
+  const ids = moveIds.includes(primaryId)
+    ? moveIds
+    : [primaryId, ...moveIds.filter(Boolean)];
+  if (ids.length <= 1) {
     return commitMoveAudioClip(
       project,
       trackId,
@@ -802,7 +822,7 @@ export function commitMoveAudioClips(
   );
   const delta = snapped - primary.startTicks;
   if (delta === 0) return project;
-  const nextForma = moveClipsRigidDelta(forma, moveIds, delta, {
+  const nextForma = moveClipsRigidDelta(forma, ids, delta, {
     contentFloorTicks: floor,
   });
   return mapFormaBack(

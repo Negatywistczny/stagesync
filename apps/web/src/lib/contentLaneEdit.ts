@@ -89,15 +89,16 @@ export function contentAsForma(
 }
 
 /**
- * `placeClipNoOverlap` may mint `${id}-r` for the right remnant of a split.
- * Resolve payload from the parent id so symbols/text are not lost → default "C".
+ * `placeClipNoOverlap` may mint `${id}-r` or `${id}-r-N` for the right remnant.
+ * Resolve payload from the parent id so seeds / symbols are not lost.
  */
 export function resolveSplitParentId(id: string): string {
   let cur = id;
-  while (cur.endsWith("-r")) {
-    cur = cur.slice(0, -2);
+  for (;;) {
+    const m = /^(.*)-r(?:-\d+)?$/.exec(cur);
+    if (!m) return cur;
+    cur = m[1]!;
   }
-  return cur;
 }
 
 function mapFormaBack(
