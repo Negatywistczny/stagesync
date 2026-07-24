@@ -42,7 +42,7 @@ describe("ChordName (#478)", () => {
 
   it("escapes HTML metacharacters in serialized root/sup/bass", () => {
     const html = serializeChordNameHtml(
-      { root: 'A&B', sup: '<7>', bass: '/C"D' },
+      { root: "A&B", sup: "<7>", bass: '/C"D', plain: 'A&B<7>/C"D' },
       CLASSES,
       "inline",
     );
