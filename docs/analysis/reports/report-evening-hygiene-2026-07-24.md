@@ -72,11 +72,19 @@
 | [#555](https://github.com/Negatywistyczny/stagesync/pull/555) | apply-update 400s | Invalid target / unknown keys |
 | [#556](https://github.com/Negatywistyczny/stagesync/pull/556) | Fader taper OOB | NaN and out-of-range t/dB clamps |
 
-| [#553](https://github.com/Negatywistyczny/stagesync/pull/553) | Client global settings title | `Globalne` → `Ustawienia globalne` |
-| [#554](https://github.com/Negatywistyczny/stagesync/pull/554) | Restart keys edges | Empty change + DATA_DIR restart |
-| [#555](https://github.com/Negatywistyczny/stagesync/pull/555) | apply-update 400s | Missing/bad target + unknown keys |
-| [#556](https://github.com/Negatywistyczny/stagesync/pull/556) | Fader taper OOB | NaN and out-of-range t/dB clamps |
 | [#557](https://github.com/Negatywistyczny/stagesync/pull/557) | Unexport deprecated aliases | Drop logicBarToScoreBar + wandContentToForma barrel |
+
+| [#558](https://github.com/Negatywistyczny/stagesync/pull/558) | moveSectionsFromId NaN | Non-finite newStartTicks no-op |
+| [#559](https://github.com/Negatywistczny/stagesync/pull/559) | looksLikeZipBytes edges | EOCD/central + ArrayBuffer + short |
+| [#560](https://github.com/Negatywistczny/stagesync/pull/560) | Transpose clamp/parse | clampSemitoneOffset + parseTonicSymbol |
+| [#561](https://github.com/Negatywistyczny/stagesync/pull/561) | Map-edit dialog PL | lane→ścieżka; Tonic→Tonika |
+| [#562](https://github.com/Negatywistyczny/stagesync/pull/562) | Setlist duration format | formatSetDurationMs + sum edges |
+| [#563](https://github.com/Negatywistyczny/stagesync/pull/563) | Chord split/symbol display | splitChordSuperscript + symbol display |
+| [#564](https://github.com/Negatywistyczny/stagesync/pull/564) | Unexport chord deprecations | Drop formatChordForDisplay etc. from barrel |
+| [#565](https://github.com/Negatywistyczny/stagesync/pull/565) | Stage message 400s | Bad priority + non-object body |
+| [#566](https://github.com/Negatywistyczny/stagesync/pull/566) | MIDI devices GET | Happy-path ports list without config |
+| [#567](https://github.com/Negatywistyczny/stagesync/pull/567) | canonicalizePolishH | Direct H→B unit coverage |
+| [#568](https://github.com/Negatywistyczny/stagesync/pull/568) | Empty diagnostics zip | EOCD + crc32 empty |
 
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
