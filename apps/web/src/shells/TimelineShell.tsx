@@ -532,6 +532,7 @@ export function TimelineShell() {
   const eyeMenuRef = useRef<HTMLDivElement>(null);
   const toolsVisBtnRef = useRef<HTMLButtonElement>(null);
   const toolsVisMenuRef = useRef<HTMLDivElement>(null);
+  const songScreenId = useId();
   const [eyeMenuPos, setEyeMenuPos] = useState<{
     top: number;
     left: number;
@@ -5830,6 +5831,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             onClick={() => setSongScreenOpen(true)}
             aria-haspopup="dialog"
             aria-expanded={songScreenOpen}
+            aria-controls={songScreenOpen ? songScreenId : undefined}
           >
             {draftProject?.name ?? "Wybierz utwór"}
           </button>
@@ -7455,7 +7457,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 if (next) setSnapMode(next);
               }}
             >
-              <option value="off">Off</option>
+              <option value="off">Wyłącz</option>
               <option value="bar">Takt</option>
               <option value="beat">Beat</option>
               <option value="subdivision:2">1/2</option>
@@ -7761,7 +7763,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {songScreenOpen ? (
-        <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="song-screen-title">
+        <div
+          id={songScreenId}
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="song-screen-title"
+        >
           <button
             type="button"
             className={styles.backdrop}
