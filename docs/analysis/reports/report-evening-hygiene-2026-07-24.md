@@ -67,6 +67,11 @@
 | [#551](https://github.com/Negatywistyczny/stagesync/pull/551) | Transport/status PL | Transport odtwarzania; Status osi czasu |
 | [#552](https://github.com/Negatywistyczny/stagesync/pull/552) | atomic-write overwrite | Second write; no `.tmp` leftovers |
 
+| [#553](https://github.com/Negatywistyczny/stagesync/pull/553) | Client global settings title | `Globalne` → `Ustawienia globalne` |
+| [#554](https://github.com/Negatywistyczny/stagesync/pull/554) | Restart keys edges | Empty change + DATA_DIR restart |
+| [#555](https://github.com/Negatywistyczny/stagesync/pull/555) | apply-update 400s | Invalid target / unknown keys |
+| [#556](https://github.com/Negatywistyczny/stagesync/pull/556) | Fader taper OOB | NaN and out-of-range t/dB clamps |
+
 Closed misfire: [#503](https://github.com/Negatywistyczny/stagesync/pull/503) (wrong branch name; content refiled as #504).
 
 ## Ranked backlog (next)
