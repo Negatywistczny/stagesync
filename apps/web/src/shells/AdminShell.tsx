@@ -1111,7 +1111,7 @@ function MusicXmlModal({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal title="MusicXML" onClose={onClose}>
+    <Modal title="Import MusicXML" onClose={onClose}>
       {!projectId ? (
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (
@@ -1198,7 +1198,7 @@ function BatchPcModal({
   };
 
   return (
-    <Modal title="Batch PC" onClose={onClose}>
+    <Modal title="Numeracja Program Change" onClose={onClose}>
       <p className={styles.muted}>
         Numeracja Program Change (0–127) dla utworów (bez wzorów).
       </p>
