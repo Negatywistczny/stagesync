@@ -40,7 +40,13 @@
         <div class="block">
           <div class="blockHead">
             <h2>Wykryte w sieci</h2>
-            <button type="button" class="btn ghost" id="btnRefresh" aria-busy="false">
+            <button
+              type="button"
+              class="btn ghost"
+              id="btnRefresh"
+              aria-busy="false"
+              aria-label="Odśwież listę hostów"
+            >
               <span class="btnRefreshLabel">Odśwież</span>
               <span class="spinner" aria-hidden="true"></span>
             </button>
@@ -91,7 +97,7 @@
 
         <div class="block" id="recentBlock" hidden>
           <h2>Ostatnio używane</h2>
-          <ul class="hostList" id="recentList"></ul>
+          <ul class="hostList" id="recentList" aria-label="Ostatnio używane hosty"></ul>
         </div>
       </section>
 
