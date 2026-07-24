@@ -31,4 +31,15 @@ describe("Button", () => {
     render(<Button iconOnly aria-label="Close">×</Button>);
     expect(screen.getByRole("button").className).toContain("ss-btn--icon");
   });
+
+  it("supports variants and selected=false aria-pressed", () => {
+    const { rerender } = render(<Button variant="ghost">G</Button>);
+    expect(screen.getByRole("button").className).toContain("ss-btn--ghost");
+    rerender(<Button variant="secondary">S</Button>);
+    expect(screen.getByRole("button").className).toContain("ss-btn--secondary");
+    rerender(<Button selected={false}>Off</Button>);
+    expect(screen.getByRole("button").getAttribute("aria-pressed")).toBe(
+      "false",
+    );
+  });
 });

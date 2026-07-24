@@ -109,4 +109,10 @@ describe("project resolvers", () => {
     expect(resolveFormaClipAt(withMaps, 7680)?.name).toBe("Verse");
     expect(resolveFormaClipAt(withMaps, 999_999)).toBeNull();
   });
+
+  it("formatKeySignature covers accidentals and modes", () => {
+    expect(formatKeySignature({ tonic: "F#", mode: "major" })).toBe("F#");
+    expect(formatKeySignature({ tonic: "Bb", mode: "minor" })).toBe("Bbm");
+    expect(formatKeySignature({ tonic: "Eb", mode: "major" })).toBe("Eb");
+  });
 });
