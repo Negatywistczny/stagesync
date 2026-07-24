@@ -21,18 +21,20 @@ describe("looksLikeZipBytes", () => {
     );
   });
 
-  it("detects empty / central directory signatures", () => {
+  it("detects empty / central ZIP signatures and ArrayBuffer input", () => {
     expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x05, 0x06]))).toBe(
       true,
     );
     expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x07, 0x08]))).toBe(
       true,
     );
+    const ab = new Uint8Array([0x50, 0x4b, 0x03, 0x04]).buffer;
+    expect(looksLikeZipBytes(ab)).toBe(true);
   });
 
-  it("rejects short buffers and ArrayBuffer views under 4 bytes", () => {
+  it("rejects short buffers and non-ZIP prefixes", () => {
     expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x03]))).toBe(false);
-    expect(looksLikeZipBytes(new ArrayBuffer(0))).toBe(false);
+    expect(looksLikeZipBytes(new Uint8Array([]))).toBe(false);
     expect(looksLikeZipBytes(new Uint8Array([0x50, 0x4b, 0x01, 0x02]))).toBe(
       false,
     );
