@@ -32,6 +32,17 @@ describe("mdns-advertise helpers", () => {
     expect(out.length).toBe(10);
     expect(out.endsWith("…")).toBe(true);
   });
+
+  it("normalizeMdnsHostname strips .local and falls back", async () => {
+    const { normalizeMdnsHostname, truncateMdnsTxtValue } = await import(
+      "./mdns-advertise.js"
+    );
+    expect(normalizeMdnsHostname("Studio.local")).toBe("Studio");
+    expect(normalizeMdnsHostname("Studio.LOCAL.")).toBe("Studio");
+    expect(normalizeMdnsHostname("   ")).toBe("localhost");
+    expect(truncateMdnsTxtValue("ab", 1)).toBe("a");
+    expect(truncateMdnsTxtValue("ab", 0)).toBe("");
+  });
 });
 
 describe("startMdnsAdvertiser", () => {
