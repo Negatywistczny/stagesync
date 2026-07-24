@@ -5070,6 +5070,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
+            aria-label={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tempo", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5101,6 +5102,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
+            aria-label={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "metrum", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5135,6 +5137,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
+            aria-label={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tonacja", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
