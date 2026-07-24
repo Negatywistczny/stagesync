@@ -28,6 +28,7 @@ import {
   fadeOutMsOf,
   gainDbToLinear,
   linearPeakToMeterDb,
+  projectEndTicks,
   resolveChannelMode,
   resolveMeterAt,
   resolveTempoAt,
@@ -47,6 +48,11 @@ export type AudioPlaybackInput = {
   project: Project;
   playing: boolean;
   displayTicks: number;
+  /**
+   * When true, do not soft-stop at song end (transport loop wraps;
+   * pause-at-end / auto-advance stay off on the server).
+   */
+  loopEnabled?: boolean;
   /** When non-empty, only these audio track ids are audible (client Solo). */
   soloTrackIds?: readonly string[];
   /** When non-empty (and no track solo), only tracks feeding these busses. */
@@ -836,6 +842,16 @@ function startClip(
   });
 }
 
+/**
+ * Soft-stop when SSOT ticks are already past song end while the server is
+ * still `playing` (pause-at-end / auto-advance awaiting setlist I/O).
+ * Stops WebAudio sources only — does not invent a music clock (ADR 0002).
+ */
+export function shouldSoftStopPastSongEnd(input: AudioPlaybackInput): boolean {
+  if (input.loopEnabled) return false;
+  return input.displayTicks >= projectEndTicks(input.project);
+}
+
 export function syncAudioPlayback(
   projectId: string,
   input: AudioPlaybackInput,
@@ -844,7 +860,12 @@ export function syncAudioPlayback(
   lastSyncArgs = { projectId, input, ctx };
   applyBusParams(input.project, ctx, input.soloBusIds);
 
-  if (playbackSuppressed || !input.playing || ctx.state !== "running") {
+  if (
+    playbackSuppressed ||
+    !input.playing ||
+    shouldSoftStopPastSongEnd(input) ||
+    ctx.state !== "running"
+  ) {
     stopAll();
     lastDisplayTicks = input.displayTicks;
     lastGraphKey = graphKey(input);

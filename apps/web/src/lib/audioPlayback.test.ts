@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectV5Seed, projectEndTicks } from "@stagesync/shared";
 import {
   allowAudioPlayback,
   assetFileUrl,
@@ -11,6 +11,7 @@ import {
   loadAudioBuffer,
   restartAudioPlayback,
   resumeAndSyncAudioPlayback,
+  shouldSoftStopPastSongEnd,
   stopAudioPlayback,
   suppressAudioPlayback,
   syncAudioPlayback,
@@ -135,6 +136,103 @@ describe("audioPlayback helpers", () => {
 
     allowAudioPlayback();
     expect(getAudioPlaybackDebugState().suppressed).toBe(false);
+  });
+
+  it("BUG-05: soft-stops WebAudio past song end while server still playing", async () => {
+    const fakeBuf = { duration: 10, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const project = projectWithClipUnderPlayhead();
+    const endTicks = projectEndTicks(project);
+    // Extend clip through song end so a source is active until soft-stop.
+    project.audioClips[0] = {
+      ...project.audioClips[0]!,
+      lengthTicks: endTicks,
+    };
+
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+    expect(source.start).toHaveBeenCalledOnce();
+    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+
+    // Server still `playing` during pause-at-end / auto-advance I/O.
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: endTicks },
+      ctx,
+    );
+    expect(source.stop).toHaveBeenCalled();
+    expect(getAudioPlaybackDebugState().activeCount).toBe(0);
+    expect(getAudioPlaybackDebugState().suppressed).toBe(false);
+
+    // Soft-stop must not latch suppress — seek/home before pause can resume.
+    const source2 = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    (ctx.createBufferSource as ReturnType<typeof vi.fn>).mockImplementation(
+      () => source2,
+    );
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+    expect(source2.start).toHaveBeenCalledOnce();
+    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+  });
+
+  it("BUG-05: song-end soft-stop respects loopEnabled", () => {
+    const project = projectWithClipUnderPlayhead();
+    const endTicks = projectEndTicks(project);
+    expect(
+      shouldSoftStopPastSongEnd({
+        project,
+        playing: true,
+        displayTicks: endTicks,
+      }),
+    ).toBe(true);
+    expect(
+      shouldSoftStopPastSongEnd({
+        project,
+        playing: true,
+        displayTicks: endTicks,
+        loopEnabled: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldSoftStopPastSongEnd({
+        project,
+        playing: true,
+        displayTicks: endTicks - 1,
+      }),
+    ).toBe(false);
   });
 
   it("stopAudioPlayback clears active sources and bumps epoch", () => {

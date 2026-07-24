@@ -4,11 +4,11 @@
 **Status:** `partial`  
 **Obszar:** Transport SSOT / WS / pause-at-end / auto-advance  
 **Data triage:** 2026-07-24  
-**Ostatnia aktualizacja:** 2026-07-25 (fala 1: song-end I/O stale-check + bez HTTP na `ws.onopen`; residual overshoot audio)
+**Ostatnia aktualizacja:** 2026-07-25 (BUG-05: lokalny soft-stop WebAudio przy tickach ≥ end)
 
 ## Werdykt przydatności
 
-**Najwyższy priorytet wśród inspiracji silnikowych.** BUG-02 / 01+06 potwierdzone i naprawione + testy. Część claimów dumpu zawyżona (optimistic REST ≠ zegar klienta; cichy drop wstecznych ticków = poprawny; StrictMode + `cancelled` OK). Dokument **nie** `closed` — residual BUG-05 (overshoot audio do RTT/`getSetlist`).
+**Najwyższy priorytet wśród inspiracji silnikowych.** BUG-02 / 01+06 / 05 potwierdzone i naprawione + testy. Część claimów dumpu zawyżona (optimistic REST ≠ zegar klienta; cichy drop wstecznych ticków = poprawny; StrictMode + `cancelled` OK). Status zostaje `partial` (dump ma więcej ID; Safari/WebAudio/mixer poza tym plikiem) — nie `closed` na zapas.
 
 ## Rozstrzygnięte w tej fali
 
@@ -16,6 +16,7 @@
 |----|--------|------|---------|
 | BUG-SSV5-02 | `pause-at-end` / `auto-advance` await I/O nadpisuje Seek/Pause FOH | `fixed` | `stillPastEnd` po każdym `await`; testy w `song-end-race.test.ts` |
 | BUG-SSV5-01 / 06 | `getTransport` HTTP vs świeży tick WS przy `onopen` / mount | `fixed` | Usunięte HTTP z `ws.onopen`; mount HTTP zostaje (pierwszy paint); welcome = tick WS |
+| BUG-SSV5-05 | pause-at-end bez twardego cut audio na `endTicks` | `fixed` | Klient: soft-stop WebAudio gdy `displayTicks ≥ projectEnd` i brak loop (bez drugiego zegara); testy w `audioPlayback.test.ts` |
 | BUG-SSV5-03 | optimistic `applyAnchor` + tick = jitter / łamie ADR 0002 | `rejected` | `runCommand` aplikuje **odpowiedź REST serwera** (nie lokalny zegar muzyczny); SSOT nadal serwer |
 | BUG-SSV5-04 | `samplePosition` side-effect przy loop wrap | `rejected` | Single-thread; wrap+reanchor idempotentny przy stałym `now` — test 10× `getState` |
 | BUG-SSV5-07 | ciche drop ticków wstecznych bez fail-fast UI | `rejected` | Zamierzone (out-of-order); spam błędu na FOH byłby gorszy |
@@ -23,9 +24,7 @@
 
 ## Otwarte / hipotezy
 
-| ID | Temat | Impact | Stan | Dlaczego ciekawe |
-|----|--------|--------|------|------------------|
-| BUG-SSV5-05 | pause-at-end bez twardego cut audio na `endTicks` | Średni (ms overshoot) | `hypothesis` | Serwer nadal `await getSetlist` przed `pause`; audio gra do ticka WS. Mitigacja klientowa (clamp do końca) albo sync cache setlist — decyzja eng; nie claim fix bez smoke |
+_(brak otwartych ID z dumpu Transport — residual poza zakresem tego audytu: Safari/WebAudio, Solo×Mute miksera)_
 
 ## Kontekst
 
@@ -34,5 +33,5 @@
 
 ## Następny krok eng
 
-1. **BUG-05:** zmierz overshoot FOH (Play→koniec, auto-advance off) — jeśli słyszalny, clamp audio po stronie klienta przy `displayTicks ≥ end` **albo** przyspiesz pause (cache flagi auto-advance).
-2. **Nie** claim `closed` dopóki BUG-05 ma `fixed` / `rejected` / `limit`.
+1. Opcjonalny smoke FOH: Play→koniec, auto-advance off — brak słyszalnego overshoot do pauzy WS.
+2. Nie claim `closed` tylko dlatego, że tabela priorytetów Transport jest pusta — inne audyty silnika mogą jeszcze nieść residual.

@@ -2094,6 +2094,7 @@ export function TimelineShell() {
       project: draftProject,
       playing: state.playing,
       displayTicks: audioTicks,
+      loopEnabled: loopOn,
       soloTrackIds: soloAudioTrackIds,
       soloBusIds,
     });
@@ -2105,6 +2106,7 @@ export function TimelineShell() {
     state.bpm,
     state.ppq,
     latencyCompMs,
+    loopOn,
     soloAudioTrackIds,
     soloBusIds,
   ]);

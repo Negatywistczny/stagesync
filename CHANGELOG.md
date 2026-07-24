@@ -32,7 +32,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** clock OUT z ticków transportu (bez osobnego timera); bezpieczny send przy odłączeniu USB; Program Change IN/OUT bierze najnowszy komunikat przy szybkiej serii; SPP nie seekuje poza koniec utworu.
 - **Mixer / mono:** Peak/VU ścieżki mono nie spada przy twardej panoramie; po dekodowaniu pliku mono ścieżka bez trybu dostaje tryb mono (panorama zamiast True Balance).
-- **Playback:** plik mono na ścieżce stereo słychać na L i R (nie tylko lewy); głośność klipu bez restartu odtwarzania; Pause w trakcie buforowania nie odpala „widmowego” dźwięku; seek na jeszcze niezaładowany plik wznawia clip po decode; przełączenie projektu nie zostawia starych buforów w cache.
+- **Playback:** plik mono na ścieżce stereo słychać na L i R (nie tylko lewy); głośność klipu bez restartu odtwarzania; Pause w trakcie buforowania nie odpala „widmowego” dźwięku; seek na jeszcze niezaładowany plik wznawia clip po decode; przełączenie projektu nie zostawia starych buforów w cache; na końcu utworu WebAudio cichnie lokalnie, gdy ticki SSOT są już za końcem, zanim serwer dokończy pauzę albo auto-advance.
 - **Transport:** Seek / Pause FOH podczas pauzy na końcu utworu albo auto-advance nie jest nadpisywany przez spóźnione odczyty z dysku; po ponownym połączeniu WS playhead bierze świeży tick (bez skoku z opóźnionego HTTP).
 
 #### 🖥️ App Shell & UI
