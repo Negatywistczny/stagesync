@@ -70,6 +70,29 @@ describe("midi REST API", () => {
     expect(res.status).toBe(400);
   });
 
+  it("PUT /api/midi/config fail-fast on unknown keys and null body", async () => {
+    const empty = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(empty.status).toBe(200);
+
+    const unknown = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ inputId: "mock-in-1", nope: true }),
+    });
+    expect(unknown.status).toBe(400);
+
+    const notJson = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: "null",
+    });
+    expect(notJson.status).toBe(400);
+  });
+
   it("POST /api/midi/panic sends CC 120/121/123 on all channels", async () => {
     await fetch(`${baseUrl}/api/midi/config`, {
       method: "PUT",
