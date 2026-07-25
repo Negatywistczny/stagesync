@@ -43,4 +43,17 @@ describe("client-presence edges", () => {
     presence.upsert("lat", { latencyMs: -1 });
     expect(presence.list()[0]?.latencyMs).toBeNull();
   });
+
+  it("remove drops clients; unknown roles are ignored", () => {
+    const presence = createClientPresence();
+    presence.connect("gone");
+    presence.upsert("gone", {
+      displayName: "Tmp",
+      roles: ["karaoke", "not-a-role", 12, "drums"],
+    });
+    expect(presence.list()[0]?.roles).toEqual(["karaoke", "drums"]);
+    presence.remove("gone");
+    expect(presence.list()).toEqual([]);
+    expect(() => presence.remove("already-gone")).not.toThrow();
+  });
 });
