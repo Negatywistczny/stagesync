@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { captureWebException } from "../lib/sentry.js";
 import { AppCrashFallback } from "./AppCrashFallback.js";
 
 type Props = { children: ReactNode };
@@ -16,6 +17,9 @@ export class AppErrorBoundary extends Component<Props, State> {
     if (import.meta.env.DEV) {
       console.error("AppErrorBoundary", error, info.componentStack);
     }
+    captureWebException(error, {
+      componentStack: info.componentStack ?? undefined,
+    });
   }
 
   render(): ReactNode {

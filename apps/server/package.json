@@ -15,6 +15,7 @@
     "migrate:legacy": "tsx src/cli/migrate-legacy.ts"
   },
   "dependencies": {
+    "@sentry/node": "^10.68.0",
     "@stagesync/shared": "workspace:*",
     "bonjour-service": "^1.4.3",
     "easymidi": "^3.2.0",

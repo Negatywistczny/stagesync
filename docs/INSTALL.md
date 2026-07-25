@@ -189,6 +189,16 @@ dane były tylko w Application Support / AppData, aplikacja skopiuje je raz przy
 Lokalne środowisko dev trzyma dane w `<repo>/data` dzięki `STAGESYNC_REPO_DEV=1`
 w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
 
+### Sentry (opcjonalne)
+
+Crash reporting jest **wyłączony**, dopóki nie ustawisz DSN w `.env`:
+
+- `SENTRY_DSN` — host Node (`apps/server`)
+- `VITE_SENTRY_DSN` — UI (wczytywane przy buildzie Vite; po zmianie przebuduj `apps/web`)
+
+Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
+(tokenów hosta, PIN-u operatora, cookies). Nie commituj prawdziwych wartości DSN.
+
 ## Zmienne środowiskowe
 
 | Zmienna | Domyślnie | Opis |
@@ -209,6 +219,8 @@ w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
 | `STAGESYNC_OPERATOR_PIN` | — | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`) |
 | `STAGESYNC_SAFETY_ROLE` | `master` | Safety Net: `master` \| `spare` (Spare = bez MIDI OUT; ręczne Przejmij) |
 | `STAGESYNC_THEME_DEFAULT` | — | Domyślny motyw klientów bez lokalnej preferencji (`dark` / `light` / `*-high`) |
+| `SENTRY_DSN` | — | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII) |
+| `VITE_SENTRY_DSN` | — | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania) |
 
 Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).
 

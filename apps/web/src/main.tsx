@@ -5,9 +5,11 @@ import {
   bootHostThemeDefault,
   initAppearance,
 } from "./lib/appearance.js";
+import { captureWebException, initWebSentry } from "./lib/sentry.js";
 import { AppErrorBoundary } from "./shells/AppErrorBoundary.js";
 import "./index.css";
 
+initWebSentry();
 initAppearance();
 bootHostThemeDefault();
 
@@ -21,9 +23,11 @@ if ("serviceWorker" in navigator) {
 
 window.addEventListener("unhandledrejection", (event) => {
   console.error("[UNHANDLED PROMISE REJECTION]", event.reason);
+  captureWebException(event.reason);
 });
 window.addEventListener("error", (event) => {
   console.error("[UNCAUGHT ERROR]", event.error || event.message);
+  captureWebException(event.error || event.message);
 });
 
 const root = document.getElementById("root");

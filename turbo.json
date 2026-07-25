@@ -28,6 +28,8 @@
     "STAGESYNC_OPERATOR_PIN",
     "STAGESYNC_SAFETY_ROLE",
     "STAGESYNC_THEME_DEFAULT",
+    "SENTRY_DSN",
+    "VITE_SENTRY_DSN",
     "LOG_LEVEL",
     "npm_package_version",
     "HOSTNAME",

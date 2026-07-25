@@ -17,7 +17,6 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
-- [ ] [#494](https://github.com/Negatywistczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
 
 ## Etap 5.2+ (Przyszłość)
 

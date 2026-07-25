@@ -18,6 +18,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@sentry/react": "^10.68.0",
     "@stagesync/shared": "workspace:*",
     "@stagesync/ui": "workspace:*",
     "lucide-react": "^1.25.0",

@@ -4,11 +4,13 @@ import { createApp } from "./app.js";
 import { loadDotenvIntoProcess } from "./env-settings.js";
 import { createLifecycle } from "./lifecycle.js";
 import { startMdnsAdvertiser } from "./mdns-advertise.js";
+import { initServerSentry } from "./sentry.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { publishSetlistHubFromStores } from "./transport/setlist-hub.js";
 import { attachTransportWs } from "./transport/ws.js";
 
 loadDotenvIntoProcess();
+initServerSentry();
 
 function resolveListenPort(): number {
   const raw = process.env.PORT;
