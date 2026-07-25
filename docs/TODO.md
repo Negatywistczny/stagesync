@@ -1,9 +1,9 @@
 # StageSync v5 — TODO
 
-**Stan:** linia **5.2** = **Cue & Guard** (cut w toku / po `v5.2.0`); **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
+**Stan:** `5.2.0` wydane 2026-07-25 na `main` (`v5.2.0`) — linia **5.2** = **Cue & Guard**; **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
-**Polityka:** nowe funkcje po Cue & Guard → nadal 5.2+ residual / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
+**Polityka:** residual po Cue & Guard → 5.2+ / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
 **Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) (Logic referencja; multi-out tak; auto-update nie; …). Mobile shell: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
 **Specy 5.2+ (hipotezy, nie SSOT):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 

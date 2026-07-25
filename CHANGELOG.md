@@ -5,7 +5,9 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.2.0](https://github.com/Negatywistyczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Cue & Guard
+
+> **Cue & Guard:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta — bez atrap Out 3–4 / auto-election / OAuth.
 
 ### Dodano
 
