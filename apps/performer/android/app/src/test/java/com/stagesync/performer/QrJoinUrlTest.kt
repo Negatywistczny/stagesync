@@ -36,4 +36,18 @@ class QrJoinUrlTest {
         assertNull(QrJoinUrl.fromRaw(""))
         assertNull(QrJoinUrl.fromRaw("not a url"))
     }
+
+    @Test
+    fun rejectsWhitespaceOnly() {
+        assertNull(QrJoinUrl.fromRaw("   "))
+        assertNull(QrJoinUrl.fromRaw("\t"))
+    }
+
+    @Test
+    fun acceptsHttpsAndTrimsTrailingPunctuation() {
+        assertEquals(
+            "https://stage.example:4000",
+            QrJoinUrl.fromRaw("Join https://stage.example:4000)."),
+        )
+    }
 }
