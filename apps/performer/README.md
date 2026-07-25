@@ -16,9 +16,11 @@ Wymaga **JDK 17+** i **Android SDK** (`ANDROID_HOME` / `ANDROID_SDK_ROOT`).
 
 ```sh
 ./scripts/build-apk.sh
-# albo:
+# albo (po pnpm --filter @stagesync/web build):
 cd android && ./gradlew assembleDebug
 ```
+
+Gradle kopiuje **Client-only** `apps/web/dist-performer` → `assets/www` (ABI: arm64-v8a + armeabi-v7a).
 
 Artefakt debug: `android/app/build/outputs/apk/debug/app-debug.apk`  
 Nazwa release CI: `StageSync-Performer-vX.Y.Z.apk`

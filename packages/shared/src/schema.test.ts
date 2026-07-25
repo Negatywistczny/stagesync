@@ -471,6 +471,19 @@ describe("HealthResponseSchema + UI meta (#692)", () => {
     expect(HealthResponseSchema.parse(raw)).toEqual(raw);
   });
 
+  it("parses health with additive role ui hashes", () => {
+    const raw = {
+      ok: true as const,
+      service: "stagesync-server" as const,
+      version: "5.1.3",
+      protocolVersion: PROTOCOL_VERSION,
+      uiHash: "full",
+      uiHashPerformer: "perf",
+      uiHashConsole: "cons",
+    };
+    expect(HealthResponseSchema.parse(raw)).toEqual(raw);
+  });
+
   it("rejects health missing uiHash (strict)", () => {
     expect(() =>
       HealthResponseSchema.parse({

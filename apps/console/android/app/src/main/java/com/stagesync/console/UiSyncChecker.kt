@@ -9,6 +9,8 @@ import java.util.concurrent.Executors
 /**
  * Health gate for Offline-First UI (#692).
  * Never installs APK; never wipes local UI cache on protocol mismatch.
+ * Compares role-specific [ShellConfig.UI_HASH_JSON_KEY] so „Zastosuj” applies
+ * the Console (Admin+Timeline) zip, not the full SPA or Performer bundle.
  */
 object UiSyncChecker {
     private val executor = Executors.newCachedThreadPool()
@@ -51,10 +53,14 @@ object UiSyncChecker {
                     ?.groupValues
                     ?.get(1)
                     ?.toIntOrNull() ?: return null
-            val uiHash =
-                Regex("\"uiHash\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
-                    ?: return null
-            return Health(version = version, protocolVersion = protocol, uiHash = uiHash)
+            // Role hash only — never compare against full SPA uiHash.
+            val roleHash =
+                Regex("\"${ShellConfig.UI_HASH_JSON_KEY}\"\\s*:\\s*\"([^\"]+)\"")
+                    .find(body)
+                    ?.groupValues
+                    ?.get(1)
+                    .orEmpty()
+            return Health(version = version, protocolVersion = protocol, uiHash = roleHash)
         } finally {
             conn.disconnect()
         }
@@ -89,7 +95,7 @@ object UiSyncChecker {
     }
 
     fun downloadUiBundle(origin: String, dest: File) {
-        val url = URL("${origin.trimEnd('/')}/downloads/ui-bundle.zip")
+        val url = URL("${origin.trimEnd('/')}/downloads/${ShellConfig.UI_BUNDLE_FILENAME}")
         val conn =
             (url.openConnection() as HttpURLConnection).apply {
                 connectTimeout = 15_000

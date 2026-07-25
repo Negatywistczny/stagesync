@@ -20,6 +20,13 @@ const META_NAMES = new Set([
   "ui-hash.json",
   "ui-manifest.json",
   "ui-bundle.zip",
+  "ui-role-hashes.json",
+  "ui-hash-performer.json",
+  "ui-hash-console.json",
+  "ui-manifest-performer.json",
+  "ui-manifest-console.json",
+  "ui-bundle-performer.zip",
+  "ui-bundle-console.zip",
 ]);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -47,6 +54,7 @@ function crc32(buf) {
 
 function walkFiles(root, dir = root, out = []) {
   for (const name of readdirSync(dir)) {
+    if (name === ".vite" || name === ".DS_Store") continue;
     const full = join(dir, name);
     const st = statSync(full);
     if (st.isDirectory()) {
@@ -55,6 +63,7 @@ function walkFiles(root, dir = root, out = []) {
     }
     const rel = relative(root, full).split(sep).join("/");
     if (META_NAMES.has(rel)) continue;
+    if (rel.endsWith(".map")) continue;
     out.push({ abs: full, rel, size: st.size });
   }
   return out;

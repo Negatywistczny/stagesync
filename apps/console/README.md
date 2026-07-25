@@ -14,9 +14,11 @@
 
 ```sh
 ./scripts/build-apk.sh
-# albo:
+# albo (po pnpm --filter @stagesync/web build):
 cd android && ./gradlew assembleDebug
 ```
+
+Gradle kopiuje **Admin+Timeline** `apps/web/dist-console` → `assets/www` (ABI: arm64-v8a + armeabi-v7a).
 
 Artefakt debug: `android/app/build/outputs/apk/debug/app-debug.apk`  
 Nazwa release CI: `StageSync-Console-vX.Y.Z.apk`

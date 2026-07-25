@@ -198,6 +198,10 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
       version: VERSION,
       protocolVersion: PROTOCOL_VERSION,
       uiHash: uiMeta.uiHash,
+      ...(uiMeta.uiHashPerformer
+        ? { uiHashPerformer: uiMeta.uiHashPerformer }
+        : {}),
+      ...(uiMeta.uiHashConsole ? { uiHashConsole: uiMeta.uiHashConsole } : {}),
     };
     res.json(body);
   });
@@ -236,7 +240,13 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     logBuffer.push("info", `static web: ${staticDir}`);
     logBuffer.push(
       "info",
-      `UI meta: protocol=${uiMeta.protocolVersion} uiHash=${uiMeta.uiHash.slice(0, 12)}${uiMeta.uiHash.length > 12 ? "…" : ""}`,
+      `UI meta: protocol=${uiMeta.protocolVersion} uiHash=${uiMeta.uiHash.slice(0, 12)}${uiMeta.uiHash.length > 12 ? "…" : ""}` +
+        (uiMeta.uiHashPerformer
+          ? ` performer=${uiMeta.uiHashPerformer.slice(0, 12)}…`
+          : "") +
+        (uiMeta.uiHashConsole
+          ? ` console=${uiMeta.uiHashConsole.slice(0, 12)}…`
+          : ""),
     );
   }
 

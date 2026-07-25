@@ -18,18 +18,24 @@ Operator sketch for Android sideload and PWA. Product names: **Performer** / **C
 2. Na Androidzie włącz „Instalacja z nieznanych źródeł” dla przeglądarki / menedżera plików.
 3. Zainstaluj `StageSync-Performer-vX.Y.Z.apk` lub `StageSync-Console-vX.Y.Z.apk`.
 
-Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle kopiuje `apps/web/dist` → `assets/www`):
+Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle kopiuje role-specific dist → `assets/www`):
 
 ```sh
-# Performer (buduje @stagesync/web, potem APK)
+# Performer (buduje @stagesync/web, potem APK z dist-performer = Client-only)
 ./apps/performer/scripts/build-apk.sh
 # artefakt: apps/performer/android/app/build/outputs/apk/debug/app-debug.apk
 
-# Console
+# Console (dist-console = Admin + Timeline)
 ./apps/console/scripts/build-apk.sh
 ```
 
-`SKIP_WEB_BUILD=1` pomija Vite, gdy `apps/web/dist` jest już aktualne. CI musi mieć Node build przed `assemble*`.
+`SKIP_WEB_BUILD=1` pomija Vite, gdy `apps/web/dist-performer` / `dist-console` są już aktualne. CI musi mieć Node build przed `assemble*`.
+
+### Rozmiar APK (ABI + R8)
+
+- **ABI:** tylko `arm64-v8a` + `armeabi-v7a` (bez x86/x86_64) — sideload tablety ARM.
+- **Release:** R8 minify + shrinkResources włączone; **debug** bez minify (lokalny sideload).
+- `ndk.abiFilters` obowiązuje też debug, więc `data/downloads/*.apk` od razu bez ABI emulatorych.
 
 ## QR: dołącz vs pobierz APK
 
@@ -62,18 +68,18 @@ Po połączeniu z hostem powłoka porównuje własny `versionName` z `version` z
 
 Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
-1. **Cold start:** APK zawiera `assets/www` (kopia `apps/web` dist). WebView ładuje `{origin}/client` lub `/admin`, a statyczne pliki serwuje `WebViewAssetLoader` z lokalnego drzewa (cache `filesDir/ui-cache` ma pierwszeństwo przed bundled www). `/api`, `/ws`, `/downloads` zawsze idą na host.
+1. **Cold start:** APK zawiera `assets/www` z **role-specific** Vite dist (`dist-performer` = Client-only; `dist-console` = Admin + Timeline). WebView ładuje `{origin}/client` lub `/admin`, a statyczne pliki serwuje `WebViewAssetLoader` z lokalnego drzewa (cache `filesDir/ui-cache` ma pierwszeństwo przed bundled www). `/api`, `/ws`, `/downloads` zawsze idą na host.
 2. **Protokół:** `GET /api/health` → `protocolVersion`. Mismatch z powłoką → **Remote Mode** (UI z hosta), **bez** kasowania lokalnego bufora.
-3. **Hash UI:** ten sam health → `uiHash`. Gdy host ma inny hash niż lokalny → dialog **„Zastosuj nowy interfejs”** / **„Później”** (nigdy cicho mid-set).
-4. **Zastosuj:** pobranie `GET /downloads/ui-bundle.zip`, rozpakowanie do `ui-cache`, przeładowanie z lokalnego drzewa. Manifest: `GET /api/ui-manifest`.
-5. **PWA SW:** klucz cache oparty o `uiHash`; nadal **nie** cache’uje `/api`, `/ws`, `/downloads`.
+3. **Hash UI (rola):** health niesie `uiHash` (pełne SPA hosta) oraz opcjonalnie `uiHashPerformer` / `uiHashConsole`. Powłoka porównuje **tylko** swój hash roli — nigdy pełnego `uiHash` (żeby „Zastosuj” nie wlało pełnego SPA do Performera).
+4. **Zastosuj:** pobranie `GET /downloads/ui-bundle-performer.zip` albo `…-console.zip`, rozpakowanie do `ui-cache`, przeładowanie z lokalnego drzewa. Manifest: `GET /api/ui-manifest?role=performer|console` (bez `role` = pełne SPA). Legacy `GET /downloads/ui-bundle.zip` = pełny dist (PWA / host).
+5. **PWA SW:** klucz cache oparty o `uiHash` pełnego buildu; nadal **nie** cache’uje `/api`, `/ws`, `/downloads`.
 
 **Follow-up (nie w MVP):** różnicowy delta / CacheStorage per-asset; binary zstd. Console **Faza 4** (embedded Node) — nadal OUT.
 
 ### Smoke (ręczne) — UI apply
 
-1. Zainstaluj APK z bundled www (hash A).
-2. Uruchom host z nowszym web dist (hash B) i `STAGESYNC_STATIC_DIR` wskazującym na dist.
+1. Zainstaluj APK z bundled www (hash A roli).
+2. Uruchom host z nowszym web dist (hash B roli) i `STAGESYNC_STATIC_DIR` wskazującym na pełny `dist` (z `ui-bundle-*.zip` po `aggregate-role-ui`).
 3. Połącz → dialog „Zastosuj nowy interfejs” → **Zastosuj** → UI z cache; **Później** zostaje na lokalnym A.
 4. Symulacja mismatch protokołu (inny `PROTOCOL_VERSION` w powłoce) → toast Remote Mode, bufor lokalny nietknięty.
 

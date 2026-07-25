@@ -1,8 +1,19 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { dirname, join } from "node:path";
+import { existsSync, renameSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+
+const rootDir = dirname(fileURLToPath(import.meta.url));
+
+type UiTarget = "full" | "performer" | "console";
+
+function resolveUiTarget(mode: string): UiTarget {
+  if (mode === "performer") return "performer";
+  if (mode === "console") return "console";
+  return "full";
+}
 
 function apiProxyError(
   err: Error,
@@ -22,34 +33,69 @@ function apiProxyError(
   }
 }
 
-function stagesyncUiMetaPlugin(): Plugin {
-  const distDir = join(dirname(fileURLToPath(import.meta.url)), "dist");
+function stagesyncUiMetaPlugin(target: UiTarget, distDir: string): Plugin {
   return {
     name: "stagesync-emit-ui-meta",
     apply: "build",
     async closeBundle() {
+      // Role HTML entries are named client.html / console.html; Android expects index.html.
+      if (target === "performer") {
+        const from = join(distDir, "client.html");
+        const to = join(distDir, "index.html");
+        if (existsSync(from) && !existsSync(to)) renameSync(from, to);
+      } else if (target === "console") {
+        const from = join(distDir, "console.html");
+        const to = join(distDir, "index.html");
+        if (existsSync(from) && !existsSync(to)) renameSync(from, to);
+      }
+
       const { emitUiMeta } = await import("./scripts/emit-ui-meta.mjs");
       const meta = emitUiMeta(distDir);
       console.log(
-        `[stagesync] uiHash=${meta.uiHash.slice(0, 12)}… protocol=${meta.protocolVersion}`,
+        `[stagesync] target=${target} uiHash=${meta.uiHash.slice(0, 12)}… protocol=${meta.protocolVersion}`,
       );
     },
   };
 }
 
-export default defineConfig({
-  plugins: [react(), stagesyncUiMetaPlugin()],
-  server: {
-    port: 3000,
-    proxy: {
-      "/api": {
-        target: "http://localhost:4000",
-        changeOrigin: true,
-        configure: (proxy) => {
-          proxy.on("error", apiProxyError);
-        },
+export default defineConfig(({ mode }) => {
+  const target = resolveUiTarget(mode);
+  const outDir =
+    target === "performer"
+      ? "dist-performer"
+      : target === "console"
+        ? "dist-console"
+        : "dist";
+  const distAbs = join(rootDir, outDir);
+  const input =
+    target === "performer"
+      ? resolve(rootDir, "client.html")
+      : target === "console"
+        ? resolve(rootDir, "console.html")
+        : resolve(rootDir, "index.html");
+
+  return {
+    plugins: [react(), stagesyncUiMetaPlugin(target, distAbs)],
+    build: {
+      outDir,
+      emptyOutDir: true,
+      manifest: target !== "full",
+      rollupOptions: {
+        input,
       },
-      "/ws": { target: "ws://localhost:4000", ws: true },
     },
-  },
+    server: {
+      port: 3000,
+      proxy: {
+        "/api": {
+          target: "http://localhost:4000",
+          changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on("error", apiProxyError);
+          },
+        },
+        "/ws": { target: "ws://localhost:4000", ws: true },
+      },
+    },
+  };
 });

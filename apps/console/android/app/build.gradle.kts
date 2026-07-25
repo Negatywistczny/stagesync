@@ -14,11 +14,16 @@ android {
         // Keep in sync with root package.json (host /api/health.version).
         versionCode = 50103
         versionName = "5.1.3"
+        // Sideload tablets: arm only (drop x86/x86_64 emulator ABIs).
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             // Sideload CI: sign with debug keystore until release keystore is provisioned.
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
@@ -28,6 +33,7 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
+            isMinifyEnabled = false
         }
     }
 
@@ -43,17 +49,30 @@ android {
     }
 }
 
-// Copy apps/web/dist → assets/www for Offline-First cold start (#692).
-val webDistDir = rootProject.projectDir.parentFile?.parentFile?.resolve("web/dist")
+// Copy Admin+Timeline web dist → assets/www for Offline-First cold start (#692).
+val webDistDir = rootProject.projectDir.parentFile?.parentFile?.resolve("web/dist-console")
 val wwwAssetsDir = file("src/main/assets/www")
+
+tasks.register("cleanWebAssets") {
+    group = "stagesync"
+    description = "Remove previous assets/www before sync"
+    doLast {
+        if (wwwAssetsDir.exists()) {
+            wwwAssetsDir.deleteRecursively()
+        }
+    }
+}
 
 tasks.register<Copy>("syncWebAssets") {
     group = "stagesync"
-    description = "Copy apps/web/dist into assets/www (skip if dist missing)"
-    onlyIf { webDistDir != null && webDistDir!!.resolve("index.html").isFile }
+    description = "Copy apps/web/dist-console into assets/www (skip if dist missing)"
+    dependsOn("cleanWebAssets")
+    onlyIf { webDistDir?.resolve("index.html")?.isFile == true }
     from(webDistDir!!)
     into(wwwAssetsDir)
     exclude("ui-bundle.zip")
+    exclude("**/.vite/**")
+    exclude("**/*.map")
 }
 
 tasks.named("preBuild").configure {

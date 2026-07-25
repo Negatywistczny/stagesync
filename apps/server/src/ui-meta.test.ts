@@ -33,6 +33,8 @@ describe("ui-meta / health (#692)", () => {
     expect(meta.uiHash).toBe(UI_UNAVAILABLE_HASH);
     expect(meta.protocolVersion).toBe(PROTOCOL_VERSION);
     expect(meta.assets).toEqual([]);
+    expect(meta.uiHashPerformer).toBeUndefined();
+    expect(meta.uiHashConsole).toBeUndefined();
   });
 
   it("health includes protocolVersion + uiHash from manifest", async () => {
@@ -51,6 +53,29 @@ describe("ui-meta / health (#692)", () => {
       }),
     );
     await writeFile(join(staticDir, "ui-bundle.zip"), Buffer.from("PK\u0003\u0004fake"));
+    await writeFile(
+      join(staticDir, "ui-role-hashes.json"),
+      JSON.stringify({
+        uiHashPerformer: "perf-hash",
+        uiHashConsole: "cons-hash",
+      }),
+    );
+    await writeFile(
+      join(staticDir, "ui-manifest-performer.json"),
+      JSON.stringify({
+        protocolVersion: PROTOCOL_VERSION,
+        uiHash: "perf-hash",
+        assets: [{ path: "/index.html", hash: "bb", size: 10 }],
+      }),
+    );
+    await writeFile(
+      join(staticDir, "ui-bundle-performer.zip"),
+      Buffer.from("PK\u0003\u0004perf"),
+    );
+    await writeFile(
+      join(staticDir, "ui-bundle-console.zip"),
+      Buffer.from("PK\u0003\u0004cons"),
+    );
 
     const { app } = createApp({
       dataDir,
@@ -68,6 +93,8 @@ describe("ui-meta / health (#692)", () => {
     const health = HealthResponseSchema.parse(await healthRes.json());
     expect(health.protocolVersion).toBe(PROTOCOL_VERSION);
     expect(health.uiHash).toBe("hash-from-build");
+    expect(health.uiHashPerformer).toBe("perf-hash");
+    expect(health.uiHashConsole).toBe("cons-hash");
 
     const manRes = await fetch(`${base}/api/ui-manifest`);
     expect(manRes.status).toBe(200);
@@ -75,9 +102,19 @@ describe("ui-meta / health (#692)", () => {
     expect(man.uiHash).toBe("hash-from-build");
     expect(man.assets).toHaveLength(1);
 
+    const roleManRes = await fetch(`${base}/api/ui-manifest?role=performer`);
+    expect(roleManRes.status).toBe(200);
+    const roleMan = UiManifestSchema.parse(await roleManRes.json());
+    expect(roleMan.uiHash).toBe("perf-hash");
+
     const zipRes = await fetch(`${base}/downloads/ui-bundle.zip`);
     expect(zipRes.status).toBe(200);
     expect(zipRes.headers.get("content-type")).toMatch(/zip/);
+
+    const perfZip = await fetch(`${base}/downloads/ui-bundle-performer.zip`);
+    expect(perfZip.status).toBe(200);
+    const consZip = await fetch(`${base}/downloads/ui-bundle-console.zip`);
+    expect(consZip.status).toBe(200);
   });
 
   it("health without static still exposes protocol + none hash", async () => {
@@ -97,6 +134,7 @@ describe("ui-meta / health (#692)", () => {
     );
     expect(health.protocolVersion).toBe(PROTOCOL_VERSION);
     expect(health.uiHash).toBe(UI_UNAVAILABLE_HASH);
+    expect(health.uiHashPerformer).toBeUndefined();
 
     const zipRes = await fetch(
       `http://127.0.0.1:${port}/downloads/ui-bundle.zip`,

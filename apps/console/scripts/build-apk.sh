@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build StageSync Console debug APK (requires ANDROID_HOME / ANDROID_SDK_ROOT + JDK 17+).
-# Builds apps/web first so assets/www gets the Offline-First UI bundle (#692).
+# Builds apps/web (incl. dist-console) so assets/www gets Admin+Timeline UI (#692).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="$(cd "$ROOT/../.." && pwd)"
@@ -13,12 +13,12 @@ if [[ -z "${ANDROID_HOME:-}" && -z "${ANDROID_SDK_ROOT:-}" ]]; then
 fi
 
 if [[ "${SKIP_WEB_BUILD:-}" != "1" ]]; then
-  echo "==> Building @stagesync/web (ui-hash + dist for assets/www)…"
+  echo "==> Building @stagesync/web (full + performer + console role dists)…"
   (cd "$REPO" && pnpm --filter @stagesync/web build)
 fi
 
-if [[ ! -f "$REPO/apps/web/dist/index.html" ]]; then
-  echo "Missing apps/web/dist — run: pnpm --filter @stagesync/web build" >&2
+if [[ ! -f "$REPO/apps/web/dist-console/index.html" ]]; then
+  echo "Missing apps/web/dist-console — run: pnpm --filter @stagesync/web build" >&2
   exit 1
 fi
 

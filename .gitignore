@@ -30,6 +30,8 @@ coverage
 out/
 build
 dist
+dist-performer
+dist-console
 
 # Runtime data (keep directory structure via .gitkeep / templates)
 data/projects/*

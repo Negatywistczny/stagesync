@@ -3,7 +3,7 @@ import { webAcl } from "@stagesync/eslint-config/acl";
 
 /** @type {import("eslint").Linter.Config} */
 export default [
-  { ignores: ["coverage/**", "dist/**"] },
+  { ignores: ["coverage/**", "dist/**", "dist-performer/**", "dist-console/**"] },
   ...config,
   ...webAcl,
 ];

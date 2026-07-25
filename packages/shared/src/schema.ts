@@ -645,8 +645,12 @@ export const HealthResponseSchema = z
     version: z.string(),
     /** WS/API frame compatibility; shells hard-fallback to Remote Mode on mismatch. */
     protocolVersion: z.number().int().positive(),
-    /** Content hash of served `apps/web` dist (`none` when host has no static UI). */
+    /** Content hash of served full `apps/web` dist (`none` when host has no static UI). */
     uiHash: z.string().min(1),
+    /** Performer (Client-only) UI hash; optional when host has no role bundle. */
+    uiHashPerformer: z.string().min(1).optional(),
+    /** Console (Admin+Timeline) UI hash; optional when host has no role bundle. */
+    uiHashConsole: z.string().min(1).optional(),
   })
   .strict();
 
