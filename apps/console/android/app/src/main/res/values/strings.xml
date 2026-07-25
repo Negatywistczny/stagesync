@@ -20,4 +20,11 @@
     <string name="local_host_out">Uruchom lokalny host: OUT (Faza 4 — brak sidecara w MVP). Thin-shell łączy się z hostem LAN.</string>
     <string name="btn_local_host_disabled">Uruchom lokalny host (niedostępne)</string>
     <string name="bridge_wake_note">Native FLAG_KEEP_SCREEN_ON + PWA Wake Lock w WebView</string>
+    <string name="update_title">Dostępna aktualizacja</string>
+    <string name="update_message">Host ma nowszą wersję StageSync (%1$s). Zainstalowana powłoka: %2$s.\n\nAktualizacja wymaga Twojej zgody — nic nie pobierze się w tle.</string>
+    <string name="update_download_install">Pobierz i zainstaluj</string>
+    <string name="update_later">Później</string>
+    <string name="update_downloading">Pobieranie APK z hosta…</string>
+    <string name="update_download_failed">Nie udało się pobrać APK: %1$s</string>
+    <string name="update_need_permission">Zezwól na instalację z tej aplikacji, a następnie wróć — instalator uruchomi się ponownie.</string>
 </resources>

@@ -4,6 +4,9 @@ object ShellConfig {
     /** Path after successful health check. Console → Admin. */
     const val ENTRY_PATH = "/admin"
 
+    /** Sideload APK filename served by host `GET /downloads/…`. */
+    const val APK_FILENAME = "stagesync-console.apk"
+
     const val PREFS = "stagesync_console"
     const val PREFS_RECENT = "recent_hosts"
     const val MAX_RECENT = 8

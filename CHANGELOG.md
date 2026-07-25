@@ -26,7 +26,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console, sideload, QR join vs QR APK, macierz HW (bez claim green).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta.
+- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta; po połączeniu jawny dialog aktualizacji (**Pobierz i zainstaluj** / **Później**), gdy host ma nowszą wersję i APK jest dostępne — bez cichej aktualizacji w tle.
 
 ### Zmieniono
 

@@ -11,8 +11,9 @@ android {
         applicationId = "com.stagesync.performer"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        // Keep in sync with root package.json (host /api/health.version).
+        versionCode = 50103
+        versionName = "5.1.3"
     }
 
     buildTypes {
@@ -48,4 +49,5 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.9.1")
+    testImplementation("junit:junit:4.13.2")
 }

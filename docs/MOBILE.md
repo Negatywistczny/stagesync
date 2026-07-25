@@ -47,6 +47,22 @@ Domyślna lokalizacja plików na hoście: `$STAGESYNC_DATA_DIR/downloads/` (nadp
 
 W repo (sideload MVP) leżą debug APK: `data/downloads/stagesync-performer.apk` oraz `stagesync-console.apk` (build `assembleDebug` / `scripts/build-apk.sh`). Release signed — gdy CI / keystore.
 
+## Aktualizacja APK w aplikacji (jawna)
+
+Po połączeniu z hostem powłoka porównuje własny `versionName` z `version` z `GET /api/health`. Gdy host jest **nowszy** (SemVer) **oraz** `HEAD`/`GET` `{origin}/downloads/stagesync-performer.apk` (Performer) albo `…-console.apk` (Console) zwraca 200, pojawia się dialog:
+
+- **Pobierz i zainstaluj** — pobranie APK z hosta i systemowy instalator (FileProvider; na Android 8+ może wymagać „Instaluj nieznane aplikacje”).
+- **Później** — zamknięcie dialogu; sesja WebView trwa bez zmian.
+
+**Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](./adr/0016-android-performer-console.md)).
+
+### Smoke (ręczne)
+
+1. Zainstaluj starszą powłokę (niższy `versionName`) albo tymczasowo obniż `versionName` w buildzie.
+2. Uruchom host z nowszym `version` i APK w `data/downloads/`.
+3. Połącz launcherem → WebView → dialog z wersjami → **Pobierz i zainstaluj** → instalator systemowy.
+4. **Później** nie uruchamia pobierania.
+
 ## PWA
 
 `apps/web` wystawia manifest + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”. Wake Lock API w przeglądarce + `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock).
@@ -102,6 +118,7 @@ W launcherze Console przycisk jest widoczny jako niedostępny z tekstem OUT — 
 - Audio / MIDI clock / synteza w procesie **Performer**.
 - Edycja Timeline / Mixer z **Performer**.
 - Stub UI „pobierz APK” bez pliku na hoście.
+- Ciche pobieranie / instalacja APK bez potwierdzenia operatora.
 
 ## Powiązane
 
