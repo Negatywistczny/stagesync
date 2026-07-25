@@ -188,7 +188,8 @@ export function resolveSetlistNext(
 }
 
 export function formatSetDurationMs(ms: number): string {
-  const totalSec = Math.max(0, Math.round(ms / 1000));
+  const safeMs = Number.isFinite(ms) ? ms : 0;
+  const totalSec = Math.max(0, Math.round(safeMs / 1000));
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
