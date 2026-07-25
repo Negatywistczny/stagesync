@@ -41,7 +41,7 @@ export function OutputSelector({
 }: OutputSelectorProps) {
   return (
     <label className={styles.outputSelectWrap}>
-      <span className={styles.outputSelectLabel}>Out</span>
+      <span className={styles.outputSelectLabel}>Wyjście</span>
       <select
         className={styles.outputSelect}
         value={value}
