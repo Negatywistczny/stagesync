@@ -27,7 +27,7 @@
 
 - **On tree:** scenic lock; Operator PIN + ACL destrukcyjnych REST + UI unlock.
 - **Residual / skip:** host default theme; 4-profile matrix; OAuth.
-- **→ TODO:** Motywy (residual default) w [TODO 5.2+](../../../TODO.md) (bez OAuth / bez ponownego PIN).
+- **→ TODO:** Motywy residual (host default / macierz 4 profili) w [TODO 5.2+](../../../TODO.md); PIN + scenic lock poza TODO; OAuth OUT.
 
 ## Następny krok eng
 
