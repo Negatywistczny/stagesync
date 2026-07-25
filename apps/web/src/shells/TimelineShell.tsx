@@ -5092,6 +5092,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       mapDragPreview?.moveIds.includes(eventId)
         ? styles.mapSegmentDragging
         : "";
+    const mapSegmentSelected = (eventId: string, lane: MapLaneId) =>
+      selectedMapLane === lane && selectedMapIds.includes(eventId);
+    const mapSegmentAriaLabel = (seg: { label: string; eventId: string }, lane: MapLaneId) => {
+      const selected = mapSegmentSelected(seg.eventId, lane);
+      const group =
+        selected && selectedMapLane === lane && selectedMapIds.length > 1
+          ? selectedMapIds.length
+          : 0;
+      if (selected && group > 1) {
+        return `${seg.label}, zaznaczony, w grupie ${group} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
+      }
+      if (selected) {
+        return `${seg.label}, zaznaczony — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
+      }
+      return `${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
+    };
 
     switch (trackId) {
       case "tempo":
@@ -5108,7 +5124,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
+            aria-label={mapSegmentAriaLabel(seg, "tempo")}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tempo", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5140,7 +5156,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
+            aria-label={mapSegmentAriaLabel(seg, "metrum")}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "metrum", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5175,7 +5191,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
+            aria-label={mapSegmentAriaLabel(seg, "tonacja")}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tonacja", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -6766,7 +6782,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedMapLane && selectedMapIds.length > 0 ? (
               <div className={styles.inspBody}>
-                <p className={styles.inspMulti}>
+                <p
+                  className={styles.inspMulti}
+                  role="status"
+                  aria-live="polite"
+                >
                   Zaznaczono {selectedMapIds.length} ·{" "}
                   {selectedMapLane === "tempo"
                     ? "Tempo"
