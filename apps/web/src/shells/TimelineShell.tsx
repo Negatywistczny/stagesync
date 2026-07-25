@@ -7484,7 +7484,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 : "Rozłączony"}
           </span>
         </div>
-        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
+        <div className={styles.zooms} role="group" aria-label="Zoom i przyciąganie">
           <label className={styles.snapPicker}>
             <span className={styles.snapPickerLab}>Przyciąganie</span>
             <select
