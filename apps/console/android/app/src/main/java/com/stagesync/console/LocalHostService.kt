@@ -127,6 +127,11 @@ class LocalHostService : Service() {
         // Multicast mDNS is unreliable in some Android sandboxes; LAN discovery
         // still works when Console is reached by IP. Loopback Admin does not need it.
         env("STAGESYNC_DISABLE_MDNS", "1")
+        // Android has no host MIDI ports — force none so easymidi/native cannot
+        // dlopen and hard-crash the embedded Node process on start.
+        env("STAGESYNC_MIDI_BACKEND", "none")
+        // Cap heap for tablet RAM; default V8 can OOM mid-boot on 4 GB devices.
+        env("NODE_OPTIONS", "--max-old-space-size=384")
         env("HOME", filesDir.absolutePath)
         env("TMPDIR", cacheDir.absolutePath)
 
