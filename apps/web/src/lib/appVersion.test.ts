@@ -11,6 +11,13 @@ describe("appVersion + docsLinks", () => {
     expect(APP_VERSION).toMatch(/^\d+\.\d+\.\d+/);
   });
 
+
+  it("docs links use https GitHub hosts", () => {
+    expect(DOCS_INSTALL_URL.startsWith("https://github.com/")).toBe(true);
+    expect(DOCS_RELEASES_URL.startsWith("https://github.com/")).toBe(true);
+    expect(DOCS_ISSUES_URL.startsWith("https://github.com/")).toBe(true);
+  });
+
   it("points docs links at the GitHub stagesync repo", () => {
     expect(DOCS_INSTALL_URL).toContain("docs/INSTALL.md");
     expect(DOCS_RELEASES_URL).toContain("/releases");
