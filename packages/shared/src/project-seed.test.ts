@@ -9,6 +9,7 @@ import {
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
+  upgradeProjectV4ToV5,
   createProjectSeed,
   nextMidiProgramId,
 } from "./project-seed.js";
@@ -143,5 +144,27 @@ describe("createProjectSeed / nextMidiProgramId", () => {
     ).toBe(0);
     const full = Array.from({ length: 128 }, (_, i) => ({ midiProgramId: i }));
     expect(nextMidiProgramId(full)).toBeNull();
+  });
+});
+
+describe("upgradeProjectV4ToV5", () => {
+  it("adds keyMap / empty scoreBarMap and default midiProgramId", () => {
+    const v4 = createProjectV4Seed("id", "Song", "2026-07-20T00:00:00.000Z");
+    const v5 = upgradeProjectV4ToV5(v4);
+    expect(v5.formatVersion).toBe(5);
+    expect(v5.keyMap[0]?.key).toEqual({ tonic: "C", mode: "major" });
+    expect(v5.scoreBarMap).toEqual({ anchors: [] });
+    expect(v5.midiProgramId).toBe(0);
+    expect(v5.isTemplate).toBeUndefined();
+  });
+
+  it("template upgrade omits midiProgramId; explicit PC is kept for songs", () => {
+    const v4 = createProjectV4Seed("id", "Tpl", "2026-07-20T00:00:00.000Z");
+    const tpl = upgradeProjectV4ToV5(v4, { isTemplate: true });
+    expect(tpl.isTemplate).toBe(true);
+    expect(tpl.midiProgramId).toBeUndefined();
+    const song = upgradeProjectV4ToV5(v4, { midiProgramId: 42 });
+    expect(song.midiProgramId).toBe(42);
+    expect(song.isTemplate).toBeUndefined();
   });
 });
