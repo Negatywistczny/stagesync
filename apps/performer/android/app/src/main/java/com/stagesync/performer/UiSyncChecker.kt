@@ -44,34 +44,45 @@ object UiSyncChecker {
         try {
             if (conn.responseCode !in 200..299) return null
             val body = conn.inputStream.bufferedReader().use { it.readText() }
-            val version =
-                Regex("\"version\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
-                    ?: return null
-            val protocol =
-                Regex("\"protocolVersion\"\\s*:\\s*(\\d+)")
-                    .find(body)
-                    ?.groupValues
-                    ?.get(1)
-                    ?.toIntOrNull() ?: return null
-            // Role hash only — never compare against full SPA uiHash (would re-poison Performer).
-            val roleHash =
-                Regex("\"${ShellConfig.UI_HASH_JSON_KEY}\"\\s*:\\s*\"([^\"]+)\"")
-                    .find(body)
-                    ?.groupValues
-                    ?.get(1)
-                    .orEmpty()
-            return Health(version = version, protocolVersion = protocol, uiHash = roleHash)
+            return parseHealthBody(body, ShellConfig.UI_HASH_JSON_KEY)
         } finally {
             conn.disconnect()
         }
     }
 
-    fun evaluate(origin: String, localUiHash: String?): Gate {
-        val health = fetchHealth(origin) ?: return Gate.Ok
-        if (health.protocolVersion != ShellConfig.PROTOCOL_VERSION) {
+    /**
+     * Parse `/api/health` JSON for Offline-First gate.
+     * Uses [roleHashKey] only — never the full SPA `uiHash` (would re-poison Performer).
+     */
+    fun parseHealthBody(body: String, roleHashKey: String): Health? {
+        val version =
+            Regex("\"version\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
+                ?: return null
+        val protocol =
+            Regex("\"protocolVersion\"\\s*:\\s*(\\d+)")
+                .find(body)
+                ?.groupValues
+                ?.get(1)
+                ?.toIntOrNull() ?: return null
+        val roleHash =
+            Regex("\"$roleHashKey\"\\s*:\\s*\"([^\"]+)\"")
+                .find(body)
+                ?.groupValues
+                ?.get(1)
+                .orEmpty()
+        return Health(version = version, protocolVersion = protocol, uiHash = roleHash)
+    }
+
+    /** Pure gate from already-fetched health (unit-testable). */
+    fun evaluateHealth(
+        health: Health,
+        localUiHash: String?,
+        localProtocol: Int = ShellConfig.PROTOCOL_VERSION,
+    ): Gate {
+        if (health.protocolVersion != localProtocol) {
             return Gate.ProtocolMismatch(
                 host = health.protocolVersion,
-                local = ShellConfig.PROTOCOL_VERSION,
+                local = localProtocol,
             )
         }
         if (
@@ -86,6 +97,11 @@ object UiSyncChecker {
             )
         }
         return Gate.Ok
+    }
+
+    fun evaluate(origin: String, localUiHash: String?): Gate {
+        val health = fetchHealth(origin) ?: return Gate.Ok
+        return evaluateHealth(health, localUiHash)
     }
 
     fun checkAsync(origin: String, localUiHash: String?, callback: (Gate) -> Unit) {

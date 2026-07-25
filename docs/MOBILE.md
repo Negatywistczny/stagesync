@@ -33,6 +33,15 @@ Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle ko
 
 `SKIP_WEB_BUILD=1` pomija Vite, gdy `apps/web/dist-performer` / `dist-console` są już aktualne. CI musi mieć Node build przed `assemble*`.
 
+JVM unit tests (bez urządzenia; wymaga `ANDROID_HOME` / Homebrew `android-commandlinetools`):
+
+```sh
+pnpm --filter @stagesync/performer test
+pnpm --filter @stagesync/console test
+```
+
+Bez SDK skrypt wychodzi 0 (skip) — CI Node bez Androida nie pada.
+
 ### Rozmiar APK (ABI + R8)
 
 - **ABI:** tylko `arm64-v8a` + `armeabi-v7a` (bez x86/x86_64) — sideload tablety ARM.

@@ -1,7 +1,8 @@
 # StageSync — aplikacja desktop
 
 Okno desktopowe (Admin / Timeline / Client) z wbudowanym lokalnym hostem albo połączeniem z hostem w sieci.
-Szczegóły decyzji: [ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md).
+Szczegóły decyzji: [ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md).  
+Android (sideload Performer / Console, bez Google Play): [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md).
 
 ## Start — Launcher
 
