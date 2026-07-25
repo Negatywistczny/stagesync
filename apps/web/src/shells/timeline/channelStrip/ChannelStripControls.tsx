@@ -358,7 +358,7 @@ export function ChannelStripControls({
         >
           <div className={styles.bannerAnchor}>
             {isBus ? (
-              <span className={styles.busBadge} title="Bus">
+              <span className={styles.busBadge} title="Magistrala">
                 BUS
               </span>
             ) : (
