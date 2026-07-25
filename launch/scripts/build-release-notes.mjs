@@ -2,9 +2,9 @@
 /**
  * Build GitHub Release notes: download table + Highlights (not full CHANGELOG).
  *
- * Pattern (matches v5.0.0):
+ * Pattern (matches curated v5.0.0 / v5.1.0):
  *   download table → Highlights — {Hero} ({version}) → short intro →
- *   aggregated domain bullets → link to CHANGELOG.md
+ *   aggregated domain bullets with real summaries → link to CHANGELOG.md
  *
  * Usage:
  *   node launch/scripts/build-release-notes.mjs <version> [changelogPath]
@@ -65,16 +65,12 @@ if (intro) {
     .trim();
 }
 
-const domainBullets = aggregateHighlights(section);
+const { bullets: domainBullets, domains } = aggregateHighlights(section);
 const highlightsTitle = hero
   ? `### 🚀 Highlights — ${hero} (${version})`
   : `### 🚀 Highlights — ${version}`;
 
-const introBlock = intro
-  ? `${intro}\n`
-  : hero
-    ? `Wydanie ${hero} (${version}).\n`
-    : `Wydanie ${version}.\n`;
+const introBlock = `${buildIntro(intro, hero, version, domains)}\n`;
 
 const bulletsBlock =
   domainBullets.length > 0
@@ -111,8 +107,10 @@ Pełna historia zmian: [CHANGELOG.md](${changelogUrl})
 `);
 
 /**
- * Aggregate Keep a Changelog #### domains into short Highlights bullets.
- * Prefer ### Dodano titles; append Zmieniono / Naprawiono titles only when fresh.
+ * Aggregate Keep a Changelog #### domains into Highlights bullets.
+ * Prefer ### Dodano; append Zmieniono / Naprawiono only when fresh.
+ * Each item keeps a short narrative from the CHANGELOG bullet body
+ * (not only the bold **Prefix:** label).
  */
 function aggregateHighlights(sectionBody) {
   /** @type {Map<string, { added: string[], other: string[] }>} */
@@ -136,25 +134,43 @@ function aggregateHighlights(sectionBody) {
       continue;
     }
     if (!currentDomain || !currentH3) continue;
-    const title = bulletTitle(line);
-    if (!title) continue;
+    const snippet = bulletSnippet(line);
+    if (!snippet) continue;
     const bucket = byDomain.get(currentDomain);
     if (currentH3 === "Dodano") {
-      bucket.added.push(title);
+      bucket.added.push(snippet);
     } else if (currentH3 === "Zmieniono" || currentH3 === "Naprawiono") {
-      bucket.other.push(title);
+      bucket.other.push(snippet);
     }
   }
 
   const bullets = [];
+  const domains = [];
   for (const [domain, { added, other }] of byDomain) {
-    const seen = new Set(added.map(normalizeTitle));
-    const extras = other.filter((t) => !seen.has(normalizeTitle(t)));
-    const titles = [...added, ...extras].slice(0, 6);
-    if (titles.length === 0) continue;
-    bullets.push(`**${domain}** — ${titles.join("; ")}.`);
+    const seen = new Set(added.map((s) => s.key));
+    const extras = other.filter((s) => !seen.has(s.key));
+    const items = [...added, ...extras].slice(0, 6);
+    if (items.length === 0) continue;
+    domains.push(domain);
+    bullets.push(
+      `**${domain}** — ${items.map((s) => s.text).join("; ")}.`,
+    );
   }
-  return bullets;
+  return { bullets, domains };
+}
+
+function buildIntro(quoteIntro, heroName, ver, domains) {
+  if (quoteIntro) return quoteIntro;
+  if (heroName) return `Wydanie ${heroName} (${ver}).`;
+  if (domains.length === 1) return `Zmiany w obszarze ${domains[0]}.`;
+  if (domains.length === 2) {
+    return `Zmiany w ${domains[0]} oraz ${domains[1]}.`;
+  }
+  if (domains.length > 2) {
+    const head = domains.slice(0, -1).join(", ");
+    return `Zmiany w ${head} oraz ${domains.at(-1)}.`;
+  }
+  return `Wydanie ${ver}.`;
 }
 
 function domainLabel(raw) {
@@ -171,10 +187,57 @@ function domainLabel(raw) {
   return withoutEmoji.replace(/\s*\(.*?\)\s*$/, "").trim() || withoutEmoji;
 }
 
-function bulletTitle(line) {
-  const m = line.match(/^- \*\*([^*]+)\*\*/);
+/**
+ * @returns {{ key: string, text: string } | null}
+ */
+function bulletSnippet(line) {
+  const m = line.match(/^- \*\*([^*]+)\*\*\s*(?::\s*|[—–-]\s*|\s+)?(.*)$/);
   if (!m) return null;
-  return m[1].replace(/\s*[:—–-]\s*$/, "").trim();
+  const label = m[1].replace(/\s*[:—–-]\s*$/, "").trim();
+  if (!label) return null;
+  const summary = summarizeBody(m[2] ?? "");
+  return {
+    key: normalizeTitle(label),
+    text: summary ? `${label}: ${summary}` : label,
+  };
+}
+
+/** Strip issue/PR links and collapse whitespace for Highlights. */
+function summarizeBody(raw) {
+  let body = raw
+    .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\s*\((?:\s*#\d+\s*,?)+\s*\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!body) return "";
+
+  // Whole short bullet fits — keep it (after stripping trailing punctuation).
+  if (body.length <= 140) {
+    return body.replace(/[.!?;:,]+\s*$/, "").trim();
+  }
+
+  // Real sentence end: period after a 4+ letter word (skips np. / itd. / tj.).
+  const sentenceRe = /(?<=\p{L}{4,})[.!?](?=\s|$)/u;
+  const sentence = body.search(sentenceRe);
+  if (sentence >= 24 && sentence <= 140) {
+    return body.slice(0, sentence).replace(/[.!?;:,]+\s*$/, "").trim();
+  }
+
+  // CHANGELOG often uses "; " as clause separators — take whole clauses, not mid-word cuts.
+  const parts = body.split(/\s*;\s*/).filter(Boolean);
+  let acc = parts[0] ?? "";
+  for (let i = 1; i < parts.length; i++) {
+    const next = `${acc}; ${parts[i]}`;
+    if (next.length > 120) break;
+    acc = next;
+  }
+  if (acc.length > 120) {
+    acc = acc
+      .slice(0, 120)
+      .replace(/\s+\S*$/, "")
+      .replace(/[,;:/\-–—]\s*$/, "");
+  }
+  return acc.replace(/[.!?;:,]+\s*$/, "").trim();
 }
 
 function normalizeTitle(title) {
