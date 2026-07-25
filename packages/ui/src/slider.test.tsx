@@ -44,4 +44,18 @@ describe("Slider", () => {
     expect(el.getAttribute("aria-valuemax")).toBe("1");
     expect(el.getAttribute("aria-valuenow")).toBe("0.5");
   });
+
+  it("merges className onto ss-slider", () => {
+    render(
+      <Slider
+        aria-label="Gain"
+        value={0}
+        className="extra"
+        onValueChange={() => {}}
+      />,
+    );
+    const el = screen.getByRole("slider", { name: "Gain" });
+    expect(el).toHaveClass("ss-slider");
+    expect(el).toHaveClass("extra");
+  });
 });
