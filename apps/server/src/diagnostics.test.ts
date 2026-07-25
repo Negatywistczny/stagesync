@@ -145,6 +145,24 @@ describe("file-logger + diagnostics zip (#351)", () => {
     expect(() => parseZipArchive(zip)).toThrow(/Niedozwolona/);
   });
 
+  it("parseZipArchive skips __MACOSX and .DS_Store entries", () => {
+    const zip = buildStoreZip([
+      { name: "__MACOSX/._a.txt", data: Buffer.from("meta", "utf8") },
+      { name: "keep.txt", data: Buffer.from("ok", "utf8") },
+      { name: "folder/.DS_Store", data: Buffer.from("ds", "utf8") },
+    ]);
+    expect(parseZipArchive(zip)).toEqual([
+      { name: "keep.txt", data: Buffer.from("ok", "utf8") },
+    ]);
+  });
+
+  it("parseZipArchive rejects absolute Windows drive paths", () => {
+    const zip = buildStoreZip([
+      { name: "C:/Windows/evil.txt", data: Buffer.from("x", "utf8") },
+    ]);
+    expect(() => parseZipArchive(zip)).toThrow(/Niedozwolona/);
+  });
+
   it("logBuffer onPush forwards to sink", () => {
     const seen: string[] = [];
     const buf = createLogBuffer({
