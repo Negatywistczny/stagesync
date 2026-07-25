@@ -152,7 +152,7 @@ export function MixerSurface({
                 );
               })}
               {project.audioTracks.length === 0 ? (
-                <p className={styles.empty}>
+                <p className={styles.empty} role="status" aria-live="polite">
                   Brak ścieżek — dwuklik albo „+ Dodaj Ścieżkę” na Timeline.
                 </p>
               ) : null}
@@ -162,23 +162,28 @@ export function MixerSurface({
           {/* Zone 2 — Busses */}
           <section
             className={[styles.zone, styles.busZone].join(" ")}
-            aria-label="Busy"
+            aria-label="Magistrale"
           >
             <div className={styles.zoneHead}>
-              <span className={styles.zoneTitle}>Busy</span>
+              <span className={styles.zoneTitle}>Magistrale</span>
               <button
                 type="button"
                 className={styles.addBusBtn}
-                aria-label="Dodaj Bus"
+                aria-label="Dodaj magistralę"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddBus();
                 }}
               >
-                + Dodaj Bus
+                + Dodaj magistralę
               </button>
             </div>
             <div className={styles.strips}>
+              {busses.length === 0 ? (
+                <p className={styles.empty} role="status" aria-live="polite">
+                  Brak magistral — użyj „+ Dodaj magistralę”.
+                </p>
+              ) : null}
               {busses.map((bus) => {
                 const callbacks = buildBusCallbacks(bus.id);
                 const reading = meters.busses[bus.id];
