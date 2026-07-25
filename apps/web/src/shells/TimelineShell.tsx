@@ -7514,8 +7514,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-              title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
-              aria-label="Zoom UI"
+              title="Zoom interfejsu — gęstość chrome Timeline / Mixer (85–125%)"
+              aria-label="Zoom interfejsu"
             />
           </label>
           <label
