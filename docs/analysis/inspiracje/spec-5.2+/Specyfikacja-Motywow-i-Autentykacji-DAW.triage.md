@@ -4,7 +4,7 @@
 **Status:** `partial`  
 **Obszar:** Appearance (`data-theme` / kontrast) · scenic lock · Operator PIN · ACL na krawędziach  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` Cue & Guard — PIN + scenic lock + host default on tree; 4-profile matrix residual)  
+**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` Pocket Stage — PIN + scenic lock + host default on tree; 4-profile matrix residual)  
 **Kąt:** wprowadzenie feature 5.2+ (nie audyt HW G1–G10)
 
 ## Werdykt przydatności

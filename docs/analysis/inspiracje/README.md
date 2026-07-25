@@ -122,7 +122,7 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 
 ### spec-5.2+/
 
-Specyfikacje intro feature linii **5.2** (Cue & Guard) i residual **5.2+** — companion do [TODO 5.2+](../../TODO.md) / [ROADMAP § 5.2.0 / Po 5.2.0](../../ROADMAP.md). **Nie** SSOT; **nie** CHANGELOG. MVP PIN / Safety Net manual / Sampler / bus→bus / Performer·Console / MIDI PC — **wydane w `5.2.0`**; residual w triage + TODO. MIDI/mixer: cross-link do istniejących audytów / referencji DAW (nie drugi backlog bugów).
+Specyfikacje intro feature linii **5.2** (Pocket Stage) i residual **5.2+** — companion do [TODO 5.2+](../../TODO.md) / [ROADMAP § 5.2.0 / Po 5.2.0](../../ROADMAP.md). **Nie** SSOT; **nie** CHANGELOG. MVP PIN / Safety Net manual / Sampler / bus→bus / Performer·Console / MIDI PC — **wydane w `5.2.0`**; residual w triage + TODO. MIDI/mixer: cross-link do istniejących audytów / referencji DAW (nie drugi backlog bugów).
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|

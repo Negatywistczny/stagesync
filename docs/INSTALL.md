@@ -42,12 +42,11 @@ Transport Play/Pause/Stop/Seek/Loop oraz MIDI Panic **nie** wymagają PIN-u.
 Admin i Timeline proszą o PIN przy wejściu; Client — w ustawieniach przy edycji
 notatek/form. Nagłówek: `X-Stagesync-Operator-Pin` (alias `X-StageSync-PIN`).
 Status: `GET /api/system/operator-auth` → `{ required: boolean }`.
-Bez OAuth / kont użytkowników.
 
 ### Safety Net (Master / Spare)
 
 `STAGESYNC_SAFETY_ROLE=spare` wycisza MIDI OUT na tym hoście (lustro). W Admin → Host
-widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master). Bez auto-election.
+widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master).
 
 ### Motyw domyślny hosta
 
@@ -58,7 +57,7 @@ wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
 ### Mixer bus→bus
 
 Wyjście busa można skierować na Master albo inny bus (bez pętli). Fizyczne Out 3–4
-pojawiają się w UI dopiero przy realnym `maxChannelCount` ≥ 4 — bez atrap.
+pojawiają się w UI przy realnym `maxChannelCount` ≥ 4.
 
 ### Cues Sampler
 

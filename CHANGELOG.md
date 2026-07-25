@@ -20,32 +20,32 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [5.2.0](https://github.com/Negatywistyczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
 
-> **Pocket Stage:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta — bez atrap Out 3–4 / auto-election / OAuth.
+> **Pocket Stage:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta.
 
 ### Dodano
 
 #### ⏱️ Timeline & DAW
 - **Ołówek / audio:** klik w pustym na ścieżce audio otwiera Import i wstawia klip w miejscu kliknięcia (jak Logic), z No Overlap.
-- **Mixer — bus→bus:** wyjście busa można skierować na Master albo inny bus (bez pętli); silnik odtwarzania buduje DAG. Logiczne wyjścia HW (`audioHardwareOutputs`) są w modelu projektu, ale selektor Out nie pokazuje atrap Out 3–4 bez realnego `maxChannelCount` ≥ 4.
-- **Cues Sampler:** klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus; start z playheadu albo przycisk GO w Inspectorze; opcjonalnie dokończenie po Stop — bez wyjść HW 3–4.
-- **Safety Net:** w Admin Host widać rolę Master/Spare i przycisk **Przejmij** na Spare (ręczne przejęcie; bez auto-election).
+- **Mixer — bus→bus:** wyjście busa można skierować na Master albo inny bus (bez pętli); silnik odtwarzania buduje DAG. Selektor Out pokazuje wyjścia HW przy realnym `maxChannelCount` ≥ 4.
+- **Cues Sampler:** klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus; start z playheadu albo przycisk GO w Inspectorze; opcjonalnie dokończenie po Stop.
+- **Safety Net:** w Admin Host widać rolę Master/Spare i przycisk **Przejmij** na Spare (ręczne przejęcie).
 
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).
 
 #### 🖥️ App Shell & UI
 - **PWA / Client:** „Dodaj do ekranu głównego” (manifest + Service Worker); cache odświeża się z wersją interfejsu (bez cache API, WebSocket i pobierań); w aktywnym widoku Client ekran nie gaśnie (Screen Wake Lock).
-- **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR: tryby Dołącz | Performer | Console.
+- **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan. Modal QR: tryby Dołącz | Performer | Console.
 - **Nazwa urządzenia:** przed Client / Admin / Timeline urządzenie bez zapisanej nazwy dostaje prompt „Podaj swoje imię lub nazwę urządzenia.”; nazwa widać na liście klientów (Scena) i da się ją zmienić w ustawieniach.
 - **Motyw sceniczny:** w Korekcie na scenie realizator może włączyć blokadę motywu na Clientach (jasny / wysoki kontrast) — nadpisuje lokalny wygląd tabletu do zdjęcia blokady; lokalne przełączniki na Clientcie są wtedy wyłączone.
 - **Motyw domyślny hosta:** `STAGESYNC_THEME_DEFAULT` (`dark` / `light` / `*-high`) ustawia wygląd dla urządzeń bez zapisanego motywu lokalnego (health → `themeDefault`).
-- **PIN operatora:** gdy host ma ustawiony kod PIN, Admin i Timeline proszą o odblokowanie przed edycją; Client może odblokować edycję notatek w ustawieniach — bez kont OAuth.
+- **PIN operatora:** gdy host ma ustawiony kod PIN, Admin i Timeline proszą o odblokowanie przed edycją; Client może odblokować edycję notatek w ustawieniach.
 
 #### ⚙️ Serwer & API
 - **Downloads:** host serwuje APK Performer i Console spod `/downloads/` (404 z komunikatem, gdy artefakt nie leży na dysku) oraz paczki UI do jawnej aktualizacji Offline-First (pełna i warianty roli Performer / Console).
 - **Health / UI sync:** health zwraca wersję protokołu i hash interfejsu (pełny oraz opcjonalnie per rola); manifest UI listuje assety do synchronizacji na telefonie.
 - **PIN operatora:** opcjonalny `STAGESYNC_OPERATOR_PIN` blokuje destrukcyjne mutacje REST (projekt, setlista, ustawienia, MIDI config, zmiana utworu…); Play/Stop i MIDI Panic bez PIN-u; status `GET /api/system/operator-auth`.
-- **Safety Net:** rola Master/Spare (`STAGESYNC_SAFETY_ROLE`); na Spare MIDI OUT jest wyciszony; Host może ręcznie **Przejmij** (bez auto-election).
+- **Safety Net:** rola Master/Spare (`STAGESYNC_SAFETY_ROLE`); na Spare MIDI OUT jest wyciszony; Host może ręcznie **Przejmij**.
 - **Motyw domyślny:** health może zwracać `themeDefault` z `STAGESYNC_THEME_DEFAULT` (dla klientów bez lokalnej preferencji).
 
 #### 📚 Dokumentacja

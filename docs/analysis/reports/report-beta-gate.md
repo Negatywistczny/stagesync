@@ -106,7 +106,7 @@ Wykonane (2026-07-21):
 - Desktop update (G6): wymaga tag push z `latest.json` (pełny publish Release).
 - Jeśli Actions `github-release` padnie na limicie wydatków GitHub — dokończ publish ręcznie przez `gh` (jak przy α13).
 
-## Po tagu `v5.2.0` (Cue & Guard)
+## Po tagu `v5.2.0` (Pocket Stage)
 
 Aktywny backlog w [TODO.md](../../TODO.md) = **5.2+ residual** + **G1–G10** operator.  
 Linia 5.2: PIN, Safety Net (manual), Sampler, bus→bus, Performer/Console, motyw hosta — **wydane** (`v5.2.0`).
@@ -116,7 +116,7 @@ Linia 5.2: PIN, Safety Net (manual), Sampler, bus→bus, Performer/Console, moty
 | G1–G10 w tabeli powyżej | nadal **⬜** — **zakaz** odhaczania bez weryfikacji operatora |
 | Must kodu 5.0.0 (A–E) | **done** w tagu `v5.0.0` |
 | Launch & Mix (5.1.0) | **done** w tagu `v5.1.0` |
-| Cue & Guard (5.2.0) | **done** w tagu `v5.2.0` |
+| Pocket Stage (5.2.0) | **done** w tagu `v5.2.0` |
 | Claim „G green” w CHANGELOG / release notes | **Zakaz** do czasu sekwencji operatora |
 | Artefakty do weryfikacji | Release [`v5.2.0`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0) (`.dmg` / `.msi` / APK / `latest.json`); poprzedni [`v5.1.3`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.3) |
 

@@ -192,6 +192,7 @@ assert.match(
   /\*\*Timeline \/ DAW\*\* — Cues Sampler: próbka audio na Cue; Safety Net: Przejmij na Spare; Ołówek: wyrównanie podglądu przeciągania\./,
 );
 assert.doesNotMatch(cue.stdout, /Cue & Guard/);
+assert.doesNotMatch(cue.stdout, /bez atrap|auto-election|bez OAuth|bez kont OAuth/);
 assert.doesNotMatch(cue.stdout, /StageSync 5\.2\.0 \(\.dmg\)/);
 assert.match(cue.stdout, /sideloadem/);
 
