@@ -41,6 +41,7 @@ import {
   setAudioBusChannelMode,
   setAudioBusPan,
   setAudioBusGainDb,
+  setAudioBusOutput,
   removeAudioBus,
   setMasterGainDb,
   splitAudioClipAt,
@@ -494,6 +495,26 @@ describe("audioLaneEdit", () => {
     p = removeAudioBus(p, bus.busId);
     expect(p.audioBusses ?? []).toHaveLength(0);
     expect(p.audioTracks[0]!.output).toBeUndefined();
+  });
+
+  it("setAudioBusOutput allows DAG and rejects cycles", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    const a = addAudioBus(p, "A");
+    p = a.project;
+    const b = addAudioBus(p, "B");
+    p = b.project;
+    p = setAudioBusOutput(p, a.busId, { kind: "bus", busId: b.busId });
+    expect(p.audioBusses!.find((x) => x.id === a.busId)!.output).toEqual({
+      kind: "bus",
+      busId: b.busId,
+    });
+    const cycled = setAudioBusOutput(p, b.busId, {
+      kind: "bus",
+      busId: a.busId,
+    });
+    expect(cycled.audioBusses!.find((x) => x.id === b.busId)!.output).toBeUndefined();
+    p = removeAudioBus(p, b.busId);
+    expect(p.audioBusses!.find((x) => x.id === a.busId)!.output).toBeUndefined();
   });
 
   it("removeAudioTrack drops track and its clips; no-op missing", () => {

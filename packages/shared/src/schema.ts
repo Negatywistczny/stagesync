@@ -6,8 +6,11 @@ import {
 } from "./track-appearance.js";
 import {
   AudioBusSchema,
+  AudioHardwareOutputSchema,
   ChannelModeSchema,
   MixerOutputDestSchema,
+  MAX_AUDIO_HARDWARE_OUTPUTS,
+  busGraphHasCycle,
 } from "./mixer-routing.js";
 
 function refineMeterForPpq(
@@ -531,6 +534,14 @@ const ProjectSchemaV5Object = z
     audioTracks: z.array(AudioTrackSchema).max(64),
     /** Group busses (Mixer zone); omit / [] = none. */
     audioBusses: z.array(AudioBusSchema).max(16).optional(),
+    /**
+     * Logical HW output patches (Out 3–4…). UI must gate on runtime
+     * `maxChannelCount` — never list fake outs.
+     */
+    audioHardwareOutputs: z
+      .array(AudioHardwareOutputSchema)
+      .max(MAX_AUDIO_HARDWARE_OUTPUTS)
+      .optional(),
     audioClips: z.array(AudioClipSchema).max(512),
     /** Project sum / Stereo Out fader (dB); omit = 0 dB. */
     masterGainDb: z.number().finite().min(-60).max(24).optional(),
@@ -564,16 +575,52 @@ export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
       });
     }
     const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
+    const hwIds = new Set(
+      (project.audioHardwareOutputs ?? []).map((h) => h.id),
+    );
     project.audioTracks.forEach((track, i) => {
-      if (track.output?.kind !== "bus") return;
-      if (!busIds.has(track.output.busId)) {
+      if (track.output?.kind === "bus" && !busIds.has(track.output.busId)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Track output busId not found: ${track.output.busId}`,
           path: ["audioTracks", i, "output", "busId"],
         });
       }
+      if (
+        track.output?.kind === "hw_out" &&
+        !hwIds.has(track.output.hwOutputId)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Track output hwOutputId not found: ${track.output.hwOutputId}`,
+          path: ["audioTracks", i, "output", "hwOutputId"],
+        });
+      }
     });
+    (project.audioBusses ?? []).forEach((bus, i) => {
+      if (bus.output?.kind !== "bus") return;
+      if (!busIds.has(bus.output.busId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Bus output busId not found: ${bus.output.busId}`,
+          path: ["audioBusses", i, "output", "busId"],
+        });
+      }
+      if (bus.output.busId === bus.id) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Bus cannot route to itself",
+          path: ["audioBusses", i, "output", "busId"],
+        });
+      }
+    });
+    if (busGraphHasCycle(project.audioBusses ?? [])) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bus routing graph must be acyclic (bus→bus cycle)",
+        path: ["audioBusses"],
+      });
+    }
   },
 );
 
@@ -589,7 +636,54 @@ export const ProjectSchema = ProjectSchemaV5;
  */
 export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
   id: true,
-}).strict();
+})
+  .strict()
+  .superRefine((project, ctx) => {
+    // Same mixer routing rules as ProjectSchemaV5 (OCC PUT body).
+    const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
+    const hwIds = new Set(
+      (project.audioHardwareOutputs ?? []).map((h) => h.id),
+    );
+    project.audioTracks.forEach((track, i) => {
+      if (track.output?.kind === "bus" && !busIds.has(track.output.busId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Track output busId not found: ${track.output.busId}`,
+          path: ["audioTracks", i, "output", "busId"],
+        });
+      }
+      if (
+        track.output?.kind === "hw_out" &&
+        !hwIds.has(track.output.hwOutputId)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Track output hwOutputId not found: ${track.output.hwOutputId}`,
+          path: ["audioTracks", i, "output", "hwOutputId"],
+        });
+      }
+    });
+    (project.audioBusses ?? []).forEach((bus, i) => {
+      if (bus.output?.kind !== "bus") return;
+      if (!busIds.has(bus.output.busId) || bus.output.busId === bus.id) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            bus.output.busId === bus.id
+              ? "Bus cannot route to itself"
+              : `Bus output busId not found: ${bus.output.busId}`,
+          path: ["audioBusses", i, "output", "busId"],
+        });
+      }
+    });
+    if (busGraphHasCycle(project.audioBusses ?? [])) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bus routing graph must be acyclic (bus→bus cycle)",
+        path: ["audioBusses"],
+      });
+    }
+  });
 
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 

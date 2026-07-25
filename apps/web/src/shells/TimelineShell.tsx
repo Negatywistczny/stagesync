@@ -244,6 +244,7 @@ import {
   setAudioBusGainDb,
   setAudioBusMuted,
   setAudioBusName,
+  setAudioBusOutput,
   setAudioBusPan,
   setAudioBusChannelMode,
   addAudioBus,
@@ -4245,6 +4246,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       onChannelModeChange: (mode) => {
         if (!draftProject) return;
         commitDraft(setAudioBusChannelMode(draftProject, busId, mode));
+      },
+      onOutputChange: (output) => {
+        if (!draftProject) return;
+        if (output.kind === "hw_out") return;
+        commitDraft(setAudioBusOutput(draftProject, busId, output));
       },
       onNameDoubleClick: () => openBusRename(busId),
       onRenameChange: (name) => {

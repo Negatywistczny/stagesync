@@ -25,6 +25,7 @@ import {
   ticksToMsAlongTempoMap,
   trackColorForIndex,
   type AudioClip,
+  type BusOutputDest,
   type ChannelMode,
   type FormaClip,
   type MixerOutputDest,
@@ -32,6 +33,7 @@ import {
   type SnapMode,
   type TrackColor,
   type TrackIcon,
+  wouldCreateBusCycle,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
 import { resolveSplitParentId } from "./contentLaneEdit.js";
@@ -585,19 +587,26 @@ export function setAudioTrackIcon(
   };
 }
 
-/** Set track mix destination (Master or Bus). Stale busId → Master (omit). */
+/** Set track mix destination (Master, Bus, or HW). Stale / unknown → Master (omit). */
 export function setAudioTrackOutput(
   project: Project,
   trackId: string,
   output: MixerOutputDest,
 ): Project {
   const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
-  const next: MixerOutputDest | undefined =
-    output.kind === "master"
-      ? undefined
-      : output.kind === "bus" && busIds.has(output.busId)
-        ? output
-        : undefined;
+  const hwIds = new Set(
+    (project.audioHardwareOutputs ?? []).map((h) => h.id),
+  );
+  let next: MixerOutputDest | undefined;
+  if (output.kind === "master") {
+    next = undefined;
+  } else if (output.kind === "bus" && busIds.has(output.busId)) {
+    next = output;
+  } else if (output.kind === "hw_out" && hwIds.has(output.hwOutputId)) {
+    next = output;
+  } else {
+    next = undefined;
+  }
   return {
     ...project,
     audioTracks: project.audioTracks.map((t) => {
@@ -609,6 +618,34 @@ export function setAudioTrackOutput(
         return rest;
       }
       return { ...t, output: next };
+    }),
+  };
+}
+
+/** Set bus mix destination (Master or another bus). Rejects cycles → unchanged. */
+export function setAudioBusOutput(
+  project: Project,
+  busId: string,
+  output: BusOutputDest,
+): Project {
+  const busses = project.audioBusses ?? [];
+  if (!busses.some((b) => b.id === busId)) return project;
+  if (output.kind === "bus") {
+    const busIds = new Set(busses.map((b) => b.id));
+    if (!busIds.has(output.busId) || output.busId === busId) return project;
+    if (wouldCreateBusCycle(busses, busId, output)) return project;
+  }
+  return {
+    ...project,
+    audioBusses: busses.map((b) => {
+      if (b.id !== busId) return b;
+      if (output.kind === "master") {
+        if (b.output == null) return b;
+        const { output: _drop, ...rest } = b;
+        void _drop;
+        return rest;
+      }
+      return { ...b, output };
     }),
   };
 }
@@ -736,14 +773,23 @@ export function setAudioBusName(
 }
 
 /**
- * Remove bus and re-route any tracks that targeted it to Master.
+ * Remove bus and re-route any tracks / busses that targeted it to Master.
  */
 export function removeAudioBus(project: Project, busId: string): Project {
   const busses = project.audioBusses ?? [];
   if (!busses.some((b) => b.id === busId)) return project;
   return {
     ...project,
-    audioBusses: busses.filter((b) => b.id !== busId),
+    audioBusses: busses
+      .filter((b) => b.id !== busId)
+      .map((b) => {
+        if (b.output?.kind === "bus" && b.output.busId === busId) {
+          const { output: _drop, ...rest } = b;
+          void _drop;
+          return rest;
+        }
+        return b;
+      }),
     audioTracks: project.audioTracks.map((t) => {
       if (t.output?.kind === "bus" && t.output.busId === busId) {
         const { output: _drop, ...rest } = t;

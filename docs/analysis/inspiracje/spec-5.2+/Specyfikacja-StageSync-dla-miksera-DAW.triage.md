@@ -4,30 +4,32 @@
 **Status:** `partial`  
 **Obszar:** `audioHardwareOutputs` · `MixerOutputTarget` · DAG bus→bus · ChannelMerger multi-out  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (disk verify)  
+**Ostatnia aktualizacja:** 2026-07-25 (bus→bus + Zod HW on tree; HW UI skipped)  
 **Kąt:** wprowadzenie feature 5.2+ (nie re-audyt bugów 5.1 Mixer)
 
 ## Werdykt przydatności
 
 **Wysoka — rekomendacja modelu (logical HW patch table + unified target) + anti-cycle DFS + ograniczenia `maxChannelCount`.** **Kolizja / companion:** DEF-ADR-01/02 w [Audyt Routingu Miksera](../audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md). **Out 3–4 = decyzja produktowa wprowadzić** ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md)); ten dump = design implementacji, nie claim że multi-out działa.
 
-## Epiki / tematy vs `main` (5.1.x)
+## Epiki / tematy vs `main` (5.1.x → 5.2)
 
 | ID / temat | Stan | Notatka |
 |------------|------|---------|
-| MX-OUT-01…04 HW outs + meters + mute/solo | `confirmed` | Brak `audioHardwareOutputs` / `hw_out` — `MixerOutputDest` = master\|bus |
-| MX-BUS-01 bus→bus | `confirmed` | `BusOutputDestSchema` tylko `master`; `resolveBusOutputDest` zawsze Master |
-| MX-BUS-02 anti-cycle Zod + fail-soft | `confirmed` | Wymagane przy bus→bus — brak DFS w modelu |
-| MX-BUS-03 solo cascade / track-wins | `partial` | Track solo wins już `fixed` w audycie miksera; kaskada DAG — przy feature |
-| WebAudio discrete ChannelMerger + OS speaker config warning | `confirmed` | `setSinkId` istnieje; multi-channel destination — nie |
-| Zakaz multi-`AudioContext` / stubów Out 3–4 | `limit` | Zgodne ADR 0011 — egzekwowane brakiem atrap w UI |
+| MX-OUT-01…04 HW outs + meters + mute/solo | `partial` | Zod `audioHardwareOutputs` + `hw_out` **on-tree**; WebAudio ChannelMerger + UI **skip** bez `maxChannelCount` ≥ 4 (`hwOutputUiAllowed`) |
+| MX-BUS-01 bus→bus | `on-tree` | `BusOutputDest` = master\|bus; Mixer Out na busie; playback DAG |
+| MX-BUS-02 anti-cycle Zod + fail-soft | `on-tree` | `busGraphHasCycle` / `wouldCreateBusCycle`; Zod fail-fast; runtime fail-soft → Master |
+| MX-BUS-03 solo cascade / track-wins | `partial` | Track solo wins już wcześniej; pełna kaskada DAG — Later |
+| WebAudio discrete ChannelMerger + OS speaker config warning | `limit` / **skip** | Brak atrap Out 3–4 w UI; multi-channel destination — deferred |
+| Zakaz multi-`AudioContext` / stubów Out 3–4 | `limit` | Egzekwowane: UI nie listuje HW bez `hwOutputUiAllowed` |
 
 ## Confirmed vs hypothesis
 
-- **Confirmed gap:** `MixerOutputDest` = master\|bus; bus output → tylko master (`mixer-routing.ts`).
-- Pozycje już w [TODO 5.2+](../../../TODO.md) (Out 3–4, bus→bus) — bez nowej promocji z dumpu.
-- Bugi 5.1 Mixer (peak, dezipper, …) — **nie** reotwierać tu; patrz triage audytu (`closed`/`partial`).
+- **On tree:** bus→bus + anti-cycle; Zod HW patch table.
+- **Justified skip:** HW UI + ChannelMerger theater bez realnych kanałów urządzenia.
+- **→ TODO:** tylko residual HW WebAudio multi-out (gated) w [TODO 5.2+](../../../TODO.md).
 
 ## Następny krok eng
 
-Przy planowaniu linii: najpierw model Zod + DFS; UI OutputSelector dopiero gdy runtime `maxChannelCount` ≥ 4 i graf HW żyje. Nie renderować „Out 3–4 wkrótce”.
+1. HW Out UI + ChannelMerger dopiero po profilu urządzenia z `destination.maxChannelCount` ≥ 4.
+2. Solo cascade DAG — opcjonalny polish.
+3. Kolejny epik 5.2: Cues Sampler / Safety Net.

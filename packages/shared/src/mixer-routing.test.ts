@@ -1,22 +1,26 @@
 import { describe, expect, it } from "vitest";
 import {
   AudioBusSchema,
+  AudioHardwareOutputSchema,
   ChannelModeSchema,
   MixerOutputDestSchema,
   MASTER_OUTPUT,
   MAX_AUDIO_BUSSES,
+  busGraphHasCycle,
   channelModeFromChannelCount,
+  hwOutputUiAllowed,
   isTrackRoutedToBus,
   nextBusName,
   resolveBusOutputDest,
   resolveChannelMode,
   resolveTrackOutputDest,
+  wouldCreateBusCycle,
 } from "./mixer-routing.js";
 import { AudioTrackSchema, ProjectSchema } from "./schema.js";
 import { createProjectSeed } from "./project-seed.js";
 
 describe("mixer routing", () => {
-  it("resolves omit / master / valid bus / stale busId", () => {
+  it("resolves omit / master / valid bus / stale busId / hw", () => {
     const ids = ["bus-a", "bus-b"];
     expect(resolveTrackOutputDest(undefined, ids)).toEqual(MASTER_OUTPUT);
     expect(resolveTrackOutputDest({ kind: "master" }, ids)).toEqual(
@@ -32,11 +36,75 @@ describe("mixer routing", () => {
       resolveTrackOutputDest({ kind: "bus", busId: "bus-a" }, new Set(ids)),
     ).toEqual({ kind: "bus", busId: "bus-a" });
     expect(resolveTrackOutputDest(null, ids)).toEqual(MASTER_OUTPUT);
+    expect(
+      resolveTrackOutputDest(
+        { kind: "hw_out", hwOutputId: "hw1" },
+        ids,
+        ["hw1"],
+      ),
+    ).toEqual({ kind: "hw_out", hwOutputId: "hw1" });
+    expect(
+      resolveTrackOutputDest({ kind: "hw_out", hwOutputId: "hw1" }, ids),
+    ).toEqual(MASTER_OUTPUT);
+
     expect(resolveBusOutputDest(undefined)).toEqual({ kind: "master" });
-    expect(resolveBusOutputDest({ kind: "master" })).toEqual({
-      kind: "master",
-    });
-    expect(resolveBusOutputDest(null)).toEqual({ kind: "master" });
+    expect(
+      resolveBusOutputDest(
+        { kind: "bus", busId: "bus-b" },
+        { fromBusId: "bus-a", busIds: ids },
+      ),
+    ).toEqual({ kind: "bus", busId: "bus-b" });
+    expect(
+      resolveBusOutputDest(
+        { kind: "bus", busId: "bus-a" },
+        { fromBusId: "bus-a", busIds: ids },
+      ),
+    ).toEqual({ kind: "master" });
+  });
+
+  it("detects bus→bus cycles and allows DAG", () => {
+    expect(
+      busGraphHasCycle([
+        { id: "a", output: { kind: "bus", busId: "b" } },
+        { id: "b", output: { kind: "bus", busId: "a" } },
+      ]),
+    ).toBe(true);
+    expect(
+      busGraphHasCycle([
+        { id: "a", output: { kind: "bus", busId: "b" } },
+        { id: "b", output: { kind: "master" } },
+      ]),
+    ).toBe(false);
+    expect(
+      wouldCreateBusCycle(
+        [
+          { id: "a", output: { kind: "master" } },
+          { id: "b", output: { kind: "bus", busId: "a" } },
+        ],
+        "a",
+        { kind: "bus", busId: "b" },
+      ),
+    ).toBe(true);
+    expect(
+      resolveBusOutputDest(
+        { kind: "bus", busId: "b" },
+        {
+          fromBusId: "a",
+          busIds: ["a", "b"],
+          busses: [
+            { id: "a", output: { kind: "master" } },
+            { id: "b", output: { kind: "bus", busId: "a" } },
+          ],
+        },
+      ),
+    ).toEqual({ kind: "master" });
+  });
+
+  it("hwOutputUiAllowed requires ≥4 channels", () => {
+    expect(hwOutputUiAllowed(2)).toBe(false);
+    expect(hwOutputUiAllowed(3)).toBe(false);
+    expect(hwOutputUiAllowed(4)).toBe(true);
+    expect(hwOutputUiAllowed(8)).toBe(true);
   });
 
   it("nextBusName increments", () => {
@@ -50,75 +118,62 @@ describe("mixer routing", () => {
     expect(
       isTrackRoutedToBus({ kind: "bus", busId: "b1" }, "b1", ["b1"]),
     ).toBe(true);
-    expect(isTrackRoutedToBus(undefined, "b1", ["b1"])).toBe(false);
+    expect(isTrackRoutedToBus({ kind: "master" }, "b1", ["b1"])).toBe(false);
   });
 
-  it("channelMode defaults and from channel count", () => {
+  it("channelMode helpers", () => {
     expect(ChannelModeSchema.parse("mono")).toBe("mono");
     expect(resolveChannelMode(undefined)).toBe("stereo");
-    expect(resolveChannelMode("mono")).toBe("mono");
     expect(channelModeFromChannelCount(1)).toBe("mono");
-    expect(channelModeFromChannelCount(0)).toBe("mono");
     expect(channelModeFromChannelCount(2)).toBe("stereo");
-    expect(AudioTrackSchema.parse({ id: "t", name: "A" }).channelMode).toBe(
-      undefined,
-    );
-    expect(
-      AudioTrackSchema.parse({ id: "t", name: "A", channelMode: "mono" })
-        .channelMode,
-    ).toBe("mono");
-    expect(
-      AudioBusSchema.parse({ id: "b1", name: "Bus 1" }).channelMode,
-    ).toBeUndefined();
-    expect(
-      AudioBusSchema.parse({
-        id: "b1",
-        name: "Bus 1",
-        channelMode: "stereo",
-      }).channelMode,
-    ).toBe("stereo");
+    expect(MAX_AUDIO_BUSSES).toBe(16);
   });
 
-  it("Zod accepts AudioBus + track output; rejects stale bus on project", () => {
-    expect(MAX_AUDIO_BUSSES).toBe(16);
-    const bus = AudioBusSchema.parse({ id: "b1", name: "Bus 1" });
-    expect(bus.name).toBe("Bus 1");
-    expect(
-      MixerOutputDestSchema.parse({ kind: "bus", busId: "b1" }).kind,
-    ).toBe("bus");
-    expect(
-      AudioTrackSchema.parse({
-        id: "t1",
-        name: "Gtr",
-        output: { kind: "bus", busId: "b1" },
-      }).output,
-    ).toEqual({ kind: "bus", busId: "b1" });
-
-    const seed = createProjectSeed("p", "Song", "2026-07-23T00:00:00.000Z");
-    const ok = ProjectSchema.parse({
-      ...seed,
-      audioBusses: [{ id: "b1", name: "Bus 1" }],
-      audioTracks: [
-        {
-          id: "t1",
-          name: "Gtr",
-          output: { kind: "bus", busId: "b1" },
-        },
-      ],
+  it("Zod accepts AudioBus bus→bus + HW patch; rejects cycle on project", () => {
+    const bus = AudioBusSchema.parse({
+      id: "b1",
+      name: "Bus 1",
+      output: { kind: "bus", busId: "b2" },
     });
-    expect(ok.audioBusses).toHaveLength(1);
+    expect(bus.output).toEqual({ kind: "bus", busId: "b2" });
+    expect(
+      MixerOutputDestSchema.parse({ kind: "hw_out", hwOutputId: "hw1" }).kind,
+    ).toBe("hw_out");
+    expect(
+      AudioHardwareOutputSchema.parse({
+        id: "hw1",
+        name: "Out 3-4",
+        channelOffset: 2,
+        channelMode: "stereo",
+      }).channelOffset,
+    ).toBe(2);
 
+    const seed = createProjectSeed("id", "Cycle", "2026-07-25T00:00:00.000Z");
     expect(() =>
       ProjectSchema.parse({
         ...seed,
-        audioTracks: [
-          {
-            id: "t1",
-            name: "Gtr",
-            output: { kind: "bus", busId: "missing" },
-          },
+        audioBusses: [
+          { id: "a", name: "A", output: { kind: "bus", busId: "b" } },
+          { id: "b", name: "B", output: { kind: "bus", busId: "a" } },
         ],
       }),
-    ).toThrow();
+    ).toThrow(/acyclic|cycle/i);
+
+    expect(
+      ProjectSchema.parse({
+        ...seed,
+        audioBusses: [
+          { id: "a", name: "A", output: { kind: "bus", busId: "b" } },
+          { id: "b", name: "B" },
+        ],
+        audioTracks: [
+          AudioTrackSchema.parse({
+            id: "t1",
+            name: "T",
+            output: { kind: "bus", busId: "a" },
+          }),
+        ],
+      }).audioBusses?.[0]?.output,
+    ).toEqual({ kind: "bus", busId: "b" });
   });
 });

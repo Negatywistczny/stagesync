@@ -81,10 +81,15 @@ export function MixerSurface({
     ];
   }, [busses]);
 
-  const busOutputOptions: OutputSelectorOption[] = useMemo(
-    () => [{ value: "master", label: "Master" }],
-    [],
-  );
+  const busOutputOptionsFor = (busId: string): OutputSelectorOption[] => [
+    { value: "master", label: "Master" },
+    ...busses
+      .filter((b) => b.id !== busId)
+      .map((b) => ({
+        value: `bus:${b.id}`,
+        label: b.name,
+      })),
+  ];
 
   useEffect(() => {
     function onPrefs(e: Event) {
@@ -206,8 +211,8 @@ export function MixerSurface({
                       meterDbR: reading?.liveDbR,
                       hold: reading?.hold,
                       kind: "bus",
-                      outputValue: "master",
-                      outputOptions: busOutputOptions,
+                      outputValue: serializeOutputDest(bus.output),
+                      outputOptions: busOutputOptionsFor(bus.id),
                     }}
                     callbacks={{
                       ...callbacks,

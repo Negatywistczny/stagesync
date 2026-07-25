@@ -1,5 +1,7 @@
 /**
- * Track / Bus mix output selector — Master | Bus N (no fake physical outs).
+ * Track / Bus mix output selector — Master | Bus N.
+ * HW outs are never listed here unless a future caller passes options
+ * gated by `hwOutputUiAllowed(maxChannelCount)`.
  */
 
 import type { MixerOutputDest } from "@stagesync/shared";
@@ -21,6 +23,7 @@ export type OutputSelectorProps = {
 
 export function serializeOutputDest(dest: MixerOutputDest | undefined): string {
   if (dest?.kind === "bus") return `bus:${dest.busId}`;
+  if (dest?.kind === "hw_out") return `hw:${dest.hwOutputId}`;
   return "master";
 }
 
@@ -28,6 +31,10 @@ export function parseOutputDest(value: string): MixerOutputDest {
   if (value.startsWith("bus:")) {
     const busId = value.slice(4);
     if (busId) return { kind: "bus", busId };
+  }
+  if (value.startsWith("hw:")) {
+    const hwOutputId = value.slice(3);
+    if (hwOutputId) return { kind: "hw_out", hwOutputId };
   }
   return { kind: "master" };
 }

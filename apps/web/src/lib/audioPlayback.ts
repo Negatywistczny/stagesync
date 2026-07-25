@@ -1,7 +1,7 @@
 /**
  * Client WebAudio playback synced to server transport ticks ([ADR 0008]).
  *
- * Graph (routing still Track → Master | Bus, Bus → Master):
+ * Graph (Track → Master | Bus | HW-failsoft-Master; Bus → Master | Bus DAG):
  *
  * Mono track:
  *   BufferSource → [stereo→mono −3 dB downmix?] → fadeGain → levelGain → trackGain
@@ -13,7 +13,8 @@
  *     merger → (masterGain | groupBusGain)
  *
  * Mono file on a stereo bus is upmixed on trackGain before the splitter (otherwise L-only).
- * Bus mirrors track mono/stereo topology; bus always → Master.
+ * Bus may feed Master or another bus (acyclic); HW outs fail-soft to Master until
+ * ChannelMerger multi-out ships with real `maxChannelCount`.
  * Click / metronome stays on a separate Direct Cue path (never through Master).
  */
 
@@ -29,6 +30,7 @@ import {
   gainDbToLinear,
   linearPeakToMeterDb,
   projectEndTicks,
+  resolveBusOutputDest,
   resolveChannelMode,
   resolveMeterAt,
   resolveTempoAt,
@@ -137,10 +139,10 @@ const MAX_BUFFER_CACHE = 32;
 const ANALYSER_FFT = 256;
 /** Short linear ramp — avoids zipper clicks on live fader / mute / solo. */
 const GAIN_DEZIPPER_SEC = 0.012;
-/** Last wired track output: `"master"` or `bus:<id>`. */
+/** Last wired track output: `"master"` | `bus:<id>` | `hw:<id>` (hw failsoft master). */
 const trackWiredDest = new Map<string, string>();
-/** Group buses always feed Master once; skip repeated disconnect/reconnect. */
-const groupWiredToMaster = new Set<string>();
+/** Last wired group-bus output: `"master"` or `bus:<id>`. */
+const groupWiredDest = new Map<string, string>();
 
 function cacheKey(projectId: string, assetId: string): string {
   return `${projectId}:${assetId}`;
@@ -434,13 +436,13 @@ function ensureGroupBus(
   if (hit) {
     disconnectBusNodes(hit);
     groupBuses.delete(busId);
-    groupWiredToMaster.delete(busId);
+    groupWiredDest.delete(busId);
   }
   const master = ensureMasterBus(ctx);
   const node = createChannelBus(ctx, mode);
   outputNode(node).connect(master.gain);
   groupBuses.set(busId, node);
-  groupWiredToMaster.add(busId);
+  groupWiredDest.set(busId, "master");
   return node;
 }
 
@@ -509,6 +511,9 @@ function applyBusParams(
 
   const busses = project.audioBusses ?? [];
   const busIdSet = new Set(busses.map((b) => b.id));
+  const hwIdSet = new Set(
+    (project.audioHardwareOutputs ?? []).map((h) => h.id),
+  );
 
   for (const bus of busses) {
     const mode = resolveChannelMode(bus.channelMode);
@@ -518,12 +523,29 @@ function applyBusParams(
     if (busSoloMutesBus(bus.id, soloTrackIds, soloBusIds)) lin = 0;
     setParamDezippered(node.gain.gain, lin, now);
     applyBalanceOrPan(node, bus.pan ?? 0, now);
-    // Bus always → Master (physical outs not in model). Wire once.
-    if (!groupWiredToMaster.has(bus.id)) {
-      const out = outputNode(node);
+    const dest = resolveBusOutputDest(bus.output, {
+      fromBusId: bus.id,
+      busIds: busIdSet,
+      busses,
+    });
+    const destKey =
+      dest.kind === "bus" ? `bus:${dest.busId}` : "master";
+    const out = outputNode(node);
+    if (groupWiredDest.get(bus.id) !== destKey) {
       disconnectSafe(out);
-      out.connect(master.gain);
-      groupWiredToMaster.add(bus.id);
+      if (dest.kind === "bus") {
+        const g = ensureGroupBus(
+          ctx,
+          dest.busId,
+          resolveChannelMode(
+            busses.find((b) => b.id === dest.busId)?.channelMode,
+          ),
+        );
+        out.connect(g.gain);
+      } else {
+        out.connect(master.gain);
+      }
+      groupWiredDest.set(bus.id, destKey);
     }
   }
   for (const id of [...groupBuses.keys()]) {
@@ -532,7 +554,7 @@ function applyBusParams(
     if (!node) continue;
     disconnectBusNodes(node);
     groupBuses.delete(id);
-    groupWiredToMaster.delete(id);
+    groupWiredDest.delete(id);
   }
 
   const alive = new Set(project.audioTracks.map((t) => t.id));
@@ -541,9 +563,14 @@ function applyBusParams(
     const tBus = ensureTrackBus(ctx, track.id, mode);
     setParamDezippered(tBus.gain.gain, gainDbToLinear(track.gainDb), now);
     applyBalanceOrPan(tBus, track.pan ?? 0, now);
-    const dest = resolveTrackOutputDest(track.output, busIdSet);
+    const dest = resolveTrackOutputDest(track.output, busIdSet, hwIdSet);
+    // HW outs: fail-soft to Master until multi-channel destination ships.
     const destKey =
-      dest.kind === "bus" ? `bus:${dest.busId}` : "master";
+      dest.kind === "bus"
+        ? `bus:${dest.busId}`
+        : dest.kind === "hw_out"
+          ? `hw:${dest.hwOutputId}`
+          : "master";
     const out = outputNode(tBus);
     if (trackWiredDest.get(track.id) !== destKey) {
       disconnectSafe(out);
@@ -677,7 +704,7 @@ function disposeBuses(): void {
     disconnectBusNodes(bus);
   }
   groupBuses.clear();
-  groupWiredToMaster.clear();
+  groupWiredDest.clear();
   if (masterBus) {
     disconnectSafe(masterBus.gain);
     disconnectSafe(masterBus.splitter);
@@ -734,16 +761,22 @@ function graphKey(input: AudioPlaybackInput): string {
       )
       .join(";"),
     input.project.audioTracks
-      .map(
-        (t) =>
-          `${t.id}:${t.muted}:${resolveChannelMode(t.channelMode)}:${t.output?.kind === "bus" ? t.output.busId : "master"}`,
-      )
+      .map((t) => {
+        const out =
+          t.output?.kind === "bus"
+            ? `bus:${t.output.busId}`
+            : t.output?.kind === "hw_out"
+              ? `hw:${t.output.hwOutputId}`
+              : "master";
+        return `${t.id}:${t.muted}:${resolveChannelMode(t.channelMode)}:${out}`;
+      })
       .join(";"),
     (input.project.audioBusses ?? [])
-      .map(
-        (b) =>
-          `${b.id}:${b.muted}:${resolveChannelMode(b.channelMode)}`,
-      )
+      .map((b) => {
+        const out =
+          b.output?.kind === "bus" ? `bus:${b.output.busId}` : "master";
+        return `${b.id}:${b.muted}:${resolveChannelMode(b.channelMode)}:${out}`;
+      })
       .join(";"),
     (input.soloTrackIds ?? []).join(","),
     (input.soloBusIds ?? []).join(","),
