@@ -7869,7 +7869,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           />
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
-              <h2 id="ug-import-title">Import Ultimate Guitar</h2>
+              <h2 id="ug-import-title">Importuj Ultimate Guitar</h2>
               <ShellIconButton
                 label="Zamknij"
                 onClick={() => setUgModalOpen(false)}
