@@ -19,10 +19,22 @@ export type WandScope = {
   sectionIds?: string[];
 };
 
+/**
+ * Outcome of placing Tekst / Akordy from Forma (różdżka).
+ *
+ * - `ok: false` — nothing placed (empty Forma, no matching scope, or hard fail);
+ *   `message` explains why for UI toast.
+ * - `ok: true` — `project` is a new object; `placed` is the number of content clips
+ *   written; `approximate` marks soft/heuristic layering (caller may warn).
+ * Never throws for ordinary project shapes — fail-soft via `ok` + `message`.
+ */
 export type WandResult = {
+  /** Updated project (same reference when `ok` is false and nothing changed). */
   project: Project;
   ok: boolean;
+  /** Count of Tekst/Akordy clips written in this pass. */
   placed: number;
+  /** Human-readable reason when `ok` is false (or soft warning when approximate). */
   message?: string;
   /** True when any section used approximate layer (B / F / C with B|F). */
   approximate?: boolean;
