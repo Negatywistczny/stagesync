@@ -8,6 +8,7 @@ import {
   commitResizeClip,
   commitSubsectionBoundaryMove,
   commitPencilSpan,
+  joinFormaAtClick,
   deleteFormaClip,
   formaSectionCoveringTicks,
   insertFormaSubsectionAt,
@@ -489,5 +490,45 @@ describe("formaEdit remaining coverage", () => {
         false,
       ),
     ).toBe(p);
+  });
+
+  it("joinFormaAtClick merges abutting sections and clears subsections", () => {
+    const p = seed();
+    expect(joinFormaAtClick(p, "missing", 0)).toBe(p);
+    expect(joinFormaAtClick(p, "forma-cd", 0)).toBe(p);
+
+    const withSub = insertFormaSubsectionAt(p, "forma-intro", 3840);
+    const cleared = joinFormaAtClick(withSub, "forma-intro", 3840);
+    expect(
+      cleared.forma.clips.find((c) => c.id === "forma-intro")?.subsections,
+    ).toBeUndefined();
+
+    const withB = commitPencilSpan(p, 7680, 15360, "B", "bar");
+    const intro = withB.forma.clips.find((c) => c.id === "forma-intro")!;
+    const b = withB.forma.clips.find((c) => c.name === "B")!;
+    expect(b.startTicks).toBe(intro.startTicks + intro.lengthTicks);
+    const merged = joinFormaAtClick(withB, intro.id, intro.startTicks + 1);
+    expect(merged.forma.clips.filter((c) => c.kind === "section")).toHaveLength(
+      1,
+    );
+    const only = merged.forma.clips.find((c) => c.kind === "section")!;
+    expect(only.id).toBe(intro.id);
+    expect(only.lengthTicks).toBe(intro.lengthTicks + b.lengthTicks);
+    expect(only.subsections).toBeUndefined();
+
+    const fromRight = joinFormaAtClick(withB, b.id, b.startTicks + 1);
+    expect(fromRight.forma.clips.find((c) => c.kind === "section")!.id).toBe(
+      intro.id,
+    );
+
+    const gapped = {
+      ...withB,
+      forma: {
+        clips: withB.forma.clips.map((c) =>
+          c.name === "B" ? { ...c, startTicks: c.startTicks + 100 } : c,
+        ),
+      },
+    };
+    expect(joinFormaAtClick(gapped, intro.id, 0)).toBe(gapped);
   });
 });
