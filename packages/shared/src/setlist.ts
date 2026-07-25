@@ -228,12 +228,16 @@ export function buildSetlistView(
     const p = byId.get(item.projectId);
     if (p) {
       entries.push({ id: p.id, name: p.name });
+      const durationMs =
+        p.durationMs != null && p.durationMs > 0
+          ? p.durationMs
+          : SETLIST_SONG_DURATION_ESTIMATE_MS;
       items.push({
         type: "project",
         projectId: p.id,
         name: p.name,
-        durationMs: SETLIST_SONG_DURATION_ESTIMATE_MS,
-        estimated: true,
+        durationMs,
+        estimated: !(p.durationMs != null && p.durationMs > 0),
       });
     }
   }

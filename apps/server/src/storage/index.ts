@@ -14,10 +14,14 @@ import {
   createDefaultTemplateProject,
   defaultSetlist,
   ensureFormaSubsections,
+  formatKeySignature,
   mergePreserveById,
   nextMidiProgramId,
   normalizeSetlist,
+  projectEndTicks,
   pruneSetlistToLibrary,
+  resolveKeyAt,
+  ticksToMsAlongTempoMap,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
@@ -117,6 +121,18 @@ function isProjectV4(raw: unknown): boolean {
 }
 
 function libraryEntryFromProject(project: Project): LibraryProjectEntry {
+  const key = resolveKeyAt(project, 0);
+  const keyLabel = key ? formatKeySignature(key) : undefined;
+  const endTicks = projectEndTicks(project);
+  let durationMs: number | undefined;
+  try {
+    const ms = ticksToMsAlongTempoMap(0, endTicks, project);
+    if (Number.isFinite(ms) && ms >= 0) {
+      durationMs = Math.round(ms);
+    }
+  } catch {
+    durationMs = undefined;
+  }
   return {
     id: project.id,
     name: project.name,
@@ -129,6 +145,9 @@ function libraryEntryFromProject(project: Project): LibraryProjectEntry {
     ...(project.artist ? { artist: project.artist } : {}),
     ...(project.genre ? { genre: project.genre } : {}),
     hasMusicXml: project.assets.some((a) => a.kind === "musicxml"),
+    defaultBpm: project.defaultBpm,
+    ...(keyLabel && keyLabel !== "—" ? { keyLabel } : {}),
+    ...(durationMs != null ? { durationMs } : {}),
   };
 }
 
@@ -239,7 +258,32 @@ export function createStores(dataDir?: string) {
       }
     }
 
-    return ensureDefaultTemplate(library);
+    return enrichLibraryCatalogMeta(await ensureDefaultTemplate(library));
+  }
+
+  async function enrichLibraryCatalogMeta(library: Library): Promise<Library> {
+    const needsEnrich = library.projects.some((p) => p.defaultBpm == null);
+    if (!needsEnrich) return library;
+
+    let dirty = false;
+    const projects: LibraryProjectEntry[] = [];
+    for (const entry of library.projects) {
+      if (entry.defaultBpm != null) {
+        projects.push(entry);
+        continue;
+      }
+      try {
+        const project = await readProject(entry.id);
+        projects.push(libraryEntryFromProject(project));
+        dirty = true;
+      } catch {
+        projects.push(entry);
+      }
+    }
+    if (!dirty) return library;
+    const next = LibrarySchema.parse({ ...library, projects });
+    await saveLibrary(next);
+    return next;
   }
 
   async function saveLibrary(library: Library): Promise<void> {

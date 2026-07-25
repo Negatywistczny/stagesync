@@ -436,6 +436,30 @@
   color: var(--ss-color-text-muted);
 }
 
+.songBadges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--ss-space-1);
+  min-width: 0;
+}
+
+.songBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--ss-space-1);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-surface) 80%, transparent);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ss-leading-tight);
+  white-space: nowrap;
+}
+
 .networkUrlRow {
   display: flex;
   flex-direction: row;
@@ -517,6 +541,81 @@
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+.inspectorStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.inspectorPrimary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+}
+
+.inspectorDelete {
+  margin-left: auto;
+  color: var(--ss-color-danger);
+  border-color: color-mix(in srgb, var(--ss-color-danger) 45%, var(--ss-color-border));
+}
+
+@media (hover: hover) {
+  .inspectorDelete:hover:not(:disabled) {
+    color: var(--ss-color-danger);
+    border-color: var(--ss-color-danger);
+    background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
+  }
+}
+
+.inspectorSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+}
+
+.songMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ss-space-2);
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-surface) 70%, transparent);
+}
+
+@media (max-width: 520px) {
+  .songMetaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.songMetaCell {
+  min-width: 0;
+}
+
+.songMetaCell dt {
+  margin: 0;
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  letter-spacing: var(--ss-tracking-label);
+  text-transform: uppercase;
+}
+
+.songMetaCell dd {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dbManageBody {
@@ -713,8 +812,8 @@
   z-index: 10;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-3) var(--ss-space-4);
+  align-items: stretch;
+  gap: var(--ss-space-2) 0;
   padding: var(--ss-space-3) var(--ss-space-5);
   border-top: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
@@ -725,6 +824,15 @@
   flex-direction: column;
   gap: 1px;
   min-width: 0;
+  padding: 0 var(--ss-space-4);
+}
+
+.statusGroup + .statusGroup {
+  border-left: 1px solid var(--ss-color-border);
+}
+
+.statusGroup:first-child {
+  padding-left: 0;
 }
 
 .statusLab {
@@ -749,6 +857,12 @@
 
 .statusMuted {
   color: var(--ss-color-text-muted);
+  font-weight: var(--ss-font-weight-regular);
+}
+
+.statusInlineSep {
+  margin: 0 var(--ss-space-1);
+  color: var(--ss-color-border);
   font-weight: var(--ss-font-weight-regular);
 }
 

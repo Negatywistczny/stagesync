@@ -45,6 +45,12 @@ export const LibraryProjectEntrySchema = z.object({
   artist: z.string().max(200).optional(),
   genre: z.string().max(200).optional(),
   hasMusicXml: z.boolean().optional(),
+  /** From project.defaultBpm (Admin list badges / inspector). */
+  defaultBpm: BpmSchema.optional(),
+  /** Starting key at tick 0 (`formatKeySignature`); omit when keyMap empty. */
+  keyLabel: z.string().min(1).max(16).optional(),
+  /** Song length from project bounds + tempo map (ms). */
+  durationMs: z.number().finite().nonnegative().optional(),
 });
 
 export type LibraryProjectEntry = z.infer<typeof LibraryProjectEntrySchema>;

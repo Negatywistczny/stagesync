@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { MessageSquare, MonitorSmartphone } from "lucide-react";
 import { Button } from "@stagesync/ui";
 import {
   clearStageMessages,
@@ -22,6 +23,14 @@ const ROLE_OPTIONS = [
   { id: "score", label: "Partytura" },
   { id: "drums", label: "Forma" },
 ] as const;
+
+const ROLE_LABELS: Record<string, string> = {
+  karaoke: "Tekst",
+  grid: "Akordy",
+  score: "Partytura",
+  drums: "Forma",
+  timeline: "Timeline",
+};
 
 /** Match v4 `CLIENT_STALE_MS` — no fresh hello/latency within this window. */
 const CLIENT_STALE_MS = 10_000;
@@ -59,11 +68,27 @@ function presenceTitle(phase: ClientPhase): string {
   }
 }
 
+function connectionStatusLabel(phase: ClientPhase): string {
+  switch (phase) {
+    case "awaiting-data":
+      return "Łączenie";
+    case "stale":
+      return "Brak sygnału";
+    case "awaiting-role":
+      return "Bez roli";
+    default:
+      return "Online";
+  }
+}
+
+function formatRoleLabels(roles: string[]): string {
+  if (roles.length === 0) return "";
+  return roles.map((role) => ROLE_LABELS[role] ?? role).join(", ");
+}
+
 function formatSessionRoles(roles: SessionStageMessage["roles"]): string {
   if (!roles || roles.length === 0) return "wszyscy";
-  return roles
-    .map((role) => ROLE_OPTIONS.find((r) => r.id === role)?.label ?? role)
-    .join(", ");
+  return formatRoleLabels(roles);
 }
 
 function formatExpiresAt(msg: SessionStageMessage): string {
@@ -329,70 +354,72 @@ export function StageView() {
                   }}
                 />
               </label>
-              <ShellSwitchRow
-                className={styles.masterSwitch}
-                checked={liveDesk.clientEditEnabled}
-                disabled={liveDeskSaving}
-                onChange={(e) => {
-                  const on = e.target.checked;
-                  setLiveDesk({ ...liveDesk, clientEditEnabled: on });
-                  void applyLiveDesk({ clientEditEnabled: on });
-                }}
-              >
-                Edycja zdalna (notatki Formy / tap wokalu)
-              </ShellSwitchRow>
-              <ShellSwitchRow
-                className={styles.masterSwitch}
-                checked={liveDesk.themeLock != null}
-                disabled={liveDeskSaving}
-                onChange={(e) => {
-                  const on = e.target.checked;
-                  const themeLock = on
-                    ? (liveDesk.themeLock ?? {
-                        light: false,
-                        highContrast: false,
-                      })
-                    : null;
-                  setLiveDesk({ ...liveDesk, themeLock });
-                  void applyLiveDesk({ themeLock });
-                }}
-              >
-                Blokada motywu na Clientach
-              </ShellSwitchRow>
-              {liveDesk.themeLock ? (
-                <>
-                  <ShellSwitchRow
-                    className={styles.masterSwitch}
-                    checked={liveDesk.themeLock.light}
-                    disabled={liveDeskSaving}
-                    onChange={(e) => {
-                      const themeLock = {
-                        ...liveDesk.themeLock!,
-                        light: e.target.checked,
-                      };
-                      setLiveDesk({ ...liveDesk, themeLock });
-                      void applyLiveDesk({ themeLock });
-                    }}
-                  >
-                    Wymuszony jasny motyw
-                  </ShellSwitchRow>
-                  <ShellSwitchRow
-                    className={styles.masterSwitch}
-                    checked={liveDesk.themeLock.highContrast}
-                    disabled={liveDeskSaving}
-                    onChange={(e) => {
-                      const themeLock = {
-                        ...liveDesk.themeLock!,
-                        highContrast: e.target.checked,
-                      };
-                      setLiveDesk({ ...liveDesk, themeLock });
-                      void applyLiveDesk({ themeLock });
-                    }}
-                  >
-                    Wymuszony wysoki kontrast
-                  </ShellSwitchRow>
-                </>
-              ) : null}
+              <div className={styles.masterSwitches}>
+                <ShellSwitchRow
+                  className={styles.masterSwitch}
+                  checked={liveDesk.clientEditEnabled}
+                  disabled={liveDeskSaving}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    setLiveDesk({ ...liveDesk, clientEditEnabled: on });
+                    void applyLiveDesk({ clientEditEnabled: on });
+                  }}
+                >
+                  Edycja zdalna (notatki Formy / tap wokalu)
+                </ShellSwitchRow>
+                <ShellSwitchRow
+                  className={styles.masterSwitch}
+                  checked={liveDesk.themeLock != null}
+                  disabled={liveDeskSaving}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    const themeLock = on
+                      ? (liveDesk.themeLock ?? {
+                          light: false,
+                          highContrast: false,
+                        })
+                      : null;
+                    setLiveDesk({ ...liveDesk, themeLock });
+                    void applyLiveDesk({ themeLock });
+                  }}
+                >
+                  Blokada motywu na Clientach
+                </ShellSwitchRow>
+                {liveDesk.themeLock ? (
+                  <>
+                    <ShellSwitchRow
+                      className={styles.masterSwitch}
+                      checked={liveDesk.themeLock.light}
+                      disabled={liveDeskSaving}
+                      onChange={(e) => {
+                        const themeLock = {
+                          ...liveDesk.themeLock!,
+                          light: e.target.checked,
+                        };
+                        setLiveDesk({ ...liveDesk, themeLock });
+                        void applyLiveDesk({ themeLock });
+                      }}
+                    >
+                      Wymuszony jasny motyw
+                    </ShellSwitchRow>
+                    <ShellSwitchRow
+                      className={styles.masterSwitch}
+                      checked={liveDesk.themeLock.highContrast}
+                      disabled={liveDeskSaving}
+                      onChange={(e) => {
+                        const themeLock = {
+                          ...liveDesk.themeLock!,
+                          highContrast: e.target.checked,
+                        };
+                        setLiveDesk({ ...liveDesk, themeLock });
+                        void applyLiveDesk({ themeLock });
+                      }}
+                    >
+                      Wymuszony wysoki kontrast
+                    </ShellSwitchRow>
+                  </>
+                ) : null}
+              </div>
             </>
           )}
         </div>
@@ -416,93 +443,117 @@ export function StageView() {
               {activeCountLabel}
             </span>
           </div>
-          <div className={[shell.cardBody, styles.messagesBody].join(" ")}>
+          <div
+            className={[
+              shell.cardBody,
+              shell.cardBodyFill,
+              styles.messagesBody,
+            ].join(" ")}
+          >
             {error ? (
               <p className={shell.error} role="alert">
                 {error}
               </p>
             ) : null}
-            <textarea
-              className={shell.textarea}
-              maxLength={200}
-              placeholder="Treść…"
-              value={text}
-              disabled={pending}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <p className={shell.muted}>Role (puste = wszyscy)</p>
-            <div className={shell.chips}>
-              {ROLE_OPTIONS.map((r) => {
-                const on = roles.includes(r.id);
-                return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    className={on ? shell.chipOn : shell.chip}
-                    disabled={pending}
-                    aria-pressed={on}
-                    onClick={() => toggleRole(r.id)}
-                  >
-                    {r.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className={shell.actions}>
-              <button
-                type="button"
-                className={
-                  priority === "alert" ? shell.chipOn : shell.chip
-                }
+
+            <div className={styles.compose}>
+              <textarea
+                className={shell.textarea}
+                maxLength={200}
+                placeholder="Treść komunikatu na scenę…"
+                value={text}
                 disabled={pending}
-                aria-pressed={priority === "alert"}
-                title={
-                  priority === "alert"
-                    ? "Priorytet: alert (wyłącz)"
-                    : "Priorytet: normalny (włącz alert)"
-                }
-                aria-label={
-                  priority === "alert"
-                    ? "Priorytet: alert (wyłącz)"
-                    : "Priorytet: normalny (włącz alert)"
-                }
-                onClick={() =>
-                  setPriority((p) => (p === "alert" ? "normal" : "alert"))
-                }
-              >
-                {priority === "alert" ? "Alert" : "Normalny"}
-              </button>
-              <select
-                className={shell.select}
-                value={String(ttlMs)}
-                disabled={pending}
-                aria-label="Czas wyświetlania komunikatu"
-                onChange={(e) => setTtlMs(Number(e.target.value))}
-              >
-                <option value="6000">6 s</option>
-                <option value="10000">10 s</option>
-                <option value="15000">15 s</option>
-                <option value="30000">30 s</option>
-                <option value="0">∞</option>
-              </select>
-              <Button
-                variant="primary"
-                disabled={pending || !text.trim()}
-                loading={pending}
-                onClick={() => void onSend()}
-              >
-                Wyślij
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={pending}
-                onClick={() => setText("")}
-              >
-                Wyczyść
-              </Button>
+                onChange={(e) => setText(e.target.value)}
+                aria-label="Treść komunikatu"
+              />
+
+              <div className={styles.composeOptions}>
+                <p className={styles.optionsLabel}>Role (puste = wszyscy)</p>
+                <div className={shell.chips}>
+                  {ROLE_OPTIONS.map((r) => {
+                    const on = roles.includes(r.id);
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className={on ? shell.chipOn : shell.chip}
+                        disabled={pending}
+                        aria-pressed={on}
+                        onClick={() => toggleRole(r.id)}
+                      >
+                        {r.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className={styles.composeMeta}>
+                  <div className={styles.composeSecondary}>
+                    <button
+                      type="button"
+                      className={
+                        priority === "alert" ? shell.chipOn : shell.chip
+                      }
+                      disabled={pending}
+                      aria-pressed={priority === "alert"}
+                      title={
+                        priority === "alert"
+                          ? "Priorytet: alert (wyłącz)"
+                          : "Priorytet: normalny (włącz alert)"
+                      }
+                      aria-label={
+                        priority === "alert"
+                          ? "Priorytet: alert (wyłącz)"
+                          : "Priorytet: normalny (włącz alert)"
+                      }
+                      onClick={() =>
+                        setPriority((p) =>
+                          p === "alert" ? "normal" : "alert",
+                        )
+                      }
+                    >
+                      Alert
+                    </button>
+                    <label className={styles.ttlField}>
+                      <span className={styles.optionsLabel}>Czas</span>
+                      <select
+                        className={shell.select}
+                        value={String(ttlMs)}
+                        disabled={pending}
+                        aria-label="Czas wyświetlania komunikatu"
+                        onChange={(e) => setTtlMs(Number(e.target.value))}
+                      >
+                        <option value="6000">6 s</option>
+                        <option value="10000">10 s</option>
+                        <option value="15000">15 s</option>
+                        <option value="30000">30 s</option>
+                        <option value="0">∞</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className={styles.composePrimary}>
+                    <Button
+                      variant="ghost"
+                      disabled={pending || !text}
+                      onClick={() => setText("")}
+                    >
+                      Wyczyść
+                    </Button>
+                    <Button
+                      variant="primary"
+                      disabled={pending || !text.trim()}
+                      loading={pending}
+                      onClick={() => void onSend()}
+                    >
+                      Wyślij
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className={styles.sessionMsgListHead}>
+              <span className={styles.listSectionLabel}>Aktywne</span>
               {messages.length > 0 ? (
                 <Button
                   variant="ghost"
@@ -513,13 +564,21 @@ export function StageView() {
                 </Button>
               ) : null}
             </div>
-            <ul className={styles.sessionMsgList} aria-live="polite">
-              {messages.length === 0 ? (
-                <li className={styles.sessionMsgEmpty} role="status">
-                  Brak aktywnych komunikatów
-                </li>
-              ) : (
-                messages.map((msg) => {
+
+            {messages.length === 0 ? (
+              <div className={styles.emptyState} role="status" aria-live="polite">
+                <span className={styles.emptyIcon} aria-hidden>
+                  <MessageSquare size={20} strokeWidth={2} />
+                </span>
+                <p className={styles.emptyTitle}>Brak aktywnych komunikatów</p>
+                <p className={styles.emptyText}>
+                  Napisz treść powyżej, wybierz role i czas, potem wyślij na
+                  scenę — komunikat pojawi się tu i na Clientach.
+                </p>
+              </div>
+            ) : (
+              <ul className={styles.sessionMsgList} aria-live="polite">
+                {messages.map((msg) => {
                   const isAlert = msg.priority === "alert";
                   return (
                     <li
@@ -552,9 +611,9 @@ export function StageView() {
                       </Button>
                     </li>
                   );
-                })
-              )}
-            </ul>
+                })}
+              </ul>
+            )}
           </div>
         </section>
 
@@ -581,16 +640,31 @@ export function StageView() {
               Odśwież
             </Button>
           </div>
-          <div className={[shell.cardBody, styles.clientsBody].join(" ")}>
+          <div
+            className={[
+              shell.cardBody,
+              shell.cardBodyFill,
+              styles.clientsBody,
+            ].join(" ")}
+          >
             {clientsError ? (
               <p className={shell.error} role="alert">
                 {clientsError}
               </p>
             ) : null}
             {clients.length === 0 ? (
-              <p className={shell.muted} role="status" aria-live="polite">Brak połączonych klientów.</p>
+              <div className={styles.emptyState} role="status" aria-live="polite">
+                <span className={styles.emptyIcon} aria-hidden>
+                  <MonitorSmartphone size={20} strokeWidth={2} />
+                </span>
+                <p className={styles.emptyTitle}>Brak połączonych klientów</p>
+                <p className={styles.emptyText}>
+                  Otwórz Client na tablecie lub telefonie muzyków — urządzenie
+                  pojawi się tu z nazwą, rolą i statusem połączenia.
+                </p>
+              </div>
             ) : (
-              <ul className={shell.list} aria-live="polite">
+              <ul className={styles.clientList} aria-live="polite">
                 {clients.map((c) => {
                   const phase = resolveClientPhase(c);
                   const title = presenceTitle(phase);
@@ -598,40 +672,41 @@ export function StageView() {
                     phase === "awaiting-data"
                       ? "Łączenie…"
                       : (c.displayName ?? "Anonim");
+                  const roleLabel = formatRoleLabels(c.roles);
+                  const statusLabel = connectionStatusLabel(phase);
+                  const latencyLabel =
+                    phase === "ready" || phase === "awaiting-role"
+                      ? c.latencyMs != null
+                        ? `${c.latencyMs} ms`
+                        : null
+                      : null;
                   return (
-                    <li
-                      key={c.id}
-                      className={[shell.songRow, shell.songRowPair].join(" ")}
-                    >
-                      <span className={shell.clientMain}>
-                        <span
-                          className={[
-                            shell.presenceDot,
-                            presenceDotClass(phase),
-                          ].join(" ")}
-                          title={title}
-                          aria-label={title}
-                        />
-                        <span className={shell.songName}>{name}</span>
-                      </span>
-                      <span className={shell.songMeta}>
-                        {[
-                          phase === "awaiting-data"
-                            ? "brak danych"
-                            : phase === "stale"
-                              ? "brak sygnału"
-                              : c.roles.length > 0
-                                ? c.roles.join(", ")
-                                : "—",
-                          phase === "ready" || phase === "awaiting-role"
-                            ? c.latencyMs != null
-                              ? `${c.latencyMs} ms`
-                              : null
-                            : null,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
+                    <li key={c.id} className={styles.clientTile}>
+                      <span
+                        className={[
+                          shell.presenceDot,
+                          presenceDotClass(phase),
+                        ].join(" ")}
+                        title={title}
+                        aria-label={title}
+                      />
+                      <div className={styles.clientBody}>
+                        <span className={styles.clientName}>{name}</span>
+                        <span className={styles.clientMeta}>
+                          {[
+                            roleLabel ||
+                              (phase === "awaiting-data"
+                                ? "brak danych"
+                                : phase === "awaiting-role"
+                                  ? "—"
+                                  : null),
+                            statusLabel,
+                            latencyLabel,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </span>
+                      </div>
                     </li>
                   );
                 })}

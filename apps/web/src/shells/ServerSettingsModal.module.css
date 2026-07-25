@@ -18,9 +18,11 @@
 .panel {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
   width: min(32rem, 100%);
   max-height: min(80dvh, 40rem);
-  overflow: auto;
+  overflow: hidden;
   padding: var(--ss-space-4);
   border: 1px solid var(--ss-color-border);
   border-radius: calc(var(--ss-radius-sm) + 2px);
@@ -29,10 +31,22 @@
 
 .head {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: var(--ss-space-3);
   margin-bottom: var(--ss-space-3);
+}
+
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: var(--ss-space-2);
 }
 
 .head h2 {
@@ -181,7 +195,30 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--ss-space-2);
-  margin-top: var(--ss-space-1);
+  margin: 0 0 var(--ss-space-1);
+  padding: var(--ss-space-3);
+  border: 1px solid
+    color-mix(in srgb, var(--ss-color-danger) 45%, var(--ss-color-border));
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-danger) 8%, transparent);
+}
+
+.panicBtn:not(:disabled) {
+  color: var(--ss-color-danger);
+  border-color: color-mix(
+    in srgb,
+    var(--ss-color-danger) 55%,
+    var(--ss-color-border)
+  );
+  background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
+}
+
+@media (hover: hover) {
+  .panicBtn:hover:not(:disabled) {
+    color: var(--ss-color-danger);
+    background: color-mix(in srgb, var(--ss-color-danger) 20%, transparent);
+    border-color: var(--ss-color-danger);
+  }
 }
 
 .confirm {
@@ -189,6 +226,18 @@
   color: var(--ss-color-success);
   font-size: var(--ss-text-sm);
   line-height: var(--ss-leading-normal);
+}
+
+.timbreRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+}
+
+.timbreRow .select {
+  flex: 1 1 10rem;
+  min-width: 0;
 }
 
 .field {
@@ -259,9 +308,13 @@
 
 .actions {
   display: flex;
+  flex: 0 0 auto;
   justify-content: flex-end;
   gap: var(--ss-space-2);
-  margin-top: var(--ss-space-4);
+  margin-top: var(--ss-space-3);
+  padding-top: var(--ss-space-3);
+  border-top: 1px solid var(--ss-color-border);
+  background: var(--ss-color-elevated);
 }
 
 /** Dirty draft: Odrzuć emphasized via danger tokens (no HEX). */

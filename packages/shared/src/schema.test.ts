@@ -49,6 +49,22 @@ describe("LibrarySchema", () => {
     expect(LibrarySchema.parse(raw)).toEqual(raw);
   });
 
+  it("accepts denormalized BPM / key / duration badges", () => {
+    const raw = {
+      version: 1 as const,
+      projects: [
+        {
+          id: "p1",
+          name: "Demo",
+          defaultBpm: 120,
+          keyLabel: "Am",
+          durationMs: 180_000,
+        },
+      ],
+    };
+    expect(LibrarySchema.parse(raw)).toEqual(raw);
+  });
+
   it("rejects wrong version", () => {
     expect(() =>
       LibrarySchema.parse({ version: 2, projects: [] }),

@@ -12,6 +12,7 @@ import {
   SETLIST_SONG_DURATION_ESTIMATE_MS,
   formatSetDurationMs,
   type Library,
+  type LibraryProjectEntry,
   type SetlistItem,
   type SetlistView,
 } from "@stagesync/shared";
@@ -21,6 +22,7 @@ import {
   putSetlist,
 } from "../../lib/setlistApi.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
+import { catalogSongBadges } from "./songCatalogBadges.js";
 import shell from "../AdminShell.module.css";
 import styles from "./SetView.module.css";
 
@@ -68,13 +70,23 @@ function draftToSetlistItems(draft: DraftItem[]): SetlistItem[] {
   );
 }
 
-function estimateTotalMs(draft: DraftItem[]): number {
+function projectDurationMs(entry: LibraryProjectEntry | undefined): number {
+  if (entry?.durationMs != null && entry.durationMs > 0) {
+    return entry.durationMs;
+  }
+  return SETLIST_SONG_DURATION_ESTIMATE_MS;
+}
+
+function estimateTotalMs(
+  draft: DraftItem[],
+  byId: Map<string, LibraryProjectEntry>,
+): number {
   let ms = 0;
   for (const item of draft) {
     if (item.type === "break") {
       ms += item.durationMinutes * 60 * 1000;
     } else {
-      ms += SETLIST_SONG_DURATION_ESTIMATE_MS;
+      ms += projectDurationMs(byId.get(item.projectId));
     }
   }
   return ms;
@@ -141,8 +153,16 @@ export function SetView({ library, selectedId }: SetViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
+  const projectsById = useMemo(() => {
+    const map = new Map<string, LibraryProjectEntry>();
+    for (const p of library?.projects ?? []) {
+      map.set(p.id, p);
+    }
+    return map;
+  }, [library?.projects]);
+
   const nameFor = (id: string) =>
-    library?.projects.find((p) => p.id === id)?.name ?? id.slice(0, 8);
+    projectsById.get(id)?.name ?? id.slice(0, 8);
 
   const draftProjectIds = useMemo(
     () =>
@@ -169,10 +189,14 @@ export function SetView({ library, selectedId }: SetViewProps) {
     );
   }, [library?.projects, filter]);
 
-  const totalMs = useMemo(() => estimateTotalMs(draftItems), [draftItems]);
+  const totalMs = useMemo(
+    () => estimateTotalMs(draftItems, projectsById),
+    [draftItems, projectsById],
+  );
   const budgetMs = timeBudgetMinutes * 60 * 1000;
   const budgetRatio = budgetMs > 0 ? Math.min(1, totalMs / budgetMs) : 0;
   const overBudget = totalMs > budgetMs;
+  const budgetPct = Math.round(budgetRatio * 100);
 
   const onTogglePick = (id: string) => {
     setPickIds((ids) =>
@@ -306,6 +330,69 @@ export function SetView({ library, selectedId }: SetViewProps) {
     if (projectId) onAddOne(projectId);
   };
 
+  const setToolbar = (
+    <div className={styles.setToolbar} role="toolbar" aria-label="Akcje setlisty">
+      <Button
+        variant="secondary"
+        disabled={pending}
+        onClick={() => onAddBreak(5)}
+      >
+        + Dodaj przerwę
+      </Button>
+      <div className={styles.templateAnchor}>
+        <Button
+          variant="ghost"
+          disabled={pending}
+          aria-expanded={templateMenuOpen}
+          aria-haspopup="menu"
+          aria-controls={templateMenuId}
+          onClick={() => setTemplateMenuOpen((o) => !o)}
+        >
+          Wczytaj szablon ▾
+        </Button>
+        {templateMenuOpen ? (
+          <div id={templateMenuId} className={styles.templateMenu} role="menu">
+            <button
+              type="button"
+              className={styles.templateItem}
+              role="menuitem"
+              disabled={pending}
+              onClick={() => onAddBreak(5)}
+            >
+              Zestaw z przerwą 5 min
+            </button>
+            <button
+              type="button"
+              className={styles.templateItem}
+              role="menuitem"
+              disabled={pending || libraryRows.length === 0}
+              onClick={onLoadLibraryTemplate}
+            >
+              Cała biblioteka
+            </button>
+          </div>
+        ) : null}
+      </div>
+      <Button
+        variant="ghost"
+        disabled={pending || draftItems.length === 0}
+        aria-label="Wyczyść setlistę"
+        onClick={onClear}
+      >
+        Wyczyść
+      </Button>
+      <Button
+        variant="primary"
+        disabled={pending || !dirty}
+        loading={pending}
+        aria-label="Zapisz setlistę"
+        onClick={() => void onSave()}
+      >
+        Zapisz setlistę
+      </Button>
+    </div>
+  );
+
   return (
     <section className={shell.card} aria-label="Set">
       <div className={shell.cardHead}>
@@ -372,7 +459,9 @@ export function SetView({ library, selectedId }: SetViewProps) {
                       iconOnly
                       disabled={inSet || pending}
                       aria-label={
-                        inSet ? `${p.name} — już w secie` : `Dodaj ${p.name} do setu`
+                        inSet
+                          ? `${p.name} — już w secie`
+                          : `Dodaj ${p.name} do setu`
                       }
                       onClick={() => onAddOne(p.id)}
                     >
@@ -385,7 +474,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 <li className={shell.muted}>Brak utworów w bibliotece.</li>
               ) : null}
             </ul>
-            <div className={shell.actions}>
+            <div className={styles.libFooter}>
               <Button
                 variant="secondary"
                 disabled={pending || pickIds.length === 0}
@@ -402,33 +491,11 @@ export function SetView({ library, selectedId }: SetViewProps) {
             onDragOver={(e) => e.preventDefault()}
             onDrop={onSetPanelDrop}
           >
-            <div className={shell.setColHead}>
-              <div className={styles.summaryBlock}>
+            <div className={styles.summaryBlock}>
+              <div className={styles.summaryRow}>
                 <strong className={shell.setColTitle}>
-                  Set ({draftItems.length}) — Łączny czas:{" "}
-                  {formatSetDurationMs(totalMs)}
+                  Set ({draftItems.length})
                 </strong>
-                <div
-                  className={styles.budgetTrack}
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(budgetRatio * 100)}
-                  aria-label={`Czas ${timeBudgetMinutes} min`}
-                  title={`Czas: ${timeBudgetMinutes} min`}
-                >
-                  <div
-                    className={[
-                      styles.budgetFill,
-                      overBudget ? styles.budgetFillOver : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    style={{ width: `${Math.round(budgetRatio * 100)}%` }}
-                  />
-                </div>
-              </div>
-              <div className={shell.actions}>
                 <label className={styles.budgetLabel}>
                   <span className={shell.muted}>Czas</span>
                   <input
@@ -450,25 +517,42 @@ export function SetView({ library, selectedId }: SetViewProps) {
                   />
                   <span className={shell.muted}>min</span>
                 </label>
-                <Button
-                  variant="primary"
-                  disabled={pending || !dirty}
-                  loading={pending}
-                  aria-label="Zapisz setlistę"
-                  onClick={() => void onSave()}
+              </div>
+              <div className={styles.budgetMeta}>
+                <span
+                  className={[
+                    styles.budgetTime,
+                    overBudget ? styles.budgetTimeOver : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
-                  Zapisz
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={pending || draftItems.length === 0}
-                  aria-label="Wyczyść setlistę"
-                  onClick={onClear}
-                >
-                  Wyczyść
-                </Button>
+                  {formatSetDurationMs(totalMs)} /{" "}
+                  {formatSetDurationMs(budgetMs)}
+                </span>
+                <span className={shell.muted}>
+                  {overBudget ? "Poza budżetem" : "W budżecie"}
+                </span>
+              </div>
+              <div
+                className={styles.budgetTrack}
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={budgetPct}
+                aria-label={`Budżet czasu ${budgetPct}%`}
+              >
+                <div
+                  className={[
+                    styles.budgetFill,
+                    overBudget ? styles.budgetFillOver : styles.budgetFillOk,
+                  ].join(" ")}
+                  style={{ width: `${budgetPct}%` }}
+                />
               </div>
             </div>
+
+            {setToolbar}
 
             {draftItems.length === 0 ? (
               <div className={styles.emptyState}>
@@ -479,70 +563,30 @@ export function SetView({ library, selectedId }: SetViewProps) {
                   Przeciągnij utwory z biblioteki po lewej stronie lub użyj
                   przycisku &apos;+&apos;
                 </p>
-                <div className={styles.emptyActions}>
-                  <Button
-                    variant="secondary"
-                    disabled={pending}
-                    onClick={() => onAddBreak(5)}
-                  >
-                    + Dodaj przerwę
-                  </Button>
-                  <div className={styles.templateAnchor}>
-                    <Button
-                      variant="ghost"
-                      disabled={pending}
-                      aria-expanded={templateMenuOpen}
-                      aria-haspopup="menu"
-                      aria-controls={templateMenuId}
-                      onClick={() => setTemplateMenuOpen((o) => !o)}
-                    >
-                      Wczytaj szablon ▾
-                    </Button>
-                    {templateMenuOpen ? (
-                      <div
-                        id={templateMenuId}
-                        className={styles.templateMenu}
-                        role="menu"
-                      >
-                        <button
-                          type="button"
-                          className={styles.templateItem}
-                          role="menuitem"
-                          disabled={pending}
-                          onClick={() => onAddBreak(5)}
-                        >
-                          Zestaw z przerwą 5 min
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.templateItem}
-                          role="menuitem"
-                          disabled={pending || libraryRows.length === 0}
-                          onClick={onLoadLibraryTemplate}
-                        >
-                          Cała biblioteka
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
               </div>
             ) : (
-              <>
-                <ul className={shell.list} aria-label="Pozycje setu">
-                  {draftItems.map((item, index) =>
-                    item.type === "break" ? (
+              <ul className={styles.setList} aria-label="Pozycje setu">
+                {draftItems.map((item, index) => {
+                  if (item.type === "break") {
+                    return (
                       <li
                         key={`break-${item.id}`}
-                        className={[shell.songRow, styles.breakRow].join(" ")}
+                        className={[styles.setTile, styles.breakRow].join(" ")}
                         draggable
                         onDragStart={() => setDragIndex(index)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => onDrop(index)}
                       >
-                        <span className={shell.songPc}>{index + 1}</span>
-                        <span className={styles.breakBody}>
-                          <span className={shell.songName}>{item.label}</span>
+                        <span
+                          className={styles.dragHandle}
+                          aria-hidden
+                          title="Przeciągnij"
+                        >
+                          ::
+                        </span>
+                        <span className={styles.tileIndex}>{index + 1}</span>
+                        <span className={styles.tileBody}>
+                          <span className={styles.tileName}>{item.label}</span>
                           <label className={styles.breakDuration}>
                             <input
                               className={styles.budgetInput}
@@ -572,9 +616,17 @@ export function SetView({ library, selectedId }: SetViewProps) {
                             <span className={shell.muted}>min</span>
                           </label>
                         </span>
+                        <span className={styles.tileBadges}>
+                          <span className={styles.tileBadge}>
+                            {formatSetDurationMs(
+                              item.durationMinutes * 60 * 1000,
+                            )}
+                          </span>
+                        </span>
                         <Button
                           variant="ghost"
                           iconOnly
+                          className={styles.removeBtn}
                           disabled={pending}
                           aria-label="Usuń przerwę z setu"
                           onClick={() => {
@@ -587,47 +639,67 @@ export function SetView({ library, selectedId }: SetViewProps) {
                           ×
                         </Button>
                       </li>
-                    ) : (
-                      <li
-                        key={`${item.projectId}-${index}`}
-                        className={shell.songRow}
-                        draggable
-                        onDragStart={() => setDragIndex(index)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => onDrop(index)}
+                    );
+                  }
+
+                  const entry = projectsById.get(item.projectId);
+                  const durationMs = projectDurationMs(entry);
+                  const badges = entry ? catalogSongBadges(entry) : [];
+                  const metaBadges = badges.filter(
+                    (b) => b !== formatSetDurationMs(durationMs),
+                  );
+
+                  return (
+                    <li
+                      key={`${item.projectId}-${index}`}
+                      className={styles.setTile}
+                      draggable
+                      onDragStart={() => setDragIndex(index)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => onDrop(index)}
+                    >
+                      <span
+                        className={styles.dragHandle}
+                        aria-hidden
+                        title="Przeciągnij"
                       >
-                        <span className={shell.songPc}>{index + 1}</span>
-                        <span className={shell.songName}>
+                        ::
+                      </span>
+                      <span className={styles.tileIndex}>{index + 1}</span>
+                      <span className={styles.tileBody}>
+                        <span className={styles.tileName}>
                           {nameFor(item.projectId)}
                         </span>
-                        <Button
-                          variant="ghost"
-                          iconOnly
-                          disabled={pending}
-                          aria-label={`Usuń ${nameFor(item.projectId)} z setu`}
-                          onClick={() => {
-                            setDraftItems((items) =>
-                              items.filter((_, i) => i !== index),
-                            );
-                            setDirty(true);
-                          }}
-                        >
-                          ×
-                        </Button>
-                      </li>
-                    ),
-                  )}
-                </ul>
-                <div className={shell.actions}>
-                  <Button
-                    variant="ghost"
-                    disabled={pending}
-                    onClick={() => onAddBreak(5)}
-                  >
-                    + Dodaj przerwę
-                  </Button>
-                </div>
-              </>
+                      </span>
+                      <span className={styles.tileBadges}>
+                        <span className={styles.tileBadge}>
+                          {formatSetDurationMs(durationMs)}
+                        </span>
+                        {metaBadges.map((b, i) => (
+                          <span key={`${b}-${i}`} className={styles.tileBadge}>
+                            {b}
+                          </span>
+                        ))}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        iconOnly
+                        className={styles.removeBtn}
+                        disabled={pending}
+                        aria-label={`Usuń ${nameFor(item.projectId)} z setu`}
+                        onClick={() => {
+                          setDraftItems((items) =>
+                            items.filter((_, i) => i !== index),
+                          );
+                          setDirty(true);
+                        }}
+                      >
+                        ×
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>

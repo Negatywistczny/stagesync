@@ -1,8 +1,7 @@
 .row {
-  display: grid;
-  grid-template-columns: var(--ss-space-6) minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  column-gap: var(--ss-space-2);
+  gap: var(--ss-space-2);
   min-height: var(--ss-space-8);
   margin: 0;
   font-size: var(--ss-text-sm);
@@ -14,28 +13,47 @@
 }
 
 .row input {
-  justify-self: center;
+  position: relative;
+  flex-shrink: 0;
   box-sizing: border-box;
   margin: 0;
-  width: var(--ss-space-4);
-  height: var(--ss-space-4);
-  flex-shrink: 0;
+  width: var(--ss-space-10);
+  height: var(--ss-space-5);
   appearance: none;
-  border-radius: 50%;
-  border: 2px solid var(--ss-color-border);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-pill);
   background: var(--ss-color-secondary);
   cursor: pointer;
   padding: 0;
   transition:
     background-color var(--ss-transition),
-    border-color var(--ss-transition),
-    box-shadow var(--ss-transition);
+    border-color var(--ss-transition);
+}
+
+.row input::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: var(--ss-space-1);
+  width: var(--ss-space-3);
+  height: var(--ss-space-3);
+  border-radius: var(--ss-radius-pill);
+  background: var(--ss-color-text-muted);
+  transform: translateY(-50%);
+  transition:
+    transform var(--ss-transition),
+    background-color var(--ss-transition),
+    left var(--ss-transition);
 }
 
 .row input:checked {
   border-color: var(--ss-color-primary);
   background: var(--ss-color-primary);
-  box-shadow: 0 0 0 2px var(--ss-color-selected);
+}
+
+.row input:checked::before {
+  left: calc(100% - var(--ss-space-1) - var(--ss-space-3));
+  background: var(--ss-color-on-primary);
 }
 
 .row input:focus-visible {

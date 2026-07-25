@@ -7,22 +7,41 @@ import {
 } from "../lib/deviceNamePrefs.js";
 import styles from "./DeviceNameFields.module.css";
 
+type Props = {
+  /** Controlled draft (Preferences). When set with onChange, does not persist. */
+  value?: string;
+  onChange?: (next: string) => void;
+  /** Validation message from parent (Preferences sticky Zapisz). */
+  error?: string | null;
+};
+
 /** Secondary rename control for Client / Admin settings. */
-export function DeviceNameFields() {
-  const [draft, setDraft] = useState(() => getStoredDeviceDisplayName() ?? "");
+export function DeviceNameFields({
+  value,
+  onChange,
+  error: controlledError = null,
+}: Props = {}) {
+  const controlled = value !== undefined && onChange !== undefined;
+  const [uncontrolled, setUncontrolled] = useState(
+    () => getStoredDeviceDisplayName() ?? "",
+  );
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const draft = controlled ? value : uncontrolled;
+  const error = controlled ? controlledError : localError;
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setError(null);
+    if (controlled) return;
+    setLocalError(null);
     setSaved(false);
     try {
-      const name = setStoredDeviceDisplayName(draft);
-      setDraft(name);
+      const name = setStoredDeviceDisplayName(uncontrolled);
+      setUncontrolled(name);
       setSaved(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Błąd zapisu");
+      setLocalError(err instanceof Error ? err.message : "Błąd zapisu");
     }
   }
 
@@ -34,21 +53,29 @@ export function DeviceNameFields() {
         maxLength={DEVICE_DISPLAY_NAME_MAX}
         value={draft}
         onChange={(e) => {
-          setDraft(e.target.value);
+          const next = e.target.value;
+          if (controlled) {
+            onChange(next);
+            return;
+          }
+          setUncontrolled(next);
           setSaved(false);
         }}
         aria-label="Nazwa urządzenia"
+        aria-invalid={error ? true : undefined}
       />
-      <div className={styles.row}>
-        <Button type="submit" variant="ghost">
-          Zapisz nazwę
-        </Button>
-        {saved ? (
-          <span className={styles.ok} role="status">
-            Zapisano
-          </span>
-        ) : null}
-      </div>
+      {controlled ? null : (
+        <div className={styles.row}>
+          <Button type="submit" variant="ghost">
+            Zapisz nazwę
+          </Button>
+          {saved ? (
+            <span className={styles.ok} role="status">
+              Zapisano
+            </span>
+          ) : null}
+        </div>
+      )}
       {error ? (
         <p className={styles.err} role="alert">
           {error}

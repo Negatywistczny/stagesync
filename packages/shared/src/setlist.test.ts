@@ -302,4 +302,42 @@ describe("setlist helpers", () => {
     });
     expect(itemsFromProjectIds(many)).toHaveLength(256);
   });
+
+  it("buildSetlistView prefers catalog durationMs over estimate", () => {
+    const withDuration: Library = {
+      version: 1,
+      projects: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          name: "A",
+          durationMs: 180_000,
+          defaultBpm: 120,
+          keyLabel: "Am",
+        },
+      ],
+    };
+    const view = buildSetlistView(
+      {
+        version: 1,
+        enabled: true,
+        items: [
+          {
+            type: "project",
+            projectId: "11111111-1111-4111-8111-111111111111",
+          },
+        ],
+        projectIds: ["11111111-1111-4111-8111-111111111111"],
+        autoAdvance: { enabled: false },
+        timeBudgetMinutes: 45,
+      },
+      withDuration,
+      null,
+    );
+    expect(view.items[0]).toMatchObject({
+      type: "project",
+      durationMs: 180_000,
+      estimated: false,
+    });
+    expect(view.totalDurationMs).toBe(180_000);
+  });
 });

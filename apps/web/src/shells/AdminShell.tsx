@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@stagesync/ui";
 import {
+  formatSetDurationMs,
   importUgText,
   looksLikeZipBytes,
   resolveFormaClipAt,
@@ -36,7 +37,7 @@ import {
 } from "../lib/clockDisplayPrefs.js";
 import { openPreferences } from "../lib/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconFullscreen, IconPower, IconRestart, IconSettings } from "./icons.js";
+import { IconFullscreen, IconPower, IconRestart, IconSettings, IconTrash } from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
@@ -51,7 +52,11 @@ import {
   ShellConfirmDialog,
   ShellPromptDialog,
 } from "./ShellBlockingDialog.js";
-import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
+import {
+  ProjectFilesPanel,
+  type ProjectFilesPanelHandle,
+} from "./admin/ProjectFilesPanel.js";
+import { catalogSongBadges, songInspectorMeta } from "./admin/songCatalogBadges.js";
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
 import { SystemView } from "./admin/SystemView.js";
@@ -498,8 +503,17 @@ export function AdminShell() {
         <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
           <span className={styles.statusLab}>Pozycja</span>
           <span className={[styles.statusVal, styles.statusMono].join(" ")}>
-            {clockLabel} · {state.bpm} BPM ·{" "}
-            {state.timeSignature.numerator}/{state.timeSignature.denominator}
+            <span>{clockLabel}</span>
+            <span className={styles.statusInlineSep} aria-hidden>
+              |
+            </span>
+            <span>{state.bpm} BPM</span>
+            <span className={styles.statusInlineSep} aria-hidden>
+              |
+            </span>
+            <span>
+              {state.timeSignature.numerator}/{state.timeSignature.denominator}
+            </span>
           </span>
         </div>
         <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
@@ -690,7 +704,14 @@ function SongsView({
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
   const [dbMenuOpen, setDbMenuOpen] = useState(false);
+  const [inspectorProject, setInspectorProject] = useState<Project | null>(null);
+  const filesPanelRef = useRef<ProjectFilesPanelHandle>(null);
   const dbMenuId = useId();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setInspectorProject(null);
+  }, [selectedId]);
 
   const visibleProjects = useMemo(() => {
     const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
@@ -721,6 +742,11 @@ function SongsView({
   const templates = useMemo(
     () => (library?.projects ?? []).filter((p) => p.isTemplate),
     [library?.projects],
+  );
+
+  const inspectorMeta = useMemo(
+    () => (inspectorProject ? songInspectorMeta(inspectorProject) : null),
+    [inspectorProject],
   );
 
   return (
@@ -810,34 +836,46 @@ function SongsView({
           ) : null}
 
           <div className={styles.list}>
-            {visibleProjects.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={[
-                  styles.songRow,
-                  selectedId === p.id ? styles.songRowOn : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                disabled={locked}
-                onClick={() => onSelect(p.id)}
-              >
-                <span className={styles.songPc}>
-                  {p.isTemplate ? "wzór" : (p.midiProgramId ?? "—")}
-                </span>
-                <span className={styles.songName}>
-                  {p.name}
-                  {p.artist?.trim() ? (
-                    <span className={styles.songArtist}>
-                      {" "}
-                      - {p.artist.trim()}
-                    </span>
-                  ) : null}
-                </span>
-                <span className={styles.songMeta} />
-              </button>
-            ))}
+            {visibleProjects.map((p) => {
+              const badges = catalogSongBadges(p);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={[
+                    styles.songRow,
+                    selectedId === p.id ? styles.songRowOn : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  disabled={locked}
+                  onClick={() => onSelect(p.id)}
+                >
+                  <span className={styles.songPc}>
+                    {p.isTemplate ? "wzór" : (p.midiProgramId ?? "—")}
+                  </span>
+                  <span className={styles.songName}>
+                    {p.name}
+                    {p.artist?.trim() ? (
+                      <span className={styles.songArtist}>
+                        {" "}
+                        - {p.artist.trim()}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span
+                    className={styles.songBadges}
+                    aria-label={badges.length > 0 ? badges.join(", ") : undefined}
+                  >
+                    {badges.map((b, i) => (
+                      <span key={`${b}-${i}`} className={styles.songBadge}>
+                        {b}
+                      </span>
+                    ))}
+                  </span>
+                </button>
+              );
+            })}
             {!library && !libraryError ? (
               <p className={styles.muted} role="status" aria-live="polite">Wczytywanie…</p>
             ) : null}
@@ -925,20 +963,26 @@ function SongsView({
         </div>
         <div className={styles.cardBody}>
           {selected ? (
-            <>
-              <div className={styles.actions}>
-                {locked ? (
-                  <span className={styles.editLinkMuted} aria-disabled>
-                    Otwórz w Timeline
-                  </span>
-                ) : (
-                  <Link
-                    className={styles.editLink}
-                    to={`/timeline/${selected.id}`}
-                  >
-                    Otwórz w Timeline
-                  </Link>
-                )}
+            <div className={styles.inspectorStack}>
+              <div className={styles.inspectorPrimary}>
+                <Button
+                  variant="primary"
+                  disabled={locked}
+                  onClick={() => navigate(`/timeline/${selected.id}`)}
+                >
+                  Otwórz w Timeline
+                </Button>
+                <ShellIconButton
+                  label="Usuń utwór"
+                  danger
+                  disabled={locked}
+                  className={styles.inspectorDelete}
+                  onClick={onDelete}
+                >
+                  <IconTrash />
+                </ShellIconButton>
+              </div>
+              <div className={styles.inspectorSecondary}>
                 <Button
                   variant="secondary"
                   disabled={!selectedId || commandPending || transportPending}
@@ -948,12 +992,11 @@ function SongsView({
                   Odtwórz
                 </Button>
                 <Button
-                  variant="ghost"
-                  loading={commandPending}
+                  variant="secondary"
                   disabled={locked}
-                  onClick={onDelete}
+                  onClick={() => filesPanelRef.current?.openImport()}
                 >
-                  Usuń
+                  Import plików
                 </Button>
                 <Button variant="ghost" disabled={locked} onClick={onXml}>
                   XML
@@ -971,8 +1014,39 @@ function SongsView({
                   Partytura
                 </Button>
               </div>
-              <ProjectFilesPanel projectId={selectedId} locked={locked} />
-            </>
+              <dl className={styles.songMetaGrid} aria-label="Metadane utworu">
+                <div className={styles.songMetaCell}>
+                  <dt>Tonacja</dt>
+                  <dd>{inspectorMeta?.keyLabel ?? "—"}</dd>
+                </div>
+                <div className={styles.songMetaCell}>
+                  <dt>Tempo</dt>
+                  <dd>
+                    {inspectorMeta?.bpm != null
+                      ? `${Math.round(inspectorMeta.bpm)} BPM`
+                      : selected.defaultBpm != null
+                        ? `${Math.round(selected.defaultBpm)} BPM`
+                        : "—"}
+                  </dd>
+                </div>
+                <div className={styles.songMetaCell}>
+                  <dt>Czas</dt>
+                  <dd>
+                    {inspectorMeta?.durationLabel ??
+                      (selected.durationMs != null && selected.durationMs > 0
+                        ? formatSetDurationMs(selected.durationMs)
+                        : "—")}
+                  </dd>
+                </div>
+              </dl>
+              <ProjectFilesPanel
+                ref={filesPanelRef}
+                projectId={selectedId}
+                locked={locked}
+                hideImport
+                onProjectLoaded={setInspectorProject}
+              />
+            </div>
           ) : (
             <p className={styles.muted}>Wybierz utwór z listy.</p>
           )}

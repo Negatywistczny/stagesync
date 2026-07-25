@@ -1,8 +1,8 @@
-/* Admin Host — System / Diagnostics: dashboard + log console */
+/* Admin Host — 2-col card grid + collapsible logs */
 
 .root {
-  display: grid;
-  grid-template-columns: 340px 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--ss-space-4);
   height: 100%;
   min-height: 0;
@@ -10,39 +10,32 @@
   overflow: hidden;
 }
 
-.left {
-  display: flex;
-  flex-direction: column;
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--ss-space-4);
+  flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  align-content: start;
 }
 
-.leftCard {
-  flex: 0 0 auto;
-}
-
-.right {
+.card {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
 }
 
-.logCard {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.cardWide {
+  grid-column: 1 / -1;
 }
 
-.networkBody {
+.cardBodyStack {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
+  align-items: stretch;
 }
 
 .networkTop {
@@ -58,6 +51,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-2);
+  align-items: flex-start;
 }
 
 .qrWrap {
@@ -76,36 +70,6 @@
   display: block;
 }
 
-.apkSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  padding-top: var(--ss-space-2);
-  border-top: 1px solid var(--ss-color-border);
-}
-
-.apkGrid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-3);
-}
-
-.apkCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  padding: var(--ss-space-2);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-}
-
-.apkTitle {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-}
-
 .urlList {
   list-style: none;
   margin: 0;
@@ -113,6 +77,89 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-1);
+}
+
+.sectionSplit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  padding-top: var(--ss-space-3);
+  border-top: 1px solid var(--ss-color-border);
+}
+
+.sectionLabel {
+  margin: 0;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+  color: var(--ss-color-text-muted);
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ss-space-3);
+}
+
+.statusTile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  align-items: flex-start;
+  min-width: 0;
+  padding: var(--ss-space-3);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 40%, transparent);
+}
+
+.statusTitle {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text);
+}
+
+.statusMeta {
+  margin: 0;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-tight);
+  color: var(--ss-color-text-muted);
+}
+
+.statusReady {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-3);
+  width: 100%;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ss-space-2);
+  width: 100%;
+  padding: var(--ss-space-2) 0;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text);
+  line-height: var(--ss-leading-tight);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-relaxed);
+  color: var(--ss-color-text-muted);
 }
 
 .aboutBody {
@@ -144,18 +191,67 @@
   line-height: var(--ss-leading-normal);
 }
 
+/* —— Collapsible logs —— */
+
+.logCard {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.logCardOpen {
+  flex: 0 1 auto;
+  max-height: min(40%, 18rem);
+}
+
+.logHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.logToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.logChevron {
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-none);
+  color: var(--ss-color-text-muted);
+}
+
+.logTerminal {
+  margin: 0;
+  padding: var(--ss-space-3) var(--ss-space-4);
+  flex: 1 1 auto;
+  min-height: 8rem;
+  overflow: auto;
+  border-top: 1px solid var(--ss-color-border);
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-relaxed);
+}
+
 @media (max-width: 768px) {
-  .root {
+  .grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(12rem, 1fr);
-    overflow: auto;
   }
 
-  .left {
-    overflow: visible;
+  .statusGrid {
+    grid-template-columns: 1fr;
   }
 
-  .right {
-    min-height: 16rem;
+  .logCardOpen {
+    max-height: min(50%, 16rem);
   }
 }

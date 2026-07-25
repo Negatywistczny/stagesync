@@ -10,6 +10,8 @@ describe("ShellSwitchRow", () => {
       </ShellSwitchRow>,
     );
     expect(out).toContain("type=\"checkbox\"");
+    expect(out).toContain("role=\"switch\"");
+    expect(out).toContain("aria-checked=\"true\"");
     expect(out).toContain("Animacje");
     expect(out).toContain("checked");
   });

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { Button } from "@stagesync/ui";
 import type { Project, ProjectAsset } from "@stagesync/shared";
 import { fetchProject } from "../../lib/libraryApi.js";
@@ -15,26 +22,49 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+export type ProjectFilesPanelHandle = {
+  openImport: () => void;
+};
+
 type ProjectFilesPanelProps = {
   projectId: string | null;
   locked?: boolean;
+  /** When true, import control lives in the parent toolbar. */
+  hideImport?: boolean;
+  onProjectLoaded?: (project: Project) => void;
 };
 
-export function ProjectFilesPanel({
-  projectId,
-  locked = false,
-}: ProjectFilesPanelProps) {
+export const ProjectFilesPanel = forwardRef<
+  ProjectFilesPanelHandle,
+  ProjectFilesPanelProps
+>(function ProjectFilesPanel(
+  { projectId, locked = false, hideImport = false, onProjectLoaded },
+  ref,
+) {
   const [assets, setAssets] = useState<ProjectAsset[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const onProjectLoadedRef = useRef(onProjectLoaded);
+  onProjectLoadedRef.current = onProjectLoaded;
 
   const reload = useCallback(async (id: string) => {
     const project: Project = await fetchProject(id);
     setAssets(project.assets);
+    onProjectLoadedRef.current?.(project);
   }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      openImport: () => {
+        if (!locked && !busyRef.current) inputRef.current?.click();
+      },
+    }),
+    [locked],
+  );
 
   useEffect(() => {
     if (!projectId) {
@@ -65,6 +95,7 @@ export function ProjectFilesPanel({
     try {
       const project = await uploadProjectAudio(projectId, file);
       setAssets(project.assets);
+      onProjectLoadedRef.current?.(project);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Przesyłanie nieudane");
     } finally {
@@ -89,6 +120,7 @@ export function ProjectFilesPanel({
     try {
       const project = await deleteProjectAsset(projectId, assetId);
       setAssets(project.assets);
+      onProjectLoadedRef.current?.(project);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Usuwanie nieudane");
     } finally {
@@ -114,7 +146,9 @@ export function ProjectFilesPanel({
         </p>
       ) : null}
       {assets.length === 0 ? (
-        <p className={styles.muted} role="status" aria-live="polite">Brak plików w projekcie.</p>
+        <p className={styles.muted} role="status" aria-live="polite">
+          Brak plików w projekcie.
+        </p>
       ) : (
         <ul className={styles.list} aria-label="Pliki projektu">
           {assets.map((a) => (
@@ -137,23 +171,25 @@ export function ProjectFilesPanel({
           ))}
         </ul>
       )}
-      <div className={styles.actions}>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg,.musicxml,.xml,.mxl"
-          hidden
-          onChange={(e) => void onUpload(e.target.files?.[0])}
-        />
-        <Button
-          variant="secondary"
-          disabled={busy || locked}
-          loading={busy}
-          onClick={() => inputRef.current?.click()}
-        >
-          Import audio / MusicXML…
-        </Button>
-      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg,.musicxml,.xml,.mxl"
+        hidden
+        onChange={(e) => void onUpload(e.target.files?.[0])}
+      />
+      {!hideImport ? (
+        <div className={styles.actions}>
+          <Button
+            variant="secondary"
+            disabled={busy || locked}
+            loading={busy}
+            onClick={() => inputRef.current?.click()}
+          >
+            Import audio / MusicXML…
+          </Button>
+        </div>
+      ) : null}
       <ShellConfirmDialog
         open={deleteAssetId != null}
         title="Usuń plik"
@@ -164,4 +200,4 @@ export function ProjectFilesPanel({
       />
     </div>
   );
-}
+});

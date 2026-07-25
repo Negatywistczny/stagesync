@@ -297,6 +297,9 @@ describe("storage/index", () => {
     );
     expect(entry?.artist).toBe("Band");
     expect(entry?.genre).toBe("Rock");
+    expect(entry?.defaultBpm).toBe(project.defaultBpm);
+    expect(entry?.keyLabel).toBeTruthy();
+    expect(entry?.durationMs).toBeGreaterThan(0);
     expect(entry?.midiProgramId).toBe(next.midiProgramId);
 
     await expect(

@@ -46,6 +46,7 @@ import {
   SquareCheck,
   SquareDashedMousePointer,
   Sun,
+  Trash2,
   Undo2,
   Volume2,
   VolumeX,
@@ -211,6 +212,10 @@ export function IconSave(p: IconProps) {
 
 export function IconClose(p: IconProps) {
   return withIcon(X, p);
+}
+
+export function IconTrash(p: IconProps) {
+  return withIcon(Trash2, p);
 }
 
 export function IconChecked(p: IconProps) {

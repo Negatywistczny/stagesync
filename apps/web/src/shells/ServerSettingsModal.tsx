@@ -24,7 +24,7 @@ import {
   setStoredClockDisplayFormat,
   type ClockDisplayFormat,
 } from "../lib/clockDisplayPrefs.js";
-import { getMetronomeAudioContext } from "../lib/metronome.js";
+import { getMetronomeAudioContext, previewMetronomeClick } from "../lib/metronome.js";
 import {
   clampMetronomeVolume,
   getMetronomePrefs,
@@ -34,6 +34,10 @@ import {
   type MetronomePrefs,
   type MetronomeTimbre,
 } from "../lib/metronomePrefs.js";
+import {
+  getStoredDeviceDisplayName,
+  setStoredDeviceDisplayName,
+} from "../lib/deviceNamePrefs.js";
 import { type PreferencesTab } from "../lib/preferencesEvents.js";
 import {
   browseServerPath,
@@ -74,6 +78,7 @@ type MidiDraft = {
 type PrefsSnapshot = {
   appearance: AppearanceState;
   clockFormat: ClockDisplayFormat;
+  deviceName: string;
   sinkId: string;
   latencyCompMs: number;
   metro: MetronomePrefs;
@@ -94,6 +99,7 @@ function readLocalSnapshot(): PrefsSnapshot {
   return {
     appearance: readAppearance(),
     clockFormat: getStoredClockDisplayFormat(),
+    deviceName: getStoredDeviceDisplayName() ?? "",
     sinkId: getStoredAudioOutputDeviceId() ?? "",
     latencyCompMs: getStoredLatencyCompensationMs(),
     metro: getMetronomePrefs(),
@@ -117,6 +123,7 @@ function prefsEqual(a: PrefsSnapshot, b: PrefsSnapshot): boolean {
     a.appearance.light === b.appearance.light &&
     a.appearance.highContrast === b.appearance.highContrast &&
     a.clockFormat === b.clockFormat &&
+    a.deviceName === b.deviceName &&
     a.sinkId === b.sinkId &&
     a.latencyCompMs === b.latencyCompMs &&
     a.metro.accentVolume === b.metro.accentVolume &&
@@ -130,10 +137,12 @@ function prefsEqual(a: PrefsSnapshot, b: PrefsSnapshot): boolean {
 function ModalShell({
   title,
   children,
+  footer,
   onDiscard,
 }: {
   title: string;
   children: ReactNode;
+  footer?: ReactNode;
   onDiscard: () => void;
 }) {
   const titleId = useId();
@@ -157,7 +166,8 @@ function ModalShell({
             ×
           </ShellIconButton>
         </div>
-        {children}
+        <div className={styles.scroll}>{children}</div>
+        {footer}
       </div>
     </div>
   );
@@ -178,8 +188,10 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const [audioError, setAudioError] = useState<string | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [saveBusy, setSaveBusy] = useState(false);
+  const [deviceNameError, setDeviceNameError] = useState<string | null>(null);
   const [panicBusy, setPanicBusy] = useState(false);
   const [panicConfirm, setPanicConfirm] = useState(false);
+  const [previewBusy, setPreviewBusy] = useState(false);
   const [server, setServer] = useState<ServerSettingsValues | null>(null);
   const serverSnap = useRef<ServerSettingsValues | null>(null);
   const [serverMeta, setServerMeta] = useState<ServerSettingsResponse | null>(null);
@@ -306,7 +318,18 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
     setSaveBusy(true);
     setAudioError(null);
     setMidiError(null);
+    setDeviceNameError(null);
     try {
+      try {
+        setStoredDeviceDisplayName(draft.deviceName);
+      } catch (err) {
+        setDeviceNameError(
+          err instanceof Error ? err.message : "Błąd zapisu nazwy",
+        );
+        setTab("general");
+        return;
+      }
+
       setAppearance(draft.appearance);
       setStoredClockDisplayFormat(draft.clockFormat);
       setStoredLatencyCompensationMs(draft.latencyCompMs);
@@ -337,12 +360,18 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
             saved.message ??
               "Zapisano. Zrestartuj serwer, aby zastosować zmiany sieci / ścieżek / logów.",
           );
-          snapshotRef.current = { ...draft };
+          snapshotRef.current = {
+            ...draft,
+            deviceName: getStoredDeviceDisplayName() ?? draft.deviceName,
+          };
           return;
         }
       }
 
-      snapshotRef.current = { ...draft };
+      snapshotRef.current = {
+        ...draft,
+        deviceName: getStoredDeviceDisplayName() ?? draft.deviceName,
+      };
       onClose();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Nie udało się zapisać";
@@ -350,6 +379,17 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
       else setAudioError(msg);
     } finally {
       setSaveBusy(false);
+    }
+  };
+
+  const onPreviewMetronome = async () => {
+    setPreviewBusy(true);
+    try {
+      await previewMetronomeClick(draft.metro, true);
+    } catch {
+      /* autoplay / audio failure — no fake success */
+    } finally {
+      setPreviewBusy(false);
     }
   };
 
@@ -382,7 +422,32 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const dirty = !prefsEqual(draft, snapshotRef.current) || serverDirty;
 
   return (
-    <ModalShell title="Ustawienia" onDiscard={onDiscard}>
+    <ModalShell
+      title="Ustawienia"
+      onDiscard={onDiscard}
+      footer={
+        <div className={styles.actions}>
+          <Button
+            variant="ghost"
+            className={dirty ? styles.discardHot : undefined}
+            disabled={saveBusy}
+            onClick={onDiscard}
+          >
+            Odrzuć
+          </Button>
+          <Button
+            variant={dirty ? "primary" : "ghost"}
+            loading={saveBusy}
+            disabled={saveBusy || !dirty}
+            onClick={() => {
+              void onSave();
+            }}
+          >
+            Zapisz
+          </Button>
+        </div>
+      }
+    >
       <div className={styles.tabs} role="tablist" aria-label="Preferencje">
         {TABS.map((t) => (
           <button
@@ -444,7 +509,14 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
             </div>
           </fieldset>
 
-          <DeviceNameFields />
+          <DeviceNameFields
+            value={draft.deviceName}
+            onChange={(deviceName) => {
+              setDeviceNameError(null);
+              setDraft((d) => ({ ...d, deviceName }));
+            }}
+            error={deviceNameError}
+          />
           <ChangeServerControl entryPath="/admin" />
         </div>
       ) : null}

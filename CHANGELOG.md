@@ -21,6 +21,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Admin Utwory:** czytelniejsza hierarchia akcji (Otwórz w Timeline jako główna, Odtwórz / Import osobno, Usuń w rogu z potwierdzeniem); w inspectorze tonacja, tempo i czas utworu; na liście dyskretne badge BPM / tonacja / czas; pasek statusu z wyraźnymi slotami Teraz / Sekcja / Pozycja / Dalej / Połączenie.
+- **Admin Set:** stały toolbar nad setlistą (przerwa / szablon / wyczyść / zapisz); kafelki z czasem, BPM i tonacją oraz uchwytem przeciągania; pasek budżetu czasu (OK / overrun); „Dodaj zaznaczone” w stopce biblioteki.
+- **Admin Scena:** przełączniki ON/OFF w Korekcie (edycja zdalna, blokada motywu); komunikaty z jasną hierarchią (Wyślij jako główna akcja, role / TTL / Alert jako opcje); puste stany zamiast pustki; kafelki klientów z rolą i statusem połączenia.
+- **Admin Host:** siatka 2 kolumn (Połączenie & QR | MIDI & Safety Net, poniżej APK i aktualizacje); logi zwijane domyślnie („Logi (N) ▾”); krótkie puste stany APK z krokiem do Releases zamiast ściany ścieżek.
 - **Client:** bez ręcznej zmiany utworu w chrome (usunięty „→następny”) — setlista sterowana z Admin / Timeline; gęstszy nagłówek z czytelnym tytułem, tonacją, tempem, metrum i taktem oraz więcej miejsca na treść sceniczną.
 
 ### Naprawiono

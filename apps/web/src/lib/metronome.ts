@@ -15,6 +15,7 @@ import {
 import {
   getMetronomePrefs,
   masterClickGainLinear,
+  type MetronomePrefs,
   type MetronomeTimbre,
 } from "./metronomePrefs.js";
 
@@ -99,8 +100,12 @@ const TIMBRE_PROFILES: Record<MetronomeTimbre, TimbreProfile> = {
   },
 };
 
-function scheduleClick(ctx: AudioContext, when: number, accent: boolean) {
-  const prefs = getMetronomePrefs();
+function scheduleClick(
+  ctx: AudioContext,
+  when: number,
+  accent: boolean,
+  prefs = getMetronomePrefs(),
+) {
   const masterLin = masterClickGainLinear(prefs);
   if (masterLin <= 0) return;
 
@@ -124,6 +129,19 @@ function scheduleClick(ctx: AudioContext, when: number, accent: boolean) {
   gain.connect(cue);
   osc.start(when);
   osc.stop(when + profile.durationSec);
+}
+
+/**
+ * Play one click for Preferences preview (user gesture → resume + schedule).
+ * Uses draft prefs when provided so Odsłuch matches the unsaved timbre/volume.
+ */
+export async function previewMetronomeClick(
+  prefs: MetronomePrefs = getMetronomePrefs(),
+  accent = true,
+  ctx: AudioContext = getMetronomeAudioContext(),
+): Promise<void> {
+  await resumeMetronomeAudio(ctx);
+  scheduleClick(ctx, ctx.currentTime, accent, prefs);
 }
 
 /** Live Click cue peak dB (not Master). Missing analyser → floor. */
