@@ -5,6 +5,30 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Stopka:** „Snap” → „Przyciąganie”, „Beat” → „Uderzenie”, zoom chrome „Interfejs”; grupa „Zoom i przyciąganie” ([#652](https://github.com/Negatywistyczny/stagesync/pull/652), [#654](https://github.com/Negatywistyczny/stagesync/pull/654), [#660](https://github.com/Negatywistyczny/stagesync/pull/660), [#662](https://github.com/Negatywistyczny/stagesync/pull/662)).
+- **Narzędzia / Pomoc:** odmiana „klip” w tytułach narzędzi i karcie Pomocy; strefy miksera w pomocy to „Wyjście” / „Magistrale”; przycisk i dialog „Importuj UG” ([#640](https://github.com/Negatywistyczny/stagesync/pull/640), [#641](https://github.com/Negatywistyczny/stagesync/pull/641), [#644](https://github.com/Negatywistyczny/stagesync/pull/644), [#668](https://github.com/Negatywistyczny/stagesync/pull/668), [#669](https://github.com/Negatywistyczny/stagesync/pull/669)).
+- **Mixer:** strefa busów „Magistrale”, „+ Dodaj magistralę”, odznaka „Magistrala”; widoczne „Wyjście” zamiast „Out” ([#623](https://github.com/Negatywistyczny/stagesync/pull/623), [#626](https://github.com/Negatywistyczny/stagesync/pull/626), [#636](https://github.com/Negatywistyczny/stagesync/pull/636), [#643](https://github.com/Negatywistyczny/stagesync/pull/643)).
+- **Inspector:** „Odliczanie”, „Lokator wklejania”, „Tonika startu”; polskie etykiety klipu audio ([#635](https://github.com/Negatywistyczny/stagesync/pull/635), [#637](https://github.com/Negatywistyczny/stagesync/pull/637), [#658](https://github.com/Negatywistyczny/stagesync/pull/658), [#666](https://github.com/Negatywistyczny/stagesync/pull/666)).
+
+#### 🖥️ App Shell & UI
+- **Dialogi:** potwierdzenie „Potwierdź”, alert „Rozumiem” ([#606](https://github.com/Negatywistyczny/stagesync/pull/606), [#622](https://github.com/Negatywistyczny/stagesync/pull/622)).
+- **Admin:** sort biblioteki „Program Change”; polskie tytuły importu UG/MusicXML ([#626](https://github.com/Negatywistyczny/stagesync/pull/626), [#657](https://github.com/Negatywistyczny/stagesync/pull/657)).
+- **Host:** „Telemetria MIDI”; crash fallback z widocznymi „Przejdź do Client/Admin” ([#638](https://github.com/Negatywistyczny/stagesync/pull/638), [#671](https://github.com/Negatywistyczny/stagesync/pull/671)).
+- **Połączenie:** tooltip wskaźnika z polskimi statusami ([#607](https://github.com/Negatywistyczny/stagesync/pull/607)).
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Etykiety AT:** jaśniejsze aria startu tekst/akord/cue, zaznaczanie segmentów mapy, wyłączone Zoom H/V w Mixerze, źródło Różdżki ([#646](https://github.com/Negatywistyczny/stagesync/pull/646), [#647](https://github.com/Negatywistyczny/stagesync/pull/647), [#655](https://github.com/Negatywistyczny/stagesync/pull/655), [#672](https://github.com/Negatywistyczny/stagesync/pull/672)).
+
+#### 🖥️ App Shell & UI
+- **Set / biblioteka / Stage / Client:** etykiety ikon Set, status biblioteki, puste Score/Karaoke, pliki projektu i Stage, format zegara, QR LAN ([#603](https://github.com/Negatywistyczny/stagesync/pull/603), [#608](https://github.com/Negatywistyczny/stagesync/pull/608), [#613](https://github.com/Negatywistyczny/stagesync/pull/613), [#614](https://github.com/Negatywistyczny/stagesync/pull/614), [#615](https://github.com/Negatywistyczny/stagesync/pull/615), [#623](https://github.com/Negatywistyczny/stagesync/pull/623), [#649](https://github.com/Negatywistyczny/stagesync/pull/649)).
+
 ## [5.1.2](https://github.com/Negatywistyczny/stagesync/compare/v5.1.1...v5.1.2) - 2026-07-25
 
 ### Dodano
