@@ -5,6 +5,13 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **APK z hosta:** QR / linki Performer i Console działają na lokalnym hoście desktopu bez ręcznego kopiowania do Documents — host bierze APK z bundla / monorepo `data/downloads` (puste tylko gdy artefakt naprawdę nie jest w instalacji).
+
 ## [5.2.1](https://github.com/Negatywistczny/stagesync/compare/v5.2.0...v5.2.1) - 2026-07-26
 
 ### Dodano

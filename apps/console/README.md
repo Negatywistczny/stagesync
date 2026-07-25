@@ -30,10 +30,7 @@ node scripts/prepare-local-host.mjs --with-server
 Artefakt debug: `android/app/build/outputs/apk/debug/app-debug.apk`  
 Nazwa release CI: `StageSync-Console-vX.Y.Z.apk`
 
-```sh
-cp android/app/build/outputs/apk/debug/app-debug.apk \
-  "$STAGESYNC_DATA_DIR/downloads/stagesync-console.apk"
-```
+`./scripts/build-apk.sh` kopiuje wynik do `data/downloads/stagesync-console.apk`. Host (desktop / monorepo) serwuje go automatycznie pod `/downloads/` — bez ręcznego kopiowania do Documents.
 
 ## Zakazy
 

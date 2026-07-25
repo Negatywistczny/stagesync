@@ -25,12 +25,7 @@ Gradle kopiuje **Client-only** `apps/web/dist-performer` → `assets/www` (ABI: 
 Artefakt debug: `android/app/build/outputs/apk/debug/app-debug.apk`  
 Nazwa release CI: `StageSync-Performer-vX.Y.Z.apk`
 
-Skopiuj APK do katalogu downloads hosta, np.:
-
-```sh
-cp android/app/build/outputs/apk/debug/app-debug.apk \
-  "$STAGESYNC_DATA_DIR/downloads/stagesync-performer.apk"
-```
+`./scripts/build-apk.sh` kopiuje wynik do `data/downloads/stagesync-performer.apk`. Host (desktop / monorepo) serwuje go automatycznie pod `/downloads/` — bez ręcznego kopiowania do Documents.
 
 ## Zakazy
 

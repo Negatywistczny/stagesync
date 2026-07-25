@@ -200,16 +200,16 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
         mode === "performer" &&
         !performerReady ? (
           <p className={styles.muted} role="status">
-            Brak pliku Performer na hoście (
-            {performerUrl ?? "/downloads/stagesync-performer.apk"}). Umieść
-            artefakt w katalogu downloads albo pobierz z Releases.
+            Brak pliku Performer w tej instalacji (
+            {performerUrl ?? "/downloads/stagesync-performer.apk"}). Pobierz z
+            Releases albo zbuduj APK lokalnie — host serwuje go automatycznie.
           </p>
         ) : null}
         {!loading && !error && mode === "console" && !consoleReady ? (
           <p className={styles.muted} role="status">
-            Brak pliku Console na hoście (
-            {consoleUrl ?? "/downloads/stagesync-console.apk"}). Umieść artefakt
-            w katalogu downloads albo pobierz z Releases.
+            Brak pliku Console w tej instalacji (
+            {consoleUrl ?? "/downloads/stagesync-console.apk"}). Pobierz z
+            Releases albo zbuduj APK lokalnie — host serwuje go automatycznie.
           </p>
         ) : null}
         {activeUrl && qrSvg ? (

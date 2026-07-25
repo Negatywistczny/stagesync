@@ -29,5 +29,8 @@ if [[ ! -f local.properties ]]; then
 fi
 ./gradlew assembleDebug "$@"
 OUT="$ANDROID_DIR/app/build/outputs/apk/debug/app-debug.apk"
+DEST="$REPO/data/downloads/stagesync-console.apk"
+mkdir -p "$(dirname "$DEST")"
+cp "$OUT" "$DEST"
 echo "Built: $OUT"
-echo "Copy to host downloads as stagesync-console.apk when ready for Admin QR."
+echo "Host downloads: $DEST (Admin QR / /downloads/stagesync-console.apk)"

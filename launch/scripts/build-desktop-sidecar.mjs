@@ -303,7 +303,12 @@ async function assertNoRepoDocsInSidecar(sidecarDir) {
   await walkNoMd(join(sidecarDir, "web"));
   await walkNoMd(join(sidecarDir, "server", "dist"));
   await walkNoMd(join(sidecarDir, "seed"));
-  console.log("[sidecar] docs hygiene check passed (web/dist, server/dist, seed)");
+  if (existsSync(join(sidecarDir, "downloads"))) {
+    await walkNoMd(join(sidecarDir, "downloads"));
+  }
+  console.log(
+    "[sidecar] docs hygiene check passed (web/dist, server/dist, seed, downloads)",
+  );
 }
 
 const NODE_MODULES_PRUNE_DIRS = new Set([
@@ -727,6 +732,7 @@ async function buildAndPrepareSidecarResources() {
   const sidecarServerDir = join(sidecarDir, "server");
   const sidecarWebDir = join(sidecarDir, "web");
   const sidecarSeedDir = join(sidecarDir, "seed");
+  const sidecarDownloadsDir = join(sidecarDir, "downloads");
 
   const serverPackageRoot = join(repoRoot, "apps/server");
   const serverDistDir = join(serverPackageRoot, "dist");
@@ -735,6 +741,7 @@ async function buildAndPrepareSidecarResources() {
 
   const seedTemplate = join(repoRoot, "data/library/library.template.json");
   const seedProjects = join(repoRoot, "data/library/seed-projects");
+  const repoDownloadsDir = join(repoRoot, "data/downloads");
 
   // Build JS outputs first (and shared, because server runtime imports it).
   console.log("[sidecar] building JS outputs (shared/server/web)");
@@ -746,10 +753,28 @@ async function buildAndPrepareSidecarResources() {
   await rm(join(srcTauriDir, "resources"), { recursive: true, force: true });
   await mkdir(sidecarWebDir, { recursive: true });
   await mkdir(sidecarSeedDir, { recursive: true });
+  await mkdir(sidecarDownloadsDir, { recursive: true });
 
   // Seed (read-only)
   await cp(seedTemplate, join(sidecarSeedDir, "library.template.json"));
   await cp(seedProjects, join(sidecarSeedDir, "seed-projects"), { recursive: true });
+
+  // Sideload APKs (optional — skip quietly when not built yet; host then 404s honestly)
+  const apkNames = ["stagesync-performer.apk", "stagesync-console.apk"];
+  let apkCopied = 0;
+  for (const name of apkNames) {
+    const src = join(repoDownloadsDir, name);
+    if (!existsSync(src)) continue;
+    await cp(src, join(sidecarDownloadsDir, name));
+    apkCopied += 1;
+  }
+  if (apkCopied > 0) {
+    console.log(`[sidecar] bundled ${apkCopied} APK(s) into sidecar/downloads`);
+  } else {
+    console.log(
+      "[sidecar] no APKs in data/downloads — Admin QR will empty-state until present",
+    );
+  }
 
   // Static web (read-only)
   await rm(sidecarWebDir, { recursive: true, force: true });

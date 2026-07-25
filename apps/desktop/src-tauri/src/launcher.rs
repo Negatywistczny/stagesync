@@ -119,6 +119,40 @@ fn project_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(home.join("Documents").join("StageSync"))
 }
 
+fn apk_file_usable(path: &std::path::Path) -> bool {
+    path.is_file()
+        && std::fs::metadata(path)
+            .map(|m| m.len() > 0)
+            .unwrap_or(false)
+}
+
+fn downloads_dir_has_apk(dir: &std::path::Path) -> bool {
+    apk_file_usable(&dir.join("stagesync-performer.apk"))
+        || apk_file_usable(&dir.join("stagesync-console.apk"))
+}
+
+/// Read-only APK root for the local host (not Documents user data).
+/// Prefers bundled `sidecar/downloads`; in monorepo/dev falls back to `data/downloads`.
+fn resolve_apk_downloads_dir(resource_dir: &std::path::Path) -> Option<PathBuf> {
+    let bundled = path_for_node(
+        &resource_dir
+            .join("resources")
+            .join("sidecar")
+            .join("downloads"),
+    );
+    if downloads_dir_has_apk(&bundled) {
+        return Some(bundled);
+    }
+    // `CARGO_MANIFEST_DIR` = apps/desktop/src-tauri → ../../../data/downloads
+    let monorepo = path_for_node(
+        &PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../data/downloads"),
+    );
+    if downloads_dir_has_apk(&monorepo) {
+        return Some(monorepo);
+    }
+    None
+}
+
 /// Pre-fix location: `app_data_dir()/StageSync` (macOS Application Support / Windows AppData).
 fn legacy_app_support_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let app_data = app
@@ -661,11 +695,14 @@ async fn start_local_host_inner(
     let expected_version = app.package_info().version.to_string();
     emit_status(&app, "Uruchamiam lokalny host…", false);
 
+    let apk_downloads_dir = resolve_apk_downloads_dir(&resource_dir);
+
     let (mut rx, child) = app
         .shell()
         .sidecar("stagesync-host")
         .and_then(|cmd| {
-            cmd.args([SERVER_ENTRY_REL])
+            let mut builder = cmd
+                .args([SERVER_ENTRY_REL])
                 .current_dir(&server_dir)
                 .env("PORT", UI_PORT.to_string())
                 .env(
@@ -675,8 +712,14 @@ async fn start_local_host_inner(
                 .env("STAGESYNC_DATA_DIR", data_dir.to_string_lossy().to_string())
                 .env("STAGESYNC_SEED_DIR", seed_dir.to_string_lossy().to_string())
                 .env("npm_package_version", expected_version.clone())
-                .env("STAGESYNC_SHELL", "desktop")
-                .spawn()
+                .env("STAGESYNC_SHELL", "desktop");
+            if let Some(ref downloads) = apk_downloads_dir {
+                builder = builder.env(
+                    "STAGESYNC_DOWNLOADS_DIR",
+                    downloads.to_string_lossy().to_string(),
+                );
+            }
+            builder.spawn()
         })
         .map_err(|err| {
             let raw = err.to_string();
@@ -970,5 +1013,28 @@ mod data_dir_migration_tests {
         let kept = fs::read_to_string(target.join("library").join("library.json")).unwrap();
         assert!(kept.contains("docs"));
         let _ = fs::remove_dir_all(source.parent().unwrap().parent().unwrap());
+    }
+}
+
+#[cfg(test)]
+mod apk_downloads_resolve_tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn downloads_dir_has_apk_requires_non_empty_file() {
+        let base = std::env::temp_dir().join(format!(
+            "stagesync-apk-resolve-{}-{}",
+            "empty",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(&base).unwrap();
+        assert!(!downloads_dir_has_apk(&base));
+        fs::write(base.join("stagesync-performer.apk"), b"").unwrap();
+        assert!(!downloads_dir_has_apk(&base));
+        fs::write(base.join("stagesync-performer.apk"), b"PK").unwrap();
+        assert!(downloads_dir_has_apk(&base));
+        let _ = fs::remove_dir_all(&base);
     }
 }

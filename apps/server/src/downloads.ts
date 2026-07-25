@@ -1,7 +1,7 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { isAbsolute, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { Express, Request, Response } from "express";
-import { REPO_ROOT } from "./storage/paths.js";
+import { defaultSeedDir, REPO_ROOT } from "./storage/paths.js";
 
 export const APK_DOWNLOAD_FILES = {
   performer: "stagesync-performer.apk",
@@ -13,6 +13,9 @@ export type ApkKind = keyof typeof APK_DOWNLOAD_FILES;
 /**
  * Directory that holds release APKs for GET /downloads/*.
  * Priority: STAGESYNC_DOWNLOADS_DIR → `<dataDir>/downloads`.
+ *
+ * Prefer {@link resolveApkFilePath} for serving — it also falls back to the
+ * product bundle next to seed (`data/downloads` / sidecar `downloads`).
  */
 export function resolveDownloadsDir(dataDir: string): string {
   const fromEnv = process.env.STAGESYNC_DOWNLOADS_DIR?.trim();
@@ -22,8 +25,63 @@ export function resolveDownloadsDir(dataDir: string): string {
   return join(dataDir, "downloads");
 }
 
+/**
+ * Read-only product APK root (bundled / monorepo), separate from user dataDir.
+ *
+ * - `STAGESYNC_APK_BUNDLE_DIR` when set
+ * - else sibling of seed: `data/library` → `data/downloads`, sidecar `seed` → `downloads`
+ */
+export function defaultApkBundleDir(): string {
+  const fromEnv = process.env.STAGESYNC_APK_BUNDLE_DIR?.trim();
+  if (fromEnv) {
+    return isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv);
+  }
+  return join(dirname(defaultSeedDir()), "downloads");
+}
+
 export function resolveApkPath(downloadsDir: string, kind: ApkKind): string {
   return join(downloadsDir, APK_DOWNLOAD_FILES[kind]);
+}
+
+/** True when path exists and has non-zero size (empty stub ≠ available). */
+export function isUsableApkFile(filePath: string): boolean {
+  if (!existsSync(filePath)) return false;
+  try {
+    return statSync(filePath).size > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Resolve on-disk APK for serving.
+ *
+ * Candidates (first usable wins):
+ * 1. `STAGESYNC_DOWNLOADS_DIR/<file>` when set
+ * 2. `<dataDir>/downloads/<file>` (user / seeded)
+ * 3. product bundle (`defaultApkBundleDir()` — repo `data/downloads` or sidecar)
+ *
+ * When nothing usable exists, returns the primary writable path (for 404 text).
+ */
+export function resolveApkFilePath(dataDir: string, kind: ApkKind): string {
+  const filename = APK_DOWNLOAD_FILES[kind];
+  const candidates: string[] = [];
+
+  const fromEnv = process.env.STAGESYNC_DOWNLOADS_DIR?.trim();
+  if (fromEnv) {
+    const dir = isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv);
+    candidates.push(join(dir, filename));
+  }
+  candidates.push(join(dataDir, "downloads", filename));
+  candidates.push(join(defaultApkBundleDir(), filename));
+
+  for (const path of candidates) {
+    if (isUsableApkFile(path)) return path;
+  }
+
+  return fromEnv
+    ? join(isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv), filename)
+    : join(dataDir, "downloads", filename);
 }
 
 function sendMissingApk(res: Response, filename: string): void {
@@ -32,8 +90,8 @@ function sendMissingApk(res: Response, filename: string): void {
     .type("text/plain; charset=utf-8")
     .send(
       `StageSync: brak pliku ${filename} na hoście.\n` +
-        `Umieść artefakt w katalogu downloads hosta (STAGESYNC_DOWNLOADS_DIR ` +
-        `lub <dataDir>/downloads/) albo pobierz z GitHub Releases.\n` +
+        `Artefakt nie jest częścią tej instalacji (brak w bundlu / data/downloads). ` +
+        `Pobierz z GitHub Releases albo zbuduj APK lokalnie — host serwuje go automatycznie.\n` +
         `Patrz docs/MOBILE.md.`,
     );
 }
@@ -44,7 +102,7 @@ function serveApkFile(
   filePath: string,
   filename: string,
 ): void {
-  if (!existsSync(filePath)) {
+  if (!isUsableApkFile(filePath)) {
     sendMissingApk(res, filename);
     return;
   }
@@ -52,10 +110,6 @@ function serveApkFile(
   try {
     size = statSync(filePath).size;
   } catch {
-    sendMissingApk(res, filename);
-    return;
-  }
-  if (size <= 0) {
     sendMissingApk(res, filename);
     return;
   }
@@ -83,13 +137,11 @@ function serveApkFile(
 
 /** Mount GET|HEAD /downloads/stagesync-performer.apk and …-console.apk. */
 export function mountApkDownloads(app: Express, dataDir: string): void {
-  const downloadsDir = resolveDownloadsDir(dataDir);
-
   for (const kind of Object.keys(APK_DOWNLOAD_FILES) as ApkKind[]) {
     const filename = APK_DOWNLOAD_FILES[kind];
     const path = `/downloads/${filename}`;
     const handler = (req: Request, res: Response) => {
-      serveApkFile(req, res, resolveApkPath(downloadsDir, kind), filename);
+      serveApkFile(req, res, resolveApkFilePath(dataDir, kind), filename);
     };
     app.get(path, handler);
     app.head(path, handler);

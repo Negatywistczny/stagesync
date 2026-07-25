@@ -199,6 +199,8 @@ serwer automatycznie użyje `~/Documents/StageSync`.
 Desktop (Tauri): lokalny host ustawia `STAGESYNC_DATA_DIR` na Documents; jeśli wcześniej
 dane były tylko w Application Support / AppData, aplikacja skopiuje je raz przy starcie
 (bez nadpisywania istniejących plików w Dokumentach). Zob. [DESKTOP.md](./DESKTOP.md).
+APK Performer/Console serwowane są automatycznie z bundla instalacji / monorepo
+`data/downloads` (nie trzeba ich przenosić do Documents) — [MOBILE.md](./MOBILE.md).
 
 ### Dev — dane w repo (domyślne)
 
@@ -221,6 +223,8 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 |---------|-----------|------|
 | `PORT` | `4000` | HTTP + WS |
 | `STAGESYNC_DATA_DIR` | `~/Documents/StageSync` (desktop) · `/app/data` (Compose) | Library + projects |
+| `STAGESYNC_DOWNLOADS_DIR` | (auto) | Nadpisanie katalogu APK; desktop lokalny host ustawia bundel / monorepo `data/downloads` |
+| `STAGESYNC_APK_BUNDLE_DIR` | obok seeda (`data/downloads`) | Read-only fallback APK (gdy brak w dataDir) |
 | `STAGESYNC_REPO_DEV` | `1` (z `.env.example`) | Wymusza `<repo>/data` w trybie dev |
 | `STAGESYNC_STATIC_DIR` | `/app/web` (obraz) | Vite `dist` serwowany przez Node |
 | `STAGESYNC_URL` | `http://127.0.0.1:4000` | URL dla shella Tauri |

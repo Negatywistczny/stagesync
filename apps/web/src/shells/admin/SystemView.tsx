@@ -567,7 +567,7 @@ function ApkRow({
       <div className={styles.appInfo}>
         <h3 className={styles.appTitle}>{title}</h3>
         <p className={styles.appStatus}>
-          {ready ? "APK dostępne na hoście" : "Brak APK na hoście"}
+          {ready ? "APK dostępne na hoście" : "Brak APK w tej instalacji"}
         </p>
       </div>
       <div className={styles.appActions}>

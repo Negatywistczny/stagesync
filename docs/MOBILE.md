@@ -60,9 +60,15 @@ W Admin → Host → **Sieć & Szybkie Połączenie**:
 
 W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień — wklejenie adresu.
 
-Gdy plik APK **nie leży** w katalogu downloads hosta, UI pokazuje **pusty stan** (komunikat). Endpoint zwraca **404** z jasnym tekstem.
+Gdy plik APK **nie jest częścią instalacji** (brak w bundlu desktop / `data/downloads`), UI pokazuje **pusty stan** (komunikat). Endpoint zwraca **404** z jasnym tekstem. Operator **nie** musi ręcznie kopiować APK do katalogu Documents.
 
-Domyślna lokalizacja plików na hoście: `$STAGESYNC_DATA_DIR/downloads/` (nadpisanie: `STAGESYNC_DOWNLOADS_DIR`).
+Host szuka APK automatycznie (pierwszy istniejący, niepusty plik wygrywa):
+
+1. `STAGESYNC_DOWNLOADS_DIR` (nadpisanie)
+2. `$STAGESYNC_DATA_DIR/downloads/`
+3. bundel produktu obok seeda — w repo `data/downloads/`, w desktopie `sidecar/downloads/` (albo `STAGESYNC_APK_BUNDLE_DIR`)
+
+Desktop (Tauri): lokalny host trzyma projekty w `~/Documents/StageSync`, a APK serwuje z bundla / monorepo `data/downloads` — bez ręcznego `cp` do Documents. Skrypty `apps/*/scripts/build-apk.sh` zapisują debug APK od razu do `data/downloads/stagesync-*.apk`.
 
 W repo (sideload MVP) leżą debug APK: `data/downloads/stagesync-performer.apk` oraz `stagesync-console.apk` (build `assembleDebug` / `scripts/build-apk.sh`). Release signed — gdy CI / keystore.
 
@@ -102,7 +108,7 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 ### Smoke (ręczne)
 
 1. Zainstaluj starszą powłokę (niższy `versionName`) albo tymczasowo obniż `versionName` w buildzie.
-2. Uruchom host z nowszym `version` i APK w `data/downloads/`.
+2. Uruchom host z nowszym `version` i APK w bundlu (`data/downloads/` / sidecar).
 3. Połącz launcherem → WebView → dialog z wersjami → **Pobierz i zainstaluj** → instalator systemowy.
 4. **Później** nie uruchamia pobierania.
 

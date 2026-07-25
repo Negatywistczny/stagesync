@@ -60,8 +60,8 @@ transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
 
 | Metoda | Ścieżka | Opis |
 |--------|---------|------|
-| `GET`/`HEAD` | `/downloads/stagesync-performer.apk` | APK Performer z katalogu downloads hosta (404 plain text gdy brak) |
-| `GET`/`HEAD` | `/downloads/stagesync-console.apk` | APK Console |
+| `GET`/`HEAD` | `/downloads/stagesync-performer.apk` | APK Performer (auto: downloads dir / bundel produktu; 404 plain text gdy brak) |
+| `GET`/`HEAD` | `/downloads/stagesync-console.apk` | APK Console (jw.) |
 | `GET`/`HEAD` | `/downloads/ui-bundle.zip` | Pełna paczka `apps/web` dist (`uiHash`); wymaga `STAGESYNC_STATIC_DIR` z buildem web |
 | `GET`/`HEAD` | `/downloads/ui-bundle-performer.zip` | Client-only UI dla StageSync Performer (`uiHashPerformer`) |
 | `GET`/`HEAD` | `/downloads/ui-bundle-console.zip` | Pełne SPA UI dla StageSync Console (`uiHashConsole`) |
