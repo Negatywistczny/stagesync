@@ -7846,7 +7846,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     setUgModalOpen(true);
                   }}
                 >
-                  Import UG
+                  Importuj UG
                 </Button>
               </div>
             </div>
