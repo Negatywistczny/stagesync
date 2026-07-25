@@ -168,6 +168,7 @@ import {
   buildClipContextMenuItems,
   buildEmptyLaneContextMenuItems,
   clipboardMatchesEmptyLane,
+  mapSegmentSelectionAriaLabel,
   type ClipMenuLane,
   type EmptyLaneMenuKind,
 } from "../lib/timelineContextMenus.js";
@@ -5094,20 +5095,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         : "";
     const mapSegmentSelected = (eventId: string, lane: MapLaneId) =>
       selectedMapLane === lane && selectedMapIds.includes(eventId);
-    const mapSegmentAriaLabel = (seg: { label: string; eventId: string }, lane: MapLaneId) => {
-      const selected = mapSegmentSelected(seg.eventId, lane);
-      const group =
-        selected && selectedMapLane === lane && selectedMapIds.length > 1
-          ? selectedMapIds.length
-          : 0;
-      if (selected && group > 1) {
-        return `${seg.label}, zaznaczony, w grupie ${group} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
-      }
-      if (selected) {
-        return `${seg.label}, zaznaczony — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
-      }
-      return `${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
-    };
+    const mapSegmentAriaLabel = (
+      seg: { label: string; eventId: string },
+      lane: MapLaneId,
+    ) =>
+      mapSegmentSelectionAriaLabel(seg.label, {
+        selected: mapSegmentSelected(seg.eventId, lane),
+        groupSize:
+          mapSegmentSelected(seg.eventId, lane) &&
+          selectedMapLane === lane &&
+          selectedMapIds.length > 1
+            ? selectedMapIds.length
+            : undefined,
+      });
 
     switch (trackId) {
       case "tempo":
