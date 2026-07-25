@@ -20,8 +20,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
 - [ ] **A11y:** segmenty map Timeline + menu kontekstowe — announce liczby zaznaczenia; Launcher (Tauri) — audit nazw kontroli „powrót do hosta”
-- [ ] [#602](https://github.com/Negatywistyczny/stagesync/issues/602) **DX / Knip:** detekcja martwego kodu i osieroconych zależności w monorepo (`lint:knip`; CI opcjonalnie nieblokujące)
-- [ ] [#494](https://github.com/Negatywistyczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
+- [ ] [#602](https://github.com/Negatywistczny/stagesync/issues/602) **DX / Knip:** detekcja martwego kodu i osieroconych zależności w monorepo (`lint:knip`; CI opcjonalnie nieblokujące)
+- [ ] [#494](https://github.com/Negatywistczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
 
 ### Etap 5.2+ (Przyszłość)
 
@@ -30,8 +30,8 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 - [ ] **Mixer — bus→bus:** routing wyjścia busa na inny bus (dziś bus → tylko Master)
 - [ ] **MIDI — kanał Program Change:** filtr IN (nie Omni) + kanał OUT w `MidiHostConfig` + Admin Host — dziś Omni IN / hardkod ch. 1 OUT ([RSK-MIDI-04/05](./analysis/inspiracje/audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md))
 - [ ] **Client transport — H-01:** `setDisplayTicks` co rAF re-renderuje konsumentów `useTransport` (Vitest potwierdzony) — najpierw profiler Grid/Karaoke @ 120 Hz, potem split context / throttle ([triage](./analysis/inspiracje/audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md))
-- [ ] [#430](https://github.com/Negatywistyczny/stagesync/issues/430) Cues Sampler
-- [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
-- [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Mobile Client:** PWA (`apps/web`) + lekka powłoka Android (`apps/mobile-client`: keep-screen-on / kiosk / QR / mDNS); dystrybucja `.apk` z serwera / Releases — **bez** Google Play; pełny `mobile-full` + sidecar później
+- [ ] [#430](https://github.com/Negatywistczny/stagesync/issues/430) Cues Sampler
+- [ ] [#437](https://github.com/Negatywistczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
+- [ ] [#674](https://github.com/Negatywistczny/stagesync/issues/674) **Mobile Client:** PWA (`apps/web`) + lekka powłoka Android (`apps/mobile-client`: keep-screen-on / kiosk / QR / mDNS); dystrybucja `.apk` z serwera / Releases — **bez** Google Play; pełny `mobile-full` + sidecar później
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 - [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS (dziś placeholder / katalog backupów w ustawieniach hosta)

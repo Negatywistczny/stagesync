@@ -16,11 +16,11 @@
 | [#485](https://github.com/Negatywistczny/stagesync/pull/485) | Rename `focus-visible` | Dock + mixer rename inputs |
 | [#486](https://github.com/Negatywistczny/stagesync/pull/486) | Night-shift handoff + RFC | This report; parking lot `rfc-v5.1-proposals.md` later folded into [TODO.md](../../TODO.md) § Should / Higiena + § 5.2+ |
 | [#487](https://github.com/Negatywistczny/stagesync/pull/487) | Map-lane segment a11y | Tempo / meter / key map segment `aria-label` |
-| [#488](https://github.com/Negatywistyczny/stagesync/pull/488) | Connection-lost alert | `ConnectionLostBanner` `role="alert"` |
+| [#488](https://github.com/Negatywistczny/stagesync/pull/488) | Connection-lost alert | `ConnectionLostBanner` `role="alert"` |
 | [#489](https://github.com/Negatywistczny/stagesync/pull/489) | Residual `line-height: 1` → token | SetView + ChannelStripControls → `--ss-leading-none` |
 | [#490](https://github.com/Negatywistczny/stagesync/pull/490) | MIDI PC handler edges | Unit tests for program-change handler |
-| [#491](https://github.com/Negatywistyczny/stagesync/pull/491) | Set template menu a11y | `aria-controls` / menu wiring on SetView |
-| [#492](https://github.com/Negatywistyczny/stagesync/pull/492) | MIDI PC OUT edges | Unit tests for program-change OUT |
+| [#491](https://github.com/Negatywistczny/stagesync/pull/491) | Set template menu a11y | `aria-controls` / menu wiring on SetView |
+| [#492](https://github.com/Negatywistczny/stagesync/pull/492) | MIDI PC OUT edges | Unit tests for program-change OUT |
 | [#493](https://github.com/Negatywistczny/stagesync/pull/493) | Shell dialog Escape | Dismiss ShellBlockingDialog with Escape |
 
 Merge order tip: **481 before 489/484** (tokens first); then a11y/tests; **#486 last**. Night-shift train landed #480–#485 and #487–#493 before this handoff.

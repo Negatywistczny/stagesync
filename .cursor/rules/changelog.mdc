@@ -46,6 +46,8 @@ Poniższe zostają wyłącznie w `git log` / docs wewnętrznych:
 
 **Wyjątek (📚 Dokumentacja):** zmiana **oficjalnego podręcznika wbudowanego w aplikację** (np. Pomoc Timeline) **albo** publicznej docs instalacji / API dla operatora lub integratora (`docs/INSTALL.md`, `docs/DESKTOP.md`, `docs/api/`). Zwykłe `.md` repo (CONTRIBUTING, ADR, reporty, DS notes) — **wykluczone**.
 
+Korekta literówki w loginie GitHub / URL właściciela org w docs (nawet INSTALL/DESKTOP) — **bez** wpisu CHANGELOG (nawet pod 📚).
+
 Link do ADR na końcu **produktowego** bulletu (kontekst decyzji) — OK. Bullet, którego treścią jest sam ADR / report / ROADMAP — **zakazany**.
 
 ### 2. Narzędzia deweloperskie i zasady AI (`chore:`)
