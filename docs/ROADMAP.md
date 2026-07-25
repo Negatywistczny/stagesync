@@ -100,7 +100,7 @@ Tag `v5.3.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - Motywy: macierz 4 profili / THM-03
 - Mixer: multi-out HW (Out 3–4)
 - Safety Net: auto-election / lease
-- Mobile: JNI/`libnode`; Offline delta
+- Mobile: responsive GUI (Admin/Client/Timeline); JNI/`libnode`; Offline delta
 - Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/)
 
 
