@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { MIDDLE_ELLIPSIS, truncateMiddle } from "./truncateMiddle.js";
+import {
+  createCanvasTextMeasurer,
+  MIDDLE_ELLIPSIS,
+  truncateMiddle,
+} from "./truncateMiddle.js";
 
 /** Unit width = character count (monospace stub). */
 const measure = (s: string) => s.length;
 
 describe("truncateMiddle", () => {
+  it("returns empty input unchanged", () => {
+    expect(truncateMiddle("", 10, measure)).toBe("");
+  });
+
   it("returns full text when it fits", () => {
     expect(truncateMiddle("Backing Vox 1", 20, measure)).toBe("Backing Vox 1");
   });
@@ -38,5 +46,13 @@ describe("truncateMiddle", () => {
     const out = truncateMiddle("ABCDEFGH", 6, measure, "..");
     expect(out).toContain("..");
     expect(measure(out)).toBeLessThanOrEqual(6);
+  });
+});
+
+describe("createCanvasTextMeasurer", () => {
+  it("uses character length when document is unavailable", () => {
+    const m = createCanvasTextMeasurer("12px sans-serif");
+    expect(m("abc")).toBe(3);
+    expect(m("")).toBe(0);
   });
 });
