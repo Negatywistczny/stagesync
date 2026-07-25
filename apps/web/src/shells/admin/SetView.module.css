@@ -44,6 +44,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.budgetInput:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -114,6 +119,11 @@
   font-size: var(--ss-text-sm);
   text-align: left;
   cursor: pointer;
+}
+
+.templateItem:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
 }
 
 @media (hover: hover) {
