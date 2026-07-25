@@ -150,6 +150,14 @@ describe("file-logger + diagnostics zip (#351)", () => {
     expect(() => parseZipArchive(zip)).toThrow(/Niedozwolona/);
   });
 
+  it("parseZipArchive rejects short buffers and absolute Unix paths", () => {
+    expect(() => parseZipArchive(Buffer.from("PK"))).toThrow(/za krótkie|EOCD/i);
+    const abs = buildStoreZip([
+      { name: "/etc/passwd", data: Buffer.from("x", "utf8") },
+    ]);
+    expect(() => parseZipArchive(abs)).toThrow(/Niedozwolona/);
+  });
+
   it("parseZipArchive rejects archives over entry cap", () => {
     const entries = Array.from({ length: ZIP_PARSE_MAX_ENTRIES + 1 }, (_, i) => ({
       name: `f${i}.txt`,
