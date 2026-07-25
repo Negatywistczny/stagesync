@@ -15,6 +15,11 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 
 - [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — bez claim green w docs
 
+### Should / Higiena (nie blokuje 5.2)
+
+- [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
+- [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
+- [ ] **A11y:** segmenty map Timeline + menu kontekstowe — announce liczby zaznaczenia; Launcher (Tauri) — audit nazw kontroli „powrót do hosta”
 
 ### Etap 5.2+ (Przyszłość)
 
@@ -27,3 +32,4 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 - [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
 - [ ] Android shell / store auto-update
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
+- [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS (dziś placeholder / katalog backupów w ustawieniach hosta)

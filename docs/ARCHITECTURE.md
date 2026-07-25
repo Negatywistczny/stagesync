@@ -9,6 +9,7 @@
 | [TODO](./TODO.md) | Checklista bieżącego etapu (alpha / beta) | Odhaczone / kolejne etapy |
 | [ROADMAP](./ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) | Bieżąca checklista (→ TODO) |
 | [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
+| [ui-shell-inventory](./ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
 | [docs/analysis/](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |

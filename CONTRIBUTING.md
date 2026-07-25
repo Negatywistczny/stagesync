@@ -51,7 +51,8 @@ Konfiguracja w GitHub UI / API — nie w kodzie repozytorium.
 
 W opisie PR podaj **problem** (1–2 zdania) oraz zaznacz **Wpływ** (model / API / UI / Granica 0)
 w [szablonie PR](.github/PULL_REQUEST_TEMPLATE.md). Przy zmianie architektury
-lub Granicy 0 — link do ADR.
+lub Granicy 0 — link do ADR. Etykiety (`scope:*` / `type:*` / `status:*`):
+[docs/github-labels.md](docs/github-labels.md).
 
 **Bez** wymogu wireframe → makieta → kod.
 

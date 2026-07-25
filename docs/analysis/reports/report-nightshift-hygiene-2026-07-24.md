@@ -14,7 +14,7 @@
 | [#483](https://github.com/Negatywistczny/stagesync/pull/483) | Timeline meta a11y | Tempo / meter / key transport meta `aria-label` |
 | [#484](https://github.com/Negatywistczny/stagesync/pull/484) | Solo/Mute + OSMD paper tokens | `--ss-color-solo|mute|osmd-paper`; Timeline + Client score paper |
 | [#485](https://github.com/Negatywistczny/stagesync/pull/485) | Rename `focus-visible` | Dock + mixer rename inputs |
-| [#486](https://github.com/Negatywistczny/stagesync/pull/486) | Night-shift handoff + RFC | This report + `docs/rfc-v5.1-proposals.md` |
+| [#486](https://github.com/Negatywistczny/stagesync/pull/486) | Night-shift handoff + RFC | This report; parking lot `rfc-v5.1-proposals.md` later folded into [TODO.md](../../TODO.md) § Should / Higiena + § 5.2+ |
 | [#487](https://github.com/Negatywistczny/stagesync/pull/487) | Map-lane segment a11y | Tempo / meter / key map segment `aria-label` |
 | [#488](https://github.com/Negatywistyczny/stagesync/pull/488) | Connection-lost alert | `ConnectionLostBanner` `role="alert"` |
 | [#489](https://github.com/Negatywistczny/stagesync/pull/489) | Residual `line-height: 1` → token | SetView + ChannelStripControls → `--ss-leading-none` |
