@@ -78,7 +78,7 @@ export function ShellConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = "OK",
+  confirmLabel = "Potwierdź",
   cancelLabel = "Anuluj",
   onConfirm,
   onCancel,
