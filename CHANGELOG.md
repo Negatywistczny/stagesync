@@ -24,6 +24,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Host:** „Telemetria MIDI”; crash fallback z widocznymi „Przejdź do Client/Admin” ([#638](https://github.com/Negatywistyczny/stagesync/pull/638), [#671](https://github.com/Negatywistyczny/stagesync/pull/671)).
 - **Połączenie:** tooltip wskaźnika z polskimi statusami ([#607](https://github.com/Negatywistyczny/stagesync/pull/607)).
 
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Aktualizacja aplikacji:** przed instalacją dialog ostrzega o restarcie StageSync i konieczności zapisania niezapisanych zmian w projekcie (Anuluj przerywa aktualizację).
+
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW

@@ -80,8 +80,8 @@ Gdy jest dostępna nowa wersja:
 
 1. Uruchom aplikację StageSync.
 2. W Adminie → sekcja **O aplikacji** → **Sprawdź aktualizacje**.
-3. Jeśli jest nowsza wersja shella: **Aktualizuj aplikację**.
-4. Shell pobierze podpisany bundle (minisign), zamknie się i zainstaluje nową wersję.
+3. Jeśli jest nowsza wersja shella: **Aktualizuj aplikację** — potwierdź ostrzeżenie (restart; zapisz niezapisane zmiany). **Anuluj** przerywa aktualizację.
+4. Shell pobierze podpisany bundle (minisign), uruchomi się ponownie z nową wersją.
 
 > Aktualizacja shella wymaga połączenia z internetem. Dane projektów są w serwerze — shell ich nie przechowuje.
 >

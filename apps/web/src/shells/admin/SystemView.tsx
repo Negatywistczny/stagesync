@@ -586,7 +586,7 @@ function UpdatePanel({
       <ShellConfirmDialog
         open={confirmDesktopUpdate}
         title="Aktualizacja aplikacji"
-        message="Aplikacja zostanie zamknięta i zaktualizowana. Kontynuować?"
+        message="StageSync zostanie uruchomiony ponownie po aktualizacji. Zapisz niezapisane zmiany w projekcie przed kontynuacją. Kontynuować?"
         confirmLabel="Aktualizuj"
         onConfirm={() => {
           setConfirmDesktopUpdate(false);
