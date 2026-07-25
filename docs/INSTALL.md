@@ -56,8 +56,7 @@ wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
 
 ### Mixer bus→bus
 
-Wyjście busa można skierować na Master albo inny bus (bez pętli). Fizyczne Out 3–4
-pojawiają się w UI przy realnym `maxChannelCount` ≥ 4.
+Wyjście busa można skierować na Master albo inny bus (bez pętli).
 
 ### Cues Sampler
 
