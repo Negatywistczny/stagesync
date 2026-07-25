@@ -154,7 +154,7 @@ Kryteria **Console** (nie mylić z pasywnym Performerem):
 
 W launcherze Console **Uruchom lokalny host** uruchamia wbudowany serwer StageSync na urządzeniu (nodejs-mobile + JNI), czeka na `GET http://127.0.0.1:4000/api/health`, potem otwiera Admin — ten sam tor co desktop ([DESKTOP.md](./DESKTOP.md), [ADR 0014](./adr/0014-desktop-launcher.md)).
 
-Domyślny `./apps/console/scripts/build-apk.sh` pakuje `libnode.so` (arm64-v8a + armeabi-v7a), most `stagesync-host-bridge` oraz `assets/host` (server jak sidecar desktop + web + seed). Dane projektów: katalog aplikacji (`filesDir/stagesync-data`). Native MIDI na Androidzie jest niedostępne (serwer startuje bez backendu MIDI); mDNS na lokalnym hoście Console jest wyłączone — odkrywanie LAN nadal działa przy połączeniu z innym hostem.
+Domyślny `./apps/console/scripts/build-apk.sh` pakuje `libnode.so` (arm64-v8a + armeabi-v7a), most `stagesync-host-bridge` oraz `assets/host` (server jak sidecar desktop + web + seed). Dane projektów: katalog aplikacji (`filesDir/stagesync-data`). Silnik Node startuje w osobnym wątku z powiększoną stertą; błędy ładowania / wypakowania / startu trafiają do statusu po polsku (bez crasha procesu z wyjątku Java). Native MIDI na Androidzie jest niedostępne (serwer startuje z `STAGESYNC_MIDI_BACKEND=none`); mDNS na lokalnym hoście Console jest wyłączone — odkrywanie LAN nadal działa przy połączeniu z innym hostem. Host nasłuchuje na pętli zwrotnej (`127.0.0.1`).
 
 Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` albo uszkodzony build), UI pokazuje uczciwy komunikat (fail-open), nie fałszywy sukces. **Performer** nigdy nie bundluje lokalnego hosta.
 

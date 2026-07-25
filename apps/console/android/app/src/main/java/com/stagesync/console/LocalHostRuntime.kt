@@ -19,12 +19,17 @@ object LocalHostRuntime {
         val nativeLibPresent: Boolean,
         val hostAssetsPresent: Boolean,
         val jniBridgeLoaded: Boolean,
+        val loadDetail: String? = null,
     ) {
         val canStart: Boolean
             get() = nativeLibPresent && hostAssetsPresent && jniBridgeLoaded
     }
 
-    fun probe(context: android.content.Context): Readiness {
+    /**
+     * File / asset presence only — does **not** call [System.loadLibrary].
+     * Safe on the main thread.
+     */
+    fun probePack(context: android.content.Context): Readiness {
         val nativeDir = context.applicationInfo.nativeLibraryDir
         val libNode = java.io.File(nativeDir, "lib$NATIVE_LIB.so")
         val libBridge = java.io.File(nativeDir, "lib$BRIDGE_LIB.so")
@@ -41,17 +46,27 @@ object LocalHostRuntime {
                 false
             }
 
-        val jniBridgeLoaded =
-            if (nativeLibPresent) {
-                LocalHostNative.isBridgeReady()
-            } else {
-                false
-            }
-
         return Readiness(
             nativeLibPresent = nativeLibPresent,
             hostAssetsPresent = hostAssetsPresent,
+            jniBridgeLoaded = false,
+        )
+    }
+
+    /**
+     * Full readiness including JNI load. Call off the main thread —
+     * loading `libnode.so` (~50 MB) can stall or OOM the UI thread.
+     */
+    fun probe(context: android.content.Context): Readiness {
+        val pack = probePack(context)
+        if (!pack.nativeLibPresent || !pack.hostAssetsPresent) {
+            return pack
+        }
+
+        val jniBridgeLoaded = LocalHostNative.isBridgeReady()
+        return pack.copy(
             jniBridgeLoaded = jniBridgeLoaded,
+            loadDetail = if (!jniBridgeLoaded) LocalHostNative.loadErrorMessage() else null,
         )
     }
 
@@ -64,7 +79,12 @@ object LocalHostRuntime {
                 add("brak paczki serwera (assets/host)")
             }
             if (readiness.nativeLibPresent && !readiness.jniBridgeLoaded) {
-                add("most JNI nie załadował się (NDK / libnode)")
+                val detail = readiness.loadDetail?.takeIf { it.isNotBlank() }
+                if (detail != null) {
+                    add("most JNI nie załadował się: $detail")
+                } else {
+                    add("most JNI nie załadował się (NDK / libnode)")
+                }
             }
         }
         return buildString {

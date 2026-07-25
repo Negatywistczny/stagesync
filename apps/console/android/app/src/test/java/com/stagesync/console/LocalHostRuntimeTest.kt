@@ -20,6 +20,20 @@ class LocalHostRuntimeTest {
     }
 
     @Test
+    fun missingMessage_includesLoadDetail() {
+        val msg =
+            LocalHostRuntime.missingMessage(
+                LocalHostRuntime.Readiness(
+                    nativeLibPresent = true,
+                    hostAssetsPresent = true,
+                    jniBridgeLoaded = false,
+                    loadDetail = "dlopen failed: libnode.so",
+                ),
+            )
+        assertTrue(msg.contains("dlopen failed"))
+    }
+
+    @Test
     fun canStart_requiresAllThree() {
         assertTrue(
             !LocalHostRuntime.Readiness(

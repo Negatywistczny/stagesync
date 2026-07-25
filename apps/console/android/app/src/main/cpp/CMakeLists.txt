@@ -23,3 +23,9 @@ target_link_libraries(
   libnode
   ${log-lib}
 )
+
+# Prefer 16 KB ELF max-page-size on the bridge (libnode itself comes from
+# nodejs-mobile release zips — still often 4 KB until upstream ships aligned builds).
+if (ANDROID_ABI STREQUAL "arm64-v8a" OR ANDROID_ABI STREQUAL "x86_64")
+  target_link_options(stagesync-host-bridge PRIVATE "-Wl,-z,max-page-size=16384")
+endif()

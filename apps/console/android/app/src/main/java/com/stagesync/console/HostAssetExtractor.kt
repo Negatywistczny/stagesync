@@ -17,8 +17,11 @@ object HostAssetExtractor {
         val assetMarker =
             try {
                 context.assets.open("$ASSET_ROOT/$MARKER").bufferedReader().use { it.readText() }
-            } catch (_: Exception) {
-                throw IllegalStateException("brak assets/host/READY — przebuduj APK z prepare-local-host")
+            } catch (err: Exception) {
+                throw IllegalStateException(
+                    "brak assets/host/READY — przebuduj APK z prepare-local-host",
+                    err,
+                )
             }
 
         if (destMarker.isFile && destMarker.readText() == assetMarker) {
@@ -30,14 +33,26 @@ object HostAssetExtractor {
             destRoot.deleteRecursively()
         }
         destRoot.mkdirs()
-        copyAssetDir(context, ASSET_ROOT, destRoot)
+        try {
+            copyAssetDir(context, ASSET_ROOT, destRoot)
+        } catch (err: Exception) {
+            destRoot.deleteRecursively()
+            throw IllegalStateException(
+                "nie udało się wypakować assets/host: ${err.message ?: err.javaClass.simpleName}",
+                err,
+            )
+        }
+        if (!File(destRoot, "server/dist/index.js").isFile) {
+            throw IllegalStateException("po wypakowaniu brak server/dist/index.js")
+        }
         return destRoot
     }
 
     private fun copyAssetDir(context: Context, assetPath: String, destDir: File) {
         val children = context.assets.list(assetPath) ?: emptyArray()
         if (children.isEmpty()) {
-            // Leaf file
+            // Leaf file (AssetManager.list returns empty for files).
+            destDir.parentFile?.mkdirs()
             context.assets.open(assetPath).use { input ->
                 FileOutputStream(destDir).use { output -> input.copyTo(output) }
             }

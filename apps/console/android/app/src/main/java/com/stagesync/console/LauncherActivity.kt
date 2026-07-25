@@ -44,6 +44,8 @@ class LauncherActivity : AppCompatActivity() {
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // FGS still starts without the permission on API 33+; denial only
+            // hides the notification. Always attempt start and surface failures.
             startLocalHost()
         }
 
@@ -132,7 +134,18 @@ class LauncherActivity : AppCompatActivity() {
         setLocalHostBusy(true)
         binding.localHostStatus.visibility = View.VISIBLE
         binding.localHostStatus.setText(R.string.local_host_starting)
-        LocalHostService.start(this)
+        try {
+            LocalHostService.start(this)
+        } catch (err: Throwable) {
+            setLocalHostBusy(false)
+            val message =
+                getString(
+                    R.string.local_host_start_failed,
+                    err.message ?: err.javaClass.simpleName,
+                )
+            binding.localHostStatus.text = message
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun setLocalHostBusy(busy: Boolean) {

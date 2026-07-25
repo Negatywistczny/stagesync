@@ -63,6 +63,10 @@ Java_com_stagesync_console_LocalHostNative_nativeStartNodeWithArguments(
     JNIEnv *env,
     jclass /* clazz */,
     jobjectArray arguments) {
+  if (arguments == nullptr) {
+    return 1;
+  }
+
   const jsize argument_count = env->GetArrayLength(arguments);
   if (argument_count <= 0) {
     return 1;
@@ -71,7 +75,14 @@ Java_com_stagesync_console_LocalHostNative_nativeStartNodeWithArguments(
   int c_arguments_size = 0;
   for (jsize i = 0; i < argument_count; i++) {
     auto arg = (jstring)env->GetObjectArrayElement(arguments, i);
+    if (arg == nullptr) {
+      return 1;
+    }
     const char *utf = env->GetStringUTFChars(arg, nullptr);
+    if (utf == nullptr) {
+      env->DeleteLocalRef(arg);
+      return 1;
+    }
     c_arguments_size += static_cast<int>(strlen(utf)) + 1;
     env->ReleaseStringUTFChars(arg, utf);
     env->DeleteLocalRef(arg);
@@ -91,7 +102,18 @@ Java_com_stagesync_console_LocalHostNative_nativeStartNodeWithArguments(
   char *current = args_buffer;
   for (jsize i = 0; i < argument_count; i++) {
     auto arg = (jstring)env->GetObjectArrayElement(arguments, i);
+    if (arg == nullptr) {
+      free(argv);
+      free(args_buffer);
+      return 1;
+    }
     const char *utf = env->GetStringUTFChars(arg, nullptr);
+    if (utf == nullptr) {
+      env->DeleteLocalRef(arg);
+      free(argv);
+      free(args_buffer);
+      return 1;
+    }
     const size_t len = strlen(utf);
     memcpy(current, utf, len);
     current[len] = '\0';

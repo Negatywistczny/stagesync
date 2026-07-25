@@ -166,4 +166,17 @@ describe("createDefaultMidiBackend", () => {
     expect(["native", "none"]).toContain(backend.kind);
     backend.dispose();
   });
+
+  it("honours STAGESYNC_MIDI_BACKEND=none", () => {
+    const prev = process.env.STAGESYNC_MIDI_BACKEND;
+    process.env.STAGESYNC_MIDI_BACKEND = "none";
+    try {
+      const backend = createDefaultMidiBackend();
+      expect(backend.kind).toBe("none");
+      backend.dispose();
+    } finally {
+      if (prev === undefined) delete process.env.STAGESYNC_MIDI_BACKEND;
+      else process.env.STAGESYNC_MIDI_BACKEND = prev;
+    }
+  });
 });

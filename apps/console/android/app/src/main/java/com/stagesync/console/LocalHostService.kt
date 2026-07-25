@@ -22,41 +22,53 @@ import kotlin.concurrent.thread
  * Foreground service for Console local host.
  *
  * Extract host assets → start Node via JNI → probe loopback /api/health →
- * broadcast READY (never without health).
+ * broadcast READY (never without health). Heavy JNI / libnode work stays off
+ * the main thread so tap-to-start cannot ANR or hard-crash the process.
  */
 class LocalHostService : Service() {
-    private val nodeThreadStarted = AtomicBoolean(false)
+    private val bootStarted = AtomicBoolean(false)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        ensureChannel()
-        val notification = buildNotification(getString(R.string.local_host_starting))
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            notification,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            } else {
-                0
-            },
-        )
-
-        val readiness = LocalHostRuntime.probe(this)
-        if (!readiness.canStart) {
-            broadcastFailed(LocalHostRuntime.missingMessage(readiness))
+        try {
+            ensureChannel()
+            val notification = buildNotification(getString(R.string.local_host_starting))
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                notification,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                } else {
+                    0
+                },
+            )
+        } catch (err: Throwable) {
+            // FGS / notification failures must not kill the launcher.
+            broadcastFailed(
+                getString(
+                    R.string.local_host_start_failed,
+                    err.message ?: err.javaClass.simpleName,
+                ),
+            )
             stopSelf()
             return START_NOT_STICKY
         }
 
-        if (!nodeThreadStarted.compareAndSet(false, true)) {
+        if (!bootStarted.compareAndSet(false, true)) {
             // Already starting / running — keep service alive.
             return START_STICKY
         }
 
         thread(name = "stagesync-local-host", isDaemon = false) {
             try {
+                val readiness = LocalHostRuntime.probe(this)
+                if (!readiness.canStart) {
+                    broadcastFailed(LocalHostRuntime.missingMessage(readiness))
+                    stopSelf()
+                    return@thread
+                }
                 bootHost()
             } catch (err: Throwable) {
                 broadcastFailed(
@@ -92,7 +104,14 @@ class LocalHostService : Service() {
 
         fun env(key: String, value: String) {
             if (!LocalHostNative.setEnv(key, value)) {
-                throw IllegalStateException("setenv failed: $key")
+                val detail = LocalHostNative.lastError()
+                throw IllegalStateException(
+                    if (detail.isNullOrBlank()) {
+                        "setenv failed: $key"
+                    } else {
+                        "setenv failed: $key ($detail)"
+                    },
+                )
             }
         }
 
@@ -112,7 +131,14 @@ class LocalHostService : Service() {
         env("TMPDIR", cacheDir.absolutePath)
 
         if (!LocalHostNative.chdir(serverDir.absolutePath)) {
-            throw IllegalStateException("chdir failed: ${serverDir.absolutePath}")
+            val detail = LocalHostNative.lastError()
+            throw IllegalStateException(
+                if (detail.isNullOrBlank()) {
+                    "chdir failed: ${serverDir.absolutePath}"
+                } else {
+                    "chdir failed: ${serverDir.absolutePath} ($detail)"
+                },
+            )
         }
 
         val nodeStarted = AtomicBoolean(false)
@@ -192,7 +218,11 @@ class LocalHostService : Service() {
     }
 
     override fun onDestroy() {
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (_: Throwable) {
+            // ignore
+        }
         super.onDestroy()
     }
 

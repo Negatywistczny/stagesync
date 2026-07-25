@@ -223,6 +223,10 @@ export function createNativeMidiBackend(
 
 /** Prefer native when loadable; otherwise empty "none" backend. */
 export function createDefaultMidiBackend(): MidiBackend {
+  const forced = process.env.STAGESYNC_MIDI_BACKEND?.trim().toLowerCase();
+  if (forced === "none" || forced === "off" || forced === "0") {
+    return createNoneMidiBackend();
+  }
   const native = createNativeMidiBackend();
   return native.kind === "native" ? native : createNoneMidiBackend();
 }
