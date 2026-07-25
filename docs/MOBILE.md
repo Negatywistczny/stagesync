@@ -108,12 +108,24 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 ## H-01 (perf Client) — observe first
 
-**Nie** robić dużego rewrite `TransportProvider` bez profilu na tablecie.
+**Nie** robić dużego rewrite `TransportProvider` (split context / throttle) bez profilu na tablecie.
+
+### Stan na drzewie
 
 1. Otwarte: [TODO](./TODO.md) pozycja **Client transport — H-01**.
-2. Profiler: Grid / Karaoke / Score @ 90–120 Hz na urządzeniu (Chrome remote debugging / Android Studio Profiler) — zmierz koszt re-renderów konsumentów `useTransport` przy `setDisplayTicks` co rAF (Vitest już potwierdza re-render).
-3. Dopiero potem: split context / throttle `displayTicks`; OSMD = cursor transform only (zakaz full `osmd.render()` co klatkę).
-4. Follow-up po profilu: `prefers-reduced-motion`; opcjonalnie thermal → cap ~30 FPS interpolacji.
+2. Vitest: `TransportProvider` — każdy rAF z **nowymi** tickami → re-render konsumentów `useTransport`; ten sam integer tick → **bez** re-renderu (equality bail w `commitDisplayTicks`).
+3. Opt-in sonda: `apps/web/src/transport/h01PerfProbe.ts` (bez wpływu gdy wyłączona).
+
+### Jak profilować (tablet / Chrome)
+
+1. Otwórz Client (PWA lub Performer WebView) z `?ss_perf=h01` **albo** w konsoli: `localStorage.setItem('stagesync_perf_h01','1')` i przeładuj.
+2. Wybierz rolę Grid lub Karaoke, uruchom Play na hoście.
+3. Po ≥2 s w konsoli / remote debugging: `window.__stagesyncH01.refresh()` — odczytaj `rafHz`, `commitHz`, `renderHz` (ClientShell).
+4. Równolegle: Chrome Performance + React Profiler (highlight updates) @ 90–120 Hz — koszt commitów przy `setDisplayTicks`.
+5. **Dopiero potem:** split context / throttle `displayTicks`; OSMD = cursor transform only (zakaz full `osmd.render()` co klatkę).
+6. Follow-up po profilu: `prefers-reduced-motion`; opcjonalnie thermal → cap ~30 FPS interpolacji.
+
+Wyłączenie: usuń query / `localStorage.removeItem('stagesync_perf_h01')` i przeładuj.
 
 ## Macierz akceptacji HW (bez claim green)
 

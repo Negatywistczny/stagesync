@@ -50,6 +50,7 @@ import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
+import { noteH01ConsumerRender } from "../transport/h01PerfProbe.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { DrumsPane } from "./client/DrumsPane.js";
@@ -114,6 +115,8 @@ export function ClientShell() {
     error: transportError,
     announcePresence,
   } = useTransport();
+  // H-01 probe: counts ClientShell commits while soft-clock advances (?ss_perf=h01).
+  noteH01ConsumerRender();
   const displayTicks =
     rawDisplayTicks +
     ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq);

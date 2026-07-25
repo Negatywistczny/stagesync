@@ -46,6 +46,7 @@ import {
   transportWsUrl,
   upsertStageCue,
 } from "./transportReducer.js";
+import { noteH01Raf } from "./h01PerfProbe.js";
 
 export { noteLatencySample } from "./transportReducer.js";
 
@@ -69,6 +70,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
   const rafIdRef = useRef(0);
+  const displayTicksRef = useRef(0);
   const wsRef = useRef<WebSocket | null>(null);
   const latencyEmaRef = useRef(0);
   const pendingHelloRef = useRef<{
@@ -81,6 +83,13 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = 0;
     }
+  }, []);
+
+  const commitDisplayTicks = useCallback((next: number): boolean => {
+    if (displayTicksRef.current === next) return false;
+    displayTicksRef.current = next;
+    setDisplayTicks(next);
+    return true;
   }, []);
 
   const applyAnchor = useCallback(
@@ -96,33 +105,33 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       receiptMsRef.current = receiptMs;
       playingRef.current = next.playing;
       setState(next);
-      setDisplayTicks(anchor.positionTicks);
+      commitDisplayTicks(anchor.positionTicks);
     },
-    [],
+    [commitDisplayTicks],
   );
 
   const startRaf = useCallback(() => {
     stopRaf();
     // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
-    // Profile Grid/Karaoke @ 90–120 Hz on tablet BEFORE split context / throttle
-    // (docs/MOBILE.md § H-01; ADR 0015). Do not rewrite in the dark.
+    // Equality bail when integer ticks unchanged; opt-in probe: ?ss_perf=h01
+    // (docs/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
     const loop = (frameTime: number) => {
       if (!playingRef.current) {
         rafIdRef.current = 0;
         return;
       }
-      setDisplayTicks(
-        getDisplayTicks(
-          anchorRef.current,
-          frameTime,
-          receiptMsRef.current,
-          true,
-        ),
+      const next = getDisplayTicks(
+        anchorRef.current,
+        frameTime,
+        receiptMsRef.current,
+        true,
       );
+      const committed = commitDisplayTicks(next);
+      noteH01Raf(next, committed);
       rafIdRef.current = requestAnimationFrame(loop);
     };
     rafIdRef.current = requestAnimationFrame(loop);
-  }, [stopRaf]);
+  }, [commitDisplayTicks, stopRaf]);
 
   const sendHello = useCallback(() => {
     const hello = pendingHelloRef.current;

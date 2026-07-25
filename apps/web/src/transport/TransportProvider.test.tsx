@@ -378,7 +378,8 @@ describe("TransportProvider", () => {
     });
 
     // H-01 (Audyt-Architektury): setDisplayTicks every rAF → context consumers re-render
-    // at display refresh rate while playing (no equality guard / throttle in startRaf).
+    // at display refresh rate while playing (equality bail when ticks unchanged;
+    // no throttle / split context until HW profiler — docs/MOBILE.md § H-01).
     it("re-renders useTransport consumers on each rAF while ticks advance", async () => {
       let renderCount = 0;
       const { result } = renderHook(
@@ -419,6 +420,44 @@ describe("TransportProvider", () => {
       expect(renderCount - rendersAtPlay).toBe(frames);
       expect(new Set(tickSamples).size).toBe(frames);
       expect(tickSamples.at(-1)!).toBeGreaterThan(ticksAtPlay);
+    });
+
+    it("does not re-render useTransport when rAF ticks stay equal", async () => {
+      let renderCount = 0;
+      const { result } = renderHook(
+        () => {
+          renderCount += 1;
+          return useTransport();
+        },
+        { wrapper },
+      );
+      await flushMicrotasks();
+      const ws = await openLatestWs();
+
+      await act(async () => {
+        ws.triggerMessage(
+          tickPayload({
+            playing: true,
+            positionTicks: 0,
+            bpm: 120,
+            serverTimeMs: 21,
+          }),
+        );
+      });
+      expect(rafQueue.length).toBeGreaterThan(0);
+
+      const frameTime = performance.now() + 16;
+      await act(async () => {
+        flushRaf(frameTime);
+      });
+      const rendersAfterAdvance = renderCount;
+      const ticks = result.current.displayTicks;
+
+      await act(async () => {
+        flushRaf(frameTime);
+      });
+      expect(result.current.displayTicks).toBe(ticks);
+      expect(renderCount).toBe(rendersAfterAdvance);
     });
 
     it("drops out-of-order ticks", async () => {
