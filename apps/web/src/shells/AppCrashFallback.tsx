@@ -67,7 +67,7 @@ export function AppCrashFallback({
           aria-label="Przejdź do Client"
           onClick={() => window.location.assign("/")}
         >
-          Client
+          Przejdź do Client
         </Button>
         <Button
           type="button"
@@ -75,7 +75,7 @@ export function AppCrashFallback({
           aria-label="Przejdź do Admin"
           onClick={() => window.location.assign("/admin")}
         >
-          Admin
+          Przejdź do Admin
         </Button>
       </div>
       {detail ? <pre className={styles.detail}>{detail}</pre> : null}
