@@ -28,6 +28,7 @@ export function ChangeServerControl({
         <Button
           type="button"
           variant="ghost"
+          aria-label="Zmień serwer StageSync"
           onClick={() => {
             requestNativeChangeServer();
           }}
@@ -75,7 +76,11 @@ export function ChangeServerControl({
             aria-label="Adres serwera StageSync"
           />
           <div className={styles.row}>
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              variant="primary"
+              aria-label="Połącz z hostem StageSync"
+            >
               Połącz
             </Button>
             <Button
