@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useId, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button, Slider } from "@stagesync/ui";
 import {
   applyAppearance,
@@ -128,8 +128,14 @@ function ModalShell({
   children: ReactNode;
   onDiscard: () => void;
 }) {
+  const titleId = useId();
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-label={title}>
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal
+      aria-labelledby={titleId}
+    >
       <button
         type="button"
         className={styles.backdrop}
@@ -138,7 +144,7 @@ function ModalShell({
       />
       <div className={styles.panel}>
         <div className={styles.head}>
-          <h2>{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           <ShellIconButton label="Odrzuć" onClick={onDiscard}>
             ×
           </ShellIconButton>
