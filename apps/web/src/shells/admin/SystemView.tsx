@@ -391,7 +391,11 @@ export function SystemView({
                         ]}
                       />
                       <div className={shell.midiPorts}>
-                        <div className={shell.midiPortRow}>
+                        <div
+                          className={shell.midiPortRow}
+                          role="group"
+                          aria-label={`MIDI In: ${midiInLabel}`}
+                        >
                           <span className={shell.midiLabel}>Wejście</span>
                           <span
                             className={shell.midiPortValue}
@@ -400,7 +404,11 @@ export function SystemView({
                             {midiInLabel}
                           </span>
                         </div>
-                        <div className={shell.midiPortRow}>
+                        <div
+                          className={shell.midiPortRow}
+                          role="group"
+                          aria-label={`MIDI Out: ${midiOutLabel}`}
+                        >
                           <span className={shell.midiLabel}>Wyjście</span>
                           <span
                             className={shell.midiPortValue}
