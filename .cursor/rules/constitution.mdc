@@ -22,6 +22,15 @@ Szczegóły decyzji: `docs/adr/0002-timebase-ssot.md`.
 **Granica 0** (aksjomaty domenowe: czas + foldery projektów; ACL na krawędziach):
 `docs/adr/0005-domain-axioms.md`.
 
+## Decyzje produktowe vs backlog
+
+- **Backlog ≠ decyzja** — pozycja w TODO / triage bez PO nie jest permanent OUT.
+- Stałe decyzje PO (Logic jako referencja DAW, multi-out, MIDI PC, auto-update NIE, menubar OUT, …):
+  `docs/adr/0015-daw-reference-and-product-decisions.md`.
+- Przy wątpliwości UX / logiki edycji: **Logic Pro** jako pierwsza referencja mechanik;
+  konflikt: SSOT czasu + brak stubów (ADR 0011) **>** Logic; gdy brak własnej spec → Logic
+  (nie pixel-clone chrome).
+
 ## Granice monorepo
 
 | Ścieżka | Rola |

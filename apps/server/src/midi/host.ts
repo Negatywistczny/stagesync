@@ -9,6 +9,7 @@
 
 import {
   MIDI_CLOCK_PPQN,
+  MidiHostConfigSchema,
   ticksToMidiClockIndex,
   sppToTicks,
   ticksToSpp,
@@ -28,6 +29,8 @@ import type { TransportEngine } from "../transport/engine.js";
 const WINDOW_MS = 1000;
 /** Max MIDI clock pulses emitted in one transport notify (anti-flood on huge jumps). */
 const MAX_CLOCK_BURST = MIDI_CLOCK_PPQN * 8;
+/** Program Change IN: debounce window + latest-wins (no Hz limiter). */
+const PC_DEBOUNCE_MS = 50;
 
 class RateMeter {
   private stamps: number[] = [];
@@ -81,7 +84,7 @@ export function createMidiHost(
 
   let config: MidiHostConfig = (() => {
     if (options.initialConfig) {
-      return { ...options.initialConfig };
+      return MidiHostConfigSchema.parse(options.initialConfig);
     }
     let fromFile: MidiHostConfig | null = null;
     if (options.configFile) {
@@ -223,16 +226,23 @@ export function createMidiHost(
     transport.seek(ticks);
   }
 
-  /** Last PC coalesced via microtask — flood does not call handler N times. */
+  /** Last PC after channel filter — debounce 50ms + latest-wins. */
   let pendingProgram: number | null = null;
-  let programFlushScheduled = false;
+  let programFlushTimer: ReturnType<typeof setTimeout> | null = null;
 
   function flushPendingProgram(): void {
-    programFlushScheduled = false;
+    programFlushTimer = null;
     const program = pendingProgram;
     pendingProgram = null;
     if (program == null) return;
     options.onProgramChange?.(program);
+  }
+
+  function scheduleProgramFlush(): void {
+    if (programFlushTimer != null) {
+      clearTimeout(programFlushTimer);
+    }
+    programFlushTimer = setTimeout(flushPendingProgram, PC_DEBOUNCE_MS);
   }
 
   function onInputMessage(msg: MidiRealtimeMessage): void {
@@ -250,15 +260,19 @@ export function createMidiHost(
         sppIn.hit(t);
         lastSppTicks = sppToTicks(msg.value, transport.getState().ppq);
         break;
-      case "program":
-        pcIn.hit(t);
-        // Coalesce to one handler call per turn (latest-wins); flood stays cheap.
-        pendingProgram = msg.program;
-        if (!programFlushScheduled) {
-          programFlushScheduled = true;
-          queueMicrotask(flushPendingProgram);
+      case "program": {
+        // Silent drop off-channel — no meter, no handler (protect Omni spill).
+        if (
+          config.inputChannel != null &&
+          msg.channel !== config.inputChannel
+        ) {
+          break;
         }
+        pcIn.hit(t);
+        pendingProgram = msg.program;
+        scheduleProgramFlush();
         break;
+      }
       case "start":
         inputClockCount = 0;
         try {
@@ -364,6 +378,14 @@ export function createMidiHost(
           patch.clockOutEnabled !== undefined
             ? patch.clockOutEnabled
             : config.clockOutEnabled,
+        inputChannel:
+          patch.inputChannel !== undefined
+            ? patch.inputChannel
+            : config.inputChannel,
+        outputChannel:
+          patch.outputChannel !== undefined
+            ? patch.outputChannel
+            : config.outputChannel,
       };
       applyPorts();
       if (options.configFile) {
@@ -381,11 +403,12 @@ export function createMidiHost(
     },
 
     /** Program Change on the configured output (song load / patch recall). */
-    sendProgramChange(program: number, channel = 0): void {
+    sendProgramChange(program: number, channel?: number): void {
+      const ch = channel ?? config.outputChannel;
       if (!Number.isInteger(program) || program < 0 || program > 127) return;
-      if (!Number.isInteger(channel) || channel < 0 || channel > 15) return;
+      if (!Number.isInteger(ch) || ch < 0 || ch > 15) return;
       if (!config.outputId) return;
-      if (safeSend({ type: "program", channel, program })) {
+      if (safeSend({ type: "program", channel: ch, program })) {
         clearError();
       }
     },
@@ -429,6 +452,11 @@ export function createMidiHost(
     dispose(): void {
       unsub();
       stopClockOut();
+      if (programFlushTimer != null) {
+        clearTimeout(programFlushTimer);
+        programFlushTimer = null;
+      }
+      pendingProgram = null;
       backend.dispose();
     },
   };

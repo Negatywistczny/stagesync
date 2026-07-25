@@ -76,6 +76,23 @@ describe("midi REST API", () => {
     const status = MidiHostStatusSchema.parse(await res.json());
     expect(status.config.inputId).toBe("mock-in-1");
     expect(status.config.outputId).toBe("mock-out-1");
+    expect(status.config.inputChannel).toBeNull();
+    expect(status.config.outputChannel).toBe(0);
+  });
+
+  it("PUT /api/midi/config sets Program Change channels", async () => {
+    const res = await fetch(`${baseUrl}/api/midi/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        inputChannel: 4,
+        outputChannel: 9,
+      }),
+    });
+    expect(res.status).toBe(200);
+    const status = MidiHostStatusSchema.parse(await res.json());
+    expect(status.config.inputChannel).toBe(4);
+    expect(status.config.outputChannel).toBe(9);
   });
 
   it("PUT /api/midi/config fail-fast on bad body", async () => {

@@ -251,6 +251,10 @@ export type MidiHostStatus = {
     inputId: string | null;
     outputId: string | null;
     clockOutEnabled: boolean;
+    /** null = Omni; 0–15 = single channel (API 0-based). */
+    inputChannel: number | null;
+    /** 0–15 Program Change OUT (API 0-based). */
+    outputChannel: number;
   };
   inputs: MidiPortInfo[];
   outputs: MidiPortInfo[];
@@ -276,6 +280,8 @@ export async function putMidiHostConfig(body: {
   inputId?: string | null;
   outputId?: string | null;
   clockOutEnabled?: boolean;
+  inputChannel?: number | null;
+  outputChannel?: number;
 }): Promise<MidiHostStatus> {
   const res = await fetch("/api/midi/config", {
     method: "PUT",

@@ -28,3 +28,5 @@ Decision log StageSync v5. Spec / praktyka: [adr.github.io](https://adr.github.i
 | [0011](./0011-ui-parity-behavior.md) | Parity behawioralna + IA (rebuild alpha) | Zaakceptowany |
 | [0012](./0012-user-data-location.md) | Lokalizacja danych użytkownika | Zaakceptowany |
 | [0013](./0013-in-app-vs-github-docs.md) | Dokumentacja in-app vs GitHub | Zaakceptowany |
+| [0014](./0014-desktop-launcher.md) | Desktop Launcher (ekran startowy) | Zaakceptowany |
+| [0015](./0015-daw-reference-and-product-decisions.md) | Referencja Logic + stałe decyzje PO | Zaakceptowany |

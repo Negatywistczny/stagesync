@@ -27,15 +27,17 @@ export function saveMidiHostConfigFile(
   renameSync(tmpPath, filePath);
 }
 
-/** Env ports override file; clockOut comes from file when present. */
+/** Env ports override file; clock/channels come from file when present. */
 export function resolveBootMidiConfig(
   fromFile: MidiHostConfig | null,
 ): MidiHostConfig {
   const envIn = process.env.STAGESYNC_MIDI_INPUT?.trim() || null;
   const envOut = process.env.STAGESYNC_MIDI_OUTPUT?.trim() || null;
-  return {
+  return MidiHostConfigSchema.parse({
     inputId: envIn ?? fromFile?.inputId ?? null,
     outputId: envOut ?? fromFile?.outputId ?? null,
     clockOutEnabled: fromFile?.clockOutEnabled ?? true,
-  };
+    inputChannel: fromFile?.inputChannel ?? null,
+    outputChannel: fromFile?.outputChannel ?? 0,
+  });
 }

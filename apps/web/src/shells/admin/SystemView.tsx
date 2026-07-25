@@ -263,19 +263,33 @@ export function SystemView({
                   <div className={shell.midiPortRow}>
                     <span className={shell.midiLabel}>Wejście</span>
                     <span className={shell.midiPortValue}>
-                      {midi.inputs.find((p) => p.id === midi.config.inputId)
-                        ?.name ??
-                        midi.config.inputId ??
-                        "—"}
+                      {(() => {
+                        const name =
+                          midi.inputs.find((p) => p.id === midi.config.inputId)
+                            ?.name ??
+                          midi.config.inputId ??
+                          "—";
+                        const ch =
+                          midi.config.inputChannel == null
+                            ? "Omni"
+                            : `Kanał ${midi.config.inputChannel + 1}`;
+                        return midi.config.inputId ? `${name} (${ch})` : name;
+                      })()}
                     </span>
                   </div>
                   <div className={shell.midiPortRow}>
                     <span className={shell.midiLabel}>Wyjście</span>
                     <span className={shell.midiPortValue}>
-                      {midi.outputs.find((p) => p.id === midi.config.outputId)
-                        ?.name ??
-                        midi.config.outputId ??
-                        "—"}
+                      {(() => {
+                        const name =
+                          midi.outputs.find(
+                            (p) => p.id === midi.config.outputId,
+                          )?.name ??
+                          midi.config.outputId ??
+                          "—";
+                        const ch = `Kanał ${(midi.config.outputChannel ?? 0) + 1}`;
+                        return midi.config.outputId ? `${name} (${ch})` : name;
+                      })()}
                     </span>
                   </div>
                   <div className={shell.midiPortRow}>

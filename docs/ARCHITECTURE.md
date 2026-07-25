@@ -52,6 +52,7 @@ Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); b
 nad routerem. Parity = **zachowanie** v4 (nie inventarz-first, nie clone chrome) —
 [ADR 0011](./adr/0011-ui-parity-behavior.md); kierunek wizualny [ADR 0003](./adr/0003-ui-direction-booth.md);
 checklista wtórna [ui-shell-inventory.md](./ui-shell-inventory.md).
+Stałe decyzje PO + reguła Logic: [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md).
 Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).  
 Desktop shell (Tauri, β1): [ADR 0010](./adr/0010-desktop-shell-tauri.md). Launcher (wybór hosta / mDNS): [ADR 0014](./adr/0014-desktop-launcher.md).
 

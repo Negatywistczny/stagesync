@@ -22,11 +22,35 @@ describe("midi config persist", () => {
       inputId: "in-1",
       outputId: "out-1",
       clockOutEnabled: false,
+      inputChannel: 2,
+      outputChannel: 4,
     };
     saveMidiHostConfigFile(file, config);
     expect(loadMidiHostConfigFile(file)).toEqual(config);
     const raw = await readFile(file, "utf8");
     expect(JSON.parse(raw)).toEqual(config);
+  });
+
+  it("loads legacy file without channels (defaults Omni / ch 1)", async () => {
+    dir = await mkdtemp(join(tmpdir(), "ss-midi-"));
+    const file = join(dir, "midi-config.json");
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(
+      file,
+      JSON.stringify({
+        inputId: "in-1",
+        outputId: null,
+        clockOutEnabled: true,
+      }) + "\n",
+      "utf8",
+    );
+    expect(loadMidiHostConfigFile(file)).toEqual({
+      inputId: "in-1",
+      outputId: null,
+      clockOutEnabled: true,
+      inputChannel: null,
+      outputChannel: 0,
+    });
   });
 
   it("fail-fast on corrupt file", async () => {
@@ -48,11 +72,15 @@ describe("midi config persist", () => {
           inputId: "file-in",
           outputId: "file-out",
           clockOutEnabled: false,
+          inputChannel: 1,
+          outputChannel: 7,
         }),
       ).toEqual({
         inputId: "env-in",
         outputId: "file-out",
         clockOutEnabled: false,
+        inputChannel: 1,
+        outputChannel: 7,
       });
     } finally {
       if (prevIn === undefined) delete process.env.STAGESYNC_MIDI_INPUT;

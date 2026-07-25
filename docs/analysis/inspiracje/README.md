@@ -105,8 +105,8 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 | [Audyt-Architektury-StageSync-v5.md](./audyty-silnik/Audyt-Architektury-StageSync-v5.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md) | `closed` |
 | [Audyt-Edytora-Sciezek-Audio.md](./audyty-silnik/Audyt-Edytora-Sciezek-Audio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Edytora-Sciezek-Audio.triage.md) | `closed` |
 | [Audyt-Lifecycle-StageSync-v5-Desktop.md](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md) | `partial` |
-| [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md) | `partial` |
-| [Audyt-Routingu-Miksera-StageSync.md](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md) | `partial` |
+| [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md) | `closed` |
+| [Audyt-Routingu-Miksera-StageSync.md](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md) | `closed` |
 | [Audyt-Silnika-Odtwarzania-Audio-WebAudio.md](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md) | `partial` |
 | [Audyt-StageSync-v5-Race-Conditions.md](./audyty-silnik/Audyt-StageSync-v5-Race-Conditions.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-StageSync-v5-Race-Conditions.triage.md) | `partial` |
 | [Audyt-Synchronizacji-Transport-SSOT.md](./audyty-silnik/Audyt-Synchronizacji-Transport-SSOT.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Synchronizacji-Transport-SSOT.triage.md) | `partial` |
@@ -130,7 +130,7 @@ Specyfikacje intro feature po Launch & Mix — companion do [TODO 5.2+](../../TO
 | [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) | `open` |
 | [Specyfikacja-StageSync-Cues-Sampler.md](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.triage.md) | `open` |
 | [Safety-Net-dla-StageSync-v5.2.md](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md) | `open` |
-| [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `open` |
+| [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `closed` |
 | [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `open` |
 
 ### ui/

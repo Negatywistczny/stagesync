@@ -63,6 +63,8 @@ type MidiDraft = {
   inputId: string | null;
   outputId: string | null;
   clockOutEnabled: boolean;
+  inputChannel: number | null;
+  outputChannel: number;
 };
 
 type PrefsSnapshot = {
@@ -100,7 +102,9 @@ function midiDraftEqual(a: MidiDraft | null, b: MidiDraft | null): boolean {
   return (
     a.inputId === b.inputId &&
     a.outputId === b.outputId &&
-    a.clockOutEnabled === b.clockOutEnabled
+    a.clockOutEnabled === b.clockOutEnabled &&
+    a.inputChannel === b.inputChannel &&
+    a.outputChannel === b.outputChannel
   );
 }
 
@@ -217,6 +221,8 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           inputId: status.config.inputId,
           outputId: status.config.outputId,
           clockOutEnabled: status.config.clockOutEnabled,
+          inputChannel: status.config.inputChannel ?? null,
+          outputChannel: status.config.outputChannel ?? 0,
         };
         snapshotRef.current = { ...snapshotRef.current, midi };
         setDraft((d) => ({ ...d, midi }));
@@ -291,6 +297,8 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           inputId: draft.midi.inputId,
           outputId: draft.midi.outputId,
           clockOutEnabled: draft.midi.clockOutEnabled,
+          inputChannel: draft.midi.inputChannel,
+          outputChannel: draft.midi.outputChannel,
         });
         setMidiStatus(status);
       }
@@ -577,6 +585,73 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     {midiStatus.outputs.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={styles.field}>
+                  <span className={styles.label}>
+                    Kanał wejściowy Program Change
+                  </span>
+                  <select
+                    className={styles.select}
+                    disabled={saveBusy || !midiStatus.available}
+                    value={
+                      midiDraft.inputChannel == null
+                        ? ""
+                        : String(midiDraft.inputChannel)
+                    }
+                    aria-label="Kanał wejściowy Program Change"
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setDraft((d) =>
+                        d.midi
+                          ? {
+                              ...d,
+                              midi: {
+                                ...d.midi,
+                                inputChannel: v === "" ? null : Number(v),
+                              },
+                            }
+                          : d,
+                      );
+                    }}
+                  >
+                    <option value="">Omni (wszystkie kanały)</option>
+                    {Array.from({ length: 16 }, (_, i) => (
+                      <option key={i} value={String(i)}>
+                        Kanał {i + 1}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={styles.field}>
+                  <span className={styles.label}>
+                    Kanał wyjściowy Program Change
+                  </span>
+                  <select
+                    className={styles.select}
+                    disabled={saveBusy || !midiStatus.available}
+                    value={String(midiDraft.outputChannel)}
+                    aria-label="Kanał wyjściowy Program Change"
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setDraft((d) =>
+                        d.midi
+                          ? {
+                              ...d,
+                              midi: {
+                                ...d.midi,
+                                outputChannel: v,
+                              },
+                            }
+                          : d,
+                      );
+                    }}
+                  >
+                    {Array.from({ length: 16 }, (_, i) => (
+                      <option key={i} value={String(i)}>
+                        Kanał {i + 1}
                       </option>
                     ))}
                   </select>

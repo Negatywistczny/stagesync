@@ -183,6 +183,7 @@ describe("midi host", () => {
   });
 
   it("meters clock / spp / pc / beat→ws from input", async () => {
+    vi.useFakeTimers();
     const t = 1_000_000;
     const transport = createTransportEngine();
     const backend = createMockMidiBackend();
@@ -201,7 +202,7 @@ describe("midi host", () => {
     }
     backend.emitInput({ type: "spp", value: 4 });
     backend.emitInput({ type: "program", channel: 0, program: 7 });
-    await Promise.resolve(); // PC coalesced via queueMicrotask
+    await vi.advanceTimersByTimeAsync(50);
 
     const rates = host.getStatus().rates;
     expect(rates.clockPerSec).toBe(24);
@@ -215,7 +216,8 @@ describe("midi host", () => {
     transport.dispose();
   });
 
-  it("RSK-07: PC flood coalesces to latest; SPP flood only caches last", async () => {
+  it("RSK-07: PC flood debounces 50ms to latest; SPP flood only caches last", async () => {
+    vi.useFakeTimers();
     const transport = createTransportEngine({
       now: () => 1_000_000,
       tickIntervalMs: 60_000,
@@ -232,7 +234,10 @@ describe("midi host", () => {
       backend.emitInput({ type: "spp", value: i % 64 });
       backend.emitInput({ type: "program", channel: 0, program: i % 128 });
     }
-    await Promise.resolve();
+    expect(pcs).toEqual([]);
+    await vi.advanceTimersByTimeAsync(49);
+    expect(pcs).toEqual([]);
+    await vi.advanceTimersByTimeAsync(1);
 
     // One handler invocation with the last program (not 1000 disk loads).
     expect(pcs).toEqual([999 % 128]);
@@ -246,6 +251,47 @@ describe("midi host", () => {
       Math.floor(((999 % 64) * transport.getState().ppq) / 4),
     );
 
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("filters Program Change IN by inputChannel (silent drop)", async () => {
+    vi.useFakeTimers();
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const pcs: number[] = [];
+    const host = createMidiHost(transport, {
+      backend,
+      onProgramChange: (p) => pcs.push(p),
+    });
+    host.setConfig({ inputId: "mock-in-1", inputChannel: 3 });
+
+    backend.emitInput({ type: "program", channel: 0, program: 1 });
+    backend.emitInput({ type: "program", channel: 2, program: 2 });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(pcs).toEqual([]);
+    expect(host.getStatus().rates.pcPerSec).toBe(0);
+
+    backend.emitInput({ type: "program", channel: 3, program: 42 });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(pcs).toEqual([42]);
+    expect(host.getStatus().rates.pcPerSec).toBe(1);
+
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("sendProgramChange uses config.outputChannel", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ outputId: "mock-out-1", outputChannel: 5 });
+    host.sendProgramChange(42);
+    expect(backend.sent).toContainEqual({
+      type: "program",
+      channel: 5,
+      program: 42,
+    });
     host.dispose();
     transport.dispose();
   });

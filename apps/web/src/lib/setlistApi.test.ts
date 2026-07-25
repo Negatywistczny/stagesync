@@ -158,6 +158,8 @@ describe("setlistApi", () => {
         inputId: null,
         outputId: null,
         clockOutEnabled: false,
+        inputChannel: null,
+        outputChannel: 0,
       },
       inputs: [],
       outputs: [],

@@ -5,6 +5,7 @@ import {
   CreateProjectBodySchema,
   ExportLibraryBodySchema,
   LibrarySchema,
+  MidiHostConfigSchema,
   ProjectIdSchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -414,13 +415,42 @@ describe("DefaultMeter refine + Setlist coerce", () => {
       PutMidiHostConfigBodySchema.parse({
         inputId: null,
         clockOutEnabled: true,
+        inputChannel: 3,
+        outputChannel: 5,
       }),
-    ).toEqual({ inputId: null, clockOutEnabled: true });
+    ).toEqual({
+      inputId: null,
+      clockOutEnabled: true,
+      inputChannel: 3,
+      outputChannel: 5,
+    });
     expect(() =>
       PutMidiHostConfigBodySchema.parse({ inputId: "" }),
     ).toThrow();
     expect(() =>
       PutMidiHostConfigBodySchema.parse({ extra: true }),
     ).toThrow();
+    expect(() =>
+      PutMidiHostConfigBodySchema.parse({ inputChannel: 16 }),
+    ).toThrow();
+    expect(() =>
+      PutMidiHostConfigBodySchema.parse({ outputChannel: -1 }),
+    ).toThrow();
+  });
+
+  it("MidiHostConfigSchema defaults missing channels (legacy files)", () => {
+    expect(
+      MidiHostConfigSchema.parse({
+        inputId: null,
+        outputId: null,
+        clockOutEnabled: true,
+      }),
+    ).toEqual({
+      inputId: null,
+      outputId: null,
+      clockOutEnabled: true,
+      inputChannel: null,
+      outputChannel: 0,
+    });
   });
 });

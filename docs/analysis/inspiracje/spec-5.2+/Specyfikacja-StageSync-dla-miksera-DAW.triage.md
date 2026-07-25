@@ -8,7 +8,7 @@
 
 ## Werdykt przydatności
 
-**Wysoka — rekomendacja modelu (logical HW patch table + unified target) + anti-cycle DFS + ograniczenia `maxChannelCount`.** **Kolizja / companion:** limity DEF-ADR-01/02 w [Audyt Routingu Miksera](../audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md) (`limit` → TODO Out 3–4 / bus→bus). Ten dump = **design 5.2**, nie claim że multi-out działa.
+**Wysoka — rekomendacja modelu (logical HW patch table + unified target) + anti-cycle DFS + ograniczenia `maxChannelCount`.** **Kolizja / companion:** DEF-ADR-01/02 w [Audyt Routingu Miksera](../audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md). **Out 3–4 = decyzja produktowa wprowadzić** ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md)); ten dump = design implementacji, nie claim że multi-out działa.
 
 ## Epiki / tematy vs `main` (5.1.x)
 

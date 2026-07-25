@@ -113,6 +113,7 @@ export {
   ApplyUpdateBodySchema,
   PutServerSettingsBodySchema,
   MidiPortSchema,
+  MidiChannelSchema,
   MidiHostConfigSchema,
   PutMidiHostConfigBodySchema,
   MidiHostRatesSchema,

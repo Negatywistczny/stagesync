@@ -732,6 +732,9 @@ export const MidiPortSchema = z.object({
 
 export type MidiPort = z.infer<typeof MidiPortSchema>;
 
+/** MIDI channel 0–15 (API / wire); UI shows 1–16. */
+export const MidiChannelSchema = z.number().int().min(0).max(15);
+
 /** Runtime selection + feature flags for Host MIDI. */
 export const MidiHostConfigSchema = z
   .object({
@@ -739,6 +742,16 @@ export const MidiHostConfigSchema = z
     outputId: z.string().min(1).nullable(),
     /** Emit MIDI clock / start / stop / SPP on the selected output from transport SSOT. */
     clockOutEnabled: z.boolean(),
+    /**
+     * Program Change IN filter. `null` = Omni (all channels); `0…15` = single channel.
+     * Missing in legacy files → Omni (back-compat).
+     */
+    inputChannel: MidiChannelSchema.nullable().default(null),
+    /**
+     * Program Change OUT channel (`0` = Channel 1 in UI).
+     * Missing in legacy files → 0.
+     */
+    outputChannel: MidiChannelSchema.default(0),
   })
   .strict();
 
@@ -749,6 +762,8 @@ export const PutMidiHostConfigBodySchema = z
     inputId: z.string().min(1).nullable().optional(),
     outputId: z.string().min(1).nullable().optional(),
     clockOutEnabled: z.boolean().optional(),
+    inputChannel: MidiChannelSchema.nullable().optional(),
+    outputChannel: MidiChannelSchema.optional(),
   })
   .strict();
 

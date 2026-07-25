@@ -81,8 +81,7 @@ describe("MIDI program change → load project", () => {
     });
 
     backend.emitInput({ type: "program", channel: 0, program: 12 });
-    await Promise.resolve(); // host coalesces PC via microtask
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 80)); // debounce 50ms + load I/O
 
     const state = TransportStateSchema.parse(
       await (await fetch(`${baseUrl}/api/transport`)).json(),

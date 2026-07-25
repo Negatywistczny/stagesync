@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+#### 🎛️ Audio / MIDI / Transport
+- **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).
+
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW

@@ -16,7 +16,8 @@ Alpha.3 dostarczyła **pencil click** na Formie (1 takt, overwrite + split sąsi
 Brakuje: drag move/resize, Smart Tool, audio clipów, spójnej polityki kolizji.
 
 Pełna specyfikacja Logic Pro (overlap modes, Flex Time, MIDI recording, join bounce)
-**nie** jest celem — wybieramy podzbiór zgodny z workflow show + backingi.
+**nie** jest celem **teraz** — stabilizujemy silnik sceniczny; zaawansowana edycja /
+recording wraca później według wzorców Logic ([ADR 0015](./0015-daw-reference-and-product-decisions.md)).
 
 ## Decyzja
 
@@ -25,8 +26,8 @@ Pełna specyfikacja Logic Pro (overlap modes, Flex Time, MIDI recording, join bo
 | Faza | Zakres audio / edycji |
 |------|------------------------|
 | **MVP sceniczny** | import, clip na Timeline, sync z transportem, trim/move, gain/mute, prosty waveform |
-| **Później (β.x / 5.0.0)** | fade, crossfade, loop-region, overlap mode, time-stretch zaawansowany |
-| **OUT** | Flex Time, transient editing, MIDI recording / Take Folders, join audio bounce |
+| **Później (β.x / 5.0.0 / 5.2+)** | fade, crossfade, loop-region, overlap mode, time-stretch; Flex / Takes / MIDI recording / join bounce **wg Logic** (nie „nigdy”) |
+| **Poza bieżącym silnikiem** | Zaawansowane DAW (Flex Time, Take Folders, MIDI recording, join bounce) — **odroczone**, nie permanent OUT |
 
 Clipy audio i MIDI (przyszłość) są **powiązane z projektem** (`data/projects/<id>/`),
 nie z globalną biblioteką mediów ([ADR 0001](./0001-storage-layout.md)).
@@ -65,14 +66,15 @@ Countdown (`kind: countdown`) — **zablokowany** do edycji geometrycznej (jak �
 
 ### 4. Audio — narzędzia β2
 
-| Dozwolone | Zakazane |
-|-----------|----------|
-| Pointer / Smart: select, move, trim brzegów | **Pencil** na ścieżce audio |
-| Trim/move w granicach pliku źródłowego | Rozciągnięcie `lengthTicks` **ponad** długość materiału (bez time-stretch) |
-| Gain clip, Mute clip, Mute track, Fader track | Automatyzacja gain/mute |
+| Dozwolone | Zakazane (MVP silnika) |
+|-----------|------------------------|
+| Pointer / Smart: select, move, trim brzegów | Rozciągnięcie `lengthTicks` **ponad** długość materiału (bez time-stretch) |
+| Trim/move w granicach pliku źródłowego | Automatyzacja gain/mute |
+| Gain clip, Mute clip, Mute track, Fader track | |
+| **Pencil** na ścieżce audio | Klik w pustym → Import / File Browser i wstawienie klipu w **dokładnej** pozycji Timeline (jak Logic; implementacja → TODO) |
 
-**Time-stretch / pitch:** OUT — odtwarzanie w **oryginalnym tempie** pliku; pozycja na
-osi = `startTicks` + `trimIn`/`trimOut` względem pliku. Zaawansowany stretch → przyszłość.
+**Time-stretch / pitch:** poza MVP silnika — odtwarzanie w **oryginalnym tempie** pliku; pozycja na
+osi = `startTicks` + `trimIn`/`trimOut` względem pliku. Zaawansowany stretch → później (Logic).
 
 **Waveform:** statyczny podgląd **peak/RMS** (precompute przy imporcie lub on-demand) —
 nie live FFT.
@@ -94,8 +96,9 @@ Brak krzywych automatyzacji w alpha/beta. Wartości persist w `project.json` (sc
 
 - Strefy geometryczne nad klipami (wzór Logic): góra/dół × brzeg/środek → select, move, trim;
   fade/crossfade **później** w górnych narożnikach audio.
-- **Reguła współistnienia:** gdy aktywny **Pencil** — obsługuje wyłącznie Formę;
-  Smart Tool / Pointer przejmują resztę lane’ów i Formę gdy pencil nieaktywny.
+- **Reguła współistnienia:** gdy aktywny **Pencil** — Forma (jak α3/α7) oraz
+  ścieżka audio (import @ klik; ADR 0015); Smart Tool / Pointer przejmują resztę
+  lane’ów i Formę gdy pencil nieaktywny.
 - Logika hit-test i FSM **oddzielona** od renderu canvas (preview transakcyjny).
 
 ### 7. Snap ([ADR 0007](./0007-snap-grid.md) — uzupełnienie)
@@ -127,13 +130,19 @@ Brak krzywych automatyzacji w alpha/beta. Wartości persist w `project.json` (sc
 
 Szczegóły checklist → [ROADMAP.md](../ROADMAP.md). Scope per etap → `report-scope-*.md`.
 
-### 10. Poza zakresem (jawnie OUT)
+### 10. Poza bieżącym silnikiem (odroczone — nie „nigdy”)
+
+Stabilizacja show engine **teraz**. Poniższe wraca później według wzorców Logic
+([ADR 0015](./0015-daw-reference-and-product-decisions.md)) — **nie** permanent OUT:
 
 - Flex Time, transient snap, Tab-to-transient
-- Time-stretch audio (poza β2 MVP)
+- Time-stretch audio (poza MVP silnika)
 - Overlap / X-Fade / Shuffle drag modes (do czasu osobnej decyzji)
-- MIDI nagrywanie nakładających się regionów (MIDI clock I/O = β2; recording = później)
+- MIDI nagrywanie / Take Folders (MIDI clock I/O = host; recording = później)
 - Join regions (audio bounce)
+
+Nadal poza zakresem implementacyjnym (nie backlog produktowy „nigdy”):
+
 - Interval tree (wystarczy posortowana lista clipów per lane przy N < 100)
 - Walidacja geometrii clipów na serwerze przy PUT (fail fast Zod shape only)
 
