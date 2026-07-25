@@ -7522,7 +7522,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Zoom H dotyczy osi czasu (niedostępny w Mixerze)"
+                ? "Zoom poziomy dotyczy osi czasu (niedostępny w Mixerze)"
                 : "Zoom poziomy (oś czasu)"
             }
           >
@@ -7542,7 +7542,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             className={styles.zoomLab}
             title={
               timelineSurface === "mixer"
-                ? "Zoom V dotyczy wysokości ścieżek (niedostępny w Mixerze)"
+                ? "Zoom pionowy dotyczy wysokości ścieżek (niedostępny w Mixerze)"
                 : "Zoom pionowy (wysokość ścieżek)"
             }
           >
