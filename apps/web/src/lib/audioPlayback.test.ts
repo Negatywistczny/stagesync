@@ -6,10 +6,12 @@ import {
   busSoloMutesBus,
   clearAudioBufferCache,
   ensureAudioBuffered,
+  fireCueSampleGo,
   getAudioPlaybackDebugState,
   getFailedAudioAssetIds,
   isAudioAssetDecodeFailed,
   loadAudioBuffer,
+  panicCueSamples,
   restartAudioPlayback,
   resumeAndSyncAudioPlayback,
   shouldSoftStopPastSongEnd,
@@ -1040,5 +1042,76 @@ describe("audioPlayback helpers", () => {
     syncAudioPlayback("p1", { project, playing: true, displayTicks: 10 }, ctx);
     syncAudioPlayback("p1", { project, playing: true, displayTicks: 20 }, ctx);
     expect(routeDisconnect).not.toHaveBeenCalled();
+  });
+
+  it("cue sample GO starts one-shot; panic clears; playPostStop survives stop", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 1, sampleRate: 48000 };
+    const makeSource = () => ({
+      buffer: null as unknown,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    });
+    const sources: ReturnType<typeof makeSource>[] = [];
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => {
+        const s = makeSource();
+        sources.push(s);
+        return s;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    let project = createProjectV5Seed("p1", "Cue", "2026-07-25T00:00:00.000Z");
+    project = {
+      ...project,
+      assets: [
+        {
+          id: "hit",
+          storageName: "hit.wav",
+          originalName: "hit.wav",
+          kind: "audio",
+          mimeType: "audio/wav",
+          sizeBytes: 8,
+        },
+      ],
+      cue: {
+        clips: [
+          {
+            id: "cue-1",
+            startTicks: 0,
+            lengthTicks: 960,
+            label: "Hit",
+            sample: {
+              assetId: "hit",
+              mode: "one-shot",
+              quantization: "immediate",
+              playPostStop: true,
+            },
+          },
+        ],
+      },
+    };
+
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    expect(fireCueSampleGo("p1", project, "cue-1", 0, ctx)).toBe(true);
+    expect(getAudioPlaybackDebugState().activeCueCount).toBe(1);
+    expect(sources[0]?.start).toHaveBeenCalled();
+
+    stopAudioPlayback();
+    expect(getAudioPlaybackDebugState().activeCueCount).toBe(1);
+
+    panicCueSamples();
+    expect(getAudioPlaybackDebugState().activeCueCount).toBe(0);
+    expect(sources[0]?.stop).toHaveBeenCalled();
   });
 });

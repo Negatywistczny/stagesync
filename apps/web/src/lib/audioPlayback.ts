@@ -911,6 +911,8 @@ export function allowAudioPlayback(): void {
 /** Test/debug: active BufferSource count + suppress flag. */
 export function getAudioPlaybackDebugState(): {
   activeCount: number;
+  /** Active cue-sample voices (one-shot / gated). */
+  activeCueCount: number;
   suppressed: boolean;
   stopEpoch: number;
   /** Linear gain currently applied to each group bus (post mute/solo). */
@@ -922,6 +924,7 @@ export function getAudioPlaybackDebugState(): {
   }
   return {
     activeCount: active.length,
+    activeCueCount: activeCues.length,
     suppressed: playbackSuppressed,
     stopEpoch,
     groupBusGainLinear,
