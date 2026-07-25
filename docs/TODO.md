@@ -5,7 +5,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Polityka:** nowe funkcje po Launch & Mix → linia **5.2+**. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).
 
-**Residuale operatorskie:** **G1–G10** na HW — ⬜ ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
+**Residuale operatorskie:** **G1–G10** — **bez claim pełnego green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). Pass operatorskie: **G5**, **G6**, **G10** (DESKTOP). Residual: **G2** skip; **G3** deferred; **G7–G9** Docker deferred. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
 ## 5.2+ — Motywy, auth, Mixer outs, kolejne minor
 
@@ -13,13 +13,15 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 
 ### Must (operator residual po 5.1.0)
 
-- [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — bez claim green w docs; **G5** komunikat port zajęty — pass operatorski na `5.1.2` (przycisk „Pobierz log” dopiero po kolejnym buildzie); **G6** updater — pass operatorski 5.1.1 → 5.1.2; **G3** re-verify HW odłożone (fix Documents na `main`, nie w 5.1.2)
+- [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — **bez claim pełnego green**; **G10** — pass operatorski (podręcznik DESKTOP uproszczony, zgodny z flow); **G5** komunikat port zajęty — pass operatorski na `5.1.2` (przycisk „Pobierz log” dopiero po kolejnym buildzie); **G6** updater — pass operatorski 5.1.1 → 5.1.2; **G2** skip; **G3** re-verify HW odłożone (fix Documents na `main`, nie w 5.1.2); **G7–G9** Docker — odłożone
 
 ### Should / Higiena (nie blokuje 5.2)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
 - [ ] **A11y:** segmenty map Timeline + menu kontekstowe — announce liczby zaznaczenia; Launcher (Tauri) — audit nazw kontroli „powrót do hosta”
+- [ ] [#602](https://github.com/Negatywistyczny/stagesync/issues/602) **DX / Knip:** detekcja martwego kodu i osieroconych zależności w monorepo (`lint:knip`; CI opcjonalnie nieblokujące)
+- [ ] [#494](https://github.com/Negatywistyczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
 
 ### Etap 5.2+ (Przyszłość)
 
@@ -30,6 +32,6 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 - [ ] **Client transport — H-01:** `setDisplayTicks` co rAF re-renderuje konsumentów `useTransport` (Vitest potwierdzony) — najpierw profiler Grid/Karaoke @ 120 Hz, potem split context / throttle ([triage](./analysis/inspiracje/audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md))
 - [ ] [#430](https://github.com/Negatywistyczny/stagesync/issues/430) Cues Sampler
 - [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
-- [ ] Android shell / store auto-update
+- [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Mobile Client:** PWA (`apps/web`) + lekka powłoka Android (`apps/mobile-client`: keep-screen-on / kiosk / QR / mDNS); dystrybucja `.apk` z serwera / Releases — **bez** Google Play; pełny `mobile-full` + sidecar później
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 - [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS (dziś placeholder / katalog backupów w ustawieniach hosta)
