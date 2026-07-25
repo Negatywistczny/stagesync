@@ -5,6 +5,7 @@ import {
   formatChordParts,
   formatHybridPolishB,
   formatMusicalAccidentals,
+  parseAndFormat,
   parseAndFormatParts,
   resolveChordNameParts,
   splitChordSuperscript,
@@ -223,5 +224,15 @@ describe("splitChordSuperscript / chordLiteralToSymbolDisplay", () => {
     expect(chordLiteralToSymbolDisplay("Cmaj7")).toBe("CΔ7");
     expect(chordLiteralToSymbolDisplay("")).toBe("");
     expect(chordLiteralToSymbolDisplay("—")).toBe("—");
+  });
+});
+
+describe("parseAndFormat", () => {
+  it("joins formatted parts including bass and empty", () => {
+    expect(parseAndFormat("")).toBe("");
+    const maj = formatChordParts("Cmaj7");
+    expect(parseAndFormat("Cmaj7")).toBe(`${maj.root}${maj.sup}${maj.bass}`);
+    expect(parseAndFormat("G/B", { hybridPolishB: true })).toBe("G/H");
+    expect(parseAndFormat("Am", { literalQuality: true })).toBe("Am");
   });
 });

@@ -427,7 +427,7 @@ export function StageView() {
                 aria-label="Czas wyświetlania komunikatu"
                 onChange={(e) => setTtlMs(Number(e.target.value))}
               >
-                <option value="6000">TTL 6 s</option>
+                <option value="6000">6 s</option>
                 <option value="10000">10 s</option>
                 <option value="15000">15 s</option>
                 <option value="30000">30 s</option>
@@ -463,7 +463,7 @@ export function StageView() {
             </div>
             <ul className={styles.sessionMsgList} aria-live="polite">
               {messages.length === 0 ? (
-                <li className={styles.sessionMsgEmpty}>
+                <li className={styles.sessionMsgEmpty} role="status">
                   Brak aktywnych komunikatów
                 </li>
               ) : (
@@ -536,7 +536,7 @@ export function StageView() {
               </p>
             ) : null}
             {clients.length === 0 ? (
-              <p className={shell.muted}>Brak połączonych klientów.</p>
+              <p className={shell.muted} role="status" aria-live="polite">Brak połączonych klientów.</p>
             ) : (
               <ul className={shell.list} aria-live="polite">
                 {clients.map((c) => {

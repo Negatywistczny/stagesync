@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
   LiveDeskPatchBodySchema,
+  TransportLoadBodySchema,
+  TransportLoopBodySchema,
   TransportPlayBodySchema,
   TransportSeekBodySchema,
   TransportStateSchema,
@@ -62,6 +64,53 @@ describe("TransportPlayBodySchema", () => {
       bpm: 90,
       timeSignature: { numerator: 5, denominator: 8 },
     });
+  });
+
+  it("rejects unknown keys and non-uuid projectId", () => {
+    expect(() =>
+      TransportPlayBodySchema.parse({ extra: true }),
+    ).toThrow();
+    expect(() =>
+      TransportPlayBodySchema.parse({ projectId: "not-a-uuid" }),
+    ).toThrow();
+  });
+});
+
+describe("TransportLoadBodySchema", () => {
+  it("requires uuid projectId", () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+    expect(TransportLoadBodySchema.parse({ projectId: id })).toEqual({
+      projectId: id,
+    });
+    expect(() => TransportLoadBodySchema.parse({})).toThrow();
+    expect(() =>
+      TransportLoadBodySchema.parse({ projectId: "x" }),
+    ).toThrow();
+    expect(() =>
+      TransportLoadBodySchema.parse({ projectId: id, extra: 1 }),
+    ).toThrow();
+  });
+});
+
+describe("TransportLoopBodySchema", () => {
+  it("requires enabled; optional int ticks; rejects junk", () => {
+    expect(TransportLoopBodySchema.parse({ enabled: false })).toEqual({
+      enabled: false,
+    });
+    expect(
+      TransportLoopBodySchema.parse({
+        enabled: true,
+        startTicks: 0,
+        endTicks: 480,
+      }),
+    ).toEqual({ enabled: true, startTicks: 0, endTicks: 480 });
+    expect(() => TransportLoopBodySchema.parse({})).toThrow();
+    expect(() =>
+      TransportLoopBodySchema.parse({ enabled: true, startTicks: 1.5 }),
+    ).toThrow();
+    expect(() =>
+      TransportLoopBodySchema.parse({ enabled: true, unknown: 1 }),
+    ).toThrow();
   });
 });
 
