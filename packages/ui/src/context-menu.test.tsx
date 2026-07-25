@@ -136,4 +136,30 @@ describe("ContextMenu", () => {
       /ContextMenuProvider/,
     );
   });
+
+  it("stays closed for empty items and closes on outside mousedown", () => {
+    render(
+      <ContextMenuProvider>
+        <Harness
+          items={[
+            { id: "a", label: "A", onSelect: () => undefined },
+            { type: "separator" },
+            { id: "b", label: "B", onSelect: () => undefined },
+          ]}
+        />
+        <Harness items={[]} />
+      </ContextMenuProvider>,
+    );
+
+    const opens = screen.getAllByRole("button", { name: "Open" });
+    fireEvent.click(opens[1]!);
+    expect(screen.queryByRole("menu")).toBeNull();
+
+    fireEvent.click(opens[0]!);
+    expect(screen.getByRole("menu")).toBeTruthy();
+    expect(screen.getByRole("separator")).toBeTruthy();
+
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
 });
