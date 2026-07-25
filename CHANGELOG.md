@@ -10,6 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
+- **Ołówek:** podgląd przeciągania klipu (Forma / Tekst / Akordy / Cue) pokazuje etykietę z tym samym wyrównaniem co zapisany klip.
 - **Zaznaczenie:** menu kontekstowe klipu i ścieżki audio oraz segmenty mapy Tempo / Metrum / Tonacja ogłaszają liczbę zaznaczonych elementów; Inspector przy wielu klipach ([#675](https://github.com/Negatywistyczny/stagesync/pull/675), [#676](https://github.com/Negatywistyczny/stagesync/pull/676), [#687](https://github.com/Negatywistyczny/stagesync/pull/687), [#690](https://github.com/Negatywistyczny/stagesync/pull/690)).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)

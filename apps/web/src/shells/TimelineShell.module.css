@@ -1429,6 +1429,7 @@
   z-index: 2;
   display: block;
   box-sizing: border-box;
+  flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
   /* Inset text inside the clip box — must not live on .clip (would inflate width). */
@@ -1439,6 +1440,7 @@
   pointer-events: none;
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-compact);
+  text-align: left;
   color: inherit;
 }
 
@@ -1446,6 +1448,8 @@
   position: absolute;
   top: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  display: flex;
+  align-items: center;
   /* No min-width floor — true px width from clipStylePx (PO: no false overlap at Zoom-out). */
   box-sizing: border-box;
   min-width: 0;

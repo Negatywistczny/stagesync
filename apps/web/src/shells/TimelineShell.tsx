@@ -125,6 +125,7 @@ import {
   segmentStylePx,
   tempoMapSegments,
 } from "../lib/mapSegments.js";
+import { FormaClipPreview } from "./timeline/FormaClipPreview.js";
 import { TimelineHelp } from "./timeline/TimelineHelp.js";
 import {
   addFormaSubsection,
@@ -5419,34 +5420,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     startTicks: clip.startTicks + delta,
                   };
                   return (
-                    <div
+                    <FormaClipPreview
                       key={ghost.id}
-                      className={[
-                        styles.clip,
-                        styles.formaClip,
-                        styles.formaPreview,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
+                      label={clip.name}
                       style={clipStylePx(
                         ghost,
                         viewSpan,
                         barTicks,
                         effectiveZoomH,
                       )}
-                      aria-hidden
-                    >
-                      {clip.name}
-                    </div>
+                    />
                   );
                 })
               : null}
             {gesturePreview?.kind === "pencil-draw" &&
             (gestureSession?.lane ?? "forma") === "forma" ? (
-              <div
-                className={[styles.clip, styles.formaClip, styles.formaPreview]
-                  .filter(Boolean)
-                  .join(" ")}
+              <FormaClipPreview
+                label={gesturePreview.name ?? "Sekcja"}
                 style={clipStylePx(
                   {
                     id: "preview",
@@ -5459,10 +5449,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   barTicks,
                   effectiveZoomH,
                 )}
-                aria-hidden
-              >
-                {gesturePreview.name ?? "Sekcja"}
-              </div>
+              />
             ) : null}
           </>
         );
@@ -5598,34 +5585,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     lengthTicks: clip.lengthTicks,
                   };
                   return (
-                    <div
+                    <FormaClipPreview
                       key={ghost.id}
-                      className={[
-                        styles.clip,
-                        styles.formaClip,
-                        styles.formaPreview,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
+                      label={label}
                       style={clipStylePx(
                         ghost,
                         viewSpan,
                         barTicks,
                         effectiveZoomH,
                       )}
-                      aria-hidden
-                    >
-                      {label}
-                    </div>
+                    />
                   );
                 })
               : null}
             {gesturePreview?.kind === "pencil-draw" &&
             gestureSession?.lane === lane ? (
-              <div
-                className={[styles.clip, styles.formaClip, styles.formaPreview]
-                  .filter(Boolean)
-                  .join(" ")}
+              <FormaClipPreview
+                label={gesturePreview.name ?? defaultPencilLabel(lane)}
                 style={clipStylePx(
                   {
                     id: "preview",
@@ -5638,10 +5614,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   barTicks,
                   effectiveZoomH,
                 )}
-                aria-hidden
-              >
-                {gesturePreview.name ?? defaultPencilLabel(lane)}
-              </div>
+              />
             ) : null}
           </>
         );
