@@ -56,6 +56,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher:** jaśniejsze etykiety powrotu, błędu lokalnego hosta, łączenia ręcznego oraz stanu zajętości / ponowienia ([#677](https://github.com/Negatywistyczny/stagesync/pull/677), [#684](https://github.com/Negatywistyczny/stagesync/pull/684), [#689](https://github.com/Negatywistyczny/stagesync/pull/689)).
+- **Android:** ikona Performer / Console na ekranie głównym ma właściwy odstęp wokół znaku StageSync (bez przycinania playheada w masce launchera).
 
 ## [5.1.3](https://github.com/Negatywistczny/stagesync/compare/v5.1.2...v5.1.3) - 2026-07-25
 
