@@ -2,6 +2,7 @@
  * Post-Vite: write ui-hash.json, ui-manifest.json, ui-bundle.zip and stamp sw.js cache key.
  * Standalone: `node scripts/emit-ui-meta.mjs [distDir]`
  */
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -11,6 +12,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const PROTOCOL_VERSION = 1;
