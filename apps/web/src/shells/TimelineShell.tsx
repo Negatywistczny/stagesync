@@ -7453,7 +7453,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       min={1}
                       step={1}
                       value={countdownBars(draftProject!, selectedClip)}
-                      aria-label="Długość Countdown w taktach"
+                      aria-label="Długość Odliczania w taktach"
                       onChange={(e) => onCountdownBarsChange(e.target.value)}
                     />
                   </label>
