@@ -148,6 +148,10 @@ cp -a data ~/Documents/StageSync
 Potem uruchom serwer bez `STAGESYNC_REPO_DEV=1` (wykomentuj w `.env`) —
 serwer automatycznie użyje `~/Documents/StageSync`.
 
+Desktop (Tauri): lokalny host ustawia `STAGESYNC_DATA_DIR` na Documents; jeśli wcześniej
+dane były tylko w Application Support / AppData, aplikacja skopiuje je raz przy starcie
+(bez nadpisywania istniejących plików w Dokumentach). Zob. [DESKTOP.md](./DESKTOP.md).
+
 ### Dev — dane w repo (domyślne)
 
 Lokalne środowisko dev trzyma dane w `<repo>/data` dzięki `STAGESYNC_REPO_DEV=1`

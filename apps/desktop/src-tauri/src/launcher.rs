@@ -100,10 +100,156 @@ fn emit_status(app: &AppHandle, message: impl Into<String>, error: bool) {
 }
 
 fn recent_path(app: &AppHandle) -> Result<PathBuf, String> {
+    // Launcher meta stays in OS app-data (Application Support / AppData) — not Documents.
     let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
     let data = dir.join("StageSync");
     let _ = std::fs::create_dir_all(&data);
     Ok(data.join("launcher-recent.json"))
+}
+
+/// Project / library root for the local sidecar (`STAGESYNC_DATA_DIR`) — ADR 0012.
+fn project_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    if let Ok(docs) = app.path().document_dir() {
+        return Ok(docs.join("StageSync"));
+    }
+    let home = app
+        .path()
+        .home_dir()
+        .map_err(|e| format!("Brak katalogu Documents/home: {e}"))?;
+    Ok(home.join("Documents").join("StageSync"))
+}
+
+/// Pre-fix location: `app_data_dir()/StageSync` (macOS Application Support / Windows AppData).
+fn legacy_app_support_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let app_data = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Brak app_data_dir: {e}"))?;
+    Ok(app_data.join("StageSync"))
+}
+
+/// Top-level entries copied once from App Support → Documents (exclude launcher meta / logs).
+const MIGRATE_DATA_ENTRIES: &[&str] = &["projects", "library", "host"];
+
+/// True when `dir` has projects, library, or setlist worth preserving.
+fn has_meaningful_user_data(dir: &std::path::Path) -> bool {
+    let projects = dir.join("projects");
+    if projects.is_dir() {
+        if let Ok(mut rd) = std::fs::read_dir(&projects) {
+            if rd.next().is_some() {
+                return true;
+            }
+        }
+    }
+    if dir.join("library").join("library.json").is_file() {
+        return true;
+    }
+    if dir.join("library").join("setlist.json").is_file() {
+        return true;
+    }
+    if dir.join("host").join("midi-config.json").is_file() {
+        return true;
+    }
+    false
+}
+
+fn copy_dir_recursive(src: &std::path::Path, dst: &std::path::Path) -> Result<(), String> {
+    std::fs::create_dir_all(dst).map_err(|e| format!("create_dir_all {}: {e}", dst.display()))?;
+    for entry in std::fs::read_dir(src).map_err(|e| format!("read_dir {}: {e}", src.display()))? {
+        let entry = entry.map_err(|e| format!("read_dir entry: {e}"))?;
+        let file_type = entry
+            .file_type()
+            .map_err(|e| format!("file_type {}: {e}", entry.path().display()))?;
+        let to = dst.join(entry.file_name());
+        if file_type.is_dir() {
+            copy_dir_recursive(&entry.path(), &to)?;
+        } else if file_type.is_file() {
+            // Never clobber existing Documents files.
+            if to.exists() {
+                continue;
+            }
+            std::fs::copy(entry.path(), &to).map_err(|e| {
+                format!("copy {} → {}: {e}", entry.path().display(), to.display())
+            })?;
+        }
+        // Symlinks / other: skip (safe copy).
+    }
+    Ok(())
+}
+
+/// One-shot copy of user data from legacy App Support → Documents/StageSync.
+///
+/// Idempotent: skips when source lacks data, paths are equal, or Documents already
+/// has projects/library. Does not delete the App Support leftover (operator may remove).
+/// Returns `Ok(true)` when a copy ran.
+fn migrate_legacy_data_dir(
+    source: &std::path::Path,
+    target: &std::path::Path,
+) -> Result<bool, String> {
+    if !source.exists() || source == target {
+        return Ok(false);
+    }
+    if !has_meaningful_user_data(source) {
+        return Ok(false);
+    }
+    if has_meaningful_user_data(target) {
+        eprintln!(
+            "[stagesync] data dir: Documents already has user data at {}; leaving App Support leftover at {}",
+            target.display(),
+            source.display()
+        );
+        return Ok(false);
+    }
+
+    std::fs::create_dir_all(target)
+        .map_err(|e| format!("Nie można utworzyć {}: {e}", target.display()))?;
+
+    for name in MIGRATE_DATA_ENTRIES {
+        let src_entry = source.join(name);
+        if !src_entry.exists() {
+            continue;
+        }
+        let dst_entry = target.join(name);
+        if src_entry.is_dir() {
+            copy_dir_recursive(&src_entry, &dst_entry)?;
+        } else if src_entry.is_file() && !dst_entry.exists() {
+            if let Some(parent) = dst_entry.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            std::fs::copy(&src_entry, &dst_entry).map_err(|e| e.to_string())?;
+        }
+    }
+
+    eprintln!(
+        "[stagesync] Migrated user data once: {} → {} (App Support leftover kept; safe to delete after verify)",
+        source.display(),
+        target.display()
+    );
+    Ok(true)
+}
+
+fn prepare_project_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let target = path_for_node(&project_data_dir(app)?);
+    let legacy = path_for_node(&legacy_app_support_data_dir(app)?);
+
+    if let Err(e) = migrate_legacy_data_dir(&legacy, &target) {
+        eprintln!("[stagesync] data migration warning (continuing with Documents): {e}");
+    }
+
+    if let Err(e) = std::fs::create_dir_all(&target) {
+        let lower = e.to_string().to_ascii_lowercase();
+        if lower.contains("permission")
+            || lower.contains("eacces")
+            || lower.contains("access is denied")
+        {
+            return Err(
+                "Brak uprawnień do katalogu danych StageSync (Dokumenty). Sprawdź uprawnienia folderu."
+                    .into(),
+            );
+        }
+        return Err(format!("Nie można utworzyć katalogu danych: {e}"));
+    }
+    Ok(target)
 }
 
 fn normalize_origin(raw: &str) -> Result<String, String> {
@@ -497,21 +643,9 @@ async fn start_local_host_inner(
         );
     }
 
-    let app_data_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| format!("Brak app_data_dir: {e}"))?;
-    let data_dir = path_for_node(&app_data_dir.join("StageSync"));
-    if let Err(e) = std::fs::create_dir_all(&data_dir) {
-        let lower = e.to_string().to_ascii_lowercase();
-        if lower.contains("permission") || lower.contains("eacces") || lower.contains("access is denied") {
-            return Err(
-                "Brak uprawnień do katalogu danych StageSync. Sprawdź uprawnienia folderu aplikacji."
-                    .into(),
-            );
-        }
-        return Err(format!("Nie można utworzyć katalogu danych: {e}"));
-    }
+    // ADR 0012: projects/library in ~/Documents/StageSync (not Application Support).
+    // Launcher meta stays under app_data_dir via recent_path(). One-shot migrate if needed.
+    let data_dir = prepare_project_data_dir(&app)?;
     let logs_dir = data_dir.join("logs");
     let _ = std::fs::create_dir_all(&logs_dir);
     let sidecar_log_path = logs_dir.join("sidecar.log");
@@ -761,5 +895,80 @@ mod pick_mdns_ipv4_tests {
             pick_mdns_ipv4(addrs.iter()).as_deref(),
             Some("169.254.10.2")
         );
+    }
+}
+
+#[cfg(test)]
+mod data_dir_migration_tests {
+    use super::*;
+    use std::fs;
+    use std::path::PathBuf;
+
+    fn temp_pair(label: &str) -> (PathBuf, PathBuf) {
+        let base = std::env::temp_dir().join(format!(
+            "stagesync-migrate-{}-{}",
+            label,
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&base);
+        let source = base.join("app-support").join("StageSync");
+        let target = base.join("Documents").join("StageSync");
+        fs::create_dir_all(&source).unwrap();
+        (source, target)
+    }
+
+    #[test]
+    fn skips_when_source_empty() {
+        let (source, target) = temp_pair("empty-src");
+        // Only launcher meta — not meaningful project data.
+        fs::write(source.join("launcher-recent.json"), "[]").unwrap();
+        assert!(!has_meaningful_user_data(&source));
+        assert_eq!(migrate_legacy_data_dir(&source, &target).unwrap(), false);
+        assert!(!target.exists());
+        let _ = fs::remove_dir_all(source.parent().unwrap().parent().unwrap());
+    }
+
+    #[test]
+    fn copies_projects_and_library_once() {
+        let (source, target) = temp_pair("copy-once");
+        let proj = source.join("projects").join("aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+        fs::create_dir_all(&proj).unwrap();
+        fs::write(proj.join("project.json"), r#"{"id":"x"}"#).unwrap();
+        fs::create_dir_all(source.join("library")).unwrap();
+        fs::write(source.join("library").join("library.json"), "{}").unwrap();
+        fs::write(source.join("launcher-recent.json"), "[]").unwrap();
+
+        assert!(has_meaningful_user_data(&source));
+        assert_eq!(migrate_legacy_data_dir(&source, &target).unwrap(), true);
+        assert!(target
+            .join("projects")
+            .join("aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee")
+            .join("project.json")
+            .is_file());
+        assert!(target.join("library").join("library.json").is_file());
+        // Launcher meta must not move to Documents.
+        assert!(!target.join("launcher-recent.json").exists());
+
+        // Idempotent second call (Documents already has data).
+        assert_eq!(migrate_legacy_data_dir(&source, &target).unwrap(), false);
+        let _ = fs::remove_dir_all(source.parent().unwrap().parent().unwrap());
+    }
+
+    #[test]
+    fn prefers_documents_when_both_have_data() {
+        let (source, target) = temp_pair("both");
+        fs::create_dir_all(source.join("library")).unwrap();
+        fs::write(source.join("library").join("library.json"), r#"{"src":true}"#).unwrap();
+        fs::create_dir_all(target.join("library")).unwrap();
+        fs::write(
+            target.join("library").join("library.json"),
+            r#"{"docs":true}"#,
+        )
+        .unwrap();
+
+        assert_eq!(migrate_legacy_data_dir(&source, &target).unwrap(), false);
+        let kept = fs::read_to_string(target.join("library").join("library.json")).unwrap();
+        assert!(kept.contains("docs"));
+        let _ = fs::remove_dir_all(source.parent().unwrap().parent().unwrap());
     }
 }

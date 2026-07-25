@@ -48,6 +48,9 @@ kopiuje plik jako `.env` i nie musi nic zmieniać. Docker i Compose zawsze ustaw
 
 - Desktop / host: projekty i biblioteka widoczne w standardowym miejscu OS — łatwy backup,
   przeniesienie, ręczna inspekcja.
+- Desktop shell (Tauri): ustawia `STAGESYNC_DATA_DIR` na `~/Documents/StageSync` (nie
+  Application Support / AppData). Jednorazowa migracja z legacy `app_data_dir/StageSync`,
+  jeśli Documents jeszcze nie mają projektów; meta Launchera zostaje w App Support.
 - Docker: bez zmian — `STAGESYNC_DATA_DIR=/app/data` w Compose.
 - Dev: bez zmian — `STAGESYNC_REPO_DEV=1` w `.env` (z `.env.example`).
 - Windows: `USERPROFILE\Documents\StageSync` (`C:\Users\nazwa\Documents\StageSync`).

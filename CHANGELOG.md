@@ -29,6 +29,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Schowek / PPM:** zaznaczony tekst (także poza polami) znów kopiuje się Ctrl/Cmd+C i ma natywne Wytnij/Kopiuj/Wklej w menu kontekstowym; Inspect Element nadal wyłączony poza polami i zaznaczeniem; przy edycji nazwy ścieżki PPM systemowe działa w polu.
 - **Set / biblioteka / Stage / Client:** etykiety ikon Set, status biblioteki, puste Score/Karaoke, pliki projektu i Stage, format zegara, QR LAN ([#603](https://github.com/Negatywistyczny/stagesync/pull/603), [#608](https://github.com/Negatywistyczny/stagesync/pull/608), [#613](https://github.com/Negatywistyczny/stagesync/pull/613), [#614](https://github.com/Negatywistyczny/stagesync/pull/614), [#615](https://github.com/Negatywistyczny/stagesync/pull/615), [#623](https://github.com/Negatywistyczny/stagesync/pull/623), [#649](https://github.com/Negatywistyczny/stagesync/pull/649)).
 
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop:** lokalny host zapisuje projekty w `~/Documents/StageSync`; przy pierwszym starcie po aktualizacji kopiuje dane z poprzedniej lokalizacji aplikacji, jeśli Dokumenty są jeszcze puste (bez nadpisywania istniejących plików).
+
 ## [5.1.2](https://github.com/Negatywistyczny/stagesync/compare/v5.1.1...v5.1.2) - 2026-07-25
 
 ### Dodano
