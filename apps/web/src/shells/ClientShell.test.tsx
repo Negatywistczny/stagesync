@@ -20,6 +20,11 @@ vi.mock("../lib/screenWakeLock.js", () => ({
   releaseScreenWakeLock: vi.fn(async () => undefined),
 }));
 
+
+vi.mock("./client/KaraokePane.js", () => ({
+  KaraokePane: () => <div data-testid="karaoke-pane">karaoke</div>,
+}));
+
 vi.mock("../lib/deviceNamePrefs.js", () => ({
   DEVICE_DISPLAY_NAME_CHANGED_EVENT: "stagesync:device-name",
   DEVICE_DISPLAY_NAME_MAX: 40,
@@ -80,6 +85,11 @@ function startGridRole() {
   fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
 }
 
+function startKaraokeRole() {
+  fireEvent.click(screen.getByRole("button", { name: /^Tekst$/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+}
+
 describe("ClientShell chrome", () => {
   it("does not expose setlist next/prev controls (read-only Client)", () => {
     render(<ClientShell />);
@@ -121,4 +131,14 @@ describe("ClientShell chrome", () => {
     expect(screen.queryByLabelText("Nazwa urządzenia")).toBeNull();
     expect(screen.queryByRole("button", { name: /Zapisz nazwę/i })).toBeNull();
   });
+
+  it("exposes Tekst role settings Auto-scroll and Tap wokalu switches", () => {
+    render(<ClientShell />);
+    startKaraokeRole();
+    expect(screen.getByTestId("karaoke-pane")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Tekst/i }));
+    expect(screen.getByRole("switch", { name: /Auto-scroll/i })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: /Tap wokalu/i })).toBeTruthy();
+  });
+
 });
