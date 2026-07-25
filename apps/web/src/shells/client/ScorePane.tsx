@@ -181,14 +181,18 @@ export function ScorePane({
     );
   }
   if (!project) {
-    return <p className={styles.empty}>Nie udało się wczytać utworu.</p>;
+    return (
+      <p className={styles.empty} role="status" aria-live="polite">
+        Nie udało się wczytać utworu.
+      </p>
+    );
   }
 
   return (
     <div className={styles.scorePane}>
       <div className={styles.scoreWrap}>
         {!xmlAsset ? (
-          <div className={styles.scoreEmptyCard}>
+          <div className={styles.scoreEmptyCard} role="status" aria-live="polite">
             <p className={styles.scoreEmptyTitle}>Partytura</p>
             <p className={styles.scoreEmptyText}>
               Brak pliku MusicXML w projekcie — dodaj w Admin → Utwory → Wybrany
@@ -196,7 +200,7 @@ export function ScorePane({
             </p>
           </div>
         ) : loadError ? (
-          <div className={styles.scoreEmptyCard}>
+          <div className={styles.scoreEmptyCard} role="status" aria-live="polite">
             <p className={styles.scoreEmptyTitle}>Błąd partytury</p>
             <p className={styles.scoreEmptyText}>{loadError}</p>
           </div>
