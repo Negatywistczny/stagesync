@@ -168,6 +168,7 @@ import {
   buildClipContextMenuItems,
   buildEmptyLaneContextMenuItems,
   clipboardMatchesEmptyLane,
+  audioTrackContextMenuLabel,
   clipContextMenuLabel,
   mapSegmentSelectionAriaLabel,
   type ClipMenuLane,
@@ -3990,13 +3991,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     clientY: number,
   ) {
     setClipSelection(clearSelection());
-    if (!isAudioTrackSelected(trackSelection, trackId)) {
+    const alreadySelected = isAudioTrackSelected(trackSelection, trackId);
+    const trackCount = alreadySelected ? trackSelection.ids.length : 1;
+    if (!alreadySelected) {
       setTrackSelection(selectAudioTrack(trackId));
     }
     openContextMenu({
       x: clientX,
       y: clientY,
-      label: "Menu ścieżki audio",
+      label: audioTrackContextMenuLabel(trackCount),
       items: buildAudioTrackContextMenuItems({
         canDuplicate:
           (draftProject?.audioTracks.length ?? 0) < MAX_AUDIO_TRACKS,
