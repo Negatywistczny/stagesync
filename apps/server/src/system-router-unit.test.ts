@@ -57,4 +57,44 @@ describe("createSystemRouter unit edges", () => {
       delete process.env.pm_id;
     }
   });
+
+  it("GET /network and POST /logs/clear work without lifecycle", async () => {
+    const logBuffer = createLogBuffer();
+    logBuffer.push("info", "keep");
+    const { baseUrl } = await listen(
+      createSystemRouter({
+        logBuffer,
+        port: 4321,
+        version: "9.9.9-test",
+      }),
+    );
+
+    const prev = process.env.STAGESYNC_DISABLE_MDNS;
+    process.env.STAGESYNC_DISABLE_MDNS = "1";
+    try {
+      const net = await fetch(`${baseUrl}/api/system/network`);
+      expect(net.status).toBe(200);
+      expect(net.headers.get("cache-control")).toMatch(/no-store/i);
+      const body = (await net.json()) as {
+        port: number;
+        version: string;
+        mdnsEnabled: boolean;
+        urls: string[];
+      };
+      expect(body.port).toBe(4321);
+      expect(body.version).toBe("9.9.9-test");
+      expect(body.mdnsEnabled).toBe(false);
+      expect(body.urls.some((u) => u.includes("localhost:4321"))).toBe(true);
+    } finally {
+      if (prev === undefined) delete process.env.STAGESYNC_DISABLE_MDNS;
+      else process.env.STAGESYNC_DISABLE_MDNS = prev;
+    }
+
+    const clear = await fetch(`${baseUrl}/api/system/logs/clear`, {
+      method: "POST",
+    });
+    expect(clear.status).toBe(200);
+    expect(await clear.json()).toEqual({ ok: true });
+    expect(logBuffer.getLines()).toEqual([]);
+  });
 });

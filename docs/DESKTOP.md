@@ -40,7 +40,7 @@ MIDI i zegar muzyczny obsługuje wyłącznie host (serwer) — nie proces okna d
 
 ## Instalacja (gotowe instalatory)
 
-Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/Negatywistyczny/stagesync/releases):
+Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases):
 
 | Platforma | Plik |
 |-----------|------|
@@ -73,7 +73,7 @@ Launcher pokazuje **status + log** z akcją **Ponów** (nie biały ekran).
 - Przy awarii hosta najpierw sprawdź **log** w Launcherze — komunikat o zajętym porcie `4000` bywa mylący, gdy prawdziwy problem to awaria hosta albo blokada Defendera.
 - Pierwsze uruchomienie na Windows może potrwać dłużej (skan Defendera) — timeout startu to ~2 min.
 
-Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistyczny/stagesync/releases).
+Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistczny/stagesync/releases).
 
 ## Aktualizacja aplikacji
 
@@ -96,7 +96,7 @@ Gdy jest dostępna nowa wersja:
 - Rust toolchain (`rustup`) + zależności platformowe Tauri 2 — https://v2.tauri.app/start/prerequisites/
 - Lokalny host uruchamia się automatycznie przy wyborze lokalnego hosta w Launcherze.
 - Dev / cienki shell: zewnętrzny host przez `STAGESYNC_URL`.
-- Pełny build `.dmg` / `.msi` jest w [Release workflow](../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shelła.
+- Pełny build `.dmg` / `.msi` jest w [Release workflow](../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
 
 ## Dev
 

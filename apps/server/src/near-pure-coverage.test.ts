@@ -28,6 +28,21 @@ describe("network-info edges", () => {
     expect(info.port).toBe(4000);
     expect(info.urls.some((u) => u.includes("localhost"))).toBe(true);
   });
+
+  it("HOSTNAME empty / whitespace falls back; long names truncate", () => {
+    const prev = process.env.HOSTNAME;
+    try {
+      process.env.HOSTNAME = "   ";
+      expect(buildNetworkInfo(1).hostname).toBe("localhost");
+      process.env.HOSTNAME = `host-${"x".repeat(80)}`;
+      expect(buildNetworkInfo(1).hostname).toHaveLength(64);
+      delete process.env.HOSTNAME;
+      expect(buildNetworkInfo(1).hostname).toBe("localhost");
+    } finally {
+      if (prev === undefined) delete process.env.HOSTNAME;
+      else process.env.HOSTNAME = prev;
+    }
+  });
 });
 
 describe("live-desk first-write failure", () => {
