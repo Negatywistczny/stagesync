@@ -5952,7 +5952,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     className={styles.locator}
                     style={{ left: `${locatorPx}px` }}
                     role="slider"
-                    aria-label="Locator wklejania"
+                    aria-label="Lokator wklejania"
                     aria-valuemin={viewSpan.start}
                     aria-valuemax={viewSpan.end}
                     aria-valuenow={effectiveLocatorTicks}
