@@ -4,7 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
-import { buildStoreZip, crc32, parseZipArchive } from "./diagnostics-zip.js";
+import {
+  buildStoreZip,
+  crc32,
+  parseZipArchive,
+  ZIP_PARSE_MAX_ENTRIES,
+} from "./diagnostics-zip.js";
 import { createFileLogger } from "./file-logger.js";
 import { createLogBuffer } from "./log-buffer.js";
 import { inflateRawSync, deflateRawSync } from "node:zlib";
@@ -143,6 +148,15 @@ describe("file-logger + diagnostics zip (#351)", () => {
       { name: "../evil.txt", data: Buffer.from("x", "utf8") },
     ]);
     expect(() => parseZipArchive(zip)).toThrow(/Niedozwolona/);
+  });
+
+  it("parseZipArchive rejects archives over entry cap", () => {
+    const entries = Array.from({ length: ZIP_PARSE_MAX_ENTRIES + 1 }, (_, i) => ({
+      name: `f${i}.txt`,
+      data: Buffer.from("x", "utf8"),
+    }));
+    const zip = buildStoreZip(entries);
+    expect(() => parseZipArchive(zip)).toThrow(/zbyt wiele wpisów/);
   });
 
   it("logBuffer onPush forwards to sink", () => {
