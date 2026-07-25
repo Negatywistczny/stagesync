@@ -29,10 +29,20 @@
             Uruchom lokalny host
           </button>
           <div class="row localErrorActions" id="localErrorActions" hidden>
-            <button type="button" class="btn ghost" id="btnLocalClear">
+            <button
+              type="button"
+              class="btn ghost"
+              id="btnLocalClear"
+              aria-label="Wyczyść błąd lokalnego hosta"
+            >
               Wyczyść błąd
             </button>
-            <button type="button" class="btn secondary" id="btnLocalDownloadLog">
+            <button
+              type="button"
+              class="btn secondary"
+              id="btnLocalDownloadLog"
+              aria-label="Pobierz log lokalnego hosta"
+            >
               Pobierz log
             </button>
           </div>
@@ -87,16 +97,44 @@
           <div id="manualError" class="manualState" hidden>
             <p class="inlineError" id="manualErrorText" role="alert"></p>
             <div class="row">
-              <button type="button" class="btn secondary" id="btnManualRetry">Ponów</button>
-              <button type="button" class="btn ghost" id="btnManualBack">Wróć</button>
+              <button
+                type="button"
+                class="btn secondary"
+                id="btnManualRetry"
+                aria-label="Ponów połączenie z hostem"
+              >
+                Ponów
+              </button>
+              <button
+                type="button"
+                class="btn ghost"
+                id="btnManualBack"
+                aria-label="Wróć do formularza połączenia"
+              >
+                Wróć
+              </button>
             </div>
           </div>
 
           <div id="manualWarn" class="manualState" hidden>
             <p class="inlineWarn" id="manualWarnText" role="status"></p>
             <div class="row">
-              <button type="button" class="btn secondary" id="btnManualForce">Połącz mimo to</button>
-              <button type="button" class="btn ghost" id="btnManualWarnBack">Anuluj</button>
+              <button
+                type="button"
+                class="btn secondary"
+                id="btnManualForce"
+                aria-label="Połącz mimo ostrzeżenia o wersji"
+              >
+                Połącz mimo to
+              </button>
+              <button
+                type="button"
+                class="btn ghost"
+                id="btnManualWarnBack"
+                aria-label="Anuluj i wróć do formularza połączenia"
+              >
+                Anuluj
+              </button>
             </div>
           </div>
         </div>
