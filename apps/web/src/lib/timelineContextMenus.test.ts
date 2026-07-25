@@ -4,6 +4,8 @@ import {
   buildClipContextMenuItems,
   buildEmptyLaneContextMenuItems,
   clipboardMatchesEmptyLane,
+  clipContextMenuLabel,
+  mapSegmentSelectionAriaLabel,
 } from "./timelineContextMenus.js";
 
 function actionIds(
@@ -114,5 +116,29 @@ describe("timelineContextMenus", () => {
     expect(clipboardMatchesEmptyLane("forma", "forma")).toBe(true);
     expect(clipboardMatchesEmptyLane("cue", "forma")).toBe(false);
     expect(clipboardMatchesEmptyLane(null, "audio")).toBe(false);
+  });
+
+  it("clipContextMenuLabel announces multi-select count", () => {
+    expect(clipContextMenuLabel(1)).toBe("Menu klipu");
+    expect(clipContextMenuLabel(3)).toBe("Menu klipu (3 zaznaczone)");
+    expect(clipContextMenuLabel(0)).toBe("Menu klipu");
+    expect(clipContextMenuLabel(Number.NaN)).toBe("Menu klipu");
+  });
+
+  it("mapSegmentSelectionAriaLabel includes selection / group size", () => {
+    expect(
+      mapSegmentSelectionAriaLabel("120 BPM", { selected: false }),
+    ).toBe("120 BPM — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij");
+    expect(
+      mapSegmentSelectionAriaLabel("120 BPM", { selected: true }),
+    ).toBe("120 BPM, zaznaczony — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij");
+    expect(
+      mapSegmentSelectionAriaLabel("4/4", {
+        selected: true,
+        groupSize: 3,
+      }),
+    ).toBe(
+      "4/4, zaznaczony, w grupie 3 — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij",
+    );
   });
 });
