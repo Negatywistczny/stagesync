@@ -47,6 +47,7 @@ test.describe("Forma lane smoke", () => {
   }) => {
     const projectId = await createSeededProject(page);
 
+    // storageState seeds stagesync-device-display-name (DeviceNameGate); see playwright.config.ts.
     await page.goto(`/timeline/${projectId}`);
 
     // Track row + lane cell both carry data-track="forma".

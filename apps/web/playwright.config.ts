@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+import { DEVICE_DISPLAY_NAME_STORAGE_KEY } from "./src/lib/deviceNamePrefs.js";
 
 /**
  * Isolated data dir so e2e never touches the developer's `data/` tree.
@@ -18,6 +19,19 @@ for (const sub of ["library", "projects", "logs"] as const) {
 const webOrigin = "http://127.0.0.1:3000";
 const apiOrigin = "http://127.0.0.1:4000";
 
+/** Bypass DeviceNameGate in e2e; prod still requires a real name. */
+const e2eStorageState = {
+  cookies: [] as [],
+  origins: [
+    {
+      origin: webOrigin,
+      localStorage: [
+        { name: DEVICE_DISPLAY_NAME_STORAGE_KEY, value: "E2E" },
+      ],
+    },
+  ],
+};
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -29,6 +43,7 @@ export default defineConfig({
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   use: {
     baseURL: webOrigin,
+    storageState: e2eStorageState,
     trace: "on-first-retry",
     viewport: { width: 1280, height: 800 },
     locale: "pl-PL",

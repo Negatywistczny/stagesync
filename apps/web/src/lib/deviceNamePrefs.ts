@@ -2,7 +2,8 @@
  * Device display name for presence (`client_hello`) — shared across Client / Admin / Timeline.
  */
 
-const KEY = "stagesync-device-display-name";
+/** localStorage key — also seeded by Playwright e2e (`playwright.config.ts`). */
+export const DEVICE_DISPLAY_NAME_STORAGE_KEY = "stagesync-device-display-name";
 export const DEVICE_DISPLAY_NAME_MAX = 40;
 export const DEVICE_DISPLAY_NAME_CHANGED_EVENT = "stagesync-device-display-name";
 
@@ -13,7 +14,9 @@ export function normalizeDeviceDisplayName(raw: string): string {
 export function getStoredDeviceDisplayName(): string | null {
   try {
     if (typeof localStorage === "undefined") return null;
-    const v = normalizeDeviceDisplayName(localStorage.getItem(KEY) ?? "");
+    const v = normalizeDeviceDisplayName(
+      localStorage.getItem(DEVICE_DISPLAY_NAME_STORAGE_KEY) ?? "",
+    );
     return v || null;
   } catch {
     return null;
@@ -27,7 +30,7 @@ export function setStoredDeviceDisplayName(raw: string): string {
     throw new Error("Nazwa nie może być pusta");
   }
   try {
-    localStorage.setItem(KEY, name);
+    localStorage.setItem(DEVICE_DISPLAY_NAME_STORAGE_KEY, name);
   } catch {
     /* private mode / quota — still use in-memory via event */
   }
@@ -41,7 +44,7 @@ export function setStoredDeviceDisplayName(raw: string): string {
 
 export function clearStoredDeviceDisplayName(): void {
   try {
-    localStorage.removeItem(KEY);
+    localStorage.removeItem(DEVICE_DISPLAY_NAME_STORAGE_KEY);
   } catch {
     /* ignore */
   }
