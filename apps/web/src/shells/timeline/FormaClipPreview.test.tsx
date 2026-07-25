@@ -25,4 +25,22 @@ describe("FormaClipPreview", () => {
     expect(root.contains(label)).toBe(true);
     expect(root.className).toContain(styles.formaPreview);
   });
+
+  it("stays decorative (aria-hidden) for empty and non-empty labels", () => {
+    const { rerender } = render(
+      <FormaClipPreview label="" style={{ left: "0", width: "24px" }} />,
+    );
+    expect(
+      screen.getByTestId("forma-clip-preview").getAttribute("aria-hidden"),
+    ).toBe("true");
+    rerender(
+      <FormaClipPreview
+        label="Intro"
+        style={{ left: "4px", width: "80px" }}
+      />,
+    );
+    expect(
+      screen.getByTestId("forma-clip-preview").getAttribute("aria-hidden"),
+    ).toBe("true");
+  });
 });
