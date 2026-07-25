@@ -77,7 +77,7 @@ pnpm dev
 | `apps/web` | 💻 UI Admina / Timeline / Client muzyka |
 | `apps/desktop` | 🖥️ Shell Tauri + sidecar Node.js |
 | `apps/performer` | 📱 Android Performer (Client na scenie, sideload) |
-| `apps/console` | 📱 Android Console (pełne SPA + lokalny host docelowo) |
+| `apps/console` | 📱 Android Console (pełne SPA; łączenie z hostem LAN) |
 | `packages/shared` | 📐 Schematy Zod + czyste helpery czasu |
 | `packages/ui` | 🎨 Design system (tokeny `--ss-*`) |
 | `data/` | 📂 Szablony runtime *(pliki projektów użytkownika w `.gitignore`)* |

@@ -25,6 +25,7 @@ Szczegóły decyzji: `docs/adr/0002-timebase-ssot.md`.
 ## Decyzje produktowe vs backlog
 
 - **Backlog ≠ decyzja** — pozycja w TODO / triage bez PO nie jest permanent OUT.
+- Residual / „do wprowadzenia” → tylko TODO / ROADMAP / inspiracje / ADR decyzji — nie CHANGELOG ani docs operatorskie ([todo-hygiene.mdc](todo-hygiene.mdc)).
 - Stałe decyzje PO (Logic jako referencja DAW, multi-out, MIDI PC, auto-update NIE, menubar OUT, …):
   `docs/adr/0015-daw-reference-and-product-decisions.md`.
 - Przy wątpliwości UX / logiki edycji: **Logic Pro** jako pierwsza referencja mechanik;

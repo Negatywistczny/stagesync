@@ -8,11 +8,11 @@ Operator sketch for Android sideload and PWA (**v5.2** Pocket Stage). Product na
 |---|-------------------------|------------------------|
 | Rola | Pasywny klient sceniczny (Grid / Karaoke / Score / Drums) | Pełnoprawny odpowiednik desktopu na Androidzie |
 | Po połączeniu | WebView → `/client` | WebView → `/admin` (pełne SPA: Admin + Timeline + Client) |
-| Lokalny host | **Zakaz** (zawsze thin) | **Produkt IN** — eng fazowany (Faza 4); interim = LAN |
-| Audio / MIDI w procesie | **Zakaz** | SSOT na lokalnym hoście (gdy działa) albo host LAN |
+| Lokalny host | **Zakaz** (zawsze thin) | Przycisk **Uruchom lokalny host** — przy braku silnika w APK: uczciwy komunikat; typowo host LAN |
+| Audio / MIDI w procesie | **Zakaz** | SSOT na hoście (LAN albo lokalny, gdy silnik w APK działa) |
 | Katalog | `apps/performer` | `apps/console` |
 
-Thin-shell-only jako cel produktu jest **superseded** ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](./adr/0016-android-performer-console.md)). Performer pozostaje read-only Client-only.
+Performer pozostaje read-only Client-only ([ADR 0016](./adr/0016-android-performer-console.md)).
 
 ## Instalacja (sideload, bez Google Play)
 
@@ -47,7 +47,6 @@ Bez SDK skrypt wychodzi 0 (skip) — CI Node bez Androida nie pada.
 - **ABI:** tylko `arm64-v8a` + `armeabi-v7a` (bez x86/x86_64) — sideload tablety ARM.
 - **Release:** R8 minify + shrinkResources włączone; **debug** bez minify (lokalny sideload).
 - `ndk.abiFilters` obowiązuje też debug, więc `data/downloads/*.apk` od razu bez ABI emulatorych.
-- **Faza 4:** opcjonalne `libnode.so` (nodejs-mobile) powiększa APK o ~50 MB+ na ABI — nie bundlowane domyślnie; patrz poniżej.
 
 ## QR: dołącz vs pobierz APK
 
@@ -59,9 +58,9 @@ W Admin → Host → **Sieć & Szybkie Połączenie**:
 | **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk` |
 | **Pobierz Console** | `{origin}/downloads/stagesync-console.apk` |
 
-W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień zostaje wklejenie adresu (bez atrapy podglądu).
+W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień — wklejenie adresu.
 
-Gdy plik APK **nie leży** w katalogu downloads hosta, UI pokazuje **pusty stan** (komunikat), nie atrapę „Pobierz” ([ADR 0011](./adr/0011-ui-parity-behavior.md)). Endpoint zwraca **404** z jasnym tekstem.
+Gdy plik APK **nie leży** w katalogu downloads hosta, UI pokazuje **pusty stan** (komunikat). Endpoint zwraca **404** z jasnym tekstem.
 
 Domyślna lokalizacja plików na hoście: `$STAGESYNC_DATA_DIR/downloads/` (nadpisanie: `STAGESYNC_DOWNLOADS_DIR`).
 
@@ -85,8 +84,6 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 3. **Hash UI (rola):** health niesie `uiHash` (pełne SPA hosta) oraz opcjonalnie `uiHashPerformer` / `uiHashConsole`. Powłoka porównuje **tylko** swój hash roli — nigdy pełnego `uiHash` (żeby „Zastosuj” nie wlało pełnego SPA do Performera). `uiHashConsole` odpowiada bundlowi Console (pełne SPA).
 4. **Zastosuj:** pobranie `GET /downloads/ui-bundle-performer.zip` albo `…-console.zip`, rozpakowanie do `ui-cache`, przeładowanie z lokalnego drzewa. Manifest: `GET /api/ui-manifest?role=performer|console` (bez `role` = pełne SPA hosta). Legacy `GET /downloads/ui-bundle.zip` = pełny dist (PWA / host).
 5. **PWA SW:** klucz cache oparty o `uiHash` pełnego buildu; nadal **nie** cache’uje `/api`, `/ws`, `/downloads`.
-
-**Follow-up:** różnicowy delta / CacheStorage per-asset; binary zstd.
 
 ## Operator: PIN, motyw, Safety Net, Sampler
 
@@ -113,70 +110,38 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 `apps/web` wystawia manifest + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”. Wake Lock API w przeglądarce + `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock).
 
-## H-01 (perf Client) — observe first
+## H-01 (perf Client) — sonda
 
-**Nie** robić dużego rewrite `TransportProvider` (split context / throttle) bez profilu na tablecie.
+Opt-in sonda w Client (PWA / Performer WebView):
 
-### Stan na drzewie
-
-1. Otwarte: [TODO](./TODO.md) pozycja **Client transport — H-01**.
-2. Vitest: `TransportProvider` — każdy rAF z **nowymi** tickami → re-render konsumentów `useTransport`; ten sam integer tick → **bez** re-renderu (equality bail w `commitDisplayTicks`).
-3. Opt-in sonda: `apps/web/src/transport/h01PerfProbe.ts` (bez wpływu gdy wyłączona).
-
-### Jak profilować (tablet / Chrome)
-
-1. Otwórz Client (PWA lub Performer WebView) z `?ss_perf=h01` **albo** w konsoli: `localStorage.setItem('stagesync_perf_h01','1')` i przeładuj.
+1. Otwórz z `?ss_perf=h01` **albo** w konsoli: `localStorage.setItem('stagesync_perf_h01','1')` i przeładuj.
 2. Wybierz rolę Grid lub Karaoke, uruchom Play na hoście.
-3. Po ≥2 s w konsoli / remote debugging: `window.__stagesyncH01.refresh()` — odczytaj `rafHz`, `commitHz`, `renderHz` (ClientShell).
-4. Równolegle: Chrome Performance + React Profiler (highlight updates) @ 90–120 Hz — koszt commitów przy `setDisplayTicks`.
-5. **Dopiero potem:** split context / throttle `displayTicks`; OSMD = cursor transform only (zakaz full `osmd.render()` co klatkę).
-6. Follow-up po profilu: `prefers-reduced-motion`; opcjonalnie thermal → cap ~30 FPS interpolacji.
+3. Po ≥2 s w konsoli / remote debugging: `window.__stagesyncH01.refresh()` — odczytaj `rafHz`, `commitHz`, `renderHz`.
 
 Wyłączenie: usuń query / `localStorage.removeItem('stagesync_perf_h01')` i przeładuj.
 
-## Macierz akceptacji HW (bez claim green)
+## Smoke HW (Performer / Console)
 
-Kryteria **Performer** (dump MOB / plan):
+Kryteria **Performer**:
 
-| ID | Kryterium | Dowód |
-|----|-----------|-------|
-| P-HW1 | Playhead stabilny przy latency sieci do ~150 ms | — |
-| P-HW2 | Ekran bez uśpienia ≥ 4 h w widoku roli | — |
-| P-HW3 | Re-connect poniżej ~1,5 s po odzyskaniu Wi‑Fi | — |
-| P-HW4 | Zmiana stroju/transpozycji widoczna poniżej ~200 ms (Grid/Score) | — |
+| ID | Kryterium |
+|----|-----------|
+| P-HW1 | Playhead stabilny przy latency sieci do ~150 ms |
+| P-HW2 | Ekran bez uśpienia ≥ 4 h w widoku roli |
+| P-HW3 | Re-connect poniżej ~1,5 s po odzyskaniu Wi‑Fi |
+| P-HW4 | Zmiana stroju/transpozycji widoczna poniżej ~200 ms (Grid/Score) |
 
-Kryteria **Console** (osobna macierz — nie mylić z pasywnym Performerem):
+Kryteria **Console** (nie mylić z pasywnym Performerem):
 
-| ID | Kryterium | Dowód |
-|----|-----------|-------|
-| C-HW1 | Launcher → health → `/admin` na tablecie LAN | — |
-| C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA) | — |
-| C-HW3 | „Uruchom lokalny host” widoczny; sukces albo uczciwy status (bez atrapy) | — |
+| ID | Kryterium |
+|----|-----------|
+| C-HW1 | Launcher → health → `/admin` na tablecie LAN |
+| C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA) |
+| C-HW3 | „Uruchom lokalny host” widoczny; sukces albo uczciwy status przy braku silnika |
 
-**Bez claim green** bez dowodu z hardware ([todo-hygiene](../.cursor/rules/todo-hygiene.mdc)).
+## Lokalny host na Console
 
-## Faza 4 — lokalny host na Console
-
-**Decyzja produktowa:** lokalny host na Console = **IN** (pełny parytet desktopu). Thin-shell LAN pozostaje ścieżką interim.
-
-| | Teraz (interim + scaffold) | Docelowo |
-|---|-------------|------------------|
-| Shell | Kotlin WebView + pełne SPA | + lokalny proces hosta (SSOT) |
-| „Uruchom lokalny host” | **Widoczny** — start foreground service; bez pełnego silnika → uczciwy komunikat | Bind `127.0.0.1:4000`, health → WebView `/admin` |
-| Silnik | Scaffold: `LocalHostService` + skrypt `prepare-local-host` (nodejs-mobile `libnode.so` + paczka serwera) | JNI bridge (`node::Start`) + bundled `apps/server` jak desktop sidecar |
-| SSOT czasu / MIDI | Zdalny host LAN (gdy lokalny niedostępny) | Lokalny host na urządzeniu **albo** nadal LAN |
-
-### Eng — następne kroki (nie claim Done)
-
-1. **NDK + JNI:** most C++ do `libnode.so` (nodejs-mobile v18.x) — wzorzec JaneaSystems `native-gradle`; `System.loadLibrary("node")` + `startNodeWithArguments`.
-2. **Paczka serwera:** podzbiór desktop sidecar (`launch/scripts/build-desktop-sidecar.mjs`) → `assets/host/server` (dist + pruned `node_modules`); data dir w `filesDir/stagesync-data`.
-3. **Skrypt:** `./apps/console/scripts/prepare-local-host.mjs` pobiera `nodejs-mobile-*-android.zip` → `jniLibs/{arm64-v8a,armeabi-v7a}/libnode.so` (gitignored) i opcjonalnie pakuje serwer.
-4. **Foreground service** + kanał powiadomień — już scaffold w APK; po starcie Node: probe `http://127.0.0.1:4000/api/health` → `HostWebActivity`.
-5. **Bez Termux** — tylko bundled native + assets w APK.
-
-Desktop porównanie: Tauri `externalBin` `stagesync-host` = oficjalny Node dla macOS/Windows; na Androidzie oficjalne Node dist **nie** istnieje → nodejs-mobile (shared lib), nie `ProcessBuilder` na ELF z nodejs.org.
-
-W launcherze Console przycisk jest **widoczny i aktywny**. Brak spakowanego silnika = komunikat fail-open (nie „sukces”) ([ADR 0011](./adr/0011-ui-parity-behavior.md)).
+W launcherze Console przycisk **Uruchom lokalny host** jest widoczny. Typowa praca: połączenie z hostem LAN. Gdy silnik nie jest spakowany w APK, UI pokazuje uczciwy komunikat (fail-open), nie fałszywy sukces.
 
 ## Zakazy
 
@@ -185,10 +150,10 @@ W launcherze Console przycisk jest **widoczny i aktywny**. Brak spakowanego siln
 - Audio / MIDI clock / synteza w procesie **Performer**.
 - Edycja Timeline / Mixer z **Performer**.
 - Performer jako Admin / lokalny host.
-- Stub UI „pobierz APK” bez pliku na hoście.
+- Przycisk „Pobierz APK”, gdy pliku nie ma na hoście (pusty stan / 404 zamiast tego).
 - Ciche pobieranie / instalacja APK bez potwierdzenia operatora.
 - Cichy sync UI mid-set (bez dialogu „Zastosuj nowy interfejs”).
-- Atrapa „lokalny host uruchomiony” bez realnego `/api/health` na pętli zwrotnej.
+- Komunikat sukcesu lokalnego hosta bez realnego `/api/health` na pętli zwrotnej.
 
 ## Powiązane
 

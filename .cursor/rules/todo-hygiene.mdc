@@ -20,6 +20,10 @@ Ten plik = **jak prowadzić `docs/TODO.md`** i jak nie kłamać w docs.
   2. **Should / Weryfikacja**
   3. **Etap 5.1+ (Przyszłość)**
 
+## Residual / nieshipnięte (SSOT lokalizacji)
+
+Elementy **jeszcze do wprowadzenia** żyją **tylko** w `docs/TODO.md`, `docs/ROADMAP.md`, opcjonalnie `docs/analysis/inspiracje/**`, oraz w ADR gdy to trwała decyzja PO (np. „wprowadzić”). **Nie** w CHANGELOG / release notes ani w publicznej docs operatorskiej (`INSTALL` / `DESKTOP` / `MOBILE` itd.) — ani jako marketing absencji („bez X”). Hard Stop: [changelog.mdc](changelog.mdc).
+
 ## No fake claims
 
 - **Nie** oznaczaj Done / nie przenoś do CHANGELOG bez realnego kodu + testów + parity runtime (gdy dotyczy UI/transportu).
