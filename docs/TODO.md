@@ -23,7 +23,6 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] **Mixer — HW Out 3–4 (WebAudio multi-out):** UI + ChannelMerger przy realnym `maxChannelCount` ≥ 4 ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Client transport — H-01 (residual):** split context / throttle `displayTicks` pod profil Grid/Karaoke @ 90–120 Hz ([MOBILE.md](./MOBILE.md) § H-01; [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md))
 - [ ] **GUI mobile (responsive):** poprawa wszystkich powierzchni (Admin / Client / Timeline) pod wąskie viewporty, touch i Android WebView ([MOBILE.md](./MOBILE.md); [ADR 0016](./adr/0016-android-performer-console.md))
-- [ ] **Client:** usunięcie / wyłączenie przeskoku do następnego (i ewentualnie poprzedniego) utworu z poziomu Clienta — ryzyko przypadkowych tapnięć
 - [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console — residual:** Faza 4 JNI/`libnode`; smoke P-HW/C-HW na tablecie — **bez claim HW green** ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md); [triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md))
 - [ ] [#692](https://github.com/Negatywistyczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
 - [ ] **Safety Net (residual):** auto-election / lease split-brain ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))

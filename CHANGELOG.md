@@ -18,6 +18,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 📚 Dokumentacja
 - **Instalacja / Desktop:** opis Przywróć (`.bak` / ZIP) w ustawieniach serwera oraz opcjonalnych DSN Sentry.
 
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Client:** bez ręcznej zmiany utworu w chrome (usunięty „→następny”) — setlista sterowana z Admin / Timeline; gęstszy nagłówek z czytelnym tytułem, tonacją, tempem, metrum i taktem oraz więcej miejsca na treść sceniczną.
+
 ### Naprawiono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)

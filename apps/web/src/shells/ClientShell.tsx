@@ -18,6 +18,8 @@ import {
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
   INSTRUMENT_PITCH_MANUAL_MIN,
+  formatKeySignature,
+  resolveKeyAt,
   resolveMeterAt,
   resolveStageCueBanner,
   resolveTempoAt,
@@ -46,7 +48,6 @@ import {
 } from "../lib/clockDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
 import { putProject } from "../lib/libraryApi.js";
-import { fetchSetlist } from "../lib/setlistApi.js";
 import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -113,10 +114,7 @@ export function ClientShell() {
     latencyMs,
     stageCues,
     liveDesk,
-    setlistSnapshot,
-    play,
     seek,
-    commandPending,
     error: transportError,
     announcePresence,
   } = useTransport();
@@ -159,8 +157,6 @@ export function ClientShell() {
   const [wallClockMs, setWallClockMs] = useState(() => Date.now());
   const cueAlertSeenRef = useRef<Set<string>>(new Set());
   const [cueFlashId, setCueFlashId] = useState<string | null>(null);
-  const [setlistIds, setSetlistIds] = useState<string[]>([]);
-  const [setlistEnabled, setSetlistEnabled] = useState(false);
   const [scoreZoom, setScoreZoom] = useState(SCORE_ZOOM_DEFAULT);
   const [scoreFollowPlayhead, setScoreFollowPlayhead] = useState(true);
   const [scoreOctave, setScoreOctave] = useState<ScoreOctave>(0);
@@ -243,31 +239,6 @@ export function ClientShell() {
   }, [wsStatus, reloadActiveProject]);
 
   useEffect(() => {
-    setSetlistIds(setlistSnapshot.projectIds);
-    setSetlistEnabled(setlistSnapshot.enabled);
-  }, [setlistSnapshot]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const view = await fetchSetlist();
-        if (cancelled) return;
-        setSetlistIds(view.projectIds);
-        setSetlistEnabled(view.enabled);
-      } catch {
-        if (!cancelled) {
-          setSetlistIds([]);
-          setSetlistEnabled(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [state.activeProjectId]);
-
-  useEffect(() => {
     const id = window.setInterval(() => setWallClockMs(Date.now()), 250);
     return () => window.clearInterval(id);
   }, []);
@@ -311,23 +282,14 @@ export function ClientShell() {
   }, [state.activeProjectId]);
 
   const songTitle = activeProject?.name ?? "Brak utworu";
-  const setlistIndex = state.activeProjectId
-    ? setlistIds.indexOf(state.activeProjectId)
-    : -1;
-  const nextSetlistId: string | null =
-    setlistEnabled &&
-    setlistIndex >= 0 &&
-    setlistIndex < setlistIds.length - 1
-      ? (setlistIds[setlistIndex + 1] ?? null)
-      : null;
+  const keyLabel = activeProject
+    ? formatKeySignature(resolveKeyAt(activeProject, displayTicks))
+    : "—";
+  const tempoLabel = `${Math.round(cueBpm)} BPM`;
+  const meterLabel = `${cueMeter.numerator}/${cueMeter.denominator}`;
 
   async function onFullscreen() {
     await toggleAppFullscreen();
-  }
-
-  async function onNextSong() {
-    if (!nextSetlistId || commandPending) return;
-    await play({ projectId: nextSetlistId });
   }
 
   function toggleRole(id: RoleId) {
@@ -364,12 +326,12 @@ export function ClientShell() {
     latencyMs,
     started,
     songTitle,
+    keyLabel,
+    tempoLabel,
+    meterLabel,
     bbt: headerBbt,
     clockLabel,
-    nextSetlistId,
-    nextSongPending: commandPending,
     transportError,
-    onNextSong: () => void onNextSong(),
     onFullscreen: shouldShowFullscreenControl()
       ? () => void onFullscreen()
       : undefined,
@@ -767,12 +729,12 @@ type ClientHeaderProps = {
   latencyMs: number | null;
   started: boolean;
   songTitle: string;
+  keyLabel: string;
+  tempoLabel: string;
+  meterLabel: string;
   bbt: { bar: number; beat: number };
   clockLabel: string;
-  nextSetlistId: string | null;
-  nextSongPending: boolean;
   transportError: string | null;
-  onNextSong: () => void;
   onFullscreen?: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
@@ -788,12 +750,12 @@ function ClientChrome({
   latencyMs,
   started,
   songTitle,
+  keyLabel,
+  tempoLabel,
+  meterLabel,
   bbt,
   clockLabel,
-  nextSetlistId,
-  nextSongPending,
   transportError,
-  onNextSong,
   onFullscreen,
   globalSettingsOpen,
   onToggleGlobalSettings,
@@ -824,25 +786,34 @@ function ClientChrome({
         ))}
       </div>
 
-      <strong className={styles.songTitle}>{songTitle}</strong>
-      {started ? (
-        <button
-          type="button"
-          className={styles.setlistNext}
-          disabled={!nextSetlistId || nextSongPending}
-          onClick={onNextSong}
-          title="Następny utwór setlisty"
-          aria-label="Następny utwór setlisty"
-        >
-          →następny
-        </button>
-      ) : null}
+      <div className={styles.songCluster}>
+        <strong className={styles.songTitle}>{songTitle}</strong>
+        <dl className={styles.songMeta} aria-label="Meta utworu">
+          <div className={styles.songMetaItem}>
+            <dt className={styles.songMetaLab}>Tonacja</dt>
+            <dd className={styles.songMetaVal}>{keyLabel}</dd>
+          </div>
+          <div className={styles.songMetaItem}>
+            <dt className={styles.songMetaLab}>Tempo</dt>
+            <dd className={styles.songMetaVal}>{tempoLabel}</dd>
+          </div>
+          <div className={styles.songMetaItem}>
+            <dt className={styles.songMetaLab}>Metrum</dt>
+            <dd className={styles.songMetaVal}>{meterLabel}</dd>
+          </div>
+          <div className={styles.songMetaItem}>
+            <dt className={styles.songMetaLab}>Takt</dt>
+            <dd className={[styles.songMetaVal, styles.takt].join(" ")}>
+              {clockLabel}
+            </dd>
+          </div>
+        </dl>
+      </div>
       {transportError ? (
         <span className={styles.transportError} role="alert">
           {transportError}
         </span>
       ) : null}
-      <span className={styles.takt}>{clockLabel}</span>
 
       <div className={styles.headerActions}>
         <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
