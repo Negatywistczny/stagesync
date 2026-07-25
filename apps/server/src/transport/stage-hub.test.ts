@@ -93,4 +93,35 @@ describe("createStageHub", () => {
       sentAtMs: 1_700_000_000_000,
     });
   });
+
+  it("dismiss empty id is false; clearAll on empty still emits; unsubscribe stops", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_700_000_000_300);
+    const hub = createStageHub();
+    expect(hub.dismiss("")).toBe(false);
+    expect(hub.dismiss("missing")).toBe(false);
+
+    const events: unknown[] = [];
+    const off = hub.onMessage((m) => events.push(m));
+    hub.clearAll();
+    expect(events).toEqual([
+      {
+        type: "stage_cue_dismiss",
+        clearAll: true,
+        sentAtMs: 1_700_000_000_300,
+      },
+    ]);
+
+    off();
+    events.length = 0;
+    hub.broadcast({
+      type: "stage_cue",
+      text: "after-unsub",
+      roles: ["drums"],
+      ttlMs: 0,
+      priority: "alert",
+    });
+    expect(events).toEqual([]);
+    expect(hub.list()[0]?.roles).toEqual(["drums"]);
+    expect(hub.list()[0]?.priority).toBe("alert");
+  });
 });
