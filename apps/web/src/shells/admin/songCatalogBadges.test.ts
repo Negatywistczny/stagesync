@@ -18,6 +18,26 @@ describe("catalogSongBadges", () => {
   it("skips missing fields", () => {
     expect(catalogSongBadges({ id: "p1", name: "Demo" })).toEqual([]);
   });
+
+  it("skips non-finite BPM, blank key, and non-positive duration", () => {
+    expect(
+      catalogSongBadges({
+        id: "p1",
+        name: "Demo",
+        defaultBpm: Number.NaN,
+        keyLabel: "   ",
+        durationMs: 0,
+      }),
+    ).toEqual([]);
+    expect(
+      catalogSongBadges({
+        id: "p1",
+        name: "Demo",
+        defaultBpm: Number.POSITIVE_INFINITY,
+        durationMs: -1,
+      }),
+    ).toEqual([]);
+  });
 });
 
 describe("songInspectorMeta", () => {
