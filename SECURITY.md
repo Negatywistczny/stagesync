@@ -22,3 +22,9 @@ nie powinny trafiać do gita — zob. `.gitignore`.
 
 Kod objęty [LICENSE](LICENSE) (BSL 1.1); zgłaszanie podatności nie zmienia
 warunków licencji.
+
+## Monitoring (opcjonalnie)
+
+Crash reporting (Sentry) jest wyłączony, dopóki nie ustawisz `SENTRY_DSN` /
+`VITE_SENTRY_DSN` — zob. [docs/INSTALL.md](docs/INSTALL.md) § Sentry. Nie
+commituj prawdziwych DSN; raporty nie powinny zawierać PIN-u / tokenów hosta.

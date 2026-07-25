@@ -82,7 +82,7 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 | Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; produkty: **Performer** (`apps/performer` → `/client`, read-only) i **Console** (`apps/console` = pełny odpowiednik desktopu: Admin + Timeline + Client + docelowo lokalny host); szczegóły shella → [ADR 0016](./0016-android-performer-console.md) |
 | Console + lokalny host (Android) | **Decyzja produktowa: IN** — Console = pełnoprawny odpowiednik desktopu na Androidzie (nie thin-shell-only). Implementacja eng fazowana (Faza 4); interim może łączyć się z hostem LAN, ale claim/cel = pełny parytet. Thin-shell-only MVP = **superseded** jako intencja produktu. |
 | Performer + lokalny host / Admin | **OUT** — Performer zawsze Client-only (read-only); bez sidecara, bez edycji Timeline/Mixer |
-| Backup Przywróć (pełne GUI) | Backlog, nie decyzja OUT |
+| Backup Przywróć | **IN (MVP):** Admin → Przywróć… pojedynczy `.bak` (+ PIN gdy włączony). Residual: pełne archiwum ZIP / bulk multi-file |
 | Auto-update bez operatora | **Permanentnie NIE** na scenie — zawsze akcja człowieka |
 | Pakiet projektu | MVP = `.stagesync.json` (na teraz) |
 | Menubar OS | **OUT:** ustawienia Audio/MIDI/DMX, Tap Tempo/Pre-count, top-level Setlista (sterowanie w Admin); lekki tray OK |
@@ -92,7 +92,7 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 
 - Konstytucja wskazuje ten ADR (reguła Logic + backlog ≠ decyzja).
 - ADR 0008: sekcja OUT bez absolutnego „nigdy” dla Flex/Takes/recording; wyjątek Pencil→import audio.
-- TODO: PC kanały = aktywna praca; multi-out = decyzja + backlog implementacji; Must = G1–G10.
+- TODO: Must = G1–G10 HW; multi-out UI / H-01 / JNI = residual 5.2+; MIDI PC kanały = shipped w 5.2.0.
 - CHANGELOG tylko przy zmianach widocznych w produkcie (np. MIDI PC kanały + debounce) — nie za sam ADR.
 
 ## Powiązane

@@ -113,7 +113,8 @@ W **Ustawienia → Serwer → Zaawansowane — Ścieżki** jest **Przywróć…*
 Host nadpisuje plik w katalogu danych po potwierdzeniu; gdy ustawiony jest
 `STAGESYNC_OPERATOR_PIN`, wymagany jest PIN. Przed nadpisaniem powstaje
 `.pre-restore.bak`. Po przywróceniu odśwież Admin / Timeline, jeśli otwarty
-był ten projekt.
+był ten projekt. Przywracanie pełnego archiwum ZIP / wielu plików naraz —
+jeszcze nie; na razie jeden plik `.bak` na raz.
 
 ## Update hosta
 
@@ -135,7 +136,7 @@ Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WAT
 
 ```sh
 # Przywróć poprzednią wersję w .env, np.:
-# STAGESYNC_VERSION=5.1.3
+# STAGESYNC_VERSION=5.2.0
 docker compose -f compose.prod.yml up -d
 ```
 
