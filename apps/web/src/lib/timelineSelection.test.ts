@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  selectAllProjectClips,
+  isModClick,
+  isAudioSelectionLane,
+  idsOnLane,
   applySoloButtonClick,
   clearSelection,
   clearTrackSelection,
@@ -298,4 +302,46 @@ describe("timelineSelection", () => {
     expect(sel.primaryId).toBe("a");
   });
 
+  it("idsOnLane / isAudioSelectionLane / isModClick / selectAllProjectClips", () => {
+    const audioLane = `audio:track-1` as const;
+    const sel = setSelection(
+      [
+        { id: "a", lane: "forma" },
+        { id: "b", lane: "tekst" },
+        { id: "c", lane: audioLane },
+      ],
+      "a",
+    );
+    expect(idsOnLane(sel, "forma")).toEqual(["a"]);
+    expect(idsOnLane(sel, audioLane)).toEqual(["c"]);
+    expect(isAudioSelectionLane(audioLane)).toBe(true);
+    expect(isAudioSelectionLane("forma")).toBe(false);
+    expect(isAudioSelectionLane(null)).toBe(false);
+    expect(isModClick({ metaKey: true })).toBe(true);
+    expect(isModClick({ ctrlKey: true })).toBe(true);
+    expect(isModClick({ shiftKey: true })).toBe(false);
+
+    const all = selectAllProjectClips({
+      forma: {
+        clips: [
+          { id: "s1", kind: "section" },
+          { id: "cd1", kind: "countdown" },
+        ],
+      },
+      tekst: { clips: [{ id: "t1" }] },
+      akordy: { clips: [{ id: "k1" }] },
+      cue: { clips: [{ id: "u1" }] },
+      audioClips: [{ id: "a1", trackId: "track-1" }],
+    });
+    expect(all.items.map((i) => i.id)).toEqual(["s1", "t1", "k1", "u1", "a1"]);
+    expect(all.items.some((i) => i.id === "cd1")).toBe(false);
+    expect(all.primaryId).toBe("a1");
+    expect(selectAllProjectClips({
+      forma: { clips: [] },
+      tekst: { clips: [] },
+      akordy: { clips: [] },
+      cue: { clips: [] },
+      audioClips: [],
+    })).toEqual(clearSelection());
+  });
 });
