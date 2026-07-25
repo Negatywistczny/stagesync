@@ -168,6 +168,7 @@ import {
   buildClipContextMenuItems,
   buildEmptyLaneContextMenuItems,
   clipboardMatchesEmptyLane,
+  clipContextMenuLabel,
   type ClipMenuLane,
   type EmptyLaneMenuKind,
 } from "../lib/timelineContextMenus.js";
@@ -4800,10 +4801,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     openContextMenu({
       x: clientX,
       y: clientY,
-      label:
-        selectionCount > 1
-          ? `Menu klipu (${selectionCount} zaznaczone)`
-          : "Menu klipu",
+      label: clipContextMenuLabel(selectionCount),
       items: buildClipContextMenuItems({
         lane,
         canPaste,
