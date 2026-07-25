@@ -6603,6 +6603,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 </ShellIconButton>
               </span>
             </div>
+            {clipSelection.items.length > 1 ? (
+              <p
+                className={styles.inspMulti}
+                role="status"
+                aria-live="polite"
+              >
+                Zaznaczono {clipSelection.items.length} klipów
+                {selectionLane
+                  ? ` · ${
+                      selectionLane === "forma"
+                        ? "Forma"
+                        : selectionLane === "tekst"
+                          ? "Tekst"
+                          : selectionLane === "akordy"
+                            ? "Akordy"
+                            : selectionLane === "cue"
+                              ? "Cue"
+                              : "Audio"
+                    }`
+                  : ""}
+              </p>
+            ) : null}
             {songMetaOpen && draftProject ? (
               <div className={styles.inspBody}>
                 <label className={styles.inspField}>
