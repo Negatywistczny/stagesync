@@ -31,9 +31,15 @@ export type UgImportOk = {
 
 export type UgImportErr = {
   ok: false;
+  /** Operator-facing reason (empty input, parse failure, validation). */
   message: string;
 };
 
+/**
+ * Discriminated result of Ultimate Guitar / ChordPro-lite import.
+ * Success carries sealed Tekst + Akordy clip lists ready to merge into a Project;
+ * failure never throws — use `message` for UI.
+ */
 export type UgImportResult = UgImportOk | UgImportErr;
 
 export type UgImportOptions = {
