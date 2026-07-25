@@ -73,4 +73,11 @@ describe("Button", () => {
       btn.querySelector(".ss-btn__spinner")?.getAttribute("aria-hidden"),
     ).toBe("true");
   });
+
+  it("merges className onto ss-btn", () => {
+    render(<Button className="extra">Save</Button>);
+    const btn = screen.getByRole("button", { name: "Save" });
+    expect(btn.className).toContain("ss-btn");
+    expect(btn.className).toContain("extra");
+  });
 });
