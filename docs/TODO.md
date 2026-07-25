@@ -16,7 +16,6 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 ## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
-- [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
 
 ## Etap 5.2+ (Przyszłość)
 
