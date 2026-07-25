@@ -6699,7 +6699,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <span className={styles.metaKeyRow}>
                     <select
                       className={styles.nameInput}
-                      aria-label="Tonic start"
+                      aria-label="Tonika startu"
                       value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
                       onChange={(e) => {
                         const mode =
@@ -7570,7 +7570,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         <div
           className={styles.touchNudge}
           role="toolbar"
-          aria-label="Przesuń i rozciągnij clip"
+          aria-label="Przesuń i rozciągnij klip"
         >
           <button
             type="button"
