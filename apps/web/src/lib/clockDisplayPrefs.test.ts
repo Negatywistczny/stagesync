@@ -3,6 +3,7 @@ import {
   CLOCK_DISPLAY_STORAGE_KEY,
   formatClockDisplay,
   formatMmSsMs,
+  isClockDisplayFormat,
   getStoredClockDisplayFormat,
   setStoredClockDisplayFormat,
 } from "./clockDisplayPrefs.js";
@@ -28,6 +29,13 @@ describe("clockDisplayPrefs", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("isClockDisplayFormat accepts bbt/time only", () => {
+    expect(isClockDisplayFormat("bbt")).toBe(true);
+    expect(isClockDisplayFormat("time")).toBe(true);
+    expect(isClockDisplayFormat("bars")).toBe(false);
+    expect(isClockDisplayFormat(null)).toBe(false);
   });
 
   it("defaults to bbt and stores time", () => {

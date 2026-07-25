@@ -369,7 +369,11 @@ export function SetView({ library, selectedId }: SetViewProps) {
                     </label>
                     <Button
                       variant="ghost"
+                      iconOnly
                       disabled={inSet || pending}
+                      aria-label={
+                        inSet ? `${p.name} — już w secie` : `Dodaj ${p.name} do setu`
+                      }
                       onClick={() => onAddOne(p.id)}
                     >
                       {inSet ? "✓" : "+"}
@@ -570,7 +574,9 @@ export function SetView({ library, selectedId }: SetViewProps) {
                         </span>
                         <Button
                           variant="ghost"
+                          iconOnly
                           disabled={pending}
+                          aria-label="Usuń przerwę z setu"
                           onClick={() => {
                             setDraftItems((items) =>
                               items.filter((_, i) => i !== index),
@@ -596,7 +602,9 @@ export function SetView({ library, selectedId }: SetViewProps) {
                         </span>
                         <Button
                           variant="ghost"
+                          iconOnly
                           disabled={pending}
+                          aria-label={`Usuń ${nameFor(item.projectId)} z setu`}
                           onClick={() => {
                             setDraftItems((items) =>
                               items.filter((_, i) => i !== index),

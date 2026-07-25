@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createProjectV5Seed } from "@stagesync/shared";
 import {
   commitContentGesture,
+  joinAdjacentContentClips,
   commitMoveContentClip,
   commitMoveContentClips,
   commitPencilContentSpan,
@@ -299,5 +300,59 @@ describe("contentLaneEdit remaining", () => {
     base = pencilAkordyClick(createProjectV5Seed("p4", "S", "2026-07-20T12:00:00.000Z"), 0, "Em");
     const overAk = commitPencilContentSpan(base, "akordy", 1920, 5760, "off");
     expect(overAk.akordy.clips.some((c) => c.symbol === "Em" || c.symbol === "C")).toBe(true);
+  });
+
+  it("joinAdjacentContentClips merges abutting or is identity", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = pencilTekstClick(p, 0, "A");
+    p = pencilTekstClick(p, 3840, "B");
+    const a = p.tekst.clips.find((c) => c.text === "A")!;
+    const b = p.tekst.clips.find((c) => c.text === "B")!;
+    // Make B abut A (pencil may leave gap depending on snap — force geometry)
+    p = {
+      ...p,
+      tekst: {
+        ...p.tekst,
+        clips: [
+          { ...a, startTicks: 0, lengthTicks: 3840 },
+          { ...b, startTicks: 3840, lengthTicks: 3840 },
+        ],
+      },
+    };
+    const joined = joinAdjacentContentClips(p, "tekst", a.id);
+    expect(joined.tekst.clips).toHaveLength(1);
+    expect(joined.tekst.clips[0]!.id).toBe(a.id);
+    expect(joined.tekst.clips[0]!.lengthTicks).toBe(7680);
+    expect(joined.tekst.clips[0]!.text).toBe("A");
+
+    expect(joinAdjacentContentClips(p, "tekst", "missing")).toBe(p);
+    const gap = {
+      ...p,
+      tekst: {
+        ...p.tekst,
+        clips: [
+          { ...a, startTicks: 0, lengthTicks: 3840 },
+          { ...b, startTicks: 4000, lengthTicks: 3840 },
+        ],
+      },
+    };
+    expect(joinAdjacentContentClips(gap, "tekst", a.id)).toBe(gap);
+
+    const fromRight = joinAdjacentContentClips(
+      {
+        ...p,
+        tekst: {
+          ...p.tekst,
+          clips: [
+            { ...a, startTicks: 0, lengthTicks: 3840 },
+            { ...b, startTicks: 3840, lengthTicks: 3840 },
+          ],
+        },
+      },
+      "tekst",
+      b.id,
+    );
+    expect(fromRight.tekst.clips).toHaveLength(1);
+    expect(fromRight.tekst.clips[0]!.id).toBe(a.id);
   });
 });
