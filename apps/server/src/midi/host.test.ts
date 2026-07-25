@@ -145,8 +145,9 @@ describe("midi host", () => {
   });
 
   it("clamps MIDI IN seek via clampSeekTicks", () => {
+    vi.useFakeTimers();
     const transport = createTransportEngine({
-      now: () => performance.now(),
+      now: () => 0,
     });
     const backend = createMockMidiBackend();
     const host = createMidiHost(transport, {
@@ -159,6 +160,7 @@ describe("midi host", () => {
     expect(transport.getState().positionTicks).toBe(1920);
     host.dispose();
     transport.dispose();
+    vi.useRealTimers();
   });
 
   it("re-emits SPP + Continue on seek while playing", () => {
