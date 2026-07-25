@@ -900,6 +900,7 @@ function SongsView({
                     <Button
                       variant="secondary"
                       disabled={locked}
+                      aria-label={`Nowy z wzoru: ${t.name}`}
                       onClick={() => onCreateFromTemplate(t.id)}
                     >
                       Nowy z wzoru
