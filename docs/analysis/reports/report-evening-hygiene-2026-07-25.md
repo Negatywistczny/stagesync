@@ -24,8 +24,9 @@
 | [#688](https://github.com/Negatywistyczny/stagesync/pull/688) | docs(analysis): evening hygiene handoff 2026-07-25 | This report |
 | [#689](https://github.com/Negatywistyczny/stagesync/pull/689) | fix(a11y): sync Launcher local-host busy and retry labels | aria-busy / retry label on local host button |
 | [#690](https://github.com/Negatywistyczny/stagesync/pull/690) | fix(a11y): announce audio-track context-menu selection count | Multi track menu label + helper |
+| [#691](https://github.com/Negatywistyczny/stagesync/pull/691) | test(server): system router network and logs/clear edges | GET /network mdns off + logs/clear |
 
-**Merge tip:** Prefer **#675**, **#676**, **#690** (include helpers) before closing **#679**. Launcher stack: **#677** → **#684** → **#689** (rebase if `index.html` / `app.js` conflicts). Tests #680–#686 independent.
+**Merge tip:** Prefer **#675**, **#676**, **#690** (include helpers) before closing **#679**. Launcher stack: **#677** → **#684** → **#689** (rebase if `index.html` / `app.js` conflicts). Tests #680–#686 / #691 independent.
 
 ## Ranked backlog (next)
 
