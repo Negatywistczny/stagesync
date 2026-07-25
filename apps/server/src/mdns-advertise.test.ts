@@ -148,4 +148,57 @@ describe("startMdnsAdvertiser", () => {
     expect(stop).toHaveBeenCalled();
     expect(destroy).toHaveBeenCalled();
   });
+
+  // HW-LIF-12: Play/Pause flood must coalesce via REFRESH_DEBOUNCE_MS (400).
+  it("debounces refresh to one re-publish after 400ms", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("STAGESYNC_DISABLE_MDNS", "0");
+    const stop = vi.fn();
+    const destroy = vi.fn();
+    const publish = vi.fn(() => ({ stop }));
+    vi.doMock("bonjour-service", () => ({
+      Bonjour: class {
+        publish = publish;
+        destroy = destroy;
+      },
+    }));
+    let status: "PLAYING" | "PAUSED" | "STOPPED" = "STOPPED";
+    const { startMdnsAdvertiser } = await import("./mdns-advertise.js");
+    const adv = startMdnsAdvertiser({
+      port: 4000,
+      bindHost: "0.0.0.0",
+      version: "5.1.2",
+      getMeta: () => ({
+        hostname: "FOH",
+        version: "5.1.2",
+        project: "Set",
+        status,
+      }),
+      log: () => undefined,
+    });
+    await vi.runAllTimersAsync();
+    const afterBoot = publish.mock.calls.length;
+    expect(afterBoot).toBeGreaterThanOrEqual(1);
+
+    for (let i = 0; i < 10; i += 1) {
+      status = i % 2 === 0 ? "PLAYING" : "PAUSED";
+      adv.refresh();
+    }
+    await vi.advanceTimersByTimeAsync(399);
+    expect(publish.mock.calls.length).toBe(afterBoot);
+
+    status = "PLAYING";
+    await vi.advanceTimersByTimeAsync(1);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(publish.mock.calls.length).toBe(afterBoot + 1);
+    expect(publish.mock.calls.at(-1)?.[0]).toEqual(
+      expect.objectContaining({
+        txt: expect.objectContaining({ status: "PLAYING" }),
+      }),
+    );
+    adv.stop();
+    vi.useRealTimers();
+  });
 });
