@@ -45,10 +45,13 @@ function mockConnectable() {
 function mockAudioContext(
   overrides: Record<string, unknown> = {},
 ): AudioContext {
+  const emptyBuf = { duration: 0, numberOfChannels: 1 } as AudioBuffer;
   return {
     state: "running",
     currentTime: 0,
+    sampleRate: 44100,
     destination: {},
+    createBuffer: vi.fn(() => emptyBuf),
     createBufferSource: vi.fn(),
     createGain: vi.fn(() => ({
       ...mockConnectable(),
@@ -216,6 +219,48 @@ describe("audioPlayback helpers", () => {
     );
     expect(source2.start).toHaveBeenCalledOnce();
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+  });
+
+  it("WA-MEM-02: stop assigns empty buffer to release decoded PCM", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const emptyBuf = { duration: 0, numberOfChannels: 1 } as AudioBuffer;
+    const source = {
+      buffer: null as AudioBuffer | null,
+      context: null as AudioContext | null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBuffer: vi.fn(() => emptyBuf),
+      createBufferSource: vi.fn(() => {
+        source.context = ctx;
+        return source;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0 },
+      ctx,
+    );
+    expect(source.buffer).toBe(fakeBuf);
+    stopAudioPlayback();
+    expect(source.stop).toHaveBeenCalled();
+    expect(source.buffer).toBe(emptyBuf);
+    expect(ctx.createBuffer).toHaveBeenCalled();
   });
 
   it("BUG-05: song-end soft-stop respects loopEnabled", () => {

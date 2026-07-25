@@ -1,14 +1,14 @@
 # Triage: Audyt silnika odtwarzania WebAudio (`audioPlayback`)
 
 **Źródło:** [Audyt-Silnika-Odtwarzania-Audio-WebAudio.md](./Audyt-Silnika-Odtwarzania-Audio-WebAudio.md) (Gemini Deep Search)  
-**Status:** `partial`  
+**Status:** `closed`  
 **Obszar:** Audio / WebAudio / transport playback  
 **Data triage:** 2026-07-24  
-**Ostatnia aktualizacja:** 2026-07-25 (WA-MEM-02: PO **odrzuca** permanent limit — reopen jako otwarte)
+**Ostatnia aktualizacja:** 2026-07-25 (WA-MEM-02 empty-buffer release on stop)
 
 ## Werdykt przydatności
 
-**Wysoka wartość jako backlog hipotez.** Część claimów dumpu była już nieaktualna (`disconnectBusNodes`, kotwica fade). Potwierdzone bugi naprawione + testy. **Safari scratch (WA-MEM-02)** — **nie** akceptowany permanent limit ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md)); wraca jako otwarte do naprawy. Cross Peak Hold / fader / Solo — [mixer triage](./Audyt-Routingu-Miksera-StageSync.triage.md).
+**Wysoka wartość jako backlog hipotez.** Część claimów dumpu była już nieaktualna (`disconnectBusNodes`, kotwica fade). Potwierdzone bugi naprawione + testy. Safari scratch (WA-MEM-02) → empty buffer po `stop()`. Cross Peak Hold / fader / Solo — [mixer triage](./Audyt-Routingu-Miksera-StageSync.triage.md).
 
 ## Rozstrzygnięte w tej fali
 
@@ -23,14 +23,13 @@
 | WA-LOOP-01 | `loopStart >= loopEnd` na ultrakrótkim trimie | `fixed` | Loop włączany tylko gdy `loopEnd > loopStart` |
 | WA-MODE-01 | Zmiana `channelMode` zostawia clip na starej szynie | `rejected` | `channelMode` w `graphKey` → `stopAll` + re-start na nowej topologii |
 | WA-SEEK-01 | Seek / cold buffer bez re-trigger po decode (= mixer DEF-BUG-05) | `fixed` | Po `loadAudioBuffer` re-`startClip` z `lastSyncArgs` jeśli nadal Play |
+| WA-MEM-02 | Scratch / empty buffer po `stop()` (Safari WebKit) | `fixed` | `releaseActiveSource`: `source.buffer =` shared empty przed disconnect; test |
 | (cross) DEF-BUG-04 | Solo track × Solo bus → dead state | `fixed` | [mixer triage](./Audyt-Routingu-Miksera-StageSync.triage.md) — track solo wins |
 | (cross) Peak Hold / fader×suppress | Race UI / clicks | `fixed` | [mixer triage](./Audyt-Routingu-Miksera-StageSync.triage.md) — holdsRef + dezipper / skip reconnect |
 
 ## Otwarte / hipotezy
 
-| ID | Temat | Impact | Stan | Dlaczego ciekawe |
-|----|--------|--------|------|------------------|
-| WA-MEM-02 | Scratch / empty buffer po `stop()` (Safari WebKit RAM) | FOH Safari | `hypothesis` | PO: **naprawić** — nie `limit`. Brak repro Vitest; spike WebKit / empty-buffer tylko z pomiarem (ryzyko regresji Chromium). → [TODO Should](../../../TODO.md) |
+_(brak — priorytetowe ID z dumpu rozstrzygnięte)_
 
 ## Kontekst konstytucji
 
@@ -39,5 +38,4 @@
 
 ## Następny krok eng
 
-1. WA-MEM-02: spike WebKit z measurement — nie blind fix; pozycja w TODO Should.
-2. Dokument zostaje `partial` do domknięcia Safari.
+Dump = provenance. Repro HW Safari opcjonalny smoke przy okazji G-gates.

@@ -44,16 +44,16 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 | Track solo vs bus solo | **Track solo wygrywa** |
 | Click w Mixerze | Na start proste Mute/Volume jako Cue; **interfejs otwarty** na ewolucję |
 | Mixer Zoom | Tylko skala UI — **bez** niezależnego Zoom H/V |
-| Safari scratch (WebAudio) | **Nie** akceptowany permanent limit — otwarte do naprawy |
+| Safari scratch (WebAudio) | Empty-buffer release po `stop()` (WA-MEM-02 fixed) |
 
 ### 4. Edycja audio / Timeline
 
 | Temat | Decyzja |
 |-------|--------|
-| Pencil na ścieżce **audio** | Jak Logic: klik w pustym + Pencil → Import / File Browser → wstawienie klipu w dokładnej pozycji na Timeline (implementacja = backlog) |
+| Pencil na ścieżce **audio** | Jak Logic: klik w pustym + Pencil → Import → wstawienie w miejscu kliknięcia (**wdrożone**) |
 | No Overlap only; bez time-stretch w MVP | Bez zmiany względem [ADR 0008](./0008-timeline-clip-editing.md) |
 | Flex Time / MIDI recording / Take Folders / join bounce | **Nie** permanent OUT — silnik sceniczny teraz; zaawansowana edycja / recording później wg wzorców Logic (patrz aktualizacja ADR 0008) |
-| Locator vs playhead | Osobne pojęcia (jak Logic); **nie** scalać kolorów/IA bez decyzji; scrub/seek = komenda do serwera (SSOT). Szczegóły IA = późniejszy pass |
+| Locator vs playhead | Osobne pojęcia (jak Logic); kolory: locator `primary`, playhead `info`; scrub/seek = komenda do serwera (SSOT) |
 
 ### 5. MIDI / transport
 

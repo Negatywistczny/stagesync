@@ -107,7 +107,7 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 | [Audyt-Lifecycle-StageSync-v5-Desktop.md](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md) | `partial` |
 | [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md) | `closed` |
 | [Audyt-Routingu-Miksera-StageSync.md](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md) | `closed` |
-| [Audyt-Silnika-Odtwarzania-Audio-WebAudio.md](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md) | `partial` |
+| [Audyt-Silnika-Odtwarzania-Audio-WebAudio.md](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md) | `closed` |
 | [Audyt-StageSync-v5-Race-Conditions.md](./audyty-silnik/Audyt-StageSync-v5-Race-Conditions.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-StageSync-v5-Race-Conditions.triage.md) | `partial` |
 | [Audyt-Synchronizacji-Transport-SSOT.md](./audyty-silnik/Audyt-Synchronizacji-Transport-SSOT.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Synchronizacji-Transport-SSOT.triage.md) | `partial` |
 

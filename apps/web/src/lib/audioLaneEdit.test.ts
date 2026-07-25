@@ -18,6 +18,7 @@ import {
   deleteAudioClip,
   duplicateAudioTrack,
   MAX_AUDIO_TRACKS,
+  placeImportedAudioClipAt,
   previewAudioFromSession,
   removeAudioTrack,
   setAudioClipFadeMs,
@@ -370,6 +371,21 @@ describe("audioLaneEdit", () => {
 
     // zero crossfade → applyAbutCrossfade returns null
     expect(applyAbutCrossfadeForClip(p, "left", 0)).toBe(p);
+  });
+
+  it("placeImportedAudioClipAt moves clip to click ticks with duration", () => {
+    const p = projectWithAudio();
+    const clip = p.audioClips[0]!;
+    const at = elapsedToTicks(2000, 120, p.defaultMeter, p.ppq);
+    const next = placeImportedAudioClipAt(p, clip.id, at, {
+      durationMs: 1000,
+    });
+    const placed = next.audioClips.find((c) => c.id === clip.id)!;
+    expect(placed.startTicks).toBe(at);
+    expect(placed.lengthTicks).toBe(
+      elapsedToTicks(1000, 120, p.defaultMeter, p.ppq),
+    );
+    expect(next.assets[0]!.durationMs).toBe(1000);
   });
 
   it("applyDecodedAudioMeta stamps peaks and skips non-matching", () => {

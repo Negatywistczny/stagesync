@@ -457,6 +457,26 @@ describe("storage/index", () => {
     );
     expect(audio.audioTracks.length).toBeGreaterThanOrEqual(1);
     expect(audio.audioClips.length).toBeGreaterThanOrEqual(1);
+    expect(audio.audioClips[0]!.startTicks).toBe(0);
+
+    const atBeat = await stores.addProjectAsset(
+      audio.id,
+      {
+        id: "asset-audio-2",
+        kind: "audio",
+        originalName: "b.wav",
+        storageName: "b.wav",
+        mimeType: "audio/wav",
+        sizeBytes: 3,
+      },
+      Buffer.from([4, 5, 6]),
+      {
+        audioTrackId: audio.audioTracks[0]!.id,
+        startTicks: 1920,
+      },
+    );
+    const placed = atBeat.audioClips.find((c) => c.assetId === "asset-audio-2");
+    expect(placed?.startTicks).toBe(1920);
 
     const withXml = await stores.addProjectAsset(
       audio.id,

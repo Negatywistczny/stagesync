@@ -491,12 +491,9 @@
   --tl-ruler-lane-h: calc(
     (var(--ss-space-6) + var(--ss-space-1)) * var(--tl-zoom-ui)
   );
-  /* Subtle rail vs canvas — not primary/info accents. */
-  --tl-marker-line: color-mix(
-    in srgb,
-    var(--ss-color-text-muted) 72%,
-    var(--ss-color-bg)
-  );
+  /* Distinct signals (ADR 0011 / 0015): locator = primary, playhead = info. */
+  --tl-locator-line: var(--ss-color-primary);
+  --tl-playhead-line: var(--ss-color-info);
   position: absolute;
   left: var(--tl-dock-w);
   right: 0;
@@ -514,7 +511,7 @@
   bottom: 0;
   width: 2px;
   margin-left: -1px;
-  background: var(--tl-marker-line);
+  background: var(--tl-playhead-line);
   pointer-events: none;
   opacity: 0.95;
   z-index: 1;
@@ -528,7 +525,7 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid var(--tl-marker-line);
+  border-top: 8px solid var(--tl-playhead-line);
 }
 
 .locator {
@@ -554,7 +551,7 @@
   left: 50%;
   width: 2px;
   margin-left: -1px;
-  background: var(--tl-marker-line);
+  background: var(--tl-locator-line);
   pointer-events: none;
 }
 
@@ -566,7 +563,7 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 8px solid var(--tl-marker-line);
+  border-bottom: 8px solid var(--tl-locator-line);
   pointer-events: none;
 }
 
@@ -578,7 +575,7 @@
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);
   font-variant-numeric: tabular-nums;
-  color: var(--ss-color-text-muted);
+  color: var(--tl-locator-line);
   white-space: nowrap;
   pointer-events: none;
 }

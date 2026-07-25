@@ -1,5 +1,5 @@
 /**
- * Audio lane edit — Pointer/Smart move + trim; no pencil ([ADR 0008]).
+ * Audio lane edit — Pointer/Smart move + trim; Pencil @ empty = import ([ADR 0008]/[ADR 0015]).
  */
 
 import {
@@ -9,6 +9,7 @@ import {
   clampAudioFades,
   channelModeFromChannelCount,
   DEFAULT_TRACK_ICON,
+  elapsedToTicks,
   findAbutNeighbor,
   lengthTicksFromAssetWindow,
   MAX_AUDIO_BUSSES,
@@ -98,6 +99,69 @@ export function deleteAudioClip(project: Project, clipId: string): Project {
   const clips = project.audioClips.filter((c) => c.id !== clipId);
   if (clips.length === project.audioClips.length) return project;
   return { ...project, audioClips: clips };
+}
+
+/**
+ * After import: move clip to click ticks (No Overlap) and optionally set length
+ * from decoded duration. Used by Pencil @ empty audio lane (Logic-like).
+ */
+export function placeImportedAudioClipAt(
+  project: Project,
+  clipId: string,
+  startTicks: number,
+  opts?: { durationMs?: number },
+): Project {
+  const clip = project.audioClips.find((c) => c.id === clipId);
+  if (!clip) return project;
+  const floor = contentFloorTicks(project.forma.clips);
+  const start = Math.max(floor, Math.floor(startTicks));
+  if (!Number.isFinite(start) || start < 0) return project;
+
+  let nextProject = project;
+  let lengthTicks = clip.lengthTicks;
+  if (
+    opts?.durationMs != null &&
+    Number.isFinite(opts.durationMs) &&
+    opts.durationMs > 0
+  ) {
+    const asset = assetOf(project, clip.assetId);
+    if (asset) {
+      nextProject = {
+        ...project,
+        assets: project.assets.map((a) =>
+          a.id === asset.id ? { ...a, durationMs: opts.durationMs } : a,
+        ),
+      };
+    }
+    const ctx = tempoCtxAt(nextProject, start);
+    lengthTicks = Math.max(
+      1,
+      elapsedToTicks(opts.durationMs, ctx.bpm, ctx.meter, ctx.ppq),
+    );
+  }
+
+  const seed: AudioClip = {
+    ...clip,
+    startTicks: start,
+    lengthTicks,
+  };
+  const onTrack = clipsOnTrack(nextProject, clip.trackId);
+  const byId = new Map(onTrack.map((c) => [c.id, c]));
+  byId.set(seed.id, seed);
+  const placed = placeClipNoOverlap(
+    audioAsForma(onTrack.filter((c) => c.id !== clipId)),
+    {
+      id: seed.id,
+      name: seed.id,
+      kind: "section",
+      startTicks: seed.startTicks,
+      lengthTicks: seed.lengthTicks,
+    },
+  );
+  if (!placed.some((c) => c.id === clipId)) {
+    return nextProject;
+  }
+  return mapFormaBack(nextProject, clip.trackId, placed, byId);
 }
 
 export function setAudioClipMuted(

@@ -625,21 +625,44 @@ export function readMasterMeterDb(): { l: number; r: number } {
   };
 }
 
+/** Tiny silent buffer assigned after stop — releases decoded PCM (Safari/WebKit scratch). */
+const emptyBufferByCtx = new WeakMap<BaseAudioContext, AudioBuffer>();
+
+function emptyReleaseBuffer(ctx: BaseAudioContext): AudioBuffer {
+  let buf = emptyBufferByCtx.get(ctx);
+  if (!buf) {
+    buf = ctx.createBuffer(1, 1, ctx.sampleRate || 44100);
+    emptyBufferByCtx.set(ctx, buf);
+  }
+  return buf;
+}
+
+/** Stop + detach + swap buffer so WebKit can drop decoded audio RAM (WA-MEM-02). */
+function releaseActiveSource(a: ActiveSource): void {
+  try {
+    a.source.stop();
+  } catch {
+    /* already stopped */
+  }
+  try {
+    const ctx = a.source.context;
+    a.source.buffer = emptyReleaseBuffer(ctx);
+  } catch {
+    /* assign may throw if context closed */
+  }
+  try {
+    a.source.disconnect();
+    a.fadeGain.disconnect();
+    a.levelGain.disconnect();
+    for (const n of a.extras) disconnectSafe(n);
+  } catch {
+    /* */
+  }
+}
+
 function stopAll(): void {
   for (const a of active) {
-    try {
-      a.source.stop();
-    } catch {
-      /* */
-    }
-    try {
-      a.source.disconnect();
-      a.fadeGain.disconnect();
-      a.levelGain.disconnect();
-      for (const n of a.extras) disconnectSafe(n);
-    } catch {
-      /* */
-    }
+    releaseActiveSource(a);
   }
   active = [];
 }
@@ -1012,19 +1035,7 @@ export function syncAudioPlayback(
 
   for (const a of [...active]) {
     if (!stillNeeded.has(a.clipId)) {
-      try {
-        a.source.stop();
-      } catch {
-        /* */
-      }
-      try {
-        a.source.disconnect();
-        a.fadeGain.disconnect();
-        a.levelGain.disconnect();
-        for (const n of a.extras) disconnectSafe(n);
-      } catch {
-        /* */
-      }
+      releaseActiveSource(a);
       active = active.filter((x) => x.clipId !== a.clipId);
     }
   }

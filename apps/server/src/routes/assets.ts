@@ -130,6 +130,15 @@ export function createAssetsRouter(stores: Stores): Router {
         typeof trackIdField === "string" && trackIdField.length > 0
           ? trackIdField
           : undefined;
+      const startTicksRaw = req.body?.startTicks;
+      const startTicksParsed =
+        typeof startTicksRaw === "string" || typeof startTicksRaw === "number"
+          ? Number(startTicksRaw)
+          : NaN;
+      const startTicks =
+        Number.isFinite(startTicksParsed) && startTicksParsed >= 0
+          ? Math.floor(startTicksParsed)
+          : undefined;
       const assetId = randomUUID();
       const storageName = `${assetId}${ext}`;
       const project = await stores.addProjectAsset(
@@ -143,7 +152,7 @@ export function createAssetsRouter(stores: Stores): Router {
           sizeBytes: file.size,
         },
         file.buffer,
-        { createAudioClip: isAudio, audioTrackId },
+        { createAudioClip: isAudio, audioTrackId, startTicks },
       );
       res.status(201).json(project);
     } catch (err) {

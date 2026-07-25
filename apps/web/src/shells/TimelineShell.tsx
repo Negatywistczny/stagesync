@@ -249,6 +249,7 @@ import {
   addAudioBus,
   removeAudioBus,
   setMasterGainDb,
+  placeImportedAudioClipAt,
   splitAudioClipAt,
   toggleAudioClipMute,
 } from "../lib/audioLaneEdit.js";
@@ -810,6 +811,8 @@ export function TimelineShell() {
   } | null>(null);
   const [audioLaneDropId, setAudioLaneDropId] = useState<string | null>(null);
   const laneImportTrackIdRef = useRef<string | null>(null);
+  /** Pencil @ empty audio: place imported clip at these ticks (Logic-like). */
+  const laneImportStartTicksRef = useRef<number | null>(null);
   const laneAudioFileRef = useRef<HTMLInputElement>(null);
   const trackSelectionRef = useRef(trackSelection);
   trackSelectionRef.current = trackSelection;
@@ -4251,18 +4254,27 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     };
   }
 
-  async function onUploadAudioToTrack(trackId: string, file: File) {
+  async function onUploadAudioToTrack(
+    trackId: string,
+    file: File,
+    opts?: { startTicks?: number },
+  ) {
     if (!projectId || !draftProject) return;
     if (audioUploadPendingRef.current) return;
     audioUploadPendingRef.current = true;
     setAudioUploadPending(true);
     try {
-      const next = await uploadProjectAudio(projectId, file);
+      const next = await uploadProjectAudio(projectId, file, {
+        trackId,
+        startTicks: opts?.startTicks,
+      });
       // Prefer the uploaded clip on the chosen track when server put it on track 0
       let project = next;
       let targetTrackId = trackId;
+      let lastClipId: string | null = null;
       if (trackId && next.audioClips.length) {
         const last = next.audioClips[next.audioClips.length - 1]!;
+        lastClipId = last.id;
         if (last.trackId !== trackId) {
           project = {
             ...next,
@@ -4278,6 +4290,25 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             project,
             targetTrackId,
             channelModeFromChannelCount(buf.numberOfChannels),
+          );
+        }
+        if (
+          lastClipId &&
+          opts?.startTicks != null &&
+          Number.isFinite(opts.startTicks)
+        ) {
+          project = placeImportedAudioClipAt(
+            project,
+            lastClipId,
+            opts.startTicks,
+            buf ? { durationMs: buf.duration * 1000 } : undefined,
+          );
+        } else if (lastClipId && buf) {
+          project = placeImportedAudioClipAt(
+            project,
+            lastClipId,
+            last.startTicks,
+            { durationMs: buf.duration * 1000 },
           );
         }
       }
@@ -4945,6 +4976,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           laneKind === "audio" && audioTrackId
             ? () => {
                 laneImportTrackIdRef.current = audioTrackId;
+                laneImportStartTicksRef.current = null;
                 laneAudioFileRef.current?.click();
               }
             : undefined,
@@ -5645,9 +5677,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           const f = e.target.files?.[0];
           e.target.value = "";
           const trackId = laneImportTrackIdRef.current;
+          const startTicks = laneImportStartTicksRef.current;
           laneImportTrackIdRef.current = null;
+          laneImportStartTicksRef.current = null;
           if (f && trackId) {
-            void onUploadAudioToTrack(trackId, f);
+            void onUploadAudioToTrack(
+              trackId,
+              f,
+              startTicks != null ? { startTicks } : undefined,
+            );
           }
         }}
       />
@@ -6364,6 +6402,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                               : isAudioLaneId(track.id)
                                 ? (e) => {
                                     if (e.button !== 0) return;
+                                    if (toolIsPencilDraw(tool)) {
+                                      const raw = rawTicksAtClientX(e.clientX);
+                                      if (raw == null || !track.audioTrackId) {
+                                        return;
+                                      }
+                                      const draft = draftRef.current;
+                                      if (!draft) return;
+                                      const mode = contentSnapModeFromModifiers(
+                                        e.metaKey,
+                                        e.ctrlKey,
+                                      );
+                                      const snapped = snapEditTicks(
+                                        draft,
+                                        raw,
+                                        mode,
+                                      );
+                                      laneImportTrackIdRef.current =
+                                        track.audioTrackId;
+                                      laneImportStartTicksRef.current = snapped;
+                                      laneAudioFileRef.current?.click();
+                                      return;
+                                    }
                                     if (toolUsesMarqueeGesture(tool)) {
                                       beginMarquee(e);
                                     }
@@ -6413,6 +6473,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           : "",
                         isMapLaneId(track.id) || track.id === "kotwice"
                           ? styles.mapLaneCell
+                          : "",
+                        isAudioLaneId(track.id) && toolIsPencilDraw(tool)
+                          ? styles.formaLanePencil
                           : "",
                         isAudioLaneId(track.id) &&
                         audioLaneDropId === track.audioTrackId

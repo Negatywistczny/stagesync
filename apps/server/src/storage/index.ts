@@ -582,7 +582,12 @@ export function createStores(dataDir?: string) {
       projectId: string,
       asset: ProjectAsset,
       fileBytes: Buffer,
-      opts?: { createAudioClip?: boolean; audioTrackId?: string },
+      opts?: {
+        createAudioClip?: boolean;
+        audioTrackId?: string;
+        /** When set (e.g. Pencil @ click), place clip here instead of appending. */
+        startTicks?: number;
+      },
     ): Promise<Project> {
       return withLibraryLock(async () => {
         const safeId = assertSafeProjectId(paths, projectId);
@@ -605,13 +610,21 @@ export function createStores(dataDir?: string) {
             track = { id: randomUUID(), name: "Audio 1" };
             audioTracks = [track];
           }
-          // Append after clips on the target track so re-uploads do not stack.
-          const startTicks = audioClips
-            .filter((c) => c.trackId === track.id)
-            .reduce(
-              (max, c) => Math.max(max, c.startTicks + c.lengthTicks),
-              0,
-            );
+          const explicitStart =
+            opts?.startTicks != null &&
+            Number.isFinite(opts.startTicks) &&
+            opts.startTicks >= 0
+              ? Math.floor(opts.startTicks)
+              : null;
+          // Default: append after clips on the target track so re-uploads do not stack.
+          const startTicks =
+            explicitStart ??
+            audioClips
+              .filter((c) => c.trackId === track.id)
+              .reduce(
+                (max, c) => Math.max(max, c.startTicks + c.lengthTicks),
+                0,
+              );
           audioClips = [
             ...audioClips,
             {

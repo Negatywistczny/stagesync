@@ -9,14 +9,25 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+#### ⏱️ Timeline & DAW
+- **Ołówek / audio:** klik w pustym na ścieżce audio otwiera Import i wstawia klip w miejscu kliknięcia (jak Logic), z No Overlap.
+
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Wskaźniki:** locator (amber) i playhead MIDI (info) znów są wizualnie rozdzielone — bez wspólnej „przygaszonej” linii.
 
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
 - **Ołówek:** podgląd przeciągania klipu (Forma / Tekst / Akordy / Cue) pokazuje etykietę z tym samym wyrównaniem co zapisany klip.
 - **Zaznaczenie:** menu kontekstowe klipu i ścieżki audio oraz segmenty mapy Tempo / Metrum / Tonacja ogłaszają liczbę zaznaczonych elementów; Inspector przy wielu klipach ([#675](https://github.com/Negatywistyczny/stagesync/pull/675), [#676](https://github.com/Negatywistyczny/stagesync/pull/676), [#687](https://github.com/Negatywistyczny/stagesync/pull/687), [#690](https://github.com/Negatywistyczny/stagesync/pull/690)).
+
+#### 🎛️ Audio / MIDI / Transport
+- **Playback:** po Stop/scrub bufor źródła jest zwalniany (pusty buffer) — mniej trzasków / obciążenia pamięci przy scrubie w WebKit/Safari.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher:** jaśniejsze etykiety powrotu, błędu lokalnego hosta, łączenia ręcznego oraz stanu zajętości / ponowienia ([#677](https://github.com/Negatywistyczny/stagesync/pull/677), [#684](https://github.com/Negatywistyczny/stagesync/pull/684), [#689](https://github.com/Negatywistyczny/stagesync/pull/689)).

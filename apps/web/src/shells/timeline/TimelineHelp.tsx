@@ -249,7 +249,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Pencil (T P)",
         detail:
-          "klik: 1 takt / marker; przeciągnięcie: zakres z nadpisaniem. Na mapach: nowa zmiana @ snap. Bez pencil na audio.",
+          "klik: 1 takt / marker; przeciągnięcie: zakres z nadpisaniem. Na mapach: nowa zmiana @ snap. Na audio: klik w pustym → Import i wstawienie w miejscu kliknięcia (jak Logic).",
       },
       {
         term: "Eraser (T E)",

@@ -14,12 +14,19 @@ async function readApiError(res: Response): Promise<string> {
 export async function uploadProjectAudio(
   projectId: string,
   file: File,
-  opts?: { trackId?: string },
+  opts?: { trackId?: string; startTicks?: number },
 ): Promise<Project> {
   const form = new FormData();
   form.append("file", file);
   if (opts?.trackId) {
     form.append("trackId", opts.trackId);
+  }
+  if (
+    opts?.startTicks != null &&
+    Number.isFinite(opts.startTicks) &&
+    opts.startTicks >= 0
+  ) {
+    form.append("startTicks", String(Math.floor(opts.startTicks)));
   }
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/assets`,

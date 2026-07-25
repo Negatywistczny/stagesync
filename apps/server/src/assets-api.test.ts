@@ -122,6 +122,24 @@ describe("project assets API", () => {
     expect(clip?.assetId).toBe(project.assets.at(-1)?.id);
   });
 
+  it("honors multipart startTicks for Pencil-style place", async () => {
+    const form = new FormData();
+    form.append(
+      "file",
+      new Blob([new Uint8Array([2, 2])], { type: "audio/wav" }),
+      "hat.wav",
+    );
+    form.append("startTicks", "3840");
+    const up = await fetch(`${baseUrl}/api/projects/${projectId}/assets`, {
+      method: "POST",
+      body: form,
+    });
+    expect(up.status).toBe(201);
+    const project = ProjectSchema.parse(await up.json());
+    const clip = project.audioClips[project.audioClips.length - 1];
+    expect(clip?.startTicks).toBe(3840);
+  });
+
   it("merge-preserves assets when PUT omits them", async () => {
     const form = new FormData();
     form.append(
