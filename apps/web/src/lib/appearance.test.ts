@@ -84,6 +84,14 @@ describe("appearance", () => {
     expect(rootAttrs.has("data-theme")).toBe(false);
   });
 
+
+  it("applies and clears high-contrast data attribute", () => {
+    applyAppearance({ light: false, highContrast: true });
+    expect(rootAttrs.get("data-contrast")).toBe("high");
+    applyAppearance({ light: false, highContrast: false });
+    expect(rootAttrs.has("data-contrast")).toBe(false);
+  });
+
   it("theme-color prefers --ss-color-bg when computed", () => {
     vi.stubGlobal("getComputedStyle", () => ({
       getPropertyValue: (name: string) =>
