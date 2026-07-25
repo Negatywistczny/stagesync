@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import { join } from "node:path";
 import {
   PROTOCOL_VERSION,
+  parseThemeDefaultEnv,
   projectEndTicks,
   type HealthResponse,
 } from "@stagesync/shared";
@@ -193,6 +194,9 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   const uiMeta = loadUiMeta(staticDir);
 
   app.get("/api/health", (_req, res) => {
+    const themeDefault = parseThemeDefaultEnv(
+      process.env.STAGESYNC_THEME_DEFAULT,
+    );
     const body: HealthResponse = {
       ok: true,
       service: "stagesync-server",
@@ -203,6 +207,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
         ? { uiHashPerformer: uiMeta.uiHashPerformer }
         : {}),
       ...(uiMeta.uiHashConsole ? { uiHashConsole: uiMeta.uiHashConsole } : {}),
+      ...(themeDefault ? { themeDefault } : {}),
     };
     res.json(body);
   });

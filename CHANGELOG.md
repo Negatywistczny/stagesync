@@ -23,6 +23,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR: tryby Dołącz | Performer | Console.
 - **Nazwa urządzenia:** przed Client / Admin / Timeline urządzenie bez zapisanej nazwy dostaje prompt „Podaj swoje imię lub nazwę urządzenia.”; nazwa widać na liście klientów (Scena) i da się ją zmienić w ustawieniach.
 - **Motyw sceniczny:** w Korekcie na scenie realizator może włączyć blokadę motywu na Clientach (jasny / wysoki kontrast) — nadpisuje lokalny wygląd tabletu do zdjęcia blokady; lokalne przełączniki na Clientcie są wtedy wyłączone.
+- **Motyw domyślny hosta:** `STAGESYNC_THEME_DEFAULT` (`dark` / `light` / `*-high`) ustawia wygląd dla urządzeń bez zapisanego motywu lokalnego (health → `themeDefault`).
 - **PIN operatora:** gdy host ma ustawiony kod PIN, Admin i Timeline proszą o odblokowanie przed edycją; Client może odblokować edycję notatek w ustawieniach — bez kont OAuth.
 
 #### ⚙️ Serwer & API
@@ -30,6 +31,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Health / UI sync:** health zwraca wersję protokołu i hash interfejsu (pełny oraz opcjonalnie per rola); manifest UI listuje assety do synchronizacji na telefonie.
 - **PIN operatora:** opcjonalny `STAGESYNC_OPERATOR_PIN` blokuje destrukcyjne mutacje REST (projekt, setlista, ustawienia, MIDI config, zmiana utworu…); Play/Stop i MIDI Panic bez PIN-u; status `GET /api/system/operator-auth`.
 - **Safety Net:** rola Master/Spare (`STAGESYNC_SAFETY_ROLE`); na Spare MIDI OUT jest wyciszony; Host może ręcznie **Przejmij** (bez auto-election).
+- **Motyw domyślny:** health może zwracać `themeDefault` z `STAGESYNC_THEME_DEFAULT` (dla klientów bez lokalnej preferencji).
 
 #### 📚 Dokumentacja
 - **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).

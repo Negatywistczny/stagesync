@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyAppearance,
+  applyHostThemeDefault,
+  hasStoredAppearance,
   initAppearance,
   readAppearance,
   setAppearance,
@@ -115,6 +117,20 @@ describe("appearance", () => {
     });
     expect(readAppearance()).toEqual({ light: false, highContrast: false });
     expect(() => setAppearance({ light: true })).not.toThrow();
+  });
+
+  it("applyHostThemeDefault only when localStorage empty", () => {
+    expect(hasStoredAppearance()).toBe(false);
+    expect(applyHostThemeDefault("light")).toEqual({
+      light: true,
+      highContrast: false,
+    });
+    expect(rootAttrs.get("data-theme")).toBe("light");
+    expect(hasStoredAppearance()).toBe(false);
+
+    setAppearance({ light: false, highContrast: false });
+    expect(applyHostThemeDefault("light-high")).toBeNull();
+    expect(rootAttrs.has("data-theme")).toBe(false);
   });
 
 });

@@ -116,6 +116,15 @@ export const SETTINGS_SCHEMA = {
     defaultValue: "master",
     restartRequired: false,
   },
+  STAGESYNC_THEME_DEFAULT: {
+    section: "advanced",
+    type: "enum",
+    label: "Domyślny motyw klientów",
+    hint: "Dla urządzeń bez zapisanego motywu lokalnego (dark / light / *-high). Scenic lock nadpisuje. Wymaga restartu albo odświeżenia klienta.",
+    options: ["dark", "light", "dark-high", "light-high"],
+    defaultValue: "dark",
+    restartRequired: false,
+  },
 } as const satisfies Record<string, SettingSpec>;
 
 export type SettingsKey = keyof typeof SETTINGS_SCHEMA;

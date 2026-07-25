@@ -496,3 +496,11 @@ export {
   type DetectLibraryImportResult,
   type NormalizeLibraryImportResult,
 } from "./library-import.js";
+
+export {
+  ThemeDefaultIdSchema,
+  appearanceFromThemeDefault,
+  parseThemeDefaultEnv,
+  type ThemeAppearance,
+  type ThemeDefaultId,
+} from "./theme-default.js";

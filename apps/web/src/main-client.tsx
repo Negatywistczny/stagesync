@@ -1,11 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import AppClient from "./AppClient";
-import { initAppearance } from "./lib/appearance.js";
+import {
+  bootHostThemeDefault,
+  initAppearance,
+} from "./lib/appearance.js";
 import { AppErrorBoundary } from "./shells/AppErrorBoundary.js";
 import "./index.css";
 
 initAppearance();
+bootHostThemeDefault();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

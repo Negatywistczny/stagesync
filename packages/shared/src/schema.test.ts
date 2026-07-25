@@ -3,6 +3,7 @@ import {
   BatchMidiPcBodySchema,
   ClientHelloMessageSchema,
   CreateProjectBodySchema,
+  CueSampleConfigSchema,
   ExportLibraryBodySchema,
   HealthResponseSchema,
   LibrarySchema,
@@ -126,6 +127,89 @@ describe("ProjectSchemaV5", () => {
     const v4 = createProjectV4Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const v5 = upgradeProjectV4ToV5(v4);
     expect(ProjectSchemaV5.parse(v5).keyMap[0]?.key.tonic).toBe("C");
+  });
+
+  it("accepts Cue sample config and rejects stale sample bus / asset", () => {
+    expect(
+      CueSampleConfigSchema.parse({
+        assetId: "a1",
+        mode: "gated",
+        quantization: "next-beat",
+        output: { kind: "bus", busId: "bus-a" },
+        playPostStop: true,
+      }).mode,
+    ).toBe("gated");
+
+    const seed = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const withAsset = {
+      ...seed,
+      assets: [
+        {
+          id: "a1",
+          storageName: "hit.wav",
+          originalName: "hit.wav",
+          kind: "audio" as const,
+          mimeType: "audio/wav",
+          sizeBytes: 100,
+        },
+      ],
+      audioBusses: [{ id: "bus-a", name: "Bus A" }],
+      cue: {
+        clips: [
+          {
+            id: "c1",
+            startTicks: 0,
+            lengthTicks: 960,
+            label: "Hit",
+            sample: {
+              assetId: "a1",
+              mode: "one-shot" as const,
+              output: { kind: "bus" as const, busId: "bus-a" },
+            },
+          },
+        ],
+      },
+    };
+    expect(ProjectSchema.parse(withAsset).cue.clips[0]?.sample?.assetId).toBe(
+      "a1",
+    );
+
+    expect(() =>
+      ProjectSchema.parse({
+        ...withAsset,
+        cue: {
+          clips: [
+            {
+              id: "c1",
+              startTicks: 0,
+              lengthTicks: 960,
+              label: "Hit",
+              sample: { assetId: "missing" },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/audio asset/i);
+
+    expect(() =>
+      ProjectSchema.parse({
+        ...withAsset,
+        cue: {
+          clips: [
+            {
+              id: "c1",
+              startTicks: 0,
+              lengthTicks: 960,
+              label: "Hit",
+              sample: {
+                assetId: "a1",
+                output: { kind: "bus", busId: "gone" },
+              },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/busId/i);
   });
 
   it("rejects template with midiProgramId", () => {
@@ -482,6 +566,19 @@ describe("HealthResponseSchema + UI meta (#692)", () => {
       uiHashConsole: "cons",
     };
     expect(HealthResponseSchema.parse(raw)).toEqual(raw);
+  });
+
+  it("parses optional themeDefault", () => {
+    expect(
+      HealthResponseSchema.parse({
+        ok: true,
+        service: "stagesync-server",
+        version: "5.2.0",
+        protocolVersion: PROTOCOL_VERSION,
+        uiHash: "x",
+        themeDefault: "light-high",
+      }).themeDefault,
+    ).toBe("light-high");
   });
 
   it("rejects health missing uiHash (strict)", () => {

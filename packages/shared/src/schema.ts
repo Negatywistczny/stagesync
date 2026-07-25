@@ -824,6 +824,13 @@ export const HealthResponseSchema = z
     uiHashPerformer: z.string().min(1).optional(),
     /** Console (Admin+Timeline) UI hash; optional when host has no role bundle. */
     uiHashConsole: z.string().min(1).optional(),
+    /**
+     * Host default theme when the client has no localStorage theme yet
+     * (`STAGESYNC_THEME_DEFAULT`). Omitted when unset.
+     */
+    themeDefault: z
+      .enum(["dark", "light", "dark-high", "light-high"])
+      .optional(),
   })
   .strict();
 

@@ -1,3 +1,8 @@
+import {
+  appearanceFromThemeDefault,
+  parseThemeDefaultEnv,
+} from "@stagesync/shared";
+
 const THEME_KEY = "stagesync-theme";
 const CONTRAST_KEY = "stagesync-contrast";
 
@@ -19,6 +24,18 @@ function readThemeColorHex(fallback: string): string {
     return raw;
   }
   return fallback;
+}
+
+/** True when the device already chose a theme (host default must not override). */
+export function hasStoredAppearance(): boolean {
+  try {
+    return (
+      localStorage.getItem(THEME_KEY) != null ||
+      localStorage.getItem(CONTRAST_KEY) != null
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function readAppearance(): AppearanceState {
@@ -56,6 +73,34 @@ export function setAppearance(partial: Partial<AppearanceState>): AppearanceStat
   }
   applyAppearance(next);
   return next;
+}
+
+/**
+ * Apply host `themeDefault` only when this device has no stored theme.
+ * Does not write localStorage (virgin devices stay unbound to a host choice).
+ */
+export function applyHostThemeDefault(
+  themeDefault: string | undefined | null,
+): AppearanceState | null {
+  if (hasStoredAppearance()) return null;
+  const id = parseThemeDefaultEnv(themeDefault);
+  if (!id) return null;
+  const state = appearanceFromThemeDefault(id);
+  applyAppearance(state);
+  return state;
+}
+
+/** Fetch health and apply host theme default when localStorage is empty. */
+export function bootHostThemeDefault(): void {
+  void fetch("/api/health", { cache: "no-store" })
+    .then(async (res) => {
+      if (!res.ok) return;
+      const body = (await res.json()) as { themeDefault?: string };
+      applyHostThemeDefault(body.themeDefault);
+    })
+    .catch(() => {
+      /* offline / pre-host */
+    });
 }
 
 /** Call once at app boot (before paint ideally). */
