@@ -390,7 +390,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   type="radio"
                   name="clock-format"
                   checked={draft.clockFormat === "bbt"}
-                  aria-label="BBT Takt.Beat"
+                  aria-label="Format zegara BBT (Takt.Beat)"
                   onChange={() =>
                     setDraft((d) => ({ ...d, clockFormat: "bbt" }))
                   }
@@ -402,7 +402,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   type="radio"
                   name="clock-format"
                   checked={draft.clockFormat === "time"}
-                  aria-label="MM:SS.ms"
+                  aria-label="Format zegara MM:SS.ms"
                   onChange={() =>
                     setDraft((d) => ({ ...d, clockFormat: "time" }))
                   }
