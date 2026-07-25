@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   bbtToTicksAlongMeterMap,
+  resolveMeterAtTicks,
   ticksToBbtAlongMeterMap,
 } from "./meter-map-bbt.js";
 import { DEFAULT_PPQ, ticksPerBar } from "./time.js";
@@ -111,5 +112,35 @@ describe("ticksToBbtAlongMeterMap", () => {
     expect(() => ticksToBbtAlongMeterMap(huge, TS_4_4, [])).toThrow(
       /exceeded max bars/,
     );
+  });
+});
+
+describe("resolveMeterAtTicks", () => {
+  it("returns default when map empty or before first event", () => {
+    expect(resolveMeterAtTicks(0, TS_4_4, [])).toEqual(TS_4_4);
+    expect(
+      resolveMeterAtTicks(100, TS_4_4, [
+        { startTicks: 200, numerator: 3, denominator: 4 },
+      ]),
+    ).toEqual(TS_4_4);
+  });
+
+  it("picks last event at or before position; ignores later unsorted entries", () => {
+    const map = [
+      { startTicks: 3840, numerator: 5, denominator: 8 },
+      { startTicks: 0, numerator: 4, denominator: 4 },
+    ];
+    expect(resolveMeterAtTicks(0, TS_4_4, map)).toEqual({
+      numerator: 4,
+      denominator: 4,
+    });
+    expect(resolveMeterAtTicks(3840, TS_4_4, map)).toEqual({
+      numerator: 5,
+      denominator: 8,
+    });
+    expect(resolveMeterAtTicks(3839, TS_4_4, map)).toEqual({
+      numerator: 4,
+      denominator: 4,
+    });
   });
 });
