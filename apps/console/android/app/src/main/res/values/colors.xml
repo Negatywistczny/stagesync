@@ -2,8 +2,11 @@
 <resources>
     <color name="ss_bg">#0B0B0C</color>
     <color name="ss_elevated">#161618</color>
+    <color name="ss_elevated_pressed">#1F1F23</color>
     <color name="ss_text">#F4F4F5</color>
     <color name="ss_muted">#A1A1AA</color>
     <color name="ss_primary">#F2A900</color>
     <color name="ss_border">#2A2A2E</color>
+    <color name="ss_status_ok">#22C55E</color>
+    <color name="ss_input_stroke">#3F3F46</color>
 </resources>

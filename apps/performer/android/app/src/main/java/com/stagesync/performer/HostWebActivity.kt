@@ -86,12 +86,17 @@ class HostWebActivity : AppCompatActivity() {
         web.addJavascriptInterface(NativeBridge(), "StageSyncNative")
         web.loadUrl("$origin${ShellConfig.ENTRY_PATH}")
 
+        binding.btnChangeServer.setOnClickListener { finish() }
+
         onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    // Kiosk: back returns to launcher instead of history spam / exit.
-                    finish()
+                    if (binding.webView.canGoBack()) {
+                        binding.webView.goBack()
+                    } else {
+                        finish()
+                    }
                 }
             },
         )

@@ -4,10 +4,15 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.stagesync.performer.databinding.ActivityLauncherBinding
@@ -15,6 +20,9 @@ import com.stagesync.performer.databinding.ActivityLauncherBinding
 class LauncherActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLauncherBinding
     private var mdns: MdnsBrowser? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var emptyScanRunnable: Runnable? = null
+    private var lastHostCount = 0
 
     private val qrLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -26,7 +34,6 @@ class LauncherActivity : AppCompatActivity() {
 
     private val cameraPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            // Camera lib optional — QrScanActivity always accepts pasted URL.
             qrLauncher.launch(Intent(this, QrScanActivity::class.java).putExtra("camera", granted))
         }
 
@@ -39,12 +46,14 @@ class LauncherActivity : AppCompatActivity() {
             connect(binding.urlInput.text?.toString().orEmpty())
         }
         binding.btnQr.setOnClickListener { startQr() }
-        binding.btnMdns.setOnClickListener { startMdns() }
+        binding.btnRecent.setOnClickListener { showRecentDialog() }
+        binding.status.setOnClickListener { startMdns() }
 
-        renderRecent()
+        startMdns()
     }
 
     override fun onDestroy() {
+        cancelEmptyScanHint()
         mdns?.stop()
         super.onDestroy()
     }
@@ -59,44 +68,77 @@ class LauncherActivity : AppCompatActivity() {
     }
 
     private fun startMdns() {
-        binding.status.text = getString(R.string.btn_mdns) + "…"
+        cancelEmptyScanHint()
+        lastHostCount = 0
+        binding.status.setText(R.string.status_scanning)
+        binding.mdnsList.removeAllViews()
         if (mdns == null) mdns = MdnsBrowser(this)
         mdns?.start { hosts ->
+            lastHostCount = hosts.size
             binding.mdnsList.removeAllViews()
             if (hosts.isEmpty()) {
-                binding.status.text = "mDNS: brak hostów (sprawdź Wi‑Fi / STAGESYNC_DISABLE_MDNS)"
+                binding.status.setText(R.string.status_none)
                 return@start
             }
-            binding.status.text = "mDNS: ${hosts.size}"
+            cancelEmptyScanHint()
+            binding.status.text = getString(R.string.status_found, hosts.size)
             hosts.forEach { host ->
-                binding.mdnsList.addView(linkRow(host.name, host.origin))
+                binding.mdnsList.addView(hostCard(host.name, host.origin))
             }
         }
+        val hint =
+            Runnable {
+                if (lastHostCount == 0 && binding.mdnsList.childCount == 0) {
+                    binding.status.setText(R.string.status_none)
+                }
+            }
+        emptyScanRunnable = hint
+        mainHandler.postDelayed(hint, 4_000L)
     }
 
-    private fun renderRecent() {
-        binding.recentList.removeAllViews()
-        RecentHosts.load(this).forEach { origin ->
-            binding.recentList.addView(linkRow(origin, origin))
+    private fun cancelEmptyScanHint() {
+        emptyScanRunnable?.let { mainHandler.removeCallbacks(it) }
+        emptyScanRunnable = null
+    }
+
+    private fun showRecentDialog() {
+        val recent = RecentHosts.load(this)
+        if (recent.isEmpty()) {
+            Toast.makeText(this, R.string.recent_empty, Toast.LENGTH_SHORT).show()
+            return
         }
-    }
-
-    private fun linkRow(label: String, origin: String): TextView {
-        return TextView(this).apply {
-            text = label
-            setTextColor(ContextCompat.getColor(this@LauncherActivity, R.color.ss_primary))
-            setPadding(0, 12, 0, 12)
-            setOnClickListener {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.recent_dialog_title)
+            .setItems(recent.toTypedArray()) { _, which ->
+                val origin = recent[which]
                 binding.urlInput.setText(origin)
                 connect(origin)
             }
-            layoutParams =
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                )
-        }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
+
+    private fun hostCard(name: String, origin: String): View {
+        val card =
+            LayoutInflater.from(this).inflate(R.layout.item_host_card, binding.mdnsList, false)
+        card.findViewById<TextView>(R.id.hostName).text = name
+        card.findViewById<TextView>(R.id.hostOrigin).text = displayOrigin(origin)
+        card.setOnClickListener {
+            binding.urlInput.setText(origin)
+            connect(origin)
+        }
+        val lp =
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
+        lp.bottomMargin = (8 * resources.displayMetrics.density).toInt()
+        card.layoutParams = lp
+        return card
+    }
+
+    private fun displayOrigin(origin: String): String =
+        origin.removePrefix("http://").removePrefix("https://")
 
     private fun connect(raw: String) {
         val origin = RecentHosts.normalizeOrigin(raw)
