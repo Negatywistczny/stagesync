@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { DualDbReadout } from "./DualDbReadout.js";
+import styles from "./ChannelStripControls.module.css";
 
 describe("DualDbReadout", () => {
   it("labels fader and Peak Hold controls", () => {
@@ -15,6 +16,7 @@ describe("DualDbReadout", () => {
     expect(out).toContain('aria-label="Poziom fadera"');
     expect(out).toContain('aria-label="Peak Hold — kliknij aby wyzerować"');
     expect(out).toContain("-6.3");
+    expect(out).not.toContain(styles.peakHoldClipped);
   });
 
   it("accepts custom aria labels and clipped hold class", () => {
@@ -30,6 +32,6 @@ describe("DualDbReadout", () => {
     );
     expect(out).toContain('aria-label="Fader Stereo Out"');
     expect(out).toContain('aria-label="Peak Hold Stereo Out"');
-    expect(out).toContain("peakHoldClipped");
+    expect(out).toContain(styles.peakHoldClipped);
   });
 });
