@@ -145,6 +145,24 @@ describe("library / projects CRUD", () => {
     expect(typeof body.error).toBe("string");
   });
 
+  it("returns 400 for unknown create keys and whitespace-only name", async () => {
+    const unknown = await fetch(`${baseUrl}/api/projects`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Ok", legacy: true }),
+    });
+    expect(unknown.status).toBe(400);
+    expect(((await unknown.json()) as { ok: boolean }).ok).toBe(false);
+
+    const ws = await fetch(`${baseUrl}/api/projects`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "   " }),
+    });
+    expect(ws.status).toBe(400);
+    expect(((await ws.json()) as { ok: boolean }).ok).toBe(false);
+  });
+
   it("returns 400 for unknown PUT keys", async () => {
     const createRes = await fetch(`${baseUrl}/api/projects`, {
       method: "POST",
