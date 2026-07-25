@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.2.1` wydane 2026-07-25 na `main` (`v5.2.1`) — linia **5.2** = **Pocket Stage**; **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
+**Stan:** ostatni cut `5.2.0` (`v5.2.0`) — linia **5.2** = **Pocket Stage**; **5.1** = **Launch & Mix**; **5.0** = **Overture**. Przywróć / Sentry w `[Unreleased]`.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** residual po Pocket Stage → 5.3+ / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -11,7 +11,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ## Must (operator residual)
 
-- [ ] **G1–G10** na instalatorach `v5.2.1` (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
+- [ ] **G1–G10** na instalatorach `v5.2.0` (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 

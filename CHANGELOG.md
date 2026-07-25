@@ -5,9 +5,7 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.2.1](https://github.com/Negatywistyczny/stagesync/compare/v5.2.0...v5.2.1) - 2026-07-25
-
-> Przywróć kopie `.bak` / ZIP z Admina oraz opcjonalny Sentry — bez zmiany zachowania hosta, gdy DSN nie jest ustawiony.
+## [Unreleased]
 
 ### Dodano
 

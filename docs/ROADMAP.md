@@ -24,8 +24,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw hosta | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
-| **5.2.1** | Patch — Przywróć (`.bak` / ZIP), opcjonalny Sentry | **Wydane 2026-07-25** — tag `v5.2.1` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [MOBILE.md](./MOBILE.md) |
-| **5.3+** | Residual: multi-out HW, auto-election, Offline delta, JNI, OAuth… | Po 5.2.1 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.3+** | Przywróć / Sentry (`[Unreleased]`); residual: multi-out HW, auto-election, Offline delta, JNI, OAuth… | Po 5.2.0 | [TODO.md](./TODO.md) · [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
 ### Zamknięte etapy (α3–β1)
 
@@ -77,7 +76,7 @@ Tag `v5.1.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Dostarczone:** Desktop Launcher ([ADR 0014](./adr/0014-desktop-launcher.md)); Mixer Timeline (strefy Audio / Busy / Click / Master, Out = Master\|Bus); menu narzędzi T + skróty / kontekst / dock; polish UI Timeline.
 
-**Świadome OUT przy cutcie 5.1 → 5.2:** fizyczne Out 3–4 (HW) oraz epiki Pocket Stage (PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw) — dostarczone w **5.2.0** (Out 3–4 nadal residual); Przywróć / Sentry w **5.2.1**.
+**Świadome OUT przy cutcie 5.1 → 5.2:** fizyczne Out 3–4 (HW) oraz epiki Pocket Stage (PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw) — dostarczone w **5.2.0** (Out 3–4 nadal residual). Przywróć / Sentry → `[Unreleased]`.
 
 ### 5.2.0 — **Pocket Stage** — **wydane 2026-07-25**
 
@@ -87,21 +86,15 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; JNI local host; OAuth; macierz motywów 4 profili — [TODO.md](./TODO.md).
 
-### 5.2.1 — **wydane 2026-07-25**
+### Po 5.2.0 (`[Unreleased]` + residual 5.3+)
 
-Tag `v5.2.1` (patch linii Pocket Stage; wcześniej błędnie opublikowane jako `v5.3.0`). Historia: [CHANGELOG.md](../CHANGELOG.md).
-
-**Dostarczone:** Admin **Przywróć…** (shadow `.bak` pojedynczo / bulk / katalog; archiwum `.zip` z drzewem danych); opcjonalne raportowanie awarii (Sentry) dla hosta i UI (`SENTRY_DSN` / `VITE_SENTRY_DSN`); docs INSTALL/DESKTOP/MOBILE.
-
-**Świadome OUT / residual:** jak po 5.2.0 — Out 3–4 (HW); Safety Net auto-election; Offline delta; JNI local host; OAuth; macierz motywów — [TODO.md](./TODO.md).
-
-### Po 5.2.1 (residual 5.3+)
-
+- **W kodzie na `main` (jeszcze bez tagu):** Admin **Przywróć…** (`.bak` / ZIP); opcjonalny Sentry (`SENTRY_DSN` / `VITE_SENTRY_DSN`) — zob. [CHANGELOG.md](../CHANGELOG.md) `[Unreleased]`. Błędny cut `v5.3.0` wycofany.
 - Motywy: macierz 4 profili / THM-03
 - Mixer: multi-out HW (Out 3–4)
 - Safety Net: auto-election / lease
 - Mobile: responsive GUI (Admin/Client/Timeline); JNI/`libnode`; Offline delta
 - Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/)
+
 
 
 ## Zasady operacyjne
