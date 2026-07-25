@@ -6,6 +6,7 @@ import {
   clipboardMatchesEmptyLane,
   clipContextMenuLabel,
   mapSegmentSelectionAriaLabel,
+  audioTrackContextMenuLabel,
 } from "./timelineContextMenus.js";
 
 function actionIds(
@@ -123,6 +124,13 @@ describe("timelineContextMenus", () => {
     expect(clipContextMenuLabel(3)).toBe("Menu klipu (3 zaznaczone)");
     expect(clipContextMenuLabel(0)).toBe("Menu klipu");
     expect(clipContextMenuLabel(Number.NaN)).toBe("Menu klipu");
+  });
+
+  it("audioTrackContextMenuLabel announces multi-select count", () => {
+    expect(audioTrackContextMenuLabel(1)).toBe("Menu ścieżki audio");
+    expect(audioTrackContextMenuLabel(2)).toBe(
+      "Menu ścieżki audio (2 zaznaczone)",
+    );
   });
 
   it("mapSegmentSelectionAriaLabel includes selection / group size", () => {

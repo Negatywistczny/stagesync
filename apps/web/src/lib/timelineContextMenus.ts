@@ -205,6 +205,16 @@ export function clipContextMenuLabel(selectionCount: number): string {
   return n > 1 ? `Menu klipu (${n} zaznaczone)` : "Menu klipu";
 }
 
+/** Accessible label for the audio-track context menu. */
+export function audioTrackContextMenuLabel(selectionCount: number): string {
+  const n = Number.isFinite(selectionCount)
+    ? Math.max(1, Math.floor(selectionCount))
+    : 1;
+  return n > 1
+    ? `Menu ścieżki audio (${n} zaznaczone)`
+    : "Menu ścieżki audio";
+}
+
 /**
  * Accessible label for a Tempo / Metrum / Tonacja map segment button.
  * When selected in a multi group, includes the group size for SR users.
