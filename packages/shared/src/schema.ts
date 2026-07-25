@@ -936,14 +936,22 @@ export const ApplyUpdateBodySchema = z
 
 export type ApplyUpdateBody = z.infer<typeof ApplyUpdateBodySchema>;
 
-/** POST /api/system/restore — restore a shadow `.bak` into the data tree. */
-export const RestoreBackupBodySchema = z
-  .object({
-    path: z.string().min(1).max(1024),
-    /** Must be true — destructive overwrite of the live file. */
-    confirm: z.literal(true),
-  })
-  .strict();
+/** POST /api/system/restore — single `.bak` / `.zip`, or bulk `.bak` paths. */
+export const RestoreBackupBodySchema = z.union([
+  z
+    .object({
+      path: z.string().min(1).max(1024),
+      /** Must be true — destructive overwrite of live file(s). */
+      confirm: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      paths: z.array(z.string().min(1).max(1024)).min(1).max(64),
+      confirm: z.literal(true),
+    })
+    .strict(),
+]);
 
 export type RestoreBackupBody = z.infer<typeof RestoreBackupBodySchema>;
 

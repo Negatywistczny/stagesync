@@ -175,4 +175,49 @@ describe("GET/PUT /api/system/settings + browse", () => {
       await new Promise<void>((r) => server.close(() => r()));
     }
   });
+
+  it("POST restore accepts bulk paths and ZIP archive", async () => {
+    const { buildStoreZip } = await import("./diagnostics-zip.js");
+    const dataDir = await mkdtemp(join(homedir(), ".stagesync-restore-bulk-api-"));
+    dirs.push(dataDir);
+    const a = join(dataDir, "a.json");
+    const b = join(dataDir, "b.json");
+    await writeFile(a, "1", "utf8");
+    await writeFile(b, "2", "utf8");
+    await writeFile(`${a}.bak`, "A", "utf8");
+    await writeFile(`${b}.bak`, "B", "utf8");
+    const zipPath = join(dataDir, "pack.zip");
+    await writeFile(
+      zipPath,
+      buildStoreZip([
+        { name: "c.json", data: Buffer.from("C", "utf8") },
+      ]),
+    );
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const bulk = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          paths: [`${a}.bak`, `${b}.bak`],
+          confirm: true,
+        }),
+      });
+      expect(bulk.status).toBe(200);
+      const bulkBody = (await bulk.json()) as { count?: number };
+      expect(bulkBody.count).toBe(2);
+      expect(await readFile(a, "utf8")).toBe("A");
+      expect(await readFile(b, "utf8")).toBe("B");
+
+      const zipRes = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: zipPath, confirm: true }),
+      });
+      expect(zipRes.status).toBe(200);
+      expect(await readFile(join(dataDir, "c.json"), "utf8")).toBe("C");
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
 });

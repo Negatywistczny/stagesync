@@ -182,6 +182,16 @@ describe("path-browser", () => {
 
     const blankExt = listBrowseDirectory(dir, { mode: "file", ext: "   " });
     expect(blankExt.entries.some((e) => e.name === "skip.txt")).toBe(true);
+
+    writeFileSync(join(dir, "snap.zip"), "PK");
+    writeFileSync(join(dir, "old.bak"), "x");
+    const multi = listBrowseDirectory(dir, {
+      mode: "file",
+      ext: ".bak,.zip",
+    });
+    const multiNames = multi.entries.filter((e) => e.type === "file").map((e) => e.name);
+    expect(multiNames).toEqual(expect.arrayContaining(["snap.zip", "old.bak"]));
+    expect(multiNames).not.toContain("keep.json");
   });
 
   it("returns null parent at home root and throws ENOENT / not-dir", () => {

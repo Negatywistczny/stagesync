@@ -107,14 +107,21 @@ Serwer przy starcie robi też **shadow `.bak`** przed destrukcyjnym rewrite sche
 
 ### Przywróć z Admina
 
-W **Ustawienia → Serwer → Zaawansowane — Ścieżki** jest **Przywróć…**: wybierz plik
-`.bak` (np. `project.json.schema.bak` obok oryginału albo kopię w
-`STAGESYNC_BACKUPS_DIR` / `{dataDir}/backups` z zachowaną strukturą ścieżek).
-Host nadpisuje plik w katalogu danych po potwierdzeniu; gdy ustawiony jest
-`STAGESYNC_OPERATOR_PIN`, wymagany jest PIN. Przed nadpisaniem powstaje
+W **Ustawienia → Serwer → Zaawansowane — Ścieżki** jest **Przywróć…**:
+
+- **Pojedynczy / wiele `.bak`** — zaznacz jeden lub więcej plików shadow backup
+  (np. `project.json.schema.bak` obok oryginału albo kopie w
+  `STAGESYNC_BACKUPS_DIR` / `{dataDir}/backups` z zachowaną strukturą ścieżek),
+  albo użyj **Przywróć katalog (.bak)** dla wszystkich `.bak` w bieżącym folderze
+  (max 64 naraz).
+- **Archiwum `.zip`** — wybierz ZIP z drzewem katalogu danych (opcjonalny wspólny
+  folder najwyższego poziomu jest obcinany) albo z plikami `.bak` wewnątrz.
+  Obsługiwane: STORE i DEFLATE; max 256 wpisów.
+
+Host nadpisuje pliki w katalogu danych po potwierdzeniu; gdy ustawiony jest
+`STAGESYNC_OPERATOR_PIN`, wymagany jest PIN. Przed każdym nadpisaniem powstaje
 `.pre-restore.bak`. Po przywróceniu odśwież Admin / Timeline, jeśli otwarty
-był ten projekt. Przywracanie pełnego archiwum ZIP / wielu plików naraz —
-jeszcze nie; na razie jeden plik `.bak` na raz.
+był ten projekt.
 
 ## Update hosta
 

@@ -188,13 +188,25 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const [browseData, setBrowseData] = useState<BrowseResult | null>(null);
   const [restoreBusy, setRestoreBusy] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
+  const [restoreSelected, setRestoreSelected] = useState<
+    { path: string; name: string }[]
+  >([]);
   const [pendingRestore, setPendingRestore] = useState<{
-    path: string;
-    name: string;
+    paths: string[];
+    label: string;
   } | null>(null);
 
   const isRestoreBrowse = browseField === "__restore__";
   const browseMode = isRestoreBrowse ? "file" : "dir";
+  const restoreBrowseExt = ".bak,.zip";
+
+  function isZipName(name: string): boolean {
+    return name.toLowerCase().endsWith(".zip");
+  }
+
+  function isBakName(name: string): boolean {
+    return name.toLowerCase().endsWith(".bak");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -923,20 +935,22 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   </label>
                 ))}
                 <div className={styles.field}>
-                  <span className={styles.label}>Przywróć z kopii .bak</span>
+                  <span className={styles.label}>Przywróć z kopii</span>
                   <p className={styles.muted}>
-                    Wybierz plik shadow backup (np. <code>project.json.schema.bak</code>)
-                    obok oryginału albo kopię w katalogu backups. Host nadpisze plik w
-                    katalogu danych (najpierw zrobi kopię <code>pre-restore</code>).
+                    Wybierz plik <code>.bak</code> (shadow backup), kilka plików
+                    <code>.bak</code>, albo archiwum <code>.zip</code> z drzewem
+                    danych / kopiami. Host nadpisze pliki w katalogu danych
+                    (najpierw zrobi kopię <code>pre-restore</code>).
                   </p>
                   <div className={styles.latencyRow}>
                     <Button
                       variant="secondary"
                       disabled={restoreBusy}
-                      aria-label="Przywróć z pliku .bak"
+                      aria-label="Przywróć z pliku .bak lub .zip"
                       onClick={() => {
                         setBrowseField("__restore__");
                         setRestoreMsg(null);
+                        setRestoreSelected([]);
                         const start =
                           serverMeta?.resolved?.backupsDir ||
                           serverMeta?.resolved?.dataDir ||
@@ -944,7 +958,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                         void browseServerPath({
                           path: start,
                           mode: "file",
-                          ext: ".bak",
+                          ext: restoreBrowseExt,
                         })
                           .then(setBrowseData)
                           .catch((err) => {
@@ -975,8 +989,11 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                           void browseServerPath({
                             path: browseData.parent,
                             mode: browseMode,
-                            ext: isRestoreBrowse ? ".bak" : undefined,
-                          }).then(setBrowseData);
+                            ext: isRestoreBrowse ? restoreBrowseExt : undefined,
+                          }).then((next) => {
+                            setBrowseData(next);
+                            if (isRestoreBrowse) setRestoreSelected([]);
+                          });
                         }
                       }}>W górę</Button>
                       {!isRestoreBrowse ? (
@@ -985,35 +1002,122 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                           setBrowseField(null);
                           setBrowseData(null);
                         }}>Wybierz</Button>
-                      ) : null}
-                      <Button variant="ghost" onClick={() => { setBrowseField(null); setBrowseData(null); }}>Anuluj</Button>
+                      ) : (
+                        <>
+                          <Button
+                            variant="primary"
+                            disabled={restoreSelected.length === 0 || restoreBusy}
+                            onClick={() => {
+                              const n = restoreSelected.length;
+                              setPendingRestore({
+                                paths: restoreSelected.map((s) => s.path),
+                                label:
+                                  n === 1
+                                    ? restoreSelected[0]!.name
+                                    : `${n} plików .bak`,
+                              });
+                            }}
+                          >
+                            Przywróć zaznaczone
+                            {restoreSelected.length > 0
+                              ? ` (${restoreSelected.length})`
+                              : ""}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            disabled={restoreBusy}
+                            onClick={() => {
+                              const baks = browseData.entries.filter(
+                                (e) => e.type === "file" && isBakName(e.name),
+                              );
+                              if (baks.length === 0) {
+                                setRestoreMsg(
+                                  "W tym katalogu nie ma plików .bak do przywrócenia",
+                                );
+                                return;
+                              }
+                              setPendingRestore({
+                                paths: baks.map((e) => e.path),
+                                label: `wszystkie .bak w katalogu (${baks.length})`,
+                              });
+                            }}
+                          >
+                            Przywróć katalog (.bak)
+                          </Button>
+                        </>
+                      )}
+                      <Button variant="ghost" onClick={() => {
+                        setBrowseField(null);
+                        setBrowseData(null);
+                        setRestoreSelected([]);
+                      }}>Anuluj</Button>
                     </div>
                     <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
                       {browseData.entries
                         .filter((e) =>
                           isRestoreBrowse ? e.type === "dir" || e.type === "file" : e.type === "dir",
                         )
-                        .map((e) => (
+                        .map((e) => {
+                          const selected =
+                            isRestoreBrowse &&
+                            e.type === "file" &&
+                            isBakName(e.name) &&
+                            restoreSelected.some((s) => s.path === e.path);
+                          return (
                         <li key={e.path}>
-                          <button type="button" className={styles.select} style={{ width: "100%", textAlign: "left" }}
+                          <button type="button" className={styles.select} style={{
+                            width: "100%",
+                            textAlign: "left",
+                            ...(selected
+                              ? { outline: "2px solid var(--ss-color-primary)" }
+                              : {}),
+                          }}
                             onClick={() => {
                               if (e.type === "dir") {
                                 void browseServerPath({
                                   path: e.path,
                                   mode: browseMode,
-                                  ext: isRestoreBrowse ? ".bak" : undefined,
-                                }).then(setBrowseData);
+                                  ext: isRestoreBrowse ? restoreBrowseExt : undefined,
+                                }).then((next) => {
+                                  setBrowseData(next);
+                                  if (isRestoreBrowse) setRestoreSelected([]);
+                                });
                                 return;
                               }
-                              setPendingRestore({ path: e.path, name: e.name });
-                              setBrowseField(null);
-                              setBrowseData(null);
+                              if (isZipName(e.name)) {
+                                setPendingRestore({
+                                  paths: [e.path],
+                                  label: e.name,
+                                });
+                                setBrowseField(null);
+                                setBrowseData(null);
+                                setRestoreSelected([]);
+                                return;
+                              }
+                              if (isBakName(e.name)) {
+                                setRestoreSelected((prev) => {
+                                  const exists = prev.some((s) => s.path === e.path);
+                                  if (exists) {
+                                    return prev.filter((s) => s.path !== e.path);
+                                  }
+                                  return [...prev, { path: e.path, name: e.name }];
+                                });
+                                return;
+                              }
                             }}
                           >
-                            {e.type === "dir" ? "📁" : "📄"} {e.name}
+                            {e.type === "dir"
+                              ? "📁"
+                              : isZipName(e.name)
+                                ? "📦"
+                                : selected
+                                  ? "☑"
+                                  : "☐"}{" "}
+                            {e.name}
                           </button>
                         </li>
-                      ))}
+                          );
+                        })}
                     </ul>
                   </div>
                 ) : null}
@@ -1050,7 +1154,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         title="Przywróć kopię zapasową"
         message={
           pendingRestore
-            ? `Nadpisać bieżący plik zawartością „${pendingRestore.name}”? To destrukcyjna operacja (host zrobi najpierw kopię pre-restore).`
+            ? `Nadpisać bieżące pliki zawartością „${pendingRestore.label}”? To destrukcyjna operacja (host zrobi najpierw kopię pre-restore dla każdego nadpisanego pliku).`
             : ""
         }
         confirmLabel="Przywróć"
@@ -1060,9 +1164,21 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           if (!pending) return;
           setRestoreBusy(true);
           setRestoreMsg(null);
-          void postSystemRestore(pending.path)
+          setBrowseField(null);
+          setBrowseData(null);
+          setRestoreSelected([]);
+          const payload =
+            pending.paths.length === 1
+              ? pending.paths[0]!
+              : pending.paths;
+          void postSystemRestore(payload)
             .then((res) => {
-              setRestoreMsg(res.message ?? `Przywrócono: ${res.targetPath}`);
+              setRestoreMsg(
+                res.message ??
+                  (res.count && res.count > 1
+                    ? `Przywrócono ${res.count} plików`
+                    : `Przywrócono: ${res.targetPath ?? ""}`),
+              );
             })
             .catch((err) => {
               setRestoreMsg(

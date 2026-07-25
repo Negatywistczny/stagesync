@@ -84,11 +84,21 @@ export function resolveBrowseStartPath(
   return REPO_ROOT;
 }
 
-function normalizeExt(ext: string | undefined): string | null {
+/** One or more extensions: `.bak`, `.bak,.zip`, `bak,zip`. */
+function normalizeExtList(ext: string | undefined): string[] | null {
   if (!ext) return null;
-  const e = String(ext).trim().toLowerCase();
-  if (!e) return null;
-  return e.startsWith(".") ? e : `.${e}`;
+  const parts = String(ext)
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter(Boolean)
+    .map((e) => (e.startsWith(".") ? e : `.${e}`));
+  return parts.length > 0 ? parts : null;
+}
+
+function nameMatchesExt(name: string, exts: string[] | null): boolean {
+  if (!exts) return true;
+  const lower = name.toLowerCase();
+  return exts.some((e) => lower.endsWith(e));
 }
 
 export function listBrowseDirectory(
@@ -115,7 +125,7 @@ export function listBrowseDirectory(
     throw new Error("Oczekiwano katalogu");
   }
 
-  const extFilter = normalizeExt(ext);
+  const extFilter = normalizeExtList(ext);
   const entries: BrowseEntry[] = [];
   let names: string[];
   try {
@@ -148,7 +158,7 @@ export function listBrowseDirectory(
     }
 
     if (entryStat.isFile() && mode === "file") {
-      if (extFilter && !name.toLowerCase().endsWith(extFilter)) continue;
+      if (!nameMatchesExt(name, extFilter)) continue;
       entries.push({
         name,
         type: "file",

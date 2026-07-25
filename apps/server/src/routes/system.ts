@@ -32,7 +32,9 @@ import {
 } from "../path-browser.js";
 import {
   resolveBackupsDir,
+  restoreBulkFromBackups,
   restoreFromBackup,
+  restoreFromZipArchive,
 } from "../storage/restore-backup.js";
 import { sendError, handleRouteError } from "./errors.js";
 
@@ -392,7 +394,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     }
   });
 
-  /** POST /api/system/restore — restore a `.bak` into the data tree (PIN + lifecycle ACL). */
+  /** POST /api/system/restore — `.bak`, bulk `.bak`, or `.zip` into data tree (PIN + lifecycle ACL). */
   router.post("/restore", async (req, res) => {
     if (!assertLifecycleAllowed(req, res)) return;
     if (!dataDir) {
@@ -409,8 +411,46 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         });
         return;
       }
+
+      if ("paths" in body.data) {
+        const many = await restoreBulkFromBackups({
+          bakPaths: body.data.paths,
+          dataDir,
+        });
+        const n = many.restored.length;
+        res.json({
+          ok: true,
+          restored: many.restored,
+          count: n,
+          bakPath: many.restored[0]?.source,
+          targetPath: many.restored[0]?.targetPath,
+          shadowed: many.restored[0]?.shadowed ?? null,
+          message:
+            n === 1
+              ? "Przywrócono kopię. Odśwież Admin / Timeline, jeśli otwarty był ten projekt."
+              : `Przywrócono ${n} plików. Odśwież Admin / Timeline, jeśli otwarty był ten projekt.`,
+        });
+        return;
+      }
+
+      const path = body.data.path;
+      if (path.toLowerCase().endsWith(".zip")) {
+        const many = await restoreFromZipArchive({ zipPath: path, dataDir });
+        const n = many.restored.length;
+        res.json({
+          ok: true,
+          restored: many.restored,
+          count: n,
+          bakPath: path,
+          targetPath: many.restored[0]?.targetPath,
+          shadowed: many.restored[0]?.shadowed ?? null,
+          message: `Przywrócono archiwum ZIP (${n} plik${n === 1 ? "" : "ów"}). Odśwież Admin / Timeline, jeśli otwarty był ten projekt.`,
+        });
+        return;
+      }
+
       const result = await restoreFromBackup({
-        bakPath: body.data.path,
+        bakPath: path,
         dataDir,
       });
       res.json({
@@ -418,6 +458,14 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         bakPath: result.bakPath,
         targetPath: result.targetPath,
         shadowed: result.shadowed,
+        restored: [
+          {
+            source: result.bakPath,
+            targetPath: result.targetPath,
+            shadowed: result.shadowed,
+          },
+        ],
+        count: 1,
         message:
           "Przywrócono kopię. Odśwież Admin / Timeline, jeśli otwarty był ten projekt.",
       });

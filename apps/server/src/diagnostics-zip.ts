@@ -1,6 +1,8 @@
 /**
- * Minimal ZIP (STORE only) — no compression dependency (#351).
+ * Minimal ZIP — STORE writer (#351); STORE + DEFLATE reader for restore archives.
  */
+
+import { inflateRawSync } from "node:zlib";
 
 export type ZipEntry = {
   name: string;
@@ -114,4 +116,124 @@ export function buildStoreZip(entries: ZipEntry[]): Buffer {
   ]);
 
   return Buffer.concat([...localParts, centralDir, end]);
+}
+
+const SIG_EOCD = 0x06054b50;
+const SIG_CENTRAL = 0x02014b50;
+const SIG_LOCAL = 0x04034b50;
+
+/** Max entries / uncompressed bytes accepted when parsing a restore ZIP. */
+export const ZIP_PARSE_MAX_ENTRIES = 256;
+export const ZIP_PARSE_MAX_UNCOMPRESSED = 512 * 1024 * 1024;
+
+function findEocdOffset(buf: Buffer): number {
+  // EOCD is at least 22 bytes; comment ≤ 65535 → scan from end.
+  const min = Math.max(0, buf.length - 22 - 65535);
+  for (let i = buf.length - 22; i >= min; i--) {
+    if (buf.readUInt32LE(i) === SIG_EOCD) return i;
+  }
+  throw new Error("Nieprawidłowe archiwum ZIP (brak EOCD)");
+}
+
+/**
+ * Parse a ZIP (STORE or DEFLATE). Skips directory markers; rejects traversal /
+ * absolute paths and unsupported compression. Used by backup restore.
+ */
+export function parseZipArchive(buf: Buffer): ZipEntry[] {
+  if (buf.length < 22) {
+    throw new Error("Nieprawidłowe archiwum ZIP (za krótkie)");
+  }
+  const eocd = findEocdOffset(buf);
+  const totalEntries = buf.readUInt16LE(eocd + 10);
+  const centralSize = buf.readUInt32LE(eocd + 12);
+  const centralOffset = buf.readUInt32LE(eocd + 16);
+  if (totalEntries > ZIP_PARSE_MAX_ENTRIES) {
+    throw new Error(
+      `Archiwum ZIP ma zbyt wiele wpisów (max ${ZIP_PARSE_MAX_ENTRIES})`,
+    );
+  }
+  if (
+    centralOffset + centralSize > buf.length ||
+    centralOffset + centralSize > eocd
+  ) {
+    throw new Error("Nieprawidłowe archiwum ZIP (central directory)");
+  }
+
+  const entries: ZipEntry[] = [];
+  let offset = centralOffset;
+  let uncompressedTotal = 0;
+
+  for (let i = 0; i < totalEntries; i++) {
+    if (offset + 46 > buf.length || buf.readUInt32LE(offset) !== SIG_CENTRAL) {
+      throw new Error("Nieprawidłowe archiwum ZIP (central entry)");
+    }
+    const method = buf.readUInt16LE(offset + 10);
+    const compSize = buf.readUInt32LE(offset + 20);
+    const uncompSize = buf.readUInt32LE(offset + 24);
+    const nameLen = buf.readUInt16LE(offset + 28);
+    const extraLen = buf.readUInt16LE(offset + 30);
+    const commentLen = buf.readUInt16LE(offset + 32);
+    const localHeaderOffset = buf.readUInt32LE(offset + 42);
+    const nameStart = offset + 46;
+    const nameEnd = nameStart + nameLen;
+    if (nameEnd > buf.length) {
+      throw new Error("Nieprawidłowe archiwum ZIP (nazwa)");
+    }
+    const rawName = buf.subarray(nameStart, nameEnd).toString("utf8");
+    offset = nameEnd + extraLen + commentLen;
+
+    const name = rawName.replace(/\\/g, "/");
+    if (!name || name.endsWith("/")) continue; // directory
+    if (
+      name.startsWith("/") ||
+      name.includes("..") ||
+      /^[A-Za-z]:\//.test(name)
+    ) {
+      throw new Error(`Niedozwolona ścieżka w ZIP: ${name}`);
+    }
+    if (name.startsWith("__MACOSX/") || /(^|\/)\.DS_Store$/i.test(name)) {
+      continue;
+    }
+    if (method !== 0 && method !== 8) {
+      throw new Error(
+        `Nieobsługiwana kompresja ZIP (${method}) dla „${name}” — użyj STORE lub DEFLATE`,
+      );
+    }
+
+    uncompressedTotal += uncompSize;
+    if (uncompressedTotal > ZIP_PARSE_MAX_UNCOMPRESSED) {
+      throw new Error("Archiwum ZIP przekracza limit rozpakowanych danych");
+    }
+
+    if (
+      localHeaderOffset + 30 > buf.length ||
+      buf.readUInt32LE(localHeaderOffset) !== SIG_LOCAL
+    ) {
+      throw new Error(`Nieprawidłowy local header ZIP: ${name}`);
+    }
+    const localNameLen = buf.readUInt16LE(localHeaderOffset + 26);
+    const localExtraLen = buf.readUInt16LE(localHeaderOffset + 28);
+    const dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen;
+    const dataEnd = dataStart + compSize;
+    if (dataEnd > buf.length) {
+      throw new Error(`Obcięte dane ZIP: ${name}`);
+    }
+    const compressed = buf.subarray(dataStart, dataEnd);
+    let data: Buffer;
+    if (method === 0) {
+      data = Buffer.from(compressed);
+    } else {
+      try {
+        data = inflateRawSync(compressed, { maxOutputLength: uncompSize || undefined });
+      } catch {
+        throw new Error(`Nie udało się rozpakować „${name}”`);
+      }
+    }
+    if (uncompSize > 0 && data.length !== uncompSize) {
+      throw new Error(`Niezgodny rozmiar po rozpakowaniu: ${name}`);
+    }
+    entries.push({ name, data });
+  }
+
+  return entries;
 }

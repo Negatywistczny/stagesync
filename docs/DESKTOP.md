@@ -39,9 +39,9 @@ MIDI i zegar muzyczny obsługuje wyłącznie host (serwer) — nie proces okna d
 > Application Support / AppData (bez nadpisywania Dokumentów).
 > Lista ostatnich hostów Launchera zostaje w katalogu aplikacji OS.
 >
-> **Przywróć kopię `.bak`:** Ustawienia → Serwer → Zaawansowane — **Przywróć…**
-> (jeden plik shadow backup obok oryginału albo w katalogu backups; PIN gdy włączony).
-> ZIP / wiele plików naraz — jeszcze nie. Szczegóły: [INSTALL.md](./INSTALL.md) § Backup volume.
+> **Przywróć kopię:** Ustawienia → Serwer → Zaawansowane — **Przywróć…**
+> (`.bak` pojedynczo / zaznaczenie / katalog; albo archiwum `.zip` z drzewem danych;
+> PIN gdy włączony). Szczegóły: [INSTALL.md](./INSTALL.md) § Backup volume.
 >
 > **Sentry (opcjonalnie):** ustaw `SENTRY_DSN` / `VITE_SENTRY_DSN` w `.env` hosta — bez DSN brak raportowania ([INSTALL.md](./INSTALL.md) § Sentry).
 

@@ -514,24 +514,36 @@ export async function browseServerPath(options: {
   return (await res.json()) as BrowseResult;
 }
 
-export type RestoreBackupResponse = {
-  ok: true;
-  bakPath: string;
+export type RestoreBackupItem = {
+  source: string;
   targetPath: string;
   shadowed: string | null;
+};
+
+export type RestoreBackupResponse = {
+  ok: true;
+  bakPath?: string;
+  targetPath?: string;
+  shadowed?: string | null;
+  restored?: RestoreBackupItem[];
+  count?: number;
   message?: string;
 };
 
 /** POST /api/system/restore — destructive; requires confirm + operator PIN when configured. */
 export async function postSystemRestore(
-  path: string,
+  pathOrPaths: string | string[],
 ): Promise<RestoreBackupResponse> {
+  const body =
+    typeof pathOrPaths === "string"
+      ? { path: pathOrPaths, confirm: true as const }
+      : { paths: pathOrPaths, confirm: true as const };
   const res = await fetch("/api/system/restore", {
     method: "POST",
     headers: hostMutatingHeaders({
       "content-type": "application/json",
     }),
-    body: JSON.stringify({ path, confirm: true }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     throw new Error(await readApiError(res));

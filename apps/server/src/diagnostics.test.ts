@@ -4,9 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
-import { buildStoreZip, crc32 } from "./diagnostics-zip.js";
+import { buildStoreZip, crc32, parseZipArchive } from "./diagnostics-zip.js";
 import { createFileLogger } from "./file-logger.js";
 import { createLogBuffer } from "./log-buffer.js";
+import { inflateRawSync, deflateRawSync } from "node:zlib";
 
 describe("file-logger + diagnostics zip (#351)", () => {
   let dir: string;
@@ -49,6 +50,99 @@ describe("file-logger + diagnostics zip (#351)", () => {
     // End of central directory signature
     expect(zip.includes(Buffer.from([0x50, 0x4b, 0x05, 0x06]))).toBe(true);
     expect(crc32(Buffer.alloc(0))).toBe(0);
+  });
+
+  it("parseZipArchive round-trips STORE and DEFLATE entries", () => {
+    const store = buildStoreZip([
+      { name: "a.txt", data: Buffer.from("hello", "utf8") },
+      { name: "dir/b.txt", data: Buffer.from("world", "utf8") },
+    ]);
+    const parsed = parseZipArchive(store);
+    expect(parsed).toEqual([
+      { name: "a.txt", data: Buffer.from("hello", "utf8") },
+      { name: "dir/b.txt", data: Buffer.from("world", "utf8") },
+    ]);
+
+    // Hand-build a single DEFLATE entry via STORE shell + patch is heavy;
+    // instead compress payload and splice into a minimal local+central zip.
+    const payload = Buffer.from("deflated-payload-xxxx", "utf8");
+    const compressed = deflateRawSync(payload);
+    const nameBuf = Buffer.from("c.txt", "utf8");
+    const { time, date } = (() => {
+      const d = new Date(2020, 0, 1);
+      return {
+        time: (d.getHours() << 11) | (d.getMinutes() << 5) | 0,
+        date: ((2020 - 1980) << 9) | (1 << 5) | 1,
+      };
+    })();
+    const u16 = (n: number) => {
+      const b = Buffer.alloc(2);
+      b.writeUInt16LE(n & 0xffff, 0);
+      return b;
+    };
+    const u32 = (n: number) => {
+      const b = Buffer.alloc(4);
+      b.writeUInt32LE(n >>> 0, 0);
+      return b;
+    };
+    const crc = crc32(payload);
+    const local = Buffer.concat([
+      Buffer.from([0x50, 0x4b, 0x03, 0x04]),
+      u16(20),
+      u16(0),
+      u16(8), // DEFLATE
+      u16(time),
+      u16(date),
+      u32(crc),
+      u32(compressed.length),
+      u32(payload.length),
+      u16(nameBuf.length),
+      u16(0),
+      nameBuf,
+      compressed,
+    ]);
+    const central = Buffer.concat([
+      Buffer.from([0x50, 0x4b, 0x01, 0x02]),
+      u16(20),
+      u16(20),
+      u16(0),
+      u16(8),
+      u16(time),
+      u16(date),
+      u32(crc),
+      u32(compressed.length),
+      u32(payload.length),
+      u16(nameBuf.length),
+      u16(0),
+      u16(0),
+      u16(0),
+      u16(0),
+      u32(0),
+      u32(0),
+      nameBuf,
+    ]);
+    const end = Buffer.concat([
+      Buffer.from([0x50, 0x4b, 0x05, 0x06]),
+      u16(0),
+      u16(0),
+      u16(1),
+      u16(1),
+      u32(central.length),
+      u32(local.length),
+      u16(0),
+    ]);
+    const deflatedZip = Buffer.concat([local, central, end]);
+    const deflatedParsed = parseZipArchive(deflatedZip);
+    expect(deflatedParsed).toEqual([{ name: "c.txt", data: payload }]);
+    // sanity: inflateRaw used under the hood matches
+    expect(inflateRawSync(compressed).equals(payload)).toBe(true);
+  });
+
+  it("parseZipArchive rejects traversal names", () => {
+    const zip = buildStoreZip([
+      { name: "../evil.txt", data: Buffer.from("x", "utf8") },
+    ]);
+    expect(() => parseZipArchive(zip)).toThrow(/Niedozwolona/);
   });
 
   it("logBuffer onPush forwards to sink", () => {

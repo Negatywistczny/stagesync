@@ -82,7 +82,7 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 | Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; produkty: **Performer** (`apps/performer` → `/client`, read-only) i **Console** (`apps/console` = pełny odpowiednik desktopu: Admin + Timeline + Client + docelowo lokalny host); szczegóły shella → [ADR 0016](./0016-android-performer-console.md) |
 | Console + lokalny host (Android) | **Decyzja produktowa: IN** — Console = pełnoprawny odpowiednik desktopu na Androidzie (nie thin-shell-only). Implementacja eng fazowana (Faza 4); interim może łączyć się z hostem LAN, ale claim/cel = pełny parytet. Thin-shell-only MVP = **superseded** jako intencja produktu. |
 | Performer + lokalny host / Admin | **OUT** — Performer zawsze Client-only (read-only); bez sidecara, bez edycji Timeline/Mixer |
-| Backup Przywróć | **IN (MVP):** Admin → Przywróć… pojedynczy `.bak` (+ PIN gdy włączony). Residual: pełne archiwum ZIP / bulk multi-file |
+| Backup Przywróć | **IN:** Admin → Przywróć… — `.bak` (pojedynczy / bulk / katalog) oraz archiwum `.zip` (+ PIN gdy włączony) |
 | Auto-update bez operatora | **Permanentnie NIE** na scenie — zawsze akcja człowieka |
 | Pakiet projektu | MVP = `.stagesync.json` (na teraz) |
 | Menubar OS | **OUT:** ustawienia Audio/MIDI/DMX, Tap Tempo/Pre-count, top-level Setlista (sterowanie w Admin); lekki tray OK |
