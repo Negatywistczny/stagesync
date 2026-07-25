@@ -45,6 +45,7 @@ data/host/*
 !data/host/.gitkeep
 data/downloads/*
 !data/downloads/.gitkeep
+!data/downloads/stagesync-*.apk
 
 # Android shells (Performer / Console)
 apps/*/android/.gradle/

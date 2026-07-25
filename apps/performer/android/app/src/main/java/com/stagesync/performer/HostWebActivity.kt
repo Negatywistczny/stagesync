@@ -47,9 +47,9 @@ class HostWebActivity : AppCompatActivity() {
             domStorageEnabled = true
             mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-            // Pull-to-refresh is browser chrome; WebView has no address bar — still block overscroll glow noise.
-            overScrollMode = View.OVER_SCROLL_NEVER
         }
+        // Pull-to-refresh is browser chrome; WebView has no address bar — still block overscroll glow noise.
+        web.overScrollMode = View.OVER_SCROLL_NEVER
         web.webChromeClient = WebChromeClient()
         web.webViewClient =
             object : WebViewClient() {

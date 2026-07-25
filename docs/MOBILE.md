@@ -45,6 +45,8 @@ Gdy plik APK **nie leży** w katalogu downloads hosta, UI pokazuje **pusty stan*
 
 Domyślna lokalizacja plików na hoście: `$STAGESYNC_DATA_DIR/downloads/` (nadpisanie: `STAGESYNC_DOWNLOADS_DIR`).
 
+W repo (sideload MVP) leżą debug APK: `data/downloads/stagesync-performer.apk` oraz `stagesync-console.apk` (build `assembleDebug` / `scripts/build-apk.sh`). Release signed — gdy CI / keystore.
+
 ## PWA
 
 `apps/web` wystawia manifest + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”. Wake Lock API w przeglądarce + `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock).
