@@ -114,3 +114,22 @@ describe("ShellBlockingDialog focus trap", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 });
+
+describe("ShellConfirmDialog labels", () => {
+  it("uses custom confirm and cancel labels", () => {
+    render(
+      <ShellConfirmDialog
+        open
+        title="Restart?"
+        message="Host zostanie zrestartowany."
+        confirmLabel="Restartuj"
+        cancelLabel="Zostaw"
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Restartuj" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Zostaw" })).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Restart?" })).toBeTruthy();
+  });
+});
