@@ -5952,7 +5952,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     className={styles.locator}
                     style={{ left: `${locatorPx}px` }}
                     role="slider"
-                    aria-label="Lokator wklejania"
+                    aria-label="Locator wklejania"
                     aria-valuemin={viewSpan.start}
                     aria-valuemax={viewSpan.end}
                     aria-valuenow={effectiveLocatorTicks}
@@ -7453,7 +7453,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       min={1}
                       step={1}
                       value={countdownBars(draftProject!, selectedClip)}
-                      aria-label="Długość Odliczania w taktach"
+                      aria-label="Długość Countdown w taktach"
                       onChange={(e) => onCountdownBarsChange(e.target.value)}
                     />
                   </label>
@@ -7484,12 +7484,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 : "Rozłączony"}
           </span>
         </div>
-        <div className={styles.zooms} role="group" aria-label="Zoom i przyciąganie">
+        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
           <label className={styles.snapPicker}>
-            <span className={styles.snapPickerLab}>Przyciąganie</span>
+            <span className={styles.snapPickerLab}>Snap</span>
             <select
               className={styles.snapPickerSelect}
-              aria-label="Tryb przyciągania"
+              aria-label="Tryb snap"
               value={snapModeToStorageKey(snapMode)}
               onChange={(e) => {
                 const next = snapModeFromStorageKey(e.target.value);
@@ -7498,7 +7498,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               <option value="off">Wyłącz</option>
               <option value="bar">Takt</option>
-              <option value="beat">Uderzenie</option>
+              <option value="beat">Beat</option>
               <option value="subdivision:2">1/2</option>
               <option value="subdivision:4">1/4</option>
               <option value="subdivision:8">1/8</option>
@@ -7506,7 +7506,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             </select>
           </label>
           <label className={styles.zoomLab}>
-            Interfejs
+            UI
             <input
               className={styles.zoomRange}
               type="range"
@@ -7514,8 +7514,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               max={ZOOM_UI_MAX}
               value={zoomUi}
               onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-              title="Zoom interfejsu — gęstość chrome Timeline / Mixer (85–125%)"
-              aria-label="Zoom interfejsu"
+              title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
+              aria-label="Zoom UI"
             />
           </label>
           <label

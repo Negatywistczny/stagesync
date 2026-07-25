@@ -101,7 +101,7 @@ export function MixerSurface({
     <div
       className={styles.root}
       role="region"
-      aria-label="Mikser"
+      aria-label="Mixer"
       onDoubleClick={onEmptyDoubleClick}
     >
       <div className={styles.bank}>
@@ -162,26 +162,26 @@ export function MixerSurface({
           {/* Zone 2 — Busses */}
           <section
             className={[styles.zone, styles.busZone].join(" ")}
-            aria-label="Magistrale"
+            aria-label="Busy"
           >
             <div className={styles.zoneHead}>
-              <span className={styles.zoneTitle}>Magistrale</span>
+              <span className={styles.zoneTitle}>Busy</span>
               <button
                 type="button"
                 className={styles.addBusBtn}
-                aria-label="Dodaj magistralę"
+                aria-label="Dodaj Bus"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddBus();
                 }}
               >
-                + Dodaj magistralę
+                + Dodaj Bus
               </button>
             </div>
             <div className={styles.strips}>
               {busses.length === 0 ? (
                 <p className={styles.empty} role="status" aria-live="polite">
-                  Brak magistral — użyj „+ Dodaj magistralę”.
+                  Brak busów — użyj „+ Dodaj Bus”.
                 </p>
               ) : null}
               {busses.map((bus) => {

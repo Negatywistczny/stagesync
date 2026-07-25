@@ -25,6 +25,12 @@ Procedura sesji parity / tech-debt. Zakazy produktowe zostają w `.cursor/rules/
 - Dual-write legacy 4.x; admin scrub APIs; stuby brakujących zachowań v4
 - Claim green **G1–G10** bez dowodu HW
 - Żargon ops / residual / soft-gate w CHANGELOG
+- **Nie „polonizuj” żargonu DAW** powszechnie używanego po angielsku w UI produktu.
+  Zostaw m.in.: Bus / Busy, Out, Stereo Out, Snap, Beat, UI (zoom chrome),
+  Locator, Countdown, Mixer, Pan, Balance, Peak Hold, Fade In/Out, Clip (gdy
+  nazwa narzędzia). PL OK dla dialogów (Potwierdź / Rozumiem), odmiany „klip”
+  w zdaniach PL, Importuj UG, statusów połączenia — nie tłumacz nazw stref
+  miksera ani stopki Timeline.
 
 ## Fazy
 

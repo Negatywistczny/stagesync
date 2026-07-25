@@ -24,7 +24,7 @@ export function DualDbReadout({
   onGainReset,
   onHoldClear,
   gainAriaLabel = "Poziom fadera",
-  holdAriaLabel = "Szczyt — kliknij aby wyzerować",
+  holdAriaLabel = "Peak Hold — kliknij aby wyzerować",
 }: DualDbReadoutProps) {
   return (
     <div className={styles.dualReadout}>

@@ -10,10 +10,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW
-- **Stopka:** „Snap” → „Przyciąganie”, „Beat” → „Uderzenie”, zoom chrome „Interfejs”; grupa „Zoom i przyciąganie” ([#652](https://github.com/Negatywistyczny/stagesync/pull/652), [#654](https://github.com/Negatywistyczny/stagesync/pull/654), [#660](https://github.com/Negatywistyczny/stagesync/pull/660), [#662](https://github.com/Negatywistyczny/stagesync/pull/662)).
-- **Narzędzia / Pomoc:** odmiana „klip” w tytułach narzędzi i karcie Pomocy; strefy miksera w pomocy to „Wyjście” / „Magistrale”; przycisk i dialog „Importuj UG” ([#640](https://github.com/Negatywistyczny/stagesync/pull/640), [#641](https://github.com/Negatywistyczny/stagesync/pull/641), [#644](https://github.com/Negatywistyczny/stagesync/pull/644), [#668](https://github.com/Negatywistyczny/stagesync/pull/668), [#669](https://github.com/Negatywistyczny/stagesync/pull/669)).
-- **Mixer:** strefa busów „Magistrale”, „+ Dodaj magistralę”, odznaka „Magistrala”; widoczne „Wyjście” zamiast „Out” ([#623](https://github.com/Negatywistyczny/stagesync/pull/623), [#626](https://github.com/Negatywistyczny/stagesync/pull/626), [#636](https://github.com/Negatywistyczny/stagesync/pull/636), [#643](https://github.com/Negatywistyczny/stagesync/pull/643)).
-- **Inspector:** „Odliczanie”, „Lokator wklejania”, „Tonika startu”; polskie etykiety klipu audio ([#635](https://github.com/Negatywistyczny/stagesync/pull/635), [#637](https://github.com/Negatywistyczny/stagesync/pull/637), [#658](https://github.com/Negatywistyczny/stagesync/pull/658), [#666](https://github.com/Negatywistyczny/stagesync/pull/666)).
+- **Narzędzia / Pomoc:** odmiana „klip” w tytułach narzędzi i karcie Pomocy; przycisk i dialog „Importuj UG” ([#640](https://github.com/Negatywistyczny/stagesync/pull/640), [#641](https://github.com/Negatywistyczny/stagesync/pull/641), [#668](https://github.com/Negatywistyczny/stagesync/pull/668), [#669](https://github.com/Negatywistyczny/stagesync/pull/669)).
+- **Inspector:** polskie etykiety klipu audio (wyciszenie / gain); „Tonika startu” ([#635](https://github.com/Negatywistyczny/stagesync/pull/635), [#637](https://github.com/Negatywistyczny/stagesync/pull/637)).
 
 #### 🖥️ App Shell & UI
 - **Dialogi:** potwierdzenie „Potwierdź”, alert „Rozumiem” ([#606](https://github.com/Negatywistyczny/stagesync/pull/606), [#622](https://github.com/Negatywistyczny/stagesync/pull/622)).

@@ -302,7 +302,7 @@ export function ChannelStripControls({
         <OutputSelector
           value={strip.outputValue ?? "master"}
           options={outputOptions}
-          aria-label={`Wyjście ${strip.name}`}
+          aria-label={`Out ${strip.name}`}
           onChange={(v) => callbacks.onOutputChange?.(parseOutputDest(v))}
         />
 
@@ -311,7 +311,7 @@ export function ChannelStripControls({
           label={isStereo ? "BAL" : "PAN"}
           onPanChange={(v) => callbacks.onPanChange?.(v)}
           onPanReset={() => callbacks.onPanReset?.()}
-          aria-label={`${isStereo ? "Balans" : "Panorama"} ${strip.name}`}
+          aria-label={`${isStereo ? "Balance" : "Pan"} ${strip.name}`}
         />
 
         <DualDbReadout
@@ -320,7 +320,7 @@ export function ChannelStripControls({
           onGainReset={callbacks.onGainReset}
           onHoldClear={() => callbacks.onHoldClear?.()}
           gainAriaLabel={`Fader ${strip.name}`}
-          holdAriaLabel={`Szczyt ${strip.name} — kliknij aby wyzerować`}
+          holdAriaLabel={`Peak Hold ${strip.name} — kliknij aby wyzerować`}
         />
 
         <div className={styles.faderMeterRow} onClick={(e) => e.stopPropagation()}>
@@ -358,7 +358,7 @@ export function ChannelStripControls({
         >
           <div className={styles.bannerAnchor}>
             {isBus ? (
-              <span className={styles.busBadge} title="Magistrala">
+              <span className={styles.busBadge} title="Bus">
                 BUS
               </span>
             ) : (

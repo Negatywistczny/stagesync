@@ -36,12 +36,12 @@ export function OutputSelector({
   value,
   options,
   onChange,
-  "aria-label": ariaLabel = "Wyjście",
+  "aria-label": ariaLabel = "Out",
   disabled = false,
 }: OutputSelectorProps) {
   return (
     <label className={styles.outputSelectWrap}>
-      <span className={styles.outputSelectLabel}>Wyjście</span>
+      <span className={styles.outputSelectLabel}>Out</span>
       <select
         className={styles.outputSelect}
         value={value}
