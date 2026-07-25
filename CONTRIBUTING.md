@@ -27,6 +27,12 @@
 
 Higiena listy zadań i parytetu: [docs/TODO.md](docs/TODO.md), [`.cursor/rules/todo-hygiene.mdc`](.cursor/rules/todo-hygiene.mdc).
 
+## Cursor (agent tooling)
+
+- **Rules** (zawsze): [`.cursor/rules/`](.cursor/rules/) — konstytucja, CHANGELOG, parity, TODO.
+- **Commands / skills** (jawne): `/night-audit`, `/triage-next`, `/turn-red` → [`.cursor/skills/`](.cursor/skills/) (procedury sesji; nie dublują Rules).
+- **Subagent:** `night-auditor` ([`.cursor/agents/night-auditor.md`](.cursor/agents/night-auditor.md)) — długie sesje night/evening hygiene z handoffem.
+
 ### Branch protection (właściciel repo)
 
 Push na `main` OK (Admin bypass). Na PR-ach do `main` — ruleset

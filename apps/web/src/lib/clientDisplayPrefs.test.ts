@@ -66,6 +66,17 @@ describe("clientDisplayPrefs", () => {
     expect(loadClientDisplayPrefs().instrumentPitch).toBe("concert");
   });
 
+  it("treats string true as enabled for bool prefs", () => {
+    store.set("stagesync-chord-hybrid-polish-b", "true");
+    store.set("stagesync-chord-literal-quality", "false");
+    store.set("stagesync-grid-animations", "0");
+    expect(loadClientDisplayPrefs()).toMatchObject({
+      hybridPolishB: true,
+      literalQuality: false,
+      gridAnimations: false,
+    });
+  });
+
   it("loaders and setters tolerate private-mode throws", () => {
     vi.stubGlobal("localStorage", {
       getItem: () => {
