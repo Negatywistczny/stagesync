@@ -5,6 +5,16 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Zaznaczenie:** menu kontekstowe klipu i ścieżki audio oraz segmenty mapy Tempo / Metrum / Tonacja ogłaszają liczbę zaznaczonych elementów; Inspector przy wielu klipach ([#675](https://github.com/Negatywistyczny/stagesync/pull/675), [#676](https://github.com/Negatywistyczny/stagesync/pull/676), [#687](https://github.com/Negatywistyczny/stagesync/pull/687), [#690](https://github.com/Negatywistyczny/stagesync/pull/690)).
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher:** jaśniejsze etykiety powrotu, błędu lokalnego hosta, łączenia ręcznego oraz stanu zajętości / ponowienia ([#677](https://github.com/Negatywistyczny/stagesync/pull/677), [#684](https://github.com/Negatywistyczny/stagesync/pull/684), [#689](https://github.com/Negatywistyczny/stagesync/pull/689)).
+
 ## [5.1.3](https://github.com/Negatywistczny/stagesync/compare/v5.1.2...v5.1.3) - 2026-07-25
 
 ### Dodano
