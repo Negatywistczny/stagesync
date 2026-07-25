@@ -13,7 +13,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 
 ### Must (operator residual po 5.1.0)
 
-- [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — bez claim green w docs; **G3** re-verify HW odłożone (fix Documents na `main`, nie w 5.1.2)
+- [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — bez claim green w docs; **G5** komunikat port zajęty — pass operatorski na `5.1.2` (przycisk „Pobierz log” dopiero po kolejnym buildzie); **G3** re-verify HW odłożone (fix Documents na `main`, nie w 5.1.2)
 
 ### Should / Higiena (nie blokuje 5.2)
 

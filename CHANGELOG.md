@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher:** przy nieudanym starcie lokalnego hosta (m.in. zajęty port) można pobrać log diagnostyczny do pliku.
+
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW

@@ -28,9 +28,14 @@
           <button type="button" class="btn primary" id="btnLocal" disabled>
             Uruchom lokalny host
           </button>
-          <button type="button" class="btn ghost localClear" id="btnLocalClear" hidden>
-            Wyczyść błąd
-          </button>
+          <div class="row localErrorActions" id="localErrorActions" hidden>
+            <button type="button" class="btn ghost" id="btnLocalClear">
+              Wyczyść błąd
+            </button>
+            <button type="button" class="btn secondary" id="btnLocalDownloadLog">
+              Pobierz log
+            </button>
+          </div>
           <pre class="log localLog" id="localLog" hidden></pre>
           <p class="hint" id="localHint" hidden></p>
         </div>

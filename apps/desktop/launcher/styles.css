@@ -121,8 +121,8 @@ body {
   width: 100%;
 }
 
-.localClear {
-  align-self: flex-start;
+.localErrorActions {
+  align-self: stretch;
 }
 
 .localLog {

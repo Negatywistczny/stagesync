@@ -26,6 +26,8 @@ const el = {
   mainPanel: document.getElementById("mainPanel"),
   btnLocal: document.getElementById("btnLocal"),
   btnLocalClear: document.getElementById("btnLocalClear"),
+  btnLocalDownloadLog: document.getElementById("btnLocalDownloadLog"),
+  localErrorActions: document.getElementById("localErrorActions"),
   localError: document.getElementById("localError"),
   localProgress: document.getElementById("localProgress"),
   localLog: document.getElementById("localLog"),
@@ -58,6 +60,10 @@ let scanning = false;
 /** @type {string | null} */
 let lastRemoteUrl = null;
 let localHasError = false;
+/** @type {string} */
+let lastLocalErrorMessage = "";
+/** @type {string} */
+let lastLocalLog = "";
 
 function setBusy(next) {
   busy = next;
@@ -65,6 +71,7 @@ function setBusy(next) {
   el.btnLocal.disabled = next || !canLocal;
   el.btnRefresh.disabled = next || scanning;
   el.btnLocalClear.disabled = next;
+  el.btnLocalDownloadLog.disabled = next;
 }
 
 function setScanning(next) {
@@ -146,6 +153,59 @@ function friendlyLocalError(raw) {
   return first.length > 280 ? `${first.slice(0, 277)}…` : first;
 }
 
+/** Extract embedded sidecar log from a Rust failure string (`— log hosta —`). */
+function extractEmbeddedLog(raw) {
+  const text = String(raw?.message ?? raw ?? "");
+  const marker = "\n\n— log";
+  const idx = text.indexOf(marker);
+  if (idx < 0) return "";
+  const after = text.slice(idx + marker.length);
+  const nl = after.indexOf("\n");
+  return (nl >= 0 ? after.slice(nl + 1) : after).trim();
+}
+
+/** Prefer live sidecar tail; fall back to embedded log in the error payload. */
+async function resolveLocalLog(rawErr) {
+  try {
+    const tail = await invoke("get_sidecar_log_tail");
+    if (String(tail || "").trim()) return String(tail);
+  } catch {
+    /* ignore */
+  }
+  return extractEmbeddedLog(rawErr);
+}
+
+function downloadTextFile(filename, content) {
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.append(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadLocalLog() {
+  const message = lastLocalErrorMessage || el.localError.textContent || "";
+  const log = lastLocalLog || el.localLog.textContent || "";
+  const parts = [
+    "# StageSync — log startu lokalnego hosta",
+    `# ${new Date().toISOString()}`,
+  ];
+  if (message.trim()) {
+    parts.push("", "## Komunikat", message.trim());
+  }
+  if (log.trim()) {
+    parts.push("", "## Log hosta", log.trim());
+  }
+  if (parts.length <= 2) return;
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  downloadTextFile(`stagesync-host-${stamp}.log`, `${parts.join("\n")}\n`);
+}
+
 function friendlyDiscoverError(raw) {
   const text = String(raw?.message ?? raw ?? "");
   const lower = text.toLowerCase();
@@ -164,21 +224,25 @@ function friendlyDiscoverError(raw) {
 
 function clearLocalError() {
   localHasError = false;
+  lastLocalErrorMessage = "";
+  lastLocalLog = "";
   el.localError.hidden = true;
   el.localError.textContent = "";
   el.localProgress.hidden = true;
   el.localProgress.textContent = "";
   el.localLog.hidden = true;
   el.localLog.textContent = "";
-  el.btnLocalClear.hidden = true;
+  el.localErrorActions.hidden = true;
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
 }
 
 function showLocalProgress(message) {
   localHasError = false;
+  lastLocalErrorMessage = "";
+  lastLocalLog = "";
   el.localError.hidden = true;
   el.localError.textContent = "";
-  el.btnLocalClear.hidden = true;
+  el.localErrorActions.hidden = true;
   el.localLog.hidden = true;
   el.localProgress.hidden = false;
   el.localProgress.textContent = message;
@@ -187,12 +251,14 @@ function showLocalProgress(message) {
 
 function showLocalError(message, log) {
   localHasError = true;
+  lastLocalErrorMessage = String(message || "");
+  lastLocalLog = String(log || "");
   el.localProgress.hidden = true;
   el.localProgress.textContent = "";
   el.localError.hidden = false;
   el.localError.textContent = message;
   el.btnLocal.textContent = LABEL_LOCAL_RETRY;
-  el.btnLocalClear.hidden = false;
+  el.localErrorActions.hidden = false;
   if (log) {
     el.localLog.hidden = false;
     el.localLog.textContent = log;
@@ -423,12 +489,7 @@ async function startLocal() {
   try {
     await invoke("start_local_host");
   } catch (err) {
-    let log = "";
-    try {
-      log = await invoke("get_sidecar_log_tail");
-    } catch {
-      /* ignore */
-    }
+    const log = await resolveLocalLog(err);
     showLocalError(friendlyLocalError(err), log || undefined);
     setBusy(false);
   }
@@ -500,11 +561,13 @@ async function init() {
   }
 
   if (bootstrap.lastError) {
-    showLocalError(friendlyLocalError(bootstrap.lastError));
+    const log = await resolveLocalLog(bootstrap.lastError);
+    showLocalError(friendlyLocalError(bootstrap.lastError), log || undefined);
   }
 
   el.btnLocal.addEventListener("click", () => void startLocal());
   el.btnLocalClear.addEventListener("click", () => clearLocalError());
+  el.btnLocalDownloadLog.addEventListener("click", () => downloadLocalLog());
   el.btnRefresh.addEventListener("click", () => void refreshDiscovery());
   el.manualForm.addEventListener("submit", (e) => {
     e.preventDefault();
