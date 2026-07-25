@@ -32,4 +32,24 @@ class SemVerTest {
         assertTrue(SemVer.hostIsNewer("next", "5.1.3"))
         assertFalse(SemVer.hostIsNewer("build-local", "build-local"))
     }
+
+    @Test
+    fun compare_unparseableReturnsNull() {
+        assertEquals(null, SemVer.compare("not-a-version", "5.1.3"))
+        assertEquals(null, SemVer.compare("5.1.3", "bogus"))
+        assertEquals(null, SemVer.compare("", "5.1.3"))
+    }
+
+    @Test
+    fun compare_trimsAndIgnoresBuildMetadata() {
+        assertEquals(0, SemVer.compare("  5.1.3  ", "5.1.3+build.9"))
+        assertEquals(0, SemVer.compare("5.1.3+abc", "5.1.3+xyz"))
+    }
+
+    @Test
+    fun hostIsNewer_emptyVersionsAreNotNewer() {
+        assertFalse(SemVer.hostIsNewer("", "5.1.3"))
+        assertFalse(SemVer.hostIsNewer("5.1.3", ""))
+        assertFalse(SemVer.hostIsNewer("   ", "5.1.3"))
+    }
 }
