@@ -8042,7 +8042,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               className={styles.toolMenu}
               style={{ top: wandMenu.top, left: wandMenu.left }}
               role="menu"
-              aria-label="Różdżka — źródło"
+              aria-label="Różdżka — wybór źródła"
             >
               {(
                 [
