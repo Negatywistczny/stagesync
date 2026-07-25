@@ -349,10 +349,14 @@ export function KaraokePane({
           </div>
         </div>
       ) : (
-        <div className={styles.karaokePlaceholder}>
+        <div
+          className={styles.karaokePlaceholder}
+          role="status"
+          aria-live="polite"
+        >
           <p className={styles.karaokePlaceholderTitle}>Brak linii tekstu</p>
           <p className={styles.muted}>
-            Dodaj clipy na lane Tekst w Timeline (Pencil).
+            Dodaj clipy na lane Tekst w Timeline (Ołówek).
           </p>
         </div>
       )}
