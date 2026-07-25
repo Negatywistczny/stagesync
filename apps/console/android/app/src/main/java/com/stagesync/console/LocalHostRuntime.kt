@@ -1,17 +1,19 @@
 package com.stagesync.console
 
 /**
- * Faza 4 — lokalny host runtime probe (Termux-free path).
+ * Lokalny host runtime probe (Termux-free path).
  *
- * Desktop packs Node as Tauri externalBin (`stagesync-host`). Android has no
- * official Node dist; the intended eng path is nodejs-mobile `libnode.so` + JNI
- * (see docs/MOBILE.md). Until that bridge + server assets ship in the APK, start
- * attempts fail open with an honest operator message — never fake success.
+ * Desktop packs Node as Tauri externalBin (`stagesync-host`). Android uses
+ * nodejs-mobile `libnode.so` + JNI (`stagesync-host-bridge`) + `assets/host`.
+ * Start attempts without a complete pack fail open — never fake success.
  */
 object LocalHostRuntime {
     const val LOOPBACK_ORIGIN = "http://127.0.0.1:4000"
     const val NATIVE_LIB = "node"
+    const val BRIDGE_LIB = "stagesync-host-bridge"
     const val HOST_ASSET_MARKER = "host/READY"
+    const val HEALTH_PATH = "/api/health"
+    const val DEFAULT_PORT = 4000
 
     data class Readiness(
         val nativeLibPresent: Boolean,
@@ -24,8 +26,13 @@ object LocalHostRuntime {
 
     fun probe(context: android.content.Context): Readiness {
         val nativeDir = context.applicationInfo.nativeLibraryDir
-        val libFile = java.io.File(nativeDir, "lib$NATIVE_LIB.so")
-        val nativeLibPresent = libFile.isFile && libFile.length() > 0L
+        val libNode = java.io.File(nativeDir, "lib$NATIVE_LIB.so")
+        val libBridge = java.io.File(nativeDir, "lib$BRIDGE_LIB.so")
+        val nativeLibPresent =
+            libNode.isFile &&
+                libNode.length() > 0L &&
+                libBridge.isFile &&
+                libBridge.length() > 0L
 
         val hostAssetsPresent =
             try {
@@ -34,18 +41,12 @@ object LocalHostRuntime {
                 false
             }
 
-        var jniBridgeLoaded = false
-        if (nativeLibPresent) {
-            try {
-                System.loadLibrary(NATIVE_LIB)
-                // Placeholder: real bridge exposes startNodeWithArguments via JNI.
-                jniBridgeLoaded = LocalHostNative.isBridgeReady()
-            } catch (_: UnsatisfiedLinkError) {
-                jniBridgeLoaded = false
-            } catch (_: Throwable) {
-                jniBridgeLoaded = false
+        val jniBridgeLoaded =
+            if (nativeLibPresent) {
+                LocalHostNative.isBridgeReady()
+            } else {
+                false
             }
-        }
 
         return Readiness(
             nativeLibPresent = nativeLibPresent,
@@ -57,31 +58,22 @@ object LocalHostRuntime {
     fun missingMessage(readiness: Readiness): String {
         val missing = buildList {
             if (!readiness.nativeLibPresent) {
-                add("brak libnode.so (nodejs-mobile) w jniLibs")
+                add("brak libnode.so / stagesync-host-bridge w APK")
             }
             if (!readiness.hostAssetsPresent) {
                 add("brak paczki serwera (assets/host)")
             }
             if (readiness.nativeLibPresent && !readiness.jniBridgeLoaded) {
-                add("brak mostu JNI (NDK) do node::Start")
+                add("most JNI nie załadował się (NDK / libnode)")
             }
         }
         return buildString {
-            append("Lokalny host nie jest jeszcze gotowy w tym buildzie")
+            append("Lokalny host nie jest gotowy w tym buildzie")
             if (missing.isNotEmpty()) {
                 append(": ")
                 append(missing.joinToString("; "))
             }
-            append(". Połącz się z hostem LAN albo zbuduj APK po `prepare-local-host` + NDK — docs/MOBILE.md Faza 4.")
+            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/MOBILE.md.")
         }
     }
-}
-
-/**
- * JNI façade — real implementation lands with NDK cmake (`startNodeWithArguments`).
- * Default stub reports bridge not ready so UI stays fail-open.
- */
-object LocalHostNative {
-    @JvmStatic
-    fun isBridgeReady(): Boolean = false
 }

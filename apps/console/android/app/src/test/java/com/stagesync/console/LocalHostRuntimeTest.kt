@@ -14,7 +14,7 @@ class LocalHostRuntimeTest {
                     jniBridgeLoaded = false,
                 ),
             )
-        assertTrue(msg.contains("libnode.so"))
+        assertTrue(msg.contains("libnode"))
         assertTrue(msg.contains("assets/host"))
         assertTrue(msg.contains("MOBILE.md"))
     }

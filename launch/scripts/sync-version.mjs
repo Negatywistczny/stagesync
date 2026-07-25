@@ -16,6 +16,8 @@
  *   - compose.yml (STAGESYNC_VERSION default)
  *   - apps/desktop/src-tauri/tauri.conf.json
  *   - apps/desktop/src-tauri/Cargo.toml
+ *   - apps/console/android/app/build.gradle.kts (versionName / versionCode)
+ *   - apps/performer/android/app/build.gradle.kts (versionName / versionCode)
  *   (CI still passes --build-arg APP_VERSION / STAGESYNC_VERSION explicitly)
  */
 
@@ -124,6 +126,26 @@ const updates = [
   {
     path: "apps/desktop/src-tauri/Cargo.toml",
     transform: (c) => c.replace(/^version = "[^"]+"/m, `version = "${version}"`),
+  },
+  {
+    path: "apps/console/android/app/build.gradle.kts",
+    transform: (c) => {
+      const [maj, min, pat] = version.split(".").map(Number);
+      const code = maj * 10000 + min * 100 + pat;
+      return c
+        .replace(/versionCode\s*=\s*\d+/, `versionCode = ${code}`)
+        .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${version}"`);
+    },
+  },
+  {
+    path: "apps/performer/android/app/build.gradle.kts",
+    transform: (c) => {
+      const [maj, min, pat] = version.split(".").map(Number);
+      const code = maj * 10000 + min * 100 + pat;
+      return c
+        .replace(/versionCode\s*=\s*\d+/, `versionCode = ${code}`)
+        .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${version}"`);
+    },
   },
 ];
 

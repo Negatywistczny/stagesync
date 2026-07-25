@@ -13,7 +13,11 @@
     <string name="local_host_channel">Lokalny host StageSync</string>
     <string name="local_host_notification_title">StageSync Console</string>
     <string name="local_host_starting">Uruchamianie lokalnego hosta…</string>
-    <string name="local_host_bridge_incomplete">Silnik Node jest w APK, ale most JNI nie jest jeszcze zbudowany (NDK). Połącz się z hostem LAN — docs/MOBILE.md Faza 4.</string>
+    <string name="local_host_running">Lokalny host działa (127.0.0.1:4000)</string>
+    <string name="local_host_start_failed">Nie udało się uruchomić lokalnego hosta: %1$s</string>
+    <string name="local_host_node_exited">Proces Node zakończył się (kod %1$d)</string>
+    <string name="local_host_health_timeout">Lokalny host nie odpowiedział na /api/health (%1$s)</string>
+    <string name="local_host_bridge_incomplete">Silnik Node jest w APK, ale most JNI nie załadował się. Połącz się z hostem LAN albo przebuduj APK — docs/MOBILE.md.</string>
     <string name="btn_scan_qr">Skanuj kod QR</string>
     <string name="btn_recent">Ostatnie serwery</string>
     <string name="btn_change_server">Zmień serwer</string>

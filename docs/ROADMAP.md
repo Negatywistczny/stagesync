@@ -24,7 +24,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw hosta | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
-| **5.3+** | Residual: multi-out HW, auto-election, Offline delta, JNI, OAuth… | Po 5.2.1 | [TODO.md](./TODO.md) · [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.3+** | Residual: multi-out HW, auto-election, Offline delta, OAuth… | Po 5.2.1 | [TODO.md](./TODO.md) · [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
 ### Zamknięte etapy (α3–β1)
 
@@ -84,7 +84,7 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Dostarczone:** Operator PIN; scenic theme lock + `STAGESYNC_THEME_DEFAULT`; Mixer bus→bus (anti-cycle); Cues Sampler; Safety Net Master/Spare (ręczne Przejmij); Performer/Console Offline-First (zip apply); MIDI PC channel; sideload APK z hosta.
 
-**Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; JNI local host; OAuth; macierz motywów 4 profili — [TODO.md](./TODO.md).
+**Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; OAuth; macierz motywów 4 profili — [TODO.md](./TODO.md).
 
 ### Po 5.2.0 / 5.2.1 + residual 5.3+
 
@@ -92,7 +92,7 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - Motywy: macierz 4 profili / THM-03
 - Mixer: multi-out HW (Out 3–4)
 - Safety Net: auto-election / lease
-- Mobile: responsive GUI (Admin/Client/Timeline); JNI/`libnode`; Offline delta
+- Mobile: responsive GUI (Admin/Client/Timeline); Offline delta
 - Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/)
 
 

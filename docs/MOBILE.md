@@ -8,7 +8,7 @@ Operator sketch for Android sideload and PWA (**v5.2** Pocket Stage). Product na
 |---|-------------------------|------------------------|
 | Rola | Pasywny klient sceniczny (Grid / Karaoke / Score / Drums) | Pełnoprawny odpowiednik desktopu na Androidzie |
 | Po połączeniu | WebView → `/client` | WebView → `/admin` (pełne SPA: Admin + Timeline + Client) |
-| Lokalny host | **Zakaz** (zawsze thin) | Przycisk **Uruchom lokalny host** — przy braku silnika w APK: uczciwy komunikat; typowo host LAN |
+| Lokalny host | **Zakaz** (zawsze thin) | **Uruchom lokalny host** startuje Node na urządzeniu (`127.0.0.1:4000`); LAN nadal dostępne |
 | Audio / MIDI w procesie | **Zakaz** | SSOT na hoście (LAN albo lokalny, gdy silnik w APK działa) |
 | Katalog | `apps/performer` | `apps/console` |
 
@@ -25,13 +25,17 @@ Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle ko
 ```sh
 # Performer (buduje @stagesync/web, potem APK z dist-performer = Client-only)
 ./apps/performer/scripts/build-apk.sh
-# artefakt: apps/performer/android/app/build/outputs/apk/debug/app-debug.apk
+# artefakt: data/downloads/stagesync-performer.apk
 
-# Console (dist-console = pełne SPA jak desktop)
+# Console (dist-console = pełne SPA + lokalny host: libnode + server assets)
 ./apps/console/scripts/build-apk.sh
+# artefakt: data/downloads/stagesync-console.apk
 ```
 
-`SKIP_WEB_BUILD=1` pomija Vite, gdy `apps/web/dist-performer` / `dist-console` są już aktualne. CI musi mieć Node build przed `assemble*`.
+Wymagania Console z lokalnym hostem: Android SDK, **NDK 26.1+**, **CMake 3.22.1**, JDK 17+, sieć (pierwszy raz pobiera nodejs-mobile).  
+`SKIP_LOCAL_HOST=1` — APK bez silnika (LAN-only; przycisk fail-open).  
+`SKIP_HOST_SERVER=1` — tylko `libnode`/JNI, bez `assets/host`.  
+`SKIP_WEB_BUILD=1` pomija Vite, gdy `dist-performer` / `dist-console` są aktualne.
 
 JVM unit tests (bez urządzenia; wymaga `ANDROID_HOME` / Homebrew `android-commandlinetools`):
 
@@ -143,12 +147,16 @@ Kryteria **Console** (nie mylić z pasywnym Performerem):
 |----|-----------|
 | C-HW1 | Launcher → health → `/admin` na tablecie LAN |
 | C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA) |
-| C-HW3 | „Uruchom lokalny host” widoczny; sukces albo uczciwy status przy braku silnika |
+| C-HW3 | „Uruchom lokalny host” → `/api/health` na `127.0.0.1:4000` → Admin; przy uszkodzonym buildzie — uczciwy status |
 | C-HW4 | Telefon (≤768): Timeline = podgląd / transport (bez Inspectora i chrome edycji); Admin czytelny |
 
 ## Lokalny host na Console
 
-W launcherze Console przycisk **Uruchom lokalny host** jest widoczny. Typowa praca: połączenie z hostem LAN. Gdy silnik nie jest spakowany w APK, UI pokazuje uczciwy komunikat (fail-open), nie fałszywy sukces.
+W launcherze Console **Uruchom lokalny host** uruchamia wbudowany serwer StageSync na urządzeniu (nodejs-mobile + JNI), czeka na `GET http://127.0.0.1:4000/api/health`, potem otwiera Admin — ten sam tor co desktop ([DESKTOP.md](./DESKTOP.md), [ADR 0014](./adr/0014-desktop-launcher.md)).
+
+Domyślny `./apps/console/scripts/build-apk.sh` pakuje `libnode.so` (arm64-v8a + armeabi-v7a), most `stagesync-host-bridge` oraz `assets/host` (server jak sidecar desktop + web + seed). Dane projektów: katalog aplikacji (`filesDir/stagesync-data`). Native MIDI na Androidzie jest niedostępne (serwer startuje bez backendu MIDI); mDNS na lokalnym hoście Console jest wyłączone — odkrywanie LAN nadal działa przy połączeniu z innym hostem.
+
+Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` albo uszkodzony build), UI pokazuje uczciwy komunikat (fail-open), nie fałszywy sukces. **Performer** nigdy nie bundluje lokalnego hosta.
 
 ## Zakazy
 

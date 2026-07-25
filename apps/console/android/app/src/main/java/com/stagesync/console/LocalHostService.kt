@@ -12,14 +12,21 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
 
 /**
- * Foreground service for Console local host (Faza 4).
+ * Foreground service for Console local host.
  *
- * Starts honest probe → either boots Node (when packaged) or broadcasts failure.
- * Never reports success without loopback /api/health.
+ * Extract host assets → start Node via JNI → probe loopback /api/health →
+ * broadcast READY (never without health).
  */
 class LocalHostService : Service() {
+    private val nodeThreadStarted = AtomicBoolean(false)
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -38,34 +45,155 @@ class LocalHostService : Service() {
 
         val readiness = LocalHostRuntime.probe(this)
         if (!readiness.canStart) {
-            broadcast(
-                ACTION_FAILED,
-                LocalHostRuntime.missingMessage(readiness),
-            )
+            broadcastFailed(LocalHostRuntime.missingMessage(readiness))
             stopSelf()
             return START_NOT_STICKY
         }
 
-        // Real path (when JNI + assets land): extract host → startNode → probe health.
-        broadcast(
-            ACTION_FAILED,
-            getString(R.string.local_host_bridge_incomplete),
+        if (!nodeThreadStarted.compareAndSet(false, true)) {
+            // Already starting / running — keep service alive.
+            return START_STICKY
+        }
+
+        thread(name = "stagesync-local-host", isDaemon = false) {
+            try {
+                bootHost()
+            } catch (err: Throwable) {
+                broadcastFailed(
+                    getString(
+                        R.string.local_host_start_failed,
+                        err.message ?: err.javaClass.simpleName,
+                    ),
+                )
+                stopSelf()
+            }
+        }
+
+        return START_STICKY
+    }
+
+    private fun bootHost() {
+        val hostRoot = HostAssetExtractor.extractIfNeeded(this)
+        val serverDir = File(hostRoot, "server")
+        val entry = File(serverDir, "dist/index.js")
+        if (!entry.isFile) {
+            throw IllegalStateException("brak server/dist/index.js w assets/host")
+        }
+
+        val dataDir = File(filesDir, "stagesync-data").apply { mkdirs() }
+        val seedDir = File(hostRoot, "seed")
+        val staticDir = File(hostRoot, "web")
+        val versionName =
+            try {
+                packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+            } catch (_: Exception) {
+                "0.0.0"
+            }
+
+        fun env(key: String, value: String) {
+            if (!LocalHostNative.setEnv(key, value)) {
+                throw IllegalStateException("setenv failed: $key")
+            }
+        }
+
+        env("PORT", LocalHostRuntime.DEFAULT_PORT.toString())
+        env("STAGESYNC_BIND_HOST", "0.0.0.0")
+        env("STAGESYNC_DATA_DIR", dataDir.absolutePath)
+        env("STAGESYNC_SEED_DIR", seedDir.absolutePath)
+        env("STAGESYNC_STATIC_DIR", staticDir.absolutePath)
+        env("STAGESYNC_SHELL", "console")
+        env("STAGESYNC_VERSION", versionName)
+        env("npm_package_version", versionName)
+        env("NODE_ENV", "production")
+        // Multicast mDNS is unreliable in some Android sandboxes; LAN discovery
+        // still works when Console is reached by IP. Loopback Admin does not need it.
+        env("STAGESYNC_DISABLE_MDNS", "1")
+        env("HOME", filesDir.absolutePath)
+        env("TMPDIR", cacheDir.absolutePath)
+
+        if (!LocalHostNative.chdir(serverDir.absolutePath)) {
+            throw IllegalStateException("chdir failed: ${serverDir.absolutePath}")
+        }
+
+        val nodeStarted = AtomicBoolean(false)
+        thread(name = "stagesync-node", isDaemon = false) {
+            nodeStarted.set(true)
+            // Relative entry + cwd mirrors desktop sidecar (launcher.rs).
+            val code =
+                LocalHostNative.startNodeWithArguments(
+                    arrayOf(
+                        "node",
+                        "dist/index.js",
+                    ),
+                )
+            broadcastFailed(
+                getString(R.string.local_host_node_exited, code),
+            )
+            stopSelf()
+        }
+
+        // Wait until the Node thread has entered startNode (or health succeeds).
+        val deadline = System.currentTimeMillis() + HEALTH_TIMEOUT_MS
+        var lastDetail = "timeout"
+        while (System.currentTimeMillis() < deadline) {
+            if (probeHealth()) {
+                val nm = getSystemService(NotificationManager::class.java)
+                nm?.notify(
+                    NOTIFICATION_ID,
+                    buildNotification(getString(R.string.local_host_running)),
+                )
+                broadcastReady(LocalHostRuntime.LOOPBACK_ORIGIN)
+                return
+            }
+            lastDetail = if (nodeStarted.get()) "waiting for /api/health" else "starting node"
+            Thread.sleep(HEALTH_POLL_MS)
+        }
+
+        throw IllegalStateException(
+            getString(R.string.local_host_health_timeout, lastDetail),
         )
-        stopSelf()
-        return START_NOT_STICKY
+    }
+
+    private fun probeHealth(): Boolean {
+        return runCatching {
+            val url = URL("${LocalHostRuntime.LOOPBACK_ORIGIN}${LocalHostRuntime.HEALTH_PATH}")
+            val conn =
+                (url.openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 1_500
+                    readTimeout = 1_500
+                    requestMethod = "GET"
+                    instanceFollowRedirects = true
+                }
+            try {
+                val code = conn.responseCode
+                val body = conn.inputStream.bufferedReader().use { it.readText() }
+                code in 200..299 && body.contains("\"ok\"")
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrDefault(false)
+    }
+
+    private fun broadcastFailed(message: String) {
+        sendBroadcast(
+            Intent(ACTION_FAILED)
+                .setPackage(packageName)
+                .putExtra(EXTRA_MESSAGE, message),
+        )
+    }
+
+    private fun broadcastReady(origin: String) {
+        sendBroadcast(
+            Intent(ACTION_READY)
+                .setPackage(packageName)
+                .putExtra(EXTRA_ORIGIN, origin)
+                .putExtra(EXTRA_MESSAGE, getString(R.string.local_host_running)),
+        )
     }
 
     override fun onDestroy() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
-    }
-
-    private fun broadcast(action: String, message: String) {
-        sendBroadcast(
-            Intent(action)
-                .setPackage(packageName)
-                .putExtra(EXTRA_MESSAGE, message),
-        )
     }
 
     private fun ensureChannel() {
@@ -104,6 +232,9 @@ class LocalHostService : Service() {
         const val ACTION_READY = "com.stagesync.console.LOCAL_HOST_READY"
         const val EXTRA_MESSAGE = "message"
         const val EXTRA_ORIGIN = "origin"
+
+        private const val HEALTH_TIMEOUT_MS = 90_000L
+        private const val HEALTH_POLL_MS = 400L
 
         fun start(context: Context) {
             val intent = Intent(context, LocalHostService::class.java)

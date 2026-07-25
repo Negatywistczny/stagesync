@@ -5,6 +5,17 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [5.2.3](https://github.com/Negatywistyczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
+
+### Dodano
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Console (Android):** „Uruchom lokalny host” startuje wbudowany serwer StageSync na tablecie (`127.0.0.1:4000`), czeka na gotowość i otwiera Admin — ten sam tor co desktop; domyślny APK zawiera silnik Node i paczkę hosta (MIDI sprzętowe na Androidzie niedostępne; łączenie LAN nadal działa).
+
+#### 📚 Dokumentacja
+- **Mobile / Desktop:** opis lokalnego hosta Console oraz wymagań buildu (NDK / CMake).
+
+
 ## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
 
 ### Zmieniono
