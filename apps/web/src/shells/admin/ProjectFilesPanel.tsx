@@ -163,6 +163,7 @@ export const ProjectFilesPanel = forwardRef<
               <Button
                 variant="ghost"
                 disabled={busy || locked}
+                aria-label={`Usuń ${a.originalName}`}
                 onClick={() => onDelete(a.id)}
               >
                 Usuń
