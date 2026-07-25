@@ -35,7 +35,7 @@ export function ConnectionIndicator({
     connected && variant !== "dot" ? formatLatency(latencyMs) : null;
   const titleText =
     title ??
-    (latencyText ? `WS: ${status} · ${latencyText}` : `WS: ${status}`);
+    (latencyText ? `${label} · ${latencyText}` : label);
 
   if (variant === "dot") {
     return (
