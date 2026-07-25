@@ -48,7 +48,7 @@ describe("ShellBlockingDialog focus trap", () => {
     );
 
     const cancel = panelCancel();
-    const ok = screen.getByRole("button", { name: "OK" });
+    const ok = screen.getByRole("button", { name: "Potwierdź" });
     // Initial focus prefers primary (.ss-btn--primary).
     expect(document.activeElement).toBe(ok);
 
