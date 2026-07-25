@@ -1,28 +1,27 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.1.3` wydane 2026-07-25 na `main` (`v5.1.3`) — linia **5.1** = **Launch & Mix**; linia **5.0** = **Overture** (`v5.0.0` / `v5.0.1`).  
+**Stan:** linia **5.2** = **Cue & Guard** (cut w toku / po `v5.2.0`); **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
-**Polityka:** nowe funkcje po Launch & Mix → linia **5.2+**. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
+**Polityka:** nowe funkcje po Cue & Guard → nadal 5.2+ residual / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
 **Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) (Logic referencja; multi-out tak; auto-update nie; …). Mobile shell: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
 **Specy 5.2+ (hipotezy, nie SSOT):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
 **Residuale operatorskie:** **G1–G10** — **bez claim pełnego green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). Pass: **G1**, **G4–G6**, **G10**. Residual: **G2** skip; **G3** re-verify HW; **G7–G9** Docker deferred. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-## Must (operator residual po 5.1.0)
+## Must (operator residual)
 
-- [ ] **G1–G10** na instalatorach `v5.1.3` (mac/Win HW) — **bez claim pełnego green**; **G1**, **G4–G6**, **G10** — pass; **G2** skip; **G3** re-verify HW; **G7–G9** Docker — odłożone
+- [ ] **G1–G10** na instalatorach `v5.2.0` (mac/Win HW) — **bez claim pełnego green**; **G1**, **G4–G6**, **G10** — pass; **G2** skip; **G3** re-verify HW; **G7–G9** Docker — odłożone
 
-## Should / Higiena (nie blokuje 5.2)
+## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
-- [ ] [#602](https://github.com/Negatywistyczny/stagesync/issues/602) **DX / Knip:** detekcja martwego kodu i osieroconych zależności w monorepo (`lint:knip`; CI opcjonalnie nieblokujące)
 - [ ] [#494](https://github.com/Negatywistyczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
 
 ## Etap 5.2+ (Przyszłość)
 
-- [ ] **Motywy (residual):** host default `STAGESYNC_THEME_DEFAULT` / pełna macierz 4 profili ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
+- [ ] **Motywy (residual):** pełna macierz 4 profili skór / THM-03 niezmienniki ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
 - [ ] **Mixer — HW Out 3–4 (WebAudio multi-out):** UI + ChannelMerger przy realnym `maxChannelCount` ≥ 4 ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Client transport — H-01 (residual):** split context / throttle `displayTicks` pod profil Grid/Karaoke @ 90–120 Hz ([MOBILE.md](./MOBILE.md) § H-01; [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md))
 - [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console — residual:** Faza 4 JNI/`libnode`; smoke P-HW/C-HW na tablecie — **bez claim HW green** ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md); [triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md))

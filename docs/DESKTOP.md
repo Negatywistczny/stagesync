@@ -124,6 +124,15 @@ pnpm --filter @stagesync/desktop tauri build
 | macOS | `.dmg` |
 | Windows | `.msi` |
 
+## Operator: PIN, Safety Net, Sampler, motyw
+
+- **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN.
+- **Safety Net** — w Admin → Host: rola Master/Spare i **Przejmij** na Spare (MIDI OUT wyciszony na Spare).
+- **Cues Sampler** — Inspector klipu Cue: próbka, tryb one-shot/gated, GO, Master/Bus.
+- **Motyw:** lokalne przełączniki w ustawieniach; `STAGESYNC_THEME_DEFAULT` dla urządzeń bez lokalnej preferencji; Admin → Scena → blokada sceniczna nadpisuje Clienty.
+
+Szczegóły env: [INSTALL.md](./INSTALL.md).
+
 ## Ograniczenia (ADR 0010)
 
 - Autorytet transportu i czasu muzycznego — tylko host (`apps/server`)

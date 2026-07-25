@@ -23,7 +23,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane 2026-07-21** — Audio 0…N; MIDI serwera; menu Faza B+C; Countdown; updater darwin+windows; G1–G10 residual operatorski | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
-| **5.2+** | Motywy, Operator PIN, multi-out HW, bus→bus, Performer/Console, Sampler, Safety Net | TBD przy planowaniu linii 5.2 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.2.0** | **Cue & Guard** — PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw hosta | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.2+** | Residual: multi-out HW, auto-election, Offline delta, JNI, OAuth… | Po 5.2.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
 ### Zamknięte etapy (α3–β1)
 
@@ -77,14 +78,18 @@ Tag `v5.1.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Świadome OUT → 5.2+:** fizyczne Out 3–4 (HW); routing bus→bus; motywy / Operator PIN / Performer+Console / Sampler / Safety Net — [TODO.md](./TODO.md).
 
-### Po 5.1.0 (linia 5.2+)
+### 5.2.0 — **Cue & Guard** — **wydane 2026-07-25**
 
-- Motywy (`data-theme` + switcher / scenic lock) — light+contrast już na main; rozbudowa 5.2
-- Auth: opcjonalny Operator PIN (OAuth / multi-user — Later)
-- Mixer: multi-out HW (Out 3–4) + bus→bus
-- Android **Performer + Console** (PWA + Kotlin WebView; sideload, bez Play) — [ADR 0016](./adr/0016-android-performer-console.md); Console = pełny parytet + lokalny host IN; residual Faza 4 JNI / H-01
-- Cues Sampler (#430) · Safety Net Master/Spare (#437)
-- Inne **nowe** minor bez długu operatorskiego v4
+**Dostarczone:** Operator PIN; scenic theme lock + `STAGESYNC_THEME_DEFAULT`; Mixer bus→bus (anti-cycle); Cues Sampler; Safety Net Master/Spare (ręczne Przejmij); Performer/Console Offline-First (zip apply); MIDI PC channel.
+
+**Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; JNI local host; OAuth — [TODO.md](./TODO.md).
+
+### Po 5.2.0 (residual 5.2+)
+
+- Motywy: macierz 4 profili / THM-03
+- Mixer: multi-out HW (Out 3–4)
+- Safety Net: auto-election / lease
+- Mobile: JNI/`libnode`; Offline delta
 - Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/)
 
 

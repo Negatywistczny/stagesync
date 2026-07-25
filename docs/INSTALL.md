@@ -44,6 +44,22 @@ notatek/form. Nagłówek: `X-Stagesync-Operator-Pin` (alias `X-StageSync-PIN`).
 Status: `GET /api/system/operator-auth` → `{ required: boolean }`.
 Bez OAuth / kont użytkowników.
 
+### Safety Net (Master / Spare)
+
+`STAGESYNC_SAFETY_ROLE=spare` wycisza MIDI OUT na tym hoście (lustro). W Admin → Host
+widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master). Bez auto-election.
+
+### Motyw domyślny hosta
+
+`STAGESYNC_THEME_DEFAULT` (`dark` \| `light` \| `dark-high` \| `light-high`) ustawia
+wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
+`themeDefault`). Blokada sceniczna (Admin → Scena) nadal nadpisuje Clienty.
+
+### Cues Sampler
+
+Klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus — start z
+playheadu albo GO w Inspectorze Timeline. Opcjonalnie dokończenie po Stop.
+
 ## Produkcja z GHCR (compose.prod.yml)
 
 ### 1. Logowanie do GHCR
@@ -187,6 +203,7 @@ w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
 | `STAGESYNC_ALLOW_REMOTE_LIFECYCLE` | — | `1` = pozwól na restart/shutdown spoza localhost bez tokenu |
 | `STAGESYNC_OPERATOR_PIN` | — | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`) |
 | `STAGESYNC_SAFETY_ROLE` | `master` | Safety Net: `master` \| `spare` (Spare = bez MIDI OUT; ręczne Przejmij) |
+| `STAGESYNC_THEME_DEFAULT` | — | Domyślny motyw klientów bez lokalnej preferencji (`dark` / `light` / `*-high`) |
 
 Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).
 

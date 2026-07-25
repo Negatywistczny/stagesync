@@ -88,6 +88,13 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 **Follow-up:** różnicowy delta / CacheStorage per-asset; binary zstd.
 
+## Operator: PIN, motyw, Safety Net, Sampler
+
+- **PIN:** gdy host ma `STAGESYNC_OPERATOR_PIN`, Console (Admin/Timeline) prosi o odblokowanie przed edycją; Performer może odblokować edycję notatek w ustawieniach Client.
+- **Motyw sceniczny:** Admin → Scena → blokada motywu wymusza jasny / wysoki kontrast na Clientach (lokalne przełączniki wyłączone). Bez blokady: lokalna preferencja albo `STAGESYNC_THEME_DEFAULT` z hosta (gdy urządzenie nie ma zapisanego motywu).
+- **Safety Net:** rola Master/Spare na hoście — dotyczy MIDI OUT hosta, nie APK; Console na Spare pokazuje **Przejmij** jak desktop Admin.
+- **Cues Sampler:** próbki na klipach Cue działają w Timeline (Console / desktop); Performer tylko wyświetla banery Cue.
+
 ### Smoke (ręczne) — UI apply
 
 1. Zainstaluj APK z bundled www (hash A roli).

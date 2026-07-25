@@ -27,7 +27,7 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 
 | Metoda | Ścieżka | Opis |
 |--------|---------|------|
-| `GET` | `/api/health` | `{ ok, service, version, protocolVersion, uiHash, uiHashPerformer?, uiHashConsole? }` — `protocolVersion` = kompatybilność ramek WS/API; `uiHash` = hash pełnego `apps/web` dist; role hashes = Offline-First dla APK (`none` / brak pól bez static UI) |
+| `GET` | `/api/health` | `{ ok, service, version, protocolVersion, uiHash, uiHashPerformer?, uiHashConsole?, themeDefault? }` — `protocolVersion` = kompatybilność ramek WS/API; `uiHash` = hash pełnego `apps/web` dist; role hashes = Offline-First dla APK; `themeDefault` = `STAGESYNC_THEME_DEFAULT` gdy ustawione |
 | `GET` | `/api/ui-manifest` | `{ protocolVersion, uiHash, assets[] }` — lista plików UI z hashami; `?role=performer\|console` = manifest paczki roli |
 | `GET` | `/api/system/logs` | Ring-buffer logów hosta |
 | `GET` | `/api/system/logs/stream` | SSE stream logów |
