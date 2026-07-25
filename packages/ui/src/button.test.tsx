@@ -42,4 +42,17 @@ describe("Button", () => {
       "false",
     );
   });
+
+  it("sets aria-disabled when disabled or loading", () => {
+    const { rerender } = render(<Button disabled>Save</Button>);
+    expect(screen.getByRole("button").getAttribute("aria-disabled")).toBe(
+      "true",
+    );
+    rerender(<Button loading>Save</Button>);
+    const btn = screen.getByRole("button");
+    expect(btn.getAttribute("aria-disabled")).toBe("true");
+    expect(
+      btn.querySelector(".ss-btn__spinner")?.getAttribute("aria-hidden"),
+    ).toBe("true");
+  });
 });
