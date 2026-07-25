@@ -196,3 +196,31 @@ export function clipboardMatchesEmptyLane(
   }
   return clipboardLane === emptyLane;
 }
+
+/** Accessible label for the clip context menu (announces multi-select count). */
+export function clipContextMenuLabel(selectionCount: number): string {
+  const n = Number.isFinite(selectionCount)
+    ? Math.max(1, Math.floor(selectionCount))
+    : 1;
+  return n > 1 ? `Menu klipu (${n} zaznaczone)` : "Menu klipu";
+}
+
+/**
+ * Accessible label for a Tempo / Metrum / Tonacja map segment button.
+ * When selected in a multi group, includes the group size for SR users.
+ */
+export function mapSegmentSelectionAriaLabel(
+  label: string,
+  opts: { selected: boolean; groupSize?: number },
+): string {
+  const base = `${label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
+  if (!opts.selected) return base;
+  const group =
+    opts.groupSize != null && Number.isFinite(opts.groupSize)
+      ? Math.floor(opts.groupSize)
+      : 0;
+  if (group > 1) {
+    return `${label}, zaznaczony, w grupie ${group} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
+  }
+  return `${label}, zaznaczony — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`;
+}
