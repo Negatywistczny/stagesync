@@ -25,7 +25,14 @@
         <div class="localBlock">
           <p class="inlineError" id="localError" role="alert" hidden></p>
           <p class="inlineStatus" id="localProgress" hidden></p>
-          <button type="button" class="btn primary" id="btnLocal" disabled>
+          <button
+            type="button"
+            class="btn primary"
+            id="btnLocal"
+            disabled
+            aria-busy="false"
+            aria-label="Uruchom lokalny host"
+          >
             Uruchom lokalny host
           </button>
           <div class="row localErrorActions" id="localErrorActions" hidden>

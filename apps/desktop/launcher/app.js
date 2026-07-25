@@ -72,6 +72,16 @@ function setBusy(next) {
   el.btnRefresh.disabled = next || scanning;
   el.btnLocalClear.disabled = next;
   el.btnLocalDownloadLog.disabled = next;
+  syncLocalButtonAria();
+}
+
+function syncLocalButtonAria() {
+  const label = el.btnLocal.textContent?.trim() || LABEL_LOCAL_IDLE;
+  el.btnLocal.setAttribute(
+    "aria-label",
+    busy ? "Uruchamianie lokalnego hosta…" : label,
+  );
+  el.btnLocal.setAttribute("aria-busy", busy ? "true" : "false");
 }
 
 function setScanning(next) {
@@ -234,6 +244,7 @@ function clearLocalError() {
   el.localLog.textContent = "";
   el.localErrorActions.hidden = true;
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
+  syncLocalButtonAria();
 }
 
 function showLocalProgress(message) {
@@ -247,6 +258,7 @@ function showLocalProgress(message) {
   el.localProgress.hidden = false;
   el.localProgress.textContent = message;
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
+  syncLocalButtonAria();
 }
 
 function showLocalError(message, log) {
@@ -258,6 +270,7 @@ function showLocalError(message, log) {
   el.localError.hidden = false;
   el.localError.textContent = message;
   el.btnLocal.textContent = LABEL_LOCAL_RETRY;
+  syncLocalButtonAria();
   el.localErrorActions.hidden = false;
   if (log) {
     el.localLog.hidden = false;
@@ -559,6 +572,7 @@ async function init() {
       "Brak bundla sidecara. Uruchom serwer (`pnpm dev`) i połącz ręcznie do http://127.0.0.1:4000.";
     el.manualUrl.placeholder = "http://127.0.0.1:4000";
   }
+  syncLocalButtonAria();
 
   if (bootstrap.lastError) {
     const log = await resolveLocalLog(bootstrap.lastError);
