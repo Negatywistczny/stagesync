@@ -169,6 +169,8 @@ import {
   buildEmptyLaneContextMenuItems,
   clipboardMatchesEmptyLane,
   audioTrackContextMenuLabel,
+  clipContextMenuLabel,
+  mapSegmentSelectionAriaLabel,
   type ClipMenuLane,
   type EmptyLaneMenuKind,
 } from "../lib/timelineContextMenus.js";
@@ -4731,8 +4733,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       canDelete = true,
     } = args;
     clearMapSelection();
+    const prev = clipSelectionRef.current;
+    const alreadySelected = isClipSelected(prev, clipId, args.selectionLane);
+    const onLaneIds = alreadySelected
+      ? idsOnLane(prev, args.selectionLane)
+      : [];
+    const multiIds = onLaneIds.length > 1 ? onLaneIds : null;
+    const selectionCount = multiIds?.length ?? 1;
     flushSync(() => {
-      selectLaneClip(args.selectionLane, clipId);
+      if (multiIds) {
+        setClipSelection(setSelection(prev.items, clipId));
+        setSelectedSubsectionIdx(null);
+        setSelectedAnchorId(null);
+        setSongMetaOpen(false);
+        setInspectorVisible(true);
+      } else {
+        selectLaneClip(args.selectionLane, clipId);
+      }
     });
     const board = clipboardRef.current;
     const canPaste = Boolean(board);
@@ -4788,16 +4805,25 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     openContextMenu({
       x: clientX,
       y: clientY,
-      label: "Menu klipu",
+      label: clipContextMenuLabel(selectionCount),
       items: buildClipContextMenuItems({
         lane,
         canPaste,
-        canSplit: canSplit && splitTicks != null,
+        canSplit: canSplit && splitTicks != null && !multiIds,
         clipMuted,
         onCopy: () => {
+          if (multiIds) {
+            copyClipSelection();
+            return;
+          }
           copyThisClip();
         },
         onCut: () => {
+          if (multiIds) {
+            if (!copyClipSelection()) return;
+            deleteSelectedFormaClip();
+            return;
+          }
           if (!canDelete) return;
           if (!copyThisClip()) return;
           deleteThisClip();
@@ -4806,6 +4832,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           pasteClipClipboard(locatorTicks);
         },
         onDuplicate: () => {
+          if (multiIds) {
+            duplicateClipSelection();
+            return;
+          }
           if (!copyThisClip()) return;
           const draft = draftRef.current;
           if (!draft) return;
@@ -4828,7 +4858,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           }
           pasteClipClipboard(end);
         },
-        onDelete: () => deleteThisClip(),
+        onDelete: () => {
+          if (multiIds) {
+            deleteSelectedFormaClip();
+            return;
+          }
+          deleteThisClip();
+        },
         onMuteToggle:
           lane === "audio"
             ? () => {
@@ -4841,7 +4877,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             : undefined,
         onFocusInspector: () => focusInspectorPanel(),
         onSplit:
-          canSplit && splitTicks != null
+          canSplit && splitTicks != null && !multiIds
             ? () => {
                 const draft = draftRef.current;
                 if (!draft) return;
@@ -5095,6 +5131,21 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       mapDragPreview?.moveIds.includes(eventId)
         ? styles.mapSegmentDragging
         : "";
+    const mapSegmentSelected = (eventId: string, lane: MapLaneId) =>
+      selectedMapLane === lane && selectedMapIds.includes(eventId);
+    const mapSegmentAriaLabel = (
+      seg: { label: string; eventId: string },
+      lane: MapLaneId,
+    ) =>
+      mapSegmentSelectionAriaLabel(seg.label, {
+        selected: mapSegmentSelected(seg.eventId, lane),
+        groupSize:
+          mapSegmentSelected(seg.eventId, lane) &&
+          selectedMapLane === lane &&
+          selectedMapIds.length > 1
+            ? selectedMapIds.length
+            : undefined,
+      });
 
     switch (trackId) {
       case "tempo":
@@ -5111,7 +5162,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
+            aria-label={mapSegmentAriaLabel(seg, "tempo")}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tempo", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5143,7 +5194,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
+            aria-label={mapSegmentAriaLabel(seg, "metrum")}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "metrum", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5178,7 +5229,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
+            aria-label={mapSegmentAriaLabel(seg, "tonacja")}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tonacja", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -6555,6 +6606,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 </ShellIconButton>
               </span>
             </div>
+            {clipSelection.items.length > 1 ? (
+              <p
+                className={styles.inspMulti}
+                role="status"
+                aria-live="polite"
+              >
+                Zaznaczono {clipSelection.items.length} klipów
+                {selectionLane
+                  ? ` · ${
+                      selectionLane === "forma"
+                        ? "Forma"
+                        : selectionLane === "tekst"
+                          ? "Tekst"
+                          : selectionLane === "akordy"
+                            ? "Akordy"
+                            : selectionLane === "cue"
+                              ? "Cue"
+                              : "Audio"
+                    }`
+                  : ""}
+              </p>
+            ) : null}
             {songMetaOpen && draftProject ? (
               <div className={styles.inspBody}>
                 <label className={styles.inspField}>
@@ -6769,7 +6842,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </div>
             ) : selectedMapLane && selectedMapIds.length > 0 ? (
               <div className={styles.inspBody}>
-                <p className={styles.inspMulti}>
+                <p
+                  className={styles.inspMulti}
+                  role="status"
+                  aria-live="polite"
+                >
                   Zaznaczono {selectedMapIds.length} ·{" "}
                   {selectedMapLane === "tempo"
                     ? "Tempo"

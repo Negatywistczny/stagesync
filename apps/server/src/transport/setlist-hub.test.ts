@@ -107,4 +107,49 @@ describe("setlist-hub", () => {
     expect(snap?.projectIds).toEqual(setlist.projectIds);
     expect(snap?.currentIndex).toBe(0);
   });
+
+  it("snapshot starts null; unsubscribe stops; store failures are swallowed", async () => {
+    const hub = createSetlistHub();
+    expect(hub.snapshotMessage()).toBeNull();
+
+    const listener = vi.fn();
+    const off = hub.onMessage(listener);
+    hub.publish({
+      type: "setlist_snapshot",
+      projectIds: [],
+      enabled: false,
+      autoAdvance: { enabled: false },
+      currentIndex: -1,
+      next: null,
+      sentAtMs: 1,
+    });
+    expect(listener).toHaveBeenCalledTimes(1);
+    off();
+    hub.publish({
+      type: "setlist_snapshot",
+      projectIds: [],
+      enabled: true,
+      autoAdvance: { enabled: true },
+      currentIndex: -1,
+      next: null,
+      sentAtMs: 2,
+    });
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(hub.snapshotMessage()?.enabled).toBe(true);
+
+    await expect(
+      publishSetlistHubFromStores(
+        {
+          getSetlist: vi.fn(async () => {
+            throw new Error("missing");
+          }),
+          getLibrary: vi.fn(async () => {
+            throw new Error("missing");
+          }),
+        } as never,
+        { getActiveProjectId: () => null } as never,
+        hub,
+      ),
+    ).resolves.toBeUndefined();
+  });
 });
