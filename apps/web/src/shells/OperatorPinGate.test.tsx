@@ -40,7 +40,9 @@ describe("OperatorPinGate", () => {
     expect(
       screen.getByRole("heading", { name: "PIN operatora" }).getAttribute("id"),
     ).toBe("operator-pin-title");
-    expect(screen.getByLabelText("PIN operatora")).toBeTruthy();
+    expect(screen.getByPlaceholderText("PIN").getAttribute("aria-label")).toBe(
+      "PIN operatora",
+    );
     expect(screen.queryByText("secret")).toBeNull();
   });
 
