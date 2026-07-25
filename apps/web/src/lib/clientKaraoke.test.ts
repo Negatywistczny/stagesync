@@ -86,8 +86,11 @@ describe("clientKaraoke", () => {
 
   it("isPlaceholderLyric matches v4 bracket placeholders", () => {
     expect(isPlaceholderLyric("")).toBe(true);
+    expect(isPlaceholderLyric("   ")).toBe(true);
     expect(isPlaceholderLyric("[Intro]")).toBe(true);
     expect(isPlaceholderLyric("Hello")).toBe(false);
+    expect(isPlaceholderLyric("[Intro] more")).toBe(false);
+    expect(isPlaceholderLyric("[unclosed")).toBe(false);
   });
 
   it("groups lyric lines under Forma section cards", () => {
