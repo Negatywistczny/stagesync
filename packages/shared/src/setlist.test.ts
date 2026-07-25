@@ -4,7 +4,9 @@ import {
   buildSetlistView,
   defaultSetlist,
   formatSetDurationMs,
+  itemsFromProjectIds,
   normalizeSetlist,
+  projectIdsFromItems,
   pruneSetlistToLibrary,
   resolveSetlistNext,
   SETLIST_SONG_DURATION_ESTIMATE_MS,
@@ -258,5 +260,46 @@ describe("setlist helpers", () => {
         },
       ]),
     ).toBe(3000);
+  });
+
+  it("projectIdsFromItems skips breaks, blanks, and dedupes with 256 cap", () => {
+    expect(projectIdsFromItems([])).toEqual([]);
+    const a = "11111111-1111-4111-8111-111111111111";
+    const b = "22222222-2222-4222-8222-222222222222";
+    expect(
+      projectIdsFromItems([
+        { type: "project", projectId: a },
+        {
+          type: "break",
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          label: "P",
+          durationMinutes: 1,
+        },
+        { type: "project", projectId: a },
+        { type: "project", projectId: b },
+      ]),
+    ).toEqual([a, b]);
+
+    const many = Array.from({ length: 300 }, (_, i) => {
+      const hex = i.toString(16).padStart(12, "0");
+      return {
+        type: "project" as const,
+        projectId: `00000000-0000-4000-8000-${hex}`,
+      };
+    });
+    expect(projectIdsFromItems(many)).toHaveLength(256);
+  });
+
+  it("itemsFromProjectIds skips blank ids, dedupes, and caps at 256", () => {
+    expect(itemsFromProjectIds([])).toEqual([]);
+    const a = "11111111-1111-4111-8111-111111111111";
+    expect(itemsFromProjectIds(["", a, a, ""])).toEqual([
+      { type: "project", projectId: a },
+    ]);
+    const many = Array.from({ length: 300 }, (_, i) => {
+      const hex = i.toString(16).padStart(12, "0");
+      return `00000000-0000-4000-8000-${hex}`;
+    });
+    expect(itemsFromProjectIds(many)).toHaveLength(256);
   });
 });

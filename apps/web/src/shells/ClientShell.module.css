@@ -2054,31 +2054,6 @@
   letter-spacing: var(--ss-tracking-label);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ss-space-1);
-  margin-bottom: var(--ss-space-3);
-}
-
-.chip {
-  padding: var(--ss-space-1) var(--ss-space-2);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-xs);
-  cursor: not-allowed;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ss-space-2);
-  align-items: center;
-}
-
 @media (max-width: 768px) {
   .stageSplit {
     grid-template-columns: 1fr;
