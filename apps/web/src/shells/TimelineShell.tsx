@@ -7086,10 +7086,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Mute clip
+                  Wycisz klip
                 </label>
                 <label className={styles.inspField}>
-                  Trim In (ms)
+                  Trim początku (ms)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -7109,7 +7109,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
                 <label className={styles.inspField}>
-                  Trim Out (ms)
+                  Trim końca (ms)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -7129,9 +7129,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
                 <label className={styles.inspField}>
-                  Gain clip (dB)
+                  Gain klipu (dB)
                   <Slider
-                    aria-label="Gain clip"
+                    aria-label="Gain klipu"
                     min={-24}
                     max={12}
                     step={0.5}
@@ -7151,7 +7151,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade In (ms)
                   <Slider
-                    aria-label="Fade in"
+                    aria-label="Fade In"
                     min={0}
                     max={2000}
                     step={10}
@@ -7169,7 +7169,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade Out (ms)
                   <Slider
-                    aria-label="Fade out"
+                    aria-label="Fade Out"
                     min={0}
                     max={2000}
                     step={10}
@@ -7199,7 +7199,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Loop
+                  Pętla
                 </label>
               </div>
             ) : selectedDockAudioTrack ? (
