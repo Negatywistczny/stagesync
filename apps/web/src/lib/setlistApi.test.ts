@@ -139,6 +139,7 @@ describe("setlistApi", () => {
       transpositionSemitones: 1,
       syncLeadMs: 200,
       clientEditEnabled: true,
+      themeLock: null,
     };
     const fetchMock = vi
       .fn()

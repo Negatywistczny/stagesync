@@ -129,6 +129,7 @@ export type LiveDeskSettingsDto = {
   transpositionSemitones: number;
   syncLeadMs: number;
   clientEditEnabled: boolean;
+  themeLock: { light: boolean; highContrast: boolean } | null;
 };
 
 export async function fetchLiveDesk(): Promise<LiveDeskSettingsDto> {
@@ -136,7 +137,7 @@ export async function fetchLiveDesk(): Promise<LiveDeskSettingsDto> {
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
-  return (await res.json()) as LiveDeskSettingsDto;
+  return normalizeLiveDesk((await res.json()) as LiveDeskSettingsDto);
 }
 
 export async function patchLiveDesk(
@@ -150,7 +151,14 @@ export async function patchLiveDesk(
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
-  return (await res.json()) as LiveDeskSettingsDto;
+  return normalizeLiveDesk((await res.json()) as LiveDeskSettingsDto);
+}
+
+function normalizeLiveDesk(body: LiveDeskSettingsDto): LiveDeskSettingsDto {
+  return {
+    ...body,
+    themeLock: body.themeLock ?? null,
+  };
 }
 
 export type HostLogLine = {

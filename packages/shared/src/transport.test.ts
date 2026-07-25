@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
   LiveDeskPatchBodySchema,
+  LiveDeskSettingsSchema,
   TransportLoadBodySchema,
   TransportLoopBodySchema,
   TransportPlayBodySchema,
@@ -277,5 +278,22 @@ describe("LiveDeskPatchBodySchema", () => {
     expect(
       LiveDeskPatchBodySchema.parse({ transpositionSemitones: 2 }),
     ).toEqual({ transpositionSemitones: 2 });
+  });
+
+  it("accepts themeLock profile or null unlock", () => {
+    expect(
+      LiveDeskPatchBodySchema.parse({
+        themeLock: { light: true, highContrast: false },
+      }),
+    ).toEqual({ themeLock: { light: true, highContrast: false } });
+    expect(LiveDeskPatchBodySchema.parse({ themeLock: null })).toEqual({
+      themeLock: null,
+    });
+  });
+});
+
+describe("LiveDeskSettingsSchema", () => {
+  it("defaults themeLock to null", () => {
+    expect(LiveDeskSettingsSchema.parse({}).themeLock).toBeNull();
   });
 });

@@ -23,7 +23,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ## Etap 5.2+ (Przyszłość)
 
-- [ ] **Motywy:** rozbudowa appearance (profile / host default / scenic lock `themeLock`) — light + high-contrast już na `main`; OAuth OUT ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
+- [ ] **Motywy:** scenic lock `liveDesk.themeLock` **na drzewie** (Admin Scena → Client apply + disable local switches); light + high-contrast już wcześniej; residual: host default `STAGESYNC_THEME_DEFAULT` / 4-profile matrix z dumpu — OAuth OUT ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
 - [ ] **Auth — Operator PIN:** opcjonalny `STAGESYNC_OPERATOR_PIN` + ACL destrukcyjnych REST/WS (bez multi-user OAuth w 5.2) ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
 - [ ] **Mixer — Out 3–4 (HW multi-out):** **decyzja produktowa: wprowadzić** ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)); implementacja gdy model + WebAudio wspierają (bez atrap w UI) ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Mixer — bus→bus:** routing wyjścia busa na inny bus (dziś bus → tylko Master) + anti-cycle DFS ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))

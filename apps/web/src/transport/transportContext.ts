@@ -16,10 +16,17 @@ export type StageCue = {
   priority?: "normal" | "alert";
 };
 
+export type LiveDeskThemeLock = {
+  light: boolean;
+  highContrast: boolean;
+} | null;
+
 export type LiveDeskState = {
   transpositionSemitones: number;
   syncLeadMs: number;
   clientEditEnabled: boolean;
+  /** When set, Client applies this appearance and disables local theme switches. */
+  themeLock: LiveDeskThemeLock;
 };
 
 /** Lightweight setlist chrome snapshot from WS (not full SetlistView items). */
@@ -36,6 +43,7 @@ export const DEFAULT_LIVE_DESK: LiveDeskState = {
   transpositionSemitones: 0,
   syncLeadMs: 200,
   clientEditEnabled: true,
+  themeLock: null,
 };
 
 export const DEFAULT_SETLIST_SNAPSHOT: SetlistSnapshotState = {
@@ -64,7 +72,7 @@ export type TransportContextValue = {
   stageCue: StageCue | null;
   /** Active session cues from WS snapshot / upsert / dismiss. */
   stageCues: StageCue[];
-  /** Live Desk (team transpose / sync-lead / remote edit). */
+  /** Live Desk (team transpose / sync-lead / remote edit / scenic theme lock). */
   liveDesk: LiveDeskState;
   /** Setlist neighbors pushed over WS after Admin edits. */
   setlistSnapshot: SetlistSnapshotState;

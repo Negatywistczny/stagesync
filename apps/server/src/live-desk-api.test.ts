@@ -37,9 +37,11 @@ describe("GET/PATCH /api/live-desk", () => {
         transpositionSemitones: number;
         syncLeadMs: number;
         clientEditEnabled: boolean;
+        themeLock: { light: boolean; highContrast: boolean } | null;
       };
       expect(defaults.transpositionSemitones).toBe(0);
       expect(typeof defaults.clientEditEnabled).toBe("boolean");
+      expect(defaults.themeLock).toBeNull();
 
       const patch = await fetch(`${baseUrl}/api/live-desk`, {
         method: "PATCH",
@@ -48,6 +50,7 @@ describe("GET/PATCH /api/live-desk", () => {
           transpositionSemitones: 2,
           syncLeadMs: 40,
           clientEditEnabled: true,
+          themeLock: { light: true, highContrast: true },
         }),
       });
       expect(patch.status).toBe(200);
@@ -56,6 +59,7 @@ describe("GET/PATCH /api/live-desk", () => {
         transpositionSemitones: 2,
         syncLeadMs: 40,
         clientEditEnabled: true,
+        themeLock: { light: true, highContrast: true },
       });
 
       const get2 = await fetch(`${baseUrl}/api/live-desk`);
@@ -137,6 +141,7 @@ describe("createLiveDeskStore", () => {
       type: "live_desk",
       syncLeadMs: 25,
       transpositionSemitones: -1,
+      themeLock: null,
     });
 
     const disk = JSON.parse(await readFile(filePath, "utf8")) as {

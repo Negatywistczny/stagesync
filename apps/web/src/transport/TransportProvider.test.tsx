@@ -208,6 +208,7 @@ describe("TransportProvider", () => {
       transpositionSemitones: 2,
       syncLeadMs: 100,
       clientEditEnabled: false,
+      themeLock: null,
     });
     wsReconnectDelayMs.mockReset().mockReturnValue(1000);
   });
@@ -229,6 +230,7 @@ describe("TransportProvider", () => {
         transpositionSemitones: 2,
         syncLeadMs: 100,
         clientEditEnabled: false,
+        themeLock: null,
       });
       expect(result.current.wsStatus).toBe("connecting");
       expect(MockWebSocket.instances).toHaveLength(1);
@@ -569,6 +571,7 @@ describe("TransportProvider", () => {
           transpositionSemitones: -3,
           syncLeadMs: 250,
           clientEditEnabled: true,
+          themeLock: { light: true, highContrast: false },
           sentAtMs: 9,
         });
       });
@@ -577,6 +580,7 @@ describe("TransportProvider", () => {
         transpositionSemitones: -3,
         syncLeadMs: 250,
         clientEditEnabled: true,
+        themeLock: { light: true, highContrast: false },
       });
     });
 

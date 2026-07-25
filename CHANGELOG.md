@@ -19,6 +19,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **PWA / Client:** „Dodaj do ekranu głównego” (manifest + Service Worker); cache odświeża się z wersją interfejsu (bez cache API, WebSocket i pobierań); w aktywnym widoku Client ekran nie gaśnie (Screen Wake Lock).
 - **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR: tryby Dołącz | Performer | Console.
 - **Nazwa urządzenia:** przed Client / Admin / Timeline urządzenie bez zapisanej nazwy dostaje prompt „Podaj swoje imię lub nazwę urządzenia.”; nazwa widać na liście klientów (Scena) i da się ją zmienić w ustawieniach.
+- **Motyw sceniczny:** w Korekcie na scenie realizator może włączyć blokadę motywu na Clientach (jasny / wysoki kontrast) — nadpisuje lokalny wygląd tabletu do zdjęcia blokady; lokalne przełączniki na Clientcie są wtedy wyłączone.
 
 #### ⚙️ Serwer & API
 - **Downloads:** host serwuje APK Performer i Console spod `/downloads/` (404 z komunikatem, gdy artefakt nie leży na dysku) oraz paczki UI do jawnej aktualizacji Offline-First (pełna i warianty roli Performer / Console).

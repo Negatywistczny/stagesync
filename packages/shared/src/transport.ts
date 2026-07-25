@@ -122,12 +122,24 @@ export const SessionStageMessageSchema = z.object({
 
 export type SessionStageMessage = z.infer<typeof SessionStageMessageSchema>;
 
-/** Live Desk — team transpose / sync-lead / remote edit (v4 AD-01…03). */
+/** Forced Client appearance while scenic lock is active (`null` = unlocked). */
+export const AppearanceProfileSchema = z
+  .object({
+    light: z.boolean(),
+    highContrast: z.boolean(),
+  })
+  .strict();
+
+export type AppearanceProfile = z.infer<typeof AppearanceProfileSchema>;
+
+/** Live Desk — team transpose / sync-lead / remote edit / scenic theme lock. */
 export const LiveDeskSettingsSchema = z
   .object({
     transpositionSemitones: z.number().int().min(-12).max(12).default(0),
     syncLeadMs: z.number().int().min(-500).max(500).default(200),
     clientEditEnabled: z.boolean().default(true),
+    /** When set, Client shells apply this profile and ignore local theme prefs. */
+    themeLock: AppearanceProfileSchema.nullable().default(null),
   })
   .strict();
 
@@ -138,13 +150,15 @@ export const LiveDeskPatchBodySchema = z
     transpositionSemitones: z.number().int().min(-12).max(12).optional(),
     syncLeadMs: z.number().int().min(-500).max(500).optional(),
     clientEditEnabled: z.boolean().optional(),
+    themeLock: AppearanceProfileSchema.nullable().optional(),
   })
   .strict()
   .refine(
     (b) =>
       b.transpositionSemitones != null ||
       b.syncLeadMs != null ||
-      b.clientEditEnabled != null,
+      b.clientEditEnabled != null ||
+      b.themeLock !== undefined,
     { message: "At least one live-desk field required" },
   );
 
@@ -155,6 +169,7 @@ export const LiveDeskMessageSchema = z.object({
   transpositionSemitones: z.number().int().min(-12).max(12),
   syncLeadMs: z.number().int().min(-500).max(500),
   clientEditEnabled: z.boolean(),
+  themeLock: AppearanceProfileSchema.nullable().default(null),
   sentAtMs: z.number().finite(),
 });
 

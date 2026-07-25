@@ -50,6 +50,10 @@ import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
+import {
+  applyAppearance,
+  readAppearance,
+} from "../lib/appearance.js";
 import { noteH01ConsumerRender } from "../transport/h01PerfProbe.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
@@ -120,6 +124,15 @@ export function ClientShell() {
   const displayTicks =
     rawDisplayTicks +
     ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq);
+
+  // Scenic lock: host-forced theme on Client only (does not rewrite localStorage).
+  useEffect(() => {
+    if (liveDesk.themeLock) {
+      applyAppearance(liveDesk.themeLock);
+      return;
+    }
+    applyAppearance(readAppearance());
+  }, [liveDesk.themeLock]);
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
     getStoredClockDisplayFormat(),
@@ -365,6 +378,7 @@ export function ClientShell() {
     onBack: started ? () => setStarted(false) : undefined,
     displayPrefs,
     onDisplayPrefsChange: setDisplayPrefs,
+    themeLock: liveDesk.themeLock,
   };
 
   if (nameModal) {
@@ -765,6 +779,7 @@ type ClientHeaderProps = {
   onBack?: () => void;
   displayPrefs: ClientDisplayPrefs;
   onDisplayPrefsChange: (prefs: ClientDisplayPrefs) => void;
+  themeLock: { light: boolean; highContrast: boolean } | null;
 };
 
 function ClientChrome({
@@ -785,6 +800,7 @@ function ClientChrome({
   onBack,
   displayPrefs,
   onDisplayPrefsChange,
+  themeLock,
 }: ClientHeaderProps) {
   return (
     <header className={styles.header}>
@@ -847,6 +863,7 @@ function ClientChrome({
               <GlobalSettingsFields
                 prefs={displayPrefs}
                 onPrefsChange={onDisplayPrefsChange}
+                themeLock={themeLock}
               />
             </SettingsPopover>
           ) : null}
@@ -893,14 +910,32 @@ const PITCH_OPTIONS: {
 function GlobalSettingsFields({
   prefs,
   onPrefsChange,
+  themeLock,
 }: {
   prefs: ClientDisplayPrefs;
   onPrefsChange: (prefs: ClientDisplayPrefs) => void;
+  themeLock: { light: boolean; highContrast: boolean } | null;
 }) {
+  const locked = themeLock != null;
   return (
     <>
       <p className={styles.fieldLab}>Wygląd</p>
-      <ShellAppearanceFields />
+      {locked ? (
+        <p className={styles.muted} role="status">
+          Motyw wymuszony przez hosta (blokada sceniczna).
+        </p>
+      ) : null}
+      <ShellAppearanceFields
+        disabled={locked}
+        {...(locked
+          ? {
+              value: themeLock,
+              onChange: () => {
+                /* scenic lock — local edits ignored */
+              },
+            }
+          : {})}
+      />
       <p className={styles.fieldLab}>Strój instrumentu</p>
       <div
         className={styles.pitchToggle}

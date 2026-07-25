@@ -1,5 +1,6 @@
 /**
- * Live Desk settings (team transpose / sync-lead / remote edit) — SSOT + WS fanout.
+ * Live Desk settings (team transpose / sync-lead / remote edit / theme lock) —
+ * SSOT + WS fanout.
  */
 
 import {
@@ -50,6 +51,7 @@ export function createLiveDeskStore(filePath: string) {
       transpositionSemitones: settings.transpositionSemitones,
       syncLeadMs: settings.syncLeadMs,
       clientEditEnabled: settings.clientEditEnabled,
+      themeLock: settings.themeLock,
       sentAtMs,
     };
   }

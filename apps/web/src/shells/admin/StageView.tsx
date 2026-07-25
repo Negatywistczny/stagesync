@@ -341,6 +341,58 @@ export function StageView() {
               >
                 Edycja zdalna (notatki Formy / tap wokalu)
               </ShellSwitchRow>
+              <ShellSwitchRow
+                className={styles.masterSwitch}
+                checked={liveDesk.themeLock != null}
+                disabled={liveDeskSaving}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  const themeLock = on
+                    ? (liveDesk.themeLock ?? {
+                        light: false,
+                        highContrast: false,
+                      })
+                    : null;
+                  setLiveDesk({ ...liveDesk, themeLock });
+                  void applyLiveDesk({ themeLock });
+                }}
+              >
+                Blokada motywu na Clientach
+              </ShellSwitchRow>
+              {liveDesk.themeLock ? (
+                <>
+                  <ShellSwitchRow
+                    className={styles.masterSwitch}
+                    checked={liveDesk.themeLock.light}
+                    disabled={liveDeskSaving}
+                    onChange={(e) => {
+                      const themeLock = {
+                        ...liveDesk.themeLock!,
+                        light: e.target.checked,
+                      };
+                      setLiveDesk({ ...liveDesk, themeLock });
+                      void applyLiveDesk({ themeLock });
+                    }}
+                  >
+                    Wymuszony jasny motyw
+                  </ShellSwitchRow>
+                  <ShellSwitchRow
+                    className={styles.masterSwitch}
+                    checked={liveDesk.themeLock.highContrast}
+                    disabled={liveDeskSaving}
+                    onChange={(e) => {
+                      const themeLock = {
+                        ...liveDesk.themeLock!,
+                        highContrast: e.target.checked,
+                      };
+                      setLiveDesk({ ...liveDesk, themeLock });
+                      void applyLiveDesk({ themeLock });
+                    }}
+                  >
+                    Wymuszony wysoki kontrast
+                  </ShellSwitchRow>
+                </>
+              ) : null}
             </>
           )}
         </div>
