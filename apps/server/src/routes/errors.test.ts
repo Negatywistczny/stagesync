@@ -82,4 +82,20 @@ describe("routes/errors", () => {
       expect(res.body.error).toMatch(c.match);
     }
   });
+
+  it("caps Zod details at 32 issues", () => {
+    const res = mockRes();
+    handleRouteError(res, {
+      name: "ZodError",
+      issues: Array.from({ length: 40 }, (_, i) => ({
+        message: `m${i}`,
+        path: ["f", i],
+        code: "custom",
+      })),
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.details).toHaveLength(32);
+    expect(res.body.details?.[0]).toMatchObject({ path: "f.0", message: "m0" });
+    expect(res.body.details?.[31]).toMatchObject({ path: "f.31", message: "m31" });
+  });
 });
