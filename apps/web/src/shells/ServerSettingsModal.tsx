@@ -1,5 +1,5 @@
 import { useId, useEffect, useRef, useState, type ReactNode } from "react";
-import { Button, Input, Select, Slider, Textarea } from "@stagesync/ui";
+import { Button, Input, Select, Slider } from "@stagesync/ui";
 import {
   applyAppearance,
   readAppearance,
