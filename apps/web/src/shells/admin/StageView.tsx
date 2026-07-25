@@ -546,7 +546,7 @@ export function StageView() {
                         variant="ghost"
                         disabled={pending}
                         title="Usuń komunikat"
-                        aria-label="Usuń komunikat"
+                        aria-label={`Usuń komunikat: ${msg.text.trim().slice(0, 40) || "bez treści"}`}
                         onClick={() => void onDismiss(msg.id)}
                       >
                         Usuń
