@@ -68,4 +68,19 @@ describe("shadowBackup", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("overwrites an existing .bak sibling", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-shadow-ow-"));
+    try {
+      const file = join(dir, "library.json");
+      const bakPath = `${file}.pre.bak`;
+      await writeFile(file, '{"v":2}\n');
+      await writeFile(bakPath, '{"v":1}\n');
+      const bak = await shadowBackup(file, "pre");
+      expect(bak).toBe(bakPath);
+      expect(await readFile(bakPath, "utf8")).toBe('{"v":2}\n');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });
