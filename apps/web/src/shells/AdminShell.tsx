@@ -28,6 +28,7 @@ import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
+import { filterAndSortLibrarySongs } from "./admin/filterLibrarySongs.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import {
@@ -707,31 +708,10 @@ function SongsView({
     setInspectorProject(null);
   }, [selectedId]);
 
-  const visibleProjects = useMemo(() => {
-    const projects = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
-    const q = filter.trim().toLowerCase();
-    let list = q
-      ? projects.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            (p.artist ?? "").toLowerCase().includes(q) ||
-            (p.genre ?? "").toLowerCase().includes(q) ||
-            String(p.midiProgramId ?? "").includes(q),
-        )
-      : [...projects];
-    if (sort === "title") {
-      list = [...list].sort((a, b) =>
-        a.name.localeCompare(b.name, "pl", { sensitivity: "base" }),
-      );
-    } else if (sort === "pc") {
-      list = [...list].sort(
-        (a, b) =>
-          (a.midiProgramId ?? 0) - (b.midiProgramId ?? 0) ||
-          a.name.localeCompare(b.name, "pl", { sensitivity: "base" }),
-      );
-    }
-    return list;
-  }, [library?.projects, filter, sort]);
+  const visibleProjects = useMemo(
+    () => filterAndSortLibrarySongs(library?.projects ?? [], filter, sort),
+    [library?.projects, filter, sort],
+  );
 
   const templates = useMemo(
     () => (library?.projects ?? []).filter((p) => p.isTemplate),
