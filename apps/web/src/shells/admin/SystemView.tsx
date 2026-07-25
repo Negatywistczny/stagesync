@@ -206,10 +206,10 @@ export function SystemView({
 
         <section
           className={`${shell.card} ${styles.leftCard}`}
-          aria-label="Telemetria Midi"
+          aria-label="Telemetria MIDI"
         >
           <div className={shell.cardHead}>
-            <h2 className={shell.cardTitle}>Telemetria Midi</h2>
+            <h2 className={shell.cardTitle}>Telemetria MIDI</h2>
           </div>
           <div className={`${shell.cardBody} ${shell.midiBody}`}>
             {midiError ? (
