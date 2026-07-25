@@ -16,24 +16,22 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <ImageView
-                android:layout_width="40dp"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:contentDescription="@null"
-                android:src="@drawable/ss_brand" />
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/brand_cd"
+                android:src="@drawable/ss_wordmark" />
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:text="@string/app_name"
-                android:textColor="@color/ss_primary"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="6dp"
+                android:text="@string/product_role"
+                android:textColor="@color/ss_muted"
+                android:textSize="14sp" />
         </LinearLayout>
 
         <TextView
