@@ -8,6 +8,7 @@ import { isRunningUnderPm2 } from "../lifecycle.js";
 import {
   ApplyUpdateBodySchema,
   PutServerSettingsBodySchema,
+  RestoreBackupBodySchema,
 } from "@stagesync/shared";
 import { buildStoreZip, type ZipEntry } from "../diagnostics-zip.js";
 import {
@@ -29,6 +30,10 @@ import {
   listBrowseDirectory,
   resolveBrowseStartPath,
 } from "../path-browser.js";
+import {
+  resolveBackupsDir,
+  restoreFromBackup,
+} from "../storage/restore-backup.js";
 import { sendError, handleRouteError } from "./errors.js";
 
 export type SystemRouterDeps = {
@@ -317,7 +322,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         restartRequired: true,
         resolved: {
           dataDir: dataDir ?? null,
-          backupsDir: dataDir ? join(dataDir, "backups") : null,
+          backupsDir: dataDir ? resolveBackupsDir(dataDir) : null,
           assetsHint: dataDir
             ? join(dataDir, "projects", "<id>", "assets")
             : null,
@@ -378,6 +383,44 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       const result = listBrowseDirectory(browsePath, { mode, ext });
       res.set("Cache-Control", "no-store");
       res.json(result);
+    } catch (err) {
+      if (err instanceof Error) {
+        sendError(res, 400, err.message);
+        return;
+      }
+      handleRouteError(res, err);
+    }
+  });
+
+  /** POST /api/system/restore — restore a `.bak` into the data tree (PIN + lifecycle ACL). */
+  router.post("/restore", async (req, res) => {
+    if (!assertLifecycleAllowed(req, res)) return;
+    if (!dataDir) {
+      sendError(res, 500, "Katalog danych hosta nie jest skonfigurowany");
+      return;
+    }
+    try {
+      const body = RestoreBackupBodySchema.safeParse(req.body);
+      if (!body.success) {
+        res.status(400).json({
+          ok: false,
+          error: "Invalid body",
+          details: body.error.issues,
+        });
+        return;
+      }
+      const result = await restoreFromBackup({
+        bakPath: body.data.path,
+        dataDir,
+      });
+      res.json({
+        ok: true,
+        bakPath: result.bakPath,
+        targetPath: result.targetPath,
+        shadowed: result.shadowed,
+        message:
+          "Przywrócono kopię. Odśwież Admin / Timeline, jeśli otwarty był ten projekt.",
+      });
     } catch (err) {
       if (err instanceof Error) {
         sendError(res, 400, err.message);

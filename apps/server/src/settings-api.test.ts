@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
@@ -9,6 +9,7 @@ import { createApp } from "./app.js";
 describe("GET/PUT /api/system/settings + browse", () => {
   const dirs: string[] = [];
   afterEach(async () => {
+    vi.unstubAllEnvs();
     await Promise.all(dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })));
   });
 
@@ -102,6 +103,74 @@ describe("GET/PUT /api/system/settings + browse", () => {
       const body = (await res.json()) as { ok?: boolean; error?: string };
       expect(body.ok).toBe(false);
       expect(String(body.error ?? "")).toMatch(/Invalid body/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("POST restore restores sibling .bak into dataDir", async () => {
+    const dataDir = await mkdtemp(join(homedir(), ".stagesync-restore-api-"));
+    dirs.push(dataDir);
+    const live = join(dataDir, "library.json");
+    await writeFile(live, '{"v":1}', "utf8");
+    const bak = `${live}.schema.bak`;
+    await writeFile(bak, '{"v":2}', "utf8");
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const bad = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: bak }),
+      });
+      expect(bad.status).toBe(400);
+
+      const res = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: bak, confirm: true }),
+      });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        ok: boolean;
+        targetPath: string;
+        shadowed: string | null;
+      };
+      expect(body.ok).toBe(true);
+      expect(body.targetPath).toBe(live);
+      expect(body.shadowed).toBe(`${live}.pre-restore.bak`);
+      expect(await readFile(live, "utf8")).toBe('{"v":2}');
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("POST restore requires operator PIN when configured", async () => {
+    vi.stubEnv("STAGESYNC_OPERATOR_PIN", "4242");
+    const dataDir = await mkdtemp(join(homedir(), ".stagesync-restore-pin-"));
+    dirs.push(dataDir);
+    const live = join(dataDir, "library.json");
+    await writeFile(live, '{"v":1}', "utf8");
+    const bak = `${live}.schema.bak`;
+    await writeFile(bak, '{"v":2}', "utf8");
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const denied = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: bak, confirm: true }),
+      });
+      expect(denied.status).toBe(403);
+
+      const res = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-stagesync-operator-pin": "4242",
+        },
+        body: JSON.stringify({ path: bak, confirm: true }),
+      });
+      expect(res.status).toBe(200);
+      expect(await readFile(live, "utf8")).toBe('{"v":2}');
     } finally {
       await new Promise<void>((r) => server.close(() => r()));
     }

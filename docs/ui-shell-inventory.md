@@ -28,7 +28,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 | React + CSS Modules + `--ss-*` | Stack v5 |
 | Admin: Utwory · Set · Scena · Host | IA v5 — **Set + wybór utworów w jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)) |
 | Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
-| Backup restore / path picker FS | Placeholder — aktywne: [TODO.md](./TODO.md) § 5.2+ |
+| Backup restore / path picker FS | Admin Ustawienia → Serwer → Przywróć… (`.bak` + confirm + PIN) |
 | Mixer — fizyczne Out 3–4 / bus→bus | [TODO.md](./TODO.md) § 5.2+ (bez atrap) |
 | Forma scissors = subsections v4 | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×** |
 
@@ -80,7 +80,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 - [x] Host: logi SSE · **Restart / Wyłącz (2×)** · sieć · MIDI I/O
 - [x] Wygląd: jasny / wysoki kontrast (`data-theme` / `data-contrast`)
 - [x] Sprawdź aktualizacje / Aktualizuj host (Watchtower) + Aktualizuj aplikację (Tauri updater) — [ADR 0004](./adr/0004-updates-docker.md)
-- [ ] Backup Przywróć — → [TODO.md](./TODO.md) § 5.2+
+- [x] Backup Przywróć — Admin Ustawienia → Przywróć… (`.bak`)
 
 ## Client
 

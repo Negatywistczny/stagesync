@@ -9,8 +9,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+#### 🖥️ App Shell & UI
+- **Admin — Przywróć:** w Ustawieniach serwera można wybrać plik `.bak` (shadow backup) i przywrócić go do katalogu danych po potwierdzeniu (z PIN-em operatora, gdy włączony).
+
 #### 🛠️ Infrastruktura & Build
 - **Monitoring:** opcjonalne raportowanie awarii (Sentry) dla hosta i UI — włączane tylko gdy ustawisz `SENTRY_DSN` / `VITE_SENTRY_DSN` (bez DSN aplikacja działa jak wcześniej; bez wysyłania haseł i tokenów).
+
+#### 📚 Dokumentacja
+- **Instalacja / Desktop:** opis Przywróć z `.bak` w ustawieniach serwera oraz opcjonalnych DSN Sentry.
 
 ## [5.2.0](https://github.com/Negatywistczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Cue & Guard
 

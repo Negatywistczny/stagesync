@@ -19,7 +19,7 @@ export function initWebSentry(): boolean {
   try {
     Sentry.init({
       dsn,
-      environment: import.meta.env.MODE,
+      environment: import.meta.env.DEV ? "development" : "production",
       sendDefaultPii: false,
       beforeSend(event) {
         if (event.request?.headers) {

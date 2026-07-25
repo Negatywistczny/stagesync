@@ -38,6 +38,10 @@ MIDI i zegar muzyczny obsługuje wyłącznie host (serwer) — nie proces okna d
 > Przy pierwszym starcie aplikacja może jednorazowo skopiować dane z poprzedniej lokalizacji
 > Application Support / AppData (bez nadpisywania Dokumentów).
 > Lista ostatnich hostów Launchera zostaje w katalogu aplikacji OS.
+>
+> **Przywróć kopię `.bak`:** Ustawienia → Serwer → Zaawansowane — **Przywróć…**
+> (plik shadow backup obok oryginału albo w katalogu backups; PIN operatora gdy włączony).
+> Szczegóły: [INSTALL.md](./INSTALL.md) § Backup volume.
 
 ## Instalacja (gotowe instalatory)
 

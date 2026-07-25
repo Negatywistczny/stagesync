@@ -27,4 +27,3 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] [#692](https://github.com/Negatywistczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
 - [ ] **Safety Net (residual):** auto-election / lease split-brain ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
-- [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS

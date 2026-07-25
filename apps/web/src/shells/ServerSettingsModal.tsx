@@ -40,6 +40,7 @@ import {
   fetchMidiHostStatus,
   fetchServerSettings,
   postMidiPanic,
+  postSystemRestore,
   putMidiHostConfig,
   putServerSettings,
   type BrowseResult,
@@ -51,6 +52,7 @@ import { useTransport } from "../transport/useTransport.js";
 import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { DeviceNameFields } from "./DeviceNameFields.js";
+import { ShellConfirmDialog } from "./ShellBlockingDialog.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./ServerSettingsModal.module.css";
 
@@ -184,7 +186,15 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const [restartNote, setRestartNote] = useState<string | null>(null);
   const [browseField, setBrowseField] = useState<string | null>(null);
   const [browseData, setBrowseData] = useState<BrowseResult | null>(null);
+  const [restoreBusy, setRestoreBusy] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<{
+    path: string;
+    name: string;
+  } | null>(null);
 
+  const isRestoreBrowse = browseField === "__restore__";
+  const browseMode = isRestoreBrowse ? "file" : "dir";
 
   useEffect(() => {
     let cancelled = false;
@@ -906,30 +916,102 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                         aria-label={`Przeglądaj katalog — ${label}`}
                         onClick={() => {
                         setBrowseField(key);
+                        setRestoreMsg(null);
                         void browseServerPath({ path: String(server[key] || ""), mode: "dir" }).then(setBrowseData).catch(() => setBrowseData(null));
                       }}>…</Button>
                     </div>
                   </label>
                 ))}
+                <div className={styles.field}>
+                  <span className={styles.label}>Przywróć z kopii .bak</span>
+                  <p className={styles.muted}>
+                    Wybierz plik shadow backup (np. <code>project.json.schema.bak</code>)
+                    obok oryginału albo kopię w katalogu backups. Host nadpisze plik w
+                    katalogu danych (najpierw zrobi kopię <code>pre-restore</code>).
+                  </p>
+                  <div className={styles.latencyRow}>
+                    <Button
+                      variant="secondary"
+                      disabled={restoreBusy}
+                      aria-label="Przywróć z pliku .bak"
+                      onClick={() => {
+                        setBrowseField("__restore__");
+                        setRestoreMsg(null);
+                        const start =
+                          serverMeta?.resolved?.backupsDir ||
+                          serverMeta?.resolved?.dataDir ||
+                          String(server.STAGESYNC_BACKUPS_DIR || server.STAGESYNC_DATA_DIR || "");
+                        void browseServerPath({
+                          path: start,
+                          mode: "file",
+                          ext: ".bak",
+                        })
+                          .then(setBrowseData)
+                          .catch((err) => {
+                            setBrowseData(null);
+                            setRestoreMsg(
+                              err instanceof Error
+                                ? err.message
+                                : "Nie udało się otworzyć przeglądarki plików",
+                            );
+                          });
+                      }}
+                    >
+                      Przywróć…
+                    </Button>
+                  </div>
+                  {restoreMsg ? (
+                    <p className={styles.muted} role="status">
+                      {restoreMsg}
+                    </p>
+                  ) : null}
+                </div>
                 {browseField && browseData ? (
                   <div className={styles.panicBlock}>
                     <p className={styles.muted}>{browseData.envPath}</p>
                     <div className={styles.latencyRow}>
                       <Button variant="ghost" disabled={!browseData.parent} onClick={() => {
-                        if (browseData.parent) void browseServerPath({ path: browseData.parent, mode: "dir" }).then(setBrowseData);
+                        if (browseData.parent) {
+                          void browseServerPath({
+                            path: browseData.parent,
+                            mode: browseMode,
+                            ext: isRestoreBrowse ? ".bak" : undefined,
+                          }).then(setBrowseData);
+                        }
                       }}>W górę</Button>
-                      <Button variant="primary" onClick={() => {
-                        setServer({ ...server, [browseField]: browseData.envPath });
-                        setBrowseField(null);
-                        setBrowseData(null);
-                      }}>Wybierz</Button>
+                      {!isRestoreBrowse ? (
+                        <Button variant="primary" onClick={() => {
+                          setServer({ ...server, [browseField]: browseData.envPath });
+                          setBrowseField(null);
+                          setBrowseData(null);
+                        }}>Wybierz</Button>
+                      ) : null}
                       <Button variant="ghost" onClick={() => { setBrowseField(null); setBrowseData(null); }}>Anuluj</Button>
                     </div>
                     <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                      {browseData.entries.filter((e) => e.type === "dir").map((e) => (
+                      {browseData.entries
+                        .filter((e) =>
+                          isRestoreBrowse ? e.type === "dir" || e.type === "file" : e.type === "dir",
+                        )
+                        .map((e) => (
                         <li key={e.path}>
                           <button type="button" className={styles.select} style={{ width: "100%", textAlign: "left" }}
-                            onClick={() => void browseServerPath({ path: e.path, mode: "dir" }).then(setBrowseData)}>📁 {e.name}</button>
+                            onClick={() => {
+                              if (e.type === "dir") {
+                                void browseServerPath({
+                                  path: e.path,
+                                  mode: browseMode,
+                                  ext: isRestoreBrowse ? ".bak" : undefined,
+                                }).then(setBrowseData);
+                                return;
+                              }
+                              setPendingRestore({ path: e.path, name: e.name });
+                              setBrowseField(null);
+                              setBrowseData(null);
+                            }}
+                          >
+                            {e.type === "dir" ? "📁" : "📄"} {e.name}
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -963,6 +1045,34 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           Zapisz
         </Button>
       </div>
+      <ShellConfirmDialog
+        open={pendingRestore != null}
+        title="Przywróć kopię zapasową"
+        message={
+          pendingRestore
+            ? `Nadpisać bieżący plik zawartością „${pendingRestore.name}”? To destrukcyjna operacja (host zrobi najpierw kopię pre-restore).`
+            : ""
+        }
+        confirmLabel="Przywróć"
+        onConfirm={() => {
+          const pending = pendingRestore;
+          setPendingRestore(null);
+          if (!pending) return;
+          setRestoreBusy(true);
+          setRestoreMsg(null);
+          void postSystemRestore(pending.path)
+            .then((res) => {
+              setRestoreMsg(res.message ?? `Przywrócono: ${res.targetPath}`);
+            })
+            .catch((err) => {
+              setRestoreMsg(
+                err instanceof Error ? err.message : "Nie udało się przywrócić",
+              );
+            })
+            .finally(() => setRestoreBusy(false));
+        }}
+        onCancel={() => setPendingRestore(null)}
+      />
     </ModalShell>
   );
 }

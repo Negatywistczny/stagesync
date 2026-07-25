@@ -105,6 +105,16 @@ cp -a data "data-backup-$(date +%Y%m%d-%H%M%S)"
 
 Serwer przy starcie robi też **shadow `.bak`** przed destrukcyjnym rewrite schematu projektu (`formatVersion` < 5).
 
+### Przywróć z Admina
+
+W **Ustawienia → Serwer → Zaawansowane — Ścieżki** jest **Przywróć…**: wybierz plik
+`.bak` (np. `project.json.schema.bak` obok oryginału albo kopię w
+`STAGESYNC_BACKUPS_DIR` / `{dataDir}/backups` z zachowaną strukturą ścieżek).
+Host nadpisuje plik w katalogu danych po potwierdzeniu; gdy ustawiony jest
+`STAGESYNC_OPERATOR_PIN`, wymagany jest PIN. Przed nadpisaniem powstaje
+`.pre-restore.bak`. Po przywróceniu odśwież Admin / Timeline, jeśli otwarty
+był ten projekt.
+
 ## Update hosta
 
 ### Na żądanie z Admina (zalecane)
@@ -219,6 +229,7 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 | `STAGESYNC_OPERATOR_PIN` | — | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`) |
 | `STAGESYNC_SAFETY_ROLE` | `master` | Safety Net: `master` \| `spare` (Spare = bez MIDI OUT; ręczne Przejmij) |
 | `STAGESYNC_THEME_DEFAULT` | — | Domyślny motyw klientów bez lokalnej preferencji (`dark` / `light` / `*-high`) |
+| `STAGESYNC_BACKUPS_DIR` | `{dataDir}/backups` | Katalog kopii (mapowanie przy Przywróć); puste = domyślny podkatalog danych |
 | `SENTRY_DSN` | — | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII) |
 | `VITE_SENTRY_DSN` | — | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania) |
 
