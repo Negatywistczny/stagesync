@@ -20,6 +20,10 @@ vi.mock("../lib/screenWakeLock.js", () => ({
   releaseScreenWakeLock: vi.fn(async () => undefined),
 }));
 
+vi.mock("./client/ScorePane.js", () => ({
+  ScorePane: () => <div data-testid="score-pane">score</div>,
+}));
+
 vi.mock("../lib/deviceNamePrefs.js", () => ({
   DEVICE_DISPLAY_NAME_CHANGED_EVENT: "stagesync:device-name",
   DEVICE_DISPLAY_NAME_MAX: 40,
@@ -80,6 +84,11 @@ function startGridRole() {
   fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
 }
 
+function startScoreRole() {
+  fireEvent.click(screen.getByRole("button", { name: /Partytura/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+}
+
 describe("ClientShell chrome", () => {
   it("does not expose setlist next/prev controls (read-only Client)", () => {
     render(<ClientShell />);
@@ -121,4 +130,15 @@ describe("ClientShell chrome", () => {
     expect(screen.queryByLabelText("Nazwa urządzenia")).toBeNull();
     expect(screen.queryByRole("button", { name: /Zapisz nazwę/i })).toBeNull();
   });
+
+  it("names Partytura zoom controls in role settings", () => {
+    render(<ClientShell />);
+    startScoreRole();
+    expect(screen.getByTestId("score-pane")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Partytura/i }));
+    expect(screen.getByRole("button", { name: "Pomniejsz partyturę" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Powiększ partyturę" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Resetuj zoom partytury" })).toBeTruthy();
+  });
+
 });
