@@ -88,6 +88,43 @@ describe("transport REST + WS", () => {
     expect(res.status).toBe(400);
   });
 
+  it("rejects invalid load and loop bodies", async () => {
+    const badLoad = await fetch(`${baseUrl}/api/transport/load`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(badLoad.status).toBe(400);
+
+    const badUuid = await fetch(`${baseUrl}/api/transport/load`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ projectId: "not-uuid" }),
+    });
+    expect(badUuid.status).toBe(400);
+
+    const badLoop = await fetch(`${baseUrl}/api/transport/loop`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(badLoop.status).toBe(400);
+
+    const badTicks = await fetch(`${baseUrl}/api/transport/loop`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ enabled: true, startTicks: 1.5 }),
+    });
+    expect(badTicks.status).toBe(400);
+
+    const unknown = await fetch(`${baseUrl}/api/transport/play`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ extra: true }),
+    });
+    expect(unknown.status).toBe(400);
+  });
+
   it("play with projectId sets activeProjectId and resolves bpm", async () => {
     const dataDir = await mkdtemp(join(tmpdir(), "stagesync-transport-"));
     const { app } = createApp({ dataDir });

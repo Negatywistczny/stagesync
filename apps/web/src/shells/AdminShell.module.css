@@ -126,14 +126,6 @@
   position: relative;
 }
 
-.chromeAlert {
-  margin: 0;
-  padding: 0 var(--ss-space-5) var(--ss-space-2);
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-danger);
-  line-height: var(--ss-leading-normal);
-}
-
 /* —— Workspace —— */
 
 .workspace {
@@ -820,19 +812,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--ss-space-1);
-}
-
-.fieldset {
-  margin: 0 0 var(--ss-space-3);
-  padding: var(--ss-space-3);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-}
-
-.fieldset legend {
-  padding: 0 var(--ss-space-1);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
 }
 
 .field {

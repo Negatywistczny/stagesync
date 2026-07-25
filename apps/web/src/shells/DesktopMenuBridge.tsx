@@ -32,7 +32,7 @@ import {
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import {
-  PreferencesModal,
+  ServerSettingsModal,
   type PreferencesTab,
 } from "./ServerSettingsModal.js";
 import styles from "./DesktopMenuBridge.module.css";
@@ -121,14 +121,20 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Kod QR — połączenie klientów" onClose={onClose}>
       <div className={styles.body}>
-        {loading ? <p className={styles.muted}>Ładowanie adresów LAN…</p> : null}
+        {loading ? (
+          <p className={styles.muted} role="status" aria-live="polite">
+            Ładowanie adresów LAN…
+          </p>
+        ) : null}
         {error ? (
           <p className={styles.error} role="alert">
             {error}
           </p>
         ) : null}
         {!loading && !error && urls.length === 0 ? (
-          <p className={styles.muted}>Brak adresów LAN z hosta.</p>
+          <p className={styles.muted} role="status" aria-live="polite">
+            Brak adresów LAN z hosta.
+          </p>
         ) : null}
         {selected && qrSvg ? (
           <div
@@ -390,7 +396,7 @@ export function DesktopMenuBridge() {
         />
       ) : null}
       {prefsOpen ? (
-        <PreferencesModal
+        <ServerSettingsModal
           key={prefsTab}
           initialTab={prefsTab}
           onClose={() => setPrefsOpen(false)}
