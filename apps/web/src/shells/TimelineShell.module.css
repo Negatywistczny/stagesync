@@ -137,61 +137,16 @@
   outline-offset: -2px;
 }
 
-.playBtn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: var(--ss-touch-min);
-  height: var(--ss-touch-min);
-  padding: 0;
-  border: 1px solid var(--ss-color-primary);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
+/* Color accent only — geometry from Button iconOnly. */
+.playAccent {
+  border-color: var(--ss-color-primary);
   color: var(--ss-color-primary);
-  cursor: pointer;
-}
-
-.playBtnPlaying {
-  background: var(--ss-color-selected);
-  border-color: var(--ss-color-selected-border);
-  color: var(--ss-color-text);
 }
 
 @media (hover: hover) {
-  .playBtn:hover:not(:disabled) {
-    transition:
-      background-color var(--ss-transition),
-      border-color var(--ss-transition),
-      color var(--ss-transition);
-    background: var(--ss-color-selected);
+  .playAccent:hover:not(:disabled) {
     border-color: var(--ss-color-primary-hover);
     color: var(--ss-color-primary-hover);
-  }
-}
-
-.playBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.playBtnBuffering {
-  cursor: wait;
-  opacity: 1;
-}
-
-.playBtnSpinner {
-  width: var(--ss-space-4);
-  height: var(--ss-space-4);
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: tl-play-spin var(--ss-duration-slow) linear infinite;
-}
-
-@keyframes tl-play-spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -391,7 +346,6 @@
   color: var(--ss-color-text);
 }
 
-.metaBtn,
 .metaRead {
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-medium);
@@ -399,30 +353,9 @@
   color: var(--ss-color-text-muted);
 }
 
-.metaBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ss-space-1);
-  min-height: var(--ss-space-8);
-  padding: var(--ss-space-1) var(--ss-space-2);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text);
-  font: inherit;
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-medium);
-  line-height: var(--ss-leading-compact);
+/* Behavior on mobile — no size overrides on Button. */
+.metaChip {
   white-space: nowrap;
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .metaBtn:hover {
-    transition: background-color var(--ss-transition), border-color var(--ss-transition);
-    background: var(--ss-color-ghost-hover);
-    border-color: var(--ss-color-border);
-  }
 }
 
 .main {
@@ -1120,62 +1053,12 @@
   max-width: none;
 }
 
-.eyeBtn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--ss-space-8) * var(--tl-zoom-ui));
-  height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: pointer;
-}
-
-/* Narrow chip right of tools — configure which tools stay on the strip. */
-.toolsVisBtn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--ss-space-5) * var(--tl-zoom-ui));
-  height: var(--ss-touch-min);
-  margin-left: var(--ss-space-1);
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: pointer;
-}
-
-.toolsVisBtnOpen {
-  color: var(--ss-color-text);
-  border-color: var(--ss-color-selected-border);
-  background: var(--ss-color-selected);
-}
-
-@media (hover: hover) {
-  .toolsVisBtn:hover {
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-    border-color: var(--ss-color-primary);
-  }
-}
-
 /* Lucide defaults to fixed 18px — scale glyph with Zoom UI (v4 lane-tool svg). */
-.eyeBtn svg,
-.tapBtn svg {
+.tapBtnSelected :global(svg),
+.tapBtnSolo :global(svg),
+.tapBtnMute :global(svg) {
   width: calc(18px * var(--tl-zoom-ui));
   height: calc(18px * var(--tl-zoom-ui));
-}
-
-.toolsVisBtn svg {
-  width: calc(14px * var(--tl-zoom-ui));
-  height: calc(14px * var(--tl-zoom-ui));
 }
 
 .eyeMenu {
@@ -1213,72 +1096,39 @@
   cursor: default;
 }
 
-.tapBtn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--ss-space-8) * var(--tl-zoom-ui));
-  height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
-  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui));
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .tapBtn:hover {
-    transition:
-      background-color var(--ss-transition),
-      border-color var(--ss-transition),
-      color var(--ss-transition);
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-    border-color: var(--ss-color-primary);
-  }
-}
-
-.tapBtn:focus-visible {
-  outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: -2px;
-}
-
-/* Selected modifiers after .tapBtn so they win cascade (Tap / Solo / Mute). */
-.tapBtn.tapBtnSelected {
+/* Color accents on Button iconOnly — no size overrides. */
+.tapBtnSelected {
   color: var(--ss-color-text);
   background: var(--ss-color-selected);
   border-color: var(--ss-color-primary);
 }
 
-.tapBtn.tapBtnSolo {
+.tapBtnSolo {
   color: var(--tl-solo-fg);
   background: var(--tl-solo-bg);
   border-color: var(--tl-solo-bg);
 }
 
-.tapBtn.tapBtnMute {
+.tapBtnMute {
   color: var(--tl-mute-fg);
   background: var(--tl-mute-bg);
   border-color: var(--tl-mute-bg);
 }
 
 @media (hover: hover) {
-  .tapBtn.tapBtnSelected:hover {
+  .tapBtnSelected:hover {
     color: var(--ss-color-text);
     background: var(--ss-color-selected);
     border-color: var(--ss-color-primary);
   }
 
-  .tapBtn.tapBtnSolo:hover {
+  .tapBtnSolo:hover {
     color: var(--tl-solo-fg);
     background: color-mix(in srgb, var(--tl-solo-bg) 88%, var(--ss-color-text));
     border-color: var(--tl-solo-bg);
   }
 
-  .tapBtn.tapBtnMute:hover {
+  .tapBtnMute:hover {
     color: var(--tl-mute-fg);
     background: color-mix(in srgb, var(--tl-mute-bg) 88%, var(--ss-color-text));
     border-color: var(--tl-mute-bg);
@@ -2005,24 +1855,6 @@
   background: var(--ss-color-border);
 }
 
-.touchNudgeBtn {
-  min-width: var(--ss-space-10);
-  min-height: var(--ss-space-10);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text);
-  font: inherit;
-  font-size: var(--ss-text-lg);
-  cursor: pointer;
-}
-
-.touchNudgeBtnSm {
-  min-width: var(--ss-space-8);
-  min-height: var(--ss-space-8);
-  font-size: var(--ss-text-sm);
-}
-
 .touchTierNote {
   margin: 0;
   padding: var(--ss-space-2) var(--ss-space-4);
@@ -2102,7 +1934,7 @@
   display: inline-flex;
 }
 
-.shell[data-tl-tier="mobile"] .metaBtn {
+.shell[data-tl-tier="mobile"] .metaChip {
   pointer-events: none;
   cursor: default;
   color: var(--ss-color-text-muted);
@@ -2252,11 +2084,7 @@
   background: color-mix(in srgb, var(--ss-color-primary) 10%, var(--ss-color-surface));
 }
 
-.playBtn:focus-visible,
-.eyeBtn:focus-visible,
-.toolsVisBtn:focus-visible,
-.clip:focus-visible,
-.metaBtn:focus-visible {
+.clip:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
 }

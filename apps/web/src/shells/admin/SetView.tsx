@@ -626,7 +626,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                         <Button
                           variant="ghost"
                           iconOnly
-                          className={styles.removeBtn}
+                          className={styles.removeSlot}
                           disabled={pending}
                           aria-label="Usuń przerwę z setu"
                           onClick={() => {
@@ -684,7 +684,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                       <Button
                         variant="ghost"
                         iconOnly
-                        className={styles.removeBtn}
+                        className={styles.removeSlot}
                         disabled={pending}
                         aria-label={`Usuń ${nameFor(item.projectId)} z setu`}
                         onClick={() => {

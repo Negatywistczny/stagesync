@@ -58,50 +58,9 @@
 .tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
+  gap: var(--ss-space-1);
   margin: 0 0 var(--ss-space-3);
-  border-bottom: 1px solid var(--ss-color-border);
-}
-
-.tab {
-  flex: 0 0 auto;
-  min-height: var(--ss-space-8);
-  padding: var(--ss-space-2) var(--ss-space-3);
-  margin-bottom: -1px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  background: transparent;
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-control);
-  font-weight: var(--ss-font-weight-medium);
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .tab:hover {
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-  }
-}
-
-.tab:focus-visible {
-  outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: 2px;
-}
-
-.tabSelected {
-  color: var(--ss-color-text);
-  background: transparent;
-  border-bottom-color: var(--ss-color-primary);
-  font-weight: var(--ss-font-weight-semibold);
-}
-
-@media (hover: hover) {
-  .tabSelected:hover {
-    background: var(--ss-color-ghost-hover);
-  }
+  align-items: center;
 }
 
 .body {

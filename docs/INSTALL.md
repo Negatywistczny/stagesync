@@ -52,7 +52,7 @@ widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master).
 
 `STAGESYNC_THEME_DEFAULT` (`dark` \| `light` \| `dark-high` \| `light-high`) ustawia
 wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
-`themeDefault`). Blokada sceniczna (Admin → Scena) nadal nadpisuje Clienty.
+`themeDefault`).
 
 ### Mixer bus→bus
 

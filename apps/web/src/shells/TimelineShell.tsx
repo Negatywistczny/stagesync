@@ -5765,24 +5765,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </ShellIconButton>
             ),
           )}
-          <button
+          <ShellIconButton
             ref={toolsVisBtnRef}
-            type="button"
-            className={[
-              styles.toolsVisBtn,
-              toolsVisOpen ? styles.toolsVisBtnOpen : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            aria-label="Widoczne narzędzia na pasku"
-            title="Widoczne narzędzia na pasku"
+            label="Widoczne narzędzia na pasku"
+            pressed={toolsVisOpen}
             aria-expanded={toolsVisOpen}
             aria-haspopup="menu"
             aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
             onClick={() => setToolsVisOpen((v) => !v)}
           >
             <IconSettings />
-          </button>
+          </ShellIconButton>
         </div>
 
         <div className={styles.toolbarCenter}>
@@ -5794,15 +5787,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               <IconStop />
             </ShellIconButton>
-            <button
-              type="button"
-              className={[
-                styles.playBtn,
-                state.playing ? styles.playBtnPlaying : "",
-                audioBuffering ? styles.playBtnBuffering : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+            <Button
+              variant="ghost"
+              iconOnly
+              className={styles.playAccent}
+              selected={state.playing && !audioBuffering}
+              loading={audioBuffering}
               aria-label={
                 audioBuffering
                   ? "Buforowanie audio"
@@ -5810,26 +5800,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     ? "Pauza"
                     : "Odtwarzaj"
               }
-              aria-busy={audioBuffering || undefined}
               disabled={commandPending || audioBuffering}
               onClick={() =>
                 void (state.playing ? onPauseClick() : onPlayClick())
               }
             >
-              {audioBuffering ? (
-                <span className={styles.playBtnSpinner} aria-hidden="true" />
-              ) : state.playing ? (
+              {audioBuffering ? null : state.playing ? (
                 <IconPause />
               ) : (
                 <IconPlay />
               )}
-            </button>
+            </Button>
             <span className={styles.bbt} aria-live="polite">
               {clockLabel}
             </span>
-            <button
-              type="button"
-              className={styles.metaBtn}
+            <Button
+              variant="ghost"
+              className={styles.metaChip}
               title="Tempo — kliknij, aby edytować @ playhead"
               aria-label="Tempo — kliknij, aby edytować @ playhead"
               onClick={() => {
@@ -5837,7 +5824,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               }}
             >
               {tempoAtPlayhead} BPM
-            </button>
+            </Button>
             <ShellIconButton
               label={
                 timelineSurface === "mixer"
@@ -5863,9 +5850,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               >
                 <IconLoop />
               </ShellIconButton>
-              <button
-                type="button"
-                className={styles.metaBtn}
+              <Button
+                variant="ghost"
+                className={styles.metaChip}
                 title="Metrum — kliknij, aby edytować @ playhead"
                 aria-label="Metrum — kliknij, aby edytować @ playhead"
                 onClick={() => {
@@ -5873,10 +5860,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 }}
               >
                 {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
-              </button>
-              <button
-                type="button"
-                className={styles.metaBtn}
+              </Button>
+              <Button
+                variant="ghost"
+                className={styles.metaChip}
                 title="Tonacja — kliknij, aby edytować"
                 aria-label="Tonacja — kliknij, aby edytować"
                 onClick={() => openMapEdit("tonacja", displayTicks)}
@@ -5884,7 +5871,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 {draftProject
                   ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
                   : "—"}
-              </button>
+              </Button>
               <ShellIconButton
                 label="Metronom"
                 aria-keyshortcuts="k"
@@ -6062,18 +6049,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
                 <div className={styles.rulerRow}>
                   <div className={styles.rulerDock}>
-                    <button
+                    <ShellIconButton
                       ref={eyeBtnRef}
-                      type="button"
-                      className={styles.eyeBtn}
-                      aria-label="Widoczność ścieżek"
+                      label="Widoczność ścieżek"
+                      pressed={eyeOpen}
                       aria-expanded={eyeOpen}
                       aria-haspopup="menu"
                       aria-controls={eyeOpen ? eyeMenuId : undefined}
                       onClick={() => setEyeOpen((v) => !v)}
                     >
                       <IconEye />
-                    </button>
+                    </ShellIconButton>
                     {touchTier !== "mobile" ? (
                       <button
                         type="button"
@@ -6296,8 +6282,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                                 ? trackRename.name
                                 : track.label
                             }
-                            soloClassName={styles.tapBtn}
-                            muteClassName={styles.tapBtn}
                             soloActiveClassName={styles.tapBtnSolo}
                             muteActiveClassName={styles.tapBtnMute}
                             labelClassName={styles.dockLabel}
@@ -6309,25 +6293,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         <span className={styles.dockLabel}>{track.label}</span>
                       )}
                       {track.id === "tekst" ? (
-                        <button
-                          type="button"
-                          className={[
-                            styles.tapBtn,
-                            tool === "tap" ? styles.tapBtnSelected : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
+                        <Button
+                          variant="ghost"
+                          iconOnly
+                          selected={tool === "tap"}
+                          className={
+                            tool === "tap" ? styles.tapBtnSelected : undefined
+                          }
                           title={
                             tapBpmHint
                               ? `Tap — linie Tekstu + tempo (${tapBpmHint} BPM)`
                               : "Tap — linie Tekstu + tempo @ locator"
                           }
                           aria-label="Tap — linie Tekstu i tempo"
-                          aria-pressed={tool === "tap"}
                           onClick={onTap}
                         >
                           <IconTap />
-                        </button>
+                        </Button>
                       ) : null}
                       {touchTier !== "mobile" ? (
                         <button
@@ -7855,9 +7837,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           role="toolbar"
           aria-label="Przesuń i rozciągnij klip"
         >
-          <button
-            type="button"
-            className={styles.touchNudgeBtn}
+          <Button
+            variant="ghost"
+            iconOnly
             aria-label="Przesuń w lewo"
             onClick={() => {
               commitDraft(
@@ -7871,10 +7853,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             }}
           >
             ◀
-          </button>
-          <button
-            type="button"
-            className={styles.touchNudgeBtn}
+          </Button>
+          <Button
+            variant="ghost"
+            iconOnly
             aria-label="Przesuń w prawo"
             onClick={() => {
               commitDraft(
@@ -7888,13 +7870,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             }}
           >
             ▶
-          </button>
+          </Button>
           <span className={styles.touchNudgeSep} aria-hidden />
           {nudgeShowsLeftEdge(draftProject, selectionLane, primaryId) ? (
             <>
-              <button
-                type="button"
-                className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+              <Button
+                variant="ghost"
+                iconOnly
                 aria-label="Wydłuż lewą krawędź"
                 onClick={() => {
                   commitDraft(
@@ -7908,10 +7890,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 }}
               >
                 ◂|
-              </button>
-              <button
-                type="button"
-                className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+              </Button>
+              <Button
+                variant="ghost"
+                iconOnly
                 aria-label="Skróć od lewej"
                 onClick={() => {
                   commitDraft(
@@ -7925,12 +7907,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 }}
               >
                 |▸
-              </button>
+              </Button>
             </>
           ) : null}
-          <button
-            type="button"
-            className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+          <Button
+            variant="ghost"
+            iconOnly
             aria-label="Skróć od prawej"
             onClick={() => {
               commitDraft(
@@ -7944,10 +7926,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             }}
           >
             ◂|
-          </button>
-          <button
-            type="button"
-            className={`${styles.touchNudgeBtn} ${styles.touchNudgeBtnSm}`}
+          </Button>
+          <Button
+            variant="ghost"
+            iconOnly
             aria-label="Wydłuż prawą krawędź"
             onClick={() => {
               commitDraft(
@@ -7961,7 +7943,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             }}
           >
             |▸
-          </button>
+          </Button>
         </div>
       ) : null}
 

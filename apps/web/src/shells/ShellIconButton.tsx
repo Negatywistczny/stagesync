@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
+import { Button } from "@stagesync/ui";
 import styles from "./ShellIconButton.module.css";
 
 export type ShellIconButtonProps = {
@@ -16,11 +17,16 @@ export type ShellIconButtonProps = {
   | "onClick"
   | "aria-expanded"
   | "aria-controls"
+  | "aria-haspopup"
   | "aria-keyshortcuts"
   | "className"
   | "type"
 >;
 
+/**
+ * Thin chrome wrapper: `@stagesync/ui` `Button iconOnly` + shell accents
+ * (confirming pulse / danger) that do not override control geometry.
+ */
 export function ShellIconButton({
   label,
   children,
@@ -34,15 +40,18 @@ export function ShellIconButton({
   ref,
   "aria-expanded": ariaExpanded,
   "aria-controls": ariaControls,
+  "aria-haspopup": ariaHaspopup,
   "aria-keyshortcuts": ariaKeyshortcuts,
 }: ShellIconButtonProps) {
   return (
-    <button
+    <Button
       ref={ref}
       type={type}
+      variant="ghost"
+      iconOnly
+      selected={pressed}
       className={[
-        styles.btn,
-        pressed ? styles.pressed : "",
+        styles.shellIcon,
         confirming ? styles.confirming : "",
         danger ? styles.danger : "",
         className,
@@ -51,14 +60,14 @@ export function ShellIconButton({
         .join(" ")}
       aria-label={label}
       title={label}
-      aria-pressed={pressed}
       aria-expanded={ariaExpanded}
       aria-controls={ariaControls}
+      aria-haspopup={ariaHaspopup}
       aria-keyshortcuts={ariaKeyshortcuts}
       disabled={disabled}
       onClick={onClick}
     >
       {children}
-    </button>
+    </Button>
   );
 }

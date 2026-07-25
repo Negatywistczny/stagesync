@@ -44,43 +44,10 @@
 .sections {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--ss-space-1);
   flex: 1;
   min-width: 0;
-}
-
-.sectionTab {
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border: 0;
-  border-radius: var(--ss-radius-sm);
-  background: transparent;
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-control);
-  font-weight: var(--ss-font-weight-medium);
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .sectionTab:hover {
-    transition: background-color var(--ss-transition), border-color var(--ss-transition);
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-  }
-}
-
-.sectionTabOn {
-  color: var(--ss-color-on-primary);
-  background: var(--ss-color-primary);
-  font-weight: var(--ss-font-weight-semibold);
-}
-
-@media (hover: hover) {
-  .sectionTabOn:hover {
-    transition: background-color var(--ss-transition), border-color var(--ss-transition);
-    color: var(--ss-color-on-primary);
-    background: var(--ss-color-primary-hover);
-  }
 }
 
 .chromeAside {
@@ -904,28 +871,11 @@
   max-width: none;
 }
 
-.chip,
-.chipOn {
-  padding: var(--ss-space-1) var(--ss-space-3);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: transparent;
-  color: var(--ss-color-text-muted);
-  font: inherit;
-  font-size: var(--ss-text-xs);
-  cursor: pointer;
-}
-
-.chipOn {
-  border-color: var(--ss-color-selected-border);
-  background: var(--ss-color-selected);
-  color: var(--ss-color-text);
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ss-space-1);
+  align-items: center;
 }
 
 .field {
@@ -1013,11 +963,8 @@
 }
 
 /* Focus inside overflow:hidden chrome/cards — inset ring */
-.sectionTab:focus-visible,
 .songRow:focus-visible,
 .appJump a:focus-visible,
-.chip:focus-visible,
-.chipOn:focus-visible,
 .editLink:focus-visible,
 .input:focus-visible,
 .select:focus-visible {

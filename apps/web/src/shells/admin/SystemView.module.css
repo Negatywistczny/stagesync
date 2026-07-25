@@ -1,4 +1,4 @@
-/* Admin Host — 2-col card grid + collapsible logs */
+/* Admin Host — 2×2 equal cards + collapsible logs strip */
 
 .root {
   display: flex;
@@ -13,45 +13,79 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: var(--ss-space-4);
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  align-content: start;
+  overflow: hidden;
 }
 
 .card {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.cardWide {
-  grid-column: 1 / -1;
-}
-
-.cardBodyStack {
+.cardBody {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--ss-space-3);
+  /* Beat shell.cardBody overflow:auto — no inner scrollbar in Host tiles */
+  overflow: hidden;
 }
 
-.networkTop {
+/* —— Połączenie & Sieć —— */
+
+.networkRow {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
-  gap: var(--ss-space-3);
+  gap: var(--ss-space-4);
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .networkMeta {
-  flex: 1 1 10rem;
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-2);
   align-items: flex-start;
+}
+
+.networkField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  width: 100%;
+}
+
+.networkLabel {
+  margin: 0;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+  color: var(--ss-color-text-muted);
+}
+
+.networkValue {
+  margin: 0;
+  font-size: var(--ss-text-md);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+  color: var(--ss-color-text);
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
 }
 
 .qrWrap {
@@ -70,21 +104,14 @@
   display: block;
 }
 
-.urlList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-1);
-}
+/* —— MIDI & Safety Net —— */
 
-.sectionSplit {
+.midiStack {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
-  padding-top: var(--ss-space-3);
-  border-top: 1px solid var(--ss-color-border);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sectionLabel {
@@ -97,25 +124,78 @@
   color: var(--ss-color-text-muted);
 }
 
-.statusGrid {
+.meters {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--ss-space-3);
+  gap: var(--ss-space-2);
+  min-width: 0;
 }
 
-.statusTile {
+.meter {
   display: flex;
   flex-direction: column;
-  gap: var(--ss-space-2);
-  align-items: flex-start;
+  gap: var(--ss-space-1);
   min-width: 0;
-  padding: var(--ss-space-3);
-  border: 1px solid var(--ss-color-border);
+  padding: var(--ss-space-2);
   border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-bg) 40%, transparent);
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
 }
 
-.statusTitle {
+.meterLabel {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-tight);
+  white-space: nowrap;
+}
+
+.meterValue {
+  margin: 0;
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-md);
+  font-weight: var(--ss-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ss-leading-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* —— Aplikacje Mobilne —— */
+
+.appRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.appRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2) var(--ss-space-3);
+  min-width: 0;
+  padding-bottom: var(--ss-space-3);
+  border-bottom: 1px solid var(--ss-color-border);
+}
+
+.appRow:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.appInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  flex: 1 1 8rem;
+}
+
+.appTitle {
   margin: 0;
   font-size: var(--ss-text-sm);
   font-weight: var(--ss-font-weight-semibold);
@@ -123,50 +203,30 @@
   color: var(--ss-color-text);
 }
 
-.statusMeta {
+.appStatus {
   margin: 0;
   font-size: var(--ss-text-xs);
   line-height: var(--ss-leading-tight);
   color: var(--ss-color-text-muted);
 }
 
-.statusReady {
+.appActions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ss-space-3);
-  width: 100%;
-}
-
-.emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   gap: var(--ss-space-2);
-  width: 100%;
-  padding: var(--ss-space-2) 0;
+  flex: 0 1 auto;
 }
 
-.emptyTitle {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  color: var(--ss-color-text);
-  line-height: var(--ss-leading-tight);
-}
-
-.emptyText {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-relaxed);
-  color: var(--ss-color-text-muted);
-}
+/* —— O Aplikacji —— */
 
 .aboutBody {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: flex-start;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .updateBlock {
@@ -191,7 +251,7 @@
   line-height: var(--ss-leading-normal);
 }
 
-/* —— Collapsible logs —— */
+/* —— Collapsible logs (fixed strip) —— */
 
 .logCard {
   flex: 0 0 auto;
@@ -202,8 +262,9 @@
 }
 
 .logCardOpen {
-  flex: 0 1 auto;
-  max-height: min(40%, 18rem);
+  flex: 0 0 12rem;
+  height: 12rem;
+  max-height: 12rem;
 }
 
 .logHead {
@@ -232,7 +293,7 @@
   margin: 0;
   padding: var(--ss-space-3) var(--ss-space-4);
   flex: 1 1 auto;
-  min-height: 8rem;
+  min-height: 0;
   overflow: auto;
   border-top: 1px solid var(--ss-color-border);
   background: var(--ss-color-bg);
@@ -245,13 +306,22 @@
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    overflow-y: auto;
   }
 
-  .statusGrid {
-    grid-template-columns: 1fr;
+  .card {
+    height: auto;
+    min-height: 0;
+  }
+
+  .cardBody {
+    overflow: visible;
   }
 
   .logCardOpen {
-    max-height: min(50%, 16rem);
+    flex: 0 0 10rem;
+    height: 10rem;
+    max-height: 10rem;
   }
 }

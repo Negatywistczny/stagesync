@@ -39,6 +39,18 @@ function measureHeroFlyMetrics(
   const nextRect = heroNextName.getBoundingClientRect();
   const heroRect = heroNameWrap.getBoundingClientRect();
 
+  // Mobile hides `.heroNext` (`display: none`) — zero rect would place the fly
+  // origin at viewport (0,0) relative to layout → looks like “from the top”.
+  // Fall back to the translateX slide enter instead.
+  if (
+    nextRect.width <= 0 ||
+    nextRect.height <= 0 ||
+    heroRect.width <= 0 ||
+    heroRect.height <= 0
+  ) {
+    return null;
+  }
+
   const nextCenterX = nextRect.left + nextRect.width / 2 - layoutRect.left;
   const nextCenterY = nextRect.top + nextRect.height / 2 - layoutRect.top;
   const heroCenterX = heroRect.left + heroRect.width / 2 - layoutRect.left;

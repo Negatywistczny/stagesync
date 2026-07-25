@@ -37,11 +37,10 @@ describe("GET/PATCH /api/live-desk", () => {
         transpositionSemitones: number;
         syncLeadMs: number;
         clientEditEnabled: boolean;
-        themeLock: { light: boolean; highContrast: boolean } | null;
       };
       expect(defaults.transpositionSemitones).toBe(0);
       expect(typeof defaults.clientEditEnabled).toBe("boolean");
-      expect(defaults.themeLock).toBeNull();
+      expect("themeLock" in defaults).toBe(false);
 
       const patch = await fetch(`${baseUrl}/api/live-desk`, {
         method: "PATCH",
@@ -50,7 +49,6 @@ describe("GET/PATCH /api/live-desk", () => {
           transpositionSemitones: 2,
           syncLeadMs: 40,
           clientEditEnabled: true,
-          themeLock: { light: true, highContrast: true },
         }),
       });
       expect(patch.status).toBe(200);
@@ -59,8 +57,8 @@ describe("GET/PATCH /api/live-desk", () => {
         transpositionSemitones: 2,
         syncLeadMs: 40,
         clientEditEnabled: true,
-        themeLock: { light: true, highContrast: true },
       });
+      expect("themeLock" in next).toBe(false);
 
       const get2 = await fetch(`${baseUrl}/api/live-desk`);
       expect(await get2.json()).toMatchObject(next);
@@ -120,6 +118,7 @@ describe("createLiveDeskStore", () => {
         transpositionSemitones: -1,
         syncLeadMs: 10,
         clientEditEnabled: true,
+        themeLock: { light: true, highContrast: false },
       }),
       "utf8",
     );
@@ -133,6 +132,7 @@ describe("createLiveDeskStore", () => {
       syncLeadMs: 10,
       clientEditEnabled: true,
     });
+    expect(await store.get()).not.toHaveProperty("themeLock");
     expect(store.snapshotMessage().type).toBe("live_desk");
 
     await store.patch({ syncLeadMs: 25 });
@@ -141,13 +141,14 @@ describe("createLiveDeskStore", () => {
       type: "live_desk",
       syncLeadMs: 25,
       transpositionSemitones: -1,
-      themeLock: null,
     });
+    expect(seen[0]).not.toHaveProperty("themeLock");
 
     const disk = JSON.parse(await readFile(filePath, "utf8")) as {
       syncLeadMs: number;
     };
     expect(disk.syncLeadMs).toBe(25);
+    expect(disk).not.toHaveProperty("themeLock");
 
     unsub();
     await store.patch({ syncLeadMs: 30 });

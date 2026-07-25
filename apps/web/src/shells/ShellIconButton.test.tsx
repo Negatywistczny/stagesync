@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import { ShellIconButton } from "./ShellIconButton.js";
 
 describe("ShellIconButton", () => {
-  it("wires aria-label, title, and aria-pressed", () => {
+  it("wires aria-label, title, and aria-pressed via Button iconOnly", () => {
     const out = renderToStaticMarkup(
       <ShellIconButton label="Pomoc" pressed>
         ?
       </ShellIconButton>,
     );
+    expect(out).toContain("ss-btn");
+    expect(out).toContain("ss-btn--icon");
     expect(out).toContain('aria-label="Pomoc"');
     expect(out).toContain('title="Pomoc"');
     expect(out).toContain('aria-pressed="true"');

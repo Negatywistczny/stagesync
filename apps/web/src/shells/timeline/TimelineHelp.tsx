@@ -3,6 +3,7 @@
  */
 
 import { useId, useMemo, useState } from "react";
+import { Button } from "@stagesync/ui";
 import { IconClose } from "../icons.js";
 import { ShellIconButton } from "../ShellIconButton.js";
 import styles from "./TimelineHelp.module.css";
@@ -415,21 +416,19 @@ export function TimelineHelp({ onClose }: TimelineHelpProps) {
             {TABS.map((t) => {
               const selected = tab === t.id;
               return (
-                <button
+                <Button
                   key={t.id}
-                  type="button"
+                  variant="ghost"
                   role="tab"
                   id={`${baseId}-${t.id}`}
                   aria-selected={selected}
                   aria-controls={`${baseId}-${t.id}-panel`}
                   tabIndex={selected ? 0 : -1}
-                  className={[styles.tab, selected ? styles.tabSelected : ""]
-                    .filter(Boolean)
-                    .join(" ")}
+                  selected={selected}
                   onClick={() => setTab(t.id)}
                 >
                   {t.label}
-                </button>
+                </Button>
               );
             })}
           </div>

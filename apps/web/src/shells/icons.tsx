@@ -191,7 +191,10 @@ export function IconMetronome(p: IconProps) {
   return withIcon(Music2, p);
 }
 
-/** Timeline Mixer surface toggle (channel strips). */
+/**
+ * Sliders (Lucide SlidersVertical) — Timeline Mixer toggle and Client
+ * per-role display prefs (v4 `.view-settings-trigger`, not the global gear).
+ */
 export function IconMixer(p: IconProps) {
   return withIcon(SlidersVertical, p);
 }

@@ -746,58 +746,12 @@
   min-width: 0;
 }
 
-.tapBtn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
-  height: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
-  min-height: calc(var(--ss-space-8) * var(--tl-zoom-ui, 1));
-  padding: 0;
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  cursor: pointer;
-  font: inherit;
-  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-}
-
-/* Dock S/M — element selector so TimelineShell `tapBtn` class still shrinks. */
-.dockStrip .tools > button {
-  width: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
-  height: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
-  min-height: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
-  font-size: calc(var(--ss-text-xs) * var(--tl-zoom-ui, 1));
-}
-
-/* Height compression: hide fader; shrink S/M further. */
+/* Height compression: hide fader; S/M stay Button iconOnly (--ss-touch-min). */
 .dockStripCompact .dockFaderRow {
   display: none;
 }
 
-.dockStripCompact .tools > button {
-  width: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
-  height: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
-  min-height: calc(var(--ss-space-5) * var(--tl-zoom-ui, 1));
-}
-
-@media (hover: hover) {
-  .tapBtn:hover {
-    color: var(--ss-color-text);
-    background: var(--ss-color-ghost-hover);
-    border-color: var(--ss-color-primary);
-  }
-}
-
-.tapBtn:focus-visible {
-  outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: -2px;
-}
-
+/* Solo / Mute color accents — geometry from Button iconOnly. */
 .tapBtnSolo {
   color: var(--tl-solo-fg, var(--ss-color-text));
   background: var(--tl-solo-bg, var(--ss-color-warning));

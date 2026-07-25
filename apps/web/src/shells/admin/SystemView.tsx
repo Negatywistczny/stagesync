@@ -43,7 +43,7 @@ export type SystemViewProps = {
   onAutoCheckUpdateConsumed?: () => void;
 };
 
-/** Admin Host — connection / MIDI / APK tiles + collapsible log console. */
+/** Admin Host — 2×2 cards + collapsible log strip. */
 export function SystemView({
   statusMsg,
   autoCheckUpdate = false,
@@ -58,7 +58,7 @@ export function SystemView({
   const [consoleApkUrl, setConsoleApkUrl] = useState<string | null>(null);
   const [performerApkReady, setPerformerApkReady] = useState(false);
   const [consoleApkReady, setConsoleApkReady] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [copiedIp, setCopiedIp] = useState(false);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [safety, setSafety] = useState<SafetyNetStatus | null>(null);
@@ -70,10 +70,10 @@ export function SystemView({
   pausedRef.current = paused;
 
   useEffect(() => {
-    if (!copiedUrl) return;
-    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
+    if (!copiedIp) return;
+    const t = window.setTimeout(() => setCopiedIp(false), 2000);
     return () => window.clearTimeout(t);
-  }, [copiedUrl]);
+  }, [copiedIp]);
 
   const refreshMidi = useCallback(async () => {
     try {
@@ -163,6 +163,18 @@ export function SystemView({
   }, []);
 
   const primaryUrl = network ? pickPrimaryJoinUrl(network) : null;
+  const displayIp =
+    network?.lanAddresses[0] ??
+    (primaryUrl
+      ? (() => {
+          try {
+            return new URL(primaryUrl).hostname;
+          } catch {
+            return network?.hostname ?? null;
+          }
+        })()
+      : (network?.hostname ?? null));
+
   const qrSvg = useMemo(() => {
     if (!primaryUrl) return null;
     try {
@@ -176,105 +188,98 @@ export function SystemView({
     }
   }, [primaryUrl]);
 
-  const performerQrSvg = useMemo(() => {
-    if (!performerApkReady || !performerApkUrl) return null;
-    try {
-      return renderSVG(performerApkUrl, {
-        ecc: "M",
-        border: 1,
-        pixelSize: 3,
-      });
-    } catch {
-      return null;
-    }
-  }, [performerApkReady, performerApkUrl]);
-
-  const consoleQrSvg = useMemo(() => {
-    if (!consoleApkReady || !consoleApkUrl) return null;
-    try {
-      return renderSVG(consoleApkUrl, {
-        ecc: "M",
-        border: 1,
-        pixelSize: 3,
-      });
-    } catch {
-      return null;
-    }
-  }, [consoleApkReady, consoleApkUrl]);
   const rateLabel = (n: number | undefined) =>
     n == null ? "—" : String(Math.round(n));
+
+  const midiInLabel = (() => {
+    if (!midi) return "—";
+    const name =
+      midi.inputs.find((p) => p.id === midi.config.inputId)?.name ??
+      midi.config.inputId ??
+      "—";
+    if (!midi.config.inputId) return name;
+    const ch =
+      midi.config.inputChannel == null
+        ? "Omni"
+        : `Ch ${midi.config.inputChannel + 1}`;
+    return `${name} (${ch})`;
+  })();
+
+  const midiOutLabel = (() => {
+    if (!midi) return "—";
+    const name =
+      midi.outputs.find((p) => p.id === midi.config.outputId)?.name ??
+      midi.config.outputId ??
+      "—";
+    if (!midi.config.outputId) return name;
+    const ch = `Ch ${(midi.config.outputChannel ?? 0) + 1}`;
+    return `${name} (${ch})`;
+  })();
 
   return (
     <div className={styles.root}>
       <div className={styles.grid}>
         <section
           className={`${shell.card} ${styles.card}`}
-          aria-label="Połączenie i QR"
+          aria-label="Połączenie i sieć"
         >
           <div className={shell.cardHead}>
-            <h2 className={shell.cardTitle}>Połączenie &amp; QR</h2>
+            <h2 className={shell.cardTitle}>Połączenie &amp; Sieć</h2>
           </div>
-          <div className={`${shell.cardBody} ${styles.cardBodyStack}`}>
+          <div className={styles.cardBody}>
             {networkError ? (
               <p className={shell.error} role="alert">
                 {networkError}
               </p>
             ) : null}
             {network ? (
-              <>
-                <div className={styles.networkTop}>
-                  <div className={styles.networkMeta}>
-                    <p className={shell.muted}>
-                      Port <strong>{network.port}</strong> · {network.hostname} ·
-                      v{network.version}
-                    </p>
-                    {primaryUrl && qrSvg ? (
-                      <p className={shell.muted}>
-                        <strong>Dołącz do hosta</strong> — zeskanuj QR w tej
-                        samej sieci LAN.
-                      </p>
-                    ) : null}
+              <div className={styles.networkRow}>
+                <div className={styles.networkMeta}>
+                  <div className={styles.networkField}>
+                    <p className={styles.networkLabel}>IP</p>
+                    <p className={styles.networkValue}>{displayIp ?? "—"}</p>
                   </div>
-                  {primaryUrl && qrSvg ? (
-                    <div
-                      className={styles.qrWrap}
-                      aria-label={`Kod QR dołączenia: ${primaryUrl}`}
-                      dangerouslySetInnerHTML={{ __html: qrSvg }}
-                    />
+                  <div className={styles.networkField}>
+                    <p className={styles.networkLabel}>Port</p>
+                    <p className={styles.networkValue}>{network.port}</p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    disabled={!displayIp && !primaryUrl}
+                    onClick={() => {
+                      void (async () => {
+                        const text = displayIp ?? primaryUrl;
+                        if (!text) return;
+                        try {
+                          await navigator.clipboard.writeText(text);
+                          setCopiedIp(true);
+                          setNetworkError(null);
+                        } catch {
+                          setCopiedIp(false);
+                          setNetworkError("Nie udało się skopiować IP");
+                        }
+                      })();
+                    }}
+                  >
+                    {copiedIp ? "Skopiowano" : "Kopiuj IP"}
+                  </Button>
+                  {statusMsg ? (
+                    <p className={shell.muted} role="status">
+                      {statusMsg}
+                    </p>
                   ) : null}
                 </div>
-                <ul className={styles.urlList} aria-label="Adresy sieciowe">
-                  {network.urls.map((u) => (
-                    <li key={u} className={shell.networkUrlRow}>
-                      <span className={shell.songMeta}>{u}</span>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          void (async () => {
-                            try {
-                              await navigator.clipboard.writeText(u);
-                              setCopiedUrl(u);
-                            } catch {
-                              setCopiedUrl(null);
-                              setNetworkError("Nie udało się skopiować URL");
-                            }
-                          })();
-                        }}
-                      >
-                        {copiedUrl === u ? "Skopiowano" : "Kopiuj"}
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </>
+                {primaryUrl && qrSvg ? (
+                  <div
+                    className={styles.qrWrap}
+                    aria-label={`Kod QR dołączenia: ${primaryUrl}`}
+                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  />
+                ) : null}
+              </div>
             ) : networkError ? null : (
               <p className={shell.muted}>Wczytywanie…</p>
             )}
-            {statusMsg ? (
-              <p className={shell.muted} role="status">
-                {statusMsg}
-              </p>
-            ) : null}
           </div>
         </section>
 
@@ -285,63 +290,58 @@ export function SystemView({
           <div className={shell.cardHead}>
             <h2 className={shell.cardTitle}>MIDI &amp; Safety Net</h2>
           </div>
-          <div className={`${shell.cardBody} ${styles.cardBodyStack}`}>
-            <div aria-label="Safety Net">
-              <p className={styles.sectionLabel}>Safety Net</p>
-              {safetyError ? (
-                <p className={shell.error} role="alert">
-                  {safetyError}
-                </p>
-              ) : null}
-              {safety ? (
-                <div className={styles.cardBodyStack}>
-                  <p className={shell.muted}>
-                    Rola:{" "}
-                    <strong>
-                      {safety.role === "master" ? "Master" : "Spare"}
-                    </strong>
-                    {safety.midiOutAllowed
-                      ? " — MIDI OUT dozwolony"
-                      : " — MIDI OUT wyciszony"}
+          <div className={styles.cardBody}>
+            <div className={styles.midiStack}>
+              <div aria-label="Safety Net">
+                <p className={styles.sectionLabel}>Safety Net</p>
+                {safetyError ? (
+                  <p className={shell.error} role="alert">
+                    {safetyError}
                   </p>
-                  {safety.role === "spare" ? (
-                    <Button
-                      variant="primary"
-                      disabled={safetyBusy}
-                      onClick={() => {
-                        setSafetyBusy(true);
-                        void postSafetyNetPromote()
-                          .then((s) => {
-                            setSafety(s);
-                            setSafetyError(null);
-                          })
-                          .catch((err) => {
-                            setSafetyError(
-                              err instanceof Error
-                                ? err.message
-                                : "Promote nieudany",
-                            );
-                          })
-                          .finally(() => setSafetyBusy(false));
-                      }}
-                    >
-                      {safetyBusy ? "Przejmowanie…" : "Przejmij (Master)"}
-                    </Button>
-                  ) : (
+                ) : null}
+                {safety ? (
+                  <>
                     <p className={shell.muted}>
-                      Host jest Masterem. Spare ustawiasz przez{" "}
-                      <code>STAGESYNC_SAFETY_ROLE=spare</code>.
+                      Rola:{" "}
+                      <strong>
+                        {safety.role === "master" ? "Master" : "Spare"}
+                      </strong>
+                      {safety.midiOutAllowed
+                        ? " — MIDI OUT dozwolony"
+                        : " — MIDI OUT wyciszony"}
                     </p>
-                  )}
-                </div>
-              ) : !safetyError ? (
-                <p className={shell.muted}>Ładowanie…</p>
-              ) : null}
-            </div>
+                    {safety.role === "spare" ? (
+                      <Button
+                        variant="primary"
+                        disabled={safetyBusy}
+                        onClick={() => {
+                          setSafetyBusy(true);
+                          void postSafetyNetPromote()
+                            .then((s) => {
+                              setSafety(s);
+                              setSafetyError(null);
+                            })
+                            .catch((err) => {
+                              setSafetyError(
+                                err instanceof Error
+                                  ? err.message
+                                  : "Promote nieudany",
+                              );
+                            })
+                            .finally(() => setSafetyBusy(false));
+                        }}
+                      >
+                        {safetyBusy ? "Przejmowanie…" : "Przejmij (Master)"}
+                      </Button>
+                    ) : null}
+                  </>
+                ) : !safetyError ? (
+                  <p className={shell.muted}>Ładowanie…</p>
+                ) : null}
+              </div>
 
-            <div className={styles.sectionSplit} aria-label="Telemetria MIDI">
-              <p className={styles.sectionLabel}>Telemetria MIDI</p>
-              <div className={shell.midiBody}>
+              <div aria-label="Telemetria MIDI">
+                <p className={styles.sectionLabel}>MIDI</p>
                 {midiError ? (
                   <p className={shell.error} role="alert">
                     {midiError}
@@ -349,97 +349,39 @@ export function SystemView({
                 ) : null}
                 {midi ? (
                   <>
-                    {midi.clockOutActive || midi.lastError ? (
-                      <p className={shell.muted}>
-                        {[
-                          midi.clockOutActive ? "clock OUT aktywny" : null,
-                          midi.lastError || null,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    ) : null}
                     <div
-                      className={shell.midiMeters}
+                      className={styles.meters}
                       role="group"
                       aria-label="Metryki MIDI"
                     >
-                      <div className={shell.midiMeter}>
-                        <span className={shell.midiLabel}>Clock/s</span>
-                        <span className={shell.midiValue}>
+                      <div className={styles.meter}>
+                        <span className={styles.meterLabel}>Clock/s</span>
+                        <span className={styles.meterValue}>
                           {rateLabel(midi.rates.clockPerSec)}
                         </span>
                       </div>
-                      <div className={shell.midiMeter}>
-                        <span className={shell.midiLabel}>SPP/s</span>
-                        <span className={shell.midiValue}>
-                          {rateLabel(midi.rates.sppPerSec)}
-                        </span>
-                      </div>
-                      <div className={shell.midiMeter}>
-                        <span className={shell.midiLabel}>PC/s</span>
-                        <span className={shell.midiValue}>
+                      <div className={styles.meter}>
+                        <span className={styles.meterLabel}>PC/s</span>
+                        <span className={styles.meterValue}>
                           {rateLabel(midi.rates.pcPerSec)}
                         </span>
                       </div>
-                      <div className={shell.midiMeter}>
-                        <span className={shell.midiLabel}>Beat→WS</span>
-                        <span className={shell.midiValue}>
-                          {rateLabel(midi.rates.beatToWsPerSec)}
+                      <div className={styles.meter}>
+                        <span className={styles.meterLabel}>In</span>
+                        <span className={styles.meterValue} title={midiInLabel}>
+                          {midiInLabel}
                         </span>
                       </div>
-                    </div>
-                    <div className={shell.midiPorts}>
-                      <div className={shell.midiPortRow}>
-                        <span className={shell.midiLabel}>Wejście</span>
-                        <span className={shell.midiPortValue}>
-                          {(() => {
-                            const name =
-                              midi.inputs.find(
-                                (p) => p.id === midi.config.inputId,
-                              )?.name ??
-                              midi.config.inputId ??
-                              "—";
-                            const ch =
-                              midi.config.inputChannel == null
-                                ? "Omni"
-                                : `Kanał ${midi.config.inputChannel + 1}`;
-                            return midi.config.inputId
-                              ? `${name} (${ch})`
-                              : name;
-                          })()}
-                        </span>
-                      </div>
-                      <div className={shell.midiPortRow}>
-                        <span className={shell.midiLabel}>Wyjście</span>
-                        <span className={shell.midiPortValue}>
-                          {(() => {
-                            const name =
-                              midi.outputs.find(
-                                (p) => p.id === midi.config.outputId,
-                              )?.name ??
-                              midi.config.outputId ??
-                              "—";
-                            const ch = `Kanał ${(midi.config.outputChannel ?? 0) + 1}`;
-                            return midi.config.outputId
-                              ? `${name} (${ch})`
-                              : name;
-                          })()}
-                        </span>
-                      </div>
-                      <div className={shell.midiPortRow}>
-                        <span className={shell.midiLabel}>Clock OUT</span>
-                        <span className={shell.midiPortValue}>
-                          {midi.config.clockOutEnabled
-                            ? "włączony"
-                            : "wyłączony"}
+                      <div className={styles.meter}>
+                        <span className={styles.meterLabel}>Out</span>
+                        <span className={styles.meterValue} title={midiOutLabel}>
+                          {midiOutLabel}
                         </span>
                       </div>
                     </div>
                     {!midi.available ? (
                       <p className={shell.muted}>
                         Brak natywnego MIDI w tym środowisku (Docker / CI).
-                        Desktop sidecar ładuje urządzenia hosta.
                       </p>
                     ) : null}
                   </>
@@ -452,62 +394,58 @@ export function SystemView({
         </section>
 
         <section
-          className={`${shell.card} ${styles.card} ${styles.cardWide}`}
-          aria-label="Aplikacje mobilne i aktualizacje"
+          className={`${shell.card} ${styles.card}`}
+          aria-label="Aplikacje mobilne"
         >
           <div className={shell.cardHead}>
-            <h2 className={shell.cardTitle}>
-              Aplikacje mobilne &amp; Aktualizacje
-            </h2>
+            <h2 className={shell.cardTitle}>Aplikacje Mobilne</h2>
           </div>
-          <div className={`${shell.cardBody} ${styles.cardBodyStack}`}>
-            <div
-              className={styles.statusGrid}
-              aria-label="Pobieranie aplikacji Android"
-            >
-              <ApkStatusTile
-                title="StageSync Performer"
-                meta="Klient sceniczny → /client"
+          <div className={styles.cardBody}>
+            <div className={styles.appRows} aria-label="Pobieranie aplikacji Android">
+              <ApkRow
+                title="Performer"
                 ready={performerApkReady}
                 apkUrl={performerApkUrl}
-                qrSvg={performerQrSvg}
-                qrLabel="Kod QR pobrania Performer"
               />
-              <ApkStatusTile
-                title="StageSync Console"
-                meta="Admin / tablet FOH → /admin"
+              <ApkRow
+                title="Console"
                 ready={consoleApkReady}
                 apkUrl={consoleApkUrl}
-                qrSvg={consoleQrSvg}
-                qrLabel="Kod QR pobrania Console"
               />
             </div>
+          </div>
+        </section>
 
-            <div className={styles.sectionSplit}>
-              <p className={styles.sectionLabel}>O aplikacji</p>
-              <div className={styles.aboutBody}>
-                <p className={shell.muted}>
-                  Wersja <strong>{APP_VERSION}</strong>
-                </p>
-                <div className={shell.actions}>
-                  <Button
-                    variant="ghost"
-                    onClick={() => void openExternalUrl(DOCS_INSTALL_URL)}
-                  >
-                    Pełna instrukcja na GitHubie ↗
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => void openExternalUrl(DOCS_ISSUES_URL)}
-                  >
-                    Zgłoś błąd lub pomysł ↗
-                  </Button>
-                </div>
-                <UpdatePanel
-                  autoCheck={autoCheckUpdate}
-                  onAutoCheckConsumed={onAutoCheckUpdateConsumed}
-                />
+        <section
+          className={`${shell.card} ${styles.card}`}
+          aria-label="O aplikacji i aktualizacje"
+        >
+          <div className={shell.cardHead}>
+            <h2 className={shell.cardTitle}>O Aplikacji &amp; Aktualizacje</h2>
+          </div>
+          <div className={styles.cardBody}>
+            <div className={styles.aboutBody}>
+              <p className={shell.muted}>
+                Wersja <strong>{APP_VERSION}</strong>
+              </p>
+              <div className={shell.actions}>
+                <Button
+                  variant="ghost"
+                  onClick={() => void openExternalUrl(DOCS_INSTALL_URL)}
+                >
+                  Dokumentacja ↗
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => void openExternalUrl(DOCS_ISSUES_URL)}
+                >
+                  Zgłoś błąd ↗
+                </Button>
               </div>
+              <UpdatePanel
+                autoCheck={autoCheckUpdate}
+                onAutoCheckConsumed={onAutoCheckUpdateConsumed}
+              />
             </div>
           </div>
         </section>
@@ -615,55 +553,39 @@ export function SystemView({
   );
 }
 
-function ApkStatusTile({
+function ApkRow({
   title,
-  meta,
   ready,
   apkUrl,
-  qrSvg,
-  qrLabel,
 }: {
   title: string;
-  meta: string;
   ready: boolean;
   apkUrl: string | null;
-  qrSvg: string | null;
-  qrLabel: string;
 }) {
   return (
-    <div className={styles.statusTile}>
-      <h3 className={styles.statusTitle}>{title}</h3>
-      <p className={styles.statusMeta}>{meta}</p>
-      {ready && qrSvg && apkUrl ? (
-        <div className={styles.statusReady}>
-          <div
-            className={styles.qrWrap}
-            aria-label={`${qrLabel}: ${apkUrl}`}
-            dangerouslySetInnerHTML={{ __html: qrSvg }}
-          />
-          <Button
-            variant="ghost"
-            onClick={() => {
-              void navigator.clipboard.writeText(apkUrl);
-            }}
-          >
-            Kopiuj link APK
-          </Button>
-        </div>
-      ) : (
-        <div className={styles.emptyState} role="status">
-          <p className={styles.emptyTitle}>Brak APK na hoście</p>
-          <p className={styles.emptyText}>
-            Pobierz z Releases i umieść w katalogu downloads hosta.
-          </p>
+    <div className={styles.appRow}>
+      <div className={styles.appInfo}>
+        <h3 className={styles.appTitle}>{title}</h3>
+        <p className={styles.appStatus}>
+          {ready ? "APK dostępne na hoście" : "Brak APK na hoście"}
+        </p>
+      </div>
+      <div className={styles.appActions}>
+        {ready && apkUrl ? (
           <Button
             variant="secondary"
-            onClick={() => void openExternalUrl(DOCS_RELEASES_URL)}
+            onClick={() => void openExternalUrl(apkUrl)}
           >
-            Otwórz Releases ↗
+            Pobierz APK
           </Button>
-        </div>
-      )}
+        ) : null}
+        <Button
+          variant="ghost"
+          onClick={() => void openExternalUrl(DOCS_RELEASES_URL)}
+        >
+          Releases ↗
+        </Button>
+      </div>
     </div>
   );
 }

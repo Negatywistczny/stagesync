@@ -23,17 +23,28 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Admin Utwory:** czytelniejsza hierarchia akcji (Otwórz w Timeline jako główna, Odtwórz / Import osobno, Usuń w rogu z potwierdzeniem); w inspectorze tonacja, tempo i czas utworu; na liście dyskretne badge BPM / tonacja / czas; pasek statusu z wyraźnymi slotami Teraz / Sekcja / Pozycja / Dalej / Połączenie.
 - **Admin Set:** stały toolbar nad setlistą (przerwa / szablon / wyczyść / zapisz); kafelki z czasem, BPM i tonacją oraz uchwytem przeciągania; pasek budżetu czasu (OK / overrun); „Dodaj zaznaczone” w stopce biblioteki.
-- **Admin Scena:** przełączniki ON/OFF w Korekcie (edycja zdalna, blokada motywu); komunikaty z jasną hierarchią (Wyślij jako główna akcja, role / TTL / Alert jako opcje); puste stany zamiast pustki; kafelki klientów z rolą i statusem połączenia.
-- **Admin Host:** siatka 2 kolumn (Połączenie & QR | MIDI & Safety Net, poniżej APK i aktualizacje); logi zwijane domyślnie („Logi (N) ▾”); krótkie puste stany APK z krokiem do Releases zamiast ściany ścieżek.
+- **Admin Scena:** przełączniki ON/OFF w Korekcie (edycja zdalna); komunikaty z jasną hierarchią (Wyślij jako główna akcja, role / TTL / Alert jako opcje); puste stany zamiast pustki; kafelki klientów z rolą i statusem połączenia.
+- **Admin Host:** siatka 2×2 równych kart (Połączenie & Sieć | MIDI & Safety Net | Aplikacje Mobilne | O Aplikacji & Aktualizacje); logi zwijane pod spodem ze stałą wysokością; bez zagnieżdżonych ramek w kartach.
 - **Admin Ustawienia:** jeden **Zapisz** w stopce (także nazwa urządzenia — bez osobnego „Zapisz nazwę”); **MIDI Panic** na górze zakładki MIDI; **Odsłuch** obok dźwięku metronomu; zakładka Serwer przewija się nad stopką (ścieżki / backup bez przycięcia).
-- **Client:** bez ręcznej zmiany utworu w chrome (usunięty „→następny”) — setlista sterowana z Admin / Timeline; gęstszy nagłówek z czytelnym tytułem, tonacją, tempem, metrum i taktem oraz więcej miejsca na treść sceniczną.
+- **Client:** bez ręcznej zmiany utworu w chrome (usunięty „→następny”) — setlista sterowana z Admin / Timeline; minimalistyczny nagłówek (tytuł utworu, bez tonacji / tempa / metrum / taktu) i więcej miejsca na treść sceniczną; nazwa urządzenia tylko na ekranie wyboru roli (nie w ustawieniach).
+- **Kontrolki shelli:** przyciski chrome (ikony, taby, chipy, transport, Solo/Mute, zoom partytury) na kanonicznym `Button` z `@stagesync/ui` — bez lokalnych rozmiarów sm/lg ani nadpisań paddingu/fontu.
 
 ### Naprawiono
+
+#### 🖥️ App Shell & UI
+- **Client / Akordy (mobile):** hero przy zmianie akordu znów wlatuje z prawej, a nie od góry.
+- **Client:** ustawienia roli (Karaoke / Akordy / Partytura / Perkusja) znów mają ikonę suwaków, a nie to samo koło zębate co ustawienia globalne; panel ustawień nie jest ucinany przez overflow nagłówka.
+- **Client Karaoke:** usunięty nieproszony pasek bieżącego akordu nad tekstem (regresja po typografii akordów) — akordy zostają w roli Akordy; ustawienia roli floatują bez pustego rzędu nad sceną.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher:** „Pobierz log” i „Wyczyść błąd” pojawiają się tylko gdy jest log diagnostyczny albo błąd do wyczyszczenia.
 
-## [5.2.0](https://github.com/Negatywistyczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
+### Usunięto
+
+#### 🖥️ App Shell & UI
+- **Motyw sceniczny:** z Korekty Sceny znika blokada motywu (wymuszenie jasnego / wysokiego kontrastu na Clientach). Clienty zostają przy lokalnych przełącznikach w ustawieniach oraz opcjonalnym domyślnym motywie hosta (`STAGESYNC_THEME_DEFAULT`).
+
+## [5.2.0](https://github.com/Negatywistczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
 
 > **Pocket Stage:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta.
 

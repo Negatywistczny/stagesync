@@ -225,6 +225,7 @@ body {
   background: var(--ss-color-border);
 }
 
+/* Static HTML mirror of @stagesync/ui Button (no React in launcher). */
 .btn {
   min-height: var(--ss-touch-min);
   border: 1px solid transparent;

@@ -282,15 +282,6 @@
   font-size: var(--ss-text-xs);
 }
 
-.removeBtn {
-  width: var(--ss-touch-min) !important;
-  height: var(--ss-touch-min) !important;
-  min-width: var(--ss-touch-min);
-  min-height: var(--ss-touch-min);
-  font-size: var(--ss-text-lg);
-  line-height: var(--ss-leading-none);
-}
-
 @media (max-width: 768px) {
   .setTile {
     grid-template-columns:
@@ -317,7 +308,8 @@
     justify-content: flex-start;
   }
 
-  .removeBtn {
+  /* Placement only — geometry from Button iconOnly. */
+  .removeSlot {
     grid-area: remove;
   }
 }

@@ -3,7 +3,7 @@
  */
 
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
-import { Slider } from "@stagesync/ui";
+import { Button, Slider } from "@stagesync/ui";
 import {
   resolveTrackColor,
   resolveTrackIcon,
@@ -118,45 +118,47 @@ export function ChannelStripControls({
   );
 
   const soloBtn = (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      iconOnly
+      selected={strip.soloed}
       className={[
-        soloClassName ?? styles.tapBtn,
+        soloClassName,
         strip.soloed ? soloActiveClassName ?? styles.tapBtnSolo : "",
       ]
         .filter(Boolean)
         .join(" ")}
       title={strip.soloed ? "Wyłącz solo" : "Solo ścieżki"}
       aria-label={strip.soloed ? "Wyłącz solo" : "Solo ścieżki"}
-      aria-pressed={strip.soloed}
       onClick={(e) => {
         e.stopPropagation();
         callbacks.onSoloClick(e);
       }}
     >
       S
-    </button>
+    </Button>
   );
 
   const muteBtn = (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      iconOnly
+      selected={strip.muted}
       className={[
-        muteClassName ?? styles.tapBtn,
+        muteClassName,
         strip.muted ? muteActiveClassName ?? styles.tapBtnMute : "",
       ]
         .filter(Boolean)
         .join(" ")}
       title={strip.muted ? "Włącz ścieżkę" : "Wycisz ścieżkę"}
       aria-label={strip.muted ? "Włącz ścieżkę" : "Wycisz ścieżkę"}
-      aria-pressed={strip.muted}
       onClick={(e) => {
         e.stopPropagation();
         callbacks.onMuteClick(e);
       }}
     >
       M
-    </button>
+    </Button>
   );
 
   const iconBadge = (

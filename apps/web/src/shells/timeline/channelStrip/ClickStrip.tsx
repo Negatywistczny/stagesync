@@ -4,6 +4,7 @@
  */
 
 import type { PeakHoldState } from "@stagesync/shared";
+import { Button } from "@stagesync/ui";
 import { DualDbReadout } from "./DualDbReadout.js";
 import { PeakMeter } from "./PeakMeter.js";
 import { VerticalFader } from "./VerticalFader.js";
@@ -62,20 +63,16 @@ export function ClickStrip({ state, callbacks }: ClickStripProps) {
       </div>
 
       <div className={styles.mixerTools}>
-        <button
-          type="button"
-          className={[
-            styles.tapBtn,
-            state.muted ? styles.tapBtnMute : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+        <Button
+          variant="ghost"
+          iconOnly
+          selected={state.muted}
+          className={state.muted ? styles.tapBtnMute : undefined}
           title={
             state.muted
               ? "Włącz Click (metronom)"
               : "Wycisz Click (metronom)"
           }
-          aria-pressed={state.muted}
           aria-label={
             state.muted
               ? "Włącz Click (metronom)"
@@ -84,7 +81,7 @@ export function ClickStrip({ state, callbacks }: ClickStripProps) {
           onClick={() => callbacks.onMuteClick()}
         >
           M
-        </button>
+        </Button>
       </div>
 
       <div

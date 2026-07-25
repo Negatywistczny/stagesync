@@ -1,5 +1,5 @@
 /**
- * Live Desk settings (team transpose / sync-lead / remote edit / theme lock) —
+ * Live Desk settings (team transpose / sync-lead / remote edit) —
  * SSOT + WS fanout.
  */
 
@@ -28,7 +28,16 @@ export function createLiveDeskStore(filePath: string) {
     loaded = true;
     try {
       const raw = JSON.parse(await readFile(filePath, "utf8")) as unknown;
-      settings = LiveDeskSettingsSchema.parse(raw);
+      // Drop legacy scenic themeLock if present (removed; keep other fields).
+      const cleaned =
+        raw !== null && typeof raw === "object" && !Array.isArray(raw)
+          ? Object.fromEntries(
+              Object.entries(raw as Record<string, unknown>).filter(
+                ([k]) => k !== "themeLock",
+              ),
+            )
+          : raw;
+      settings = LiveDeskSettingsSchema.parse(cleaned);
     } catch {
       settings = defaultLiveDeskSettings();
       try {
@@ -51,7 +60,6 @@ export function createLiveDeskStore(filePath: string) {
       transpositionSemitones: settings.transpositionSemitones,
       syncLeadMs: settings.syncLeadMs,
       clientEditEnabled: settings.clientEditEnabled,
-      themeLock: settings.themeLock,
       sentAtMs,
     };
   }

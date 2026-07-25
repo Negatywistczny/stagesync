@@ -450,18 +450,16 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
     >
       <div className={styles.tabs} role="tablist" aria-label="Preferencje">
         {TABS.map((t) => (
-          <button
+          <Button
             key={t.id}
-            type="button"
+            variant="ghost"
             role="tab"
             aria-selected={tab === t.id}
-            className={[styles.tab, tab === t.id ? styles.tabSelected : ""]
-              .filter(Boolean)
-              .join(" ")}
+            selected={tab === t.id}
             onClick={() => setTab(t.id)}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 

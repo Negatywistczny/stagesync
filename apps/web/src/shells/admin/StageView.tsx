@@ -367,58 +367,6 @@ export function StageView() {
                 >
                   Edycja zdalna (notatki Formy / tap wokalu)
                 </ShellSwitchRow>
-                <ShellSwitchRow
-                  className={styles.masterSwitch}
-                  checked={liveDesk.themeLock != null}
-                  disabled={liveDeskSaving}
-                  onChange={(e) => {
-                    const on = e.target.checked;
-                    const themeLock = on
-                      ? (liveDesk.themeLock ?? {
-                          light: false,
-                          highContrast: false,
-                        })
-                      : null;
-                    setLiveDesk({ ...liveDesk, themeLock });
-                    void applyLiveDesk({ themeLock });
-                  }}
-                >
-                  Blokada motywu na Clientach
-                </ShellSwitchRow>
-                {liveDesk.themeLock ? (
-                  <>
-                    <ShellSwitchRow
-                      className={styles.masterSwitch}
-                      checked={liveDesk.themeLock.light}
-                      disabled={liveDeskSaving}
-                      onChange={(e) => {
-                        const themeLock = {
-                          ...liveDesk.themeLock!,
-                          light: e.target.checked,
-                        };
-                        setLiveDesk({ ...liveDesk, themeLock });
-                        void applyLiveDesk({ themeLock });
-                      }}
-                    >
-                      Wymuszony jasny motyw
-                    </ShellSwitchRow>
-                    <ShellSwitchRow
-                      className={styles.masterSwitch}
-                      checked={liveDesk.themeLock.highContrast}
-                      disabled={liveDeskSaving}
-                      onChange={(e) => {
-                        const themeLock = {
-                          ...liveDesk.themeLock!,
-                          highContrast: e.target.checked,
-                        };
-                        setLiveDesk({ ...liveDesk, themeLock });
-                        void applyLiveDesk({ themeLock });
-                      }}
-                    >
-                      Wymuszony wysoki kontrast
-                    </ShellSwitchRow>
-                  </>
-                ) : null}
               </div>
             </>
           )}
@@ -473,29 +421,25 @@ export function StageView() {
                   {ROLE_OPTIONS.map((r) => {
                     const on = roles.includes(r.id);
                     return (
-                      <button
+                      <Button
                         key={r.id}
-                        type="button"
-                        className={on ? shell.chipOn : shell.chip}
+                        variant="ghost"
+                        selected={on}
                         disabled={pending}
-                        aria-pressed={on}
                         onClick={() => toggleRole(r.id)}
                       >
                         {r.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
 
                 <div className={styles.composeMeta}>
                   <div className={styles.composeSecondary}>
-                    <button
-                      type="button"
-                      className={
-                        priority === "alert" ? shell.chipOn : shell.chip
-                      }
+                    <Button
+                      variant="ghost"
+                      selected={priority === "alert"}
                       disabled={pending}
-                      aria-pressed={priority === "alert"}
                       title={
                         priority === "alert"
                           ? "Priorytet: alert (wyłącz)"
@@ -513,7 +457,7 @@ export function StageView() {
                       }
                     >
                       Alert
-                    </button>
+                    </Button>
                     <label className={styles.ttlField}>
                       <span className={styles.optionsLabel}>Czas</span>
                       <select

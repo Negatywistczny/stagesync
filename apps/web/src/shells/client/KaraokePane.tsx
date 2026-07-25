@@ -1,21 +1,16 @@
 import {
-  applyInstrumentPitchToChord,
-  resolveChordNameParts,
   formatSectionNameForDisplay,
-  resolveKeyAt,
   type Project,
 } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
   type KaraokeSectionGroup,
 } from "../../lib/clientKaraoke.js";
-import { resolveAkordClipAt } from "../../lib/akordyEdit.js";
 import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
 import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js";
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
 import { useEffect, useRef, type CSSProperties } from "react";
-import { ChordName } from "./ChordName.js";
 
 type KaraokePaneProps = {
   project: Project | null;
@@ -23,7 +18,6 @@ type KaraokePaneProps = {
   loading: boolean;
   hasActiveProjectId: boolean;
   prefs: ClientDisplayPrefs;
-  teamSemitones?: number;
   vocalTapOn?: boolean;
   vocalTapIndex?: number;
   onVocalTap?: () => void;
@@ -121,7 +115,6 @@ export function KaraokePane({
   loading,
   hasActiveProjectId,
   prefs,
-  teamSemitones = 0,
   vocalTapOn = false,
   vocalTapIndex = 0,
   onVocalTap,
@@ -237,24 +230,6 @@ export function KaraokePane({
     );
   }
 
-  const key = resolveKeyAt(project, displayTicks);
-  const fmtChordParts = (symbol: string) =>
-    resolveChordNameParts(
-      applyInstrumentPitchToChord(
-        symbol,
-        prefs.instrumentPitch,
-        prefs.instrumentPitchManual,
-        key,
-        teamSemitones,
-      ),
-      {
-        literalQuality: prefs.literalQuality,
-        hybridPolishB: prefs.hybridPolishB,
-      },
-    );
-  const activeChord = resolveAkordClipAt(project, displayTicks);
-  const chordParts = activeChord ? fmtChordParts(activeChord.symbol) : null;
-
   const hasContent =
     ctx.sections.length > 0 &&
     (ctx.hasLyricLines || ctx.sections.some((s) => s.useProgress));
@@ -270,21 +245,6 @@ export function KaraokePane({
             Tap
           </Button>
         </div>
-      ) : null}
-      {chordParts ? (
-        <p className={styles.karaokeChordNow} aria-live="polite">
-          <ChordName
-            parts={chordParts}
-            bassLayout="inline"
-            classNames={{
-              top: styles.chordNameTop ?? "",
-              root: styles.chordNameRoot ?? "",
-              sup: styles.chordNameSup ?? "",
-              bass: styles.chordNameBass ?? "",
-              stack: styles.chordNameStack ?? "",
-            }}
-          />
-        </p>
       ) : null}
       {hasContent ? (
         <div

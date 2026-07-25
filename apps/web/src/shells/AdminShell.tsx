@@ -314,20 +314,14 @@ export function AdminShell() {
 
           <nav className={styles.sections} aria-label="Sekcje">
             {SECTIONS.map((item) => (
-              <button
+              <Button
                 key={item.id}
-                type="button"
-                className={[
-                  styles.sectionTab,
-                  section === item.id ? styles.sectionTabOn : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                aria-pressed={section === item.id}
+                variant="ghost"
+                selected={section === item.id}
                 onClick={() => setSection(item.id)}
               >
                 {item.label}
-              </button>
+              </Button>
             ))}
           </nav>
 

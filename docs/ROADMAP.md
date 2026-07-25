@@ -88,7 +88,7 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 ### Po 5.2.0 (`[Unreleased]` + residual 5.3+)
 
-- **W kodzie na `main` (jeszcze bez tagu):** Admin **Przywróć…** (`.bak` / ZIP); opcjonalny Sentry (`SENTRY_DSN` / `VITE_SENTRY_DSN`) — zob. [CHANGELOG.md](../CHANGELOG.md) `[Unreleased]`. Błędny cut `v5.3.0` wycofany.
+- **W kodzie na `main` (jeszcze bez tagu):** Admin **Przywróć…** (`.bak` / ZIP); opcjonalny Sentry (`SENTRY_DSN` / `VITE_SENTRY_DSN`); usunięta scenic theme lock (Admin Scena) — zostaje lokalny motyw + `STAGESYNC_THEME_DEFAULT` — zob. [CHANGELOG.md](../CHANGELOG.md) `[Unreleased]`. Błędny cut `v5.3.0` wycofany.
 - Motywy: macierz 4 profili / THM-03
 - Mixer: multi-out HW (Out 3–4)
 - Safety Net: auto-election / lease

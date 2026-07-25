@@ -251,4 +251,45 @@ describe("gridHeroMotion", () => {
     vi.advanceTimersByTime(HERO_CHORD_EXIT_MS + HERO_CHORD_GAP_MS + 1);
     expect(heroName.textContent).toBe("E");
   });
+
+  it("falls back to slide when next panel has zero layout (mobile display:none)", () => {
+    vi.useFakeTimers();
+    const layout = el();
+    layout.setAttribute("data-grid-hero-layout", "");
+    layout.getBoundingClientRect = () => rect(0, 80, 360, 120);
+
+    const heroRoot = el();
+    const heroNameWrap = el();
+    heroNameWrap.getBoundingClientRect = () => rect(40, 100, 280, 48);
+    const heroName = el();
+    heroName.innerHTML = "Am";
+
+    const heroNext = el();
+    const heroNextName = el();
+    // display:none → zero box (viewport origin); must not fly from “top”
+    heroNextName.getBoundingClientRect = () => rect(0, 0, 0, 0);
+
+    heroNameWrap.appendChild(heroName);
+    heroNext.appendChild(heroNextName);
+    layout.append(heroRoot, heroNameWrap, heroNext);
+    heroRoot.appendChild(heroNameWrap);
+    document.body.appendChild(layout);
+
+    runHeroChordTransition(
+      { heroRoot, heroName, heroNameWrap, heroNext, heroNextName },
+      {
+        nextHeroHtml: "C",
+        nextPreviewHtml: "G",
+        fromNext: true,
+        isCountdown: false,
+        classNames: CLASS,
+      },
+    );
+
+    expect(layout.querySelector("[data-grid-hero-fly]")).toBeNull();
+    expect(heroNameWrap.querySelector("[data-grid-hero-exit]")).toBeTruthy();
+    vi.advanceTimersByTime(HERO_CHORD_EXIT_MS + HERO_CHORD_GAP_MS + 1);
+    expect(heroName.textContent).toBe("C");
+    expect(heroName.classList.contains(CLASS.entering)).toBe(true);
+  });
 });

@@ -7,7 +7,6 @@ import {
 } from "../lib/screenWakeLock.js";
 import { Button } from "@stagesync/ui";
 import { ChangeServerControl } from "./ChangeServerControl.js";
-import { DeviceNameFields } from "./DeviceNameFields.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
 import {
   DEVICE_DISPLAY_NAME_CHANGED_EVENT,
@@ -18,8 +17,6 @@ import {
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
   INSTRUMENT_PITCH_MANUAL_MIN,
-  formatKeySignature,
-  resolveKeyAt,
   resolveMeterAt,
   resolveStageCueBanner,
   resolveTempoAt,
@@ -40,22 +37,12 @@ import {
   setSectionNamesPolish,
   type ClientDisplayPrefs,
 } from "../lib/clientDisplayPrefs.js";
-import {
-  CLOCK_DISPLAY_CHANGED_EVENT,
-  formatClockDisplay,
-  getStoredClockDisplayFormat,
-  type ClockDisplayFormat,
-} from "../lib/clockDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
 import { putProject } from "../lib/libraryApi.js";
 import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
-import {
-  applyAppearance,
-  readAppearance,
-} from "../lib/appearance.js";
 import { noteH01ConsumerRender } from "../transport/h01PerfProbe.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
@@ -79,7 +66,7 @@ import {
   SCORE_ZOOM_STEP,
   clampScoreZoom,
 } from "../lib/scorePlayhead.js";
-import { IconFullscreen, IconSettings } from "./icons.js";
+import { IconFullscreen, IconMixer, IconSettings } from "./icons.js";
 import {
   SettingsPopover,
   SettingsPopoverAnchor,
@@ -124,25 +111,7 @@ export function ClientShell() {
     rawDisplayTicks +
     ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq);
 
-  // Scenic lock: host-forced theme on Client only (does not rewrite localStorage).
-  useEffect(() => {
-    if (liveDesk.themeLock) {
-      applyAppearance(liveDesk.themeLock);
-      return;
-    }
-    applyAppearance(readAppearance());
-  }, [liveDesk.themeLock]);
   const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
-  const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
-    getStoredClockDisplayFormat(),
-  );
-  const clockLabel = formatClockDisplay({
-    ticks: displayTicks,
-    bpm: state.bpm,
-    timeSignature: state.timeSignature,
-    ppq: state.ppq,
-    format: clockFormat,
-  });
   const {
     activeProject,
     setActiveProject,
@@ -219,16 +188,6 @@ export function ClientShell() {
     };
   }, [started]);
 
-  useEffect(() => {
-    const onClock = () => {
-      setClockFormat(getStoredClockDisplayFormat());
-    };
-    window.addEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
-    return () => {
-      window.removeEventListener(CLOCK_DISPLAY_CHANGED_EVENT, onClock);
-    };
-  }, []);
-
   // After WS reconnect, refetch project even if activeProjectId unchanged (#358).
   useEffect(() => {
     const prev = prevWsStatusRef.current;
@@ -282,11 +241,6 @@ export function ClientShell() {
   }, [state.activeProjectId]);
 
   const songTitle = activeProject?.name ?? "Brak utworu";
-  const keyLabel = activeProject
-    ? formatKeySignature(resolveKeyAt(activeProject, displayTicks))
-    : "—";
-  const tempoLabel = `${Math.round(cueBpm)} BPM`;
-  const meterLabel = `${cueMeter.numerator}/${cueMeter.denominator}`;
 
   async function onFullscreen() {
     await toggleAppFullscreen();
@@ -326,11 +280,7 @@ export function ClientShell() {
     latencyMs,
     started,
     songTitle,
-    keyLabel,
-    tempoLabel,
-    meterLabel,
     bbt: headerBbt,
-    clockLabel,
     transportError,
     onFullscreen: shouldShowFullscreenControl()
       ? () => void onFullscreen()
@@ -341,7 +291,6 @@ export function ClientShell() {
     onBack: started ? () => setStarted(false) : undefined,
     displayPrefs,
     onDisplayPrefsChange: setDisplayPrefs,
-    themeLock: liveDesk.themeLock,
   };
 
   if (nameModal) {
@@ -385,9 +334,9 @@ export function ClientShell() {
             <ShellWordmark className={styles.welcomeBrand} />
             <div className={styles.greetingRow}>
               <p className={styles.greeting}>Cześć, {name}</p>
-              <button
-                type="button"
-                className={styles.changeNameBtn}
+              <Button
+                variant="ghost"
+                iconOnly
                 aria-label="Zmień nazwę"
                 title="Zmień nazwę"
                 onClick={() => {
@@ -408,7 +357,7 @@ export function ClientShell() {
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
                 </svg>
-              </button>
+              </Button>
             </div>
             <h1 className={styles.welcomeTitle}>
               Wybierz <span className={styles.welcomeAccent}>rolę</span>
@@ -440,7 +389,7 @@ export function ClientShell() {
           <div className={styles.startBar}>
             <Button
               variant="primary"
-              className={styles.startBtn}
+              className={styles.startBarBtn}
               disabled={picked.length === 0}
               onClick={() => setStarted(true)}
             >
@@ -477,7 +426,7 @@ export function ClientShell() {
           const role = ROLES.find((r) => r.id === id)!;
           return (
             <section key={id} className={styles.rolePane} aria-label={role.label}>
-              {/* Role settings float top-right like v4 view-settings-wrap — no title strip */}
+              {/* Role display prefs: v4 view-settings sliders (not global gear) */}
               <SettingsPopoverAnchor className={styles.roleSettings}>
                 <ShellIconButton
                   label={`Ustawienia ${role.label}`}
@@ -485,7 +434,7 @@ export function ClientShell() {
                   aria-controls={`role-settings-${id}`}
                   onClick={() => toggleRoleSettings(id)}
                 >
-                  <IconSettings />
+                  <IconMixer />
                 </ShellIconButton>
                 {roleSettings === id ? (
                   <SettingsPopover
@@ -596,7 +545,6 @@ export function ClientShell() {
                   loading={projectLoading}
                   hasActiveProjectId={Boolean(state.activeProjectId)}
                   prefs={displayPrefs}
-                  teamSemitones={liveDesk.transpositionSemitones}
                   vocalTapOn={vocalTapOn && liveDesk.clientEditEnabled}
                   vocalTapIndex={vocalTapIndex}
                   onVocalTap={() => {
@@ -729,11 +677,7 @@ type ClientHeaderProps = {
   latencyMs: number | null;
   started: boolean;
   songTitle: string;
-  keyLabel: string;
-  tempoLabel: string;
-  meterLabel: string;
   bbt: { bar: number; beat: number };
-  clockLabel: string;
   transportError: string | null;
   onFullscreen?: () => void;
   globalSettingsOpen: boolean;
@@ -742,7 +686,6 @@ type ClientHeaderProps = {
   onBack?: () => void;
   displayPrefs: ClientDisplayPrefs;
   onDisplayPrefsChange: (prefs: ClientDisplayPrefs) => void;
-  themeLock: { light: boolean; highContrast: boolean } | null;
 };
 
 function ClientChrome({
@@ -750,11 +693,7 @@ function ClientChrome({
   latencyMs,
   started,
   songTitle,
-  keyLabel,
-  tempoLabel,
-  meterLabel,
   bbt,
-  clockLabel,
   transportError,
   onFullscreen,
   globalSettingsOpen,
@@ -763,7 +702,6 @@ function ClientChrome({
   onBack,
   displayPrefs,
   onDisplayPrefsChange,
-  themeLock,
 }: ClientHeaderProps) {
   return (
     <header className={styles.header}>
@@ -786,29 +724,7 @@ function ClientChrome({
         ))}
       </div>
 
-      <div className={styles.songCluster}>
-        <strong className={styles.songTitle}>{songTitle}</strong>
-        <dl className={styles.songMeta} aria-label="Meta utworu">
-          <div className={styles.songMetaItem}>
-            <dt className={styles.songMetaLab}>Tonacja</dt>
-            <dd className={styles.songMetaVal}>{keyLabel}</dd>
-          </div>
-          <div className={styles.songMetaItem}>
-            <dt className={styles.songMetaLab}>Tempo</dt>
-            <dd className={styles.songMetaVal}>{tempoLabel}</dd>
-          </div>
-          <div className={styles.songMetaItem}>
-            <dt className={styles.songMetaLab}>Metrum</dt>
-            <dd className={styles.songMetaVal}>{meterLabel}</dd>
-          </div>
-          <div className={styles.songMetaItem}>
-            <dt className={styles.songMetaLab}>Takt</dt>
-            <dd className={[styles.songMetaVal, styles.takt].join(" ")}>
-              {clockLabel}
-            </dd>
-          </div>
-        </dl>
-      </div>
+      <strong className={styles.songTitle}>{songTitle}</strong>
       {transportError ? (
         <span className={styles.transportError} role="alert">
           {transportError}
@@ -835,7 +751,6 @@ function ClientChrome({
               <GlobalSettingsFields
                 prefs={displayPrefs}
                 onPrefsChange={onDisplayPrefsChange}
-                themeLock={themeLock}
               />
             </SettingsPopover>
           ) : null}
@@ -882,32 +797,14 @@ const PITCH_OPTIONS: {
 function GlobalSettingsFields({
   prefs,
   onPrefsChange,
-  themeLock,
 }: {
   prefs: ClientDisplayPrefs;
   onPrefsChange: (prefs: ClientDisplayPrefs) => void;
-  themeLock: { light: boolean; highContrast: boolean } | null;
 }) {
-  const locked = themeLock != null;
   return (
     <>
       <p className={styles.fieldLab}>Wygląd</p>
-      {locked ? (
-        <p className={styles.muted} role="status">
-          Motyw wymuszony przez hosta (blokada sceniczna).
-        </p>
-      ) : null}
-      <ShellAppearanceFields
-        disabled={locked}
-        {...(locked
-          ? {
-              value: themeLock,
-              onChange: () => {
-                /* scenic lock — local edits ignored */
-              },
-            }
-          : {})}
-      />
+      <ShellAppearanceFields />
       <p className={styles.fieldLab}>Strój instrumentu</p>
       <div
         className={styles.pitchToggle}
@@ -917,15 +814,13 @@ function GlobalSettingsFields({
         {PITCH_OPTIONS.map((opt) => {
           const on = prefs.instrumentPitch === opt.id;
           return (
-            <button
+            <Button
               key={opt.id}
-              type="button"
-              className={[styles.pitchOption, on ? styles.pitchOptionOn : ""]
-                .filter(Boolean)
-                .join(" ")}
+              variant="ghost"
+              selected={on}
+              className={styles.pitchOption}
               title={opt.title}
               aria-label={opt.title}
-              aria-pressed={on}
               onClick={() => {
                 setInstrumentPitch(opt.id);
                 onPrefsChange({ ...prefs, instrumentPitch: opt.id });
@@ -943,7 +838,7 @@ function GlobalSettingsFields({
                 {opt.icon}
               </span>
               <span className={styles.pitchLabel}>{opt.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -976,7 +871,6 @@ function GlobalSettingsFields({
       >
         Polskie nazwy sekcji
       </ShellSwitchRow>
-      <DeviceNameFields />
       <OperatorPinFields />
       <ChangeServerControl entryPath="/client" />
     </>
@@ -1132,6 +1026,7 @@ function RoleSettingsFields({
         <div className={styles.scoreZoomRow}>
           <Button
             variant="ghost"
+            iconOnly
             aria-label="Pomniejsz partyturę"
             onClick={() => bumpZoom(-SCORE_ZOOM_STEP)}
             disabled={scoreZoom <= SCORE_ZOOM_MIN}
@@ -1141,6 +1036,7 @@ function RoleSettingsFields({
           <span className={styles.scoreZoomLabel}>{scoreZoom}%</span>
           <Button
             variant="ghost"
+            iconOnly
             aria-label="Powiększ partyturę"
             onClick={() => bumpZoom(SCORE_ZOOM_STEP)}
             disabled={scoreZoom >= SCORE_ZOOM_MAX}

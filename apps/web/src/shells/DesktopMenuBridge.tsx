@@ -168,21 +168,16 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
               ["console", "Console APK"],
             ] as const
           ).map(([id, label]) => (
-            <button
+            <Button
               key={id}
-              type="button"
+              variant="ghost"
               role="tab"
               aria-selected={mode === id}
-              className={[
-                styles.modeBtn,
-                mode === id ? styles.modeBtnSelected : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+              selected={mode === id}
               onClick={() => setMode(id)}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
         {loading ? (
@@ -228,19 +223,14 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
           <ul className={styles.urlList} aria-label="Adresy sieciowe">
             {urls.map((url) => (
               <li key={url}>
-                <button
-                  type="button"
-                  className={[
-                    styles.urlBtn,
-                    url === selected ? styles.urlBtnSelected : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  aria-pressed={url === selected}
+                <Button
+                  variant="ghost"
+                  selected={url === selected}
+                  className={styles.urlPick}
                   onClick={() => setSelected(url)}
                 >
                   {url}
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

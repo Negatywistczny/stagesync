@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Host default appearance when a client has no localStorage theme yet
- * (`STAGESYNC_THEME_DEFAULT`). Scenic lock still overrides at runtime.
+ * (`STAGESYNC_THEME_DEFAULT`).
  */
 export const ThemeDefaultIdSchema = z.enum([
   "dark",

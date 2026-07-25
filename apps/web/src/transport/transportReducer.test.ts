@@ -137,20 +137,11 @@ describe("transportReducer", () => {
         transpositionSemitones: -1,
         syncLeadMs: 120,
         clientEditEnabled: false,
-        themeLock: { light: false, highContrast: true },
       }),
     ).toEqual({
       transpositionSemitones: -1,
       syncLeadMs: 120,
       clientEditEnabled: false,
-      themeLock: { light: false, highContrast: true },
     });
-    expect(
-      liveDeskFromPayload({
-        transpositionSemitones: 0,
-        syncLeadMs: 200,
-        clientEditEnabled: true,
-      }).themeLock,
-    ).toBeNull();
   });
 });

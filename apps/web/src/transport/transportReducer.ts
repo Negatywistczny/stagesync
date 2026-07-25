@@ -89,13 +89,11 @@ export function liveDeskFromPayload(desk: {
   transpositionSemitones: number;
   syncLeadMs: number;
   clientEditEnabled: boolean;
-  themeLock?: { light: boolean; highContrast: boolean } | null;
 }): LiveDeskState {
   return {
     transpositionSemitones: desk.transpositionSemitones,
     syncLeadMs: desk.syncLeadMs,
     clientEditEnabled: desk.clientEditEnabled,
-    themeLock: desk.themeLock ?? null,
   };
 }
 

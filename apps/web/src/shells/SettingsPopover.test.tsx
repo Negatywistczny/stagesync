@@ -3,7 +3,10 @@
  */
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SettingsPopover } from "./SettingsPopover.js";
+import {
+  SettingsPopover,
+  SettingsPopoverAnchor,
+} from "./SettingsPopover.js";
 
 afterEach(() => {
   cleanup();
@@ -20,5 +23,19 @@ describe("SettingsPopover", () => {
     expect(screen.getByRole("dialog", { name: "Ustawienia globalne" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape", bubbles: true });
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("portals anchor placement to document.body", () => {
+    render(
+      <SettingsPopoverAnchor>
+        <button type="button">trigger</button>
+        <SettingsPopover title="Ustawienia globalne" onClose={() => {}}>
+          <p>treść</p>
+        </SettingsPopover>
+      </SettingsPopoverAnchor>,
+    );
+    const dialog = screen.getByRole("dialog", { name: "Ustawienia globalne" });
+    expect(dialog.parentElement).toBe(document.body);
+    expect(dialog.className).toMatch(/portaled/);
   });
 });

@@ -280,20 +280,21 @@ describe("LiveDeskPatchBodySchema", () => {
     ).toEqual({ transpositionSemitones: 2 });
   });
 
-  it("accepts themeLock profile or null unlock", () => {
-    expect(
+  it("rejects unknown themeLock field", () => {
+    expect(() =>
       LiveDeskPatchBodySchema.parse({
         themeLock: { light: true, highContrast: false },
       }),
-    ).toEqual({ themeLock: { light: true, highContrast: false } });
-    expect(LiveDeskPatchBodySchema.parse({ themeLock: null })).toEqual({
-      themeLock: null,
-    });
+    ).toThrow();
   });
 });
 
 describe("LiveDeskSettingsSchema", () => {
-  it("defaults themeLock to null", () => {
-    expect(LiveDeskSettingsSchema.parse({}).themeLock).toBeNull();
+  it("defaults live-desk fields", () => {
+    expect(LiveDeskSettingsSchema.parse({})).toEqual({
+      transpositionSemitones: 0,
+      syncLeadMs: 200,
+      clientEditEnabled: true,
+    });
   });
 });

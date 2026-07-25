@@ -12,6 +12,7 @@ vi.mock("../lib/desktopBridge.js", () => ({
 
 vi.mock("../lib/nativeShell.js", () => ({
   shouldShowFullscreenControl: () => false,
+  canChangeServer: () => false,
 }));
 
 vi.mock("../lib/screenWakeLock.js", () => ({
@@ -60,7 +61,6 @@ vi.mock("../transport/useTransport.js", () => ({
       syncLeadMs: 0,
       transpositionSemitones: 0,
       clientEditEnabled: false,
-      themeLock: null,
     },
     setlistSnapshot: { projectIds: ["song-1", "song-2"], enabled: true },
     play: vi.fn(),
@@ -94,19 +94,31 @@ describe("ClientShell chrome", () => {
     ).toBeNull();
   });
 
-  it("shows title, key, tempo, meter and bar in the header", () => {
+  it("shows song title in the header without key/tempo/meter/bar meta", () => {
     render(<ClientShell />);
 
     expect(screen.getByText("Test Song")).toBeTruthy();
-    expect(screen.getByText("G")).toBeTruthy();
-    expect(screen.getByText("112 BPM")).toBeTruthy();
-    expect(screen.getByText("4/4")).toBeTruthy();
+    expect(screen.queryByLabelText("Meta utworu")).toBeNull();
+    expect(screen.queryByText("Tonacja")).toBeNull();
+    expect(screen.queryByText("112 BPM")).toBeNull();
+    expect(screen.queryByText("4/4")).toBeNull();
 
     startGridRole();
 
-    const meta = screen.getByLabelText("Meta utworu");
-    expect(meta.textContent).toMatch(/Tonacja/);
-    expect(meta.textContent).toMatch(/Tempo/);
-    expect(meta.textContent).toMatch(/Takt/);
+    expect(screen.getByText("Test Song")).toBeTruthy();
+    expect(screen.queryByLabelText("Meta utworu")).toBeNull();
+  });
+
+  it("edits device name on role picker, not in global settings", () => {
+    render(<ClientShell />);
+
+    expect(screen.getByRole("button", { name: /Zmień nazwę/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
+    expect(dialog).toBeTruthy();
+    expect(dialog.parentElement).toBe(document.body);
+    expect(screen.queryByLabelText("Nazwa urządzenia")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Zapisz nazwę/i })).toBeNull();
   });
 });

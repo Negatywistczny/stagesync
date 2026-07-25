@@ -15,7 +15,7 @@ type Props = {
   error?: string | null;
 };
 
-/** Secondary rename control for Client / Admin settings. */
+/** Secondary rename control for Admin Preferences. */
 export function DeviceNameFields({
   value,
   onChange,

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import "./button.css";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
@@ -13,6 +13,7 @@ export type ButtonProps = {
   /** Square icon-only geometry (ss-btn--icon). */
   iconOnly?: boolean;
   className?: string;
+  ref?: Ref<HTMLButtonElement>;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
 /**
@@ -28,6 +29,7 @@ export function Button({
   disabled,
   className = "",
   type = "button",
+  ref,
   ...rest
 }: ButtonProps) {
   const isDisabled = Boolean(disabled || loading);
@@ -44,6 +46,7 @@ export function Button({
 
   return (
     <button
+      ref={ref}
       type={type}
       className={classes}
       disabled={isDisabled}
