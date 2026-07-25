@@ -834,10 +834,10 @@ function SongsView({
               </button>
             ))}
             {!library && !libraryError ? (
-              <p className={styles.muted}>Wczytywanie…</p>
+              <p className={styles.muted} role="status" aria-live="polite">Wczytywanie…</p>
             ) : null}
             {library && visibleProjects.length === 0 ? (
-              <p className={styles.muted}>Brak utworów dla filtra.</p>
+              <p className={styles.muted} role="status" aria-live="polite">Brak utworów dla filtra.</p>
             ) : null}
           </div>
 
