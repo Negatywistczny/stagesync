@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">StageSync Console</string>
-    <string name="brand_cd">StageSync</string>
+    <string name="brand_cd">StageSync Console</string>
     <string name="product_role">Console</string>
     <string name="section_discovered">Wyszukane serwery w sieci</string>
     <string name="section_quick">Lub szybkie połączenie</string>
