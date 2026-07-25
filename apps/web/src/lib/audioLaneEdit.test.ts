@@ -35,6 +35,11 @@ import {
   setAudioTracksMuted,
   setAudioTrackName,
   addAudioBus,
+  setAudioBusName,
+  setAudioBusMuted,
+  setAudioBusChannelMode,
+  setAudioBusPan,
+  setAudioBusGainDb,
   removeAudioBus,
   setMasterGainDb,
   splitAudioClipAt,
@@ -990,5 +995,38 @@ describe("split / join / mute / gain tools", () => {
       false,
     );
     expect(next.audioClips[0]!.gainDb).toBeCloseTo(40 * GAIN_TOOL_DB_PER_PX);
+  });
+
+  it("setAudioBus* no-ops unknown bus and applies mute/pan/name/mode", () => {
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z") as Project;
+    const { project: withBus, busId } = addAudioBus(p, "Bus A");
+    p = withBus;
+    expect(setAudioBusGainDb(p, "missing", -6)).toBe(p);
+    expect(setAudioBusPan(p, "missing", 0.5)).toBe(p);
+    expect(setAudioBusMuted(p, "missing", true)).toBe(p);
+    expect(setAudioBusName(p, busId, "   ")).toBe(p);
+
+    p = setAudioBusGainDb(p, busId, -3);
+    expect(p.audioBusses!.find((b) => b.id === busId)!.gainDb).toBe(-3);
+
+    p = setAudioBusPan(p, busId, 0.5);
+    expect(p.audioBusses!.find((b) => b.id === busId)!.pan).toBe(0.5);
+    p = setAudioBusPan(p, busId, Number.NaN);
+    expect(p.audioBusses!.find((b) => b.id === busId)!.pan).toBeUndefined();
+    p = setAudioBusPan(p, busId, 1e-7);
+    expect(p.audioBusses!.find((b) => b.id === busId)!.pan).toBeUndefined();
+
+    p = setAudioBusMuted(p, busId, true);
+    expect(p.audioBusses!.find((b) => b.id === busId)!.muted).toBe(true);
+    p = setAudioBusMuted(p, busId, false);
+    expect(p.audioBusses!.find((b) => b.id === busId)!.muted).toBeUndefined();
+
+    p = setAudioBusChannelMode(p, busId, "mono");
+    expect(p.audioBusses!.find((b) => b.id === busId)!.channelMode).toBe("mono");
+    p = setAudioBusChannelMode(p, busId, "stereo");
+    expect(p.audioBusses!.find((b) => b.id === busId)!.channelMode).toBeUndefined();
+
+    p = setAudioBusName(p, busId, "  Reverb  ");
+    expect(p.audioBusses!.find((b) => b.id === busId)!.name).toBe("Reverb");
   });
 });

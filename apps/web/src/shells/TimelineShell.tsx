@@ -465,42 +465,42 @@ const TOOLS: {
   {
     id: "scissors",
     label: "Nożyczki",
-    title: "Nożyczki — podział clipu / podsekcja Formy / zmiana mapy",
+    title: "Nożyczki — podział klipu / podsekcja Formy / zmiana mapy",
     key: "i",
     Icon: IconScissors,
   },
   {
     id: "join",
     label: "Połącz",
-    title: "Połącz — scal sąsiednie clipy / usuń granicę podsekcji",
+    title: "Połącz — scal sąsiednie klipy / usuń granicę podsekcji",
     key: "j",
     Icon: IconJoin,
   },
   {
     id: "mute",
     label: "Mute",
-    title: "Mute — przełącz wyciszenie klikniętego clipu audio",
+    title: "Mute — przełącz wyciszenie klikniętego klipu audio",
     key: "m",
     Icon: IconMute,
   },
   {
     id: "solo",
     label: "Solo",
-    title: "Solo — chwilowe solo ścieżki clipu audio przytrzymaniem LMB",
+    title: "Solo — chwilowe solo ścieżki klipu audio przytrzymaniem LMB",
     key: "s",
     Icon: IconSolo,
   },
   {
     id: "fade",
     label: "Fade",
-    title: "Fade — przeciągnij na krawędzi clipu audio: fade in/out",
+    title: "Fade — przeciągnij na krawędzi klipu audio: fade in/out",
     key: "a",
     Icon: IconFade,
   },
   {
     id: "gain",
     label: "Gain",
-    title: "Gain — przeciągnij w pionie na clipie audio: poziom dB",
+    title: "Gain — przeciągnij w pionie na klipie audio: poziom dB",
     key: "g",
     Icon: IconGain,
   },
@@ -4621,7 +4621,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       }
       if (sectionIds.size === 0) {
         flashCanvasNotice(
-          "Zaznacz sekcję Formy albo clipy Tekstu/Akordów — Różdżka nie działa na Cue",
+          "Zaznacz sekcję Formy albo klipy Tekstu/Akordów — Różdżka nie działa na Cue",
         );
         setWandMenu(null);
         setTool("pointer");
@@ -4639,7 +4639,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       return;
     }
     if (result.project !== draft) commitDraft(result.project);
-    let msg = result.message || `Różdżka: ${result.placed} clipów`;
+    let msg = result.message || `Różdżka: ${result.placed} klipów`;
     if (result.approximate) {
       msg += " — przybliżone (doprecyzuj Tapem)";
     }
@@ -5097,7 +5097,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
+            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tempo", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5129,7 +5129,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
+            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "metrum", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5164,7 +5164,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
             style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
             title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
+            aria-label={`${seg.label} — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij`}
             onPointerDown={(e) => onMapSegmentPointerDown(e, "tonacja", seg)}
             onPointerMove={onMapSegmentPointerMove}
             onPointerUp={onMapSegmentPointerUp}
@@ -5952,7 +5952,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     className={styles.locator}
                     style={{ left: `${locatorPx}px` }}
                     role="slider"
-                    aria-label="Locator wklejania"
+                    aria-label="Lokator wklejania"
                     aria-valuemin={viewSpan.start}
                     aria-valuemax={viewSpan.end}
                     aria-valuenow={effectiveLocatorTicks}
@@ -6699,7 +6699,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <span className={styles.metaKeyRow}>
                     <select
                       className={styles.nameInput}
-                      aria-label="Tonic start"
+                      aria-label="Tonika startu"
                       value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
                       onChange={(e) => {
                         const mode =
@@ -6803,7 +6803,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedTekstClip.startTicks,
                     )}
                     key={`tekst-start-${selectedTekstClip.id}-${selectedTekstClip.startTicks}`}
-                    aria-label="Start tekst takt.beat"
+                    aria-label="Start tekstu (takt.beat)"
                     onBlur={(e) => {
                       if (!draftProject) return;
                       const parsed = parseStartBarBeat(e.target.value);
@@ -6877,7 +6877,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedAkordClip.startTicks,
                     )}
                     key={`akord-start-${selectedAkordClip.id}-${selectedAkordClip.startTicks}`}
-                    aria-label="Start akord takt.beat"
+                    aria-label="Start akordu (takt.beat)"
                     onBlur={(e) => {
                       if (!draftProject) return;
                       const parsed = parseStartBarBeat(e.target.value);
@@ -6989,7 +6989,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedCueClip.startTicks,
                     )}
                     key={`cue-start-${selectedCueClip.id}-${selectedCueClip.startTicks}`}
-                    aria-label="Start cue takt.beat"
+                    aria-label="Start cue (takt.beat)"
                     onBlur={(e) => {
                       if (!draftProject) return;
                       const parsed = parseStartBarBeat(e.target.value);
@@ -7086,10 +7086,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Mute clip
+                  Wycisz klip
                 </label>
                 <label className={styles.inspField}>
-                  Trim In (ms)
+                  Trim początku (ms)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -7109,7 +7109,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
                 <label className={styles.inspField}>
-                  Trim Out (ms)
+                  Trim końca (ms)
                   <input
                     className={styles.lengthInput}
                     type="number"
@@ -7129,9 +7129,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 </label>
                 <label className={styles.inspField}>
-                  Gain clip (dB)
+                  Gain klipu (dB)
                   <Slider
-                    aria-label="Gain clip"
+                    aria-label="Gain klipu"
                     min={-24}
                     max={12}
                     step={0.5}
@@ -7151,7 +7151,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade In (ms)
                   <Slider
-                    aria-label="Fade in"
+                    aria-label="Fade In"
                     min={0}
                     max={2000}
                     step={10}
@@ -7169,7 +7169,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <label className={styles.inspField}>
                   Fade Out (ms)
                   <Slider
-                    aria-label="Fade out"
+                    aria-label="Fade Out"
                     min={0}
                     max={2000}
                     step={10}
@@ -7199,7 +7199,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       );
                     }}
                   />{" "}
-                  Loop
+                  Pętla
                 </label>
               </div>
             ) : selectedDockAudioTrack ? (
@@ -7453,7 +7453,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       min={1}
                       step={1}
                       value={countdownBars(draftProject!, selectedClip)}
-                      aria-label="Długość Countdown w taktach"
+                      aria-label="Długość Odliczania w taktach"
                       onChange={(e) => onCountdownBarsChange(e.target.value)}
                     />
                   </label>
@@ -7570,7 +7570,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         <div
           className={styles.touchNudge}
           role="toolbar"
-          aria-label="Przesuń i rozciągnij clip"
+          aria-label="Przesuń i rozciągnij klip"
         >
           <button
             type="button"
@@ -7846,7 +7846,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     setUgModalOpen(true);
                   }}
                 >
-                  Import UG
+                  Importuj UG
                 </Button>
               </div>
             </div>
@@ -7869,7 +7869,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           />
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
-              <h2 id="ug-import-title">Import Ultimate Guitar</h2>
+              <h2 id="ug-import-title">Importuj Ultimate Guitar</h2>
               <ShellIconButton
                 label="Zamknij"
                 onClick={() => setUgModalOpen(false)}
