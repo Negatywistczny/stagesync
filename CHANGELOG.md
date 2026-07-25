@@ -20,10 +20,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR: tryby Dołącz | Performer | Console.
 - **Nazwa urządzenia:** przed Client / Admin / Timeline urządzenie bez zapisanej nazwy dostaje prompt „Podaj swoje imię lub nazwę urządzenia.”; nazwa widać na liście klientów (Scena) i da się ją zmienić w ustawieniach.
 - **Motyw sceniczny:** w Korekcie na scenie realizator może włączyć blokadę motywu na Clientach (jasny / wysoki kontrast) — nadpisuje lokalny wygląd tabletu do zdjęcia blokady; lokalne przełączniki na Clientcie są wtedy wyłączone.
+- **PIN operatora:** gdy host ma ustawiony kod PIN, Admin i Timeline proszą o odblokowanie przed edycją; Client może odblokować edycję notatek w ustawieniach — bez kont OAuth.
 
 #### ⚙️ Serwer & API
 - **Downloads:** host serwuje APK Performer i Console spod `/downloads/` (404 z komunikatem, gdy artefakt nie leży na dysku) oraz paczki UI do jawnej aktualizacji Offline-First (pełna i warianty roli Performer / Console).
 - **Health / UI sync:** health zwraca wersję protokołu i hash interfejsu (pełny oraz opcjonalnie per rola); manifest UI listuje assety do synchronizacji na telefonie.
+- **PIN operatora:** opcjonalny `STAGESYNC_OPERATOR_PIN` blokuje destrukcyjne mutacje REST (projekt, setlista, ustawienia, MIDI config, zmiana utworu…); Play/Stop i MIDI Panic bez PIN-u; status `GET /api/system/operator-auth`.
 
 #### 📚 Dokumentacja
 - **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).

@@ -8,6 +8,7 @@ import {
 import { Button } from "@stagesync/ui";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { DeviceNameFields } from "./DeviceNameFields.js";
+import { OperatorPinFields } from "./OperatorPinFields.js";
 import {
   DEVICE_DISPLAY_NAME_CHANGED_EVENT,
   DEVICE_DISPLAY_NAME_MAX,
@@ -1005,6 +1006,7 @@ function GlobalSettingsFields({
         Polskie nazwy sekcji
       </ShellSwitchRow>
       <DeviceNameFields />
+      <OperatorPinFields />
       <ChangeServerControl entryPath="/client" />
     </>
   );

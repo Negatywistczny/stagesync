@@ -8,6 +8,7 @@ import {
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
+import { mergeApiHeaders } from "../lib/operatorPin.js";
 import { transportStateFromTick } from "../lib/timelineLocator.js";
 
 export type TransportCommandResult = {
@@ -56,7 +57,7 @@ export async function loadTransport(
   const body = TransportLoadBodySchema.parse({ projectId });
   const res = await fetch("/api/transport/load", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(body),
   });
   return parseTick(res);

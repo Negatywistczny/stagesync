@@ -1,4 +1,5 @@
 import { ProjectSchema, type Project } from "@stagesync/shared";
+import { mergeApiHeaders } from "./operatorPin.js";
 
 async function readApiError(res: Response): Promise<string> {
   let message = `HTTP ${res.status}`;
@@ -30,7 +31,7 @@ export async function uploadProjectAudio(
   }
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/assets`,
-    { method: "POST", body: form },
+    { method: "POST", body: form, headers: mergeApiHeaders() },
   );
   if (!res.ok) {
     throw new Error(await readApiError(res));
@@ -47,7 +48,7 @@ export async function deleteProjectAsset(
 ): Promise<Project> {
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/assets/${encodeURIComponent(assetId)}`,
-    { method: "DELETE" },
+    { method: "DELETE", headers: mergeApiHeaders() },
   );
   if (!res.ok) {
     throw new Error(await readApiError(res));

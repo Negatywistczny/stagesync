@@ -38,6 +38,8 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 | `GET` | `/api/system/browse` | Picker katalogów (repo + home) |
 | `GET` | `/api/system/update-status` | Porównanie wersji vs GitHub Releases (Docker); w shellu desktop — soft skip |
 | `POST` | `/api/system/apply-update` | Trigger Watchtower (`STAGESYNC_UPDATER_*`); inaczej **501** |
+| `GET` | `/api/system/operator-auth` | `{ required }` — czy host ma `STAGESYNC_OPERATOR_PIN` |
+| `POST` | `/api/system/operator-auth` | `{ pin }` — weryfikacja PIN (**200** / **403**); bez mutacji stanu |
 | `POST` | `/api/system/restart` | Restart procesu (lifecycle); LAN wymaga tokenu / allow |
 | `POST` | `/api/system/shutdown` | Shutdown procesu; LAN wymaga tokenu / allow |
 | `GET` | `/api/system/diagnostics/export` | ZIP logów + meta (loopback lub host token) |
@@ -45,6 +47,11 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 Restart / shutdown / diagnostics z LAN: `Authorization: Bearer …` lub
 `X-Stagesync-Host-Token` = `STAGESYNC_HOST_TOKEN`, albo
 `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1`. Loopback zawsze OK.
+
+Gdy ustawiony `STAGESYNC_OPERATOR_PIN`, destrukcyjne mutacje REST wymagają
+`X-Stagesync-Operator-Pin` (alias `X-StageSync-PIN`). Wyjątki bez PIN-u:
+transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
+(własny ACL).
 
 ### Downloads (sideload / UI bundle)
 

@@ -34,6 +34,16 @@ Z LAN wymagają `Authorization: Bearer <STAGESYNC_HOST_TOKEN>` **albo**
 z `localStorage.stagesync.hostToken` gdy ustawiony — w UI: zakładka **Host**
 (przyciski restart / shutdown w nagłówku Admina; PR [#257](https://github.com/Negatywistczny/stagesync/pull/257)).
 
+### Operator PIN (opcjonalny)
+
+Ustaw `STAGESYNC_OPERATOR_PIN` w `.env`, aby chronić destrukcyjne mutacje REST
+(projekt, setlista, live desk, ustawienia, MIDI config, `transport/load` itd.).
+Transport Play/Pause/Stop/Seek/Loop oraz MIDI Panic **nie** wymagają PIN-u.
+Admin i Timeline proszą o PIN przy wejściu; Client — w ustawieniach przy edycji
+notatek/form. Nagłówek: `X-Stagesync-Operator-Pin` (alias `X-StageSync-PIN`).
+Status: `GET /api/system/operator-auth` → `{ required: boolean }`.
+Bez OAuth / kont użytkowników.
+
 ## Produkcja z GHCR (compose.prod.yml)
 
 ### 1. Logowanie do GHCR
@@ -175,6 +185,7 @@ w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
 | `STAGESYNC_GITHUB_TOKEN` | — | PAT do GitHub Releases API (update-status na Docker/host; desktop sidecar pomija) |
 | `STAGESYNC_HOST_TOKEN` | — | Bearer / `X-Stagesync-Host-Token` dla restart/shutdown z LAN |
 | `STAGESYNC_ALLOW_REMOTE_LIFECYCLE` | — | `1` = pozwól na restart/shutdown spoza localhost bez tokenu |
+| `STAGESYNC_OPERATOR_PIN` | — | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`) |
 
 Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).
 

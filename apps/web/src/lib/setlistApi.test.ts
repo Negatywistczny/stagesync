@@ -113,7 +113,10 @@ describe("setlistApi", () => {
 
     expect(fetchMock.mock.calls[0]![0]).toBe("/api/stage/message");
     expect(fetchMock.mock.calls[2]![0]).toBe("/api/stage/messages/m1");
-    expect(fetchMock.mock.calls[3]![1]).toEqual({ method: "DELETE" });
+    expect(fetchMock.mock.calls[3]![1]).toEqual({
+      method: "DELETE",
+      headers: {},
+    });
   });
 
   it("fetchStageClients returns clients array", async () => {

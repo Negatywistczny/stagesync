@@ -1,4 +1,5 @@
 import type { SetlistItem, SetlistView } from "@stagesync/shared";
+import { mergeApiHeaders } from "./operatorPin.js";
 
 async function readApiError(res: Response): Promise<string> {
   let message = `HTTP ${res.status}`;
@@ -27,7 +28,7 @@ export async function putSetlist(body: {
 }): Promise<SetlistView> {
   const res = await fetch("/api/setlist", {
     method: "PUT",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -41,7 +42,7 @@ export async function patchSetlistAutoAdvance(
 ): Promise<SetlistView> {
   const res = await fetch("/api/setlist/auto-advance", {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({ enabled }),
   });
   if (!res.ok) {
@@ -58,7 +59,7 @@ export async function sendStageMessage(body: {
 }): Promise<SessionStageMessage[]> {
   const res = await fetch("/api/stage/message", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -92,6 +93,7 @@ export async function dismissStageMessage(
 ): Promise<SessionStageMessage[]> {
   const res = await fetch(`/api/stage/messages/${encodeURIComponent(id)}`, {
     method: "DELETE",
+    headers: mergeApiHeaders(),
   });
   if (!res.ok) {
     throw new Error(await readApiError(res));
@@ -101,7 +103,10 @@ export async function dismissStageMessage(
 }
 
 export async function clearStageMessages(): Promise<void> {
-  const res = await fetch("/api/stage/messages", { method: "DELETE" });
+  const res = await fetch("/api/stage/messages", {
+    method: "DELETE",
+    headers: mergeApiHeaders(),
+  });
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
@@ -145,7 +150,7 @@ export async function patchLiveDesk(
 ): Promise<LiveDeskSettingsDto> {
   const res = await fetch("/api/live-desk", {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -177,7 +182,10 @@ export async function fetchHostLogs(): Promise<HostLogLine[]> {
 }
 
 export async function clearHostLogs(): Promise<void> {
-  const res = await fetch("/api/system/logs/clear", { method: "POST" });
+  const res = await fetch("/api/system/logs/clear", {
+    method: "POST",
+    headers: mergeApiHeaders(),
+  });
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
@@ -187,7 +195,7 @@ export async function clearHostLogs(): Promise<void> {
 export async function downloadDiagnosticsExport(): Promise<void> {
   const res = await fetch("/api/system/diagnostics/export", {
     cache: "no-store",
-    headers: hostLifecycleHeaders(),
+    headers: mergeApiHeaders(hostLifecycleHeaders()),
   });
   if (!res.ok) {
     throw new Error(await readApiError(res));
@@ -340,7 +348,7 @@ export async function putMidiHostConfig(body: {
 }): Promise<MidiHostStatus> {
   const res = await fetch("/api/midi/config", {
     method: "PUT",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -400,6 +408,13 @@ function hostLifecycleHeaders(): HeadersInit {
   return {};
 }
 
+function hostMutatingHeaders(extra?: HeadersInit): HeadersInit {
+  return mergeApiHeaders({
+    ...hostLifecycleHeaders(),
+    ...(extra ?? {}),
+  });
+}
+
 
 export type ServerSettingsValues = {
   PORT: string;
@@ -453,10 +468,9 @@ export async function putServerSettings(
 ): Promise<ServerSettingsResponse> {
   const res = await fetch("/api/system/settings", {
     method: "PUT",
-    headers: {
+    headers: hostMutatingHeaders({
       "content-type": "application/json",
-      ...hostLifecycleHeaders(),
-    },
+    }),
     body: JSON.stringify({ values }),
   });
   if (!res.ok) {
@@ -517,7 +531,7 @@ export async function fetchHostUpdateStatus(): Promise<HostUpdateStatus> {
 export async function postApplyHostUpdate(): Promise<void> {
   const res = await fetch("/api/system/apply-update", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({ target: "host" }),
   });
   if (!res.ok) {

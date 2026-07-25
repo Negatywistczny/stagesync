@@ -41,6 +41,7 @@ import {
   publishSetlistHubFromStores,
   type SetlistHub,
 } from "./transport/setlist-hub.js";
+import { createOperatorPinMiddleware } from "./operator-pin.js";
 
 function resolveServiceVersion(): string {
   const staged = process.env.STAGESYNC_VERSION?.trim();
@@ -207,6 +208,9 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   });
 
   mountUiMetaRoutes(app, uiMeta, staticDir);
+
+  // Optional Operator PIN on destructive Admin REST (see operator-pin.ts).
+  app.use(createOperatorPinMiddleware());
 
   app.use("/api/library", createLibraryRouter(stores));
   app.use("/api/projects", createProjectsRouter(stores, transport));

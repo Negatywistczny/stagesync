@@ -18,6 +18,10 @@ import {
   writeManagedSettings,
 } from "../env-settings.js";
 import {
+  isOperatorPinRequired,
+  verifyOperatorPin,
+} from "../operator-pin.js";
+import {
   listBrowseDirectory,
   resolveBrowseStartPath,
 } from "../path-browser.js";
@@ -221,6 +225,28 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
   const version = deps.version ?? process.env.npm_package_version ?? "0.0.0";
   const dataDir = deps.dataDir ?? null;
   const router = Router();
+
+  router.get("/operator-auth", (_req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.json({ required: isOperatorPinRequired() });
+  });
+
+  router.post("/operator-auth", (req, res) => {
+    const pin =
+      typeof req.body?.pin === "string" ? req.body.pin : "";
+    if (!isOperatorPinRequired()) {
+      res.json({ ok: true, required: false });
+      return;
+    }
+    if (!verifyOperatorPin(pin)) {
+      res.status(403).json({
+        ok: false,
+        error: "Nieprawidłowy PIN operatora.",
+      });
+      return;
+    }
+    res.json({ ok: true, required: true });
+  });
 
   router.get("/logs", (_req, res) => {
     res.json({ lines: logBuffer.getLines() });

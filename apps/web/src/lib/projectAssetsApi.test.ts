@@ -55,7 +55,7 @@ describe("projectAssetsApi", () => {
     await deleteProjectAsset(project.id, "asset/1");
     expect(fetchMock).toHaveBeenCalledWith(
       `/api/projects/${project.id}/assets/asset%2F1`,
-      { method: "DELETE" },
+      { method: "DELETE", headers: {} },
     );
   });
 

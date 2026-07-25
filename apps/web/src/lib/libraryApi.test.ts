@@ -229,6 +229,7 @@ describe("libraryApi", () => {
     await deleteProject(project.id);
     expect(fetchMock).toHaveBeenCalledWith(`/api/projects/${project.id}`, {
       method: "DELETE",
+      headers: {},
     });
 
     await expect(deleteProject("  ")).rejects.toThrow(

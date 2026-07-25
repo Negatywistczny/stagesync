@@ -7,6 +7,7 @@ import {
   type Project,
   type PutProjectBody,
 } from "@stagesync/shared";
+import { mergeApiHeaders } from "./operatorPin.js";
 
 async function readApiError(res: Response): Promise<string> {
   let message = `HTTP ${res.status}`;
@@ -50,7 +51,7 @@ export async function createProject(
   });
   const res = await fetch("/api/projects", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: mergeApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -64,7 +65,7 @@ export async function batchMidiProgramIds(
 ): Promise<Library> {
   const res = await fetch("/api/library/batch-midi-pc", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: mergeApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ assignments }),
   });
   if (!res.ok) {
@@ -78,7 +79,7 @@ export async function exportLibraryPack(
 ): Promise<Blob> {
   const res = await fetch("/api/library/export", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: mergeApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ projectIds }),
   });
   if (!res.ok) {
@@ -99,7 +100,7 @@ export async function importLibraryPack(
 ): Promise<ImportLibraryResult> {
   const res = await fetch("/api/library/import", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: mergeApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(pack),
   });
   if (!res.ok) {
@@ -137,7 +138,7 @@ export async function putProject(id: string, project: Project): Promise<Project>
   const body = toPutBody(project);
   const res = await fetch(`/api/projects/${encodeURIComponent(id)}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: mergeApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -165,6 +166,7 @@ export async function deleteProject(id: string): Promise<void> {
   }
   const res = await fetch(`/api/projects/${encodeURIComponent(id)}`, {
     method: "DELETE",
+    headers: mergeApiHeaders(),
   });
   if (!res.ok) {
     throw new Error(await readApiError(res));
