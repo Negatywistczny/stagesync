@@ -5,6 +5,7 @@ import {
   type Project,
 } from "@stagesync/shared";
 import {
+  mergeAkordyWithCountdownDigits,
   buildGridLiveContext,
   compressBarChordsToProgression,
   cycleGridTemplateColumns,
@@ -488,4 +489,49 @@ describe("clientGrid", () => {
     expect(info?.barIndexInSection).toBeGreaterThanOrEqual(0);
   });
 
+
+  it("mergeAkordyWithCountdownDigits synth inside CD and strips legacy", () => {
+    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
+    const inside = mergeAkordyWithCountdownDigits(p, cd.startTicks);
+    expect(inside.some((c) => /^\d+$/.test(c.symbol) || c.id.includes("cd"))).toBe(
+      true,
+    );
+    const past = mergeAkordyWithCountdownDigits(
+      p,
+      cd.startTicks + cd.lengthTicks + 1,
+    );
+    expect(past.every((c) => !/^cd-chord-/i.test(c.id))).toBe(true);
+
+    const dirty = {
+      ...p,
+      akordy: {
+        clips: [
+          {
+            id: "cd-chord-legacy",
+            startTicks: 0,
+            lengthTicks: 100,
+            symbol: "C",
+          },
+          {
+            id: "real",
+            startTicks: -10,
+            lengthTicks: 100,
+            symbol: "3",
+          },
+          {
+            id: "keep",
+            startTicks: 5000,
+            lengthTicks: 100,
+            symbol: "Am",
+          },
+        ],
+      },
+    };
+    const cleaned = mergeAkordyWithCountdownDigits(
+      dirty,
+      cd.startTicks + cd.lengthTicks + 1,
+    );
+    expect(cleaned.map((c) => c.id)).toEqual(["keep"]);
+  });
 });
