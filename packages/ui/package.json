@@ -9,7 +9,8 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./button.css": "./src/button.css"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

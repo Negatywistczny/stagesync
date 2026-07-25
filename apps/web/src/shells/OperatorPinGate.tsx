@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import {
   fetchOperatorPinRequired,
   getStoredOperatorPin,
@@ -98,8 +98,7 @@ export function OperatorPinGate({ children }: { children: ReactNode }) {
           Play/Stop działa bez PIN-u.
         </p>
         <form className={styles.form} onSubmit={(e) => void onSubmit(e)}>
-          <input
-            className={styles.input}
+          <Input
             type="password"
             inputMode="numeric"
             autoComplete="one-time-code"

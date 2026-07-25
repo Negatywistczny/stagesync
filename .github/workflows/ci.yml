@@ -63,6 +63,14 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Lint SS CSS (no ad-hoc HEX / fractional rem)
+        run: pnpm lint:ss-css
+
+      - name: Sync launcher UI vendor + desktop launcher tests
+        run: |
+          pnpm sync:launcher-ui
+          pnpm --filter @stagesync/desktop test
+
       - name: Check types
         run: pnpm check-types
 

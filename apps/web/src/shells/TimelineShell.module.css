@@ -82,8 +82,9 @@
 }
 
 .snapPickerSelect {
-  min-width: 4.5rem;
-  max-width: 6.5rem;
+  min-width: calc(var(--ss-space-16) + var(--ss-space-2));
+  max-width: calc(var(--ss-space-16) + var(--ss-space-6));
+  min-height: auto;
   padding: var(--ss-space-1) 0;
   border: none;
   background: transparent;
@@ -1935,12 +1936,21 @@
 }
 
 .shell[data-tl-tier="mobile"] .metaChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ss-space-8);
+  padding: 0 var(--ss-space-2);
   pointer-events: none;
   cursor: default;
   color: var(--ss-color-text-muted);
-  border-color: var(--ss-color-border-muted);
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-sm);
   background: transparent;
-  opacity: 0.72;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ss-leading-compact);
+  opacity: 0.92;
 }
 
 .shell[data-tl-tier="mobile"] .formaClip,
@@ -1950,8 +1960,28 @@
 
 .shell[data-tl-tier="mobile"] .toolBar,
 .shell[data-tl-tier="mobile"] .transportExtras,
-.shell[data-tl-tier="mobile"] .songClusterExtra {
+.shell[data-tl-tier="mobile"] .songClusterExtra,
+.shell[data-tl-tier="mobile"] .dockAddTrack,
+.shell[data-tl-tier="mobile"] .dockFillHit,
+.shell[data-tl-tier="mobile"] .snapPicker {
   display: none;
+}
+
+.shell[data-tl-tier="mobile"] .status {
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-2) var(--ss-space-3);
+}
+
+.shell[data-tl-tier="mobile"] .zooms {
+  margin-left: 0;
+  padding-left: 0;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2) var(--ss-space-3);
+}
+
+.shell[data-tl-tier="mobile"] .zoomRange {
+  width: var(--ss-space-12);
 }
 
 .shell[data-tl-tier="mobile"] .toolbar {

@@ -1,0 +1,10 @@
+.ss-segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-1);
+}
+
+.ss-segmented > .ss-btn {
+  flex: 0 0 auto;
+}

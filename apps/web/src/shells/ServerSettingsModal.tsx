@@ -1,5 +1,5 @@
 import { useId, useEffect, useRef, useState, type ReactNode } from "react";
-import { Button, Slider } from "@stagesync/ui";
+import { Button, Input, Select, Slider, Textarea } from "@stagesync/ui";
 import {
   applyAppearance,
   readAppearance,
@@ -531,8 +531,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
             <legend className={styles.legend}>Urządzenia Wyjściowe</legend>
             <label className={styles.field}>
               <span className={styles.label}>Wyjście audio</span>
-              <select
-                className={styles.select}
+              <Select
                 disabled={saveBusy}
                 value={draft.sinkId}
                 aria-label="Wyjście audio"
@@ -546,7 +545,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     {d.label || d.deviceId}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </fieldset>
 
@@ -656,8 +655,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 <legend className={styles.legend}>Porty MIDI</legend>
                 <label className={styles.field}>
                   <span className={styles.label}>Wejście MIDI</span>
-                  <select
-                    className={styles.select}
+                  <Select
                     disabled={saveBusy || !midiStatus.available}
                     value={midiDraft.inputId ?? ""}
                     aria-label="Wejście MIDI"
@@ -682,12 +680,11 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                         {p.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className={styles.field}>
                   <span className={styles.label}>Wyjście MIDI</span>
-                  <select
-                    className={styles.select}
+                  <Select
                     disabled={saveBusy || !midiStatus.available}
                     value={midiDraft.outputId ?? ""}
                     aria-label="Wyjście MIDI"
@@ -712,14 +709,13 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                         {p.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className={styles.field}>
                   <span className={styles.label}>
                     Kanał wejściowy Program Change
                   </span>
-                  <select
-                    className={styles.select}
+                  <Select
                     disabled={saveBusy || !midiStatus.available}
                     value={
                       midiDraft.inputChannel == null
@@ -748,14 +744,13 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                         Kanał {i + 1}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className={styles.field}>
                   <span className={styles.label}>
                     Kanał wyjściowy Program Change
                   </span>
-                  <select
-                    className={styles.select}
+                  <Select
                     disabled={saveBusy || !midiStatus.available}
                     value={String(midiDraft.outputChannel)}
                     aria-label="Kanał wyjściowy Program Change"
@@ -779,7 +774,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                         Kanał {i + 1}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className={styles.checkRow}>
                   <input
@@ -909,8 +904,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>Dźwięk metronomu</legend>
             <div className={styles.timbreRow}>
-              <select
-                className={styles.select}
+              <Select
                 value={draft.metro.timbre}
                 aria-label="Dźwięk metronomu"
                 onChange={(e) =>
@@ -926,7 +920,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 <option value="default">Domyślny</option>
                 <option value="woodblock">Woodblock</option>
                 <option value="bell">Bell</option>
-              </select>
+              </Select>
               <Button
                 type="button"
                 variant="secondary"
@@ -962,11 +956,11 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 </label>
                 <label className={styles.field}>
                   <span className={styles.label}>Bind host</span>
-                  <select className={styles.select} value={server.STAGESYNC_BIND_HOST || "0.0.0.0"}
+                  <Select value={server.STAGESYNC_BIND_HOST || "0.0.0.0"}
                     onChange={(e) => setServer({ ...server, STAGESYNC_BIND_HOST: e.target.value })} aria-label="Host nasłuchu">
                     <option value="0.0.0.0">0.0.0.0 (LAN)</option>
                     <option value="127.0.0.1">localhost</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className={styles.checkRow}>
                   <input type="checkbox" checked={Boolean(server.STAGESYNC_DISABLE_MDNS)}
@@ -978,13 +972,13 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 <legend className={styles.legend}>Logi &amp; Utrzymanie</legend>
                 <label className={styles.field}>
                   <span className={styles.label}>Poziom logów</span>
-                  <select className={styles.select} value={server.LOG_LEVEL || "info"}
+                  <Select value={server.LOG_LEVEL || "info"}
                     onChange={(e) => setServer({ ...server, LOG_LEVEL: e.target.value })} aria-label="Poziom logów">
                     <option value="info">info</option>
                     <option value="debug">debug</option>
                     <option value="warn">warn</option>
                     <option value="error">error</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className={styles.checkRow}>
                   <input type="checkbox" checked={!server.STAGESYNC_DISABLE_AUTO_UPDATE}
@@ -993,12 +987,12 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 </label>
                 <label className={styles.field}>
                   <span className={styles.label}>Kanał aktualizacji</span>
-                  <select className={styles.select} value={server.STAGESYNC_UPDATE_CHANNEL || "stable"}
+                  <Select value={server.STAGESYNC_UPDATE_CHANNEL || "stable"}
                     onChange={(e) => setServer({ ...server, STAGESYNC_UPDATE_CHANNEL: e.target.value })} aria-label="Kanał">
                     <option value="stable">Stable</option>
                     <option value="beta">Beta</option>
                     <option value="rc">RC</option>
-                  </select>
+                  </Select>
                 </label>
               </fieldset>
               <details className={styles.fieldset}>
@@ -1011,7 +1005,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   <label key={key} className={styles.field}>
                     <span className={styles.label}>{label}</span>
                     <div className={styles.latencyRow}>
-                      <input className={styles.select} style={{ flex: 1 }} type="text" value={String(server[key] ?? "")}
+                      <Input style={{ flex: 1 }} type="text" value={String(server[key] ?? "")}
                         placeholder={ph ?? ""} onChange={(e) => setServer({ ...server, [key]: e.target.value })} aria-label={label} />
                       <Button
                         variant="secondary"

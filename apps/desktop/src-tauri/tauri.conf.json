@@ -1,13 +1,13 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "StageSync",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "identifier": "com.stagesync.app",
   "build": {
     "frontendDist": "../launcher",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeDevCommand": "npx --yes serve ./launcher -l 1420 --no-clipboard",
-    "beforeBuildCommand": ""
+    "beforeDevCommand": "node ../../launch/scripts/sync-launcher-ui.mjs && npx --yes serve ./launcher -l 1420 --no-clipboard",
+    "beforeBuildCommand": "node ../../launch/scripts/sync-launcher-ui.mjs"
   },
   "app": {
     "withGlobalTauri": true,

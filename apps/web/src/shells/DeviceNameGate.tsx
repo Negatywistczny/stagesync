@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import {
   DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
@@ -52,8 +52,7 @@ export function DeviceNameGate({ children }: { children: ReactNode }) {
         </h1>
         <p className={styles.muted}>Podaj swoje imię lub nazwę urządzenia.</p>
         <form className={styles.form} onSubmit={onSubmit}>
-          <input
-            className={styles.input}
+          <Input
             maxLength={DEVICE_DISPLAY_NAME_MAX}
             placeholder="np. Ania · saksofon"
             value={draft}

@@ -37,6 +37,7 @@ import {
   ServerSettingsModal,
   type PreferencesTab,
 } from "./ServerSettingsModal.js";
+import { QrWrap } from "./shared/index.js";
 import styles from "./DesktopMenuBridge.module.css";
 
 function Modal({
@@ -213,11 +214,7 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
           </p>
         ) : null}
         {activeUrl && qrSvg ? (
-          <div
-            className={styles.qrWrap}
-            aria-label={`Kod QR dla ${activeUrl}`}
-            dangerouslySetInnerHTML={{ __html: qrSvg }}
-          />
+          <QrWrap svg={qrSvg} aria-label={`Kod QR dla ${activeUrl}`} />
         ) : null}
         {mode === "join" && urls.length > 0 ? (
           <ul className={styles.urlList} aria-label="Adresy sieciowe">

@@ -14,10 +14,14 @@ przycisków CSS w shellach.
 | `variant` | `"primary"` \| `"secondary"` \| `"ghost"` | Hierarchia wizualna (domyślnie `primary`) |
 | `loading` | `boolean` | Spinner + blokada interakcji |
 | `selected` | `boolean` | Toggle; ustawia `aria-pressed` |
-| `iconOnly` | `boolean` | Kwadrat 36×36 (`ss-btn--icon`) |
+| `iconOnly` | `boolean` | Kwadrat `touch-min` (`ss-btn--icon`) |
 | `disabled` | `boolean` | Natywna blokada |
 | `className` | `string` | Dodatkowe klasy |
 | … | atrybuty `<button>` | `type`, `onClick`, itd. (bez `children` w Omit) |
+
+**Desktop launcher (bez React):** te same klasy `ss-btn` / `ss-btn--*` z
+`pnpm sync:launcher-ui` → `apps/desktop/launcher/vendor/button.css`
+([ADR 0014](../adr/0014-desktop-launcher.md)).
 
 ## Stany (zamknięty zbiór)
 

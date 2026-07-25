@@ -38,4 +38,23 @@ describe("SettingsPopover", () => {
     expect(dialog.parentElement).toBe(document.body);
     expect(dialog.className).toMatch(/portaled/);
   });
+
+  it("copies --ss-touch-min from the anchor tree onto the portaled panel", async () => {
+    render(
+      <div style={{ ["--ss-touch-min" as string]: "44px" }}>
+        <SettingsPopoverAnchor>
+          <button type="button">trigger</button>
+          <SettingsPopover title="Ustawienia globalne" onClose={() => {}}>
+            <p>treść</p>
+          </SettingsPopover>
+        </SettingsPopoverAnchor>
+      </div>,
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Ustawienia globalne",
+    });
+    await vi.waitFor(() => {
+      expect(dialog.style.getPropertyValue("--ss-touch-min")).toBe("44px");
+    });
+  });
 });

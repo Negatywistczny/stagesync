@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { renderSVG } from "uqr";
 import { Button } from "@stagesync/ui";
 import {
+  MetricGrid,
+  NetworkUrlList,
+  QrWrap,
+} from "../shared/index.js";
+import {
   clearHostLogs,
   downloadDiagnosticsExport,
   fetchNetworkInfo,
@@ -43,7 +48,7 @@ export type SystemViewProps = {
   onAutoCheckUpdateConsumed?: () => void;
 };
 
-/** Admin Host — 2×2 cards + collapsible log strip. */
+/** Admin Host — 2×2 content-height cards + collapsible log strip. */
 export function SystemView({
   statusMsg,
   autoCheckUpdate = false,
@@ -58,7 +63,7 @@ export function SystemView({
   const [consoleApkUrl, setConsoleApkUrl] = useState<string | null>(null);
   const [performerApkReady, setPerformerApkReady] = useState(false);
   const [consoleApkReady, setConsoleApkReady] = useState(false);
-  const [copiedIp, setCopiedIp] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [safety, setSafety] = useState<SafetyNetStatus | null>(null);
@@ -70,10 +75,10 @@ export function SystemView({
   pausedRef.current = paused;
 
   useEffect(() => {
-    if (!copiedIp) return;
-    const t = window.setTimeout(() => setCopiedIp(false), 2000);
+    if (!copiedUrl) return;
+    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
     return () => window.clearTimeout(t);
-  }, [copiedIp]);
+  }, [copiedUrl]);
 
   const refreshMidi = useCallback(async () => {
     try {
@@ -163,17 +168,6 @@ export function SystemView({
   }, []);
 
   const primaryUrl = network ? pickPrimaryJoinUrl(network) : null;
-  const displayIp =
-    network?.lanAddresses[0] ??
-    (primaryUrl
-      ? (() => {
-          try {
-            return new URL(primaryUrl).hostname;
-          } catch {
-            return network?.hostname ?? null;
-          }
-        })()
-      : (network?.hostname ?? null));
 
   const qrSvg = useMemo(() => {
     if (!primaryUrl) return null;
@@ -201,7 +195,7 @@ export function SystemView({
     const ch =
       midi.config.inputChannel == null
         ? "Omni"
-        : `Ch ${midi.config.inputChannel + 1}`;
+        : `Kanał ${midi.config.inputChannel + 1}`;
     return `${name} (${ch})`;
   })();
 
@@ -212,7 +206,7 @@ export function SystemView({
       midi.config.outputId ??
       "—";
     if (!midi.config.outputId) return name;
-    const ch = `Ch ${(midi.config.outputChannel ?? 0) + 1}`;
+    const ch = `Kanał ${(midi.config.outputChannel ?? 0) + 1}`;
     return `${name} (${ch})`;
   })();
 
@@ -233,50 +227,57 @@ export function SystemView({
               </p>
             ) : null}
             {network ? (
-              <div className={styles.networkRow}>
-                <div className={styles.networkMeta}>
-                  <div className={styles.networkField}>
-                    <p className={styles.networkLabel}>IP</p>
-                    <p className={styles.networkValue}>{displayIp ?? "—"}</p>
-                  </div>
-                  <div className={styles.networkField}>
-                    <p className={styles.networkLabel}>Port</p>
-                    <p className={styles.networkValue}>{network.port}</p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    disabled={!displayIp && !primaryUrl}
-                    onClick={() => {
-                      void (async () => {
-                        const text = displayIp ?? primaryUrl;
-                        if (!text) return;
-                        try {
-                          await navigator.clipboard.writeText(text);
-                          setCopiedIp(true);
-                          setNetworkError(null);
-                        } catch {
-                          setCopiedIp(false);
-                          setNetworkError("Nie udało się skopiować IP");
-                        }
-                      })();
-                    }}
-                  >
-                    {copiedIp ? "Skopiowano" : "Kopiuj IP"}
-                  </Button>
-                  {statusMsg ? (
-                    <p className={shell.muted} role="status">
-                      {statusMsg}
+              <>
+                <div className={styles.networkRow}>
+                  <div className={styles.networkMeta}>
+                    <p className={shell.muted}>
+                      Port <strong>{network.port}</strong> · {network.hostname} ·
+                      v{network.version}
                     </p>
+                    {primaryUrl && qrSvg ? (
+                      <p className={shell.muted}>
+                        <strong>Dołącz do hosta</strong> — zeskanuj QR w tej
+                        samej sieci LAN.
+                      </p>
+                    ) : null}
+                    {statusMsg ? (
+                      <p className={shell.muted} role="status">
+                        {statusMsg}
+                      </p>
+                    ) : null}
+                  </div>
+                  {primaryUrl && qrSvg ? (
+                    <QrWrap
+                      svg={qrSvg}
+                      aria-label={`Kod QR dołączenia: ${primaryUrl}`}
+                    />
                   ) : null}
                 </div>
-                {primaryUrl && qrSvg ? (
-                  <div
-                    className={styles.qrWrap}
-                    aria-label={`Kod QR dołączenia: ${primaryUrl}`}
-                    dangerouslySetInnerHTML={{ __html: qrSvg }}
-                  />
-                ) : null}
-              </div>
+                <NetworkUrlList
+                  urls={network.urls.map((u) => ({
+                    url: u,
+                    action: (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          void (async () => {
+                            try {
+                              await navigator.clipboard.writeText(u);
+                              setCopiedUrl(u);
+                              setNetworkError(null);
+                            } catch {
+                              setCopiedUrl(null);
+                              setNetworkError("Nie udało się skopiować URL");
+                            }
+                          })();
+                        }}
+                      >
+                        {copiedUrl === u ? "Skopiowano" : "Kopiuj"}
+                      </Button>
+                    ),
+                  }))}
+                />
+              </>
             ) : networkError ? null : (
               <p className={shell.muted}>Wczytywanie…</p>
             )}
@@ -333,61 +334,101 @@ export function SystemView({
                       >
                         {safetyBusy ? "Przejmowanie…" : "Przejmij (Master)"}
                       </Button>
-                    ) : null}
+                    ) : (
+                      <p className={shell.muted}>
+                        Host jest Masterem. Spare ustawiasz przez{" "}
+                        <code>STAGESYNC_SAFETY_ROLE=spare</code>.
+                      </p>
+                    )}
                   </>
                 ) : !safetyError ? (
                   <p className={shell.muted}>Ładowanie…</p>
                 ) : null}
               </div>
 
-              <div aria-label="Telemetria MIDI">
-                <p className={styles.sectionLabel}>MIDI</p>
-                {midiError ? (
-                  <p className={shell.error} role="alert">
-                    {midiError}
-                  </p>
-                ) : null}
-                {midi ? (
-                  <>
-                    <div
-                      className={styles.meters}
-                      role="group"
-                      aria-label="Metryki MIDI"
-                    >
-                      <div className={styles.meter}>
-                        <span className={styles.meterLabel}>Clock/s</span>
-                        <span className={styles.meterValue}>
-                          {rateLabel(midi.rates.clockPerSec)}
-                        </span>
+              <div
+                className={styles.sectionSplit}
+                aria-label="Telemetria MIDI"
+              >
+                <p className={styles.sectionLabel}>Telemetria MIDI</p>
+                <div className={shell.midiBody}>
+                  {midiError ? (
+                    <p className={shell.error} role="alert">
+                      {midiError}
+                    </p>
+                  ) : null}
+                  {midi ? (
+                    <>
+                      {midi.clockOutActive || midi.lastError ? (
+                        <p className={shell.muted}>
+                          {[
+                            midi.clockOutActive ? "clock OUT aktywny" : null,
+                            midi.lastError || null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      ) : null}
+                      <MetricGrid
+                        aria-label="Metryki MIDI"
+                        items={[
+                          {
+                            label: "Clock/s",
+                            value: rateLabel(midi.rates.clockPerSec),
+                          },
+                          {
+                            label: "SPP/s",
+                            value: rateLabel(midi.rates.sppPerSec),
+                          },
+                          {
+                            label: "PC/s",
+                            value: rateLabel(midi.rates.pcPerSec),
+                          },
+                          {
+                            label: "Beat→WS",
+                            value: rateLabel(midi.rates.beatToWsPerSec),
+                          },
+                        ]}
+                      />
+                      <div className={shell.midiPorts}>
+                        <div className={shell.midiPortRow}>
+                          <span className={shell.midiLabel}>Wejście</span>
+                          <span
+                            className={shell.midiPortValue}
+                            title={midiInLabel}
+                          >
+                            {midiInLabel}
+                          </span>
+                        </div>
+                        <div className={shell.midiPortRow}>
+                          <span className={shell.midiLabel}>Wyjście</span>
+                          <span
+                            className={shell.midiPortValue}
+                            title={midiOutLabel}
+                          >
+                            {midiOutLabel}
+                          </span>
+                        </div>
+                        <div className={shell.midiPortRow}>
+                          <span className={shell.midiLabel}>Clock OUT</span>
+                          <span className={shell.midiPortValue}>
+                            {midi.config.clockOutEnabled
+                              ? "włączony"
+                              : "wyłączony"}
+                          </span>
+                        </div>
                       </div>
-                      <div className={styles.meter}>
-                        <span className={styles.meterLabel}>PC/s</span>
-                        <span className={styles.meterValue}>
-                          {rateLabel(midi.rates.pcPerSec)}
-                        </span>
-                      </div>
-                      <div className={styles.meter}>
-                        <span className={styles.meterLabel}>In</span>
-                        <span className={styles.meterValue} title={midiInLabel}>
-                          {midiInLabel}
-                        </span>
-                      </div>
-                      <div className={styles.meter}>
-                        <span className={styles.meterLabel}>Out</span>
-                        <span className={styles.meterValue} title={midiOutLabel}>
-                          {midiOutLabel}
-                        </span>
-                      </div>
-                    </div>
-                    {!midi.available ? (
-                      <p className={shell.muted}>
-                        Brak natywnego MIDI w tym środowisku (Docker / CI).
-                      </p>
-                    ) : null}
-                  </>
-                ) : midiError ? null : (
-                  <p className={shell.muted}>Wczytywanie…</p>
-                )}
+                      {!midi.available ? (
+                        <p className={shell.muted}>
+                          Brak natywnego MIDI w tym środowisku (Docker / CI).
+                          Desktop sidecar ładuje urządzenia hosta.
+                        </p>
+                      ) : null}
+                    </>
+                  ) : midiError ? null : (
+                    <p className={shell.muted}>Wczytywanie…</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

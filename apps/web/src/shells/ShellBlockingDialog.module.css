@@ -47,17 +47,6 @@
   color: var(--ss-color-text-muted);
 }
 
-.input {
-  width: 100%;
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text);
-  font: inherit;
-  font-size: var(--ss-text-control);
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

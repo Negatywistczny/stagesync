@@ -53,6 +53,8 @@ const VIEWPORT_PAD_PX = 8;
 type AnchorPos = {
   top: number;
   right: number;
+  /** Inherited from anchor tree (e.g. Client `--ss-touch-min-client`). */
+  touchMin: string;
 };
 
 /**
@@ -105,7 +107,11 @@ export function SettingsPopover({
         top = Math.max(VIEWPORT_PAD_PX, rect.top - ph - gap);
       }
       const right = Math.max(VIEWPORT_PAD_PX, vw - rect.right);
-      setPos({ top, right });
+      // Portaled panel escapes shell roots (Client `.page`) — copy touch target.
+      const touchMin =
+        getComputedStyle(a).getPropertyValue("--ss-touch-min").trim() ||
+        "36px";
+      setPos({ top, right, touchMin });
     }
 
     place();
@@ -134,7 +140,11 @@ export function SettingsPopover({
       style={
         portal
           ? pos
-            ? { top: pos.top, right: pos.right }
+            ? {
+                top: pos.top,
+                right: pos.right,
+                ["--ss-touch-min" as string]: pos.touchMin,
+              }
             : { visibility: "hidden" }
           : undefined
       }

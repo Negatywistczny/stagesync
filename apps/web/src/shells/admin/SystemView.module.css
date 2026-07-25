@@ -1,4 +1,4 @@
-/* Admin Host — 2×2 equal cards + collapsible logs strip */
+/* Admin Host — 2×2 content-height cards + collapsible logs strip */
 
 .root {
   display: flex;
@@ -13,17 +13,19 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
   gap: var(--ss-space-4);
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-content: start;
+  align-items: start;
 }
 
 .card {
   min-width: 0;
-  min-height: 0;
-  height: 100%;
+  height: auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -34,74 +36,29 @@
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: stretch;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   padding: var(--ss-space-3);
-  /* Beat shell.cardBody overflow:auto — no inner scrollbar in Host tiles */
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* —— Połączenie & Sieć —— */
 
 .networkRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--ss-space-4);
-  min-height: 0;
-  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .networkMeta {
-  flex: 1 1 auto;
+  flex: 1 1 10rem;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-2);
   align-items: flex-start;
-}
-
-.networkField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-1);
-  min-width: 0;
-  width: 100%;
-}
-
-.networkLabel {
-  margin: 0;
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-tight);
-  letter-spacing: var(--ss-tracking-wide);
-  text-transform: uppercase;
-  color: var(--ss-color-text-muted);
-}
-
-.networkValue {
-  margin: 0;
-  font-size: var(--ss-text-md);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-tight);
-  color: var(--ss-color-text);
-  font-variant-numeric: tabular-nums;
-  word-break: break-all;
-}
-
-.qrWrap {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  padding: var(--ss-space-2);
-  background: var(--ss-color-bg);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-}
-
-.qrWrap :global(svg) {
-  width: 5.5rem;
-  height: auto;
-  display: block;
 }
 
 /* —— MIDI & Safety Net —— */
@@ -110,8 +67,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
-  min-height: 0;
-  overflow: hidden;
+  min-width: 0;
+}
+
+.sectionSplit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  padding-top: var(--ss-space-3);
+  border-top: 1px solid var(--ss-color-border);
 }
 
 .sectionLabel {
@@ -122,44 +86,6 @@
   letter-spacing: var(--ss-tracking-wide);
   text-transform: uppercase;
   color: var(--ss-color-text-muted);
-}
-
-.meters {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.meter {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-1);
-  min-width: 0;
-  padding: var(--ss-space-2);
-  border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
-}
-
-.meterLabel {
-  margin: 0;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-medium);
-  line-height: var(--ss-leading-tight);
-  white-space: nowrap;
-}
-
-.meterValue {
-  margin: 0;
-  color: var(--ss-color-text);
-  font-size: var(--ss-text-md);
-  font-weight: var(--ss-font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--ss-leading-tight);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* —— Aplikacje Mobilne —— */
@@ -225,8 +151,7 @@
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: flex-start;
-  min-height: 0;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .updateBlock {
@@ -306,22 +231,16 @@
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: 1fr;
-    grid-template-rows: none;
-    overflow-y: auto;
-  }
-
-  .card {
-    height: auto;
-    min-height: 0;
-  }
-
-  .cardBody {
-    overflow: visible;
+    gap: var(--ss-space-3);
   }
 
   .logCardOpen {
     flex: 0 0 10rem;
     height: 10rem;
     max-height: 10rem;
+  }
+
+  .root {
+    gap: var(--ss-space-3);
   }
 }

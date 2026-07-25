@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>StageSync — Launcher</title>
+    <link rel="stylesheet" href="./vendor/tokens.css" />
+    <link rel="stylesheet" href="./vendor/button.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -27,7 +29,7 @@
           <p class="inlineStatus" id="localProgress" hidden></p>
           <button
             type="button"
-            class="btn primary"
+            class="ss-btn ss-btn--primary"
             id="btnLocal"
             disabled
             aria-busy="false"
@@ -38,7 +40,7 @@
           <div class="row localErrorActions" id="localErrorActions" hidden>
             <button
               type="button"
-              class="btn ghost"
+              class="ss-btn ss-btn--ghost"
               id="btnLocalClear"
               hidden
               aria-label="Wyczyść błąd lokalnego hosta"
@@ -47,7 +49,7 @@
             </button>
             <button
               type="button"
-              class="btn secondary"
+              class="ss-btn ss-btn--secondary"
               id="btnLocalDownloadLog"
               hidden
               aria-label="Pobierz log lokalnego hosta"
@@ -66,7 +68,7 @@
             <h2>Wykryte w sieci</h2>
             <button
               type="button"
-              class="btn ghost"
+              class="ss-btn ss-btn--ghost"
               id="btnRefresh"
               aria-busy="false"
               aria-label="Odśwież listę hostów"
@@ -97,7 +99,7 @@
               />
               <button
                 type="submit"
-                class="btn secondary"
+                class="ss-btn ss-btn--secondary"
                 id="btnConnect"
                 aria-label="Połącz z hostem StageSync"
               >
@@ -115,7 +117,7 @@
             <div class="row">
               <button
                 type="button"
-                class="btn secondary"
+                class="ss-btn ss-btn--secondary"
                 id="btnManualRetry"
                 aria-label="Ponów połączenie z hostem"
               >
@@ -123,7 +125,7 @@
               </button>
               <button
                 type="button"
-                class="btn ghost"
+                class="ss-btn ss-btn--ghost"
                 id="btnManualBack"
                 aria-label="Wróć do formularza połączenia"
               >
@@ -137,7 +139,7 @@
             <div class="row">
               <button
                 type="button"
-                class="btn secondary"
+                class="ss-btn ss-btn--secondary"
                 id="btnManualForce"
                 aria-label="Połącz mimo ostrzeżenia o wersji"
               >
@@ -145,7 +147,7 @@
               </button>
               <button
                 type="button"
-                class="btn ghost"
+                class="ss-btn ss-btn--ghost"
                 id="btnManualWarnBack"
                 aria-label="Anuluj i wróć do formularza połączenia"
               >

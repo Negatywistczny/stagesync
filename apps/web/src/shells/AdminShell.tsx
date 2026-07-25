@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@stagesync/ui";
+import { Button, Input, Select, Textarea } from "@stagesync/ui";
+import { MetaBadge, MetaBadgeRow, ShellToolbar } from "./shared/index.js";
 import {
   formatSetDurationMs,
   importUgText,
@@ -544,8 +545,7 @@ export function AdminShell() {
                   {ugError}
                 </p>
               ) : null}
-              <textarea
-                className={styles.textarea}
+              <Textarea
                 rows={10}
                 value={ugText}
                 aria-label="Tekst UG"
@@ -784,16 +784,14 @@ function SongsView({
           </div>
         </div>
         <div className={[styles.cardBody, styles.cardBodyFill].join(" ")}>
-          <div className={styles.toolbar}>
-            <input
-              className={styles.input}
+          <ShellToolbar>
+            <Input
               placeholder="Filtruj…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               aria-label="Filtruj utwory"
             />
-            <select
-              className={styles.select}
+            <Select
               value={sort}
               onChange={(e) => {
                 const v = e.target.value;
@@ -804,7 +802,7 @@ function SongsView({
               <option value="library">Kolejność bazy</option>
               <option value="title">Tytuł A–Z</option>
               <option value="pc">Program Change</option>
-            </select>
+            </Select>
             <Button
               variant="secondary"
               loading={commandPending}
@@ -821,7 +819,7 @@ function SongsView({
             >
               Batch PC
             </Button>
-          </div>
+          </ShellToolbar>
 
           {libraryError ? (
             <p className={styles.error} role="alert">
@@ -857,16 +855,13 @@ function SongsView({
                       </span>
                     ) : null}
                   </span>
-                  <span
-                    className={styles.songBadges}
+                  <MetaBadgeRow
                     aria-label={badges.length > 0 ? badges.join(", ") : undefined}
                   >
                     {badges.map((b, i) => (
-                      <span key={`${b}-${i}`} className={styles.songBadge}>
-                        {b}
-                      </span>
+                      <MetaBadge key={`${b}-${i}`}>{b}</MetaBadge>
                     ))}
-                  </span>
+                  </MetaBadgeRow>
                 </button>
               );
             })}
@@ -922,9 +917,8 @@ function SongsView({
           {selected ? (
             <div className={styles.inspectorHead}>
               <div className={styles.nameRow}>
-                <input
+                <Input
                   id="admin-project-name"
-                  className={styles.input}
                   value={draftName}
                   maxLength={200}
                   disabled={locked}
@@ -1316,8 +1310,7 @@ function BatchPcModal({
       ) : null}
       <label className={styles.field}>
         Start Program Change
-        <input
-          className={styles.input}
+        <Input
           type="number"
           min={0}
           max={127}
@@ -1335,8 +1328,7 @@ function BatchPcModal({
             className={[styles.songRow, styles.songRowPair].join(" ")}
           >
             <span className={styles.songName}>{p.name}</span>
-            <input
-              className={styles.input}
+            <Input
               type="number"
               min={0}
               max={127}

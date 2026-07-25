@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import {
   DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
@@ -48,8 +48,7 @@ export function DeviceNameFields({
   return (
     <form className={styles.wrap} onSubmit={onSubmit}>
       <p className={styles.lab}>Nazwa urządzenia</p>
-      <input
-        className={styles.input}
+      <Input
         maxLength={DEVICE_DISPLAY_NAME_MAX}
         value={draft}
         onChange={(e) => {

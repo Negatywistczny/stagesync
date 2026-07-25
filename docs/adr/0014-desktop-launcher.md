@@ -26,3 +26,5 @@ SPA web jest **same-origin** — nie da się pokazać React Launchera *zanim* is
 - Invoke-only features (updater, …) pełne przy lokalnym `127.0.0.1:4000`; przy remote — soft-cap (Admin HTTP działa).
 - Flaga `STAGESYNC_DISABLE_MDNS` wreszcie steruje prawdziwym advertise.
 - Dokumentacja operatora: [DESKTOP.md](../DESKTOP.md).
+- Style Launchera = kopia `tokens.css` + `button.css` z `@stagesync/ui`
+  (`pnpm sync:launcher-ui`) — bez React, bez ręcznego `:root` / `.btn`.

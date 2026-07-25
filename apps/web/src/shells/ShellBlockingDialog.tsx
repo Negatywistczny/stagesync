@@ -5,7 +5,7 @@ import {
   type FormEvent,
   type RefObject,
 } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import styles from "./ShellBlockingDialog.module.css";
 
 const FOCUSABLE =
@@ -161,10 +161,9 @@ export function ShellPromptDialog({
         </h2>
         <label className={styles.field} htmlFor={inputId}>
           {label}
-          <input
+          <Input
             ref={inputRef}
             id={inputId}
-            className={styles.input}
             defaultValue={defaultValue}
             maxLength={120}
             autoComplete="off"

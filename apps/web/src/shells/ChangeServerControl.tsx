@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import {
   canChangeServer,
   requestNativeChangeServer,
@@ -65,8 +65,7 @@ export function ChangeServerControl({
         </Button>
       ) : (
         <form className={styles.form} onSubmit={onSubmit}>
-          <input
-            className={styles.input}
+          <Input
             type="url"
             inputMode="url"
             autoComplete="off"

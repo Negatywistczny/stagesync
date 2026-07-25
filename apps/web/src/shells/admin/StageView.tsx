@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { MessageSquare, MonitorSmartphone } from "lucide-react";
-import { Button } from "@stagesync/ui";
+import { Button, Select, Textarea } from "@stagesync/ui";
 import {
   clearStageMessages,
   dismissStageMessage,
@@ -405,8 +405,7 @@ export function StageView() {
             ) : null}
 
             <div className={styles.compose}>
-              <textarea
-                className={shell.textarea}
+              <Textarea
                 maxLength={200}
                 placeholder="Treść komunikatu na scenę…"
                 value={text}
@@ -460,8 +459,7 @@ export function StageView() {
                     </Button>
                     <label className={styles.ttlField}>
                       <span className={styles.optionsLabel}>Czas</span>
-                      <select
-                        className={shell.select}
+                      <Select
                         value={String(ttlMs)}
                         disabled={pending}
                         aria-label="Czas wyświetlania komunikatu"
@@ -472,7 +470,7 @@ export function StageView() {
                         <option value="15000">15 s</option>
                         <option value="30000">30 s</option>
                         <option value="0">∞</option>
-                      </select>
+                      </Select>
                     </label>
                   </div>
                   <div className={styles.composePrimary}>

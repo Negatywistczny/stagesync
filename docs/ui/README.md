@@ -9,6 +9,20 @@ komponentów: [`packages/ui`](../../packages/ui/).
 | [typography.md](./typography.md) | `--ss-text-*` / weight / leading / tracking |
 | [spacing.md](./spacing.md) | Siatka `--ss-space-*` + soft-px / wyjątki layoutu |
 | [button.md](./button.md) | `Button` — 7 stanów, props, PWA / touch |
+| [field.md](./field.md) | `Input` / `Select` / `Textarea` / `Field` |
+| [badge.md](./badge.md) | `Badge` (meta chip) |
+| [segmented.md](./segmented.md) | `SegmentedControl` |
+
+## Warstwy SSOT (anty–ad-hoc)
+
+| Warstwa | Wolno | Zakaz |
+|---------|-------|-------|
+| `@stagesync/ui` | Tokeny + prymitywy (`Button`, `Slider`, `Input`, `Field`, `Badge`, `SegmentedControl`, …) | HEX poza `tokens.css`; warianty Button poza primary/secondary/ghost |
+| `apps/web/src/shells/shared/` | Wspólny chrome (PanelCard, MetaBadge, NetworkUrlList, MetricGrid, ShellToolbar) | Duplikowanie geometrii Button/Input |
+| Page CSS Modules | Layout strony, geometria DAW (playhead, lane), soft-px 1–2px | Lokalny `padding`/`font-size`/`min-height` na kontrolkach; ułamkowe `rem`; HEX |
+| Desktop launcher | Layout cold-start; klasy `ss-btn*` z skopiowanego `button.css` | Ręczny `:root` tokenów; mirror `.btn` ([ADR 0014](../adr/0014-desktop-launcher.md) — bez React) |
+
+**Wyjątki świadome:** soft-px (`1px`/`2px`) dla border/outline/divider; canvas Timeline (clip/lane); scenic `roleTile` (nie control-size Button). Bramka: `pnpm lint:ss-css` (`/* ss-css-allow */` tylko z uzasadnieniem).
 
 ## Zasady
 
@@ -20,6 +34,6 @@ komponentów: [`packages/ui`](../../packages/ui/).
   — bez nowych lokalnych SVG w shellach.
 - Wordmark: [`apps/web/src/shells/ShellWordmark.tsx`](../../apps/web/src/shells/ShellWordmark.tsx)
   (`Stage` + amber `Sync`; opcjonalnie suffix roli i wersja).
-- Chrome shelli (współdzielone): `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`, `ShellSwitchRow` w [`apps/web/src/shells/`](../../apps/web/src/shells/).
-- Paleta domyślna: black / amber; motywy `data-theme` — osobne zadanie (TODO).
+- Chrome shelli (współdzielone): `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`, `ShellSwitchRow` oraz `shells/shared/*`.
+- Launcher: `pnpm sync:launcher-ui` kopiuje `tokens.css` + `button.css` do `apps/desktop/launcher/vendor/`.
 - Nie twórz równoległych komponentów UI poza `@stagesync/ui`.

@@ -23,7 +23,8 @@
   padding-top: env(safe-area-inset-top, 0px);
   border-bottom: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
-  min-height: var(--ss-space-10);
+  /* At least chrome row or Client touch target (44), whichever is larger. */
+  min-height: max(var(--ss-space-10), var(--ss-touch-min));
   min-width: 0;
 }
 
@@ -127,7 +128,7 @@
 
 .welcomeBrand {
   justify-content: center;
-  --ss-wordmark-height: 2.25rem;
+  /* wordmark from tokens */
 }
 
 .greetingRow {
@@ -447,7 +448,7 @@
   display: flex;
   align-items: stretch;
   gap: var(--ss-space-1);
-  min-height: clamp(2.5rem, 8vh, 4rem);
+  min-height: var(--ss-stage-header-min);
 }
 
 .karaokeProgressCell {
@@ -512,7 +513,7 @@
 .karaokeLine {
   margin: 0;
   font-size: calc(
-    clamp(2rem, 7vw, 3.75rem) * var(--ss-client-text-scale, 1)
+    var(--ss-text-stage-xl) * var(--ss-client-text-scale, 1)
   );
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-relaxed);
@@ -566,15 +567,15 @@
   margin: 0 auto;
   overflow: hidden;
   --phrase-carousel-ms: 450ms;
-  --chord-hero-next-offset: clamp(5.75rem, 24vw, 9rem);
-  --phrase-bar-size: clamp(4.65rem, 24vw, 9.25rem);
+  --chord-hero-next-offset: var(--ss-stage-chord-next-offset);
+  --phrase-bar-size: var(--ss-stage-phrase-bar);
   --grid-scroll-pad-inline: var(--ss-space-3);
 }
 
 .gridSectionLabel {
   margin: 0;
   width: auto;
-  max-width: calc(100% - 1.5rem);
+  max-width: calc(100% - var(--ss-space-6));
   font-size: var(--ss-text-control);
   font-weight: var(--ss-font-weight-medium);
   line-height: var(--ss-leading-compact);
@@ -582,7 +583,7 @@
   text-transform: uppercase;
   color: var(--ss-color-disabled-text);
   text-align: center;
-  padding: 0.3rem 0.75rem;
+  padding: var(--ss-space-1) var(--ss-space-3);
   border-radius: 9999px;
   background: color-mix(in srgb, var(--ss-color-primary) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
@@ -773,12 +774,12 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 0.12rem;
-  padding-left: 0.65rem;
+  gap: var(--ss-space-1);
+  padding-left: var(--ss-space-3);
   border-left: 1px solid
     color-mix(in srgb, var(--ss-color-border) 85%, transparent);
-  width: clamp(3rem, 14vw, 6.5rem);
-  max-width: 6.5rem;
+  width: var(--ss-stage-grid-col);
+  max-width: calc(var(--ss-space-16) + var(--ss-space-6));
   box-sizing: border-box;
   pointer-events: none;
 }
@@ -814,15 +815,15 @@
 }
 
 .phraseCarouselViewport {
-  width: calc(100% + 2 * var(--grid-scroll-pad-inline, 1.25rem));
+  width: calc(100% + 2 * var(--grid-scroll-pad-inline, var(--ss-stage-grid-pad-inline)));
   max-width: min(
-    calc(100% + 2 * var(--grid-scroll-pad-inline, 1.25rem)),
+    calc(100% + 2 * var(--grid-scroll-pad-inline, var(--ss-stage-grid-pad-inline))),
     calc(
-      4 * 9.25rem + 3 * 0.35rem + 2 * var(--grid-scroll-pad-inline, 1.25rem) +
+      4 * var(--ss-stage-phrase-bar) + 3 * var(--ss-space-1) + 2 * var(--grid-scroll-pad-inline, var(--ss-stage-grid-pad-inline)) +
         1rem
     )
   );
-  margin-inline: calc(-1 * var(--grid-scroll-pad-inline, 1.25rem));
+  margin-inline: calc(-1 * var(--grid-scroll-pad-inline, var(--ss-stage-grid-pad-inline)));
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
@@ -840,7 +841,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
+  gap: var(--ss-space-3);
   width: 100%;
   will-change: transform;
   transform: translateY(0);
@@ -865,8 +866,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 0.5rem;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-3) var(--ss-space-2);
   border-radius: 1rem;
   border: 1px solid transparent;
   overflow: hidden;
@@ -923,7 +924,7 @@
 .cycleRow {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.35rem;
+  gap: var(--ss-space-1);
   justify-content: center;
   align-items: flex-end;
   width: max-content;
@@ -941,9 +942,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.25rem;
+  padding: var(--ss-space-2) var(--ss-space-1);
   border: 2px solid var(--ss-color-border-muted);
-  border-radius: 0.65rem;
+  border-radius: var(--ss-radius-md);
   background: color-mix(in srgb, var(--ss-color-surface) 75%, transparent);
   color: color-mix(in srgb, var(--ss-color-primary) 95%, transparent);
   overflow: hidden;
@@ -970,7 +971,7 @@
 }
 
 .cycleCellSymbol {
-  font-size: min(2.25rem, calc(var(--phrase-bar-size) * 0.32));
+  font-size: min(var(--ss-text-2xl), calc(var(--phrase-bar-size) * 0.32));
   font-weight: var(--ss-font-weight-black);
   line-height: var(--ss-leading-display);
   letter-spacing: var(--ss-tracking-tight);
@@ -1051,7 +1052,7 @@
 
 .cycleCellCountdown .cycleCellSymbol {
   color: var(--ss-color-info);
-  font-size: min(3.5rem, calc(var(--phrase-bar-size) * 0.45));
+  font-size: min(var(--ss-text-3xl), calc(var(--phrase-bar-size) * 0.45));
 }
 
 .gridAnimationsOff .heroName,
@@ -1072,7 +1073,7 @@
 
 @media (max-width: 768px) {
   .gridPane {
-    --phrase-bar-size: clamp(3.5rem, 28vw, 6rem);
+    --phrase-bar-size: var(--ss-stage-phrase-bar-narrow);
     gap: var(--ss-space-3);
     padding: var(--ss-space-3) var(--ss-space-2);
   }
@@ -1088,11 +1089,11 @@
   .chordHeroLayout {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.35rem;
+    gap: var(--ss-space-1);
   }
 
   .heroNameWrap {
-    min-height: clamp(4.5rem, 28vw, 8rem);
+    min-height: var(--ss-stage-drums-pad);
   }
 
   .heroName {
@@ -1161,8 +1162,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 0.6rem;
-  padding: 1.5rem 1rem 0.75rem;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-6) var(--ss-space-4) var(--ss-space-3);
   position: sticky;
   top: 0;
   z-index: 5;
@@ -1214,10 +1215,10 @@
 }
 
 .drumsHeroNote {
-  margin: 0.35rem 0 0;
+  margin: var(--ss-space-1) 0 0;
   max-width: 42rem;
-  padding: 0.65rem 1rem;
-  border-radius: 0.75rem;
+  padding: var(--ss-space-3) var(--ss-space-4);
+  border-radius: var(--ss-radius-md);
   border: 2px solid color-mix(in srgb, var(--client-drums) 45%, transparent);
   background: color-mix(in srgb, var(--client-drums) 8%, transparent);
   font-size: var(--ss-text-stage-sm);
@@ -1236,9 +1237,9 @@
   display: block;
   width: 100%;
   max-width: 42rem;
-  margin: 0.35rem 0 0;
-  padding: 0.65rem 0.85rem;
-  border-radius: 0.75rem;
+  margin: var(--ss-space-1) 0 0;
+  padding: var(--ss-space-3) var(--ss-space-3);
+  border-radius: var(--ss-radius-md);
   border: 2px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-surface) 90%, transparent);
   color: var(--ss-color-text);
@@ -1246,7 +1247,7 @@
   font-size: var(--ss-text-stage-sm);
   line-height: var(--ss-leading-normal);
   resize: vertical;
-  min-height: 2.75rem;
+  min-height: calc(var(--ss-space-8) + var(--ss-space-3));
 }
 
 .drumsNoteInput:focus-visible {
@@ -1261,9 +1262,9 @@
 
 .drumsFormSegNoteInput {
   max-width: none;
-  margin: 0.35rem 0 0;
+  margin: var(--ss-space-1) 0 0;
   font-size: var(--ss-text-stage-xs);
-  min-height: 2.25rem;
+  min-height: var(--ss-space-8);
 }
 
 .drumsMetronome {
@@ -1271,16 +1272,16 @@
   align-items: center;
   justify-content: center;
   gap: clamp(1rem, 5vw, 2rem);
-  margin-top: 1.25rem;
-  padding: 0.75rem 0;
+  margin-top: var(--ss-space-5);
+  padding: var(--ss-space-3) 0;
 }
 
 .drumsBeatDot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(2.25rem, 9vw, 3.5rem);
-  height: clamp(2.25rem, 9vw, 3.5rem);
+  width: var(--ss-stage-dot);
+  height: var(--ss-stage-dot);
   border-radius: 50%;
   background: var(--ss-color-border);
   transition:
@@ -1298,8 +1299,8 @@
 }
 
 .drumsBeatDotDownbeat {
-  width: clamp(2.65rem, 10vw, 4rem);
-  height: clamp(2.65rem, 10vw, 4rem);
+  width: var(--ss-stage-dot-lg);
+  height: var(--ss-stage-dot-lg);
 }
 
 .drumsBeatDotDownbeat .drumsBeatNum {
@@ -1340,7 +1341,7 @@
 .drumsFormScroll {
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.5rem 0 1rem;
+  padding: var(--ss-space-2) 0 var(--ss-space-4);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -1362,10 +1363,10 @@
 .drumsFormSeg {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: var(--ss-space-3);
   flex: var(--seg-bars, 1) 1 0;
-  min-width: max(6rem, calc(var(--seg-bars, 1) * 1.75rem));
-  padding: 0.85rem 0.65rem 0.9rem;
+  min-width: max(var(--ss-space-12), calc(var(--seg-bars, 1) * var(--ss-space-6))); /* ss-css-allow */
+  padding: var(--ss-space-3) var(--ss-space-3) var(--ss-space-4);
   border-radius: 1rem;
   border: 3px solid var(--ss-color-border-muted);
   background: color-mix(in srgb, var(--ss-color-surface) 55%, transparent);
@@ -1377,7 +1378,7 @@
 
 .drumsEditMode .drumsFormSeg,
 .drumsEditMode .drumsFormSegHasNote {
-  min-width: max(8rem, calc(var(--seg-bars, 1) * 1.75rem));
+  min-width: max(var(--ss-space-16), calc(var(--seg-bars, 1) * var(--ss-space-6))); /* ss-css-allow */
 }
 
 .drumsFormSegPast {
@@ -1399,7 +1400,7 @@
 .drumsFormSegHead {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--ss-space-1);
   min-width: 0;
 }
 
@@ -1438,7 +1439,7 @@
   flex: 1;
   align-items: stretch;
   gap: 4px;
-  min-height: clamp(4rem, 12vh, 6.5rem);
+  min-height: var(--ss-stage-note-min);
 }
 
 .drumsBarCell {
@@ -1508,13 +1509,13 @@
 
 @media (max-width: 768px) {
   .drumsView {
-    gap: 1.25rem;
-    padding-bottom: 1.5rem;
+    gap: var(--ss-space-5);
+    padding-bottom: var(--ss-space-6);
   }
 
   .drumsHero {
-    padding: 1rem 0.5rem 0.5rem;
-    gap: 0.45rem;
+    padding: var(--ss-space-4) var(--ss-space-2) var(--ss-space-2);
+    gap: var(--ss-space-2);
   }
 
   .drumsHeroEyebrow {
@@ -1540,27 +1541,27 @@
   }
 
   .drumsMetronome {
-    gap: clamp(0.55rem, 3vw, 1rem);
-    margin-top: 0.75rem;
+    gap: clamp(var(--ss-space-2), 3vw, var(--ss-space-4));
+    margin-top: var(--ss-space-3);
   }
 
   .drumsBeatDot {
-    width: clamp(1.75rem, 7vw, 2.5rem);
-    height: clamp(1.75rem, 7vw, 2.5rem);
+    width: var(--ss-stage-dot-sm);
+    height: var(--ss-stage-dot-sm);
   }
 
   .drumsFormScroll {
-    margin-inline: -0.25rem;
+    margin-inline: calc(-1 * var(--ss-space-1));
   }
 
   .drumsFormStrip {
-    min-height: clamp(6.5rem, 28vh, 9rem);
+    min-height: var(--ss-stage-note-min-narrow);
     gap: 4px;
   }
 
   .drumsFormSeg {
-    padding: 0.65rem 0.45rem 0.7rem;
-    min-width: max(4.5rem, calc(var(--seg-bars, 1) * 1.35rem));
+    padding: var(--ss-space-3) var(--ss-space-2) var(--ss-space-3);
+    min-width: max(calc(var(--ss-space-16) + var(--ss-space-2)), calc(var(--seg-bars, 1) * var(--ss-space-5))); /* ss-css-allow */
   }
 
   .drumsFormSegName {
@@ -1568,7 +1569,7 @@
   }
 
   .drumsFormSegBars {
-    min-height: clamp(3rem, 14vh, 4.5rem);
+    min-height: var(--ss-stage-seg-min);
   }
 }
 
@@ -1592,7 +1593,7 @@
 }
 
 .scoreZoomLabel {
-  min-width: 3.5rem;
+  min-width: calc(var(--ss-space-12) + var(--ss-space-2));
   text-align: center;
   font-size: var(--ss-text-sm);
   font-weight: var(--ss-font-weight-semibold);
@@ -1608,7 +1609,7 @@
 }
 
 .scoreOctaveSelect {
-  min-width: 3.5rem;
+  min-width: calc(var(--ss-space-12) + var(--ss-space-2));
   padding: var(--ss-space-1) var(--ss-space-2);
   font-size: var(--ss-text-sm);
   color: var(--ss-color-text);
@@ -1836,7 +1837,9 @@
 
 .input {
   display: block;
+  box-sizing: border-box;
   width: 100%;
+  min-height: var(--ss-touch-min);
   margin: var(--ss-space-3) 0 var(--ss-space-4);
   padding: var(--ss-space-2) var(--ss-space-3);
   border: 1px solid var(--ss-color-border);

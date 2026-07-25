@@ -7,6 +7,7 @@ import {
   type DragEvent,
 } from "react";
 import { Button } from "@stagesync/ui";
+import { MetaBadge, MetaBadgeRow } from "../shared/index.js";
 import {
   SETLIST_DEFAULT_TIME_BUDGET_MINUTES,
   SETLIST_SONG_DURATION_ESTIMATE_MS,
@@ -616,13 +617,13 @@ export function SetView({ library, selectedId }: SetViewProps) {
                             <span className={shell.muted}>min</span>
                           </label>
                         </span>
-                        <span className={styles.tileBadges}>
-                          <span className={styles.tileBadge}>
+                        <MetaBadgeRow>
+                          <MetaBadge>
                             {formatSetDurationMs(
                               item.durationMinutes * 60 * 1000,
                             )}
-                          </span>
-                        </span>
+                          </MetaBadge>
+                        </MetaBadgeRow>
                         <Button
                           variant="ghost"
                           iconOnly
@@ -671,16 +672,16 @@ export function SetView({ library, selectedId }: SetViewProps) {
                           {nameFor(item.projectId)}
                         </span>
                       </span>
-                      <span className={styles.tileBadges}>
-                        <span className={styles.tileBadge}>
+                      <MetaBadgeRow>
+                        <MetaBadge>
                           {formatSetDurationMs(durationMs)}
-                        </span>
+                        </MetaBadge>
                         {metaBadges.map((b, i) => (
-                          <span key={`${b}-${i}`} className={styles.tileBadge}>
+                          <MetaBadge key={`${b}-${i}`}>
                             {b}
-                          </span>
+                          </MetaBadge>
                         ))}
-                      </span>
+                      </MetaBadgeRow>
                       <Button
                         variant="ghost"
                         iconOnly

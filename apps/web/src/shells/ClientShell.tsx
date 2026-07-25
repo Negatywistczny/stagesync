@@ -5,7 +5,7 @@ import {
   releaseScreenWakeLock,
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
 import {
@@ -306,8 +306,7 @@ export function ClientShell() {
           </h1>
           <p className={styles.muted}>Podaj swoje imię lub nazwę urządzenia.</p>
           <form onSubmit={submitName}>
-            <input
-              className={styles.input}
+            <Input
               maxLength={DEVICE_DISPLAY_NAME_MAX}
               placeholder="np. Ania · saksofon"
               value={nameDraft}

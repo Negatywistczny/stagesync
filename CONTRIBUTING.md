@@ -95,5 +95,6 @@ Polityka parytetu v4 → `5.0.0`: [ADR 0011 §1a](docs/adr/0011-ui-parity-behavi
 - [ ] [README.md](README.md) — uruchomienie i wersja nadal zgodne z rzeczywistością
 - [ ] Design System — brak ad-hoc HEX / drugiego Buttona; tokeny `--ss-*` ([docs/ui/](docs/ui/README.md))
 - [ ] Brak orphan `TODO` / `FIXME` / `TEMP` w kodzie bez pozycji w [docs/TODO.md](docs/TODO.md)
-- [ ] `pnpm lint` / `pnpm check-types` / `pnpm test` / `pnpm build`
+- [ ] `pnpm lint` / `pnpm lint:ss-css` / `pnpm check-types` / `pnpm test` / `pnpm build`
+- [ ] Po zmianie `packages/ui` tokenów/Button: `pnpm sync:launcher-ui` (przed `tauri dev` / build)
 - [ ] Zmiana architektury → ADR (status + konsekwencje); Granica 0 → [ADR 0005](docs/adr/0005-domain-axioms.md)

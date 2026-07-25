@@ -3,7 +3,7 @@
  */
 
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
-import { Button, Slider } from "@stagesync/ui";
+import { Button, SegmentedControl, Slider } from "@stagesync/ui";
 import {
   resolveTrackColor,
   resolveTrackIcon,
@@ -258,42 +258,17 @@ export function ChannelStripControls({
         onClick={callbacks.onSelect}
         onContextMenu={callbacks.onContextMenu}
       >
-        <div
-          className={styles.channelModeToggle}
-          role="group"
-          aria-label={`Tryb kanału ${strip.name}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            type="button"
-            className={[
-              styles.channelModeBtn,
-              channelMode === "mono" ? styles.channelModeBtnActive : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            title="Tryb mono"
-            aria-label="Tryb mono"
-            aria-pressed={channelMode === "mono"}
-            onClick={() => callbacks.onChannelModeChange?.("mono")}
-          >
-            M
-          </button>
-          <button
-            type="button"
-            className={[
-              styles.channelModeBtn,
-              channelMode === "stereo" ? styles.channelModeBtnActive : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            title="Tryb stereo"
-            aria-label="Tryb stereo"
-            aria-pressed={channelMode === "stereo"}
-            onClick={() => callbacks.onChannelModeChange?.("stereo")}
-          >
-            ST
-          </button>
+        <div onClick={(e) => e.stopPropagation()}>
+          <SegmentedControl
+            aria-label={`Tryb kanału ${strip.name}`}
+            className={styles.channelModeToggle}
+            value={channelMode}
+            onChange={(next) => callbacks.onChannelModeChange?.(next)}
+            options={[
+              { value: "mono", label: "M", "aria-label": "Tryb mono" },
+              { value: "stereo", label: "ST", "aria-label": "Tryb stereo" },
+            ]}
+          />
         </div>
 
         <OutputSelector

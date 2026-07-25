@@ -5,9 +5,28 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
+
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Design system:** wspólne pola formularza (`Input` / `Select` / `Textarea` / `Field`), badge i segmenty w `@stagesync/ui`; chrome Admin (karty, URL+Kopiuj, metryki MIDI, toolbary) z jednego modułu shared — mniej rozjazdu wyglądu między stronami.
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher:** te same tokeny i klasy przycisków co SPA (`ss-btn*`) — bez ręcznej kopii stylów w cold-start.
+
+#### 📚 Dokumentacja
+- **Desktop / design system:** Launcher i SPA dzielą te same tokeny oraz klasy przycisków; opis w DESKTOP i docs/ui.
 
 ### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Mobile — podgląd:** na telefonie Timeline nie pokazuje zablokowanego chrome edycji (Tap, „Dodaj ścieżkę”, Inspector, Mikser, Snap) — zostają transport, wybór utworu i zoom do przeglądania.
+
+#### 🖥️ App Shell & UI
+- **Admin (telefon):** ciaśniejszy workspace i chrome; Utwory — lista nad panelem wybranego utworu bez sztywnego 60/40; Set / Scena — czytelniejszy układ na wąskim ekranie; ustawienia serwera na pełną wysokość.
+- **Admin Host:** z powrotem pełne adresy URL z Kopiuj, podpowiedź o skanowaniu QR w LAN oraz pełna telemetria MIDI (Clock/s, SPP/s, PC/s, Beat→WS) ze statusami Wejście / Wyjście / Clock OUT; karty dopasowują wysokość do treści zamiast pustych czarnych pól.
+- **Client:** przyciski chrome i w ustawieniach (ikony, Start, zoom, strój, Zamknij) znów mają ten sam cel dotykowy 44×44 — panel ustawień nie wracał do 36px po portalu poza `.page`.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **APK z hosta:** QR / linki Performer i Console działają na lokalnym hoście desktopu bez ręcznego kopiowania do Documents — host bierze APK z bundla / monorepo `data/downloads` (puste tylko gdy artefakt naprawdę nie jest w instalacji).

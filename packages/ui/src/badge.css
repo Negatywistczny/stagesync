@@ -1,0 +1,14 @@
+.ss-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: max-content;
+  padding: var(--ss-space-1) var(--ss-space-2);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-secondary);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-compact);
+  white-space: nowrap;
+}

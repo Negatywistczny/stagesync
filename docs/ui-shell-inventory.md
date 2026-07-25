@@ -25,7 +25,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 | Countdown widoczny; długość = pre-roll ≤ 0 | Semantyka v5 |
 | − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) — **nigdy** |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
-| React + CSS Modules + `--ss-*` | Stack v5 |
+| React + CSS Modules + `--ss-*` | Stack v5; SSOT warstw: [docs/ui/README.md](./ui/README.md) |
 | Admin: Utwory · Set · Scena · Host | IA v5 — **Set + wybór utworów w jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)) |
 | Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
 | Backup restore / path picker FS | Admin Ustawienia → Serwer → Przywróć… (`.bak` / bulk / ZIP + confirm + PIN) |
@@ -38,6 +38,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 2. **Kolejność pionowa:** Tempo → Tonacja → Metrum → Kotwice → Forma → Tekst → Akordy → Cue → Audio 0…N.
 3. **Eye menu:** ukrywanie pojedynczych śladów; Forma zawsze widoczna.
 4. **Responsywność:** węższe okno nie rozdziela nagłówków od lane’ów.
+5. **Mobile (≤768, `data-tl-tier="mobile"`):** tryb podglądu / odtwarzania — bez Inspectora, Tap, „Dodaj ścieżkę”, Miksera i Snap; transport + utwór + zoom H/V.
 
 ## Timeline
 

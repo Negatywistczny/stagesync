@@ -1,43 +1,3 @@
-:root {
-  color-scheme: dark;
-  --ss-color-bg: #000000;
-  --ss-color-surface: #09090b;
-  --ss-color-elevated: #18181b;
-  --ss-color-text: #fafafa;
-  --ss-color-text-muted: #a3a3a3;
-  --ss-color-primary: #fbbf24;
-  --ss-color-primary-hover: #fcd34d;
-  --ss-color-primary-active: #f59e0b;
-  --ss-color-on-primary: #0a0a0a;
-  --ss-color-secondary: #27272a;
-  --ss-color-secondary-hover: #3f3f46;
-  --ss-color-ghost-hover: rgba(250, 250, 250, 0.08);
-  --ss-color-border: #3f3f46;
-  --ss-color-danger: #ef4444;
-  --ss-color-online: #22c55e;
-  --ss-color-focus-ring: #22d3ee;
-  --ss-radius-sm: 6px;
-  --ss-radius-md: 12px;
-  --ss-space-2: 8px;
-  --ss-space-3: 12px;
-  --ss-space-4: 16px;
-  --ss-space-6: 24px;
-  --ss-space-8: 32px;
-  --ss-touch-min: 36px;
-  --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
-  --ss-text-sm: 0.8125rem;
-  --ss-text-control: 0.875rem;
-  --ss-text-md: 0.9375rem;
-  --ss-text-lg: 1.125rem;
-  --ss-text-xl: 1.5rem;
-  --ss-text-2xl: 2rem;
-  --ss-font-weight-semibold: 600;
-  --ss-font-weight-bold: 650;
-  --ss-leading-compact: 1.15;
-  --ss-leading-normal: 1.35;
-  --ss-duration-fast: 120ms;
-}
-
 *,
 *::before,
 *::after {
@@ -88,7 +48,7 @@ body {
 .brand {
   display: block;
   margin: 0 0 var(--ss-space-4);
-  height: 2.25rem;
+  height: var(--ss-space-10);
   width: auto;
 }
 
@@ -110,14 +70,13 @@ body {
   margin-top: var(--ss-space-2);
 }
 
-/* Local host block — error above primary, clear is ghost only */
 .localBlock {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-2);
 }
 
-.localBlock .btn.primary {
+.localBlock .ss-btn--primary {
   width: 100%;
 }
 
@@ -126,16 +85,12 @@ body {
 }
 
 .localLog {
-  max-height: 140px;
+  max-height: calc(var(--ss-space-16) * 2 + var(--ss-space-12));
 }
 
 .localBlock .inlineError,
 .localBlock .inlineStatus {
-  min-height: 1.35em;
-}
-
-.hint {
-  margin-top: var(--ss-space-2);
+  min-height: var(--ss-space-5);
 }
 
 .panel {
@@ -145,7 +100,7 @@ body {
 }
 
 .manualState {
-  min-height: 5.5rem;
+  min-height: calc(var(--ss-space-8) + var(--ss-space-6));
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
@@ -153,7 +108,7 @@ body {
 }
 
 #manualIdle {
-  min-height: 5.5rem;
+  min-height: calc(var(--ss-space-8) + var(--ss-space-6));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -225,68 +180,6 @@ body {
   background: var(--ss-color-border);
 }
 
-/* Static HTML mirror of @stagesync/ui Button (no React in launcher). */
-.btn {
-  min-height: var(--ss-touch-min);
-  border: 1px solid transparent;
-  border-radius: var(--ss-radius-sm);
-  padding: var(--ss-space-2) var(--ss-space-4);
-  font: inherit;
-  font-size: var(--ss-text-control);
-  font-weight: var(--ss-font-weight-semibold);
-  cursor: pointer;
-  transition: background var(--ss-duration-fast) ease, border-color var(--ss-duration-fast) ease;
-}
-
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: 2px;
-}
-
-.btn.primary {
-  width: 100%;
-  background: var(--ss-color-primary);
-  color: var(--ss-color-on-primary);
-}
-
-.btn.primary:hover:not(:disabled) {
-  background: var(--ss-color-primary-hover);
-}
-
-.btn.primary:active:not(:disabled) {
-  background: var(--ss-color-primary-active);
-}
-
-.btn.secondary {
-  background: var(--ss-color-secondary);
-  color: var(--ss-color-text);
-}
-
-.btn.secondary:hover:not(:disabled) {
-  background: var(--ss-color-secondary-hover);
-}
-
-.btn.ghost {
-  background: transparent;
-  color: var(--ss-color-text);
-  border-color: var(--ss-color-border);
-}
-
-.btn.ghost:hover:not(:disabled) {
-  background: var(--ss-color-ghost-hover);
-}
-
-.btn.danger {
-  background: transparent;
-  color: var(--ss-color-danger);
-  border-color: var(--ss-color-danger);
-}
-
 #btnRefresh {
   display: inline-flex;
   align-items: center;
@@ -296,12 +189,12 @@ body {
 
 #btnRefresh .spinner {
   display: none;
-  width: 14px;
-  height: 14px;
+  width: var(--ss-space-4);
+  height: var(--ss-space-4);
   border: 2px solid var(--ss-color-border);
   border-top-color: var(--ss-color-primary);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: spin var(--ss-duration-slow) linear infinite;
 }
 
 #btnRefresh[aria-busy="true"] .btnRefreshLabel {
@@ -312,10 +205,14 @@ body {
   display: inline-block;
 }
 
+#btnRefresh[aria-busy="true"] {
+  cursor: wait;
+}
+
 .hostList.is-scanning {
   opacity: 0.45;
   pointer-events: none;
-  transition: opacity var(--ss-duration-fast) ease;
+  transition: opacity var(--ss-transition);
 }
 
 @keyframes spin {
@@ -351,8 +248,10 @@ body {
   font: inherit;
 }
 
-.hostList button.host:hover {
-  border-color: var(--ss-color-primary);
+@media (hover: hover) {
+  .hostList button.host:hover {
+    border-color: var(--ss-color-primary);
+  }
 }
 
 .hostList button.host:focus-visible {
@@ -415,21 +314,21 @@ body {
 .statusDiode,
 .healthDiode {
   flex: 0 0 auto;
-  width: 8px;
-  height: 8px;
+  width: var(--ss-space-2);
+  height: var(--ss-space-2);
   border-radius: 50%;
   background: var(--ss-color-border);
 }
 
 .statusDiode.is-playing,
 .healthDiode.is-online {
-  background: var(--ss-color-online);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ss-color-online) 25%, transparent);
+  background: var(--ss-color-success);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ss-color-success) 25%, transparent);
 }
 
 .statusDiode.is-paused {
   background: var(--ss-color-primary);
-  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.25);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ss-color-primary) 25%, transparent);
 }
 
 .statusDiode.is-stopped,
@@ -456,12 +355,12 @@ body {
 
 .manual input:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .log {
   margin: 0;
-  max-height: 220px;
+  max-height: calc(var(--ss-space-16) * 3 + var(--ss-space-8));
   overflow: auto;
   padding: var(--ss-space-3);
   background: var(--ss-color-elevated);

@@ -1,6 +1,17 @@
+/**
+ * @vitest-environment jsdom
+ */
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Button } from "./button.js";
+
+const buttonCss = readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), "button.css"),
+  "utf8",
+);
 
 describe("Button", () => {
   it("renders default state", () => {
@@ -30,6 +41,13 @@ describe("Button", () => {
   it("supports iconOnly class", () => {
     render(<Button iconOnly aria-label="Close">×</Button>);
     expect(screen.getByRole("button").className).toContain("ss-btn--icon");
+  });
+
+  it("uses --ss-touch-min for min hit height (text and icon)", () => {
+    expect(buttonCss).toMatch(/min-height:\s*var\(--ss-touch-min\)/);
+    expect(buttonCss).toMatch(
+      /\.ss-btn--icon\s*\{[^}]*height:\s*var\(--ss-touch-min\)/s,
+    );
   });
 
   it("supports variants and selected=false aria-pressed", () => {

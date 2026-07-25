@@ -93,6 +93,22 @@
   --ss-text-stage-5xl: clamp(5rem, 24vw, 10rem);
   --ss-text-stage-hero-sm: clamp(3.75rem, 22vw, 6.5rem);
   --ss-text-stage-hero-lg: clamp(5rem, 28vw, 8rem);
+  /** Wordmark / brand mark height (shells + launcher). */
+  --ss-wordmark-height: 2rem;
+  /** Scenic Client layout (fluid) — use instead of ad-hoc rem in ClientShell. */
+  --ss-stage-header-min: clamp(2.5rem, 8vh, 4rem);
+  --ss-stage-chord-next-offset: clamp(6rem, 24vw, 9rem);
+  --ss-stage-phrase-bar: clamp(4.5rem, 24vw, 9rem);
+  --ss-stage-phrase-bar-narrow: clamp(3.5rem, 28vw, 6rem);
+  --ss-stage-grid-col: clamp(3rem, 14vw, 6.5rem);
+  --ss-stage-grid-pad-inline: var(--ss-space-5);
+  --ss-stage-drums-pad: clamp(4.5rem, 28vw, 8rem);
+  --ss-stage-note-min: clamp(4rem, 12vh, 6.5rem);
+  --ss-stage-note-min-narrow: clamp(6.5rem, 28vh, 9rem);
+  --ss-stage-seg-min: clamp(3rem, 14vh, 4.5rem);
+  --ss-stage-dot: clamp(2rem, 9vw, 3.5rem);
+  --ss-stage-dot-lg: clamp(2.5rem, 10vw, 4rem);
+  --ss-stage-dot-sm: clamp(1.75rem, 7vw, 2.5rem);
   --ss-font-size: var(--ss-text-control);
   --ss-font-weight-regular: 400;
   --ss-font-weight-medium: 500;

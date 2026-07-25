@@ -9,7 +9,7 @@ import {
 } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
-import { Button, Slider, useContextMenu } from "@stagesync/ui";
+import { Button, Slider, Select, useContextMenu } from "@stagesync/ui";
 import {
   resolveMeterAt,
   resolveTempoAt,
@@ -721,6 +721,8 @@ export function TimelineShell() {
   const [touchTier, setTouchTier] = useState<TimelineTouchTier>(() =>
     typeof window !== "undefined" ? detectTimelineTier() : "desktop",
   );
+  /** Phone = read/preview surface — no edit chrome / inspector (v4 mobile RO). */
+  const isMobilePreview = touchTier === "mobile";
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
   const gesturePolicy = timelineGesturesAllowed(touchTier);
   const [tempoEditOpen, setTempoEditOpen] = useState(false);
@@ -984,6 +986,7 @@ export function TimelineShell() {
 
   /** Desktop dblclick → focus Właściwości (v4); tablet canvas double-tap stays Fit Zoom. */
   const focusInspectorPanel = useCallback(() => {
+    if (touchTier === "mobile") return;
     setInspectorVisible(true);
     setSongMetaOpen(false);
     requestAnimationFrame(() => {
@@ -997,9 +1000,9 @@ export function TimelineShell() {
       );
       field?.focus({ preventScroll: true });
     });
-  }, []);
+  }, [touchTier]);
 
-  /** Esc / mobile sheet dismiss — clear focus; hide panel only on mobile. */
+  /** Esc — clear focus; on mobile preview there is no inspector sheet. */
   const closeMobileInspector = useCallback(() => {
     setSongMetaOpen(false);
     clearClipSelection();
@@ -1136,6 +1139,14 @@ export function TimelineShell() {
       window.removeEventListener("resize", syncTier);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isMobilePreview) return;
+    setInspectorVisible(false);
+    setSongMetaOpen(false);
+    setTimelineSurface("timeline");
+    setTool((t) => (t === "tap" ? "pointer" : t));
+  }, [isMobilePreview]);
 
   useTimelineTouchGestures({
     enabled: touchTier === "tablet",
@@ -1463,8 +1474,9 @@ export function TimelineShell() {
 
   /** Bare I — show/hide Właściwości only (never Metadane / songMetaOpen). */
   const toggleInspectorPanel = useCallback(() => {
+    if (touchTier === "mobile") return;
     setInspectorVisible((v) => !v);
-  }, []);
+  }, [touchTier]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -1489,7 +1501,7 @@ export function TimelineShell() {
         const pick = TOOL_BY_KEY[action.letter];
         if (pick) {
           e.preventDefault();
-          onTool(pick.id);
+          h.onTool(pick.id);
         }
         return;
       }
@@ -2065,9 +2077,11 @@ export function TimelineShell() {
         null
       : null;
 
-  /** Panel visibility — bare I (not Metadane ⓘ). Hidden in Mixer; state kept for restore. */
+  /** Panel visibility — bare I (not Metadane ⓘ). Hidden in Mixer; absent on mobile preview. */
   const inspectorOpen =
-    inspectorVisible && timelineSurface !== "mixer";
+    !isMobilePreview &&
+    inspectorVisible &&
+    timelineSurface !== "mixer";
 
   const meterAtPlayhead = draftProject
     ? resolveMeterAt(draftProject, displayTicks)
@@ -2368,6 +2382,10 @@ export function TimelineShell() {
 
   /** Tekst dock Tap — activates vocal-tap tool + records tempo taps (no hotkey). */
   function onTap() {
+    if (isMobilePreview) {
+      setTouchAlertOpen(true);
+      return;
+    }
     setTool("tap");
     setToolMenu(null);
     setWandMenu(null);
@@ -3932,6 +3950,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   }
 
   function onAddAudioTrack() {
+    if (isMobilePreview) {
+      setTouchAlertOpen(true);
+      return;
+    }
     if (!draftProject) return;
     if (draftProject.audioTracks.length >= MAX_AUDIO_TRACKS) {
       setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
@@ -4000,6 +4022,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     clientX: number,
     clientY: number,
   ) {
+    if (isMobilePreview) {
+      setTouchAlertOpen(true);
+      return;
+    }
     setClipSelection(clearSelection());
     const alreadySelected = isAudioTrackSelected(trackSelection, trackId);
     const trackCount = alreadySelected ? trackSelection.ids.length : 1;
@@ -4624,6 +4650,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   }
 
   function onTool(id: ToolId) {
+    if (isMobilePreview) {
+      setTouchAlertOpen(true);
+      return;
+    }
     setToolMenu(null);
     if (id === "wand") {
       setTool("wand");
@@ -4766,6 +4796,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     canDelete?: boolean;
     selectionLane: Parameters<typeof selectLaneClip>[0];
   }) {
+    if (isMobilePreview) {
+      setTouchAlertOpen(true);
+      return;
+    }
     const {
       clientX,
       clientY,
@@ -4968,6 +5002,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     laneKind: EmptyLaneMenuKind;
     audioTrackId?: string;
   }) {
+    if (isMobilePreview) {
+      setTouchAlertOpen(true);
+      return;
+    }
     const { clientX, clientY, laneKind, audioTrackId } = args;
     const ticks = rawTicksAtClientX(clientX);
     if (ticks == null) return;
@@ -5814,17 +5852,24 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <span className={styles.bbt} aria-live="polite">
               {clockLabel}
             </span>
-            <Button
-              variant="ghost"
-              className={styles.metaChip}
-              title="Tempo — kliknij, aby edytować @ playhead"
-              aria-label="Tempo — kliknij, aby edytować @ playhead"
-              onClick={() => {
-                openMapEdit("tempo", displayTicks);
-              }}
-            >
-              {tempoAtPlayhead} BPM
-            </Button>
+            {isMobilePreview ? (
+              <span className={styles.metaChip} aria-label={`Tempo ${tempoAtPlayhead} BPM`}>
+                {tempoAtPlayhead} BPM
+              </span>
+            ) : (
+              <Button
+                variant="ghost"
+                className={styles.metaChip}
+                title="Tempo — kliknij, aby edytować @ playhead"
+                aria-label="Tempo — kliknij, aby edytować @ playhead"
+                onClick={() => {
+                  openMapEdit("tempo", displayTicks);
+                }}
+              >
+                {tempoAtPlayhead} BPM
+              </Button>
+            )}
+            {!isMobilePreview ? (
             <ShellIconButton
               label={
                 timelineSurface === "mixer"
@@ -5841,6 +5886,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               <IconMixer />
             </ShellIconButton>
+            ) : null}
             <div className={styles.transportExtras}>
               <ShellIconButton
                 label="Pętla — przeciągnij zakres na linijce, potem włącz"
@@ -5905,6 +5951,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
 
         <div className={styles.songCluster} role="group" aria-label="Setlista">
+          {!isMobilePreview ? (
           <ShellIconButton
             label="Metadane utworu"
             disabled={!draftProject}
@@ -5919,6 +5966,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           >
             <IconInfo />
           </ShellIconButton>
+          ) : null}
           <ShellIconButton
             label="Poprzedni utwór setlisty"
             disabled={!prevSetlistId}
@@ -6292,7 +6340,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ) : (
                         <span className={styles.dockLabel}>{track.label}</span>
                       )}
-                      {track.id === "tekst" ? (
+                      {track.id === "tekst" && !isMobilePreview ? (
                         <Button
                           variant="ghost"
                           iconOnly
@@ -6564,6 +6612,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   </div>
                 ))}
                 <div className={styles.rowsFill}>
+                  {isMobilePreview ? (
+                    <div className={styles.dockColumnFill} aria-hidden />
+                  ) : (
                   <div
                     className={styles.dockColumnFill}
                     onDoubleClick={(e) => {
@@ -6594,6 +6645,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       title="Dwuklik — dodaj pustą ścieżkę"
                     />
                   </div>
+                  )}
                   <div
                     className={styles.laneFillHit}
                     onPointerDown={(e) => {
@@ -6610,14 +6662,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           )}
         </div>
 
-        {touchTier === "mobile" && inspectorOpen ? (
-          <button
-            type="button"
-            className={styles.inspectorBackdrop}
-            aria-label="Zamknij właściwości"
-            onClick={closeInspectorPanel}
-          />
-        ) : null}
+        {!isMobilePreview ? (
         <aside
           className={[
             styles.inspector,
@@ -7736,6 +7781,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </p>
             )}
           </aside>
+        ) : null}
       </div>
 
       <footer className={styles.status} aria-label="Status osi czasu">
@@ -7750,9 +7796,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </span>
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom i snap">
+          {!isMobilePreview ? (
           <label className={styles.snapPicker}>
             <span className={styles.snapPickerLab}>Snap</span>
-            <select
+            <Select
               className={styles.snapPickerSelect}
               aria-label="Tryb snap"
               value={snapModeToStorageKey(snapMode)}
@@ -7768,8 +7815,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <option value="subdivision:4">1/4</option>
               <option value="subdivision:8">1/8</option>
               <option value="subdivision:16">1/16</option>
-            </select>
+            </Select>
           </label>
+          ) : null}
+          {!isMobilePreview ? (
           <label className={styles.zoomLab}>
             UI
             <input
@@ -7783,6 +7832,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               aria-label="Zoom UI"
             />
           </label>
+          ) : null}
           <label
             className={styles.zoomLab}
             title={

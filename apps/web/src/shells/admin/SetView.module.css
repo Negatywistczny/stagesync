@@ -65,7 +65,7 @@
 }
 
 .budgetInput {
-  width: 3.5rem;
+  width: calc(var(--ss-space-12) + var(--ss-space-2));
   padding: var(--ss-space-1) var(--ss-space-2);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
@@ -311,5 +311,16 @@
   /* Placement only — geometry from Button iconOnly. */
   .removeSlot {
     grid-area: remove;
+  }
+
+  .summaryRow,
+  .budgetMeta,
+  .setToolbar,
+  .libFooter {
+    gap: var(--ss-space-2);
+  }
+
+  .budgetInput {
+    width: 3rem;
   }
 }

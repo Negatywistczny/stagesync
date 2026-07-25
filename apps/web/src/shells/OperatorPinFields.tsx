@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Button } from "@stagesync/ui";
+import { Button, Input } from "@stagesync/ui";
 import {
   clearStoredOperatorPin,
   fetchOperatorPinRequired,
@@ -77,8 +77,7 @@ export function OperatorPinFields() {
       <p className={styles.ok}>
         Wymagany do zapisu notatek i form. Podgląd bez PIN-u.
       </p>
-      <input
-        className={styles.input}
+      <Input
         type="password"
         inputMode="numeric"
         autoComplete="one-time-code"

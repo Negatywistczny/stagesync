@@ -60,21 +60,6 @@
   font-size: var(--ss-text-sm);
 }
 
-.qrWrap {
-  display: grid;
-  place-items: center;
-  padding: var(--ss-space-3);
-  background: var(--ss-color-bg);
-  border: 1px solid var(--ss-color-border);
-  border-radius: var(--ss-radius-sm);
-}
-
-.qrWrap :global(svg) {
-  width: min(14rem, 100%);
-  height: auto;
-  display: block;
-}
-
 .urlList {
   list-style: none;
   margin: 0;

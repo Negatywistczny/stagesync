@@ -144,6 +144,7 @@ Kryteria **Console** (nie mylić z pasywnym Performerem):
 | C-HW1 | Launcher → health → `/admin` na tablecie LAN |
 | C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA) |
 | C-HW3 | „Uruchom lokalny host” widoczny; sukces albo uczciwy status przy braku silnika |
+| C-HW4 | Telefon (≤768): Timeline = podgląd / transport (bez Inspectora i chrome edycji); Admin czytelny |
 
 ## Lokalny host na Console
 

@@ -3,6 +3,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--ss-space-2);
+  box-sizing: border-box;
+  min-height: var(--ss-touch-min);
   padding: var(--ss-space-y) var(--ss-space-x);
   border: 1px solid transparent;
   border-radius: var(--ss-radius-sm);

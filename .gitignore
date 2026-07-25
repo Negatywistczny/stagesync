@@ -62,6 +62,9 @@ apps/*/android/app/src/main/assets/www/
 apps/console/android/app/src/main/jniLibs/
 apps/console/android/app/src/main/assets/host/
 
+# Tauri launcher — generated from packages/ui (pnpm sync:launcher-ui)
+apps/desktop/launcher/vendor/
+
 # Tauri
 apps/desktop/src-tauri/gen/
 apps/desktop/src-tauri/target
