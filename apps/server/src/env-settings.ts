@@ -107,6 +107,15 @@ export const SETTINGS_SCHEMA = {
     pathKind: "dir",
     restartRequired: true,
   },
+  STAGESYNC_SAFETY_ROLE: {
+    section: "advanced",
+    type: "enum",
+    label: "Safety Net — rola",
+    hint: "Master = pełny MIDI OUT. Spare = pasywne lustro (bez MIDI OUT). Bez auto-election.",
+    options: ["master", "spare"],
+    defaultValue: "master",
+    restartRequired: false,
+  },
 } as const satisfies Record<string, SettingSpec>;
 
 export type SettingsKey = keyof typeof SETTINGS_SCHEMA;

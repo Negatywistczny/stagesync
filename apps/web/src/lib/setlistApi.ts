@@ -426,6 +426,7 @@ export type ServerSettingsValues = {
   STAGESYNC_DATA_DIR: string;
   STAGESYNC_BACKUPS_DIR: string;
   STAGESYNC_ASSETS_DIR: string;
+  STAGESYNC_SAFETY_ROLE: string;
   [key: string]: string | boolean;
 };
 
@@ -537,4 +538,29 @@ export async function postApplyHostUpdate(): Promise<void> {
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
+}
+
+export type SafetyNetStatus = {
+  role: "master" | "spare";
+  midiOutAllowed: boolean;
+};
+
+export async function fetchSafetyNetStatus(): Promise<SafetyNetStatus> {
+  const res = await fetch("/api/system/safety-net", { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as SafetyNetStatus;
+}
+
+/** Manual Spare → Master promote (MIDI OUT on). */
+export async function postSafetyNetPromote(): Promise<SafetyNetStatus> {
+  const res = await fetch("/api/system/promote", {
+    method: "POST",
+    headers: mergeApiHeaders({ "content-type": "application/json" }),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as SafetyNetStatus;
 }

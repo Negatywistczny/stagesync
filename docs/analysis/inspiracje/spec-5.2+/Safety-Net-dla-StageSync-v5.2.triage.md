@@ -4,30 +4,30 @@
 **Status:** `partial`  
 **Obszar:** Hot standby · manual promote · lease / split-brain · MIDI mute na Spare  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (disk verify)  
+**Ostatnia aktualizacja:** 2026-07-25 (manual promote + MIDI mute on tree; auto-election skipped)  
 **Kąt:** wprowadzenie feature 5.2+ (nie claim HA green / G-gates)
 
 ## Werdykt przydatności
 
-**Wysoka jako granica produktu: manual promote MVP, auto-election Later; zakaz dual clock / dual MIDI OUT.** Companion do [Audyt Lifecycle](../audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md) (port/orphan/mDNS), nie zamiennik. [#437](https://github.com/Negatywistyczny/stagesync/issues/437) w [TODO 5.2+](../../../TODO.md). Nazwa produktu: **Master/Spare** (nie „Slave”).
+**Wysoka jako granica produktu: manual promote MVP, auto-election Later; zakaz dual clock / dual MIDI OUT.** Companion do [Audyt Lifecycle](../audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md). [#437](https://github.com/Negatywistyczny/stagesync/issues/437). Nazwa: **Master/Spare**.
 
-## Epiki / tematy vs `main` (5.1.x)
+## Epiki / tematy vs `main`
 
 | ID / temat | Stan | Notatka |
 |------------|------|---------|
-| SN-01…03 Master vs Spare (PASSIVE_MIRROR, MIDI off) | `confirmed` | Brak roli spare / `isMaster` gate w `apps/server` / Launcher |
-| SN-04…06 detekcja + workflow promote | `confirmed` | Brak `POST /api/system/promote` / UI „Przejmij” |
-| SN-07…08 sync projektu/setlisty vs lokalny AudioContext | `hypothesis` | Sensowny podział; nie implementować sync WebAudio |
-| SN-09…11 split-brain / dual PC·Clock / drugi Master w LAN | `hypothesis` | Mitygacje dumpa = wymagania MVP |
-| SN-12 MVP manual + shared data dir + Launcher status | `confirmed` | Zakres 5.2 — nie na dysku |
-| SN-13 auto-election / HW switchers / P2P | `limit` | Dump: v5.3+ |
-| Integracja HW-LIF-* (orphan port, host token) | `partial` | Część lifecycle już na desktop; Safety Net nie podpięty |
+| SN-01…03 Master vs Spare (MIDI off) | `on-tree` | `STAGESYNC_SAFETY_ROLE`; Spare → `isMidiOutAllowed() === false` w MIDI host |
+| SN-04…06 promote | `on-tree` | `GET /api/system/safety-net`, `POST /api/system/promote` + Admin Host **Przejmij** |
+| SN-07…08 sync projektu | `hypothesis` | Shared data dir — poza tym slice |
+| SN-09…11 split-brain | `hypothesis` | Residual — nie claim HA |
+| SN-12 MVP manual + status | `on-tree` | Env + managed settings + UI |
+| SN-13 auto-election | **skip** / `limit` | Dump: Later — **nie** implementować |
 
 ## Confirmed vs hypothesis
 
-- **Confirmed gap:** brak failover / promote / role=spare w apps (grep `promote` / `PASSIVE_MIRROR` / `isMaster` ≠ Safety Net).
-- **Nie** claim „Docker = HA”. Nie stubować przycisku Przejmij bez MIDI gate.
+- **On tree:** role + MIDI mute Spare + manual promote.
+- **Justified skip:** auto-election / HW switchers / P2P.
+- **→ TODO:** #437 usunięte; residual auto-election w tym triage.
 
 ## Następny krok eng
 
-MVP: Launcher status Master/Spare + manual promote + twarde wyłączenie MIDI OUT na Spare. Cross-link Lifecycle triage przy implementacji.
+Operacyjny smoke Master+Spare na dwóch hostach (shared data) — bez claim green. Auto-election = Later.

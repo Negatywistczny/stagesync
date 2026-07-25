@@ -13,6 +13,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Ołówek / audio:** klik w pustym na ścieżce audio otwiera Import i wstawia klip w miejscu kliknięcia (jak Logic), z No Overlap.
 - **Mixer — bus→bus:** wyjście busa można skierować na Master albo inny bus (bez pętli); silnik odtwarzania buduje DAG. Logiczne wyjścia HW (`audioHardwareOutputs`) są w modelu projektu, ale selektor Out nie pokazuje atrap Out 3–4 bez realnego `maxChannelCount` ≥ 4.
 - **Cues Sampler:** klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus; start z playheadu albo przycisk GO w Inspectorze; opcjonalnie dokończenie po Stop — bez wyjść HW 3–4.
+- **Safety Net:** w Admin Host widać rolę Master/Spare i przycisk **Przejmij** na Spare (ręczne przejęcie; bez auto-election).
 
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).
@@ -28,6 +29,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Downloads:** host serwuje APK Performer i Console spod `/downloads/` (404 z komunikatem, gdy artefakt nie leży na dysku) oraz paczki UI do jawnej aktualizacji Offline-First (pełna i warianty roli Performer / Console).
 - **Health / UI sync:** health zwraca wersję protokołu i hash interfejsu (pełny oraz opcjonalnie per rola); manifest UI listuje assety do synchronizacji na telefonie.
 - **PIN operatora:** opcjonalny `STAGESYNC_OPERATOR_PIN` blokuje destrukcyjne mutacje REST (projekt, setlista, ustawienia, MIDI config, zmiana utworu…); Play/Stop i MIDI Panic bez PIN-u; status `GET /api/system/operator-auth`.
+- **Safety Net:** rola Master/Spare (`STAGESYNC_SAFETY_ROLE`); na Spare MIDI OUT jest wyciszony; Host może ręcznie **Przejmij** (bez auto-election).
 
 #### 📚 Dokumentacja
 - **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).

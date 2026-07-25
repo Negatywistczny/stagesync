@@ -22,6 +22,10 @@ import {
   verifyOperatorPin,
 } from "../operator-pin.js";
 import {
+  promoteToMaster,
+  safetyNetStatus,
+} from "../safety-net.js";
+import {
   listBrowseDirectory,
   resolveBrowseStartPath,
 } from "../path-browser.js";
@@ -246,6 +250,22 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       return;
     }
     res.json({ ok: true, required: true });
+  });
+
+  router.get("/safety-net", (_req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.json(safetyNetStatus());
+  });
+
+  /** Manual promote Spare → Master (no auto-election). */
+  router.post("/promote", (_req, res) => {
+    promoteToMaster();
+    try {
+      writeManagedSettings({ STAGESYNC_SAFETY_ROLE: "master" });
+    } catch {
+      /* env write optional — runtime role already flipped */
+    }
+    res.json({ ok: true, ...safetyNetStatus() });
   });
 
   router.get("/logs", (_req, res) => {

@@ -7,14 +7,17 @@ import {
   fetchNetworkInfo,
   fetchMidiHostStatus,
   fetchHostUpdateStatus,
+  fetchSafetyNetStatus,
   pickPrimaryJoinUrl,
   apkDownloadUrlsFromJoin,
   probeApkAvailable,
   postApplyHostUpdate,
+  postSafetyNetPromote,
   type HostLogLine,
   type NetworkInfo,
   type HostUpdateStatus,
   type MidiHostStatus,
+  type SafetyNetStatus,
 } from "../../lib/setlistApi.js";
 import {
   isDesktopShell,
@@ -57,6 +60,9 @@ export function SystemView({
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
+  const [safety, setSafety] = useState<SafetyNetStatus | null>(null);
+  const [safetyError, setSafetyError] = useState<string | null>(null);
+  const [safetyBusy, setSafetyBusy] = useState(false);
   const [diagBusy, setDiagBusy] = useState(false);
   const [diagError, setDiagError] = useState<string | null>(null);
   const pausedRef = useRef(paused);
@@ -75,6 +81,18 @@ export function SystemView({
       setMidiError(null);
     } catch (err) {
       setMidiError(err instanceof Error ? err.message : "Błąd MIDI");
+    }
+  }, []);
+
+  const refreshSafety = useCallback(async () => {
+    try {
+      const s = await fetchSafetyNetStatus();
+      setSafety(s);
+      setSafetyError(null);
+    } catch (err) {
+      setSafetyError(
+        err instanceof Error ? err.message : "Błąd Safety Net",
+      );
     }
   }, []);
 
@@ -121,6 +139,10 @@ export function SystemView({
     }, 1000);
     return () => window.clearInterval(id);
   }, [refreshMidi]);
+
+  useEffect(() => {
+    void refreshSafety();
+  }, [refreshSafety]);
 
   useEffect(() => {
     const es = new EventSource("/api/system/logs/stream");
@@ -320,6 +342,66 @@ export function SystemView({
               <p className={shell.muted} role="status">
                 {statusMsg}
               </p>
+            ) : null}
+          </div>
+        </section>
+
+        <section
+          className={`${shell.card} ${styles.leftCard}`}
+          aria-label="Safety Net"
+        >
+          <div className={shell.cardHead}>
+            <h2 className={shell.cardTitle}>Safety Net</h2>
+          </div>
+          <div className={shell.cardBody}>
+            {safetyError ? (
+              <p className={shell.error} role="alert">
+                {safetyError}
+              </p>
+            ) : null}
+            {safety ? (
+              <>
+                <p className={shell.muted}>
+                  Rola:{" "}
+                  <strong>
+                    {safety.role === "master" ? "Master" : "Spare"}
+                  </strong>
+                  {safety.midiOutAllowed
+                    ? " — MIDI OUT dozwolony"
+                    : " — MIDI OUT wyciszony"}
+                </p>
+                {safety.role === "spare" ? (
+                  <Button
+                    variant="primary"
+                    disabled={safetyBusy}
+                    onClick={() => {
+                      setSafetyBusy(true);
+                      void postSafetyNetPromote()
+                        .then((s) => {
+                          setSafety(s);
+                          setSafetyError(null);
+                        })
+                        .catch((err) => {
+                          setSafetyError(
+                            err instanceof Error
+                              ? err.message
+                              : "Promote nieudany",
+                          );
+                        })
+                        .finally(() => setSafetyBusy(false));
+                    }}
+                  >
+                    {safetyBusy ? "Przejmowanie…" : "Przejmij (Master)"}
+                  </Button>
+                ) : (
+                  <p className={shell.muted}>
+                    Host jest Masterem. Spare ustawiasz przez{" "}
+                    <code>STAGESYNC_SAFETY_ROLE=spare</code>.
+                  </p>
+                )}
+              </>
+            ) : !safetyError ? (
+              <p className={shell.muted}>Ładowanie…</p>
             ) : null}
           </div>
         </section>

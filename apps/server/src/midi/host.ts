@@ -25,6 +25,7 @@ import {
 } from "./config-persist.js";
 import { createDefaultMidiBackend } from "./native-backend.js";
 import type { TransportEngine } from "../transport/engine.js";
+import { isMidiOutAllowed } from "../safety-net.js";
 
 const WINDOW_MS = 1000;
 /** Max MIDI clock pulses emitted in one transport notify (anti-flood on huge jumps). */
@@ -129,6 +130,7 @@ export function createMidiHost(
 
   /** Never throw from MIDI OUT — USB unplug must not kill the host process. */
   function safeSend(msg: MidiRealtimeMessage): boolean {
+    if (!isMidiOutAllowed()) return false;
     try {
       backend.send(msg);
       return true;
