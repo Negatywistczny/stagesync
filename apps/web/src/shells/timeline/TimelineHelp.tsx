@@ -253,34 +253,34 @@ const TOOL_SECTIONS: ToolSection[] = [
       },
       {
         term: "Eraser (T E)",
-        detail: "usuń kliknięty clip (Forma / treść / audio) lub zdarzenie mapy.",
+        detail: "usuń kliknięty klip (Forma / treść / audio) lub zdarzenie mapy.",
       },
       {
         term: "Scissors (T I)",
         detail:
-          "podział clipu / podsekcja Formy / nowa zmiana mapy. Samo I = Inspector (nie nożyczki).",
+          "podział klipu / podsekcja Formy / nowa zmiana mapy. Samo I = Inspector (nie nożyczki).",
       },
       {
         term: "Join (T J)",
         detail:
-          "scal sąsiednie clipy albo usuń najbliższą granicę podsekcji Formy.",
+          "scal sąsiednie klipy albo usuń najbliższą granicę podsekcji Formy.",
       },
       {
         term: "Mute (T M) / Solo (T S)",
         detail:
-          "klik = mute clipu; przytrzymaj LMB = chwilowe solo ścieżki. Dock S/M bez zmian.",
+          "klik = mute klipu; przytrzymaj LMB = chwilowe solo ścieżki. Dock S/M bez zmian.",
       },
       {
         term: "Fade (T A)",
-        detail: "przeciągnij na krawędzi clipu: fade in / out.",
+        detail: "przeciągnij na krawędzi klipu: fade in / out.",
       },
       {
         term: "Gain (T G)",
-        detail: "przeciągnij w pionie na clipie: poziom dB.",
+        detail: "przeciągnij w pionie na klipie: poziom dB.",
       },
       {
         term: "Marquee (T R)",
-        detail: "prostokąt zaznaczenia na siatce (także clipy audio).",
+        detail: "prostokąt zaznaczenia na siatce (także klipy audio).",
       },
       {
         term: "Zoom (T Y)",
