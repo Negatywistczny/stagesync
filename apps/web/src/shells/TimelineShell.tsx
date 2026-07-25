@@ -6803,7 +6803,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedTekstClip.startTicks,
                     )}
                     key={`tekst-start-${selectedTekstClip.id}-${selectedTekstClip.startTicks}`}
-                    aria-label="Start tekst takt.beat"
+                    aria-label="Start tekstu (takt.beat)"
                     onBlur={(e) => {
                       if (!draftProject) return;
                       const parsed = parseStartBarBeat(e.target.value);
@@ -6877,7 +6877,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedAkordClip.startTicks,
                     )}
                     key={`akord-start-${selectedAkordClip.id}-${selectedAkordClip.startTicks}`}
-                    aria-label="Start akord takt.beat"
+                    aria-label="Start akordu (takt.beat)"
                     onBlur={(e) => {
                       if (!draftProject) return;
                       const parsed = parseStartBarBeat(e.target.value);
@@ -6989,7 +6989,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       selectedCueClip.startTicks,
                     )}
                     key={`cue-start-${selectedCueClip.id}-${selectedCueClip.startTicks}`}
-                    aria-label="Start cue takt.beat"
+                    aria-label="Start cue (takt.beat)"
                     onBlur={(e) => {
                       if (!draftProject) return;
                       const parsed = parseStartBarBeat(e.target.value);
