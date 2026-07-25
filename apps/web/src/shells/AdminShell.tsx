@@ -992,7 +992,13 @@ function SongsView({
                 >
                   Import plików
                 </Button>
-                <Button variant="ghost" disabled={locked} onClick={onXml}>
+                <Button
+                  variant="ghost"
+                  disabled={locked}
+                  aria-label="Import MusicXML"
+                  title="Import MusicXML"
+                  onClick={onXml}
+                >
                   XML
                 </Button>
                 <Button
