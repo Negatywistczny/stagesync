@@ -41,6 +41,8 @@ W Admin → Host → **Sieć & Szybkie Połączenie**:
 | **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk` |
 | **Pobierz Console** | `{origin}/downloads/stagesync-console.apk` |
 
+W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień zostaje wklejenie adresu (bez atrapy podglądu).
+
 Gdy plik APK **nie leży** w katalogu downloads hosta, UI pokazuje **pusty stan** (komunikat), nie atrapę „Pobierz” ([ADR 0011](./adr/0011-ui-parity-behavior.md)). Endpoint zwraca **404** z jasnym tekstem.
 
 Domyślna lokalizacja plików na hoście: `$STAGESYNC_DATA_DIR/downloads/` (nadpisanie: `STAGESYNC_DOWNLOADS_DIR`).

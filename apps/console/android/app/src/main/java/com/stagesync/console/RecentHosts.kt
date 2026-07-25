@@ -52,4 +52,17 @@ object RecentHosts {
             null
         }
     }
+
+    /**
+     * Join QR from Admin is usually a bare LAN origin (`http://host:port`).
+     * Also accepts paths (`/client`, `/downloads/…`) and noisy payloads with an embedded URL.
+     */
+    fun originFromQrPayload(raw: String): String? {
+        normalizeOrigin(raw)?.let { return it }
+        val match = URL_IN_TEXT.find(raw.trim()) ?: return null
+        return normalizeOrigin(match.value.trimEnd(',', '.', ';', ')', ']'))
+    }
+
+    private val URL_IN_TEXT =
+        Regex("""https?://[^\s"'<>\\]+""", RegexOption.IGNORE_CASE)
 }

@@ -28,6 +28,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta; po połączeniu jawny dialog aktualizacji (**Pobierz i zainstaluj** / **Później**), gdy host ma nowszą wersję i APK jest dostępne — bez cichej aktualizacji w tle. Launcher: ciemny ekran z kartami serwerów z sieci (jedno dotknięcie), kafelkami **Skanuj kod QR** / **Ostatnie serwery** oraz ręcznym adresem na dole; ikona i znak w launcherze to żółty romb z PWA (`pwa-icon`); wstecz w sesji idzie po historii strony, a **Zmień serwer** / **Dodaj serwer…** jest w ustawieniach Client / Admin (nie jako pływający przycisk nad WebView).
+- **Android QR:** żywy skaner kamery (CameraX + ML Kit) w launcherze Performer i Console — kod „Dołącz do hosta” łączy od razu; wklejenie adresu zostaje jako zapas przy braku uprawnień / kamery.
 - **Client / Admin (mobile):** przycisk **Pełny ekran** ukryty w powłoce Android (`StageSyncNative`) oraz w samodzielnym PWA na małym / touch ekranie — desktop i Tauri bez zmian.
 
 ### Zmieniono

@@ -34,7 +34,7 @@ class LauncherActivity : AppCompatActivity() {
 
     private val cameraPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            qrLauncher.launch(Intent(this, QrScanActivity::class.java).putExtra("camera", granted))
+            openQrScanner(granted)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,10 +61,26 @@ class LauncherActivity : AppCompatActivity() {
     private fun startQr() {
         when {
             ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
-                PackageManager.PERMISSION_GRANTED ->
-                qrLauncher.launch(Intent(this, QrScanActivity::class.java).putExtra("camera", true))
-            else -> cameraPermission.launch(Manifest.permission.CAMERA)
+                PackageManager.PERMISSION_GRANTED -> openQrScanner(true)
+            else ->
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.camera_permission_title)
+                    .setMessage(R.string.camera_permission_rationale)
+                    .setPositiveButton(R.string.camera_permission_allow) { _, _ ->
+                        cameraPermission.launch(Manifest.permission.CAMERA)
+                    }
+                    .setNegativeButton(R.string.camera_permission_paste) { _, _ ->
+                        openQrScanner(false)
+                    }
+                    .show()
         }
+    }
+
+    private fun openQrScanner(cameraGranted: Boolean) {
+        qrLauncher.launch(
+            Intent(this, QrScanActivity::class.java)
+                .putExtra(QrScanActivity.EXTRA_CAMERA, cameraGranted),
+        )
     }
 
     private fun startMdns() {

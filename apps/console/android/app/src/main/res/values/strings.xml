@@ -20,7 +20,15 @@
     <string name="err_bad_url">Niepoprawny adres</string>
     <string name="err_health">Serwer nie odpowiada</string>
     <string name="qr_hint">Zeskanuj kod QR „Dołącz do hosta” z panelu Admin albo wklej adres poniżej.</string>
-    <string name="qr_paste_hint">Adres z kodu QR:</string>
+    <string name="qr_scanning">Skieruj aparat na kod QR hosta…</string>
+    <string name="qr_found">Kod rozpoznany — łączę…</string>
+    <string name="qr_camera_denied">Brak dostępu do kamery. Wklej adres LAN poniżej albo włącz Kamerę w ustawieniach aplikacji.</string>
+    <string name="qr_camera_error">Nie udało się uruchomić kamery. Wklej adres poniżej.</string>
+    <string name="qr_paste_hint">Albo wklej adres ręcznie:</string>
+    <string name="camera_permission_title">Kamera do skanowania QR</string>
+    <string name="camera_permission_rationale">StageSync używa kamery wyłącznie do odczytu kodu QR z adresem hosta w sieci lokalnej. Obraz nie jest nagrywany ani wysyłany.</string>
+    <string name="camera_permission_allow">Zezwól na kamerę</string>
+    <string name="camera_permission_paste">Wklej adres</string>
     <string name="btn_use_url">Połącz</string>
     <string name="update_title">Dostępna aktualizacja</string>
     <string name="update_message">Host ma nowszą wersję StageSync (%1$s). Zainstalowana powłoka: %2$s.\n\nAktualizacja wymaga Twojej zgody — nic nie pobierze się w tle.</string>
