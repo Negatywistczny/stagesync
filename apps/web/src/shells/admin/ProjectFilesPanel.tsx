@@ -98,21 +98,25 @@ export function ProjectFilesPanel({
   };
 
   if (!projectId) {
-    return <p className={styles.muted}>Wybierz utwór.</p>;
+    return (
+      <p className={styles.muted} role="status" aria-live="polite">
+        Wybierz utwór.
+      </p>
+    );
   }
 
   return (
     <div>
-      <h3 className={styles.subTitle}>Assety projektu</h3>
+      <h3 className={styles.subTitle}>Pliki projektu</h3>
       {error ? (
         <p className={styles.error} role="alert">
           {error}
         </p>
       ) : null}
       {assets.length === 0 ? (
-        <p className={styles.muted}>Brak plików w projekcie.</p>
+        <p className={styles.muted} role="status" aria-live="polite">Brak plików w projekcie.</p>
       ) : (
-        <ul className={styles.list} aria-label="Assety projektu">
+        <ul className={styles.list} aria-label="Pliki projektu">
           {assets.map((a) => (
             <li
               key={a.id}

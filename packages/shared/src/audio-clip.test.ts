@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   audioClipAbutGapTicks,
+  audioClipEndTicks,
   audioClipBufferOffsetSec,
   audioClipBufferOffsetSecAlongMaps,
   audioClipPlayableMs,
@@ -27,6 +28,21 @@ import type { AudioClip } from "./schema.js";
 
 const TS_4_4 = { numerator: 4, denominator: 4 };
 const CTX = { bpm: 120, meter: TS_4_4, ppq: DEFAULT_PPQ };
+
+
+describe("audioClipEndTicks", () => {
+  it("returns exclusive end as start + length", () => {
+    expect(
+      audioClipEndTicks({ startTicks: 0, lengthTicks: 480 }),
+    ).toBe(480);
+    expect(
+      audioClipEndTicks({ startTicks: 100, lengthTicks: 50 }),
+    ).toBe(150);
+    expect(
+      audioClipEndTicks({ startTicks: -240, lengthTicks: 240 }),
+    ).toBe(0);
+  });
+});
 
 describe("gainDbToLinear", () => {
   it("maps 0 dB to 1 and halves at -6 dB approx", () => {

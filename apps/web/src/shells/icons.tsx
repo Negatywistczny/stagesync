@@ -37,7 +37,6 @@ import {
   RotateCw,
   Power,
   Save,
-  Scaling,
   Scissors,
   Settings,
   SlidersVertical,
@@ -46,16 +45,12 @@ import {
   Square,
   SquareCheck,
   SquareDashedMousePointer,
-  StretchHorizontal,
-  StretchVertical,
   Sun,
   Undo2,
   Volume2,
   VolumeX,
-  Wand2,
   X,
   ZoomIn,
-  ZoomOut,
 } from "lucide-react";
 import type { TrackIcon } from "@stagesync/shared";
 
@@ -94,9 +89,6 @@ export function IconScissors(p: IconProps) {
   return withIcon(Scissors, p);
 }
 
-export function IconWand(p: IconProps) {
-  return withIcon(Wand2, p);
-}
 
 export function IconJoin(p: IconProps) {
   return withIcon(Combine, p);
@@ -233,22 +225,6 @@ export function IconZoomIn(p: IconProps) {
   return withIcon(ZoomIn, p);
 }
 
-export function IconZoomOut(p: IconProps) {
-  return withIcon(ZoomOut, p);
-}
-
-export function IconZoomH(p: IconProps) {
-  return withIcon(StretchHorizontal, p);
-}
-
-export function IconZoomV(p: IconProps) {
-  return withIcon(StretchVertical, p);
-}
-
-/** UI chrome scale (not time axis). */
-export function IconZoomUi(p: IconProps) {
-  return withIcon(Scaling, p);
-}
 
 const TRACK_ICON_MAP: Record<TrackIcon, ComponentType<LucideProps>> = {
   mic: Mic,
