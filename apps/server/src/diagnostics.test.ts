@@ -188,4 +188,17 @@ describe("file-logger + diagnostics zip (#351)", () => {
       );
     }
   });
+
+  it("parseZipArchive rejects short buffers and path traversal names", () => {
+    expect(() => parseZipArchive(Buffer.from("PK"))).toThrow(/za krótkie|EOCD/i);
+    const evil = buildStoreZip([
+      { name: "../escape.txt", data: Buffer.from("x") },
+    ]);
+    expect(() => parseZipArchive(evil)).toThrow(/Niedozwolona ścieżka/);
+    const abs = buildStoreZip([
+      { name: "/etc/passwd", data: Buffer.from("x") },
+    ]);
+    expect(() => parseZipArchive(abs)).toThrow(/Niedozwolona ścieżka/);
+  });
+
 });
