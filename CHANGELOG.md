@@ -12,6 +12,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### ⏱️ Timeline & DAW
 - **Ołówek / audio:** klik w pustym na ścieżce audio otwiera Import i wstawia klip w miejscu kliknięcia (jak Logic), z No Overlap.
 - **Mixer — bus→bus:** wyjście busa można skierować na Master albo inny bus (bez pętli); silnik odtwarzania buduje DAG. Logiczne wyjścia HW (`audioHardwareOutputs`) są w modelu projektu, ale selektor Out nie pokazuje atrap Out 3–4 bez realnego `maxChannelCount` ≥ 4.
+- **Cues Sampler:** klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus; start z playheadu albo przycisk GO w Inspectorze; opcjonalnie dokończenie po Stop — bez wyjść HW 3–4.
 
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).

@@ -419,7 +419,38 @@ export const CueClipRoleSchema = z.enum([
 
 export type CueClipRole = z.infer<typeof CueClipRoleSchema>;
 
-/** Content lane clip — Cue (α7+; roles/priority = v4 parity). */
+/** Cue sample routing — Master | Bus only (no HW outs in MVP). */
+export const CueSampleOutputSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("master") }),
+  z.object({ kind: z.literal("bus"), busId: z.string().min(1).max(64) }),
+]);
+
+export type CueSampleOutput = z.infer<typeof CueSampleOutputSchema>;
+
+/**
+ * Optional audio sample on a Cue clip (#430).
+ * Omit `sample` → text banner only (v5.1 behavior).
+ */
+export const CueSampleConfigSchema = z
+  .object({
+    assetId: z.string().min(1),
+    /** Default one-shot (plays full file). Gated = stop at clip end. */
+    mode: z.enum(["one-shot", "gated"]).optional(),
+    /** Default tick (SSOT startTicks). next-beat / immediate for GO pad. */
+    quantization: z.enum(["tick", "next-beat", "immediate"]).optional(),
+    gainDb: z.number().finite().min(-60).max(24).optional(),
+    pan: z.number().finite().min(-1).max(1).optional(),
+    output: CueSampleOutputSchema.optional(),
+    /** Continue after transport Stop when true. */
+    playPostStop: z.boolean().optional(),
+    /** Retrigger restarts; choke stops previous instance. Default retrigger. */
+    polyphony: z.enum(["retrigger", "choke"]).optional(),
+  })
+  .strict();
+
+export type CueSampleConfig = z.infer<typeof CueSampleConfigSchema>;
+
+/** Content lane clip — Cue (α7+; roles/priority = v4 parity; sample = 5.2+). */
 export const CueClipSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
@@ -429,6 +460,8 @@ export const CueClipSchema = z.object({
   roles: z.array(CueClipRoleSchema).max(4).optional(),
   /** Omit or `normal`; persist `alert` when highlighted. */
   priority: z.enum(["normal", "alert"]).optional(),
+  /** Optional sampler config — same startTicks as the banner. */
+  sample: CueSampleConfigSchema.optional(),
 });
 
 export type CueClip = z.infer<typeof CueClipSchema>;
@@ -621,6 +654,29 @@ export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
         path: ["audioBusses"],
       });
     }
+    const assetById = new Map(project.assets.map((a) => [a.id, a]));
+    project.cue.clips.forEach((clip, i) => {
+      const sample = clip.sample;
+      if (!sample) return;
+      const asset = assetById.get(sample.assetId);
+      if (!asset || asset.kind !== "audio") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Cue sample assetId must reference an audio asset: ${sample.assetId}`,
+          path: ["cue", "clips", i, "sample", "assetId"],
+        });
+      }
+      if (
+        sample.output?.kind === "bus" &&
+        !busIds.has(sample.output.busId)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Cue sample busId not found: ${sample.output.busId}`,
+          path: ["cue", "clips", i, "sample", "output", "busId"],
+        });
+      }
+    });
   },
 );
 
@@ -683,6 +739,29 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
         path: ["audioBusses"],
       });
     }
+    const assetById = new Map(project.assets.map((a) => [a.id, a]));
+    project.cue.clips.forEach((clip, i) => {
+      const sample = clip.sample;
+      if (!sample) return;
+      const asset = assetById.get(sample.assetId);
+      if (!asset || asset.kind !== "audio") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Cue sample assetId must reference an audio asset: ${sample.assetId}`,
+          path: ["cue", "clips", i, "sample", "assetId"],
+        });
+      }
+      if (
+        sample.output?.kind === "bus" &&
+        !busIds.has(sample.output.busId)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Cue sample busId not found: ${sample.output.busId}`,
+          path: ["cue", "clips", i, "sample", "output", "busId"],
+        });
+      }
+    });
   });
 
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;

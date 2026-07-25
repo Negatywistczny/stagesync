@@ -153,6 +153,7 @@ import {
   setCueClipLabel,
   setCueClipRoles,
   setCueClipPriority,
+  setCueClipSample,
   CUE_ROLES,
 } from "../lib/cueEdit.js";
 import {
@@ -266,6 +267,7 @@ import {
   allowAudioPlayback,
   clearAudioBufferCache,
   ensureAudioBuffered,
+  fireCueSampleGo,
   getAudioPlaybackDebugState,
   getFailedAudioAssetIds,
   isAudioAssetDecodeFailed,
@@ -7120,6 +7122,147 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     <option value="alert">Alert</option>
                   </select>
                 </label>
+                <fieldset className={styles.inspFieldset}>
+                  <legend>Sampler</legend>
+                  <label className={styles.inspField}>
+                    Asset audio
+                    <select
+                      className={styles.nameInput}
+                      aria-label="Cue sample asset"
+                      value={selectedCueClip.sample?.assetId ?? ""}
+                      onChange={(e) => {
+                        if (!draftProject) return;
+                        const assetId = e.target.value;
+                        if (!assetId) {
+                          commitDraft(
+                            setCueClipSample(
+                              draftProject,
+                              selectedCueClip.id,
+                              null,
+                            ),
+                          );
+                          return;
+                        }
+                        commitDraft(
+                          setCueClipSample(draftProject, selectedCueClip.id, {
+                            ...(selectedCueClip.sample ?? {}),
+                            assetId,
+                          }),
+                        );
+                      }}
+                    >
+                      <option value="">— brak —</option>
+                      {draftProject!.assets
+                        .filter((a) => a.kind === "audio")
+                        .map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.originalName}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  {selectedCueClip.sample ? (
+                    <>
+                      <label className={styles.inspField}>
+                        Tryb
+                        <select
+                          className={styles.nameInput}
+                          aria-label="Cue sample mode"
+                          value={selectedCueClip.sample.mode ?? "one-shot"}
+                          onChange={(e) => {
+                            if (!draftProject || !selectedCueClip.sample) return;
+                            const mode =
+                              e.target.value === "gated" ? "gated" : "one-shot";
+                            commitDraft(
+                              setCueClipSample(
+                                draftProject,
+                                selectedCueClip.id,
+                                { ...selectedCueClip.sample, mode },
+                              ),
+                            );
+                          }}
+                        >
+                          <option value="one-shot">One-shot</option>
+                          <option value="gated">Gated</option>
+                        </select>
+                      </label>
+                      <label className={styles.inspField}>
+                        Out
+                        <select
+                          className={styles.nameInput}
+                          aria-label="Cue sample output"
+                          value={
+                            selectedCueClip.sample.output?.kind === "bus"
+                              ? `bus:${selectedCueClip.sample.output.busId}`
+                              : "master"
+                          }
+                          onChange={(e) => {
+                            if (!draftProject || !selectedCueClip.sample) return;
+                            const v = e.target.value;
+                            const output =
+                              v.startsWith("bus:") && v.length > 4
+                                ? ({
+                                    kind: "bus" as const,
+                                    busId: v.slice(4),
+                                  })
+                                : ({ kind: "master" as const });
+                            commitDraft(
+                              setCueClipSample(
+                                draftProject,
+                                selectedCueClip.id,
+                                { ...selectedCueClip.sample, output },
+                              ),
+                            );
+                          }}
+                        >
+                          <option value="master">Master</option>
+                          {(draftProject!.audioBusses ?? []).map((b) => (
+                            <option key={b.id} value={`bus:${b.id}`}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className={styles.inspCheck}>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(
+                            selectedCueClip.sample.playPostStop,
+                          )}
+                          onChange={(e) => {
+                            if (!draftProject || !selectedCueClip.sample) return;
+                            commitDraft(
+                              setCueClipSample(
+                                draftProject,
+                                selectedCueClip.id,
+                                {
+                                  ...selectedCueClip.sample,
+                                  playPostStop: e.target.checked || undefined,
+                                },
+                              ),
+                            );
+                          }}
+                        />
+                        Graj po Stop
+                      </label>
+                      <button
+                        type="button"
+                        className={styles.nameInput}
+                        onClick={() => {
+                          if (!draftProject || !projectId) return;
+                          void fireCueSampleGo(
+                            projectId,
+                            draftProject,
+                            selectedCueClip.id,
+                            displayTicks,
+                          );
+                        }}
+                      >
+                        GO
+                      </button>
+                    </>
+                  ) : null}
+                </fieldset>
                 <label className={styles.inspField}>
                   Start (takt.beat)
                   <input

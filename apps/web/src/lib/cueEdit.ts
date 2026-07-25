@@ -8,6 +8,7 @@ import {
   ticksPerBar,
   type CueClip,
   type CueClipRole,
+  type CueSampleConfig,
   type Project,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
@@ -133,6 +134,42 @@ export function setCueClipPriority(
       return rest;
     }
     return { ...c, priority: "alert" as const };
+  });
+  return { ...project, cue: { clips } };
+}
+
+/** Attach / replace / clear cue sample config (#430). */
+export function setCueClipSample(
+  project: Project,
+  clipId: string,
+  sample: CueSampleConfig | null,
+): Project {
+  const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
+  const clips = project.cue.clips.map((c) => {
+    if (c.id !== clipId) return c;
+    if (sample == null) {
+      if (c.sample == null) return c;
+      const { sample: _drop, ...rest } = c;
+      void _drop;
+      return rest;
+    }
+    const asset = project.assets.find((a) => a.id === sample.assetId);
+    if (!asset || asset.kind !== "audio") return c;
+    let output = sample.output;
+    if (output?.kind === "bus" && !busIds.has(output.busId)) {
+      output = undefined;
+    }
+    const next: CueSampleConfig = {
+      assetId: sample.assetId,
+      ...(sample.mode ? { mode: sample.mode } : {}),
+      ...(sample.quantization ? { quantization: sample.quantization } : {}),
+      ...(sample.gainDb != null ? { gainDb: sample.gainDb } : {}),
+      ...(sample.pan != null ? { pan: sample.pan } : {}),
+      ...(output ? { output } : {}),
+      ...(sample.playPostStop ? { playPostStop: true } : {}),
+      ...(sample.polyphony ? { polyphony: sample.polyphony } : {}),
+    };
+    return { ...c, sample: next };
   });
   return { ...project, cue: { clips } };
 }

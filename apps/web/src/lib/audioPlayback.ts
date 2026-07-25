@@ -38,6 +38,7 @@ import {
   STEREO_DOWNMIX_LINEAR,
   trimInMsOf,
   trimOutMsOf,
+  ticksToMs,
   type ChannelMode,
   type Project,
 } from "@stagesync/shared";
@@ -75,6 +76,14 @@ type ActiveSource = {
   levelGain: GainNode;
   /** Extra nodes for stereo→mono downmix (disconnected on stop). */
   extras: AudioNode[];
+};
+
+type ActiveCueSample = {
+  clipId: string;
+  source: AudioBufferSourceNode;
+  gain: GainNode;
+  pan: StereoPannerNode;
+  playPostStop: boolean;
 };
 
 type TrackBusMono = {
@@ -118,6 +127,9 @@ let bufferCacheGlobalGen = 0;
 /** Per-project clear generation — late decode must not re-pollute after switch. */
 const bufferCacheProjectGen = new Map<string, number>();
 let active: ActiveSource[] = [];
+let activeCues: ActiveCueSample[] = [];
+/** Cue clip ids fired this play-through (reset on seek / hard stop). */
+const firedCueIds = new Set<string>();
 let lastDisplayTicks: number | null = null;
 let lastGraphKey = "";
 /** Last sync args — cold-buffer load completion may re-trigger under playhead. */
@@ -256,6 +268,9 @@ export async function ensureAudioBuffered(
     );
     if (offset == null) continue;
     assetIds.add(clip.assetId);
+  }
+  for (const clip of project.cue.clips) {
+    if (clip.sample?.assetId) assetIds.add(clip.sample.assetId);
   }
   if (assetIds.size === 0) {
     return { ready: true, failedAssetIds: [] };
@@ -687,11 +702,175 @@ function releaseActiveSource(a: ActiveSource): void {
   }
 }
 
+function releaseCueSample(a: ActiveCueSample): void {
+  try {
+    a.source.stop();
+  } catch {
+    /* */
+  }
+  try {
+    a.source.disconnect();
+    a.gain.disconnect();
+    a.pan.disconnect();
+  } catch {
+    /* */
+  }
+}
+
+/** PANIC — stop all cue samples including playPostStop. */
+export function panicCueSamples(): void {
+  for (const a of activeCues) releaseCueSample(a);
+  activeCues = [];
+  firedCueIds.clear();
+}
+
+function stopCueSamplesOnTransportStop(): void {
+  const keep: ActiveCueSample[] = [];
+  for (const a of activeCues) {
+    if (a.playPostStop) keep.push(a);
+    else releaseCueSample(a);
+  }
+  activeCues = keep;
+}
+
+function startCueSample(
+  projectId: string,
+  project: Project,
+  clip: Project["cue"]["clips"][number],
+  ctx: AudioContext,
+): void {
+  const sample = clip.sample;
+  if (!sample) return;
+  const buf = bufferCache.get(cacheKey(projectId, sample.assetId));
+  if (!buf) {
+    void loadAudioBuffer(projectId, sample.assetId, ctx);
+    return;
+  }
+  const poly = sample.polyphony ?? "retrigger";
+  if (poly === "choke") {
+    activeCues = activeCues.filter((a) => {
+      if (a.clipId !== clip.id) return true;
+      releaseCueSample(a);
+      return false;
+    });
+  }
+  const source = ctx.createBufferSource();
+  source.buffer = buf;
+  const gain = ctx.createGain();
+  gain.gain.value = gainDbToLinear(sample.gainDb);
+  const pan = ctx.createStereoPanner();
+  pan.pan.value = sample.pan ?? 0;
+  source.connect(gain);
+  gain.connect(pan);
+
+  const master = ensureMasterBus(ctx);
+  let dest: AudioNode = master.gain;
+  if (sample.output?.kind === "bus") {
+    const busId = sample.output.busId;
+    const bus = project.audioBusses?.find((b) => b.id === busId);
+    if (bus) {
+      dest = ensureGroupBus(
+        ctx,
+        bus.id,
+        resolveChannelMode(bus.channelMode),
+      ).gain;
+    }
+  }
+  pan.connect(dest);
+
+  const mode = sample.mode ?? "one-shot";
+  let dur = buf.duration;
+  if (mode === "gated") {
+    const bpm = resolveTempoAt(project, clip.startTicks);
+    const meter = resolveMeterAt(project, clip.startTicks);
+    dur = Math.max(
+      0.01,
+      ticksToMs(clip.lengthTicks, bpm, meter, project.ppq) / 1000,
+    );
+  }
+  try {
+    if (mode === "gated") source.start(0, 0, dur);
+    else source.start(0);
+  } catch {
+    return;
+  }
+  const entry: ActiveCueSample = {
+    clipId: clip.id,
+    source,
+    gain,
+    pan,
+    playPostStop: Boolean(sample.playPostStop),
+  };
+  source.onended = () => {
+    activeCues = activeCues.filter((a) => a !== entry);
+  };
+  activeCues.push(entry);
+}
+
+/** Manual GO pad — fires cue sample (immediate or next-beat). */
+export function fireCueSampleGo(
+  projectId: string,
+  project: Project,
+  clipId: string,
+  displayTicks: number,
+  ctx: AudioContext = getMetronomeAudioContext(),
+): boolean {
+  const clip = project.cue.clips.find((c) => c.id === clipId);
+  if (!clip?.sample) return false;
+  const q = clip.sample.quantization ?? "immediate";
+  if (q === "next-beat") {
+    const beatTicks = Math.max(1, project.ppq);
+    const next = Math.ceil((displayTicks + 1) / beatTicks) * beatTicks;
+    const bpm = resolveTempoAt(project, displayTicks);
+    const meter = resolveMeterAt(project, displayTicks);
+    const delayMs = Math.max(
+      0,
+      ticksToMs(next - displayTicks, bpm, meter, project.ppq),
+    );
+    window.setTimeout(() => {
+      startCueSample(projectId, project, clip, ctx);
+    }, delayMs);
+    return true;
+  }
+  startCueSample(projectId, project, clip, ctx);
+  return true;
+}
+
+function syncCueSamples(
+  projectId: string,
+  project: Project,
+  displayTicks: number,
+  prevTicks: number | null,
+  ctx: AudioContext,
+): void {
+  for (const clip of project.cue.clips) {
+    if (!clip.sample) continue;
+    const q = clip.sample.quantization ?? "tick";
+    if (q === "immediate") continue;
+
+    let fireAt = clip.startTicks;
+    if (q === "next-beat") {
+      const beatTicks = Math.max(1, project.ppq);
+      fireAt = Math.ceil(clip.startTicks / beatTicks) * beatTicks;
+      if (fireAt < clip.startTicks) fireAt += beatTicks;
+    }
+
+    const crossed =
+      prevTicks != null && prevTicks < fireAt && displayTicks >= fireAt;
+    if (!crossed) continue;
+    if (firedCueIds.has(clip.id)) continue;
+    firedCueIds.add(clip.id);
+    startCueSample(projectId, project, clip, ctx);
+  }
+}
+
 function stopAll(): void {
   for (const a of active) {
     releaseActiveSource(a);
   }
   active = [];
+  stopCueSamplesOnTransportStop();
+  firedCueIds.clear();
 }
 
 function disposeBuses(): void {
@@ -719,6 +898,7 @@ export function suppressAudioPlayback(): void {
   playbackSuppressed = true;
   stopEpoch += 1;
   stopAll();
+  panicCueSamples();
   lastDisplayTicks = null;
   lastGraphKey = "";
 }
@@ -780,6 +960,13 @@ function graphKey(input: AudioPlaybackInput): string {
       .join(";"),
     (input.soloTrackIds ?? []).join(","),
     (input.soloBusIds ?? []).join(","),
+    input.project.cue.clips
+      .map((c) => {
+        const s = c.sample;
+        if (!s) return `${c.id}:-`;
+        return `${c.id}:${s.assetId}:${s.mode ?? "one-shot"}:${s.quantization ?? "tick"}:${s.output?.kind === "bus" ? s.output.busId : "master"}`;
+      })
+      .join(";"),
   ].join("|");
 }
 
@@ -1016,8 +1203,12 @@ export function syncAudioPlayback(
     lastDisplayTicks != null &&
     Math.abs(input.displayTicks - lastDisplayTicks) > SEEK_JUMP_TICKS;
   const graphChanged = gKey !== lastGraphKey;
-  if (jumped || graphChanged) stopAll();
+  if (jumped || graphChanged) {
+    stopAll();
+    firedCueIds.clear();
+  }
 
+  const prevTicks = lastDisplayTicks;
   lastDisplayTicks = input.displayTicks;
   lastGraphKey = gKey;
 
@@ -1058,6 +1249,14 @@ export function syncAudioPlayback(
       input.soloBusIds,
     );
   }
+
+  syncCueSamples(
+    projectId,
+    input.project,
+    input.displayTicks,
+    prevTicks,
+    ctx,
+  );
 
   // Live clip gainDb (not part of graphKey).
   for (const a of active) {

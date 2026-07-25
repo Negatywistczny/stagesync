@@ -6,6 +6,7 @@ import {
   setCueClipLabel,
   setCueClipPriority,
   setCueClipRoles,
+  setCueClipSample,
 } from "./cueEdit.js";
 
 describe("cueEdit", () => {
@@ -90,5 +91,33 @@ describe("cueEdit", () => {
     let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilCueClick(p, 0, "   ");
     expect(p.cue.clips[0]!.label).toBe("Cue");
+  });
+
+  it("setCueClipSample attaches and clears sample", () => {
+    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = {
+      ...p,
+      assets: [
+        {
+          id: "a1",
+          storageName: "x.wav",
+          originalName: "hit.wav",
+          kind: "audio",
+          mimeType: "audio/wav",
+          sizeBytes: 1000,
+        },
+      ],
+    };
+    p = pencilCueClick(p, 0, "Hit");
+    const id = p.cue.clips[0]!.id;
+    p = setCueClipSample(p, id, {
+      assetId: "a1",
+      mode: "gated",
+      output: { kind: "master" },
+    });
+    expect(p.cue.clips[0]?.sample?.assetId).toBe("a1");
+    expect(p.cue.clips[0]?.sample?.mode).toBe("gated");
+    p = setCueClipSample(p, id, null);
+    expect(p.cue.clips[0]?.sample).toBeUndefined();
   });
 });
