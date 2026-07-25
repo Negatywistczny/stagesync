@@ -15,7 +15,7 @@ import {
   syncNavRecentProjects,
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
-import { isEditableKeyboardTarget } from "../lib/isEditableKeyboardTarget.js";
+import { shouldAllowNativeTextClipboard } from "../lib/isEditableKeyboardTarget.js";
 import {
   downloadDiagnosticsExport,
   fetchNetworkInfo,
@@ -374,7 +374,9 @@ export function DesktopMenuBridge() {
 
   useEffect(() => {
     function onContextMenu(ev: MouseEvent) {
-      if (isEditableKeyboardTarget(ev.target)) return;
+      // Keep Inspect/native chrome off app-wide, but allow system Cut/Copy/Paste
+      // for editable fields and for an existing text selection.
+      if (shouldAllowNativeTextClipboard(ev.target)) return;
       ev.preventDefault();
     }
     window.addEventListener("contextmenu", onContextMenu);

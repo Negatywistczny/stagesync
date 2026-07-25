@@ -103,11 +103,6 @@ export function ChannelStripControls({
       onChange={(e) => callbacks.onRenameChange?.(e.target.value)}
       onBlur={() => callbacks.onRenameCommit?.()}
       onKeyDown={onRenameKeyDown}
-      onContextMenu={(e) => {
-        // Block native edit/Look Up while renaming; custom track menu optional.
-        e.preventDefault();
-        e.stopPropagation();
-      }}
     />
   ) : (
     <MiddleTruncateLabel

@@ -280,7 +280,10 @@ import {
   type ClockDisplayFormat,
 } from "../lib/clockDisplayPrefs.js";
 import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
-import { isEditableKeyboardTarget } from "../lib/isEditableKeyboardTarget.js";
+import {
+  hasNonCollapsedDomTextSelection,
+  isEditableKeyboardTarget,
+} from "../lib/isEditableKeyboardTarget.js";
 import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
 import {
   computeWaveformFromAudioBuffer,
@@ -1475,6 +1478,14 @@ export function TimelineShell() {
           e.preventDefault();
           onTool(pick.id);
         }
+        return;
+      }
+
+      // DOM text selection → system clipboard (not in-app clip clipboard).
+      if (
+        (action === "copy" || action === "cut") &&
+        hasNonCollapsedDomTextSelection()
+      ) {
         return;
       }
 
@@ -6699,7 +6710,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   <span className={styles.metaKeyRow}>
                     <select
                       className={styles.nameInput}
-                      aria-label="Tonika startu"
+                      aria-label="Tonika (start)"
                       value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
                       onChange={(e) => {
                         const mode =
@@ -6735,7 +6746,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     </select>
                     <select
                       className={styles.nameInput}
-                      aria-label="Tryb tonacji start"
+                      aria-label="Tryb (start)"
                       value={resolveKeyAt(draftProject, 0)?.mode ?? "major"}
                       onChange={(e) => {
                         const tonic =
@@ -7690,8 +7701,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
       {touchTier === "mobile" ? (
         <p className={styles.touchTierNote} role="status">
-          Tryb odtwarzacza — pełna edycja na tablecie ({'>'}768 px) lub komputerze.
-          Metadane można edytować.
+          Tryb odtwarzacza
         </p>
       ) : null}
 

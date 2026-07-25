@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { isEditableKeyboardTarget } from "./isEditableKeyboardTarget.js";
+import {
+  hasNonCollapsedDomTextSelection,
+  isEditableKeyboardTarget,
+  shouldAllowNativeTextClipboard,
+} from "./isEditableKeyboardTarget.js";
 
 function fake(
   tagName: string,
@@ -21,5 +25,80 @@ describe("isEditableKeyboardTarget", () => {
     expect(isEditableKeyboardTarget(fake("DIV", true))).toBe(true);
     expect(isEditableKeyboardTarget(fake("DIV"))).toBe(false);
     expect(isEditableKeyboardTarget(fake("BUTTON"))).toBe(false);
+  });
+});
+
+describe("hasNonCollapsedDomTextSelection", () => {
+  it("is false when selection is missing, collapsed, or empty", () => {
+    expect(hasNonCollapsedDomTextSelection(() => null)).toBe(false);
+    expect(
+      hasNonCollapsedDomTextSelection(
+        () =>
+          ({
+            rangeCount: 0,
+            isCollapsed: true,
+            toString: () => "",
+          }) as unknown as Selection,
+      ),
+    ).toBe(false);
+    expect(
+      hasNonCollapsedDomTextSelection(
+        () =>
+          ({
+            rangeCount: 1,
+            isCollapsed: true,
+            toString: () => "",
+          }) as unknown as Selection,
+      ),
+    ).toBe(false);
+    expect(
+      hasNonCollapsedDomTextSelection(
+        () =>
+          ({
+            rangeCount: 1,
+            isCollapsed: false,
+            toString: () => "",
+          }) as unknown as Selection,
+      ),
+    ).toBe(false);
+  });
+
+  it("is true for a non-empty range", () => {
+    expect(
+      hasNonCollapsedDomTextSelection(
+        () =>
+          ({
+            rangeCount: 1,
+            isCollapsed: false,
+            toString: () => "hello",
+          }) as unknown as Selection,
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("shouldAllowNativeTextClipboard", () => {
+  it("allows editable targets even without a DOM selection", () => {
+    expect(
+      shouldAllowNativeTextClipboard(fake("INPUT"), () => null),
+    ).toBe(true);
+  });
+
+  it("allows non-editable targets when text is selected", () => {
+    expect(
+      shouldAllowNativeTextClipboard(fake("SPAN"), () =>
+        ({
+          rangeCount: 1,
+          isCollapsed: false,
+          toString: () => "kopiuł",
+        }) as unknown as Selection,
+      ),
+    ).toBe(true);
+  });
+
+  it("denies non-editable targets without a selection", () => {
+    expect(
+      shouldAllowNativeTextClipboard(fake("DIV"), () => null),
+    ).toBe(false);
   });
 });

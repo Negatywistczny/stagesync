@@ -19,3 +19,34 @@ export function isEditableKeyboardTarget(
     el.isContentEditable === true
   );
 }
+
+/**
+ * True when the document has a non-empty text selection.
+ * Used so system Copy / native PPM win over in-app clip clipboard.
+ */
+export function hasNonCollapsedDomTextSelection(
+  getSelection: () => Selection | null = defaultGetSelection,
+): boolean {
+  const sel = getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
+  return sel.toString().length > 0;
+}
+
+/**
+ * Yield Ctrl/Cmd+C/X and native context menu to the browser for editable
+ * fields or when the user has selected copyable text.
+ */
+export function shouldAllowNativeTextClipboard(
+  target: EventTarget | null,
+  getSelection: () => Selection | null = defaultGetSelection,
+): boolean {
+  return (
+    isEditableKeyboardTarget(target) ||
+    hasNonCollapsedDomTextSelection(getSelection)
+  );
+}
+
+function defaultGetSelection(): Selection | null {
+  if (typeof window === "undefined") return null;
+  return window.getSelection();
+}

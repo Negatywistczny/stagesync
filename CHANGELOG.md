@@ -11,7 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 - **Narzędzia / Pomoc:** odmiana „klip” w tytułach narzędzi i karcie Pomocy; przycisk i dialog „Importuj UG” ([#640](https://github.com/Negatywistyczny/stagesync/pull/640), [#641](https://github.com/Negatywistyczny/stagesync/pull/641), [#668](https://github.com/Negatywistyczny/stagesync/pull/668), [#669](https://github.com/Negatywistyczny/stagesync/pull/669)).
-- **Inspector:** polskie etykiety klipu audio (wyciszenie / gain); „Tonika startu” ([#635](https://github.com/Negatywistyczny/stagesync/pull/635), [#637](https://github.com/Negatywistyczny/stagesync/pull/637)).
+- **Inspector:** polskie etykiety klipu audio (wyciszenie / gain) ([#635](https://github.com/Negatywistyczny/stagesync/pull/635)).
 
 #### 🖥️ App Shell & UI
 - **Dialogi:** potwierdzenie „Potwierdź”, alert „Rozumiem” ([#606](https://github.com/Negatywistyczny/stagesync/pull/606), [#622](https://github.com/Negatywistyczny/stagesync/pull/622)).
@@ -25,6 +25,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Etykiety AT:** jaśniejsze aria startu tekst/akord/cue, zaznaczanie segmentów mapy, wyłączone Zoom H/V w Mixerze, źródło Różdżki ([#646](https://github.com/Negatywistyczny/stagesync/pull/646), [#647](https://github.com/Negatywistyczny/stagesync/pull/647), [#655](https://github.com/Negatywistyczny/stagesync/pull/655), [#672](https://github.com/Negatywistyczny/stagesync/pull/672)).
 
 #### 🖥️ App Shell & UI
+- **Schowek / PPM:** zaznaczony tekst (także poza polami) znów kopiuje się Ctrl/Cmd+C i ma natywne Wytnij/Kopiuj/Wklej w menu kontekstowym; Inspect Element nadal wyłączony poza polami i zaznaczeniem; przy edycji nazwy ścieżki PPM systemowe działa w polu.
 - **Set / biblioteka / Stage / Client:** etykiety ikon Set, status biblioteki, puste Score/Karaoke, pliki projektu i Stage, format zegara, QR LAN ([#603](https://github.com/Negatywistyczny/stagesync/pull/603), [#608](https://github.com/Negatywistyczny/stagesync/pull/608), [#613](https://github.com/Negatywistyczny/stagesync/pull/613), [#614](https://github.com/Negatywistyczny/stagesync/pull/614), [#615](https://github.com/Negatywistyczny/stagesync/pull/615), [#623](https://github.com/Negatywistyczny/stagesync/pull/623), [#649](https://github.com/Negatywistyczny/stagesync/pull/649)).
 
 ## [5.1.2](https://github.com/Negatywistyczny/stagesync/compare/v5.1.1...v5.1.2) - 2026-07-25
