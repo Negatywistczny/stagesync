@@ -9,9 +9,9 @@
 
 ## Werdykt przydatności
 
-**Wysoka — kanoniczna macierz MOB-01…04 + zakazy (bez Capacitor-as-magic, bez audio/MIDI na tablecie Performer).** Zgodna z [#674](https://github.com/Negatywistyczny/stagesync/issues/674), [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../../../adr/0016-android-performer-console.md), [TODO 5.2+](../../../TODO.md). Dump ≠ claim Done; dump opisuje **tylko** pasywnego klienta (= **Performer**). **Console** = pełnoprawny odpowiednik desktopu (Admin + Timeline + Client + lokalny host docelowo) — thin-shell-only MVP **superseded**.
+**Wysoka — kanoniczna macierz MOB-01…04 + zakazy (bez Capacitor-as-magic, bez audio/MIDI na tablecie Performer).** Zgodna z [#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../../../adr/0016-android-performer-console.md), [TODO 5.2+](../../../TODO.md). Dump ≠ claim Done; dump opisuje **tylko** pasywnego klienta (= **Performer**). **Console** = pełnoprawny odpowiednik desktopu (Admin + Timeline + Client + lokalny host docelowo) — thin-shell-only MVP **superseded**.
 
-## Epiki / tematy vs `main` (5.1.x → 5.2+)
+## Epiki / tematy vs `main` (5.2.0)
 
 | ID / temat | Stan | Notatka |
 |------------|------|---------|
@@ -30,11 +30,11 @@
 
 - **Confirmed (na dysku / MVP shell):** dwa APK apps, sideload endpoints, QR join/APK, dual wake-lock, role UI bundles, Offline-First gate + dialog „Zastosuj”, decyzja produktowa Console=pełny parytet + host IN, JVM unit tests (SemVer / QR / UiSync / LocalHostRuntime).
 - **Residual gap:** Faza 4 JNI + bundled server (scaffold); H-01 **profil HW** (sonda gotowa; bez split/throttle); #692 delta; operatorskie smoke P-HW/C-HW **bez claim green**; signed release keystore gdy CI.
-- Issue [#674](https://github.com/Negatywistyczny/stagesync/issues/674) / [#692](https://github.com/Negatywistyczny/stagesync/issues/692) już w TODO — **nie** duplikować bulletów z dumpu.
+- Issue [#674](https://github.com/Negatywistczny/stagesync/issues/674) / [#692](https://github.com/Negatywistczny/stagesync/issues/692) już w TODO — **nie** duplikować bulletów z dumpu.
 
 ## Następny krok eng
 
-1. ~~Domknąć falę APK+UI-sync już w drzewie (testy gate)~~ — wave 1.
-2. H-01: profil HW ze `?ss_perf=h01` / `window.__stagesyncH01` — **potem** split context.
-3. Console host: NDK cmake + `libnode` + paczka serwera (MOBILE.md Faza 4) — bez atrapy sukcesu.
-4. Smoke HW (P-HW / C-HW) na tablecie — dopiero potem claim green.
+1. H-01: profil HW ze `?ss_perf=h01` / `window.__stagesyncH01` — **potem** split context.
+2. Console host: NDK cmake + `libnode` + paczka serwera (MOBILE.md Faza 4) — bez atrapy sukcesu.
+3. Smoke HW (P-HW / C-HW) na tablecie — dopiero potem claim green.
+4. #692 delta / CacheStorage — residual [TODO](../../../TODO.md).

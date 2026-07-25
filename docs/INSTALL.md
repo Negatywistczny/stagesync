@@ -55,6 +55,11 @@ widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master). Bez auto-e
 wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
 `themeDefault`). Blokada sceniczna (Admin → Scena) nadal nadpisuje Clienty.
 
+### Mixer bus→bus
+
+Wyjście busa można skierować na Master albo inny bus (bez pętli). Fizyczne Out 3–4
+pojawiają się w UI dopiero przy realnym `maxChannelCount` ≥ 4 — bez atrap.
+
 ### Cues Sampler
 
 Klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus — start z
@@ -120,7 +125,7 @@ Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WAT
 
 ```sh
 # Przywróć poprzednią wersję w .env, np.:
-# STAGESYNC_VERSION=5.0.0-beta.2
+# STAGESYNC_VERSION=5.1.3
 docker compose -f compose.prod.yml up -d
 ```
 

@@ -1,7 +1,7 @@
 # StageSync Console
 
 **Produkt:** pełnoprawny odpowiednik desktopu na Androidzie (Admin + Timeline + Client + docelowo lokalny host).  
-**Mapowanie:** `mobile-full` w [#674](https://github.com/Negatywistyczny/stagesync/issues/674) → **Console**. Thin-shell-only MVP = **superseded** jako intencja ([ADR 0015](../../docs/adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../../docs/adr/0016-android-performer-console.md)).  
+**Mapowanie:** `mobile-full` w [#674](https://github.com/Negatywistczny/stagesync/issues/674) → **Console**. Thin-shell-only MVP = **superseded** jako intencja ([ADR 0015](../../docs/adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../../docs/adr/0016-android-performer-console.md)).  
 **Po połączeniu:** WebView ładuje host `{origin}/admin` z **pełnym SPA** (link „Klient” działa).
 
 ## Stack

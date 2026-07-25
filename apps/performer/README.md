@@ -1,7 +1,7 @@
 # StageSync Performer
 
 **Produkt:** cienki klient sceniczny (role Grid / Karaoke / Score / Drums) na Androidzie.  
-**Mapowanie:** `mobile-client` / MOB-01…04 w [#674](https://github.com/Negatywistyczny/stagesync/issues/674) → **Performer**.  
+**Mapowanie:** `mobile-client` / MOB-01…04 w [#674](https://github.com/Negatywistczny/stagesync/issues/674) → **Performer**.  
 **Po połączeniu:** WebView ładuje host `{origin}/client`.
 
 ## Stack

@@ -6,8 +6,8 @@
 |------|----------|--------|
 | [README](../README.md) | Uruchomienie | Historia, backlog, pełne reguły |
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
-| [TODO](./TODO.md) | Checklista bieżącego etapu (alpha / beta) | Odhaczone / kolejne etapy |
-| [ROADMAP](./ROADMAP.md) | Etapy wydania (alpha → beta → 5.0.0) | Bieżąca checklista (→ TODO) |
+| [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.2.0`) | Odhaczone / historia wydań |
+| [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → 5.1 → 5.2 → …) | Bieżąca checklista (→ TODO) |
 | [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [ui-shell-inventory](./ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
@@ -25,11 +25,12 @@
 |--------------|-------|------------------|
 | `apps/server` | Express (Node 20, `.nvmrc`) | API, persystencja, transport SSOT |
 | `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
+| `apps/desktop` | Tauri + Node sidecar | Shell desktop + Launcher ([ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md)) |
 | `apps/performer` | Kotlin WebView | StageSync Performer → `/client` ([ADR 0016](./adr/0016-android-performer-console.md)) |
 | `apps/console` | Kotlin WebView | StageSync Console → pełne SPA (Admin+Timeline+Client); lokalny host = Faza 4 IN |
 | `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
 | `packages/ui` | React | Design system (`Button`, `--ss-*`) |
-| `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi |
+| `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi, `downloads/` (APK sideload) |
 
 Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 

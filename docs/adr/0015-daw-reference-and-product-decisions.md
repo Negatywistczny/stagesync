@@ -2,7 +2,7 @@
 
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-25
-- **Etap:** po `5.1.3` (SSOT decyzji PO; implementacja częściowa / backlog osobno)
+- **Etap:** po `5.2.0` (SSOT decyzji PO; Cue & Guard dostarczone; residual w [TODO](../TODO.md))
 - **Uzupełnia:** [ADR 0011](./0011-ui-parity-behavior.md) (parity / zakaz stubów), [ADR 0008](./0008-timeline-clip-editing.md) (edycja), [ADR 0002](./0002-timebase-ssot.md) (MIDI / transport)
 
 ## Kontekst

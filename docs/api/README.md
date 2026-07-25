@@ -40,6 +40,8 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 | `POST` | `/api/system/apply-update` | Trigger Watchtower (`STAGESYNC_UPDATER_*`); inaczej **501** |
 | `GET` | `/api/system/operator-auth` | `{ required }` — czy host ma `STAGESYNC_OPERATOR_PIN` |
 | `POST` | `/api/system/operator-auth` | `{ pin }` — weryfikacja PIN (**200** / **403**); bez mutacji stanu |
+| `GET` | `/api/system/safety-net` | `{ role }` — Master / Spare (`STAGESYNC_SAFETY_ROLE`) |
+| `POST` | `/api/system/promote` | Ręczne Przejmij: Spare → Master (bez auto-election) |
 | `POST` | `/api/system/restart` | Restart procesu (lifecycle); LAN wymaga tokenu / allow |
 | `POST` | `/api/system/shutdown` | Shutdown procesu; LAN wymaga tokenu / allow |
 | `GET` | `/api/system/diagnostics/export` | ZIP logów + meta (loopback lub host token) |
@@ -129,7 +131,7 @@ Wszystkie odpowiedzi sukcesu = **`TransportTickMessage`** (stan + `type` +
 |--------|---------|------|
 | `GET` | `/api/midi` | Status hosta (`MidiHostStatus`: ports, config, rates, `clockOutActive`) |
 | `GET` | `/api/midi/devices` | Skrót: `available`, `backend`, `inputs`, `outputs`, `lastError` |
-| `PUT` | `/api/midi/config` | `{ inputId?, outputId?, clockOutEnabled? }` → status |
+| `PUT` | `/api/midi/config` | `{ inputId?, outputId?, clockOutEnabled?, inputChannel?, outputChannel? }` → status (`inputChannel` / `outputChannel`: `null` = Omni IN / domyślny OUT; `0…15` = kanał 1–16 w UI) |
 | `POST` | `/api/midi/panic` | MUTE ALL: CC 120/121/123 na 16 kanałach wyjścia → `{ ok, sent, channels, status }` |
 
 Bez MIDI w procesie Tauri ([ADR 0010](../adr/0010-desktop-shell-tauri.md)).

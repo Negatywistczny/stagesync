@@ -4,12 +4,12 @@
 **Status:** `partial`  
 **Obszar:** Hot standby · manual promote · lease / split-brain · MIDI mute na Spare  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (manual promote + MIDI mute on tree; auto-election skipped)  
+**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` — manual promote + MIDI mute on tree; auto-election residual)  
 **Kąt:** wprowadzenie feature 5.2+ (nie claim HA green / G-gates)
 
 ## Werdykt przydatności
 
-**Wysoka jako granica produktu: manual promote MVP, auto-election Later; zakaz dual clock / dual MIDI OUT.** Companion do [Audyt Lifecycle](../audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md). [#437](https://github.com/Negatywistyczny/stagesync/issues/437). Nazwa: **Master/Spare**.
+**Wysoka jako granica produktu: manual promote MVP, auto-election Later; zakaz dual clock / dual MIDI OUT.** Companion do [Audyt Lifecycle](../audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md). [#437](https://github.com/Negatywistczny/stagesync/issues/437). Nazwa: **Master/Spare**.
 
 ## Epiki / tematy vs `main`
 

@@ -1,15 +1,15 @@
 # Triage: Cues Sampler — intro 5.2+ (#430)
 
 **Źródło:** [Specyfikacja-StageSync-Cues-Sampler.md](./Specyfikacja-StageSync-Cues-Sampler.md) (Gemini / AI Exporter)  
-**Status:** `partial`  
+**Status:** `closed`  
 **Obszar:** `CueClip.sample` · WebAudio one-shot/gated · GO pad · format V6  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (MVP sample on tree; formatVersion stays 5)  
+**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` — MVP Sampler wydany; Later = limit)  
 **Kąt:** wprowadzenie feature 5.2+ (nie G1–G10)
 
 ## Werdykt przydatności
 
-**Wysoka — decyzja modelowa (rozszerzyć `CueClip`, nie osobny `SamplerClip`) + macierz CSMP-REF MVP vs Later.** Zgodna z [#430](https://github.com/Negatywistyczny/stagesync/issues/430) i zakazem stubów Out 3–4. Dump ≠ runtime.
+**Wysoka — decyzja modelowa (rozszerzyć `CueClip`, nie osobny `SamplerClip`) + macierz CSMP-REF MVP vs Later.** Zgodna z [#430](https://github.com/Negatywistczny/stagesync/issues/430) i zakazem stubów Out 3–4. Dump ≠ runtime.
 
 ## Epiki / tematy vs `main`
 
@@ -30,4 +30,4 @@
 
 ## Następny krok eng
 
-Safety Net (#437) albo residual Mixer HW multi-out gdy `maxChannelCount` ≥ 4.
+Brak na MVP — residual Later (polyphony/loop/pitch/HW) tylko gdy PO otworzy. Mixer HW Out 3–4 = osobny residual w [TODO](../../../TODO.md).

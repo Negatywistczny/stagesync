@@ -4,7 +4,7 @@
 **Status:** `partial`  
 **Obszar:** Appearance (`data-theme` / kontrast) · scenic lock · Operator PIN · ACL na krawędziach  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (`STAGESYNC_THEME_DEFAULT` on tree; 4-profile matrix residual)  
+**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` Cue & Guard — PIN + scenic lock + host default on tree; 4-profile matrix residual)  
 **Kąt:** wprowadzenie feature 5.2+ (nie audyt HW G1–G10)
 
 ## Werdykt przydatności
@@ -33,4 +33,4 @@
 
 1. Nie stubować „Zaloguj się” / OAuth (**skip** uzasadniony).
 2. Cross-check `docs/ui/colors.md` / ADR 0003 booth vs THM-03.
-3. Kolejny epik 5.2: Mixer DAW (HW outs / bus→bus) albo Cues Sampler.
+3. Residual: macierz 4 profili skór — [TODO 5.2+](../../../TODO.md).

@@ -4,28 +4,28 @@
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** residual po Cue & Guard → 5.2+ / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
-**Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) (Logic referencja; multi-out tak; auto-update nie; …). Mobile shell: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
-**Specy 5.2+ (hipotezy, nie SSOT):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
+**Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md). Mobile: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
+**Specy 5.2+ (hipotezy):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
-**Residuale operatorskie:** **G1–G10** — **bez claim pełnego green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). Pass: **G1**, **G4–G6**, **G10**. Residual: **G2** skip; **G3** re-verify HW; **G7–G9** Docker deferred. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
+**Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
 ## Must (operator residual)
 
-- [ ] **G1–G10** na instalatorach `v5.2.0` (mac/Win HW) — **bez claim pełnego green**; **G1**, **G4–G6**, **G10** — pass; **G2** skip; **G3** re-verify HW; **G7–G9** Docker — odłożone
+- [ ] **G1–G10** na instalatorach `v5.2.0` (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] **DX / types:** wąskie adaptery zamiast `any` na granicy OSMD / WebMidi (fail-soft); JSDoc typów wyniku wand / ug-import w `@stagesync/shared`
-- [ ] [#494](https://github.com/Negatywistyczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
+- [ ] [#494](https://github.com/Negatywistczny/stagesync/issues/494) **Monitoring / Sentry:** crash reporting web + server (warunkowy DSN; bez sekretów w kontekście zdarzeń)
 
 ## Etap 5.2+ (Przyszłość)
 
 - [ ] **Motywy (residual):** pełna macierz 4 profili skór / THM-03 niezmienniki ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
 - [ ] **Mixer — HW Out 3–4 (WebAudio multi-out):** UI + ChannelMerger przy realnym `maxChannelCount` ≥ 4 ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Client transport — H-01 (residual):** split context / throttle `displayTicks` pod profil Grid/Karaoke @ 90–120 Hz ([MOBILE.md](./MOBILE.md) § H-01; [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md))
-- [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console — residual:** Faza 4 JNI/`libnode`; smoke P-HW/C-HW na tablecie — **bez claim HW green** ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md); [triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md))
-- [ ] [#692](https://github.com/Negatywistyczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
+- [ ] [#674](https://github.com/Negatywistczny/stagesync/issues/674) **Performer + Console — residual:** Faza 4 JNI/`libnode`; smoke P-HW/C-HW na tablecie — **bez claim HW green** ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md); [triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md))
+- [ ] [#692](https://github.com/Negatywistczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
 - [ ] **Safety Net (residual):** auto-election / lease split-brain ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 - [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS

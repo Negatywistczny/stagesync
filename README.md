@@ -76,6 +76,8 @@ pnpm dev
 | `apps/server` | ⚙️ API, persystencja danych, transport SSOT |
 | `apps/web` | 💻 UI Admina / Timeline / Client muzyka |
 | `apps/desktop` | 🖥️ Shell Tauri + sidecar Node.js |
+| `apps/performer` | 📱 Android Performer (Client na scenie, sideload) |
+| `apps/console` | 📱 Android Console (pełne SPA + lokalny host docelowo) |
 | `packages/shared` | 📐 Schematy Zod + czyste helpery czasu |
 | `packages/ui` | 🎨 Design system (tokeny `--ss-*`) |
 | `data/` | 📂 Szablony runtime *(pliki projektów użytkownika w `.gitignore`)* |
@@ -84,13 +86,14 @@ pnpm dev
 
 | Dokument | Opis |
 | :--- | :--- |
-| 🚀 **[INSTALL](docs/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR |
-| 🖥️ **[DESKTOP](docs/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`) oraz automatyczny updater |
+| 🚀 **[INSTALL](docs/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw) |
+| 🖥️ **[DESKTOP](docs/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`), Launcher i aktualizacja |
+| 📱 **[MOBILE](docs/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
 | 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
 | 🔌 **[docs/api](docs/api/)** | Specyfikacja powierzchni REST API i punktów końcowych |
 | 💡 **[ADR](docs/adr/)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
 | 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
-| 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań, zmian i poprawek w kolejnych wersjach |
+| 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań (`5.2.0` Cue & Guard, …) |
 | 🎨 **[UI](docs/ui/README.md)** | Przewodnik po Design Systemie i tokenach CSS |
 | 🔒 **[SECURITY](SECURITY.md)** | Polityka bezpieczeństwa i zgłaszanie podatności |
 | 🤝 **[CONTRIBUTING](CONTRIBUTING.md)** | Standardy commitów, obsługa PR-ów i praca na gałęziach |

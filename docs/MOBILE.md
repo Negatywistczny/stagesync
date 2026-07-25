@@ -1,6 +1,6 @@
 # StageSync — Mobile (Performer + Console)
 
-Operator sketch for Android sideload and PWA. Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistyczny/stagesync/issues/674), [ADR 0016](./adr/0016-android-performer-console.md)).
+Operator sketch for Android sideload and PWA (**v5.2.0** Cue & Guard). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](./adr/0016-android-performer-console.md)).
 
 ## Performer vs Console
 

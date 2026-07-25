@@ -76,13 +76,15 @@ Tag `v5.1.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Dostarczone:** Desktop Launcher ([ADR 0014](./adr/0014-desktop-launcher.md)); Mixer Timeline (strefy Audio / Busy / Click / Master, Out = Master\|Bus); menu narzędzi T + skróty / kontekst / dock; polish UI Timeline.
 
-**Świadome OUT → 5.2+:** fizyczne Out 3–4 (HW); routing bus→bus; motywy / Operator PIN / Performer+Console / Sampler / Safety Net — [TODO.md](./TODO.md).
+**Świadome OUT przy cutcie 5.1 → 5.2:** fizyczne Out 3–4 (HW) oraz epiki Cue & Guard (PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw) — dostarczone w **5.2.0** (Out 3–4 nadal residual).
 
 ### 5.2.0 — **Cue & Guard** — **wydane 2026-07-25**
 
-**Dostarczone:** Operator PIN; scenic theme lock + `STAGESYNC_THEME_DEFAULT`; Mixer bus→bus (anti-cycle); Cues Sampler; Safety Net Master/Spare (ręczne Przejmij); Performer/Console Offline-First (zip apply); MIDI PC channel.
+Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
-**Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; JNI local host; OAuth — [TODO.md](./TODO.md).
+**Dostarczone:** Operator PIN; scenic theme lock + `STAGESYNC_THEME_DEFAULT`; Mixer bus→bus (anti-cycle); Cues Sampler; Safety Net Master/Spare (ręczne Przejmij); Performer/Console Offline-First (zip apply); MIDI PC channel; sideload APK z hosta.
+
+**Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; JNI local host; OAuth; macierz motywów 4 profili — [TODO.md](./TODO.md).
 
 ### Po 5.2.0 (residual 5.2+)
 
