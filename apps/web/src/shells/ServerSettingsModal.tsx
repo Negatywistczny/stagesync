@@ -626,6 +626,34 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   MIDI niedostępne w tym środowisku.
                 </p>
               ) : null}
+              <div className={styles.panicBlock}>
+                <Button
+                  variant="secondary"
+                  className={styles.panicBtn}
+                  disabled={
+                    panicBusy ||
+                    saveBusy ||
+                    !midiStatus.available ||
+                    !midiStatus.config.outputId
+                  }
+                  loading={panicBusy}
+                  onClick={() => {
+                    void onPanic();
+                  }}
+                >
+                  MIDI Panic / Reset Controllers
+                </Button>
+                {panicConfirm ? (
+                  <p className={styles.confirm} role="status">
+                    Wysłano sygnał Reset
+                  </p>
+                ) : (
+                  <p className={styles.muted}>
+                    Awaryjne wyciszenie nut i Reset Controllers na wszystkich
+                    kanałach wyjścia MIDI.
+                  </p>
+                )}
+              </div>
               <fieldset className={styles.fieldset}>
                 <legend className={styles.legend}>Porty MIDI</legend>
                 <label className={styles.field}>
@@ -779,28 +807,6 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   <span>Clock OUT</span>
                 </label>
               </fieldset>
-              <div className={styles.panicBlock}>
-                <Button
-                  variant="primary"
-                  disabled={
-                    panicBusy ||
-                    saveBusy ||
-                    !midiStatus.available ||
-                    !midiStatus.config.outputId
-                  }
-                  loading={panicBusy}
-                  onClick={() => {
-                    void onPanic();
-                  }}
-                >
-                  MIDI Panic / Reset Controllers
-                </Button>
-                {panicConfirm ? (
-                  <p className={styles.confirm} role="status">
-                    Wysłano sygnał Reset
-                  </p>
-                ) : null}
-              </div>
             </>
           ) : midiError ? null : (
             <p className={styles.muted}>Wczytywanie…</p>
@@ -904,24 +910,38 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
 
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>Dźwięk metronomu</legend>
-            <select
-              className={styles.select}
-              value={draft.metro.timbre}
-              aria-label="Dźwięk metronomu"
-              onChange={(e) =>
-                setDraft((d) => ({
-                  ...d,
-                  metro: {
-                    ...d.metro,
-                    timbre: e.target.value as MetronomeTimbre,
-                  },
-                }))
-              }
-            >
-              <option value="default">Domyślny</option>
-              <option value="woodblock">Woodblock</option>
-              <option value="bell">Bell</option>
-            </select>
+            <div className={styles.timbreRow}>
+              <select
+                className={styles.select}
+                value={draft.metro.timbre}
+                aria-label="Dźwięk metronomu"
+                onChange={(e) =>
+                  setDraft((d) => ({
+                    ...d,
+                    metro: {
+                      ...d.metro,
+                      timbre: e.target.value as MetronomeTimbre,
+                    },
+                  }))
+                }
+              >
+                <option value="default">Domyślny</option>
+                <option value="woodblock">Woodblock</option>
+                <option value="bell">Bell</option>
+              </select>
+              <Button
+                type="button"
+                variant="secondary"
+                loading={previewBusy}
+                disabled={previewBusy || saveBusy}
+                aria-label="Odsłuch kliknięcia metronomu"
+                onClick={() => {
+                  void onPreviewMetronome();
+                }}
+              >
+                Odsłuch
+              </Button>
+            </div>
           </fieldset>
         </div>
       ) : null}
@@ -1201,26 +1221,6 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         </div>
       ) : null}
 
-      <div className={styles.actions}>
-        <Button
-          variant="ghost"
-          className={dirty ? styles.discardHot : undefined}
-          disabled={saveBusy}
-          onClick={onDiscard}
-        >
-          Odrzuć
-        </Button>
-        <Button
-          variant={dirty ? "primary" : "ghost"}
-          loading={saveBusy}
-          disabled={saveBusy || !dirty}
-          onClick={() => {
-            void onSave();
-          }}
-        >
-          Zapisz
-        </Button>
-      </div>
       <ShellConfirmDialog
         open={pendingRestore != null}
         title="Przywróć kopię zapasową"

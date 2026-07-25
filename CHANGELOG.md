@@ -25,6 +25,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Set:** stały toolbar nad setlistą (przerwa / szablon / wyczyść / zapisz); kafelki z czasem, BPM i tonacją oraz uchwytem przeciągania; pasek budżetu czasu (OK / overrun); „Dodaj zaznaczone” w stopce biblioteki.
 - **Admin Scena:** przełączniki ON/OFF w Korekcie (edycja zdalna, blokada motywu); komunikaty z jasną hierarchią (Wyślij jako główna akcja, role / TTL / Alert jako opcje); puste stany zamiast pustki; kafelki klientów z rolą i statusem połączenia.
 - **Admin Host:** siatka 2 kolumn (Połączenie & QR | MIDI & Safety Net, poniżej APK i aktualizacje); logi zwijane domyślnie („Logi (N) ▾”); krótkie puste stany APK z krokiem do Releases zamiast ściany ścieżek.
+- **Admin Ustawienia:** jeden **Zapisz** w stopce (także nazwa urządzenia — bez osobnego „Zapisz nazwę”); **MIDI Panic** na górze zakładki MIDI; **Odsłuch** obok dźwięku metronomu; zakładka Serwer przewija się nad stopką (ścieżki / backup bez przycięcia).
 - **Client:** bez ręcznej zmiany utworu w chrome (usunięty „→następny”) — setlista sterowana z Admin / Timeline; gęstszy nagłówek z czytelnym tytułem, tonacją, tempem, metrum i taktem oraz więcej miejsca na treść sceniczną.
 
 ### Naprawiono

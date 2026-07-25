@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   advanceMetronomeClicks,
   metronomeBeatIndex,
+  previewMetronomeClick,
   resumeMetronomeAudio,
 } from "./metronome.js";
 import { setMetronomePrefs } from "./metronomePrefs.js";
@@ -168,5 +169,29 @@ describe("metronome", () => {
     await resumeMetronomeAudio(ctx);
     expect(ctx.resume).toHaveBeenCalledOnce();
     expect(ctx.createBufferSource).toHaveBeenCalledOnce();
+  });
+
+  it("previewMetronomeClick resumes and schedules one accent click", async () => {
+    const { ctx, oscillators } = mockAudioContext("suspended");
+    setMetronomePrefs({
+      accentVolume: 80,
+      beatVolume: 40,
+      timbre: "bell",
+      masterGainDb: 0,
+    });
+    await previewMetronomeClick(
+      {
+        accentVolume: 80,
+        beatVolume: 40,
+        timbre: "bell",
+        masterGainDb: 0,
+      },
+      true,
+      ctx as unknown as AudioContext,
+    );
+    expect(ctx.resume).toHaveBeenCalled();
+    expect(oscillators.length).toBe(1);
+    expect(oscillators[0]!.frequency.value).toBe(1760);
+    expect(oscillators[0]!.start).toHaveBeenCalledOnce();
   });
 });
