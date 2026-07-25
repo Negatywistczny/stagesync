@@ -4,6 +4,7 @@
 **Status:** `closed`  
 **Obszar:** `MidiHostConfig.inputChannel` / `outputChannel` · Admin Host UI · silent drop + debounce 50 ms latest-wins  
 **Data triage:** 2026-07-25  
+**Ostatnia aktualizacja:** 2026-07-25 (re-verify: schema + host + Admin/SystemView + testy — bez regresji)  
 **Kąt:** feature zamykający RSK-MIDI-04/05/07 — wdrożone ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md))
 
 ## Werdykt przydatności

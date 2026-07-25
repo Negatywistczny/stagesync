@@ -6,11 +6,13 @@ Operator sketch for Android sideload and PWA. Product names: **Performer** / **C
 
 | | **StageSync Performer** | **StageSync Console** |
 |---|-------------------------|------------------------|
-| Rola | Pasywny klient sceniczny (Grid / Karaoke / Score / Drums) | Thin-shell Admin (+ Timeline przez chrome) na tablecie FOH |
-| Po połączeniu | WebView → `/client` | WebView → `/admin` |
-| Lokalny host | **Zakaz** (zawsze thin) | **OUT** w MVP — osobna decyzja eng (Faza 4) |
-| Audio / MIDI w procesie | **Zakaz** | Sterowanie przez host LAN (SSOT na serwerze) |
+| Rola | Pasywny klient sceniczny (Grid / Karaoke / Score / Drums) | Pełnoprawny odpowiednik desktopu na Androidzie |
+| Po połączeniu | WebView → `/client` | WebView → `/admin` (pełne SPA: Admin + Timeline + Client) |
+| Lokalny host | **Zakaz** (zawsze thin) | **Produkt IN** — eng fazowany (Faza 4); interim = LAN |
+| Audio / MIDI w procesie | **Zakaz** | SSOT na lokalnym hoście (gdy działa) albo host LAN |
 | Katalog | `apps/performer` | `apps/console` |
+
+Thin-shell-only jako cel produktu jest **superseded** ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](./adr/0016-android-performer-console.md)). Performer pozostaje read-only Client-only.
 
 ## Instalacja (sideload, bez Google Play)
 
@@ -25,7 +27,7 @@ Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle ko
 ./apps/performer/scripts/build-apk.sh
 # artefakt: apps/performer/android/app/build/outputs/apk/debug/app-debug.apk
 
-# Console (dist-console = Admin + Timeline)
+# Console (dist-console = pełne SPA jak desktop)
 ./apps/console/scripts/build-apk.sh
 ```
 
@@ -36,6 +38,7 @@ Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle ko
 - **ABI:** tylko `arm64-v8a` + `armeabi-v7a` (bez x86/x86_64) — sideload tablety ARM.
 - **Release:** R8 minify + shrinkResources włączone; **debug** bez minify (lokalny sideload).
 - `ndk.abiFilters` obowiązuje też debug, więc `data/downloads/*.apk` od razu bez ABI emulatorych.
+- **Faza 4:** opcjonalne `libnode.so` (nodejs-mobile) powiększa APK o ~50 MB+ na ABI — nie bundlowane domyślnie; patrz poniżej.
 
 ## QR: dołącz vs pobierz APK
 
@@ -68,13 +71,13 @@ Po połączeniu z hostem powłoka porównuje własny `versionName` z `version` z
 
 Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
-1. **Cold start:** APK zawiera `assets/www` z **role-specific** Vite dist (`dist-performer` = Client-only; `dist-console` = Admin + Timeline). WebView ładuje `{origin}/client` lub `/admin`, a statyczne pliki serwuje `WebViewAssetLoader` z lokalnego drzewa (cache `filesDir/ui-cache` ma pierwszeństwo przed bundled www). `/api`, `/ws`, `/downloads` zawsze idą na host.
+1. **Cold start:** APK zawiera `assets/www` z **role-specific** Vite dist (`dist-performer` = Client-only; `dist-console` = **pełne SPA**). WebView ładuje `{origin}/client` lub `/admin`, a statyczne pliki serwuje `WebViewAssetLoader` z lokalnego drzewa (cache `filesDir/ui-cache` ma pierwszeństwo przed bundled www). `/api`, `/ws`, `/downloads` zawsze idą na host.
 2. **Protokół:** `GET /api/health` → `protocolVersion`. Mismatch z powłoką → **Remote Mode** (UI z hosta), **bez** kasowania lokalnego bufora.
-3. **Hash UI (rola):** health niesie `uiHash` (pełne SPA hosta) oraz opcjonalnie `uiHashPerformer` / `uiHashConsole`. Powłoka porównuje **tylko** swój hash roli — nigdy pełnego `uiHash` (żeby „Zastosuj” nie wlało pełnego SPA do Performera).
-4. **Zastosuj:** pobranie `GET /downloads/ui-bundle-performer.zip` albo `…-console.zip`, rozpakowanie do `ui-cache`, przeładowanie z lokalnego drzewa. Manifest: `GET /api/ui-manifest?role=performer|console` (bez `role` = pełne SPA). Legacy `GET /downloads/ui-bundle.zip` = pełny dist (PWA / host).
+3. **Hash UI (rola):** health niesie `uiHash` (pełne SPA hosta) oraz opcjonalnie `uiHashPerformer` / `uiHashConsole`. Powłoka porównuje **tylko** swój hash roli — nigdy pełnego `uiHash` (żeby „Zastosuj” nie wlało pełnego SPA do Performera). `uiHashConsole` odpowiada bundlowi Console (pełne SPA).
+4. **Zastosuj:** pobranie `GET /downloads/ui-bundle-performer.zip` albo `…-console.zip`, rozpakowanie do `ui-cache`, przeładowanie z lokalnego drzewa. Manifest: `GET /api/ui-manifest?role=performer|console` (bez `role` = pełne SPA hosta). Legacy `GET /downloads/ui-bundle.zip` = pełny dist (PWA / host).
 5. **PWA SW:** klucz cache oparty o `uiHash` pełnego buildu; nadal **nie** cache’uje `/api`, `/ws`, `/downloads`.
 
-**Follow-up (nie w MVP):** różnicowy delta / CacheStorage per-asset; binary zstd. Console **Faza 4** (embedded Node) — nadal OUT.
+**Follow-up:** różnicowy delta / CacheStorage per-asset; binary zstd.
 
 ### Smoke (ręczne) — UI apply
 
@@ -119,24 +122,33 @@ Kryteria **Console** (osobna macierz — nie mylić z pasywnym Performerem):
 | ID | Kryterium | Dowód |
 |----|-----------|-------|
 | C-HW1 | Launcher → health → `/admin` na tablecie LAN | — |
-| C-HW2 | Admin / Timeline czytelne i używalne na tablecie | — |
-| C-HW3 | Brak lokalnego hosta w MVP — jasny komunikat OUT | — |
+| C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA) | — |
+| C-HW3 | „Uruchom lokalny host” widoczny; sukces albo uczciwy status (bez atrapy) | — |
 
 **Bez claim green** bez dowodu z hardware ([todo-hygiene](../.cursor/rules/todo-hygiene.mdc)).
 
 ## Faza 4 — lokalny host na Console
 
-Thin-shell (Faza 3) łączy się z hostem LAN jak desktop remote. Pełny parytet desktopu (Node sidecar / równoważnik na urządzeniu) = **osobna decyzja eng** — nie blokuje Faz 0–3.
+**Decyzja produktowa:** lokalny host na Console = **IN** (pełny parytet desktopu). Thin-shell LAN pozostaje ścieżką interim.
 
-**Podejście (MVP vs docelowo):**
-
-| | MVP (teraz) | Faza 4 (później) |
+| | Teraz (interim + scaffold) | Docelowo |
 |---|-------------|------------------|
-| Shell | Kotlin WebView → `/admin` | + lokalny proces hosta |
-| „Uruchom lokalny host” | **Ukryty / disabled** + notka OUT w launcherze Console | Po decyzji eng (sidecar / równoważnik) |
-| SSOT czasu / MIDI | Zdalny host LAN | Lokalny host na urządzeniu **albo** nadal LAN |
+| Shell | Kotlin WebView + pełne SPA | + lokalny proces hosta (SSOT) |
+| „Uruchom lokalny host” | **Widoczny** — start foreground service; bez pełnego silnika → uczciwy komunikat | Bind `127.0.0.1:4000`, health → WebView `/admin` |
+| Silnik | Scaffold: `LocalHostService` + skrypt `prepare-local-host` (nodejs-mobile `libnode.so` + paczka serwera) | JNI bridge (`node::Start`) + bundled `apps/server` jak desktop sidecar |
+| SSOT czasu / MIDI | Zdalny host LAN (gdy lokalny niedostępny) | Lokalny host na urządzeniu **albo** nadal LAN |
 
-W launcherze Console przycisk jest widoczny jako niedostępny z tekstem OUT — bez atrapy startu ([ADR 0011](./adr/0011-ui-parity-behavior.md), [ADR 0016](./adr/0016-android-performer-console.md)).
+### Eng — następne kroki (nie claim Done)
+
+1. **NDK + JNI:** most C++ do `libnode.so` (nodejs-mobile v18.x) — wzorzec JaneaSystems `native-gradle`; `System.loadLibrary("node")` + `startNodeWithArguments`.
+2. **Paczka serwera:** podzbiór desktop sidecar (`launch/scripts/build-desktop-sidecar.mjs`) → `assets/host/server` (dist + pruned `node_modules`); data dir w `filesDir/stagesync-data`.
+3. **Skrypt:** `./apps/console/scripts/prepare-local-host.mjs` pobiera `nodejs-mobile-*-android.zip` → `jniLibs/{arm64-v8a,armeabi-v7a}/libnode.so` (gitignored) i opcjonalnie pakuje serwer.
+4. **Foreground service** + kanał powiadomień — już scaffold w APK; po starcie Node: probe `http://127.0.0.1:4000/api/health` → `HostWebActivity`.
+5. **Bez Termux** — tylko bundled native + assets w APK.
+
+Desktop porównanie: Tauri `externalBin` `stagesync-host` = oficjalny Node dla macOS/Windows; na Androidzie oficjalne Node dist **nie** istnieje → nodejs-mobile (shared lib), nie `ProcessBuilder` na ELF z nodejs.org.
+
+W launcherze Console przycisk jest **widoczny i aktywny**. Brak spakowanego silnika = komunikat fail-open (nie „sukces”) ([ADR 0011](./adr/0011-ui-parity-behavior.md)).
 
 ## Zakazy
 
@@ -144,9 +156,11 @@ W launcherze Console przycisk jest widoczny jako niedostępny z tekstem OUT — 
 - Sekrety / tokeny wbudowane w APK.
 - Audio / MIDI clock / synteza w procesie **Performer**.
 - Edycja Timeline / Mixer z **Performer**.
+- Performer jako Admin / lokalny host.
 - Stub UI „pobierz APK” bez pliku na hoście.
 - Ciche pobieranie / instalacja APK bez potwierdzenia operatora.
 - Cichy sync UI mid-set (bez dialogu „Zastosuj nowy interfejs”).
+- Atrapa „lokalny host uruchomiony” bez realnego `/api/health` na pętli zwrotnej.
 
 ## Powiązane
 

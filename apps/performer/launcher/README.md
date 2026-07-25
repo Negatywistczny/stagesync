@@ -18,4 +18,4 @@ This folder documents the shared product contract so Console can mirror without 
 
 - No secrets in APK
 - Performer: no local host / sidecar / Timeline edit
-- Console MVP: local host button OUT (Faza 4)
+- Console: local host button visible (Faza 4 eng; product IN) — Performer never gets this

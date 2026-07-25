@@ -1,9 +1,10 @@
 # Triage: Mixer HW Out 3–4 + bus→bus — intro 5.2+
 
 **Źródło:** [Specyfikacja-StageSync-dla-miksera-DAW.md](./Specyfikacja-StageSync-dla-miksera-DAW.md) (Gemini / AI Exporter)  
-**Status:** `open`  
+**Status:** `partial`  
 **Obszar:** `audioHardwareOutputs` · `MixerOutputTarget` · DAG bus→bus · ChannelMerger multi-out  
 **Data triage:** 2026-07-25  
+**Ostatnia aktualizacja:** 2026-07-25 (disk verify)  
 **Kąt:** wprowadzenie feature 5.2+ (nie re-audyt bugów 5.1 Mixer)
 
 ## Werdykt przydatności
@@ -14,12 +15,12 @@
 
 | ID / temat | Stan | Notatka |
 |------------|------|---------|
-| MX-OUT-01…04 HW outs + meters + mute/solo | `hypothesis` | Brak `audioHardwareOutputs` / `hw_out` — **confirmed gap** |
-| MX-BUS-01 bus→bus | `hypothesis` | `BusOutputDestSchema` tylko `master` — **confirmed gap** |
-| MX-BUS-02 anti-cycle Zod + fail-soft | `hypothesis` | Wymagane przy bus→bus |
+| MX-OUT-01…04 HW outs + meters + mute/solo | `confirmed` | Brak `audioHardwareOutputs` / `hw_out` — `MixerOutputDest` = master\|bus |
+| MX-BUS-01 bus→bus | `confirmed` | `BusOutputDestSchema` tylko `master`; `resolveBusOutputDest` zawsze Master |
+| MX-BUS-02 anti-cycle Zod + fail-soft | `confirmed` | Wymagane przy bus→bus — brak DFS w modelu |
 | MX-BUS-03 solo cascade / track-wins | `partial` | Track solo wins już `fixed` w audycie miksera; kaskada DAG — przy feature |
-| WebAudio discrete ChannelMerger + OS speaker config warning | `hypothesis` | `setSinkId` istnieje; multi-channel destination — nie |
-| Zakaz multi-`AudioContext` / stubów Out 3–4 | `limit` / polityka | Zgodne ADR 0011 — już egzekwowane brakiem atrap |
+| WebAudio discrete ChannelMerger + OS speaker config warning | `confirmed` | `setSinkId` istnieje; multi-channel destination — nie |
+| Zakaz multi-`AudioContext` / stubów Out 3–4 | `limit` | Zgodne ADR 0011 — egzekwowane brakiem atrap w UI |
 
 ## Confirmed vs hypothesis
 

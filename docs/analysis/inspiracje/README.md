@@ -126,12 +126,12 @@ Specyfikacje intro feature po Launch & Mix — companion do [TODO 5.2+](../../TO
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
-| [Specyfikacja-Motywow-i-Autentykacji-DAW.md](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md) | `open` |
-| [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) | `open` |
-| [Specyfikacja-StageSync-Cues-Sampler.md](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.triage.md) | `open` |
-| [Safety-Net-dla-StageSync-v5.2.md](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md) | `open` |
+| [Specyfikacja-Motywow-i-Autentykacji-DAW.md](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md) | `partial` |
+| [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) | `partial` |
+| [Specyfikacja-StageSync-Cues-Sampler.md](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.triage.md) | `partial` |
+| [Safety-Net-dla-StageSync-v5.2.md](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md) | `partial` |
 | [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `closed` |
-| [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `open` |
+| [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `partial` |
 
 ### ui/
 

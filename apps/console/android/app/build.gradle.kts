@@ -49,7 +49,7 @@ android {
     }
 }
 
-// Copy Admin+Timeline web dist → assets/www for Offline-First cold start (#692).
+// Copy full Console SPA web dist → assets/www for Offline-First cold start (#692).
 val webDistDir = rootProject.projectDir.parentFile?.parentFile?.resolve("web/dist-console")
 val wwwAssetsDir = file("src/main/assets/www")
 
@@ -65,7 +65,7 @@ tasks.register("cleanWebAssets") {
 
 tasks.register<Copy>("syncWebAssets") {
     group = "stagesync"
-    description = "Copy apps/web/dist-console into assets/www (skip if dist missing)"
+    description = "Copy apps/web/dist-console (full SPA) into assets/www (skip if dist missing)"
     dependsOn("cleanWebAssets")
     onlyIf { webDistDir?.resolve("index.html")?.isFile == true }
     from(webDistDir!!)

@@ -26,7 +26,7 @@
 | `apps/server` | Express (Node 20, `.nvmrc`) | API, persystencja, transport SSOT |
 | `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
 | `apps/performer` | Kotlin WebView | StageSync Performer → `/client` ([ADR 0016](./adr/0016-android-performer-console.md)) |
-| `apps/console` | Kotlin WebView | StageSync Console → `/admin` (thin; lokalny host = Faza 4) |
+| `apps/console` | Kotlin WebView | StageSync Console → pełne SPA (Admin+Timeline+Client); lokalny host = Faza 4 IN |
 | `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
 | `packages/ui` | React | Design system (`Button`, `--ss-*`) |
 | `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi |

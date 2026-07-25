@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build StageSync Console debug APK (requires ANDROID_HOME / ANDROID_SDK_ROOT + JDK 17+).
-# Builds apps/web (incl. dist-console) so assets/www gets Admin+Timeline UI (#692).
+# Builds apps/web (incl. dist-console = full SPA) so assets/www gets Admin+Timeline+Client (#692).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="$(cd "$ROOT/../.." && pwd)"

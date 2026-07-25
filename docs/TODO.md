@@ -4,7 +4,8 @@
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** nowe funkcje po Launch & Mix → linia **5.2+**. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
-**Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) (Logic referencja; multi-out tak; auto-update nie; …). Mobile shell: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).
+**Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) (Logic referencja; multi-out tak; auto-update nie; …). Mobile shell: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
+**Specy 5.2+ (hipotezy, nie SSOT):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
 **Residuale operatorskie:** **G1–G10** — **bez claim pełnego green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). Pass operatorskie: **G1**, **G4–G6**, **G10** (bazowo na `5.1.2` / docs; w `5.1.3` też „Pobierz log” i ostrzeżenie updatera). Residual: **G2** skip; **G3** deferred (fix Documents w `5.1.3` — wymaga re-verify HW na nowym instalatorze); **G7–G9** Docker deferred. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
@@ -22,13 +23,14 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ## Etap 5.2+ (Przyszłość)
 
-- [ ] Motywy / auth / multi-user *(backlog — nie permanent OUT bez PO)*
-- [ ] **Mixer — Out 3–4 (HW multi-out):** **decyzja produktowa: wprowadzić** ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)); implementacja gdy model + WebAudio wspierają (bez atrap w UI)
-- [ ] **Mixer — bus→bus:** routing wyjścia busa na inny bus (dziś bus → tylko Master)
+- [ ] **Motywy:** rozbudowa appearance (profile / host default / scenic lock `themeLock`) — light + high-contrast już na `main`; OAuth OUT ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
+- [ ] **Auth — Operator PIN:** opcjonalny `STAGESYNC_OPERATOR_PIN` + ACL destrukcyjnych REST/WS (bez multi-user OAuth w 5.2) ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
+- [ ] **Mixer — Out 3–4 (HW multi-out):** **decyzja produktowa: wprowadzić** ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)); implementacja gdy model + WebAudio wspierają (bez atrap w UI) ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
+- [ ] **Mixer — bus→bus:** routing wyjścia busa na inny bus (dziś bus → tylko Master) + anti-cycle DFS ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Client transport — H-01:** `setDisplayTicks` co rAF re-renderuje konsumentów `useTransport` (Vitest potwierdzony) — najpierw profiler Grid/Karaoke @ 120 Hz na tablecie (kroki: [MOBILE.md](./MOBILE.md)), potem split context / throttle ([triage](./analysis/inspiracje/audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md); [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md))
-- [ ] [#430](https://github.com/Negatywistyczny/stagesync/issues/430) Cues Sampler
-- [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
-- [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console (Android):** PWA (`apps/web`) + powłoki Kotlin WebView (`apps/performer` → `/client`, `apps/console` → `/admin`); dystrybucja `.apk` z hosta `/downloads/…` / Releases — **bez** Google Play ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md)); lokalny host na Console = Faza 4
-- [ ] [#692](https://github.com/Negatywistyczny/stagesync/issues/692) **Offline-First UI hybrid (follow-up):** delta / CacheStorage per-asset po `ui-manifest` (MVP: full `ui-bundle.zip` + dialog „Zastosuj” już na main); bez cichego sync mid-set
+- [ ] [#430](https://github.com/Negatywistyczny/stagesync/issues/430) **Cues Sampler:** `CueClip.sample` + WebAudio one-shot/gated; routing Master\|Bus only — bez HW Out 3–4 ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.triage.md))
+- [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) **Safety Net (Master/Spare):** manual promote MVP + MIDI OUT off na Spare — bez auto-election ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
+- [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console (Android):** PWA (`apps/web`) + powłoki Kotlin WebView (`apps/performer` → `/client` Client-only; `apps/console` = pełne SPA Admin+Timeline+Client + lokalny host **produkt IN**); dystrybucja `.apk` z hosta `/downloads/…` / Releases — **bez** Google Play ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md); [ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md); [triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md)); residual eng: Faza 4 JNI/`libnode` (scaffold na drzewie), smoke HW, H-01
+- [ ] [#692](https://github.com/Negatywistyczny/stagesync/issues/692) **Offline-First UI hybrid (follow-up):** delta / CacheStorage per-asset po `ui-manifest` (MVP: full `ui-bundle.zip` + role zips + dialog „Zastosuj” już na drzewie); bez cichego sync mid-set
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 - [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS *(backlog, nie decyzja OUT; dziś placeholder / katalog backupów w ustawieniach hosta)*

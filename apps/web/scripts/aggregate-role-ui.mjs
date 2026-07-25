@@ -2,7 +2,7 @@
  * After role Vite builds: copy performer/console ui-bundle + hash/manifest into full `dist/`
  * so the host can serve role-specific Offline-First zips (#692) without separate static roots.
  *
- * Also smoke-checks that role bundles stay isolated (Client vs Admin+Timeline).
+ * Smoke-checks: Performer stays Client-only; Console = full SPA (Admin+Timeline+Client).
  */
 import {
   copyFileSync,
@@ -52,24 +52,24 @@ function assertPerformerIsolation() {
   }
 }
 
-function assertConsoleIsolation() {
+function assertConsoleFullSpa() {
   requireFile(join(consoleDist, "index.html"), "console index.html");
   const js = readRoleJs(consoleDist);
   if (!js.includes('"/admin"')) {
     throw new Error("aggregate-role-ui: console JS missing /admin route");
   }
+  if (!js.includes('"/client"')) {
+    throw new Error(
+      "aggregate-role-ui: console JS missing /client route — full desktop parity required",
+    );
+  }
   if (!js.includes("/timeline/:projectId") && !js.includes('"/timeline/')) {
     throw new Error("aggregate-role-ui: console JS missing Timeline route");
   }
-  // OSMD is Client Score — must not ship in Console shell.
-  if (/OpenSheetMusicDisplay|opensheetmusicdisplay/i.test(js)) {
+  // Client Score (OSMD) must ship in Console full SPA (minified symbols may rename).
+  if (!/OpenSheetMusicDisplay|opensheetmusicdisplay/i.test(js)) {
     throw new Error(
-      "aggregate-role-ui: console JS includes OSMD (Client-only) — dual-entry leak",
-    );
-  }
-  if (js.includes("ClientShell") || js.includes("AppClient")) {
-    throw new Error(
-      "aggregate-role-ui: console JS includes ClientShell/AppClient symbol",
+      "aggregate-role-ui: console JS missing OSMD — Client Score expected in full SPA",
     );
   }
 }
@@ -101,7 +101,7 @@ function copyRole(role, distDir) {
 
 requireFile(join(fullDist, "index.html"), "full dist index.html");
 assertPerformerIsolation();
-assertConsoleIsolation();
+assertConsoleFullSpa();
 
 const uiHashPerformer = copyRole("performer", performerDist);
 const uiHashConsole = copyRole("console", consoleDist);

@@ -58,6 +58,9 @@ apps/*/android/**/*.aab
 apps/*/android/.idea/
 # Generated Offline-First web bundle (#692) — filled by syncWebAssets / build-apk.sh
 apps/*/android/app/src/main/assets/www/
+# Console Faza 4 — nodejs-mobile + optional host server assets (prepare-local-host.mjs)
+apps/console/android/app/src/main/jniLibs/
+apps/console/android/app/src/main/assets/host/
 
 # Tauri
 apps/desktop/src-tauri/gen/

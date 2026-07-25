@@ -8,6 +8,12 @@
     <string name="section_manual">Ręczne wprowadzanie</string>
     <string name="hint_url">http://192.168.x.x:4000</string>
     <string name="btn_connect">Połącz</string>
+    <string name="btn_local_host">Uruchom lokalny host</string>
+    <string name="btn_local_host_busy">Uruchamianie lokalnego hosta…</string>
+    <string name="local_host_channel">Lokalny host StageSync</string>
+    <string name="local_host_notification_title">StageSync Console</string>
+    <string name="local_host_starting">Uruchamianie lokalnego hosta…</string>
+    <string name="local_host_bridge_incomplete">Silnik Node jest w APK, ale most JNI nie jest jeszcze zbudowany (NDK). Połącz się z hostem LAN — docs/MOBILE.md Faza 4.</string>
     <string name="btn_scan_qr">Skanuj kod QR</string>
     <string name="btn_recent">Ostatnie serwery</string>
     <string name="btn_change_server">Zmień serwer</string>

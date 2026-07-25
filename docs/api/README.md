@@ -54,7 +54,7 @@ Restart / shutdown / diagnostics z LAN: `Authorization: Bearer …` lub
 | `GET`/`HEAD` | `/downloads/stagesync-console.apk` | APK Console |
 | `GET`/`HEAD` | `/downloads/ui-bundle.zip` | Pełna paczka `apps/web` dist (`uiHash`); wymaga `STAGESYNC_STATIC_DIR` z buildem web |
 | `GET`/`HEAD` | `/downloads/ui-bundle-performer.zip` | Client-only UI dla StageSync Performer (`uiHashPerformer`) |
-| `GET`/`HEAD` | `/downloads/ui-bundle-console.zip` | Admin+Timeline UI dla StageSync Console (`uiHashConsole`) |
+| `GET`/`HEAD` | `/downloads/ui-bundle-console.zip` | Pełne SPA UI dla StageSync Console (`uiHashConsole`) |
 
 ### Library
 

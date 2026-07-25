@@ -1,8 +1,12 @@
 package com.stagesync.console
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -23,6 +27,7 @@ class LauncherActivity : AppCompatActivity() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var emptyScanRunnable: Runnable? = null
     private var lastHostCount = 0
+    private var localHostBusy = false
 
     private val qrLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -37,6 +42,37 @@ class LauncherActivity : AppCompatActivity() {
             openQrScanner(granted)
         }
 
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            startLocalHost()
+        }
+
+    private val localHostReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent == null) return
+                when (intent.action) {
+                    LocalHostService.ACTION_FAILED -> {
+                        val message =
+                            intent.getStringExtra(LocalHostService.EXTRA_MESSAGE)
+                                ?: getString(R.string.err_health)
+                        setLocalHostBusy(false)
+                        binding.localHostStatus.visibility = View.VISIBLE
+                        binding.localHostStatus.text = message
+                        Toast.makeText(this@LauncherActivity, message, Toast.LENGTH_LONG).show()
+                    }
+                    LocalHostService.ACTION_READY -> {
+                        val origin =
+                            intent.getStringExtra(LocalHostService.EXTRA_ORIGIN)
+                                ?: LocalHostRuntime.LOOPBACK_ORIGIN
+                        setLocalHostBusy(false)
+                        binding.localHostStatus.visibility = View.GONE
+                        connect(origin)
+                    }
+                }
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLauncherBinding.inflate(layoutInflater)
@@ -45,9 +81,22 @@ class LauncherActivity : AppCompatActivity() {
         binding.btnConnect.setOnClickListener {
             connect(binding.urlInput.text?.toString().orEmpty())
         }
+        binding.btnLocalHost.setOnClickListener { onLocalHostClicked() }
         binding.btnQr.setOnClickListener { startQr() }
         binding.btnRecent.setOnClickListener { showRecentDialog() }
         binding.status.setOnClickListener { startMdns() }
+
+        val filter =
+            IntentFilter().apply {
+                addAction(LocalHostService.ACTION_FAILED)
+                addAction(LocalHostService.ACTION_READY)
+            }
+        ContextCompat.registerReceiver(
+            this,
+            localHostReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
 
         startMdns()
     }
@@ -55,7 +104,46 @@ class LauncherActivity : AppCompatActivity() {
     override fun onDestroy() {
         cancelEmptyScanHint()
         mdns?.stop()
+        try {
+            unregisterReceiver(localHostReceiver)
+        } catch (_: IllegalArgumentException) {
+            // already unregistered
+        }
         super.onDestroy()
+    }
+
+    private fun onLocalHostClicked() {
+        if (localHostBusy) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted =
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS,
+                ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return
+            }
+        }
+        startLocalHost()
+    }
+
+    private fun startLocalHost() {
+        setLocalHostBusy(true)
+        binding.localHostStatus.visibility = View.VISIBLE
+        binding.localHostStatus.setText(R.string.local_host_starting)
+        LocalHostService.start(this)
+    }
+
+    private fun setLocalHostBusy(busy: Boolean) {
+        localHostBusy = busy
+        binding.btnLocalHost.isEnabled = !busy
+        binding.btnLocalHost.isClickable = !busy
+        binding.btnLocalHost.alpha = if (busy) 0.6f else 1f
+        binding.btnLocalHost.text =
+            getString(if (busy) R.string.btn_local_host_busy else R.string.btn_local_host)
+        binding.btnLocalHost.contentDescription =
+            getString(if (busy) R.string.btn_local_host_busy else R.string.btn_local_host)
     }
 
     private fun startQr() {
