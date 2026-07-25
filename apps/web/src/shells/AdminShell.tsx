@@ -1122,7 +1122,11 @@ function LibraryFilesCard({
 
   if (compact) {
     return (
-      <div className={styles.dbManageBody} aria-label="Pliki bazy">
+      <div
+        className={styles.dbManageBody}
+        role="region"
+        aria-label="Pliki bazy"
+      >
         {body}
       </div>
     );
