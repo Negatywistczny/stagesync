@@ -27,6 +27,7 @@ writeFileSync(
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher:** ekran startowy przed Adminem.
+- **Android:** sideload Performer i Console.
 
 ### Zmieniono
 
@@ -58,7 +59,7 @@ writeFileSync(
 function run(version) {
   return spawnSync(process.execPath, [script, version, path], {
     encoding: "utf8",
-    env: { ...process.env, GITHUB_REPOSITORY: "Negatywistczny/stagesync" },
+    env: { ...process.env, GITHUB_REPOSITORY: "Negatywistyczny/stagesync" },
   });
 }
 
@@ -70,14 +71,26 @@ assert.match(
   /^Launcher hosta, Mixer Timeline oraz zestaw narzędzi live-show\.$/m,
 );
 assert.doesNotMatch(ok.stdout, /\*\*Launch & Mix:\*\*/);
+// One bullet per CHANGELOG item (not semicolon-squashed domain lines).
 assert.match(
   ok.stdout,
-  /\*\*Timeline \/ DAW\*\* — Menu narzędzi Timeline: zestaw live-show w stylu Logic; Mixer: cztery strefy Audio \| Busy \| Click \| Master\./,
+  /\*\*Timeline \/ DAW\*\* — \*\*Menu narzędzi Timeline:\*\* zestaw live-show w stylu Logic/,
 );
-assert.match(ok.stdout, /\*\*Desktop\*\* — Launcher: ekran startowy przed Adminem\./);
 assert.match(
   ok.stdout,
-  /\*\*Dokumentacja\*\* — Pomoc Timeline \(\?\): skróty i wyszukiwanie\./,
+  /\*\*Timeline \/ DAW\*\* — \*\*Mixer:\*\* cztery strefy Audio \| Busy \| Click \| Master/,
+);
+assert.match(
+  ok.stdout,
+  /\*\*Desktop \/ Android\*\* — \*\*Launcher:\*\* ekran startowy przed Adminem/,
+);
+assert.match(
+  ok.stdout,
+  /\*\*Desktop \/ Android\*\* — \*\*Android:\*\* sideload Performer i Console/,
+);
+assert.match(
+  ok.stdout,
+  /\*\*Dokumentacja\*\* — \*\*Pomoc Timeline \(\?\):\*\* skróty i wyszukiwanie/,
 );
 assert.match(ok.stdout, /Pełna historia zmian: \[CHANGELOG\.md\]/);
 assert.match(
@@ -88,6 +101,10 @@ assert.match(
   ok.stdout,
   /releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_aarch64\.dmg/,
 );
+// APKs only from 5.2.0 — no dead Android links on 5.1.x.
+assert.doesNotMatch(ok.stdout, /StageSync-Performer-v5\.1\.0\.apk/);
+assert.doesNotMatch(ok.stdout, /StageSync-Console-v5\.1\.0\.apk/);
+assert.doesNotMatch(ok.stdout, /Android — Performer/);
 assert.doesNotMatch(ok.stdout, /### Dodano/);
 assert.doesNotMatch(ok.stdout, /#### ⏱️/);
 assert.doesNotMatch(ok.stdout, /Co nowego w tym wydaniu/);
@@ -102,14 +119,57 @@ assert.match(
 assert.doesNotMatch(patch.stdout, /^Wydanie 5\.1\.2\.$/m);
 assert.match(
   patch.stdout,
-  /\*\*Audio \/ MIDI \/ Transport\*\* — Setlista: zmiana kolejności od razu aktualizuje podgląd „następny utwór” przez WebSocket; MIDI Host:/,
+  /\*\*Audio \/ MIDI \/ Transport\*\* — \*\*Setlista:\*\* zmiana kolejności od razu aktualizuje podgląd/,
 );
-assert.match(patch.stdout, /Mixer \/ Solo: gdy Solo ścieżki jest aktywne/);
-assert.match(patch.stdout, /\*\*Timeline \/ DAW\*\* — Etykiety AT:/);
+assert.match(
+  patch.stdout,
+  /\*\*Audio \/ MIDI \/ Transport\*\* — \*\*MIDI Host:\*\*/,
+);
+assert.match(
+  patch.stdout,
+  /\*\*Audio \/ MIDI \/ Transport\*\* — \*\*Mixer \/ Solo:\*\*/,
+);
+assert.match(patch.stdout, /\*\*Timeline \/ DAW\*\* — \*\*Etykiety AT:\*\*/);
 assert.doesNotMatch(patch.stdout, /#1/);
 assert.doesNotMatch(
   patch.stdout,
   /\*\*Audio \/ MIDI \/ Transport\*\* — Setlista; MIDI Host/,
+);
+assert.doesNotMatch(patch.stdout, /Android — Performer/);
+
+writeFileSync(
+  path,
+  `# Changelog
+
+## [5.2.0](https://example.com) - 2026-07-25 — Pocket Stage
+
+> **Pocket Stage:** PIN, Safety Net, Sampler.
+
+### Dodano
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Android:** sideload Performer i Console.
+
+## [5.1.0](https://example.com) - 2026-07-24 — Launch & Mix
+
+> older
+`,
+);
+
+const cue = run("5.2.0");
+assert.equal(cue.status, 0, cue.stderr || cue.stdout);
+assert.match(cue.stdout, /### 🚀 Highlights — Pocket Stage \(5\.2\.0\)/);
+assert.match(
+  cue.stdout,
+  /releases\/download\/v5\.2\.0\/StageSync-Performer-v5\.2\.0\.apk/,
+);
+assert.match(
+  cue.stdout,
+  /releases\/download\/v5\.2\.0\/StageSync-Console-v5\.2\.0\.apk/,
+);
+assert.match(
+  cue.stdout,
+  /\*\*Desktop \/ Android\*\* — \*\*Android:\*\* sideload Performer i Console/,
 );
 
 console.log("build-release-notes.test.mjs: ok");

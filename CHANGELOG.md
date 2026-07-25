@@ -5,9 +5,9 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.3.0](https://github.com/Negatywistczny/stagesync/compare/v5.2.0...v5.3.0) - 2026-07-25 — Pocket Stage
+## [5.2.1](https://github.com/Negatywistyczny/stagesync/compare/v5.2.0...v5.2.1) - 2026-07-25
 
-> **Pocket Stage:** Przywróć kopie `.bak` / ZIP z Admina oraz opcjonalny Sentry — bez zmiany zachowania hosta, gdy DSN nie jest ustawiony.
+> Przywróć kopie `.bak` / ZIP z Admina oraz opcjonalny Sentry — bez zmiany zachowania hosta, gdy DSN nie jest ustawiony.
 
 ### Dodano
 
@@ -20,9 +20,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 📚 Dokumentacja
 - **Instalacja / Desktop:** opis Przywróć (`.bak` / ZIP) w ustawieniach serwera oraz opcjonalnych DSN Sentry.
 
-## [5.2.0](https://github.com/Negatywistczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Cue & Guard
+## [5.2.0](https://github.com/Negatywistyczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
 
-> **Cue & Guard:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta — bez atrap Out 3–4 / auto-election / OAuth.
+> **Pocket Stage:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta — bez atrap Out 3–4 / auto-election / OAuth.
 
 ### Dodano
 
