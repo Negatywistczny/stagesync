@@ -25,6 +25,17 @@ describe("SettingsPopover", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it("closes via Zamknij icon button", () => {
+    const onClose = vi.fn();
+    render(
+      <SettingsPopover title="Ustawienia Client" onClose={onClose}>
+        <p>treść</p>
+      </SettingsPopover>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Zamknij" }));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
   it("portals anchor placement to document.body", () => {
     render(
       <SettingsPopoverAnchor>
