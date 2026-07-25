@@ -18,6 +18,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 📚 Dokumentacja
 - **Instalacja / Desktop:** opis Przywróć (`.bak` / ZIP) w ustawieniach serwera oraz opcjonalnych DSN Sentry.
 
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher:** „Pobierz log” i „Wyczyść błąd” pojawiają się tylko gdy jest log diagnostyczny albo błąd do wyczyszczenia.
+
 ## [5.2.0](https://github.com/Negatywistyczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
 
 > **Pocket Stage:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta.

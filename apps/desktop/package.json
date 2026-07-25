@@ -12,7 +12,7 @@
     "tauri:build": "tauri build",
     "check-types": "node -e \"process.exit(0)\"",
     "lint": "node -e \"process.exit(0)\"",
-    "test": "node -e \"process.exit(0)\""
+    "test": "node --test launcher/*.test.js"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0"

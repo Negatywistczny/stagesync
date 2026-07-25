@@ -2,6 +2,8 @@
 /** @typedef {{ url: string, label: string }} RecentHost */
 /** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null }} LauncherBootstrap */
 
+import { localErrorActionsVisibility } from "./localErrorActions.js";
+
 const SCAN_MIN_MS = 900;
 const LABEL_LOCAL_IDLE = "Uruchom lokalny host";
 const LABEL_LOCAL_RETRY = "Ponów uruchomienie";
@@ -201,6 +203,7 @@ function downloadTextFile(filename, content) {
 function downloadLocalLog() {
   const message = lastLocalErrorMessage || el.localError.textContent || "";
   const log = lastLocalLog || el.localLog.textContent || "";
+  if (!log.trim()) return;
   const parts = [
     "# StageSync — log startu lokalnego hosta",
     `# ${new Date().toISOString()}`,
@@ -208,12 +211,19 @@ function downloadLocalLog() {
   if (message.trim()) {
     parts.push("", "## Komunikat", message.trim());
   }
-  if (log.trim()) {
-    parts.push("", "## Log hosta", log.trim());
-  }
-  if (parts.length <= 2) return;
+  parts.push("", "## Log hosta", log.trim());
   const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   downloadTextFile(`stagesync-host-${stamp}.log`, `${parts.join("\n")}\n`);
+}
+
+function syncLocalErrorActions() {
+  const vis = localErrorActionsVisibility({
+    hasError: localHasError,
+    hasLog: Boolean(lastLocalLog.trim()),
+  });
+  el.btnLocalClear.hidden = !vis.showClear;
+  el.btnLocalDownloadLog.hidden = !vis.showDownload;
+  el.localErrorActions.hidden = !vis.showRow;
 }
 
 function friendlyDiscoverError(raw) {
@@ -242,7 +252,7 @@ function clearLocalError() {
   el.localProgress.textContent = "";
   el.localLog.hidden = true;
   el.localLog.textContent = "";
-  el.localErrorActions.hidden = true;
+  syncLocalErrorActions();
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
   syncLocalButtonAria();
 }
@@ -253,8 +263,9 @@ function showLocalProgress(message) {
   lastLocalLog = "";
   el.localError.hidden = true;
   el.localError.textContent = "";
-  el.localErrorActions.hidden = true;
   el.localLog.hidden = true;
+  el.localLog.textContent = "";
+  syncLocalErrorActions();
   el.localProgress.hidden = false;
   el.localProgress.textContent = message;
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
@@ -264,21 +275,21 @@ function showLocalProgress(message) {
 function showLocalError(message, log) {
   localHasError = true;
   lastLocalErrorMessage = String(message || "");
-  lastLocalLog = String(log || "");
+  lastLocalLog = String(log || "").trim();
   el.localProgress.hidden = true;
   el.localProgress.textContent = "";
   el.localError.hidden = false;
   el.localError.textContent = message;
   el.btnLocal.textContent = LABEL_LOCAL_RETRY;
   syncLocalButtonAria();
-  el.localErrorActions.hidden = false;
-  if (log) {
+  if (lastLocalLog) {
     el.localLog.hidden = false;
-    el.localLog.textContent = log;
+    el.localLog.textContent = lastLocalLog;
   } else {
     el.localLog.hidden = true;
     el.localLog.textContent = "";
   }
+  syncLocalErrorActions();
 }
 
 function setManualMode(mode) {
