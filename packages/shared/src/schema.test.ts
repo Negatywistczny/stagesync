@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BatchMidiPcBodySchema,
+  ClientHelloMessageSchema,
   CreateProjectBodySchema,
   ExportLibraryBodySchema,
   LibrarySchema,
@@ -156,6 +157,77 @@ describe("CreateProjectBodySchema", () => {
   it("rejects names longer than 200 chars", () => {
     expect(() =>
       CreateProjectBodySchema.parse({ name: "x".repeat(201) }),
+    ).toThrow();
+  });
+
+  it("rejects whitespace-only name, unknown keys; keeps optional flags", () => {
+    expect(() => CreateProjectBodySchema.parse({ name: "   " })).toThrow();
+    expect(() =>
+      CreateProjectBodySchema.parse({ name: "Ok", extra: true }),
+    ).toThrow();
+    expect(
+      CreateProjectBodySchema.parse({
+        name: " From tpl ",
+        fromTemplateId: "tpl-1",
+        isTemplate: true,
+      }),
+    ).toEqual({
+      name: "From tpl",
+      fromTemplateId: "tpl-1",
+      isTemplate: true,
+    });
+  });
+});
+
+describe("ClientHelloMessageSchema", () => {
+  it("accepts minimal hello and optional fields", () => {
+    expect(ClientHelloMessageSchema.parse({ type: "client_hello" })).toEqual({
+      type: "client_hello",
+    });
+    expect(
+      ClientHelloMessageSchema.parse({
+        type: "client_hello",
+        displayName: "Pad",
+        roles: ["karaoke", "grid"],
+        latencyMs: 12.5,
+      }),
+    ).toMatchObject({
+      displayName: "Pad",
+      roles: ["karaoke", "grid"],
+      latencyMs: 12.5,
+    });
+  });
+
+  it("rejects bad type, roles, latency, and unknown keys", () => {
+    expect(() =>
+      ClientHelloMessageSchema.parse({ type: "hello" }),
+    ).toThrow();
+    expect(() =>
+      ClientHelloMessageSchema.parse({
+        type: "client_hello",
+        roles: ["karaoke", "grid", "score"],
+      }),
+    ).toThrow();
+    expect(() =>
+      ClientHelloMessageSchema.parse({
+        type: "client_hello",
+        roles: ["admin"],
+      }),
+    ).toThrow();
+    expect(() =>
+      ClientHelloMessageSchema.parse({
+        type: "client_hello",
+        latencyMs: Number.NaN,
+      }),
+    ).toThrow();
+    expect(() =>
+      ClientHelloMessageSchema.parse({
+        type: "client_hello",
+        latencyMs: -1,
+      }),
+    ).toThrow();
+    expect(() =>
+      ClientHelloMessageSchema.parse({ type: "client_hello", extra: 1 }),
     ).toThrow();
   });
 });
