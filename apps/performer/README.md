@@ -7,7 +7,7 @@
 ## Stack
 
 - Kotlin + Android WebView (bez Capacitor/Cordova-as-magic) — [ADR 0016](../../docs/adr/0016-android-performer-console.md)
-- Launcher: QR + mDNS + ręczny URL + recent (wzorzec [ADR 0014](../../docs/adr/0014-desktop-launcher.md))
+- Launcher: live QR (CameraX + ML Kit) + mDNS + ręczny URL + recent (wzorzec [ADR 0014](../../docs/adr/0014-desktop-launcher.md))
 - Dual wake-lock: PWA Wake Lock API + natywne `FLAG_KEEP_SCREEN_ON`
 
 ## Build

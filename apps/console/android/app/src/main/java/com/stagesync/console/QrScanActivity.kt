@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -36,6 +37,7 @@ class QrScanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQrScanBinding
     private var cameraExecutor: ExecutorService? = null
     private var barcodeScanner: BarcodeScanner? = null
+    private var cameraProvider: ProcessCameraProvider? = null
     private val handled = AtomicBoolean(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +61,8 @@ class QrScanActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         handled.set(true)
-        runCatching { ProcessCameraProvider.getInstance(this).get().unbindAll() }
+        cameraProvider?.unbindAll()
+        cameraProvider = null
         barcodeScanner?.close()
         barcodeScanner = null
         cameraExecutor?.shutdown()
@@ -81,7 +84,8 @@ class QrScanActivity : AppCompatActivity() {
         cameraProviderFuture.addListener(
             {
                 try {
-                    val cameraProvider = cameraProviderFuture.get()
+                    val provider = cameraProviderFuture.get()
+                    cameraProvider = provider
                     val preview =
                         Preview.Builder().build().also { p ->
                             p.setSurfaceProvider(binding.previewView.surfaceProvider)
@@ -101,8 +105,8 @@ class QrScanActivity : AppCompatActivity() {
                         processFrame(scanner, imageProxy)
                     }
 
-                    cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(
+                    provider.unbindAll()
+                    provider.bindToLifecycle(
                         this,
                         CameraSelector.DEFAULT_BACK_CAMERA,
                         preview,
@@ -117,7 +121,7 @@ class QrScanActivity : AppCompatActivity() {
         )
     }
 
-    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+    @ExperimentalGetImage
     private fun processFrame(scanner: BarcodeScanner, imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image
         if (mediaImage == null || handled.get()) {
@@ -131,7 +135,7 @@ class QrScanActivity : AppCompatActivity() {
                 if (handled.get()) return@addOnSuccessListener
                 for (barcode in barcodes) {
                     val raw = barcode.rawValue ?: continue
-                    val origin = RecentHosts.originFromQrPayload(raw) ?: continue
+                    val origin = QrJoinUrl.fromRaw(raw) ?: continue
                     if (!handled.compareAndSet(false, true)) return@addOnSuccessListener
                     runOnUiThread {
                         binding.scanStatus.setText(R.string.qr_found)
@@ -145,7 +149,7 @@ class QrScanActivity : AppCompatActivity() {
 
     private fun submitManual() {
         val raw = binding.qrUrlInput.text?.toString().orEmpty()
-        val origin = RecentHosts.originFromQrPayload(raw)
+        val origin = QrJoinUrl.fromRaw(raw)
         if (origin == null) {
             binding.qrUrlInput.error = getString(R.string.err_bad_url)
             return

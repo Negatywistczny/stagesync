@@ -7,7 +7,7 @@
 ## Stack
 
 - Ten sam stos co Performer: Kotlin + WebView — [ADR 0016](../../docs/adr/0016-android-performer-console.md)
-- Launcher jak desktop ([ADR 0014](../../docs/adr/0014-desktop-launcher.md)), ścieżka docelowa `/admin`
+- Launcher jak desktop ([ADR 0014](../../docs/adr/0014-desktop-launcher.md)) z live QR (CameraX + ML Kit); ścieżka docelowa `/admin`
 - **Uruchom lokalny host:** OUT w MVP (disabled + notka) — decyzja eng Fazy 4
 
 ## Build

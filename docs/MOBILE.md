@@ -37,7 +37,7 @@ W Admin → Host → **Sieć & Szybkie Połączenie**:
 
 | QR / link | Cel |
 |-----------|-----|
-| **Dołącz do hosta** | URL LAN (np. `http://192.168.x.x:4000`) — skan w launcherze / przeglądarce |
+| **Dołącz do hosta** | URL LAN (np. `http://192.168.x.x:4000`) — live skan w launcherze Performer/Console (kamera + wklejenie) / przeglądarka |
 | **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk` |
 | **Pobierz Console** | `{origin}/downloads/stagesync-console.apk` |
 
