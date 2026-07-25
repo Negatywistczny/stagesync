@@ -168,6 +168,7 @@ import {
   buildClipContextMenuItems,
   buildEmptyLaneContextMenuItems,
   clipboardMatchesEmptyLane,
+  clipContextMenuLabel,
   mapSegmentSelectionAriaLabel,
   type ClipMenuLane,
   type EmptyLaneMenuKind,
@@ -4729,8 +4730,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       canDelete = true,
     } = args;
     clearMapSelection();
+    const prev = clipSelectionRef.current;
+    const alreadySelected = isClipSelected(prev, clipId, args.selectionLane);
+    const onLaneIds = alreadySelected
+      ? idsOnLane(prev, args.selectionLane)
+      : [];
+    const multiIds = onLaneIds.length > 1 ? onLaneIds : null;
+    const selectionCount = multiIds?.length ?? 1;
     flushSync(() => {
-      selectLaneClip(args.selectionLane, clipId);
+      if (multiIds) {
+        setClipSelection(setSelection(prev.items, clipId));
+        setSelectedSubsectionIdx(null);
+        setSelectedAnchorId(null);
+        setSongMetaOpen(false);
+        setInspectorVisible(true);
+      } else {
+        selectLaneClip(args.selectionLane, clipId);
+      }
     });
     const board = clipboardRef.current;
     const canPaste = Boolean(board);
@@ -4786,16 +4802,25 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     openContextMenu({
       x: clientX,
       y: clientY,
-      label: "Menu klipu",
+      label: clipContextMenuLabel(selectionCount),
       items: buildClipContextMenuItems({
         lane,
         canPaste,
-        canSplit: canSplit && splitTicks != null,
+        canSplit: canSplit && splitTicks != null && !multiIds,
         clipMuted,
         onCopy: () => {
+          if (multiIds) {
+            copyClipSelection();
+            return;
+          }
           copyThisClip();
         },
         onCut: () => {
+          if (multiIds) {
+            if (!copyClipSelection()) return;
+            deleteSelectedFormaClip();
+            return;
+          }
           if (!canDelete) return;
           if (!copyThisClip()) return;
           deleteThisClip();
@@ -4804,6 +4829,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           pasteClipClipboard(locatorTicks);
         },
         onDuplicate: () => {
+          if (multiIds) {
+            duplicateClipSelection();
+            return;
+          }
           if (!copyThisClip()) return;
           const draft = draftRef.current;
           if (!draft) return;
@@ -4826,7 +4855,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           }
           pasteClipClipboard(end);
         },
-        onDelete: () => deleteThisClip(),
+        onDelete: () => {
+          if (multiIds) {
+            deleteSelectedFormaClip();
+            return;
+          }
+          deleteThisClip();
+        },
         onMuteToggle:
           lane === "audio"
             ? () => {
@@ -4839,7 +4874,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             : undefined,
         onFocusInspector: () => focusInspectorPanel(),
         onSplit:
-          canSplit && splitTicks != null
+          canSplit && splitTicks != null && !multiIds
             ? () => {
                 const draft = draftRef.current;
                 if (!draft) return;
