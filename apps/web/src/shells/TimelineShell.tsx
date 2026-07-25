@@ -7486,10 +7486,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom i snap">
           <label className={styles.snapPicker}>
-            <span className={styles.snapPickerLab}>Snap</span>
+            <span className={styles.snapPickerLab}>Przyciąganie</span>
             <select
               className={styles.snapPickerSelect}
-              aria-label="Tryb snap"
+              aria-label="Tryb przyciągania"
               value={snapModeToStorageKey(snapMode)}
               onChange={(e) => {
                 const next = snapModeFromStorageKey(e.target.value);
