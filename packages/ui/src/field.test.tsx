@@ -44,6 +44,17 @@ describe("Badge", () => {
     render(<Badge>meta</Badge>);
     expect(screen.getByText("meta")).toHaveClass("ss-badge");
   });
+
+  it("merges className and forwards aria attributes", () => {
+    render(
+      <Badge className="extra" aria-label="Metadane">
+        BPM
+      </Badge>,
+    );
+    const el = screen.getByLabelText("Metadane");
+    expect(el).toHaveClass("ss-badge");
+    expect(el).toHaveClass("extra");
+  });
 });
 
 describe("SegmentedControl", () => {
