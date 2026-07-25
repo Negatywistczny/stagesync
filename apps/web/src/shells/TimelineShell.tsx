@@ -7498,7 +7498,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               <option value="off">Wyłącz</option>
               <option value="bar">Takt</option>
-              <option value="beat">Beat</option>
+              <option value="beat">Uderzenie</option>
               <option value="subdivision:2">1/2</option>
               <option value="subdivision:4">1/4</option>
               <option value="subdivision:8">1/8</option>
