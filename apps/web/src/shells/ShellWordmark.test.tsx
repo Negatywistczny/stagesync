@@ -20,6 +20,14 @@ describe("ShellWordmark", () => {
     expect(screen.getByRole("img", { name: "StageSync Admin" })).toBeTruthy();
   });
 
+
+  it("falls back to brand label when clickable without title", () => {
+    render(<ShellWordmark onClick={() => {}} suffix="Client" />);
+    expect(
+      screen.getByRole("button", { name: "StageSync Client" }),
+    ).toBeTruthy();
+  });
+
   it("uses button aria-label when clickable", () => {
     const onClick = vi.fn();
     render(<ShellWordmark onClick={onClick} title="Wróć do ról" />);
