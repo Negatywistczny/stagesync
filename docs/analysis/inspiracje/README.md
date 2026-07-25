@@ -57,6 +57,7 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 | [`historia-bootstrap/`](./historia-bootstrap/) | Dlaczego V5 / konstytucja / monorepo | `archive` |
 | [`audyty-silnik/`](./audyty-silnik/) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
 | [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
+| [`spec-5.2+/`](./spec-5.2+/) | Specyfikacje wprowadzenia feature linii **5.2+** (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer HW) — hipotezy / design, nie claim Done | `open` → … |
 | [`ui/`](./ui/) | Gęstość / kontrast vs `ui-density` / `@stagesync/ui` | `open` → … |
 
 ## Zasady
@@ -118,6 +119,19 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 | [Referencja-Zachowan-Live-MIDI.md](./referencje-daw/Referencja-Zachowan-Live-MIDI.md) | Gemini Deep Search | [triage](./referencje-daw/Referencja-Zachowan-Live-MIDI.triage.md) | `partial` |
 | [Specyfikacja-Referencji-Zachowan-Wyswietlania.md](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.md) | Gemini Deep Search | [triage](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.triage.md) | `partial` |
 | [UXLogika-Show-Tools-Referencja-Zachowan.md](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.md) | Gemini Deep Search | [triage](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.triage.md) | `partial` |
+
+### spec-5.2+/
+
+Specyfikacje intro feature po Launch & Mix — companion do [TODO 5.2+](../../TODO.md) / [ROADMAP § Po 5.1.0](../../ROADMAP.md). **Nie** SSOT; **nie** CHANGELOG. MIDI/mixer: cross-link do istniejących audytów / referencji DAW (nie drugi backlog bugów).
+
+| Raport | Źródło | Triage | Status |
+|--------|--------|--------|--------|
+| [Specyfikacja-Motywow-i-Autentykacji-DAW.md](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md) | `open` |
+| [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) | `open` |
+| [Specyfikacja-StageSync-Cues-Sampler.md](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.triage.md) | `open` |
+| [Safety-Net-dla-StageSync-v5.2.md](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md) | `open` |
+| [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `open` |
+| [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `open` |
 
 ### ui/
 
