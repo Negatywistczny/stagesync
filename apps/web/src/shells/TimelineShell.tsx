@@ -465,42 +465,42 @@ const TOOLS: {
   {
     id: "scissors",
     label: "Nożyczki",
-    title: "Nożyczki — podział clipu / podsekcja Formy / zmiana mapy",
+    title: "Nożyczki — podział klipu / podsekcja Formy / zmiana mapy",
     key: "i",
     Icon: IconScissors,
   },
   {
     id: "join",
     label: "Połącz",
-    title: "Połącz — scal sąsiednie clipy / usuń granicę podsekcji",
+    title: "Połącz — scal sąsiednie klipy / usuń granicę podsekcji",
     key: "j",
     Icon: IconJoin,
   },
   {
     id: "mute",
     label: "Mute",
-    title: "Mute — przełącz wyciszenie klikniętego clipu audio",
+    title: "Mute — przełącz wyciszenie klikniętego klipu audio",
     key: "m",
     Icon: IconMute,
   },
   {
     id: "solo",
     label: "Solo",
-    title: "Solo — chwilowe solo ścieżki clipu audio przytrzymaniem LMB",
+    title: "Solo — chwilowe solo ścieżki klipu audio przytrzymaniem LMB",
     key: "s",
     Icon: IconSolo,
   },
   {
     id: "fade",
     label: "Fade",
-    title: "Fade — przeciągnij na krawędzi clipu audio: fade in/out",
+    title: "Fade — przeciągnij na krawędzi klipu audio: fade in/out",
     key: "a",
     Icon: IconFade,
   },
   {
     id: "gain",
     label: "Gain",
-    title: "Gain — przeciągnij w pionie na clipie audio: poziom dB",
+    title: "Gain — przeciągnij w pionie na klipie audio: poziom dB",
     key: "g",
     Icon: IconGain,
   },
@@ -4621,7 +4621,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       }
       if (sectionIds.size === 0) {
         flashCanvasNotice(
-          "Zaznacz sekcję Formy albo clipy Tekstu/Akordów — Różdżka nie działa na Cue",
+          "Zaznacz sekcję Formy albo klipy Tekstu/Akordów — Różdżka nie działa na Cue",
         );
         setWandMenu(null);
         setTool("pointer");
@@ -4639,7 +4639,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       return;
     }
     if (result.project !== draft) commitDraft(result.project);
-    let msg = result.message || `Różdżka: ${result.placed} clipów`;
+    let msg = result.message || `Różdżka: ${result.placed} klipów`;
     if (result.approximate) {
       msg += " — przybliżone (doprecyzuj Tapem)";
     }
