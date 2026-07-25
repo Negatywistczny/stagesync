@@ -4,8 +4,10 @@ import {
   ClientHelloMessageSchema,
   CreateProjectBodySchema,
   ExportLibraryBodySchema,
+  HealthResponseSchema,
   LibrarySchema,
   MidiHostConfigSchema,
+  PROTOCOL_VERSION,
   ProjectIdSchema,
   ProjectSchema,
   ProjectSchemaV2,
@@ -17,6 +19,8 @@ import {
   PutSetlistBodySchema,
   SetlistSchema,
   StageMessageBodySchema,
+  UiHashFileSchema,
+  UiManifestSchema,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -452,5 +456,58 @@ describe("DefaultMeter refine + Setlist coerce", () => {
       inputChannel: null,
       outputChannel: 0,
     });
+  });
+});
+
+describe("HealthResponseSchema + UI meta (#692)", () => {
+  it("parses health with protocolVersion and uiHash", () => {
+    const raw = {
+      ok: true as const,
+      service: "stagesync-server" as const,
+      version: "5.1.3",
+      protocolVersion: PROTOCOL_VERSION,
+      uiHash: "abc123",
+    };
+    expect(HealthResponseSchema.parse(raw)).toEqual(raw);
+  });
+
+  it("rejects health missing uiHash (strict)", () => {
+    expect(() =>
+      HealthResponseSchema.parse({
+        ok: true,
+        service: "stagesync-server",
+        version: "5.1.3",
+        protocolVersion: 1,
+      }),
+    ).toThrow();
+  });
+
+  it("rejects unknown health keys", () => {
+    expect(() =>
+      HealthResponseSchema.parse({
+        ok: true,
+        service: "stagesync-server",
+        version: "5.1.3",
+        protocolVersion: 1,
+        uiHash: "x",
+        extra: true,
+      }),
+    ).toThrow();
+  });
+
+  it("parses ui-hash.json and ui-manifest", () => {
+    expect(
+      UiHashFileSchema.parse({
+        protocolVersion: PROTOCOL_VERSION,
+        uiHash: "deadbeef",
+      }),
+    ).toEqual({ protocolVersion: 1, uiHash: "deadbeef" });
+
+    const manifest = {
+      protocolVersion: PROTOCOL_VERSION,
+      uiHash: "deadbeef",
+      assets: [{ path: "/index.html", hash: "aa", size: 12 }],
+    };
+    expect(UiManifestSchema.parse(manifest)).toEqual(manifest);
   });
 });

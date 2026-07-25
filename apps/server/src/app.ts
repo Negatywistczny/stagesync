@@ -1,6 +1,10 @@
 import express, { type Express } from "express";
 import { join } from "node:path";
-import { projectEndTicks, type HealthResponse } from "@stagesync/shared";
+import {
+  PROTOCOL_VERSION,
+  projectEndTicks,
+  type HealthResponse,
+} from "@stagesync/shared";
 import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import {
   createFileLogger,
@@ -24,6 +28,7 @@ import { createStores, type Stores } from "./storage/index.js";
 import { defaultDataDir, resolveDataPaths } from "./storage/paths.js";
 import { mountApkDownloads } from "./downloads.js";
 import { mountStaticWeb, resolveStaticDir } from "./static-web.js";
+import { loadUiMeta, mountUiMetaRoutes } from "./ui-meta.js";
 import {
   createTransportEngine,
   type TransportEngine,
@@ -182,14 +187,22 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     },
   );
 
+  const staticDir =
+    options.staticDir === undefined ? resolveStaticDir() : options.staticDir;
+  const uiMeta = loadUiMeta(staticDir);
+
   app.get("/api/health", (_req, res) => {
     const body: HealthResponse = {
       ok: true,
       service: "stagesync-server",
       version: VERSION,
+      protocolVersion: PROTOCOL_VERSION,
+      uiHash: uiMeta.uiHash,
     };
     res.json(body);
   });
+
+  mountUiMetaRoutes(app, uiMeta, staticDir);
 
   app.use("/api/library", createLibraryRouter(stores));
   app.use("/api/projects", createProjectsRouter(stores, transport));
@@ -215,13 +228,16 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   });
 
   // Sideload APKs (before SPA fallback so /downloads/* is never HTML).
+  // ui-bundle.zip is mounted earlier via mountUiMetaRoutes.
   mountApkDownloads(app, dataDir);
 
-  const staticDir =
-    options.staticDir === undefined ? resolveStaticDir() : options.staticDir;
   if (staticDir) {
     mountStaticWeb(app, staticDir);
     logBuffer.push("info", `static web: ${staticDir}`);
+    logBuffer.push(
+      "info",
+      `UI meta: protocol=${uiMeta.protocolVersion} uiHash=${uiMeta.uiHash.slice(0, 12)}${uiMeta.uiHash.length > 12 ? "…" : ""}`,
+    );
   }
 
   const midiStatus = midi.getStatus();

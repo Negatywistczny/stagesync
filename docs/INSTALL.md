@@ -22,7 +22,7 @@ docker compose up --build -d
 | http://localhost:4000/ | Client |
 | http://localhost:4000/admin | Admin |
 | http://localhost:4000/timeline | Timeline |
-| http://localhost:4000/api/health | Healthcheck |
+| http://localhost:4000/api/health | Healthcheck (`protocolVersion`, `uiHash`) |
 
 Dane użytkownika: volume `./data` → `/app/data` w kontenerze (`STAGESYNC_DATA_DIR`).
 

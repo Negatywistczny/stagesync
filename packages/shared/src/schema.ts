@@ -632,15 +632,57 @@ export const UpdateProjectBodySchema = PutProjectBodySchema;
 
 export type UpdateProjectBody = PutProjectBody;
 
+/**
+ * Wire / WebSocket frame compatibility for Offline-First shells ([#692](https://github.com/Negatywistyczny/stagesync/issues/692)).
+ * Bump only on breaking transport/API frame changes — not on CSS/JS UI refreshes.
+ */
+export const PROTOCOL_VERSION = 1 as const;
+
 export const HealthResponseSchema = z
   .object({
     ok: z.literal(true),
     service: z.literal("stagesync-server"),
     version: z.string(),
+    /** WS/API frame compatibility; shells hard-fallback to Remote Mode on mismatch. */
+    protocolVersion: z.number().int().positive(),
+    /** Content hash of served `apps/web` dist (`none` when host has no static UI). */
+    uiHash: z.string().min(1),
   })
   .strict();
 
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
+
+/** One hashed file in the UI asset tree (paths start with `/`). */
+export const UiManifestAssetSchema = z
+  .object({
+    path: z.string().min(1),
+    hash: z.string().min(1),
+    size: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export type UiManifestAsset = z.infer<typeof UiManifestAssetSchema>;
+
+/** `GET /api/ui-manifest` — enough for full UI sync / verify after zip apply. */
+export const UiManifestSchema = z
+  .object({
+    protocolVersion: z.number().int().positive(),
+    uiHash: z.string().min(1),
+    assets: z.array(UiManifestAssetSchema),
+  })
+  .strict();
+
+export type UiManifest = z.infer<typeof UiManifestSchema>;
+
+/** Emitted by web build as `dist/ui-hash.json` (subset of manifest). */
+export const UiHashFileSchema = z
+  .object({
+    protocolVersion: z.number().int().positive(),
+    uiHash: z.string().min(1),
+  })
+  .strict();
+
+export type UiHashFile = z.infer<typeof UiHashFileSchema>;
 
 export const ApiErrorDetailSchema = z.object({
   path: z.string(),

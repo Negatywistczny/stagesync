@@ -1,4 +1,6 @@
-/* Minimal StageSync PWA service worker — network-first for navigations; cache shell assets. */
+/* Minimal StageSync PWA service worker — network-first for navigations; cache shell assets.
+ * CACHE name is stamped at build time with uiHash prefix (emit-ui-meta.mjs).
+ * Never cache /api, /ws, or /downloads (APK / ui-bundle). */
 const CACHE = "stagesync-pwa-v1";
 const PRECACHE = ["/", "/client", "/manifest.webmanifest", "/favicon.svg"];
 
