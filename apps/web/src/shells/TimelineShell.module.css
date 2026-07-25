@@ -2053,6 +2053,14 @@
   grid-template-columns: 1fr;
 }
 
+/*
+ * Sheet + backdrop live inside `.main` (stacking context z-index: 1).
+ * Without this, toolbar / status (z-sticky) paint over the drawer.
+ */
+.shell[data-tl-tier="mobile"] .main:has(.inspectorOpen) {
+  z-index: var(--ss-z-panel);
+}
+
 .shell[data-tl-tier="mobile"] .inspectorBackdrop {
   position: fixed;
   inset: 0;

@@ -22,6 +22,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
+- **Mobile — Inspector:** dolny sheet Właściwości znów jest nad paskiem transportu i statusem (Snap / zoom), zamiast chować się pod nimi.
 - **Etykiety AT:** jaśniejsze aria startu tekst/akord/cue, zaznaczanie segmentów mapy, wyłączone Zoom H/V w Mixerze, źródło Różdżki ([#646](https://github.com/Negatywistyczny/stagesync/pull/646), [#647](https://github.com/Negatywistyczny/stagesync/pull/647), [#655](https://github.com/Negatywistyczny/stagesync/pull/655), [#672](https://github.com/Negatywistyczny/stagesync/pull/672)).
 
 #### 🖥️ App Shell & UI
