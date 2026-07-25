@@ -3,8 +3,8 @@
  * Build GitHub Release notes: download table + Highlights (not full CHANGELOG).
  *
  * Pattern (matches curated v5.0.0 / v5.1.0):
- *   download table (desktop + Android APK) → Highlights — {Hero} ({version}) →
- *   short intro → one narrative bullet per CHANGELOG item → link to CHANGELOG.md
+ *   download table (desktop + Android APK from 5.2.0) → Highlights — {Hero} ({version}) →
+ *   short intro → one narrative bullet per domain (aggregated) → link to CHANGELOG.md
  *
  * Usage:
  *   node launch/scripts/build-release-notes.mjs <version> [changelogPath]
@@ -85,25 +85,25 @@ const msiUrl = `${base}/StageSync_${version}_x64.msi`;
 const performerApkUrl = `${base}/StageSync-Performer-v${version}.apk`;
 const consoleApkUrl = `${base}/StageSync-Console-v${version}.apk`;
 const changelogUrl = changelogPermalink(repo, tag, version, date, hero);
-/** APKs ship from 5.2.0 (Cue & Guard); older cuts have no Android assets. */
+/** APKs ship from 5.2.0 (Pocket Stage); older cuts have no Android assets. */
 const includeAndroid = compareSemver(version, "5.2.0") >= 0;
 
 const androidRows = includeAndroid
-  ? `| 🤖 **Android — Performer** (Client na scenie) | [StageSync Performer (.apk)](${performerApkUrl}) |
-| 🤖 **Android — Console** (Admin + Timeline + Client) | [StageSync Console (.apk)](${consoleApkUrl}) |
+  ? `| 🤖 **Android** (Performer) | [Performer (.apk)](${performerApkUrl}) |
+| 🤖 **Android** (Console) | [Console (.apk)](${consoleApkUrl}) |
 `
   : "";
 
 const updaterDetails = includeAndroid
-  ? `Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji desktop i weryfikację spójności — nie musisz ich pobierać ręcznie. APK Android instalujesz sideloadem (bez Google Play); kolejne APK możesz też pobrać z hosta (QR w Admin Host).`
+  ? `Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji i weryfikację spójności — nie musisz ich pobierać ręcznie. APK Android instalujesz sideloadem (bez Google Play).`
   : `Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji i weryfikację spójności — nie musisz ich pobierać ręcznie.`;
 
 process.stdout.write(`### 📦 Pobierz StageSync
 
-| System / aplikacja | Plik |
+| System operacyjny | Plik instalacyjny |
 | :--- | :--- |
-| 🍎 **macOS** (Apple Silicon) | [StageSync ${version} (.dmg)](${dmgUrl}) |
-| 🪟 **Windows** (64-bit) | [StageSync ${version} (.msi)](${msiUrl}) |
+| 🍎 **macOS** (Apple Silicon) | [macOS (Apple Silicon)](${dmgUrl}) |
+| 🪟 **Windows** (64-bit) | [Windows (64-bit)](${msiUrl}) |
 ${androidRows}
 <details>
 <summary>Pliki automatycznych aktualizacji i checksumy</summary>
@@ -121,13 +121,13 @@ Pełna historia zmian: [CHANGELOG.md](${changelogUrl})
 `);
 
 /**
- * Keep a Changelog #### domains → one Highlights bullet per product item.
- * Prefer ### Dodano; then ### Zmieniono / ### Naprawiono (no duplicates by key).
- * Does **not** squash a domain into one semicolon list (that omitted content).
+ * Aggregate Keep a Changelog #### domains into Highlights bullets.
+ * Prefer ### Dodano; merge Zmieniono / Naprawiono into the same domain (dedupe by key).
+ * One bullet per domain: `**Domain** — Label: short; Label2: short.`
  */
 function aggregateHighlights(sectionBody) {
-  /** @type {{ domain: string, h3: string, snippet: { key: string, text: string } }[]} */
-  const collected = [];
+  /** @type {Map<string, { added: { key: string, text: string }[], other: { key: string, text: string }[] }>} */
+  const byDomain = new Map();
   let currentH3 = null;
   let currentDomain = null;
 
@@ -141,36 +141,34 @@ function aggregateHighlights(sectionBody) {
     const h4 = line.match(/^####\s+(.+)\s*$/);
     if (h4) {
       currentDomain = domainLabel(h4[1].trim());
+      if (!byDomain.has(currentDomain)) {
+        byDomain.set(currentDomain, { added: [], other: [] });
+      }
       continue;
     }
     if (!currentDomain || !currentH3) continue;
-    if (
-      currentH3 !== "Dodano" &&
-      currentH3 !== "Zmieniono" &&
-      currentH3 !== "Naprawiono"
-    ) {
-      continue;
-    }
     const snippet = bulletSnippet(line);
     if (!snippet) continue;
-    collected.push({ domain: currentDomain, h3: currentH3, snippet });
+    const bucket = byDomain.get(currentDomain);
+    if (currentH3 === "Dodano") {
+      bucket.added.push(snippet);
+    } else if (currentH3 === "Zmieniono" || currentH3 === "Naprawiono") {
+      bucket.other.push(snippet);
+    }
   }
 
-  const order = ["Dodano", "Zmieniono", "Naprawiono"];
-  collected.sort((a, b) => {
-    const d = order.indexOf(a.h3) - order.indexOf(b.h3);
-    if (d !== 0) return d;
-    return 0;
-  });
-
-  const seen = new Set();
   const bullets = [];
   const domains = [];
-  for (const { domain, snippet } of collected) {
-    if (seen.has(snippet.key)) continue;
-    seen.add(snippet.key);
-    if (!domains.includes(domain)) domains.push(domain);
-    bullets.push(`**${domain}** — ${snippet.text}`);
+  for (const [domain, { added, other }] of byDomain) {
+    const seen = new Set(added.map((s) => s.key));
+    const extras = other.filter((s) => !seen.has(s.key));
+    // Keep every domain; cap clauses per bullet so Highlights stay readable.
+    const items = [...added, ...extras].slice(0, 6);
+    if (items.length === 0) continue;
+    domains.push(domain);
+    bullets.push(
+      `**${domain}** — ${items.map((s) => s.text).join("; ")}.`,
+    );
   }
   return { bullets, domains };
 }
@@ -212,9 +210,10 @@ function bulletSnippet(line) {
   const label = m[1].replace(/\s*[:—–-]\s*$/, "").trim();
   if (!label) return null;
   const summary = summarizeBody(m[2] ?? "");
+  // Labels stay plain (5.1.3 style) — only the domain is bold in the bullet.
   return {
     key: normalizeTitle(label),
-    text: summary ? `**${label}:** ${summary}` : `**${label}**`,
+    text: summary ? `${label}: ${summary}` : label,
   };
 }
 
@@ -227,33 +226,33 @@ function summarizeBody(raw) {
     .trim();
   if (!body) return "";
 
-  // Keep a full short/medium bullet (Highlights should not omit clauses).
-  if (body.length <= 280) {
+  // Prefer short/medium summaries (~100–140 chars) for line-cut readability.
+  if (body.length <= 140) {
     return body.replace(/[.!?;:,]+\s*$/, "").trim();
   }
 
   // Real sentence end: period after a 4+ letter word (skips np. / itd. / tj.).
   const sentenceRe = /(?<=\p{L}{4,})[.!?](?=\s|$)/u;
   const sentence = body.search(sentenceRe);
-  if (sentence >= 40 && sentence <= 280) {
+  if (sentence >= 24 && sentence <= 140) {
     return body.slice(0, sentence).replace(/[.!?;:,]+\s*$/, "").trim();
   }
 
-  // Prefer clause boundaries (; —) over mid-word cuts.
+  // CHANGELOG often uses "; " as clause separators — take whole clauses.
   const parts = body.split(/\s*;\s*/).filter(Boolean);
   let acc = parts[0] ?? "";
   for (let i = 1; i < parts.length; i++) {
     const next = `${acc}; ${parts[i]}`;
-    if (next.length > 260) break;
+    if (next.length > 120) break;
     acc = next;
   }
-  if (acc.length > 260) {
+  if (acc.length > 120) {
     acc = acc
-      .slice(0, 260)
+      .slice(0, 120)
       .replace(/\s+\S*$/, "")
       .replace(/[,;:/\-–—]\s*$/, "");
   }
-  return `${acc.replace(/[.!?;:,]+\s*$/, "").trim()}…`;
+  return acc.replace(/[.!?;:,]+\s*$/, "").trim();
 }
 
 function normalizeTitle(title) {

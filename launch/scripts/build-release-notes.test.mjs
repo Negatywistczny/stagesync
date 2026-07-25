@@ -71,26 +71,24 @@ assert.match(
   /^Launcher hosta, Mixer Timeline oraz zestaw narzędzi live-show\.$/m,
 );
 assert.doesNotMatch(ok.stdout, /\*\*Launch & Mix:\*\*/);
-// One bullet per CHANGELOG item (not semicolon-squashed domain lines).
+// One bullet per domain — semicolon-aggregated (5.1.3 style); labels not bold.
 assert.match(
   ok.stdout,
-  /\*\*Timeline \/ DAW\*\* — \*\*Menu narzędzi Timeline:\*\* zestaw live-show w stylu Logic/,
+  /\*\*Timeline \/ DAW\*\* — Menu narzędzi Timeline: zestaw live-show w stylu Logic; Mixer: cztery strefy Audio \| Busy \| Click \| Master\./,
 );
 assert.match(
   ok.stdout,
-  /\*\*Timeline \/ DAW\*\* — \*\*Mixer:\*\* cztery strefy Audio \| Busy \| Click \| Master/,
+  /\*\*Desktop \/ Android\*\* — Launcher: ekran startowy przed Adminem; Android: sideload Performer i Console\./,
 );
 assert.match(
   ok.stdout,
-  /\*\*Desktop \/ Android\*\* — \*\*Launcher:\*\* ekran startowy przed Adminem/,
+  /\*\*Dokumentacja\*\* — Pomoc Timeline \(\?\): skróty i wyszukiwanie\./,
 );
-assert.match(
+// Not one bullet per CHANGELOG item with bold labels.
+assert.doesNotMatch(ok.stdout, /\*\*Menu narzędzi Timeline:\*\*/);
+assert.doesNotMatch(
   ok.stdout,
-  /\*\*Desktop \/ Android\*\* — \*\*Android:\*\* sideload Performer i Console/,
-);
-assert.match(
-  ok.stdout,
-  /\*\*Dokumentacja\*\* — \*\*Pomoc Timeline \(\?\):\*\* skróty i wyszukiwanie/,
+  /\*\*Timeline \/ DAW\*\* — \*\*Menu narzędzi Timeline:\*\*/,
 );
 assert.match(ok.stdout, /Pełna historia zmian: \[CHANGELOG\.md\]/);
 assert.match(
@@ -99,12 +97,22 @@ assert.match(
 );
 assert.match(
   ok.stdout,
-  /releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_aarch64\.dmg/,
+  /\| System operacyjny \| Plik instalacyjny \|/,
 );
+assert.match(
+  ok.stdout,
+  /\[macOS \(Apple Silicon\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_aarch64\.dmg\)/,
+);
+assert.match(
+  ok.stdout,
+  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x64\.msi\)/,
+);
+assert.doesNotMatch(ok.stdout, /StageSync 5\.1\.0 \(\.dmg\)/);
+assert.doesNotMatch(ok.stdout, /\| System \/ aplikacja \| Plik \|/);
 // APKs only from 5.2.0 — no dead Android links on 5.1.x.
 assert.doesNotMatch(ok.stdout, /StageSync-Performer-v5\.1\.0\.apk/);
 assert.doesNotMatch(ok.stdout, /StageSync-Console-v5\.1\.0\.apk/);
-assert.doesNotMatch(ok.stdout, /Android — Performer/);
+assert.doesNotMatch(ok.stdout, /\*\*Android\*\* \(Performer\)/);
 assert.doesNotMatch(ok.stdout, /### Dodano/);
 assert.doesNotMatch(ok.stdout, /#### ⏱️/);
 assert.doesNotMatch(ok.stdout, /Co nowego w tym wydaniu/);
@@ -117,25 +125,18 @@ assert.match(
   /^Zmiany w Audio \/ MIDI \/ Transport oraz Timeline \/ DAW\.$/m,
 );
 assert.doesNotMatch(patch.stdout, /^Wydanie 5\.1\.2\.$/m);
+// Dodano + Naprawiono merged into one domain bullet; issue links stripped.
 assert.match(
   patch.stdout,
-  /\*\*Audio \/ MIDI \/ Transport\*\* — \*\*Setlista:\*\* zmiana kolejności od razu aktualizuje podgląd/,
+  /\*\*Audio \/ MIDI \/ Transport\*\* — Setlista: zmiana kolejności od razu aktualizuje podgląd „następny utwór” przez WebSocket; MIDI Host: clock OUT z ticków transportu; bezpieczny send przy odłączeniu USB; Mixer \/ Solo:/,
 );
 assert.match(
   patch.stdout,
-  /\*\*Audio \/ MIDI \/ Transport\*\* — \*\*MIDI Host:\*\*/,
+  /\*\*Timeline \/ DAW\*\* — Etykiety AT: Dodaj ścieżkę i menu narzędzi mają czytelne nazwy dla czytników ekranu\./,
 );
-assert.match(
-  patch.stdout,
-  /\*\*Audio \/ MIDI \/ Transport\*\* — \*\*Mixer \/ Solo:\*\*/,
-);
-assert.match(patch.stdout, /\*\*Timeline \/ DAW\*\* — \*\*Etykiety AT:\*\*/);
 assert.doesNotMatch(patch.stdout, /#1/);
-assert.doesNotMatch(
-  patch.stdout,
-  /\*\*Audio \/ MIDI \/ Transport\*\* — Setlista; MIDI Host/,
-);
-assert.doesNotMatch(patch.stdout, /Android — Performer/);
+assert.doesNotMatch(patch.stdout, /\*\*Setlista:\*\*/);
+assert.doesNotMatch(patch.stdout, /\*\*Android\*\* \(Performer\)/);
 
 writeFileSync(
   path,
@@ -149,6 +150,16 @@ writeFileSync(
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Android:** sideload Performer i Console.
+- **Launcher:** ekran startowy.
+
+#### ⏱️ Timeline & DAW
+- **Cues Sampler:** próbka audio na Cue.
+- **Safety Net:** Przejmij na Spare.
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Ołówek:** wyrównanie podglądu przeciągania.
 
 ## [5.1.0](https://example.com) - 2026-07-24 — Launch & Mix
 
@@ -159,17 +170,29 @@ writeFileSync(
 const cue = run("5.2.0");
 assert.equal(cue.status, 0, cue.stderr || cue.stdout);
 assert.match(cue.stdout, /### 🚀 Highlights — Pocket Stage \(5\.2\.0\)/);
+assert.match(cue.stdout, /\| System operacyjny \| Plik instalacyjny \|/);
 assert.match(
   cue.stdout,
-  /releases\/download\/v5\.2\.0\/StageSync-Performer-v5\.2\.0\.apk/,
+  /\[macOS \(Apple Silicon\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync_5\.2\.0_aarch64\.dmg\)/,
 );
 assert.match(
   cue.stdout,
-  /releases\/download\/v5\.2\.0\/StageSync-Console-v5\.2\.0\.apk/,
+  /\|\s*🤖 \*\*Android\*\* \(Performer\) \| \[Performer \(\.apk\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync-Performer-v5\.2\.0\.apk\) \|/,
 );
 assert.match(
   cue.stdout,
-  /\*\*Desktop \/ Android\*\* — \*\*Android:\*\* sideload Performer i Console/,
+  /\|\s*🤖 \*\*Android\*\* \(Console\) \| \[Console \(\.apk\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync-Console-v5\.2\.0\.apk\) \|/,
 );
+assert.match(
+  cue.stdout,
+  /\*\*Desktop \/ Android\*\* — Android: sideload Performer i Console; Launcher: ekran startowy\./,
+);
+assert.match(
+  cue.stdout,
+  /\*\*Timeline \/ DAW\*\* — Cues Sampler: próbka audio na Cue; Safety Net: Przejmij na Spare; Ołówek: wyrównanie podglądu przeciągania\./,
+);
+assert.doesNotMatch(cue.stdout, /Cue & Guard/);
+assert.doesNotMatch(cue.stdout, /StageSync 5\.2\.0 \(\.dmg\)/);
+assert.match(cue.stdout, /sideloadem/);
 
 console.log("build-release-notes.test.mjs: ok");
