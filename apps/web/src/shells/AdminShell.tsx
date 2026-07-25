@@ -778,7 +778,7 @@ function SongsView({
             >
               <option value="library">Kolejność bazy</option>
               <option value="title">Tytuł A–Z</option>
-              <option value="pc">PC</option>
+              <option value="pc">Program Change</option>
             </select>
             <Button
               variant="secondary"
