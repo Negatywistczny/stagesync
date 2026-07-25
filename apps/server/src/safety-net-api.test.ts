@@ -70,4 +70,31 @@ describe("Safety Net API", () => {
       await new Promise<void>((r) => server.close(() => r()));
     }
   });
+  it("defaults to master when safety role unset", async () => {
+    vi.stubEnv("STAGESYNC_SAFETY_ROLE", "");
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-safety-master-"));
+    dirs.push(dataDir);
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const status = await fetch(`${baseUrl}/api/system/safety-net`);
+      expect(status.status).toBe(200);
+      expect(await status.json()).toEqual({
+        role: "master",
+        midiOutAllowed: true,
+      });
+
+      const promote = await fetch(`${baseUrl}/api/system/promote`, {
+        method: "POST",
+      });
+      expect(promote.status).toBe(200);
+      expect(await promote.json()).toEqual({
+        ok: true,
+        role: "master",
+        midiOutAllowed: true,
+      });
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
 });
