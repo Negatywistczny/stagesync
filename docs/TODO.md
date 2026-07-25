@@ -1,11 +1,11 @@
 # StageSync v5 — TODO
 
-**Stan:** `5.1.2` wydane 2026-07-25 na `main` (`v5.1.2`) — linia **5.1** = **Launch & Mix**; linia **5.0** = **Overture** (`v5.0.0` / `v5.0.1`).  
+**Stan:** `5.1.3` wydane 2026-07-25 na `main` (`v5.1.3`) — linia **5.1** = **Launch & Mix**; linia **5.0** = **Overture** (`v5.0.0` / `v5.0.1`).  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** nowe funkcje po Launch & Mix → linia **5.2+**. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).
 
-**Residuale operatorskie:** **G1–G10** — **bez claim pełnego green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). Pass operatorskie: **G5**, **G6**, **G10** (DESKTOP). Residual: **G2** skip; **G3** deferred; **G7–G9** Docker deferred. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
+**Residuale operatorskie:** **G1–G10** — **bez claim pełnego green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). Pass operatorskie: **G1**, **G4–G6**, **G10** (bazowo na `5.1.2` / docs; w `5.1.3` też „Pobierz log” i ostrzeżenie updatera). Residual: **G2** skip; **G3** deferred (fix Documents w `5.1.3` — wymaga re-verify HW na nowym instalatorze); **G7–G9** Docker deferred. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
 ## 5.2+ — Motywy, auth, Mixer outs, kolejne minor
 
@@ -13,7 +13,7 @@ Orientacja: [ROADMAP.md](./ROADMAP.md) § Po 5.1.0.
 
 ### Must (operator residual po 5.1.0)
 
-- [ ] **G1–G10** na instalatorach `v5.1.2` (mac/Win HW) — **bez claim pełnego green**; **G10** — pass operatorski (podręcznik DESKTOP uproszczony, zgodny z flow); **G5** komunikat port zajęty — pass operatorski na `5.1.2` (przycisk „Pobierz log” dopiero po kolejnym buildzie); **G6** updater — pass operatorski 5.1.1 → 5.1.2; **G2** skip; **G3** re-verify HW odłożone (fix Documents na `main`, nie w 5.1.2); **G7–G9** Docker — odłożone
+- [ ] **G1–G10** na instalatorach `v5.1.3` (mac/Win HW) — **bez claim pełnego green**; **G1**, **G4–G6**, **G10** — pass operatorski (bazowo `5.1.2` / docs; `5.1.3` dokłada „Pobierz log”, ostrzeżenie restartu updatera, podręcznik DESKTOP); **G2** skip; **G3** re-verify HW po instalacji `5.1.3` (data dir Documents + migracja — fix w tym patchu, jeszcze bez dowodu HW); **G7–G9** Docker — odłożone
 
 ### Should / Higiena (nie blokuje 5.2)
 
