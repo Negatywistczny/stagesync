@@ -101,7 +101,7 @@ Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
-| [Audyt-Architektury-StageSync-v5.md](./audyty-silnik/Audyt-Architektury-StageSync-v5.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md) | `partial` |
+| [Audyt-Architektury-StageSync-v5.md](./audyty-silnik/Audyt-Architektury-StageSync-v5.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Architektury-StageSync-v5.triage.md) | `closed` |
 | [Audyt-Edytora-Sciezek-Audio.md](./audyty-silnik/Audyt-Edytora-Sciezek-Audio.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Edytora-Sciezek-Audio.triage.md) | `closed` |
 | [Audyt-Lifecycle-StageSync-v5-Desktop.md](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-Lifecycle-StageSync-v5-Desktop.triage.md) | `open` |
 | [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md) | Gemini Deep Search | [triage](./audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md) | `partial` |

@@ -377,6 +377,50 @@ describe("TransportProvider", () => {
       expect(result.current.displayTicks).toBeGreaterThanOrEqual(480);
     });
 
+    // H-01 (Audyt-Architektury): setDisplayTicks every rAF → context consumers re-render
+    // at display refresh rate while playing (no equality guard / throttle in startRaf).
+    it("re-renders useTransport consumers on each rAF while ticks advance", async () => {
+      let renderCount = 0;
+      const { result } = renderHook(
+        () => {
+          renderCount += 1;
+          return useTransport();
+        },
+        { wrapper },
+      );
+      await flushMicrotasks();
+      const ws = await openLatestWs();
+
+      await act(async () => {
+        ws.triggerMessage(
+          tickPayload({
+            playing: true,
+            positionTicks: 0,
+            bpm: 120,
+            serverTimeMs: 20,
+          }),
+        );
+      });
+      expect(rafQueue.length).toBeGreaterThan(0);
+
+      const rendersAtPlay = renderCount;
+      const ticksAtPlay = result.current.displayTicks;
+      const frames = 8;
+      const tickSamples: number[] = [];
+
+      for (let i = 1; i <= frames; i += 1) {
+        await act(async () => {
+          // frameTime must advance past receiptMs (performance.now at applyAnchor)
+          flushRaf(performance.now() + i * 16);
+        });
+        tickSamples.push(result.current.displayTicks);
+      }
+
+      expect(renderCount - rendersAtPlay).toBe(frames);
+      expect(new Set(tickSamples).size).toBe(frames);
+      expect(tickSamples.at(-1)!).toBeGreaterThan(ticksAtPlay);
+    });
+
     it("drops out-of-order ticks", async () => {
       const { result } = await mountProvider();
       const ws = await openLatestWs();
