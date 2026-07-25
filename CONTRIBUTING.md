@@ -16,6 +16,7 @@
 
 - **`main`** — domyślna linia pracy; małe kroki kod → test → commit → push. Przed pushem lokalnie `pnpm test` i `pnpm build` gdy zmieniasz kod.
 - **Gałąź / PR** (`feat/…`, `fix/…`) — tylko gdy **użytkownik o to prosi** albo gdy jawnie potrzebna izolacja; nie „na zapas”.
+- Po merge PR head na `origin` jest **usuwany automatycznie** (`delete_branch_on_merge`); lokalnie: `git fetch --prune` i `git branch -d`.
 - **Bez** Git Flow: nie używamy `develop` ani `release/*`.
 - CI: workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) na `push` /
   PR do `main` — na PR wymagany job `lint-types-test-build`; Docker Compose
