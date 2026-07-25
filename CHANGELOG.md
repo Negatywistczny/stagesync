@@ -18,6 +18,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **PWA / Client:** manifest i Service Worker umożliwiają „Dodaj do ekranu głównego”; w aktywnym widoku roli Client prosi o Screen Wake Lock (ekran nie gaśnie w przeglądarce).
 - **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR na desktopie: tryby Dołącz | Performer | Console.
+- **Nazwa urządzenia:** przed Client / Admin / Timeline każde urządzenie bez zapisanej nazwy dostaje prompt „Podaj swoje imię lub nazwę urządzenia.”; ta nazwa widać na liście klientów (Scena) i da się ją zmienić w ustawieniach.
 
 #### ⚙️ Serwer & API
 - **Downloads:** host serwuje `GET /downloads/stagesync-performer.apk` i `…-console.apk` z katalogu downloads (404 z komunikatem, gdy artefakt nie leży na dysku).
@@ -26,7 +27,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console, sideload, QR join vs QR APK, macierz HW (bez claim green).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta; po połączeniu jawny dialog aktualizacji (**Pobierz i zainstaluj** / **Później**), gdy host ma nowszą wersję i APK jest dostępne — bez cichej aktualizacji w tle. Launcher: ciemny ekran z kartami serwerów z sieci (jedno dotknięcie), kafelkami **Skanuj kod QR** / **Ostatnie serwery** oraz ręcznym adresem na dole; wstecz w sesji idzie po historii strony, a **Zmień serwer** wraca do wyboru hosta.
+- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta; po połączeniu jawny dialog aktualizacji (**Pobierz i zainstaluj** / **Później**), gdy host ma nowszą wersję i APK jest dostępne — bez cichej aktualizacji w tle. Launcher: ciemny ekran z kartami serwerów z sieci (jedno dotknięcie), kafelkami **Skanuj kod QR** / **Ostatnie serwery** oraz ręcznym adresem na dole; ikona i znak w launcherze to żółty romb z PWA (`pwa-icon`); wstecz w sesji idzie po historii strony, a **Zmień serwer** / **Dodaj serwer…** jest w ustawieniach Client / Admin (nie jako pływający przycisk nad WebView).
+- **Client / Admin (mobile):** przycisk **Pełny ekran** ukryty w powłoce Android (`StageSyncNative`) oraz w samodzielnym PWA na małym / touch ekranie — desktop i Tauri bez zmian.
 
 ### Zmieniono
 

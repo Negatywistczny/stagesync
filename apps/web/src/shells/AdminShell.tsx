@@ -24,6 +24,8 @@ import {
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
+import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
+import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
 import {
@@ -72,6 +74,7 @@ function errMessage(err: unknown): string {
 const ADMIN_SECTIONS = new Set<SectionId>(["songs", "set", "stage", "host"]);
 
 export function AdminShell() {
+  useAnnounceDevicePresence();
   const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -357,12 +360,14 @@ export function AdminShell() {
             >
               <IconPower />
             </ShellIconButton>
-            <ShellIconButton
-              label="Pełny ekran"
-              onClick={() => void toggleAppFullscreen()}
-            >
-              <IconFullscreen />
-            </ShellIconButton>
+            {shouldShowFullscreenControl() ? (
+              <ShellIconButton
+                label="Pełny ekran"
+                onClick={() => void toggleAppFullscreen()}
+              >
+                <IconFullscreen />
+              </ShellIconButton>
+            ) : null}
           </div>
         </header>
       </div>

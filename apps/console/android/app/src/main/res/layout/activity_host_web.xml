@@ -8,17 +8,4 @@
         android:id="@+id/webView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnChangeServer"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:layout_margin="12dp"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        android:minWidth="44dp"
-        android:text="@string/btn_change_server"
-        android:textColor="@color/ss_text" />
 </FrameLayout>

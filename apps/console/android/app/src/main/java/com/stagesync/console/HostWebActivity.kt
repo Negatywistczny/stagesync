@@ -86,8 +86,6 @@ class HostWebActivity : AppCompatActivity() {
         web.addJavascriptInterface(NativeBridge(), "StageSyncNative")
         web.loadUrl("$origin${ShellConfig.ENTRY_PATH}")
 
-        binding.btnChangeServer.setOnClickListener { finish() }
-
         onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {
@@ -190,14 +188,20 @@ class HostWebActivity : AppCompatActivity() {
     }
 
     /**
-     * Bridge notes for dual wake-lock / update prompt.
+     * Bridge notes for dual wake-lock / update prompt / host picker.
      * No secrets. Manual APK download only (no silent install).
      */
-    class NativeBridge {
+    inner class NativeBridge {
         @android.webkit.JavascriptInterface
         fun shellKind(): String = "console"
 
         @android.webkit.JavascriptInterface
         fun keepScreenOnNative(): Boolean = true
+
+        /** SPA settings → return to launcher host picker. */
+        @android.webkit.JavascriptInterface
+        fun changeServer() {
+            runOnUiThread { finish() }
+        }
     }
 }

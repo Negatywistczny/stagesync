@@ -4,6 +4,7 @@ import { AdminShell } from "./shells/AdminShell.js";
 import { ClientShell } from "./shells/ClientShell.js";
 import { DesktopMenuBridge } from "./shells/DesktopMenuBridge.js";
 import { DesktopRootRedirect } from "./shells/DesktopRootRedirect.js";
+import { DeviceNameGate } from "./shells/DeviceNameGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
 
@@ -25,7 +26,9 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <TransportProvider>
-      <RouterProvider router={router} />
+      <DeviceNameGate>
+        <RouterProvider router={router} />
+      </DeviceNameGate>
     </TransportProvider>
   );
 }

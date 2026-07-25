@@ -388,6 +388,8 @@ import {
   syncNavRecentProjects,
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
+import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
+import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
 import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
@@ -533,6 +535,7 @@ const TOOL_BY_KEY = Object.fromEntries(
 );
 
 export function TimelineShell() {
+  useAnnounceDevicePresence(["timeline"]);
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
   const lanesCoordRef = useRef<HTMLDivElement>(null);
@@ -5712,20 +5715,24 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         onHelp={() => setHelpOpen(true)}
         appearancePressed={appearanceOpen}
         onAppearance={() => setAppearanceOpen((v) => !v)}
-        onFullscreen={() => {
-          void (async () => {
-            try {
-              await toggleAppFullscreen();
-              setFullscreenError(null);
-            } catch (err) {
-              setFullscreenError(
-                err instanceof Error
-                  ? err.message
-                  : "Nie udało się przełączyć pełnego ekranu",
-              );
-            }
-          })();
-        }}
+        onFullscreen={
+          shouldShowFullscreenControl()
+            ? () => {
+                void (async () => {
+                  try {
+                    await toggleAppFullscreen();
+                    setFullscreenError(null);
+                  } catch (err) {
+                    setFullscreenError(
+                      err instanceof Error
+                        ? err.message
+                        : "Nie udało się przełączyć pełnego ekranu",
+                    );
+                  }
+                })();
+              }
+            : undefined
+        }
       />
 
       <ConnectionLostBanner status={wsStatus} />

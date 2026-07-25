@@ -49,6 +49,8 @@ import {
 } from "../lib/setlistApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
+import { ChangeServerControl } from "./ChangeServerControl.js";
+import { DeviceNameFields } from "./DeviceNameFields.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./ServerSettingsModal.module.css";
 
@@ -419,6 +421,9 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
               </label>
             </div>
           </fieldset>
+
+          <DeviceNameFields />
+          <ChangeServerControl entryPath="/admin" />
         </div>
       ) : null}
 

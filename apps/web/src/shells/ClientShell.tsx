@@ -1,10 +1,19 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
+import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import {
   releaseScreenWakeLock,
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
 import { Button } from "@stagesync/ui";
+import { ChangeServerControl } from "./ChangeServerControl.js";
+import { DeviceNameFields } from "./DeviceNameFields.js";
+import {
+  DEVICE_DISPLAY_NAME_CHANGED_EVENT,
+  DEVICE_DISPLAY_NAME_MAX,
+  getStoredDeviceDisplayName,
+  setStoredDeviceDisplayName,
+} from "../lib/deviceNamePrefs.js";
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
   INSTRUMENT_PITCH_MANUAL_MIN,
@@ -84,8 +93,8 @@ const ROLES: { id: RoleId; label: string; icon: string }[] = [
 ];
 
 export function ClientShell() {
-  const [nameModal, setNameModal] = useState(true);
-  const [name, setName] = useState("");
+  const [nameModal, setNameModal] = useState(false);
+  const [name, setName] = useState(() => getStoredDeviceDisplayName() ?? "");
   const [nameDraft, setNameDraft] = useState("");
   const [picked, setPicked] = useState<RoleId[]>([]);
   const [started, setStarted] = useState(false);
@@ -154,10 +163,19 @@ export function ClientShell() {
   }, [activeProject?.id, state.activeProjectId]);
 
   useEffect(() => {
-    if (!started) return;
+    const onName = () => setName(getStoredDeviceDisplayName() ?? "");
+    window.addEventListener(DEVICE_DISPLAY_NAME_CHANGED_EVENT, onName);
+    return () => {
+      window.removeEventListener(DEVICE_DISPLAY_NAME_CHANGED_EVENT, onName);
+    };
+  }, []);
+
+  useEffect(() => {
+    const displayName = name.trim() || null;
+    if (!displayName) return;
     announcePresence({
-      displayName: name.trim() || null,
-      roles: picked,
+      displayName,
+      roles: started ? picked : [],
     });
   }, [started, name, picked, announcePresence]);
 
@@ -305,9 +323,13 @@ export function ClientShell() {
 
   function submitName(e: FormEvent) {
     e.preventDefault();
-    const n = nameDraft.trim() || "Gość";
-    setName(n);
-    setNameModal(false);
+    try {
+      const n = setStoredDeviceDisplayName(nameDraft);
+      setName(n);
+      setNameModal(false);
+    } catch {
+      /* keep modal open */
+    }
   }
 
   function toggleGlobalSettings() {
@@ -331,7 +353,9 @@ export function ClientShell() {
     nextSongPending: commandPending,
     transportError,
     onNextSong: () => void onNextSong(),
-    onFullscreen: () => void onFullscreen(),
+    onFullscreen: shouldShowFullscreenControl()
+      ? () => void onFullscreen()
+      : undefined,
     globalSettingsOpen: globalSettings,
     onToggleGlobalSettings: toggleGlobalSettings,
     onCloseGlobalSettings: () => setGlobalSettings(false),
@@ -349,20 +373,21 @@ export function ClientShell() {
           </div>
           <ConnectionLostBanner status={wsStatus} />
           <h1 id="name-title" className={styles.modalTitle}>
-            Witaj w StageSync
+            Zmień nazwę
           </h1>
-          <p className={styles.muted}>Podaj swoje imię lub nazwę tabletu.</p>
+          <p className={styles.muted}>Podaj swoje imię lub nazwę urządzenia.</p>
           <form onSubmit={submitName}>
             <input
               className={styles.input}
-              maxLength={40}
+              maxLength={DEVICE_DISPLAY_NAME_MAX}
               placeholder="np. Ania · saksofon"
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
               autoFocus
+              aria-label="Imię lub nazwa urządzenia"
             />
             <Button variant="primary" type="submit">
-              Dalej
+              Zapisz
             </Button>
           </form>
         </div>
@@ -730,7 +755,7 @@ type ClientHeaderProps = {
   nextSongPending: boolean;
   transportError: string | null;
   onNextSong: () => void;
-  onFullscreen: () => void;
+  onFullscreen?: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
   onCloseGlobalSettings: () => void;
@@ -823,9 +848,11 @@ function ClientChrome({
             </SettingsPopover>
           ) : null}
         </SettingsPopoverAnchor>
-        <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
-          <IconFullscreen />
-        </ShellIconButton>
+        {onFullscreen ? (
+          <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
+            <IconFullscreen />
+          </ShellIconButton>
+        ) : null}
       </div>
     </header>
   );
@@ -939,6 +966,8 @@ function GlobalSettingsFields({
       >
         Polskie nazwy sekcji
       </ShellSwitchRow>
+      <DeviceNameFields />
+      <ChangeServerControl entryPath="/client" />
     </>
   );
 }
