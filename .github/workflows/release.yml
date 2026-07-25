@@ -482,12 +482,34 @@ jobs:
             gh release upload "$TAG" "$f" -R "$REPO" --clobber
             echo "Uploaded $f"
           done
-          # Keep updater manifest URLs consistent if they still mention _en-US.
+          # Point latest.json Windows updater URLs at the friendly MSI asset
+          # (Tauri uploads _en-US.msi first; we delete it after rename, so the
+          # asset id in latest.json goes stale unless rewritten).
           if gh release download "$TAG" -R "$REPO" -p latest.json -D . 2>/dev/null; then
-            if grep -q '_en-US\.msi' latest.json; then
-              sed -i 's/_en-US\.msi/.msi/g' latest.json
+            MSI_NAME="StageSync_${{ env.VERSION }}_x64.msi"
+            MSI_ID=$(gh release view "$TAG" -R "$REPO" --json assets \
+              --jq ".assets[] | select(.name==\"$MSI_NAME\") | .apiUrl" \
+              | sed 's#.*/assets/##')
+            if [ -n "$MSI_ID" ]; then
+              NEW_URL="https://api.github.com/repos/${REPO}/releases/assets/${MSI_ID}"
+              python3 - "$NEW_URL" <<'PY'
+import json, pathlib, sys
+new_url = sys.argv[1]
+path = pathlib.Path("latest.json")
+data = json.loads(path.read_text())
+changed = False
+for key, platform in data.get("platforms", {}).items():
+    if "windows" in key and platform.get("url") != new_url:
+        platform["url"] = new_url
+        changed = True
+if changed:
+    path.write_text(json.dumps(data, indent=2) + "\n")
+print("latest.json windows url ->", new_url, "changed=", changed)
+PY
               gh release upload "$TAG" latest.json -R "$REPO" --clobber
-              echo "Updated latest.json MSI URLs"
+              echo "Updated latest.json MSI asset URLs"
+            else
+              echo "WARN: $MSI_NAME not found on release — latest.json unchanged"
             fi
           fi
 

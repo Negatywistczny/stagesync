@@ -59,7 +59,7 @@ writeFileSync(
 function run(version) {
   return spawnSync(process.execPath, [script, version, path], {
     encoding: "utf8",
-    env: { ...process.env, GITHUB_REPOSITORY: "Negatywistyczny/stagesync" },
+    env: { ...process.env, GITHUB_REPOSITORY: "Negatywistczny/stagesync" },
   });
 }
 
@@ -101,11 +101,11 @@ assert.match(
 );
 assert.match(
   ok.stdout,
-  /\[macOS \(Apple Silicon\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_aarch64\.dmg\)/,
+  /\[macOS \(Apple Silicon\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_aarch64\.dmg\)/,
 );
 assert.match(
   ok.stdout,
-  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x64\.msi\)/,
+  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x64\.msi\)/,
 );
 assert.doesNotMatch(ok.stdout, /StageSync 5\.1\.0 \(\.dmg\)/);
 assert.doesNotMatch(ok.stdout, /\| System \/ aplikacja \| Plik \|/);
@@ -173,15 +173,15 @@ assert.match(cue.stdout, /### 🚀 Highlights — Pocket Stage \(5\.2\.0\)/);
 assert.match(cue.stdout, /\| System operacyjny \| Plik instalacyjny \|/);
 assert.match(
   cue.stdout,
-  /\[macOS \(Apple Silicon\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync_5\.2\.0_aarch64\.dmg\)/,
+  /\[macOS \(Apple Silicon\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync_5\.2\.0_aarch64\.dmg\)/,
 );
 assert.match(
   cue.stdout,
-  /\|\s*🤖 \*\*Android\*\* \(Performer\) \| \[Performer \(\.apk\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync-Performer-v5\.2\.0\.apk\) \|/,
+  /\|\s*🤖 \*\*Android\*\* \(Performer\) \| \[Performer \(\.apk\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync-Performer-v5\.2\.0\.apk\) \|/,
 );
 assert.match(
   cue.stdout,
-  /\|\s*🤖 \*\*Android\*\* \(Console\) \| \[Console \(\.apk\)\]\(https:\/\/github\.com\/Negatywistyczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync-Console-v5\.2\.0\.apk\) \|/,
+  /\|\s*🤖 \*\*Android\*\* \(Console\) \| \[Console \(\.apk\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.2\.0\/StageSync-Console-v5\.2\.0\.apk\) \|/,
 );
 assert.match(
   cue.stdout,
