@@ -513,7 +513,7 @@ export function AdminShell() {
 
       {importModalOpen ? (
         <Modal
-          title="Import Ultimate Guitar"
+          title="Importuj Ultimate Guitar"
           onClose={() => {
             setImportModalOpen(false);
             setUgError(null);
@@ -834,10 +834,10 @@ function SongsView({
               </button>
             ))}
             {!library && !libraryError ? (
-              <p className={styles.muted}>Wczytywanie…</p>
+              <p className={styles.muted} role="status" aria-live="polite">Wczytywanie…</p>
             ) : null}
             {library && visibleProjects.length === 0 ? (
-              <p className={styles.muted}>Brak utworów dla filtra.</p>
+              <p className={styles.muted} role="status" aria-live="polite">Brak utworów dla filtra.</p>
             ) : null}
           </div>
 
@@ -1145,7 +1145,7 @@ function MusicXmlModal({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal title="Import MusicXML" onClose={onClose}>
+    <Modal title="Importuj MusicXML" onClose={onClose}>
       {!projectId ? (
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (

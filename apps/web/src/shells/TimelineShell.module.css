@@ -101,37 +101,8 @@
 }
 
 @media (max-width: 768px) {
-  .header {
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-      "brand actions"
-      "controls controls";
-  }
-
   .songCluster {
     justify-self: stretch;
-  }
-}
-
-.appJump {
-  display: flex;
-  gap: var(--ss-space-1);
-}
-
-.appJump a {
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border-radius: var(--ss-radius-sm);
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-medium);
-  text-decoration: none;
-}
-
-@media (hover: hover) {
-  .appJump a:hover {
-    transition: background-color var(--ss-transition), color var(--ss-transition);
-    color: var(--ss-color-primary);
-    background: var(--ss-color-ghost-hover);
   }
 }
 
@@ -161,8 +132,7 @@
   }
 }
 
-.songPicker:focus-visible,
-.appJump a:focus-visible {
+.songPicker:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: -2px;
 }
@@ -1908,38 +1878,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
-}
-
-.statusGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.statusLab {
-  font-size: var(--ss-text-xs);
-  color: var(--ss-color-text-muted);
-  letter-spacing: var(--ss-tracking-label);
-  text-transform: uppercase;
-}
-
-.statusVal {
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.statusMono {
-  font-variant-numeric: tabular-nums;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-.statusMuted {
-  color: var(--ss-color-text-muted);
-  font-weight: var(--ss-font-weight-regular);
 }
 
 .zooms {

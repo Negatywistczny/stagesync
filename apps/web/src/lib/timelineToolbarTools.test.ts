@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_TOOLBAR_VISIBLE,
+  isToolbarToolId,
   loadToolbarVisibleTools,
   normalizeToolbarVisible,
   saveToolbarVisibleTools,
@@ -9,6 +10,13 @@ import {
 } from "./timelineToolbarTools.js";
 
 describe("timelineToolbarTools", () => {
+  it("isToolbarToolId matches canonical tool ids", () => {
+    expect(isToolbarToolId("pointer")).toBe(true);
+    expect(isToolbarToolId("zoom")).toBe(true);
+    expect(isToolbarToolId("wand")).toBe(false);
+    expect(isToolbarToolId("")).toBe(false);
+  });
+
   it("normalize keeps stable order, drops unknown, forces pointer", () => {
     expect(normalizeToolbarVisible(["zoom", "bogus", "pencil"])).toEqual([
       "pointer",

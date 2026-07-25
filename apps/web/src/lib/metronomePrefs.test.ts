@@ -1,13 +1,16 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { FADER_GAIN_FLOOR_DB, FADER_TAPER_DB_MAX } from "@stagesync/shared";
 import {
   DEFAULT_METRONOME_PREFS,
   METRONOME_ACCENT_VOLUME_KEY,
   METRONOME_MASTER_GAIN_DB_KEY,
   METRONOME_ON_KEY,
   METRONOME_TIMBRE_KEY,
+  clampMasterClickGainDb,
   clampMetronomeVolume,
   getMetronomeOn,
   getMetronomePrefs,
+  isMetronomeTimbre,
   masterClickGainLinear,
   setMetronomeOn,
   setMetronomePrefs,
@@ -103,11 +106,25 @@ describe("metronomePrefs", () => {
     ).not.toThrow();
   });
 
-
   it("invalid timbre keeps current", () => {
     setMetronomePrefs({ timbre: "woodblock" });
     const next = setMetronomePrefs({ timbre: "nope" as never });
     expect(next.timbre).toBe("woodblock");
   });
 
+  it("isMetronomeTimbre allowlists known values", () => {
+    expect(isMetronomeTimbre("default")).toBe(true);
+    expect(isMetronomeTimbre("woodblock")).toBe(true);
+    expect(isMetronomeTimbre("bell")).toBe(true);
+    expect(isMetronomeTimbre("nope")).toBe(false);
+    expect(isMetronomeTimbre(null)).toBe(false);
+    expect(isMetronomeTimbre(1)).toBe(false);
+  });
+
+  it("clampMasterClickGainDb uses fader floor/ceil", () => {
+    expect(clampMasterClickGainDb(0)).toBe(0);
+    expect(clampMasterClickGainDb(Number.NaN)).toBe(FADER_GAIN_FLOOR_DB);
+    expect(clampMasterClickGainDb(-999)).toBe(FADER_GAIN_FLOOR_DB);
+    expect(clampMasterClickGainDb(999)).toBe(FADER_TAPER_DB_MAX);
+  });
 });
