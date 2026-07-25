@@ -37,4 +37,11 @@
     <string name="update_downloading">Pobieranie APK z hosta…</string>
     <string name="update_download_failed">Nie udało się pobrać APK: %1$s</string>
     <string name="update_need_permission">Zezwól na instalację z tej aplikacji, a następnie wróć — instalator uruchomi się ponownie.</string>
+    <string name="ui_apply_title">Zastosuj nowy interfejs</string>
+    <string name="ui_apply_message">Host ma inną wersję interfejsu (%1$s…) niż lokalna (%2$s…). Pobranie nie zainstaluje nowego APK — tylko odświeży UI w pamięci aplikacji. Nic nie pobierze się w tle bez Twojej zgody.</string>
+    <string name="ui_apply_action">Zastosuj nowy interfejs</string>
+    <string name="ui_apply_downloading">Pobieranie interfejsu z hosta…</string>
+    <string name="ui_apply_failed">Nie udało się zastosować interfejsu: %1$s</string>
+    <string name="ui_apply_done">Interfejs zaktualizowany</string>
+    <string name="ui_protocol_mismatch">Niezgodny protokół z hostem — tryb zdalny (lokalny bufor UI zachowany).</string>
 </resources>

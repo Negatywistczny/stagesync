@@ -16,18 +16,19 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).
 
 #### 🖥️ App Shell & UI
-- **PWA / Client:** manifest i Service Worker umożliwiają „Dodaj do ekranu głównego”; w aktywnym widoku roli Client prosi o Screen Wake Lock (ekran nie gaśnie w przeglądarce).
+- **PWA / Client:** manifest i Service Worker umożliwiają „Dodaj do ekranu głównego”; klucz cache SW jest powiązany z `uiHash` buildu (bez cache `/api`, `/ws`, `/downloads`); w aktywnym widoku roli Client prosi o Screen Wake Lock (ekran nie gaśnie w przeglądarce).
 - **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR na desktopie: tryby Dołącz | Performer | Console.
 - **Nazwa urządzenia:** przed Client / Admin / Timeline każde urządzenie bez zapisanej nazwy dostaje prompt „Podaj swoje imię lub nazwę urządzenia.”; ta nazwa widać na liście klientów (Scena) i da się ją zmienić w ustawieniach.
 
 #### ⚙️ Serwer & API
 - **Downloads:** host serwuje `GET /downloads/stagesync-performer.apk` i `…-console.apk` z katalogu downloads (404 z komunikatem, gdy artefakt nie leży na dysku).
+- **Health / UI sync:** `GET /api/health` zwraca `protocolVersion` i `uiHash` serwowanego interfejsu; `GET /api/ui-manifest` listę assetów; `GET /downloads/ui-bundle.zip` pełną paczkę UI do jawnej aktualizacji na Performer/Console.
 
 #### 📚 Dokumentacja
-- **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console, sideload, QR join vs QR APK, macierz HW (bez claim green).
+- **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console, sideload, QR join vs QR APK, Offline-First UI (dialog „Zastosuj”), macierz HW (bez claim green).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta; po połączeniu jawny dialog aktualizacji (**Pobierz i zainstaluj** / **Później**), gdy host ma nowszą wersję i APK jest dostępne — bez cichej aktualizacji w tle. Launcher: ciemny ekran z kartami serwerów z sieci (jedno dotknięcie), kafelkami **Skanuj kod QR** / **Ostatnie serwery** oraz ręcznym adresem na dole; **Skanuj kod QR** otwiera podgląd kamery (CameraX + ML Kit), rozpoznaje URL LAN hosta z QR „Dołącz” i łączy jak przy ręcznym adresie (wklejenie bez kamery nadal działa; jasne uzasadnienie uprawnienia Kamera po polsku); ikona i znak w launcherze to żółty romb z PWA (`pwa-icon`); wstecz w sesji idzie po historii strony, a **Zmień serwer** / **Dodaj serwer…** jest w ustawieniach Client / Admin (nie jako pływający przycisk nad WebView).
+- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta; po połączeniu jawny dialog aktualizacji APK (**Pobierz i zainstaluj** / **Później**), gdy host ma nowszą wersję i APK jest dostępne — bez cichej aktualizacji w tle. **Offline-First:** APK startuje z lokalnego UI (`assets/www`); przy innym `uiHash` na hoście jawny dialog **„Zastosuj nowy interfejs”** / **Później** (pobranie `ui-bundle.zip` do cache — nie instalacja APK); przy niezgodnym protokole tryb zdalny bez kasowania lokalnego bufora. Launcher: ciemny ekran z kartami serwerów z sieci (jedno dotknięcie), kafelkami **Skanuj kod QR** / **Ostatnie serwery** oraz ręcznym adresem na dole; **Skanuj kod QR** otwiera podgląd kamery (CameraX + ML Kit), rozpoznaje URL LAN hosta z QR „Dołącz” i łączy jak przy ręcznym adresie (wklejenie bez kamery nadal działa; jasne uzasadnienie uprawnienia Kamera po polsku); ikona i znak w launcherze to żółty romb z PWA (`pwa-icon`); wstecz w sesji idzie po historii strony, a **Zmień serwer** / **Dodaj serwer…** jest w ustawieniach Client / Admin (nie jako pływający przycisk nad WebView).
 - **Client / Admin (mobile):** przycisk **Pełny ekran** ukryty w powłoce Android (`StageSyncNative`) oraz w samodzielnym PWA na małym / touch ekranie — desktop i Tauri bez zmian.
 
 ### Zmieniono

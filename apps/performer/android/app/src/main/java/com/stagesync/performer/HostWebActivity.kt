@@ -7,22 +7,26 @@ import android.view.View
 import android.view.WindowManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewClientCompat
 import com.stagesync.performer.databinding.ActivityHostWebBinding
 import java.io.File
+import java.net.URI
 
 /**
- * Loads `{origin}/client` in a kiosk-ish WebView.
+ * Loads `{origin}/client` with Offline-First hybrid (#692):
+ * local assets via [WebViewAssetLoader] when available; Remote Mode on protocol mismatch
+ * (without wiping cache); explicit „Zastosuj nowy interfejs” when host uiHash differs.
  *
- * Dual wake-lock: [FLAG_KEEP_SCREEN_ON] here + PWA Screen Wake Lock API inside the SPA.
- * After load: optional explicit APK update dialog (never silent — ADR 0015 / 0016).
+ * APK update remains a separate explicit dialog (ADR 0015 / 0016) — never silent.
  */
 class HostWebActivity : AppCompatActivity() {
     companion object {
@@ -31,8 +35,12 @@ class HostWebActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHostWebBinding
     private var hostOrigin: String = ""
+    private var hostAuthority: String = ""
     private var updateDialogShown = false
+    private var uiDialogShown = false
+    private var remoteMode = false
     private var pendingApkFile: File? = null
+    private var assetLoader: WebViewAssetLoader? = null
 
     private val unknownSourcesLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -60,6 +68,15 @@ class HostWebActivity : AppCompatActivity() {
             return
         }
         hostOrigin = origin
+        hostAuthority =
+            try {
+                URI(origin).host ?: ""
+            } catch (_: Exception) {
+                ""
+            }
+
+        remoteMode = !LocalUiStore.hasLocalUi(this)
+        rebuildAssetLoader()
 
         val web = binding.webView
         web.settings.apply {
@@ -68,23 +85,34 @@ class HostWebActivity : AppCompatActivity() {
             mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         }
-        // Pull-to-refresh is browser chrome; WebView has no address bar — still block overscroll glow noise.
         web.overScrollMode = View.OVER_SCROLL_NEVER
         web.webChromeClient = WebChromeClient()
         web.webViewClient =
-            object : WebViewClient() {
+            object : WebViewClientCompat() {
                 override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    request: WebResourceRequest?,
+                    view: WebView,
+                    request: WebResourceRequest,
                 ): Boolean = false
+
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    request: WebResourceRequest,
+                ): WebResourceResponse? {
+                    if (remoteMode) return null
+                    val loader = assetLoader ?: return null
+                    val uri = request.url
+                    if (uri.host != null && uri.host != hostAuthority) return null
+                    return loader.shouldInterceptRequest(uri)
+                }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
+                    maybeCheckUiGate()
                     maybeCheckForApkUpdate()
                 }
             }
         web.addJavascriptInterface(NativeBridge(), "StageSyncNative")
-        web.loadUrl("$origin${ShellConfig.ENTRY_PATH}")
+        loadEntry()
 
         onBackPressedDispatcher.addCallback(
             this,
@@ -95,6 +123,106 @@ class HostWebActivity : AppCompatActivity() {
                     } else {
                         finish()
                     }
+                }
+            },
+        )
+    }
+
+    private fun rebuildAssetLoader() {
+        if (hostAuthority.isEmpty() || remoteMode) {
+            assetLoader = null
+            return
+        }
+        assetLoader =
+            WebViewAssetLoader.Builder()
+                .setDomain(hostAuthority)
+                .setHttpAllowed(true)
+                .addPathHandler("/", LocalUiStore.pathHandler(this))
+                .build()
+    }
+
+    private fun loadEntry() {
+        binding.webView.loadUrl("$hostOrigin${ShellConfig.ENTRY_PATH}")
+    }
+
+    private fun enterRemoteMode(reasonToast: Int? = null) {
+        // Keep local cache / assets — only stop intercepting.
+        remoteMode = true
+        assetLoader = null
+        reasonToast?.let {
+            Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+        }
+        loadEntry()
+    }
+
+    private fun maybeCheckUiGate() {
+        if (uiDialogShown || hostOrigin.isEmpty()) return
+        val localHash = LocalUiStore.readLocalUiHash(this)
+        UiSyncChecker.checkAsync(hostOrigin, localHash) { gate ->
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                when (gate) {
+                    is UiSyncChecker.Gate.ProtocolMismatch -> {
+                        if (!remoteMode) {
+                            enterRemoteMode(R.string.ui_protocol_mismatch)
+                        }
+                    }
+                    is UiSyncChecker.Gate.UiUpdateAvailable -> {
+                        if (uiDialogShown || remoteMode) return@runOnUiThread
+                        uiDialogShown = true
+                        showUiApplyDialog(gate)
+                    }
+                    UiSyncChecker.Gate.Ok -> Unit
+                }
+            }
+        }
+    }
+
+    private fun showUiApplyDialog(gate: UiSyncChecker.Gate.UiUpdateAvailable) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.ui_apply_title)
+            .setMessage(
+                getString(
+                    R.string.ui_apply_message,
+                    gate.hostUiHash.take(12),
+                    gate.localUiHash.take(12),
+                ),
+            )
+            .setPositiveButton(R.string.ui_apply_action) { _, _ ->
+                startUiBundleApply()
+            }
+            .setNegativeButton(R.string.update_later, null)
+            .setCancelable(true)
+            .show()
+    }
+
+    private fun startUiBundleApply() {
+        val progress =
+            AlertDialog.Builder(this)
+                .setMessage(R.string.ui_apply_downloading)
+                .setCancelable(false)
+                .create()
+        progress.show()
+        UiSyncChecker.downloadAndApplyAsync(
+            context = this,
+            origin = hostOrigin,
+            onError = { msg ->
+                runOnUiThread {
+                    progress.dismiss()
+                    Toast.makeText(
+                        this,
+                        getString(R.string.ui_apply_failed, msg),
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            },
+            onDone = {
+                runOnUiThread {
+                    progress.dismiss()
+                    remoteMode = false
+                    rebuildAssetLoader()
+                    Toast.makeText(this, R.string.ui_apply_done, Toast.LENGTH_SHORT).show()
+                    loadEntry()
                 }
             },
         )
@@ -187,10 +315,6 @@ class HostWebActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
     }
 
-    /**
-     * Bridge notes for dual wake-lock / update prompt / host picker.
-     * No secrets. Manual APK download only (no silent install).
-     */
     inner class NativeBridge {
         @android.webkit.JavascriptInterface
         fun shellKind(): String = "performer"
@@ -198,7 +322,6 @@ class HostWebActivity : AppCompatActivity() {
         @android.webkit.JavascriptInterface
         fun keepScreenOnNative(): Boolean = true
 
-        /** SPA settings → return to launcher host picker. */
         @android.webkit.JavascriptInterface
         fun changeServer() {
             runOnUiThread { finish() }

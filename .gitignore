@@ -54,6 +54,8 @@ apps/*/android/**/build/
 apps/*/android/**/*.apk
 apps/*/android/**/*.aab
 apps/*/android/.idea/
+# Generated Offline-First web bundle (#692) — filled by syncWebAssets / build-apk.sh
+apps/*/android/app/src/main/assets/www/
 
 # Tauri
 apps/desktop/src-tauri/gen/

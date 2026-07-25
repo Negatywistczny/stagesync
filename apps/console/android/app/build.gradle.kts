@@ -43,12 +43,30 @@ android {
     }
 }
 
+// Copy apps/web/dist → assets/www for Offline-First cold start (#692).
+val webDistDir = rootProject.projectDir.parentFile?.parentFile?.resolve("web/dist")
+val wwwAssetsDir = file("src/main/assets/www")
+
+tasks.register<Copy>("syncWebAssets") {
+    group = "stagesync"
+    description = "Copy apps/web/dist into assets/www (skip if dist missing)"
+    onlyIf { webDistDir != null && webDistDir!!.resolve("index.html").isFile }
+    from(webDistDir!!)
+    into(wwwAssetsDir)
+    exclude("ui-bundle.zip")
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("syncWebAssets")
+}
+
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.9.1")
+    implementation("androidx.webkit:webkit:1.11.0")
     implementation("androidx.camera:camera-camera2:1.3.4")
     implementation("androidx.camera:camera-lifecycle:1.3.4")
     implementation("androidx.camera:camera-view:1.3.4")

@@ -18,18 +18,18 @@ Operator sketch for Android sideload and PWA. Product names: **Performer** / **C
 2. Na Androidzie włącz „Instalacja z nieznanych źródeł” dla przeglądarki / menedżera plików.
 3. Zainstaluj `StageSync-Performer-vX.Y.Z.apk` lub `StageSync-Console-vX.Y.Z.apk`.
 
-Lokalny build (wymaga Android SDK + JDK 17):
+Lokalny build (wymaga Android SDK + JDK 17; **najpierw** build web — Gradle kopiuje `apps/web/dist` → `assets/www`):
 
 ```sh
-# Performer
-cd apps/performer/android && ./gradlew assembleDebug
-# artefakt: app/build/outputs/apk/debug/app-debug.apk
+# Performer (buduje @stagesync/web, potem APK)
+./apps/performer/scripts/build-apk.sh
+# artefakt: apps/performer/android/app/build/outputs/apk/debug/app-debug.apk
 
 # Console
-cd apps/console/android && ./gradlew assembleDebug
+./apps/console/scripts/build-apk.sh
 ```
 
-Skrypt pomocniczy: `apps/performer/scripts/build-apk.sh` (i analog w Console).
+`SKIP_WEB_BUILD=1` pomija Vite, gdy `apps/web/dist` jest już aktualne. CI musi mieć Node build przed `assemble*`.
 
 ## QR: dołącz vs pobierz APK
 
@@ -57,6 +57,25 @@ Po połączeniu z hostem powłoka porównuje własny `versionName` z `version` z
 - **Później** — zamknięcie dialogu; sesja WebView trwa bez zmian.
 
 **Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](./adr/0016-android-performer-console.md)).
+
+## Offline-First UI hybrid (#692)
+
+Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
+
+1. **Cold start:** APK zawiera `assets/www` (kopia `apps/web` dist). WebView ładuje `{origin}/client` lub `/admin`, a statyczne pliki serwuje `WebViewAssetLoader` z lokalnego drzewa (cache `filesDir/ui-cache` ma pierwszeństwo przed bundled www). `/api`, `/ws`, `/downloads` zawsze idą na host.
+2. **Protokół:** `GET /api/health` → `protocolVersion`. Mismatch z powłoką → **Remote Mode** (UI z hosta), **bez** kasowania lokalnego bufora.
+3. **Hash UI:** ten sam health → `uiHash`. Gdy host ma inny hash niż lokalny → dialog **„Zastosuj nowy interfejs”** / **„Później”** (nigdy cicho mid-set).
+4. **Zastosuj:** pobranie `GET /downloads/ui-bundle.zip`, rozpakowanie do `ui-cache`, przeładowanie z lokalnego drzewa. Manifest: `GET /api/ui-manifest`.
+5. **PWA SW:** klucz cache oparty o `uiHash`; nadal **nie** cache’uje `/api`, `/ws`, `/downloads`.
+
+**Follow-up (nie w MVP):** różnicowy delta / CacheStorage per-asset; binary zstd. Console **Faza 4** (embedded Node) — nadal OUT.
+
+### Smoke (ręczne) — UI apply
+
+1. Zainstaluj APK z bundled www (hash A).
+2. Uruchom host z nowszym web dist (hash B) i `STAGESYNC_STATIC_DIR` wskazującym na dist.
+3. Połącz → dialog „Zastosuj nowy interfejs” → **Zastosuj** → UI z cache; **Później** zostaje na lokalnym A.
+4. Symulacja mismatch protokołu (inny `PROTOCOL_VERSION` w powłoce) → toast Remote Mode, bufor lokalny nietknięty.
 
 ### Smoke (ręczne)
 
@@ -121,6 +140,7 @@ W launcherze Console przycisk jest widoczny jako niedostępny z tekstem OUT — 
 - Edycja Timeline / Mixer z **Performer**.
 - Stub UI „pobierz APK” bez pliku na hoście.
 - Ciche pobieranie / instalacja APK bez potwierdzenia operatora.
+- Cichy sync UI mid-set (bez dialogu „Zastosuj nowy interfejs”).
 
 ## Powiązane
 

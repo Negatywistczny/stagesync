@@ -29,5 +29,6 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] [#430](https://github.com/Negatywistyczny/stagesync/issues/430) Cues Sampler
 - [ ] [#437](https://github.com/Negatywistyczny/stagesync/issues/437) Safety Net (Master/Slave / failover)
 - [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console (Android):** PWA (`apps/web`) + powłoki Kotlin WebView (`apps/performer` → `/client`, `apps/console` → `/admin`); dystrybucja `.apk` z hosta `/downloads/…` / Releases — **bez** Google Play ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md)); lokalny host na Console = Faza 4
+- [ ] [#692](https://github.com/Negatywistyczny/stagesync/issues/692) **Offline-First UI hybrid (follow-up):** delta / CacheStorage per-asset po `ui-manifest` (MVP: full `ui-bundle.zip` + dialog „Zastosuj” już na main); bez cichego sync mid-set
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 - [ ] **Backup Przywróć** (Admin) — pełny restore + path picker FS *(backlog, nie decyzja OUT; dziś placeholder / katalog backupów w ustawieniach hosta)*
