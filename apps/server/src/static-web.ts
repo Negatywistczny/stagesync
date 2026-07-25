@@ -44,7 +44,11 @@ export function mountStaticWeb(app: Express, staticDir: string): void {
       next();
       return;
     }
-    if (req.path.startsWith("/api") || req.path.startsWith("/ws")) {
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/ws") ||
+      req.path.startsWith("/downloads")
+    ) {
       next();
       return;
     }

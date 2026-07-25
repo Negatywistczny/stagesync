@@ -1,0 +1,14 @@
+{
+  "name": "@stagesync/performer",
+  "version": "0.0.0",
+  "private": true,
+  "license": "BUSL-1.1",
+  "description": "StageSync Performer — Android WebView shell for /client (ADR 0016)",
+  "scripts": {
+    "build": "node -e \"console.log('@stagesync/performer: use ./scripts/build-apk.sh')\"",
+    "build:apk": "./scripts/build-apk.sh",
+    "check-types": "node -e \"process.exit(0)\"",
+    "lint": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\""
+  }
+}

@@ -21,6 +21,8 @@ import {
   fetchNetworkInfo,
   fetchSetlist,
   pickPrimaryJoinUrl,
+  apkDownloadUrlsFromJoin,
+  probeApkAvailable,
   postSystemRestart,
 } from "../lib/setlistApi.js";
 import { suppressAudioPlayback } from "../lib/audioPlayback.js";
@@ -74,8 +76,14 @@ function Modal({
 }
 
 function HostQrModal({ onClose }: { onClose: () => void }) {
+  type QrMode = "join" | "performer" | "console";
+  const [mode, setMode] = useState<QrMode>("join");
   const [urls, setUrls] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [performerUrl, setPerformerUrl] = useState<string | null>(null);
+  const [consoleUrl, setConsoleUrl] = useState<string | null>(null);
+  const [performerReady, setPerformerReady] = useState(false);
+  const [consoleReady, setConsoleReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -89,7 +97,20 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
         if (cancelled) return;
         const list = info.urls.length > 0 ? info.urls : [];
         setUrls(list);
-        setSelected(pickPrimaryJoinUrl(info) ?? list[0] ?? null);
+        const join = pickPrimaryJoinUrl(info) ?? list[0] ?? null;
+        setSelected(join);
+        const apk = join ? apkDownloadUrlsFromJoin(join) : null;
+        if (apk) {
+          setPerformerUrl(apk.performer);
+          setConsoleUrl(apk.console);
+          const [pOk, cOk] = await Promise.all([
+            probeApkAvailable(apk.performer),
+            probeApkAvailable(apk.console),
+          ]);
+          if (cancelled) return;
+          setPerformerReady(pOk);
+          setConsoleReady(cOk);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -105,10 +126,21 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
+  const activeUrl =
+    mode === "join"
+      ? selected
+      : mode === "performer"
+        ? performerReady
+          ? performerUrl
+          : null
+        : consoleReady
+          ? consoleUrl
+          : null;
+
   const qrSvg = useMemo(() => {
-    if (!selected) return null;
+    if (!activeUrl) return null;
     try {
-      return renderSVG(selected, {
+      return renderSVG(activeUrl, {
         ecc: "M",
         border: 2,
         pixelSize: 6,
@@ -116,11 +148,43 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
     } catch {
       return null;
     }
-  }, [selected]);
+  }, [activeUrl]);
+
+  const title =
+    mode === "join"
+      ? "Kod QR — dołącz do hosta"
+      : mode === "performer"
+        ? "Kod QR — pobierz Performer"
+        : "Kod QR — pobierz Console";
 
   return (
-    <Modal title="Kod QR — połączenie klientów" onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       <div className={styles.body}>
+        <div className={styles.modeRow} role="tablist" aria-label="Tryb QR">
+          {(
+            [
+              ["join", "Dołącz"],
+              ["performer", "Performer APK"],
+              ["console", "Console APK"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={mode === id}
+              className={[
+                styles.modeBtn,
+                mode === id ? styles.modeBtnSelected : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => setMode(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         {loading ? (
           <p className={styles.muted} role="status" aria-live="polite">
             Ładowanie adresów LAN…
@@ -131,19 +195,36 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
             {error}
           </p>
         ) : null}
-        {!loading && !error && urls.length === 0 ? (
+        {!loading && !error && mode === "join" && urls.length === 0 ? (
           <p className={styles.muted} role="status" aria-live="polite">
             Brak adresów LAN z hosta.
           </p>
         ) : null}
-        {selected && qrSvg ? (
+        {!loading &&
+        !error &&
+        mode === "performer" &&
+        !performerReady ? (
+          <p className={styles.muted} role="status">
+            Brak pliku Performer na hoście (
+            {performerUrl ?? "/downloads/stagesync-performer.apk"}). Umieść
+            artefakt w katalogu downloads albo pobierz z Releases.
+          </p>
+        ) : null}
+        {!loading && !error && mode === "console" && !consoleReady ? (
+          <p className={styles.muted} role="status">
+            Brak pliku Console na hoście (
+            {consoleUrl ?? "/downloads/stagesync-console.apk"}). Umieść artefakt
+            w katalogu downloads albo pobierz z Releases.
+          </p>
+        ) : null}
+        {activeUrl && qrSvg ? (
           <div
             className={styles.qrWrap}
-            aria-label={`Kod QR dla ${selected}`}
+            aria-label={`Kod QR dla ${activeUrl}`}
             dangerouslySetInnerHTML={{ __html: qrSvg }}
           />
         ) : null}
-        {urls.length > 0 ? (
+        {mode === "join" && urls.length > 0 ? (
           <ul className={styles.urlList} aria-label="Adresy sieciowe">
             {urls.map((url) => (
               <li key={url}>
@@ -164,9 +245,15 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
             ))}
           </ul>
         ) : null}
-        <p className={styles.muted}>
-          Zeskanuj kod telefonem / tabletem w tej samej sieci LAN.
-        </p>
+        {mode === "join" ? (
+          <p className={styles.muted}>
+            Zeskanuj kod telefonem / tabletem w tej samej sieci LAN (dołączenie).
+          </p>
+        ) : (
+          <p className={styles.muted}>
+            QR prowadzi do pliku APK na tym hoście (sideload, bez Google Play).
+          </p>
+        )}
       </div>
     </Modal>
   );

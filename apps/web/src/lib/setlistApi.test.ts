@@ -17,6 +17,9 @@ import {
   patchLiveDesk,
   patchSetlistAutoAdvance,
   pickPrimaryJoinUrl,
+  apkDownloadUrl,
+  apkDownloadUrlsFromJoin,
+  probeApkAvailable,
   postApplyHostUpdate,
   postMidiPanic,
   postSystemRestart,
@@ -469,5 +472,42 @@ describe("setlistApi", () => {
         version: "5",
       }),
     ).toBe("http://ok.example:4000");
+  });
+
+  it("apkDownloadUrl and apkDownloadUrlsFromJoin build host download paths", () => {
+    expect(apkDownloadUrl("http://10.0.0.2:4000", "performer")).toBe(
+      "http://10.0.0.2:4000/downloads/stagesync-performer.apk",
+    );
+    expect(apkDownloadUrl("http://10.0.0.2:4000/", "console")).toBe(
+      "http://10.0.0.2:4000/downloads/stagesync-console.apk",
+    );
+    expect(apkDownloadUrlsFromJoin("http://192.168.1.5:4000/admin")).toEqual({
+      performer: "http://192.168.1.5:4000/downloads/stagesync-performer.apk",
+      console: "http://192.168.1.5:4000/downloads/stagesync-console.apk",
+    });
+    expect(apkDownloadUrlsFromJoin("not-a-url")).toBeNull();
+  });
+
+  it("probeApkAvailable is true only on ok HEAD", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({ ok: true, status: 200 }),
+    );
+    await expect(
+      probeApkAvailable("http://x/downloads/stagesync-performer.apk"),
+    ).resolves.toBe(true);
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({ ok: false, status: 404 }),
+    );
+    await expect(
+      probeApkAvailable("http://x/downloads/stagesync-performer.apk"),
+    ).resolves.toBe(false);
+
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("offline")));
+    await expect(
+      probeApkAvailable("http://x/downloads/stagesync-performer.apk"),
+    ).resolves.toBe(false);
   });
 });

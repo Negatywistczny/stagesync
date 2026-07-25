@@ -118,3 +118,36 @@
   gap: var(--ss-space-2);
   justify-content: flex-end;
 }
+
+.modeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+}
+
+.modeBtn {
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text);
+  font: inherit;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  cursor: pointer;
+}
+
+.modeBtn:hover {
+  border-color: var(--ss-color-primary);
+}
+
+.modeBtnSelected {
+  border-color: var(--ss-color-primary);
+  background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+}
+
+.modeBtn:focus-visible {
+  outline: 2px solid var(--ss-color-primary);
+  outline-offset: 2px;
+}
+

@@ -15,6 +15,19 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🎛️ Audio / MIDI / Transport
 - **MIDI Host:** wybór kanału Program Change IN (Omni albo 1–16) i OUT w ustawieniach hosta; przy szybkiej serii PC silnik czeka 50 ms i bierze najnowszy komunikat (ochrona przed przypadkową zmianą utworu na współdzielonej magistrali).
 
+#### 🖥️ App Shell & UI
+- **PWA / Client:** manifest i Service Worker umożliwiają „Dodaj do ekranu głównego”; w aktywnym widoku roli Client prosi o Screen Wake Lock (ekran nie gaśnie w przeglądarce).
+- **Admin Host:** w karcie Sieć osobne QR/linki **Dołącz** oraz **Pobierz StageSync Performer / Console** (APK z hosta); gdy pliku brak — jasny pusty stan zamiast atrapy pobierania. Modal QR na desktopie: tryby Dołącz | Performer | Console.
+
+#### ⚙️ Serwer & API
+- **Downloads:** host serwuje `GET /downloads/stagesync-performer.apk` i `…-console.apk` z katalogu downloads (404 z komunikatem, gdy artefakt nie leży na dysku).
+
+#### 📚 Dokumentacja
+- **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console, sideload, QR join vs QR APK, macierz HW (bez claim green).
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Android:** sideload APK **StageSync Performer** i **StageSync Console** (Kotlin WebView; bez Google Play) — artefakty release + serwowanie z hosta.
+
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW

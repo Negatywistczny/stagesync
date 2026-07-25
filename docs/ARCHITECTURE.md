@@ -11,6 +11,7 @@
 | [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [ui-shell-inventory](./ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
+| [MOBILE.md](./MOBILE.md) | Performer / Console (Android sideload, QR, PWA) | Implementacja Kotlin (→ `apps/performer`, `apps/console`) |
 | [docs/analysis/](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
@@ -24,6 +25,8 @@
 |--------------|-------|------------------|
 | `apps/server` | Express (Node 20, `.nvmrc`) | API, persystencja, transport SSOT |
 | `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
+| `apps/performer` | Kotlin WebView | StageSync Performer → `/client` ([ADR 0016](./adr/0016-android-performer-console.md)) |
+| `apps/console` | Kotlin WebView | StageSync Console → `/admin` (thin; lokalny host = Faza 4) |
 | `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
 | `packages/ui` | React | Design system (`Button`, `--ss-*`) |
 | `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi |

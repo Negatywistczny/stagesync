@@ -43,6 +43,16 @@ data/library/*
 !data/library/seed-projects/**/*
 data/host/*
 !data/host/.gitkeep
+data/downloads/*
+!data/downloads/.gitkeep
+
+# Android shells (Performer / Console)
+apps/*/android/.gradle/
+apps/*/android/local.properties
+apps/*/android/**/build/
+apps/*/android/**/*.apk
+apps/*/android/**/*.aab
+apps/*/android/.idea/
 
 # Tauri
 apps/desktop/src-tauri/gen/

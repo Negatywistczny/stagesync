@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Trusted LAN hosts often use HTTP — intentional for StageSync LAN (no secrets in APK). -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

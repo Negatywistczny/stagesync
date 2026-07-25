@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.StageSyncPerformer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/ss_primary</item>
+        <item name="colorPrimaryVariant">@color/ss_primary</item>
+        <item name="colorOnPrimary">@color/ss_bg</item>
+        <item name="android:statusBarColor">@color/ss_bg</item>
+        <item name="android:navigationBarColor">@color/ss_bg</item>
+        <item name="android:windowBackground">@color/ss_bg</item>
+        <item name="android:textColor">@color/ss_text</item>
+    </style>
+</resources>

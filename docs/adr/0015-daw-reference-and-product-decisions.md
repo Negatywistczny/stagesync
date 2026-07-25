@@ -79,8 +79,8 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 
 | Temat | Decyzja |
 |-------|--------|
-| Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; pozycje implementacji = backlog |
-| `mobile-full` + sidecar | Późniejszy backlog |
+| Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; produkty: **Performer** (`apps/performer` → `/client`) i **Console** (`apps/console` → `/admin`); szczegóły shella → [ADR 0016](./0016-android-performer-console.md) |
+| Console + lokalny sidecar | Późniejszy backlog (Faza 4); MVP Console = thin-shell LAN |
 | Backup Przywróć (pełne GUI) | Backlog, nie decyzja OUT |
 | Auto-update bez operatora | **Permanentnie NIE** na scenie — zawsze akcja człowieka |
 | Pakiet projektu | MVP = `.stagesync.json` (na teraz) |

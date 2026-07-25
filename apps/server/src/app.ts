@@ -22,6 +22,7 @@ import { createTransportRouter } from "./routes/transport.js";
 import { sendError } from "./routes/errors.js";
 import { createStores, type Stores } from "./storage/index.js";
 import { defaultDataDir, resolveDataPaths } from "./storage/paths.js";
+import { mountApkDownloads } from "./downloads.js";
 import { mountStaticWeb, resolveStaticDir } from "./static-web.js";
 import {
   createTransportEngine,
@@ -212,6 +213,9 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   app.use("/api", (_req, res) => {
     res.status(404).json({ ok: false, error: "Not found" });
   });
+
+  // Sideload APKs (before SPA fallback so /downloads/* is never HTML).
+  mountApkDownloads(app, dataDir);
 
   const staticDir =
     options.staticDir === undefined ? resolveStaticDir() : options.staticDir;

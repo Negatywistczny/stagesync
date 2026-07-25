@@ -8,6 +8,8 @@ import {
   fetchMidiHostStatus,
   fetchHostUpdateStatus,
   pickPrimaryJoinUrl,
+  apkDownloadUrlsFromJoin,
+  probeApkAvailable,
   postApplyHostUpdate,
   type HostLogLine,
   type NetworkInfo,
@@ -48,6 +50,10 @@ export function SystemView({
   const [paused, setPaused] = useState(false);
   const [network, setNetwork] = useState<NetworkInfo | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
+  const [performerApkUrl, setPerformerApkUrl] = useState<string | null>(null);
+  const [consoleApkUrl, setConsoleApkUrl] = useState<string | null>(null);
+  const [performerApkReady, setPerformerApkReady] = useState(false);
+  const [consoleApkReady, setConsoleApkReady] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
@@ -77,7 +83,26 @@ export function SystemView({
     void (async () => {
       try {
         const n = await fetchNetworkInfo();
-        if (!cancelled) setNetwork(n);
+        if (cancelled) return;
+        setNetwork(n);
+        const join = pickPrimaryJoinUrl(n);
+        const apkUrls = join ? apkDownloadUrlsFromJoin(join) : null;
+        if (!apkUrls) {
+          setPerformerApkUrl(null);
+          setConsoleApkUrl(null);
+          setPerformerApkReady(false);
+          setConsoleApkReady(false);
+          return;
+        }
+        setPerformerApkUrl(apkUrls.performer);
+        setConsoleApkUrl(apkUrls.console);
+        const [perfOk, consOk] = await Promise.all([
+          probeApkAvailable(apkUrls.performer),
+          probeApkAvailable(apkUrls.console),
+        ]);
+        if (cancelled) return;
+        setPerformerApkReady(perfOk);
+        setConsoleApkReady(consOk);
       } catch (err) {
         if (!cancelled) {
           setNetworkError(err instanceof Error ? err.message : "Błąd sieci");
@@ -128,6 +153,31 @@ export function SystemView({
     }
   }, [primaryUrl]);
 
+  const performerQrSvg = useMemo(() => {
+    if (!performerApkReady || !performerApkUrl) return null;
+    try {
+      return renderSVG(performerApkUrl, {
+        ecc: "M",
+        border: 1,
+        pixelSize: 3,
+      });
+    } catch {
+      return null;
+    }
+  }, [performerApkReady, performerApkUrl]);
+
+  const consoleQrSvg = useMemo(() => {
+    if (!consoleApkReady || !consoleApkUrl) return null;
+    try {
+      return renderSVG(consoleApkUrl, {
+        ecc: "M",
+        border: 1,
+        pixelSize: 3,
+      });
+    } catch {
+      return null;
+    }
+  }, [consoleApkReady, consoleApkUrl]);
   const rateLabel = (n: number | undefined) =>
     n == null ? "—" : String(Math.round(n));
 
@@ -157,14 +207,15 @@ export function SystemView({
                     </p>
                     {primaryUrl && qrSvg ? (
                       <p className={shell.muted}>
-                        Zeskanuj QR telefonem / tabletem w tej samej sieci LAN.
+                        <strong>Dołącz do hosta</strong> — zeskanuj QR telefonem /
+                        tabletem w tej samej sieci LAN.
                       </p>
                     ) : null}
                   </div>
                   {primaryUrl && qrSvg ? (
                     <div
                       className={styles.qrWrap}
-                      aria-label={`Kod QR dla ${primaryUrl}`}
+                      aria-label={`Kod QR dołączenia: ${primaryUrl}`}
                       dangerouslySetInnerHTML={{ __html: qrSvg }}
                     />
                   ) : null}
@@ -192,6 +243,75 @@ export function SystemView({
                     </li>
                   ))}
                 </ul>
+                <div
+                  className={styles.apkSection}
+                  aria-label="Pobieranie aplikacji Android"
+                >
+                  <p className={shell.muted}>
+                    <strong>Pobierz APK</strong> (sideload, bez Google Play) —
+                    osobny kod od dołączenia do hosta.
+                  </p>
+                  <div className={styles.apkGrid}>
+                    <div className={styles.apkCard}>
+                      <h3 className={styles.apkTitle}>StageSync Performer</h3>
+                      <p className={shell.muted}>Klient sceniczny → /client</p>
+                      {performerApkReady && performerQrSvg && performerApkUrl ? (
+                        <>
+                          <div
+                            className={styles.qrWrap}
+                            aria-label={`Kod QR pobrania Performer: ${performerApkUrl}`}
+                            dangerouslySetInnerHTML={{ __html: performerQrSvg }}
+                          />
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              void navigator.clipboard.writeText(performerApkUrl);
+                            }}
+                          >
+                            Kopiuj link APK
+                          </Button>
+                        </>
+                      ) : (
+                        <p className={shell.muted} role="status">
+                          Brak pliku na hoście (
+                          {performerApkUrl ??
+                            "/downloads/stagesync-performer.apk"}
+                          ). Umieść artefakt w katalogu downloads albo pobierz z
+                          Releases — patrz dokumentacja Mobile.
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.apkCard}>
+                      <h3 className={styles.apkTitle}>StageSync Console</h3>
+                      <p className={shell.muted}>Admin / tablet FOH → /admin</p>
+                      {consoleApkReady && consoleQrSvg && consoleApkUrl ? (
+                        <>
+                          <div
+                            className={styles.qrWrap}
+                            aria-label={`Kod QR pobrania Console: ${consoleApkUrl}`}
+                            dangerouslySetInnerHTML={{ __html: consoleQrSvg }}
+                          />
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              void navigator.clipboard.writeText(consoleApkUrl);
+                            }}
+                          >
+                            Kopiuj link APK
+                          </Button>
+                        </>
+                      ) : (
+                        <p className={shell.muted} role="status">
+                          Brak pliku na hoście (
+                          {consoleApkUrl ??
+                            "/downloads/stagesync-console.apk"}
+                          ). Umieść artefakt w katalogu downloads albo pobierz z
+                          Releases — patrz dokumentacja Mobile.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </>
             ) : networkError ? null : (
               <p className={shell.muted}>Wczytywanie…</p>

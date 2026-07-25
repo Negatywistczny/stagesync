@@ -103,6 +103,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const startRaf = useCallback(() => {
     stopRaf();
+    // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
+    // Profile Grid/Karaoke @ 90–120 Hz on tablet BEFORE split context / throttle
+    // (docs/MOBILE.md § H-01; ADR 0015). Do not rewrite in the dark.
     const loop = (frameTime: number) => {
       if (!playingRef.current) {
         rafIdRef.current = 0;

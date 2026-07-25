@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
+import {
+  releaseScreenWakeLock,
+  requestScreenWakeLock,
+} from "../lib/screenWakeLock.js";
 import { Button } from "@stagesync/ui";
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
@@ -156,6 +160,33 @@ export function ClientShell() {
       roles: picked,
     });
   }, [started, name, picked, announcePresence]);
+
+  // Dual wake-lock (PWA): keep screen on while a role view is active.
+  useEffect(() => {
+    if (!started) return;
+    let sentinel: WakeLockSentinel | null = null;
+    let cancelled = false;
+    void (async () => {
+      sentinel = await requestScreenWakeLock();
+      if (cancelled && sentinel) {
+        await releaseScreenWakeLock(sentinel);
+        sentinel = null;
+      }
+    })();
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        void requestScreenWakeLock().then((s) => {
+          sentinel = s;
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVis);
+      void releaseScreenWakeLock(sentinel);
+    };
+  }, [started]);
 
   useEffect(() => {
     const onClock = () => {

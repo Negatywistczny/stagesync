@@ -238,6 +238,53 @@ export async function fetchNetworkInfo(): Promise<NetworkInfo> {
   return (await res.json()) as NetworkInfo;
 }
 
+export type ApkDownloadKind = "performer" | "console";
+
+const APK_FILENAMES: Record<ApkDownloadKind, string> = {
+  performer: "stagesync-performer.apk",
+  console: "stagesync-console.apk",
+};
+
+/** Absolute URL for sideload APK on the current host origin. */
+export function apkDownloadUrl(
+  origin: string,
+  kind: ApkDownloadKind,
+): string {
+  const base = origin.replace(/\/$/, "");
+  return `${base}/downloads/${APK_FILENAMES[kind]}`;
+}
+
+/**
+ * Build Performer / Console APK download URLs from a join URL (same host).
+ * Returns null when joinUrl cannot be parsed.
+ */
+export function apkDownloadUrlsFromJoin(
+  joinUrl: string,
+): { performer: string; console: string } | null {
+  try {
+    const origin = new URL(joinUrl).origin;
+    return {
+      performer: apkDownloadUrl(origin, "performer"),
+      console: apkDownloadUrl(origin, "console"),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** HEAD probe — true only when host has a non-empty APK artifact. */
+export async function probeApkAvailable(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+    if (res.ok) return true;
+    // Some proxies strip HEAD — fall back to ranged GET size check is overkill;
+    // treat non-OK as unavailable (honest empty-state).
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export type MidiPortInfo = {
   id: string;
   name: string;

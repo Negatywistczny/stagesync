@@ -7,6 +7,14 @@ import "./index.css";
 
 initAppearance();
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js").catch((err) => {
+      console.warn("[PWA] service worker registration failed", err);
+    });
+  });
+}
+
 window.addEventListener("unhandledrejection", (event) => {
   console.error("[UNHANDLED PROMISE REJECTION]", event.reason);
 });
