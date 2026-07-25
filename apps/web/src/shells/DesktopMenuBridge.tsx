@@ -32,7 +32,7 @@ import {
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import {
-  PreferencesModal,
+  ServerSettingsModal,
   type PreferencesTab,
 } from "./ServerSettingsModal.js";
 import styles from "./DesktopMenuBridge.module.css";
@@ -396,7 +396,7 @@ export function DesktopMenuBridge() {
         />
       ) : null}
       {prefsOpen ? (
-        <PreferencesModal
+        <ServerSettingsModal
           key={prefsTab}
           initialTab={prefsTab}
           onClose={() => setPrefsOpen(false)}
