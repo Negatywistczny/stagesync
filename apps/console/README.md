@@ -20,7 +20,7 @@ cd android && ./gradlew assembleDebug
 
 Gradle kopiuje **pełne SPA** `apps/web/dist-console` → `assets/www` (ABI: arm64-v8a + armeabi-v7a).
 
-Domyślnie `build-apk.sh` uruchamia `prepare-local-host.mjs` (libnode 16 KB–aligned + headers + server/web/seed + `android-boot.mjs`). Wymaga NDK 26 + CMake 3.22.1. Zip: digidem `v18.20.4` (nadpisanie `NODEJS_MOBILE_ZIP_URL`). Sideload: `versionCode` ≥ **50210** (`com.stagesync.console.debug`).
+Domyślnie `build-apk.sh` uruchamia `prepare-local-host.mjs` (libnode 16 KB–aligned + headers + server/web/seed + `android-boot.mjs`). Wymaga NDK 26 + CMake 3.22.1. Zip: digidem `v18.20.4` (nadpisanie `NODEJS_MOBILE_ZIP_URL`). Sideload: `versionCode` ≥ **50211** (`com.stagesync.console.debug`).
 
 ```sh
 node scripts/prepare-local-host.mjs              # pełny pack (domyślny)
