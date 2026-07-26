@@ -117,12 +117,12 @@ export interface DownloadCatalog {
 
 function helpFor(kind: DownloadKind): Pick<DownloadOffer, "helpLabel" | "installTab"> {
   if (kind === "windows") {
-    return { helpLabel: "Jak zainstalować na komputerze", installTab: "windows" };
+    return { helpLabel: "Jak zainstalować na Windows", installTab: "windows" };
   }
   if (kind === "macos-arm" || kind === "macos-x64") {
-    return { helpLabel: "Jak zainstalować na komputerze", installTab: "macos" };
+    return { helpLabel: "Jak zainstalować na Macu", installTab: "macos" };
   }
-  return { helpLabel: "Jak zainstalować na tablecie", installTab: "android" };
+  return { helpLabel: "Jak zainstalować na Androidzie", installTab: "android" };
 }
 
 function toOffer(kind: DownloadKind, url: string): DownloadOffer {

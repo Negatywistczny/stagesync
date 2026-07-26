@@ -106,18 +106,16 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (!root) return;
   root.replaceChildren();
 
-  const desktopHelp = { label: "Jak zainstalować na komputerze", tab: "macos" as const };
-  const tabletHelp = { label: "Jak zainstalować na tablecie", tab: "android" as const };
+  const desktopMacHelp = { label: "Jak zainstalować na Macu", tab: "macos" as const };
+  const desktopWinHelp = { label: "Jak zainstalować na Windows", tab: "windows" as const };
+  const androidHelp = { label: "Jak zainstalować na Androidzie", tab: "android" as const };
 
   const desktopCards: HTMLElement[] = [];
   if (catalog.desktop.windows) {
     desktopCards.push(renderCard(catalog.desktop.windows));
   } else {
     desktopCards.push(
-      renderUnavailable("Windows", "Aplikacja główna (stacja robocza)", "windows", {
-        label: desktopHelp.label,
-        tab: "windows",
-      }),
+      renderUnavailable("Windows", "Aplikacja główna (stacja robocza)", "windows", desktopWinHelp),
     );
   }
 
@@ -129,7 +127,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
     desktopCards.push(renderCard(catalog.desktop.macosIntel));
   } else {
     desktopCards.push(
-      renderUnavailable("macOS", "Aplikacja główna (stacja robocza)", "apple", desktopHelp),
+      renderUnavailable("macOS", "Aplikacja główna (stacja robocza)", "apple", desktopMacHelp),
     );
   }
 
@@ -145,12 +143,12 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (catalog.android.console) {
     androidCards.push(renderCard(catalog.android.console));
   } else {
-    androidCards.push(renderUnavailable("Console", "Realizator / Lider", "console", tabletHelp));
+    androidCards.push(renderUnavailable("Console", "Realizator / Lider", "console", androidHelp));
   }
   if (catalog.android.performer) {
     androidCards.push(renderCard(catalog.android.performer));
   } else {
-    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer", tabletHelp));
+    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer", androidHelp));
   }
 
   root.append(
