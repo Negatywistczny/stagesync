@@ -173,6 +173,8 @@ describe("system routes — network / logs / apply-update / settings edges", () 
         body: JSON.stringify({ target: "host" }),
       });
       expect(missing.status).toBe(501);
+      const missingBody = (await missing.json()) as { error?: string };
+      expect(missingBody.error ?? "").toMatch(/Watchtower|compose\.prod/i);
 
       stash("STAGESYNC_UPDATER_URL");
       stash("STAGESYNC_UPDATER_TOKEN");

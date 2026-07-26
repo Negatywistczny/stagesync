@@ -39,6 +39,7 @@ import {
   DOCS_RELEASES_URL,
 } from "../../lib/docsLinks.js";
 import { APP_VERSION } from "../../lib/appVersion.js";
+import { isNativeAndroidShell } from "../../lib/nativeShell.js";
 import { useMqMobile } from "../../lib/useMqMobile.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import shell from "../AdminShell.module.css";
@@ -661,6 +662,7 @@ function UpdatePanel({
   const [confirmDesktopUpdate, setConfirmDesktopUpdate] = useState(false);
   // Require real Tauri IPC — Android Console on :4000 matches isDesktopShell() without invoke.
   const inTauri = canUseDesktopUpdater();
+  const onAndroidConsole = isNativeAndroidShell();
 
   const handleCheck = useCallback(async () => {
     setChecking(true);
@@ -678,6 +680,16 @@ function UpdatePanel({
         }
         return;
       }
+      // Android Console WebView: APK updates, not Docker Watchtower.
+      if (onAndroidConsole) {
+        setHostStatus({
+          current: APP_VERSION,
+          latest: null,
+          updateAvailable: false,
+          error: null,
+        });
+        return;
+      }
       try {
         const host = await fetchHostUpdateStatus();
         setHostStatus(host);
@@ -688,7 +700,7 @@ function UpdatePanel({
     } finally {
       setChecking(false);
     }
-  }, [inTauri]);
+  }, [inTauri, onAndroidConsole]);
 
   useEffect(() => {
     if (!autoCheck) return;
@@ -749,7 +761,7 @@ function UpdatePanel({
           Aktualizacja hosta uruchomiona — połączenie wróci za chwilę.
         </p>
       ) : null}
-      {!inTauri && hostStatus ? (
+      {!inTauri && hostStatus && !onAndroidConsole ? (
         <div className={styles.updateRow}>
           <span className={shell.muted}>
             Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
@@ -765,6 +777,24 @@ function UpdatePanel({
             </Button>
           ) : null}
         </div>
+      ) : null}
+      {onAndroidConsole && hostStatus ? (
+        <p className={shell.muted}>
+          Console: v{hostStatus.current}. Aktualizacje to nowy APK — karta
+          Połączenie &amp; Sieć albo{" "}
+          <a
+            href={DOCS_RELEASES_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              void openExternalUrl(DOCS_RELEASES_URL);
+            }}
+          >
+            Releases
+          </a>
+          .
+        </p>
       ) : null}
       {inTauri && desktopStatus ? (
         <div className={styles.updateRow}>
@@ -789,7 +819,7 @@ function UpdatePanel({
           ) : null}
         </div>
       ) : null}
-      {!inTauri && hostStatus ? (
+      {!inTauri && !onAndroidConsole && hostStatus ? (
         <p className={shell.muted}>
           Desktop: pobierz instalator z{" "}
           <a

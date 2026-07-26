@@ -11,6 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Console (Android):** powiadomienie lokalnego hosta jest trwałe (nie da się go zrzucić gestem) — zatrzymanie tylko akcją **Zatrzymaj Host**, która bezpiecznie gasi silnik i zdejmuje foreground.
+- **Console (Android) — aktualizacje:** „Sprawdź aktualizacje” w Host nie sugeruje już Watchtower / `compose.prod.yml` — na tablecie aktualizacje to nowy APK (Releases / karta Połączenie & Sieć).
 
 ## [5.2.6](https://github.com/Negatywistyczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
 

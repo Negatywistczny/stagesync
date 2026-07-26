@@ -186,4 +186,39 @@ describe("GET /api/system/update-status", () => {
       await rm(dataDir, { recursive: true, force: true });
     }
   });
+
+  it("skips GitHub fetch in Android Console embedded host shell", async () => {
+    process.env.STAGESYNC_SHELL = "console";
+    const realFetch = globalThis.fetch;
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("api.github.com")) {
+        throw new Error("GitHub must not be contacted in console shell");
+      }
+      return realFetch(input, init);
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const dataDir = await mkdtemp(join(tmpdir(), "stagesync-update-console-"));
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await realFetch(`${baseUrl}/api/system/update-status`);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        latest: string | null;
+        updateAvailable: boolean;
+        error: string | null;
+        updateMode?: string;
+      };
+      expect(body.latest).toBeNull();
+      expect(body.updateAvailable).toBe(false);
+      expect(body.error).toBeNull();
+      expect(body.updateMode).toBe("apk");
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((err) => (err ? reject(err) : resolve()));
+      });
+      await rm(dataDir, { recursive: true, force: true });
+    }
+  });
 });

@@ -511,14 +511,17 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       return;
     }
 
-    // Desktop sidecar: app updates via Tauri updater; Watchtower/host GitHub
-    // check is Docker-only — skip noisy Releases fetch and soft-fail messaging.
-    if (process.env.STAGESYNC_SHELL === "desktop") {
+    // Desktop sidecar + Android Console embedded host: app/APK updates, not Watchtower.
+    // Skip noisy GitHub Releases fetch and Docker soft-fail messaging.
+    const shell = process.env.STAGESYNC_SHELL ?? "";
+    if (shell === "desktop" || shell === "console") {
       res.json({
         current: version,
         latest: null,
         updateAvailable: false,
         error: null,
+        updateChannel: process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable",
+        updateMode: shell === "console" ? "apk" : "desktop",
       });
       return;
     }
@@ -551,9 +554,16 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     const updaterToken = process.env.STAGESYNC_UPDATER_TOKEN;
 
     if (!updaterUrl || !updaterToken) {
+      const shell = process.env.STAGESYNC_SHELL ?? "";
+      const error =
+        shell === "console"
+          ? "Aktualizacja hosta Docker nie dotyczy Console na Androidzie. Zainstaluj nowszy APK (Releases / QR z karty Połączenie & Sieć)."
+          : shell === "desktop"
+            ? "Aktualizacja kontenera Docker nie dotyczy aplikacji desktopowej — użyj Sprawdź aktualizacje w launcherze."
+            : "Aktualizacja hosta niedostępna w tym trybie (brak Watchtower). W produkcji: compose.prod.yml.";
       res.status(501).json({
         ok: false,
-        error: "Host update unavailable (STAGESYNC_UPDATER_URL / STAGESYNC_UPDATER_TOKEN not set). Use compose.prod.yml.",
+        error,
       });
       return;
     }
