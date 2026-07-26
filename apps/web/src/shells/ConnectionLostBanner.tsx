@@ -29,6 +29,7 @@ export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
           type="button"
           variant="ghost"
           className={styles.action}
+          aria-label="Wróć do wyboru hosta w launcherze"
           onClick={() => {
             void returnToLauncher().catch(() => {
               /* best-effort — user can quit/reopen */
