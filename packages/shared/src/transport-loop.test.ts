@@ -34,4 +34,37 @@ describe("transport-loop", () => {
       normalizeLoop({ enabled: true, startTicks: 0, endTicks: 100 }),
     ).toEqual({ enabled: true, startTicks: 0, endTicks: 100 });
   });
+
+  it("normalizeLoop truncates floats and rejects non-finite / nullish", () => {
+    expect(normalizeLoop(null)).toBeNull();
+    expect(normalizeLoop(undefined)).toBeNull();
+    expect(
+      normalizeLoop({ enabled: 1 as unknown as boolean, startTicks: 1.9, endTicks: 4.2 }),
+    ).toEqual({ enabled: true, startTicks: 1, endTicks: 4 });
+    expect(
+      normalizeLoop({ enabled: false, startTicks: Number.NaN, endTicks: 10 }),
+    ).toBeNull();
+    expect(
+      normalizeLoop({
+        enabled: true,
+        startTicks: Number.POSITIVE_INFINITY,
+        endTicks: Number.POSITIVE_INFINITY,
+      }),
+    ).toBeNull();
+  });
+
+  it("isUsableLoop rejects nullish and non-integer bounds", () => {
+    expect(isUsableLoop(null)).toBe(false);
+    expect(isUsableLoop(undefined)).toBe(false);
+    expect(
+      isUsableLoop({ enabled: true, startTicks: 0.5, endTicks: 10 }),
+    ).toBe(false);
+  });
+
+  it("loopWrapTicks ignores unusable enabled loops", () => {
+    expect(
+      loopWrapTicks(100, { enabled: true, startTicks: 50, endTicks: 50 }),
+    ).toBeNull();
+    expect(loopWrapTicks(100, null)).toBeNull();
+  });
 });
