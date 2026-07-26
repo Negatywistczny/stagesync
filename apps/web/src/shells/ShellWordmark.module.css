@@ -60,6 +60,12 @@
   color: var(--ss-color-text-muted);
 }
 
+@media (max-width: 768px) {
+  .version {
+    display: none;
+  }
+}
+
 .wordmarkBtn:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: 2px;

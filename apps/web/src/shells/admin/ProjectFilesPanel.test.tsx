@@ -68,6 +68,28 @@ describe("ProjectFilesPanel empty, list, and delete aria", () => {
       expect(screen.getByLabelText("Pliki projektu")).toBeTruthy();
     });
     expect(screen.getByText("kick.wav")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Import plików" }),
+    ).toBeTruthy();
+  });
+
+  it("hides Import in section header when hideImport", async () => {
+    const project = createProjectSeed(
+      "song-1",
+      "Test Song",
+      "2026-07-26T00:00:00.000Z",
+    );
+    project.assets = [];
+    vi.mocked(fetchProject).mockResolvedValue(project);
+
+    render(<ProjectFilesPanel projectId="song-1" hideImport />);
+    await waitFor(() => {
+      expect(screen.getByRole("status").textContent).toMatch(
+        /Brak plików w projekcie/,
+      );
+    });
+    expect(screen.getByRole("heading", { name: "Pliki" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Import plików" })).toBeNull();
   });
 
   it("surfaces load errors as alerts", async () => {

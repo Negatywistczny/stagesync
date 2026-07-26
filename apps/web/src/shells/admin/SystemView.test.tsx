@@ -1,7 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../lib/desktopBridge.js", () => ({
@@ -74,6 +80,19 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.stubGlobal(
+    "matchMedia",
+    (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    }),
+  );
+  vi.stubGlobal(
     "EventSource",
     class {
       close() {}
@@ -129,5 +148,51 @@ describe("SystemView APK download aria", () => {
       expect(screen.getByText("http://stage.local:8787")).toBeTruthy();
     });
     expect(screen.getByText("http://192.168.1.10:8787")).toBeTruthy();
+  });
+
+  it("on mobile expands one Host card at a time", async () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("max-width"),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    }));
+
+    render(<SystemView statusMsg={null} />);
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Połączenie & Sieć/ }),
+      ).toBeTruthy();
+    });
+
+    const networkToggle = screen.getByRole("button", {
+      name: /Połączenie & Sieć/,
+    });
+    expect(networkToggle.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      screen.queryByRole("button", { name: "Pobierz APK StageSync Performer" }),
+    ).toBeTruthy();
+
+    act(() => {
+      screen.getByRole("button", { name: /Logi serwera/ }).click();
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Logi serwera/ }).getAttribute(
+          "aria-expanded",
+        ),
+      ).toBe("true");
+    });
+    expect(networkToggle.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      screen.queryByRole("button", { name: "Pobierz APK StageSync Performer" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Pobierz paczkę diagnostyki ZIP" }),
+    ).toBeTruthy();
   });
 });

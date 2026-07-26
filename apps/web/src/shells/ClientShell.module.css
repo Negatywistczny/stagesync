@@ -12,7 +12,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: flex;
   flex-direction: row;
@@ -301,7 +301,7 @@
   grid-template-rows: minmax(0, 1fr);
   gap: 0;
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   min-height: 0;
   height: 100%;
   overflow: hidden;
@@ -332,7 +332,7 @@
   position: absolute;
   top: var(--ss-space-2);
   right: var(--ss-space-2);
-  z-index: 5;
+  z-index: var(--ss-z-sticky);
   width: max-content;
 }
 
@@ -625,7 +625,7 @@
 
 .heroName {
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   margin: 0;
   font-size: var(--ss-text-stage-3xl);
   font-weight: var(--ss-font-weight-black);
@@ -655,7 +655,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--ss-z-grid);
   will-change: transform, opacity;
 }
 
@@ -665,7 +665,7 @@
 
 .heroChordFly {
   position: absolute;
-  z-index: 4;
+  z-index: var(--ss-z-playhead);
   pointer-events: none;
   transform-origin: center center;
   will-change: transform;
@@ -961,7 +961,7 @@
   background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent) !important;
   box-shadow: 0 0 24px color-mix(in srgb, var(--ss-color-primary) 22%, transparent);
   transform: scale(1.02);
-  z-index: 1;
+  z-index: var(--ss-z-lane);
 }
 
 .cycleCellCountdown.cycleCellActive {
@@ -1166,7 +1166,7 @@
   padding: var(--ss-space-6) var(--ss-space-4) var(--ss-space-3);
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: var(--ss-z-sticky);
   background: linear-gradient(
     to bottom,
     var(--ss-color-bg) 70%,

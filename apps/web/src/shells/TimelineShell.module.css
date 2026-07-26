@@ -189,7 +189,7 @@
 .toolbarCenter {
   grid-area: center;
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   justify-self: center;
   flex-wrap: nowrap;
   min-width: 0;
@@ -224,7 +224,7 @@
 .songCluster {
   grid-area: song;
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   justify-self: end;
   display: flex;
   flex-wrap: nowrap;
@@ -361,7 +361,7 @@
 
 .main {
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   flex: 1 1 auto;
   display: grid;
   grid-template-columns: 1fr minmax(200px, 240px);
@@ -419,6 +419,8 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  /* Local stacking root: sticky dock (--ss-z-sticky) vs markers (--ss-z-playhead). */
+  isolation: isolate;
 }
 
 .markerOverlay {
@@ -434,6 +436,7 @@
   top: 0;
   bottom: 0;
   pointer-events: none;
+  /* Below sticky dock rail/cells — never paint locator over the dock on H-scroll. */
   z-index: var(--ss-z-playhead);
   overflow: hidden;
 }
@@ -448,7 +451,7 @@
   background: var(--tl-playhead-line);
   pointer-events: none;
   opacity: 0.95;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
 }
 
 .playheadMidi::before {
@@ -473,7 +476,7 @@
   pointer-events: auto;
   cursor: col-resize;
   touch-action: none;
-  z-index: 2;
+  z-index: var(--ss-z-locator);
 }
 
 .locator::before {
@@ -551,7 +554,7 @@
   cursor: col-resize;
   touch-action: none;
   appearance: none;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
 }
 
 @media (hover: hover) {
@@ -640,7 +643,7 @@
   border-left: 2px solid var(--ss-color-warning);
   border-right: 2px solid var(--ss-color-warning);
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
 }
 
 .loopRegionOff {
@@ -670,8 +673,11 @@
   flex: 1 1 auto;
   /* No row gap — v4 dock/lanes share abutting rows; gutters let scrolled bar-grid peek. */
   min-height: 0;
-  /* Isolate sticky dock rail; avoid subpixel bleed from ancestor transforms. */
-  isolation: isolate;
+  /*
+   * Do NOT use isolation:isolate here — it trapped sticky dock under .markerOverlay
+   * (playhead z) so the locator painted over the dock on horizontal scroll.
+   * Sticky dock cells / rail use --ss-z-sticky and compete in .canvasBody.
+   */
 }
 
 .laneOverlay {
@@ -699,7 +705,8 @@
 .dockColumnRail {
   position: sticky;
   left: 0;
-  z-index: calc(var(--ss-z-sticky) - 1);
+  /* Same band as dock cells — above playhead/locator overlay. */
+  z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   align-self: flex-start;
   width: var(--tl-dock-w);
@@ -1206,7 +1213,7 @@
 }
 
 .mapSegmentSelected {
-  z-index: 2;
+  z-index: var(--ss-z-grid);
   outline: 2px solid var(--ss-color-selected-border);
   outline-offset: 1px;
   border-color: var(--ss-color-selected-border);
@@ -1216,7 +1223,7 @@
 
 .mapSegmentDragging {
   cursor: grabbing;
-  z-index: 2;
+  z-index: var(--ss-z-grid);
   border-color: var(--ss-color-selected-border);
   background: color-mix(in srgb, var(--ss-color-info) 24%, transparent);
   color: var(--ss-color-info);
@@ -1256,7 +1263,7 @@
   margin-left: -6px;
   pointer-events: auto;
   cursor: ew-resize;
-  z-index: 2;
+  z-index: var(--ss-z-grid);
   background: transparent;
 }
 
@@ -1274,7 +1281,7 @@
 /* Above subsection bands/ticks; none so boundary drag still works under text. */
 .formaClipLabel {
   position: relative;
-  z-index: 2;
+  z-index: var(--ss-z-grid);
   display: block;
   box-sizing: border-box;
   flex: 1 1 auto;
@@ -1433,7 +1440,7 @@
 /* Selected — outline/border only; no amber fill flood. */
 .clip.clipSelected,
 .clip.clipOn {
-  z-index: 2;
+  z-index: var(--ss-z-grid);
   outline: 2px solid var(--ss-color-selected-border);
   outline-offset: 1px;
   border-style: solid;
@@ -1734,7 +1741,7 @@
 
 .zooms {
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   display: flex;
   flex: 0 0 auto;
   flex-wrap: nowrap;
@@ -1888,7 +1895,7 @@
 }
 
 /*
- * Sheet + backdrop live inside `.main` (stacking context z-index: 1).
+ * Sheet + backdrop live inside `.main` (stacking context `--ss-z-lane`).
  * Without this, toolbar / status (z-sticky) paint over the drawer.
  */
 .shell[data-tl-tier="mobile"] .main:has(.inspectorOpen) {
@@ -2048,7 +2055,7 @@
 
 .overlayPanel {
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   width: min(28rem, calc(100vw - var(--ss-space-8)));
   max-height: min(80dvh, 40rem);
   overflow: auto;
@@ -2206,7 +2213,7 @@
 
 .audioClipLabel {
   position: relative;
-  z-index: 1;
+  z-index: var(--ss-z-lane);
   margin: auto 0 auto var(--ss-space-2);
   font-size: var(--ss-text-xs);
   font-weight: var(--ss-font-weight-semibold);

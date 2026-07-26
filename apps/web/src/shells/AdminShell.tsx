@@ -54,10 +54,7 @@ import {
   ShellConfirmDialog,
   ShellPromptDialog,
 } from "./ShellBlockingDialog.js";
-import {
-  ProjectFilesPanel,
-  type ProjectFilesPanelHandle,
-} from "./admin/ProjectFilesPanel.js";
+import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
 import { catalogSongBadges, songInspectorMeta } from "./admin/songCatalogBadges.js";
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
@@ -312,7 +309,9 @@ export function AdminShell() {
       <ConnectionLostBanner status={wsStatus} />
       <div className={styles.chromeWrap}>
         <header className={styles.chrome}>
-          <ShellWordmark suffix="Admin" version={APP_VERSION} />
+          <div className={styles.chromeBrand}>
+            <ShellWordmark suffix="Admin" version={APP_VERSION} />
+          </div>
 
           <nav className={styles.sections} aria-label="Sekcje">
             {SECTIONS.map((item) => (
@@ -327,17 +326,18 @@ export function AdminShell() {
             ))}
           </nav>
 
+          <nav className={styles.appJump} aria-label="Aplikacje">
+            {timelineProjectId ? (
+              <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
+            ) : (
+              <span className={styles.appJumpMuted} aria-disabled>
+                Timeline
+              </span>
+            )}
+            <Link to="/client">Klient</Link>
+          </nav>
+
           <div className={styles.chromeAside}>
-            <nav className={styles.appJump} aria-label="Aplikacje">
-              {timelineProjectId ? (
-                <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
-              ) : (
-                <span className={styles.appJumpMuted} aria-disabled>
-                  Timeline
-                </span>
-              )}
-              <Link to="/client">Klient</Link>
-            </nav>
             <ShellIconButton
               label="Ustawienia"
               onClick={() => openPreferences("general")}
@@ -700,7 +700,6 @@ function SongsView({
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
   const [dbMenuOpen, setDbMenuOpen] = useState(false);
   const [inspectorProject, setInspectorProject] = useState<Project | null>(null);
-  const filesPanelRef = useRef<ProjectFilesPanelHandle>(null);
   const dbMenuId = useId();
   const navigate = useNavigate();
 
@@ -960,71 +959,64 @@ function SongsView({
                   <IconTrash />
                 </ShellIconButton>
               </div>
-              <div className={styles.inspectorSecondary}>
-                <Button
-                  variant="secondary"
-                  disabled={locked}
-                  onClick={() => filesPanelRef.current?.openImport()}
-                >
-                  Import plików
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={locked}
-                  aria-label="Import MusicXML"
-                  title="Import MusicXML"
-                  onClick={onXml}
-                >
-                  XML
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={locked || !selected.hasMusicXml}
-                  title={
-                    selected.hasMusicXml
-                      ? "Ma MusicXML"
-                      : "Brak MusicXML — użyj XML"
-                  }
-                  aria-label={
-                    selected.hasMusicXml
-                      ? "Partytura — ma MusicXML"
-                      : "Partytura — brak MusicXML, użyj XML"
-                  }
-                  onClick={onXml}
-                >
-                  Partytura
-                </Button>
+              <div className={styles.songMetaBlock}>
+                <dl className={styles.songMetaGrid} aria-label="Metadane utworu">
+                  <div className={styles.songMetaCell}>
+                    <dt>Tonacja</dt>
+                    <dd>{inspectorMeta?.keyLabel ?? "—"}</dd>
+                  </div>
+                  <div className={styles.songMetaCell}>
+                    <dt>Tempo</dt>
+                    <dd>
+                      {inspectorMeta?.bpm != null
+                        ? `${Math.round(inspectorMeta.bpm)} BPM`
+                        : selected.defaultBpm != null
+                          ? `${Math.round(selected.defaultBpm)} BPM`
+                          : "—"}
+                    </dd>
+                  </div>
+                  <div className={styles.songMetaCell}>
+                    <dt>Czas</dt>
+                    <dd>
+                      {inspectorMeta?.durationLabel ??
+                        (selected.durationMs != null && selected.durationMs > 0
+                          ? formatSetDurationMs(selected.durationMs)
+                          : "—")}
+                    </dd>
+                  </div>
+                </dl>
+                <div className={styles.songMetaActions}>
+                  <Button
+                    variant="ghost"
+                    disabled={locked || !selected.hasMusicXml}
+                    title={
+                      selected.hasMusicXml
+                        ? "Ma MusicXML"
+                        : "Brak MusicXML — użyj XML"
+                    }
+                    aria-label={
+                      selected.hasMusicXml
+                        ? "Partytura — ma MusicXML"
+                        : "Partytura — brak MusicXML, użyj XML"
+                    }
+                    onClick={onXml}
+                  >
+                    Partytura
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    disabled={locked}
+                    aria-label="Import MusicXML"
+                    title="Import MusicXML"
+                    onClick={onXml}
+                  >
+                    XML
+                  </Button>
+                </div>
               </div>
-              <dl className={styles.songMetaGrid} aria-label="Metadane utworu">
-                <div className={styles.songMetaCell}>
-                  <dt>Tonacja</dt>
-                  <dd>{inspectorMeta?.keyLabel ?? "—"}</dd>
-                </div>
-                <div className={styles.songMetaCell}>
-                  <dt>Tempo</dt>
-                  <dd>
-                    {inspectorMeta?.bpm != null
-                      ? `${Math.round(inspectorMeta.bpm)} BPM`
-                      : selected.defaultBpm != null
-                        ? `${Math.round(selected.defaultBpm)} BPM`
-                        : "—"}
-                  </dd>
-                </div>
-                <div className={styles.songMetaCell}>
-                  <dt>Czas</dt>
-                  <dd>
-                    {inspectorMeta?.durationLabel ??
-                      (selected.durationMs != null && selected.durationMs > 0
-                        ? formatSetDurationMs(selected.durationMs)
-                        : "—")}
-                  </dd>
-                </div>
-              </dl>
               <ProjectFilesPanel
-                ref={filesPanelRef}
                 projectId={selectedId}
                 locked={locked}
-                hideImport
                 onProjectLoaded={setInspectorProject}
               />
             </div>

@@ -31,6 +31,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mixer:** Solo, Mute i kolor/ikona ścieżki mają etykiety z nazwą toru (czytelniej na czytniku ekranu i w podpowiedziach) (#798).
 
 #### 🖥️ App Shell & UI
+- **Admin (mobile):** górny pasek nie rozjeżdża się już przy zawijaniu — wordmark z ikonami w jednym rzędzie, zakładki Utwory/Set/Scena/Host w równej siatce, Timeline/Klient pod spodem.
 - **Admin / Host:** grupy MIDI In/Out i Clock OUT; etykiety pobierania APK i Releases; regiony Pliki bazy, Biblioteka i kolejność setlisty; „Usuń” / „Nowy z wzoru” / „Usuń komunikat” / „Dodaj zaznaczone” z kontekstem; stan Partytury MusicXML i import XML (#696, #712, #741, #751, #758, #763, #765, #786, #788, #806).
 - **Client / Launcher:** etykiety komórek cyklu akordów; dekoracyjne takty Formy; Połącz przy zmianie serwera; powrót do launchera po utracie połączenia; podgląd QR i kart hostów; pole PIN operatora (#698, #703, #704, #705, #711, #725).
 - **Admin Set:** czas setlisty z uszkodzonymi / nieliczbowymi wartościami pokazuje 0:00 zamiast pustki (#753).

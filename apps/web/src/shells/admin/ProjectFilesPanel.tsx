@@ -29,7 +29,7 @@ export type ProjectFilesPanelHandle = {
 type ProjectFilesPanelProps = {
   projectId: string | null;
   locked?: boolean;
-  /** When true, import control lives in the parent toolbar. */
+  /** When true, import control is omitted from the section header. */
   hideImport?: boolean;
   onProjectLoaded?: (project: Project) => void;
 };
@@ -139,7 +139,20 @@ export const ProjectFilesPanel = forwardRef<
 
   return (
     <div>
-      <h3 className={styles.subTitle}>Pliki projektu</h3>
+      <div className={styles.filesSectionHeader}>
+        <h3 className={styles.subTitle}>Pliki</h3>
+        {!hideImport ? (
+          <Button
+            variant="secondary"
+            disabled={busy || locked}
+            loading={busy}
+            aria-label="Import plików"
+            onClick={() => inputRef.current?.click()}
+          >
+            Import
+          </Button>
+        ) : null}
+      </div>
       {error ? (
         <p className={styles.error} role="alert">
           {error}
@@ -179,18 +192,6 @@ export const ProjectFilesPanel = forwardRef<
         hidden
         onChange={(e) => void onUpload(e.target.files?.[0])}
       />
-      {!hideImport ? (
-        <div className={styles.actions}>
-          <Button
-            variant="secondary"
-            disabled={busy || locked}
-            loading={busy}
-            onClick={() => inputRef.current?.click()}
-          >
-            Import audio / MusicXML…
-          </Button>
-        </div>
-      ) : null}
       <ShellConfirmDialog
         open={deleteAssetId != null}
         title="Usuń plik"
