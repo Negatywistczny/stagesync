@@ -27,6 +27,16 @@ describe("Field / Input", () => {
     expect(container.querySelector(".ss-select")).toBeTruthy();
     expect(container.querySelector(".ss-textarea")).toBeTruthy();
   });
+
+  it("surfaces field errors as alerts and hides hint", () => {
+    render(
+      <Field label="PIN" htmlFor="pin" hint="4 cyfry" error="Za krótki">
+        <Input id="pin" />
+      </Field>,
+    );
+    expect(screen.getByRole("alert").textContent).toBe("Za krótki");
+    expect(screen.queryByText("4 cyfry")).toBeNull();
+  });
 });
 
 describe("Badge", () => {
@@ -50,11 +60,39 @@ describe("SegmentedControl", () => {
         ]}
       />,
     );
+    expect(screen.getByRole("group", { name: "mode" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "A" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
     screen.getByRole("button", { name: "B" }).click();
     expect(onChange).toHaveBeenCalledWith("b");
+  });
+
+  it("honors disabled options and option aria-labels", () => {
+    const onChange = vi.fn();
+    render(
+      <SegmentedControl
+        value="live"
+        onChange={onChange}
+        options={[
+          { value: "live", label: "Live", "aria-label": "Tryb live" },
+          {
+            value: "edit",
+            label: "Edit",
+            disabled: true,
+            "aria-label": "Tryb edycji",
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Tryb live" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    const edit = screen.getByRole("button", { name: "Tryb edycji" });
+    expect(edit).toBeDisabled();
+    edit.click();
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
