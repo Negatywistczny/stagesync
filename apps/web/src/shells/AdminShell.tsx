@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Input, Select, Textarea } from "@stagesync/ui";
+import { Button, Input, Select } from "@stagesync/ui";
 import { MetaBadge, MetaBadgeRow, ShellToolbar } from "./shared/index.js";
 import {
   formatSetDurationMs,
+  applyUgImportToProject,
   importUgText,
+  placeContentFromForma,
+  reflowUgImportSectionBars,
   looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
@@ -61,6 +64,7 @@ import { catalogSongBadges, songInspectorMeta } from "./admin/songCatalogBadges.
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
 import { SystemView } from "./admin/SystemView.js";
+import { UgImportForm } from "./UgImportForm.js";
 import styles from "./AdminShell.module.css";
 
 type SectionId = "songs" | "set" | "stage" | "host";
@@ -88,8 +92,6 @@ export function AdminShell() {
   const [section, setSection] = useState<SectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [ugText, setUgText] = useState("");
-  const [ugError, setUgError] = useState<string | null>(null);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
   const [batchPcOpen, setBatchPcOpen] = useState(false);
   const [commandPending, setCommandPending] = useState(false);
@@ -533,79 +535,57 @@ export function AdminShell() {
           title="Importuj Ultimate Guitar"
           onClose={() => {
             setImportModalOpen(false);
-            setUgError(null);
           }}
         >
           {!selectedId ? (
             <p className={styles.muted}>Wybierz utwór.</p>
           ) : (
-            <>
-              <p className={styles.muted}>
-                Nadpisze lane Tekst i Akordy w „{selected?.name ?? selectedId}”.
-              </p>
-              {ugError ? (
-                <p className={styles.error} role="alert">
-                  {ugError}
-                </p>
-              ) : null}
-              <Textarea
-                rows={10}
-                value={ugText}
-                aria-label="Tekst UG"
-                placeholder={"[C]Hello [G]world"}
-                disabled={commandPending}
-                onChange={(e) => setUgText(e.target.value)}
-              />
-            </>
-          )}
-          <div className={styles.actions}>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setImportModalOpen(false);
-                setUgError(null);
-              }}
-            >
-              Anuluj
-            </Button>
-            <Button
-              variant="primary"
-              disabled={!selectedId || commandPending || !ugText.trim()}
-              loading={commandPending}
-              onClick={() => {
-                void (async () => {
-                  if (!selectedId) return;
-                  setCommandPending(true);
-                  setUgError(null);
-                  try {
-                    const project = await fetchProject(selectedId);
-                    const result = importUgText(ugText, {
-                      ppq: project.ppq,
-                      meter: resolveMeterAt(project, 0),
-                    });
-                    if (!result.ok) {
-                      setUgError(result.message);
-                      return;
-                    }
-                    await putProject(selectedId, {
-                      ...project,
-                      tekst: result.tekst,
-                      akordy: result.akordy,
-                    });
-                    setImportModalOpen(false);
-                    setUgText("");
-                    await refreshLibrary(selectedId);
-                  } catch (err) {
-                    setUgError(errMessage(err));
-                  } finally {
-                    setCommandPending(false);
+            <UgImportForm
+              hint={`Nadpisze Formę (bez Countdown), Tekst i Akordy w „${selected?.name ?? selectedId}”.`}
+              applyLabel="Importuj do utworu"
+              disabled={commandPending}
+              applying={commandPending}
+              onCancel={() => setImportModalOpen(false)}
+              onApply={async ({ text, barsPerLine, sectionBars, runWand }) => {
+                if (!selectedId) return;
+                setCommandPending(true);
+                try {
+                  const project = await fetchProject(selectedId);
+                  const meter = resolveMeterAt(project, 0);
+                  const parsed = importUgText(text, {
+                    ppq: project.ppq,
+                    meter,
+                    barsPerLine,
+                  });
+                  if (!parsed.ok) {
+                    throw new Error(parsed.message);
                   }
-                })();
+                  const reflowed = reflowUgImportSectionBars(parsed, sectionBars, {
+                    ppq: project.ppq,
+                    meter,
+                  });
+                  if (!reflowed.ok) {
+                    throw new Error(reflowed.message);
+                  }
+                  let next = applyUgImportToProject(project, reflowed);
+                  if (runWand) {
+                    const wand = placeContentFromForma(next, "both");
+                    if (wand.ok) next = wand.project;
+                  }
+                  await putProject(selectedId, next);
+                  setImportModalOpen(false);
+                  setActionNotice(
+                    runWand
+                      ? `Import UG: ${reflowed.sections.length} sekcji + Różdżka. Sprawdź w Timeline.`
+                      : `Import UG: ${reflowed.sections.length} sekcji — w Timeline Różdżka (W) po dopracowaniu Formy.`,
+                  );
+                  await refreshLibrary(selectedId);
+                } finally {
+                  setCommandPending(false);
+                }
               }}
-            >
-              Importuj do utworu
-            </Button>
-          </div>
+            />
+          )}
         </Modal>
       ) : null}
 

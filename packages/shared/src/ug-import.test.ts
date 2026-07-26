@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyUgImportToProject,
   canonicalizePolishH,
   clipsFromOnsets,
   importUgText,
+  reflowUgImportSectionBars,
   sealAkordyLengths,
   chordOnsetsInBar,
 } from "./ug-import.js";
@@ -179,6 +181,93 @@ Must be funny`;
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.message).toMatch(/walidacji schematu/);
+  });
+
+  it("builds Forma sections from blank lines and Verse/Chorus headers", () => {
+    const sample = `[Verse]
+C G
+hello world
+
+[Chorus]
+Am F
+sing along`;
+    const result = importUgText(sample);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.formaMusic.clips.map((c) => c.name)).toEqual([
+      "Verse",
+      "Chorus",
+    ]);
+    expect(result.sections).toHaveLength(2);
+    expect(result.sections[0]!.lyricLines).toBe(1);
+    expect(result.tekst.clips.every((c) => c.sourceSection)).toBe(true);
+    expect(result.tekst.clips[0]!.sourceSection).toBe("Verse");
+    expect(result.tekst.clips[1]!.sourceSection).toBe("Chorus");
+    expect(result.formaMusic.clips[0]!.startTicks).toBe(0);
+    expect(result.formaMusic.clips[1]!.startTicks).toBeGreaterThan(0);
+  });
+
+  it("names anonymous blank-separated blocks Sekcja N", () => {
+    const result = importUgText("[C]one\n\n[G]two");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.formaMusic.clips.map((c) => c.name)).toEqual([
+      "Sekcja 1",
+      "Sekcja 2",
+    ]);
+  });
+
+  it("applyUgImportToProject keeps countdown and replaces music Forma", () => {
+    const result = importUgText("[Verse]\n[C]hi");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const project = {
+      id: "p1",
+      name: "P",
+      ppq: 960,
+      tempoMap: [{ tick: 0, bpm: 120 }],
+      meterMap: [{ tick: 0, numerator: 4, denominator: 4 }],
+      forma: {
+        clips: [
+          {
+            id: "cd",
+            name: "CD",
+            startTicks: -3840,
+            lengthTicks: 3840,
+            kind: "countdown" as const,
+          },
+          {
+            id: "old",
+            name: "Old",
+            startTicks: 0,
+            lengthTicks: 3840,
+            kind: "section" as const,
+          },
+        ],
+      },
+      tekst: { clips: [] },
+      akordy: { clips: [] },
+      cue: { clips: [] },
+      score: { clips: [] },
+    };
+    const next = applyUgImportToProject(project as never, result);
+    expect(next.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
+    expect(next.forma.clips.some((c) => c.name === "Old")).toBe(false);
+    expect(next.forma.clips.some((c) => c.name === "Verse")).toBe(true);
+    expect(next.tekst.clips.length).toBeGreaterThan(0);
+  });
+
+  it("reflowUgImportSectionBars stretches Forma and scales content", () => {
+    const result = importUgText("[Verse]\n[C]hi\n\n[Chorus]\n[G]yo");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const reflowed = reflowUgImportSectionBars(result, [8, 4]);
+    expect(reflowed.ok).toBe(true);
+    if (!reflowed.ok) return;
+    expect(reflowed.formaMusic.clips[0]!.lengthTicks).toBe(8 * 3840);
+    expect(reflowed.formaMusic.clips[1]!.lengthTicks).toBe(4 * 3840);
+    expect(reflowed.formaMusic.clips[1]!.startTicks).toBe(8 * 3840);
+    expect(reflowed.sections.map((s) => s.estimatedBars)).toEqual([8, 4]);
   });
 });
 

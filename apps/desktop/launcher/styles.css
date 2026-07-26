@@ -4,6 +4,12 @@
   box-sizing: border-box;
 }
 
+/* Author display:flex/inline-flex (e.g. .row, .ss-btn) beats UA [hidden];
+   without this, idle launcher still shows „Wyczyść błąd” / diagnostic CTAs. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;

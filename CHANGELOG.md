@@ -5,6 +5,19 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### ⏱️ Timeline & DAW
+- **Różdżka:** z powrotem zawsze na pasku narzędzi Timeline (poza menu T); skrót W + 1/2/3 bez zmian.
+- **Import UG:** podgląd sekcji przed zapisem; edytowalne takty każdej sekcji; opcjonalna Różdżka zaraz po imporcie (Tekst+Akordy → Forma). Puste linie i [Verse]/[Chorus] budują Formę; Countdown bez zmian.
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher:** „Wyczyść błąd” i „Pobierz logi diagnostyczne” znikają przy braku błędu hosta (CSS `hidden` nie przegrywa już z `display: flex` wiersza przycisków).
+
 ## [5.2.8](https://github.com/Negatywistczny/stagesync/compare/v5.2.7...v5.2.8) - 2026-07-26
 
 ### Dodano

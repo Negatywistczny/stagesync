@@ -1,0 +1,113 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+}
+
+.hint {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}
+
+.error {
+  margin: 0;
+  color: var(--ss-color-danger);
+  font-size: var(--ss-text-sm);
+}
+
+.barsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-3);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text);
+}
+
+.barsRow input {
+  width: calc(var(--ss-space-16) + var(--ss-space-4));
+}
+
+.preview {
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  padding: var(--ss-space-3);
+  background: var(--ss-color-surface);
+}
+
+.previewTitle {
+  margin: 0 0 var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.sectionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+  line-height: var(--ss-leading-normal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+}
+
+.sectionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+}
+
+.sectionMeta {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sectionBars {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  flex: 0 0 auto;
+}
+
+.sectionBars input {
+  width: calc(var(--ss-space-16) + var(--ss-space-2));
+}
+
+.wandCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-3);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text);
+  cursor: pointer;
+}
+
+.wandCheck input {
+  margin-top: var(--ss-space-1);
+  flex: 0 0 auto;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ss-space-2);
+}

@@ -1,10 +1,11 @@
 /**
- * Ultimate Guitar / ChordPro-lite import → Tekst + Akordy clips (α8).
+ * Ultimate Guitar / ChordPro-lite import → Forma sections + Tekst + Akordy (V5).
  *
- * Parity with legacy `parseUgTabLinesToGrid`:
- * - Chord line + lyric line = **one bar** (default), chords distributed inside the bar
+ * Parity with legacy line timing:
+ * - Chord line + lyric line = **barsPerLine** bars (default 1), chords in first bar
  * - Clip length = ticks until next onset (not 1 bar per chord)
  *
+ * Sections: blank lines and Verse/Chorus-style headers → Forma music clips.
  * Fail-soft: returns Result — never throws for bad user input.
  */
 
@@ -12,8 +13,11 @@ import { z } from "zod";
 import { toLiteralStorage } from "./chord-display.js";
 import {
   AkordClipSchema,
+  FormaClipSchema,
   TekstClipSchema,
   type AkordClip,
+  type FormaClip,
+  type Project,
   type TekstClip,
 } from "./schema.js";
 import { DEFAULT_PPQ, ticksPerBar, type TimeSignature } from "./time.js";
@@ -21,12 +25,24 @@ import { DEFAULT_PPQ, ticksPerBar, type TimeSignature } from "./time.js";
 const UgImportPayloadSchema = z.object({
   tekst: z.object({ clips: z.array(TekstClipSchema) }),
   akordy: z.object({ clips: z.array(AkordClipSchema) }),
+  formaMusic: z.object({ clips: z.array(FormaClipSchema) }),
 });
+
+export type UgSectionPreview = {
+  name: string;
+  lyricLines: number;
+  chordCount: number;
+  estimatedBars: number;
+};
 
 export type UgImportOk = {
   ok: true;
   tekst: { clips: TekstClip[] };
   akordy: { clips: AkordClip[] };
+  /** Music Forma sections only (no countdown). */
+  formaMusic: { clips: FormaClip[] };
+  sections: UgSectionPreview[];
+  barsPerLine: number;
 };
 
 export type UgImportErr = {
@@ -37,7 +53,7 @@ export type UgImportErr = {
 
 /**
  * Discriminated result of Ultimate Guitar / ChordPro-lite import.
- * Success carries sealed Tekst + Akordy clip lists ready to merge into a Project;
+ * Success carries Forma + Tekst + Akordy ready to merge into a Project;
  * failure never throws — use `message` for UI.
  */
 export type UgImportResult = UgImportOk | UgImportErr;
@@ -58,6 +74,9 @@ export type UgImportOptions = {
  */
 const CHORD_TOKEN =
   /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]+\))?(?:\/[A-H](?:#|b)?)?$/i;
+
+const SECTION_BRACKET =
+  /^\[(Verse|Chorus|Bridge|Intro|Outro|Pre-?Chorus|Solo|Instrumental|Interlude|Tag|Ending|Hook|Refrain|Coda|Break|Prechorus)(?:\s*\d*)?\]$/i;
 
 /**
  * Polish H → Western B for storage (transpose / Client hybridPolishB).
@@ -211,8 +230,74 @@ export function sealAkordyLengths(clips: AkordClip[]): AkordClip[] {
   });
 }
 
+type RawSection = { name: string | null; lines: string[] };
+
+function parseSectionHeader(line: string): string | null {
+  const bracket = line.match(SECTION_BRACKET);
+  if (bracket?.[1]) {
+    return bracket[1].replace(/prechorus/i, "Pre-Chorus");
+  }
+  if (/^\[[^\]]+\]$/.test(line) && !extractBracketChords(line).length) {
+    const inner = line.slice(1, -1).trim();
+    if (inner && !CHORD_TOKEN.test(inner)) return inner.slice(0, 120);
+  }
+  const meta = line.match(/^\{(?:comment|c)\s*:\s*(.+)\}$/i);
+  if (meta?.[1]) return meta[1].trim().slice(0, 120);
+  const startOf = line.match(/^\{start_of_([a-z_]+)(?:\s*:\s*(.+))?\}$/i);
+  if (startOf?.[1]) {
+    const kind = startOf[1].replace(/_/g, " ");
+    const label = startOf[2]?.trim();
+    const title = label || kind.replace(/\b\w/g, (c) => c.toUpperCase());
+    return title.slice(0, 120);
+  }
+  return null;
+}
+
+function isSkipMetaDirective(line: string): boolean {
+  if (!(line.startsWith("{") && line.endsWith("}"))) return false;
+  if (parseSectionHeader(line)) return false;
+  return true;
+}
+
+/** Split raw text into named section buckets (blank line / headers). */
+export function splitUgSections(raw: string): RawSection[] {
+  const out: RawSection[] = [];
+  let current: RawSection = { name: null, lines: [] };
+
+  const flush = () => {
+    if (current.lines.length > 0 || current.name) {
+      out.push(current);
+    }
+    current = { name: null, lines: [] };
+  };
+
+  for (const lineRaw of raw.split("\n")) {
+    const line = lineRaw.trim();
+    if (!line) {
+      if (current.lines.length > 0 || current.name) flush();
+      continue;
+    }
+    if (isSkipMetaDirective(line)) continue;
+    const header = parseSectionHeader(line);
+    if (header) {
+      if (current.lines.length > 0 || current.name) flush();
+      current = { name: header, lines: [] };
+      continue;
+    }
+    current.lines.push(line);
+  }
+  flush();
+  return out.filter((s) => s.lines.length > 0);
+}
+
+function defaultSectionName(index: number, named: string | null): string {
+  const n = named?.trim();
+  if (n) return n.slice(0, 120);
+  return `Sekcja ${index + 1}`;
+}
+
 /**
- * Parse UG-style / ChordPro-lite text into Tekst + Akordy clips.
+ * Parse UG-style / ChordPro-lite text into Forma + Tekst + Akordy.
  * Empty / garbage → `{ ok: false, message }` (Polish).
  */
 export function importUgText(
@@ -252,110 +337,145 @@ export function importUgText(
     const floor = options.contentFloorTicks ?? 0;
     const prefix = options.idPrefix ?? "ug";
 
-    const tekstClips: TekstClip[] = [];
-    const akordClips: AkordClip[] = [];
-    let cursor = floor;
-    let seq = 0;
-    let pendingChords: string[] = [];
-    let sawContent = false;
-
-    const flushChordsAtCursor = (
-      symbols: string[],
-      sourceLineId?: string,
-    ) => {
-      const list = dedupeConsecutive(symbols);
-      if (!list.length) return;
-      const spanStart = cursor;
-      const spanEnd = cursor + lineTicks;
-      // Place chord onsets in the **first** bar of the line span (legacy).
-      const onsets = chordOnsetsInBar(
-        list.length,
-        spanStart,
-        barTicks,
-        beatsPerBar,
-        ticksPerBeat,
-      );
-      const placed = clipsFromOnsets(
-        list,
-        onsets,
-        spanEnd,
-        prefix,
-        seq,
-        sourceLineId,
-      );
-      seq = placed.nextSeq;
-      akordClips.push(...placed.clips);
-      cursor = spanEnd;
-    };
-
-    const lines = raw.split("\n");
-    for (const lineRaw of lines) {
-      const line = lineRaw.trim();
-      if (!line) continue;
-      if (line.startsWith("{") && line.endsWith("}")) continue;
-      if (/^\[[^\]]+\]$/.test(line) && !extractBracketChords(line).length) {
-        continue;
-      }
-
-      const bracketChords = extractBracketChords(line);
-      const lyric = stripBracketChords(line);
-
-      if (bracketChords.length && lyric) {
-        sawContent = true;
-        const chords = dedupeConsecutive([...pendingChords, ...bracketChords]);
-        pendingChords = [];
-        const lineStart = cursor;
-        const tekstId = `${prefix}-tekst-${++seq}`;
-        if (chords.length) {
-          flushChordsAtCursor(chords, tekstId);
-        } else {
-          cursor += lineTicks;
-        }
-        tekstClips.push({
-          id: tekstId,
-          startTicks: lineStart,
-          lengthTicks: lineTicks,
-          text: lyric,
-        });
-        continue;
-      }
-
-      if (bracketChords.length && !lyric) {
-        pendingChords.push(...bracketChords);
-        continue;
-      }
-
-      if (isChordOnlyLine(line)) {
-        pendingChords.push(...parseChordOnlyLine(line));
-        continue;
-      }
-
-      if (lyric) {
-        sawContent = true;
-        const chords = pendingChords.length
-          ? dedupeConsecutive(pendingChords)
-          : [];
-        pendingChords = [];
-        const lineStart = cursor;
-        const tekstId = `${prefix}-tekst-${++seq}`;
-        if (chords.length) {
-          flushChordsAtCursor(chords, tekstId);
-        } else {
-          cursor += lineTicks;
-        }
-        tekstClips.push({
-          id: tekstId,
-          startTicks: lineStart,
-          lengthTicks: lineTicks,
-          text: lyric,
-        });
-      }
+    const buckets = splitUgSections(raw);
+    if (buckets.length === 0) {
+      return {
+        ok: false,
+        message:
+          "Nie rozpoznano akordów ani tekstu — sprawdź format UG / ChordPro.",
+      };
     }
 
-    if (pendingChords.length) {
-      sawContent = true;
-      flushChordsAtCursor(pendingChords);
-      pendingChords = [];
+    const tekstClips: TekstClip[] = [];
+    const akordClips: AkordClip[] = [];
+    const formaClips: FormaClip[] = [];
+    const sectionPreview: UgSectionPreview[] = [];
+    let cursor = floor;
+    let seq = 0;
+    let sawContent = false;
+
+    for (let si = 0; si < buckets.length; si++) {
+      const bucket = buckets[si]!;
+      const sectionName = defaultSectionName(si, bucket.name);
+      const sectionStart = cursor;
+      let pendingChords: string[] = [];
+      let lyricLines = 0;
+      let chordCount = 0;
+
+      const flushChordsAtCursor = (
+        symbols: string[],
+        sourceLineId?: string,
+      ) => {
+        const list = dedupeConsecutive(symbols);
+        if (!list.length) return;
+        chordCount += list.length;
+        const spanStart = cursor;
+        const spanEnd = cursor + lineTicks;
+        const onsets = chordOnsetsInBar(
+          list.length,
+          spanStart,
+          barTicks,
+          beatsPerBar,
+          ticksPerBeat,
+        );
+        const placed = clipsFromOnsets(
+          list,
+          onsets,
+          spanEnd,
+          prefix,
+          seq,
+          sourceLineId,
+        );
+        seq = placed.nextSeq;
+        akordClips.push(...placed.clips);
+        cursor = spanEnd;
+      };
+
+      for (const line of bucket.lines) {
+        const bracketChords = extractBracketChords(line);
+        const lyric = stripBracketChords(line);
+
+        if (bracketChords.length && lyric) {
+          sawContent = true;
+          lyricLines += 1;
+          const chords = dedupeConsecutive([...pendingChords, ...bracketChords]);
+          pendingChords = [];
+          const lineStart = cursor;
+          const tekstId = `${prefix}-tekst-${++seq}`;
+          if (chords.length) {
+            flushChordsAtCursor(chords, tekstId);
+          } else {
+            cursor += lineTicks;
+          }
+          tekstClips.push({
+            id: tekstId,
+            startTicks: lineStart,
+            lengthTicks: lineTicks,
+            text: lyric,
+            sourceSection: sectionName,
+          });
+          continue;
+        }
+
+        if (bracketChords.length && !lyric) {
+          pendingChords.push(...bracketChords);
+          continue;
+        }
+
+        if (isChordOnlyLine(line)) {
+          pendingChords.push(...parseChordOnlyLine(line));
+          continue;
+        }
+
+        if (lyric) {
+          sawContent = true;
+          lyricLines += 1;
+          const chords = pendingChords.length
+            ? dedupeConsecutive(pendingChords)
+            : [];
+          pendingChords = [];
+          const lineStart = cursor;
+          const tekstId = `${prefix}-tekst-${++seq}`;
+          if (chords.length) {
+            flushChordsAtCursor(chords, tekstId);
+          } else {
+            cursor += lineTicks;
+          }
+          tekstClips.push({
+            id: tekstId,
+            startTicks: lineStart,
+            lengthTicks: lineTicks,
+            text: lyric,
+            sourceSection: sectionName,
+          });
+        }
+      }
+
+      if (pendingChords.length) {
+        sawContent = true;
+        flushChordsAtCursor(pendingChords);
+        pendingChords = [];
+      }
+
+      if (cursor <= sectionStart) {
+        continue;
+      }
+      formaClips.push({
+        id: `${prefix}-forma-${si + 1}`,
+        name: sectionName,
+        startTicks: sectionStart,
+        lengthTicks: Math.max(1, cursor - sectionStart),
+        kind: "section",
+      });
+      sectionPreview.push({
+        name: sectionName,
+        lyricLines,
+        chordCount,
+        estimatedBars: Math.max(
+          1,
+          Math.round((cursor - sectionStart) / barTicks),
+        ),
+      });
     }
 
     if (!sawContent || (tekstClips.length === 0 && akordClips.length === 0)) {
@@ -366,11 +486,19 @@ export function importUgText(
       };
     }
 
+    if (formaClips.length === 0) {
+      return {
+        ok: false,
+        message: "Nie udało się zbudować sekcji Formy z importu UG.",
+      };
+    }
+
     const sealed = sealAkordyLengths(akordClips);
 
     const payload = UgImportPayloadSchema.safeParse({
       tekst: { clips: tekstClips },
       akordy: { clips: sealed },
+      formaMusic: { clips: formaClips },
     });
     if (!payload.success) {
       return {
@@ -383,6 +511,9 @@ export function importUgText(
       ok: true,
       tekst: payload.data.tekst,
       akordy: payload.data.akordy,
+      formaMusic: payload.data.formaMusic,
+      sections: sectionPreview,
+      barsPerLine,
     };
   } catch {
     return {
@@ -390,4 +521,120 @@ export function importUgText(
       message: "Nie udało się sparsować tekstu UG.",
     };
   }
+}
+
+/**
+ * Merge UG import into a Project: keep Countdown Forma clips; replace music
+ * Forma sections + Tekst + Akordy.
+ */
+export function applyUgImportToProject(
+  project: Project,
+  imported: UgImportOk,
+): Project {
+  const countdown = project.forma.clips.filter((c) => c.kind === "countdown");
+  return {
+    ...project,
+    forma: { clips: [...countdown, ...imported.formaMusic.clips] },
+    tekst: imported.tekst,
+    akordy: imported.akordy,
+  };
+}
+
+/**
+ * Rebuild Forma lengths from operator-edited bars-per-section and scale
+ * Tekst/Akordy within each section onto the new spans (preview → apply).
+ */
+export function reflowUgImportSectionBars(
+  imported: UgImportOk,
+  sectionBars: number[],
+  options: Pick<UgImportOptions, "ppq" | "meter" | "contentFloorTicks"> = {},
+): UgImportResult {
+  const n = imported.formaMusic.clips.length;
+  if (sectionBars.length !== n || imported.sections.length !== n) {
+    return {
+      ok: false,
+      message: "Liczba długości sekcji nie pasuje do podglądu Formy.",
+    };
+  }
+  const ppq = options.ppq ?? DEFAULT_PPQ;
+  const meter = options.meter ?? { numerator: 4, denominator: 4 };
+  const barTicks = ticksPerBar(meter, ppq);
+  if (!Number.isFinite(barTicks) || barTicks <= 0) {
+    return { ok: false, message: "Nieprawidłowe metrum przy reflow UG." };
+  }
+  const floor = options.contentFloorTicks ?? 0;
+
+  const bars = sectionBars.map((b) => {
+    const v = Math.trunc(Number(b));
+    if (!Number.isFinite(v)) return 1;
+    return Math.min(256, Math.max(1, v));
+  });
+
+  const oldClips = imported.formaMusic.clips;
+  const newForma: FormaClip[] = [];
+  let cursor = floor;
+  for (let i = 0; i < n; i++) {
+    const old = oldClips[i]!;
+    const lengthTicks = bars[i]! * barTicks;
+    newForma.push({
+      ...old,
+      startTicks: cursor,
+      lengthTicks: Math.max(1, lengthTicks),
+      kind: "section",
+    });
+    cursor += lengthTicks;
+  }
+
+  const mapClip = <T extends { startTicks: number; lengthTicks: number }>(
+    clip: T,
+  ): T => {
+    for (let i = 0; i < n; i++) {
+      const old = oldClips[i]!;
+      const neu = newForma[i]!;
+      const oldEnd = old.startTicks + old.lengthTicks;
+      if (clip.startTicks < old.startTicks || clip.startTicks >= oldEnd) {
+        continue;
+      }
+      const rel =
+        old.lengthTicks > 0
+          ? (clip.startTicks - old.startTicks) / old.lengthTicks
+          : 0;
+      const scale =
+        old.lengthTicks > 0 ? neu.lengthTicks / old.lengthTicks : 1;
+      return {
+        ...clip,
+        startTicks: neu.startTicks + Math.round(rel * neu.lengthTicks),
+        lengthTicks: Math.max(1, Math.round(clip.lengthTicks * scale)),
+      };
+    }
+    return clip;
+  };
+
+  const tekstClips = imported.tekst.clips.map(mapClip);
+  const akordClips = sealAkordyLengths(imported.akordy.clips.map(mapClip));
+  const sections = imported.sections.map((s, i) => ({
+    ...s,
+    estimatedBars: bars[i]!,
+  }));
+
+  const payload = UgImportPayloadSchema.safeParse({
+    tekst: { clips: tekstClips },
+    akordy: { clips: akordClips },
+    formaMusic: { clips: newForma },
+  });
+  if (!payload.success) {
+    return {
+      ok: false,
+      message: "Reflow UG nie przeszedł walidacji schematu.",
+    };
+  }
+
+  return {
+    ok: true,
+    tekst: payload.data.tekst,
+    akordy: payload.data.akordy,
+    formaMusic: payload.data.formaMusic,
+    sections,
+    barsPerLine: imported.barsPerLine,
+  };
 }

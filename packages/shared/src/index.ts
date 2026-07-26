@@ -436,12 +436,16 @@ export {
 
 export {
   importUgText,
+  applyUgImportToProject,
+  reflowUgImportSectionBars,
+  splitUgSections,
   sealAkordyLengths,
   chordOnsetsInBar,
   type UgImportErr,
   type UgImportOk,
   type UgImportOptions,
   type UgImportResult,
+  type UgSectionPreview,
 } from "./ug-import.js";
 
 export {

@@ -43,7 +43,7 @@ const KEY_GROUPS: ShortcutGroup[] = [
         action:
           "Wybór narzędzia: T T Wskaźnik, T P Ołówek, T E Gumka, T I Nożyczki, T J Połącz, T M Mute, T S Solo, T A Fade, T G Gain, T R Zaznaczanie, T Y Zoom",
       },
-      { keys: "W", action: "Różdżka (1/2/3 w menu)" },
+      { keys: "W", action: "Różdżka — przycisk na pasku lub skrót (1/2/3 w menu)" },
       { keys: "1 / 2 / 3", action: "Tekst / Akordy / obie (menu Różdżki)" },
       {
         keys: "Przycisk Tap (Tekst)",
@@ -219,6 +219,11 @@ const TOOL_SECTIONS: ToolSection[] = [
           "nazwa + S/M w pierwszym rzędzie, fader na pełną szerokość w drugim; przeciągnij prawą krawędź kolumny (zapamiętane).",
       },
       {
+        term: "Import UG",
+        detail:
+          "Wybierz utwór → Importuj UG: podgląd sekcji, edycja taktów każdej sekcji, opcjonalna Różdżka od razu po imporcie. Puste linie / [Verse]/[Chorus] → Forma.",
+      },
+      {
         term: "Import",
         detail:
           "upuść plik na pustą lane, PPM → Importuj, albo z Inspectora.",
@@ -291,7 +296,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Różdżka (W)",
         detail:
-          "Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3); poza akordem T.",
+          "przycisk na pasku (poza menu T) lub W: Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3).",
       },
       {
         term: "Tap",

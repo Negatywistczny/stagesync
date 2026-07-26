@@ -19,7 +19,7 @@ import {
   ticksPerBar,
   ticksToBbt,
   toDisplayBar,
-  importUgText,
+  applyUgImportToProject,
   normalizeKeyTonic,
   placeContentFromForma,
   projectEndTicks,
@@ -28,6 +28,7 @@ import {
   channelModeFromChannelCount,
   type FormaClip,
   type Project,
+  type UgImportOk,
   type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
@@ -431,6 +432,7 @@ import {
   IconStop,
   IconTap,
   IconUnchecked,
+  IconWand,
   IconZoomIn,
 } from "./icons.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
@@ -442,6 +444,7 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { AppHeader } from "./components/AppHeader.js";
+import { UgImportForm } from "./UgImportForm.js";
 import styles from "./TimelineShell.module.css";
 
 type ToolId = FormaToolId;
@@ -664,8 +667,6 @@ export function TimelineShell() {
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
   const [ugModalOpen, setUgModalOpen] = useState(false);
-  const [ugText, setUgText] = useState("");
-  const [ugError, setUgError] = useState<string | null>(null);
   const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
@@ -2411,24 +2412,20 @@ export function TimelineShell() {
     commitDraft(applyTapBpm(draftProject, locatorTicks, bpm));
   }
 
-  function onImportUg() {
+  function onImportUg(result: UgImportOk, runWand: boolean) {
     if (!draftProject) return;
-    const result = importUgText(ugText, {
-      ppq: draftProject.ppq,
-      meter: resolveMeterAt(draftProject, 0),
-    });
-    if (!result.ok) {
-      setUgError(result.message);
-      return;
+    let next = applyUgImportToProject(draftProject, result);
+    if (runWand) {
+      const wand = placeContentFromForma(next, "both");
+      if (wand.ok) next = wand.project;
     }
-    commitDraft({
-      ...draftProject,
-      tekst: result.tekst,
-      akordy: result.akordy,
-    });
-    setUgError(null);
+    commitDraft(next);
+    flashCanvasNotice(
+      runWand
+        ? `Import UG: ${result.sections.length} sekcji + Różdżka — sprawdź Formę i Tap`
+        : `Import UG: ${result.sections.length} sekcji — Różdżka (W) gdy Formę dopracujesz`,
+    );
     setUgModalOpen(false);
-    setUgText("");
     setSongScreenOpen(false);
   }
 
@@ -5891,6 +5888,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             ),
           )}
           <ShellIconButton
+            label="Różdżka — rozmieszcza Tekst/Akordy wg Formy (W)"
+            pressed={tool === "wand"}
+            onClick={() => onTool("wand")}
+          >
+            <IconWand />
+          </ShellIconButton>
+          <ShellIconButton
             ref={toolsVisBtnRef}
             label="Widoczne narzędzia na pasku"
             pressed={toolsVisOpen}
@@ -8268,7 +8272,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setUgError(null);
                     setUgModalOpen(true);
                   }}
                 >
@@ -8280,7 +8283,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
       ) : null}
 
-      {ugModalOpen ? (
+      {ugModalOpen && draftProject ? (
         <div
           className={styles.overlay}
           role="dialog"
@@ -8304,31 +8307,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
-              <p className={styles.muted}>
-                Wklej tekst ChordPro / UG ([C]tekst). Nadpisze lane Tekst i
-                Akordy w draftcie.
-              </p>
-              {ugError ? (
-                <p className={styles.muted} role="alert">
-                  {ugError}
-                </p>
-              ) : null}
-              <textarea
-                className={styles.nameInput}
-                rows={12}
-                value={ugText}
-                aria-label="Tekst UG"
-                placeholder={"[C]Hello [G]world\n[Am]Line two"}
-                onChange={(e) => setUgText(e.target.value)}
+              <UgImportForm
+                hint="Nadpisze Formę (bez Countdown), Tekst i Akordy w draftcie."
+                applyLabel="Importuj do draftu"
+                importOptions={{
+                  ppq: draftProject.ppq,
+                  meter: resolveMeterAt(draftProject, 0),
+                }}
+                onCancel={() => setUgModalOpen(false)}
+                onApply={({ result, runWand }) => onImportUg(result, runWand)}
               />
-              <div className={styles.overlayActions}>
-                <Button variant="ghost" onClick={() => setUgModalOpen(false)}>
-                  Anuluj
-                </Button>
-                <Button variant="primary" onClick={onImportUg}>
-                  Importuj do draftu
-                </Button>
-              </div>
             </div>
           </div>
         </div>

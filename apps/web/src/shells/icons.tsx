@@ -50,6 +50,7 @@ import {
   Undo2,
   Volume2,
   VolumeX,
+  Wand2,
   X,
   ZoomIn,
 } from "lucide-react";
@@ -113,6 +114,10 @@ export function IconGain(p: IconProps) {
 
 export function IconMarquee(p: IconProps) {
   return withIcon(SquareDashedMousePointer, p);
+}
+
+export function IconWand(p: IconProps) {
+  return withIcon(Wand2, p);
 }
 
 export function IconTap(p: IconProps) {
