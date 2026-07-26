@@ -25,6 +25,7 @@ const {
       RestoreCursorAfterRerender: true,
     };
     Zoom = 1;
+    TransposeCalculator: unknown = null;
     Sheet: {
       SourceMeasures?: unknown[];
       Instruments?: unknown[];
@@ -68,6 +69,7 @@ const {
 vi.mock("opensheetmusicdisplay", () => ({
   OpenSheetMusicDisplay: OpenSheetMusicDisplayMock,
   PointF2D: PointF2DMock,
+  TransposeCalculator: class TransposeCalculator {},
 }));
 
 import {
@@ -90,6 +92,7 @@ import {
   scoreBarFromClientPoint,
   scoreInstrumentId,
   scoreOctaveToSemitones,
+  scoreSheetTransposeSemitones,
   scrollCursorIntoView,
 } from "./scoreOsmd.js";
 
@@ -134,6 +137,7 @@ describe("scoreOsmd", () => {
       expect(osmd.container).toBe(el);
       expect(osmd.EngravingRules.PageBackgroundColor).toBe("#ffffff");
       expect(osmd.EngravingRules.RestoreCursorAfterRerender).toBe(false);
+      expect(osmd.TransposeCalculator).toBeTruthy();
       expect(osmd.options).toMatchObject({
         backend: "svg",
         followCursor: false,
@@ -426,6 +430,37 @@ describe("scoreOsmd", () => {
 
       applyScoreSheetTranspose(osmd as never, 12);
       expect(renderSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it("applyScoreSheetTranspose installs TransposeCalculator when missing", () => {
+      const osmd = makeOsmd();
+      osmd.TransposeCalculator = null;
+      osmd.Sheet = { Transpose: 2 };
+      osmd.IsReadyToRender.mockReturnValue(true);
+      updateGraphicSpy.mockClear();
+      applyScoreSheetTranspose(osmd as never, 2);
+      expect(osmd.TransposeCalculator).toBeTruthy();
+      expect(osmd.Sheet.Transpose).toBe(2);
+      expect(updateGraphicSpy).toHaveBeenCalled();
+    });
+
+    it("scoreSheetTransposeSemitones combines team, pitch, and octave", () => {
+      expect(
+        scoreSheetTransposeSemitones({
+          teamSemitones: 2,
+          instrumentPitch: "bb",
+          scoreOctave: 1,
+        }),
+      ).toBe(2 + 2 + 12);
+      expect(
+        scoreSheetTransposeSemitones({
+          teamSemitones: -1,
+          instrumentPitch: "manual",
+          instrumentPitchManual: 3,
+          scoreOctave: -1,
+        }),
+      ).toBe(-1 + 3 - 12);
+      expect(scoreSheetTransposeSemitones({})).toBe(0);
     });
 
     it("applyScoreSheetTranspose tolerates updateGraphic failure", () => {

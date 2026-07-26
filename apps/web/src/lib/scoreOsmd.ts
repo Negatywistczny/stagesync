@@ -3,8 +3,14 @@
  */
 
 import {
+  clampSemitoneOffset,
+  resolveInstrumentPitchOffset,
+  type InstrumentPitchMode,
+} from "@stagesync/shared";
+import {
   OpenSheetMusicDisplay,
   PointF2D,
+  TransposeCalculator,
   type Cursor,
 } from "opensheetmusicdisplay";
 
@@ -98,6 +104,8 @@ export function createOsmd(container: HTMLElement): OpenSheetMusicDisplay {
   // OSMD bug belt-and-suspenders: enableOrDisableCursors(true) still assigns
   // `this.cursors[i].hidden` when cursor creation was skipped (no backend yet).
   osmd.EngravingRules.RestoreCursorAfterRerender = false;
+  // Required for Sheet.Transpose / Instrument.Transpose to take effect (OSMD plugin).
+  osmd.TransposeCalculator = new TransposeCalculator();
   return osmd;
 }
 
@@ -315,15 +323,48 @@ export function scoreOctaveToSemitones(octave: ScoreOctave): number {
   return octave * 12;
 }
 
-/** Apply Sheet.Transpose (team + score octave) and re-render when ready. */
+/**
+ * Combined OSMD Sheet.Transpose: Live Desk team + local instrument pitch + score octave.
+ * Matches Grid/Karaoke chord offset (v4 StageSyncTranspose) plus partytura octave (±12).
+ */
+export function scoreSheetTransposeSemitones(opts: {
+  teamSemitones?: number;
+  scoreOctave?: ScoreOctave;
+  instrumentPitch?: InstrumentPitchMode | string;
+  instrumentPitchManual?: number;
+}): number {
+  const local = resolveInstrumentPitchOffset(
+    opts.instrumentPitch ?? "concert",
+    opts.instrumentPitchManual ?? 0,
+  );
+  return (
+    clampSemitoneOffset(opts.teamSemitones ?? 0) +
+    local +
+    scoreOctaveToSemitones(opts.scoreOctave ?? 0)
+  );
+}
+
+/** Apply Sheet.Transpose (team + pitch + score octave) and re-render when ready. */
 export function applyScoreSheetTranspose(
   osmd: OpenSheetMusicDisplay,
   semitones: number,
 ): void {
   if (!osmd.Sheet) return;
+  const installedCalculator = !osmd.TransposeCalculator;
+  if (installedCalculator) {
+    osmd.TransposeCalculator = new TransposeCalculator();
+  }
   const next = Math.trunc(semitones);
   const current = osmd.Sheet.Transpose ?? 0;
   if (current === next) {
+    // Calculator may have been missing while Transpose was already set — force graphic rebuild.
+    if (installedCalculator) {
+      try {
+        osmd.updateGraphic();
+      } catch {
+        /* older OSMD */
+      }
+    }
     if (osmd.IsReadyToRender()) osmd.render();
     return;
   }

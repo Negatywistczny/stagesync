@@ -607,6 +607,8 @@ export function ClientShell() {
                   hiddenPartIds={scoreHiddenPartIds}
                   onPartsChange={setScoreParts}
                   teamSemitones={liveDesk.transpositionSemitones}
+                  instrumentPitch={displayPrefs.instrumentPitch}
+                  instrumentPitchManual={displayPrefs.instrumentPitchManual}
                   onSeek={(ticks) => {
                     void seek(ticks);
                   }}

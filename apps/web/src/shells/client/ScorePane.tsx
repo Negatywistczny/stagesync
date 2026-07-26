@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import type { Project } from "@stagesync/shared";
+import type { InstrumentPitchMode, Project } from "@stagesync/shared";
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { assetFileUrl } from "../../lib/audioPlayback.js";
 import {
@@ -17,7 +17,7 @@ import {
   listScoreParts,
   renderOsmd,
   scoreBarFromClientPoint,
-  scoreOctaveToSemitones,
+  scoreSheetTransposeSemitones,
   scrollCursorIntoView,
   type ScoreOctave,
   type ScorePartInfo,
@@ -41,6 +41,9 @@ type Props = {
   onSeek: (ticks: number) => void;
   /** Live Desk team transpose (semitones). */
   teamSemitones?: number;
+  /** Local instrument pitch (Client global settings). */
+  instrumentPitch?: InstrumentPitchMode;
+  instrumentPitchManual?: number;
 };
 
 export function ScorePane({
@@ -55,6 +58,8 @@ export function ScorePane({
   onPartsChange,
   onSeek,
   teamSemitones = 0,
+  instrumentPitch = "concert",
+  instrumentPitchManual = 0,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -93,7 +98,12 @@ export function ScorePane({
         applyScorePartVisibility(osmd, hiddenPartIds);
         applyScoreSheetTranspose(
           osmd,
-          teamSemitones + scoreOctaveToSemitones(scoreOctave),
+          scoreSheetTransposeSemitones({
+            teamSemitones,
+            scoreOctave,
+            instrumentPitch,
+            instrumentPitchManual,
+          }),
         );
         renderOsmd(osmd);
         if (cancelled) return;
@@ -157,14 +167,26 @@ export function ScorePane({
       applyScorePartVisibility(osmd, hiddenPartIds);
       applyScoreSheetTranspose(
         osmd,
-        teamSemitones + scoreOctaveToSemitones(scoreOctave),
+        scoreSheetTransposeSemitones({
+          teamSemitones,
+          scoreOctave,
+          instrumentPitch,
+          instrumentPitchManual,
+        }),
       );
       if (lastBarRef.current != null) {
         goToScoreBar(osmd, lastBarRef.current);
       }
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [hiddenPartIds, scoreOctave, teamSemitones, ready]);
+  }, [
+    hiddenPartIds,
+    scoreOctave,
+    teamSemitones,
+    instrumentPitch,
+    instrumentPitchManual,
+    ready,
+  ]);
 
   if (!hasActiveProjectId) {
     return (
