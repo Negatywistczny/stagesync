@@ -42,4 +42,23 @@ describe("express JSON body limit", () => {
       error: "Payload too large",
     });
   });
+
+  it("accepts JSON under the 2mb limit without 413", async () => {
+    const res = await fetch(`${baseUrl}/api/live-desk`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ transpositionSemitones: 1 }),
+    });
+    expect(res.status).not.toBe(413);
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects malformed JSON with 400", async () => {
+    const res = await fetch(`${baseUrl}/api/live-desk`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: "{not-json",
+    });
+    expect(res.status).toBe(400);
+  });
 });
