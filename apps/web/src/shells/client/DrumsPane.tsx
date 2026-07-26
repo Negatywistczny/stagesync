@@ -182,6 +182,7 @@ export function DrumsPane({
                             ? `Takt ${cell.barDisplay}`
                             : `CD ${cell.index}`
                         }
+                        aria-hidden
                       />
                     );
                   })}
