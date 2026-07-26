@@ -1,3 +1,4 @@
+import { htmlWithBrandWordmarks, setTextWithBrand } from "./brand.js";
 import { iconSvg } from "./icons.js";
 import { spotlightsNewestFirst } from "./news/content";
 import { fillBrand, fillNav } from "./site";
@@ -39,14 +40,14 @@ if (list) {
 
     const summary = document.createElement("p");
     summary.className = "release-card__summary";
-    summary.textContent = release.summary;
+    setTextWithBrand(summary, release.summary);
 
     const chips = document.createElement("ul");
     chips.className = "release-card__chips";
     for (const item of release.highlights) {
       const chip = document.createElement("li");
       chip.className = "release-chip";
-      chip.innerHTML = `${iconSvg(item.icon, "release-chip__icon")}<span>${item.label}</span>`;
+      chip.innerHTML = `${iconSvg(item.icon, "release-chip__icon")}<span>${htmlWithBrandWordmarks(item.label)}</span>`;
       chips.append(chip);
     }
 

@@ -47,6 +47,7 @@ import { isAndroidUpdateSurface } from "../../lib/nativeShell.js";
 
 import { useMqMobile } from "../../lib/useMqMobile.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
+import { BrandName } from "../BrandName.js";
 import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import styles from "./SystemView.module.css";
@@ -308,12 +309,12 @@ export function SystemView({
               aria-label="Pobieranie aplikacji Android"
             >
               <ApkTile
-                title="StageSync Performer"
+                product="Performer"
                 ready={performerApkReady}
                 apkUrl={performerApkUrl}
               />
               <ApkTile
-                title="StageSync Console"
+                product="Console"
                 ready={consoleApkReady}
                 apkUrl={consoleApkUrl}
               />
@@ -611,17 +612,20 @@ export function SystemView({
 }
 
 function ApkTile({
-  title,
+  product,
   ready,
   apkUrl,
 }: {
-  title: string;
+  product: "Performer" | "Console";
   ready: boolean;
   apkUrl: string | null;
 }) {
+  const fullName = `StageSync ${product}`;
   return (
     <div className={styles.apkTile}>
-      <h3 className={styles.apkTitle}>{title}</h3>
+      <h3 className={styles.apkTitle}>
+        <BrandName /> {product}
+      </h3>
       <p className={styles.apkStatus}>
         {ready ? "APK dostępne na hoście" : "Brak APK w tej instalacji"}
       </p>
@@ -629,7 +633,7 @@ function ApkTile({
         {ready && apkUrl ? (
           <Button
             variant="secondary"
-            aria-label={`Pobierz APK ${title}`}
+            aria-label={`Pobierz APK ${fullName}`}
             onClick={() => void openExternalUrl(apkUrl)}
           >
             Pobierz APK
@@ -637,7 +641,7 @@ function ApkTile({
         ) : null}
         <Button
           variant="ghost"
-          aria-label={`Releases — ${title}`}
+          aria-label={`Releases — ${fullName}`}
           onClick={() => void openExternalUrl(DOCS_RELEASES_URL)}
         >
           Releases ↗

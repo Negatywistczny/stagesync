@@ -6,6 +6,7 @@ import {
   setStoredDeviceDisplayName,
 } from "../lib/deviceNamePrefs.js";
 import { useKeepTileAboveIme } from "../lib/useKeepTileAboveIme.js";
+import { BrandName } from "./BrandName.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -53,11 +54,7 @@ export function DeviceNameGate({ children }: { children: ReactNode }) {
         </div>
         <ConnectionLostBanner status={wsStatus} />
         <h1 id="device-name-title" className={styles.modalTitle}>
-          Witaj w{" "}
-          <span className={styles.brandName}>
-            <span className={styles.brandStage}>Stage</span>
-            <span className={styles.brandSync}>Sync</span>
-          </span>
+          Witaj w <BrandName />
         </h1>
         <p className={styles.muted}>Podaj swoje imię lub nazwę urządzenia.</p>
         <form className={styles.form} onSubmit={onSubmit}>

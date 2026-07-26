@@ -1,0 +1,14 @@
+.brandName {
+  font-family: var(--ss-font-sans);
+  font-weight: var(--ss-font-weight-bold);
+  letter-spacing: var(--ss-tracking-tight);
+  white-space: nowrap;
+}
+
+.brandStage {
+  color: var(--ss-color-text);
+}
+
+.brandSync {
+  color: var(--ss-color-primary);
+}

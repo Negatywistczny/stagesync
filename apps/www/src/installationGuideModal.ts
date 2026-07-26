@@ -1,3 +1,4 @@
+import { setTextWithBrand } from "./brand.js";
 import { iconSvg } from "./icons.js";
 
 export type InstallGuideTab = "macos" | "windows" | "android";
@@ -92,7 +93,9 @@ function onDialogClose(): void {
 
 function renderStep(step: InstallStep): HTMLLIElement {
   const li = el("li", "install-guide__step");
-  li.append(el("p", "install-guide__step-text", step.text));
+  const text = el("p", "install-guide__step-text");
+  setTextWithBrand(text, step.text);
+  li.append(text);
   if (step.code) {
     const wrap = el("div", "install-guide__code-wrap");
     const pre = el("pre", "install-guide__code");

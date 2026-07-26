@@ -95,6 +95,22 @@ a:focus-visible {
   padding-block: var(--ss-space-3);
 }
 
+/* Official wordmark: Stage = text, Sync = amber (logo SVG). */
+.brand-name {
+  font-family: var(--ss-font-sans);
+  font-weight: var(--ss-font-weight-bold);
+  letter-spacing: var(--ss-tracking-tight);
+  white-space: nowrap;
+}
+
+.brand-name__stage {
+  color: var(--ss-color-text);
+}
+
+.brand-name__sync {
+  color: var(--ss-color-primary);
+}
+
 .topbar__brand {
   flex-shrink: 0;
   text-decoration: none;

@@ -44,22 +44,6 @@
   line-height: var(--ss-leading-tight);
 }
 
-/* Official wordmark colors: Stage = text, Sync = amber primary (logo SVG). */
-.brandName {
-  font-family: var(--ss-font-sans);
-  font-weight: var(--ss-font-weight-bold);
-  letter-spacing: var(--ss-tracking-tight);
-  white-space: nowrap;
-}
-
-.brandStage {
-  color: var(--ss-color-text);
-}
-
-.brandSync {
-  color: var(--ss-color-primary);
-}
-
 .muted {
   margin: 0;
   font-size: var(--ss-text-md);
