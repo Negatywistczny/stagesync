@@ -423,7 +423,11 @@ export function SetView({ library, selectedId }: SetViewProps) {
         </div>
 
         <div className={shell.setSplit}>
-          <div className={shell.setCol} aria-label="Biblioteka">
+          <div
+            className={shell.setCol}
+            role="region"
+            aria-label="Biblioteka"
+          >
             <div className={shell.setColHead}>
               <strong className={shell.setColTitle}>Biblioteka</strong>
               <input
@@ -488,6 +492,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
 
           <div
             className={shell.setCol}
+            role="region"
             aria-label="Kolejność setu"
             onDragOver={(e) => e.preventDefault()}
             onDrop={onSetPanelDrop}
