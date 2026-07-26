@@ -54,7 +54,12 @@
       "minimumSystemVersion": "10.15"
     },
     "windows": {
-      "digestAlgorithm": "sha256"
+      "digestAlgorithm": "sha256",
+      "wix": {
+        "bannerPath": "assets/installer/wiz-banner.bmp",
+        "dialogImagePath": "assets/installer/wiz-dialog.bmp",
+        "language": ["pl-PL"]
+      }
     }
   },
   "plugins": {

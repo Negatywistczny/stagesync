@@ -7,13 +7,18 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop (Windows MSI):** instalator WiX ma ciemne banery StageSync i język polski (`pl-PL`) zamiast domyślnego wyglądu Windows. (#812)
+
 ### Naprawiono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Console (Android):** powiadomienie lokalnego hosta jest trwałe (nie da się go zrzucić gestem) — zatrzymanie tylko akcją **Zatrzymaj Host**, która bezpiecznie gasi silnik i zdejmuje foreground.
-- **Console (Android) — aktualizacje:** „Sprawdź aktualizacje” w Host nie sugeruje już Watchtower / `compose.prod.yml` — na tablecie aktualizacje to nowy APK (Releases / karta Połączenie & Sieć).
+- **Console (Android) — aktualizacje:** „Sprawdź aktualizacje” w Host nie sugeruje już Watchtower / `compose.prod.yml` ani „Desktop: pobierz instalator” — na tablecie / w APK aktualizacje to nowy APK (Releases / karta Połączenie & Sieć), także gdy mostek `StageSyncNative` nie złapie od razu.
 
-## [5.2.6](https://github.com/Negatywistyczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
+## [5.2.6](https://github.com/Negatywistczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
 
 ### Dodano
 
