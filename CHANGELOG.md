@@ -23,6 +23,16 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 📚 Dokumentacja
 - **Mobile:** opis QR/APK w Host wskazuje kartę Połączenie & Sieć (kafelki Performer / Console).
 
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Mixer:** Solo, Mute i kolor/ikona ścieżki mają etykiety z nazwą toru (czytelniej na czytniku ekranu i w podpowiedziach).
+
+#### 🖥️ App Shell & UI
+- **Admin / Host:** grupy MIDI In/Out i Clock OUT; etykiety pobierania APK i Releases; regiony Pliki bazy, Biblioteka i kolejność setlisty; „Usuń” / „Nowy z wzoru” / „Usuń komunikat” / „Dodaj zaznaczone” z kontekstem; stan Partytury MusicXML i import XML.
+- **Client / Launcher:** etykiety komórek cyklu akordów; dekoracyjne takty Formy; Połącz przy zmianie serwera; powrót do launchera po utracie połączenia; podgląd QR i kart hostów; pole PIN operatora.
+
+
 ## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
 
 ### Zmieniono
