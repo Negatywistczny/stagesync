@@ -5,7 +5,7 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.2.8](https://github.com/Negatywistczny/stagesync/compare/v5.2.7...v5.2.8) - 2026-07-26
 
 ### Dodano
 
@@ -18,7 +18,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Admin Host — aktualizacje:** przycisk **Aktualizuj host** pojawia się tylko gdy Watchtower jest skonfigurowany; bez `STAGESYNC_UPDATER_*` widać jasną wskazówkę (Docker: `compose.prod.yml`, inaczej instalator z Releases) zamiast błędu po kliknięciu.
 
-## [5.2.7](https://github.com/Negatywistyczny/stagesync/compare/v5.2.6...v5.2.7) - 2026-07-26
+## [5.2.7](https://github.com/Negatywistczny/stagesync/compare/v5.2.6...v5.2.7) - 2026-07-26
 
 ### Zmieniono
 
