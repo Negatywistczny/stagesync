@@ -47,6 +47,73 @@ describe("operatorPin", () => {
     });
   });
 
+  it("mergeApiHeaders accepts Headers and tuple arrays", () => {
+    setStoredOperatorPin("42");
+    const headers = new Headers({ Accept: "application/json" });
+    expect(mergeApiHeaders(headers)).toEqual({
+      [OPERATOR_PIN_HEADER]: "42",
+      accept: "application/json",
+    });
+    expect(
+      mergeApiHeaders([["X-Custom", "1"], ["X-Other", "2"]]),
+    ).toEqual({
+      [OPERATOR_PIN_HEADER]: "42",
+      "X-Custom": "1",
+      "X-Other": "2",
+    });
+    expect(mergeApiHeaders()).toEqual({
+      [OPERATOR_PIN_HEADER]: "42",
+    });
+  });
+
+  it("treats blank PIN as clear and tolerates sessionStorage throws", () => {
+    setStoredOperatorPin("1234");
+    setStoredOperatorPin("   ");
+    expect(getStoredOperatorPin()).toBeNull();
+
+    vi.stubGlobal("sessionStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    });
+    expect(getStoredOperatorPin()).toBeNull();
+    expect(() => clearStoredOperatorPin()).not.toThrow();
+    expect(operatorPinHeaders()).toEqual({});
+  });
+
+  it("fetchOperatorPinRequired rejects non-OK HTTP", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: async () => ({}),
+      }),
+    );
+    await expect(fetchOperatorPinRequired()).rejects.toThrow(/HTTP 503/);
+  });
+
+  it("unlockOperatorPin falls back when error body is not JSON", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => {
+          throw new Error("no json");
+        },
+      }),
+    );
+    await expect(unlockOperatorPin("0000")).rejects.toThrow(
+      /Nieprawidłowy PIN operatora/,
+    );
+  });
+
   it("fetchOperatorPinRequired reads host flag", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
