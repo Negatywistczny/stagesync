@@ -109,7 +109,7 @@ Night wave (open at handoff, created ~22:31 UTC 2025-07-25 → ~00:52 UTC 2026-0
 | [#804](https://github.com/Negatywistyczny/stagesync/pull/804) | test(server): cover migrateVolumeOnBoot missing dir and skip names | test |
 | [#805](https://github.com/Negatywistyczny/stagesync/pull/805) | test(shared): cover transport-loop normalize and wrap edges | test |
 | [#806](https://github.com/Negatywistyczny/stagesync/pull/806) | fix(a11y): name Set Dodaj zaznaczone and extract budget percent | a11y |
-| *(this PR)* | docs(analysis): nightshift hygiene handoff 2026-07-26 | docs (emergency handoff) |
+| [#807](https://github.com/Negatywistyczny/stagesync/pull/807) | docs(analysis): nightshift hygiene handoff 2026-07-26 | docs (this report) |
 
 ## Ranked backlog (next)
 
