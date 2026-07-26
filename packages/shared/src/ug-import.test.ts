@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canonicalizePolishH,
   clipsFromOnsets,
   importUgText,
   sealAkordyLengths,
@@ -212,5 +213,18 @@ describe("clipsFromOnsets", () => {
         sourceLineId: "line-a",
       },
     ]);
+  });
+});
+
+describe("canonicalizePolishH", () => {
+  it("maps Polish H roots and slash bass to Western B", () => {
+    expect(canonicalizePolishH("H")).toBe("B");
+    expect(canonicalizePolishH("Hm7")).toBe("Bm7");
+    expect(canonicalizePolishH("C/H")).toBe("C/B");
+  });
+
+  it("leaves Western spellings unchanged", () => {
+    expect(canonicalizePolishH("Am7")).toBe("Am7");
+    expect(canonicalizePolishH("Bb")).toBe("Bb");
   });
 });
