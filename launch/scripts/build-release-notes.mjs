@@ -94,10 +94,6 @@ const androidRows = includeAndroid
 `
   : "";
 
-const updaterDetails = includeAndroid
-  ? `Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji i weryfikację spójności — nie musisz ich pobierać ręcznie. APK Android instalujesz sideloadem (bez Google Play).`
-  : `Pliki \`.app.tar.gz\`, \`.sig\`, \`latest.json\` oraz \`SHA256SUMS.txt\` są wykorzystywane przez wbudowany aktualizator aplikacji i weryfikację spójności — nie musisz ich pobierać ręcznie.`;
-
 process.stdout.write(`### 📦 Pobierz StageSync
 
 | System operacyjny | Plik instalacyjny |
@@ -105,13 +101,6 @@ process.stdout.write(`### 📦 Pobierz StageSync
 | 🍎 **macOS** (Apple Silicon) | [macOS (Apple Silicon)](${dmgUrl}) |
 | 🪟 **Windows** (64-bit) | [Windows (64-bit)](${msiUrl}) |
 ${androidRows}
-<details>
-<summary>Pliki automatycznych aktualizacji i checksumy</summary>
-
-${updaterDetails}
-
-</details>
-
 ---
 
 ${highlightsTitle}

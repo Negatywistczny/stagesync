@@ -194,6 +194,10 @@ assert.match(
 assert.doesNotMatch(cue.stdout, /Cue & Guard/);
 assert.doesNotMatch(cue.stdout, /bez atrap|auto-election|bez OAuth|bez kont OAuth/);
 assert.doesNotMatch(cue.stdout, /StageSync 5\.2\.0 \(\.dmg\)/);
-assert.match(cue.stdout, /sideloadem/);
+assert.match(cue.stdout, /sideload Performer i Console/);
+assert.doesNotMatch(ok.stdout, /Pliki automatycznych aktualizacji/);
+assert.doesNotMatch(ok.stdout, /SHA256SUMS\.txt/);
+assert.doesNotMatch(cue.stdout, /<details>/);
+assert.doesNotMatch(cue.stdout, /Pliki automatycznych aktualizacji/);
 
 console.log("build-release-notes.test.mjs: ok");
