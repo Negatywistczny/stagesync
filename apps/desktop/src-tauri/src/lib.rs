@@ -20,6 +20,7 @@ pub(crate) const SIDECAR_LOG_CAP: usize = 6_000;
 pub(crate) const SERVER_ENTRY_REL: &str = "dist/index.js";
 
 mod launcher;
+mod tray;
 
 /// Strip Win32 extended-length / verbatim prefixes so Node can realpath the entry.
 ///
@@ -966,8 +967,10 @@ pub(crate) async fn check_health_at_timeout(
 pub fn run() {
     let sidecar_runtime = Arc::new(launcher::SidecarRuntime::default());
     let sidecar_runtime_run = sidecar_runtime.clone();
+    let sidecar_runtime_setup = sidecar_runtime.clone();
     let launcher_nav = Arc::new(launcher::LauncherNav::default());
     let launcher_nav_setup = launcher_nav.clone();
+    let launcher_nav_tray = launcher_nav.clone();
     let nav_state = NavState {
         timeline_project_id: Arc::new(Mutex::new(None)),
         recent_projects: Arc::new(Mutex::new(Vec::new())),
@@ -992,8 +995,25 @@ pub fn run() {
                     }
                 }
             }
+            if let Err(e) = tray::install_tray(
+                app.handle(),
+                sidecar_runtime_setup,
+                launcher_nav_tray,
+            ) {
+                eprintln!("[tray] install failed: {e}");
+            }
             // Window loads bundled Launcher (frontendDist). Sidecar starts only via invoke.
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if window.label() != "main" {
+                return;
+            }
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                // Close-to-tray (#813): keep sidecar alive; Quit from tray/menu exits.
+                let _ = window.hide();
+                api.prevent_close();
+            }
         })
         .invoke_handler(tauri::generate_handler![
             check_desktop_update,
@@ -1017,21 +1037,11 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building StageSync desktop")
-        .run(move |app_handle, event| {
+        .run(move |_app_handle, event| {
             match event {
-                // Full quit (⌘Q / Zakończ) and process teardown.
+                // Full quit (⌘Q / Zakończ / tray Zakończ) and process teardown.
                 RunEvent::ExitRequested { .. } | RunEvent::Exit => {
                     sidecar_runtime_run.kill_child();
-                }
-                // Closing the main window must end the session — on macOS the app
-                // otherwise stays in the Dock while an orphaned sidecar keeps :4000.
-                RunEvent::WindowEvent {
-                    label,
-                    event: WindowEvent::CloseRequested { .. },
-                    ..
-                } if label == "main" => {
-                    sidecar_runtime_run.kill_child();
-                    app_handle.exit(0);
                 }
                 _ => {}
             }

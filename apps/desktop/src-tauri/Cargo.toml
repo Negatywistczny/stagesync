@@ -14,7 +14,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-shell = "2"
 tauri-plugin-updater = "2"
 serde = { version = "1", features = ["derive"] }
@@ -24,6 +24,7 @@ open = "5"
 flume = "0.11"
 mdns-sd = "0.11"
 url = "2"
+arboard = "3"
 
 [profile.release]
 panic = "abort"

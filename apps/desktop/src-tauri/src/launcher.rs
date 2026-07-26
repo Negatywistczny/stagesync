@@ -45,6 +45,26 @@ impl SidecarRuntime {
             *g = false;
         }
     }
+
+    pub fn has_child(&self) -> bool {
+        self.child
+            .lock()
+            .ok()
+            .map(|g| g.is_some())
+            .unwrap_or(false)
+    }
+
+    pub fn is_starting(&self) -> bool {
+        self.starting.lock().ok().map(|g| *g).unwrap_or(false)
+    }
+
+    pub fn take_pending_error(&self) -> Option<String> {
+        self.pending_error.lock().ok().and_then(|mut g| g.take())
+    }
+
+    pub fn peek_pending_error(&self) -> Option<String> {
+        self.pending_error.lock().ok().and_then(|g| g.clone())
+    }
 }
 
 /// Origin URL of the bundled Launcher (captured at setup before any navigate).
@@ -423,7 +443,7 @@ fn fallback_launcher_url() -> String {
     }
 }
 
-fn navigate_to_launcher(app: &AppHandle, nav: &LauncherNav) -> Result<(), String> {
+pub(crate) fn navigate_to_launcher(app: &AppHandle, nav: &LauncherNav) -> Result<(), String> {
     let stored = nav
         .url
         .lock()
@@ -487,11 +507,7 @@ pub fn get_launcher_bootstrap(
         })
         .unwrap_or(false);
     let stagesync_url = std::env::var("STAGESYNC_URL").ok().filter(|s| !s.trim().is_empty());
-    let last_error = runtime
-        .pending_error
-        .lock()
-        .ok()
-        .and_then(|mut g| g.take());
+    let last_error = runtime.take_pending_error();
     Ok(LauncherBootstrap {
         has_sidecar,
         stagesync_url,
@@ -681,6 +697,14 @@ pub async fn start_local_host(
     app: AppHandle,
     runtime: State<'_, Arc<SidecarRuntime>>,
 ) -> Result<(), String> {
+    start_local_host_managed(app, runtime.inner().clone()).await
+}
+
+/// Start local host from tray / non-command contexts (same guards as invoke).
+pub(crate) async fn start_local_host_managed(
+    app: AppHandle,
+    runtime: Arc<SidecarRuntime>,
+) -> Result<(), String> {
     {
         let mut starting = runtime.starting.lock().map_err(|e| e.to_string())?;
         if *starting {
@@ -689,7 +713,7 @@ pub async fn start_local_host(
         *starting = true;
     }
 
-    let result = start_local_host_inner(app.clone(), runtime.inner().clone()).await;
+    let result = start_local_host_inner(app.clone(), runtime.clone()).await;
 
     if let Ok(mut starting) = runtime.starting.lock() {
         *starting = false;
