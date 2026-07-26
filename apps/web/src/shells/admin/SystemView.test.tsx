@@ -11,7 +11,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../lib/desktopBridge.js", () => ({
-  isDesktopShell: () => false,
+  canUseDesktopUpdater: () => false,
   checkDesktopUpdate: vi.fn(),
   installDesktopUpdate: vi.fn(),
   openExternalUrl: vi.fn(),
@@ -152,7 +152,7 @@ describe("SystemView APK download aria", () => {
 
   it("on mobile expands one Host card at a time", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
-      matches: query.includes("max-width"),
+      matches: query.includes("max-width: 768px") || query === "(max-width: 768px)",
       media: query,
       addEventListener: () => {},
       removeEventListener: () => {},
@@ -173,6 +173,7 @@ describe("SystemView APK download aria", () => {
       name: /Połączenie & Sieć/,
     });
     expect(networkToggle.getAttribute("aria-expanded")).toBe("true");
+    expect(networkToggle.textContent).not.toMatch(/[▸▾▶▼]/);
     await waitFor(() => {
       expect(
         screen.getByRole("button", { name: "Pobierz APK StageSync Performer" }),

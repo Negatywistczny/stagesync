@@ -33,46 +33,6 @@
   overflow: hidden;
 }
 
-.cardCollapsed {
-  flex: 0 0 auto;
-}
-
-.cardToggle {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-2);
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-  min-height: var(--ss-touch-min);
-}
-
-.cardToggle:focus-visible {
-  outline: 2px solid var(--ss-color-focus-ring);
-  outline-offset: 2px;
-}
-
-.cardToggleMeta {
-  margin-left: auto;
-}
-
-.cardChevron {
-  flex: 0 0 auto;
-  margin-left: var(--ss-space-2);
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-compact);
-}
-
 .cardBody {
   display: flex;
   flex-direction: column;
@@ -323,9 +283,7 @@
     flex-direction: column;
     flex-wrap: nowrap;
     gap: var(--ss-space-2);
-    /* Accordion: one open card — keep headers reachable. */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
 
   .column {
@@ -337,19 +295,6 @@
 
   .card {
     width: 100%;
-  }
-
-  .card:not(.cardCollapsed) {
-    /* Expanded tile fills remaining viewport under chrome. */
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  .card:not(.cardCollapsed) .cardBody,
-  .card:not(.cardCollapsed) .cardBodyFill {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
   }
 
   .apkTiles {

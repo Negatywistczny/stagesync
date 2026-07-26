@@ -60,6 +60,8 @@ pub struct LauncherBootstrap {
     pub stagesync_url: Option<String>,
     pub expected_version: String,
     pub last_error: Option<String>,
+    /// Skipped update version (operator „Pomiń tę wersję”).
+    pub ignored_version: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -105,6 +107,44 @@ fn recent_path(app: &AppHandle) -> Result<PathBuf, String> {
     let data = dir.join("StageSync");
     let _ = std::fs::create_dir_all(&data);
     Ok(data.join("launcher-recent.json"))
+}
+
+fn prefs_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let data = dir.join("StageSync");
+    let _ = std::fs::create_dir_all(&data);
+    Ok(data.join("launcher-prefs.json"))
+}
+
+#[derive(Clone, Default, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LauncherPrefs {
+    /// SemVer string the operator chose to skip (no auto prompt for this release).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ignored_version: Option<String>,
+}
+
+fn load_prefs(app: &AppHandle) -> LauncherPrefs {
+    let Ok(path) = prefs_path(app) else {
+        return LauncherPrefs::default();
+    };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return LauncherPrefs::default();
+    };
+    serde_json::from_str(&raw).unwrap_or_default()
+}
+
+fn save_prefs(app: &AppHandle, prefs: &LauncherPrefs) -> Result<(), String> {
+    let path = prefs_path(app)?;
+    let json = serde_json::to_string_pretty(prefs).map_err(|e| e.to_string())?;
+    std::fs::write(path, json).map_err(|e| {
+        let lower = e.to_string().to_ascii_lowercase();
+        if lower.contains("permission") || lower.contains("eacces") || lower.contains("access is denied") {
+            "Brak uprawnień do zapisu preferencji Launchera.".into()
+        } else {
+            e.to_string()
+        }
+    })
 }
 
 /// Project / library root for the local sidecar (`STAGESYNC_DATA_DIR`) — ADR 0012.
@@ -457,7 +497,25 @@ pub fn get_launcher_bootstrap(
         stagesync_url,
         expected_version,
         last_error,
+        ignored_version: load_prefs(&app).ignored_version,
     })
+}
+
+#[tauri::command]
+pub fn launcher_get_ignored_version(app: AppHandle) -> Result<Option<String>, String> {
+    Ok(load_prefs(&app).ignored_version)
+}
+
+#[tauri::command]
+pub fn launcher_set_ignored_version(
+    app: AppHandle,
+    version: Option<String>,
+) -> Result<(), String> {
+    let mut prefs = load_prefs(&app);
+    prefs.ignored_version = version
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty());
+    save_prefs(&app, &prefs)
 }
 
 #[tauri::command]

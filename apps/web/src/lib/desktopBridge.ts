@@ -122,6 +122,15 @@ export function tauriInvokeAvailable(): boolean {
   return Boolean(tauriGlobal()?.core?.invoke ?? tauriInternals()?.invoke);
 }
 
+/**
+ * True when the desktop updater IPC is usable.
+ * Hostname / shell markers alone are not enough — Android Console on
+ * `127.0.0.1:4000` matches `isDesktopShell()` without Tauri.
+ */
+export function canUseDesktopUpdater(): boolean {
+  return isDesktopShell() && tauriInvokeAvailable();
+}
+
 function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   const fromGlobal = tauriGlobal()?.core?.invoke;
   const invoke = fromGlobal ?? tauriInternals()?.invoke;
@@ -143,7 +152,7 @@ async function toggleHtmlFullscreen(): Promise<void> {
 
 /** Check for a desktop update via tauri-plugin-updater. */
 export function checkDesktopUpdate(): Promise<DesktopUpdateInfo> {
-  if (!isDesktopShell()) {
+  if (!canUseDesktopUpdater()) {
     return Promise.reject(new Error("Not running in Tauri shell"));
   }
   return tauriInvoke<DesktopUpdateInfo>("check_desktop_update");
@@ -151,7 +160,7 @@ export function checkDesktopUpdate(): Promise<DesktopUpdateInfo> {
 
 /** Download and install a desktop update, then relaunch the shell. */
 export function installDesktopUpdate(): Promise<void> {
-  if (!isDesktopShell()) {
+  if (!canUseDesktopUpdater()) {
     return Promise.reject(new Error("Not running in Tauri shell"));
   }
   return tauriInvoke<void>("install_desktop_update");

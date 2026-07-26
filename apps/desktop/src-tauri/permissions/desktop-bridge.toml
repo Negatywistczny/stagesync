@@ -34,6 +34,8 @@ description = "Launcher: bootstrap, local host, remote connect, mDNS browse, rec
 commands.allow = [
   "get_launcher_bootstrap",
   "launcher_list_recent",
+  "launcher_get_ignored_version",
+  "launcher_set_ignored_version",
   "get_sidecar_log_tail",
   "cancel_local_host",
   "discover_lan_hosts",

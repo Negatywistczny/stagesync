@@ -7,7 +7,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("../../lib/setlistApi.js", () => ({
   fetchSetlist: vi.fn(async () => ({
     items: [],
-    autoAdvance: false,
+    enabled: false,
+    autoAdvance: { enabled: false },
     timeBudgetMinutes: 90,
   })),
   patchSetlistAutoAdvance: vi.fn(async () => undefined),

@@ -178,6 +178,89 @@
   overflow: hidden;
 }
 
+.cardCollapsed {
+  flex: 0 0 auto;
+}
+
+.cardToggle {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ss-space-2);
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  min-height: var(--ss-touch-min);
+}
+
+.cardToggle:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.cardToggleMeta {
+  margin-left: auto;
+  min-width: 0;
+}
+
+/* Phone accordion stack: chrome stays put; only the open card scrolls. */
+.accordionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.accordionStack > .cardCollapsed {
+  flex: 0 0 auto;
+}
+
+.accordionStack > .card:not(.cardCollapsed) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.accordionStack > .card:not(.cardCollapsed) > .accordionPanel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Marker class on accordion body panels (see AdminAccordionCard). */
+.accordionPanel {
+  min-height: 0;
+}
+
+.accordionChrome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: var(--ss-space-1) 0;
+}
+
+/* Flatten layout wrappers (columns / bottom grids) on phone accordion. */
+.accordionFlatten {
+  display: contents;
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -328,24 +411,6 @@
 @media (max-width: 768px) {
   .workspace {
     padding: var(--ss-space-3);
-  }
-
-  .setSplit {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(12rem, 0.85fr) minmax(14rem, 1.15fr);
-    overflow: auto;
-  }
-
-  .split {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) auto;
-    overflow: auto;
-    gap: var(--ss-space-3);
-  }
-
-  .split > .card:last-child {
-    flex: 0 0 auto;
-    max-height: none;
   }
 
   .chrome {

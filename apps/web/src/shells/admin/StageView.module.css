@@ -320,7 +320,8 @@
 
 @media (max-width: 768px) {
   .root {
-    gap: var(--ss-space-3);
+    gap: var(--ss-space-2);
+    overflow: hidden;
   }
 
   .masterBarBody {
@@ -331,12 +332,6 @@
   .masterField,
   .masterSwitches {
     flex: 1 1 100%;
-  }
-
-  .bottom {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(12rem, 1fr) minmax(10rem, 0.85fr);
-    gap: var(--ss-space-3);
   }
 
   .composeMeta {

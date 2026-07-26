@@ -13,9 +13,13 @@ import {
   type PresenceClient,
   type SessionStageMessage,
 } from "../../lib/setlistApi.js";
+import { useMqMobile } from "../../lib/useMqMobile.js";
 import shell from "../AdminShell.module.css";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
+import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import styles from "./StageView.module.css";
+
+type StageCardId = "korekta" | "messages" | "clients";
 
 const ROLE_OPTIONS = [
   { id: "karaoke", label: "Tekst" },
@@ -116,6 +120,8 @@ export function StageView() {
   const [liveDesk, setLiveDesk] = useState<LiveDeskSettingsDto | null>(null);
   const [liveDeskError, setLiveDeskError] = useState<string | null>(null);
   const [liveDeskSaving, setLiveDeskSaving] = useState(false);
+  const mobile = useMqMobile();
+  const [openCard, setOpenCard] = useState<StageCardId>("messages");
 
   const refreshMessages = useCallback(async () => {
     try {
@@ -273,16 +279,35 @@ export function StageView() {
   const activeCountLabel =
     messages.length === 1 ? "1 aktywny" : `${messages.length} aktywnych`;
 
+  const messagesCount = (
+    <span
+      className={[
+        styles.sessionMsgCount,
+        messages.length > 0 ? styles.sessionMsgCountOn : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {activeCountLabel}
+    </span>
+  );
+
   return (
-    <div className={styles.root}>
-      <section
-        className={[shell.card, styles.masterBar].join(" ")}
-        aria-label="Korekta na scenie"
+    <div
+      className={mobile ? shell.accordionStack : styles.root}
+      data-admin-mobile={mobile ? "1" : undefined}
+    >
+      <AdminAccordionCard
+        id="korekta"
+        title="Korekta na scenie"
+        titleAs="h1"
+        ariaLabel="Korekta na scenie"
+        mobile={mobile}
+        openId={openCard}
+        onOpen={setOpenCard}
+        className={styles.masterBar}
+        bodyClassName={styles.masterBarBody}
       >
-        <div className={shell.cardHead}>
-          <h1 className={shell.cardTitle}>Korekta na scenie</h1>
-        </div>
-        <div className={styles.masterBarBody}>
           {liveDeskError ? (
             <p className={shell.error} role="alert">
               {liveDeskError}
@@ -370,34 +395,25 @@ export function StageView() {
               </div>
             </>
           )}
-        </div>
-      </section>
+      </AdminAccordionCard>
 
-      <div className={styles.bottom}>
-        <section
-          className={[shell.card, styles.panel].join(" ")}
-          aria-label="Komunikaty"
+      <div className={mobile ? shell.accordionFlatten : styles.bottom}>
+        <AdminAccordionCard
+          id="messages"
+          title="Komunikaty"
+          titleAs="h1"
+          ariaLabel="Komunikaty"
+          mobile={mobile}
+          openId={openCard}
+          onOpen={setOpenCard}
+          className={styles.panel}
+          headMeta={messagesCount}
+          bodyClassName={[
+            shell.cardBody,
+            shell.cardBodyFill,
+            styles.messagesBody,
+          ].join(" ")}
         >
-          <div className={shell.cardHead}>
-            <h1 className={shell.cardTitle}>Komunikaty</h1>
-            <span
-              className={[
-                styles.sessionMsgCount,
-                messages.length > 0 ? styles.sessionMsgCountOn : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              {activeCountLabel}
-            </span>
-          </div>
-          <div
-            className={[
-              shell.cardBody,
-              shell.cardBodyFill,
-              styles.messagesBody,
-            ].join(" ")}
-          >
             {error ? (
               <p className={shell.error} role="alert">
                 {error}
@@ -556,14 +572,21 @@ export function StageView() {
                 })}
               </ul>
             )}
-          </div>
-        </section>
+        </AdminAccordionCard>
 
-        <section
-          className={[shell.card, styles.panel].join(" ")}
-          aria-label="Klienci"
-        >
-          <div className={shell.cardHead}>
+        <AdminAccordionCard
+          id="clients"
+          title="Klienci"
+          titleAs="h1"
+          ariaLabel="Klienci"
+          mobile={mobile}
+          openId={openCard}
+          onOpen={setOpenCard}
+          className={styles.panel}
+          headMeta={
+            <span className={shell.clientsHeadCount}>{headerCountLabel}</span>
+          }
+          desktopHead={
             <div className={shell.clientsHeadLead}>
               <span
                 className={[shell.presenceDot, headerDotClass].join(" ")}
@@ -574,6 +597,8 @@ export function StageView() {
               <h1 className={shell.cardTitle}>Klienci</h1>
               <span className={shell.clientsHeadCount}>{headerCountLabel}</span>
             </div>
+          }
+          headActions={
             <Button
               variant="ghost"
               loading={clientsLoading}
@@ -581,14 +606,13 @@ export function StageView() {
             >
               Odśwież
             </Button>
-          </div>
-          <div
-            className={[
-              shell.cardBody,
-              shell.cardBodyFill,
-              styles.clientsBody,
-            ].join(" ")}
-          >
+          }
+          bodyClassName={[
+            shell.cardBody,
+            shell.cardBodyFill,
+            styles.clientsBody,
+          ].join(" ")}
+        >
             {clientsError ? (
               <p className={shell.error} role="alert">
                 {clientsError}
@@ -654,8 +678,7 @@ export function StageView() {
                 })}
               </ul>
             )}
-          </div>
-        </section>
+        </AdminAccordionCard>
       </div>
     </div>
   );

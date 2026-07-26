@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   canReturnToLauncher,
+  canUseDesktopUpdater,
   checkDesktopUpdate,
   formatUnknownError,
   installDesktopUpdate,
@@ -39,6 +40,37 @@ describe("isDesktopShell", () => {
   it("returns false in a plain browser context", () => {
     vi.stubGlobal("window", {});
     expect(isDesktopShell()).toBe(false);
+  });
+});
+
+describe("canUseDesktopUpdater", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("is false on Android-like :4000 without Tauri invoke", () => {
+    vi.stubGlobal("window", {
+      location: { hostname: "127.0.0.1", port: "4000" },
+    });
+    expect(isDesktopShell()).toBe(true);
+    expect(tauriInvokeAvailable()).toBe(false);
+    expect(canUseDesktopUpdater()).toBe(false);
+  });
+
+  it("is true when desktop shell has invoke", () => {
+    vi.stubGlobal("window", {
+      __STAGESYNC_SHELL__: "desktop",
+      __TAURI__: { core: { invoke: vi.fn() } },
+    });
+    expect(canUseDesktopUpdater()).toBe(true);
+  });
+
+  it("checkDesktopUpdate rejects :4000 heuristic without invoke (no raw IPC error)", async () => {
+    vi.stubGlobal("window", {
+      location: { hostname: "127.0.0.1", port: "4000" },
+    });
+    await expect(checkDesktopUpdate()).rejects.toThrow(/Tauri shell/i);
+    await expect(installDesktopUpdate()).rejects.toThrow(/Tauri shell/i);
   });
 });
 

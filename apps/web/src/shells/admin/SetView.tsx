@@ -23,10 +23,14 @@ import {
   putSetlist,
 } from "../../lib/setlistApi.js";
 import { setlistBudgetPercent } from "../../lib/setlistBudget.js";
+import { useMqMobile } from "../../lib/useMqMobile.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
+import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import { catalogSongBadges } from "./songCatalogBadges.js";
 import shell from "../AdminShell.module.css";
 import styles from "./SetView.module.css";
+
+type SetCardId = "library" | "set";
 
 type SetViewProps = {
   library: Library | null;
@@ -110,6 +114,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const [pickIds, setPickIds] = useState<string[]>([]);
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const templateMenuId = "set-template-menu";
+  const mobile = useMqMobile();
+  const [openCard, setOpenCard] = useState<SetCardId>("set");
 
   useEffect(() => {
     if (!templateMenuOpen) return;
@@ -394,110 +400,101 @@ export function SetView({ library, selectedId }: SetViewProps) {
     </div>
   );
 
-  return (
-    <section className={shell.card} aria-label="Set">
-      <div className={shell.cardHead}>
-        <h1 className={shell.cardTitle}>Set</h1>
+  const errorBlock = error ? (
+    <p className={shell.error} role="alert">
+      {error}
+    </p>
+  ) : null;
+
+  const switches = (
+    <div className={shell.setControls}>
+      <ShellSwitchRow
+        checked={enabled}
+        disabled={pending}
+        onChange={(e) => onToggleEnabled(e.target.checked)}
+      >
+        Aktywny set
+      </ShellSwitchRow>
+      <ShellSwitchRow
+        checked={Boolean(view?.autoAdvance.enabled)}
+        disabled={pending || !enabled}
+        onChange={(e) => void onAutoAdvance(e.target.checked)}
+      >
+        Auto-setlista
+      </ShellSwitchRow>
+    </div>
+  );
+
+  const libraryInner = (
+    <>
+      <div className={shell.setColHead}>
+        {mobile ? null : (
+          <strong className={shell.setColTitle}>Biblioteka</strong>
+        )}
+        <input
+          className={shell.filterInput}
+          type="search"
+          placeholder="Filtr…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          aria-label="Filtr utworów"
+        />
       </div>
-      <div className={shell.cardBody}>
-        {error ? (
-          <p className={shell.error} role="alert">
-            {error}
-          </p>
-        ) : null}
-        <div className={shell.setControls}>
-          <ShellSwitchRow
-            checked={enabled}
-            disabled={pending}
-            onChange={(e) => onToggleEnabled(e.target.checked)}
-          >
-            Aktywny set
-          </ShellSwitchRow>
-          <ShellSwitchRow
-            checked={Boolean(view?.autoAdvance.enabled)}
-            disabled={pending || !enabled}
-            onChange={(e) => void onAutoAdvance(e.target.checked)}
-          >
-            Auto-setlista
-          </ShellSwitchRow>
-        </div>
-
-        <div className={shell.setSplit}>
-          <div
-            className={shell.setCol}
-            role="region"
-            aria-label="Biblioteka"
-          >
-            <div className={shell.setColHead}>
-              <strong className={shell.setColTitle}>Biblioteka</strong>
-              <input
-                className={shell.filterInput}
-                type="search"
-                placeholder="Filtr…"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                aria-label="Filtr utworów"
-              />
-            </div>
-            <ul className={shell.setPickList}>
-              {libraryRows.map((p) => {
-                const inSet = draftProjectIds.includes(p.id);
-                const checked = pickIds.includes(p.id);
-                return (
-                  <li
-                    key={p.id}
-                    className={shell.setPickRow}
-                    draggable={!inSet && !pending}
-                    onDragStart={onLibraryDragStart(p.id)}
-                  >
-                    <label className={shell.setPickLabel}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        disabled={inSet || pending}
-                        onChange={() => onTogglePick(p.id)}
-                      />
-                      <span className={shell.songName}>{p.name}</span>
-                    </label>
-                    <Button
-                      variant="ghost"
-                      iconOnly
-                      disabled={inSet || pending}
-                      aria-label={
-                        inSet
-                          ? `${p.name} — już w secie`
-                          : `Dodaj ${p.name} do setu`
-                      }
-                      onClick={() => onAddOne(p.id)}
-                    >
-                      {inSet ? "✓" : "+"}
-                    </Button>
-                  </li>
-                );
-              })}
-              {libraryRows.length === 0 ? (
-                <li className={shell.muted}>Brak utworów w bibliotece.</li>
-              ) : null}
-            </ul>
-            <div className={styles.libFooter}>
+      <ul className={shell.setPickList}>
+        {libraryRows.map((p) => {
+          const inSet = draftProjectIds.includes(p.id);
+          const checked = pickIds.includes(p.id);
+          return (
+            <li
+              key={p.id}
+              className={shell.setPickRow}
+              draggable={!inSet && !pending}
+              onDragStart={onLibraryDragStart(p.id)}
+            >
+              <label className={shell.setPickLabel}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={inSet || pending}
+                  onChange={() => onTogglePick(p.id)}
+                />
+                <span className={shell.songName}>{p.name}</span>
+              </label>
               <Button
-                variant="secondary"
-                disabled={pending || pickIds.length === 0}
-                aria-label={`Dodaj zaznaczone (${pickIds.length})`}
-                onClick={onAddPicked}
+                variant="ghost"
+                iconOnly
+                disabled={inSet || pending}
+                aria-label={
+                  inSet
+                    ? `${p.name} — już w secie`
+                    : `Dodaj ${p.name} do setu`
+                }
+                onClick={() => onAddOne(p.id)}
               >
-                Dodaj zaznaczone ({pickIds.length})
+                {inSet ? "✓" : "+"}
               </Button>
-            </div>
-          </div>
+            </li>
+          );
+        })}
+        {libraryRows.length === 0 ? (
+          <li className={shell.muted}>Brak utworów w bibliotece.</li>
+        ) : null}
+      </ul>
+      <div className={styles.libFooter}>
+        <Button
+          variant="secondary"
+          disabled={pending || pickIds.length === 0}
+          aria-label={`Dodaj zaznaczone (${pickIds.length})`}
+          onClick={onAddPicked}
+        >
+          Dodaj zaznaczone ({pickIds.length})
+        </Button>
+      </div>
+    </>
+  );
 
-          <div
-            className={shell.setCol}
-            role="region"
-            aria-label="Kolejność setu"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={onSetPanelDrop}
-          >
+  const setInner = (
+    <>
             <div className={styles.summaryBlock}>
               <div className={styles.summaryRow}>
                 <strong className={shell.setColTitle}>
@@ -708,16 +705,80 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 })}
               </ul>
             )}
+    </>
+  );
+
+  const warnings = view?.warnings?.length ? (
+    <ul className={shell.muted}>
+      {view.warnings.map((w) => (
+        <li key={w.code}>{w.message}</li>
+      ))}
+    </ul>
+  ) : null;
+
+  if (mobile) {
+    return (
+      <div className={shell.accordionStack} data-admin-mobile="1">
+        <div className={shell.accordionChrome}>
+          {errorBlock}
+          {switches}
+        </div>
+        <AdminAccordionCard
+          id="library"
+          title="Biblioteka"
+          titleAs="h1"
+          ariaLabel="Biblioteka"
+          mobile={mobile}
+          openId={openCard}
+          onOpen={setOpenCard}
+          bodyClassName={[shell.cardBody, shell.cardBodyFill].join(" ")}
+        >
+          {libraryInner}
+        </AdminAccordionCard>
+        <AdminAccordionCard
+          id="set"
+          title={`Set (${draftItems.length})`}
+          titleAs="h1"
+          ariaLabel="Kolejność setu"
+          mobile={mobile}
+          openId={openCard}
+          onOpen={setOpenCard}
+          bodyClassName={[shell.cardBody, shell.cardBodyFill].join(" ")}
+        >
+          {setInner}
+          {warnings}
+        </AdminAccordionCard>
+      </div>
+    );
+  }
+
+  return (
+    <section className={shell.card} aria-label="Set">
+      <div className={shell.cardHead}>
+        <h1 className={shell.cardTitle}>Set</h1>
+      </div>
+      <div className={shell.cardBody}>
+        {errorBlock}
+        {switches}
+        <div className={shell.setSplit}>
+          <div
+            className={shell.setCol}
+            role="region"
+            aria-label="Biblioteka"
+          >
+            {libraryInner}
+          </div>
+          <div
+            className={shell.setCol}
+            role="region"
+            aria-label="Kolejność setu"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={onSetPanelDrop}
+          >
+            {setInner}
           </div>
         </div>
-
-        {view?.warnings?.length ? (
-          <ul className={shell.muted}>
-            {view.warnings.map((w) => (
-              <li key={w.code}>{w.message}</li>
-            ))}
-          </ul>
-        ) : null}
+        {warnings}
       </div>
     </section>
   );

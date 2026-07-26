@@ -167,6 +167,59 @@
         <p class="footerVersion" id="footerVersion"></p>
       </footer>
     </main>
+
+    <div
+      class="updateOverlay"
+      id="updateOverlay"
+      hidden
+      role="presentation"
+    >
+      <div
+        class="updateDialog"
+        id="updateDialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="updateTitle"
+        aria-describedby="updateNotes"
+      >
+        <h2 class="updateTitle" id="updateTitle">Dostępna aktualizacja</h2>
+        <p class="updateMeta" id="updateMeta"></p>
+        <div class="updateNotes" id="updateNotes">
+          <ul class="updateNotesList" id="updateNotesList"></ul>
+          <p class="updateNotesEmpty" id="updateNotesEmpty" hidden>
+            Brak skróconych release notes — pełny opis w GitHub Releases.
+          </p>
+        </div>
+        <p class="updateError" id="updateError" role="alert" hidden></p>
+        <div class="updateActions">
+          <button
+            type="button"
+            class="ss-btn ss-btn--primary"
+            id="btnUpdateNow"
+            aria-label="Zaktualizuj aplikację"
+          >
+            Zaktualizuj
+          </button>
+          <button
+            type="button"
+            class="ss-btn ss-btn--secondary"
+            id="btnUpdateLater"
+            aria-label="Przypomnij później"
+          >
+            Przypomnij później
+          </button>
+          <button
+            type="button"
+            class="updateSkip"
+            id="btnUpdateSkip"
+            aria-label="Pomiń tę wersję"
+          >
+            Pomiń tę wersję
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="./app.js"></script>
   </body>
 </html>

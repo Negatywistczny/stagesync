@@ -10,9 +10,13 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -526,6 +530,22 @@ class LocalHostService : Service() {
 
     private fun buildNotification(text: String): Notification {
         val openApp = openAppPendingIntent()
+        val stopTitle =
+            SpannableString(getString(R.string.local_host_action_stop)).apply {
+                setSpan(
+                    ForegroundColorSpan(ContextCompat.getColor(this@LocalHostService, R.color.ss_danger)),
+                    0,
+                    length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+        val stopAction =
+            NotificationCompat.Action.Builder(
+                0,
+                stopTitle,
+                stopHostPendingIntent(),
+            ).setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_DELETE)
+                .build()
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.local_host_notification_title))
             .setContentText(text)
@@ -539,11 +559,7 @@ class LocalHostService : Service() {
                 getString(R.string.local_host_action_open),
                 openApp,
             )
-            .addAction(
-                0,
-                getString(R.string.local_host_action_stop),
-                stopHostPendingIntent(),
-            )
+            .addAction(stopAction)
             .build()
     }
 

@@ -5,6 +5,29 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher — aktualizacja:** przy starcie (oraz z menu Sprawdź aktualizacje…) dialog nowej wersji z release notes: **Zaktualizuj**, **Przypomnij później**, **Pomiń tę wersję** (zapamiętane lokalnie).
+
+#### 📚 Dokumentacja
+- **Desktop:** opis dialogu aktualizacji Launchera (Zaktualizuj / Przypomnij później / Pomiń tę wersję).
+
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Admin (telefon):** Utwory, Set, Scena i Host mają akordeon kart (jedna rozwinięta na raz), bez chevrona; przewija się tylko aktywna sekcja pod stałym chrome — tablety zostają przy układzie desktopowym.
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Console (Android):** akcja **Zamknij host** w powiadomieniu lokalnego hosta ma czerwony kolor (destructive).
+
+### Naprawiono
+
+#### 🖥️ App Shell & UI
+- **Admin / Android:** sprawdzanie aktualizacji w Host nie próbuje już API desktopowego Tauri (WebView na `127.0.0.1:4000` mylnie wyglądał jak shell desktopowy) — zostaje ścieżka hosta; aktualizacja APK nadal przez natywny dialog przy połączeniu.
+
 ## [5.2.3](https://github.com/Negatywistczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
 
 ### Dodano

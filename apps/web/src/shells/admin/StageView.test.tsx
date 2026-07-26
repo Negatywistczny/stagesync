@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, act } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const fetchStageMessages = vi.fn(async () => [] as unknown[]);
@@ -46,6 +46,48 @@ describe("StageView regions and delete aria", () => {
     expect(
       screen.getByRole("textbox", { name: "Treść komunikatu" }),
     ).toBeTruthy();
+  });
+
+  it("on mobile expands one Scena card at a time", async () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("max-width: 768px"),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    }));
+
+    fetchStageMessages.mockResolvedValue([]);
+    render(<StageView />);
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Komunikaty/ }),
+      ).toBeTruthy();
+    });
+
+    const messagesToggle = screen.getByRole("button", { name: /Komunikaty/ });
+    expect(messagesToggle.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      screen.getByRole("textbox", { name: "Treść komunikatu" }),
+    ).toBeTruthy();
+
+    act(() => {
+      screen.getByRole("button", { name: /Klienci/ }).click();
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Klienci/ }).getAttribute(
+          "aria-expanded",
+        ),
+      ).toBe("true");
+    });
+    expect(messagesToggle.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      screen.queryByRole("textbox", { name: "Treść komunikatu" }),
+    ).toBeNull();
   });
 
   it("names Usuń with message text", async () => {

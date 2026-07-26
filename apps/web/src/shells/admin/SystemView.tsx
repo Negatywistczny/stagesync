@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { renderSVG } from "uqr";
 import { Button } from "@stagesync/ui";
 import {
@@ -26,7 +26,7 @@ import {
   type SafetyNetStatus,
 } from "../../lib/setlistApi.js";
 import {
-  isDesktopShell,
+  canUseDesktopUpdater,
   checkDesktopUpdate,
   installDesktopUpdate,
   openExternalUrl,
@@ -39,9 +39,10 @@ import {
   DOCS_RELEASES_URL,
 } from "../../lib/docsLinks.js";
 import { APP_VERSION } from "../../lib/appVersion.js";
-import { MQ_MOBILE } from "../../lib/breakpoints.js";
+import { useMqMobile } from "../../lib/useMqMobile.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import shell from "../AdminShell.module.css";
+import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import styles from "./SystemView.module.css";
 
 export type SystemViewProps = {
@@ -51,85 +52,6 @@ export type SystemViewProps = {
 };
 
 type HostCardId = "network" | "about" | "logs" | "midi";
-
-function useMqMobile(): boolean {
-  const [mobile, setMobile] = useState(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return false;
-    return window.matchMedia(MQ_MOBILE).matches;
-  });
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mq = window.matchMedia(MQ_MOBILE);
-    const sync = () => setMobile(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-  return mobile;
-}
-
-function HostCard({
-  id,
-  title,
-  ariaLabel,
-  mobile,
-  openId,
-  onOpen,
-  headMeta,
-  bodyClassName,
-  children,
-}: {
-  id: HostCardId;
-  title: string;
-  ariaLabel: string;
-  mobile: boolean;
-  openId: HostCardId;
-  onOpen: (id: HostCardId) => void;
-  headMeta?: ReactNode;
-  bodyClassName?: string;
-  children: ReactNode;
-}) {
-  const expanded = !mobile || openId === id;
-  const panelId = `host-card-${id}`;
-  return (
-    <section
-      className={`${shell.card} ${styles.card} ${
-        mobile && !expanded ? styles.cardCollapsed : ""
-      }`}
-      aria-label={ariaLabel}
-    >
-      <div className={shell.cardHead}>
-        {mobile ? (
-          <button
-            type="button"
-            className={styles.cardToggle}
-            aria-expanded={expanded}
-            aria-controls={panelId}
-            onClick={() => onOpen(id)}
-          >
-            <h2 className={shell.cardTitle}>{title}</h2>
-            {headMeta ? (
-              <span className={styles.cardToggleMeta}>{headMeta}</span>
-            ) : null}
-            <span className={styles.cardChevron} aria-hidden>
-              {expanded ? "▾" : "▸"}
-            </span>
-          </button>
-        ) : (
-          <>
-            <h2 className={shell.cardTitle}>{title}</h2>
-            {headMeta}
-          </>
-        )}
-      </div>
-      {expanded ? (
-        <div id={panelId} className={bodyClassName ?? styles.cardBody}>
-          {children}
-        </div>
-      ) : null}
-    </section>
-  );
-}
 
 /** Admin Host — two-column content-height layout (Sieć+APK | Logi / About | MIDI). */
 export function SystemView({
@@ -295,15 +217,19 @@ export function SystemView({
   })();
 
   return (
-    <div className={styles.root} data-host-mobile={mobile ? "1" : undefined}>
-      <div className={styles.column}>
-        <HostCard
+    <div
+      className={mobile ? shell.accordionStack : styles.root}
+      data-host-mobile={mobile ? "1" : undefined}
+    >
+      <div className={mobile ? shell.accordionFlatten : styles.column}>
+        <AdminAccordionCard
           id="network"
           title="Połączenie & Sieć"
           ariaLabel="Połączenie i sieć"
           mobile={mobile}
           openId={openCard}
           onOpen={setOpenCard}
+          className={styles.card}
           bodyClassName={styles.cardBody}
         >
             <div className={styles.networkMain}>
@@ -386,15 +312,16 @@ export function SystemView({
                 apkUrl={consoleApkUrl}
               />
             </div>
-        </HostCard>
+        </AdminAccordionCard>
 
-        <HostCard
+        <AdminAccordionCard
           id="about"
           title="O Aplikacji & Aktualizacje"
           ariaLabel="O aplikacji i aktualizacje"
           mobile={mobile}
           openId={openCard}
           onOpen={setOpenCard}
+          className={styles.card}
           bodyClassName={styles.cardBody}
         >
             <div className={styles.aboutBody}>
@@ -420,17 +347,18 @@ export function SystemView({
                 onAutoCheckConsumed={onAutoCheckUpdateConsumed}
               />
             </div>
-        </HostCard>
+        </AdminAccordionCard>
       </div>
 
-      <div className={styles.column}>
-        <HostCard
+      <div className={mobile ? shell.accordionFlatten : styles.column}>
+        <AdminAccordionCard
           id="logs"
           title="Logi serwera"
           ariaLabel="Logi serwera"
           mobile={mobile}
           openId={openCard}
           onOpen={setOpenCard}
+          className={styles.card}
           headMeta={<span className={shell.muted}>{lines.length}</span>}
           bodyClassName={styles.cardBodyFill}
         >
@@ -506,15 +434,16 @@ export function SystemView({
                 Pobierz (.zip)
               </Button>
             </div>
-        </HostCard>
+        </AdminAccordionCard>
 
-        <HostCard
+        <AdminAccordionCard
           id="midi"
           title="MIDI & Safety Net"
           ariaLabel="MIDI i Safety Net"
           mobile={mobile}
           openId={openCard}
           onOpen={setOpenCard}
+          className={styles.card}
           bodyClassName={styles.cardBody}
         >
             <div className={styles.midiStack}>
@@ -669,7 +598,7 @@ export function SystemView({
                 </div>
               </div>
             </div>
-        </HostCard>
+        </AdminAccordionCard>
       </div>
     </div>
   );
@@ -730,7 +659,8 @@ function UpdatePanel({
   const [done, setDone] = useState(false);
   const [confirmHostUpdate, setConfirmHostUpdate] = useState(false);
   const [confirmDesktopUpdate, setConfirmDesktopUpdate] = useState(false);
-  const inTauri = isDesktopShell();
+  // Require real Tauri IPC — Android Console on :4000 matches isDesktopShell() without invoke.
+  const inTauri = canUseDesktopUpdater();
 
   const handleCheck = useCallback(async () => {
     setChecking(true);

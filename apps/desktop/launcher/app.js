@@ -1,8 +1,13 @@
 /** @typedef {{ name: string, host: string, port: number, version?: string | null, url: string, hostname?: string | null, project?: string | null, status?: string | null }} DiscoveredHost */
 /** @typedef {{ url: string, label: string }} RecentHost */
-/** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null }} LauncherBootstrap */
+/** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null, ignoredVersion?: string | null }} LauncherBootstrap */
+/** @typedef {{ available: boolean, version?: string | null, current: string, notes?: string | null }} DesktopUpdateInfo */
 
 import { localErrorActionsVisibility } from "./localErrorActions.js";
+import {
+  formatReleaseNotes,
+  shouldShowUpdateDialog,
+} from "./updateDialog.js";
 
 const SCAN_MIN_MS = 900;
 const LABEL_LOCAL_IDLE = "Uruchom lokalny host";
@@ -53,6 +58,15 @@ const el = {
   recentList: document.getElementById("recentList"),
   appFooter: document.getElementById("appFooter"),
   footerVersion: document.getElementById("footerVersion"),
+  updateOverlay: document.getElementById("updateOverlay"),
+  updateTitle: document.getElementById("updateTitle"),
+  updateMeta: document.getElementById("updateMeta"),
+  updateNotesList: document.getElementById("updateNotesList"),
+  updateNotesEmpty: document.getElementById("updateNotesEmpty"),
+  updateError: document.getElementById("updateError"),
+  btnUpdateNow: document.getElementById("btnUpdateNow"),
+  btnUpdateLater: document.getElementById("btnUpdateLater"),
+  btnUpdateSkip: document.getElementById("btnUpdateSkip"),
 };
 
 /** @type {LauncherBootstrap | null} */
@@ -66,6 +80,118 @@ let localHasError = false;
 let lastLocalErrorMessage = "";
 /** @type {string} */
 let lastLocalLog = "";
+/** @type {DesktopUpdateInfo | null} */
+let pendingUpdate = null;
+let updateInstalling = false;
+
+function setUpdateError(msg) {
+  if (!msg) {
+    el.updateError.hidden = true;
+    el.updateError.textContent = "";
+    return;
+  }
+  el.updateError.hidden = false;
+  el.updateError.textContent = msg;
+}
+
+function hideUpdateDialog() {
+  el.updateOverlay.hidden = true;
+  pendingUpdate = null;
+  setUpdateError(null);
+  el.btnUpdateNow.disabled = false;
+  el.btnUpdateLater.disabled = false;
+  el.btnUpdateSkip.disabled = false;
+  el.btnUpdateNow.textContent = "Zaktualizuj";
+}
+
+/**
+ * @param {DesktopUpdateInfo} info
+ */
+function showUpdateDialog(info) {
+  pendingUpdate = info;
+  const next = info.version ?? "?";
+  const cur = info.current ?? bootstrap?.expectedVersion ?? "?";
+  el.updateTitle.textContent = `Dostępna wersja ${next}`;
+  el.updateMeta.textContent = `Masz ${cur}. Aktualizacja pobierze plik z GitHub Releases i uruchomi StageSync ponownie.`;
+  const bullets = formatReleaseNotes(info.notes);
+  el.updateNotesList.replaceChildren();
+  if (bullets.length === 0) {
+    el.updateNotesEmpty.hidden = false;
+  } else {
+    el.updateNotesEmpty.hidden = true;
+    for (const text of bullets) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      el.updateNotesList.append(li);
+    }
+  }
+  setUpdateError(null);
+  el.updateOverlay.hidden = false;
+  el.btnUpdateLater.focus();
+}
+
+/**
+ * @param {{ force?: boolean }} [opts]
+ */
+async function checkForDesktopUpdate(opts = {}) {
+  try {
+    /** @type {DesktopUpdateInfo} */
+    const info = await invoke("check_desktop_update");
+    const ignored =
+      bootstrap?.ignoredVersion ??
+      (await invoke("launcher_get_ignored_version").catch(() => null));
+    if (!shouldShowUpdateDialog(info, ignored, opts)) {
+      if (opts.force && info && !info.available) {
+        // Manual check while already current — brief footer flash is enough.
+        el.footerVersion.textContent = `v${info.current} (aktualna)`;
+      }
+      return;
+    }
+    if (info.available) showUpdateDialog(info);
+  } catch (err) {
+    if (opts.force) {
+      const cur = bootstrap?.expectedVersion ?? "?";
+      el.footerVersion.textContent = `v${cur} — nie udało się sprawdzić aktualizacji`;
+      console.warn("check_desktop_update", err);
+    }
+    // Silent on auto-check (offline / unsigned builds).
+  }
+}
+
+async function installPendingUpdate() {
+  if (!pendingUpdate?.available || updateInstalling) return;
+  updateInstalling = true;
+  el.btnUpdateNow.disabled = true;
+  el.btnUpdateLater.disabled = true;
+  el.btnUpdateSkip.disabled = true;
+  el.btnUpdateNow.textContent = "Aktualizuję…";
+  setUpdateError(null);
+  try {
+    await invoke("install_desktop_update");
+    // process restarts on success
+  } catch (err) {
+    updateInstalling = false;
+    el.btnUpdateNow.disabled = false;
+    el.btnUpdateLater.disabled = false;
+    el.btnUpdateSkip.disabled = false;
+    el.btnUpdateNow.textContent = "Zaktualizuj";
+    setUpdateError(String(err?.message ?? err));
+  }
+}
+
+async function skipPendingUpdate() {
+  const ver = pendingUpdate?.version;
+  if (ver) {
+    try {
+      await invoke("launcher_set_ignored_version", { version: ver });
+      if (bootstrap) bootstrap.ignoredVersion = ver;
+    } catch (err) {
+      setUpdateError(String(err?.message ?? err));
+      return;
+    }
+  }
+  hideUpdateDialog();
+}
 
 function setBusy(next) {
   busy = next;
@@ -616,8 +742,25 @@ async function init() {
     setManualMode("idle");
   });
 
+  el.btnUpdateNow.addEventListener("click", () => void installPendingUpdate());
+  el.btnUpdateLater.addEventListener("click", () => hideUpdateDialog());
+  el.btnUpdateSkip.addEventListener("click", () => void skipPendingUpdate());
+  el.updateOverlay.addEventListener("click", (e) => {
+    if (e.target === el.updateOverlay && !updateInstalling) hideUpdateDialog();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !el.updateOverlay.hidden && !updateInstalling) {
+      hideUpdateDialog();
+    }
+  });
+
+  await listen("launcher-check-update", () => {
+    void checkForDesktopUpdate({ force: true });
+  });
+
   void refreshDiscovery();
   void refreshRecent();
+  void checkForDesktopUpdate();
 }
 
 void init();

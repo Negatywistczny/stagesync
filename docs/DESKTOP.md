@@ -86,14 +86,18 @@ Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000
 
 ## Aktualizacja aplikacji
 
-Gdy jest dostępna nowa wersja:
+Gdy jest dostępna nowa wersja, **Launcher** przy starcie pokazuje dialog:
 
-1. Uruchom StageSync.
-2. W Adminie → **O aplikacji** → **Sprawdź aktualizacje** (albo menu **StageSync** → **Sprawdź aktualizacje…**).
-3. Jeśli jest nowsza wersja: **Aktualizuj aplikację** — potwierdź ostrzeżenie (restart; zapisz niezapisane zmiany). **Anuluj** przerywa aktualizację.
-4. Aplikacja pobierze aktualizację i uruchomi się ponownie.
+1. **Zaktualizuj** — pobiera instalator z GitHub Releases (`latest.json` + minisign) i uruchamia StageSync ponownie.
+2. **Przypomnij później** — zamyka dialog; przypomnienie wraca przy następnym uruchomieniu.
+3. **Pomiń tę wersję** — zapisuje wersję w lokalnej konfiguracji Launchera (`ignoredVersion`) i nie pyta ponownie o tę konkretną wersję.
 
-> Aktualizacja wymaga internetu. Dane projektów są u hosta (`~/Documents/StageSync` przy lokalnym hoście) — okno ich nie przechowuje osobno.
+Skrót zmian pochodzi z release notes aktualizacji. Menu **StageSync** → **Sprawdź aktualizacje…** na ekranie Launchera otwiera ten sam dialog (także gdy wersja była pominięta).
+
+Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji** → **Sprawdź aktualizacje** / **Aktualizuj aplikację** (z potwierdzeniem restartu).
+
+> Aktualizacja wymaga internetu. Dane projektów są u hosta (`~/Documents/StageSync` przy lokalnym hoście) — okno ich nie przechowuje osobno.  
+> Na Androidzie (Performer / Console) aktualizacja to osobny dialog APK z hosta — nie Tauri updater.
 
 ## Pełny ekran i przeciąganie plików
 

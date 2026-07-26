@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri::{Manager, RunEvent, WindowEvent};
+use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -365,6 +365,20 @@ fn navigate_main(app: &tauri::AppHandle, path: &str) {
     };
     if let Ok(parsed) = nav_url(path).parse() {
         let _ = window.navigate(parsed);
+    }
+}
+
+/// True when the main webview still shows the bundled Launcher (cold-start), not host SPA.
+fn window_url_is_launcher(app: &tauri::AppHandle) -> bool {
+    let Some(window) = app.get_webview_window("main") else {
+        return true;
+    };
+    match window.url() {
+        Ok(url) => {
+            let path = url.path();
+            path.is_empty() || path == "/" || path == "/index.html"
+        }
+        Err(_) => true,
     }
 }
 
@@ -743,7 +757,13 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
         match id {
             "about" | "help_about" => navigate_main(&app, "/admin?section=host"),
             "preferences" => dispatch_menu_action(&app, "preferences"),
-            "check_updates" => navigate_main(&app, "/admin?section=host&action=check-update"),
+            "check_updates" => {
+                if window_url_is_launcher(&app) {
+                    let _ = app.emit("launcher-check-update", ());
+                } else {
+                    navigate_main(&app, "/admin?section=host&action=check-update");
+                }
+            }
             "file_save" => dispatch_menu_action(&app, "save"),
             "edit_undo" => dispatch_menu_action(&app, "edit-undo"),
             "edit_redo" => dispatch_menu_action(&app, "edit-redo"),
@@ -985,6 +1005,8 @@ pub fn run() {
             set_edit_history_state,
             launcher::get_launcher_bootstrap,
             launcher::launcher_list_recent,
+            launcher::launcher_get_ignored_version,
+            launcher::launcher_set_ignored_version,
             launcher::get_sidecar_log_tail,
             launcher::cancel_local_host,
             launcher::discover_lan_hosts,

@@ -28,6 +28,7 @@ import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
+import { useMqMobile } from "../lib/useMqMobile.js";
 import { filterAndSortLibrarySongs } from "./admin/filterLibrarySongs.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
@@ -55,6 +56,7 @@ import {
   ShellPromptDialog,
 } from "./ShellBlockingDialog.js";
 import { ProjectFilesPanel } from "./admin/ProjectFilesPanel.js";
+import { AdminAccordionCard } from "./admin/AdminAccordionCard.js";
 import { catalogSongBadges, songInspectorMeta } from "./admin/songCatalogBadges.js";
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
@@ -700,6 +702,8 @@ function SongsView({
   const [sort, setSort] = useState<"library" | "title" | "pc">("library");
   const [dbMenuOpen, setDbMenuOpen] = useState(false);
   const [inspectorProject, setInspectorProject] = useState<Project | null>(null);
+  const [openCard, setOpenCard] = useState<"songs" | "inspector">("songs");
+  const mobile = useMqMobile();
   const dbMenuId = useId();
   const navigate = useNavigate();
 
@@ -722,47 +726,99 @@ function SongsView({
     [inspectorProject],
   );
 
+  const selectSong = (id: string) => {
+    onSelect(id);
+    if (mobile) setOpenCard("inspector");
+  };
+
+  const songsHeadActions = (
+    <div className={styles.actions}>
+      <SettingsPopoverAnchor>
+        <Button
+          variant="ghost"
+          disabled={locked}
+          aria-expanded={dbMenuOpen}
+          aria-haspopup="dialog"
+          aria-controls={dbMenuOpen ? dbMenuId : undefined}
+          onClick={() => setDbMenuOpen((o) => !o)}
+        >
+          Zarządzaj bazą ▾
+        </Button>
+        {dbMenuOpen ? (
+          <SettingsPopover
+            id={dbMenuId}
+            title="Baza plików"
+            onClose={() => setDbMenuOpen(false)}
+          >
+            <LibraryFilesCard
+              compact
+              locked={locked}
+              error={actionError}
+              notice={actionNotice}
+              onOpenImport={() => {
+                setDbMenuOpen(false);
+                onImport();
+              }}
+              onExport={onExportLibrary}
+              onImportFile={onImportFile}
+            />
+          </SettingsPopover>
+        ) : null}
+      </SettingsPopoverAnchor>
+    </div>
+  );
+
+  const inspectorDesktopHead = selected ? (
+    <div className={styles.inspectorHead}>
+      <div className={styles.nameRow}>
+        <Input
+          id="admin-project-name"
+          value={draftName}
+          maxLength={200}
+          disabled={locked}
+          aria-label="Nazwa projektu"
+          title={selected.id}
+          onChange={(e) => onDraftNameChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && nameDirty && !locked) {
+              e.preventDefault();
+              onRename();
+            }
+          }}
+        />
+        <Button
+          variant="primary"
+          loading={commandPending}
+          disabled={locked || !nameDirty}
+          onClick={onRename}
+        >
+          Zapisz
+        </Button>
+      </div>
+      <p className={styles.inspectorIdQuiet} title={selected.id}>
+        ID · {selected.id.slice(0, 8)}…
+      </p>
+    </div>
+  ) : (
+    <h2 className={styles.cardTitle}>Wybrany utwór</h2>
+  );
+
   return (
-    <div className={styles.split}>
-      <section className={styles.card} aria-label="Utwory">
-        <div className={styles.cardHead}>
-          <h1 className={styles.cardTitle}>Utwory</h1>
-          <div className={styles.actions}>
-            <SettingsPopoverAnchor>
-              <Button
-                variant="ghost"
-                disabled={locked}
-                aria-expanded={dbMenuOpen}
-                aria-haspopup="dialog"
-                aria-controls={dbMenuOpen ? dbMenuId : undefined}
-                onClick={() => setDbMenuOpen((o) => !o)}
-              >
-                Zarządzaj bazą ▾
-              </Button>
-              {dbMenuOpen ? (
-                <SettingsPopover
-                  id={dbMenuId}
-                  title="Baza plików"
-                  onClose={() => setDbMenuOpen(false)}
-                >
-                  <LibraryFilesCard
-                    compact
-                    locked={locked}
-                    error={actionError}
-                    notice={actionNotice}
-                    onOpenImport={() => {
-                      setDbMenuOpen(false);
-                      onImport();
-                    }}
-                    onExport={onExportLibrary}
-                    onImportFile={onImportFile}
-                  />
-                </SettingsPopover>
-              ) : null}
-            </SettingsPopoverAnchor>
-          </div>
-        </div>
-        <div className={[styles.cardBody, styles.cardBodyFill].join(" ")}>
+    <div
+      className={mobile ? styles.accordionStack : styles.split}
+      data-admin-mobile={mobile ? "1" : undefined}
+    >
+      <AdminAccordionCard
+        id="songs"
+        title="Utwory"
+        titleAs="h1"
+        ariaLabel="Utwory"
+        mobile={mobile}
+        openId={openCard}
+        onOpen={setOpenCard}
+        headActions={songsHeadActions}
+        bodyClassName={[styles.cardBody, styles.cardBodyFill].join(" ")}
+      >
           <ShellToolbar>
             <Input
               placeholder="Filtruj…"
@@ -820,7 +876,7 @@ function SongsView({
                     .filter(Boolean)
                     .join(" ")}
                   disabled={locked}
-                  onClick={() => onSelect(p.id)}
+                  onClick={() => selectSong(p.id)}
                 >
                   <span className={styles.songPc}>
                     {p.isTemplate ? "wzór" : (p.midiProgramId ?? "—")}
@@ -889,16 +945,22 @@ function SongsView({
               </ul>
             )}
           </details>
-        </div>
-      </section>
+      </AdminAccordionCard>
 
-      <aside className={styles.card} aria-label="Wybrany utwór">
-        <div className={styles.cardHead}>
-          {selected ? (
+      <AdminAccordionCard
+        id="inspector"
+        title={selected ? draftName || selected.name : "Wybrany utwór"}
+        ariaLabel="Wybrany utwór"
+        mobile={mobile}
+        openId={openCard}
+        onOpen={setOpenCard}
+        desktopHead={inspectorDesktopHead}
+      >
+          {mobile && selected ? (
             <div className={styles.inspectorHead}>
               <div className={styles.nameRow}>
                 <Input
-                  id="admin-project-name"
+                  id="admin-project-name-mobile"
                   value={draftName}
                   maxLength={200}
                   disabled={locked}
@@ -925,11 +987,7 @@ function SongsView({
                 ID · {selected.id.slice(0, 8)}…
               </p>
             </div>
-          ) : (
-            <h2 className={styles.cardTitle}>Wybrany utwór</h2>
-          )}
-        </div>
-        <div className={styles.cardBody}>
+          ) : null}
           {selected ? (
             <div className={styles.inspectorStack}>
               <div className={styles.inspectorPrimary}>
@@ -1023,8 +1081,7 @@ function SongsView({
           ) : (
             <p className={styles.muted}>Wybierz utwór z listy.</p>
           )}
-        </div>
-      </aside>
+      </AdminAccordionCard>
     </div>
   );
 }

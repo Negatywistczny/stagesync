@@ -377,3 +377,108 @@ body {
   flex-wrap: wrap;
   gap: var(--ss-space-2);
 }
+
+/* —— Update Dialog (industry-standard three actions) —— */
+
+.updateOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ss-z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--ss-space-4);
+  background: color-mix(in srgb, var(--ss-color-bg) 72%, transparent);
+}
+
+.updateOverlay[hidden] {
+  display: none;
+}
+
+.updateDialog {
+  box-sizing: border-box;
+  width: min(28rem, 100%);
+  max-height: min(80dvh, 36rem);
+  overflow: auto;
+  padding: var(--ss-space-5);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-md);
+  background: var(--ss-color-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+}
+
+.updateTitle {
+  margin: 0;
+  font-size: var(--ss-text-lg);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+}
+
+.updateMeta {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.updateNotesList {
+  margin: 0;
+  padding-left: var(--ss-space-5);
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-relaxed);
+}
+
+.updateNotesList li + li {
+  margin-top: var(--ss-space-1);
+}
+
+.updateNotesEmpty {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.updateError {
+  margin: 0;
+  color: var(--ss-color-danger);
+  font-size: var(--ss-text-sm);
+}
+
+.updateActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-2);
+}
+
+.updateActions .ss-btn {
+  width: 100%;
+}
+
+.updateSkip {
+  align-self: center;
+  margin: 0;
+  padding: var(--ss-space-1) var(--ss-space-2);
+  border: 0;
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-sm);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.updateSkip:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--ss-radius-sm);
+}
+
+@media (hover: hover) {
+  .updateSkip:hover {
+    color: var(--ss-color-text);
+  }
+}
