@@ -51,7 +51,7 @@ object LocalUiStore {
         return runCatching { parseUiHash(file.readText()) }.getOrNull()
     }
 
-    private fun parseUiHash(json: String): String? {
+    internal fun parseUiHash(json: String): String? {
         val m = Regex("\"uiHash\"\\s*:\\s*\"([^\"]+)\"").find(json) ?: return null
         return m.groupValues[1]
     }
