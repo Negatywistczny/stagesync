@@ -492,22 +492,23 @@ jobs:
               | sed 's#.*/assets/##')
             if [ -n "$MSI_ID" ]; then
               NEW_URL="https://api.github.com/repos/${REPO}/releases/assets/${MSI_ID}"
-              python3 - "$NEW_URL" <<'PY'
-import json, pathlib, sys
-new_url = sys.argv[1]
-path = pathlib.Path("latest.json")
-data = json.loads(path.read_text())
-changed = False
-for key, platform in data.get("platforms", {}).items():
-    if "windows" in key and platform.get("url") != new_url:
-        platform["url"] = new_url
-        changed = True
-if changed:
-    path.write_text(json.dumps(data, indent=2) + "\n")
-print("latest.json windows url ->", new_url, "changed=", changed)
-PY
-              gh release upload "$TAG" latest.json -R "$REPO" --clobber
-              echo "Updated latest.json MSI asset URLs"
+              # jq (not a column-0 heredoc) — unindented <<'PY' breaks Actions YAML parse
+              jq --arg url "$NEW_URL" '
+                .platforms |= with_entries(
+                  if (.key | contains("windows")) and .value.url != $url
+                  then .value.url = $url
+                  else .
+                  end
+                )
+              ' latest.json > latest.json.tmp
+              if ! cmp -s latest.json latest.json.tmp; then
+                mv latest.json.tmp latest.json
+                gh release upload "$TAG" latest.json -R "$REPO" --clobber
+                echo "Updated latest.json MSI asset URLs -> $NEW_URL"
+              else
+                rm -f latest.json.tmp
+                echo "latest.json windows urls already current"
+              fi
             else
               echo "WARN: $MSI_NAME not found on release — latest.json unchanged"
             fi
