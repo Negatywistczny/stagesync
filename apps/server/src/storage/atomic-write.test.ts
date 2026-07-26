@@ -36,4 +36,20 @@ describe("writeJsonAtomic", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("serializes nulls/arrays and ends with a newline", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-atomic-nl-"));
+    try {
+      const file = join(dir, "payload.json");
+      await writeJsonAtomic(file, { items: [null, { id: "a" }], ok: null });
+      const raw = await readFile(file, "utf8");
+      expect(raw.endsWith("\n")).toBe(true);
+      expect(JSON.parse(raw)).toEqual({
+        items: [null, { id: "a" }],
+        ok: null,
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });
