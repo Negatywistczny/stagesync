@@ -2,25 +2,48 @@ import { iconSvg } from "./icons.js";
 
 export type InstallGuideTab = "macos" | "windows" | "android";
 
+interface InstallStep {
+  text: string;
+  /** Exact shell / path snippet shown under the step (e.g. macOS quarantine). */
+  code?: string;
+}
+
 const TABS: { id: InstallGuideTab; label: string }[] = [
   { id: "macos", label: "macOS" },
   { id: "windows", label: "Windows" },
   { id: "android", label: "Android (APK)" },
 ];
 
-const STEPS: Record<InstallGuideTab, string[]> = {
+const STEPS: Record<InstallGuideTab, InstallStep[]> = {
   macos: [
-    "Przeciągnij aplikację do folderu Aplikacje.",
-    "Jeśli zobaczysz ostrzeżenie Gatekeepera: kliknij ikonę prawym przyciskiem myszy → Otwórz.",
-    "Potwierdź klikając Otwórz mimo to.",
+    {
+      text: "Otwórz pobrany plik .dmg i przeciągnij StageSync do folderu Aplikacje.",
+    },
+    {
+      text: "Otwórz Terminal (Spotlight: Terminal) i wklej poniższą komendę — bez niej macOS często blokuje aplikację, czasem z mylącym komunikatem „uszkodzona”:",
+      code: "xattr -cr /Applications/StageSync.app\nopen /Applications/StageSync.app",
+    },
+    {
+      text: "Tę samą komendę uruchom ponownie po każdej świeżej instalacji z .dmg.",
+    },
+    {
+      text: "Jeśli wolisz bez Terminala: prawy klik na StageSync → Otwórz → Otwórz, albo Ustawienia systemowe → Prywatność i ochrona → Otwórz mimo to.",
+    },
   ],
   windows: [
-    "Uruchom plik .msi.",
-    "W przypadku komunikatu SmartScreen kliknij Więcej informacji → Uruchom mimo to.",
+    { text: "Uruchom pobrany plik .msi i przejdź przez instalator." },
+    {
+      text: "Gdy pojawi się SmartScreen: kliknij Więcej informacji → Uruchom mimo to.",
+    },
   ],
   android: [
-    "Otwórz pobrany plik .apk.",
-    "Zezwól na instalację aplikacji z tego źródła w ustawieniach Androida.",
+    { text: "Otwórz pobrany plik .apk." },
+    {
+      text: "Zezwól na instalację aplikacji z tego źródła w ustawieniach Androida (gdy system o to poprosi).",
+    },
+    {
+      text: "(Opcjonalnie) Jeśli Play Protect blokuje instalację: otwórz Sklep Play → ikona profilu → Ochrona (Play Protect) → Ustawienia (koło zębate) → wyłącz „Skanuj aplikacje za pomocą Play Protect”. Po instalacji możesz włączyć ochronę z powrotem. Przy jednorazowym ostrzeżeniu wystarczy często Więcej szczegółów → Zainstaluj mimo to.",
+    },
   ],
 };
 
@@ -65,6 +88,38 @@ function onDialogClose(): void {
   document.body.classList.remove("has-modal");
   lastFocus?.focus();
   lastFocus = null;
+}
+
+function renderStep(step: InstallStep): HTMLLIElement {
+  const li = el("li", "install-guide__step");
+  li.append(el("p", "install-guide__step-text", step.text));
+  if (step.code) {
+    const wrap = el("div", "install-guide__code-wrap");
+    const pre = el("pre", "install-guide__code");
+    const code = el("code", undefined, step.code);
+    pre.append(code);
+
+    const copy = el("button", "install-guide__copy", "Kopiuj");
+    copy.type = "button";
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(step.code!);
+        copy.textContent = "Skopiowano";
+        window.setTimeout(() => {
+          copy.textContent = "Kopiuj";
+        }, 1600);
+      } catch {
+        copy.textContent = "Zaznacz ręcznie";
+        window.setTimeout(() => {
+          copy.textContent = "Kopiuj";
+        }, 2000);
+      }
+    });
+
+    wrap.append(pre, copy);
+    li.append(wrap);
+  }
+  return li;
 }
 
 function buildDialog(): HTMLDialogElement {
@@ -128,7 +183,7 @@ function buildDialog(): HTMLDialogElement {
 
     const list = el("ol", "install-guide__steps");
     for (const step of STEPS[tab.id]) {
-      list.append(el("li", "install-guide__step", step));
+      list.append(renderStep(step));
     }
     panel.append(list);
     panels.set(tab.id, panel);
@@ -142,7 +197,6 @@ function buildDialog(): HTMLDialogElement {
     if (event.target === root) closeGuide();
   });
   root.addEventListener("cancel", (event) => {
-    // Native dialog already closes on Esc; keep default, just ensure cleanup via close event.
     event.preventDefault();
     closeGuide();
   });
