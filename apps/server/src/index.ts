@@ -10,7 +10,7 @@ import { publishSetlistHubFromStores } from "./transport/setlist-hub.js";
 import { attachTransportWs } from "./transport/ws.js";
 
 loadDotenvIntoProcess();
-initServerSentry();
+await initServerSentry();
 
 function resolveListenPort(): number {
   const raw = process.env.PORT;

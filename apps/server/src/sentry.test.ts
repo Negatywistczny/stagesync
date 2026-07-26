@@ -18,7 +18,7 @@ describe("initServerSentry", () => {
     const { initServerSentry, isServerSentryEnabled } = await import(
       "./sentry.js"
     );
-    expect(initServerSentry()).toBe(false);
+    expect(await initServerSentry()).toBe(false);
     expect(isServerSentryEnabled()).toBe(false);
     expect(init).not.toHaveBeenCalled();
   });
@@ -30,7 +30,7 @@ describe("initServerSentry", () => {
     const { initServerSentry, isServerSentryEnabled } = await import(
       "./sentry.js"
     );
-    expect(initServerSentry()).toBe(true);
+    expect(await initServerSentry()).toBe(true);
     expect(isServerSentryEnabled()).toBe(true);
     expect(init).toHaveBeenCalledOnce();
     expect(init.mock.calls[0]?.[0]).toMatchObject({
@@ -51,7 +51,7 @@ describe("initServerSentry", () => {
     const { initServerSentry, isServerSentryEnabled } = await import(
       "./sentry.js"
     );
-    expect(initServerSentry()).toBe(false);
+    expect(await initServerSentry()).toBe(false);
     expect(isServerSentryEnabled()).toBe(false);
     expect(warn).toHaveBeenCalled();
   });

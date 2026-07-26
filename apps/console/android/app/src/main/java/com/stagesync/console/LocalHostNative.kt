@@ -63,6 +63,22 @@ object LocalHostNative {
     }
 
     /**
+     * Redirect Node/process stdout+stderr to [path] (truncate) before
+     * [startNodeWithArguments]. Survives `:host` death for launcher UI.
+     */
+    @JvmStatic
+    fun redirectStdio(path: String): Boolean {
+        if (!ensureLoaded()) return false
+        return try {
+            nativeRedirectStdio(path)
+        } catch (err: Throwable) {
+            lastLoadError = err.message ?: err.javaClass.simpleName
+            Log.e(TAG, "redirectStdio failed: $path", err)
+            false
+        }
+    }
+
+    /**
      * Blocks until Node exits. Call from a dedicated background thread with a
      * large stack (nodejs-mobile / V8).
      * @return Node process exit code (0 = clean).
@@ -117,6 +133,9 @@ object LocalHostNative {
 
     @JvmStatic
     private external fun nativeChdir(path: String): Boolean
+
+    @JvmStatic
+    private external fun nativeRedirectStdio(path: String): Boolean
 
     @JvmStatic
     private external fun nativeStartNodeWithArguments(arguments: Array<String>): Int

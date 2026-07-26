@@ -413,6 +413,13 @@ async function packServerTree(destServer) {
   await pruneDeployedNodeModules(join(destServer, "node_modules"));
   await pruneTypescriptSourceTrees(join(destServer, "node_modules"));
   await assertDeployHasRuntimeDeps(destServer);
+
+  const androidBootSrc = join(repoRoot, "apps/console/android-boot.mjs");
+  if (!existsSync(androidBootSrc)) {
+    throw new Error(`[local-host] missing ${androidBootSrc}`);
+  }
+  await cp(androidBootSrc, join(destServer, "android-boot.mjs"));
+  console.log("[local-host] wrote server/android-boot.mjs");
 }
 
 async function packWebAndSeed(hostRoot) {

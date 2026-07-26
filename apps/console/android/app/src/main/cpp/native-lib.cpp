@@ -1,5 +1,7 @@
 #include <jni.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -22,6 +24,46 @@ Java_com_stagesync_console_LocalHostNative_nativeIsBridgeReady(
     JNIEnv * /* env */,
     jclass /* clazz */) {
   SS_LOGI("nativeIsBridgeReady=true");
+  return JNI_TRUE;
+}
+
+/**
+ * Redirect stdout + stderr to [path] (truncate) so the launcher can read a
+ * surviving log after `:host` aborts. Unbuffered so the last lines flush.
+ */
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_stagesync_console_LocalHostNative_nativeRedirectStdio(
+    JNIEnv *env,
+    jclass /* clazz */,
+    jstring path) {
+  if (path == nullptr) {
+    return JNI_FALSE;
+  }
+  const char *p = env->GetStringUTFChars(path, nullptr);
+  if (p == nullptr) {
+    return JNI_FALSE;
+  }
+  SS_LOGI("redirectStdio %s", p);
+  const int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+  if (fd < 0) {
+    SS_LOGE("redirectStdio open failed errno=%d path=%s", errno, p);
+    env->ReleaseStringUTFChars(path, p);
+    return JNI_FALSE;
+  }
+  if (dup2(fd, STDOUT_FILENO) < 0 || dup2(fd, STDERR_FILENO) < 0) {
+    SS_LOGE("redirectStdio dup2 failed errno=%d", errno);
+    close(fd);
+    env->ReleaseStringUTFChars(path, p);
+    return JNI_FALSE;
+  }
+  if (fd > STDERR_FILENO) {
+    close(fd);
+  }
+  setvbuf(stdout, nullptr, _IONBF, 0);
+  setvbuf(stderr, nullptr, _IONBF, 0);
+  env->ReleaseStringUTFChars(path, p);
+  fprintf(stderr, "[stagesync-host] stdio redirected\n");
+  fflush(stderr);
   return JNI_TRUE;
 }
 

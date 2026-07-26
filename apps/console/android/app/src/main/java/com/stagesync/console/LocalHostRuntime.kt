@@ -54,25 +54,28 @@ object LocalHostRuntime {
 
     /**
      * Polish hint after `:host` death or failed dlopen — prefers proven
-     * page-size mismatch over a generic “Node crashed” string.
+     * page-size mismatch over a generic “Node crashed” string, then appends
+     * host stdio / boot-phase diagnostics when present.
      */
     fun processDiedMessage(context: Context): String {
         val page = devicePageSize()
         val align = libnodePtLoadAlign(context)
-        return when {
-            isPageAlignMismatch(context) ->
-                "Lokalny host padł przy ładowaniu libnode: urządzenie ma stronę pamięci " +
-                    "${page} B, a libnode.so w APK ma wyrównanie ELF ${align} B (<16 KB). " +
-                    "Przebuduj Console z prepare-local-host (domyślny zip digidem 16 KB) " +
-                    "albo połącz się z hostem LAN. Logcat: SsLocalHost."
-            page >= ElfLoadAlign.ALIGN_16K && align >= ElfLoadAlign.ALIGN_16K ->
-                "Proces lokalnego hosta zakończył się awaryjnie (silnik Node), mimo libnode " +
-                    "wyrównanego do 16 KB. Launcher działa dalej — połącz się z hostem LAN " +
-                    "albo sprawdź logcat tag SsLocalHost."
-            else ->
-                "Proces lokalnego hosta zakończył się awaryjnie (silnik Node). Launcher działa " +
-                    "dalej — połącz się z hostem LAN albo sprawdź logcat tag SsLocalHost."
-        }
+        val base =
+            when {
+                isPageAlignMismatch(context) ->
+                    "Lokalny host padł przy ładowaniu libnode: urządzenie ma stronę pamięci " +
+                        "${page} B, a libnode.so w APK ma wyrównanie ELF ${align} B (<16 KB). " +
+                        "Przebuduj Console z prepare-local-host (domyślny zip digidem 16 KB) " +
+                        "albo połącz się z hostem LAN. Logcat: SsLocalHost."
+                page >= ElfLoadAlign.ALIGN_16K && align >= ElfLoadAlign.ALIGN_16K ->
+                    "Proces lokalnego hosta zakończył się awaryjnie (silnik Node), mimo libnode " +
+                        "wyrównanego do 16 KB. Launcher działa dalej — połącz się z hostem LAN " +
+                        "albo sprawdź logcat tag SsLocalHost."
+                else ->
+                    "Proces lokalnego hosta zakończył się awaryjnie (silnik Node). Launcher działa " +
+                        "dalej — połącz się z hostem LAN albo sprawdź logcat tag SsLocalHost."
+            }
+        return HostProcessLog.appendDiagnostics(context, base)
     }
 
     /**

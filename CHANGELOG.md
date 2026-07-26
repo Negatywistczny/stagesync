@@ -10,7 +10,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Console (Android):** lokalny host działa w osobnym procesie (`:host`) — awaria silnika Node nie zamyka już launchera; start z większą stertą wątku, absolutną ścieżką wejścia i `NODE_PATH`; status po śmierci procesu hosta. Domyślny APK pakuje `libnode` wyrównany do 16 KB (przebudowa digidem `v18.20.4`), żeby host startował też na Android 15+ ze stroną pamięci 16 KB; przy starej paczce 4 KB UI wskazuje konkretny mismatch page size / ELF (logcat: `SsLocalHost`).
+- **Console (Android):** lokalny host działa w osobnym procesie (`:host`) — awaria silnika Node nie zamyka już launchera; start z większą stertą wątku, absolutną ścieżką wejścia i `NODE_PATH`; status po śmierci procesu hosta. Domyślny APK pakuje `libnode` wyrównany do 16 KB (przebudowa digidem `v18.20.4`), żeby host startował też na Android 15+ ze stroną pamięci 16 KB; przy starej paczce 4 KB UI wskazuje konkretny mismatch page size / ELF. Gdy `:host` pada, launcher pokazuje fazę startu i ostatnie linie logu Node (bez adb; logcat: `SsLocalHost`).
 
 ## [5.2.3](https://github.com/Negatywistczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
 

@@ -1,11 +1,15 @@
 /**
  * Conditional Sentry for the Node host. No-op when `SENTRY_DSN` is unset.
  * Does not send PII (tokens, PIN, cookies). Fail-soft on init errors.
+ *
+ * `@sentry/node` is loaded only when a DSN is set — keeps Console Android
+ * (nodejs-mobile, no DSN) free of Sentry / import-in-the-middle boot cost.
  */
 
-import * as Sentry from "@sentry/node";
+type SentryModule = typeof import("@sentry/node");
 
 let initialized = false;
+let sentryMod: SentryModule | null = null;
 
 const SENSITIVE_HEADER =
   /^(authorization|cookie|set-cookie|x-stagesync-operator-pin|x-stagesync-pin|x-stagesync-host-token)$/i;
@@ -31,12 +35,14 @@ function scrubRequestData(
  * Initialize Sentry when `SENTRY_DSN` is set. Safe to call multiple times.
  * Returns whether reporting is active.
  */
-export function initServerSentry(): boolean {
+export async function initServerSentry(): Promise<boolean> {
   if (initialized) return true;
   const dsn = process.env.SENTRY_DSN?.trim();
   if (!dsn) return false;
 
   try {
+    const Sentry = await import("@sentry/node");
+    sentryMod = Sentry;
     Sentry.init({
       dsn,
       environment: process.env.NODE_ENV ?? "development",
@@ -68,6 +74,6 @@ export function isServerSentryEnabled(): boolean {
 
 /** Capture an unexpected error when Sentry is active (no-op otherwise). */
 export function captureServerException(error: unknown): void {
-  if (!initialized) return;
-  Sentry.captureException(error);
+  if (!initialized || !sentryMod) return;
+  sentryMod.captureException(error);
 }

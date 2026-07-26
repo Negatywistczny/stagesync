@@ -77,6 +77,8 @@ class LocalHostService : Service() {
         Thread(
             {
                 try {
+                    HostProcessLog.clear(this)
+                    HostProcessLog.writePhase(this, "probe")
                     logDeviceHints()
                     val readiness = LocalHostRuntime.probe(this)
                     Log.i(
@@ -85,17 +87,28 @@ class LocalHostService : Service() {
                             "jni=${readiness.jniBridgeLoaded} detail=${readiness.loadDetail}",
                     )
                     if (!readiness.canStart) {
-                        broadcastFailed(LocalHostRuntime.missingMessage(readiness, this))
+                        HostProcessLog.writePhase(this, "probe-failed")
+                        broadcastFailed(
+                            HostProcessLog.appendDiagnostics(
+                                this,
+                                LocalHostRuntime.missingMessage(readiness, this),
+                            ),
+                        )
                         stopSelf()
                         return@Thread
                     }
+                    HostProcessLog.writePhase(this, "probe-ok")
                     bootHost()
                 } catch (err: Throwable) {
                     Log.e(TAG, "boot failed", err)
+                    HostProcessLog.writePhase(this@LocalHostService, "boot-failed")
                     broadcastFailed(
-                        getString(
-                            R.string.local_host_start_failed,
-                            err.message ?: err.javaClass.simpleName,
+                        HostProcessLog.appendDiagnostics(
+                            this@LocalHostService,
+                            getString(
+                                R.string.local_host_start_failed,
+                                err.message ?: err.javaClass.simpleName,
+                            ),
                         ),
                     )
                     stopSelf()
@@ -132,13 +145,19 @@ class LocalHostService : Service() {
     }
 
     private fun bootHost() {
+        HostProcessLog.writePhase(this, "extract")
         Log.i(TAG, "extract assets…")
         val hostRoot = HostAssetExtractor.extractIfNeeded(this)
         val serverDir = File(hostRoot, "server")
-        val entry = File(serverDir, "dist/index.js")
-        if (!entry.isFile) {
-            throw IllegalStateException("brak server/dist/index.js w assets/host")
-        }
+        val bootEntry = File(serverDir, "android-boot.mjs")
+        val distEntry = File(serverDir, "dist/index.js")
+        val entry =
+            when {
+                bootEntry.isFile -> bootEntry
+                distEntry.isFile -> distEntry
+                else -> throw IllegalStateException("brak server/android-boot.mjs ani dist/index.js")
+            }
+        HostProcessLog.writePhase(this, "assets-ready entry=${entry.name}")
         Log.i(TAG, "assets ready root=${hostRoot.absolutePath} entry=${entry.absolutePath}")
 
         val dataDir = File(filesDir, "stagesync-data").apply { mkdirs() }
@@ -166,6 +185,7 @@ class LocalHostService : Service() {
             }
         }
 
+        HostProcessLog.writePhase(this, "setenv")
         env("PORT", LocalHostRuntime.DEFAULT_PORT.toString())
         env("STAGESYNC_BIND_HOST", "0.0.0.0")
         env("STAGESYNC_DATA_DIR", dataDir.absolutePath)
@@ -196,6 +216,7 @@ class LocalHostService : Service() {
             if (existingLd.isNullOrBlank()) nativeDir else "$nativeDir:$existingLd",
         )
 
+        HostProcessLog.writePhase(this, "chdir")
         Log.i(TAG, "chdir ${serverDir.absolutePath}")
         if (!LocalHostNative.chdir(serverDir.absolutePath)) {
             val detail = LocalHostNative.lastError()
@@ -208,12 +229,21 @@ class LocalHostService : Service() {
             )
         }
 
+        val logPath = HostProcessLog.logFile(this).absolutePath
+        HostProcessLog.writePhase(this, "redirect-stdio")
+        if (!LocalHostNative.redirectStdio(logPath)) {
+            val detail = LocalHostNative.lastError()
+            Log.w(TAG, "redirectStdio failed ($detail) — continuing without file log")
+            HostProcessLog.writePhase(this, "redirect-stdio-failed")
+        }
+
         val nodeStarted = AtomicBoolean(false)
         // nodejs-mobile samples use a multi-MB stack — default Kotlin threads are too small for V8.
         Thread(
             null,
             {
                 nodeStarted.set(true)
+                HostProcessLog.writePhase(this@LocalHostService, "node-start")
                 Log.i(TAG, "node::Start begin argv=[node, ${entry.absolutePath}]")
                 val code =
                     LocalHostNative.startNodeWithArguments(
@@ -223,8 +253,12 @@ class LocalHostService : Service() {
                         ),
                     )
                 Log.e(TAG, "node::Start returned code=$code")
+                HostProcessLog.writePhase(this@LocalHostService, "node-exit code=$code")
                 broadcastFailed(
-                    getString(R.string.local_host_node_exited, code),
+                    HostProcessLog.appendDiagnostics(
+                        this@LocalHostService,
+                        getString(R.string.local_host_node_exited, code),
+                    ),
                 )
                 stopSelf()
             },
@@ -235,10 +269,14 @@ class LocalHostService : Service() {
             uncaughtExceptionHandler =
                 Thread.UncaughtExceptionHandler { _, err ->
                     Log.e(TAG, "node thread crashed", err)
+                    HostProcessLog.writePhase(this@LocalHostService, "node-thread-crash")
                     broadcastFailed(
-                        getString(
-                            R.string.local_host_start_failed,
-                            err.message ?: err.javaClass.simpleName,
+                        HostProcessLog.appendDiagnostics(
+                            this@LocalHostService,
+                            getString(
+                                R.string.local_host_start_failed,
+                                err.message ?: err.javaClass.simpleName,
+                            ),
                         ),
                     )
                     stopSelf()
@@ -251,6 +289,7 @@ class LocalHostService : Service() {
         while (System.currentTimeMillis() < deadline) {
             if (probeHealth()) {
                 Log.i(TAG, "health OK — broadcasting READY")
+                HostProcessLog.writePhase(this, "health-ok")
                 val nm = getSystemService(NotificationManager::class.java)
                 nm?.notify(
                     NOTIFICATION_ID,
@@ -264,8 +303,12 @@ class LocalHostService : Service() {
         }
 
         Log.e(TAG, "health timeout ($lastDetail)")
+        HostProcessLog.writePhase(this, "health-timeout")
         throw IllegalStateException(
-            getString(R.string.local_host_health_timeout, lastDetail),
+            HostProcessLog.appendDiagnostics(
+                this,
+                getString(R.string.local_host_health_timeout, lastDetail),
+            ),
         )
     }
 
