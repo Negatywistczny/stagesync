@@ -1,10 +1,17 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { Button, Input } from "@stagesync/ui";
 import {
   fetchOperatorPinRequired,
   getStoredOperatorPin,
   unlockOperatorPin,
 } from "../lib/operatorPin.js";
+import { useKeepTileAboveIme } from "../lib/useKeepTileAboveIme.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -23,6 +30,9 @@ export function OperatorPinGate({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const { wsStatus, latencyMs } = useTransport();
+  const pageRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useKeepTileAboveIme(pageRef, modalRef, mode === "open");
 
   useEffect(() => {
     let cancelled = false;
@@ -79,8 +89,9 @@ export function OperatorPinGate({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className={styles.page}>
+    <div ref={pageRef} className={styles.page}>
       <div
+        ref={modalRef}
         className={styles.modal}
         role="dialog"
         aria-modal

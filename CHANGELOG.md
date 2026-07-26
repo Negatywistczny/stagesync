@@ -17,6 +17,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### ⏱️ Timeline & DAW
 - **Różdżka:** przycisk przy warstwie Forma (jak Tap przy Tekście), poza menu T; skrót W + 1/2/3 bez zmian.
 
+#### 🖥️ App Shell & UI
+- **Admin — Pliki:** przycisk eksportu biblioteki to teraz **Eksport**.
+- **Nazwa urządzenia:** w tytule „Witaj w StageSync” słowo **StageSync** ma oficjalny krój (Sora) i kolory marki — Stage w kolorze tekstu, Sync w amber.
+
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Aktualizacja (Desktop + Android):** uproszczony dialog — tytuł z numerem wersji, treść „Korzystasz z wersji…”, przyciski **Aktualizuj** / **Przypomnij później** (Desktop dodatkowo **Pomiń tę wersję**); bez listy zmian z release.
 
@@ -24,6 +28,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 - **Import UG:** polskie litery w tekście (np. ó) dekodują się poprawnie; tipy autora UG (np. „you can play E7…”) nie wchodzą już do Formy / tekstu — przy pobraniu z linku i przy wklejeniu.
+
+#### 🖥️ App Shell & UI
+- **Nazwa urządzenia / PIN:** przy wpisywaniu imienia lub PIN-u na telefonie (także w Console / Performer) klawiatura nie zasłania już całego kafelka — panel zostaje nad IME.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Console / Performer (Android):** przy wpisywaniu adresu hosta klawiatura nie zasłania już pola ani przycisku Połącz — cały blok ręcznego połączenia (oraz panel wklejenia w skanie QR) zostaje nad IME.

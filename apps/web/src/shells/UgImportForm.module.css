@@ -4,13 +4,6 @@
   gap: var(--ss-space-3);
 }
 
-.hint {
-  margin: 0;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-normal);
-}
-
 .error {
   margin: 0;
   color: var(--ss-color-danger);

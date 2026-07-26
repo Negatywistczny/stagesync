@@ -541,7 +541,6 @@ export function AdminShell() {
             <p className={styles.muted}>Wybierz utwór.</p>
           ) : (
             <UgImportForm
-              hint={`Nadpisze Formę (bez Countdown), Tekst i Akordy w „${selected?.name ?? selectedId}”.`}
               applyLabel="Importuj do utworu"
               disabled={commandPending}
               applying={commandPending}
@@ -1136,7 +1135,7 @@ function LibraryFilesCard({
           Import UG
         </Button>
         <Button variant="ghost" disabled={locked} onClick={onExport}>
-          Eksport biblioteki
+          Eksport
         </Button>
       </div>
     </>

@@ -8316,7 +8316,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             </div>
             <div className={styles.overlayBody}>
               <UgImportForm
-                hint="Nadpisze Formę (bez Countdown), Tekst i Akordy w draftcie."
                 applyLabel="Importuj do draftu"
                 importOptions={{
                   ppq: draftProject.ppq,

@@ -31,8 +31,6 @@ export type UgImportApplyPayload = {
 };
 
 export type UgImportFormProps = {
-  /** Hint under the title (target song / draft). */
-  hint: string;
   applyLabel: string;
   disabled?: boolean;
   applying?: boolean;
@@ -42,7 +40,6 @@ export type UgImportFormProps = {
 };
 
 export function UgImportForm({
-  hint,
   applyLabel,
   disabled = false,
   applying = false,
@@ -161,11 +158,6 @@ export function UgImportForm({
 
   return (
     <div className={styles.root}>
-      <p className={styles.hint}>{hint}</p>
-      <p className={styles.hint}>
-        Szukaj lub wklej link → Pobierz → ustaw takty sekcji → zastosuj.
-        Opcjonalnie Różdżka od razu rozłoży Tekst/Akordy na Formę.
-      </p>
       {error ? (
         <p className={styles.error} role="alert">
           {error}

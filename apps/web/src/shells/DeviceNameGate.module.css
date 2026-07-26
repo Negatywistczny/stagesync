@@ -1,15 +1,27 @@
 .page {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   min-height: 100dvh;
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: var(--ss-space-4);
+  /* Whole welcome / PIN tile stays above IME (visualViewport → --ss-ime-inset). */
+  padding-bottom: max(
+    var(--ss-space-4),
+    var(--ss-ime-inset, 0px),
+    env(safe-area-inset-bottom, 0px)
+  );
   color: var(--ss-color-text);
   background: var(--ss-color-bg);
 }
 
 .modal {
+  flex: 0 0 auto;
   width: min(24rem, 100%);
   padding: var(--ss-space-5);
   border: 1px solid var(--ss-color-border);
@@ -30,6 +42,22 @@
   font-size: var(--ss-text-xl);
   font-weight: var(--ss-font-weight-semibold);
   line-height: var(--ss-leading-tight);
+}
+
+/* Official wordmark colors: Stage = text, Sync = amber primary (logo SVG). */
+.brandName {
+  font-family: var(--ss-font-sans);
+  font-weight: var(--ss-font-weight-bold);
+  letter-spacing: var(--ss-tracking-tight);
+  white-space: nowrap;
+}
+
+.brandStage {
+  color: var(--ss-color-text);
+}
+
+.brandSync {
+  color: var(--ss-color-primary);
 }
 
 .muted {

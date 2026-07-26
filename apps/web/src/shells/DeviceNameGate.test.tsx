@@ -43,11 +43,10 @@ describe("DeviceNameGate", () => {
     );
     const dialog = screen.getByRole("dialog");
     expect(dialog.getAttribute("aria-labelledby")).toBe("device-name-title");
-    expect(
-      screen.getByRole("heading", { name: "Witaj w StageSync" }).getAttribute(
-        "id",
-      ),
-    ).toBe("device-name-title");
+    const title = screen.getByRole("heading", { name: "Witaj w StageSync" });
+    expect(title.getAttribute("id")).toBe("device-name-title");
+    const sync = title.querySelector("[class*='brandSync']");
+    expect(sync?.textContent).toBe("Sync");
     expect(
       screen.getByLabelText("Imię lub nazwa urządzenia"),
     ).toBeTruthy();

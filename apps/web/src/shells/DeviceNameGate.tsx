@@ -1,10 +1,11 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Button, Input } from "@stagesync/ui";
 import {
   DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
 } from "../lib/deviceNamePrefs.js";
+import { useKeepTileAboveIme } from "../lib/useKeepTileAboveIme.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -19,6 +20,9 @@ export function DeviceNameGate({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState(() => getStoredDeviceDisplayName() ?? "");
   const [error, setError] = useState<string | null>(null);
   const { wsStatus, latencyMs } = useTransport();
+  const pageRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useKeepTileAboveIme(pageRef, modalRef, !name);
 
   if (name) {
     return children;
@@ -36,8 +40,9 @@ export function DeviceNameGate({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className={styles.page}>
+    <div ref={pageRef} className={styles.page}>
       <div
+        ref={modalRef}
         className={styles.modal}
         role="dialog"
         aria-modal
@@ -48,7 +53,11 @@ export function DeviceNameGate({ children }: { children: ReactNode }) {
         </div>
         <ConnectionLostBanner status={wsStatus} />
         <h1 id="device-name-title" className={styles.modalTitle}>
-          Witaj w StageSync
+          Witaj w{" "}
+          <span className={styles.brandName}>
+            <span className={styles.brandStage}>Stage</span>
+            <span className={styles.brandSync}>Sync</span>
+          </span>
         </h1>
         <p className={styles.muted}>Podaj swoje imię lub nazwę urządzenia.</p>
         <form className={styles.form} onSubmit={onSubmit}>
