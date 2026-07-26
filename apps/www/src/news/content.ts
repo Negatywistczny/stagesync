@@ -1,60 +1,81 @@
+import type { IconName } from "../icons.js";
+
 /**
- * Marketing news — friendly feature stories only.
- * Not a changelog / commit feed. Keep copy user-facing and high-level.
+ * Release spotlights — friendly minor-line highlights for the marketing site.
+ * Not a changelog / commit feed. Link out to GitHub for full notes.
  */
 
-export interface NewsArticle {
-  slug: string;
-  date: string;
-  title: string;
-  teaser: string;
-  /** Short paragraphs; no release notes jargon. */
-  body: string[];
+export interface ReleaseHighlight {
+  label: string;
+  icon: IconName;
 }
 
-export const NEWS_ARTICLES: NewsArticle[] = [
+export interface ReleaseSpotlight {
+  /** Line id, e.g. "5.2" */
+  line: string;
+  /** Badge text, e.g. "v5.2" */
+  badge: string;
+  name: string;
+  date: string;
+  /** ISO date for <time datetime> */
+  dateIso: string;
+  summary: string;
+  highlights: ReleaseHighlight[];
+  /** GitHub Releases tag URL for the line cut. */
+  releaseUrl: string;
+}
+
+export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
   {
-    slug: "android-na-scenie",
-    date: "2026-07",
-    title: "Android na scenie: Console i Performer",
-    teaser:
-      "Prowadź show z telefonu lub tabletu i daj muzykom własne ekrany — w układzie dopasowanym do urządzenia.",
-    body: [
-      "StageSync na Androidzie to dwie aplikacje pod dwie role. Console to pełna kontrola koncertu: start i pauza, zmiana piosenek, podgląd setlisty — na telefonie albo tablecie, także z lokalnym hostem gdy chcesz grać bez osobnego komputera.",
-      "Performer jest dla muzyków. Po połączeniu z siecią Wi‑Fi widzą nuty, akordy albo tekst dokładnie w tej samej chwili co reszta zespołu. Widoki są przygotowane pod mały i duży ekran — nie musisz brać tabletu, jeśli wolisz telefon na statywie.",
-      "Obie aplikacje pobierzesz z tej strony. Instalacja jest prosta: pobierz APK, zainstaluj i dołącz do hosta w tej samej sieci.",
+    line: "5.2",
+    badge: "v5.2",
+    name: "Pocket Stage",
+    date: "lipiec 2026",
+    dateIso: "2026-07-25",
+    summary:
+      "StageSync w kieszeni: Console i Performer na telefonie lub tablecie, PIN operatora oraz spokojniejsza praca na scenie i w reżyserii.",
+    highlights: [
+      { icon: "tablet", label: "Console i Performer na Androidzie" },
+      { icon: "sliders", label: "PIN operatora i Safety Net Master/Spare" },
+      { icon: "music", label: "Sampler Cue oraz Mixer bus→bus" },
+      { icon: "download", label: "Jawne aktualizacje APK i interfejsu" },
     ],
+    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0",
   },
   {
-    slug: "desktop",
-    date: "2026-07",
-    title: "StageSync na komputerze",
-    teaser:
-      "Aplikacja na Windows i Mac — stąd najczęściej układacie setlistę i prowadzicie próbę albo koncert.",
-    body: [
-      "Desktop to aplikacja główna StageSync: tu budujesz setlistę, ustawiasz przebieg utworów i sterujesz tym, co widzą muzycy na swoich ekranach.",
-      "Działa na Windowsie i Macu. Po instalacji uruchamiasz StageSync, otwierasz projekt i możesz od razu podłączać telefony oraz tablety w lokalnej sieci Wi‑Fi.",
-      "To dobra baza na próbę w sali i na koncert — jeden komputer przy mikserze, reszta zespołu na własnych urządzeniach.",
+    line: "5.1",
+    badge: "v5.1",
+    name: "Launch & Mix",
+    date: "lipiec 2026",
+    dateIso: "2026-07-24",
+    summary:
+      "Szybki start hosta i mocniejszy warsztat miksu: Launcher, pełny Mixer oraz narzędzia Timeline pod próbę i koncert.",
+    highlights: [
+      { icon: "laptop", label: "Launcher — lokalny host i LAN" },
+      { icon: "sliders-horizontal", label: "Mixer z busami, Click i Master" },
+      { icon: "list-music", label: "Narzędzia Timeline pod live-show" },
+      { icon: "wifi", label: "Wykrywanie StageSync w sieci" },
     ],
+    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.0",
   },
   {
-    slug: "wspolny-punkt",
-    date: "2026-07",
-    title: "Cały zespół w jednym punkcie utworu",
-    teaser:
-      "Jedna setlista, wspólne tempo — ekrany muzyków same podążają za piosenką.",
-    body: [
-      "Najważniejsza obietnica StageSync jest prosta: wszyscy grają w tym samym miejscu utworu. Gdy ty zmieniasz piosenkę albo przewijasz setlistę, ekrany na scenie robią to razem z tobą.",
-      "Muzycy nie muszą ręcznie przewijać PDF‑ów ani dogadywać się gestami „jesteśmy w refrenie”. Dostają swój widok — nuty, akordy albo tekst — zsynchronizowany z resztą zespołu.",
-      "Dzięki temu próba i koncert wyglądają spokojniej: mniej chaosu przy zmianie utworu, więcej skupienia na grze.",
+    line: "5.0",
+    badge: "v5.0",
+    name: "Overture",
+    date: "lipiec 2026",
+    dateIso: "2026-07-23",
+    summary:
+      "Pierwsze stabilne StageSync 5: odświeżony interfejs, wspólny punkt w utworze dla całego zespołu i aplikacja na komputer.",
+    highlights: [
+      { icon: "refresh-cw", label: "Pełny przebieg próby i koncertu" },
+      { icon: "mic-2", label: "Partytura, akordy i Live Desk na scenie" },
+      { icon: "music", label: "Audio z fade, loop i płynnym transportem" },
+      { icon: "laptop", label: "Desktop na Windows i Mac" },
     ],
+    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0",
   },
 ];
 
-export function articleBySlug(slug: string): NewsArticle | undefined {
-  return NEWS_ARTICLES.find((a) => a.slug === slug);
-}
-
-export function articlesNewestFirst(): NewsArticle[] {
-  return [...NEWS_ARTICLES];
+export function spotlightsNewestFirst(): ReleaseSpotlight[] {
+  return [...RELEASE_SPOTLIGHTS];
 }

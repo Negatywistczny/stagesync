@@ -1,5 +1,6 @@
-import { articlesNewestFirst } from "./news/content";
-import { fillBrand, fillNav, siteBase } from "./site";
+import { iconSvg } from "./icons.js";
+import { spotlightsNewestFirst } from "./news/content";
+import { fillBrand, fillNav } from "./site";
 import "./styles.css";
 
 const brand = document.querySelector<HTMLAnchorElement>("[data-brand]");
@@ -9,34 +10,54 @@ if (nav) fillNav(nav, "news");
 
 const list = document.querySelector<HTMLElement>("#news-list");
 if (list) {
-  const base = siteBase();
   list.replaceChildren();
-  for (const article of articlesNewestFirst()) {
+  for (const release of spotlightsNewestFirst()) {
     const li = document.createElement("li");
-    li.className = "news-card reveal";
-    const a = document.createElement("a");
-    a.className = "news-card__link";
-    a.href = `${base}aktualnosci/${article.slug}.html`;
+    li.className = "release-card reveal";
 
-    const time = document.createElement("time");
-    time.className = "news-card__date";
-    time.dateTime = `${article.date}-01`;
-    time.textContent = article.date;
+    const head = document.createElement("div");
+    head.className = "release-card__head";
 
-    const h2 = document.createElement("h2");
-    h2.className = "news-card__title";
-    h2.textContent = article.title;
+    const badge = document.createElement("span");
+    badge.className = "release-card__badge";
+    badge.textContent = release.badge;
 
-    const p = document.createElement("p");
-    p.className = "news-card__teaser";
-    p.textContent = article.teaser;
+    const meta = document.createElement("div");
+    meta.className = "release-card__meta";
 
-    const more = document.createElement("span");
-    more.className = "news-card__more";
-    more.textContent = "Czytaj dalej";
+    const name = document.createElement("h2");
+    name.className = "release-card__name";
+    name.textContent = release.name;
 
-    a.append(time, h2, p, more);
-    li.append(a);
+    const when = document.createElement("time");
+    when.className = "release-card__date";
+    when.dateTime = release.dateIso;
+    when.textContent = release.date;
+
+    meta.append(name, when);
+    head.append(badge, meta);
+
+    const summary = document.createElement("p");
+    summary.className = "release-card__summary";
+    summary.textContent = release.summary;
+
+    const chips = document.createElement("ul");
+    chips.className = "release-card__chips";
+    for (const item of release.highlights) {
+      const chip = document.createElement("li");
+      chip.className = "release-chip";
+      chip.innerHTML = `${iconSvg(item.icon, "release-chip__icon")}<span>${item.label}</span>`;
+      chips.append(chip);
+    }
+
+    const link = document.createElement("a");
+    link.className = "release-card__gh";
+    link.href = release.releaseUrl;
+    link.rel = "noopener noreferrer";
+    link.target = "_blank";
+    link.textContent = "Szczegółowy wykaz zmian na GitHub ↗";
+
+    li.append(head, summary, chips, link);
     list.append(li);
   }
 }

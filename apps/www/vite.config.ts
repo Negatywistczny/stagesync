@@ -17,9 +17,6 @@ export default defineConfig({
       input: {
         main: resolve(root, "index.html"),
         news: resolve(root, "aktualnosci/index.html"),
-        newsAndroid: resolve(root, "aktualnosci/android-na-scenie.html"),
-        newsDesktop: resolve(root, "aktualnosci/desktop.html"),
-        newsSync: resolve(root, "aktualnosci/wspolny-punkt.html"),
       },
     },
   },

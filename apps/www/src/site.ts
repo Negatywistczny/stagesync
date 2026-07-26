@@ -10,7 +10,7 @@ export function fillNav(nav: HTMLElement, active: NavId): void {
   const base = siteBase();
   const items: { id: NavId; href: string; label: string }[] = [
     { id: "home", href: base, label: "Start" },
-    { id: "news", href: `${base}aktualnosci/`, label: "Aktualności" },
+    { id: "news", href: `${base}aktualnosci/`, label: "Wydania" },
     { id: "download", href: `${base}#download`, label: "Pobierz" },
   ];
 
