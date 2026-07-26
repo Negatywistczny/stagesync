@@ -1,7 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.2.6` (`v5.2.6`) — linia **5.2** = **Pocket Stage**; **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
-Unreleased (patch): Console Android update copy / FG notification catch-up + WiX MSI branding (#812).  
+**Stan:** ostatni cut `5.2.7` (`v5.2.7`) — linia **5.2** = **Pocket Stage**; **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** residual po Pocket Stage → 5.3+ / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -12,7 +11,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ## Must (operator residual)
 
-- [ ] **G1–G10** na instalatorach `v5.2.6` / najnowszy **5.2.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
+- [ ] **G1–G10** na instalatorach `v5.2.7` / najnowszy **5.2.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 
