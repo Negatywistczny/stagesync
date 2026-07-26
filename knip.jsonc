@@ -23,6 +23,10 @@
       "entry": ["src-tauri/src/main.rs", "src/**/*.{ts,tsx}"],
       "project": ["src/**/*.{ts,tsx}"]
     },
+    "apps/www": {
+      "entry": ["src/main.ts", "vite.config.ts"],
+      "project": ["src/**/*.ts", "vite.config.ts"]
+    },
     "packages/shared": {
       "entry": ["src/index.ts", "src/**/*.test.ts"],
       "project": ["src/**/*.ts"]
@@ -35,6 +39,7 @@
   "ignore": [
     "apps/performer/**",
     "apps/console/**",
+    "apps/www/dist/**",
     "**/dist/**",
     "**/.turbo/**"
   ],

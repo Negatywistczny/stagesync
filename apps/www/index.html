@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="StageSync — scentralizowany transport sceniczny, Timeline i synchronizacja stanowisk muzyków na żywo."
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%brand/stagesync-mark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <title>StageSync — Live Show Control</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Przejdź do treści</a>
+
+    <header class="topbar">
+      <a class="topbar__brand" href="#top" aria-label="StageSync — góra strony">
+        <img src="%BASE_URL%brand/stagesync-logo.svg" alt="" width="160" height="38" />
+      </a>
+      <nav class="topbar__nav" aria-label="Główne">
+        <a href="#download">Pobierz</a>
+        <a href="#docs">Dokumentacja</a>
+        <a href="#config">Config</a>
+        <a
+          class="topbar__github"
+          href="https://github.com/Negatywistczny/stagesync"
+          rel="noopener noreferrer"
+          >GitHub</a
+        >
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero__stage" aria-hidden="true">
+          <svg class="hero__timeline" viewBox="0 0 960 420" fill="none">
+            <defs>
+              <linearGradient id="laneFade" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0" />
+                <stop offset="35%" stop-color="#fbbf24" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <g class="hero__lanes" stroke="#3f3f46" stroke-width="2">
+              <line x1="40" y1="110" x2="920" y2="110" />
+              <line x1="40" y1="180" x2="920" y2="180" />
+              <line x1="40" y1="250" x2="920" y2="250" />
+              <line x1="40" y1="320" x2="920" y2="320" />
+            </g>
+            <g class="hero__clips">
+              <rect x="120" y="92" width="160" height="36" rx="4" fill="#27272a" />
+              <rect x="120" y="162" width="160" height="36" rx="4" fill="#27272a" />
+              <rect x="120" y="232" width="160" height="36" rx="4" fill="#27272a" />
+              <rect x="360" y="92" width="220" height="36" rx="4" fill="#3f3f46" />
+              <rect x="360" y="162" width="180" height="36" rx="4" fill="#3f3f46" />
+              <rect x="360" y="232" width="200" height="36" rx="4" fill="#3f3f46" />
+              <rect x="360" y="302" width="140" height="36" rx="4" fill="#27272a" />
+              <rect x="620" y="162" width="190" height="36" rx="4" fill="#27272a" />
+              <rect x="640" y="232" width="150" height="36" rx="4" fill="#27272a" />
+            </g>
+            <rect
+              class="hero__sweep"
+              x="0"
+              y="70"
+              width="140"
+              height="280"
+              fill="url(#laneFade)"
+            />
+            <g class="hero__playhead">
+              <line x1="480" y1="60" x2="480" y2="360" stroke="#fbbf24" stroke-width="3" />
+              <path d="M480 48 L492 62 L480 68 L468 62 Z" fill="#fbbf24" />
+            </g>
+          </svg>
+          <div class="hero__vignette"></div>
+        </div>
+
+        <div class="hero__copy">
+          <p class="hero__eyebrow">Live Show Control</p>
+          <h1 id="hero-title" class="hero__title">
+            <img
+              class="hero__wordmark"
+              src="%BASE_URL%brand/stagesync-logo.svg"
+              alt="StageSync"
+              width="420"
+              height="100"
+            />
+          </h1>
+          <p class="hero__lede">
+            Scentralizowany transport, Timeline i synchronizacja stanowisk muzyków —
+            jeden zegar na całą scenę.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#download">Pobierz wydanie</a>
+            <a
+              class="btn btn--ghost"
+              href="https://github.com/Negatywistczny/stagesync"
+              rel="noopener noreferrer"
+              >Zobacz kod</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--tight" aria-labelledby="pillars-title">
+        <h2 id="pillars-title" class="visually-hidden">Możliwości</h2>
+        <ul class="pillars">
+          <li class="pillar reveal">
+            <span class="pillar__label">Transport SSOT</span>
+            <p>Jeden autorytatywny zegar tempa, metrum i pozycji — bez dryfu między stanowiskami.</p>
+          </li>
+          <li class="pillar reveal">
+            <span class="pillar__label">Timeline</span>
+            <p>Edycja Formy, klipów i map na osi czasu zaprojektowanej pod reżyserię koncertu.</p>
+          </li>
+          <li class="pillar reveal">
+            <span class="pillar__label">Client na scenie</span>
+            <p>Akordy, tekst, partytura i siatka — zsynchronizowane ekrany muzyków w LAN.</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section" id="download" aria-labelledby="download-title">
+        <div class="section__head reveal">
+          <h2 id="download-title">Pobierz</h2>
+          <p>
+            Instalatory i APK z GitHub Releases. Host rackowy — obraz
+            <code>ghcr.io/negatywistczny/stagesync</code>.
+          </p>
+        </div>
+
+        <p class="download__status reveal" id="download-status" role="status">
+          Ładowanie najnowszego wydania…
+        </p>
+
+        <div class="download__grid" id="download-grid" hidden></div>
+
+        <p class="download__fallback reveal">
+          Pełna lista artefaktów:
+          <a href="https://github.com/Negatywistczny/stagesync/releases" rel="noopener noreferrer"
+            >github.com/Negatywistczny/stagesync/releases</a
+          >
+        </p>
+      </section>
+
+      <section class="section" id="docs" aria-labelledby="docs-title">
+        <div class="section__head reveal">
+          <h2 id="docs-title">Dokumentacja</h2>
+          <p>Kanoniczne instrukcje operatorskie w repozytorium — bez osobnej kopii treści.</p>
+        </div>
+        <ul class="doc-list">
+          <li class="reveal">
+            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/DESKTOP.md"
+              >Desktop</a
+            >
+            <span>Instalatory .dmg / .msi, launcher, updater</span>
+          </li>
+          <li class="reveal">
+            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md"
+              >Docker / host</a
+            >
+            <span>Compose, GHCR, porty, volume danych</span>
+          </li>
+          <li class="reveal">
+            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/MOBILE.md"
+              >Android</a
+            >
+            <span>Performer, Console, sideload, aktualizacje APK</span>
+          </li>
+          <li class="reveal">
+            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/api/README.md"
+              >API</a
+            >
+            <span>Kontrakt REST / WebSocket</span>
+          </li>
+          <li class="reveal">
+            <a href="https://github.com/Negatywistczny/stagesync/blob/main/CHANGELOG.md"
+              >Changelog</a
+            >
+            <span>Historia wydań produktu</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section" id="config" aria-labelledby="config-title">
+        <div class="section__head reveal">
+          <h2 id="config-title">Config</h2>
+          <p>
+            Statyczne pliki konfiguracyjne hostowane z tej strony — stabilne URL-e do integracji i
+            tooling.
+          </p>
+        </div>
+        <ul class="config-list">
+          <li class="reveal">
+            <a href="%BASE_URL%config/channels.json"><code>config/channels.json</code></a>
+            <span>Kanały wydań, manifesty updatera, linki do docs</span>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <img src="%BASE_URL%brand/stagesync-mark.svg" alt="" width="28" height="28" />
+      <p>
+        StageSync ·
+        <a href="https://github.com/Negatywistczny/stagesync" rel="noopener noreferrer">GitHub</a>
+        · licencja BUSL-1.1
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

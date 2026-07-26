@@ -1,0 +1,13 @@
+{
+  "extends": "@stagesync/typescript-config/base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["vite/client"]
+  },
+  "include": ["src", "vite.config.ts"]
+}

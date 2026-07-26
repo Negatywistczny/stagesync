@@ -1,0 +1,21 @@
+{
+  "name": "@stagesync/www",
+  "version": "0.0.0",
+  "private": true,
+  "license": "BUSL-1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stagesync/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@stagesync/typescript-config": "workspace:*",
+    "typescript": "5.9.3",
+    "vite": "^7.0.4"
+  }
+}
