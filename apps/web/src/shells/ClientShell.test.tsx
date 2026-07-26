@@ -132,4 +132,13 @@ describe("ClientShell chrome", () => {
     expect(screen.queryByLabelText("Nazwa urządzenia")).toBeNull();
     expect(screen.queryByRole("button", { name: /Zapisz nazwę/i })).toBeNull();
   });
+
+  it("opens labelled rename dialog from Zmień nazwę", () => {
+    render(<ClientShell />);
+    fireEvent.click(screen.getByRole("button", { name: /Zmień nazwę/i }));
+    expect(screen.getByRole("dialog", { name: /Zmień nazwę/i })).toBeTruthy();
+    expect(
+      screen.getByRole("textbox", { name: "Imię lub nazwa urządzenia" }),
+    ).toBeTruthy();
+  });
 });
