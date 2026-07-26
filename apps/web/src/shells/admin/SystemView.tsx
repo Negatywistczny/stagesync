@@ -615,6 +615,7 @@ function ApkRow({
         {ready && apkUrl ? (
           <Button
             variant="secondary"
+            aria-label={`Pobierz APK ${title}`}
             onClick={() => void openExternalUrl(apkUrl)}
           >
             Pobierz APK
@@ -622,6 +623,7 @@ function ApkRow({
         ) : null}
         <Button
           variant="ghost"
+          aria-label={`Releases — ${title}`}
           onClick={() => void openExternalUrl(DOCS_RELEASES_URL)}
         >
           Releases ↗
