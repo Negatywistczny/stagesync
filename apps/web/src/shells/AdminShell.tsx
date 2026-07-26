@@ -935,11 +935,20 @@ function SongsView({
             <div className={styles.inspectorStack}>
               <div className={styles.inspectorPrimary}>
                 <Button
+                  variant="secondary"
+                  disabled={!selectedId || commandPending || transportPending}
+                  loading={transportPending}
+                  onClick={() => selectedId && onPlay(selectedId)}
+                >
+                  Odtwórz
+                </Button>
+                <Button
                   variant="primary"
                   disabled={locked}
+                  aria-label="Otwórz w Timeline"
                   onClick={() => navigate(`/timeline/${selected.id}`)}
                 >
-                  Otwórz w Timeline
+                  Timeline
                 </Button>
                 <ShellIconButton
                   label="Usuń utwór"
@@ -952,14 +961,6 @@ function SongsView({
                 </ShellIconButton>
               </div>
               <div className={styles.inspectorSecondary}>
-                <Button
-                  variant="secondary"
-                  disabled={!selectedId || commandPending || transportPending}
-                  loading={transportPending}
-                  onClick={() => selectedId && onPlay(selectedId)}
-                >
-                  Odtwórz
-                </Button>
                 <Button
                   variant="secondary"
                   disabled={locked}
