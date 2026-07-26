@@ -5,17 +5,7 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.2.12](https://github.com/Negatywistczny/stagesync/compare/v5.2.11...v5.2.12) - 2026-07-26
-
-### Naprawiono
-
-#### ⏱️ Timeline & DAW
-- **Kotwice:** zaznaczoną kotwicę usuwasz Delete / Backspace — tak jak inne klipy (nie tylko gumką).
-
-#### 🖥️ App Shell & UI
-- **Client — partytura:** podświetlenie taktu idzie dalej przy powtórzeniach i drugiej volcie — kursor OSMD trafia w właściwy takt partytury, a nie „klei się” na początku volty.
-
-## [5.2.11](https://github.com/Negatywistyczny/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
+## [5.2.11](https://github.com/Negatywistczny/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
 
 ### Dodano
 
@@ -30,8 +20,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+#### ⏱️ Timeline & DAW
+- **Kotwice:** zaznaczoną kotwicę usuwasz Delete / Backspace — tak jak inne klipy (nie tylko gumką).
+
 #### 🖥️ App Shell & UI
 - **Client — partytura:** MusicXML znów transponuje się przy zmianie stroju instrumentu (C / B♭ / E♭ / ręczna) oraz przy globalnej transpozycji zespołu z Live Desk (Admin → Scena) — jak w Grid i w v4.
+- **Client — partytura:** podświetlenie taktu idzie dalej przy powtórzeniach i drugiej volcie — kursor OSMD trafia w właściwy takt partytury, a nie „klei się” na początku volty.
 
 ## [5.2.10](https://github.com/Negatywistczny/stagesync/compare/v5.2.9...v5.2.10) - 2026-07-26
 
