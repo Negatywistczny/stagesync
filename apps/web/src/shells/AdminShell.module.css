@@ -489,23 +489,6 @@
   white-space: nowrap;
 }
 
-.networkUrlRow {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.networkUrlRow .songMeta {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .editLink {
   color: var(--ss-color-primary);
   font-size: var(--ss-text-control);
@@ -517,14 +500,6 @@
   .editLink:hover {
     color: var(--ss-color-primary-hover);
   }
-}
-
-.editLinkMuted {
-  color: var(--ss-color-disabled-text);
-  font-size: var(--ss-text-control);
-  font-weight: var(--ss-font-weight-semibold);
-  pointer-events: none;
-  user-select: none;
 }
 
 .templates {
@@ -689,13 +664,6 @@
   white-space: nowrap;
 }
 
-.clientMain {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
 .presenceDot {
   width: var(--ss-space-2);
   height: var(--ss-space-2);
@@ -759,79 +727,6 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: var(--ss-text-xs);
   line-height: var(--ss-leading-relaxed);
-}
-
-.midiBody {
-  /* cardBody already scrolls; avoid clipping port/action rows */
-  overflow: auto;
-  min-height: 0;
-}
-
-.midiMeters {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ss-space-2);
-  flex: 0 0 auto;
-  min-width: 0;
-}
-
-.midiMeter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-2);
-  min-width: 0;
-  min-height: var(--ss-space-8);
-  padding: 0 var(--ss-space-2);
-  border-radius: var(--ss-radius-sm);
-  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
-}
-
-.midiLabel {
-  margin: 0;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-xs);
-  font-weight: var(--ss-font-weight-medium);
-  line-height: var(--ss-leading-tight);
-  white-space: nowrap;
-}
-
-.midiValue {
-  margin: 0;
-  color: var(--ss-color-text);
-  font-size: var(--ss-text-md);
-  font-weight: var(--ss-font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--ss-leading-tight);
-}
-
-.midiPorts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-2);
-  min-width: 0;
-  flex: 0 0 auto;
-}
-
-.midiPortRow {
-  display: grid;
-  grid-template-columns: minmax(5rem, 6rem) minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ss-space-2);
-  min-width: 0;
-  min-height: var(--ss-space-8);
-}
-
-.midiPortValue {
-  margin: 0;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--ss-color-text);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-tight);
 }
 
 /* —— Status bar (always on) —— */
