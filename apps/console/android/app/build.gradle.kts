@@ -15,8 +15,8 @@ android {
         // Keep in sync with root package.json (host /api/health.version).
         // versionCode patch digit bumps for Console sideload diagnostics builds
         // without a SemVer cut (50207 = READY via shared status file after :host split).
-        versionCode = 50220
-        versionName = "5.2.11"
+        versionCode = 50221
+        versionName = "5.2.12"
         // Sideload tablets: arm only (drop x86/x86_64 emulator ABIs).
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a")
