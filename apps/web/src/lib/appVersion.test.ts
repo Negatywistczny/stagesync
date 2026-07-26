@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { APP_VERSION } from "./appVersion.js";
 import {
   DOCS_INSTALL_URL,
@@ -6,11 +9,19 @@ import {
   DOCS_RELEASES_URL,
 } from "./docsLinks.js";
 
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
 describe("appVersion + docsLinks", () => {
   it("exposes SemVer app version string", () => {
     expect(APP_VERSION).toMatch(/^\d+\.\d+\.\d+/);
   });
 
+  it("matches root package.json version", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(repoRoot, "package.json"), "utf8"),
+    ) as { version: string };
+    expect(APP_VERSION).toBe(pkg.version);
+  });
 
   it("docs links use https GitHub hosts", () => {
     expect(DOCS_INSTALL_URL.startsWith("https://github.com/")).toBe(true);
