@@ -12,6 +12,7 @@
     <string name="btn_recent">Ostatnie serwery</string>
     <string name="btn_change_server">Zmień serwer</string>
     <string name="host_ready">Gotowy do połączenia</string>
+    <string name="host_card_cd">Serwer StageSync — dotknij, aby połączyć</string>
     <string name="recent_dialog_title">Ostatnie serwery</string>
     <string name="recent_empty">Brak zapisanych serwerów</string>
     <string name="status_scanning">Szukam serwerów StageSync w sieci…</string>
@@ -23,6 +24,7 @@
     <string name="err_health">Serwer nie odpowiada</string>
     <string name="qr_hint">Zeskanuj kod QR „Dołącz do hosta” z panelu Admin albo wklej adres poniżej.</string>
     <string name="qr_scanning">Skieruj aparat na kod QR hosta…</string>
+    <string name="qr_preview_cd">Podgląd kamery do skanowania kodu QR</string>
     <string name="qr_found">Kod rozpoznany — łączę…</string>
     <string name="qr_camera_denied">Brak dostępu do kamery. Wklej adres LAN poniżej albo włącz Kamerę w ustawieniach aplikacji.</string>
     <string name="qr_camera_error">Nie udało się uruchomić kamery. Wklej adres poniżej.</string>
