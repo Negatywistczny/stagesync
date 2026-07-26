@@ -1,6 +1,10 @@
 package com.stagesync.console
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
@@ -15,6 +19,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import com.stagesync.console.databinding.ActivityHostWebBinding
@@ -41,6 +46,22 @@ class HostWebActivity : AppCompatActivity() {
     private var remoteMode = false
     private var pendingApkFile: File? = null
     private var assetLoader: WebViewAssetLoader? = null
+
+    private val localHostStoppedReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != LocalHostService.ACTION_STOPPED) return
+                // Local host was closed from the FG notification — leave Admin.
+                if (hostOrigin == LocalHostRuntime.LOOPBACK_ORIGIN ||
+                    hostAuthority == "127.0.0.1" ||
+                    hostAuthority == "localhost"
+                ) {
+                    Toast.makeText(this@HostWebActivity, R.string.local_host_stopped, Toast.LENGTH_SHORT)
+                        .show()
+                    finish()
+                }
+            }
+        }
 
     private val unknownSourcesLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -74,6 +95,13 @@ class HostWebActivity : AppCompatActivity() {
             } catch (_: Exception) {
                 ""
             }
+
+        ContextCompat.registerReceiver(
+            this,
+            localHostStoppedReceiver,
+            IntentFilter(LocalHostService.ACTION_STOPPED),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
 
         remoteMode = !LocalUiStore.hasLocalUi(this)
         rebuildAssetLoader()
@@ -126,6 +154,15 @@ class HostWebActivity : AppCompatActivity() {
                 }
             },
         )
+    }
+
+    override fun onDestroy() {
+        try {
+            unregisterReceiver(localHostStoppedReceiver)
+        } catch (_: IllegalArgumentException) {
+            // already unregistered
+        }
+        super.onDestroy()
     }
 
     private fun rebuildAssetLoader() {

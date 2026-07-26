@@ -40,7 +40,15 @@ class LocalHostService : Service() {
     private val binder = object : android.os.Binder() {}
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(TAG, "onStartCommand startId=$startId pid=${android.os.Process.myPid()}")
+        Log.i(
+            TAG,
+            "onStartCommand action=${intent?.action} startId=$startId pid=${android.os.Process.myPid()}",
+        )
+        if (intent?.action == ACTION_STOP) {
+            stopHostCleanly()
+            return START_NOT_STICKY
+        }
+
         try {
             ensureChannel()
             // Android 14+: startForeground must run promptly after
@@ -353,6 +361,40 @@ class LocalHostService : Service() {
         super.onDestroy()
     }
 
+    /**
+     * Stop from notification action: dismiss FG notification, notify UI, then
+     * exit the `:host` process. Embedded `node::Start` has no stop JNI — killing
+     * this process frees the port without taking down the launcher UI process.
+     */
+    private fun stopHostCleanly() {
+        Log.i(TAG, "ACTION_STOP — shutting down local host")
+        LocalHostStatus.clear(this)
+        sendBroadcast(
+            Intent(ACTION_STOPPED)
+                .setPackage(packageName)
+                .putExtra(EXTRA_MESSAGE, getString(R.string.local_host_stopped)),
+        )
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (_: Throwable) {
+            // ignore
+        }
+        stopSelf()
+        // Do not sleep on the main thread — give the UI process a moment to
+        // receive ACTION_STOPPED, then exit so embedded Node frees the port.
+        Thread(
+            {
+                try {
+                    Thread.sleep(STOP_BROADCAST_GRACE_MS)
+                } catch (_: InterruptedException) {
+                    // ignore
+                }
+                android.os.Process.killProcess(android.os.Process.myPid())
+            },
+            "stagesync-host-stop",
+        ).start()
+    }
+
     private fun ensureChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val mgr = getSystemService(NotificationManager::class.java) ?: return
@@ -361,24 +403,63 @@ class LocalHostService : Service() {
                 CHANNEL_ID,
                 getString(R.string.local_host_channel),
                 NotificationManager.IMPORTANCE_LOW,
-            )
+            ).apply {
+                description = getString(R.string.local_host_channel)
+                setShowBadge(false)
+            }
         mgr.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(text: String): Notification {
+    private fun openAppPendingIntent(): PendingIntent {
         val launch =
-            PendingIntent.getActivity(
-                this,
-                0,
-                Intent(this, LauncherActivity::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
+            packageManager.getLaunchIntentForPackage(packageName)
+                ?: Intent(this, LauncherActivity::class.java).apply {
+                    action = Intent.ACTION_MAIN
+                    addCategory(Intent.CATEGORY_LAUNCHER)
+                }
+        launch.flags =
+            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+        return PendingIntent.getActivity(
+            this,
+            REQUEST_OPEN,
+            launch,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private fun stopHostPendingIntent(): PendingIntent {
+        val stop =
+            Intent(this, LocalHostService::class.java).apply {
+                action = ACTION_STOP
+            }
+        return PendingIntent.getService(
+            this,
+            REQUEST_STOP,
+            stop,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private fun buildNotification(text: String): Notification {
+        val openApp = openAppPendingIntent()
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.local_host_notification_title))
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(launch)
+            .setContentIntent(openApp)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .addAction(
+                0,
+                getString(R.string.local_host_action_open),
+                openApp,
+            )
+            .addAction(
+                0,
+                getString(R.string.local_host_action_stop),
+                stopHostPendingIntent(),
+            )
             .build()
     }
 
@@ -387,6 +468,8 @@ class LocalHostService : Service() {
         const val NOTIFICATION_ID = 4000
         const val ACTION_FAILED = "com.stagesync.console.LOCAL_HOST_FAILED"
         const val ACTION_READY = "com.stagesync.console.LOCAL_HOST_READY"
+        const val ACTION_STOPPED = "com.stagesync.console.LOCAL_HOST_STOPPED"
+        const val ACTION_STOP = "com.stagesync.console.LOCAL_HOST_STOP"
         const val EXTRA_MESSAGE = "message"
         const val EXTRA_ORIGIN = "origin"
 
@@ -394,6 +477,9 @@ class LocalHostService : Service() {
         private const val HEALTH_TIMEOUT_MS = 90_000L
         private const val HEALTH_POLL_MS = 400L
         private const val NODE_STACK_BYTES = 8L * 1024L * 1024L
+        private const val STOP_BROADCAST_GRACE_MS = 200L
+        private const val REQUEST_OPEN = 1
+        private const val REQUEST_STOP = 2
 
         fun start(context: Context) {
             val intent = Intent(context, LocalHostService::class.java)
@@ -402,6 +488,12 @@ class LocalHostService : Service() {
             } else {
                 context.startService(intent)
             }
+        }
+
+        fun stop(context: Context) {
+            context.startService(
+                Intent(context, LocalHostService::class.java).setAction(ACTION_STOP),
+            )
         }
     }
 }

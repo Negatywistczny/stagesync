@@ -102,6 +102,7 @@ class LauncherActivity : AppCompatActivity() {
                                 ?: LocalHostRuntime.LOOPBACK_ORIGIN
                         onLocalHostReady(origin)
                     }
+                    LocalHostService.ACTION_STOPPED -> onLocalHostStopped()
                 }
             }
         }
@@ -133,6 +134,7 @@ class LauncherActivity : AppCompatActivity() {
             IntentFilter().apply {
                 addAction(LocalHostService.ACTION_FAILED)
                 addAction(LocalHostService.ACTION_READY)
+                addAction(LocalHostService.ACTION_STOPPED)
             }
         ContextCompat.registerReceiver(
             this,
@@ -242,6 +244,17 @@ class LauncherActivity : AppCompatActivity() {
         setLocalHostBusy(false)
         showLocalHostError(message)
         Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
+    }
+
+    private fun onLocalHostStopped() {
+        stopStatusPoll()
+        unbindHostWatch()
+        if (localHostBusy && !hostTerminal) {
+            hostTerminal = true
+            setLocalHostBusy(false)
+            clearLocalHostErrorUi(clearFiles = false)
+            Toast.makeText(this, R.string.local_host_stopped, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun bindHostWatch() {
