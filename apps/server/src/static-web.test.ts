@@ -45,6 +45,15 @@ describe("static web SPA", () => {
     expect(await res.text()).toContain("spa");
   });
 
+  it("serves SPA shell for /client and /timeline routes", async () => {
+    ({ server, baseUrl } = await listenStatic(staticDir));
+    for (const path of ["/client", "/timeline", "/client/foo"]) {
+      const res = await fetch(`${baseUrl}${path}`);
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("spa");
+    }
+  });
+
   it("injects desktop shell marker for SPA routes when STAGESYNC_SHELL=desktop", async () => {
     process.env.STAGESYNC_SHELL = "desktop";
     await writeFile(
