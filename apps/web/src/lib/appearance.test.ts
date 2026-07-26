@@ -133,4 +133,19 @@ describe("appearance", () => {
     expect(rootAttrs.has("data-theme")).toBe(false);
   });
 
+  it("hasStoredAppearance is true after set and false on storage throw", () => {
+    expect(hasStoredAppearance()).toBe(false);
+    setAppearance({ light: true, highContrast: true });
+    expect(hasStoredAppearance()).toBe(true);
+
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    });
+    expect(hasStoredAppearance()).toBe(false);
+  });
+
 });
