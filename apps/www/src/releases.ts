@@ -67,7 +67,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     title: "Console",
     subtitle: "Realizator / Lider",
     detail: "Pełny panel zarządzania setlistą na telefonie lub tablecie",
-    cta: "Pobierz Console",
+    cta: "Pobierz Console (Android)",
   },
   "android-performer": {
     category: "android",
@@ -75,7 +75,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     title: "Performer",
     subtitle: "Muzyk na scenie",
     detail: "Dedykowany widok nut, akordów i\u00A0tekstu na telefonie lub tablecie",
-    cta: "Pobierz Performer",
+    cta: "Pobierz Performer (Android)",
   },
 };
 
