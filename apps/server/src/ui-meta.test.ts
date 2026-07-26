@@ -141,4 +141,13 @@ describe("ui-meta / health (#692)", () => {
     );
     expect(zipRes.status).toBe(404);
   });
+
+  it("loadUiMeta ignores invalid ui-hash.json and keeps none", async () => {
+    staticDir = await mkdtemp(join(tmpdir(), "ss-ui-bad-"));
+    await writeFile(join(staticDir, "ui-hash.json"), "{not-json");
+    const meta = loadUiMeta(staticDir);
+    expect(meta.uiHash).toBe(UI_UNAVAILABLE_HASH);
+    expect(meta.assets).toEqual([]);
+  });
+
 });
