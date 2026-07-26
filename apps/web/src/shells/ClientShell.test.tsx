@@ -141,4 +141,15 @@ describe("ClientShell chrome", () => {
       screen.getByRole("textbox", { name: "Imię lub nazwa urządzenia" }),
     ).toBeTruthy();
   });
+
+  it("names instrument pitch group in global settings", () => {
+    render(<ClientShell />);
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    expect(
+      screen.getByRole("group", { name: "Strój instrumentu transponującego" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Strój koncertowy (C)" }),
+    ).toBeTruthy();
+  });
 });
