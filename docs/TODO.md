@@ -1,17 +1,17 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.2.9` (`v5.2.9`) — linia **5.2** = **Pocket Stage**; **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
+**Stan:** ostatni cut `5.2.11` (`v5.2.11`) — linia **5.2** = **Pocket Stage**; **5.1** = **Launch & Mix**; **5.0** = **Overture**.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** residual po Pocket Stage → 5.3+ / Later. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
-**Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md). Mobile: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
+**Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) · [ADR 0017](./adr/0017-live-show-control-contracts.md). Mobile: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
 **Specy 5.2+ (hipotezy):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
 ## Must (operator residual)
 
-- [ ] **G1–G10** na instalatorach `v5.2.9` / najnowszy **5.2.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
+- [ ] **G1–G10** na instalatorach `v5.2.11` / najnowszy **5.2.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 
@@ -23,9 +23,10 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] **Mixer — HW Out 3–4 (WebAudio multi-out):** UI + ChannelMerger przy realnym `maxChannelCount` ≥ 4 ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Client transport — H-01 (residual):** split context / throttle `displayTicks` pod profil Grid/Karaoke @ 90–120 Hz ([MOBILE.md](./MOBILE.md) § H-01; [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md))
 - [ ] **GUI mobile (responsive):** poprawa wszystkich powierzchni (Admin / Client / Timeline) pod wąskie viewporty, touch i Android WebView ([MOBILE.md](./MOBILE.md); [ADR 0016](./adr/0016-android-performer-console.md))
-- [ ] [#674](https://github.com/Negatywistczny/stagesync/issues/674) **Performer + Console — residual:** smoke P-HW/C-HW na tablecie (w tym C-HW3 lokalny host) — **bez claim HW green**; native MIDI na Console host = niedostępne na Androidzie ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md))
-- [ ] [#692](https://github.com/Negatywistczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
-- [ ] **Safety Net (residual):** auto-election / lease split-brain ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
+- [ ] [#674](https://github.com/Negatywistyczny/stagesync/issues/674) **Performer + Console — residual:** smoke P-HW/C-HW na tablecie (w tym C-HW3 lokalny host) — **bez claim HW green**; native MIDI na Console host = niedostępne na Androidzie ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md))
+- [ ] [#692](https://github.com/Negatywistyczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
+- [ ] **Safety Net (residual):** auto-election / lease split-brain — MVP zamknięte w [#437](https://github.com/Negatywistyczny/stagesync/issues/437); to tylko Later ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
+- [ ] [#810](https://github.com/Negatywistyczny/stagesync/issues/810) **Push / FCM / WebPush** — Later (nie mylić z FG notification lokalnego hosta Console)
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 
 **OUT (nie wraca do TODO):** natywny **StageSync Performer na iOS** (Swift/WKWebView / TestFlight) — ścieżka iOS = **Safari / PWA `/client`** ([#809](https://github.com/Negatywistyczny/stagesync/issues/809), [#674](https://github.com/Negatywistyczny/stagesync/issues/674)); natywne APK = Android only ([ADR 0016](./adr/0016-android-performer-console.md)).
