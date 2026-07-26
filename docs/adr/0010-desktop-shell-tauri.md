@@ -31,7 +31,8 @@ Przyjmujemy **Tauri** jako desktop shell w β1:
    - Auto-update w tle / sklepy = OUT β1 (β2+).
 4. **Android** — OUT β1 (PWA / Capacitor później).
 5. **Launcher (amendement — [ADR 0014](./0014-desktop-launcher.md)):** cold start ładuje bundlowany ekran wyboru hosta (lokalny sidecar **lub** LAN/remote). Sidecar nie startuje automatycznie; mDNS advertise na serwerze + browse w shellu.
-6. **Nawigacja desktop (amendement):** chrome HTML bez zmian względem przeglądarki (`appJump` Admin/Timeline). Natywne menu OS — **Faza A** (**α12**) + **Faza B+C** (**β2**):
+6. **System tray / Menu Bar (amendement — [#813](https://github.com/Negatywistczny/stagesync/issues/813), [ADR 0015](./0015-daw-reference-and-product-decisions.md) „lekki tray”):** zamknięcie okna = hide + prevent_close (host żyje); pełne wyjście tylko **Zakończ** / ⌘Q / tray Quit (`kill_child`). Menu tray: status, kopiuj LAN, start/stop host, otwórz. Bez pełnego menubar Audio/MIDI/Setlista w OS.
+7. **Nawigacja desktop (amendement):** chrome HTML bez zmian względem przeglądarki (`appJump` Admin/Timeline). Natywne menu OS — **Faza A** (**α12**) + **Faza B+C** (**β2**):
    - **StageSync:** O programie → `/admin?section=host`; Sprawdź aktualizacje… → `?action=check-update`; Zakończ
    - **Plik (B):** Otwórz ostatnie (localStorage → menu); Zapisz → event WebView → Timeline draft; Zamknij projekt → `/admin`
    - **Widok:** Admin / Timeline / Klient (`CmdOrCtrl+1…3`); Zakładki Admina (Utwory / Setlista / Scena / Host, `Alt+1…4`); Pełny ekran

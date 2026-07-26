@@ -16,7 +16,16 @@ Błędy startu lokalnego hosta (port zajęty, timeout, uprawnienia, zła wersja,
 
 Wygląd Launchera (kolory, przyciski) pochodzi z tego samego design systemu co SPA (`--ss-*`, klasy `ss-btn*`) — bez osobnej palety „na cold-start”.
 
-Zamknięcie okna albo **Zakończ** (⌘/Ctrl+Q) zatrzymuje lokalny host. Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (np. po Force Quit).
+### Zasobnik systemowy (tray / Menu Bar)
+
+Ikona StageSync zostaje w zasobniku Windows / Menu Bar macOS przez cały czas działania aplikacji.
+
+- **Zamknięcie okna (X)** — chowa okno do zasobnika; **lokalny host nadal działa** (LAN / klienci bez przerwy).
+- **Lewy klik** (lub pozycja **Otwórz StageSync**) — przywraca okno.
+- **Menu kontekstowe:** Status Hosta (wyłączony / działa z adresem LAN / błąd), **Kopiuj adres LAN**, **Uruchom / Zatrzymaj Host**, **Zakończ StageSync**.
+- **Pełne wyjście** (gasi host + proces aplikacji): tray **Zakończ StageSync**, menu OS **Zakończ**, ⌘/Ctrl+Q.
+
+Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (np. po Force Quit).
 
 **Domyślny widok po połączeniu:** Admin (`/admin`). Klient (`/client`) też w aplikacji desktop; w przeglądarce / Dockerze root `/` to Client.
 
