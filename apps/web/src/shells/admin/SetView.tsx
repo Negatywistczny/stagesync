@@ -22,6 +22,7 @@ import {
   patchSetlistAutoAdvance,
   putSetlist,
 } from "../../lib/setlistApi.js";
+import { setlistBudgetPercent } from "../../lib/setlistBudget.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import { catalogSongBadges } from "./songCatalogBadges.js";
 import shell from "../AdminShell.module.css";
@@ -195,9 +196,8 @@ export function SetView({ library, selectedId }: SetViewProps) {
     [draftItems, projectsById],
   );
   const budgetMs = timeBudgetMinutes * 60 * 1000;
-  const budgetRatio = budgetMs > 0 ? Math.min(1, totalMs / budgetMs) : 0;
+  const budgetPct = setlistBudgetPercent(totalMs, budgetMs);
   const overBudget = totalMs > budgetMs;
-  const budgetPct = Math.round(budgetRatio * 100);
 
   const onTogglePick = (id: string) => {
     setPickIds((ids) =>
@@ -483,6 +483,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
               <Button
                 variant="secondary"
                 disabled={pending || pickIds.length === 0}
+                aria-label={`Dodaj zaznaczone (${pickIds.length})`}
                 onClick={onAddPicked}
               >
                 Dodaj zaznaczone ({pickIds.length})
