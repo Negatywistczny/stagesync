@@ -12,6 +12,10 @@ object ApkUpdateChecker {
     private val executor = Executors.newCachedThreadPool()
     private val versionRegex = Regex("\"version\"\\s*:\\s*\"([^\"]+)\"")
 
+    /** Extract host semver from `/api/health` JSON body. */
+    internal fun parseHealthVersion(body: String): String? =
+        versionRegex.find(body)?.groupValues?.get(1)
+
     data class Offer(
         val hostVersion: String,
         val shellVersion: String,
@@ -54,7 +58,7 @@ object ApkUpdateChecker {
         try {
             if (conn.responseCode !in 200..299) return null
             val body = conn.inputStream.bufferedReader().use { it.readText() }
-            return versionRegex.find(body)?.groupValues?.get(1)
+            return parseHealthVersion(body)
         } finally {
             conn.disconnect()
         }
