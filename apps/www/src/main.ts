@@ -79,7 +79,7 @@ function renderUnavailable(
   titles.append(el("p", "dl-card__subtitle", subtitle));
   head.append(titles);
   card.append(head);
-  card.append(el("p", "dl-card__detail", "Niedostępne w najnowszym wydaniu."));
+  card.append(el("p", "dl-card__detail", "Niedostępne w\u00A0najnowszym wydaniu."));
   if (help) {
     const actions = el("div", "dl-card__actions");
     const link = el("a", "dl-card__help");
@@ -112,7 +112,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
 
   const docs = catalog.channels.docs;
   const desktopHelp = { label: "Jak zainstalować na komputerze", url: docs.desktop };
-  const mobileHelp = { label: "Jak zainstalować na tablecie", url: docs.mobile };
+  const mobileHelp = { label: "Jak zainstalować na Androidzie", url: docs.mobile };
 
   const desktopCards: HTMLElement[] = [];
   if (catalog.desktop.windows) {
@@ -134,7 +134,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
   root.append(
     renderCategory(
       "Aplikacja główna (stacja robocza)",
-      "Windows i Mac — stąd sterujesz setlistą.",
+      "Windows i\u00A0Mac — stąd sterujesz setlistą.",
       desktopCards,
     ),
   );
@@ -153,8 +153,8 @@ function renderCatalog(catalog: DownloadCatalog): void {
 
   root.append(
     renderCategory(
-      "Tablety na scenie",
-      "Console do zarządzania setlistą, Performer dla muzyków — ta sama sieć Wi‑Fi.",
+      "Android na scenie",
+      "Console i Performer na telefonie lub tablecie — ta sama sieć Wi‑Fi.",
       androidCards,
     ),
   );
@@ -191,7 +191,7 @@ async function hydrateDownloads(): Promise<void> {
     const catalog = await fetchLatestCatalog();
     if (!catalogHasAny(catalog)) {
       setStatus(
-        "Brak gotowych instalatorów w najnowszym wydaniu.",
+        "Brak gotowych instalatorów w\u00A0najnowszym wydaniu.",
         catalog.releaseUrl,
       );
       return;

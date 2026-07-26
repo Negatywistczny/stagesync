@@ -66,7 +66,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     icon: "console",
     title: "Console",
     subtitle: "Realizator / Lider",
-    detail: "Pełny panel zarządzania setlistą na tablecie",
+    detail: "Pełny panel zarządzania setlistą na telefonie lub tablecie",
     cta: "Pobierz Console",
   },
   "android-performer": {
@@ -74,7 +74,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     icon: "performer",
     title: "Performer",
     subtitle: "Muzyk na scenie",
-    detail: "Dedykowany widok nut, akordów i tekstu zsynchronizowany z zespołem",
+    detail: "Dedykowany widok nut, akordów i\u00A0tekstu na telefonie lub tablecie",
     cta: "Pobierz Performer",
   },
 };
@@ -118,7 +118,7 @@ function helpFor(kind: DownloadKind, channels: SiteChannels): Pick<DownloadOffer
   if (kind === "windows" || kind === "macos-arm" || kind === "macos-x64") {
     return { helpLabel: "Jak zainstalować na komputerze", helpUrl: channels.docs.desktop };
   }
-  return { helpLabel: "Jak zainstalować na tablecie", helpUrl: channels.docs.mobile };
+  return { helpLabel: "Jak zainstalować na Androidzie", helpUrl: channels.docs.mobile };
 }
 
 function toOffer(kind: DownloadKind, url: string, channels: SiteChannels): DownloadOffer {
