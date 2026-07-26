@@ -45,6 +45,18 @@ describe("clientKaraoke", () => {
     expect(line).toContain("BPM");
   });
 
+  it("formatKaraokeTransportLine falls back to meter when label empty", () => {
+    const ctx = {
+      ...buildKaraokeLiveContext(project, 0)!,
+      meterLabel: "",
+    };
+    const line = formatKaraokeTransportLine(ctx, {
+      numerator: 3,
+      denominator: 8,
+    });
+    expect(line).toContain("3/8");
+  });
+
   it("buildKaraokeLiveContext returns null without project", () => {
     expect(buildKaraokeLiveContext(null, 0)).toBeNull();
   });
@@ -74,8 +86,11 @@ describe("clientKaraoke", () => {
 
   it("isPlaceholderLyric matches v4 bracket placeholders", () => {
     expect(isPlaceholderLyric("")).toBe(true);
+    expect(isPlaceholderLyric("   ")).toBe(true);
     expect(isPlaceholderLyric("[Intro]")).toBe(true);
     expect(isPlaceholderLyric("Hello")).toBe(false);
+    expect(isPlaceholderLyric("[Intro] more")).toBe(false);
+    expect(isPlaceholderLyric("[unclosed")).toBe(false);
   });
 
   it("groups lyric lines under Forma section cards", () => {
