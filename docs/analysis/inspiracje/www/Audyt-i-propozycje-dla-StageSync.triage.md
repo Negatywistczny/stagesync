@@ -1,50 +1,45 @@
 # Triage: Audyt i propozycje marketingowe `apps/www`
 
 **Źródło:** [Audyt-i-propozycje-dla-StageSync.md](./Audyt-i-propozycje-dla-StageSync.md) (Gemini / AI Exporter)  
-**Status:** `partial`  
-**Obszar:** `apps/www` · SEO/OG · H1 · tokeny `--ss-*` · `channels.json` · download UX · copy Pocket Stage  
+**Status:** `closed`  
+**Obszar:** `apps/www` · SEO/OG · H1 · tokeny `--ss-*` · `channels.json` · download UX · copy użytkownika  
 **Data triage:** 2026-07-26  
+**Ostatnia aktualizacja:** 2026-07-26 (Must/Should on-tree; Later/limit świadomie odłożone)  
 **Kąt:** audyt witryny marketingowej (nie silnik / nie G1–G10)
 
 ## Werdykt przydatności
 
-**Wysoka jako backlog polish `apps/www` — nie feature produktu scenicznego.** Dump dobrze mapuje na realne pliki (`index.html`, `releases.ts`, `styles.css`, `main.ts`). Większość Must da się potwierdzić grepem; część Must z dumpu zawyża „krytyczność SEO” względem priorytetu Pocket Stage. **Nie** wrzucać claimów Lighthouse 100/100 ani Facebook Debugger do TODO jako bramek wydania.
+**Wysoka jako polish `apps/www` — nie feature produktu scenicznego.** Must + Should z dumpu (po korekcie IA użytkownika: bez sekcji Docs/Config/Docker) **domknięte on-tree**. Later (WWW-09/10) i HEX w brand SVG = świadomy residual poza backlogiem produktu. **Nie** Lighthouse 100 / Facebook Debugger jako bramki.
 
-Korekta dumpu: `channels.json` żyje w [`apps/www/public/config/channels.json`](../../../../apps/www/public/config/channels.json), **nie** w root monorepo.
+Korekta dumpu: `channels.json` → [`apps/www/public/config/channels.json`](../../../../apps/www/public/config/channels.json) (nie root monorepo).
 
 ## Epiki / tematy vs dysk (`main`)
 
 | ID / temat | Stan | Notatka |
 |------------|------|---------|
-| WWW-01 H1 tylko jako `<img>` w hero | `confirmed` | [`index.html`](../../../../apps/www/index.html) `#hero-title` = wordmark SVG z `alt="StageSync"`; brak tekstowego H1 / `.visually-hidden` |
-| WWW-02 brak `og:*` / `twitter:*` | `confirmed` | Brak w `<head>` — tylko `description` + `theme-color` |
-| WWW-03 HEX w SVG hero (`#fbbf24`, `#3f3f46`…) | `confirmed` | Inline SVG w `index.html` + brand SVG w `public/brand/` — poza `--ss-*` |
-| WWW-04 hardcode GitHub API w `releases.ts` | `confirmed` | `RELEASES_API` / `RELEASES_PAGE` zahardkodowane; `channels.json` istnieje, ale **nie** jest czytany przez `releases.ts` |
-| WWW-05 brak linków DESKTOP/MOBILE/INSTALL przy kartach | `confirmed` | Karty z `main.ts` / META bez docs; `channels.json` ma `docs.*` gotowe do podpięcia |
-| WWW-06 marketing absencji („bez serwera… bez chmury”) | `confirmed` | Rola Performer w `index.html` — copy do przeredagowania (Should, nie blocker) |
-| WWW-07 brak `aria-live` na `#download-catalog` | `confirmed` | Kontener bez `aria-live` |
-| WWW-08 ukrywanie nav poniżej `28rem` bez menu | `confirmed` | `styles.css` `@media (max-width: 28rem)` — chowa linki poza `#download` |
-| WWW-09 build-time release fallback JSON | `hypothesis` | Later — sensowne; nie Must |
-| WWW-10 nowa IA (pillars / booth LED / playhead CTA) | `hypothesis` / `limit` | Duża przebudowa wizualna; trzymać w dumpie — nie automatyczny backlog; respektować reguły hero (brand-first, bez kart w hero) |
-| Claim Safety §7 (Console/Performer/LAN) | `limit` | Checklist zgodności copy z 5.2 — używać przy rewrite; nie osobny issue silnika |
+| WWW-01 H1 tekstowy w hero | `done` | `visually-hidden` + wordmark; ship w polish SEO |
+| WWW-02 `og:*` / `twitter:*` | `done` | Pełny zestaw w `<head>` |
+| WWW-03 HEX → tokeny w SVG | `done` / `limit` | **done:** inline hero SVG (`currentColor` / `--ss-*`). **limit:** HEX w `public/brand/*.svg` (asset marki) |
+| WWW-04 `channels.json` → Releases | `done` | [`channels.ts`](../../../../apps/www/src/channels.ts) + `loadChannels()` |
+| WWW-05 linki pomocy przy kartach | `done` | „Jak zainstalować…” → DESKTOP/MOBILE (bez sekcji Docs na stronie) |
+| WWW-06 marketing absencji + żargon | `done` | Copy użytkownika (bez transport/Timeline/host/LAN/„bez chmury”) |
+| WWW-07 `aria-live` katalog | `done` | `#download-catalog` `aria-live="polite"` |
+| WWW-08 nav &lt;28rem | `done` | Linki zostają widoczne (bez hamburgera) |
+| WWW-09 build-time release fallback | `later` | Tylko gdy API/limit stanie się problemem operacyjnym |
+| WWW-10 booth LED / redesign motion | `later` / `limit` | Tylko jawna decyzja PO; nie automatyczny backlog |
+| Claim Safety §7 | `limit` | Checklist przy kolejnych rewrite; nie osobny issue |
+| IA Docs / Docker / rack w Pobierz | `out` | Świadomie odrzucone — strona dla użytkowników, nie deweloperów |
 
-## Must / Should / Later (PO)
+## Must / Should / Later (PO) — wynik
 
-| Priorytet dumpu | ID | Rekomendacja eng |
-|-----------------|----|------------------|
-| Must | WWW-01, WWW-02, WWW-03, WWW-04 | Mały patch `apps/www`: tekstowy H1 + OG/Twitter + tokeny w SVG hero + fetch channels |
-| Should | WWW-05, WWW-06, WWW-07, WWW-08 | Docs na kartach, copy korzyści, `aria-live`, nav mobilny |
-| Later | WWW-09, WWW-10 | Prefetch releases przy buildzie; większy redesign IA/motion |
+| Priorytet | ID | Wynik |
+|-----------|-----|--------|
+| Must | WWW-01…04 | **on-tree** (WWW-03 brand = limit) |
+| Should | WWW-05…08 | **on-tree** |
+| Later | WWW-09, WWW-10 | **odłożone** — bez wpisu w `TODO.md` |
 
-## Confirmed vs poza zakres
+## Domknięcie
 
-- **Confirmed na dysku:** WWW-01…08 (grep 2026-07-26).
-- **Poza zakresem tego triage:** APK/host Console, Timeline, G1–G10 — dump ich nie dotyczy.
-- **Nie** otwierać issue „Lighthouse 100” / „Facebook Debugger green” jako bramek cutu.
-
-## Następny krok eng
-
-1. Jeden PR `apps/www`: WWW-01 + WWW-02 + WWW-04 (H1 tekstowy, OG, `channels.json` → `releases.ts`) — szybki win SEO/utrzymanie.  
-2. Drugi PR Should: WWW-05/06/07 (+ opcjonalnie WWW-08).  
-3. WWW-03 (tokeny w SVG): albo `currentColor` / CSS variables w inline SVG, albo świadomy `limit` dla raster/brand assets.  
-4. Dopiero potem rozważać WWW-09; WWW-10 tylko z osobną decyzją PO.
+- **Backlog polish `apps/www` z tego audytu = zamknięty.**
+- Residual Later nie trafia do `TODO.md` ani CHANGELOG.
+- Kolejny ruch witryny (custom domain, OG PNG, WWW-09) = osobna decyzja PO, nie kontynuacja tego triage.
