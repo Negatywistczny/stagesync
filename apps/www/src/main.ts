@@ -116,7 +116,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (catalog.desktop.windows) {
     desktopCards.push(renderCard(catalog.desktop.windows));
   } else {
-    desktopCards.push(renderUnavailable("Windows", "Komputer reżyserii", "windows", desktopHelp));
+    desktopCards.push(renderUnavailable("Windows", "Aplikacja główna (stacja robocza)", "windows", desktopHelp));
   }
 
   if (catalog.desktop.macosArm) {
@@ -126,13 +126,13 @@ function renderCatalog(catalog: DownloadCatalog): void {
   } else if (catalog.desktop.macosIntel) {
     desktopCards.push(renderCard(catalog.desktop.macosIntel));
   } else {
-    desktopCards.push(renderUnavailable("macOS", "Komputer reżyserii", "apple", desktopHelp));
+    desktopCards.push(renderUnavailable("macOS", "Aplikacja główna (stacja robocza)", "apple", desktopHelp));
   }
 
   root.append(
     renderCategory(
-      "Komputer reżyserii",
-      "Aplikacja na Windows i Mac — stąd prowadzisz koncert.",
+      "Aplikacja główna (stacja robocza)",
+      "Windows i Mac — stąd sterujesz setlistą.",
       desktopCards,
     ),
   );
@@ -141,7 +141,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (catalog.android.console) {
     androidCards.push(renderCard(catalog.android.console));
   } else {
-    androidCards.push(renderUnavailable("Console", "Reżyseria / mikser", "console", mobileHelp));
+    androidCards.push(renderUnavailable("Console", "Realizator / Lider", "console", mobileHelp));
   }
   if (catalog.android.performer) {
     androidCards.push(renderCard(catalog.android.performer));
@@ -152,7 +152,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
   root.append(
     renderCategory(
       "Tablety na scenie",
-      "Console przy mikserze, Performer u muzyków — ta sama sieć Wi‑Fi.",
+      "Console do zarządzania setlistą, Performer dla muzyków — ta sama sieć Wi‑Fi.",
       androidCards,
     ),
   );
