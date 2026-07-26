@@ -59,6 +59,7 @@ export function OperatorPinFields() {
           <Button
             type="button"
             variant="secondary"
+            aria-label="Zablokuj sesję PIN operatora"
             onClick={() => {
               clearStoredOperatorPin();
               setUnlocked(false);
