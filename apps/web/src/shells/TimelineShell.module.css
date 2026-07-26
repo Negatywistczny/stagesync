@@ -2033,6 +2033,21 @@
   touch-action: pan-x;
 }
 
+/*
+ * Pointer (default) / click tools: allow native pan on empty lanes for any
+ * touch screen (phone, tablet, hybrid). Pencil / Marquee / Zoom clear this
+ * attribute so exclusive drag still works.
+ */
+.shell[data-tl-touch-pan] .canvasScroll {
+  touch-action: pan-x pan-y;
+}
+
+.shell[data-tl-touch-pan] .laneFillHit,
+.shell[data-tl-touch-pan] .laneCell,
+.shell[data-tl-touch-pan] .formaLaneCell {
+  touch-action: pan-x pan-y;
+}
+
 .shell[data-tl-tier="tablet"] .formaClip {
   cursor: pointer;
 }

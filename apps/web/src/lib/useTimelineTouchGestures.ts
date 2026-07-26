@@ -1,6 +1,6 @@
 /**
  * Attach native touch listeners for pinch-zoom + double-tap on Timeline viewport.
- * Enabled only for tablet/coarse tiers — does not interfere with mouse/desktop.
+ * Enable on any touch-capable surface (phone, tablet, hybrid); TouchEvents no-op on mouse-only.
  */
 
 import { useEffect, useRef, type RefObject } from "react";

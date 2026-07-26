@@ -9,6 +9,7 @@ import {
   getSessionSnapMode,
   hitTestAudioClipZone,
   hitTestClipZone,
+  isTouchPointerType,
   loadSessionSnapModeFromStorage,
   PENCIL_DRAG_THRESHOLD_PX,
   persistSessionSnapMode,
@@ -21,6 +22,7 @@ import {
   cursorForTimelineTool,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
+  toolNeedsExclusiveTouchAction,
   toolUsesMarqueeGesture,
 } from "./timelineGesture.js";
 
@@ -151,6 +153,19 @@ describe("timelineGesture remaining", () => {
     expect(toolUsesMarqueeGesture("marquee")).toBe(true);
     expect(toolUsesMarqueeGesture("zoom")).toBe(true);
     expect(toolUsesMarqueeGesture("eraser")).toBe(false);
+    expect(toolUsesMarqueeGesture("pointer")).toBe(true);
+    expect(toolUsesMarqueeGesture("pointer", "mouse")).toBe(true);
+    expect(toolUsesMarqueeGesture("pointer", "pen")).toBe(true);
+    expect(toolUsesMarqueeGesture("pointer", "touch")).toBe(false);
+    expect(toolUsesMarqueeGesture("marquee", "touch")).toBe(true);
+    expect(toolUsesMarqueeGesture("zoom", "touch")).toBe(true);
+    expect(isTouchPointerType("touch")).toBe(true);
+    expect(isTouchPointerType("mouse")).toBe(false);
+    expect(toolNeedsExclusiveTouchAction("pointer")).toBe(false);
+    expect(toolNeedsExclusiveTouchAction("pencil")).toBe(true);
+    expect(toolNeedsExclusiveTouchAction("marquee")).toBe(true);
+    expect(toolNeedsExclusiveTouchAction("zoom")).toBe(true);
+    expect(toolNeedsExclusiveTouchAction("eraser")).toBe(false);
     expect(cursorForTimelineTool("scissors")).toBe("col-resize");
     expect(cursorForTimelineTool("gain")).toBe("ns-resize");
     expect(cursorForTimelineTool("zoom")).toBe("zoom-in");

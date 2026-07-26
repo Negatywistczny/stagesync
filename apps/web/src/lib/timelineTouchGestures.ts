@@ -1,7 +1,8 @@
 /**
- * Timeline touch gestures (tablet / coarse) — pinch zoom + double-tap.
+ * Timeline touch gestures (phone / tablet / any touch) — pinch zoom + double-tap.
  * Port of v4 `timeline-touch.js` behaviour without cloning chrome.
  *
+ * Pinch scales base Zoom H (same axis as the H zoom control; effective = H × UI scale).
  * Double-tap choice: fitZoom (same as keyboard Z), not v4 inspector open.
  * Spec: same spot <300ms → fitZoom.
  */

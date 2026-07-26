@@ -327,8 +327,10 @@ import {
   persistSessionSnapMode,
   snapModeFromStorageKey,
   snapModeToStorageKey,
+  isTouchPointerType,
   toolAllowsClipHitZones,
   toolIsPencilDraw,
+  toolNeedsExclusiveTouchAction,
   toolUsesMarqueeGesture,
   type ClipHitZone,
   type FormaGesturePreview,
@@ -853,12 +855,20 @@ export function TimelineShell() {
     currentX: number;
     currentY: number;
   } | null>(null);
+  /** Touch + Pointer tool: track tap (locator) without starting marquee; drag = native pan. */
+  const touchCanvasNavRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+  } | null>(null);
   const [marqueeBox, setMarqueeBox] = useState<{
     left: number;
     top: number;
     width: number;
     height: number;
   } | null>(null);
+  /** Re-run touch-nav window listeners when a nav session starts. */
+  const [touchCanvasNavActive, setTouchCanvasNavActive] = useState(false);
   const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
   const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -1149,7 +1159,8 @@ export function TimelineShell() {
   }, [isMobilePreview]);
 
   useTimelineTouchGestures({
-    enabled: touchTier === "tablet",
+    // Phones, tablets, and hybrid touch screens — not gated by MQ_MOBILE/tablet only.
+    enabled: true,
     scrollRef: canvasScrollRef,
     getZoomH: () => zoomHBaseRef.current,
     applyZoomH: (next, anchor) => {
@@ -3069,8 +3080,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       return;
     }
     if (!toolIsPencilDraw(tool)) {
-      if (toolUsesMarqueeGesture(tool)) {
+      if (toolUsesMarqueeGesture(tool, e.pointerType)) {
         beginMarquee(e);
+      } else if (
+        isTouchPointerType(e.pointerType) &&
+        tool === "pointer" &&
+        !heldZoomRef.current
+      ) {
+        beginTouchCanvasNav(e);
       }
       return;
     }
@@ -3473,7 +3490,39 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     setClipSelection(marqueeSelectFromHits(hits));
   }
 
+  function beginTouchCanvasNav(e: React.PointerEvent<HTMLElement>) {
+    // Do not preventDefault — browser pans the scroll viewport.
+    touchCanvasNavRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+    };
+    setTouchCanvasNavActive(true);
+  }
+
+  function finishTouchCanvasNav(clientX: number, clientY: number) {
+    const nav = touchCanvasNavRef.current;
+    touchCanvasNavRef.current = null;
+    setTouchCanvasNavActive(false);
+    if (!nav) return;
+    const dx = clientX - nav.startX;
+    const dy = clientY - nav.startY;
+    if (!isMarqueeClick(dx, dy)) return;
+    clearClipSelection();
+    clearMapSelection();
+    setSelectedAnchorId(null);
+    setLocatorFromClientX(clientX, { seekTransport: true });
+  }
+
   function beginMarquee(e: React.PointerEvent<HTMLElement>) {
+    if (
+      isTouchPointerType(e.pointerType) &&
+      toolRef.current === "pointer" &&
+      !heldZoomRef.current
+    ) {
+      beginTouchCanvasNav(e);
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     marqueeRef.current = {
@@ -3508,6 +3557,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- marquee session gated by box
   }, [marqueeBox != null]);
+
+  useEffect(() => {
+    if (!touchCanvasNavActive) return;
+    function onUp(e: PointerEvent) {
+      const nav = touchCanvasNavRef.current;
+      if (!nav || e.pointerId !== nav.pointerId) return;
+      finishTouchCanvasNav(e.clientX, e.clientY);
+    }
+    function onCancel(e: PointerEvent) {
+      const nav = touchCanvasNavRef.current;
+      if (!nav || e.pointerId !== nav.pointerId) return;
+      touchCanvasNavRef.current = null;
+      setTouchCanvasNavActive(false);
+    }
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    return () => {
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- session gated by active flag
+  }, [touchCanvasNavActive]);
 
   useEffect(() => {
     function onPointerMove(e: PointerEvent) {
@@ -4445,10 +4516,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (e.button !== 0 || !draftProject) return;
     const raw = rawTicksAtClientX(e.clientX);
     if (raw == null) return;
-    e.preventDefault();
-    e.stopPropagation();
 
     if (tool === "scissors" || toolIsPencilDraw(tool)) {
+      e.preventDefault();
+      e.stopPropagation();
       if (!gesturePolicy.mapEdit) {
         setTouchAlertOpen(true);
         return;
@@ -4467,6 +4538,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
 
     if (tool === "eraser") return;
+    // Pointer: touch pans the canvas; mouse tap seeks via touch-nav / empty handlers.
+    if (
+      isTouchPointerType(e.pointerType) &&
+      tool === "pointer" &&
+      !heldZoomRef.current
+    ) {
+      beginTouchCanvasNav(e);
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
     // Pointer / Smart: seek locator (segment buttons handle edit / drag)
   }
 
@@ -5715,6 +5797,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         .filter(Boolean)
         .join(" ")}
       data-tl-tier={touchTier}
+      data-tl-touch-pan={
+        toolNeedsExclusiveTouchAction(heldZoom ? "zoom" : tool)
+          ? undefined
+          : ""
+      }
     >
       <input
         ref={laneAudioFileRef}
@@ -6434,8 +6521,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                                     return;
                                   }
                                   if (!toolIsPencilDraw(tool)) {
-                                    if (toolUsesMarqueeGesture(tool)) {
+                                    if (
+                                      toolUsesMarqueeGesture(tool, e.pointerType)
+                                    ) {
                                       beginMarquee(e);
+                                    } else if (
+                                      isTouchPointerType(e.pointerType) &&
+                                      tool === "pointer" &&
+                                      !heldZoomRef.current
+                                    ) {
+                                      beginTouchCanvasNav(e);
                                     }
                                     return;
                                   }
@@ -6469,8 +6564,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                                       laneAudioFileRef.current?.click();
                                       return;
                                     }
-                                    if (toolUsesMarqueeGesture(tool)) {
+                                    if (
+                                      toolUsesMarqueeGesture(tool, e.pointerType)
+                                    ) {
                                       beginMarquee(e);
+                                    } else if (
+                                      isTouchPointerType(e.pointerType) &&
+                                      tool === "pointer" &&
+                                      !heldZoomRef.current
+                                    ) {
+                                      beginTouchCanvasNav(e);
                                     }
                                   }
                                 : undefined
@@ -6650,8 +6753,17 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     className={styles.laneFillHit}
                     onPointerDown={(e) => {
                       if (e.button !== 0) return;
-                      if (!toolUsesMarqueeGesture(tool)) return;
-                      beginMarquee(e);
+                      if (toolUsesMarqueeGesture(tool, e.pointerType)) {
+                        beginMarquee(e);
+                        return;
+                      }
+                      if (
+                        isTouchPointerType(e.pointerType) &&
+                        tool === "pointer" &&
+                        !heldZoomRef.current
+                      ) {
+                        beginTouchCanvasNav(e);
+                      }
                     }}
                   />
                 </div>

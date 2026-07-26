@@ -212,7 +212,11 @@
   min-width: 0;
 }
 
-/* Phone accordion stack: chrome stays put; only the open card scrolls. */
+/* Phone accordion stack: chrome stays put; only the open card scrolls.
+   Include `.accordionFlatten > .card` — `display: contents` flattens the box
+   tree for layout, but the child combinator still matches the DOM, so Host /
+   Scena wrappers would otherwise miss these rules and the open panel grows
+   unbounded (sibling headers pushed off-screen under workspace overflow). */
 .accordionStack {
   display: flex;
   flex-direction: column;
@@ -223,20 +227,23 @@
   overflow: hidden;
 }
 
-.accordionStack > .cardCollapsed {
+.accordionStack > .cardCollapsed,
+.accordionStack > .accordionFlatten > .cardCollapsed {
   flex: 0 0 auto;
 }
 
-.accordionStack > .card:not(.cardCollapsed) {
-  flex: 1 1 auto;
+.accordionStack > .card:not(.cardCollapsed),
+.accordionStack > .accordionFlatten > .card:not(.cardCollapsed) {
+  flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.accordionStack > .card:not(.cardCollapsed) > .accordionPanel {
-  flex: 1 1 auto;
+.accordionStack > .card:not(.cardCollapsed) > .accordionPanel,
+.accordionStack > .accordionFlatten > .card:not(.cardCollapsed) > .accordionPanel {
+  flex: 1 1 0;
   min-height: 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;

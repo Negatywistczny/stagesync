@@ -12,8 +12,8 @@ android {
         minSdk = 26
         targetSdk = 34
         // Keep in sync with root package.json (host /api/health.version).
-        versionCode = 50206
-        versionName = "5.2.4"
+        versionCode = 50207
+        versionName = "5.2.5"
         // Sideload tablets: arm only (drop x86/x86_64 emulator ABIs).
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a")

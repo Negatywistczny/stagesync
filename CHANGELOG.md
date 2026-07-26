@@ -5,6 +5,16 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [5.2.5](https://github.com/Negatywistczny/stagesync/compare/v5.2.4...v5.2.5) - 2026-07-26
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Ekran dotykowy (telefon i tablet):** przy domyślnym narzędziu Wskaźnik przeciągnięcie przesuwa canvas (bez przypadkowego zaznaczania prostokątem); uszczypnięcie zmienia zoom poziomy (ten sam tor co suwak Zoom H, ze skalą UI); krótkie stuknięcie w pusty obszar ustawia locator.
+
+#### 🖥️ App Shell & UI
+- **Admin Host (telefon):** akordeon nie rozpycha już pierwszej karty na cały ekran — nagłówki Logi / MIDI / O aplikacji zostają widoczne i klikalne, a treść otwartej sekcji przewija się wewnątrz panelu.
+
 ## [5.2.4](https://github.com/Negatywistczny/stagesync/compare/v5.2.3...v5.2.4) - 2026-07-26
 
 ### Dodano

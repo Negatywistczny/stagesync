@@ -136,9 +136,33 @@ export function toolIsPencilDraw(tool: FormaToolId): boolean {
   return tool === "pencil";
 }
 
-/** Empty-lane drag draws a marquee (select) or zoom rect. */
-export function toolUsesMarqueeGesture(tool: FormaToolId): boolean {
-  return tool === "pointer" || tool === "marquee" || tool === "zoom";
+/** True for finger input — used to route pan vs marquee on touch screens. */
+export function isTouchPointerType(
+  pointerType: string | undefined | null,
+): boolean {
+  return pointerType === "touch";
+}
+
+/**
+ * Empty-lane drag draws a marquee (select) or zoom rect.
+ * On touch, the default Pointer tool pans the canvas instead (no accidental marquee);
+ * explicit Marquee / Zoom tools still use the rect gesture. Mouse/pen unchanged.
+ */
+export function toolUsesMarqueeGesture(
+  tool: FormaToolId,
+  pointerType?: string | null,
+): boolean {
+  if (tool === "marquee" || tool === "zoom") return true;
+  if (tool === "pointer") return !isTouchPointerType(pointerType);
+  return false;
+}
+
+/**
+ * Tools that must own the empty-lane drag (block native touch pan via touch-action).
+ * Pointer defaults to pan on touch; pencil / marquee / zoom need exclusive capture.
+ */
+export function toolNeedsExclusiveTouchAction(tool: FormaToolId): boolean {
+  return tool === "marquee" || tool === "zoom" || toolIsPencilDraw(tool);
 }
 
 /** CSS cursor for the active timeline tool on the grid / lanes. */
