@@ -37,12 +37,48 @@ describe("Field / Input", () => {
     expect(screen.getByRole("alert").textContent).toBe("Za krótki");
     expect(screen.queryByText("4 cyfry")).toBeNull();
   });
-});
 
+  it("merges Input className onto ss-input", () => {
+    render(<Input aria-label="x" className="extra" />);
+    const el = screen.getByLabelText("x");
+    expect(el).toHaveClass("ss-input");
+    expect(el).toHaveClass("extra");
+  });
+
+  it("merges Textarea className onto ss-textarea", () => {
+    render(<Textarea aria-label="t" className="extra" />);
+    const el = screen.getByLabelText("t");
+    expect(el).toHaveClass("ss-textarea");
+    expect(el).toHaveClass("extra");
+  });
+
+  it("merges Select className onto ss-select", () => {
+    render(
+      <Select aria-label="s" className="extra">
+        <option value="a">A</option>
+      </Select>,
+    );
+    const el = screen.getByLabelText("s");
+    expect(el).toHaveClass("ss-select");
+    expect(el).toHaveClass("extra");
+  });
+
+});
 describe("Badge", () => {
   it("renders ss-badge", () => {
     render(<Badge>meta</Badge>);
     expect(screen.getByText("meta")).toHaveClass("ss-badge");
+  });
+
+  it("merges className and forwards aria attributes", () => {
+    render(
+      <Badge className="extra" aria-label="Metadane">
+        BPM
+      </Badge>,
+    );
+    const el = screen.getByLabelText("Metadane");
+    expect(el).toHaveClass("ss-badge");
+    expect(el).toHaveClass("extra");
   });
 });
 
