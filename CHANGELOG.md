@@ -10,14 +10,20 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Import UG:** pełny flow jak w v4 — wyszukiwanie lub link Ultimate Guitar → pobranie zakładki Chords przez host → podgląd sekcji, edycja taktów i opcjonalna Różdżka; wklejenie tekstu zostaje jako zapas.
+- **Import UG:** pełny flow jak w v4 — wyszukiwanie lub link Ultimate Guitar → pobranie zakładki Chords przez host → podgląd sekcji, edycja taktów i opcjonalna Różdżka; wklejenie tekstu zostaje jako zapas. Działa też w aplikacji Desktop (lokalny host).
 
 ### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Różdżka:** przycisk przy warstwie Forma (jak Tap przy Tekście), poza menu T; skrót W + 1/2/3 bez zmian.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Aktualizacja (Desktop + Android):** uproszczony dialog — tytuł z numerem wersji, treść „Korzystasz z wersji…”, przyciski **Aktualizuj** / **Przypomnij później** (Desktop dodatkowo **Pomiń tę wersję**); bez listy zmian z release.
 
 ### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Import UG:** polskie litery w tekście (np. ó) dekodują się poprawnie; tipy autora UG (np. „you can play E7…”) nie wchodzą już do Formy / tekstu — przy pobraniu z linku i przy wklejeniu.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Console / Performer (Android):** przy wpisywaniu adresu hosta klawiatura nie zasłania już pola ani przycisku Połącz — cały blok ręcznego połączenia (oraz panel wklejenia w skanie QR) zostaje nad IME.

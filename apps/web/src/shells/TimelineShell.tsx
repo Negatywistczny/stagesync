@@ -456,7 +456,7 @@ const TOOLS: {
   /** Second key after T opens the tools menu (Logic-style chord). */
   key: string | null;
   Icon: typeof IconPointer;
-  /** Shown in toolbar + T menu (wand outside; Tap = Tekst dock only). */
+  /** Shown in toolbar + T menu (wand = Forma dock; Tap = Tekst dock). */
   inMenu?: boolean;
 }[] = [
   {
@@ -5888,13 +5888,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             ),
           )}
           <ShellIconButton
-            label="Różdżka — rozmieszcza Tekst/Akordy wg Formy (W)"
-            pressed={tool === "wand"}
-            onClick={() => onTool("wand")}
-          >
-            <IconWand />
-          </ShellIconButton>
-          <ShellIconButton
             ref={toolsVisBtnRef}
             label="Widoczne narzędzia na pasku"
             pressed={toolsVisOpen}
@@ -6431,6 +6424,21 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ) : (
                         <span className={styles.dockLabel}>{track.label}</span>
                       )}
+                      {track.id === "forma" && !isMobilePreview ? (
+                        <Button
+                          variant="ghost"
+                          iconOnly
+                          selected={tool === "wand"}
+                          className={
+                            tool === "wand" ? styles.tapBtnSelected : undefined
+                          }
+                          title="Różdżka — rozmieszcza Tekst/Akordy wg Formy (W)"
+                          aria-label="Różdżka — rozmieszcza Tekst/Akordy wg Formy"
+                          onClick={() => onTool("wand")}
+                        >
+                          <IconWand />
+                        </Button>
+                      ) : null}
                       {track.id === "tekst" && !isMobilePreview ? (
                         <Button
                           variant="ghost"

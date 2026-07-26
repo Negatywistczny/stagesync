@@ -11,6 +11,7 @@ const UG_TAB_URL_RE =
 
 const FETCH_TIMEOUT_MS = 20_000;
 const UG_CHORDS_CATEGORY = 300;
+const UG_ORIGIN = "https://www.ultimate-guitar.com";
 
 export function isValidUgTabUrl(url: string): boolean {
   return typeof url === "string" && UG_TAB_URL_RE.test(url.trim());
@@ -176,62 +177,107 @@ export function isUgNotFound(html: string, status: number): boolean {
   return status === 404 || /couldn't find that page|Oops!/i.test(html);
 }
 
-async function getGotScraping(): Promise<
-  (opts: Record<string, unknown>) => Promise<{ statusCode: number; body: unknown }>
-> {
-  const mod = (await import("got-scraping")) as {
-    gotScraping: (opts: Record<string, unknown>) => Promise<{
-      statusCode: number;
-      body: unknown;
-    }>;
-  };
-  return mod.gotScraping;
-}
-
 async function fetchUgHtml(
   url: string,
 ): Promise<{ status: number; html: string }> {
-  const gotScraping = await getGotScraping();
-  const response = await gotScraping({
-    url,
-    timeout: { request: FETCH_TIMEOUT_MS },
-    headerGeneratorOptions: {
-      browsers: [{ name: "chrome", minVersion: 120 }],
-      devices: ["desktop"],
-      locales: ["en-US", "pl-PL"],
-      operatingSystems: ["macos"],
+  const response = await fetch(url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "accept-language": "en-US,en;q=0.9,pl;q=0.8",
     },
-    retry: { limit: 1 },
+    redirect: "follow",
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
   return {
-    status: response.statusCode,
-    html: String(response.body || ""),
+    status: response.status,
+    html: await response.text(),
   };
+}
+
+type UgSearchHit = {
+  id?: number | string;
+  song_name?: string;
+  artist_name?: string;
+  type?: string;
+  rating?: number;
+  votes?: number;
+  tab_url?: string;
+  marketing_type?: unknown;
+};
+
+export type UgSearchRow = {
+  id?: number | string;
+  title: string | null;
+  artist: string | null;
+  type: string | null;
+  rating: number | null;
+  url: string | null;
+};
+
+/** Parse UG search `js-store` results (same shape as the former ultimate-guitar npm). */
+export function parseUgSearchResults(
+  raw: unknown,
+  artist?: string,
+): UgSearchHit[] {
+  if (!raw || typeof raw !== "object") return [];
+  const store = (raw as { store?: { page?: { data?: { results?: unknown } } } })
+    .store;
+  const results = store?.page?.data?.results;
+  if (!Array.isArray(results)) return [];
+
+  let value = results.filter(
+    (per): per is UgSearchHit =>
+      !!per &&
+      typeof per === "object" &&
+      String((per as UgSearchHit).type || "").toLowerCase() !== "pro" &&
+      (per as UgSearchHit).marketing_type === undefined,
+  );
+
+  const artistQ = artist?.trim();
+  if (artistQ) {
+    const art = new RegExp(artistQ, "gi");
+    value = value.filter(
+      (per) => per.artist_name && art.test(String(per.artist_name)),
+    );
+  }
+
+  return value;
+}
+
+function mapSearchHit(row: UgSearchHit): UgSearchRow {
+  const id = row.id;
+  const url =
+    (typeof row.tab_url === "string" && row.tab_url) ||
+    (id != null
+      ? `https://tabs.ultimate-guitar.com/tab/_/${String(id)}`
+      : null);
+  return {
+    id,
+    title: row.song_name || null,
+    artist: row.artist_name || null,
+    type: row.type || null,
+    rating: typeof row.rating === "number" ? row.rating : null,
+    url,
+  };
+}
+
+function rankSearchHits(hits: UgSearchHit[]): UgSearchHit[] {
+  const chords = hits.filter((entry) => /chord/i.test(String(entry.type || "")));
+  const pool = chords.length ? chords : hits;
+  return [...pool].sort((a, b) => (b.votes || 0) - (a.votes || 0));
 }
 
 async function searchChordsTabUrl(
   title: string,
   artist: string,
 ): Promise<string | null> {
-  const { searchSong } = await import("ultimate-guitar");
-  const result = await searchSong(title, artist, UG_CHORDS_CATEGORY);
-  const responses = result?.responses;
-  if (
-    result?.status !== 200 ||
-    !Array.isArray(responses) ||
-    !responses.length
-  ) {
-    return null;
-  }
-
-  const chords = responses.filter((entry) =>
-    /chord/i.test(String(entry.type || "")),
-  );
-  const ranked = (chords.length ? chords : responses).sort(
-    (a, b) => (b.votes || 0) - (a.votes || 0),
-  );
-  return ranked[0]?.tab_url || null;
+  const rows = await searchUgChords(title, artist);
+  if (!rows.length) return null;
+  return rows[0]?.url || null;
 }
 
 async function resolveUgTabUrl(url: string): Promise<{
@@ -269,7 +315,7 @@ export async function fetchUgTab(url: string): Promise<UgFetchResult> {
     resolved = await resolveUgTabUrl(trimmed);
   } catch (err) {
     const e = err as { name?: string; message?: string };
-    if (e.name === "TimeoutError") {
+    if (e.name === "TimeoutError" || e.name === "AbortError") {
       throw new Error("Przekroczono limit czasu pobierania strony UG.");
     }
     throw new Error(`Błąd pobierania: ${e.message || String(err)}`);
@@ -301,53 +347,36 @@ export async function fetchUgTab(url: string): Promise<UgFetchResult> {
   return buildFetchResult(pageData, resolvedUrl);
 }
 
-export type UgSearchRow = {
-  id?: number | string;
-  title: string | null;
-  artist: string | null;
-  type: string | null;
-  rating: number | null;
-  url: string | null;
-};
-
 export async function searchUgChords(
   title: string,
   artist?: string,
 ): Promise<UgSearchRow[]> {
-  let ug: typeof import("ultimate-guitar");
+  const q = String(title || "").trim();
+  if (!q) return [];
+
+  const searchUrl = `${UG_ORIGIN}/search.php?title=${encodeURIComponent(q)}&type=${UG_CHORDS_CATEGORY}`;
+  let html: string;
   try {
-    ug = await import("ultimate-guitar");
+    ({ html } = await fetchUgHtml(searchUrl));
   } catch (err) {
+    const e = err as { name?: string; message?: string };
+    if (e.name === "TimeoutError" || e.name === "AbortError") {
+      throw new Error("Przekroczono limit czasu wyszukiwania UG.");
+    }
+    throw new Error(`Błąd wyszukiwania UG: ${e.message || String(err)}`);
+  }
+
+  if (isCloudflareChallenge(html)) {
     throw new Error(
-      `Pakiet ultimate-guitar niedostępny: ${err instanceof Error ? err.message : String(err)}`,
+      "Ultimate Guitar zablokował żądanie. Spróbuj ponownie później.",
     );
   }
 
-  const category = ug.category?.CHORDS ?? UG_CHORDS_CATEGORY;
-  const result = await ug.searchSong(
-    title,
-    artist?.trim() || undefined,
-    category,
-  );
-  const responses = result?.responses;
-  if (!Array.isArray(responses) || !responses.length) {
+  if (!hasUgTabPayload(html)) {
     return [];
   }
 
-  return responses.slice(0, 25).map((row) => {
-    const id = row.id;
-    const url =
-      (typeof row.tab_url === "string" && row.tab_url) ||
-      (id != null
-        ? `https://tabs.ultimate-guitar.com/tab/_/${String(id)}`
-        : null);
-    return {
-      id,
-      title: row.song_name || null,
-      artist: row.artist_name || null,
-      type: row.type || null,
-      rating: typeof row.rating === "number" ? row.rating : null,
-      url,
-    };
-  });
+  const raw = extractDataContentJson(html);
+  const ranked = rankSearchHits(parseUgSearchResults(raw, artist));
+  return ranked.slice(0, 25).map(mapSearchHit);
 }

@@ -12,6 +12,7 @@ import {
   isUgNotFound,
   isValidUgTabUrl,
   normalizeUgMetadata,
+  parseUgSearchResults,
   parseUgUrlSlug,
 } from "./ug-fetch.js";
 
@@ -102,6 +103,24 @@ describe("ug-fetch helpers", () => {
     expect(result.content).toContain("[Verse]");
   });
 
+  it("buildFetchResult decodes Latin entities and drops tip notes", () => {
+    const result = buildFetchResult(
+      {
+        tab: { song_name: "Test", artist_name: "A", type: "Chords", id: 1 },
+        tab_view: {
+          wiki_tab: {
+            content:
+              "[tab][Verse]\n[ch]Am[/ch]U st&oacute;p\n\n[Outro]\n[ch]E[/ch]\n*you can play E7 instead of E throughout the whole song[/tab]",
+          },
+        },
+      },
+      "https://tabs.ultimate-guitar.com/tab/a/b-chords-1",
+    );
+    expect(result.content).toContain("U stóp");
+    expect(result.content).not.toMatch(/&oacute;/i);
+    expect(result.content).not.toMatch(/you can play E7/i);
+  });
+
   it("buildFetchResult rejects non-chords tab type", () => {
     expect(() =>
       buildFetchResult(
@@ -112,5 +131,53 @@ describe("ug-fetch helpers", () => {
         "https://tabs.ultimate-guitar.com/tab/a/b-chords-1",
       ),
     ).toThrow(/tylko zakładki typu Chords/i);
+  });
+
+  it("parseUgSearchResults filters pro/marketing and ranks artist", () => {
+    const raw = {
+      store: {
+        page: {
+          data: {
+            results: [
+              {
+                id: 1,
+                song_name: "A",
+                artist_name: "Foo",
+                type: "Chords",
+                votes: 10,
+                tab_url: "https://tabs.ultimate-guitar.com/tab/foo/a-chords-1",
+              },
+              {
+                id: 2,
+                song_name: "Pro",
+                artist_name: "Foo",
+                type: "Pro",
+                votes: 99,
+              },
+              {
+                id: 3,
+                song_name: "Ad",
+                artist_name: "Foo",
+                type: "Chords",
+                marketing_type: "ad",
+                votes: 50,
+              },
+              {
+                id: 4,
+                song_name: "B",
+                artist_name: "Other",
+                type: "Chords",
+                votes: 20,
+              },
+            ],
+          },
+        },
+      },
+    };
+    const all = parseUgSearchResults(raw);
+    expect(all.map((r) => r.id)).toEqual([1, 4]);
+    const foo = parseUgSearchResults(raw, "foo");
+    expect(foo).toHaveLength(1);
+    expect(foo[0]!.song_name).toBe("A");
   });
 });

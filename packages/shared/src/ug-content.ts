@@ -7,23 +7,121 @@ const UG_SECTION_START_RE =
   /\[(?:Intro|Verse|Chorus|Bridge|Outro|Pre-Chorus|Pre-chorus|Pre Chorus|Refrain|Coda|Solo|Hook|Zwrotka|Refren|Mostek|Wstęp|Zakończenie)/i;
 
 const UG_AUTHOR_NOTE_RE =
-  /^(?:\(.*\)$|capo\s+\d|tuning:|key:|strumming:|no capo|fade out|submitting|tabs\.|ultimate guitar|http)/i;
+  /^(?:\(.*\)$|capo\s+\d|tuning:|key:|strumming:|no capo|fade out|submitting|tabs\.|ultimate guitar|http|you can (?:also )?play|play .+ instead|throughout the (?:whole )?song)/i;
 
 /** String names used in ASCII guitar/bass tab (high e … low E). */
 const UG_TAB_STRING_RE = /^[eEBGDAa]\s*\|/;
 
-const BASIC_ENTITIES: Record<string, string> = {
+/**
+ * HTML named entities used in UG lyrics / data-content (XML/HTML4 basics + Latin-1).
+ * No runtime dependency — shared must stay DOM/Node-free.
+ */
+const NAMED_ENTITIES: Record<string, string> = {
   amp: "&",
   quot: '"',
   apos: "'",
   lt: "<",
   gt: ">",
   nbsp: " ",
+  iexcl: "¡",
+  cent: "¢",
+  pound: "£",
+  curren: "¤",
+  yen: "¥",
+  brvbar: "¦",
+  sect: "§",
+  uml: "¨",
+  copy: "©",
+  ordf: "ª",
+  laquo: "«",
+  not: "¬",
+  shy: "\u00AD",
+  reg: "®",
+  macr: "¯",
+  deg: "°",
+  plusmn: "±",
+  sup2: "²",
+  sup3: "³",
+  acute: "´",
+  micro: "µ",
+  para: "¶",
+  middot: "·",
+  cedil: "¸",
+  sup1: "¹",
+  ordm: "º",
+  raquo: "»",
+  frac14: "¼",
+  frac12: "½",
+  frac34: "¾",
+  iquest: "¿",
+  Agrave: "À",
+  Aacute: "Á",
+  Acirc: "Â",
+  Atilde: "Ã",
+  Auml: "Ä",
+  Aring: "Å",
+  AElig: "Æ",
+  Ccedil: "Ç",
+  Egrave: "È",
+  Eacute: "É",
+  Ecirc: "Ê",
+  Euml: "Ë",
+  Igrave: "Ì",
+  Iacute: "Í",
+  Icirc: "Î",
+  Iuml: "Ï",
+  ETH: "Ð",
+  Ntilde: "Ñ",
+  Ograve: "Ò",
+  Oacute: "Ó",
+  Ocirc: "Ô",
+  Otilde: "Õ",
+  Ouml: "Ö",
+  times: "×",
+  Oslash: "Ø",
+  Ugrave: "Ù",
+  Uacute: "Ú",
+  Ucirc: "Û",
+  Uuml: "Ü",
+  Yacute: "Ý",
+  THORN: "Þ",
+  szlig: "ß",
+  agrave: "à",
+  aacute: "á",
+  acirc: "â",
+  atilde: "ã",
+  auml: "ä",
+  aring: "å",
+  aelig: "æ",
+  ccedil: "ç",
+  egrave: "è",
+  eacute: "é",
+  ecirc: "ê",
+  euml: "ë",
+  igrave: "ì",
+  iacute: "í",
+  icirc: "î",
+  iuml: "ï",
+  eth: "ð",
+  ntilde: "ñ",
+  ograve: "ò",
+  oacute: "ó",
+  ocirc: "ô",
+  otilde: "õ",
+  ouml: "ö",
+  divide: "÷",
+  oslash: "ø",
+  ugrave: "ù",
+  uacute: "ú",
+  ucirc: "û",
+  uuml: "ü",
+  yacute: "ý",
+  thorn: "þ",
+  yuml: "ÿ",
 };
 
-/** Decode common HTML entities (named + numeric) without an entities dependency. */
-export function decodeHtmlEntities(text: string): string {
-  return String(text || "").replace(
+function decodeHtmlEntitiesOnce(text: string): string {
+  return text.replace(
     /&(#x?[0-9a-f]+|[a-z]+);/gi,
     (match, body: string) => {
       if (body[0] === "#") {
@@ -38,10 +136,24 @@ export function decodeHtmlEntities(text: string): string {
         }
         return match;
       }
-      const named = BASIC_ENTITIES[body.toLowerCase()];
+      const named = NAMED_ENTITIES[body] ?? NAMED_ENTITIES[body.toLowerCase()];
       return named ?? match;
     },
   );
+}
+
+/**
+ * Decode common HTML entities (named + numeric) without an entities dependency.
+ * Up to 3 passes so double-encoded forms like `&amp;oacute;` resolve.
+ */
+export function decodeHtmlEntities(text: string): string {
+  let cur = String(text || "");
+  for (let i = 0; i < 3; i++) {
+    const next = decodeHtmlEntitiesOnce(cur);
+    if (next === cur) break;
+    cur = next;
+  }
+  return cur;
 }
 
 /** Convert UG wiki tags to ChordPro-lite brackets; keep newlines / blanks. */
@@ -65,7 +177,10 @@ export function isUgAuthorNoteLine(line: string): boolean {
   ) {
     return true;
   }
+  // Paired markdown emphasis: *note* / **note** / _note_
   if (/^(?:\*\*|__|\*|_).*(?:\*\*|__|\*|_)$/.test(trimmed)) return true;
+  // UG tip / performance notes: "*you can play E7 instead of E..."
+  if (/^\*+$/.test(trimmed) || /^\*[^*]/.test(trimmed)) return true;
   return false;
 }
 
