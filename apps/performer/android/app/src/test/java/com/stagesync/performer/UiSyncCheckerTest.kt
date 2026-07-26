@@ -83,4 +83,29 @@ class UiSyncCheckerTest {
             ),
         )
     }
+
+    @Test
+    fun parseHealthBody_rejectsBlankAndGarbage() {
+        assertNull(UiSyncChecker.parseHealthBody("", "uiHashPerformer"))
+        assertNull(UiSyncChecker.parseHealthBody("not-json", "uiHashPerformer"))
+        assertNull(UiSyncChecker.parseHealthBody("{", "uiHashPerformer"))
+    }
+
+    @Test
+    fun evaluateHealth_okWhenHostHashBlank() {
+        assertEquals(
+            UiSyncChecker.Gate.Ok,
+            UiSyncChecker.evaluateHealth(
+                UiSyncChecker.Health("5.1.3", 1, ""),
+                localUiHash = "local",
+            ),
+        )
+        assertEquals(
+            UiSyncChecker.Gate.Ok,
+            UiSyncChecker.evaluateHealth(
+                UiSyncChecker.Health("5.1.3", 1, "   "),
+                localUiHash = "local",
+            ),
+        )
+    }
 }
