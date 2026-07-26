@@ -10,6 +10,7 @@
     <string name="btn_connect">Połącz</string>
     <string name="btn_local_host">Uruchom lokalny host</string>
     <string name="btn_local_host_busy">Uruchamianie lokalnego hosta…</string>
+    <string name="btn_local_host_connect">Połącz z localhostem</string>
     <string name="local_host_channel">Lokalny host StageSync</string>
     <string name="local_host_notification_title">StageSync Console</string>
     <string name="local_host_starting">Uruchamianie lokalnego hosta…</string>

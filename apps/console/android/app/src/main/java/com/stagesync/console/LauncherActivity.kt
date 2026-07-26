@@ -40,11 +40,14 @@ class LauncherActivity : AppCompatActivity() {
     private var emptyScanRunnable: Runnable? = null
     private var lastHostCount = 0
     private var localHostBusy = false
+    /** Non-null when status/health says local host is already READY — button offers Connect. */
+    private var readyLocalOrigin: String? = null
     private var hostBound = false
     private var hostTerminal = false
     private var lastLocalHostError = ""
     private var localHostHasError = false
     private var statusPollRunnable: Runnable? = null
+    private var offerProbeToken = 0
 
     private val hostDeathConnection =
         object : ServiceConnection {
@@ -144,6 +147,14 @@ class LauncherActivity : AppCompatActivity() {
         )
 
         startMdns()
+        refreshLocalHostOffer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!localHostBusy) {
+            refreshLocalHostOffer()
+        }
     }
 
     override fun onDestroy() {
@@ -161,6 +172,20 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun onLocalHostClicked() {
         if (localHostBusy) return
+        val existing = readyLocalOrigin
+        if (existing != null) {
+            connect(existing)
+            return
+        }
+        when (val snap = LocalHostStatus.read(this)) {
+            is LocalHostStatus.Snapshot.Ready -> {
+                readyLocalOrigin = snap.origin
+                syncLocalHostButton()
+                connect(snap.origin)
+                return
+            }
+            else -> Unit
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted =
                 ContextCompat.checkSelfPermission(
@@ -175,7 +200,60 @@ class LauncherActivity : AppCompatActivity() {
         startLocalHost()
     }
 
+    /**
+     * On resume / cold start: if status file says READY and loopback still answers,
+     * offer Connect instead of Start. Stale READY (host dead) → clear and Start.
+     */
+    private fun refreshLocalHostOffer() {
+        if (localHostBusy) return
+        when (val snap = LocalHostStatus.read(this)) {
+            is LocalHostStatus.Snapshot.Ready -> {
+                val origin = snap.origin
+                val token = ++offerProbeToken
+                HealthProbe.probe(origin) { ok, _ ->
+                    runOnUiThread {
+                        if (isFinishing || localHostBusy || token != offerProbeToken) return@runOnUiThread
+                        if (ok) {
+                            readyLocalOrigin = origin
+                            clearLocalHostErrorUi(clearFiles = false)
+                            showLocalHostProgress(getString(R.string.local_host_running))
+                            syncLocalHostButton()
+                        } else {
+                            LocalHostStatus.clear(this@LauncherActivity)
+                            readyLocalOrigin = null
+                            syncLocalHostButton()
+                        }
+                    }
+                }
+            }
+            is LocalHostStatus.Snapshot.Failed -> {
+                readyLocalOrigin = null
+                showLocalHostError(snap.message)
+                syncLocalHostButton()
+            }
+            LocalHostStatus.Snapshot.None -> {
+                readyLocalOrigin = null
+                if (!localHostHasError) {
+                    clearLocalHostErrorUi(clearFiles = false)
+                }
+                syncLocalHostButton()
+            }
+        }
+    }
+
     private fun startLocalHost() {
+        // Never wipe READY / restart when host is already up — that hangs on
+        // „Uruchamianie…” because :host refuses a second boot.
+        when (val snap = LocalHostStatus.read(this)) {
+            is LocalHostStatus.Snapshot.Ready -> {
+                readyLocalOrigin = snap.origin
+                syncLocalHostButton()
+                connect(snap.origin)
+                return
+            }
+            else -> Unit
+        }
+        readyLocalOrigin = null
         setLocalHostBusy(true)
         hostTerminal = false
         LocalHostStatus.clear(this)
@@ -231,7 +309,10 @@ class LauncherActivity : AppCompatActivity() {
         stopStatusPoll()
         unbindHostWatch()
         setLocalHostBusy(false)
+        readyLocalOrigin = origin
         clearLocalHostErrorUi(clearFiles = false)
+        showLocalHostProgress(getString(R.string.local_host_running))
+        syncLocalHostButton()
         Log.i(TAG, "local host READY origin=$origin")
         connect(origin)
     }
@@ -241,6 +322,7 @@ class LauncherActivity : AppCompatActivity() {
         hostTerminal = true
         stopStatusPoll()
         unbindHostWatch()
+        readyLocalOrigin = null
         setLocalHostBusy(false)
         showLocalHostError(message)
         Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
@@ -249,12 +331,13 @@ class LauncherActivity : AppCompatActivity() {
     private fun onLocalHostStopped() {
         stopStatusPoll()
         unbindHostWatch()
-        if (localHostBusy && !hostTerminal) {
-            hostTerminal = true
-            setLocalHostBusy(false)
-            clearLocalHostErrorUi(clearFiles = false)
-            Toast.makeText(this, R.string.local_host_stopped, Toast.LENGTH_SHORT).show()
-        }
+        // Abort in-flight start; idle Connect → Start after FG Stop.
+        hostTerminal = true
+        readyLocalOrigin = null
+        setLocalHostBusy(false)
+        clearLocalHostErrorUi(clearFiles = false)
+        syncLocalHostButton()
+        Toast.makeText(this, R.string.local_host_stopped, Toast.LENGTH_SHORT).show()
     }
 
     private fun bindHostWatch() {
@@ -281,7 +364,15 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun onHostProcessDied() {
         hostBound = false
-        if (hostTerminal || !localHostBusy) return
+        if (hostTerminal || !localHostBusy) {
+            // Host died while UI was idle (e.g. after Connect) — drop Connect affordance.
+            if (!localHostBusy) {
+                readyLocalOrigin = null
+                LocalHostStatus.clear(this)
+                syncLocalHostButton()
+            }
+            return
+        }
         // Prefer a FAILED status written just before process death.
         when (val snap = LocalHostStatus.read(this)) {
             is LocalHostStatus.Snapshot.Failed -> {
@@ -298,6 +389,7 @@ class LauncherActivity : AppCompatActivity() {
         stopStatusPoll()
         val message = LocalHostRuntime.processDiedMessage(this)
         Log.e(TAG, HostProcessLog.appendDiagnostics(this, message))
+        readyLocalOrigin = null
         setLocalHostBusy(false)
         showLocalHostError(message)
         Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
@@ -399,13 +491,29 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun setLocalHostBusy(busy: Boolean) {
         localHostBusy = busy
-        binding.btnLocalHost.isEnabled = !busy
-        binding.btnLocalHost.isClickable = !busy
-        binding.btnLocalHost.alpha = if (busy) 0.6f else 1f
-        binding.btnLocalHost.text =
-            getString(if (busy) R.string.btn_local_host_busy else R.string.btn_local_host)
-        binding.btnLocalHost.contentDescription =
-            getString(if (busy) R.string.btn_local_host_busy else R.string.btn_local_host)
+        if (busy) {
+            readyLocalOrigin = null
+        }
+        syncLocalHostButton()
+    }
+
+    private fun syncLocalHostButton() {
+        val snapshot =
+            readyLocalOrigin?.let { LocalHostStatus.Snapshot.Ready(it) }
+                ?: LocalHostStatus.Snapshot.None
+        val mode = LocalHostButtonMode.from(localHostBusy, snapshot)
+        val labelRes =
+            when (mode) {
+                LocalHostButtonMode.Mode.Busy -> R.string.btn_local_host_busy
+                LocalHostButtonMode.Mode.Connect -> R.string.btn_local_host_connect
+                LocalHostButtonMode.Mode.Start -> R.string.btn_local_host
+            }
+        val enabled = mode != LocalHostButtonMode.Mode.Busy
+        binding.btnLocalHost.isEnabled = enabled
+        binding.btnLocalHost.isClickable = enabled
+        binding.btnLocalHost.alpha = if (enabled) 1f else 0.6f
+        binding.btnLocalHost.text = getString(labelRes)
+        binding.btnLocalHost.contentDescription = getString(labelRes)
     }
 
     private fun startQr() {

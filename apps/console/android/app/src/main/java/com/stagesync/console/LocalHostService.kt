@@ -31,6 +31,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 class LocalHostService : Service() {
     private val bootStarted = AtomicBoolean(false)
 
+    /** Origin published after health-ok; used to re-assert READY on a duplicate start. */
+    @Volatile
+    private var publishedOrigin: String? = null
+
     override fun onBind(intent: Intent?): IBinder? {
         // Binding is used by the UI process only as a death watch — no IPC API.
         Log.i(TAG, "onBind (death-watch)")
@@ -47,6 +51,40 @@ class LocalHostService : Service() {
         if (intent?.action == ACTION_STOP) {
             stopHostCleanly()
             return START_NOT_STICKY
+        }
+
+        // Already booted / booting: keep FG sticky. Launcher may have cleared the
+        // status file before a duplicate start — re-assert READY when health is up
+        // so the UI never hangs forever on „Uruchamianie…”.
+        if (bootStarted.get()) {
+            try {
+                ensureChannel()
+                ServiceCompat.startForeground(
+                    this,
+                    NOTIFICATION_ID,
+                    buildNotification(getString(R.string.local_host_running)),
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                    } else {
+                        0
+                    },
+                )
+            } catch (err: Throwable) {
+                Log.e(TAG, "startForeground (re-entry) failed", err)
+            }
+            Thread(
+                {
+                    if (probeHealth()) {
+                        val origin = publishedOrigin ?: LocalHostRuntime.LOOPBACK_ORIGIN
+                        Log.i(TAG, "re-entry — health OK, re-broadcasting READY origin=$origin")
+                        broadcastReady(origin)
+                    } else {
+                        Log.w(TAG, "re-entry — health not OK yet (boot may still be in flight)")
+                    }
+                },
+                "stagesync-local-host-reassert",
+            ).start()
+            return START_STICKY
         }
 
         try {
@@ -78,7 +116,16 @@ class LocalHostService : Service() {
         }
 
         if (!bootStarted.compareAndSet(false, true)) {
-            Log.i(TAG, "boot already in progress — keep sticky")
+            // Lost the race with another onStartCommand — re-assert off the main thread.
+            Log.i(TAG, "boot race — treating as re-entry")
+            Thread(
+                {
+                    if (probeHealth()) {
+                        broadcastReady(publishedOrigin ?: LocalHostRuntime.LOOPBACK_ORIGIN)
+                    }
+                },
+                "stagesync-local-host-reassert-race",
+            ).start()
             return START_STICKY
         }
 
@@ -341,6 +388,7 @@ class LocalHostService : Service() {
 
     private fun broadcastReady(origin: String) {
         Log.i(TAG, "ACTION_READY origin=$origin")
+        publishedOrigin = origin
         // File first: UI process polls this when cross-process broadcast is dropped.
         LocalHostStatus.writeReady(this, origin)
         sendBroadcast(
@@ -368,6 +416,7 @@ class LocalHostService : Service() {
      */
     private fun stopHostCleanly() {
         Log.i(TAG, "ACTION_STOP — shutting down local host")
+        publishedOrigin = null
         LocalHostStatus.clear(this)
         sendBroadcast(
             Intent(ACTION_STOPPED)
