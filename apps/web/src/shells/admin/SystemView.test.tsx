@@ -173,9 +173,11 @@ describe("SystemView APK download aria", () => {
       name: /Połączenie & Sieć/,
     });
     expect(networkToggle.getAttribute("aria-expanded")).toBe("true");
-    expect(
-      screen.queryByRole("button", { name: "Pobierz APK StageSync Performer" }),
-    ).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Pobierz APK StageSync Performer" }),
+      ).toBeTruthy();
+    });
 
     act(() => {
       screen.getByRole("button", { name: /Logi serwera/ }).click();
@@ -191,8 +193,10 @@ describe("SystemView APK download aria", () => {
     expect(
       screen.queryByRole("button", { name: "Pobierz APK StageSync Performer" }),
     ).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Pobierz paczkę diagnostyki ZIP" }),
-    ).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Pobierz paczkę diagnostyki ZIP" }),
+      ).toBeTruthy();
+    });
   });
 });
