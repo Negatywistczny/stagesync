@@ -4,10 +4,7 @@
 /** @typedef {{ available: boolean, version?: string | null, current: string, notes?: string | null }} DesktopUpdateInfo */
 
 import { localErrorActionsVisibility } from "./localErrorActions.js";
-import {
-  formatReleaseNotes,
-  shouldShowUpdateDialog,
-} from "./updateDialog.js";
+import { shouldShowUpdateDialog } from "./updateDialog.js";
 
 const SCAN_MIN_MS = 900;
 const LABEL_LOCAL_IDLE = "Uruchom lokalny host";
@@ -62,8 +59,6 @@ const el = {
   updateOverlay: document.getElementById("updateOverlay"),
   updateTitle: document.getElementById("updateTitle"),
   updateMeta: document.getElementById("updateMeta"),
-  updateNotesList: document.getElementById("updateNotesList"),
-  updateNotesEmpty: document.getElementById("updateNotesEmpty"),
   updateError: document.getElementById("updateError"),
   btnUpdateNow: document.getElementById("btnUpdateNow"),
   btnUpdateLater: document.getElementById("btnUpdateLater"),
@@ -102,7 +97,7 @@ function hideUpdateDialog() {
   el.btnUpdateNow.disabled = false;
   el.btnUpdateLater.disabled = false;
   el.btnUpdateSkip.disabled = false;
-  el.btnUpdateNow.textContent = "Zaktualizuj";
+  el.btnUpdateNow.textContent = "Aktualizuj";
 }
 
 /**
@@ -113,19 +108,7 @@ function showUpdateDialog(info) {
   const next = info.version ?? "?";
   const cur = info.current ?? bootstrap?.expectedVersion ?? "?";
   el.updateTitle.textContent = `Dostępna wersja ${next}`;
-  el.updateMeta.textContent = `Masz ${cur}. Aktualizacja pobierze plik z GitHub Releases i uruchomi StageSync ponownie.`;
-  const bullets = formatReleaseNotes(info.notes);
-  el.updateNotesList.replaceChildren();
-  if (bullets.length === 0) {
-    el.updateNotesEmpty.hidden = false;
-  } else {
-    el.updateNotesEmpty.hidden = true;
-    for (const text of bullets) {
-      const li = document.createElement("li");
-      li.textContent = text;
-      el.updateNotesList.append(li);
-    }
-  }
+  el.updateMeta.textContent = `Korzystasz z wersji ${cur}.`;
   setUpdateError(null);
   el.updateOverlay.hidden = false;
   el.btnUpdateLater.focus();
@@ -175,7 +158,7 @@ async function installPendingUpdate() {
     el.btnUpdateNow.disabled = false;
     el.btnUpdateLater.disabled = false;
     el.btnUpdateSkip.disabled = false;
-    el.btnUpdateNow.textContent = "Zaktualizuj";
+    el.btnUpdateNow.textContent = "Aktualizuj";
     setUpdateError(String(err?.message ?? err));
   }
 }

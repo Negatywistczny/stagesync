@@ -97,11 +97,11 @@ Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000
 
 Gdy jest dostępna nowa wersja, **Launcher** przy starcie pokazuje dialog:
 
-1. **Zaktualizuj** — pobiera instalator z GitHub Releases (`latest.json` + minisign) i uruchamia StageSync ponownie.
+1. **Aktualizuj** — pobiera instalator z GitHub Releases (`latest.json` + minisign) i uruchamia StageSync ponownie.
 2. **Przypomnij później** — zamyka dialog; przypomnienie wraca przy następnym uruchomieniu.
 3. **Pomiń tę wersję** — zapisuje wersję w lokalnej konfiguracji Launchera (`ignoredVersion`) i nie pyta ponownie o tę konkretną wersję.
 
-Skrót zmian pochodzi z release notes aktualizacji. Menu **StageSync** → **Sprawdź aktualizacje…** na ekranie Launchera otwiera ten sam dialog (także gdy wersja była pominięta).
+Menu **StageSync** → **Sprawdź aktualizacje…** na ekranie Launchera otwiera ten sam dialog (także gdy wersja była pominięta).
 
 Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji** → **Sprawdź aktualizacje** / **Aktualizuj aplikację** (z potwierdzeniem restartu).
 

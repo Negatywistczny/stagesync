@@ -82,7 +82,7 @@ Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz 
 
 ## Aktualizacja APK w aplikacji (jawna)
 
-1. **Launcher (internet):** przy starcie / `onResume` powłoka pobiera `android-latest.json` z GitHub Releases (`…/releases/latest/download/android-latest.json`, ten sam kanał co Desktop `latest.json`). Gdy `version` jest nowszy od `versionName` APK, pojawia się dialog **Dostępna aktualizacja** → **Pobierz i zainstaluj** / **Później** (snooze do tej wersji). **Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)).
+1. **Launcher (internet):** przy starcie / `onResume` powłoka pobiera `android-latest.json` z GitHub Releases (`…/releases/latest/download/android-latest.json`, ten sam kanał co Desktop `latest.json`). Gdy `version` jest nowszy od `versionName` APK, pojawia się dialog **Dostępna wersja …** → **Aktualizuj** / **Przypomnij później** (snooze do tej wersji). **Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)).
 2. **Admin → Sprawdź aktualizacje (Console):** ten sam manifest — pokazuje `vAKTUALNA → vNOWSZA` i **Pobierz APK** (otwarcie URL z Releases), nie Watchtower.
 3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host jest **nowszy** **oraz** APK leży pod `/downloads/stagesync-*.apk`, dialog z hosta; jeśli host nie oferuje APK — fallback do Releases jak w (1).
 
@@ -116,8 +116,8 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 1. Zainstaluj starszą powłokę (niższy `versionName`) albo tymczasowo obniż `versionName` w buildzie.
 2. Uruchom host z nowszym `version` i APK w bundlu (`data/downloads/` / sidecar).
-3. Połącz launcherem → WebView → dialog z wersjami → **Pobierz i zainstaluj** → instalator systemowy.
-4. **Później** nie uruchamia pobierania.
+3. Połącz launcherem → WebView → dialog z wersjami → **Aktualizuj** → instalator systemowy.
+4. **Przypomnij później** nie uruchamia pobierania.
 
 ## PWA
 

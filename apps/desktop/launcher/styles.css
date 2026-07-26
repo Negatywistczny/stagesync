@@ -450,24 +450,6 @@ body {
   font-size: var(--ss-text-sm);
 }
 
-.updateNotesList {
-  margin: 0;
-  padding-left: var(--ss-space-5);
-  color: var(--ss-color-text);
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-relaxed);
-}
-
-.updateNotesList li + li {
-  margin-top: var(--ss-space-1);
-}
-
-.updateNotesEmpty {
-  margin: 0;
-  color: var(--ss-color-text-muted);
-  font-size: var(--ss-text-sm);
-}
-
 .updateError {
   margin: 0;
   color: var(--ss-color-danger);

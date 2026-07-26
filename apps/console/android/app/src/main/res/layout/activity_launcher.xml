@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/launcherScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ss_bg"
+    android:clipToPadding="false"
     android:fillViewport="true">
 
     <LinearLayout
@@ -210,66 +212,74 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Whole manual-entry tile scrolls above the IME (not only the caret). -->
         <LinearLayout
+            android:id="@+id/manualEntryTile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="@color/ss_border" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="12dp"
-                android:text="@string/section_manual"
-                android:textColor="@color/ss_muted"
-                android:textSize="12sp" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="@color/ss_border" />
-        </LinearLayout>
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/ss_border" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="12dp"
+                    android:text="@string/section_manual"
+                    android:textColor="@color/ss_muted"
+                    android:textSize="12sp" />
 
-            <EditText
-                android:id="@+id/urlInput"
-                android:layout_width="0dp"
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/ss_border" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_input"
-                android:hint="@string/hint_url"
-                android:importantForAutofill="no"
-                android:inputType="textUri"
-                android:minHeight="48dp"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="12dp"
-                android:textColor="@color/ss_text"
-                android:textColorHint="@color/ss_muted"
-                android:textSize="14sp" />
+                android:layout_marginTop="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnConnect"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="88dp"
-                android:text="@string/btn_connect" />
+                <EditText
+                    android:id="@+id/urlInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input"
+                    android:hint="@string/hint_url"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:textColor="@color/ss_text"
+                    android:textColorHint="@color/ss_muted"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConnect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="88dp"
+                    android:text="@string/btn_connect" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

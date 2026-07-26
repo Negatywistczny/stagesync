@@ -449,6 +449,29 @@ export {
 } from "./ug-import.js";
 
 export {
+  cleanUgTabContent,
+  decodeHtmlEntities,
+  isUgAsciiTabLine,
+  isUgAuthorNoteLine,
+  normalizeUgWikiMarkup,
+} from "./ug-content.js";
+
+export {
+  UgFetchBodySchema,
+  UgFetchResponseSchema,
+  UgSearchBodySchema,
+  UgSearchHitSchema,
+  UgSearchResponseSchema,
+  UgTabMetadataSchema,
+  type UgFetchBody,
+  type UgFetchResponse,
+  type UgSearchBody,
+  type UgSearchHit,
+  type UgSearchResponse,
+  type UgTabMetadata,
+} from "./ug-api.js";
+
+export {
   placeContentFromForma,
   type WandMode,
   type WandScope,

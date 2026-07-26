@@ -5,6 +5,23 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### ⏱️ Timeline & DAW
+- **Import UG:** pełny flow jak w v4 — wyszukiwanie lub link Ultimate Guitar → pobranie zakładki Chords przez host → podgląd sekcji, edycja taktów i opcjonalna Różdżka; wklejenie tekstu zostaje jako zapas.
+
+### Zmieniono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Aktualizacja (Desktop + Android):** uproszczony dialog — tytuł z numerem wersji, treść „Korzystasz z wersji…”, przyciski **Aktualizuj** / **Przypomnij później** (Desktop dodatkowo **Pomiń tę wersję**); bez listy zmian z release.
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Console / Performer (Android):** przy wpisywaniu adresu hosta klawiatura nie zasłania już pola ani przycisku Połącz — cały blok ręcznego połączenia (oraz panel wklejenia w skanie QR) zostaje nad IME.
+
 ## [5.2.9](https://github.com/Negatywistczny/stagesync/compare/v5.2.8...v5.2.9) - 2026-07-26
 
 ### Dodano

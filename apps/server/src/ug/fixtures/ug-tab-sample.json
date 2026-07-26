@@ -1,0 +1,27 @@
+{
+  "store": {
+    "page": {
+      "data": {
+        "tab": {
+          "id": 1086983,
+          "song_name": "I Will Survive",
+          "artist_name": "Gloria Gaynor",
+          "type": "Chords",
+          "tab_url": "https://tabs.ultimate-guitar.com/tab/gloria-gaynor/i-will-survive-chords-1086983"
+        },
+        "tab_view": {
+          "meta": {
+            "tonality": "A minor",
+            "capo": 0,
+            "tuning": { "value": "E A D G B E", "name": "standard" },
+            "time_signature": "4/4",
+            "tempo": 116
+          },
+          "wiki_tab": {
+            "content": "[tab][ch]Am[/ch][ch]Dm[/ch][ch]G[/ch][ch]C[/ch]\n[ch]Am[/ch][ch]Dm[/ch][ch]G[/ch][ch]C[/ch]\n\n[Verse]\n[ch]Am[/ch]At first I was afraid, I was petrified\n[ch]Dm[/ch]Kept thinking I could never live without you by my side\n[ch]G[/ch]But then I spent so many nights thinking how you did me wrong\n[ch]C[/ch]And I grew strong, and I learned how to get along\n\n[Chorus]\n[ch]F[/ch]Oh no, not I, I will survive\n[ch]G[/ch]Oh, as long as I know how to love, I know I'll stay alive\n[ch]C[/ch]I've got all my life to live, I've got all my love to give\n[ch]Am[/ch]And I'll survive, I will survive[/tab]"
+          }
+        }
+      }
+    }
+  }
+}

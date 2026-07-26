@@ -17,6 +17,7 @@ import { createMidiProgramChangeHandler } from "./midi/program-change.js";
 import { wireMidiProgramChangeOut } from "./midi/program-change-out.js";
 import { createLiveDeskStore, type LiveDeskStore } from "./live-desk.js";
 import { createLiveDeskRouter } from "./routes/live-desk.js";
+import { createImportRouter } from "./routes/import.js";
 import { createLibraryRouter } from "./routes/library.js";
 import { createMidiRouter } from "./routes/midi.js";
 import { createProjectsRouter } from "./routes/projects.js";
@@ -222,6 +223,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   app.use("/api/setlist", createSetlistRouter(stores, transport, setlistHub));
   app.use("/api/stage", createStageRouter(stageHub, presence));
   app.use("/api/live-desk", createLiveDeskRouter(liveDesk));
+  app.use("/api/import", createImportRouter());
   app.use(
     "/api/system",
     createSystemRouter({

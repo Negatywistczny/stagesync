@@ -309,10 +309,8 @@ class HostWebActivity : AppCompatActivity() {
 
     private fun showUpdateDialog(offer: ApkUpdateChecker.Offer) {
         AlertDialog.Builder(this)
-            .setTitle(R.string.update_title)
-            .setMessage(
-                getString(R.string.update_message, offer.hostVersion, offer.shellVersion),
-            )
+            .setTitle(getString(R.string.update_title, offer.hostVersion))
+            .setMessage(getString(R.string.update_message, offer.shellVersion))
             .setPositiveButton(R.string.update_download_install) { _, _ ->
                 startDownloadAndInstall(offer.apkUrl)
             }
@@ -323,14 +321,8 @@ class HostWebActivity : AppCompatActivity() {
 
     private fun showReleaseUpdateDialog(offer: ReleaseApkUpdateChecker.Offer) {
         AlertDialog.Builder(this)
-            .setTitle(R.string.update_title)
-            .setMessage(
-                getString(
-                    R.string.update_message_release,
-                    offer.latestVersion,
-                    offer.shellVersion,
-                ),
-            )
+            .setTitle(getString(R.string.update_title, offer.latestVersion))
+            .setMessage(getString(R.string.update_message, offer.shellVersion))
             .setPositiveButton(R.string.update_download_install) { _, _ ->
                 startDownloadAndInstall(offer.apkUrl)
             }

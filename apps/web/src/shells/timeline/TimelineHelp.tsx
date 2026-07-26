@@ -221,7 +221,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Import UG",
         detail:
-          "Wybierz utwór → Importuj UG: podgląd sekcji, edycja taktów każdej sekcji, opcjonalna Różdżka od razu po imporcie. Puste linie / [Verse]/[Chorus] → Forma.",
+          "Wybierz utwór → Importuj UG: szukaj lub wklej link Ultimate Guitar (Chords) → Pobierz → podgląd sekcji, edycja taktów, opcjonalna Różdżka. Wklejenie tekstu pozostaje jako zapas. Puste linie / [Verse]/[Chorus] → Forma.",
       },
       {
         term: "Import",

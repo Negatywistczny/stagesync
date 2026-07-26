@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -26,6 +27,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.stagesync.console.databinding.ActivityLauncherBinding
 import java.io.File
 import java.text.SimpleDateFormat
@@ -128,6 +133,7 @@ class LauncherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLauncherBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupImeInsets()
 
         binding.localHostLog.movementMethod = ScrollingMovementMethod()
         binding.localHostLog.setOnTouchListener { v, event ->
@@ -186,6 +192,35 @@ class LauncherActivity : AppCompatActivity() {
             // already unregistered
         }
         super.onDestroy()
+    }
+
+    /** Keep the whole manual-entry tile (label + field + Connect) above the soft keyboard. */
+    private fun setupImeInsets() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.launcherScroll) { view, windowInsets ->
+            val bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            view.updatePadding(
+                left = bars.left,
+                top = bars.top,
+                right = bars.right,
+                bottom = maxOf(bars.bottom, ime.bottom),
+            )
+            if (binding.urlInput.hasFocus() && ime.bottom > 0) {
+                view.post { ensureManualEntryTileVisible() }
+            }
+            WindowInsetsCompat.CONSUMED
+        }
+        binding.urlInput.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) binding.launcherScroll.post { ensureManualEntryTileVisible() }
+        }
+    }
+
+    private fun ensureManualEntryTileVisible() {
+        val scroll = binding.launcherScroll
+        val tile = binding.manualEntryTile
+        val rect = Rect(0, 0, tile.width, tile.height)
+        scroll.requestChildRectangleOnScreen(tile, rect, false)
     }
 
     private fun onLocalHostClicked() {
@@ -690,14 +725,8 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun showReleaseUpdateDialog(offer: ReleaseApkUpdateChecker.Offer) {
         AlertDialog.Builder(this)
-            .setTitle(R.string.update_title)
-            .setMessage(
-                getString(
-                    R.string.update_message_release,
-                    offer.latestVersion,
-                    offer.shellVersion,
-                ),
-            )
+            .setTitle(getString(R.string.update_title, offer.latestVersion))
+            .setMessage(getString(R.string.update_message, offer.shellVersion))
             .setPositiveButton(R.string.update_download_install) { _, _ ->
                 startReleaseDownloadAndInstall(offer.apkUrl)
             }

@@ -75,6 +75,13 @@ transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
 | `POST` | `/api/library/export` | Pakiet JSON (`stagesyncExportVersion: 3`); opcjonalnie `projectIds` |
 | `POST` | `/api/library/import` | Import pakietu / legacy → projekty **v5**; **201** `{ ok, created, format, warnings, library }` |
 
+### Import (Ultimate Guitar)
+
+| Metoda | Ścieżka | Opis |
+|--------|---------|------|
+| `POST` | `/api/import/ultimate-guitar` | `{ url }` — pobranie zakładki Chords z UG (serwer); `{ content, metadata }` (treść już wyczyszczona pod `importUgText`) |
+| `POST` | `/api/import/ultimate-guitar/search` | `{ title, artist? }` — wyszukiwarka (max 25 wyników Chords) |
+
 ### Project
 
 | Metoda | Ścieżka | Opis |

@@ -11,6 +11,7 @@
 
 import { z } from "zod";
 import { toLiteralStorage } from "./chord-display.js";
+import { cleanUgTabContent } from "./ug-content.js";
 import {
   AkordClipSchema,
   FormaClipSchema,
@@ -308,9 +309,12 @@ export function importUgText(
     if (typeof text !== "string") {
       return { ok: false, message: "Nieprawidłowy tekst UG." };
     }
-    const raw = text.replace(/\r\n/g, "\n").trim();
+    const raw = cleanUgTabContent(text.replace(/\r\n/g, "\n"));
     if (!raw) {
-      return { ok: false, message: "Pusty tekst — wklej tabulaturę UG lub ChordPro." };
+      return {
+        ok: false,
+        message: "Pusty tekst — pobierz z UG, wklej link albo ChordPro.",
+      };
     }
     if (raw.length > 524_288) {
       return {

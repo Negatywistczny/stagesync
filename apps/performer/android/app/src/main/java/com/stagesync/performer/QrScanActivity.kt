@@ -13,6 +13,10 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -44,6 +48,7 @@ class QrScanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityQrScanBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupImeInsets()
 
         binding.btnUseQrUrl.setOnClickListener { submitManual() }
 
@@ -68,6 +73,21 @@ class QrScanActivity : AppCompatActivity() {
         cameraExecutor?.shutdown()
         cameraExecutor = null
         super.onDestroy()
+    }
+
+    private fun setupImeInsets() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            view.updatePadding(
+                left = bars.left,
+                top = bars.top,
+                right = bars.right,
+                bottom = maxOf(bars.bottom, ime.bottom),
+            )
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun showPasteOnly(statusRes: Int) {
