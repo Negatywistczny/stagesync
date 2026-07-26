@@ -21,20 +21,16 @@
     <a class="skip-link" href="#main">Przejdź do treści</a>
 
     <header class="topbar">
-      <a class="topbar__brand" href="#top" aria-label="StageSync — góra strony">
-        <img src="%BASE_URL%brand/stagesync-logo.svg" alt="" width="160" height="38" />
-      </a>
-      <nav class="topbar__nav" aria-label="Główne">
-        <a href="#download">Pobierz</a>
-        <a href="#docs">Dokumentacja</a>
-        <a href="#config">Config</a>
-        <a
-          class="topbar__github"
-          href="https://github.com/Negatywistczny/stagesync"
-          rel="noopener noreferrer"
-          >GitHub</a
-        >
-      </nav>
+      <div class="shell topbar__inner">
+        <a class="topbar__brand" href="#top" aria-label="StageSync — góra strony">
+          <img src="%BASE_URL%brand/stagesync-logo.svg" alt="" width="160" height="38" />
+        </a>
+        <nav class="topbar__nav" aria-label="Główne">
+          <a href="#roles">Dla kogo</a>
+          <a href="#start">Jak zacząć</a>
+          <a href="#download">Pobierz</a>
+        </nav>
+      </div>
     </header>
 
     <main id="main">
@@ -81,137 +77,136 @@
           <div class="hero__vignette"></div>
         </div>
 
-        <div class="hero__copy">
-          <p class="hero__eyebrow">Live Show Control</p>
-          <h1 id="hero-title" class="hero__title">
-            <img
-              class="hero__wordmark"
-              src="%BASE_URL%brand/stagesync-logo.svg"
-              alt="StageSync"
-              width="420"
-              height="100"
-            />
-          </h1>
-          <p class="hero__lede">
-            Scentralizowany transport, Timeline i synchronizacja stanowisk muzyków —
-            jeden zegar na całą scenę.
-          </p>
-          <div class="hero__actions">
-            <a class="btn btn--primary" href="#download">Pobierz wydanie</a>
-            <a
-              class="btn btn--ghost"
-              href="https://github.com/Negatywistczny/stagesync"
-              rel="noopener noreferrer"
-              >Zobacz kod</a
-            >
+        <div class="shell hero__shell">
+          <div class="hero__copy">
+            <p class="hero__eyebrow">Live Show Control</p>
+            <h1 id="hero-title" class="hero__title">
+              <img
+                class="hero__wordmark"
+                src="%BASE_URL%brand/stagesync-logo.svg"
+                alt="StageSync"
+                width="420"
+                height="100"
+              />
+            </h1>
+            <p class="hero__lede">
+              Jeden zegar na całą scenę — transport, Timeline i&nbsp;zsynchronizowane ekrany muzyków.
+            </p>
+            <div class="hero__actions">
+              <a class="btn btn--primary" href="#download">Pobierz wydanie</a>
+            </div>
           </div>
         </div>
       </section>
 
       <section class="section section--tight" aria-labelledby="pillars-title">
-        <h2 id="pillars-title" class="visually-hidden">Możliwości</h2>
-        <ul class="pillars">
-          <li class="pillar reveal">
-            <span class="pillar__label">Transport SSOT</span>
-            <p>Jeden autorytatywny zegar tempa, metrum i pozycji — bez dryfu między stanowiskami.</p>
-          </li>
-          <li class="pillar reveal">
-            <span class="pillar__label">Timeline</span>
-            <p>Edycja Formy, klipów i map na osi czasu zaprojektowanej pod reżyserię koncertu.</p>
-          </li>
-          <li class="pillar reveal">
-            <span class="pillar__label">Client na scenie</span>
-            <p>Akordy, tekst, partytura i siatka — zsynchronizowane ekrany muzyków w LAN.</p>
-          </li>
-        </ul>
+        <div class="shell">
+          <h2 id="pillars-title" class="visually-hidden">Co zyskujesz</h2>
+          <ul class="pillars">
+            <li class="pillar reveal">
+              <span class="pillar__label">Wspólny czas</span>
+              <p>Cały zespół gra do jednego tempa i pozycji — bez rozjeżdżania się między stanowiskami.</p>
+            </li>
+            <li class="pillar reveal">
+              <span class="pillar__label">Reżyseria setu</span>
+              <p>Układaj utwory, Formę i przejścia na Timeline zaprojektowanym pod koncert, nie studio.</p>
+            </li>
+            <li class="pillar reveal">
+              <span class="pillar__label">Ekrany na scenie</span>
+              <p>Akordy, tekst i partytura przewijają się razem — każdy muzyk widzi to, czego potrzebuje.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="roles" aria-labelledby="roles-title">
+        <div class="shell">
+          <div class="section__head reveal">
+            <h2 id="roles-title">Dla kogo</h2>
+            <p>Dwa wejścia do tego samego show — wybierz rolę i urządzenie.</p>
+          </div>
+          <ul class="roles">
+            <li class="role reveal">
+              <span class="role__label">Operator</span>
+              <h3 class="role__title">Desktop lub Console</h3>
+              <p>
+                Sterujesz transportem, setlistą i Timeline. Desktop na komputerze reżyserii albo
+                Console na tablecie Android.
+              </p>
+            </li>
+            <li class="role reveal">
+              <span class="role__label">Muzyk</span>
+              <h3 class="role__title">Performer</h3>
+              <p>
+                Podłączasz się do hosta w sieci lokalnej i dostajesz swój widok — bez konfiguracji
+                serwera i bez kont w chmurze.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="start" aria-labelledby="start-title">
+        <div class="shell">
+          <div class="section__head reveal">
+            <h2 id="start-title">Jak zacząć</h2>
+            <p>Od instalacji do pierwszego utworu — trzy proste kroki.</p>
+          </div>
+          <ol class="steps">
+            <li class="step reveal">
+              <span class="step__num" aria-hidden="true">1</span>
+              <div>
+                <h3 class="step__title">Zainstaluj host</h3>
+                <p>Pobierz StageSync na macOS lub Windows — uruchom aplikację i otwórz projekt.</p>
+              </div>
+            </li>
+            <li class="step reveal">
+              <span class="step__num" aria-hidden="true">2</span>
+              <div>
+                <h3 class="step__title">Ułóż set</h3>
+                <p>Dodaj utwory, ustaw Formę i sprawdź transport na Timeline.</p>
+              </div>
+            </li>
+            <li class="step reveal">
+              <span class="step__num" aria-hidden="true">3</span>
+              <div>
+                <h3 class="step__title">Podłącz scenę</h3>
+                <p>
+                  Na tabletach muzyków zainstaluj Performer (albo Console dla operatora) i dołącz do
+                  hosta w LAN.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
       </section>
 
       <section class="section" id="download" aria-labelledby="download-title">
-        <div class="section__head reveal">
-          <h2 id="download-title">Pobierz</h2>
-          <p>
-            Instalatory i APK z GitHub Releases. Host rackowy — obraz
-            <code>ghcr.io/negatywistczny/stagesync</code>.
+        <div class="shell">
+          <div class="section__head reveal">
+            <h2 id="download-title">Pobierz</h2>
+            <p>Najnowsze instalatory i aplikacje mobilne.</p>
+          </div>
+
+          <p class="download__status reveal" id="download-status" role="status" hidden></p>
+
+          <div class="download__grid" id="download-grid" hidden></div>
+
+          <p class="download__fallback reveal">
+            Starsze wersje dostępne na
+            <a href="https://github.com/Negatywistczny/stagesync/releases" rel="noopener noreferrer"
+              >GitHub Releases</a
+            >.
           </p>
         </div>
-
-        <p class="download__status reveal" id="download-status" role="status">
-          Ładowanie najnowszego wydania…
-        </p>
-
-        <div class="download__grid" id="download-grid" hidden></div>
-
-        <p class="download__fallback reveal">
-          Pełna lista artefaktów:
-          <a href="https://github.com/Negatywistczny/stagesync/releases" rel="noopener noreferrer"
-            >github.com/Negatywistczny/stagesync/releases</a
-          >
-        </p>
-      </section>
-
-      <section class="section" id="docs" aria-labelledby="docs-title">
-        <div class="section__head reveal">
-          <h2 id="docs-title">Dokumentacja</h2>
-          <p>Kanoniczne instrukcje operatorskie w repozytorium — bez osobnej kopii treści.</p>
-        </div>
-        <ul class="doc-list">
-          <li class="reveal">
-            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/DESKTOP.md"
-              >Desktop</a
-            >
-            <span>Instalatory .dmg / .msi, launcher, updater</span>
-          </li>
-          <li class="reveal">
-            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md"
-              >Docker / host</a
-            >
-            <span>Compose, GHCR, porty, volume danych</span>
-          </li>
-          <li class="reveal">
-            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/MOBILE.md"
-              >Android</a
-            >
-            <span>Performer, Console, sideload, aktualizacje APK</span>
-          </li>
-          <li class="reveal">
-            <a href="https://github.com/Negatywistczny/stagesync/blob/main/docs/api/README.md"
-              >API</a
-            >
-            <span>Kontrakt REST / WebSocket</span>
-          </li>
-          <li class="reveal">
-            <a href="https://github.com/Negatywistczny/stagesync/blob/main/CHANGELOG.md"
-              >Changelog</a
-            >
-            <span>Historia wydań produktu</span>
-          </li>
-        </ul>
-      </section>
-
-      <section class="section" id="config" aria-labelledby="config-title">
-        <div class="section__head reveal">
-          <h2 id="config-title">Config</h2>
-          <p>
-            Statyczne pliki konfiguracyjne hostowane z tej strony — stabilne URL-e do integracji i
-            tooling.
-          </p>
-        </div>
-        <ul class="config-list">
-          <li class="reveal">
-            <a href="%BASE_URL%config/channels.json"><code>config/channels.json</code></a>
-            <span>Kanały wydań, manifesty updatera, linki do docs</span>
-          </li>
-        </ul>
       </section>
     </main>
 
     <footer class="footer">
-      <img src="%BASE_URL%brand/stagesync-mark.svg" alt="" width="28" height="28" />
-      <p>
-        StageSync ·
-        <a href="https://github.com/Negatywistczny/stagesync" rel="noopener noreferrer">GitHub</a>
-        · licencja BUSL-1.1
-      </p>
+      <div class="shell footer__inner">
+        <img src="%BASE_URL%brand/stagesync-mark.svg" alt="" width="28" height="28" />
+        <p>StageSync · Live Show Control</p>
+      </div>
     </footer>
 
     <script type="module" src="/src/main.ts"></script>

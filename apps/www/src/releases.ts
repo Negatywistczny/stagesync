@@ -37,11 +37,11 @@ const KIND_ORDER: DownloadKind[] = [
 ];
 
 const META: Record<DownloadKind, { label: string; hint: string }> = {
-  "macos-arm": { label: "macOS (Apple Silicon)", hint: ".dmg · aarch64" },
-  "macos-x64": { label: "macOS (Intel)", hint: ".dmg · x64" },
-  windows: { label: "Windows", hint: ".msi · x64" },
-  "android-console": { label: "Android Console", hint: ".apk" },
-  "android-performer": { label: "Android Performer", hint: ".apk" },
+  "macos-arm": { label: "macOS (Apple Silicon)", hint: "Instalator .dmg" },
+  "macos-x64": { label: "macOS (Intel)", hint: "Instalator .dmg" },
+  windows: { label: "Windows", hint: "Instalator .msi" },
+  "android-console": { label: "Android Console", hint: "Aplikacja dla operatora" },
+  "android-performer": { label: "Android Performer", hint: "Aplikacja dla muzyka" },
 };
 
 function classifyAsset(name: string): DownloadKind | null {
@@ -77,7 +77,7 @@ export function offersFromRelease(release: GhRelease): {
     byKind.set(kind, {
       kind,
       label: meta.label,
-      hint: `${meta.hint} · ${asset.name}`,
+      hint: meta.hint,
       url: asset.browser_download_url,
     });
   }

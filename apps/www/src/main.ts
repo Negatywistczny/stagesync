@@ -29,39 +29,30 @@ function renderOffers(offers: DownloadOffer[]): void {
   grid.hidden = offers.length === 0;
 }
 
-function setStatus(message: string, state: "loading" | "ok" | "error" = "loading"): void {
+function setStatus(message: string | null, state: "error" | "ok" = "error"): void {
   const el = document.querySelector<HTMLElement>("#download-status");
   if (!el) return;
+  if (!message) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
   el.textContent = message;
   el.dataset.state = state;
 }
 
 async function hydrateDownloads(): Promise<void> {
   try {
-    const { versionLabel, releaseUrl, offers } = await fetchLatestOffers();
+    const { offers } = await fetchLatestOffers();
     if (offers.length === 0) {
-      setStatus(
-        `Wydanie ${versionLabel} nie ma jeszcze rozpoznanych instalatorów — zobacz Releases.`,
-        "error",
-      );
+      setStatus("Brak gotowych instalatorów w najnowszym wydaniu. Sprawdź starsze wersje poniżej.");
       return;
     }
-    setStatus(`Najnowsze wydanie: ${versionLabel}`, "ok");
+    setStatus(null);
     renderOffers(offers);
-
-    const status = document.querySelector("#download-status");
-    if (status) {
-      const link = document.createElement("a");
-      link.href = releaseUrl;
-      link.rel = "noopener noreferrer";
-      link.textContent = "szczegóły na GitHub";
-      status.append(" · ", link);
-    }
   } catch {
-    setStatus(
-      "Nie udało się odczytać Releases (sieć / API). Użyj linku do GitHub poniżej.",
-      "error",
-    );
+    setStatus("Nie udało się pobrać listy wydań. Skorzystaj z linku do starszych wersji poniżej.");
   }
 }
 
