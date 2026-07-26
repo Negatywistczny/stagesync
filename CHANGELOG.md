@@ -7,21 +7,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Naprawiono
-
-#### 📦 Packaging & Desktop (Tauri / Docker)
-- **Console (Android):** lokalny host działa w osobnym procesie (`:host`) — awaria silnika Node nie zamyka już launchera; start z większą stertą wątku, absolutną ścieżką wejścia i `NODE_PATH`; status po śmierci procesu hosta. Domyślny APK pakuje `libnode` wyrównany do 16 KB (przebudowa digidem `v18.20.4`), żeby host startował też na Android 15+ ze stroną pamięci 16 KB; przy starej paczce 4 KB UI wskazuje konkretny mismatch page size / ELF. Gdy `:host` pada, launcher pokazuje fazę startu i ostatnie linie logu Node (bez adb; logcat: `SsLocalHost`).
-
-## [5.2.3](https://github.com/Negatywistczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
-
 ### Dodano
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Console (Android):** „Uruchom lokalny host” startuje wbudowany serwer StageSync na tablecie (`127.0.0.1:4000`), czeka na gotowość i otwiera Admin — ten sam tor co desktop; domyślny APK zawiera silnik Node i paczkę hosta (MIDI sprzętowe na Androidzie niedostępne; łączenie LAN nadal działa).
+- **Console (Android):** „Uruchom lokalny host” startuje wbudowany serwer StageSync na tablecie (`127.0.0.1:4000`), czeka na gotowość i otwiera Admin — ten sam tor co desktop; domyślny APK zawiera silnik Node i paczkę hosta (MIDI sprzętowe na Androidzie niedostępne; łączenie LAN nadal działa). Lokalny host działa w osobnym procesie (`:host`) — awaria silnika Node nie zamyka już launchera; start z większą stertą wątku, absolutną ścieżką wejścia i `NODE_PATH`; status po śmierci procesu hosta. Domyślny APK pakuje `libnode` wyrównany do 16 KB (przebudowa digidem `v18.20.4`), żeby host startował też na Android 15+ ze stroną pamięci 16 KB; przy starej paczce 4 KB UI wskazuje konkretny mismatch page size / ELF. Gdy `:host` pada, launcher pokazuje fazę startu i ostatnie linie logu Node (bez adb; logcat: `SsLocalHost`).
 
 #### 📚 Dokumentacja
 - **Mobile / Desktop:** opis lokalnego hosta Console oraz wymagań buildu (NDK / CMake).
-
 
 ## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
 

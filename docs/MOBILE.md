@@ -76,7 +76,7 @@ Desktop (Tauri): lokalny host trzyma projekty w `~/Documents/StageSync`, a APK s
 
 W repo (sideload MVP) leżą debug APK: `data/downloads/stagesync-performer.apk` oraz `stagesync-console.apk` (build `assembleDebug` / `scripts/build-apk.sh`). Release signed — gdy CI / keystore.
 
-**Console local host — który APK zainstalować:** pakiet `com.stagesync.console.debug`, `versionName` 5.2.3, **`versionCode` ≥ 50204** (stdio + faza startu w UI po awarii `:host`; `libnode` digidem 16 KB). Sprawdź w Ustawieniach Androida → Aplikacje → StageSync Console → zaawansowane / informacje o aplikacji. Starszy `versionCode` 50203 może mieć wyrównany libnode, ale bez logu w UI.
+**Console local host — który APK zainstalować:** pakiet `com.stagesync.console.debug`, `versionName` zgodny z monorepo (obecnie 5.2.2), **`versionCode` ≥ 50202** (stdio + faza startu w UI po awarii `:host`; `libnode` digidem 16 KB). Sprawdź w Ustawieniach Androida → Aplikacje → StageSync Console → zaawansowane / informacje o aplikacji. Starszy build bez stdio w UI może mieć wyrównany libnode, ale bez logu po padnięciu `:host`.
 
 Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz fazę startu do `local-host-phase.txt` — po padnięciu `:host` launcher dokleja ostatnie linie do komunikatu błędu (tag logcat: `SsLocalHost`).
 
