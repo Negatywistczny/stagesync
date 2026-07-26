@@ -155,12 +155,38 @@ a:focus-visible {
   bottom: 10%;
   width: min(70vw, 52rem);
   opacity: 0.9;
+  color: var(--ss-color-primary);
+}
+
+.hero__lanes {
+  stroke: var(--ss-color-border);
+}
+
+.hero__clip {
+  fill: var(--ss-color-secondary);
+}
+
+.hero__clip--strong {
+  fill: var(--ss-color-border);
+}
+
+.hero__fade-stop {
+  stop-color: var(--ss-color-primary);
+}
+
+.hero__playhead line {
+  stroke: currentColor;
+}
+
+.hero__playhead path {
+  fill: currentColor;
 }
 
 .hero__playhead {
   animation: playhead-drift 7.5s ease-in-out infinite alternate;
   transform-box: fill-box;
   transform-origin: center;
+  will-change: transform;
 }
 
 .hero__sweep {
@@ -543,6 +569,17 @@ a:focus-visible {
   text-decoration: underline;
 }
 
+.dl-card__help {
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  text-decoration: none;
+}
+
+.dl-card__help:hover {
+  color: var(--ss-color-primary);
+  text-decoration: underline;
+}
+
 .download__fallback {
   margin: 0;
   color: var(--ss-color-text-muted);
@@ -706,10 +743,8 @@ a:focus-visible {
   .section__head {
     margin-bottom: var(--ss-space-8);
   }
-}
 
-@media (max-width: 28rem) {
-  .topbar__nav a:not([href="#download"]) {
-    display: none;
+  .topbar__nav {
+    gap: var(--ss-space-2) var(--ss-space-3);
   }
 }

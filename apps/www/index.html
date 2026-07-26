@@ -8,6 +8,28 @@
       content="StageSync — scentralizowany transport sceniczny, Timeline i synchronizacja stanowisk muzyków na żywo."
     />
     <meta name="theme-color" content="#000000" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="StageSync" />
+    <meta property="og:title" content="StageSync — Live Show Control" />
+    <meta
+      property="og:description"
+      content="Jeden zegar na całą scenę — transport, Timeline i zsynchronizowane ekrany muzyków."
+    />
+    <meta property="og:url" content="https://negatywistczny.github.io/stagesync/" />
+    <meta
+      property="og:image"
+      content="https://negatywistczny.github.io/stagesync/brand/stagesync-mark.svg"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="StageSync — Live Show Control" />
+    <meta
+      name="twitter:description"
+      content="Jeden zegar na całą scenę — transport, Timeline i zsynchronizowane ekrany muzyków."
+    />
+    <meta
+      name="twitter:image"
+      content="https://negatywistczny.github.io/stagesync/brand/stagesync-mark.svg"
+    />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%brand/stagesync-mark.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -39,27 +61,27 @@
           <svg class="hero__timeline" viewBox="0 0 960 420" fill="none">
             <defs>
               <linearGradient id="laneFade" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0" />
-                <stop offset="35%" stop-color="#fbbf24" stop-opacity="0.35" />
-                <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+                <stop class="hero__fade-stop" offset="0%" stop-opacity="0" />
+                <stop class="hero__fade-stop" offset="35%" stop-opacity="0.35" />
+                <stop class="hero__fade-stop" offset="100%" stop-opacity="0" />
               </linearGradient>
             </defs>
-            <g class="hero__lanes" stroke="#3f3f46" stroke-width="2">
+            <g class="hero__lanes" stroke-width="2">
               <line x1="40" y1="110" x2="920" y2="110" />
               <line x1="40" y1="180" x2="920" y2="180" />
               <line x1="40" y1="250" x2="920" y2="250" />
               <line x1="40" y1="320" x2="920" y2="320" />
             </g>
             <g class="hero__clips">
-              <rect x="120" y="92" width="160" height="36" rx="4" fill="#27272a" />
-              <rect x="120" y="162" width="160" height="36" rx="4" fill="#27272a" />
-              <rect x="120" y="232" width="160" height="36" rx="4" fill="#27272a" />
-              <rect x="360" y="92" width="220" height="36" rx="4" fill="#3f3f46" />
-              <rect x="360" y="162" width="180" height="36" rx="4" fill="#3f3f46" />
-              <rect x="360" y="232" width="200" height="36" rx="4" fill="#3f3f46" />
-              <rect x="360" y="302" width="140" height="36" rx="4" fill="#27272a" />
-              <rect x="620" y="162" width="190" height="36" rx="4" fill="#27272a" />
-              <rect x="640" y="232" width="150" height="36" rx="4" fill="#27272a" />
+              <rect class="hero__clip" x="120" y="92" width="160" height="36" rx="4" />
+              <rect class="hero__clip" x="120" y="162" width="160" height="36" rx="4" />
+              <rect class="hero__clip" x="120" y="232" width="160" height="36" rx="4" />
+              <rect class="hero__clip hero__clip--strong" x="360" y="92" width="220" height="36" rx="4" />
+              <rect class="hero__clip hero__clip--strong" x="360" y="162" width="180" height="36" rx="4" />
+              <rect class="hero__clip hero__clip--strong" x="360" y="232" width="200" height="36" rx="4" />
+              <rect class="hero__clip" x="360" y="302" width="140" height="36" rx="4" />
+              <rect class="hero__clip" x="620" y="162" width="190" height="36" rx="4" />
+              <rect class="hero__clip" x="640" y="232" width="150" height="36" rx="4" />
             </g>
             <rect
               class="hero__sweep"
@@ -70,8 +92,8 @@
               fill="url(#laneFade)"
             />
             <g class="hero__playhead">
-              <line x1="480" y1="60" x2="480" y2="360" stroke="#fbbf24" stroke-width="3" />
-              <path d="M480 48 L492 62 L480 68 L468 62 Z" fill="#fbbf24" />
+              <line x1="480" y1="60" x2="480" y2="360" stroke-width="3" />
+              <path d="M480 48 L492 62 L480 68 L468 62 Z" />
             </g>
           </svg>
           <div class="hero__vignette"></div>
@@ -81,10 +103,11 @@
           <div class="hero__copy">
             <p class="hero__eyebrow">Live Show Control</p>
             <h1 id="hero-title" class="hero__title">
+              <span class="visually-hidden">StageSync — Live Show Control</span>
               <img
                 class="hero__wordmark"
                 src="%BASE_URL%brand/stagesync-logo.svg"
-                alt="StageSync"
+                alt=""
                 width="420"
                 height="100"
               />
@@ -138,8 +161,8 @@
               <span class="role__label">Muzyk</span>
               <h3 class="role__title">Performer</h3>
               <p>
-                Podłączasz się do hosta w sieci lokalnej i dostajesz swój widok — bez konfiguracji
-                serwera i bez kont w chmurze.
+                Łączysz się z hostem w lokalnej sieci LAN i od razu dostajesz zsynchronizowany widok
+                swojego stanowiska.
               </p>
             </li>
           </ul>
@@ -190,11 +213,20 @@
 
           <p class="download__status reveal" id="download-status" role="status" hidden></p>
 
-          <div class="download__catalog" id="download-catalog" hidden></div>
+          <div
+            class="download__catalog"
+            id="download-catalog"
+            aria-live="polite"
+            aria-busy="true"
+            hidden
+          ></div>
 
           <p class="download__fallback reveal">
             Starsze wersje dostępne na
-            <a href="https://github.com/Negatywistczny/stagesync/releases" rel="noopener noreferrer"
+            <a
+              id="download-fallback-link"
+              href="https://github.com/Negatywistczny/stagesync/releases"
+              rel="noopener noreferrer"
               >GitHub Releases</a
             >.
           </p>

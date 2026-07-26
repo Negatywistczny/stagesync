@@ -1,4 +1,5 @@
 import "./styles.css";
+import { loadChannels } from "./channels.js";
 import { platformIconSvg } from "./icons.js";
 import {
   catalogHasAny,
@@ -49,11 +50,23 @@ function renderCard(offer: DownloadOffer, options?: { secondary?: DownloadOffer 
     actions.append(secondary);
   }
 
+  if (offer.helpUrl && offer.helpLabel) {
+    const help = el("a", "dl-card__help", offer.helpLabel);
+    help.href = offer.helpUrl;
+    help.rel = "noopener noreferrer";
+    actions.append(help);
+  }
+
   card.append(actions);
   return card;
 }
 
-function renderUnavailable(title: string, subtitle: string, icon: DownloadOffer["icon"]): HTMLElement {
+function renderUnavailable(
+  title: string,
+  subtitle: string,
+  icon: DownloadOffer["icon"],
+  help?: { label: string; url: string },
+): HTMLElement {
   const card = el("article", "dl-card dl-card--empty reveal is-visible");
   const head = el("div", "dl-card__head");
   const iconWrap = el("div", "dl-card__icon");
@@ -66,14 +79,18 @@ function renderUnavailable(title: string, subtitle: string, icon: DownloadOffer[
   head.append(titles);
   card.append(head);
   card.append(el("p", "dl-card__detail", "Niedostępne w najnowszym wydaniu."));
+  if (help) {
+    const actions = el("div", "dl-card__actions");
+    const link = el("a", "dl-card__help", help.label);
+    link.href = help.url;
+    link.rel = "noopener noreferrer";
+    actions.append(link);
+    card.append(actions);
+  }
   return card;
 }
 
-function renderCategory(
-  title: string,
-  lead: string,
-  cards: HTMLElement[],
-): HTMLElement {
+function renderCategory(title: string, lead: string, cards: HTMLElement[]): HTMLElement {
   const block = el("div", "dl-group reveal is-visible");
   const head = el("div", "dl-group__head");
   head.append(el("h3", "dl-group__title", title));
@@ -91,11 +108,15 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (!root) return;
   root.replaceChildren();
 
+  const docs = catalog.channels.docs;
+  const desktopHelp = { label: "Pomoc instalacji Desktop", url: docs.desktop };
+  const mobileHelp = { label: "Pomoc instalacji Android", url: docs.mobile };
+
   const desktopCards: HTMLElement[] = [];
   if (catalog.desktop.windows) {
     desktopCards.push(renderCard(catalog.desktop.windows));
   } else {
-    desktopCards.push(renderUnavailable("Windows", "Stacja robocza", "windows"));
+    desktopCards.push(renderUnavailable("Windows", "Stacja robocza", "windows", desktopHelp));
   }
 
   if (catalog.desktop.macosArm) {
@@ -105,27 +126,23 @@ function renderCatalog(catalog: DownloadCatalog): void {
   } else if (catalog.desktop.macosIntel) {
     desktopCards.push(renderCard(catalog.desktop.macosIntel));
   } else {
-    desktopCards.push(renderUnavailable("macOS", "Apple Silicon", "apple"));
+    desktopCards.push(renderUnavailable("macOS", "Apple Silicon", "apple", desktopHelp));
   }
 
   root.append(
-    renderCategory(
-      "Stacje robocze",
-      "Desktop dla operatora — Windows i macOS.",
-      desktopCards,
-    ),
+    renderCategory("Stacje robocze", "Desktop dla operatora — Windows i macOS.", desktopCards),
   );
 
   const androidCards: HTMLElement[] = [];
   if (catalog.android.console) {
     androidCards.push(renderCard(catalog.android.console));
   } else {
-    androidCards.push(renderUnavailable("Console", "Operator / FOH", "console"));
+    androidCards.push(renderUnavailable("Console", "Operator / FOH", "console", mobileHelp));
   }
   if (catalog.android.performer) {
     androidCards.push(renderCard(catalog.android.performer));
   } else {
-    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer"));
+    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer", mobileHelp));
   }
 
   root.append(
@@ -137,31 +154,46 @@ function renderCatalog(catalog: DownloadCatalog): void {
   );
 
   root.hidden = false;
+  root.setAttribute("aria-busy", "false");
 }
 
-function setStatus(message: string | null): void {
+function setStatus(message: string | null, releaseUrl?: string): void {
   const elStatus = document.querySelector<HTMLElement>("#download-status");
   if (!elStatus) return;
+  elStatus.replaceChildren();
   if (!message) {
     elStatus.hidden = true;
-    elStatus.textContent = "";
     return;
   }
   elStatus.hidden = false;
-  elStatus.textContent = message;
+  elStatus.append(document.createTextNode(message));
+  if (releaseUrl) {
+    elStatus.append(document.createTextNode(" "));
+    const link = el("a", undefined, "Otwórz archiwum wydań");
+    link.href = releaseUrl;
+    link.rel = "noopener noreferrer";
+    elStatus.append(link);
+  }
 }
 
 async function hydrateDownloads(): Promise<void> {
+  const channels = await loadChannels();
+  const fallback = document.querySelector<HTMLAnchorElement>("#download-fallback-link");
+  if (fallback) fallback.href = channels.releases;
+
   try {
     const catalog = await fetchLatestCatalog();
     if (!catalogHasAny(catalog)) {
-      setStatus("Brak gotowych instalatorów w najnowszym wydaniu. Sprawdź starsze wersje poniżej.");
+      setStatus(
+        "Brak gotowych instalatorów w najnowszym wydaniu.",
+        catalog.releaseUrl,
+      );
       return;
     }
     setStatus(null);
     renderCatalog(catalog);
   } catch {
-    setStatus("Nie udało się pobrać listy wydań. Skorzystaj z linku do starszych wersji poniżej.");
+    setStatus("Nie udało się pobrać listy wydań.", channels.releases);
   }
 }
 

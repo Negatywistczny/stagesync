@@ -1,6 +1,4 @@
-const REPO = "Negatywistczny/stagesync";
-const RELEASES_API = `https://api.github.com/repos/${REPO}/releases/latest`;
-const RELEASES_PAGE = `https://github.com/Negatywistczny/stagesync/releases`;
+import { loadChannels, type SiteChannels } from "./channels.js";
 
 export type DownloadKind =
   | "macos-arm"
@@ -22,6 +20,8 @@ export interface DownloadOffer {
   detail: string;
   cta: string;
   url: string;
+  helpLabel?: string;
+  helpUrl?: string;
 }
 
 interface GhAsset {
@@ -36,10 +36,7 @@ interface GhRelease {
   assets: GhAsset[];
 }
 
-const META: Record<
-  DownloadKind,
-  Omit<DownloadOffer, "kind" | "url">
-> = {
+const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel" | "helpUrl">> = {
   windows: {
     category: "desktop",
     icon: "windows",
@@ -105,6 +102,7 @@ function classifyAsset(name: string): DownloadKind | null {
 export interface DownloadCatalog {
   versionLabel: string;
   releaseUrl: string;
+  channels: SiteChannels;
   desktop: {
     windows: DownloadOffer | null;
     macosArm: DownloadOffer | null;
@@ -116,21 +114,29 @@ export interface DownloadCatalog {
   };
 }
 
-function toOffer(kind: DownloadKind, url: string): DownloadOffer {
-  return { kind, url, ...META[kind] };
+function helpFor(kind: DownloadKind, channels: SiteChannels): Pick<DownloadOffer, "helpLabel" | "helpUrl"> {
+  if (kind === "windows" || kind === "macos-arm" || kind === "macos-x64") {
+    return { helpLabel: "Pomoc instalacji Desktop", helpUrl: channels.docs.desktop };
+  }
+  return { helpLabel: "Pomoc instalacji Android", helpUrl: channels.docs.mobile };
 }
 
-export function catalogFromRelease(release: GhRelease): DownloadCatalog {
+function toOffer(kind: DownloadKind, url: string, channels: SiteChannels): DownloadOffer {
+  return { kind, url, ...META[kind], ...helpFor(kind, channels) };
+}
+
+export function catalogFromRelease(release: GhRelease, channels: SiteChannels): DownloadCatalog {
   const byKind = new Map<DownloadKind, DownloadOffer>();
   for (const asset of release.assets) {
     const kind = classifyAsset(asset.name);
     if (!kind || byKind.has(kind)) continue;
-    byKind.set(kind, toOffer(kind, asset.browser_download_url));
+    byKind.set(kind, toOffer(kind, asset.browser_download_url, channels));
   }
 
   return {
     versionLabel: release.tag_name.replace(/^v/, ""),
-    releaseUrl: release.html_url || RELEASES_PAGE,
+    releaseUrl: release.html_url || channels.releases,
+    channels,
     desktop: {
       windows: byKind.get("windows") ?? null,
       macosArm: byKind.get("macos-arm") ?? null,
@@ -154,12 +160,13 @@ export function catalogHasAny(catalog: DownloadCatalog): boolean {
 }
 
 export async function fetchLatestCatalog(): Promise<DownloadCatalog> {
-  const res = await fetch(RELEASES_API, {
+  const channels = await loadChannels();
+  const res = await fetch(channels.latestReleaseApi, {
     headers: { Accept: "application/vnd.github+json" },
   });
   if (!res.ok) {
     throw new Error(`GitHub Releases HTTP ${res.status}`);
   }
   const release = (await res.json()) as GhRelease;
-  return catalogFromRelease(release);
+  return catalogFromRelease(release, channels);
 }
