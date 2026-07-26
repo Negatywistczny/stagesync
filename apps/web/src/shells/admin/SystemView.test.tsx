@@ -103,6 +103,7 @@ describe("SystemView APK download aria", () => {
   });
 
   it("names Host card regions including Logi strip", async () => {
+    render(<SystemView statusMsg={null} />);
     await waitFor(() => {
       expect(
         screen.getByRole("region", { name: "Połączenie i sieć" }),
