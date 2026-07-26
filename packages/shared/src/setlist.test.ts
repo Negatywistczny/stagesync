@@ -239,6 +239,8 @@ describe("setlist helpers", () => {
     expect(formatSetDurationMs(61_000)).toBe("1:01");
     expect(formatSetDurationMs(-500)).toBe("0:00");
     expect(formatSetDurationMs(1499)).toBe("0:01");
+    expect(formatSetDurationMs(Number.NaN)).toBe("0:00");
+    expect(formatSetDurationMs(Number.POSITIVE_INFINITY)).toBe("0:00");
   });
 
   it("sumSetlistDurationMs totals item durations", () => {
