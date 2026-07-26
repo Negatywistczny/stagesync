@@ -41,7 +41,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     category: "desktop",
     icon: "windows",
     title: "Windows",
-    subtitle: "Stacja robocza",
+    subtitle: "Komputer reżyserii",
     detail: "Wersja 64-bit · instalator .msi",
     cta: "Pobierz dla Windows",
   },
@@ -49,24 +49,24 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     category: "desktop",
     icon: "apple",
     title: "macOS",
-    subtitle: "Apple Silicon",
-    detail: "Architektura ARM64 (M1 / M2 / M3 / M4) · .dmg",
+    subtitle: "Mac z chipem Apple",
+    detail: "Dla Maców M1 / M2 / M3 / M4 · plik .dmg",
     cta: "Pobierz dla Mac",
   },
   "macos-x64": {
     category: "desktop",
     icon: "apple",
     title: "macOS",
-    subtitle: "Intel",
-    detail: "Wersja 64-bit (Intel) · .dmg",
+    subtitle: "Mac z procesorem Intel",
+    detail: "Dla starszych Maców Intel · plik .dmg",
     cta: "Pobierz (Intel)",
   },
   "android-console": {
     category: "android",
     icon: "console",
     title: "Console",
-    subtitle: "Operator / FOH",
-    detail: "Pełny panel reżyserii na tablecie Android",
+    subtitle: "Reżyseria / mikser",
+    detail: "Pełny panel prowadzenia show na tablecie Android",
     cta: "Pobierz Console",
   },
   "android-performer": {
@@ -74,7 +74,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     icon: "performer",
     title: "Performer",
     subtitle: "Muzyk na scenie",
-    detail: "Zsynchronizowany widok akordów, tekstu i partytury",
+    detail: "Nuty, akordy i tekst przewijane razem z zespołem",
     cta: "Pobierz Performer",
   },
 };
@@ -116,9 +116,9 @@ export interface DownloadCatalog {
 
 function helpFor(kind: DownloadKind, channels: SiteChannels): Pick<DownloadOffer, "helpLabel" | "helpUrl"> {
   if (kind === "windows" || kind === "macos-arm" || kind === "macos-x64") {
-    return { helpLabel: "Pomoc instalacji Desktop", helpUrl: channels.docs.desktop };
+    return { helpLabel: "Jak zainstalować na komputerze", helpUrl: channels.docs.desktop };
   }
-  return { helpLabel: "Pomoc instalacji Android", helpUrl: channels.docs.mobile };
+  return { helpLabel: "Jak zainstalować na tablecie", helpUrl: channels.docs.mobile };
 }
 
 function toOffer(kind: DownloadKind, url: string, channels: SiteChannels): DownloadOffer {

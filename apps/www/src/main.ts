@@ -109,14 +109,14 @@ function renderCatalog(catalog: DownloadCatalog): void {
   root.replaceChildren();
 
   const docs = catalog.channels.docs;
-  const desktopHelp = { label: "Pomoc instalacji Desktop", url: docs.desktop };
-  const mobileHelp = { label: "Pomoc instalacji Android", url: docs.mobile };
+  const desktopHelp = { label: "Jak zainstalować na komputerze", url: docs.desktop };
+  const mobileHelp = { label: "Jak zainstalować na tablecie", url: docs.mobile };
 
   const desktopCards: HTMLElement[] = [];
   if (catalog.desktop.windows) {
     desktopCards.push(renderCard(catalog.desktop.windows));
   } else {
-    desktopCards.push(renderUnavailable("Windows", "Stacja robocza", "windows", desktopHelp));
+    desktopCards.push(renderUnavailable("Windows", "Komputer reżyserii", "windows", desktopHelp));
   }
 
   if (catalog.desktop.macosArm) {
@@ -126,18 +126,22 @@ function renderCatalog(catalog: DownloadCatalog): void {
   } else if (catalog.desktop.macosIntel) {
     desktopCards.push(renderCard(catalog.desktop.macosIntel));
   } else {
-    desktopCards.push(renderUnavailable("macOS", "Apple Silicon", "apple", desktopHelp));
+    desktopCards.push(renderUnavailable("macOS", "Komputer reżyserii", "apple", desktopHelp));
   }
 
   root.append(
-    renderCategory("Stacje robocze", "Desktop dla operatora — Windows i macOS.", desktopCards),
+    renderCategory(
+      "Komputer reżyserii",
+      "Aplikacja na Windows i Mac — stąd prowadzisz koncert.",
+      desktopCards,
+    ),
   );
 
   const androidCards: HTMLElement[] = [];
   if (catalog.android.console) {
     androidCards.push(renderCard(catalog.android.console));
   } else {
-    androidCards.push(renderUnavailable("Console", "Operator / FOH", "console", mobileHelp));
+    androidCards.push(renderUnavailable("Console", "Reżyseria / mikser", "console", mobileHelp));
   }
   if (catalog.android.performer) {
     androidCards.push(renderCard(catalog.android.performer));
@@ -147,8 +151,8 @@ function renderCatalog(catalog: DownloadCatalog): void {
 
   root.append(
     renderCategory(
-      "Aplikacje sceniczne",
-      "Android na tablecie — Console przy FOH, Performer na scenie.",
+      "Tablety na scenie",
+      "Console przy mikserze, Performer u muzyków — ta sama sieć Wi‑Fi.",
       androidCards,
     ),
   );
@@ -169,7 +173,7 @@ function setStatus(message: string | null, releaseUrl?: string): void {
   elStatus.append(document.createTextNode(message));
   if (releaseUrl) {
     elStatus.append(document.createTextNode(" "));
-    const link = el("a", undefined, "Otwórz archiwum wydań");
+    const link = el("a", undefined, "Zobacz starsze wersje");
     link.href = releaseUrl;
     link.rel = "noopener noreferrer";
     elStatus.append(link);
