@@ -1,12 +1,18 @@
 import "./styles.css";
 import { loadChannels } from "./channels.js";
-import { hydrateDataIcons, iconSvg, platformIconSvg } from "./icons.js";
+import { hydrateDataIcons, platformIconSvg } from "./icons.js";
+import {
+  createInstallHelpButton,
+  ensureInstallationGuide,
+  type InstallGuideTab,
+} from "./installationGuideModal.js";
 import {
   catalogHasAny,
   fetchLatestCatalog,
   type DownloadCatalog,
   type DownloadOffer,
 } from "./releases.js";
+import { fillBrand, fillNav } from "./site.js";
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -50,12 +56,8 @@ function renderCard(offer: DownloadOffer, options?: { secondary?: DownloadOffer 
     actions.append(secondary);
   }
 
-  if (offer.helpUrl && offer.helpLabel) {
-    const help = el("a", "dl-card__help");
-    help.href = offer.helpUrl;
-    help.rel = "noopener noreferrer";
-    help.innerHTML = `${iconSvg("file-text", "dl-card__help-icon")}<span>${offer.helpLabel}</span>`;
-    actions.append(help);
+  if (offer.helpLabel && offer.installTab) {
+    actions.append(createInstallHelpButton(offer.helpLabel, offer.installTab));
   }
 
   card.append(actions);
@@ -66,7 +68,7 @@ function renderUnavailable(
   title: string,
   subtitle: string,
   icon: DownloadOffer["icon"],
-  help?: { label: string; url: string },
+  help: { label: string; tab: InstallGuideTab },
 ): HTMLElement {
   const card = el("article", "dl-card dl-card--empty reveal is-visible");
   const head = el("div", "dl-card__head");
@@ -80,15 +82,9 @@ function renderUnavailable(
   head.append(titles);
   card.append(head);
   card.append(el("p", "dl-card__detail", "Niedostępne w\u00A0najnowszym wydaniu."));
-  if (help) {
-    const actions = el("div", "dl-card__actions");
-    const link = el("a", "dl-card__help");
-    link.href = help.url;
-    link.rel = "noopener noreferrer";
-    link.innerHTML = `${iconSvg("file-text", "dl-card__help-icon")}<span>${help.label}</span>`;
-    actions.append(link);
-    card.append(actions);
-  }
+  const actions = el("div", "dl-card__actions");
+  actions.append(createInstallHelpButton(help.label, help.tab));
+  card.append(actions);
   return card;
 }
 
@@ -110,15 +106,19 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (!root) return;
   root.replaceChildren();
 
-  const docs = catalog.channels.docs;
-  const desktopHelp = { label: "Jak zainstalować na komputerze", url: docs.desktop };
-  const mobileHelp = { label: "Jak zainstalować na Androidzie", url: docs.mobile };
+  const desktopHelp = { label: "Jak zainstalować na komputerze", tab: "macos" as const };
+  const tabletHelp = { label: "Jak zainstalować na tablecie", tab: "android" as const };
 
   const desktopCards: HTMLElement[] = [];
   if (catalog.desktop.windows) {
     desktopCards.push(renderCard(catalog.desktop.windows));
   } else {
-    desktopCards.push(renderUnavailable("Windows", "Aplikacja główna (stacja robocza)", "windows", desktopHelp));
+    desktopCards.push(
+      renderUnavailable("Windows", "Aplikacja główna (stacja robocza)", "windows", {
+        label: desktopHelp.label,
+        tab: "windows",
+      }),
+    );
   }
 
   if (catalog.desktop.macosArm) {
@@ -128,7 +128,9 @@ function renderCatalog(catalog: DownloadCatalog): void {
   } else if (catalog.desktop.macosIntel) {
     desktopCards.push(renderCard(catalog.desktop.macosIntel));
   } else {
-    desktopCards.push(renderUnavailable("macOS", "Aplikacja główna (stacja robocza)", "apple", desktopHelp));
+    desktopCards.push(
+      renderUnavailable("macOS", "Aplikacja główna (stacja robocza)", "apple", desktopHelp),
+    );
   }
 
   root.append(
@@ -143,12 +145,12 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (catalog.android.console) {
     androidCards.push(renderCard(catalog.android.console));
   } else {
-    androidCards.push(renderUnavailable("Console", "Realizator / Lider", "console", mobileHelp));
+    androidCards.push(renderUnavailable("Console", "Realizator / Lider", "console", tabletHelp));
   }
   if (catalog.android.performer) {
     androidCards.push(renderCard(catalog.android.performer));
   } else {
-    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer", mobileHelp));
+    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer", tabletHelp));
   }
 
   root.append(
@@ -224,6 +226,12 @@ function observeReveals(): void {
   nodes.forEach((n) => io.observe(n));
 }
 
+const brand = document.querySelector<HTMLAnchorElement>("[data-brand]");
+const nav = document.querySelector<HTMLElement>("[data-nav]");
+if (brand) fillBrand(brand);
+if (nav) fillNav(nav, "home");
+
+ensureInstallationGuide();
 hydrateDataIcons();
 observeReveals();
 void hydrateDownloads();

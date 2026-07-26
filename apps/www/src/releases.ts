@@ -21,7 +21,8 @@ export interface DownloadOffer {
   cta: string;
   url: string;
   helpLabel?: string;
-  helpUrl?: string;
+  /** Opens in-page install guide on this tab (no external docs). */
+  installTab?: "macos" | "windows" | "android";
 }
 
 interface GhAsset {
@@ -36,7 +37,7 @@ interface GhRelease {
   assets: GhAsset[];
 }
 
-const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel" | "helpUrl">> = {
+const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel" | "installTab">> = {
   windows: {
     category: "desktop",
     icon: "windows",
@@ -114,15 +115,18 @@ export interface DownloadCatalog {
   };
 }
 
-function helpFor(kind: DownloadKind, channels: SiteChannels): Pick<DownloadOffer, "helpLabel" | "helpUrl"> {
-  if (kind === "windows" || kind === "macos-arm" || kind === "macos-x64") {
-    return { helpLabel: "Jak zainstalować na komputerze", helpUrl: channels.docs.desktop };
+function helpFor(kind: DownloadKind): Pick<DownloadOffer, "helpLabel" | "installTab"> {
+  if (kind === "windows") {
+    return { helpLabel: "Jak zainstalować na komputerze", installTab: "windows" };
   }
-  return { helpLabel: "Jak zainstalować na Androidzie", helpUrl: channels.docs.mobile };
+  if (kind === "macos-arm" || kind === "macos-x64") {
+    return { helpLabel: "Jak zainstalować na komputerze", installTab: "macos" };
+  }
+  return { helpLabel: "Jak zainstalować na tablecie", installTab: "android" };
 }
 
-function toOffer(kind: DownloadKind, url: string, channels: SiteChannels): DownloadOffer {
-  return { kind, url, ...META[kind], ...helpFor(kind, channels) };
+function toOffer(kind: DownloadKind, url: string): DownloadOffer {
+  return { kind, url, ...META[kind], ...helpFor(kind) };
 }
 
 export function catalogFromRelease(release: GhRelease, channels: SiteChannels): DownloadCatalog {
@@ -130,7 +134,7 @@ export function catalogFromRelease(release: GhRelease, channels: SiteChannels): 
   for (const asset of release.assets) {
     const kind = classifyAsset(asset.name);
     if (!kind || byKind.has(kind)) continue;
-    byKind.set(kind, toOffer(kind, asset.browser_download_url, channels));
+    byKind.set(kind, toOffer(kind, asset.browser_download_url));
   }
 
   return {

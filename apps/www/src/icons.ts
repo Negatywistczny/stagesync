@@ -15,6 +15,7 @@ export type IconName =
   | "list-plus"
   | "wifi"
   | "file-text"
+  | "x"
   | "windows"
   | "apple";
 
@@ -42,6 +43,7 @@ const PATHS: Record<IconName, string> = {
   wifi: '<path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/>',
   "file-text":
     '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   windows:
     '<path fill="currentColor" stroke="none" d="M3 5.5 10.2 4.4v7.1H3zm0 13 7.2 1.1v-7.2H3zm8.1-14.2L21 3v8.5h-9.9zm0 15.4L21 21v-8.6h-9.9z"/>',
   apple:

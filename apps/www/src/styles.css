@@ -125,6 +125,10 @@ a:focus-visible {
   color: var(--ss-color-text);
 }
 
+.topbar__nav a[aria-current="page"] {
+  color: var(--ss-color-text);
+}
+
 /* —— Hero —— */
 .hero {
   position: relative;
@@ -620,9 +624,16 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: var(--ss-space-2);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
   color: var(--ss-color-text-muted);
+  font: inherit;
   font-size: var(--ss-text-sm);
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .dl-card__help-icon {
@@ -634,6 +645,126 @@ a:focus-visible {
 .dl-card__help:hover {
   color: var(--ss-color-primary);
   text-decoration: underline;
+}
+
+/* —— Installation guide modal —— */
+body.has-modal {
+  overflow: hidden;
+}
+
+.install-guide {
+  width: min(100% - 2 * var(--ss-space-4), 32rem);
+  max-height: min(90vh, 40rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-lg, 0.75rem);
+  background: var(--ss-color-surface, var(--ss-color-bg));
+  color: var(--ss-color-text);
+  box-shadow: 0 1.25rem 3rem color-mix(in srgb, #000 55%, transparent);
+}
+
+.install-guide::backdrop {
+  background: color-mix(in srgb, #000 62%, transparent);
+}
+
+.install-guide__card {
+  display: flex;
+  flex-direction: column;
+  max-height: min(90vh, 40rem);
+}
+
+.install-guide__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ss-space-4);
+  padding: var(--ss-space-5) var(--ss-space-5) var(--ss-space-3);
+}
+
+.install-guide__title {
+  margin: 0;
+  font-family: var(--ss-font-display, "Sora", sans-serif);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+}
+
+.install-guide__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--ss-touch-min-client);
+  height: var(--ss-touch-min-client);
+  margin: calc(var(--ss-space-2) * -1);
+  padding: 0;
+  border: none;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  cursor: pointer;
+}
+
+.install-guide__close:hover {
+  color: var(--ss-color-text);
+  background: color-mix(in srgb, var(--ss-color-text) 8%, transparent);
+}
+
+.install-guide__close-icon {
+  width: var(--ss-space-5);
+  height: var(--ss-space-5);
+}
+
+.install-guide__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ss-space-2);
+  padding: 0 var(--ss-space-5) var(--ss-space-3);
+  border-bottom: 1px solid var(--ss-color-border-muted);
+}
+
+.install-guide__tab {
+  min-height: var(--ss-touch-min-client);
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: 1px solid transparent;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font: inherit;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  cursor: pointer;
+}
+
+.install-guide__tab:hover {
+  color: var(--ss-color-text);
+}
+
+.install-guide__tab--active,
+.install-guide__tab[aria-selected="true"] {
+  color: var(--ss-color-text);
+  border-color: var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+}
+
+.install-guide__body {
+  padding: var(--ss-space-5);
+  overflow: auto;
+}
+
+.install-guide__steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--ss-space-3);
+}
+
+.install-guide__step {
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-leading-relaxed);
+  text-wrap: pretty;
 }
 
 .download__fallback {
@@ -660,6 +791,165 @@ a:focus-visible {
 
 .footer p {
   margin: 0;
+}
+
+.footer a {
+  color: inherit;
+}
+
+.footer a:hover {
+  color: var(--ss-color-text);
+}
+
+/* —— Aktualności —— */
+.news-page {
+  padding-block: var(--ss-space-12) var(--ss-space-16);
+}
+
+.news-page__head {
+  max-width: 40rem;
+  margin-bottom: var(--ss-space-10);
+}
+
+.news-page__eyebrow {
+  margin: 0 0 var(--ss-space-2);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+}
+
+.news-page__title {
+  margin: 0 0 var(--ss-space-3);
+  font-family: var(--ss-font-display, "Sora", sans-serif);
+  font-size: var(--ss-text-3xl);
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-tight);
+  text-wrap: balance;
+}
+
+.news-page__lede {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--ss-space-5);
+}
+
+.news-card {
+  margin: 0;
+  border: 1px solid var(--ss-color-border-muted);
+  border-radius: var(--ss-radius-lg, 0.75rem);
+  background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.news-card:hover {
+  border-color: var(--ss-color-border);
+  background: var(--ss-color-surface);
+}
+
+.news-card__link {
+  display: grid;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-6);
+  color: inherit;
+  text-decoration: none;
+}
+
+.news-card__date {
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.news-card__title {
+  margin: 0;
+  font-family: var(--ss-font-display, "Sora", sans-serif);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+  text-wrap: balance;
+}
+
+.news-card__teaser {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.news-card__more {
+  margin-top: var(--ss-space-2);
+  color: var(--ss-color-primary);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.news-back {
+  display: inline-block;
+  margin-bottom: var(--ss-space-6);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  text-decoration: none;
+}
+
+.news-back:hover {
+  color: var(--ss-color-text);
+}
+
+.news-article {
+  max-width: 40rem;
+}
+
+.news-article__date {
+  display: block;
+  margin-bottom: var(--ss-space-3);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+}
+
+.news-article__title {
+  margin: 0 0 var(--ss-space-4);
+  font-family: var(--ss-font-display, "Sora", sans-serif);
+  font-size: var(--ss-text-3xl);
+  font-weight: var(--ss-font-weight-bold);
+  line-height: var(--ss-leading-tight);
+  text-wrap: balance;
+}
+
+.news-article__lead {
+  margin: 0 0 var(--ss-space-6);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-lg);
+  line-height: var(--ss-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.news-article__p {
+  margin: 0 0 var(--ss-space-5);
+  font-size: var(--ss-text-md);
+  line-height: var(--ss-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.news-article__cta {
+  margin: var(--ss-space-8) 0 0;
+}
+
+.news-missing {
+  color: var(--ss-color-text-muted);
 }
 
 /* —— Reveal on scroll —— */
