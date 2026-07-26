@@ -1,5 +1,5 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { hostname as osHostname, tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createProjectV5Seed, projectEndTicks } from "@stagesync/shared";
@@ -7,6 +7,7 @@ import { createLiveDeskStore } from "./live-desk.js";
 import {
   buildNetworkInfo,
   isLoopbackJoinUrl,
+  normalizeAdvertiseHostname,
   pickPrimaryJoinUrl,
 } from "./network-info.js";
 import { wireSetlistAutoAdvance } from "./transport/auto-advance.js";
@@ -29,15 +30,17 @@ describe("network-info edges", () => {
     expect(info.urls.some((u) => u.includes("localhost"))).toBe(true);
   });
 
-  it("HOSTNAME empty / whitespace falls back; long names truncate", () => {
+  it("HOSTNAME empty / whitespace falls back to OS; long names truncate", () => {
     const prev = process.env.HOSTNAME;
+    const osFallback = normalizeAdvertiseHostname(osHostname());
     try {
       process.env.HOSTNAME = "   ";
-      expect(buildNetworkInfo(1).hostname).toBe("localhost");
+      expect(buildNetworkInfo(1).hostname).toBe(osFallback);
       process.env.HOSTNAME = `host-${"x".repeat(80)}`;
       expect(buildNetworkInfo(1).hostname).toHaveLength(64);
       delete process.env.HOSTNAME;
-      expect(buildNetworkInfo(1).hostname).toBe("localhost");
+      expect(buildNetworkInfo(1).hostname).toBe(osFallback);
+      expect(normalizeAdvertiseHostname("")).toBe("localhost");
     } finally {
       if (prev === undefined) delete process.env.HOSTNAME;
       else process.env.HOSTNAME = prev;
