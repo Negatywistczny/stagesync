@@ -89,6 +89,8 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 ### Po 5.2.0 / 5.2.1 + residual 5.3+
 
 - **Cut `v5.2.1`:** Admin **Przywróć…** (`.bak` / ZIP); opcjonalny Sentry; polish Admin/Client (Host 2×2, Button chrome, Client header); usunięta scenic theme lock — lokalny motyw + `STAGESYNC_THEME_DEFAULT`. Historia: [CHANGELOG.md](../CHANGELOG.md).
+- **Cut `v5.2.2`:** design system shared + launcher tokeny; polish Host/Client. Historia: [CHANGELOG.md](../CHANGELOG.md).
+- **Cut `v5.2.3`:** lokalny host Console (NSD / Connect), Admin Host mobile (akordeon + górny pasek), a11y / Timeline dock. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - Motywy: macierz 4 profili / THM-03
 - Mixer: multi-out HW (Out 3–4)
 - Safety Net: auto-election / lease

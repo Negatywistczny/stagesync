@@ -5,12 +5,12 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.2.3](https://github.com/Negatywistyczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
 
 ### Dodano
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **APK (sideload / host):** bundel `data/downloads` zaktualizowany do UI Admin mobile (akordeon Host, stały górny pasek) — Console `versionCode` **50211**, Performer **50204** (`versionName` 5.2.2).
+- **APK (sideload / host):** bundel `data/downloads` zaktualizowany do UI Admin mobile (akordeon Host, stały górny pasek) — Console `versionCode` **50212**, Performer **50205** (`versionName` 5.2.3).
 - **Console (Android):** „Uruchom lokalny host” startuje wbudowany serwer StageSync na tablecie (`127.0.0.1:4000`), czeka na gotowość i otwiera Admin — ten sam tor co desktop; domyślny APK zawiera silnik Node i paczkę hosta (MIDI sprzętowe na Androidzie niedostępne; łączenie LAN nadal działa). Lokalny host działa w osobnym procesie (`:host`) — awaria silnika Node nie zamyka już launchera; start z większą stertą wątku, absolutną ścieżką wejścia i `NODE_PATH`; status po śmierci procesu hosta. Po udanym health check launcher wychodzi ze „Uruchamianie…” i otwiera lokalny Admin także wtedy, gdy broadcast między procesami nie dojdzie (wspólny status na dysku). Podczas działania host utrzymuje powiadomienie na pasku z **Otwórz aplikację** i **Zamknij host** (dotknięcie powiadomienia też wraca do Console). Gdy host już działa, launcher pokazuje **Połącz z localhostem** zamiast ponownego startu — bez zawieszenia na „Uruchamianie…”. Domyślny APK pakuje `libnode` wyrównany do 16 KB (przebudowa digidem `v18.20.4`), żeby host startował też na Android 15+ ze stroną pamięci 16 KB; przy starej paczce 4 KB UI wskazuje konkretny mismatch page size / ELF. Gdy `:host` pada, launcher pokazuje krótki komunikat, przewijany log (faza + Node) oraz **Wyczyść** / **Pobierz log** — jak przy błędzie lokalnego hosta na desktopie (bez adb; logcat: `SsLocalHost`). Paczka hosta dostosowuje `path-to-regexp` (Express 5) do silnika Node bez pełnego ICU, żeby wbudowany serwer w ogóle się załadował. Po READY lokalny host reklamuje `_stagesync._tcp` w LAN (Android NSD) — inne launchery (Performer / Console / desktop) wykrywają go automatycznie jak host desktopowy.
 
 #### 📚 Dokumentacja
