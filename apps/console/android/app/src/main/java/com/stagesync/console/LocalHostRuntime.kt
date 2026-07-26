@@ -93,7 +93,7 @@ object LocalHostRuntime {
                 append(": ")
                 append(missing.joinToString("; "))
             }
-            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/MOBILE.md.")
+            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/MOBILE.md. Na Android 15+ z 16 KB pages stock libnode może nie wystartować.")
         }
     }
 }

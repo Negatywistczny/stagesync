@@ -1,5 +1,7 @@
 package com.stagesync.console
 
+import android.util.Log
+
 /**
  * JNI façade for nodejs-mobile (`libnode` + `stagesync-host-bridge`).
  * `isBridgeReady()` is true only after both shared libraries load.
@@ -7,8 +9,13 @@ package com.stagesync.console
  * Load order matches JaneaSystems nodejs-mobile samples: `node` first, then
  * the bridge that links against it. Never call from the main thread for the
  * first load — `libnode.so` is tens of MB and can ANR / kill the process.
+ *
+ * Prefer calling only from the `:host` service process so a linker/V8 abort
+ * cannot take down the launcher UI.
  */
 object LocalHostNative {
+    private const val TAG = "SsLocalHost"
+
     @Volatile
     private var loadAttempted = false
 
@@ -38,6 +45,7 @@ object LocalHostNative {
             nativeSetEnv(key, value)
         } catch (err: Throwable) {
             lastLoadError = err.message ?: err.javaClass.simpleName
+            Log.e(TAG, "setEnv failed: $key", err)
             false
         }
     }
@@ -49,12 +57,14 @@ object LocalHostNative {
             nativeChdir(path)
         } catch (err: Throwable) {
             lastLoadError = err.message ?: err.javaClass.simpleName
+            Log.e(TAG, "chdir failed: $path", err)
             false
         }
     }
 
     /**
-     * Blocks until Node exits. Call from a dedicated background thread.
+     * Blocks until Node exits. Call from a dedicated background thread with a
+     * large stack (nodejs-mobile / V8).
      * @return Node process exit code (0 = clean).
      */
     @JvmStatic
@@ -64,6 +74,7 @@ object LocalHostNative {
             nativeStartNodeWithArguments(arguments)
         } catch (err: Throwable) {
             lastLoadError = err.message ?: err.javaClass.simpleName
+            Log.e(TAG, "startNodeWithArguments threw", err)
             1
         }
     }
@@ -74,21 +85,26 @@ object LocalHostNative {
         loadAttempted = true
         lastLoadError = null
         return try {
+            Log.i(TAG, "loadLibrary(node)…")
             // Dependency first — OEM linkers do not always auto-resolve NEEDED.
             System.loadLibrary("node")
+            Log.i(TAG, "loadLibrary(stagesync-host-bridge)…")
             System.loadLibrary("stagesync-host-bridge")
             bridgeReady = nativeIsBridgeReady()
             if (!bridgeReady) {
                 lastLoadError = "nativeIsBridgeReady=false"
             }
+            Log.i(TAG, "JNI bridge ready=$bridgeReady")
             bridgeReady
         } catch (err: UnsatisfiedLinkError) {
             bridgeReady = false
             lastLoadError = err.message ?: "UnsatisfiedLinkError"
+            Log.e(TAG, "UnsatisfiedLinkError loading libnode/bridge", err)
             false
         } catch (err: Throwable) {
             bridgeReady = false
             lastLoadError = err.message ?: err.javaClass.simpleName
+            Log.e(TAG, "failed loading libnode/bridge", err)
             false
         }
     }

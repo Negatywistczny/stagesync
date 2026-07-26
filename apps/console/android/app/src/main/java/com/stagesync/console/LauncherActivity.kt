@@ -2,14 +2,18 @@ package com.stagesync.console
 
 import android.Manifest
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
@@ -28,6 +32,29 @@ class LauncherActivity : AppCompatActivity() {
     private var emptyScanRunnable: Runnable? = null
     private var lastHostCount = 0
     private var localHostBusy = false
+    private var hostBound = false
+    private var hostTerminal = false
+
+    private val hostDeathConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                Log.i(TAG, "host process bound")
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                Log.w(TAG, "host process disconnected")
+                onHostProcessDied()
+            }
+
+            override fun onBindingDied(name: ComponentName?) {
+                Log.w(TAG, "host binding died")
+                onHostProcessDied()
+            }
+
+            override fun onNullBinding(name: ComponentName?) {
+                // Binder is non-null; unused.
+            }
+        }
 
     private val qrLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -55,6 +82,8 @@ class LauncherActivity : AppCompatActivity() {
                 if (intent == null) return
                 when (intent.action) {
                     LocalHostService.ACTION_FAILED -> {
+                        hostTerminal = true
+                        unbindHostWatch()
                         val message =
                             intent.getStringExtra(LocalHostService.EXTRA_MESSAGE)
                                 ?: getString(R.string.err_health)
@@ -64,6 +93,8 @@ class LauncherActivity : AppCompatActivity() {
                         Toast.makeText(this@LauncherActivity, message, Toast.LENGTH_LONG).show()
                     }
                     LocalHostService.ACTION_READY -> {
+                        hostTerminal = true
+                        unbindHostWatch()
                         val origin =
                             intent.getStringExtra(LocalHostService.EXTRA_ORIGIN)
                                 ?: LocalHostRuntime.LOOPBACK_ORIGIN
@@ -106,6 +137,7 @@ class LauncherActivity : AppCompatActivity() {
     override fun onDestroy() {
         cancelEmptyScanHint()
         mdns?.stop()
+        unbindHostWatch()
         try {
             unregisterReceiver(localHostReceiver)
         } catch (_: IllegalArgumentException) {
@@ -132,11 +164,16 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun startLocalHost() {
         setLocalHostBusy(true)
+        hostTerminal = false
         binding.localHostStatus.visibility = View.VISIBLE
         binding.localHostStatus.setText(R.string.local_host_starting)
         try {
+            // Bind across processes so a native abort in `:host` surfaces here
+            // instead of silently leaving the launcher stuck on “starting…”.
+            bindHostWatch()
             LocalHostService.start(this)
         } catch (err: Throwable) {
+            unbindHostWatch()
             setLocalHostBusy(false)
             val message =
                 getString(
@@ -146,6 +183,40 @@ class LauncherActivity : AppCompatActivity() {
             binding.localHostStatus.text = message
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun bindHostWatch() {
+        if (hostBound) return
+        val intent = Intent(this, LocalHostService::class.java)
+        hostBound =
+            bindService(
+                intent,
+                hostDeathConnection,
+                Context.BIND_AUTO_CREATE or Context.BIND_IMPORTANT,
+            )
+        Log.i(TAG, "bindHostWatch bound=$hostBound")
+    }
+
+    private fun unbindHostWatch() {
+        if (!hostBound) return
+        try {
+            unbindService(hostDeathConnection)
+        } catch (_: Throwable) {
+            // already unbound
+        }
+        hostBound = false
+    }
+
+    private fun onHostProcessDied() {
+        hostBound = false
+        if (hostTerminal || !localHostBusy) return
+        hostTerminal = true
+        val message = getString(R.string.local_host_process_died)
+        Log.e(TAG, message)
+        setLocalHostBusy(false)
+        binding.localHostStatus.visibility = View.VISIBLE
+        binding.localHostStatus.text = message
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun setLocalHostBusy(busy: Boolean) {
@@ -283,5 +354,9 @@ class LauncherActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "SsLocalHost"
     }
 }

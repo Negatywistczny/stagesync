@@ -37,10 +37,12 @@
             android:name=".QrScanActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <!-- Isolated process: native abort in libnode / node::Start must not kill the UI. -->
         <service
             android:name=".LocalHostService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync"
+            android:process=":host" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

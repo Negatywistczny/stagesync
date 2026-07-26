@@ -49,7 +49,7 @@ function resolveServiceVersion(): string {
   if (staged) return staged;
   const npm = process.env.npm_package_version?.trim();
   if (npm && npm !== "0.0.0") return npm;
-  return "5.2.3";
+  return "5.2.4";
 }
 
 const VERSION = resolveServiceVersion();

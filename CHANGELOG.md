@@ -5,12 +5,12 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.2.4](https://github.com/Negatywistyczny/stagesync/compare/v5.2.3...v5.2.4) - 2026-07-26
 
 ### Naprawiono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Console (Android):** start lokalnego hosta nie wywala już aplikacji — błędy ładowania silnika / wypakowania / Node trafiają do statusu po polsku; Node startuje poza wątkiem UI z większą stertą, na pętli zwrotnej bez natywnego MIDI.
+- **Console (Android):** lokalny host działa w osobnym procesie (`:host`) — awaria silnika Node nie zamyka już launchera; start z większą stertą wątku, absolutną ścieżką wejścia i `NODE_PATH`; status po śmierci procesu hosta; na części Android 15+ (strona pamięci 16 KB) wbudowany `libnode` może nadal nie wystartować — wtedy łącz się z hostem LAN (logcat: `SsLocalHost`).
 
 ## [5.2.3](https://github.com/Negatywistczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
 

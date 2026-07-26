@@ -37,7 +37,9 @@ const hostAssets = join(consoleAndroidMain, "assets/host");
 const libnodeRoot = join(consoleApp, "libnode");
 
 const NODEJS_MOBILE_VERSION = "v18.20.4";
+// Override for experiments (e.g. community 16 KB–aligned builds): NODEJS_MOBILE_ZIP_URL=…
 const ZIP_URL =
+  process.env.NODEJS_MOBILE_ZIP_URL?.trim() ||
   `https://github.com/nodejs-mobile/nodejs-mobile/releases/download/${NODEJS_MOBILE_VERSION}/nodejs-mobile-${NODEJS_MOBILE_VERSION}-android.zip`;
 
 const skipServer = process.argv.includes("--skip-server");
@@ -103,7 +105,53 @@ async function copyAbi(binRoot, abi) {
   const dest = join(destDir, "libnode.so");
   await cp(src, dest);
   await chmod(dest, 0o755);
+  const align = await maxLoadAlign(dest);
+  if (align < 16384) {
+    console.warn(
+      `[local-host] WARN ${abi} libnode.so max PT_LOAD align=${align} (<16384). ` +
+        `On Android 15+ devices with 16 KB pages, dlopen may abort the :host process. ` +
+        `UI stays alive; use LAN host or NODEJS_MOBILE_ZIP_URL with a 16 KB–aligned build.`,
+    );
+  } else {
+    console.log(`[local-host] ${abi} libnode.so PT_LOAD align=${align} (16 KB OK)`);
+  }
   console.log(`[local-host] wrote ${dest}`);
+}
+
+/** Max p_align among PT_LOAD segments (ELF). */
+async function maxLoadAlign(soPath) {
+  const { readFile } = await import("node:fs/promises");
+  const buf = await readFile(soPath);
+  if (buf.length < 64 || buf[0] !== 0x7f || buf[1] !== 0x45) return 0;
+  const eiClass = buf[4]; // 1=32, 2=64
+  const little = buf[5] === 1;
+  if (!little) return 0;
+  const u16 = (o) => buf.readUInt16LE(o);
+  const u32 = (o) => buf.readUInt32LE(o);
+  const u64 = (o) => Number(buf.readBigUInt64LE(o));
+  let ePhOff;
+  let ePhEntSize;
+  let ePhNum;
+  if (eiClass === 2) {
+    ePhOff = u64(32);
+    ePhEntSize = u16(54);
+    ePhNum = u16(56);
+  } else if (eiClass === 1) {
+    ePhOff = u32(28);
+    ePhEntSize = u16(42);
+    ePhNum = u16(44);
+  } else {
+    return 0;
+  }
+  let maxAlign = 0;
+  for (let i = 0; i < ePhNum; i++) {
+    const off = ePhOff + i * ePhEntSize;
+    const pType = u32(off);
+    if (pType !== 1) continue; // PT_LOAD
+    const pAlign = eiClass === 2 ? u64(off + 48) : u32(off + 28);
+    if (pAlign > maxAlign) maxAlign = pAlign;
+  }
+  return maxAlign;
 }
 
 async function copyHeaders(includeRoot) {
