@@ -62,6 +62,37 @@ describe("assertLifecycleAllowed", () => {
     vi.unstubAllEnvs();
   });
 
+  it("allows remote via Authorization Bearer host token", () => {
+    vi.stubEnv("STAGESYNC_HOST_TOKEN", "secret");
+    vi.stubEnv("STAGESYNC_ALLOW_REMOTE_LIFECYCLE", "");
+    const ok = mockRes();
+    expect(
+      assertLifecycleAllowed(
+        mockReq("10.0.0.2", { authorization: "Bearer secret" }),
+        ok,
+      ),
+    ).toBe(true);
+
+    const bad = mockRes();
+    expect(
+      assertLifecycleAllowed(
+        mockReq("10.0.0.2", { authorization: "Bearer wrong" }),
+        bad,
+      ),
+    ).toBe(false);
+    expect(bad.statusCode).toBe(403);
+    vi.unstubAllEnvs();
+  });
+
+  it("rejects remote when host token is set but request has none", () => {
+    vi.stubEnv("STAGESYNC_HOST_TOKEN", "secret");
+    vi.stubEnv("STAGESYNC_ALLOW_REMOTE_LIFECYCLE", "");
+    const res = mockRes();
+    expect(assertLifecycleAllowed(mockReq("10.0.0.2"), res)).toBe(false);
+    expect(res.statusCode).toBe(403);
+    vi.unstubAllEnvs();
+  });
+
   it("allows ::1 and ::ffff:127.0.0.1 as loopback", () => {
     const res = mockRes();
     expect(assertLifecycleAllowed(mockReq("::1"), res)).toBe(true);
