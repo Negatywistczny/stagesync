@@ -35,4 +35,13 @@ describe("screenWakeLock", () => {
     });
     await expect(requestScreenWakeLock()).resolves.toBeNull();
   });
+
+  it("releaseScreenWakeLock no-ops on null and swallows release errors", async () => {
+    await expect(releaseScreenWakeLock(null)).resolves.toBeUndefined();
+    const release = vi.fn().mockRejectedValue(new Error("already released"));
+    await expect(
+      releaseScreenWakeLock({ release } as unknown as WakeLockSentinel),
+    ).resolves.toBeUndefined();
+    expect(release).toHaveBeenCalledOnce();
+  });
 });
