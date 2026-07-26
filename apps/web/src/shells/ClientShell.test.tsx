@@ -109,6 +109,17 @@ describe("ClientShell chrome", () => {
     expect(screen.queryByLabelText("Meta utworu")).toBeNull();
   });
 
+
+  it("toggles role tile aria-pressed on the welcome picker", () => {
+    render(<ClientShell />);
+    const chords = screen.getByRole("button", { name: /Akordy/i });
+    expect(chords.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(chords);
+    expect(chords.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(chords);
+    expect(chords.getAttribute("aria-pressed")).toBe("false");
+  });
+
   it("edits device name on role picker, not in global settings", () => {
     render(<ClientShell />);
 
