@@ -21,7 +21,7 @@
 | Brak audio/MIDI na Performerze | KEEP | `confirmed` | SSOT server |
 | Multi-out tylko desktop/rack | REVISE scope | `hypothesis` / `limit` | Zgodne z praktyką WebAudio + TODO HW Out; nie wymaga OUT Console host |
 | Block Apply gdy PLAYING | — | `hypothesis` | Pytanie PO |
-| iOS Performer bez hosta | — | `on-tree` (TODO 5.3+) | iOS Performer w TODO; host OUT na iOS = zgodne z duchem dumpu |
+| iOS Performer (natywny) | — | `limit` / **OUT** | Usunięte z TODO 5.3+; iOS = Safari/PWA `/client` (#809); natywne APK = Android only (ADR 0016) |
 
 ## Confirmed vs hypothesis
 
