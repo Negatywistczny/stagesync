@@ -1,6 +1,6 @@
 const REPO = "Negatywistczny/stagesync";
 const RELEASES_API = `https://api.github.com/repos/${REPO}/releases/latest`;
-const RELEASES_PAGE = `https://github.com/${REPO}/releases`;
+const RELEASES_PAGE = `https://github.com/Negatywistczny/stagesync/releases`;
 
 export type DownloadKind =
   | "macos-arm"
@@ -9,10 +9,18 @@ export type DownloadKind =
   | "android-console"
   | "android-performer";
 
+export type DownloadCategory = "desktop" | "android";
+
+export type PlatformIcon = "windows" | "apple" | "console" | "performer";
+
 export interface DownloadOffer {
   kind: DownloadKind;
-  label: string;
-  hint: string;
+  category: DownloadCategory;
+  icon: PlatformIcon;
+  title: string;
+  subtitle: string;
+  detail: string;
+  cta: string;
   url: string;
 }
 
@@ -28,20 +36,50 @@ interface GhRelease {
   assets: GhAsset[];
 }
 
-const KIND_ORDER: DownloadKind[] = [
-  "macos-arm",
-  "macos-x64",
-  "windows",
-  "android-console",
-  "android-performer",
-];
-
-const META: Record<DownloadKind, { label: string; hint: string }> = {
-  "macos-arm": { label: "macOS (Apple Silicon)", hint: "Instalator .dmg" },
-  "macos-x64": { label: "macOS (Intel)", hint: "Instalator .dmg" },
-  windows: { label: "Windows", hint: "Instalator .msi" },
-  "android-console": { label: "Android Console", hint: "Aplikacja dla operatora" },
-  "android-performer": { label: "Android Performer", hint: "Aplikacja dla muzyka" },
+const META: Record<
+  DownloadKind,
+  Omit<DownloadOffer, "kind" | "url">
+> = {
+  windows: {
+    category: "desktop",
+    icon: "windows",
+    title: "Windows",
+    subtitle: "Stacja robocza",
+    detail: "Wersja 64-bit · instalator .msi",
+    cta: "Pobierz dla Windows",
+  },
+  "macos-arm": {
+    category: "desktop",
+    icon: "apple",
+    title: "macOS",
+    subtitle: "Apple Silicon",
+    detail: "Architektura ARM64 (M1 / M2 / M3 / M4) · .dmg",
+    cta: "Pobierz dla Mac",
+  },
+  "macos-x64": {
+    category: "desktop",
+    icon: "apple",
+    title: "macOS",
+    subtitle: "Intel",
+    detail: "Wersja 64-bit (Intel) · .dmg",
+    cta: "Pobierz (Intel)",
+  },
+  "android-console": {
+    category: "android",
+    icon: "console",
+    title: "Console",
+    subtitle: "Operator / FOH",
+    detail: "Pełny panel reżyserii na tablecie Android",
+    cta: "Pobierz Console",
+  },
+  "android-performer": {
+    category: "android",
+    icon: "performer",
+    title: "Performer",
+    subtitle: "Muzyk na scenie",
+    detail: "Zsynchronizowany widok akordów, tekstu i partytury",
+    cta: "Pobierz Performer",
+  },
 };
 
 function classifyAsset(name: string): DownloadKind | null {
@@ -64,42 +102,58 @@ function classifyAsset(name: string): DownloadKind | null {
   return null;
 }
 
-export function offersFromRelease(release: GhRelease): {
+export interface DownloadCatalog {
   versionLabel: string;
   releaseUrl: string;
-  offers: DownloadOffer[];
-} {
+  desktop: {
+    windows: DownloadOffer | null;
+    macosArm: DownloadOffer | null;
+    macosIntel: DownloadOffer | null;
+  };
+  android: {
+    console: DownloadOffer | null;
+    performer: DownloadOffer | null;
+  };
+}
+
+function toOffer(kind: DownloadKind, url: string): DownloadOffer {
+  return { kind, url, ...META[kind] };
+}
+
+export function catalogFromRelease(release: GhRelease): DownloadCatalog {
   const byKind = new Map<DownloadKind, DownloadOffer>();
   for (const asset of release.assets) {
     const kind = classifyAsset(asset.name);
     if (!kind || byKind.has(kind)) continue;
-    const meta = META[kind];
-    byKind.set(kind, {
-      kind,
-      label: meta.label,
-      hint: meta.hint,
-      url: asset.browser_download_url,
-    });
+    byKind.set(kind, toOffer(kind, asset.browser_download_url));
   }
 
-  const offers = KIND_ORDER.flatMap((kind) => {
-    const offer = byKind.get(kind);
-    return offer ? [offer] : [];
-  });
-
-  const versionLabel = release.tag_name.replace(/^v/, "");
   return {
-    versionLabel,
+    versionLabel: release.tag_name.replace(/^v/, ""),
     releaseUrl: release.html_url || RELEASES_PAGE,
-    offers,
+    desktop: {
+      windows: byKind.get("windows") ?? null,
+      macosArm: byKind.get("macos-arm") ?? null,
+      macosIntel: byKind.get("macos-x64") ?? null,
+    },
+    android: {
+      console: byKind.get("android-console") ?? null,
+      performer: byKind.get("android-performer") ?? null,
+    },
   };
 }
 
-export async function fetchLatestOffers(): Promise<{
-  versionLabel: string;
-  releaseUrl: string;
-  offers: DownloadOffer[];
-}> {
+export function catalogHasAny(catalog: DownloadCatalog): boolean {
+  return Boolean(
+    catalog.desktop.windows ||
+      catalog.desktop.macosArm ||
+      catalog.desktop.macosIntel ||
+      catalog.android.console ||
+      catalog.android.performer,
+  );
+}
+
+export async function fetchLatestCatalog(): Promise<DownloadCatalog> {
   const res = await fetch(RELEASES_API, {
     headers: { Accept: "application/vnd.github+json" },
   });
@@ -107,5 +161,5 @@ export async function fetchLatestOffers(): Promise<{
     throw new Error(`GitHub Releases HTTP ${res.status}`);
   }
   const release = (await res.json()) as GhRelease;
-  return offersFromRelease(release);
+  return catalogFromRelease(release);
 }

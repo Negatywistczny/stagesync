@@ -1,56 +1,165 @@
 import "./styles.css";
-import { fetchLatestOffers, type DownloadOffer } from "./releases.js";
+import { platformIconSvg } from "./icons.js";
+import {
+  catalogHasAny,
+  fetchLatestCatalog,
+  type DownloadCatalog,
+  type DownloadOffer,
+} from "./releases.js";
 
-function renderOffers(offers: DownloadOffer[]): void {
-  const grid = document.querySelector<HTMLElement>("#download-grid");
-  if (!grid) return;
-
-  grid.replaceChildren();
-  for (const offer of offers) {
-    const item = document.createElement("div");
-    item.className = "download__item reveal is-visible";
-
-    const title = document.createElement("strong");
-    title.textContent = offer.label;
-
-    const hint = document.createElement("span");
-    hint.textContent = offer.hint;
-
-    const link = document.createElement("a");
-    link.className = "btn btn--primary btn--block";
-    link.href = offer.url;
-    link.rel = "noopener noreferrer";
-    link.textContent = "Pobierz";
-
-    item.append(title, hint, link);
-    grid.append(item);
-  }
-
-  grid.hidden = offers.length === 0;
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className?: string,
+  text?: string,
+): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
 }
 
-function setStatus(message: string | null, state: "error" | "ok" = "error"): void {
-  const el = document.querySelector<HTMLElement>("#download-status");
-  if (!el) return;
+function renderCard(offer: DownloadOffer, options?: { secondary?: DownloadOffer | null }): HTMLElement {
+  const card = el("article", "dl-card reveal is-visible");
+
+  const head = el("div", "dl-card__head");
+  const iconWrap = el("div", "dl-card__icon");
+  iconWrap.dataset.platform = offer.icon;
+  iconWrap.innerHTML = platformIconSvg(offer.icon);
+  head.append(iconWrap);
+
+  const titles = el("div", "dl-card__titles");
+  titles.append(el("h3", "dl-card__title", offer.title));
+  titles.append(el("p", "dl-card__subtitle", offer.subtitle));
+  head.append(titles);
+  card.append(head);
+
+  card.append(el("p", "dl-card__detail", offer.detail));
+
+  const actions = el("div", "dl-card__actions");
+  const primary = el("a", "btn btn--primary btn--block", offer.cta);
+  primary.href = offer.url;
+  primary.rel = "noopener noreferrer";
+  actions.append(primary);
+
+  if (options?.secondary) {
+    const secondary = el("a", "dl-card__alt", options.secondary.cta);
+    secondary.href = options.secondary.url;
+    secondary.rel = "noopener noreferrer";
+    secondary.textContent = `${options.secondary.cta} — ${options.secondary.detail}`;
+    actions.append(secondary);
+  }
+
+  card.append(actions);
+  return card;
+}
+
+function renderUnavailable(title: string, subtitle: string, icon: DownloadOffer["icon"]): HTMLElement {
+  const card = el("article", "dl-card dl-card--empty reveal is-visible");
+  const head = el("div", "dl-card__head");
+  const iconWrap = el("div", "dl-card__icon");
+  iconWrap.dataset.platform = icon;
+  iconWrap.innerHTML = platformIconSvg(icon);
+  head.append(iconWrap);
+  const titles = el("div", "dl-card__titles");
+  titles.append(el("h3", "dl-card__title", title));
+  titles.append(el("p", "dl-card__subtitle", subtitle));
+  head.append(titles);
+  card.append(head);
+  card.append(el("p", "dl-card__detail", "Niedostępne w najnowszym wydaniu."));
+  return card;
+}
+
+function renderCategory(
+  title: string,
+  lead: string,
+  cards: HTMLElement[],
+): HTMLElement {
+  const block = el("div", "dl-group reveal is-visible");
+  const head = el("div", "dl-group__head");
+  head.append(el("h3", "dl-group__title", title));
+  head.append(el("p", "dl-group__lead", lead));
+  block.append(head);
+
+  const grid = el("div", "dl-group__grid");
+  for (const card of cards) grid.append(card);
+  block.append(grid);
+  return block;
+}
+
+function renderCatalog(catalog: DownloadCatalog): void {
+  const root = document.querySelector<HTMLElement>("#download-catalog");
+  if (!root) return;
+  root.replaceChildren();
+
+  const desktopCards: HTMLElement[] = [];
+  if (catalog.desktop.windows) {
+    desktopCards.push(renderCard(catalog.desktop.windows));
+  } else {
+    desktopCards.push(renderUnavailable("Windows", "Stacja robocza", "windows"));
+  }
+
+  if (catalog.desktop.macosArm) {
+    desktopCards.push(
+      renderCard(catalog.desktop.macosArm, { secondary: catalog.desktop.macosIntel }),
+    );
+  } else if (catalog.desktop.macosIntel) {
+    desktopCards.push(renderCard(catalog.desktop.macosIntel));
+  } else {
+    desktopCards.push(renderUnavailable("macOS", "Apple Silicon", "apple"));
+  }
+
+  root.append(
+    renderCategory(
+      "Stacje robocze",
+      "Desktop dla operatora — Windows i macOS.",
+      desktopCards,
+    ),
+  );
+
+  const androidCards: HTMLElement[] = [];
+  if (catalog.android.console) {
+    androidCards.push(renderCard(catalog.android.console));
+  } else {
+    androidCards.push(renderUnavailable("Console", "Operator / FOH", "console"));
+  }
+  if (catalog.android.performer) {
+    androidCards.push(renderCard(catalog.android.performer));
+  } else {
+    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer"));
+  }
+
+  root.append(
+    renderCategory(
+      "Aplikacje sceniczne",
+      "Android na tablecie — Console przy FOH, Performer na scenie.",
+      androidCards,
+    ),
+  );
+
+  root.hidden = false;
+}
+
+function setStatus(message: string | null): void {
+  const elStatus = document.querySelector<HTMLElement>("#download-status");
+  if (!elStatus) return;
   if (!message) {
-    el.hidden = true;
-    el.textContent = "";
+    elStatus.hidden = true;
+    elStatus.textContent = "";
     return;
   }
-  el.hidden = false;
-  el.textContent = message;
-  el.dataset.state = state;
+  elStatus.hidden = false;
+  elStatus.textContent = message;
 }
 
 async function hydrateDownloads(): Promise<void> {
   try {
-    const { offers } = await fetchLatestOffers();
-    if (offers.length === 0) {
+    const catalog = await fetchLatestCatalog();
+    if (!catalogHasAny(catalog)) {
       setStatus("Brak gotowych instalatorów w najnowszym wydaniu. Sprawdź starsze wersje poniżej.");
       return;
     }
     setStatus(null);
-    renderOffers(offers);
+    renderCatalog(catalog);
   } catch {
     setStatus("Nie udało się pobrać listy wydań. Skorzystaj z linku do starszych wersji poniżej.");
   }
