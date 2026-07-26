@@ -128,8 +128,10 @@ export function ChannelStripControls({
       ]
         .filter(Boolean)
         .join(" ")}
-      title={strip.soloed ? "Wyłącz solo" : "Solo ścieżki"}
-      aria-label={strip.soloed ? "Wyłącz solo" : "Solo ścieżki"}
+      title={strip.soloed ? `Wyłącz solo: ${strip.name}` : `Solo: ${strip.name}`}
+      aria-label={
+        strip.soloed ? `Wyłącz solo: ${strip.name}` : `Solo: ${strip.name}`
+      }
       onClick={(e) => {
         e.stopPropagation();
         callbacks.onSoloClick(e);
@@ -150,8 +152,16 @@ export function ChannelStripControls({
       ]
         .filter(Boolean)
         .join(" ")}
-      title={strip.muted ? "Włącz ścieżkę" : "Wycisz ścieżkę"}
-      aria-label={strip.muted ? "Włącz ścieżkę" : "Wycisz ścieżkę"}
+      title={
+        strip.muted
+          ? `Włącz ścieżkę: ${strip.name}`
+          : `Wycisz ścieżkę: ${strip.name}`
+      }
+      aria-label={
+        strip.muted
+          ? `Włącz ścieżkę: ${strip.name}`
+          : `Wycisz ścieżkę: ${strip.name}`
+      }
       onClick={(e) => {
         e.stopPropagation();
         callbacks.onMuteClick(e);
@@ -171,8 +181,8 @@ export function ChannelStripControls({
       ]
         .filter(Boolean)
         .join(" ")}
-      title="Kolor i ikona ścieżki"
-      aria-label="Kolor i ikona ścieżki"
+      title={`Kolor i ikona: ${strip.name}`}
+      aria-label={`Kolor i ikona: ${strip.name}`}
       aria-expanded={pickerOpen}
       aria-haspopup="dialog"
       aria-controls={pickerOpen ? appearancePickerId : undefined}
