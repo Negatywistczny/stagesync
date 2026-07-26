@@ -22,11 +22,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Console (Android):** akcja **Zamknij host** w powiadomieniu lokalnego hosta ma czerwony kolor (destructive).
+- **APK (sideload / host / Releases):** bundel `data/downloads` i artefakty Releases przebudowane pod 5.2.4 — Console `versionCode` **50213**, Performer **50206** (`versionName` 5.2.4); stały klucz sideload (zamiast efemerycznego debug keystore CI), żeby instalacja / aktualizacja nie padała na niezgodności podpisu; Performer w Releases znowu zawiera UI (`assets/www`).
 
 ### Naprawiono
 
 #### 🖥️ App Shell & UI
 - **Admin / Android:** sprawdzanie aktualizacji w Host nie próbuje już API desktopowego Tauri (WebView na `127.0.0.1:4000` mylnie wyglądał jak shell desktopowy) — zostaje ścieżka hosta; aktualizacja APK nadal przez natywny dialog przy połączeniu.
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **APK Android:** poprawiona instalacja paczek 5.2.4 — wcześniejszy cut podbił wersję w Gradle bez przebudowy bundla hosta, a Releases podpisywało APK innym kluczem na każdym runnerze (oraz Console zaniżało `versionCode`, a Performer wychodził bez UI).
 
 ## [5.2.3](https://github.com/Negatywistczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
 

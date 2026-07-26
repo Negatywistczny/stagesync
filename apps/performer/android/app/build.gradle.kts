@@ -20,12 +20,26 @@ android {
         }
     }
 
+    // Stable sideload key (repo launch/android) — CI ephemeral ~/.android/debug.keystore
+    // made every Release APK unsigned-upgrade-incompatible with the previous cut.
+    val sideloadKeystore =
+        rootProject.projectDir.parentFile!!.parentFile!!.parentFile!!.resolve(
+            "launch/android/sideload.keystore",
+        )
+    signingConfigs {
+        create("sideload") {
+            storeFile = sideloadKeystore
+            storePassword = "android"
+            keyAlias = "stagesync-sideload"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            // Sideload CI: sign with debug keystore until release keystore is provisioned.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("sideload")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -34,6 +48,7 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("sideload")
         }
     }
 

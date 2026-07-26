@@ -268,6 +268,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync version into files
+        run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
@@ -284,6 +299,13 @@ jobs:
       - name: Write local.properties
         working-directory: apps/performer/android
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Build Performer web assets
+        run: |
+          if [ ! -f apps/web/dist-performer/index.html ]; then
+            pnpm --filter @stagesync/web build
+          fi
+          test -f apps/web/dist-performer/index.html
 
       - name: Assemble Performer release APK
         working-directory: apps/performer/android

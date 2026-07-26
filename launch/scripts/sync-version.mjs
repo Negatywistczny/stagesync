@@ -129,25 +129,38 @@ const updates = [
   },
   {
     path: "apps/console/android/app/build.gradle.kts",
-    transform: (c) => {
-      const [maj, min, pat] = version.split(".").map(Number);
-      const code = maj * 10000 + min * 100 + pat;
-      return c
-        .replace(/versionCode\s*=\s*\d+/, `versionCode = ${code}`)
-        .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${version}"`);
-    },
+    transform: (c) => applyAndroidVersion(c, version),
   },
   {
     path: "apps/performer/android/app/build.gradle.kts",
-    transform: (c) => {
-      const [maj, min, pat] = version.split(".").map(Number);
-      const code = maj * 10000 + min * 100 + pat;
-      return c
-        .replace(/versionCode\s*=\s*\d+/, `versionCode = ${code}`)
-        .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${version}"`);
-    },
+    transform: (c) => applyAndroidVersion(c, version),
   },
 ];
+
+/**
+ * Android versionCode must stay monotonic for sideload upgrades.
+ * SemVer floor (MAJOR*10000+MINOR*100+PATCH) is a lower bound only —
+ * never regress past an intentional diagnostic bump (e.g. Console 50213).
+ * When versionName changes and the floor is not higher, bump existing +1.
+ */
+function nextAndroidVersionCode(content, nextVersion) {
+  const [maj, min, pat] = nextVersion.split(".").map(Number);
+  const floor = maj * 10000 + min * 100 + pat;
+  const existingCode = Number(content.match(/versionCode\s*=\s*(\d+)/)?.[1] ?? 0);
+  const existingName = content.match(/versionName\s*=\s*"([^"]+)"/)?.[1];
+  let code = Math.max(floor, existingCode);
+  if (existingName && existingName !== nextVersion && code <= existingCode) {
+    code = existingCode + 1;
+  }
+  return code;
+}
+
+function applyAndroidVersion(content, nextVersion) {
+  const code = nextAndroidVersionCode(content, nextVersion);
+  return content
+    .replace(/versionCode\s*=\s*\d+/, `versionCode = ${code}`)
+    .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${nextVersion}"`);
+}
 
 for (const { path, transform } of updates) {
   const abs = resolve(ROOT, path);
