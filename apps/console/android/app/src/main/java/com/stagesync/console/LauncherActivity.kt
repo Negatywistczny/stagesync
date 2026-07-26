@@ -211,7 +211,7 @@ class LauncherActivity : AppCompatActivity() {
         hostBound = false
         if (hostTerminal || !localHostBusy) return
         hostTerminal = true
-        val message = getString(R.string.local_host_process_died)
+        val message = LocalHostRuntime.processDiedMessage(this)
         Log.e(TAG, message)
         setLocalHostBusy(false)
         binding.localHostStatus.visibility = View.VISIBLE

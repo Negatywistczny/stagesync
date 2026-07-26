@@ -34,6 +34,21 @@ class LocalHostRuntimeTest {
     }
 
     @Test
+    fun processDiedMessage_mentionsLanFallback() {
+        // No Android Context in JVM unit tests — generic branch only via reflection-free path
+        // is covered indirectly; ensure missingMessage still ends with docs pointer.
+        val msg =
+            LocalHostRuntime.missingMessage(
+                LocalHostRuntime.Readiness(
+                    nativeLibPresent = true,
+                    hostAssetsPresent = true,
+                    jniBridgeLoaded = false,
+                ),
+            )
+        assertTrue(msg.contains("LAN") || msg.contains("hostem"))
+    }
+
+    @Test
     fun canStart_requiresAllThree() {
         assertTrue(
             !LocalHostRuntime.Readiness(

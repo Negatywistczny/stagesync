@@ -37,10 +37,19 @@ const hostAssets = join(consoleAndroidMain, "assets/host");
 const libnodeRoot = join(consoleApp, "libnode");
 
 const NODEJS_MOBILE_VERSION = "v18.20.4";
-// Override for experiments (e.g. community 16 KB–aligned builds): NODEJS_MOBILE_ZIP_URL=…
-const ZIP_URL =
-  process.env.NODEJS_MOBILE_ZIP_URL?.trim() ||
-  `https://github.com/nodejs-mobile/nodejs-mobile/releases/download/${NODEJS_MOBILE_VERSION}/nodejs-mobile-${NODEJS_MOBILE_VERSION}-android.zip`;
+/**
+ * Default: digidem rebuild of upstream v18.20.4 with PT_LOAD align 16 KB
+ * (nodejs-mobile#154). Official nodejs-mobile/nodejs-mobile assets remain 4 KB
+ * until a tagged +16kb-fix release ships — those abort on Android 15+ 16 KB
+ * page devices. Override: NODEJS_MOBILE_ZIP_URL=…
+ * Allow a 4 KB zip only with ALLOW_INCOMPATIBLE_LIBNODE=1 (CI must not).
+ */
+const DEFAULT_ZIP_URL =
+  `https://github.com/digidem/nodejs-mobile/releases/download/${NODEJS_MOBILE_VERSION}/nodejs-mobile-${NODEJS_MOBILE_VERSION}-android.zip`;
+const ZIP_URL = process.env.NODEJS_MOBILE_ZIP_URL?.trim() || DEFAULT_ZIP_URL;
+const ALLOW_INCOMPATIBLE_LIBNODE =
+  process.env.ALLOW_INCOMPATIBLE_LIBNODE === "1";
+const MIN_LOAD_ALIGN = 16_384;
 
 const skipServer = process.argv.includes("--skip-server");
 const withServer =
@@ -106,16 +115,21 @@ async function copyAbi(binRoot, abi) {
   await cp(src, dest);
   await chmod(dest, 0o755);
   const align = await maxLoadAlign(dest);
-  if (align < 16384) {
-    console.warn(
-      `[local-host] WARN ${abi} libnode.so max PT_LOAD align=${align} (<16384). ` +
-        `On Android 15+ devices with 16 KB pages, dlopen may abort the :host process. ` +
-        `UI stays alive; use LAN host or NODEJS_MOBILE_ZIP_URL with a 16 KB–aligned build.`,
-    );
+  if (align < MIN_LOAD_ALIGN) {
+    const msg =
+      `[local-host] ${abi} libnode.so max PT_LOAD align=${align} (<${MIN_LOAD_ALIGN}). ` +
+      `On Android 15+ devices with 16 KB pages, dlopen aborts the :host process. ` +
+      `Use the default digidem 16 KB zip, or NODEJS_MOBILE_ZIP_URL with PT_LOAD ≥ 16384.`;
+    if (ALLOW_INCOMPATIBLE_LIBNODE) {
+      console.warn(`${msg} (ALLOW_INCOMPATIBLE_LIBNODE=1 — continuing)`);
+    } else {
+      throw new Error(`${msg} Set ALLOW_INCOMPATIBLE_LIBNODE=1 to override.`);
+    }
   } else {
     console.log(`[local-host] ${abi} libnode.so PT_LOAD align=${align} (16 KB OK)`);
   }
   console.log(`[local-host] wrote ${dest}`);
+  return align;
 }
 
 /** Max p_align among PT_LOAD segments (ELF). */
@@ -451,7 +465,25 @@ async function packServerAssets() {
   console.log(`[local-host] host assets ready at ${hostAssets}`);
 }
 
+async function writeLibnodeMeta(alignByAbi) {
+  const lines = [
+    `nodejs-mobile=${NODEJS_MOBILE_VERSION}`,
+    `zip_url=${ZIP_URL}`,
+    `min_load_align=${MIN_LOAD_ALIGN}`,
+    ...Object.entries(alignByAbi).map(
+      ([abi, align]) => `pt_load_align.${abi}=${align}`,
+    ),
+    `packed=${new Date().toISOString()}`,
+    "",
+  ];
+  const metaPath = join(consoleAndroidMain, "assets/host-libnode.properties");
+  await mkdir(dirname(metaPath), { recursive: true });
+  await writeFile(metaPath, lines.join("\n"));
+  console.log(`[local-host] wrote ${metaPath}`);
+}
+
 async function main() {
+  console.log(`[local-host] zip=${ZIP_URL}`);
   const temp = await mkdtemp(join(tmpdir(), "stagesync-libnode-"));
   try {
     const zipPath = join(temp, "nodejs-mobile-android.zip");
@@ -459,9 +491,13 @@ async function main() {
     const extractRoot = join(temp, "extract");
     await extractZip(zipPath, extractRoot);
     const { binRoot, includeRoot } = await resolveZipRoots(extractRoot);
-    await copyAbi(binRoot, "arm64-v8a");
-    await copyAbi(binRoot, "armeabi-v7a");
+    const alignArm64 = await copyAbi(binRoot, "arm64-v8a");
+    const alignArm32 = await copyAbi(binRoot, "armeabi-v7a");
     await copyHeaders(includeRoot);
+    await writeLibnodeMeta({
+      "arm64-v8a": alignArm64,
+      "armeabi-v7a": alignArm32,
+    });
 
     if (withServer) {
       await packServerAssets();

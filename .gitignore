@@ -62,6 +62,7 @@ apps/*/android/app/src/main/assets/www/
 # Console Faza 4 — nodejs-mobile + optional host server assets (prepare-local-host.mjs)
 apps/console/android/app/src/main/jniLibs/
 apps/console/android/app/src/main/assets/host/
+apps/console/android/app/src/main/assets/host-libnode.properties
 apps/console/android/app/libnode/
 
 # Tauri launcher — generated from packages/ui (pnpm sync:launcher-ui)

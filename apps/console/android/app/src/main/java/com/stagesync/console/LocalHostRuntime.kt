@@ -1,5 +1,9 @@
 package com.stagesync.console
 
+import android.content.Context
+import android.system.Os
+import android.system.OsConstants
+
 /**
  * Lokalny host runtime probe (Termux-free path).
  *
@@ -25,11 +29,57 @@ object LocalHostRuntime {
             get() = nativeLibPresent && hostAssetsPresent && jniBridgeLoaded
     }
 
+    /** Device page size in bytes, or -1 if unavailable. */
+    fun devicePageSize(): Long =
+        try {
+            Os.sysconf(OsConstants._SC_PAGE_SIZE)
+        } catch (_: Throwable) {
+            -1L
+        }
+
+    fun libnodePtLoadAlign(context: Context): Long =
+        ElfLoadAlign.libnodeAlign(context.applicationInfo.nativeLibraryDir)
+
+    /**
+     * True when the kernel uses ≥16 KB pages but packed `libnode.so` ELF
+     * segments are still aligned below 16 KB (classic stock nodejs-mobile zip).
+     */
+    fun isPageAlignMismatch(context: Context): Boolean {
+        val page = devicePageSize()
+        val align = libnodePtLoadAlign(context)
+        return page >= ElfLoadAlign.ALIGN_16K &&
+            align > 0L &&
+            align < ElfLoadAlign.ALIGN_16K
+    }
+
+    /**
+     * Polish hint after `:host` death or failed dlopen — prefers proven
+     * page-size mismatch over a generic “Node crashed” string.
+     */
+    fun processDiedMessage(context: Context): String {
+        val page = devicePageSize()
+        val align = libnodePtLoadAlign(context)
+        return when {
+            isPageAlignMismatch(context) ->
+                "Lokalny host padł przy ładowaniu libnode: urządzenie ma stronę pamięci " +
+                    "${page} B, a libnode.so w APK ma wyrównanie ELF ${align} B (<16 KB). " +
+                    "Przebuduj Console z prepare-local-host (domyślny zip digidem 16 KB) " +
+                    "albo połącz się z hostem LAN. Logcat: SsLocalHost."
+            page >= ElfLoadAlign.ALIGN_16K && align >= ElfLoadAlign.ALIGN_16K ->
+                "Proces lokalnego hosta zakończył się awaryjnie (silnik Node), mimo libnode " +
+                    "wyrównanego do 16 KB. Launcher działa dalej — połącz się z hostem LAN " +
+                    "albo sprawdź logcat tag SsLocalHost."
+            else ->
+                "Proces lokalnego hosta zakończył się awaryjnie (silnik Node). Launcher działa " +
+                    "dalej — połącz się z hostem LAN albo sprawdź logcat tag SsLocalHost."
+        }
+    }
+
     /**
      * File / asset presence only — does **not** call [System.loadLibrary].
      * Safe on the main thread.
      */
-    fun probePack(context: android.content.Context): Readiness {
+    fun probePack(context: Context): Readiness {
         val nativeDir = context.applicationInfo.nativeLibraryDir
         val libNode = java.io.File(nativeDir, "lib$NATIVE_LIB.so")
         val libBridge = java.io.File(nativeDir, "lib$BRIDGE_LIB.so")
@@ -57,7 +107,7 @@ object LocalHostRuntime {
      * Full readiness including JNI load. Call off the main thread —
      * loading `libnode.so` (~50 MB) can stall or OOM the UI thread.
      */
-    fun probe(context: android.content.Context): Readiness {
+    fun probe(context: Context): Readiness {
         val pack = probePack(context)
         if (!pack.nativeLibPresent || !pack.hostAssetsPresent) {
             return pack
@@ -70,7 +120,7 @@ object LocalHostRuntime {
         )
     }
 
-    fun missingMessage(readiness: Readiness): String {
+    fun missingMessage(readiness: Readiness, context: Context? = null): String {
         val missing = buildList {
             if (!readiness.nativeLibPresent) {
                 add("brak libnode.so / stagesync-host-bridge w APK")
@@ -93,7 +143,14 @@ object LocalHostRuntime {
                 append(": ")
                 append(missing.joinToString("; "))
             }
-            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/MOBILE.md. Na Android 15+ z 16 KB pages stock libnode może nie wystartować.")
+            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/MOBILE.md.")
+            if (context != null && isPageAlignMismatch(context)) {
+                val page = devicePageSize()
+                val align = libnodePtLoadAlign(context)
+                append(
+                    " Wykryto niezgodność 16 KB: pageSize=${page}, libnode PT_LOAD align=${align}.",
+                )
+            }
         }
     }
 }

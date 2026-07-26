@@ -10,8 +10,6 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
-import android.system.Os
-import android.system.OsConstants
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -87,7 +85,7 @@ class LocalHostService : Service() {
                             "jni=${readiness.jniBridgeLoaded} detail=${readiness.loadDetail}",
                     )
                     if (!readiness.canStart) {
-                        broadcastFailed(LocalHostRuntime.missingMessage(readiness))
+                        broadcastFailed(LocalHostRuntime.missingMessage(readiness, this))
                         stopSelf()
                         return@Thread
                     }
@@ -113,22 +111,23 @@ class LocalHostService : Service() {
     }
 
     private fun logDeviceHints() {
-        val pageSize =
-            try {
-                Os.sysconf(OsConstants._SC_PAGE_SIZE)
-            } catch (_: Throwable) {
-                -1L
-            }
+        val pageSize = LocalHostRuntime.devicePageSize()
+        val libAlign = LocalHostRuntime.libnodePtLoadAlign(this)
         Log.i(
             TAG,
             "device sdk=${Build.VERSION.SDK_INT} abi=${Build.SUPPORTED_ABIS.joinToString()} " +
-                "pageSize=$pageSize nativeDir=${applicationInfo.nativeLibraryDir}",
+                "pageSize=$pageSize libnodePtLoadAlign=$libAlign " +
+                "nativeDir=${applicationInfo.nativeLibraryDir}",
         )
-        if (pageSize >= 16_384L) {
-            Log.w(
+        if (LocalHostRuntime.isPageAlignMismatch(this)) {
+            Log.e(
                 TAG,
-                "16 KB page size — stock nodejs-mobile libnode (4 KB ELF) may abort on dlopen",
+                "PAGE_ALIGN_MISMATCH: kernel pageSize=$pageSize but libnode.so PT_LOAD " +
+                    "align=$libAlign (<16384) — dlopen will abort on this device. " +
+                    "Rebuild with digidem 16 KB nodejs-mobile zip (prepare-local-host default).",
             )
+        } else if (pageSize >= ElfLoadAlign.ALIGN_16K) {
+            Log.i(TAG, "16 KB page size with libnode align=$libAlign (OK or unknown)")
         }
     }
 
