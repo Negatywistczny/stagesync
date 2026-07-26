@@ -1,6 +1,6 @@
 import "./styles.css";
 import { loadChannels } from "./channels.js";
-import { platformIconSvg } from "./icons.js";
+import { hydrateDataIcons, iconSvg, platformIconSvg } from "./icons.js";
 import {
   catalogHasAny,
   fetchLatestCatalog,
@@ -51,9 +51,10 @@ function renderCard(offer: DownloadOffer, options?: { secondary?: DownloadOffer 
   }
 
   if (offer.helpUrl && offer.helpLabel) {
-    const help = el("a", "dl-card__help", offer.helpLabel);
+    const help = el("a", "dl-card__help");
     help.href = offer.helpUrl;
     help.rel = "noopener noreferrer";
+    help.innerHTML = `${iconSvg("file-text", "dl-card__help-icon")}<span>${offer.helpLabel}</span>`;
     actions.append(help);
   }
 
@@ -81,9 +82,10 @@ function renderUnavailable(
   card.append(el("p", "dl-card__detail", "Niedostępne w najnowszym wydaniu."));
   if (help) {
     const actions = el("div", "dl-card__actions");
-    const link = el("a", "dl-card__help", help.label);
+    const link = el("a", "dl-card__help");
     link.href = help.url;
     link.rel = "noopener noreferrer";
+    link.innerHTML = `${iconSvg("file-text", "dl-card__help-icon")}<span>${help.label}</span>`;
     actions.append(link);
     card.append(actions);
   }
@@ -222,5 +224,6 @@ function observeReveals(): void {
   nodes.forEach((n) => io.observe(n));
 }
 
+hydrateDataIcons();
 observeReveals();
 void hydrateDownloads();
