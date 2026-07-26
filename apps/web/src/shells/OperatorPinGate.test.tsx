@@ -7,6 +7,7 @@ import { OperatorPinGate } from "./OperatorPinGate.js";
 
 vi.mock("../transport/useTransport.js", () => ({
   useTransport: () => ({
+    state: { playing: false },
     wsStatus: "connected",
     latencyMs: 12,
   }),
