@@ -1,31 +1,21 @@
-/* Admin Host — 2×2 content-height cards + collapsible logs strip */
+/* Admin Host — strict 2×2 stretch grid (equal cells, no uneven gaps) */
 
 .root {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: var(--ss-space-4);
   height: 100%;
   min-height: 0;
   width: 100%;
+  align-items: stretch;
   overflow: hidden;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ss-space-4);
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  align-content: start;
-  align-items: start;
 }
 
 .card {
   min-width: 0;
-  height: auto;
-  flex: 0 0 auto;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -36,13 +26,34 @@
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: stretch;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 0;
   padding: var(--ss-space-3);
-  overflow: visible;
+  overflow: auto;
+}
+
+.cardBodyFill {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 /* —— Połączenie & Sieć —— */
+
+.networkMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
 
 .networkRow {
   display: flex;
@@ -59,6 +70,85 @@
   flex-direction: column;
   gap: var(--ss-space-2);
   align-items: flex-start;
+}
+
+/* Compact APK tiles under network (side-by-side) */
+
+.apkTiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ss-space-3);
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-top: var(--ss-space-3);
+  border-top: 1px solid var(--ss-color-border);
+}
+
+.apkTile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  align-items: flex-start;
+  min-width: 0;
+  padding: var(--ss-space-2);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-bg);
+}
+
+.apkTitle {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-compact);
+  color: var(--ss-color-text);
+}
+
+.apkStatus {
+  margin: 0;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-tight);
+  color: var(--ss-color-text-muted);
+}
+
+.apkActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+  width: 100%;
+}
+
+/* —— Logi serwera —— */
+
+.logTerminal {
+  margin: 0;
+  padding: var(--ss-space-3) var(--ss-space-4);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--ss-text-xs);
+  line-height: var(--ss-leading-relaxed);
+}
+
+.logActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border-top: 1px solid var(--ss-color-border);
+}
+
+.logError {
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-3) 0;
+  flex: 0 0 auto;
 }
 
 /* —— MIDI & Safety Net —— */
@@ -86,62 +176,6 @@
   letter-spacing: var(--ss-tracking-wide);
   text-transform: uppercase;
   color: var(--ss-color-text-muted);
-}
-
-/* —— Aplikacje Mobilne —— */
-
-.appRows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-3);
-  min-width: 0;
-}
-
-.appRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-2) var(--ss-space-3);
-  min-width: 0;
-  padding-bottom: var(--ss-space-3);
-  border-bottom: 1px solid var(--ss-color-border);
-}
-
-.appRow:last-child {
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.appInfo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ss-space-1);
-  min-width: 0;
-  flex: 1 1 8rem;
-}
-
-.appTitle {
-  margin: 0;
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-semibold);
-  line-height: var(--ss-leading-compact);
-  color: var(--ss-color-text);
-}
-
-.appStatus {
-  margin: 0;
-  font-size: var(--ss-text-xs);
-  line-height: var(--ss-leading-tight);
-  color: var(--ss-color-text-muted);
-}
-
-.appActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ss-space-2);
-  flex: 0 1 auto;
 }
 
 /* —— O Aplikacji —— */
@@ -176,71 +210,22 @@
   line-height: var(--ss-leading-normal);
 }
 
-/* —— Collapsible logs (fixed strip) —— */
-
-.logCard {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.logCardOpen {
-  flex: 0 0 12rem;
-  height: 12rem;
-  max-height: 12rem;
-}
-
-.logHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.logToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ss-space-2);
-  min-width: 0;
-}
-
-.logChevron {
-  font-size: var(--ss-text-sm);
-  line-height: var(--ss-leading-none);
-  color: var(--ss-color-text-muted);
-}
-
-.logTerminal {
-  margin: 0;
-  padding: var(--ss-space-3) var(--ss-space-4);
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  border-top: 1px solid var(--ss-color-border);
-  background: var(--ss-color-bg);
-  color: var(--ss-color-text-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: var(--ss-text-xs);
-  line-height: var(--ss-leading-relaxed);
-}
-
 @media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: var(--ss-space-3);
-  }
-
-  .logCardOpen {
-    flex: 0 0 10rem;
-    height: 10rem;
-    max-height: 10rem;
-  }
-
   .root {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: minmax(12rem, auto);
     gap: var(--ss-space-3);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .card {
+    height: auto;
+    min-height: 12rem;
+  }
+
+  .apkTiles {
+    grid-template-columns: 1fr;
   }
 }

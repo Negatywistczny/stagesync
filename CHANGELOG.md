@@ -15,6 +15,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 📚 Dokumentacja
 - **Mobile / Desktop:** opis lokalnego hosta Console oraz wymagań buildu (NDK / CMake).
 
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Admin Host:** siatka 2×2 ze stretch (Połączenie & Sieć z kafelkami Performer/Console | Logi serwera / MIDI & Safety Net | O Aplikacji); logi zawsze widoczne naprzeciw sieci, z Pauza / Wyczyść / Pobierz (.zip) na dole karty.
+
+#### 📚 Dokumentacja
+- **Mobile:** opis QR/APK w Host wskazuje kartę Połączenie & Sieć (kafelki Performer / Console).
+
 ## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
 
 ### Zmieniono
