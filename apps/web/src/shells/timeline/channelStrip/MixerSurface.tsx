@@ -11,6 +11,7 @@ import {
   setMetronomePrefs,
   type MetronomePrefs,
 } from "../../../lib/metronomePrefs.js";
+import { useTransport } from "../../../transport/useTransport.js";
 import { ChannelStripControls } from "./ChannelStripControls.js";
 import type {
   ChannelStripCallbacks,
@@ -70,6 +71,8 @@ export function MixerSurface({
   const [metroPrefs, setMetroPrefs] = useState<MetronomePrefs>(() =>
     getMetronomePrefs(),
   );
+  const { state: transportState } = useTransport();
+  const playing = transportState.playing;
 
   const trackOutputOptions: OutputSelectorOption[] = useMemo(() => {
     return [
@@ -144,6 +147,12 @@ export function MixerSurface({
                       kind: "track",
                       outputValue: serializeOutputDest(track.output),
                       outputOptions: trackOutputOptions,
+                      outputDisabled:
+                        playing &&
+                        (serializeOutputDest(track.output).startsWith("hw:") ||
+                          trackOutputOptions.some((o) =>
+                            o.value.startsWith("hw:"),
+                          )),
                     }}
                     callbacks={{
                       ...callbacks,

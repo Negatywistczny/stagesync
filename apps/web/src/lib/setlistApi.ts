@@ -612,6 +612,8 @@ export async function postApplyHostUpdate(): Promise<void> {
 export type SafetyNetStatus = {
   role: "master" | "spare";
   midiOutAllowed: boolean;
+  /** True when promote paused a PLAYING transport (ADR 0017 §3). */
+  transportPaused?: boolean;
 };
 
 export async function fetchSafetyNetStatus(): Promise<SafetyNetStatus> {

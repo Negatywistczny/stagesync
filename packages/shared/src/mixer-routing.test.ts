@@ -9,6 +9,7 @@ import {
   busGraphHasCycle,
   channelModeFromChannelCount,
   hwOutputUiAllowed,
+  isHwOutRepatchBlockedWhilePlaying,
   isTrackRoutedToBus,
   nextBusName,
   resolveBusOutputDest,
@@ -105,6 +106,41 @@ describe("mixer routing", () => {
     expect(hwOutputUiAllowed(3)).toBe(false);
     expect(hwOutputUiAllowed(4)).toBe(true);
     expect(hwOutputUiAllowed(8)).toBe(true);
+  });
+
+  it("blocks hw_out repatch while playing (ADR 0017 §7)", () => {
+    expect(
+      isHwOutRepatchBlockedWhilePlaying(false, undefined, {
+        kind: "hw_out",
+        hwOutputId: "h1",
+      }),
+    ).toBe(false);
+    expect(
+      isHwOutRepatchBlockedWhilePlaying(true, undefined, {
+        kind: "bus",
+        busId: "b1",
+      }),
+    ).toBe(false);
+    expect(
+      isHwOutRepatchBlockedWhilePlaying(true, undefined, {
+        kind: "hw_out",
+        hwOutputId: "h1",
+      }),
+    ).toBe(true);
+    expect(
+      isHwOutRepatchBlockedWhilePlaying(
+        true,
+        { kind: "hw_out", hwOutputId: "h1" },
+        { kind: "master" },
+      ),
+    ).toBe(true);
+    expect(
+      isHwOutRepatchBlockedWhilePlaying(
+        true,
+        { kind: "hw_out", hwOutputId: "h1" },
+        { kind: "hw_out", hwOutputId: "h1" },
+      ),
+    ).toBe(false);
   });
 
   it("nextBusName increments", () => {

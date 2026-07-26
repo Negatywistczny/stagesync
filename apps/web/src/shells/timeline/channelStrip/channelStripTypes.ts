@@ -34,6 +34,8 @@ export type ChannelStripState = {
   /** Mixer output selector. */
   outputValue?: string;
   outputOptions?: readonly OutputSelectorOption[];
+  /** ADR 0017 §7 — lock Out when PLAYING and HW patch is involved. */
+  outputDisabled?: boolean;
 };
 
 export type ChannelStripCallbacks = {

@@ -148,8 +148,9 @@ pnpm --filter @stagesync/desktop tauri build
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw
 
 - **Mixer bus→bus:** wyjście busa na Master albo inny bus (bez pętli).
-- **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN.
-- **Safety Net** — w Admin → Host: rola Master/Spare i **Przejmij** na Spare (MIDI OUT wyciszony na Spare).
+- **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
+- **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
+- **Panic:** globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s). Performer / Client bez globalnego Panic ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8b).
 - **Cues Sampler** — Inspector klipu Cue: próbka, tryb one-shot/gated, GO, Master/Bus.
 - **Motyw:** lokalne przełączniki w ustawieniach; `STAGESYNC_THEME_DEFAULT` dla urządzeń bez lokalnej preferencji.
 

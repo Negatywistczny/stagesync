@@ -179,21 +179,36 @@ class HostWebActivity : AppCompatActivity() {
     }
 
     private fun showUiApplyDialog(gate: UiSyncChecker.Gate.UiUpdateAvailable) {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.ui_apply_title)
-            .setMessage(
-                getString(
-                    R.string.ui_apply_message,
-                    gate.hostUiHash.take(12),
-                    gate.localUiHash.take(12),
-                ),
-            )
-            .setPositiveButton(R.string.ui_apply_action) { _, _ ->
-                startUiBundleApply()
+        UiSyncChecker.isHostTransportPlayingAsync(hostOrigin) { playing ->
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                if (playing) {
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.ui_apply_title)
+                        .setMessage(R.string.ui_apply_blocked_playing)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setCancelable(true)
+                        .setOnDismissListener { uiDialogShown = false }
+                        .show()
+                    return@runOnUiThread
+                }
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.ui_apply_title)
+                    .setMessage(
+                        getString(
+                            R.string.ui_apply_message,
+                            gate.hostUiHash.take(12),
+                            gate.localUiHash.take(12),
+                        ),
+                    )
+                    .setPositiveButton(R.string.ui_apply_action) { _, _ ->
+                        startUiBundleApply()
+                    }
+                    .setNegativeButton(R.string.update_later, null)
+                    .setCancelable(true)
+                    .show()
             }
-            .setNegativeButton(R.string.update_later, null)
-            .setCancelable(true)
-            .show()
+        }
     }
 
     private fun startUiBundleApply() {

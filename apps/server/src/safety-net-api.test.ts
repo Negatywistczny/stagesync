@@ -59,6 +59,7 @@ describe("Safety Net API", () => {
         ok: true,
         role: "master",
         midiOutAllowed: true,
+        transportPaused: false,
       });
 
       const after = await fetch(`${baseUrl}/api/system/safety-net`);
@@ -91,7 +92,65 @@ describe("Safety Net API", () => {
         ok: true,
         role: "master",
         midiOutAllowed: true,
+        transportPaused: false,
       });
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("pauses PLAYING transport on promote and keeps playhead", async () => {
+    vi.stubEnv("STAGESYNC_SAFETY_ROLE", "spare");
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-safety-pause-"));
+    dirs.push(dataDir);
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const play = await fetch(`${baseUrl}/api/transport/play`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ bpm: 120 }),
+      });
+      expect(play.status).toBe(200);
+      const before = (await play.json()) as {
+        playing: boolean;
+        positionTicks: number;
+      };
+      expect(before.playing).toBe(true);
+
+      await new Promise((r) => setTimeout(r, 80));
+
+      const mid = await fetch(`${baseUrl}/api/transport`);
+      const midState = (await mid.json()) as {
+        playing: boolean;
+        positionTicks: number;
+      };
+      expect(midState.playing).toBe(true);
+      expect(midState.positionTicks).toBeGreaterThan(0);
+
+      const promote = await fetch(`${baseUrl}/api/system/promote`, {
+        method: "POST",
+      });
+      expect(promote.status).toBe(200);
+      const body = (await promote.json()) as {
+        ok: boolean;
+        role: string;
+        transportPaused: boolean;
+      };
+      expect(body).toMatchObject({
+        ok: true,
+        role: "master",
+        transportPaused: true,
+      });
+
+      const after = await fetch(`${baseUrl}/api/transport`);
+      const afterState = (await after.json()) as {
+        playing: boolean;
+        positionTicks: number;
+      };
+      expect(afterState.playing).toBe(false);
+      expect(afterState.positionTicks).toBeGreaterThanOrEqual(
+        midState.positionTicks,
+      );
     } finally {
       await new Promise<void>((r) => server.close(() => r()));
     }

@@ -232,6 +232,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
       port: options.port,
       version: VERSION,
       dataDir,
+      transport,
     }),
   );
   app.use("/api/transport", createTransportRouter(transport, stores));

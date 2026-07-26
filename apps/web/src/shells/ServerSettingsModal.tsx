@@ -191,6 +191,9 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const [deviceNameError, setDeviceNameError] = useState<string | null>(null);
   const [panicBusy, setPanicBusy] = useState(false);
   const [panicConfirm, setPanicConfirm] = useState(false);
+  const [panicHoldMs, setPanicHoldMs] = useState(0);
+  const panicHoldTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const panicArmedRef = useRef(false);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [server, setServer] = useState<ServerSettingsValues | null>(null);
   const serverSnap = useRef<ServerSettingsValues | null>(null);
@@ -406,6 +409,37 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
     } finally {
       setPanicBusy(false);
     }
+  };
+
+  const clearPanicHold = () => {
+    if (panicHoldTimerRef.current != null) {
+      clearInterval(panicHoldTimerRef.current);
+      panicHoldTimerRef.current = null;
+    }
+    setPanicHoldMs(0);
+    panicArmedRef.current = false;
+  };
+
+  const startPanicHold = () => {
+    if (
+      panicBusy ||
+      saveBusy ||
+      !midiStatus?.available ||
+      !midiStatus.config.outputId
+    ) {
+      return;
+    }
+    clearPanicHold();
+    panicArmedRef.current = true;
+    const started = Date.now();
+    panicHoldTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - started;
+      setPanicHoldMs(elapsed);
+      if (elapsed >= 1000 && panicArmedRef.current) {
+        clearPanicHold();
+        void onPanic();
+      }
+    }, 50);
   };
 
   const networkLatencyLabel =
@@ -634,11 +668,21 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     !midiStatus.config.outputId
                   }
                   loading={panicBusy}
-                  onClick={() => {
-                    void onPanic();
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return;
+                    e.preventDefault();
+                    startPanicHold();
+                  }}
+                  onPointerUp={() => clearPanicHold()}
+                  onPointerLeave={() => clearPanicHold()}
+                  onPointerCancel={() => clearPanicHold()}
+                  onClick={(e) => {
+                    e.preventDefault();
                   }}
                 >
-                  MIDI Panic / Reset Controllers
+                  {panicHoldMs > 0
+                    ? `Przytrzymaj… ${Math.min(100, Math.round((panicHoldMs / 1000) * 100))}%`
+                    : "MIDI Panic / Reset Controllers"}
                 </Button>
                 {panicConfirm ? (
                   <p className={styles.confirm} role="status">
@@ -646,8 +690,8 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   </p>
                 ) : (
                   <p className={styles.muted}>
-                    Awaryjne wyciszenie nut i Reset Controllers na wszystkich
-                    kanałach wyjścia MIDI.
+                    Przytrzymaj ~1 s — awaryjne wyciszenie nut i Reset Controllers
+                    na wszystkich kanałach wyjścia MIDI (bez PIN-u).
                   </p>
                 )}
               </div>

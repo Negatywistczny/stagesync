@@ -42,7 +42,7 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 | `GET` | `/api/system/operator-auth` | `{ required }` — czy host ma `STAGESYNC_OPERATOR_PIN` |
 | `POST` | `/api/system/operator-auth` | `{ pin }` — weryfikacja PIN (**200** / **403**); bez mutacji stanu |
 | `GET` | `/api/system/safety-net` | `{ role }` — Master / Spare (`STAGESYNC_SAFETY_ROLE`) |
-| `POST` | `/api/system/promote` | Ręczne Przejmij: Spare → Master |
+| `POST` | `/api/system/promote` | Ręczne Przejmij: Spare → Master; gdy transport `PLAYING` → `PAUSE` (`transportPaused: true`) |
 | `POST` | `/api/system/restart` | Restart procesu (lifecycle); LAN wymaga tokenu / allow |
 | `POST` | `/api/system/shutdown` | Shutdown procesu; LAN wymaga tokenu / allow |
 | `GET` | `/api/system/diagnostics/export` | ZIP logów + meta (loopback lub host token) |

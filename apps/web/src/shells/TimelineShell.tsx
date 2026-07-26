@@ -26,6 +26,7 @@ import {
   transportHomeTicks,
   resolveTrackColor,
   channelModeFromChannelCount,
+  isHwOutRepatchBlockedWhilePlaying,
   type FormaClip,
   type Project,
   type UgImportOk,
@@ -4213,6 +4214,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       },
       onOutputChange: (output) => {
         if (!draftProject) return;
+        const prev = draftProject.audioTracks.find((t) => t.id === trackId)
+          ?.output;
+        if (
+          isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)
+        ) {
+          return;
+        }
         commitDraft(setAudioTrackOutput(draftProject, trackId, output));
       },
       onNameDoubleClick: () => openTrackRename(trackId),

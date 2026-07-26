@@ -110,6 +110,33 @@ object UiSyncChecker {
         }
     }
 
+    /** ADR 0017 §6 — transport PLAYING from GET /api/transport (`playing: true`). */
+    fun isHostTransportPlaying(origin: String): Boolean {
+        val url = URL("${origin.trimEnd('/')}/api/transport")
+        val conn =
+            (url.openConnection() as HttpURLConnection).apply {
+                connectTimeout = 3000
+                readTimeout = 3000
+                requestMethod = "GET"
+                instanceFollowRedirects = true
+            }
+        try {
+            if (conn.responseCode !in 200..299) return false
+            val body = conn.inputStream.bufferedReader().use { it.readText() }
+            return Regex("\"playing\"\\s*:\\s*true").containsMatchIn(body)
+        } catch (_: Exception) {
+            return false
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    fun isHostTransportPlayingAsync(origin: String, callback: (Boolean) -> Unit) {
+        executor.execute {
+            callback(runCatching { isHostTransportPlaying(origin) }.getOrDefault(false))
+        }
+    }
+
     fun downloadUiBundle(origin: String, dest: File) {
         val url = URL("${origin.trimEnd('/')}/downloads/${ShellConfig.UI_BUNDLE_FILENAME}")
         val conn =

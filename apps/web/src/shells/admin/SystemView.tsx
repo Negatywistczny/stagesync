@@ -81,6 +81,7 @@ export function SystemView({
   const [midiError, setMidiError] = useState<string | null>(null);
   const [safety, setSafety] = useState<SafetyNetStatus | null>(null);
   const [safetyError, setSafetyError] = useState<string | null>(null);
+  const [safetyNote, setSafetyNote] = useState<string | null>(null);
   const [safetyBusy, setSafetyBusy] = useState(false);
   const [diagBusy, setDiagBusy] = useState(false);
   const [diagError, setDiagError] = useState<string | null>(null);
@@ -461,6 +462,11 @@ export function SystemView({
                     {safetyError}
                   </p>
                 ) : null}
+                {safetyNote ? (
+                  <p className={shell.muted} role="status">
+                    {safetyNote}
+                  </p>
+                ) : null}
                 {safety ? (
                   <>
                     <p className={shell.muted}>
@@ -478,10 +484,16 @@ export function SystemView({
                         disabled={safetyBusy}
                         onClick={() => {
                           setSafetyBusy(true);
+                          setSafetyNote(null);
                           void postSafetyNetPromote()
                             .then((s) => {
                               setSafety(s);
                               setSafetyError(null);
+                              if (s.transportPaused) {
+                                setSafetyNote(
+                                  "Przejęto Master — odtwarzanie wstrzymane (PAUSE), playhead zachowany.",
+                                );
+                              }
                             })
                             .catch((err) => {
                               setSafetyError(

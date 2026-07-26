@@ -420,6 +420,7 @@ export {
   busGraphHasCycle,
   channelModeFromChannelCount,
   hwOutputUiAllowed,
+  isHwOutRepatchBlockedWhilePlaying,
   isTrackRoutedToBus,
   nextBusName,
   resolveBusOutputDest,

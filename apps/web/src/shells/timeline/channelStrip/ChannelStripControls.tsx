@@ -285,6 +285,7 @@ export function ChannelStripControls({
           value={strip.outputValue ?? "master"}
           options={outputOptions}
           aria-label={`Out ${strip.name}`}
+          disabled={Boolean(strip.outputDisabled)}
           onChange={(v) => callbacks.onOutputChange?.(parseOutputDest(v))}
         />
 

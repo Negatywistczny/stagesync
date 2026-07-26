@@ -152,6 +152,24 @@ export function hwOutputUiAllowed(maxChannelCount: number): boolean {
   return Number.isFinite(maxChannelCount) && maxChannelCount >= 4;
 }
 
+/**
+ * ADR 0017 §7 — physical HW out repatch blocked while transport is PLAYING.
+ * Master ↔ Bus changes are allowed; any change involving `hw_out` is not.
+ */
+export function isHwOutRepatchBlockedWhilePlaying(
+  playing: boolean,
+  previous: MixerOutputDest | undefined | null,
+  next: MixerOutputDest,
+): boolean {
+  if (!playing) return false;
+  const prevHw =
+    previous?.kind === "hw_out" ? previous.hwOutputId : null;
+  const nextHw = next.kind === "hw_out" ? next.hwOutputId : null;
+  if (prevHw == null && nextHw == null) return false;
+  if (prevHw != null && nextHw != null && prevHw === nextHw) return false;
+  return true;
+}
+
 /** Normalize omit / unknown → Master. Invalid bus / hw → Master. */
 export function resolveTrackOutputDest(
   output: MixerOutputDest | undefined | null,

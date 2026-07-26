@@ -11,6 +11,11 @@ import {
   getStoredOperatorPin,
   unlockOperatorPin,
 } from "../lib/operatorPin.js";
+import {
+  createOperatorPinIdleWatchdog,
+  lockOperatorPinSession,
+  shouldClearOperatorPinOnHide,
+} from "../lib/operatorPinSession.js";
 import { useKeepTileAboveIme } from "../lib/useKeepTileAboveIme.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
@@ -23,13 +28,18 @@ type Mode = "loading" | "open" | "unlocked";
  * Blocks Admin / Timeline until Operator PIN is unlocked when
  * `STAGESYNC_OPERATOR_PIN` is configured on the host.
  * Client read-only shells should not wrap with this gate.
+ * ADR 0017 §8a: session does not expire during PLAYING; idle 15 min + hide lock outside show.
  */
 export function OperatorPinGate({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>("loading");
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const { wsStatus, latencyMs } = useTransport();
+  const { state, wsStatus, latencyMs } = useTransport();
+  const playing = state.playing;
+  const playingRef = useRef(playing);
+  playingRef.current = playing;
+  const syncPlayingRef = useRef<(() => void) | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   useKeepTileAboveIme(pageRef, modalRef, mode === "open");
@@ -61,6 +71,64 @@ export function OperatorPinGate({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (mode !== "unlocked") {
+      syncPlayingRef.current = null;
+      return;
+    }
+    if (!getStoredOperatorPin()) return;
+
+    const lock = () => {
+      lockOperatorPinSession();
+      setMode("open");
+      setDraft("");
+    };
+
+    const watchdog = createOperatorPinIdleWatchdog({
+      getPlaying: () => playingRef.current,
+      onExpire: lock,
+    });
+    syncPlayingRef.current = () => watchdog.syncPlaying();
+    watchdog.touch();
+    watchdog.syncPlaying();
+
+    const onActivity = () => watchdog.touch();
+    const activityEvents = [
+      "pointerdown",
+      "keydown",
+      "touchstart",
+      "mousemove",
+    ] as const;
+    for (const ev of activityEvents) {
+      window.addEventListener(ev, onActivity, { passive: true });
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (shouldClearOperatorPinOnHide(playingRef.current)) lock();
+      }
+    };
+    const onHide = () => {
+      if (shouldClearOperatorPinOnHide(playingRef.current)) lock();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onHide);
+
+    return () => {
+      syncPlayingRef.current = null;
+      watchdog.dispose();
+      for (const ev of activityEvents) {
+        window.removeEventListener(ev, onActivity);
+      }
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onHide);
+    };
+  }, [mode]);
+
+  useEffect(() => {
+    syncPlayingRef.current?.();
+  }, [playing]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

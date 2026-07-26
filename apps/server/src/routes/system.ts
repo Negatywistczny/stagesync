@@ -40,6 +40,7 @@ import {
   restoreFromBackup,
   restoreFromZipArchive,
 } from "../storage/restore-backup.js";
+import type { TransportEngine } from "../transport/engine.js";
 import { sendError, handleRouteError } from "./errors.js";
 
 export type SystemRouterDeps = {
@@ -48,6 +49,8 @@ export type SystemRouterDeps = {
   port?: number;
   version?: string;
   dataDir?: string;
+  /** When set: promote while PLAYING → PAUSE (ADR 0017 §3). */
+  transport?: TransportEngine;
 };
 
 const GITHUB_REPO = "Negatywistczny/stagesync";
@@ -271,12 +274,18 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
   /** Manual promote Spare → Master (no auto-election). */
   router.post("/promote", (_req, res) => {
     promoteToMaster();
+    let transportPaused = false;
+    const transport = deps.transport;
+    if (transport?.getState().playing) {
+      transport.pause();
+      transportPaused = true;
+    }
     try {
       writeManagedSettings({ STAGESYNC_SAFETY_ROLE: "master" });
     } catch {
       /* env write optional — runtime role already flipped */
     }
-    res.json({ ok: true, ...safetyNetStatus() });
+    res.json({ ok: true, ...safetyNetStatus(), transportPaused });
   });
 
   router.get("/logs", (_req, res) => {

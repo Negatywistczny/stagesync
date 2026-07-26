@@ -5,6 +5,24 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### 🎛️ Audio / MIDI / Transport
+- **Safety Net:** po **Przejmij** (Spare → Master), gdy leciało odtwarzanie, transport przechodzi w **PAUSE** z zachowanym playheadem — zamiast lecieć dalej na świeżo przejętym masterze.
+- **Mixer:** zmiana wyjścia fizycznego (`hw_out`) jest zablokowana w trakcie Play (wystarczy Pause).
+- **Admin — MIDI Panic:** przytrzymaj ~1 s, żeby wysłać Panic / Reset Controllers (bez PIN-u); na Performerze nie ma globalnego Panic.
+
+#### 🖥️ App Shell & UI
+- **PIN operatora:** sesja nie wygasa podczas Play; poza show blokada po ukryciu karty / uśpieniu oraz po 15 min bezczynności.
+- **Console / Performer — Zastosuj UI:** przy Play na hoście Performer blokuje aktualizację interfejsu; Console ostrzega (także o utracie Admina przy lokalnym hoście) i wymaga potwierdzenia.
+
+### Naprawiono
+
+#### 🖥️ App Shell & UI
+- **Client — partytura:** MusicXML znów transponuje się przy zmianie stroju instrumentu (C / B♭ / E♭ / ręczna) oraz przy globalnej transpozycji zespołu z Live Desk (Admin → Scena) — jak w Grid i w v4.
+
 ## [5.2.10](https://github.com/Negatywistczny/stagesync/compare/v5.2.9...v5.2.10) - 2026-07-26
 
 ### Dodano

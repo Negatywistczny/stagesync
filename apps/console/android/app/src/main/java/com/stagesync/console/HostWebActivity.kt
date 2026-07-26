@@ -216,21 +216,48 @@ class HostWebActivity : AppCompatActivity() {
     }
 
     private fun showUiApplyDialog(gate: UiSyncChecker.Gate.UiUpdateAvailable) {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.ui_apply_title)
-            .setMessage(
-                getString(
-                    R.string.ui_apply_message,
-                    gate.hostUiHash.take(12),
-                    gate.localUiHash.take(12),
-                ),
-            )
-            .setPositiveButton(R.string.ui_apply_action) { _, _ ->
-                startUiBundleApply()
+        UiSyncChecker.isHostTransportPlayingAsync(hostOrigin) { playing ->
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                if (playing) {
+                    val localHost =
+                        hostOrigin.contains("127.0.0.1") || hostOrigin.contains("localhost")
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.ui_apply_title)
+                        .setMessage(
+                            getString(
+                                if (localHost) {
+                                    R.string.ui_apply_playing_warn_local_host
+                                } else {
+                                    R.string.ui_apply_playing_warn
+                                },
+                            ),
+                        )
+                        .setPositiveButton(R.string.ui_apply_anyway) { _, _ ->
+                            startUiBundleApply()
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setCancelable(true)
+                        .show()
+                    return@runOnUiThread
+                }
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.ui_apply_title)
+                    .setMessage(
+                        getString(
+                            R.string.ui_apply_message,
+                            gate.hostUiHash.take(12),
+                            gate.localUiHash.take(12),
+                        ),
+                    )
+                    .setPositiveButton(R.string.ui_apply_action) { _, _ ->
+                        startUiBundleApply()
+                    }
+                    .setNegativeButton(R.string.update_later, null)
+                    .setCancelable(true)
+                    .show()
             }
-            .setNegativeButton(R.string.update_later, null)
-            .setCancelable(true)
-            .show()
+        }
     }
 
     private fun startUiBundleApply() {
