@@ -70,7 +70,9 @@ describe("createSystemRouter unit edges", () => {
     );
 
     const prev = process.env.STAGESYNC_DISABLE_MDNS;
+    const prevPlatform = process.env.STAGESYNC_MDNS_PLATFORM;
     process.env.STAGESYNC_DISABLE_MDNS = "1";
+    delete process.env.STAGESYNC_MDNS_PLATFORM;
     try {
       const net = await fetch(`${baseUrl}/api/system/network`);
       expect(net.status).toBe(200);
@@ -88,6 +90,8 @@ describe("createSystemRouter unit edges", () => {
     } finally {
       if (prev === undefined) delete process.env.STAGESYNC_DISABLE_MDNS;
       else process.env.STAGESYNC_DISABLE_MDNS = prev;
+      if (prevPlatform === undefined) delete process.env.STAGESYNC_MDNS_PLATFORM;
+      else process.env.STAGESYNC_MDNS_PLATFORM = prevPlatform;
     }
 
     const clear = await fetch(`${baseUrl}/api/system/logs/clear`, {

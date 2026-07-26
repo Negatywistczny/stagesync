@@ -35,6 +35,13 @@ class LocalHostService : Service() {
     @Volatile
     private var publishedOrigin: String? = null
 
+    /** Android NSD advertise (`_stagesync._tcp`) — Node bonjour stays disabled. */
+    @Volatile
+    private var nsdAdvertiser: LocalHostNsdAdvertiser? = null
+
+    @Volatile
+    private var advertisedVersion: String? = null
+
     override fun onBind(intent: Intent?): IBinder? {
         // Binding is used by the UI process only as a death watch — no IPC API.
         Log.i(TAG, "onBind (death-watch)")
@@ -77,6 +84,7 @@ class LocalHostService : Service() {
                     if (probeHealth()) {
                         val origin = publishedOrigin ?: LocalHostRuntime.LOOPBACK_ORIGIN
                         Log.i(TAG, "re-entry — health OK, re-broadcasting READY origin=$origin")
+                        startNsdAdvertise()
                         broadcastReady(origin)
                     } else {
                         Log.w(TAG, "re-entry — health not OK yet (boot may still be in flight)")
@@ -121,6 +129,7 @@ class LocalHostService : Service() {
             Thread(
                 {
                     if (probeHealth()) {
+                        startNsdAdvertise()
                         broadcastReady(publishedOrigin ?: LocalHostRuntime.LOOPBACK_ORIGIN)
                     }
                 },
@@ -215,12 +224,8 @@ class LocalHostService : Service() {
         val seedDir = File(hostRoot, "seed")
         val staticDir = File(hostRoot, "web")
         val nodeModules = File(serverDir, "node_modules")
-        val versionName =
-            try {
-                packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
-            } catch (_: Exception) {
-                "0.0.0"
-            }
+        val versionName = packageVersionName()
+        advertisedVersion = versionName
 
         fun env(key: String, value: String) {
             Log.i(TAG, "setenv $key=${value.take(120)}")
@@ -246,9 +251,13 @@ class LocalHostService : Service() {
         env("STAGESYNC_VERSION", versionName)
         env("npm_package_version", versionName)
         env("NODE_ENV", "production")
-        // Multicast mDNS is unreliable in some Android sandboxes; LAN discovery
-        // still works when Console is reached by IP. Loopback Admin does not need it.
+        // Node bonjour-service is unreliable under nodejs-mobile (multicast /
+        // sandbox). Keep it off; LocalHostNsdAdvertiser registers `_stagesync._tcp`
+        // via Android NsdManager once health is OK (same type launchers browse).
         env("STAGESYNC_DISABLE_MDNS", "1")
+        env("STAGESYNC_MDNS_PLATFORM", "1")
+        val deviceHost = LocalHostNsdAdvertiser.resolveDeviceHostname(this)
+        env("HOSTNAME", deviceHost)
         // Android has no host MIDI ports — force none so easymidi/native cannot
         // dlopen and hard-crash the embedded Node process on start.
         env("STAGESYNC_MIDI_BACKEND", "none")
@@ -341,6 +350,7 @@ class LocalHostService : Service() {
                     NOTIFICATION_ID,
                     buildNotification(getString(R.string.local_host_running)),
                 )
+                startNsdAdvertise()
                 broadcastReady(LocalHostRuntime.LOOPBACK_ORIGIN)
                 return
             }
@@ -375,8 +385,31 @@ class LocalHostService : Service() {
         }.getOrDefault(false)
     }
 
+    private fun packageVersionName(): String =
+        try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+        } catch (_: Exception) {
+            "0.0.0"
+        }
+
+    private fun startNsdAdvertise() {
+        val version = advertisedVersion ?: packageVersionName().also { advertisedVersion = it }
+        val advertiser =
+            nsdAdvertiser ?: LocalHostNsdAdvertiser(this).also { nsdAdvertiser = it }
+        advertiser.start(
+            port = LocalHostRuntime.DEFAULT_PORT,
+            version = version,
+        )
+    }
+
+    private fun stopNsdAdvertise() {
+        nsdAdvertiser?.stop()
+        nsdAdvertiser = null
+    }
+
     private fun broadcastFailed(message: String) {
         Log.w(TAG, "ACTION_FAILED: $message")
+        stopNsdAdvertise()
         // File first: UI process polls this when cross-process broadcast is dropped.
         LocalHostStatus.writeFailed(this, message)
         sendBroadcast(
@@ -401,6 +434,7 @@ class LocalHostService : Service() {
 
     override fun onDestroy() {
         Log.i(TAG, "onDestroy")
+        stopNsdAdvertise()
         try {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } catch (_: Throwable) {
@@ -416,6 +450,7 @@ class LocalHostService : Service() {
      */
     private fun stopHostCleanly() {
         Log.i(TAG, "ACTION_STOP — shutting down local host")
+        stopNsdAdvertise()
         publishedOrigin = null
         LocalHostStatus.clear(this)
         sendBroadcast(

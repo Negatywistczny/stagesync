@@ -13,6 +13,7 @@ describe("system routes — network / logs / apply-update / settings edges", () 
     "STAGESYNC_UPDATER_TOKEN",
     "STAGESYNC_DISABLE_AUTO_UPDATE",
     "STAGESYNC_DISABLE_MDNS",
+    "STAGESYNC_MDNS_PLATFORM",
   ] as const;
   const prevEnv: Partial<Record<(typeof envKeys)[number], string | undefined>> =
     {};
@@ -48,7 +49,9 @@ describe("system routes — network / logs / apply-update / settings edges", () 
 
   it("GET /network includes version and mdns flag", async () => {
     stash("STAGESYNC_DISABLE_MDNS");
+    stash("STAGESYNC_MDNS_PLATFORM");
     process.env.STAGESYNC_DISABLE_MDNS = "1";
+    delete process.env.STAGESYNC_MDNS_PLATFORM;
     const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-net-"));
     dirs.push(dataDir);
     const { server, baseUrl } = await listen(dataDir);
@@ -63,6 +66,24 @@ describe("system routes — network / logs / apply-update / settings edges", () 
       expect(body.mdnsEnabled).toBe(false);
       expect(body.dataDir).toBe(dataDir);
       expect(body.version).toBeTruthy();
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("GET /network mdnsEnabled when platform NSD advertises (Android)", async () => {
+    stash("STAGESYNC_DISABLE_MDNS");
+    stash("STAGESYNC_MDNS_PLATFORM");
+    process.env.STAGESYNC_DISABLE_MDNS = "1";
+    process.env.STAGESYNC_MDNS_PLATFORM = "1";
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-net-plat-"));
+    dirs.push(dataDir);
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/network`);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { mdnsEnabled: boolean };
+      expect(body.mdnsEnabled).toBe(true);
     } finally {
       await new Promise<void>((r) => server.close(() => r()));
     }
