@@ -300,8 +300,9 @@ jobs:
         working-directory: apps/performer/android
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      - name: Build Performer web assets
+      - name: Build shared + Performer web assets
         run: |
+          pnpm --filter @stagesync/shared build
           if [ ! -f apps/web/dist-performer/index.html ]; then
             pnpm --filter @stagesync/web build
           fi
@@ -391,6 +392,7 @@ jobs:
 
       - name: Build Console web assets
         run: |
+          pnpm --filter @stagesync/shared build
           if [ ! -f apps/web/dist-console/index.html ]; then
             pnpm --filter @stagesync/web build
           fi
