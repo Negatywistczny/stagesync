@@ -18,8 +18,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
-- **Admin Host:** układ dwukolumnowy na wysokość treści (lewa: Połączenie & Sieć z kafelkami Performer/Console + O Aplikacji; prawa: Logi serwera + MIDI & Safety Net) — bez rozciągania pustych pól; adres mDNS `http://nazwa.local:port` obok IP gdy host go reklamuje; Wejście / Wyjście / Clock OUT w jednym rzędzie; Pauza / Wyczyść / Pobierz (.zip) na dole karty logów.
-- **Admin Utwory:** w panelu wybranego utworu **Odtwórz** przed **Timeline** (krótsza etykieta zamiast „Otwórz w Timeline”).
+- **Admin Host:** układ dwukolumnowy na wysokość treści (lewa: Połączenie & Sieć z kafelkami Performer/Console + O Aplikacji; prawa: Logi serwera + MIDI & Safety Net) — bez rozciągania pustych pól; adres mDNS `http://nazwa.local:port` obok IP gdy host go reklamuje; Wejście / Wyjście / Clock OUT w jednym rzędzie; Pauza / Wyczyść / Pobierz (.zip) na dole karty logów. Na wąskim ekranie karty Host to akordeon — jedna rozwinięta na raz (domyślnie Połączenie & Sieć).
+- **Admin Utwory:** w panelu wybranego utworu **Odtwórz** przed **Timeline** (krótsza etykieta zamiast „Otwórz w Timeline”); **Import** przy nagłówku sekcji Pliki; Partytura / XML przy metadanych.
 
 #### 📚 Dokumentacja
 - **Mobile:** opis QR/APK w Host wskazuje kartę Połączenie & Sieć (kafelki Performer / Console).
@@ -27,12 +27,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
-- **Mixer:** Solo, Mute i kolor/ikona ścieżki mają etykiety z nazwą toru (czytelniej na czytniku ekranu i w podpowiedziach).
+- **Wskaźniki / dock:** locator i playhead nie malują się już nad kolumną docku przy przewijaniu w poziomie (sticky dock nad playhead/locator).
+- **Mixer:** Solo, Mute i kolor/ikona ścieżki mają etykiety z nazwą toru (czytelniej na czytniku ekranu i w podpowiedziach) (#798).
 
 #### 🖥️ App Shell & UI
-- **Admin / Host:** grupy MIDI In/Out i Clock OUT; etykiety pobierania APK i Releases; regiony Pliki bazy, Biblioteka i kolejność setlisty; „Usuń” / „Nowy z wzoru” / „Usuń komunikat” / „Dodaj zaznaczone” z kontekstem; stan Partytury MusicXML i import XML.
-- **Client / Launcher:** etykiety komórek cyklu akordów; dekoracyjne takty Formy; Połącz przy zmianie serwera; powrót do launchera po utracie połączenia; podgląd QR i kart hostów; pole PIN operatora.
-
+- **Admin / Host:** grupy MIDI In/Out i Clock OUT; etykiety pobierania APK i Releases; regiony Pliki bazy, Biblioteka i kolejność setlisty; „Usuń” / „Nowy z wzoru” / „Usuń komunikat” / „Dodaj zaznaczone” z kontekstem; stan Partytury MusicXML i import XML (#696, #712, #741, #751, #758, #763, #765, #786, #788, #806).
+- **Client / Launcher:** etykiety komórek cyklu akordów; dekoracyjne takty Formy; Połącz przy zmianie serwera; powrót do launchera po utracie połączenia; podgląd QR i kart hostów; pole PIN operatora (#698, #703, #704, #705, #711, #725).
+- **Admin Set:** czas setlisty z uszkodzonymi / nieliczbowymi wartościami pokazuje 0:00 zamiast pustki (#753).
 
 ## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
 
