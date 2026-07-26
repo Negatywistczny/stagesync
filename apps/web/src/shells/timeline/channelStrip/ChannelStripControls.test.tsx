@@ -33,10 +33,10 @@ describe("ChannelStripControls", () => {
         layout="dock"
       />,
     );
-    expect(out).toContain('aria-label="Solo ścieżki"');
-    expect(out).toContain('aria-label="Wycisz ścieżkę"');
+    expect(out).toContain('aria-label="Solo: Backing Vox"');
+    expect(out).toContain('aria-label="Wycisz ścieżkę: Backing Vox"');
     expect(out).toContain('aria-label="Fader Backing Vox"');
-    expect(out).toContain('aria-label="Kolor i ikona ścieżki"');
+    expect(out).toContain('aria-label="Kolor i ikona: Backing Vox"');
   });
 
   it("flips Solo / Mute labels when active", () => {
@@ -47,8 +47,8 @@ describe("ChannelStripControls", () => {
         layout="dock"
       />,
     );
-    expect(out).toContain('aria-label="Wyłącz solo"');
-    expect(out).toContain('aria-label="Włącz ścieżkę"');
+    expect(out).toContain('aria-label="Wyłącz solo: Backing Vox"');
+    expect(out).toContain('aria-label="Włącz ścieżkę: Backing Vox"');
   });
 
   it("exposes channel-mode group labels in mixer layout", () => {
@@ -62,8 +62,8 @@ describe("ChannelStripControls", () => {
     expect(out).toContain('aria-label="Tryb kanału Backing Vox"');
     expect(out).toContain('aria-label="Tryb mono"');
     expect(out).toContain('aria-label="Tryb stereo"');
-    expect(out).toContain('aria-label="Solo ścieżki"');
-    expect(out).toContain('aria-label="Wycisz ścieżkę"');
+    expect(out).toContain('aria-label="Solo: Backing Vox"');
+    expect(out).toContain('aria-label="Wycisz ścieżkę: Backing Vox"');
   });
 
   it("labels rename input when renaming", () => {
