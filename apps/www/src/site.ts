@@ -4,12 +4,13 @@ export function siteBase(): string {
   return import.meta.env.BASE_URL;
 }
 
-export type NavId = "home" | "news" | "download";
+export type NavId = "home" | "preview" | "news" | "download";
 
 export function fillNav(nav: HTMLElement, active: NavId): void {
   const base = siteBase();
   const items: { id: NavId; href: string; label: string }[] = [
     { id: "home", href: base, label: "Start" },
+    { id: "preview", href: `${base}#preview`, label: "Podgląd" },
     { id: "news", href: `${base}aktualnosci/`, label: "Wydania" },
     { id: "download", href: `${base}#download`, label: "Pobierz" },
   ];

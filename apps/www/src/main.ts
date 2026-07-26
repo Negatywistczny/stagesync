@@ -13,6 +13,7 @@ import {
   type DownloadOffer,
 } from "./releases.js";
 import { fillBrand, fillNav } from "./site.js";
+import { mountPreviewLightbox } from "./previewLightbox.js";
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -231,5 +232,6 @@ if (nav) fillNav(nav, "home");
 
 ensureInstallationGuide();
 hydrateDataIcons();
+mountPreviewLightbox();
 observeReveals();
 void hydrateDownloads();
