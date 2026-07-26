@@ -496,6 +496,10 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
   router.get("/update-status", async (_req, res) => {
     res.set("Cache-Control", "no-store");
 
+    const applyAvailable = Boolean(
+      process.env.STAGESYNC_UPDATER_URL && process.env.STAGESYNC_UPDATER_TOKEN,
+    );
+
     if (
       process.env.STAGESYNC_DISABLE_AUTO_UPDATE === "1" ||
       process.env.STAGESYNC_DISABLE_AUTO_UPDATE === "true"
@@ -504,6 +508,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         current: version,
         latest: null,
         updateAvailable: false,
+        applyAvailable: false,
         error:
           "Aktualizacje wyłączone w Ustawieniach (STAGESYNC_DISABLE_AUTO_UPDATE).",
         autoUpdateDisabled: true,
@@ -519,6 +524,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
         current: version,
         latest: null,
         updateAvailable: false,
+        applyAvailable: false,
         error: null,
         updateChannel: process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable",
         updateMode: shell === "console" ? "apk" : "desktop",
@@ -533,12 +539,15 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       fetch,
       channel,
     );
+    const updateAvailable = latest !== null && isSemverNewer(latest, version);
     res.json({
       current: version,
       latest,
-      updateAvailable: latest !== null && isSemverNewer(latest, version),
+      updateAvailable,
+      applyAvailable,
       error,
       updateChannel: channel,
+      updateMode: applyAvailable ? "docker" : "manual",
     });
   });
 

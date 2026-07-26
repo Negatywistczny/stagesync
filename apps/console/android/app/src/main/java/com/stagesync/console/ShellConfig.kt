@@ -19,6 +19,8 @@ object ShellConfig {
 
     const val PREFS = "stagesync_console"
     const val PREFS_RECENT = "recent_hosts"
+    /** Snooze Releases update dialog until this version (Later). */
+    const val PREFS_RELEASE_UPDATE_SNOOZE = "release_update_snooze"
     const val MAX_RECENT = 8
 
     /** mDNS service type advertised by StageSync host. */

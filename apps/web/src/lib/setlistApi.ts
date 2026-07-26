@@ -583,6 +583,11 @@ export type HostUpdateStatus = {
   latest: string | null;
   updateAvailable: boolean;
   error?: string | null;
+  /** Watchtower apply path — false for Desktop / Console / bare host without env. */
+  applyAvailable?: boolean;
+  updateMode?: "desktop" | "apk" | "docker" | "manual";
+  /** Direct APK URL from `android-latest.json` (Admin Android check). */
+  apkUrl?: string | null;
 };
 
 export async function fetchHostUpdateStatus(): Promise<HostUpdateStatus> {

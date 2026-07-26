@@ -82,10 +82,9 @@ Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz 
 
 ## Aktualizacja APK w aplikacji (jawna)
 
-Po połączeniu z hostem powłoka porównuje własny `versionName` z `version` z `GET /api/health`. Gdy host jest **nowszy** (SemVer) **oraz** `HEAD`/`GET` `{origin}/downloads/stagesync-performer.apk` (Performer) albo `…-console.apk` (Console) zwraca 200, pojawia się dialog:
-
-- **Pobierz i zainstaluj** — pobranie APK z hosta i systemowy instalator (FileProvider; na Android 8+ może wymagać „Instaluj nieznane aplikacje”).
-- **Później** — zamknięcie dialogu; sesja WebView trwa bez zmian.
+1. **Launcher (internet):** przy starcie / `onResume` powłoka pobiera `android-latest.json` z GitHub Releases (`…/releases/latest/download/android-latest.json`, ten sam kanał co Desktop `latest.json`). Gdy `version` jest nowszy od `versionName` APK, pojawia się dialog **Dostępna aktualizacja** → **Pobierz i zainstaluj** / **Później** (snooze do tej wersji). **Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)).
+2. **Admin → Sprawdź aktualizacje (Console):** ten sam manifest — pokazuje `vAKTUALNA → vNOWSZA` i **Pobierz APK** (otwarcie URL z Releases), nie Watchtower.
+3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host jest **nowszy** **oraz** APK leży pod `/downloads/stagesync-*.apk`, dialog z hosta; jeśli host nie oferuje APK — fallback do Releases jak w (1).
 
 **Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](./adr/0016-android-performer-console.md)).
 

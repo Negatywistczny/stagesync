@@ -538,6 +538,19 @@ jobs:
             fi
           fi
 
+      - name: Publish android-latest.json for APK update prompts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+          REPO: ${{ github.repository }}
+          BASE: https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          python3 -c "import json,os; v=os.environ['VERSION']; b=os.environ['BASE']; json.dump({'version':v,'consoleUrl':f'{b}/StageSync-Console-v{v}.apk','performerUrl':f'{b}/StageSync-Performer-v{v}.apk'}, open('android-latest.json','w'), separators=(',',':'))"
+          gh release upload "$TAG" android-latest.json -R "$REPO" --clobber
+          echo "Uploaded android-latest.json for $TAG"
+
       - name: Generate SHA256 checksums
         run: |
           cd dist

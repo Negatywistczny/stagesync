@@ -209,11 +209,62 @@ describe("GET /api/system/update-status", () => {
         updateAvailable: boolean;
         error: string | null;
         updateMode?: string;
+        applyAvailable?: boolean;
       };
       expect(body.latest).toBeNull();
       expect(body.updateAvailable).toBe(false);
       expect(body.error).toBeNull();
       expect(body.updateMode).toBe("apk");
+      expect(body.applyAvailable).toBe(false);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((err) => (err ? reject(err) : resolve()));
+      });
+      await rm(dataDir, { recursive: true, force: true });
+    }
+  });
+
+  it("reports applyAvailable false without Watchtower env", async () => {
+    delete process.env.STAGESYNC_UPDATER_URL;
+    delete process.env.STAGESYNC_UPDATER_TOKEN;
+    process.env.STAGESYNC_SHELL = "";
+    const realFetch = globalThis.fetch;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("api.github.com")) {
+          return new Response(
+            JSON.stringify([
+              {
+                tag_name: "v9.9.9",
+                draft: false,
+                prerelease: false,
+                published_at: "2026-01-01T00:00:00Z",
+              },
+            ]),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        return realFetch(input, init);
+      }),
+    );
+
+    const dataDir = await mkdtemp(join(tmpdir(), "stagesync-update-manual-"));
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await realFetch(`${baseUrl}/api/system/update-status`);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        updateAvailable: boolean;
+        applyAvailable?: boolean;
+        updateMode?: string;
+        latest: string | null;
+      };
+      expect(body.latest).toBe("9.9.9");
+      expect(body.updateAvailable).toBe(true);
+      expect(body.applyAvailable).toBe(false);
+      expect(body.updateMode).toBe("manual");
     } finally {
       await new Promise<void>((resolve, reject) => {
         server.close((err) => (err ? reject(err) : resolve()));

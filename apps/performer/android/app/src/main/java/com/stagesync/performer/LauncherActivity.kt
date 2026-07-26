@@ -23,6 +23,20 @@ class LauncherActivity : AppCompatActivity() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var emptyScanRunnable: Runnable? = null
     private var lastHostCount = 0
+    private var releaseUpdateDialogShown = false
+    private var releaseUpdateCheckStarted = false
+    private var pendingApkFile: java.io.File? = null
+
+    private val unknownSourcesLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val file = pendingApkFile
+            if (file != null && ApkInstaller.canInstallPackages(this)) {
+                startActivity(ApkInstaller.installIntent(this, file))
+            } else if (file != null) {
+                Toast.makeText(this, R.string.update_need_permission, Toast.LENGTH_LONG).show()
+            }
+            pendingApkFile = null
+        }
 
     private val qrLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -50,6 +64,12 @@ class LauncherActivity : AppCompatActivity() {
         binding.status.setOnClickListener { startMdns() }
 
         startMdns()
+        maybeCheckReleaseApkUpdate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        maybeCheckReleaseApkUpdate()
     }
 
     override fun onDestroy() {
@@ -182,5 +202,92 @@ class LauncherActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    private fun maybeCheckReleaseApkUpdate() {
+        if (releaseUpdateDialogShown || releaseUpdateCheckStarted) return
+        releaseUpdateCheckStarted = true
+        val shellVersion =
+            try {
+                packageManager.getPackageInfo(packageName, 0).versionName ?: return
+            } catch (_: PackageManager.NameNotFoundException) {
+                return
+            }
+        val snoozed =
+            getSharedPreferences(ShellConfig.PREFS, MODE_PRIVATE)
+                .getString(ShellConfig.PREFS_RELEASE_UPDATE_SNOOZE, null)
+        ReleaseApkUpdateChecker.check(
+            shellVersion,
+            ReleaseApkUpdateChecker.AppKind.PERFORMER,
+        ) { offer ->
+            if (offer == null) return@check
+            if (offer.latestVersion == snoozed) return@check
+            runOnUiThread {
+                if (isFinishing || releaseUpdateDialogShown) return@runOnUiThread
+                releaseUpdateDialogShown = true
+                showReleaseUpdateDialog(offer)
+            }
+        }
+    }
+
+    private fun showReleaseUpdateDialog(offer: ReleaseApkUpdateChecker.Offer) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.update_title)
+            .setMessage(
+                getString(
+                    R.string.update_message_release,
+                    offer.latestVersion,
+                    offer.shellVersion,
+                ),
+            )
+            .setPositiveButton(R.string.update_download_install) { _, _ ->
+                startReleaseDownloadAndInstall(offer.apkUrl)
+            }
+            .setNegativeButton(R.string.update_later) { _, _ ->
+                getSharedPreferences(ShellConfig.PREFS, MODE_PRIVATE)
+                    .edit()
+                    .putString(ShellConfig.PREFS_RELEASE_UPDATE_SNOOZE, offer.latestVersion)
+                    .apply()
+            }
+            .setCancelable(true)
+            .show()
+    }
+
+    private fun startReleaseDownloadAndInstall(apkUrl: String) {
+        val progress =
+            AlertDialog.Builder(this)
+                .setMessage(R.string.update_downloading)
+                .setCancelable(false)
+                .create()
+        progress.show()
+        ApkInstaller.downloadThenInstall(
+            context = this,
+            apkUrl = apkUrl,
+            onError = { msg ->
+                runOnUiThread {
+                    progress.dismiss()
+                    Toast.makeText(
+                        this,
+                        getString(R.string.update_download_failed, msg),
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            },
+            onReadyToInstall = { file ->
+                runOnUiThread {
+                    progress.dismiss()
+                    if (!ApkInstaller.canInstallPackages(this)) {
+                        pendingApkFile = file
+                        Toast.makeText(this, R.string.update_need_permission, Toast.LENGTH_LONG)
+                            .show()
+                        unknownSourcesLauncher.launch(
+                            ApkInstaller.unknownSourcesSettingsIntent(this),
+                        )
+                        return@runOnUiThread
+                    }
+                    startActivity(ApkInstaller.installIntent(this, file))
+                }
+            },
+        )
     }
 }

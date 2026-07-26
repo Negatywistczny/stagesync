@@ -241,12 +241,30 @@ class HostWebActivity : AppCompatActivity() {
             } catch (_: PackageManager.NameNotFoundException) {
                 return
             }
-        ApkUpdateChecker.check(hostOrigin, shellVersion, ShellConfig.APK_FILENAME) { offer ->
-            if (offer == null) return@check
-            runOnUiThread {
-                if (isFinishing || updateDialogShown) return@runOnUiThread
-                updateDialogShown = true
-                showUpdateDialog(offer)
+        ApkUpdateChecker.check(hostOrigin, shellVersion, ShellConfig.APK_FILENAME) hostCheck@{ hostOffer ->
+            if (hostOffer != null) {
+                runOnUiThread {
+                    if (isFinishing || updateDialogShown) return@runOnUiThread
+                    updateDialogShown = true
+                    showUpdateDialog(hostOffer)
+                }
+                return@hostCheck
+            }
+            val snoozed =
+                getSharedPreferences(ShellConfig.PREFS, MODE_PRIVATE)
+                    .getString(ShellConfig.PREFS_RELEASE_UPDATE_SNOOZE, null)
+            ReleaseApkUpdateChecker.check(
+                shellVersion,
+                ReleaseApkUpdateChecker.AppKind.PERFORMER,
+            ) releaseCheck@{ releaseOffer ->
+                if (releaseOffer == null || releaseOffer.latestVersion == snoozed) {
+                    return@releaseCheck
+                }
+                runOnUiThread {
+                    if (isFinishing || updateDialogShown) return@runOnUiThread
+                    updateDialogShown = true
+                    showReleaseUpdateDialog(releaseOffer)
+                }
             }
         }
     }
@@ -261,6 +279,29 @@ class HostWebActivity : AppCompatActivity() {
                 startDownloadAndInstall(offer.apkUrl)
             }
             .setNegativeButton(R.string.update_later, null)
+            .setCancelable(true)
+            .show()
+    }
+
+    private fun showReleaseUpdateDialog(offer: ReleaseApkUpdateChecker.Offer) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.update_title)
+            .setMessage(
+                getString(
+                    R.string.update_message_release,
+                    offer.latestVersion,
+                    offer.shellVersion,
+                ),
+            )
+            .setPositiveButton(R.string.update_download_install) { _, _ ->
+                startDownloadAndInstall(offer.apkUrl)
+            }
+            .setNegativeButton(R.string.update_later) { _, _ ->
+                getSharedPreferences(ShellConfig.PREFS, MODE_PRIVATE)
+                    .edit()
+                    .putString(ShellConfig.PREFS_RELEASE_UPDATE_SNOOZE, offer.latestVersion)
+                    .apply()
+            }
             .setCancelable(true)
             .show()
     }

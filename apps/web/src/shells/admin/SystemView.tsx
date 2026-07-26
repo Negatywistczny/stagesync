@@ -39,6 +39,10 @@ import {
   DOCS_RELEASES_URL,
 } from "../../lib/docsLinks.js";
 import { APP_VERSION } from "../../lib/appVersion.js";
+import {
+  fetchAndroidLatestManifest,
+  isSemverNewer,
+} from "../../lib/androidLatest.js";
 import { isAndroidUpdateSurface } from "../../lib/nativeShell.js";
 
 import { useMqMobile } from "../../lib/useMqMobile.js";
@@ -681,13 +685,31 @@ function UpdatePanel({
         }
         return;
       }
-      // Android Console / Android UA: APK updates, not Docker Watchtower.
+      // Android Console / Android UA: compare shell to GitHub android-latest.json.
       if (onAndroid) {
+        const manifest = await fetchAndroidLatestManifest();
+        if (!manifest) {
+          setHostStatus({
+            current: APP_VERSION,
+            latest: null,
+            updateAvailable: false,
+            applyAvailable: false,
+            error:
+              "Nie udało się sprawdzić Releases (sieć / brak android-latest.json).",
+            updateMode: "apk",
+            apkUrl: null,
+          });
+          return;
+        }
+        const available = isSemverNewer(manifest.version, APP_VERSION);
         setHostStatus({
           current: APP_VERSION,
-          latest: null,
-          updateAvailable: false,
+          latest: manifest.version,
+          updateAvailable: available,
+          applyAvailable: false,
           error: null,
+          updateMode: "apk",
+          apkUrl: available ? manifest.consoleUrl : null,
         });
         return;
       }
@@ -765,10 +787,13 @@ function UpdatePanel({
       {!inTauri && hostStatus && !onAndroid ? (
         <div className={styles.updateRow}>
           <span className={shell.muted}>
-            Host: {hostStatus.current} → {hostStatus.latest ?? "?"}{" "}
-            {!hostStatus.updateAvailable && hostStatus.latest && "(aktualny)"}
+            Host: {hostStatus.current}
+            {hostStatus.latest ? ` → ${hostStatus.latest}` : ""}{" "}
+            {!hostStatus.updateAvailable && hostStatus.latest
+              ? "(aktualny)"
+              : null}
           </span>
-          {hostStatus.updateAvailable ? (
+          {hostStatus.updateAvailable && hostStatus.applyAvailable ? (
             <Button
               variant="primary"
               onClick={() => setConfirmHostUpdate(true)}
@@ -779,10 +804,15 @@ function UpdatePanel({
           ) : null}
         </div>
       ) : null}
-      {onAndroid && hostStatus ? (
+      {!inTauri &&
+      !onAndroid &&
+      hostStatus?.updateAvailable &&
+      hostStatus.applyAvailable === false ? (
         <p className={shell.muted}>
-          Console: v{hostStatus.current}. Aktualizacje to nowy APK — karta
-          Połączenie &amp; Sieć albo{" "}
+          Nowa wersja jest dostępna, ale ten host nie ma Watchtower (
+          <code>STAGESYNC_UPDATER_*</code>). Docker:{" "}
+          <code>compose.prod.yml</code>. Desktop / lokalnie: pobierz instalator
+          z{" "}
           <a
             href={DOCS_RELEASES_URL}
             target="_blank"
@@ -796,6 +826,36 @@ function UpdatePanel({
           </a>
           .
         </p>
+      ) : null}
+      {onAndroid && hostStatus ? (
+        <div className={styles.updateRow}>
+          <span className={shell.muted}>
+            Console: v{hostStatus.current}
+            {hostStatus.latest ? ` → ${hostStatus.latest}` : ""}
+            {!hostStatus.updateAvailable && hostStatus.latest
+              ? " (aktualna)"
+              : null}
+          </span>
+          {hostStatus.updateAvailable && hostStatus.apkUrl ? (
+            <Button
+              variant="primary"
+              onClick={() => {
+                void openExternalUrl(hostStatus.apkUrl!);
+              }}
+            >
+              Pobierz APK
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                void openExternalUrl(DOCS_RELEASES_URL);
+              }}
+            >
+              Releases
+            </Button>
+          )}
+        </div>
       ) : null}
       {inTauri && desktopStatus ? (
         <div className={styles.updateRow}>
@@ -820,7 +880,10 @@ function UpdatePanel({
           ) : null}
         </div>
       ) : null}
-      {!inTauri && !onAndroid && hostStatus ? (
+      {!inTauri &&
+      !onAndroid &&
+      hostStatus &&
+      !(hostStatus.updateAvailable && hostStatus.applyAvailable === false) ? (
         <p className={shell.muted}>
           Desktop: pobierz instalator z{" "}
           <a

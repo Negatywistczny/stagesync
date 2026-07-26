@@ -928,6 +928,11 @@ export const UpdateStatusSchema = z
     updateAvailable: z.boolean(),
     /** null when check succeeded; otherwise operator-facing reason (auth / network / empty) */
     error: z.string().max(500).nullable().optional(),
+    /** True only when Watchtower env is set — UI must not offer apply otherwise. */
+    applyAvailable: z.boolean().optional(),
+    updateChannel: z.string().optional(),
+    updateMode: z.enum(["desktop", "apk", "docker", "manual"]).optional(),
+    autoUpdateDisabled: z.boolean().optional(),
   })
   .strict();
 

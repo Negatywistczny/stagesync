@@ -11,6 +11,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Desktop — zasobnik systemowy:** zamknięcie okna chowa aplikację do tray / Menu Bar (lokalny host dalej działa w LAN); menu: status, kopiuj adres, uruchom/zatrzymaj host, zakończ. Pełne wyjście tylko przez **Zakończ** / ⌘Q. (#813)
+- **Console / Performer (Android):** po starcie launchera (przy internecie) pojawia się jawny dialog, gdy GitHub Releases ma nowszy APK — pobranie tylko po zgodzie; manifest `android-latest.json` jak Desktop `latest.json`. W Adminie **Sprawdź aktualizacje** porównuje wersję z tym samym manifestem i oferuje **Pobierz APK**.
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Admin Host — aktualizacje:** przycisk **Aktualizuj host** pojawia się tylko gdy Watchtower jest skonfigurowany; bez `STAGESYNC_UPDATER_*` widać jasną wskazówkę (Docker: `compose.prod.yml`, inaczej instalator z Releases) zamiast błędu po kliknięciu.
 
 ## [5.2.7](https://github.com/Negatywistyczny/stagesync/compare/v5.2.6...v5.2.7) - 2026-07-26
 

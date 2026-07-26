@@ -185,9 +185,9 @@ describe("SystemView APK download aria", () => {
     });
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /Logi serwera/ }).getAttribute(
-          "aria-expanded",
-        ),
+        screen
+          .getByRole("button", { name: /Logi serwera/ })
+          .getAttribute("aria-expanded"),
       ).toBe("true");
     });
     expect(networkToggle.getAttribute("aria-expanded")).toBe("false");
@@ -199,5 +199,33 @@ describe("SystemView APK download aria", () => {
         screen.getByRole("button", { name: "Pobierz paczkę diagnostyki ZIP" }),
       ).toBeTruthy();
     });
+  });
+
+  it("hides Aktualizuj host when update exists but Watchtower apply is unavailable", async () => {
+    const { fetchHostUpdateStatus } = await import("../../lib/setlistApi.js");
+    vi.mocked(fetchHostUpdateStatus).mockResolvedValueOnce({
+      current: "5.2.5",
+      latest: "5.2.6",
+      updateAvailable: true,
+      applyAvailable: false,
+      updateMode: "manual",
+      error: null,
+    });
+
+    render(<SystemView statusMsg={null} />);
+    const check = await screen.findByRole("button", {
+      name: "Sprawdź aktualizacje",
+    });
+    await act(async () => {
+      check.click();
+    });
+    await waitFor(() => {
+      expect(screen.getByText(/Host: 5\.2\.5 → 5\.2\.6/)).toBeTruthy();
+    });
+    expect(
+      screen.queryByRole("button", { name: "Aktualizuj host" }),
+    ).toBeNull();
+    expect(screen.getByText(/compose\.prod\.yml/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Releases" })).toBeTruthy();
   });
 });
