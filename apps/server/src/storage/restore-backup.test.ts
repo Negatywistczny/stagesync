@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildStoreZip } from "../diagnostics-zip.js";
 import {
+  resolveLiveNameFromBak,
   resolveLivePathFromBak,
   restoreFromBackup,
   restoreBulkFromBackups,
@@ -20,6 +21,31 @@ async function scratchUnderHome(prefix: string): Promise<string> {
   scratchDirs.push(dir);
   return dir;
 }
+
+describe("resolveLiveNameFromBak", () => {
+  it("strips labeled schema / pre-migrate / pre-restore suffixes", () => {
+    expect(resolveLiveNameFromBak("project.json.schema.bak")).toBe("project.json");
+    expect(resolveLiveNameFromBak("library.json.pre-migrate.bak")).toBe(
+      "library.json",
+    );
+    expect(resolveLiveNameFromBak("live-desk.json.pre-restore.bak")).toBe(
+      "live-desk.json",
+    );
+  });
+
+  it("is case-insensitive on labeled .bak suffixes", () => {
+    expect(resolveLiveNameFromBak("project.json.SCHEMA.BAK")).toBe("project.json");
+    expect(resolveLiveNameFromBak("library.json.Pre-Migrate.Bak")).toBe(
+      "library.json",
+    );
+  });
+
+  it("strips plain trailing .bak and rejects bare .bak", () => {
+    expect(resolveLiveNameFromBak("library.json.bak")).toBe("library.json");
+    expect(() => resolveLiveNameFromBak(".bak")).toThrow(/\.bak/);
+    expect(() => resolveLiveNameFromBak("project.json")).toThrow(/\.bak/);
+  });
+});
 
 describe("resolveLivePathFromBak", () => {
   it("strips labeled .schema.bak", () => {
