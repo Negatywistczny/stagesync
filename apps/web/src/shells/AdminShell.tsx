@@ -997,6 +997,11 @@ function SongsView({
                       ? "Ma MusicXML"
                       : "Brak MusicXML — użyj XML"
                   }
+                  aria-label={
+                    selected.hasMusicXml
+                      ? "Partytura — ma MusicXML"
+                      : "Partytura — brak MusicXML, użyj XML"
+                  }
                   onClick={onXml}
                 >
                   Partytura
