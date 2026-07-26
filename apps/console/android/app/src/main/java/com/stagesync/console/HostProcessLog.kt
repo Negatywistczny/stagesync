@@ -3,6 +3,10 @@ package com.stagesync.console
 import android.content.Context
 import java.io.File
 import java.io.RandomAccessFile
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Persists local-host Node stdio + boot phase under [Context.getFilesDir] so the
@@ -41,10 +45,6 @@ object HostProcessLog {
     fun readPhase(filesDir: File): String =
         runCatching { phaseFile(filesDir).readText().trim() }.getOrDefault("")
 
-    /**
-     * Last [maxLines] of the Node stdio log, truncated to [maxChars].
-     * Empty when the process died before redirect / first write.
-     */
     fun lastLines(
         context: Context,
         maxLines: Int = DEFAULT_MAX_LINES,
@@ -72,21 +72,79 @@ object HostProcessLog {
         }
     }
 
+    fun lastPhaseLabel(context: Context): String = lastPhaseLabel(context.filesDir)
+
+    fun lastPhaseLabel(filesDir: File): String {
+        val phase = readPhase(filesDir).lines().lastOrNull()?.trim().orEmpty()
+        if (phase.isEmpty()) return ""
+        return phase.substringAfter(' ').ifEmpty { phase }
+    }
+
+    /** Scrollable panel body (phase + Node stdio) for launcher UI. */
+    fun panelText(context: Context): String = panelText(context.filesDir)
+
+    fun panelText(filesDir: File): String {
+        val phase = lastPhaseLabel(filesDir)
+        val tail = lastLines(filesDir)
+        return buildString {
+            if (phase.isNotEmpty()) {
+                append("Faza: ")
+                append(phase)
+            }
+            if (tail.isNotEmpty()) {
+                if (isNotEmpty()) append("\n\n")
+                append(tail)
+            } else if (phase.isNotEmpty()) {
+                append(
+                    "\n\n(brak logu Node — proces padł przed startem silnika albo przed pierwszym zapisem; " +
+                        "logcat tag SsLocalHost)",
+                )
+            }
+        }
+    }
+
+    fun hasPanelContent(context: Context): Boolean = hasPanelContent(context.filesDir)
+
+    fun hasPanelContent(filesDir: File): Boolean = panelText(filesDir).isNotBlank()
+
+    fun buildExport(context: Context, message: String): String =
+        buildExport(context.filesDir, message)
+
+    fun buildExport(filesDir: File, message: String): String {
+        val stamp =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+                .apply { timeZone = TimeZone.getTimeZone("UTC") }
+                .format(Date())
+        val parts =
+            mutableListOf(
+                "# StageSync — log startu lokalnego hosta",
+                "# $stamp",
+            )
+        val msg = message.trim()
+        if (msg.isNotEmpty()) {
+            parts += ""
+            parts += "## Komunikat"
+            parts += msg
+        }
+        val panel = panelText(filesDir)
+        if (panel.isNotEmpty()) {
+            parts += ""
+            parts += "## Log hosta"
+            parts += panel
+        }
+        return parts.joinToString("\n") + "\n"
+    }
+
     fun appendDiagnostics(context: Context, baseMessage: String): String =
         appendDiagnostics(context.filesDir, baseMessage)
 
     fun appendDiagnostics(filesDir: File, baseMessage: String): String {
-        val phase = readPhase(filesDir).lines().lastOrNull()?.trim().orEmpty()
-        val tail = lastLines(filesDir)
+        val panel = panelText(filesDir)
         return buildString {
             append(baseMessage.trim())
-            if (phase.isNotEmpty()) {
-                append("\n\nFaza: ")
-                append(phase.substringAfter(' ').ifEmpty { phase })
-            }
-            if (tail.isNotEmpty()) {
-                append("\n\nOstatni log hosta:\n")
-                append(tail)
+            if (panel.isNotEmpty()) {
+                append("\n\n")
+                append(panel)
             } else {
                 append(
                     "\n\n(brak logu Node — proces padł przed startem silnika albo przed pierwszym zapisem; " +

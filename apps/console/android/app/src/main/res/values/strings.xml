@@ -19,6 +19,13 @@
     <string name="local_host_health_timeout">Lokalny host nie odpowiedział na /api/health (%1$s)</string>
     <string name="local_host_process_died">Proces lokalnego hosta zakończył się awaryjnie (silnik Node). Launcher działa dalej — połącz się z hostem LAN albo sprawdź logcat tag SsLocalHost.</string>
     <string name="local_host_bridge_incomplete">Silnik Node jest w APK, ale most JNI nie załadował się. Połącz się z hostem LAN albo przebuduj APK — docs/MOBILE.md.</string>
+    <string name="local_host_clear_error">Wyczyść</string>
+    <string name="local_host_clear_error_cd">Wyczyść błąd lokalnego hosta</string>
+    <string name="local_host_download_log">Pobierz log</string>
+    <string name="local_host_download_log_cd">Pobierz log lokalnego hosta</string>
+    <string name="local_host_share_log">Udostępnij log lokalnego hosta</string>
+    <string name="local_host_log_empty">Brak logu do pobrania</string>
+    <string name="local_host_log_cd">Log startu lokalnego hosta</string>
     <string name="btn_scan_qr">Skanuj kod QR</string>
     <string name="btn_recent">Ostatnie serwery</string>
     <string name="btn_change_server">Zmień serwer</string>

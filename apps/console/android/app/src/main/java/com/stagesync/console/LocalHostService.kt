@@ -88,12 +88,9 @@ class LocalHostService : Service() {
                     )
                     if (!readiness.canStart) {
                         HostProcessLog.writePhase(this, "probe-failed")
-                        broadcastFailed(
-                            HostProcessLog.appendDiagnostics(
-                                this,
-                                LocalHostRuntime.missingMessage(readiness, this),
-                            ),
-                        )
+                        val base = LocalHostRuntime.missingMessage(readiness, this)
+                        Log.e(TAG, HostProcessLog.appendDiagnostics(this, base))
+                        broadcastFailed(base)
                         stopSelf()
                         return@Thread
                     }
@@ -102,15 +99,13 @@ class LocalHostService : Service() {
                 } catch (err: Throwable) {
                     Log.e(TAG, "boot failed", err)
                     HostProcessLog.writePhase(this@LocalHostService, "boot-failed")
-                    broadcastFailed(
-                        HostProcessLog.appendDiagnostics(
-                            this@LocalHostService,
-                            getString(
-                                R.string.local_host_start_failed,
-                                err.message ?: err.javaClass.simpleName,
-                            ),
-                        ),
-                    )
+                    val base =
+                        getString(
+                            R.string.local_host_start_failed,
+                            err.message ?: err.javaClass.simpleName,
+                        )
+                    Log.e(TAG, HostProcessLog.appendDiagnostics(this@LocalHostService, base))
+                    broadcastFailed(base)
                     stopSelf()
                 }
             },
@@ -254,12 +249,9 @@ class LocalHostService : Service() {
                     )
                 Log.e(TAG, "node::Start returned code=$code")
                 HostProcessLog.writePhase(this@LocalHostService, "node-exit code=$code")
-                broadcastFailed(
-                    HostProcessLog.appendDiagnostics(
-                        this@LocalHostService,
-                        getString(R.string.local_host_node_exited, code),
-                    ),
-                )
+                val base = getString(R.string.local_host_node_exited, code)
+                Log.e(TAG, HostProcessLog.appendDiagnostics(this@LocalHostService, base))
+                broadcastFailed(base)
                 stopSelf()
             },
             "stagesync-node",
@@ -270,15 +262,13 @@ class LocalHostService : Service() {
                 Thread.UncaughtExceptionHandler { _, err ->
                     Log.e(TAG, "node thread crashed", err)
                     HostProcessLog.writePhase(this@LocalHostService, "node-thread-crash")
-                    broadcastFailed(
-                        HostProcessLog.appendDiagnostics(
-                            this@LocalHostService,
-                            getString(
-                                R.string.local_host_start_failed,
-                                err.message ?: err.javaClass.simpleName,
-                            ),
-                        ),
-                    )
+                    val base =
+                        getString(
+                            R.string.local_host_start_failed,
+                            err.message ?: err.javaClass.simpleName,
+                        )
+                    Log.e(TAG, HostProcessLog.appendDiagnostics(this@LocalHostService, base))
+                    broadcastFailed(base)
                     stopSelf()
                 }
             start()
@@ -305,10 +295,7 @@ class LocalHostService : Service() {
         Log.e(TAG, "health timeout ($lastDetail)")
         HostProcessLog.writePhase(this, "health-timeout")
         throw IllegalStateException(
-            HostProcessLog.appendDiagnostics(
-                this,
-                getString(R.string.local_host_health_timeout, lastDetail),
-            ),
+            getString(R.string.local_host_health_timeout, lastDetail),
         )
     }
 

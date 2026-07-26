@@ -13,8 +13,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -23,7 +25,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.stagesync.console.databinding.ActivityLauncherBinding
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class LauncherActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLauncherBinding
@@ -34,6 +42,8 @@ class LauncherActivity : AppCompatActivity() {
     private var localHostBusy = false
     private var hostBound = false
     private var hostTerminal = false
+    private var lastLocalHostError = ""
+    private var localHostHasError = false
 
     private val hostDeathConnection =
         object : ServiceConnection {
@@ -71,8 +81,6 @@ class LauncherActivity : AppCompatActivity() {
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            // FGS still starts without the permission on API 33+; denial only
-            // hides the notification. Always attempt start and surface failures.
             startLocalHost()
         }
 
@@ -88,9 +96,12 @@ class LauncherActivity : AppCompatActivity() {
                             intent.getStringExtra(LocalHostService.EXTRA_MESSAGE)
                                 ?: getString(R.string.err_health)
                         setLocalHostBusy(false)
-                        binding.localHostStatus.visibility = View.VISIBLE
-                        binding.localHostStatus.text = message
-                        Toast.makeText(this@LauncherActivity, message, Toast.LENGTH_LONG).show()
+                        showLocalHostError(message)
+                        Toast.makeText(
+                            this@LauncherActivity,
+                            toastSummary(message),
+                            Toast.LENGTH_LONG,
+                        ).show()
                     }
                     LocalHostService.ACTION_READY -> {
                         hostTerminal = true
@@ -99,7 +110,7 @@ class LauncherActivity : AppCompatActivity() {
                             intent.getStringExtra(LocalHostService.EXTRA_ORIGIN)
                                 ?: LocalHostRuntime.LOOPBACK_ORIGIN
                         setLocalHostBusy(false)
-                        binding.localHostStatus.visibility = View.GONE
+                        clearLocalHostErrorUi(clearFiles = false)
                         connect(origin)
                     }
                 }
@@ -110,6 +121,16 @@ class LauncherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLauncherBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.localHostLog.movementMethod = ScrollingMovementMethod()
+        binding.localHostLog.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
+                v.parent?.requestDisallowInterceptTouchEvent(true)
+            }
+            false
+        }
+        binding.btnLocalHostClear.setOnClickListener { clearLocalHostError() }
+        binding.btnLocalHostDownloadLog.setOnClickListener { shareLocalHostLog() }
 
         binding.btnConnect.setOnClickListener {
             connect(binding.urlInput.text?.toString().orEmpty())
@@ -165,11 +186,8 @@ class LauncherActivity : AppCompatActivity() {
     private fun startLocalHost() {
         setLocalHostBusy(true)
         hostTerminal = false
-        binding.localHostStatus.visibility = View.VISIBLE
-        binding.localHostStatus.setText(R.string.local_host_starting)
+        showLocalHostProgress(getString(R.string.local_host_starting))
         try {
-            // Bind across processes so a native abort in `:host` surfaces here
-            // instead of silently leaving the launcher stuck on “starting…”.
             bindHostWatch()
             LocalHostService.start(this)
         } catch (err: Throwable) {
@@ -180,8 +198,8 @@ class LauncherActivity : AppCompatActivity() {
                     R.string.local_host_start_failed,
                     err.message ?: err.javaClass.simpleName,
                 )
-            binding.localHostStatus.text = message
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            showLocalHostError(message)
+            Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -212,11 +230,104 @@ class LauncherActivity : AppCompatActivity() {
         if (hostTerminal || !localHostBusy) return
         hostTerminal = true
         val message = LocalHostRuntime.processDiedMessage(this)
-        Log.e(TAG, message)
+        Log.e(TAG, HostProcessLog.appendDiagnostics(this, message))
         setLocalHostBusy(false)
+        showLocalHostError(message)
+        Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
+    }
+
+    private fun showLocalHostProgress(message: String) {
+        localHostHasError = false
+        lastLocalHostError = ""
         binding.localHostStatus.visibility = View.VISIBLE
+        binding.localHostStatus.setTextColor(ContextCompat.getColor(this, R.color.ss_muted))
         binding.localHostStatus.text = message
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        binding.localHostLog.visibility = View.GONE
+        binding.localHostLog.text = ""
+        syncLocalHostErrorActions()
+    }
+
+    private fun showLocalHostError(message: String) {
+        localHostHasError = true
+        lastLocalHostError = message.trim()
+        binding.localHostStatus.visibility = View.VISIBLE
+        binding.localHostStatus.setTextColor(ContextCompat.getColor(this, R.color.ss_danger))
+        binding.localHostStatus.text = lastLocalHostError
+        val panel = HostProcessLog.panelText(this)
+        if (panel.isNotBlank()) {
+            binding.localHostLog.visibility = View.VISIBLE
+            binding.localHostLog.text = panel
+            binding.localHostLog.scrollTo(0, 0)
+        } else {
+            binding.localHostLog.visibility = View.GONE
+            binding.localHostLog.text = ""
+        }
+        syncLocalHostErrorActions()
+    }
+
+    private fun clearLocalHostError() {
+        HostProcessLog.clear(this)
+        clearLocalHostErrorUi(clearFiles = false)
+    }
+
+    private fun clearLocalHostErrorUi(clearFiles: Boolean) {
+        if (clearFiles) HostProcessLog.clear(this)
+        localHostHasError = false
+        lastLocalHostError = ""
+        binding.localHostStatus.visibility = View.GONE
+        binding.localHostStatus.text = ""
+        binding.localHostStatus.setTextColor(ContextCompat.getColor(this, R.color.ss_muted))
+        binding.localHostLog.visibility = View.GONE
+        binding.localHostLog.text = ""
+        syncLocalHostErrorActions()
+    }
+
+    private fun syncLocalHostErrorActions() {
+        val hasLog =
+            HostProcessLog.hasPanelContent(this) ||
+                binding.localHostLog.text?.isNotBlank() == true
+        val vis =
+            LocalHostErrorActions.visibility(
+                hasError = localHostHasError,
+                hasLog = hasLog,
+            )
+        binding.localHostErrorActions.visibility = if (vis.showRow) View.VISIBLE else View.GONE
+        binding.btnLocalHostClear.visibility = if (vis.showClear) View.VISIBLE else View.GONE
+        binding.btnLocalHostDownloadLog.visibility =
+            if (vis.showDownload) View.VISIBLE else View.GONE
+    }
+
+    private fun shareLocalHostLog() {
+        val export = HostProcessLog.buildExport(this, lastLocalHostError).trim()
+        if (export.isEmpty()) {
+            Toast.makeText(this, R.string.local_host_log_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val stamp =
+            SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss", Locale.US)
+                .apply { timeZone = TimeZone.getTimeZone("UTC") }
+                .format(Date())
+        val file = File(cacheDir, "stagesync-host-$stamp.log")
+        file.writeText("$export\n")
+        val uri =
+            FileProvider.getUriForFile(
+                this,
+                "$packageName.fileprovider",
+                file,
+            )
+        val send =
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.local_host_share_log))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        startActivity(Intent.createChooser(send, getString(R.string.local_host_share_log)))
+    }
+
+    private fun toastSummary(message: String): String {
+        val first = message.lineSequence().firstOrNull()?.trim().orEmpty()
+        return if (first.length <= 160) first else first.take(157) + "…"
     }
 
     private fun setLocalHostBusy(busy: Boolean) {

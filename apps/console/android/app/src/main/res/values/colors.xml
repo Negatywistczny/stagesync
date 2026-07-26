@@ -8,5 +8,6 @@
     <color name="ss_primary">#F2A900</color>
     <color name="ss_border">#2A2A2E</color>
     <color name="ss_status_ok">#22C55E</color>
+    <color name="ss_danger">#EF4444</color>
     <color name="ss_input_stroke">#3F3F46</color>
 </resources>

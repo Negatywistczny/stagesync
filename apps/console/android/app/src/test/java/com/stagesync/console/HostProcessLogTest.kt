@@ -18,9 +18,14 @@ class HostProcessLogTest {
             val msg = HostProcessLog.appendDiagnostics(dir, "base error")
             assertTrue(msg.startsWith("base error"))
             assertTrue(msg.contains("Faza: node-start"))
-            assertTrue(msg.contains("Ostatni log hosta"))
             assertTrue(msg.contains("line-50"))
             assertFalse(msg.contains("line-1\n"))
+            val panel = HostProcessLog.panelText(dir)
+            assertTrue(panel.startsWith("Faza: node-start"))
+            assertTrue(panel.contains("line-50"))
+            val export = HostProcessLog.buildExport(dir, "base error")
+            assertTrue(export.contains("## Komunikat"))
+            assertTrue(export.contains("## Log hosta"))
         } finally {
             dir.deleteRecursively()
         }
@@ -34,6 +39,7 @@ class HostProcessLogTest {
             val msg = HostProcessLog.appendDiagnostics(dir, "died")
             assertTrue(msg.contains("Faza: redirect-stdio"))
             assertTrue(msg.contains("brak logu Node"))
+            assertTrue(HostProcessLog.hasPanelContent(dir))
         } finally {
             dir.deleteRecursively()
         }

@@ -13,9 +13,9 @@ android {
         minSdk = 26
         targetSdk = 34
         // Keep in sync with root package.json (host /api/health.version).
-        // versionCode patch digit may bump for Console sideload diagnostics
-        // without a SemVer cut (sync-version resets to maj*10000+min*100+pat).
-        versionCode = 50202
+        // versionCode patch digit bumps for Console sideload diagnostics builds
+        // without a SemVer cut (50202 → 50206 = ICU-safe host + error log actions).
+        versionCode = 50206
         versionName = "5.2.2"
         // Sideload tablets: arm only (drop x86/x86_64 emulator ABIs).
         ndk {

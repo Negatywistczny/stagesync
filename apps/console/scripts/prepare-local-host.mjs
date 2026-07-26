@@ -18,6 +18,7 @@ import {
   mkdir,
   mkdtemp,
   readdir,
+  readFile,
   realpath,
   rm,
   writeFile,
@@ -134,7 +135,6 @@ async function copyAbi(binRoot, abi) {
 
 /** Max p_align among PT_LOAD segments (ELF). */
 async function maxLoadAlign(soPath) {
-  const { readFile } = await import("node:fs/promises");
   const buf = await readFile(soPath);
   if (buf.length < 64 || buf[0] !== 0x7f || buf[1] !== 0x45) return 0;
   const eiClass = buf[4]; // 1=32, 2=64
@@ -376,6 +376,105 @@ async function assertDeployHasRuntimeDeps(serverDir) {
   }
 }
 
+/**
+ * nodejs-mobile is built with --with-intl=none: RegExp Unicode property escapes
+ * (`\p{ID_Start}`) throw at parse time. Express 5 → router 2 → path-to-regexp 8.x
+ * always ships those escapes; no published 8.x pin is ICU-free, and downgrading
+ * to 6.x/0.1.x breaks the router 2 API. Patch only the Android host pack (desktop
+ * keeps stock path-to-regexp). Route params in StageSync are ASCII (`:id`, …).
+ *
+ * @see https://nodejs-mobile.github.io/docs/api/differences#regexp-unicode-property-names
+ */
+const PATH_TO_REGEXP_UNICODE_PROPS = [
+  [
+    String.raw`const ID_START = /^[$_\p{ID_Start}]$/u;`,
+    "const ID_START = /^[$_A-Za-z]$/;",
+  ],
+  [
+    String.raw`const ID_CONTINUE = /^[$\u200c\u200d\p{ID_Continue}]$/u;`,
+    "const ID_CONTINUE = /^[$\\u200c\\u200dA-Za-z0-9_]$/;",
+  ],
+  [
+    String.raw`const ID = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;`,
+    "const ID = /^[$_A-Za-z][$\\u200c\\u200dA-Za-z0-9_]*$/;",
+  ],
+];
+
+async function patchPathToRegexpForNodejsMobile(nodeModulesDir) {
+  const pkgRoot = join(nodeModulesDir, "path-to-regexp");
+  const candidates = [
+    join(pkgRoot, "dist", "index.js"),
+    join(pkgRoot, "index.js"),
+  ];
+  const targets = candidates.filter((p) => existsSync(p));
+  if (targets.length === 0) {
+    throw new Error(
+      `[local-host] path-to-regexp missing under ${pkgRoot} (Express 5 deploy)`,
+    );
+  }
+
+  let patchedFiles = 0;
+  for (const file of targets) {
+    let src = await readFile(file, "utf8");
+    if (!src.includes("\\p{ID_Start}") && !src.includes("\\p{ID_Continue}")) {
+      continue;
+    }
+    let next = src;
+    for (const [from, to] of PATH_TO_REGEXP_UNICODE_PROPS) {
+      next = next.split(from).join(to);
+    }
+    if (next.includes("\\p{ID_Start}") || next.includes("\\p{ID_Continue}")) {
+      throw new Error(
+        `[local-host] path-to-regexp still has Unicode property escapes after patch: ${file}`,
+      );
+    }
+    if (next === src) {
+      throw new Error(
+        `[local-host] path-to-regexp Unicode props present but patterns did not match: ${file}`,
+      );
+    }
+    await writeFile(file, next);
+    patchedFiles += 1;
+  }
+
+  await assertPathToRegexpNodejsMobileSafe(nodeModulesDir);
+  if (patchedFiles > 0) {
+    console.log(
+      `[local-host] patched path-to-regexp for nodejs-mobile (no \\p{ID_*} ICU; ${patchedFiles} file(s))`,
+    );
+  } else {
+    console.log(
+      "[local-host] path-to-regexp already free of Unicode property escapes",
+    );
+  }
+}
+
+async function assertPathToRegexpNodejsMobileSafe(nodeModulesDir) {
+  const pkgRoot = join(nodeModulesDir, "path-to-regexp");
+  if (!existsSync(pkgRoot)) {
+    throw new Error(`[local-host] missing path-to-regexp at ${pkgRoot}`);
+  }
+  const stack = [pkgRoot];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const ent of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, ent.name);
+      if (ent.isDirectory()) {
+        stack.push(full);
+        continue;
+      }
+      if (!/\.(js|cjs|mjs)$/i.test(ent.name)) continue;
+      const src = await readFile(full, "utf8");
+      if (src.includes("\\p{ID_Start}") || src.includes("\\p{ID_Continue}")) {
+        throw new Error(
+          `[local-host] path-to-regexp still uses Unicode property escapes (${full}). ` +
+            `nodejs-mobile (--with-intl=none) cannot parse \\p{ID_Start}.`,
+        );
+      }
+    }
+  }
+}
+
 async function packServerTree(destServer) {
   const serverDistDir = join(repoRoot, "apps/server/dist");
   console.log("[local-host] building shared + server…");
@@ -413,6 +512,8 @@ async function packServerTree(destServer) {
   await pruneDeployedNodeModules(join(destServer, "node_modules"));
   await pruneTypescriptSourceTrees(join(destServer, "node_modules"));
   await assertDeployHasRuntimeDeps(destServer);
+  // Android-only: Express 5 keeps path-to-regexp 8.x; strip ICU Unicode props.
+  await patchPathToRegexpForNodejsMobile(join(destServer, "node_modules"));
 
   const androidBootSrc = join(repoRoot, "apps/console/android-boot.mjs");
   if (!existsSync(androidBootSrc)) {
