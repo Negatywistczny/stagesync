@@ -5,6 +5,16 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Kotwice:** zaznaczoną kotwicę usuwasz Delete / Backspace — tak jak inne klipy (nie tylko gumką).
+
+#### 🖥️ App Shell & UI
+- **Client — partytura:** podświetlenie taktu idzie dalej przy powtórzeniach i drugiej volcie — kursor OSMD trafia w właściwy takt partytury, a nie „klei się” na początku volty.
+
 ## [5.2.11](https://github.com/Negatywistyczny/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
 
 ### Dodano

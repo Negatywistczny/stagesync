@@ -139,6 +139,31 @@ function getMeasureCursor(osmd: OpenSheetMusicDisplay): Cursor | undefined {
   return cursors[cursors.length - 1] ?? osmd.cursor;
 }
 
+/** OSMD exposes both `Iterator` (getter) and `iterator` (field). */
+function getCursorIterator(
+  cursor: Cursor,
+):
+  | {
+      CurrentMeasureIndex?: number;
+      EndReached?: boolean;
+    }
+  | undefined {
+  const withGetter = cursor as Cursor & {
+    Iterator?: {
+      CurrentMeasureIndex?: number;
+      EndReached?: boolean;
+    };
+  };
+  return withGetter.Iterator ?? cursor.iterator ?? undefined;
+}
+
+/**
+ * Move the measure cursor to a MusicXML / sheet measure (1-based).
+ *
+ * Do **not** count `nextMeasure()` calls: OSMD's iterator follows musical
+ * repeats / voltas / jumps, so N steps ≠ sheet measure index N. Navigate by
+ * `CurrentMeasureIndex` instead (0-based list index).
+ */
 export function goToScoreBar(
   osmd: OpenSheetMusicDisplay,
   scoreBar: number,
@@ -146,14 +171,23 @@ export function goToScoreBar(
   const cursor = getMeasureCursor(osmd);
   if (!cursor) return;
   const target = clampScoreBar(osmd, scoreBar);
+  const targetIndex = target - 1;
   cursor.reset();
   cursor.show();
-  let current = 1;
-  const max = getMeasureCount(osmd);
-  while (current < target && current < max) {
+
+  const measureCount = getMeasureCount(osmd);
+  // Allow walking through repeat passes (volta 1 → jump → volta 2).
+  const maxSteps = Math.max(measureCount * 8, 64);
+  let steps = 0;
+  while (steps < maxSteps) {
+    const iterator = getCursorIterator(cursor);
+    if (!iterator || iterator.EndReached) break;
+    const currentIndex = iterator.CurrentMeasureIndex ?? 0;
+    if (currentIndex >= targetIndex) break;
     cursor.nextMeasure();
-    current += 1;
+    steps += 1;
   }
+
   cursor.update();
   cursor.adjustToBackgroundColor?.();
   const el = cursor.cursorElement;

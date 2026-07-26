@@ -22,6 +22,7 @@ import {
   type ScoreOctave,
   type ScorePartInfo,
 } from "../../lib/scoreOsmd.js";
+import { logicBarFromTicks } from "../../lib/scoreBarEdit.js";
 import {
   scoreBarFromDisplayTicks,
   seekTicksFromScoreBar,
@@ -65,6 +66,8 @@ export function ScorePane({
   const hostRef = useRef<HTMLDivElement>(null);
   const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
   const lastBarRef = useRef<number | null>(null);
+  /** Song / logic bar — refresh highlight when transport advances even if scoreBar stalls (kotwice / repeats). */
+  const lastLogicBarRef = useRef<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -85,6 +88,7 @@ export function ScorePane({
     setLoadError(null);
     setReady(false);
     lastBarRef.current = null;
+    lastLogicBarRef.current = null;
     onPartsChange([]);
 
     const url = assetFileUrl(project.id, xmlAsset.id);
@@ -109,9 +113,11 @@ export function ScorePane({
         if (cancelled) return;
         onPartsChange(listScoreParts(osmd));
         setReady(true);
+        const logicBar = logicBarFromTicks(project, displayTicks);
         const bar = scoreBarFromDisplayTicks(project, displayTicks);
         goToScoreBar(osmd, bar);
         lastBarRef.current = bar;
+        lastLogicBarRef.current = logicBar;
       } catch (err) {
         if (cancelled) return;
         setLoadError(
@@ -151,8 +157,17 @@ export function ScorePane({
   useEffect(() => {
     const osmd = osmdRef.current;
     if (!osmd || !ready || !project) return;
+    const logicBar = logicBarFromTicks(project, displayTicks);
     const bar = scoreBarFromDisplayTicks(project, displayTicks);
-    if (bar === lastBarRef.current) return;
+    // Key on song bar (legacy parity): kotwice / voltas may keep scoreBar flat
+    // while transport advances — still re-position the OSMD measure cursor.
+    if (
+      logicBar === lastLogicBarRef.current &&
+      bar === lastBarRef.current
+    ) {
+      return;
+    }
+    lastLogicBarRef.current = logicBar;
     lastBarRef.current = bar;
     goToScoreBar(osmd, bar);
     if (followPlayhead && scrollRef.current) {

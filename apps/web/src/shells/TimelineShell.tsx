@@ -1194,6 +1194,12 @@ export function TimelineShell() {
       }
       return;
     }
+    if (selectedAnchorId) {
+      const next = deleteScoreAnchor(draft, selectedAnchorId);
+      if (next !== draft) commitDraft(next);
+      setSelectedAnchorId(null);
+      return;
+    }
     if (!clipSelection.items.length) {
       const ids = trackSelectionRef.current.ids;
       if (!ids.length) return;
@@ -1242,6 +1248,7 @@ export function TimelineShell() {
     clearMapSelection,
     clipSelection,
     commitDraft,
+    selectedAnchorId,
     selectedMapIds,
     selectedMapLane,
   ]);

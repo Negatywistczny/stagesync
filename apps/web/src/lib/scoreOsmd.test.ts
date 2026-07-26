@@ -220,23 +220,106 @@ describe("scoreOsmd", () => {
     it("goToScoreBar advances measure cursor and styles element", () => {
       const cursorEl = document.createElement("div");
       const nextMeasure = vi.fn();
+      let measureIndex = 0;
       const osmd = makeOsmd();
       osmd.Sheet = { SourceMeasures: [{}, {}, {}, {}] };
+      const iterator = {
+        get CurrentMeasureIndex() {
+          return measureIndex;
+        },
+        EndReached: false,
+      };
       osmd.cursors = [
         {
-          reset: vi.fn(),
+          reset: vi.fn(() => {
+            measureIndex = 0;
+          }),
           show: vi.fn(),
-          nextMeasure,
+          nextMeasure: () => {
+            nextMeasure();
+            measureIndex += 1;
+          },
           update: vi.fn(),
           adjustToBackgroundColor: vi.fn(),
           cursorElement: cursorEl,
+          iterator,
         },
       ];
 
       goToScoreBar(osmd as never, 3);
       expect(nextMeasure).toHaveBeenCalledTimes(2);
+      expect(measureIndex).toBe(2);
       expect(cursorEl.style.pointerEvents).toBe("none");
       expect(cursorEl.style.zIndex).toBe("5");
+    });
+
+    it("goToScoreBar follows CurrentMeasureIndex across repeat jumps (not step count)", () => {
+      const nextMeasure = vi.fn();
+      // Sheet indices 0..3; musical path jumps back after index 2 (volta-like).
+      const path = [0, 1, 2, 0, 1, 2, 3];
+      let pathPos = 0;
+      const osmd = makeOsmd();
+      osmd.Sheet = { SourceMeasures: [{}, {}, {}, {}] };
+      const iterator = {
+        get CurrentMeasureIndex() {
+          return path[pathPos] ?? 3;
+        },
+        get EndReached() {
+          return pathPos >= path.length - 1 && path[pathPos] === 3;
+        },
+      };
+      osmd.cursors = [
+        {
+          reset: vi.fn(() => {
+            pathPos = 0;
+          }),
+          show: vi.fn(),
+          nextMeasure: () => {
+            nextMeasure();
+            if (pathPos < path.length - 1) pathPos += 1;
+          },
+          update: vi.fn(),
+          adjustToBackgroundColor: vi.fn(),
+          cursorElement: document.createElement("div"),
+          Iterator: iterator,
+        },
+      ];
+
+      goToScoreBar(osmd as never, 4);
+      // Counting nextMeasure would stop after 3 steps at sheet index 0 (post-jump).
+      // Index-based navigation continues through the second pass to index 3.
+      expect(nextMeasure.mock.calls.length).toBeGreaterThan(3);
+      expect(path[pathPos]).toBe(3);
+    });
+
+    it("goToScoreBar stops on EndReached / safety cap without infinite loop", () => {
+      const nextMeasure = vi.fn();
+      const osmd = makeOsmd();
+      osmd.Sheet = { SourceMeasures: [{}, {}, {}] };
+      const iterator = {
+        CurrentMeasureIndex: 0,
+        EndReached: false,
+      };
+      osmd.cursors = [
+        {
+          reset: vi.fn(),
+          show: vi.fn(),
+          nextMeasure: () => {
+            nextMeasure();
+            // Stuck at index 0 (pathological) — safety cap must stop the loop.
+          },
+          update: vi.fn(),
+          adjustToBackgroundColor: vi.fn(),
+          cursorElement: document.createElement("div"),
+          iterator,
+        },
+      ];
+
+      expect(() => goToScoreBar(osmd as never, 3)).not.toThrow();
+      expect(nextMeasure.mock.calls.length).toBeGreaterThan(0);
+      expect(nextMeasure.mock.calls.length).toBeLessThanOrEqual(
+        Math.max(3 * 8, 64),
+      );
     });
 
     it("goToScoreBar no-ops without cursors", () => {
