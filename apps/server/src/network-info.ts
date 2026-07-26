@@ -1,4 +1,4 @@
-import { networkInterfaces } from "node:os";
+import { hostname as osHostname, networkInterfaces } from "node:os";
 
 export type LanAddress = {
   address: string;
@@ -46,6 +46,47 @@ export function pickPrimaryJoinUrl(urls: string[]): string | null {
   return lan ?? urls[0] ?? null;
 }
 
+/** Strip trailing `.local` and truncate for advertise / Admin display. */
+export function normalizeAdvertiseHostname(raw: string): string {
+  const host = raw.trim().replace(/\.local\.?$/i, "").slice(0, 64);
+  return host || "localhost";
+}
+
+/**
+ * Device hostname for Admin / mDNS row: `HOSTNAME` env, else OS hostname.
+ * Never invents a fake brand name — may still be `localhost` on locked-down hosts.
+ */
+export function resolveAdvertiseHostname(): string {
+  const fromEnv = (process.env.HOSTNAME ?? "").trim();
+  if (fromEnv) return normalizeAdvertiseHostname(fromEnv);
+  return normalizeAdvertiseHostname(osHostname());
+}
+
+/** `http://{host}.local:{port}` when hostname is a real device name; else null. */
+export function buildMdnsJoinUrl(
+  hostname: string,
+  port: number,
+): string | null {
+  const host = normalizeAdvertiseHostname(hostname);
+  if (!host || host.toLowerCase() === "localhost") return null;
+  return `http://${host}.local:${port}`;
+}
+
+/**
+ * Insert mDNS `.local` URL after LAN IPs and before localhost (when present).
+ * No-op when `mdnsUrl` is null or already listed.
+ */
+export function withMdnsJoinUrl(urls: string[], mdnsUrl: string | null): string[] {
+  if (!mdnsUrl || urls.includes(mdnsUrl)) return urls;
+  const localhostIdx = urls.findIndex((u) => isLoopbackJoinUrl(u));
+  if (localhostIdx < 0) return [...urls, mdnsUrl];
+  return [
+    ...urls.slice(0, localhostIdx),
+    mdnsUrl,
+    ...urls.slice(localhostIdx),
+  ];
+}
+
 export function buildNetworkInfo(port: number): {
   port: number;
   hostname: string;
@@ -53,8 +94,7 @@ export function buildNetworkInfo(port: number): {
   urls: string[];
 } {
   const lan = getLanAddresses();
-  const hostname =
-    (process.env.HOSTNAME ?? "localhost").trim().slice(0, 64) || "localhost";
+  const hostname = resolveAdvertiseHostname();
   const addresses = lan.map((r) => r.address);
   // LAN first so QR / default selection is phone-reachable; localhost last for local copy.
   const urls = [

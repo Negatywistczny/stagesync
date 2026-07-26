@@ -218,6 +218,8 @@ export type NetworkInfo = {
   version: string;
   /** Absolute host data root when reported by the server. */
   dataDir?: string;
+  /** When true, host advertises via mDNS — Admin may show `http://{host}.local:{port}`. */
+  mdnsEnabled?: boolean;
 };
 
 /**
@@ -236,6 +238,39 @@ export function pickPrimaryJoinUrl(info: NetworkInfo): string | null {
     }
   });
   return nonLoopback ?? info.urls[0] ?? null;
+}
+
+/**
+ * Read-only mDNS join URL for Admin Host. Fail soft: omit when mDNS is off,
+ * hostname unknown/localhost, or field missing — never invent a device name.
+ */
+export function mdnsJoinUrl(info: NetworkInfo): string | null {
+  if (info.mdnsEnabled !== true) return null;
+  const host = info.hostname.trim().replace(/\.local\.?$/i, "");
+  if (!host || host.toLowerCase() === "localhost" || host === "127.0.0.1") {
+    return null;
+  }
+  return `http://${host}.local:${info.port}`;
+}
+
+/** URL list for Admin: LAN / listed URLs plus mDNS row when not already present. */
+export function networkDisplayUrls(info: NetworkInfo): string[] {
+  const mdns = mdnsJoinUrl(info);
+  if (!mdns || info.urls.includes(mdns)) return info.urls;
+  const localhostIdx = info.urls.findIndex((u) => {
+    try {
+      const host = new URL(u).hostname.toLowerCase();
+      return host === "localhost" || host === "127.0.0.1" || host === "::1";
+    } catch {
+      return /localhost|127\.0\.0\.1/i.test(u);
+    }
+  });
+  if (localhostIdx < 0) return [...info.urls, mdns];
+  return [
+    ...info.urls.slice(0, localhostIdx),
+    mdns,
+    ...info.urls.slice(localhostIdx),
+  ];
 }
 
 export async function fetchNetworkInfo(): Promise<NetworkInfo> {

@@ -18,7 +18,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
-- **Admin Host:** siatka 2×2 ze stretch (Połączenie & Sieć z kafelkami Performer/Console | Logi serwera / MIDI & Safety Net | O Aplikacji); logi zawsze widoczne naprzeciw sieci, z Pauza / Wyczyść / Pobierz (.zip) na dole karty.
+- **Admin Host:** układ dwukolumnowy na wysokość treści (lewa: Połączenie & Sieć z kafelkami Performer/Console + O Aplikacji; prawa: Logi serwera + MIDI & Safety Net) — bez rozciągania pustych pól; adres mDNS `http://nazwa.local:port` obok IP gdy host go reklamuje; Wejście / Wyjście / Clock OUT w jednym rzędzie; Pauza / Wyczyść / Pobierz (.zip) na dole karty logów.
 
 #### 📚 Dokumentacja
 - **Mobile:** opis QR/APK w Host wskazuje kartę Połączenie & Sieć (kafelki Performer / Console).

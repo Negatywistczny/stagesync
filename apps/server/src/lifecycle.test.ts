@@ -10,6 +10,7 @@ describe("network-info", () => {
   it("buildNetworkInfo includes localhost url after LAN", () => {
     const info = buildNetworkInfo(4000);
     expect(info.port).toBe(4000);
+    expect(info.hostname.length).toBeGreaterThan(0);
     expect(info.urls.some((u) => u.includes("localhost:4000"))).toBe(true);
     const localhostIdx = info.urls.findIndex((u) =>
       u.includes("localhost:4000"),
@@ -19,6 +20,27 @@ describe("network-info", () => {
       expect(info.urls[0]).toBe(`http://${info.lanAddresses[0]}:4000`);
       expect(info.urls[0]).not.toContain("localhost");
     }
+  });
+
+  it("buildMdnsJoinUrl and withMdnsJoinUrl insert .local before localhost", async () => {
+    const {
+      buildMdnsJoinUrl,
+      withMdnsJoinUrl,
+    } = await import("./network-info.js");
+    expect(buildMdnsJoinUrl("Studio-Mac.local", 4000)).toBe(
+      "http://Studio-Mac.local:4000",
+    );
+    expect(buildMdnsJoinUrl("localhost", 4000)).toBeNull();
+    expect(
+      withMdnsJoinUrl(
+        ["http://10.0.0.1:4000", "http://localhost:4000"],
+        "http://Studio-Mac.local:4000",
+      ),
+    ).toEqual([
+      "http://10.0.0.1:4000",
+      "http://Studio-Mac.local:4000",
+      "http://localhost:4000",
+    ]);
   });
 
   it("pickPrimaryJoinUrl prefers non-loopback", () => {

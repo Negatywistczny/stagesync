@@ -54,7 +54,7 @@ Bez SDK skrypt wychodzi 0 (skip) — CI Node bez Androida nie pada.
 
 ## QR: dołącz vs pobierz APK
 
-W Admin → Host → **Połączenie & Sieć** (kafelki Performer / Console pod QR i adresami):
+W Admin → Host → **Połączenie & Sieć** (lewa kolumna u góry; kafelki Performer / Console obok siebie pod QR i adresami LAN / mDNS):
 
 | QR / link | Cel |
 |-----------|-----|

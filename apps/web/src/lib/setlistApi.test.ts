@@ -17,6 +17,8 @@ import {
   patchLiveDesk,
   patchSetlistAutoAdvance,
   pickPrimaryJoinUrl,
+  mdnsJoinUrl,
+  networkDisplayUrls,
   apkDownloadUrl,
   apkDownloadUrlsFromJoin,
   probeApkAvailable,
@@ -475,6 +477,56 @@ describe("setlistApi", () => {
         version: "5",
       }),
     ).toBe("http://ok.example:4000");
+  });
+
+  it("mdnsJoinUrl and networkDisplayUrls fail soft without inventing names", () => {
+    expect(
+      mdnsJoinUrl({
+        port: 4000,
+        hostname: "Studio-Mac",
+        lanAddresses: ["10.0.0.1"],
+        urls: ["http://10.0.0.1:4000", "http://localhost:4000"],
+        version: "5",
+        mdnsEnabled: true,
+      }),
+    ).toBe("http://Studio-Mac.local:4000");
+
+    expect(
+      mdnsJoinUrl({
+        port: 4000,
+        hostname: "localhost",
+        lanAddresses: [],
+        urls: ["http://localhost:4000"],
+        version: "5",
+        mdnsEnabled: true,
+      }),
+    ).toBeNull();
+
+    expect(
+      mdnsJoinUrl({
+        port: 4000,
+        hostname: "Studio-Mac",
+        lanAddresses: [],
+        urls: [],
+        version: "5",
+        mdnsEnabled: false,
+      }),
+    ).toBeNull();
+
+    expect(
+      networkDisplayUrls({
+        port: 4000,
+        hostname: "Studio-Mac",
+        lanAddresses: ["10.0.0.1"],
+        urls: ["http://10.0.0.1:4000", "http://localhost:4000"],
+        version: "5",
+        mdnsEnabled: true,
+      }),
+    ).toEqual([
+      "http://10.0.0.1:4000",
+      "http://Studio-Mac.local:4000",
+      "http://localhost:4000",
+    ]);
   });
 
   it("apkDownloadUrl and apkDownloadUrlsFromJoin build host download paths", () => {

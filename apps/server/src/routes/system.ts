@@ -3,7 +3,11 @@ import { readFileSync, readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { LogBuffer } from "../log-buffer.js";
 import type { Lifecycle } from "../lifecycle.js";
-import { buildNetworkInfo } from "../network-info.js";
+import {
+  buildMdnsJoinUrl,
+  buildNetworkInfo,
+  withMdnsJoinUrl,
+} from "../network-info.js";
 import { isRunningUnderPm2 } from "../lifecycle.js";
 import {
   ApplyUpdateBodySchema,
@@ -298,11 +302,21 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     const mdnsDisabled =
       process.env.STAGESYNC_DISABLE_MDNS === "1" ||
       process.env.STAGESYNC_DISABLE_MDNS === "true";
+    // Android Console local host: Node bonjour off, platform NSD advertises.
+    const mdnsPlatform =
+      process.env.STAGESYNC_MDNS_PLATFORM === "1" ||
+      process.env.STAGESYNC_MDNS_PLATFORM === "true";
+    const mdnsEnabled = !mdnsDisabled || mdnsPlatform;
+    const info = buildNetworkInfo(port);
+    const urls = mdnsEnabled
+      ? withMdnsJoinUrl(info.urls, buildMdnsJoinUrl(info.hostname, port))
+      : info.urls;
     res.json({
-      ...buildNetworkInfo(port),
+      ...info,
+      urls,
       version,
       ...(dataDir ? { dataDir } : {}),
-      mdnsEnabled: !mdnsDisabled,
+      mdnsEnabled,
       bindHost:
         (process.env.STAGESYNC_BIND_HOST ?? "0.0.0.0").trim() || "0.0.0.0",
       updateChannel: process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable",

@@ -1,21 +1,33 @@
-/* Admin Host — strict 2×2 stretch grid (equal cells, no uneven gaps) */
+/* Admin Host — two-column content-height masonry (no 1fr×1fr stretch) */
 
 .root {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--ss-space-4);
   height: 100%;
   min-height: 0;
   width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.column {
+  flex: 1 1 calc(50% - var(--ss-space-4) / 2);
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
-  overflow: hidden;
+  gap: var(--ss-space-4);
+  min-width: min(100%, 18rem);
+  width: auto;
+  height: fit-content;
 }
 
 .card {
   min-width: 0;
-  min-height: 0;
-  height: 100%;
+  height: auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -26,10 +38,10 @@
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: stretch;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   padding: var(--ss-space-3);
-  overflow: auto;
+  overflow: visible;
 }
 
 .cardBodyFill {
@@ -37,7 +49,7 @@
   flex-direction: column;
   gap: 0;
   align-items: stretch;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   padding: 0;
   overflow: hidden;
@@ -50,8 +62,7 @@
   flex-direction: column;
   gap: var(--ss-space-3);
   align-items: stretch;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -70,6 +81,12 @@
   flex-direction: column;
   gap: var(--ss-space-2);
   align-items: flex-start;
+}
+
+.qrSlot {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  width: min(calc(var(--ss-space-16) * 3 + var(--ss-space-8)), 100%);
 }
 
 /* Compact APK tiles under network (side-by-side) */
@@ -124,8 +141,9 @@
 .logTerminal {
   margin: 0;
   padding: var(--ss-space-3) var(--ss-space-4);
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: calc(var(--ss-space-16) * 3);
+  max-height: calc(var(--ss-space-16) * 6);
   overflow: auto;
   background: var(--ss-color-bg);
   color: var(--ss-color-text-muted);
@@ -178,6 +196,56 @@
   color: var(--ss-color-text-muted);
 }
 
+.midiBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  min-width: 0;
+  overflow: visible;
+}
+
+.midiPorts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ss-space-2);
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.midiPortRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  min-height: var(--ss-space-8);
+  padding: var(--ss-space-2);
+  border-radius: var(--ss-radius-sm);
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+}
+
+.midiLabel {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-tight);
+  white-space: nowrap;
+}
+
+.midiPortValue {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+}
+
 /* —— O Aplikacji —— */
 
 .aboutBody {
@@ -212,20 +280,21 @@
 
 @media (max-width: 768px) {
   .root {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-    grid-auto-rows: minmax(12rem, auto);
+    flex-direction: column;
     gap: var(--ss-space-3);
-    overflow-x: hidden;
-    overflow-y: auto;
   }
 
-  .card {
-    height: auto;
-    min-height: 12rem;
+  .column {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
   }
 
   .apkTiles {
+    grid-template-columns: 1fr;
+  }
+
+  .midiPorts {
     grid-template-columns: 1fr;
   }
 }
