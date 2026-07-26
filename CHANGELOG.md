@@ -5,6 +5,13 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Console (Android):** powiadomienie lokalnego hosta jest trwałe (nie da się go zrzucić gestem) — zatrzymanie tylko akcją **Zatrzymaj Host**, która bezpiecznie gasi silnik i zdejmuje foreground.
+
 ## [5.2.6](https://github.com/Negatywistyczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
 
 ### Dodano

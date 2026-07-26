@@ -440,7 +440,7 @@ class LocalHostService : Service() {
         Log.i(TAG, "onDestroy")
         stopNsdAdvertise()
         try {
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
         } catch (_: Throwable) {
             // ignore
         }
@@ -448,9 +448,10 @@ class LocalHostService : Service() {
     }
 
     /**
-     * Stop from notification action: dismiss FG notification, notify UI, then
-     * exit the `:host` process. Embedded `node::Start` has no stop JNI — killing
-     * this process frees the port without taking down the launcher UI process.
+     * Stop from notification **Zatrzymaj Host**: tear down advertise / status,
+     * notify UI, then remove the ongoing FGS notification and exit `:host`.
+     * Embedded `node::Start` has no stop JNI — killing this process frees the
+     * port without taking down the launcher UI process.
      */
     private fun stopHostCleanly() {
         Log.i(TAG, "ACTION_STOP — shutting down local host")
@@ -462,12 +463,14 @@ class LocalHostService : Service() {
                 .setPackage(packageName)
                 .putExtra(EXTRA_MESSAGE, getString(R.string.local_host_stopped)),
         )
+        stopSelf()
+        // Remove ongoing notification only after shutdown broadcast — swipe
+        // dismiss is blocked while FGS is active; this is the sole clear path.
         try {
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
         } catch (_: Throwable) {
             // ignore
         }
-        stopSelf()
         // Do not sleep on the main thread — give the UI process a moment to
         // receive ACTION_STOPPED, then exit so embedded Node frees the port.
         Thread(
@@ -520,14 +523,20 @@ class LocalHostService : Service() {
             Intent(this, LocalHostService::class.java).apply {
                 action = ACTION_STOP
             }
-        return PendingIntent.getService(
-            this,
-            REQUEST_STOP,
-            stop,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        // Prefer getForegroundService so the stop action reliably reaches the FGS.
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            PendingIntent.getForegroundService(this, REQUEST_STOP, stop, flags)
+        } else {
+            PendingIntent.getService(this, REQUEST_STOP, stop, flags)
+        }
     }
 
+    /**
+     * Persistent FGS notification — must not be swipe-dismissible while the host
+     * runs (otherwise OEMs may stop the `:host` process). Cleared only via
+     * [stopHostCleanly] → [stopForeground](STOP_FOREGROUND_REMOVE).
+     */
     private fun buildNotification(text: String): Notification {
         val openApp = openAppPendingIntent()
         val stopTitle =
@@ -546,21 +555,29 @@ class LocalHostService : Service() {
                 stopHostPendingIntent(),
             ).setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_DELETE)
                 .build()
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.local_host_notification_title))
-            .setContentText(text)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(openApp)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .addAction(
-                0,
-                getString(R.string.local_host_action_open),
-                openApp,
-            )
-            .addAction(stopAction)
-            .build()
+        val notification =
+            NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(getString(R.string.local_host_notification_title))
+                .setContentText(text)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(openApp)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setOnlyAlertOnce(true)
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+                .addAction(
+                    0,
+                    getString(R.string.local_host_action_open),
+                    openApp,
+                )
+                .addAction(stopAction)
+                .build()
+        // Belt-and-suspenders: some OEM skins ignore setOngoing alone.
+        notification.flags = notification.flags or
+            Notification.FLAG_ONGOING_EVENT or
+            Notification.FLAG_NO_CLEAR
+        return notification
     }
 
     companion object {

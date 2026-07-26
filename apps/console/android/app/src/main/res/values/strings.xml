@@ -16,7 +16,7 @@
     <string name="local_host_starting">Uruchamianie lokalnego hosta…</string>
     <string name="local_host_running">Lokalny host działa (127.0.0.1:4000)</string>
     <string name="local_host_action_open">Otwórz aplikację</string>
-    <string name="local_host_action_stop">Zamknij host</string>
+    <string name="local_host_action_stop">Zatrzymaj Host</string>
     <string name="local_host_stopped">Lokalny host zatrzymany</string>
     <string name="local_host_start_failed">Nie udało się uruchomić lokalnego hosta: %1$s</string>
     <string name="local_host_node_exited">Proces Node zakończył się (kod %1$d)</string>
