@@ -59,6 +59,7 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 | [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
 | [`spec-5.2+/`](./spec-5.2+/) | Specyfikacje wprowadzenia feature linii **5.2+** (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer HW) — hipotezy / design, nie claim Done | `open` → … |
 | [`ui/`](./ui/) | Gęstość / kontrast vs `ui-density` / `@stagesync/ui` | `open` → … |
+| [`www/`](./www/) | Audyt / strategia witryny marketingowej `apps/www` | `open` → … |
 
 ## Zasady
 
@@ -138,3 +139,11 @@ Specyfikacje intro feature linii **5.2** (Pocket Stage) i residual **5.2+** — 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
 | [Reguly-UI-dla-Cursor-V5.md](./ui/Reguly-UI-dla-Cursor-V5.md) | Deep Search / UI | [triage](./ui/Reguly-UI-dla-Cursor-V5.triage.md) | `archive` |
+
+### www/
+
+Witryna marketingowa **`apps/www`** (SEO, download hub, copy Pocket Stage). Nie SSOT produktu scenicznego; nie CHANGELOG.
+
+| Raport | Źródło | Triage | Status |
+|--------|--------|--------|--------|
+| [Audyt-i-propozycje-dla-StageSync.md](./www/Audyt-i-propozycje-dla-StageSync.md) | Gemini / AI Exporter | [triage](./www/Audyt-i-propozycje-dla-StageSync.triage.md) | `partial` |
