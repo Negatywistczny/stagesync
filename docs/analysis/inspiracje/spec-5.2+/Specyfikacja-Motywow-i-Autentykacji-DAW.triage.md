@@ -4,8 +4,9 @@
 **Status:** `partial`  
 **Obszar:** Appearance (`data-theme` / kontrast) · Operator PIN · ACL na krawędziach  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-26 (scenic theme lock usunięty z produktu; host default + lokalny motyw zostają; 4-profile matrix residual)  
-**Kąt:** wprowadzenie feature 5.2+ (nie audyt HW G1–G10)
+**Ostatnia aktualizacja:** 2026-07-26 (scenic theme lock usunięty z produktu; host default + lokalny motyw zostają; 4-profile matrix residual; link review MotywyAuth)  
+**Kąt:** wprowadzenie feature 5.2+ (nie audyt HW G1–G10)  
+**Review decyzji:** [MotywyAuth-Bezpieczenstwo-UX-Decyzje.triage.md](./MotywyAuth-Bezpieczenstwo-UX-Decyzje.triage.md) (CRIT-THM-01)
 
 ## Werdykt przydatności
 

@@ -31,3 +31,4 @@ Decision log StageSync v5. Spec / praktyka: [adr.github.io](https://adr.github.i
 | [0014](./0014-desktop-launcher.md) | Desktop Launcher (ekran startowy) | Zaakceptowany |
 | [0015](./0015-daw-reference-and-product-decisions.md) | Referencja Logic + stałe decyzje PO | Zaakceptowany |
 | [0016](./0016-android-performer-console.md) | Android Performer + Console (Kotlin WebView) | Zaakceptowany |
+| [0017](./0017-live-show-control-contracts.md) | Live Show Control — kontrakty produktowe 1–8 | Zaakceptowany |

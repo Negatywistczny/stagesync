@@ -4,8 +4,9 @@
 **Status:** `partial`  
 **Obszar:** Hot standby · manual promote · lease / split-brain · MIDI mute na Spare  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` — manual promote + MIDI mute on tree; auto-election residual)  
-**Kąt:** wprowadzenie feature 5.2+ (nie claim HA green / G-gates)
+**Ostatnia aktualizacja:** 2026-07-26 (link oceny #437; conflict shared-dir vs v1 dump)  
+**Kąt:** wprowadzenie feature 5.2+ (nie claim HA green / G-gates)  
+**Review decyzji:** [Ocena-Safety-Net-StageSync-437.triage.md](./Ocena-Safety-Net-StageSync-437.triage.md) · v1 (shared-dir REVISE): [Ocena-Safety-Net-StageSync-437-v1.triage.md](./Ocena-Safety-Net-StageSync-437-v1.triage.md) · reliability: [Ocena-Decyzji-Produktowych-StageSync.triage.md](./Ocena-Decyzji-Produktowych-StageSync.triage.md)
 
 ## Werdykt przydatności
 

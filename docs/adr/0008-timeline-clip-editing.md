@@ -16,8 +16,10 @@ Alpha.3 dostarczyła **pencil click** na Formie (1 takt, overwrite + split sąsi
 Brakuje: drag move/resize, Smart Tool, audio clipów, spójnej polityki kolizji.
 
 Pełna specyfikacja Logic Pro (overlap modes, Flex Time, MIDI recording, join bounce)
-**nie** jest celem **teraz** — stabilizujemy silnik sceniczny; zaawansowana edycja /
-recording wraca później według wzorców Logic ([ADR 0015](./0015-daw-reference-and-product-decisions.md)).
+**nie** jest celem StageSync 5.x — to **Playback & Show Control**, nie DAW rejestracji.
+Flex Time / time-stretching, nagrywanie wielościeżkowe, Take Folders, Join/Bounce =
+**permanent OUT dla linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5;
+[ADR 0015](./0015-daw-reference-and-product-decisions.md)). Powrót tylko MAJOR + nowy ADR.
 
 ## Decyzja
 
@@ -26,8 +28,8 @@ recording wraca później według wzorców Logic ([ADR 0015](./0015-daw-referenc
 | Faza | Zakres audio / edycji |
 |------|------------------------|
 | **MVP sceniczny** | import, clip na Timeline, sync z transportem, trim/move, gain/mute, prosty waveform |
-| **Później (β.x / 5.0.0 / 5.2+)** | fade, crossfade, loop-region, overlap mode, time-stretch; Flex / Takes / MIDI recording / join bounce **wg Logic** (nie „nigdy”) |
-| **Poza bieżącym silnikiem** | Zaawansowane DAW (Flex Time, Take Folders, MIDI recording, join bounce) — **odroczone**, nie permanent OUT |
+| **Później w 5.x (gdy PO)** | fade, crossfade, loop-region, overlap mode — **bez** Flex / Takes / recording / join bounce |
+| **Permanent OUT (linia 5.x)** | Flex Time / time-stretching, nagrywanie wielościeżkowe, Take Folders, Join/Bounce ([ADR 0017](./0017-live-show-control-contracts.md) §5) |
 
 Clipy audio i MIDI (przyszłość) są **powiązane z projektem** (`data/projects/<id>/`),
 nie z globalną biblioteką mediów ([ADR 0001](./0001-storage-layout.md)).
@@ -73,8 +75,8 @@ Countdown (`kind: countdown`) — **zablokowany** do edycji geometrycznej (jak �
 | Gain clip, Mute clip, Mute track, Fader track | |
 | **Pencil** na ścieżce audio | Klik w pustym → Import / File Browser i wstawienie klipu w **dokładnej** pozycji Timeline (jak Logic; implementacja → TODO) |
 
-**Time-stretch / pitch:** poza MVP silnika — odtwarzanie w **oryginalnym tempie** pliku; pozycja na
-osi = `startTicks` + `trimIn`/`trimOut` względem pliku. Zaawansowany stretch → później (Logic).
+**Time-stretch / pitch:** poza silnikiem 5.x (**permanent OUT**) — odtwarzanie w **oryginalnym tempie**
+pliku; pozycja na osi = `startTicks` + `trimIn`/`trimOut` względem pliku.
 
 **Waveform:** statyczny podgląd **peak/RMS** (precompute przy imporcie lub on-demand) —
 nie live FFT.
@@ -130,16 +132,20 @@ Brak krzywych automatyzacji w alpha/beta. Wartości persist w `project.json` (sc
 
 Szczegóły checklist → [ROADMAP.md](../ROADMAP.md). Scope per etap → `report-scope-*.md`.
 
-### 10. Poza bieżącym silnikiem (odroczone — nie „nigdy”)
+### 10. Permanent OUT (linia 5.x) vs odroczone
 
-Stabilizacja show engine **teraz**. Poniższe wraca później według wzorców Logic
-([ADR 0015](./0015-daw-reference-and-product-decisions.md)) — **nie** permanent OUT:
+**Permanent OUT dla całej linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5) —
+zmiana tylko MAJOR + nowy ADR + decyzja PO:
 
-- Flex Time, transient snap, Tab-to-transient
-- Time-stretch audio (poza MVP silnika)
-- Overlap / X-Fade / Shuffle drag modes (do czasu osobnej decyzji)
-- MIDI nagrywanie / Take Folders (MIDI clock I/O = host; recording = później)
-- Join regions (audio bounce)
+- Flex Time / time-stretching (w tym transient snap / Tab-to-transient jako część Flex)
+- Nagrywanie wielościeżkowe audio/MIDI
+- Take Folders
+- Join / Bounce regionów
+
+**Odroczone w 5.x** (nie permanent OUT — osobna decyzja PO gdy wrócą):
+
+- Overlap / X-Fade / Shuffle drag modes
+- Fade / crossfade / loop-region (gdy jeszcze nie w produkcie)
 
 Nadal poza zakresem implementacyjnym (nie backlog produktowy „nigdy”):
 
@@ -161,3 +167,5 @@ Nadal poza zakresem implementacyjnym (nie backlog produktowy „nigdy”):
 - [0003](./0003-ui-direction-booth.md) — Audio 0…N na Timeline
 - [0005](./0005-domain-axioms.md) — ACL przy audio engine / migratorze
 - [0007](./0007-snap-grid.md) — kwantyzacja; Cmd-off w §7 tego ADR
+- [0015](./0015-daw-reference-and-product-decisions.md) — Logic-First (Timeline only) + decyzje PO
+- [0017](./0017-live-show-control-contracts.md) — permanent OUT Flex/Takes/recording (5.x)

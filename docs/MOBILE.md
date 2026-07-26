@@ -100,9 +100,11 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 ## Operator: PIN, motyw, Safety Net, Sampler
 
-- **PIN:** gdy host ma `STAGESYNC_OPERATOR_PIN`, Console (Admin/Timeline) prosi o odblokowanie przed edycją; Performer może odblokować edycję notatek w ustawieniach Client.
+- **PIN:** gdy host ma `STAGESYNC_OPERATOR_PIN`, Console (Admin/Timeline) prosi o odblokowanie przed edycją; Performer może odblokować edycję notatek w ustawieniach Client. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy zablokowaniu ekranu OS / `onPause` oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
 - **Motyw:** lokalna preferencja urządzenia albo `STAGESYNC_THEME_DEFAULT` z hosta (gdy urządzenie nie ma zapisanego motywu).
-- **Safety Net:** rola Master/Spare na hoście — dotyczy MIDI OUT hosta, nie APK; Console na Spare pokazuje **Przejmij** jak desktop Admin.
+- **Safety Net:** **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). Rola Master/Spare na hoście — MIDI OUT hosta, nie APK; Console na Spare jak desktop Admin. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
+- **Panic:** globalny Mute/Stop All bez PIN tylko na **Console/Admin** (hold ~1 s). Performer **bez** globalnego Panic ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8b).
+- **Zastosuj UI:** przy `PLAYING` — Performer: twardy block; Console: ostrzeżenie + potwierdzenie ([ADR 0017](./adr/0017-live-show-control-contracts.md) §6).
 - **Cues Sampler:** próbki na klipach Cue działają w Timeline (Console / desktop); Performer tylko wyświetla banery Cue.
 
 ### Smoke (ręczne) — UI apply

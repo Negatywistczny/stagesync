@@ -4,12 +4,13 @@
 **Status:** `partial` (MVP shell **on-tree**; residual = HW smoke / H-01 / #692 delta)  
 **Obszar:** PWA Client · `apps/performer` · `apps/console` · QR/mDNS · keep-screen-on / kiosk · perf H-01  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-26 (Console lokalny host: JNI + libnode + assets/host **on-tree**; residual = HW smoke / H-01 / #692)  
-**Kąt:** wprowadzenie feature 5.2+ (nie G1–G10)
+**Ostatnia aktualizacja:** 2026-07-26 (Console lokalny host on-tree; link Krytyka Mobile-for-Live)  
+**Kąt:** wprowadzenie feature 5.2+ (nie G1–G10)  
+**Review strategii:** [Krytyka-strategii-Mobile-for-Live.triage.md](./Krytyka-strategii-Mobile-for-Live.triage.md) · [Ocena-Strategii-Produktu-StageSync-v5.triage.md](./Ocena-Strategii-Produktu-StageSync-v5.triage.md)
 
 ## Werdykt przydatności
 
-**Wysoka — kanoniczna macierz MOB-01…04 + zakazy (bez Capacitor-as-magic, bez audio/MIDI na tablecie Performer).** Zgodna z [#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../../../adr/0016-android-performer-console.md), [TODO 5.2+](../../../TODO.md). Dump ≠ claim Done; dump opisuje **tylko** pasywnego klienta (= **Performer**). **Console** = pełnoprawny odpowiednik desktopu (Admin + Timeline + Client + lokalny host docelowo) — thin-shell-only MVP **superseded**.
+**Wysoka — kanoniczna macierz MOB-01…04 + zakazy (bez Capacitor-as-magic, bez audio/MIDI na tablecie Performer).** Zgodna z [#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../../../adr/0016-android-performer-console.md), [TODO 5.2+](../../../TODO.md). Dump ≠ claim Done; dump opisuje **tylko** pasywnego klienta (= **Performer**). **Console** = pełnoprawny odpowiednik desktopu (Admin + Timeline + Client + lokalny host docelowo) — thin-shell-only MVP **superseded**. Krytyka Mobile-for-Live: KEEP Performer/sideload/Offline-First; REVISE host = konflikt z ADR IN — nie revert bez PO.
 
 ## Epiki / tematy vs `main` (5.2.0)
 

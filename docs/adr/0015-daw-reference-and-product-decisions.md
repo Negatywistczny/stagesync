@@ -17,15 +17,18 @@ Po fali Q&A PO pojawiły się **trwałe decyzje produktowe** oraz wiele pozycji 
 - **Backlog** = praca do zrobienia (TODO / issue). Sam wpis w TODO **nie** jest decyzją OUT.
 - Nie przenoś deferrali z triage / starych docs do „permanent OUT” bez PO.
 
-### 1. Reguła referencji Logic Pro
+### 1. Reguła referencji Logic Pro *(amend 2026-07-26 — [ADR 0017](./0017-live-show-control-contracts.md) §4)*
 
-W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą referencją** sprawdzonych mechanik DAW (nie pixel-clone chrome).
+W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia, geometria, import): **Logic Pro jest pierwszą referencją** sprawdzonych mechanik DAW (nie pixel-clone chrome).
+
+**Zakres Logic-First:** wyłącznie Timeline / clip / tools. **Poza zakresem Logic** (własna domena sceniczna StageSync): sieć LAN, Safety Net, mobile (Performer/Console), PIN operatora, Panic, Apply UI Offline-First, pozycjonowanie lokalnego hosta.
 
 **Kolejność konfliktów:**
 
 1. SSOT czasu + zakaz stubów ([ADR 0002](./0002-timebase-ssot.md), [ADR 0011](./0011-ui-parity-behavior.md))
-2. Logic Pro (gdy StageSync nie ma własnej specyfikacji zachowania)
-3. Inne DAW / inspiracje — wtórne
+2. Kontrakty Live Show Control ([ADR 0017](./0017-live-show-control-contracts.md)) — gdy temat należy do domeny scenicznej
+3. Logic Pro (gdy temat = edycja Timeline i StageSync nie ma własnej specyfikacji)
+4. Inne DAW / inspiracje — wtórne
 
 ### 2. Zakres UI
 
@@ -52,7 +55,7 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 |-------|--------|
 | Pencil na ścieżce **audio** | Jak Logic: klik w pustym + Pencil → Import → wstawienie w miejscu kliknięcia (**wdrożone**) |
 | No Overlap only; bez time-stretch w MVP | Bez zmiany względem [ADR 0008](./0008-timeline-clip-editing.md) |
-| Flex Time / MIDI recording / Take Folders / join bounce | **Nie** permanent OUT — silnik sceniczny teraz; zaawansowana edycja / recording później wg wzorców Logic (patrz aktualizacja ADR 0008) |
+| Flex Time / MIDI recording / Take Folders / join bounce | **Permanent OUT dla całej linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5). Powrót tylko MAJOR + nowy ADR + decyzja PO |
 | Locator vs playhead | Osobne pojęcia (jak Logic); kolory: locator `primary`, playhead `info`; scrub/seek = komenda do serwera (SSOT) |
 
 ### 5. MIDI / transport
@@ -80,7 +83,7 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 | Temat | Decyzja |
 |-------|--------|
 | Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; produkty: **Performer** (`apps/performer` → `/client`, read-only) i **Console** (`apps/console` = pełny odpowiednik desktopu: Admin + Timeline + Client + docelowo lokalny host); szczegóły shella → [ADR 0016](./0016-android-performer-console.md) |
-| Console + lokalny host (Android) | **Decyzja produktowa: IN** — Console = pełnoprawny odpowiednik desktopu na Androidzie (nie thin-shell-only). Implementacja eng fazowana (Faza 4); interim może łączyć się z hostem LAN, ale claim/cel = pełny parytet. Thin-shell-only MVP = **superseded** jako intencja produktu. |
+| Console + lokalny host (Android) | **IN jako booth awaryjny/terenowy** ([ADR 0017](./0017-live-show-control-contracts.md) §1). Console nadal niesie lokalny host w APK, ale **domyślna ścieżka UI = LAN** do hosta desktop; lokalny host = CTA wtórne. Pełny SPA (Admin + Timeline + Client) bez zmiany. Thin-shell-only = nadal superseded. |
 | Performer + lokalny host / Admin | **OUT** — Performer zawsze Client-only (read-only); bez sidecara, bez edycji Timeline/Mixer |
 | Backup Przywróć | **IN:** Admin → Przywróć… — `.bak` (pojedynczy / bulk / katalog) oraz archiwum `.zip` (+ PIN gdy włączony) |
 | Auto-update bez operatora | **Permanentnie NIE** na scenie — zawsze akcja człowieka |
@@ -90,12 +93,13 @@ W sytuacjach wątpliwości UX i logiki edycji: **Logic Pro jest pierwszą refere
 
 ## Konsekwencje
 
-- Konstytucja wskazuje ten ADR (reguła Logic + backlog ≠ decyzja).
-- ADR 0008: sekcja OUT bez absolutnego „nigdy” dla Flex/Takes/recording; wyjątek Pencil→import audio.
-- TODO: Must = G1–G10 HW; multi-out UI / H-01 / JNI = residual 5.2+; MIDI PC kanały = shipped w 5.2.0.
-- CHANGELOG tylko przy zmianach widocznych w produkcie (np. MIDI PC kanały + debounce) — nie za sam ADR.
+- Konstytucja wskazuje ten ADR (reguła Logic + backlog ≠ decyzja); zakres Logic zawężony — [ADR 0017](./0017-live-show-control-contracts.md).
+- ADR 0008: Flex/Takes/recording/join bounce = **permanent OUT 5.x** (nie „później wg Logic”).
+- TODO: Must = G1–G10 HW; multi-out UI / H-01 / JNI = residual 5.2+; MIDI PC kanały = shipped w 5.2.0; egzekucja kontraktów 0017 = backlog.
+- CHANGELOG tylko przy zmianach widocznych w produkcie — nie za sam ADR.
 
 ## Powiązane
 
 - [ADR 0002](./0002-timebase-ssot.md), [0008](./0008-timeline-clip-editing.md), [0010](./0010-desktop-shell-tauri.md), [0011](./0011-ui-parity-behavior.md)
 - [ADR 0004](./0004-updates-docker.md) — aktualizacje (bez auto bez operatora)
+- [ADR 0016](./0016-android-performer-console.md), [ADR 0017](./0017-live-show-control-contracts.md) — Live Show Control / mobile

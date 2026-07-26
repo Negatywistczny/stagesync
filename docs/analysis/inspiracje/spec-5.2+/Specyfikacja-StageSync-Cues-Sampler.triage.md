@@ -4,12 +4,13 @@
 **Status:** `closed`  
 **Obszar:** `CueClip.sample` · WebAudio one-shot/gated · GO pad · format V6  
 **Data triage:** 2026-07-25  
-**Ostatnia aktualizacja:** 2026-07-25 (`5.2.0` — MVP Sampler wydany; Later = limit)  
-**Kąt:** wprowadzenie feature 5.2+ (nie G1–G10)
+**Ostatnia aktualizacja:** 2026-07-26 (link Ocena-decyzji-Sampler-Cue; residual HW sample routing)  
+**Kąt:** wprowadzenie feature 5.2+ (nie G1–G10)  
+**Review decyzji:** [Ocena-decyzji-Sampler-Cue.triage.md](./Ocena-decyzji-Sampler-Cue.triage.md) (CRIT-CSMP-01)
 
 ## Werdykt przydatności
 
-**Wysoka — decyzja modelowa (rozszerzyć `CueClip`, nie osobny `SamplerClip`) + macierz CSMP-REF MVP vs Later.** Zgodna z [#430](https://github.com/Negatywistczny/stagesync/issues/430) i zakazem stubów Out 3–4. Dump ≠ runtime.
+**Wysoka — decyzja modelowa (rozszerzyć `CueClip`, nie osobny `SamplerClip`) + macierz CSMP-REF MVP vs Later.** Zgodna z [#430](https://github.com/Negatywistczny/stagesync/issues/430) i zakazem stubów Out 3–4. Dump ≠ runtime. Review: KEEP modelu; REVISE `CueSampleOutput` → `hw_out` = confirmed gap vs ADR multi-out (nie otwierać bez HW UI / PO).
 
 ## Epiki / tematy vs `main`
 
