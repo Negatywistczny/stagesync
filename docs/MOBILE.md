@@ -122,8 +122,7 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 ## PWA
 
-`apps/web` wystawia manifest + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”. Wake Lock API w przeglądarce + `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock).
-
+`apps/web` wystawia manifest (`display: standalone`) + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”; Safari (iOS) → Udostępnij → „Do ekranu początkowego” (pełny ekran, status bar `black-translucent`, `viewport-fit=cover`). Wake Lock API w przeglądarce (+ cichy fallback wideo gdy API niedostępne) oraz `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock). Po uśpieniu Safari Client wznawia WebSocket od razu po powrocie do karty. Gestami: `overscroll-behavior-y: none` i `touch-action: manipulation` na shellu Client.
 ## H-01 (perf Client) — sonda
 
 Opt-in sonda w Client (PWA / Performer WebView):

@@ -295,7 +295,8 @@
 
   .card {
     width: 100%;
-    /* Accordion stack owns flex grow/shrink; do not lock to content height. */
+    /* Accordion stack owns grow/shrink — unlock desktop `flex: 0 0 auto`. */
+    flex: 1 1 auto;
     height: auto;
     min-height: 0;
   }
@@ -303,8 +304,19 @@
   .cardBody,
   .cardBodyFill {
     /* Defer scroll to AdminShell `.accordionPanel` on the open card. */
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
+    overflow: auto;
+  }
+
+  .cardBodyFill {
+    overflow: hidden;
+  }
+
+  .logTerminal {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
   }
 
   .apkTiles {

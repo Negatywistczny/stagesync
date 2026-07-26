@@ -7,6 +7,10 @@
   background: var(--ss-color-bg);
   /* Client scenic: 44×44 touch targets (inherits into ShellIconButton / Button). */
   --ss-touch-min: var(--ss-touch-min-client);
+  /* iOS/PWA: no pull-to-refresh / double-tap zoom; respect notch insets. */
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .header {

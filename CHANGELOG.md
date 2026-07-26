@@ -5,12 +5,22 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.2.6](https://github.com/Negatywistyczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Client (iOS / PWA):** lepsze użytkowanie sceniczne w Safari — wake lock z fallbackiem wideo, natychmiastowy reconnect WebSocket po powrocie do karty, tryb standalone (status bar translucent, `viewport-fit=cover`), bez pull-to-refresh i dwukrotnego zoomu; baner pokazuje też **Łączenie…**. (#809)
 
 ### Zmieniono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher (Desktop / Console Android):** „Pobierz log” znika spod przycisku lokalnego hosta — dyskretna ikona **Pobierz logi** w nagłówku; przy awarii silnika pod banerem błędu jest **Pobierz logi diagnostyczne**.
+
+### Naprawiono
+
+#### 🖥️ App Shell & UI
+- **Admin Host (telefon):** akordeon Host nie rozpycha już pierwszej karty kosztem Logów / MIDI / O aplikacji — grupy kolumn to prawdziwe flex-y (bez `display: contents`), a otwarty panel przewija się wewnątrz. (#811)
 
 ## [5.2.5](https://github.com/Negatywistczny/stagesync/compare/v5.2.4...v5.2.5) - 2026-07-26
 

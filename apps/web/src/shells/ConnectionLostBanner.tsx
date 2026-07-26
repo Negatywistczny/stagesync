@@ -15,15 +15,17 @@ export type ConnectionLostBannerProps = {
  * Return button only when Tauri IPC is available (local 127.0.0.1:4000).
  */
 export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
-  if (status !== "disconnected") return null;
+  if (status === "connected") return null;
 
   const showReturn = canReturnToLauncher();
+  const text =
+    status === "connecting"
+      ? "Łączenie z hostem…"
+      : "Utracono połączenie. Próba ponownego łączenia…";
 
   return (
     <div className={styles.banner} role="alert">
-      <p className={styles.text}>
-        Utracono połączenie. Próba ponownego łączenia…
-      </p>
+      <p className={styles.text}>{text}</p>
       {showReturn ? (
         <Button
           type="button"

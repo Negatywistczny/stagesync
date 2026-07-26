@@ -308,6 +308,28 @@ describe("TransportProvider", () => {
       expect(result.current.wsStatus).toBe("connecting");
     });
 
+    it("reconnects immediately when tab becomes visible after close", async () => {
+      await mountProvider();
+      const ws = await openLatestWs();
+
+      await act(async () => {
+        ws.triggerClose();
+      });
+      expect(MockWebSocket.instances).toHaveLength(1);
+
+      await act(async () => {
+        Object.defineProperty(document, "visibilityState", {
+          configurable: true,
+          get: () => "visible",
+        });
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      await flushMicrotasks();
+
+      expect(MockWebSocket.instances).toHaveLength(2);
+      expect(wsReconnectDelayMs).toHaveBeenCalled();
+    });
+
     it("onerror is a no-op (reconnect via onclose)", async () => {
       await mountProvider();
       const ws = await openLatestWs();

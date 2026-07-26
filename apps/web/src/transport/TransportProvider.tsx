@@ -284,6 +284,24 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       };
     };
 
+    /** iOS Safari freezes WS when backgrounded — reconnect immediately on return. */
+    const onVisibility = () => {
+      if (cancelled || document.visibilityState !== "visible") return;
+      const cur = wsRef.current;
+      if (cur?.readyState === WebSocket.OPEN) {
+        sendHello();
+        return;
+      }
+      if (cur?.readyState === WebSocket.CONNECTING) return;
+      if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      reconnectAttempt = 0;
+      connect();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     void (async () => {
       try {
         const initial = await getTransport();
@@ -324,6 +342,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
       stopRaf();
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
       if (helloTimer !== null) clearInterval(helloTimer);

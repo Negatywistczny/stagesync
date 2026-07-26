@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   releaseScreenWakeLock,
@@ -6,10 +9,11 @@ import {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  document.body.replaceChildren();
 });
 
 describe("screenWakeLock", () => {
-  it("returns null when Wake Lock API is missing", async () => {
+  it("returns null when Wake Lock API and video fallback are unavailable", async () => {
     vi.stubGlobal("navigator", {});
     await expect(requestScreenWakeLock()).resolves.toBeNull();
   });
@@ -27,13 +31,34 @@ describe("screenWakeLock", () => {
     expect(release).toHaveBeenCalled();
   });
 
-  it("swallows request failures", async () => {
+  it("falls back to silent video when Wake Lock request fails", async () => {
     vi.stubGlobal("navigator", {
       wakeLock: {
         request: vi.fn().mockRejectedValue(new Error("denied")),
       },
     });
-    await expect(requestScreenWakeLock()).resolves.toBeNull();
+    const play = vi.fn().mockResolvedValue(undefined);
+    const captureStream = vi.fn().mockReturnValue({} as MediaStream);
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+      fillStyle: "",
+      fillRect: vi.fn(),
+    }) as unknown as typeof original;
+    Object.defineProperty(HTMLCanvasElement.prototype, "captureStream", {
+      configurable: true,
+      value: captureStream,
+    });
+    const playSpy = vi
+      .spyOn(HTMLMediaElement.prototype, "play")
+      .mockImplementation(play);
+
+    const handle = await requestScreenWakeLock();
+    expect(handle).not.toBeNull();
+    expect(captureStream).toHaveBeenCalled();
+    await releaseScreenWakeLock(handle);
+    playSpy.mockRestore();
+    HTMLCanvasElement.prototype.getContext = original;
+    Reflect.deleteProperty(HTMLCanvasElement.prototype, "captureStream");
   });
 
   it("releaseScreenWakeLock no-ops on null and swallows release errors", async () => {

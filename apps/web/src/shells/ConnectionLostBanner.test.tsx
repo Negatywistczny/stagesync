@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe("ConnectionLostBanner", () => {
-  it("renders nothing unless disconnected", () => {
+  it("renders nothing when connected", () => {
     const { container } = render(<ConnectionLostBanner status="connected" />);
     expect(container.firstChild).toBeNull();
   });
@@ -36,6 +36,11 @@ describe("ConnectionLostBanner", () => {
         name: "Wróć do wyboru hosta w launcherze",
       }),
     ).toBeNull();
+  });
+
+  it("shows connecting copy while reconnecting", () => {
+    render(<ConnectionLostBanner status="connecting" />);
+    expect(screen.getByRole("alert").textContent ?? "").toMatch(/Łączenie/);
   });
 
   it("offers return-to-launcher when Tauri IPC is available", () => {
