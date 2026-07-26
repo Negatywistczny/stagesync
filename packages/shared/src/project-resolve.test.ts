@@ -114,5 +114,6 @@ describe("project resolvers", () => {
     expect(formatKeySignature({ tonic: "F#", mode: "major" })).toBe("F#");
     expect(formatKeySignature({ tonic: "Bb", mode: "minor" })).toBe("Bbm");
     expect(formatKeySignature({ tonic: "Eb", mode: "major" })).toBe("Eb");
+    expect(formatKeySignature(null)).toBe("—");
   });
 });
