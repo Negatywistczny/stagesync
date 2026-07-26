@@ -20,6 +20,22 @@ vi.mock("../lib/screenWakeLock.js", () => ({
   releaseScreenWakeLock: vi.fn(async () => undefined),
 }));
 
+vi.mock("./client/ScorePane.js", () => ({
+  ScorePane: () => <div data-testid="score-pane">score</div>,
+}));
+
+vi.mock("./client/KaraokePane.js", () => ({
+  KaraokePane: () => <div data-testid="karaoke-pane">karaoke</div>,
+}));
+
+vi.mock("./client/GridPane.js", () => ({
+  GridPane: () => <div data-testid="grid-pane">grid</div>,
+}));
+
+vi.mock("./client/DrumsPane.js", () => ({
+  DrumsPane: () => <div data-testid="drums-pane">drums</div>,
+}));
+
 vi.mock("../lib/deviceNamePrefs.js", () => ({
   DEVICE_DISPLAY_NAME_CHANGED_EVENT: "stagesync:device-name",
   DEVICE_DISPLAY_NAME_MAX: 40,
@@ -77,6 +93,21 @@ afterEach(() => {
 
 function startGridRole() {
   fireEvent.click(screen.getByRole("button", { name: /Akordy/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+}
+
+function startScoreRole() {
+  fireEvent.click(screen.getByRole("button", { name: /Partytura/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+}
+
+function startKaraokeRole() {
+  fireEvent.click(screen.getByRole("button", { name: /^Tekst$/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+}
+
+function startDrumsRole() {
+  fireEvent.click(screen.getByRole("button", { name: /^Forma$/i }));
   fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
 }
 
@@ -152,4 +183,48 @@ describe("ClientShell chrome", () => {
       screen.getByRole("button", { name: "Strój koncertowy (C)" }),
     ).toBeTruthy();
   });
+
+  it("names Partytura zoom controls in role settings", () => {
+    render(<ClientShell />);
+    startScoreRole();
+    expect(screen.getByTestId("score-pane")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Partytura/i }));
+    expect(screen.getByRole("button", { name: "Pomniejsz partyturę" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Powiększ partyturę" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Resetuj zoom partytury" })).toBeTruthy();
+    expect(
+      screen.getByRole("combobox", { name: "Transpozycja oktawy partytury" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("switch", { name: /Śledź wskaźnik odtwarzania/i }),
+    ).toBeTruthy();
+  });
+
+  it("exposes Tekst role settings Auto-scroll and Tap wokalu switches", () => {
+    render(<ClientShell />);
+    startKaraokeRole();
+    expect(screen.getByTestId("karaoke-pane")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Tekst/i }));
+    expect(screen.getByRole("switch", { name: /Auto-scroll/i })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: /Tap wokalu/i })).toBeTruthy();
+  });
+
+  it("exposes Akordy role settings display switches", () => {
+    render(<ClientShell />);
+    startGridRole();
+    expect(screen.getByTestId("grid-pane")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Akordy/i }));
+    expect(screen.getByRole("switch", { name: /H zamiast B/i })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: /Litery zamiast symboli/i })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: /^Animacje$/i })).toBeTruthy();
+  });
+
+  it("exposes Forma role settings notes edit switch", () => {
+    render(<ClientShell />);
+    startDrumsRole();
+    expect(screen.getByTestId("drums-pane")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Forma/i }));
+    expect(screen.getByRole("switch", { name: /Edycja notatek Formy/i })).toBeTruthy();
+  });
+
 });
