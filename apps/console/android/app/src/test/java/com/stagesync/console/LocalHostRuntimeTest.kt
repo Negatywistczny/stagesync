@@ -65,4 +65,33 @@ class LocalHostRuntimeTest {
             ).canStart,
         )
     }
+
+    @Test
+    fun missingMessage_jniOnlyWhenNativePresent() {
+        val msg =
+            LocalHostRuntime.missingMessage(
+                LocalHostRuntime.Readiness(
+                    nativeLibPresent = true,
+                    hostAssetsPresent = true,
+                    jniBridgeLoaded = false,
+                ),
+            )
+        assertTrue(msg.contains("JNI"))
+        assertTrue(!msg.contains("libnode.so"))
+        assertTrue(!msg.contains("assets/host"))
+    }
+
+    @Test
+    fun missingMessage_readyBuildHasNoGapList() {
+        val msg =
+            LocalHostRuntime.missingMessage(
+                LocalHostRuntime.Readiness(
+                    nativeLibPresent = true,
+                    hostAssetsPresent = true,
+                    jniBridgeLoaded = true,
+                ),
+            )
+        assertTrue(msg.contains("Lokalny host nie jest jeszcze gotowy"))
+        assertTrue(!msg.contains(": "))
+    }
 }
