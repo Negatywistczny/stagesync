@@ -154,7 +154,7 @@ function renderCatalog(catalog: DownloadCatalog): void {
   root.append(
     renderCategory(
       "Android na scenie",
-      "Console i Performer na telefonie lub tablecie — ta sama sieć Wi‑Fi.",
+      "Console i Performer na telefonie lub tablecie — w zależności od potrzeb.",
       androidCards,
     ),
   );
