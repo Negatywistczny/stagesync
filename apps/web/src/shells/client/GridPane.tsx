@@ -735,6 +735,11 @@ function CycleRow({
                 ? `${parts.plain} · ${step.bars} takty`
                 : parts.plain
             }
+            aria-label={
+              step.bars > 1
+                ? `${parts.plain} · ${step.bars} takty`
+                : parts.plain
+            }
           >
             <span className={styles.cycleCellSymbol}>
               {isCdDigit ? (
