@@ -25,8 +25,8 @@
     <string name="local_host_bridge_incomplete">Silnik Node jest w APK, ale most JNI nie załadował się. Połącz się z hostem LAN albo przebuduj APK — docs/MOBILE.md.</string>
     <string name="local_host_clear_error">Wyczyść</string>
     <string name="local_host_clear_error_cd">Wyczyść błąd lokalnego hosta</string>
-    <string name="local_host_download_log">Pobierz log</string>
-    <string name="local_host_download_log_cd">Pobierz log lokalnego hosta</string>
+    <string name="local_host_download_logs">Pobierz logi</string>
+    <string name="local_host_download_diagnostic_logs">Pobierz logi diagnostyczne</string>
     <string name="local_host_share_log">Udostępnij log lokalnego hosta</string>
     <string name="local_host_log_empty">Brak logu do pobrania</string>
     <string name="local_host_log_cd">Log startu lokalnego hosta</string>

@@ -37,79 +37,102 @@
                 android:textAllCaps="true"
                 android:textColor="@color/ss_muted"
                 android:textSize="12sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/btnHeaderDownloadLog"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/local_host_download_logs"
+                android:enabled="false"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_file_text"
+                android:tooltipText="@string/local_host_download_logs" />
         </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLocalHost"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="24dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="@string/btn_local_host" />
-
-        <TextView
-            android:id="@+id/localHostStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/ss_muted"
-            android:textSize="13sp"
-            android:visibility="gone" />
 
         <LinearLayout
-            android:id="@+id/localHostErrorActions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="gone">
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnLocalHostClear"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:contentDescription="@string/local_host_clear_error_cd"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:text="@string/local_host_clear_error"
+            <TextView
+                android:id="@+id/localHostStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:textColor="@color/ss_muted"
+                android:textSize="13sp"
                 android:visibility="gone" />
 
+            <LinearLayout
+                android:id="@+id/localHostErrorActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLocalHostClear"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:contentDescription="@string/local_host_clear_error_cd"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:text="@string/local_host_clear_error"
+                    android:textColor="@color/ss_muted"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLocalHostDiagnosticLog"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:contentDescription="@string/local_host_download_diagnostic_logs"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:text="@string/local_host_download_diagnostic_logs"
+                    android:textColor="@color/ss_text"
+                    android:visibility="gone"
+                    app:strokeColor="@color/ss_border" />
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnLocalHostDownloadLog"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
-                android:contentDescription="@string/local_host_download_log_cd"
+                android:id="@+id/btnLocalHost"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="8dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:text="@string/local_host_download_log"
-                android:textColor="@color/ss_text"
-                android:visibility="gone"
-                app:strokeColor="@color/ss_border" />
-        </LinearLayout>
+                android:text="@string/btn_local_host" />
 
-        <TextView
-            android:id="@+id/localHostLog"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_input"
-            android:contentDescription="@string/local_host_log_cd"
-            android:fontFamily="monospace"
-            android:maxHeight="180dp"
-            android:padding="12dp"
-            android:scrollbars="vertical"
-            android:textColor="@color/ss_muted"
-            android:textIsSelectable="true"
-            android:textSize="12sp"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/localHostLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:contentDescription="@string/local_host_log_cd"
+                android:fontFamily="monospace"
+                android:maxHeight="180dp"
+                android:padding="12dp"
+                android:scrollbars="vertical"
+                android:textColor="@color/ss_muted"
+                android:textIsSelectable="true"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

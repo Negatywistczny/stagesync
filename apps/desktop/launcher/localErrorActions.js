@@ -1,14 +1,22 @@
 /**
- * Visibility for local-host error actions (ADR 0011: no fake / empty controls).
+ * Visibility for local-host error / log actions (ADR 0011: no fake empty CTAs).
+ * Header icon stays for discreet log access; diagnostic download is crash-path only.
  * @param {{ hasError: boolean, hasLog: boolean }} state
- * @returns {{ showClear: boolean, showDownload: boolean, showRow: boolean }}
+ * @returns {{
+ *   showClear: boolean,
+ *   showDiagnosticDownload: boolean,
+ *   headerDownloadEnabled: boolean,
+ *   showRow: boolean,
+ * }}
  */
 export function localErrorActionsVisibility({ hasError, hasLog }) {
   const showClear = Boolean(hasError);
-  const showDownload = Boolean(hasLog);
+  const showDiagnosticDownload = Boolean(hasError && hasLog);
+  const headerDownloadEnabled = Boolean(hasLog);
   return {
     showClear,
-    showDownload,
-    showRow: showClear || showDownload,
+    showDiagnosticDownload,
+    headerDownloadEnabled,
+    showRow: showClear || showDiagnosticDownload,
   };
 }

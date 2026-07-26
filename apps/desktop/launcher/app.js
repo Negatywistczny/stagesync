@@ -33,7 +33,8 @@ const el = {
   mainPanel: document.getElementById("mainPanel"),
   btnLocal: document.getElementById("btnLocal"),
   btnLocalClear: document.getElementById("btnLocalClear"),
-  btnLocalDownloadLog: document.getElementById("btnLocalDownloadLog"),
+  btnLocalDiagnosticLog: document.getElementById("btnLocalDiagnosticLog"),
+  btnHeaderDownloadLog: document.getElementById("btnHeaderDownloadLog"),
   localErrorActions: document.getElementById("localErrorActions"),
   localError: document.getElementById("localError"),
   localProgress: document.getElementById("localProgress"),
@@ -199,7 +200,8 @@ function setBusy(next) {
   el.btnLocal.disabled = next || !canLocal;
   el.btnRefresh.disabled = next || scanning;
   el.btnLocalClear.disabled = next;
-  el.btnLocalDownloadLog.disabled = next;
+  el.btnLocalDiagnosticLog.disabled = next;
+  syncLocalErrorActions();
   syncLocalButtonAria();
 }
 
@@ -348,8 +350,9 @@ function syncLocalErrorActions() {
     hasLog: Boolean(lastLocalLog.trim()),
   });
   el.btnLocalClear.hidden = !vis.showClear;
-  el.btnLocalDownloadLog.hidden = !vis.showDownload;
+  el.btnLocalDiagnosticLog.hidden = !vis.showDiagnosticDownload;
   el.localErrorActions.hidden = !vis.showRow;
+  el.btnHeaderDownloadLog.disabled = busy || !vis.headerDownloadEnabled;
 }
 
 function friendlyDiscoverError(raw) {
@@ -718,7 +721,8 @@ async function init() {
 
   el.btnLocal.addEventListener("click", () => void startLocal());
   el.btnLocalClear.addEventListener("click", () => clearLocalError());
-  el.btnLocalDownloadLog.addEventListener("click", () => downloadLocalLog());
+  el.btnLocalDiagnosticLog.addEventListener("click", () => downloadLocalLog());
+  el.btnHeaderDownloadLog.addEventListener("click", () => downloadLocalLog());
   el.btnRefresh.addEventListener("click", () => void refreshDiscovery());
   el.manualForm.addEventListener("submit", (e) => {
     e.preventDefault();

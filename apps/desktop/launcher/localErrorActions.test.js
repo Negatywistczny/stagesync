@@ -3,10 +3,11 @@ import { describe, it } from "node:test";
 import { localErrorActionsVisibility } from "./localErrorActions.js";
 
 describe("localErrorActionsVisibility", () => {
-  it("hides both controls and the row when idle", () => {
+  it("hides error row and disables header download when idle", () => {
     assert.deepEqual(localErrorActionsVisibility({ hasError: false, hasLog: false }), {
       showClear: false,
-      showDownload: false,
+      showDiagnosticDownload: false,
+      headerDownloadEnabled: false,
       showRow: false,
     });
   });
@@ -14,24 +15,27 @@ describe("localErrorActionsVisibility", () => {
   it("shows only clear when there is an error but no log", () => {
     assert.deepEqual(localErrorActionsVisibility({ hasError: true, hasLog: false }), {
       showClear: true,
-      showDownload: false,
+      showDiagnosticDownload: false,
+      headerDownloadEnabled: false,
       showRow: true,
     });
   });
 
-  it("shows clear and download when error and log are present", () => {
+  it("shows clear and diagnostic download when error and log are present", () => {
     assert.deepEqual(localErrorActionsVisibility({ hasError: true, hasLog: true }), {
       showClear: true,
-      showDownload: true,
+      showDiagnosticDownload: true,
+      headerDownloadEnabled: true,
       showRow: true,
     });
   });
 
-  it("shows only download when a log exists without an error", () => {
+  it("enables header download only when a log exists without an error", () => {
     assert.deepEqual(localErrorActionsVisibility({ hasError: false, hasLog: true }), {
       showClear: false,
-      showDownload: true,
-      showRow: true,
+      showDiagnosticDownload: false,
+      headerDownloadEnabled: true,
+      showRow: false,
     });
   });
 });

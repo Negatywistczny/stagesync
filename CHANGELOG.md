@@ -5,6 +5,13 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Launcher (Desktop / Console Android):** „Pobierz log” znika spod przycisku lokalnego hosta — dyskretna ikona **Pobierz logi** w nagłówku; przy awarii silnika pod banerem błędu jest **Pobierz logi diagnostyczne**.
+
 ## [5.2.5](https://github.com/Negatywistczny/stagesync/compare/v5.2.4...v5.2.5) - 2026-07-26
 
 ### Naprawiono

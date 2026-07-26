@@ -45,11 +45,34 @@ body {
   margin-bottom: var(--ss-space-8);
 }
 
+.heroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ss-space-3);
+  margin-bottom: var(--ss-space-4);
+}
+
 .brand {
   display: block;
-  margin: 0 0 var(--ss-space-4);
+  margin: 0;
   height: var(--ss-space-10);
   width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.heroLogBtn {
+  flex: 0 0 auto;
+  color: var(--ss-color-text-muted);
+}
+
+.heroLogBtn:disabled {
+  opacity: 0.4;
+}
+
+.heroLogIcon {
+  display: block;
 }
 
 .hero h1 {

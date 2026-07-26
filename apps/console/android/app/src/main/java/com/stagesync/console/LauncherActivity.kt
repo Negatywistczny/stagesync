@@ -123,7 +123,8 @@ class LauncherActivity : AppCompatActivity() {
             false
         }
         binding.btnLocalHostClear.setOnClickListener { clearLocalHostError() }
-        binding.btnLocalHostDownloadLog.setOnClickListener { shareLocalHostLog() }
+        binding.btnLocalHostDiagnosticLog.setOnClickListener { shareLocalHostLog() }
+        binding.btnHeaderDownloadLog.setOnClickListener { shareLocalHostLog() }
 
         binding.btnConnect.setOnClickListener {
             connect(binding.urlInput.text?.toString().orEmpty())
@@ -148,6 +149,7 @@ class LauncherActivity : AppCompatActivity() {
 
         startMdns()
         refreshLocalHostOffer()
+        syncLocalHostErrorActions()
     }
 
     override fun onResume() {
@@ -452,8 +454,10 @@ class LauncherActivity : AppCompatActivity() {
             )
         binding.localHostErrorActions.visibility = if (vis.showRow) View.VISIBLE else View.GONE
         binding.btnLocalHostClear.visibility = if (vis.showClear) View.VISIBLE else View.GONE
-        binding.btnLocalHostDownloadLog.visibility =
-            if (vis.showDownload) View.VISIBLE else View.GONE
+        binding.btnLocalHostDiagnosticLog.visibility =
+            if (vis.showDiagnosticDownload) View.VISIBLE else View.GONE
+        binding.btnHeaderDownloadLog.isEnabled = vis.headerDownloadEnabled
+        binding.btnHeaderDownloadLog.alpha = if (vis.headerDownloadEnabled) 1f else 0.4f
     }
 
     private fun shareLocalHostLog() {

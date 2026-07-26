@@ -6,11 +6,12 @@ import org.junit.Test
 
 class LocalHostErrorActionsTest {
     @Test
-    fun idle_hidesRow() {
+    fun idle_hidesRowAndDisablesHeader() {
         val v = LocalHostErrorActions.visibility(hasError = false, hasLog = false)
         assertFalse(v.showRow)
         assertFalse(v.showClear)
-        assertFalse(v.showDownload)
+        assertFalse(v.showDiagnosticDownload)
+        assertFalse(v.headerDownloadEnabled)
     }
 
     @Test
@@ -18,22 +19,25 @@ class LocalHostErrorActionsTest {
         val v = LocalHostErrorActions.visibility(hasError = true, hasLog = false)
         assertTrue(v.showRow)
         assertTrue(v.showClear)
-        assertFalse(v.showDownload)
+        assertFalse(v.showDiagnosticDownload)
+        assertFalse(v.headerDownloadEnabled)
     }
 
     @Test
-    fun errorWithLog_showsClearAndDownload() {
+    fun errorWithLog_showsClearAndDiagnostic() {
         val v = LocalHostErrorActions.visibility(hasError = true, hasLog = true)
         assertTrue(v.showRow)
         assertTrue(v.showClear)
-        assertTrue(v.showDownload)
+        assertTrue(v.showDiagnosticDownload)
+        assertTrue(v.headerDownloadEnabled)
     }
 
     @Test
-    fun logWithoutError_showsDownloadOnly() {
+    fun logWithoutError_enablesHeaderOnly() {
         val v = LocalHostErrorActions.visibility(hasError = false, hasLog = true)
-        assertTrue(v.showRow)
+        assertFalse(v.showRow)
         assertFalse(v.showClear)
-        assertTrue(v.showDownload)
+        assertFalse(v.showDiagnosticDownload)
+        assertTrue(v.headerDownloadEnabled)
     }
 }
