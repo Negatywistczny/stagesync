@@ -78,6 +78,7 @@ class LocalHostService : Service() {
             {
                 try {
                     HostProcessLog.clear(this)
+                    LocalHostStatus.clear(this)
                     HostProcessLog.writePhase(this, "probe")
                     logDeviceHints()
                     val readiness = LocalHostRuntime.probe(this)
@@ -321,6 +322,8 @@ class LocalHostService : Service() {
 
     private fun broadcastFailed(message: String) {
         Log.w(TAG, "ACTION_FAILED: $message")
+        // File first: UI process polls this when cross-process broadcast is dropped.
+        LocalHostStatus.writeFailed(this, message)
         sendBroadcast(
             Intent(ACTION_FAILED)
                 .setPackage(packageName)
@@ -330,6 +333,8 @@ class LocalHostService : Service() {
 
     private fun broadcastReady(origin: String) {
         Log.i(TAG, "ACTION_READY origin=$origin")
+        // File first: UI process polls this when cross-process broadcast is dropped.
+        LocalHostStatus.writeReady(this, origin)
         sendBroadcast(
             Intent(ACTION_READY)
                 .setPackage(packageName)

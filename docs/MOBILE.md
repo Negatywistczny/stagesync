@@ -76,7 +76,7 @@ Desktop (Tauri): lokalny host trzyma projekty w `~/Documents/StageSync`, a APK s
 
 W repo (sideload MVP) leżą debug APK: `data/downloads/stagesync-performer.apk` oraz `stagesync-console.apk` (build `assembleDebug` / `scripts/build-apk.sh`). Release signed — gdy CI / keystore.
 
-**Console local host — który APK zainstalować:** pakiet `com.stagesync.console.debug`, `versionName` zgodny z monorepo (obecnie 5.2.2), **`versionCode` ≥ 50206** (host pack bez Unicode property escapes w `path-to-regexp`; błąd startu z **Wyczyść** / **Pobierz log**; `libnode` digidem 16 KB). Sprawdź w Ustawieniach Androida → Aplikacje → StageSync Console → zaawansowane / informacje o aplikacji. Starszy `versionCode` 50204 pada na imporcie Express (`\p{ID_Start}`); 50205 ma ICU-safe pack, ale bez przycisków logu w UI.
+**Console local host — który APK zainstalować:** pakiet `com.stagesync.console.debug`, `versionName` zgodny z monorepo (obecnie 5.2.2), **`versionCode` ≥ 50207** (po `health-ok` launcher otwiera Admin mimo osobnego procesu `:host`; host pack bez Unicode property escapes w `path-to-regexp`; błąd startu z **Wyczyść** / **Pobierz log**; `libnode` digidem 16 KB). Sprawdź w Ustawieniach Androida → Aplikacje → StageSync Console → zaawansowane / informacje o aplikacji. Starszy `versionCode` 50204 pada na imporcie Express (`\p{ID_Start}`); 50206 ma ICU-safe pack + log UI, ale może zostać na „Uruchamianie…” mimo gotowego hosta.
 
 Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz fazę startu do `local-host-phase.txt` — po padnięciu `:host` launcher dokleja ostatnie linie do komunikatu błędu (tag logcat: `SsLocalHost`).
 

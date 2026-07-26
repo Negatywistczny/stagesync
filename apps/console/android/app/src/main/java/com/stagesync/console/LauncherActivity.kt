@@ -44,6 +44,7 @@ class LauncherActivity : AppCompatActivity() {
     private var hostTerminal = false
     private var lastLocalHostError = ""
     private var localHostHasError = false
+    private var statusPollRunnable: Runnable? = null
 
     private val hostDeathConnection =
         object : ServiceConnection {
@@ -90,28 +91,16 @@ class LauncherActivity : AppCompatActivity() {
                 if (intent == null) return
                 when (intent.action) {
                     LocalHostService.ACTION_FAILED -> {
-                        hostTerminal = true
-                        unbindHostWatch()
                         val message =
                             intent.getStringExtra(LocalHostService.EXTRA_MESSAGE)
                                 ?: getString(R.string.err_health)
-                        setLocalHostBusy(false)
-                        showLocalHostError(message)
-                        Toast.makeText(
-                            this@LauncherActivity,
-                            toastSummary(message),
-                            Toast.LENGTH_LONG,
-                        ).show()
+                        onLocalHostFailed(message)
                     }
                     LocalHostService.ACTION_READY -> {
-                        hostTerminal = true
-                        unbindHostWatch()
                         val origin =
                             intent.getStringExtra(LocalHostService.EXTRA_ORIGIN)
                                 ?: LocalHostRuntime.LOOPBACK_ORIGIN
-                        setLocalHostBusy(false)
-                        clearLocalHostErrorUi(clearFiles = false)
-                        connect(origin)
+                        onLocalHostReady(origin)
                     }
                 }
             }
@@ -157,6 +146,7 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         cancelEmptyScanHint()
+        stopStatusPoll()
         mdns?.stop()
         unbindHostWatch()
         try {
@@ -186,11 +176,14 @@ class LauncherActivity : AppCompatActivity() {
     private fun startLocalHost() {
         setLocalHostBusy(true)
         hostTerminal = false
+        LocalHostStatus.clear(this)
         showLocalHostProgress(getString(R.string.local_host_starting))
+        startStatusPoll()
         try {
             bindHostWatch()
             LocalHostService.start(this)
         } catch (err: Throwable) {
+            stopStatusPoll()
             unbindHostWatch()
             setLocalHostBusy(false)
             val message =
@@ -201,6 +194,54 @@ class LauncherActivity : AppCompatActivity() {
             showLocalHostError(message)
             Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
         }
+    }
+
+    /**
+     * Poll shared status written by `:host` — broadcasts often never arrive at a
+     * dynamically registered RECEIVER_NOT_EXPORTED across process boundaries.
+     */
+    private fun startStatusPoll() {
+        stopStatusPoll()
+        val poll =
+            object : Runnable {
+                override fun run() {
+                    if (!localHostBusy || hostTerminal) return
+                    when (val snap = LocalHostStatus.read(this@LauncherActivity)) {
+                        is LocalHostStatus.Snapshot.Ready -> onLocalHostReady(snap.origin)
+                        is LocalHostStatus.Snapshot.Failed -> onLocalHostFailed(snap.message)
+                        LocalHostStatus.Snapshot.None ->
+                            mainHandler.postDelayed(this, STATUS_POLL_MS)
+                    }
+                }
+            }
+        statusPollRunnable = poll
+        mainHandler.postDelayed(poll, STATUS_POLL_MS)
+    }
+
+    private fun stopStatusPoll() {
+        statusPollRunnable?.let { mainHandler.removeCallbacks(it) }
+        statusPollRunnable = null
+    }
+
+    private fun onLocalHostReady(origin: String) {
+        if (hostTerminal) return
+        hostTerminal = true
+        stopStatusPoll()
+        unbindHostWatch()
+        setLocalHostBusy(false)
+        clearLocalHostErrorUi(clearFiles = false)
+        Log.i(TAG, "local host READY origin=$origin")
+        connect(origin)
+    }
+
+    private fun onLocalHostFailed(message: String) {
+        if (hostTerminal) return
+        hostTerminal = true
+        stopStatusPoll()
+        unbindHostWatch()
+        setLocalHostBusy(false)
+        showLocalHostError(message)
+        Toast.makeText(this, toastSummary(message), Toast.LENGTH_LONG).show()
     }
 
     private fun bindHostWatch() {
@@ -228,7 +269,20 @@ class LauncherActivity : AppCompatActivity() {
     private fun onHostProcessDied() {
         hostBound = false
         if (hostTerminal || !localHostBusy) return
+        // Prefer a FAILED status written just before process death.
+        when (val snap = LocalHostStatus.read(this)) {
+            is LocalHostStatus.Snapshot.Failed -> {
+                onLocalHostFailed(snap.message)
+                return
+            }
+            is LocalHostStatus.Snapshot.Ready -> {
+                onLocalHostReady(snap.origin)
+                return
+            }
+            LocalHostStatus.Snapshot.None -> Unit
+        }
         hostTerminal = true
+        stopStatusPoll()
         val message = LocalHostRuntime.processDiedMessage(this)
         Log.e(TAG, HostProcessLog.appendDiagnostics(this, message))
         setLocalHostBusy(false)
@@ -469,5 +523,6 @@ class LauncherActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "SsLocalHost"
+        private const val STATUS_POLL_MS = 350L
     }
 }
