@@ -19,6 +19,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ## Etap 5.3+ (Przyszłość)
 
+- [ ] **StageSync Performer (iOS):** natywna powłoka Client-only na iPhonie/iPadzie (WebView + launcher QR/URL/recent jak Android Performer) — dystrybucja poza Google Play (TestFlight / sideload wg decyzji); bez lokalnego hosta; decyzja stacku (Swift/WKWebView vs inny) + ADR przed implementacją ([ADR 0016](./adr/0016-android-performer-console.md) = Android SSOT; [MOBILE.md](./MOBILE.md))
 - [ ] **Motywy (residual):** pełna macierz 4 profili skór / THM-03 niezmienniki ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md))
 - [ ] **Mixer — HW Out 3–4 (WebAudio multi-out):** UI + ChannelMerger przy realnym `maxChannelCount` ≥ 4 ([triage](./analysis/inspiracje/spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md))
 - [ ] **Client transport — H-01 (residual):** split context / throttle `displayTicks` pod profil Grid/Karaoke @ 90–120 Hz ([MOBILE.md](./MOBILE.md) § H-01; [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md))
