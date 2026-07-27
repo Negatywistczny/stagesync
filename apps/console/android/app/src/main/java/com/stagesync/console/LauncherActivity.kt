@@ -521,7 +521,10 @@ class LauncherActivity : AppCompatActivity() {
             SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss", Locale.US)
                 .apply { timeZone = TimeZone.getTimeZone("UTC") }
                 .format(Date())
-        val file = File(cacheDir, "stagesync-host-$stamp.log")
+        // Keep an explicit, stable filename for share-target “save as…”
+        // (some targets derive it from chooser/subject, not the URI path).
+        val fileName = "stagesync-host-$stamp.txt"
+        val file = File(cacheDir, fileName)
         file.writeText("$export\n")
         val uri =
             FileProvider.getUriForFile(
@@ -533,10 +536,11 @@ class LauncherActivity : AppCompatActivity() {
             Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.local_host_share_log))
+                putExtra(Intent.EXTRA_SUBJECT, fileName)
+                putExtra(Intent.EXTRA_TITLE, fileName)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-        startActivity(Intent.createChooser(send, getString(R.string.local_host_share_log)))
+        startActivity(Intent.createChooser(send, fileName))
     }
 
     private fun toastSummary(message: String): String {

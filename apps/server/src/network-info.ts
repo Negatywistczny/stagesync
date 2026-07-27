@@ -63,8 +63,21 @@ export function resolveAdvertiseHostname(): string {
 }
 
 const HOST_DISPLAY_NAME_MAX = 40;
-const HOST_DISPLAY_NAME_RE =
-  /^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,39}$/u;
+function makeHostDisplayNameRegex(): RegExp {
+  try {
+    // Feature-detect Unicode property escapes: some JS bundles/environments
+    // can fail to parse `\p{...}` syntax at import-time.
+    return new RegExp(
+      "^[\\p{L}\\p{N}][\\p{L}\\p{N} ._-]{0,39}$",
+      "u",
+    );
+  } catch {
+    // Fallback: ASCII-only. Better to accept a narrower set than crash the host.
+    return /^[A-Za-z0-9][A-Za-z0-9 ._-]{0,39}$/;
+  }
+}
+
+const HOST_DISPLAY_NAME_RE = makeHostDisplayNameRegex();
 
 /** Operator-facing LAN discovery title (mDNS TXT `hostname`). */
 export function resolveHostDisplayName(): string {
