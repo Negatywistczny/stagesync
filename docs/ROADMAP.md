@@ -100,6 +100,8 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 Tag `v5.3.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
+**Decyzja release (2026-07-27):** kolejne domknięcia parity/chrome po `v5.3.0` tniemy jako **patche 5.3.x**; linia 5.4 nie jest otwierana tym cutem.
+
 **Dostarczone:** Mixer multi-out HW (ChannelMerger N, CRUD patchy, track/bus/cue → `hw_out`) gdy `maxChannelCount ≥ 4` — przy stereo strefa HW Out ukryta (bez atrap); oczka widoczności stref Mixer; **5 nazwanych skór** (Booth Amber / Daylight / Midnight Cyan / Matrix Green / Neon Ember, `data-theme`); menu OS Plik/Edycja/Widok (Wygląd) rozszerzone o Timeline/Client.
 
 **Nie otwiera:** Live Input / Audio Suite / automation / VSTi ([ADR 0018](./adr/0018-future-audio-architecture.md)).

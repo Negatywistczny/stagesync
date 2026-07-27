@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.3.0` (`v5.3.0`) — linia **5.3** = **Colors & Channels**; następny fokus produktowy **5.x Pitch & FX Busses** / residual ops.  
+**Stan:** ostatni cut `5.3.2` (`v5.3.2`) — linia **5.3** = **Colors & Channels**; następny fokus produktowy **5.x Pitch & FX Busses** / residual ops.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -10,6 +10,8 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
+**Release policy (2026-07-27):** bieżący cut po konsolidacji parity/chrome jest traktowany jako **PATCH 5.3.x** (bez otwierania linii 5.4).
+
 ## Must (operator residual)
 
 - [ ] **HW smoke multi-out** na interfejsie ≥ 4 ch (mac/Win) — checklista w [DESKTOP.md](./DESKTOP.md); **bez claim green**
@@ -18,7 +20,6 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 ## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
-- [ ] **Release hygiene 5.4:** ustalić i zatwierdzić nazwę linii **5.4** (jak `Overture`/`Launch & Mix`/`Pocket Stage`/`Colors & Channels`) przed kolejnym cutem `chore(release): 5.4.x` i nagłówkiem CHANGELOG
 
 ## Etap 5.x+ / Later (po Colors & Channels)
 
