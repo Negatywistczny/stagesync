@@ -73,7 +73,7 @@ const KEY_GROUPS: ShortcutGroup[] = [
     ],
   },
   {
-    heading: "Transport",
+    heading: "Odtwarzanie",
     rows: [
       { keys: "Spacja", action: "Play / Pause (Tap: mark linii)" },
       { keys: "Shift+Spacja", action: "Play od startu zaznaczonego klipu" },
@@ -110,7 +110,7 @@ const KEY_GROUPS: ShortcutGroup[] = [
 
 const TOOL_SECTIONS: ToolSection[] = [
   {
-    title: "Podstawy & Transport",
+    title: "Podstawy & Odtwarzanie",
     bullets: [
       {
         term: "Ścieżki",
@@ -133,7 +133,7 @@ const TOOL_SECTIONS: ToolSection[] = [
           "X = Mikser (bez panelu Właściwości); I / Właściwości = Inspector w Timeline; ? = ta pomoc.",
       },
       {
-        term: "Transport",
+        term: "Odtwarzanie",
         detail:
           "Play / Pause / Stop (Enter/Home = stop + początek); pętla C; U = cycle z klipu audio; metronom K; Podążaj za wskaźnikiem.",
       },

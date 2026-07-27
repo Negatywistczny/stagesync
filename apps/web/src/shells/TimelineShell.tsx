@@ -6009,7 +6009,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
 
         <div className={styles.toolbarCenter}>
-          <div className={styles.transport} role="group" aria-label="Transport odtwarzania">
+          <div className={styles.transport} role="group" aria-label="Odtwarzanie">
             <ShellIconButton
               label="Zatrzymaj"
               disabled={commandPending}

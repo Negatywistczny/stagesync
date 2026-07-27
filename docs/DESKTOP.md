@@ -36,7 +36,7 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 
 ## Menu systemowe
 
-**StageSync** | **Plik** | **Edycja** | **Widok** | **Transport** | **Host** | **Pomoc**
+**StageSync** | **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**
 
 | Menu | Pozycje |
 |------|---------|
@@ -44,7 +44,7 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 | **Plik** | Nowy (Utwór / Wzór / Z wzoru…); Otwórz…; Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zapisz jako…; Importuj / Eksportuj bibliotekę…; Zamknij projekt |
 | **Edycja** | Cofnij / Ponów; Wytnij / Kopiuj / Wklej (schowek klipów Timeline); Usuń; Zaznacz wszystko |
 | **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Powiększ / Pomniejsz / Rzeczywisty rozmiar; Wygląd…; Pełny ekran |
-| **Transport** | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`) |
+| **Odtwarzanie** | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`) |
 | **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
 | **Pomoc** | Skróty klawiszowe…; Dokumentacja online; Zgłoś problem; Eksport logów; O programie (Win/Linux) |
 

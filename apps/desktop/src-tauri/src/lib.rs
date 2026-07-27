@@ -383,7 +383,7 @@ fn window_url_is_launcher(app: &tauri::AppHandle) -> bool {
     }
 }
 
-/// Desktop OS menu Faza A+B+C: StageSync | Plik | Widok | Transport | Host | Pomoc (ADR 0010).
+/// Desktop OS menu Faza A+B+C: StageSync | Plik | Widok | Odtwarzanie | Host | Pomoc (ADR 0010).
 fn dispatch_menu_action(app: &tauri::AppHandle, action: &str) {
     let Some(window) = app.get_webview_window("main") else {
         return;
@@ -691,7 +691,7 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
     )?;
     let transport_submenu = Submenu::with_items(
         app,
-        "Transport",
+        "Odtwarzanie",
         true,
         &[
             &transport_play,
