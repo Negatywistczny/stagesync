@@ -4,6 +4,7 @@ import { isDesktopShell } from "../../lib/desktopBridge.js";
 import type { OperatorAppId } from "../../lib/operatorNavRoutes.js";
 import { shouldShowOperatorNav } from "../../lib/operatorSurface.js";
 import { openPreferences } from "../../lib/preferencesEvents.js";
+import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import {
   IconDiscard,
   IconFullscreen,
@@ -64,6 +65,8 @@ export type AppHeaderProps = {
    * Admin keeps Level 1 always visible (`hideOnDesktop={false}`).
    */
   hideOnDesktop?: boolean;
+  /** Compact mobile: operator bar above handles notch inset — skip duplicate padding. */
+  operatorNavExternal?: boolean;
 };
 
 /**
@@ -89,18 +92,29 @@ export function AppHeader({
   wordmarkOnClick,
   wordmarkTitle,
   hideOnDesktop = true,
+  operatorNavExternal = false,
 }: AppHeaderProps) {
   const { pathname } = useLocation();
+  const isCompactMobile = useMqMobileCompact();
   const showOperatorNav = operatorApp
     ? shouldShowOperatorNav(pathname)
     : false;
+  const embedOperatorNav = showOperatorNav && operatorApp && !isCompactMobile;
 
   if (hideOnDesktop && isDesktopShell()) return null;
 
   const handleSettings = onSettings ?? (() => openPreferences());
 
   return (
-    <header className={styles.header} data-ss-level="1">
+    <header
+      className={[
+        styles.header,
+        operatorNavExternal ? styles.compactStacked : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      data-ss-level="1"
+    >
       <div className={styles.brand}>
         <ShellWordmark
           suffix={suffix}
@@ -113,9 +127,9 @@ export function AppHeader({
       {center ? <div className={styles.center}>{center}</div> : null}
 
       <div className={styles.actions}>
-        {showOperatorNav && operatorApp ? (
+        {embedOperatorNav ? (
           <OperatorNav activeApp={operatorApp} className={styles.operatorNav} />
-        ) : (
+        ) : !showOperatorNav ? (
           <nav className={styles.appJump} aria-label="Aplikacje">
             {appJump.map((link) =>
               link.disabled ? (
@@ -133,7 +147,7 @@ export function AppHeader({
               ),
             )}
           </nav>
-        )}
+        ) : null}
 
         {history ? (
           <>

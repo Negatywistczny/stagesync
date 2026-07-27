@@ -23,6 +23,8 @@ export type OperatorNavProps = {
   activeApp: OperatorAppId;
   section?: AdminSectionId;
   onSectionChange?: (section: AdminSectionId) => void;
+  /** Center slot (Timeline song title, Client status, etc.). */
+  center?: ReactNode;
   onSettings?: () => void;
   settingsLabel?: string;
   /** Actions after settings (e.g. Admin restart / fullscreen). */
@@ -34,6 +36,7 @@ export function OperatorNav({
   activeApp,
   section = "songs",
   onSectionChange,
+  center,
   onSettings,
   settingsLabel = "Ustawienia",
   trailing,
@@ -65,14 +68,6 @@ export function OperatorNav({
 
   return (
     <nav className={rootClass} aria-label="Nawigacja operatora" data-ss-level="1">
-      {activeApp === "admin" ? (
-        <AdminSectionNav
-          variant={variant}
-          section={section}
-          onSectionChange={onSectionChange}
-        />
-      ) : null}
-
       <div className={styles.segments} aria-label="Aplikacje">
         {OPERATOR_APP_SEGMENTS.map((seg) => {
           const selected = activeApp === seg.id;
@@ -124,6 +119,18 @@ export function OperatorNav({
             </Link>
           );
         })}
+      </div>
+
+      <div className={styles.context}>
+        {activeApp === "admin" ? (
+          <AdminSectionNav
+            variant={variant}
+            section={section}
+            onSectionChange={onSectionChange}
+          />
+        ) : center ? (
+          <div className={styles.contextBody}>{center}</div>
+        ) : null}
       </div>
 
       <div className={styles.aside}>

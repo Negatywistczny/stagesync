@@ -130,6 +130,10 @@
     padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
   }
 
+  .compactStacked {
+    padding-top: var(--ss-space-1);
+  }
+
   .center {
     display: none;
   }

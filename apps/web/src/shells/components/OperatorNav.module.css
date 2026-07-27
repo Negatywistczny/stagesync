@@ -1,6 +1,6 @@
 .root {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--ss-space-2) var(--ss-space-3);
   flex: 1 1 auto;
@@ -13,6 +13,26 @@
   align-items: center;
   gap: var(--ss-space-1);
   flex: 0 0 auto;
+}
+
+.context {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contextBody {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  color: var(--ss-color-text-muted);
+  text-align: center;
 }
 
 .segmentLink,
@@ -56,6 +76,7 @@
 .sectionSelect {
   flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
 }
 
 .sectionSelectInput {
@@ -76,36 +97,43 @@
 /* —— compact (≤640px) —— */
 
 .compact {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "segments context aside";
   align-items: center;
   gap: var(--ss-space-1) var(--ss-space-2);
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  min-height: var(--ss-touch-min-client);
   max-height: var(--ss-touch-min-client);
 }
 
-.compact .sectionSelect {
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: min(42%, 11rem);
-  order: 1;
+.compact .segments {
+  grid-area: segments;
+  flex-shrink: 0;
+}
+
+.compact .context {
+  grid-area: context;
+  flex-shrink: 1;
+  justify-content: center;
+}
+
+.compact .aside {
+  grid-area: aside;
+  flex-shrink: 0;
+  margin-left: 0;
 }
 
 .compact .sections {
   display: none;
 }
 
-.compact .segments {
-  flex: 0 1 auto;
+.compact .sectionSelect {
+  flex: 1 1 auto;
   min-width: 0;
-  order: 2;
-}
-
-.compact .aside {
-  flex: 0 0 auto;
-  margin-left: auto;
-  order: 3;
+  max-width: 100%;
 }
 
 .compact .segmentLink,
@@ -122,6 +150,10 @@
   color: var(--ss-color-primary);
   border-color: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-border));
   background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+}
+
+.compact .contextBody {
+  font-size: var(--ss-text-xs);
 }
 
 /* —— tablet (641–1024px) —— */

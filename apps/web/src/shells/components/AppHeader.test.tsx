@@ -6,7 +6,12 @@ vi.mock("../../lib/desktopBridge.js", () => ({
   isDesktopShell: vi.fn(() => false),
 }));
 
+vi.mock("../../lib/useMqMobileCompact.js", () => ({
+  useMqMobileCompact: vi.fn(() => false),
+}));
+
 import { isDesktopShell } from "../../lib/desktopBridge.js";
+import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import { AppHeader } from "./AppHeader.js";
 
 function html(node: React.ReactElement): string {
@@ -16,6 +21,7 @@ function html(node: React.ReactElement): string {
 describe("AppHeader", () => {
   afterEach(() => {
     vi.mocked(isDesktopShell).mockReturnValue(false);
+    vi.mocked(useMqMobileCompact).mockReturnValue(false);
   });
 
   it("renders Level 1 chrome on web", () => {
@@ -80,6 +86,27 @@ describe("AppHeader", () => {
     expect(out).toContain("Odrzuć");
     expect(out).toContain("aria-pressed=\"true\"");
     expect(out).toContain("Cofnij");
+  });
+
+  it("embeds OperatorNav for timeline on tablet", () => {
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
+      </MemoryRouter>,
+    );
+    expect(out).toContain('aria-label="Nawigacja operatora"');
+    expect(out).toContain("Timeline");
+  });
+
+  it("omits embedded OperatorNav on compact mobile — shell owns the bar", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
+      </MemoryRouter>,
+    );
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
+    expect(out).toContain('data-ss-level="1"');
   });
 
   it("exposes PL chrome action labels for help, appearance, fullscreen", () => {

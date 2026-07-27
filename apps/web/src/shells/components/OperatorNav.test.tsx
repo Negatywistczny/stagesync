@@ -26,6 +26,7 @@ vi.mock("../../lib/lastTimelineProject.js", () => ({
 }));
 
 import { OperatorNav } from "./OperatorNav.js";
+import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 
 function html(node: React.ReactElement): string {
   return renderToStaticMarkup(<MemoryRouter>{node}</MemoryRouter>);
@@ -34,6 +35,7 @@ function html(node: React.ReactElement): string {
 describe("OperatorNav", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useMqMobileCompact).mockReturnValue(false);
   });
 
   it("renders app segments and admin sections on tablet", () => {
@@ -55,5 +57,28 @@ describe("OperatorNav", () => {
     const out = html(<OperatorNav activeApp="timeline" />);
     expect(out).toContain("Timeline");
     expect(out).toContain('aria-current="page"');
+  });
+
+  it("renders center slot before settings on compact", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    const out = html(
+      <OperatorNav activeApp="timeline" center="Mój utwór" />,
+    );
+    expect(out.indexOf("Admin")).toBeLessThan(out.indexOf("Mój utwór"));
+    expect(out.indexOf("Mój utwór")).toBeLessThan(out.indexOf("Ustawienia"));
+    expect(out).toContain('aria-label="Aplikacje"');
+  });
+
+  it("keeps admin segments left of section select on compact", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    const out = html(
+      <OperatorNav
+        activeApp="admin"
+        section="songs"
+        onSectionChange={() => {}}
+      />,
+    );
+    expect(out.indexOf("Admin")).toBeLessThan(out.indexOf("Utwory"));
+    expect(out.indexOf("Utwory")).toBeLessThan(out.indexOf("Ustawienia"));
   });
 });

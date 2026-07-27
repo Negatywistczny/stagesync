@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { createPortal, flushSync } from "react-dom";
-import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
+import { Link, useBlocker, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Slider, Select, useContextMenu } from "@stagesync/ui";
 import {
   resolveMeterAt,
@@ -408,6 +408,8 @@ import {
 } from "../lib/desktopMenuEvents.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
+import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
+import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -451,6 +453,7 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { AppHeader } from "./components/AppHeader.js";
+import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
 import styles from "./TimelineShell.module.css";
 
@@ -552,6 +555,9 @@ const TOOL_BY_KEY = Object.fromEntries(
 export function TimelineShell() {
   useAnnounceDevicePresence(["timeline"]);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isCompactMobile = useMqMobileCompact();
+  const showOperatorNav = shouldShowOperatorNav(pathname);
 
   useEffect(() => {
     markOperatorSession();
@@ -5936,10 +5942,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           }
         }}
       />
+      {isCompactMobile && showOperatorNav ? (
+        <div className={styles.operatorNavBar}>
+          <OperatorNav
+            activeApp="timeline"
+            center={draftProject?.name ?? projectId ?? undefined}
+          />
+        </div>
+      ) : null}
       <AppHeader
         suffix="Timeline"
         version={APP_VERSION}
         operatorApp="timeline"
+        operatorNavExternal={isCompactMobile && showOperatorNav}
         history={{
           canUndo: Boolean(draftHistory && canUndo(draftHistory)),
           canRedo: Boolean(draftHistory && canRedo(draftHistory)),
