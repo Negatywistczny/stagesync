@@ -4,7 +4,7 @@
 **Status:** `partial`  
 **Obszar:** `apps/server` — `/ws/transport`, broadcast, presence, huby opcjonalne  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27 — coverage `ws.ts` **81%** lines / **90%** branches (`ws.integration.test.ts` + `broadcastJson` try/catch)
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `ws.ts` **81.37%** lines / **89.65%** branches (`ws.integration.test.ts` + `broadcastJson` try/catch)
 
 ## Werdykt przydatności
 
@@ -23,4 +23,4 @@
 
 ## Limit
 
-Lines **81%** (cel 100%) — gałęzie error-path `wss` init / edge hubów bez pełnego stub matrix.
+Lines **81.37%** (cel 100%) — gałęzie error-path `wss` init / edge hubów bez pełnego stub matrix.
