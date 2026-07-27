@@ -4,11 +4,11 @@
 **Status:** `partial`  
 **Obszar:** `apps/web` — `audioLaneEdit.ts`  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `audioLaneEdit.ts` **97.17%** lines / **80.73%** branches
 
 ## Werdykt przydatności
 
-**Średnia–wysoka.** `audioLaneEdit.test.ts` jest obszerny; dump trafnie wskazuje negatywy bus DAG i limit busów.
+**Średnia–wysoka.** P0 bus cycle + limit busów domknięte; pozostałe: split edges, countdown clamp, crossfade negatywy.
 
 ## Priorytety weryfikacji
 
@@ -22,6 +22,6 @@
 | TST-ALE-06 | `applyAbutCrossfadeForClip` | P2 | `confirmed` | Brak negatywów sąsiada/clamp |
 | TST-ALE-07 | `setAudioTrackOutput` stale bus/hw | P1 | `fixed` | `audioLaneEdit.test.ts` — stale ids |
 
-## Następny krok eng
+## Limit
 
-P0/P1 z fazy 4 domknięte; TST-ALE-02/05/06 opcjonalnie.
+TST-ALE-02/05 (P1) + TST-ALE-06 (P2) — opcjonalnie; P0 i większość P1 domknięta.

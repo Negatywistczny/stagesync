@@ -4,11 +4,11 @@
 **Status:** `partial`  
 **Obszar:** `apps/web` — `audioPlayback.ts`  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `audioPlayback.ts` **75.35%** lines / **70.45%** branches
 
 ## Werdykt przydatności
 
-**Średnia.** Dump nieaktualny względem `audioPlayback.test.ts` (~1000+ linii): sync, cache race, cue, HW — duża część już jest.
+**Średnia.** Faza 4 domknęła release/HW/cue/metry; pozostałe: pełna macierza helperów + mid-fade ramp.
 
 ## Priorytety weryfikacji
 
@@ -22,6 +22,6 @@
 | TST-APB-06 | Race cache + `stopEpoch` | P0 | `rejected` | „late decode after clearAudioBufferCache…” (L568+) |
 | TST-APB-07 | Metry bez analysera | P2 | `fixed` | `readTrackMeterDb` floor + after sync |
 
-## Następny krok eng
+## Limit
 
-TST-APB-02/04/05/07 domknięte w fazie 4; TST-APB-03 opcjonalnie.
+Lines **75.35%**; TST-APB-01/03 (P1) — macierza helperów i mid-fade-out ramp.
