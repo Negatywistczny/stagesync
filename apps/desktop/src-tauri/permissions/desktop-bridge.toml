@@ -42,5 +42,6 @@ commands.allow = [
   "probe_host_health",
   "connect_remote_host",
   "start_local_host",
+  "prepare_host_restart",
   "return_to_launcher",
 ]

@@ -67,7 +67,7 @@ class LauncherActivity : AppCompatActivity() {
         }
         binding.btnQr.setOnClickListener { startQr() }
         binding.btnRecent.setOnClickListener { showRecentDialog() }
-        binding.status.setOnClickListener { startMdns() }
+        binding.btnRefresh.setOnClickListener { startMdns() }
 
         startMdns()
         maybeCheckReleaseApkUpdate()
@@ -141,10 +141,12 @@ class LauncherActivity : AppCompatActivity() {
     private fun startMdns() {
         cancelEmptyScanHint()
         lastHostCount = 0
+        setMdnsRefreshing(true)
         binding.status.setText(R.string.status_scanning)
         binding.mdnsList.removeAllViews()
         if (mdns == null) mdns = MdnsBrowser(this)
         mdns?.start { hosts ->
+            setMdnsRefreshing(false)
             lastHostCount = hosts.size
             binding.mdnsList.removeAllViews()
             if (hosts.isEmpty()) {
@@ -159,12 +161,18 @@ class LauncherActivity : AppCompatActivity() {
         }
         val hint =
             Runnable {
+                setMdnsRefreshing(false)
                 if (lastHostCount == 0 && binding.mdnsList.childCount == 0) {
                     binding.status.setText(R.string.status_none)
                 }
             }
         emptyScanRunnable = hint
         mainHandler.postDelayed(hint, 4_000L)
+    }
+
+    private fun setMdnsRefreshing(refreshing: Boolean) {
+        binding.btnRefresh.isEnabled = !refreshing
+        binding.btnRefresh.alpha = if (refreshing) 0.55f else 1f
     }
 
     private fun cancelEmptyScanHint() {

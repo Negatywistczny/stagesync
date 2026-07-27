@@ -482,6 +482,13 @@ body {
   cursor: pointer;
 }
 
+.updateSkip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
+  pointer-events: none;
+}
+
 .updateSkip:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: 2px;
@@ -489,7 +496,7 @@ body {
 }
 
 @media (hover: hover) {
-  .updateSkip:hover {
+  .updateSkip:hover:not(:disabled) {
     color: var(--ss-color-text);
   }
 }

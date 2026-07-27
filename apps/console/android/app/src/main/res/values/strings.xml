@@ -8,6 +8,8 @@
     <string name="section_manual">Ręczne wprowadzanie</string>
     <string name="hint_url">http://192.168.x.x:4000</string>
     <string name="btn_connect">Połącz</string>
+    <string name="btn_refresh">Odśwież</string>
+    <string name="btn_refresh_cd">Odśwież listę serwerów</string>
     <string name="btn_local_host">Uruchom lokalny host (awaryjnie)</string>
     <string name="btn_local_host_busy">Uruchamianie lokalnego hosta…</string>
     <string name="btn_local_host_connect">Połącz z localhostem</string>
@@ -63,9 +65,9 @@
     <string name="update_downloading">Pobieranie APK…</string>
     <string name="update_download_failed">Nie udało się pobrać APK: %1$s</string>
     <string name="update_need_permission">Zezwól na instalację z tej aplikacji, a następnie wróć — instalator uruchomi się ponownie.</string>
-    <string name="ui_apply_title">Zastosuj nowy interfejs</string>
-    <string name="ui_apply_message">Host ma inną wersję interfejsu (%1$s…) niż lokalna (%2$s…). Pobranie nie zainstaluje nowego APK — tylko odświeży UI w pamięci aplikacji. Nic nie pobierze się w tle bez Twojej zgody.</string>
-    <string name="ui_apply_action">Zastosuj nowy interfejs</string>
+    <string name="ui_apply_title">Odświeżyć interfejs?</string>
+    <string name="ui_apply_message">Host ma inną wersję ekranów niż aplikacja. Odświeży wygląd z hosta — bez nowego APK.</string>
+    <string name="ui_apply_action">Odśwież</string>
     <string name="ui_apply_anyway">Zastosuj mimo to</string>
     <string name="ui_apply_playing_warn">Odtwarzanie w toku. Przeładowanie UI spowoduje chwilowy brak podglądu. Zastosować mimo to?</string>
     <string name="ui_apply_playing_warn_local_host">Odtwarzanie w toku na lokalnym hoście. Przeładowanie UI odświeży podgląd i panel Admin na kilka sekund przy żywym silniku. Zastosować mimo to?</string>

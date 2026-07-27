@@ -306,6 +306,12 @@ export function canReturnToLauncher(): boolean {
   return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
 }
 
+/** Desktop local host: mark intentional restart before POST /api/system/restart. */
+export function prepareHostRestart(): Promise<void> {
+  if (!tauriInvokeAvailable()) return Promise.resolve();
+  return tauriInvoke<void>("prepare_host_restart", {}).catch(() => {});
+}
+
 /**
  * Kill local sidecar (if any) and return WebView to the host picker.
  * Prefers Tauri invoke; falls back to a navigation sentinel intercepted by the shell

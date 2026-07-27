@@ -133,23 +133,15 @@ async fn resolve_host_snapshot(
         };
         return (HostTrayState::Error, format!("Host: błąd — {short}"), None);
     }
+    let health = check_health_at("127.0.0.1", UI_PORT).await;
     if !runtime.has_child() {
-        return (HostTrayState::Idle, "Host: wyłączony".into(), None);
+        return match health {
+            Ok(Some(_)) => running_snapshot(fetch_primary_lan_url().await).await,
+            _ => (HostTrayState::Idle, "Host: wyłączony".into(), None),
+        };
     }
-    match check_health_at("127.0.0.1", UI_PORT).await {
-        Ok(Some(_)) => {
-            let lan = fetch_primary_lan_url().await;
-            let label = match &lan {
-                Some(url) => {
-                    let display = url
-                        .trim_start_matches("http://")
-                        .trim_start_matches("https://");
-                    format!("Host: działa [{display}] · kopiuj")
-                }
-                None => format!("Host: działa [127.0.0.1:{UI_PORT}]"),
-            };
-            (HostTrayState::Running, label, lan)
-        }
+    match health {
+        Ok(Some(_)) => running_snapshot(fetch_primary_lan_url().await).await,
         Ok(None) => (
             HostTrayState::Starting,
             "Host: startuje (health)…".into(),
@@ -161,6 +153,19 @@ async fn resolve_host_snapshot(
             None,
         ),
     }
+}
+
+async fn running_snapshot(lan: Option<String>) -> (HostTrayState, String, Option<String>) {
+    let label = match &lan {
+        Some(url) => {
+            let display = url
+                .trim_start_matches("http://")
+                .trim_start_matches("https://");
+            format!("Host: działa [{display}] · kopiuj")
+        }
+        None => format!("Host: działa [127.0.0.1:{UI_PORT}]"),
+    };
+    (HostTrayState::Running, label, lan)
 }
 
 fn apply_tray_visual(
@@ -259,8 +264,15 @@ pub fn install_tray(
                 let runtime = runtime_menu.clone();
                 let nav = nav_menu.clone();
                 tauri::async_runtime::spawn(async move {
-                    if runtime.has_child() || runtime.is_starting() {
+                    let host_active = runtime.has_child()
+                        || runtime.is_starting()
+                        || matches!(
+                            check_health_at("127.0.0.1", UI_PORT).await,
+                            Ok(Some(_))
+                        );
+                    if host_active {
                         runtime.kill_child();
+                        let _ = crate::reclaim_ui_port_orphan();
                         // Avoid forcing Launcher navigation while the window is hidden
                         // (close-to-tray); visible session returns to Launcher like return_to_launcher.
                         let visible = app

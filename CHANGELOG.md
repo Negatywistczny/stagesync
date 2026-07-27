@@ -5,6 +5,20 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Console / Performer (Android):** dialog odświeżenia interfejsu z hosta — neutralny opis (różna wersja ekranów, nie tylko „nowsza”), bez hashy i bez żargonu APK.
+- **Console / Performer (Android):** przy sekcji wyszukanych serwerów widoczny przycisk **Odśwież** (jak w launcherze Desktop), zamiast ukrytego odświeżania po kliknięciu w status.
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop — restart / shutdown hosta:** po restarcie z Admina lub menu OS zostajesz w sesji Admin (flaga `prepare_host_restart` w ACL); wyłączenie serwera (kod 0) nie wraca już do Launchera z fałszywym błędem; zasobnik pokazuje działający host także po restarcie poza sidecarem, a **Zatrzymaj Host** czyści osierocony proces na porcie 4000.
+- **Launcher — aktualizacja:** podczas pobierania instalatora **Pomiń tę wersję** jest nieaktywny (bez efektu najechania).
+
 ## [5.3.0](https://github.com/Negatywistczny/stagesync/compare/v5.2.11...v5.3.0) - 2026-07-27 — Colors & Channels
 
 ### Dodano

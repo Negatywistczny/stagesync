@@ -194,13 +194,7 @@ class HostWebActivity : AppCompatActivity() {
                 }
                 AlertDialog.Builder(this)
                     .setTitle(R.string.ui_apply_title)
-                    .setMessage(
-                        getString(
-                            R.string.ui_apply_message,
-                            gate.hostUiHash.take(12),
-                            gate.localUiHash.take(12),
-                        ),
-                    )
+                    .setMessage(R.string.ui_apply_message)
                     .setPositiveButton(R.string.ui_apply_action) { _, _ ->
                         startUiBundleApply()
                     }

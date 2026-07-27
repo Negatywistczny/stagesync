@@ -164,6 +164,7 @@ async function installPendingUpdate() {
 }
 
 async function skipPendingUpdate() {
+  if (updateInstalling) return;
   const ver = pendingUpdate?.version;
   if (ver) {
     try {

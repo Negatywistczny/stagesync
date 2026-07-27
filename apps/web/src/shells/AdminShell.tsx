@@ -28,6 +28,7 @@ import {
 } from "../lib/libraryApi.js";
 import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
+import { prepareHostRestart } from "../lib/desktopBridge.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
@@ -106,6 +107,7 @@ export function AdminShell() {
   const restart = useDoubleConfirm(async () => {
     setHostStatusMsg("Restart serwera…");
     try {
+      await prepareHostRestart();
       await postSystemRestart();
     } catch (err) {
       setHostStatusMsg(err instanceof Error ? err.message : "Restart nieudany");

@@ -20,6 +20,7 @@ import {
 } from "../lib/desktopFileMenu.js";
 import {
   isDesktopShell,
+  prepareHostRestart,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
@@ -390,6 +391,7 @@ export function DesktopMenuBridge() {
     setRestartPending(true);
     setRestartError(null);
     try {
+      await prepareHostRestart();
       await postSystemRestart();
       setRestartOpen(false);
     } catch (err) {

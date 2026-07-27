@@ -37,6 +37,8 @@ pub struct SidecarRuntime {
     pub starting: Mutex<bool>,
     /// Surfaced once on next Launcher bootstrap (e.g. mid-session sidecar crash).
     pub pending_error: Mutex<Option<String>>,
+    /// Set before POST /api/system/restart so sidecar exit rejoins Admin instead of Launcher.
+    pub expect_restart: Mutex<bool>,
 }
 
 impl SidecarRuntime {
@@ -66,6 +68,24 @@ impl SidecarRuntime {
 
     pub fn take_pending_error(&self) -> Option<String> {
         self.pending_error.lock().ok().and_then(|mut g| g.take())
+    }
+
+    pub fn set_expect_restart(&self, value: bool) {
+        if let Ok(mut guard) = self.expect_restart.lock() {
+            *guard = value;
+        }
+    }
+
+    fn take_expect_restart(&self) -> bool {
+        self.expect_restart
+            .lock()
+            .ok()
+            .map(|mut g| {
+                let v = *g;
+                *g = false;
+                v
+            })
+            .unwrap_or(false)
     }
 
     pub fn peek_pending_error(&self) -> Option<String> {
@@ -465,9 +485,35 @@ pub(crate) fn navigate_to_launcher(app: &AppHandle, nav: &LauncherNav) -> Result
         .map_err(|e| e.to_string())
 }
 
+/// After intentional host restart, the detached respawn is not a managed child — poll health and
+/// return to Admin instead of treating exit as a crash → Launcher.
+async fn rejoin_local_admin_after_restart(app: &AppHandle) -> bool {
+    let deadline = Instant::now() + Duration::from_secs(20);
+    while Instant::now() < deadline {
+        if let Ok(Some(_)) = check_health_at("127.0.0.1", UI_PORT).await {
+            let origin = format!("http://127.0.0.1:{UI_PORT}");
+            let target = match admin_url(&origin).parse() {
+                Ok(u) => u,
+                Err(_) => return false,
+            };
+            if let Some(window) = app.get_webview_window("main") {
+                return window.navigate(target).is_ok();
+            }
+            return false;
+        }
+        tokio::time::sleep(Duration::from_millis(300)).await;
+    }
+    false
+}
+
 /// True for the web→shell return sentinel (`stagesync://launcher/return`).
 pub(crate) fn is_return_to_launcher_url(url: &Url) -> bool {
     url.scheme() == "stagesync" && url.host_str() == Some("launcher")
+}
+
+/// After a managed sidecar exits: crash → launcher + error; graceful (code 0) → stay in session.
+pub(crate) fn sidecar_exit_is_crash(exit_code: Option<i32>) -> bool {
+    exit_code != Some(0)
 }
 
 /// Kill local sidecar (if any) and navigate back to the bundled Launcher.
@@ -588,6 +634,13 @@ pub fn get_sidecar_log_tail(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<S
 #[tauri::command]
 pub async fn cancel_local_host(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<(), String> {
     runtime.kill_child();
+    Ok(())
+}
+
+/// Mark the next managed sidecar exit as an intentional host restart (Admin / menu).
+#[tauri::command]
+pub fn prepare_host_restart(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<(), String> {
+    runtime.set_expect_restart(true);
     Ok(())
 }
 
@@ -959,14 +1012,30 @@ async fn start_local_host_inner(
                                 if let Ok(mut guard) = runtime_watch.child.lock() {
                                     let _ = guard.take();
                                 }
-                                let msg = format!(
-                                    "Lokalny host zatrzymał się niespodziewanie (kod {code}). Uruchom ponownie albo sprawdź log."
-                                );
-                                if let Ok(mut pending) = runtime_watch.pending_error.lock() {
-                                    *pending = Some(msg);
-                                }
-                                let nav = app_watch.state::<Arc<LauncherNav>>();
-                                let _ = navigate_to_launcher(&app_watch, nav.as_ref());
+                                let intentional_restart =
+                                    runtime_watch.take_expect_restart();
+                                let exit_code = payload.code;
+                                let app_term = app_watch.clone();
+                                let runtime_term = runtime_watch.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    if intentional_restart {
+                                        if rejoin_local_admin_after_restart(&app_term).await {
+                                            return;
+                                        }
+                                    }
+                                    if !sidecar_exit_is_crash(exit_code) {
+                                        return;
+                                    }
+                                    let msg = format!(
+                                        "Lokalny host zatrzymał się niespodziewanie (kod {code}). Uruchom ponownie albo sprawdź log."
+                                    );
+                                    if let Ok(mut pending) = runtime_term.pending_error.lock()
+                                    {
+                                        *pending = Some(msg);
+                                    }
+                                    let nav = app_term.state::<Arc<LauncherNav>>();
+                                    let _ = navigate_to_launcher(&app_term, nav.as_ref());
+                                });
                                 break;
                             }
                             _ => {}
@@ -1055,6 +1124,22 @@ mod pick_mdns_ipv4_tests {
             pick_mdns_ipv4(addrs.iter()).as_deref(),
             Some("169.254.10.2")
         );
+    }
+}
+
+#[cfg(test)]
+mod sidecar_exit_tests {
+    use super::*;
+
+    #[test]
+    fn graceful_exit_zero_is_not_crash() {
+        assert!(!sidecar_exit_is_crash(Some(0)));
+    }
+
+    #[test]
+    fn nonzero_or_missing_exit_is_crash() {
+        assert!(sidecar_exit_is_crash(Some(1)));
+        assert!(sidecar_exit_is_crash(None));
     }
 }
 
