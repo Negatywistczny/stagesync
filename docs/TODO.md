@@ -18,6 +18,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 ## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
+- [ ] **Release hygiene 5.4:** ustalić i zatwierdzić nazwę linii **5.4** (jak `Overture`/`Launch & Mix`/`Pocket Stage`/`Colors & Channels`) przed kolejnym cutem `chore(release): 5.4.x` i nagłówkiem CHANGELOG
 
 ## Etap 5.x+ / Later (po Colors & Channels)
 
