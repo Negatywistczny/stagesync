@@ -1879,6 +1879,18 @@
   font-size: var(--ss-text-xl);
 }
 
+.modalHint {
+  margin: 0 0 var(--ss-space-3);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+}
+
 .input {
   display: block;
   box-sizing: border-box;

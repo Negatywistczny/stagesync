@@ -335,8 +335,8 @@ export function ClientShell() {
           <h1 id="name-title" className={styles.modalTitle}>
             Zmień nazwę
           </h1>
-          <p className={styles.muted}>Podaj swoje imię lub nazwę urządzenia.</p>
-          <form onSubmit={submitName}>
+          <p className={styles.modalHint}>Podaj swoje imię lub nazwę urządzenia.</p>
+          <form className={styles.modalForm} onSubmit={submitName}>
             <Input
               maxLength={DEVICE_DISPLAY_NAME_MAX}
               placeholder="np. Ania · saksofon"
