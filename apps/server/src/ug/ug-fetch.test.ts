@@ -41,21 +41,6 @@ function ugTabHtml(payload: unknown, reverseAttrs = false): string {
   return `<div class="js-store" data-content="${encoded}"></div>`;
 }
 
-function chordsPageData(title = "Song", type = "Chords"): unknown {
-  return {
-    store: {
-      page: {
-        data: {
-          tab: { song_name: title, artist_name: "Artist", type, id: 9 },
-          tab_view: {
-            wiki_tab: { content: "[tab][Verse]\n[ch]C[/ch]line[/tab]" },
-          },
-        },
-      },
-    },
-  };
-}
-
 describe("ug-fetch helpers", () => {
   it("isValidUgTabUrl accepts tabs.ultimate-guitar.com chord URLs", () => {
     expect(
