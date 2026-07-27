@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Input } from "@stagesync/ui";
+import { Button, Input, Select } from "@stagesync/ui";
 import { MetaBadge, MetaBadgeRow, ShellToolbar } from "./shared/index.js";
 import {
   formatSetDurationMs,
@@ -43,7 +43,6 @@ import {
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
 } from "../lib/clockDisplayPrefs.js";
-import { openPreferences } from "../lib/preferencesEvents.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
 import {
   isAdminSectionId,
