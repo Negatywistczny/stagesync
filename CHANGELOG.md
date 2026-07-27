@@ -5,7 +5,7 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.4.0](https://github.com/Negatywistczny/stagesync/compare/v5.3.2...v5.4.0) - 2026-07-27
 
 ### Dodano
 
