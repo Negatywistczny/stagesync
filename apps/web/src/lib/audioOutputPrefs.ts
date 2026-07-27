@@ -2,6 +2,7 @@
  * Browser audio output device preference (setSinkId + localStorage).
  */
 
+import { refreshAudioHwCapability } from "./audioHwCapability.js";
 import { getMetronomeAudioContext } from "./metronome.js";
 
 export const AUDIO_OUTPUT_STORAGE_KEY = "stagesync.audio.outputDeviceId";
@@ -44,6 +45,7 @@ export async function applyAudioOutputSink(
     throw new Error("setSinkId niedostępne w tej przeglądarce");
   }
   await sinkable.setSinkId(deviceId ?? "");
+  refreshAudioHwCapability(ctx);
 }
 
 /** Apply stored sink after creating / unlocking the shared AudioContext. */

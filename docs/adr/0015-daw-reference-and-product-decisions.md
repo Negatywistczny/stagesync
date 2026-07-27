@@ -55,7 +55,7 @@ W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia
 |-------|--------|
 | Pencil na ścieżce **audio** | Jak Logic: klik w pustym + Pencil → Import → wstawienie w miejscu kliknięcia (**wdrożone**) |
 | No Overlap only; bez time-stretch w MVP | Bez zmiany względem [ADR 0008](./0008-timeline-clip-editing.md) |
-| Flex Time / MIDI recording / Take Folders / join bounce | **Permanent OUT dla całej linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5). Powrót tylko MAJOR + nowy ADR + decyzja PO |
+| Flex Time / MIDI recording / Take Folders / join bounce | **Permanent OUT dla całej linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5). Powrót rejestracji + proste edit = major **6.0** ([ADR 0018](./0018-future-audio-architecture.md)); Flex / Takes nadal nie must 6.0 |
 | Locator vs playhead | Osobne pojęcia (jak Logic); kolory: locator `primary`, playhead `info`; scrub/seek = komenda do serwera (SSOT) |
 
 ### 5. MIDI / transport
@@ -95,7 +95,9 @@ W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia
 
 - Konstytucja wskazuje ten ADR (reguła Logic + backlog ≠ decyzja); zakres Logic zawężony — [ADR 0017](./0017-live-show-control-contracts.md).
 - ADR 0008: Flex/Takes/recording/join bounce = **permanent OUT 5.x** (nie „później wg Logic”).
-- TODO: Must = G1–G10 HW; multi-out UI / H-01 / JNI = residual 5.2+; MIDI PC kanały = shipped w 5.2.0; egzekucja kontraktów 0017 = backlog.
+- TODO: Must = G1–G10 HW; multi-out UI = **5.3 Colors & Channels** (on-tree przy
+  `maxChannelCount ≥ 4`); H-01 / Offline delta = Later; MIDI PC kanały = shipped w 5.2.0;
+  egzekucja kontraktów 0017 = shipped w 5.2.x.
 - CHANGELOG tylko przy zmianach widocznych w produkcie — nie za sam ADR.
 
 ## Powiązane

@@ -594,7 +594,7 @@ describe("HealthResponseSchema + UI meta (#692)", () => {
         uiHash: "x",
         themeDefault: "light-high",
       }).themeDefault,
-    ).toBe("light-high");
+    ).toBe("daylight");
   });
 
   it("rejects health missing uiHash (strict)", () => {

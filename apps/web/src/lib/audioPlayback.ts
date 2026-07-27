@@ -13,8 +13,8 @@
  *     merger → (masterGain | groupBusGain)
  *
  * Mono file on a stereo bus is upmixed on trackGain before the splitter (otherwise L-only).
- * Bus may feed Master or another bus (acyclic); HW outs fail-soft to Master until
- * ChannelMerger multi-out ships with real `maxChannelCount`.
+ * Bus may feed Master, another bus (acyclic), or HW out when
+ * `maxChannelCount ≥ 4` (discrete ChannelMerger). Otherwise HW fail-softs to Master.
  * Click / metronome stays on a separate Direct Cue path (never through Master).
  */
 
@@ -28,6 +28,7 @@ import {
   fadeInMsOf,
   fadeOutMsOf,
   gainDbToLinear,
+  hwOutputUiAllowed,
   linearPeakToMeterDb,
   projectEndTicks,
   resolveBusOutputDest,
@@ -39,9 +40,15 @@ import {
   trimInMsOf,
   trimOutMsOf,
   ticksToMs,
+  type AudioHardwareOutput,
   type ChannelMode,
   type Project,
 } from "@stagesync/shared";
+import {
+  applyDestinationChannelLayout,
+  getAudioMaxChannelCount,
+  refreshAudioHwCapability,
+} from "./audioHwCapability.js";
 import {
   getMetronomeAudioContext,
   resumeMetronomeAudio,
@@ -116,6 +123,23 @@ type MasterBus = {
   splitter: ChannelSplitterNode;
   analyserL: AnalyserNode;
   analyserR: AnalyserNode;
+  /** Present when multi-out is active — feeds destination merger ch 0–1. */
+  toMergerSplit?: ChannelSplitterNode;
+};
+
+type HwOutBus = {
+  id: string;
+  mode: ChannelMode;
+  channelOffset: number;
+  gain: GainNode;
+  splitter?: ChannelSplitterNode;
+  analyserL: AnalyserNode;
+  analyserR?: AnalyserNode;
+};
+
+type DestGraph = {
+  channelCount: number;
+  merger: ChannelMergerNode;
 };
 
 const bufferCache = new Map<string, AudioBuffer>();
@@ -144,16 +168,18 @@ let stopEpoch = 0;
 
 const trackBuses = new Map<string, TrackBus>();
 const groupBuses = new Map<string, GroupBusNode>();
+const hwOutBuses = new Map<string, HwOutBus>();
 let masterBus: MasterBus | null = null;
+let destGraph: DestGraph | null = null;
 
 const SEEK_JUMP_TICKS = 480;
 const MAX_BUFFER_CACHE = 32;
 const ANALYSER_FFT = 256;
 /** Short linear ramp — avoids zipper clicks on live fader / mute / solo. */
 const GAIN_DEZIPPER_SEC = 0.012;
-/** Last wired track output: `"master"` | `bus:<id>` | `hw:<id>` (hw failsoft master). */
+/** Last wired track output: `"master"` | `bus:<id>` | `hw:<id>`. */
 const trackWiredDest = new Map<string, string>();
-/** Last wired group-bus output: `"master"` or `bus:<id>`. */
+/** Last wired group-bus output: `"master"` | `bus:<id>` | `hw:<id>`. */
 const groupWiredDest = new Map<string, string>();
 
 function cacheKey(projectId: string, assetId: string): string {
@@ -426,19 +452,167 @@ function applyBalanceOrPan(
   setParamDezippered(bus.gainR.gain, r, currentTime);
 }
 
+function ensureDestGraph(ctx: AudioContext): DestGraph | null {
+  refreshAudioHwCapability(ctx);
+  const n = applyDestinationChannelLayout(ctx, getAudioMaxChannelCount());
+  if (!hwOutputUiAllowed(n)) {
+    if (destGraph) {
+      disconnectSafe(destGraph.merger);
+      destGraph = null;
+    }
+    return null;
+  }
+  if (destGraph && destGraph.channelCount === n) return destGraph;
+  if (destGraph) {
+    disconnectSafe(destGraph.merger);
+    destGraph = null;
+  }
+  const merger = ctx.createChannelMerger(n);
+  merger.connect(ctx.destination);
+  destGraph = { channelCount: n, merger };
+  return destGraph;
+}
+
 function ensureMasterBus(ctx: AudioContext): MasterBus {
-  if (masterBus) return masterBus;
+  const graph = ensureDestGraph(ctx);
+  const multi = graph != null;
+
+  if (masterBus) {
+    const hadMulti = Boolean(masterBus.toMergerSplit);
+    if (hadMulti === multi && (!multi || masterBus.toMergerSplit)) {
+      return masterBus;
+    }
+    disconnectSafe(masterBus.gain);
+    disconnectSafe(masterBus.splitter);
+    disconnectSafe(masterBus.analyserL);
+    disconnectSafe(masterBus.analyserR);
+    if (masterBus.toMergerSplit) disconnectSafe(masterBus.toMergerSplit);
+    masterBus = null;
+    // Force rewire of all routes after master topology change
+    trackWiredDest.clear();
+    groupWiredDest.clear();
+  }
+
   const gain = ctx.createGain();
   gain.gain.value = 1;
   const splitter = ctx.createChannelSplitter(2);
   const analyserL = makeAnalyser(ctx);
   const analyserR = makeAnalyser(ctx);
-  gain.connect(ctx.destination);
   gain.connect(splitter);
   splitter.connect(analyserL, 0);
   splitter.connect(analyserR, 1);
-  masterBus = { gain, splitter, analyserL, analyserR };
+
+  let toMergerSplit: ChannelSplitterNode | undefined;
+  if (multi && graph) {
+    toMergerSplit = ctx.createChannelSplitter(2);
+    gain.connect(toMergerSplit);
+    toMergerSplit.connect(graph.merger, 0, 0);
+    toMergerSplit.connect(graph.merger, 1, 1);
+  } else {
+    gain.connect(ctx.destination);
+  }
+
+  masterBus = { gain, splitter, analyserL, analyserR, toMergerSplit };
   return masterBus;
+}
+
+function disconnectHwOut(node: HwOutBus): void {
+  disconnectSafe(node.gain);
+  if (node.splitter) disconnectSafe(node.splitter);
+  disconnectSafe(node.analyserL);
+  if (node.analyserR) disconnectSafe(node.analyserR);
+}
+
+function ensureHwOutBus(
+  ctx: AudioContext,
+  row: AudioHardwareOutput,
+): HwOutBus | null {
+  const graph = ensureDestGraph(ctx);
+  if (!graph) return null;
+  const mode = resolveChannelMode(row.channelMode);
+  const width = mode === "mono" ? 1 : 2;
+  if (row.channelOffset + width > graph.channelCount) return null;
+
+  const hit = hwOutBuses.get(row.id);
+  if (
+    hit &&
+    hit.mode === mode &&
+    hit.channelOffset === row.channelOffset
+  ) {
+    return hit;
+  }
+  if (hit) {
+    disconnectHwOut(hit);
+    hwOutBuses.delete(row.id);
+  }
+
+  const gain = ctx.createGain();
+  gain.gain.value = 1;
+  const analyserL = makeAnalyser(ctx);
+  let analyserR: AnalyserNode | undefined;
+  let splitter: ChannelSplitterNode | undefined;
+
+  if (mode === "mono") {
+    gain.connect(analyserL);
+    gain.connect(graph.merger, 0, row.channelOffset);
+  } else {
+    gain.channelCount = 2;
+    gain.channelCountMode = "explicit";
+    gain.channelInterpretation = "speakers";
+    splitter = ctx.createChannelSplitter(2);
+    analyserR = makeAnalyser(ctx);
+    gain.connect(splitter);
+    splitter.connect(analyserL, 0);
+    splitter.connect(analyserR, 1);
+    splitter.connect(graph.merger, 0, row.channelOffset);
+    splitter.connect(graph.merger, 1, row.channelOffset + 1);
+  }
+
+  const node: HwOutBus = {
+    id: row.id,
+    mode,
+    channelOffset: row.channelOffset,
+    gain,
+    splitter,
+    analyserL,
+    analyserR,
+  };
+  hwOutBuses.set(row.id, node);
+  return node;
+}
+
+function connectRouteToDest(
+  out: AudioNode,
+  dest: { kind: "master" } | { kind: "bus"; busId: string } | { kind: "hw_out"; hwOutputId: string },
+  ctx: AudioContext,
+  project: Project,
+  master: MasterBus,
+): void {
+  if (dest.kind === "bus") {
+    const busses = project.audioBusses ?? [];
+    const g = ensureGroupBus(
+      ctx,
+      dest.busId,
+      resolveChannelMode(
+        busses.find((b) => b.id === dest.busId)?.channelMode,
+      ),
+    );
+    out.connect(g.gain);
+    return;
+  }
+  if (dest.kind === "hw_out") {
+    const row = (project.audioHardwareOutputs ?? []).find(
+      (h) => h.id === dest.hwOutputId,
+    );
+    if (row) {
+      const hw = ensureHwOutBus(ctx, row);
+      if (hw) {
+        out.connect(hw.gain);
+        return;
+      }
+    }
+  }
+  out.connect(master.gain);
 }
 
 function ensureGroupBus(
@@ -542,24 +716,18 @@ function applyBusParams(
       fromBusId: bus.id,
       busIds: busIdSet,
       busses,
+      hwOutputIds: hwIdSet,
     });
     const destKey =
-      dest.kind === "bus" ? `bus:${dest.busId}` : "master";
+      dest.kind === "bus"
+        ? `bus:${dest.busId}`
+        : dest.kind === "hw_out"
+          ? `hw:${dest.hwOutputId}`
+          : "master";
     const out = outputNode(node);
     if (groupWiredDest.get(bus.id) !== destKey) {
       disconnectSafe(out);
-      if (dest.kind === "bus") {
-        const g = ensureGroupBus(
-          ctx,
-          dest.busId,
-          resolveChannelMode(
-            busses.find((b) => b.id === dest.busId)?.channelMode,
-          ),
-        );
-        out.connect(g.gain);
-      } else {
-        out.connect(master.gain);
-      }
+      connectRouteToDest(out, dest, ctx, project, master);
       groupWiredDest.set(bus.id, destKey);
     }
   }
@@ -579,7 +747,6 @@ function applyBusParams(
     setParamDezippered(tBus.gain.gain, gainDbToLinear(track.gainDb), now);
     applyBalanceOrPan(tBus, track.pan ?? 0, now);
     const dest = resolveTrackOutputDest(track.output, busIdSet, hwIdSet);
-    // HW outs: fail-soft to Master until multi-channel destination ships.
     const destKey =
       dest.kind === "bus"
         ? `bus:${dest.busId}`
@@ -589,18 +756,7 @@ function applyBusParams(
     const out = outputNode(tBus);
     if (trackWiredDest.get(track.id) !== destKey) {
       disconnectSafe(out);
-      if (dest.kind === "bus") {
-        const g = ensureGroupBus(
-          ctx,
-          dest.busId,
-          resolveChannelMode(
-            busses.find((b) => b.id === dest.busId)?.channelMode,
-          ),
-        );
-        out.connect(g.gain);
-      } else {
-        out.connect(master.gain);
-      }
+      connectRouteToDest(out, dest, ctx, project, master);
       trackWiredDest.set(track.id, destKey);
     }
   }
@@ -611,6 +767,24 @@ function applyBusParams(
     disconnectBusNodes(bus);
     trackBuses.delete(id);
     trackWiredDest.delete(id);
+  }
+
+  // HW patch gain/mute + prune removed rows
+  const hwRows = project.audioHardwareOutputs ?? [];
+  const hwAlive = new Set(hwRows.map((h) => h.id));
+  for (const row of hwRows) {
+    const node = ensureHwOutBus(ctx, row);
+    if (!node) continue;
+    let lin = gainDbToLinear(row.gainDb);
+    if (row.muted) lin = 0;
+    setParamDezippered(node.gain.gain, lin, now);
+  }
+  for (const id of [...hwOutBuses.keys()]) {
+    if (hwAlive.has(id)) continue;
+    const node = hwOutBuses.get(id);
+    if (!node) continue;
+    disconnectHwOut(node);
+    hwOutBuses.delete(id);
   }
 }
 
@@ -637,6 +811,20 @@ export function readTrackMeterDb(trackId: string): ChannelMeterPeaks {
   const floor = linearPeakToMeterDb(0);
   if (!bus) return { l: floor };
   if (bus.mode === "mono") return { l: peakDbFromAnalyser(bus.analyser) };
+  return {
+    l: peakDbFromAnalyser(bus.analyserL),
+    r: peakDbFromAnalyser(bus.analyserR),
+  };
+}
+
+/** Live peak dB per hardware output patch. */
+export function readHwOutMeterDb(hwOutputId: string): ChannelMeterPeaks {
+  const bus = hwOutBuses.get(hwOutputId);
+  const floor = linearPeakToMeterDb(0);
+  if (!bus) return { l: floor };
+  if (bus.mode === "mono" || !bus.analyserR) {
+    return { l: peakDbFromAnalyser(bus.analyserL) };
+  }
   return {
     l: peakDbFromAnalyser(bus.analyserL),
     r: peakDbFromAnalyser(bus.analyserR),
@@ -775,6 +963,15 @@ function startCueSample(
         resolveChannelMode(bus.channelMode),
       ).gain;
     }
+  } else if (sample.output?.kind === "hw_out") {
+    const hwOutputId = sample.output.hwOutputId;
+    const row = (project.audioHardwareOutputs ?? []).find(
+      (h) => h.id === hwOutputId,
+    );
+    if (row) {
+      const hw = ensureHwOutBus(ctx, row);
+      if (hw) dest = hw.gain;
+    }
   }
   pan.connect(dest);
 
@@ -884,12 +1081,21 @@ function disposeBuses(): void {
   }
   groupBuses.clear();
   groupWiredDest.clear();
+  for (const hw of hwOutBuses.values()) {
+    disconnectHwOut(hw);
+  }
+  hwOutBuses.clear();
   if (masterBus) {
     disconnectSafe(masterBus.gain);
     disconnectSafe(masterBus.splitter);
     disconnectSafe(masterBus.analyserL);
     disconnectSafe(masterBus.analyserR);
+    if (masterBus.toMergerSplit) disconnectSafe(masterBus.toMergerSplit);
     masterBus = null;
+  }
+  if (destGraph) {
+    disconnectSafe(destGraph.merger);
+    destGraph = null;
   }
 }
 

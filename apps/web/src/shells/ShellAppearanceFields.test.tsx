@@ -7,10 +7,9 @@ import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
 
 vi.mock("../lib/appearance.js", () => ({
   applyAppearance: vi.fn(),
-  readAppearance: () => ({ light: false, highContrast: false }),
-  setAppearance: vi.fn((patch: { light?: boolean; highContrast?: boolean }) => ({
-    light: patch.light ?? false,
-    highContrast: patch.highContrast ?? false,
+  readAppearance: () => ({ profile: "booth" }),
+  setAppearance: vi.fn((patch: { profile?: string }) => ({
+    profile: patch.profile ?? "booth",
   })),
 }));
 
@@ -19,26 +18,28 @@ afterEach(() => {
 });
 
 describe("ShellAppearanceFields", () => {
-  it("exposes Jasny motyw and Wysoki kontrast switches", () => {
+  it("exposes a named profile select", () => {
     render(<ShellAppearanceFields />);
-    expect(screen.getByRole("switch", { name: "Jasny motyw" })).toBeTruthy();
-    expect(
-      screen.getByRole("switch", { name: "Wysoki kontrast" }),
-    ).toBeTruthy();
+    const select = screen.getByRole("combobox", {
+      name: "Motyw kolorystyczny",
+    });
+    expect(select).toBeTruthy();
+    expect(screen.getByText("Booth Amber")).toBeTruthy();
+    expect(screen.getByText("Neon Ember")).toBeTruthy();
   });
 
   it("forwards controlled changes without persisting", () => {
     const onChange = vi.fn();
     render(
       <ShellAppearanceFields
-        value={{ light: false, highContrast: false }}
+        value={{ profile: "booth" }}
         onChange={onChange}
       />,
     );
-    fireEvent.click(screen.getByRole("switch", { name: "Jasny motyw" }));
-    expect(onChange).toHaveBeenCalledWith({
-      light: true,
-      highContrast: false,
-    });
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Motyw kolorystyczny" }),
+      { target: { value: "midnight" } },
+    );
+    expect(onChange).toHaveBeenCalledWith({ profile: "midnight" });
   });
 });

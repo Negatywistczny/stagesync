@@ -26,10 +26,12 @@
   display: none;
 }
 
+:global([data-theme="daylight"]) .logoDark,
 :global([data-theme="light"]) .logoDark {
   display: none;
 }
 
+:global([data-theme="daylight"]) .logoLight,
 :global([data-theme="light"]) .logoLight {
   display: block;
 }

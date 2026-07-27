@@ -5,10 +5,17 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("../../../lib/audioHwCapability.js", () => ({
+  AUDIO_HW_CAPABILITY_EVENT: "stagesync-audio-hw-capability",
+  getAudioHwCapability: () => ({ maxChannelCount: 2, uiAllowed: false }),
+  refreshAudioHwCapability: () => ({ maxChannelCount: 2, uiAllowed: false }),
+}));
+
 vi.mock("./useMixerMeterLevels.js", () => ({
   useMixerMeterLevels: () => ({
     tracks: {},
     busses: {},
+    hwOuts: {},
     master: {
       liveL: -60,
       liveR: -60,
@@ -21,6 +28,7 @@ vi.mock("./useMixerMeterLevels.js", () => ({
     },
     clearTrackHold: () => {},
     clearBusHold: () => {},
+    clearHwHold: () => {},
     clearMasterHold: () => {},
     clearClickHold: () => {},
   }),
@@ -78,7 +86,9 @@ describe("MixerSurface", () => {
     expect(screen.getByRole("region", { name: "Mixer" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Ścieżki audio" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Busy" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Wyjścia HW" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Dodaj Bus" })).toBeTruthy();
     expect(screen.getByText(/Brak ścieżek/)).toBeTruthy();
+    expect(screen.getByText(/Multi-out wymaga/)).toBeTruthy();
   });
 });

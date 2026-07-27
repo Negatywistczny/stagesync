@@ -463,8 +463,52 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         .iter()
         .map(|i| i as &dyn tauri::menu::IsMenuItem<tauri::Wry>)
         .collect();
+    let file_new_song =
+        MenuItem::with_id(app, "file_new", "Utwór", true, Some("CmdOrCtrl+N"))?;
+    let file_new_template =
+        MenuItem::with_id(app, "file_new_template", "Wzór", true, None::<&str>)?;
+    let file_new_from_template = MenuItem::with_id(
+        app,
+        "file_new_from_template",
+        "Z wzoru…",
+        true,
+        None::<&str>,
+    )?;
+    let file_new = Submenu::with_items(
+        app,
+        "Nowy",
+        true,
+        &[
+            &file_new_song,
+            &file_new_template,
+            &file_new_from_template,
+        ],
+    )?;
+    let file_open =
+        MenuItem::with_id(app, "file_open", "Otwórz…", true, Some("CmdOrCtrl+O"))?;
     let open_recent = Submenu::with_items(app, "Otwórz ostatnie", true, &recent_refs)?;
     let file_save = MenuItem::with_id(app, "file_save", "Zapisz", true, Some("CmdOrCtrl+S"))?;
+    let file_save_as = MenuItem::with_id(
+        app,
+        "file_save_as",
+        "Zapisz jako…",
+        true,
+        Some("CmdOrCtrl+Shift+S"),
+    )?;
+    let file_import = MenuItem::with_id(
+        app,
+        "file_import",
+        "Importuj bibliotekę…",
+        true,
+        None::<&str>,
+    )?;
+    let file_export = MenuItem::with_id(
+        app,
+        "file_export",
+        "Eksportuj bibliotekę…",
+        true,
+        None::<&str>,
+    )?;
     let file_close = MenuItem::with_id(
         app,
         "file_close",
@@ -472,17 +516,32 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         true,
         None::<&str>,
     )?;
-    let file_sep = PredefinedMenuItem::separator(app)?;
+    let file_sep_1 = PredefinedMenuItem::separator(app)?;
+    let file_sep_2 = PredefinedMenuItem::separator(app)?;
+    let file_sep_3 = PredefinedMenuItem::separator(app)?;
     let file_submenu = Submenu::with_items(
         app,
         "Plik",
         true,
-        &[&open_recent, &file_sep, &file_save, &file_close],
+        &[
+            &file_new,
+            &file_open,
+            &open_recent,
+            &file_sep_1,
+            &file_save,
+            &file_save_as,
+            &file_sep_2,
+            &file_import,
+            &file_export,
+            &file_sep_3,
+            &file_close,
+        ],
     )?;
 
     // Timeline draft undo/redo: custom items (not PredefinedMenuItem::undo) so
     // WebView receives stagesync:desktop-menu instead of native text undo.
     // Enabled state synced from Timeline via set_edit_history_state.
+    // Cut/copy/paste likewise custom — Timeline clip clipboard, not only OS text.
     let can_undo = nav_state
         .can_undo
         .lock()
@@ -510,9 +569,12 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         Some("CmdOrCtrl+Shift+Z"),
     )?;
     let edit_sep = PredefinedMenuItem::separator(app)?;
-    let edit_cut = PredefinedMenuItem::cut(app, Some("Wytnij"))?;
-    let edit_copy = PredefinedMenuItem::copy(app, Some("Kopiuj"))?;
-    let edit_paste = PredefinedMenuItem::paste(app, Some("Wklej"))?;
+    let edit_cut =
+        MenuItem::with_id(app, "edit_cut", "Wytnij", true, Some("CmdOrCtrl+X"))?;
+    let edit_copy =
+        MenuItem::with_id(app, "edit_copy", "Kopiuj", true, Some("CmdOrCtrl+C"))?;
+    let edit_paste =
+        MenuItem::with_id(app, "edit_paste", "Wklej", true, Some("CmdOrCtrl+V"))?;
     let edit_delete = MenuItem::with_id(app, "edit_delete", "Usuń", true, None::<&str>)?;
     let edit_select_all = PredefinedMenuItem::select_all(app, Some("Zaznacz wszystko"))?;
     let edit_submenu = Submenu::with_items(
@@ -575,9 +637,17 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         true,
         Some("CmdOrCtrl+0"),
     )?;
+    let view_appearance = MenuItem::with_id(
+        app,
+        "view_appearance",
+        "Wygląd…",
+        true,
+        None::<&str>,
+    )?;
     let view_sep_1 = PredefinedMenuItem::separator(app)?;
     let view_sep_2 = PredefinedMenuItem::separator(app)?;
     let view_sep_3 = PredefinedMenuItem::separator(app)?;
+    let view_sep_4 = PredefinedMenuItem::separator(app)?;
 
     let view_submenu = Submenu::with_items(
         app,
@@ -594,6 +664,8 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
             &view_zoom_out,
             &view_zoom_reset,
             &view_sep_3,
+            &view_appearance,
+            &view_sep_4,
             &fullscreen,
         ],
     )?;
@@ -765,9 +837,21 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
                     navigate_main(&app, "/admin?section=host&action=check-update");
                 }
             }
-            "file_save" => dispatch_menu_action(&app, "save"),
+            "file_new" => dispatch_menu_action(&app, "file-new"),
+            "file_new_template" => dispatch_menu_action(&app, "file-new-template"),
+            "file_new_from_template" => {
+                dispatch_menu_action(&app, "file-new-from-template")
+            }
+            "file_open" => dispatch_menu_action(&app, "file-open"),
+            "file_save" => dispatch_menu_action(&app, "file-save"),
+            "file_save_as" => dispatch_menu_action(&app, "file-save-as"),
+            "file_import" => dispatch_menu_action(&app, "file-import"),
+            "file_export" => dispatch_menu_action(&app, "file-export"),
             "edit_undo" => dispatch_menu_action(&app, "edit-undo"),
             "edit_redo" => dispatch_menu_action(&app, "edit-redo"),
+            "edit_cut" => dispatch_menu_action(&app, "edit-cut"),
+            "edit_copy" => dispatch_menu_action(&app, "edit-copy"),
+            "edit_paste" => dispatch_menu_action(&app, "edit-paste"),
             "edit_delete" => dispatch_menu_action(&app, "edit-delete"),
             "file_close" => navigate_main(&app, "/admin"),
             "nav_admin" => navigate_main(&app, "/admin"),
@@ -784,6 +868,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "admin_set" => navigate_main(&app, "/admin?section=set"),
             "admin_stage" => navigate_main(&app, "/admin?section=stage"),
             "admin_host" => navigate_main(&app, "/admin?section=host"),
+            "view_appearance" => dispatch_menu_action(&app, "appearance"),
             "view_zoom_in" => dispatch_menu_action(&app, "view-zoom-in"),
             "view_zoom_out" => dispatch_menu_action(&app, "view-zoom-out"),
             "view_zoom_reset" => dispatch_menu_action(&app, "view-zoom-reset"),

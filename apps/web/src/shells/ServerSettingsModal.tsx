@@ -12,6 +12,7 @@ import {
   listAudioOutputDevices,
   setStoredAudioOutputDeviceId,
 } from "../lib/audioOutputPrefs.js";
+import { refreshAudioHwCapability } from "../lib/audioHwCapability.js";
 import {
   AUDIO_LATENCY_MAX_MS,
   AUDIO_LATENCY_MIN_MS,
@@ -120,8 +121,7 @@ function midiDraftEqual(a: MidiDraft | null, b: MidiDraft | null): boolean {
 
 function prefsEqual(a: PrefsSnapshot, b: PrefsSnapshot): boolean {
   return (
-    a.appearance.light === b.appearance.light &&
-    a.appearance.highContrast === b.appearance.highContrast &&
+    a.appearance.profile === b.appearance.profile &&
     a.clockFormat === b.clockFormat &&
     a.deviceName === b.deviceName &&
     a.sinkId === b.sinkId &&
@@ -184,6 +184,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
 
   const [outputs, setOutputs] = useState<MediaDeviceInfo[]>([]);
   const [sampleRate, setSampleRate] = useState<number | null>(null);
+  const [maxChannelCount, setMaxChannelCount] = useState<number | null>(null);
   const [midiStatus, setMidiStatus] = useState<MidiHostStatus | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
@@ -241,8 +242,12 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
     })();
     try {
       setSampleRate(getMetronomeAudioContext().sampleRate);
+      setMaxChannelCount(
+        refreshAudioHwCapability(getMetronomeAudioContext()).maxChannelCount,
+      );
     } catch {
       setSampleRate(null);
+      setMaxChannelCount(null);
     }
     return () => {
       cancelled = true;
@@ -333,14 +338,40 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         return;
       }
 
+      // Persist local prefs first, then advance snapshot so Discard/Escape
+      // cannot wipe a theme already written to localStorage.
       setAppearance(draft.appearance);
       setStoredClockDisplayFormat(draft.clockFormat);
       setStoredLatencyCompensationMs(draft.latencyCompMs);
       setMetronomePrefs(draft.metro);
+      snapshotRef.current = {
+        ...snapshotRef.current,
+        appearance: draft.appearance,
+        clockFormat: draft.clockFormat,
+        deviceName: getStoredDeviceDisplayName() ?? draft.deviceName,
+        latencyCompMs: draft.latencyCompMs,
+        metro: draft.metro,
+      };
 
-      const sink = draft.sinkId === "" ? null : draft.sinkId;
-      await applyAudioOutputSink(sink);
-      setStoredAudioOutputDeviceId(sink);
+      const prevSink = snapshotRef.current.sinkId;
+      const nextSink = draft.sinkId;
+      if (prevSink !== nextSink) {
+        try {
+          const sink = nextSink === "" ? null : nextSink;
+          await applyAudioOutputSink(sink);
+          setStoredAudioOutputDeviceId(sink);
+          snapshotRef.current = {
+            ...snapshotRef.current,
+            sinkId: nextSink,
+          };
+        } catch (err) {
+          setAudioError(
+            err instanceof Error ? err.message : "Nie udało się zmienić wyjścia",
+          );
+          setTab("audio");
+          return;
+        }
+      }
 
       if (draft.midi && !midiDraftEqual(draft.midi, snapshotRef.current.midi)) {
         const status = await putMidiHostConfig({
@@ -351,6 +382,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           outputChannel: draft.midi.outputChannel,
         });
         setMidiStatus(status);
+        snapshotRef.current = { ...snapshotRef.current, midi: draft.midi };
       }
 
       if (server && serverDirty) {
@@ -591,6 +623,18 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 <dd>
                   {sampleRate != null
                     ? `${Math.round(sampleRate)} Hz`
+                    : "—"}
+                </dd>
+              </div>
+              <div className={styles.infoRow}>
+                <dt>Kanały wyjścia</dt>
+                <dd>
+                  {maxChannelCount != null
+                    ? `${maxChannelCount}${
+                        maxChannelCount >= 4
+                          ? " (multi-out OK)"
+                          : " (stereo — Quad/5.1 dla HW Out)"
+                      }`
                     : "—"}
                 </dd>
               </div>

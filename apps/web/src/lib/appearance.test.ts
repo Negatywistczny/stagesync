@@ -55,42 +55,43 @@ describe("appearance", () => {
     vi.unstubAllGlobals();
   });
 
-  it("defaults to dark / normal contrast", () => {
-    expect(readAppearance()).toEqual({ light: false, highContrast: false });
+  it("defaults to booth", () => {
+    expect(readAppearance()).toEqual({ profile: "booth" });
   });
 
   it("setAppearance persists and applies DOM attrs", () => {
-    const next = setAppearance({ light: true, highContrast: true });
-    expect(next).toEqual({ light: true, highContrast: true });
-    expect(store.get("stagesync-theme")).toBe("light");
-    expect(store.get("stagesync-contrast")).toBe("high");
-    expect(rootAttrs.get("data-theme")).toBe("light");
-    expect(rootAttrs.get("data-contrast")).toBe("high");
+    const next = setAppearance({ profile: "daylight" });
+    expect(next).toEqual({ profile: "daylight" });
+    expect(store.get("stagesync-appearance-profile")).toBe("daylight");
+    expect(rootAttrs.get("data-theme")).toBe("daylight");
+    expect(rootAttrs.has("data-contrast")).toBe(false);
     expect(themeMetaContent).toBe("#f4f4f5");
 
-    setAppearance({ light: false, highContrast: false });
-    expect(rootAttrs.has("data-theme")).toBe(false);
-    expect(rootAttrs.has("data-contrast")).toBe(false);
+    setAppearance({ profile: "booth" });
+    expect(rootAttrs.get("data-theme")).toBe("booth");
     expect(themeMetaContent).toBe("#000000");
   });
 
-  it("initAppearance applies stored prefs", () => {
+  it("migrates legacy light/high to daylight", () => {
     store.set("stagesync-theme", "light");
+    store.set("stagesync-contrast", "high");
     const state = initAppearance();
-    expect(state.light).toBe(true);
-    expect(rootAttrs.get("data-theme")).toBe("light");
+    expect(state.profile).toBe("daylight");
+    expect(store.get("stagesync-appearance-profile")).toBe("daylight");
+    expect(store.has("stagesync-theme")).toBe(false);
+    expect(rootAttrs.get("data-theme")).toBe("daylight");
   });
 
-  it("applyAppearance is idempotent for current state", () => {
-    applyAppearance({ light: false, highContrast: false });
-    expect(rootAttrs.has("data-theme")).toBe(false);
+  it("migrates legacy dark-high to booth", () => {
+    store.set("stagesync-theme", "dark");
+    store.set("stagesync-contrast", "high");
+    expect(readAppearance().profile).toBe("booth");
   });
 
-
-  it("applies and clears high-contrast data attribute", () => {
-    applyAppearance({ light: false, highContrast: true });
-    expect(rootAttrs.get("data-contrast")).toBe("high");
-    applyAppearance({ light: false, highContrast: false });
+  it("applyAppearance clears legacy contrast attr", () => {
+    rootAttrs.set("data-contrast", "high");
+    applyAppearance({ profile: "midnight" });
+    expect(rootAttrs.get("data-theme")).toBe("midnight");
     expect(rootAttrs.has("data-contrast")).toBe(false);
   });
 
@@ -99,7 +100,7 @@ describe("appearance", () => {
       getPropertyValue: (name: string) =>
         name === "--ss-color-bg" ? "#112233" : "",
     }));
-    applyAppearance({ light: true, highContrast: false });
+    applyAppearance({ profile: "daylight" });
     expect(themeMetaContent).toBe("#112233");
   });
 
@@ -115,27 +116,24 @@ describe("appearance", () => {
         throw new Error("denied");
       },
     });
-    expect(readAppearance()).toEqual({ light: false, highContrast: false });
-    expect(() => setAppearance({ light: true })).not.toThrow();
+    expect(readAppearance()).toEqual({ profile: "booth" });
+    expect(() => setAppearance({ profile: "neon" })).not.toThrow();
   });
 
   it("applyHostThemeDefault only when localStorage empty", () => {
     expect(hasStoredAppearance()).toBe(false);
-    expect(applyHostThemeDefault("light")).toEqual({
-      light: true,
-      highContrast: false,
-    });
-    expect(rootAttrs.get("data-theme")).toBe("light");
+    expect(applyHostThemeDefault("light")).toEqual({ profile: "daylight" });
+    expect(rootAttrs.get("data-theme")).toBe("daylight");
     expect(hasStoredAppearance()).toBe(false);
 
-    setAppearance({ light: false, highContrast: false });
-    expect(applyHostThemeDefault("light-high")).toBeNull();
-    expect(rootAttrs.has("data-theme")).toBe(false);
+    setAppearance({ profile: "booth" });
+    expect(applyHostThemeDefault("neon")).toBeNull();
+    expect(rootAttrs.get("data-theme")).toBe("booth");
   });
 
   it("hasStoredAppearance is true after set and false on storage throw", () => {
     expect(hasStoredAppearance()).toBe(false);
-    setAppearance({ light: true, highContrast: true });
+    setAppearance({ profile: "matrix" });
     expect(hasStoredAppearance()).toBe(true);
 
     vi.stubGlobal("localStorage", {
@@ -147,5 +145,4 @@ describe("appearance", () => {
     });
     expect(hasStoredAppearance()).toBe(false);
   });
-
 });

@@ -258,6 +258,11 @@ import {
   toggleAudioClipMute,
 } from "../lib/audioLaneEdit.js";
 import {
+  addAudioHardwareOutput,
+  removeAudioHardwareOutput,
+  updateAudioHardwareOutput,
+} from "../lib/audioHwEdit.js";
+import {
   ChannelStripControls,
   MixerSurface,
 } from "./timeline/channelStrip/index.js";
@@ -899,6 +904,9 @@ export function TimelineShell() {
     onDiscard: () => {},
     onUndo: () => {},
     onRedo: () => {},
+    onClipCut: () => false as boolean,
+    onClipCopy: () => false as boolean,
+    onClipPaste: () => false as boolean,
     onPlayOrPause: () => {},
     onStop: async () => {},
     onMetronomeToggle: async () => {},
@@ -2254,6 +2262,7 @@ export function TimelineShell() {
       const h = keyHandlersRef.current;
       switch (detail.action) {
         case "save":
+        case "file-save":
           if (h.dirty && !h.savePending) void h.onSave();
           break;
         case "edit-undo":
@@ -2261,6 +2270,39 @@ export function TimelineShell() {
           break;
         case "edit-redo":
           h.onRedo();
+          break;
+        case "edit-cut":
+          if (hasNonCollapsedDomTextSelection()) {
+            try {
+              document.execCommand("cut");
+            } catch {
+              /* best-effort native text */
+            }
+            break;
+          }
+          h.onClipCut();
+          break;
+        case "edit-copy":
+          if (hasNonCollapsedDomTextSelection()) {
+            try {
+              document.execCommand("copy");
+            } catch {
+              /* best-effort native text */
+            }
+            break;
+          }
+          h.onClipCopy();
+          break;
+        case "edit-paste":
+          if (isEditableKeyboardTarget(document.activeElement)) {
+            try {
+              document.execCommand("paste");
+            } catch {
+              /* best-effort native text */
+            }
+            break;
+          }
+          h.onClipPaste();
           break;
         case "edit-delete":
           deleteSelectedFormaClip();
@@ -2273,6 +2315,9 @@ export function TimelineShell() {
           break;
         case "view-zoom-reset":
           h.fitZoom();
+          break;
+        case "appearance":
+          setAppearanceOpen(true);
           break;
         case "help-shortcuts":
           setHelpOpen(true);
@@ -4308,6 +4353,42 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
   }
 
+  function onAddHwOut() {
+    if (!draftProject) return;
+    try {
+      const { project } = addAudioHardwareOutput(draftProject);
+      commitDraft(project);
+    } catch (err) {
+      setLoadError(
+        err instanceof Error ? err.message : "Nie udało się dodać HW Out",
+      );
+    }
+  }
+
+  function onHwGainChange(hwOutputId: string, gainDb: number) {
+    if (!draftProject) return;
+    commitDraft(
+      updateAudioHardwareOutput(draftProject, hwOutputId, { gainDb }),
+    );
+  }
+
+  function onHwMuteToggle(hwOutputId: string) {
+    if (!draftProject) return;
+    const row = draftProject.audioHardwareOutputs?.find(
+      (h) => h.id === hwOutputId,
+    );
+    commitDraft(
+      updateAudioHardwareOutput(draftProject, hwOutputId, {
+        muted: !row?.muted,
+      }),
+    );
+  }
+
+  function onHwRemove(hwOutputId: string) {
+    if (!draftProject) return;
+    commitDraft(removeAudioHardwareOutput(draftProject, hwOutputId));
+  }
+
   function buildBusCallbacks(busId: string): ChannelStripCallbacks {
     return {
       onSelect: () => {
@@ -4360,7 +4441,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       },
       onOutputChange: (output) => {
         if (!draftProject) return;
-        if (output.kind === "hw_out") return;
+        const bus = draftProject.audioBusses?.find((b) => b.id === busId);
+        const prev =
+          bus?.output?.kind === "hw_out" || bus?.output?.kind === "bus"
+            ? bus.output
+            : ({ kind: "master" } as const);
+        if (
+          isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)
+        ) {
+          return;
+        }
         commitDraft(setAudioBusOutput(draftProject, busId, output));
       },
       onNameDoubleClick: () => openBusRename(busId),
@@ -4856,6 +4946,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     onDiscard,
     onUndo,
     onRedo,
+    onClipCut: cutClipSelection,
+    onClipCopy: copyClipSelection,
+    onClipPaste: () => pasteClipClipboard(locatorTicks),
     onPlayOrPause: () => {
       if (audioBuffering) return;
       void (state.playing ? onPauseClick() : onPlayClick());
@@ -5959,8 +6052,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <Button
                 variant="ghost"
                 className={styles.metaChip}
-                title="Tempo — kliknij, aby edytować @ playhead"
-                aria-label="Tempo — kliknij, aby edytować @ playhead"
+                title="Tempo — kliknij, aby edytować przy playheadzie"
+                aria-label="Tempo — kliknij, aby edytować przy playheadzie"
                 onClick={() => {
                   openMapEdit("tempo", displayTicks);
                 }}
@@ -5998,8 +6091,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <Button
                 variant="ghost"
                 className={styles.metaChip}
-                title="Metrum — kliknij, aby edytować @ playhead"
-                aria-label="Metrum — kliknij, aby edytować @ playhead"
+                title="Metrum — kliknij, aby edytować przy playheadzie"
+                aria-label="Metrum — kliknij, aby edytować przy playheadzie"
                 onClick={() => {
                   openMapEdit("metrum", displayTicks);
                 }}
@@ -6144,6 +6237,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               clickMuted={!metronomeOn}
               playing={state.playing}
               onAddBus={onAddBus}
+              onAddHwOut={onAddHwOut}
+              onHwGainChange={onHwGainChange}
+              onHwMuteToggle={onHwMuteToggle}
+              onHwRemove={onHwRemove}
               onEmptyDoubleClick={(e) => {
                 if ((e.target as HTMLElement).closest("button, input, select"))
                   return;
@@ -6465,7 +6562,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           title={
                             tapBpmHint
                               ? `Tap — linie Tekstu + tempo (${tapBpmHint} BPM)`
-                              : "Tap — linie Tekstu + tempo @ locator"
+                              : "Tap — linie Tekstu + tempo przy locatorze"
                           }
                           aria-label="Tap — linie Tekstu i tempo"
                           onClick={onTap}
@@ -7360,13 +7457,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           value={
                             selectedCueClip.sample.output?.kind === "bus"
                               ? `bus:${selectedCueClip.sample.output.busId}`
-                              : "master"
+                              : selectedCueClip.sample.output?.kind === "hw_out"
+                                ? `hw:${selectedCueClip.sample.output.hwOutputId}`
+                                : "master"
                           }
                           onChange={(e) => {
                             if (!draftProject || !selectedCueClip.sample) return;
                             const v = e.target.value;
-                            const output =
-                              v.startsWith("bus:") && v.length > 4
+                            const output = v.startsWith("hw:") && v.length > 3
+                              ? ({
+                                  kind: "hw_out" as const,
+                                  hwOutputId: v.slice(3),
+                                })
+                              : v.startsWith("bus:") && v.length > 4
                                 ? ({
                                     kind: "bus" as const,
                                     busId: v.slice(4),
@@ -7387,6 +7490,13 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                               {b.name}
                             </option>
                           ))}
+                          {(draftProject!.audioHardwareOutputs ?? []).map(
+                            (h) => (
+                              <option key={h.id} value={`hw:${h.id}`}>
+                                {h.name}
+                              </option>
+                            ),
+                          )}
                         </select>
                       </label>
                       <label className={styles.inspCheck}>

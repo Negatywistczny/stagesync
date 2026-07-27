@@ -42,10 +42,11 @@ Sesja PO (dumpy `docs/analysis/inspiracje/spec-5.2+`, konfrontacja z ADR) domkn�
 - [ADR 0008](./0008-timeline-clip-editing.md): Flex / Takes / recording / join bounce = permanent OUT 5.x (nie „później wg Logic”).
 - [ADR 0016](./0016-android-performer-console.md): pozycjonowanie hosta + reguły Apply mid-PLAY; PIN TTL / Panic — kontrakt tutaj, egzekucja w shellach + web.
 - Docs operatorskie (`MOBILE.md`, `DESKTOP.md`, www): bez obietnic Zero-Glitch HA; Safety Net = Operator-Assisted Hot Standby; bez Flex/Takes/recording w komunikacji 5.x.
+- **§5 vs major 6.0:** OUT pozostaje dla całej linii **5.x**; powrót rejestracji z prostymi narzędziami edycji = [ADR 0018](./0018-future-audio-architecture.md) (supersedes „permanent” poza 5.x).
 - CHANGELOG **tylko** gdy zachowanie produktu się zmieni (złota zasada) — nie za sam ten ADR.
 
 ## Powiązane
 
-- [ADR 0002](./0002-timebase-ssot.md), [0008](./0008-timeline-clip-editing.md), [0015](./0015-daw-reference-and-product-decisions.md), [0016](./0016-android-performer-console.md)
+- [ADR 0002](./0002-timebase-ssot.md), [0008](./0008-timeline-clip-editing.md), [0015](./0015-daw-reference-and-product-decisions.md), [0016](./0016-android-performer-console.md), [0018](./0018-future-audio-architecture.md)
 - Prompt wdrożenia: [product-contracts-5.2-impl-prompt.md](../analysis/product-contracts-5.2-impl-prompt.md)
 - Inspiracje / triage: `docs/analysis/inspiracje/spec-5.2+/`

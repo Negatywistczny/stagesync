@@ -1,10 +1,16 @@
 /**
- * Mixer surface — 4 zones L→R: Audio | Busses | Click | Master.
+ * Mixer surface — zones L→R: Audio | Busses | HW | Click | Master.
  */
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import type { Project } from "@stagesync/shared";
+import { emptyPeakHold, type Project } from "@stagesync/shared";
 import type { TrackSelection } from "../../../lib/timelineSelection.js";
+import {
+  AUDIO_HW_CAPABILITY_EVENT,
+  getAudioHwCapability,
+  refreshAudioHwCapability,
+  type AudioHwCapability,
+} from "../../../lib/audioHwCapability.js";
 import {
   getMetronomePrefs,
   METRONOME_PREFS_CHANGED_EVENT,
@@ -18,6 +24,7 @@ import type {
   MasterStripCallbacks,
 } from "./channelStripTypes.js";
 import { ClickStrip } from "./ClickStrip.js";
+import { HwOutStrip } from "./HwOutStrip.js";
 import { MasterStrip } from "./MasterStrip.js";
 import {
   serializeOutputDest,
@@ -42,6 +49,10 @@ export type MixerSurfaceProps = {
   clickMuted: boolean;
   playing: boolean;
   onAddBus: () => void;
+  onAddHwOut?: () => void;
+  onHwGainChange?: (hwOutputId: string, gainDb: number) => void;
+  onHwMuteToggle?: (hwOutputId: string) => void;
+  onHwRemove?: (hwOutputId: string) => void;
   onEmptyDoubleClick?: (e: MouseEvent) => void;
 };
 
@@ -61,15 +72,51 @@ export function MixerSurface({
   clickMuted,
   playing,
   onAddBus,
+  onAddHwOut,
+  onHwGainChange,
+  onHwMuteToggle,
+  onHwRemove,
   onEmptyDoubleClick,
 }: MixerSurfaceProps) {
   const trackIds = project.audioTracks.map((t) => t.id);
   const busses = useMemo(() => project.audioBusses ?? [], [project.audioBusses]);
   const busIds = busses.map((b) => b.id);
-  const meters = useMixerMeterLevels(trackIds, true, { playing, busIds });
+  const hwOuts = useMemo(
+    () => project.audioHardwareOutputs ?? [],
+    [project.audioHardwareOutputs],
+  );
+  const hwIds = hwOuts.map((h) => h.id);
+  const meters = useMixerMeterLevels(trackIds, true, {
+    playing,
+    busIds,
+    hwIds,
+  });
   const [metroPrefs, setMetroPrefs] = useState<MetronomePrefs>(() =>
     getMetronomePrefs(),
   );
+  const [hwCap, setHwCap] = useState<AudioHwCapability>(() =>
+    getAudioHwCapability(),
+  );
+
+  useEffect(() => {
+    refreshAudioHwCapability();
+    setHwCap(getAudioHwCapability());
+    function onCap(e: Event) {
+      const detail = (e as CustomEvent<AudioHwCapability>).detail;
+      if (detail) setHwCap(detail);
+      else setHwCap(getAudioHwCapability());
+    }
+    window.addEventListener(AUDIO_HW_CAPABILITY_EVENT, onCap);
+    return () => window.removeEventListener(AUDIO_HW_CAPABILITY_EVENT, onCap);
+  }, []);
+
+  const hwOptions: OutputSelectorOption[] = useMemo(() => {
+    if (!hwCap.uiAllowed) return [];
+    return hwOuts.map((h) => ({
+      value: `hw:${h.id}`,
+      label: h.name,
+    }));
+  }, [hwCap.uiAllowed, hwOuts]);
 
   const trackOutputOptions: OutputSelectorOption[] = useMemo(() => {
     return [
@@ -78,8 +125,9 @@ export function MixerSurface({
         value: `bus:${b.id}`,
         label: b.name,
       })),
+      ...hwOptions,
     ];
-  }, [busses]);
+  }, [busses, hwOptions]);
 
   const busOutputOptionsFor = (busId: string): OutputSelectorOption[] => [
     { value: "master", label: "Master" },
@@ -89,6 +137,7 @@ export function MixerSurface({
         value: `bus:${b.id}`,
         label: b.name,
       })),
+    ...hwOptions,
   ];
 
   useEffect(() => {
@@ -110,9 +159,7 @@ export function MixerSurface({
       onDoubleClick={onEmptyDoubleClick}
     >
       <div className={styles.bank}>
-        {/* Scrollable Audio + Busy; Click/Master pinned as sibling (not sticky-in-overflow). */}
         <div className={styles.scrollBank}>
-          {/* Zone 1 — Audio tracks */}
           <section className={styles.zone} aria-label="Ścieżki audio">
             <div className={styles.zoneHead}>
               <span className={styles.zoneTitle}>Audio</span>
@@ -123,6 +170,7 @@ export function MixerSurface({
                 const reading = meters.tracks[track.id];
                 const channelMode =
                   track.channelMode === "mono" ? "mono" : "stereo";
+                const outVal = serializeOutputDest(track.output);
                 return (
                   <ChannelStripControls
                     key={track.id}
@@ -142,14 +190,11 @@ export function MixerSurface({
                       color: track.color,
                       icon: track.icon,
                       kind: "track",
-                      outputValue: serializeOutputDest(track.output),
+                      outputValue: outVal,
                       outputOptions: trackOutputOptions,
                       outputDisabled:
                         playing &&
-                        (serializeOutputDest(track.output).startsWith("hw:") ||
-                          trackOutputOptions.some((o) =>
-                            o.value.startsWith("hw:"),
-                          )),
+                        (outVal.startsWith("hw:") || hwOptions.length > 0),
                     }}
                     callbacks={{
                       ...callbacks,
@@ -170,7 +215,6 @@ export function MixerSurface({
             </div>
           </section>
 
-          {/* Zone 2 — Busses */}
           <section
             className={[styles.zone, styles.busZone].join(" ")}
             aria-label="Busy"
@@ -200,6 +244,7 @@ export function MixerSurface({
                 const reading = meters.busses[bus.id];
                 const channelMode =
                   bus.channelMode === "mono" ? "mono" : "stereo";
+                const outVal = serializeOutputDest(bus.output);
                 return (
                   <ChannelStripControls
                     key={bus.id}
@@ -217,8 +262,11 @@ export function MixerSurface({
                       meterDbR: reading?.liveDbR,
                       hold: reading?.hold,
                       kind: "bus",
-                      outputValue: serializeOutputDest(bus.output),
+                      outputValue: outVal,
                       outputOptions: busOutputOptionsFor(bus.id),
+                      outputDisabled:
+                        playing &&
+                        (outVal.startsWith("hw:") || hwOptions.length > 0),
                     }}
                     callbacks={{
                       ...callbacks,
@@ -233,9 +281,77 @@ export function MixerSurface({
               })}
             </div>
           </section>
+
+          {hwCap.uiAllowed ? (
+            <section
+              className={[styles.zone, styles.busZone].join(" ")}
+              aria-label="Wyjścia HW"
+            >
+              <div className={styles.zoneHead}>
+                <span className={styles.zoneTitle}>HW Out</span>
+                {onAddHwOut ? (
+                  <button
+                    type="button"
+                    className={styles.addBusBtn}
+                    aria-label="Dodaj wyjście HW"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddHwOut();
+                    }}
+                  >
+                    + Dodaj HW
+                  </button>
+                ) : null}
+              </div>
+              <div className={styles.strips}>
+                {hwOuts.length === 0 ? (
+                  <p className={styles.empty} role="status" aria-live="polite">
+                    Brak patchy HW — „+ Dodaj HW” (kanały {hwCap.maxChannelCount}
+                    ).
+                  </p>
+                ) : null}
+                {hwOuts.map((row) => {
+                  const reading = meters.hwOuts?.[row.id];
+                  return (
+                    <HwOutStrip
+                      key={row.id}
+                      id={row.id}
+                      name={row.name}
+                      channelOffset={row.channelOffset}
+                      channelMode={
+                        row.channelMode === "mono" ? "mono" : "stereo"
+                      }
+                      gainDb={row.gainDb ?? 0}
+                      muted={Boolean(row.muted)}
+                      meterDb={reading?.liveDb}
+                      meterDbR={reading?.liveDbR}
+                      hold={reading?.hold ?? emptyPeakHold()}
+                      onGainChange={(v) => onHwGainChange?.(row.id, v)}
+                      onGainReset={() => onHwGainChange?.(row.id, 0)}
+                      onMuteClick={(e) => {
+                        e.stopPropagation();
+                        onHwMuteToggle?.(row.id);
+                      }}
+                      onHoldClear={() => meters.clearHwHold?.(row.id)}
+                      onRemove={() => onHwRemove?.(row.id)}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          ) : (
+            <section className={styles.zone} aria-label="Wyjścia HW">
+              <div className={styles.zoneHead}>
+                <span className={styles.zoneTitle}>HW Out</span>
+              </div>
+              <p className={styles.empty} role="status">
+                Multi-out wymaga urządzenia z ≥ 4 kanałami (teraz{" "}
+                {hwCap.maxChannelCount}). Ustaw Quad/5.1 w systemie audio.
+              </p>
+            </section>
+          )}
         </div>
 
-        {/* Zone 3+4 — Click + Master (pinned right sibling) */}
         <div className={styles.masterRail}>
           <ClickStrip
             state={{

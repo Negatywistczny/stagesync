@@ -24,7 +24,10 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw hosta | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
-| **5.3+** | Residual: multi-out HW, auto-election, Offline delta, OAuth… | Po 5.2.1 | [TODO.md](./TODO.md) · [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.3** | **Colors & Channels** — multi-out HW + nazwane skóry | Po residual 5.2.x; runtime gate `maxChannelCount` | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
+| **5.x** (po 5.3) | **Pitch & FX Busses** — Track Pitch + expanded busses / send-return | Przed major 6.0 | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
+| **6.0+** | Live Processing & Master Show Controller | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
+| **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
 ### Zamknięte etapy (α3–β1)
 
@@ -86,18 +89,41 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; OAuth; macierz motywów 4 profili — [TODO.md](./TODO.md).
 
-### Po 5.2.0 / 5.2.1 + residual 5.3+
+### Po 5.2.0 / residual 5.2.x
 
 - **Cut `v5.2.1`:** Admin **Przywróć…** (`.bak` / ZIP); opcjonalny Sentry; polish Admin/Client (Host 2×2, Button chrome, Client header); usunięta scenic theme lock — lokalny motyw + `STAGESYNC_THEME_DEFAULT`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - **Cut `v5.2.2`:** design system shared + launcher tokeny; polish Host/Client. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - **Cut `v5.2.3`:** lokalny host Console (NSD / Connect), Admin Host mobile (akordeon + górny pasek), a11y / Timeline dock. Historia: [CHANGELOG.md](../CHANGELOG.md).
-- Motywy: macierz 4 profili / THM-03
-- Mixer: multi-out HW (Out 3–4)
-- Safety Net: auto-election / lease
-- Mobile: responsive GUI (Admin/Client/Timeline); Offline delta
-- Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/)
+- Dalsze patche **5.2.x** — higiena / ops; checklista: [TODO.md](./TODO.md).
 
+### 5.3 — **Colors & Channels** (plan)
 
+Hero: multi-out HW + **5 nazwanych skór** (Booth Amber / Daylight / Midnight Cyan / Matrix Green / Neon Ember). **Nie** otwiera Live Input / Audio Suite / automation / VSTi ([ADR 0018](./adr/0018-future-audio-architecture.md)).
+
+- Mixer: fizyczne Out 3–4+ (ChannelMerger N, CRUD patchy, track/bus/cue → `hw_out`, paseki HW) tylko gdy `maxChannelCount ≥ 4` (brak atrap — [ADR 0011](./adr/0011-ui-parity-behavior.md))
+- Motywy: `data-theme=<profileId>`; THM-03 niezmienniki (Solo/Mute/OSMD/playhead≠locator); bez scenic lock
+- Residual ops **równolegle** (nie hero 5.3): Safety Net auto-election; Offline delta; OAuth; GUI mobile — [TODO.md](./TODO.md)
+
+### 5.x (po 5.3) — **Pitch & FX Busses**
+
+- Track Pitch Shift (sync z Chord AST / OSMD — residual zakresu w [ADR 0018](./adr/0018-future-audio-architecture.md) §7)
+- Expanded busses / send-return FX (nadal WebAudio; bez in-process VST)
+- Cel: przygotowanie grafu pod Audio Suite 6.0 **bez** major i bez InputStrip / automation / recording
+
+### 6.0+ — Live Processing & Master Show Controller
+
+Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (**Zaakceptowany**).
+
+| Filar | Zakres (docelowy) |
+|-------|-------------------|
+| 1 | Input & Live Processing (InputStrip, `getUserMedia`, mapowanie wejść) + **recording + proste narzędzia edycji** |
+| 2 | StageSync Audio Suite (Worklet / WASM — Limiter, EQ, Comp, Pitch, Reverb, Delay, LUFS…) |
+| 3 | Real-Time Automation (lane’y; **host Tick Engine** SSOT — bez client musical clock) |
+| 4 | MIDI Tracks + **Standalone VSTi Controller** (PC/CC); **MIDI Patch Matrix**; wbudowane synthy WebAudio = Later 6.x+ |
+
+**Zero-Crash:** native DSP w WebAudio/Worklet/WASM; ciężkie VST tylko jako zewnętrzne procesy MIDI. **SSOT czasu** bez zmian ([ADR 0002](./adr/0002-timebase-ssot.md)). Recording OUT w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5); **IN w 6.0** z prostymi narzędziami edycji ([ADR 0018](./adr/0018-future-audio-architecture.md) §5). Flex / Take Folders = nie must 6.0.
+
+Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
 ## Zasady operacyjne
 
@@ -119,6 +145,10 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
     bez PO smoke. **§1a:** funkcja v4 → must `5.0.0` (chyba że usunięta); **zakaz stubów**.
     Audyt: [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) ·
     UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
+11. **Audio 6.0+** ([ADR 0018](./adr/0018-future-audio-architecture.md)): Zero-Crash (Worklet/WASM vs
+    VST external); sekwencja **5.3 Colors & Channels → 5.x Pitch & FX Busses → 6.0+** Input /
+    Automation / Standalone VSTi; **bez** otwierania recording/VSTi w 5.x
+    ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5).
 
 ## Granica 0
 

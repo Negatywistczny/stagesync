@@ -12,6 +12,10 @@ import {
   MAX_AUDIO_HARDWARE_OUTPUTS,
   busGraphHasCycle,
 } from "./mixer-routing.js";
+import {
+  AppearanceProfileIdSchema,
+  normalizeAppearanceProfile,
+} from "./theme-default.js";
 
 function refineMeterForPpq(
   ts: { numerator: number; denominator: number },
@@ -425,10 +429,14 @@ export const CueClipRoleSchema = z.enum([
 
 export type CueClipRole = z.infer<typeof CueClipRoleSchema>;
 
-/** Cue sample routing — Master | Bus only (no HW outs in MVP). */
+/** Cue sample routing — Master | Bus | HW (HW gated at UI/runtime). */
 export const CueSampleOutputSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("master") }),
   z.object({ kind: z.literal("bus"), busId: z.string().min(1).max(64) }),
+  z.object({
+    kind: z.literal("hw_out"),
+    hwOutputId: z.string().min(1).max(64),
+  }),
 ]);
 
 export type CueSampleOutput = z.infer<typeof CueSampleOutputSchema>;
@@ -637,6 +645,16 @@ export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
       }
     });
     (project.audioBusses ?? []).forEach((bus, i) => {
+      if (bus.output?.kind === "hw_out") {
+        if (!hwIds.has(bus.output.hwOutputId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Bus output hwOutputId not found: ${bus.output.hwOutputId}`,
+            path: ["audioBusses", i, "output", "hwOutputId"],
+          });
+        }
+        return;
+      }
       if (bus.output?.kind !== "bus") return;
       if (!busIds.has(bus.output.busId)) {
         ctx.addIssue({
@@ -680,6 +698,16 @@ export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
           code: z.ZodIssueCode.custom,
           message: `Cue sample busId not found: ${sample.output.busId}`,
           path: ["cue", "clips", i, "sample", "output", "busId"],
+        });
+      }
+      if (
+        sample.output?.kind === "hw_out" &&
+        !hwIds.has(sample.output.hwOutputId)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Cue sample hwOutputId not found: ${sample.output.hwOutputId}`,
+          path: ["cue", "clips", i, "sample", "output", "hwOutputId"],
         });
       }
     });
@@ -726,6 +754,16 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
       }
     });
     (project.audioBusses ?? []).forEach((bus, i) => {
+      if (bus.output?.kind === "hw_out") {
+        if (!hwIds.has(bus.output.hwOutputId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Bus output hwOutputId not found: ${bus.output.hwOutputId}`,
+            path: ["audioBusses", i, "output", "hwOutputId"],
+          });
+        }
+        return;
+      }
       if (bus.output?.kind !== "bus") return;
       if (!busIds.has(bus.output.busId) || bus.output.busId === bus.id) {
         ctx.addIssue({
@@ -765,6 +803,16 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
           code: z.ZodIssueCode.custom,
           message: `Cue sample busId not found: ${sample.output.busId}`,
           path: ["cue", "clips", i, "sample", "output", "busId"],
+        });
+      }
+      if (
+        sample.output?.kind === "hw_out" &&
+        !hwIds.has(sample.output.hwOutputId)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Cue sample hwOutputId not found: ${sample.output.hwOutputId}`,
+          path: ["cue", "clips", i, "sample", "output", "hwOutputId"],
         });
       }
     });
@@ -832,11 +880,16 @@ export const HealthResponseSchema = z
     uiHashConsole: z.string().min(1).optional(),
     /**
      * Host default theme when the client has no localStorage theme yet
-     * (`STAGESYNC_THEME_DEFAULT`). Omitted when unset.
+     * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
+     * dark/light/*-high aliases (normalized). Omitted when unset.
      */
-    themeDefault: z
-      .enum(["dark", "light", "dark-high", "light-high"])
-      .optional(),
+    themeDefault: z.preprocess(
+      (v) => {
+        if (v == null || v === "") return undefined;
+        return normalizeAppearanceProfile(String(v)) ?? v;
+      },
+      AppearanceProfileIdSchema.optional(),
+    ),
   })
   .strict();
 

@@ -58,6 +58,7 @@ nad routerem. Parity = **zachowanie** v4 (nie inventarz-first, nie clone chrome)
 checklista wtórna [ui-shell-inventory.md](./ui-shell-inventory.md).
 Stałe decyzje PO + reguła Logic: [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md).
 Live Show Control (kontrakty 1–8): [ADR 0017](./adr/0017-live-show-control-contracts.md).
+Przyszła architektura audio / Live Processing 6.0+ (Zaakceptowany): [ADR 0018](./adr/0018-future-audio-architecture.md).
 Aktualizacje Docker: [ADR 0004](./adr/0004-updates-docker.md).  
 Desktop shell (Tauri, β1): [ADR 0010](./adr/0010-desktop-shell-tauri.md). Launcher (wybór hosta / mDNS): [ADR 0014](./adr/0014-desktop-launcher.md).
 Android Performer / Console: [ADR 0016](./adr/0016-android-performer-console.md).

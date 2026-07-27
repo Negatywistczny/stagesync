@@ -634,6 +634,11 @@ export function setAudioBusOutput(
     const busIds = new Set(busses.map((b) => b.id));
     if (!busIds.has(output.busId) || output.busId === busId) return project;
     if (wouldCreateBusCycle(busses, busId, output)) return project;
+  } else if (output.kind === "hw_out") {
+    const hwIds = new Set(
+      (project.audioHardwareOutputs ?? []).map((h) => h.id),
+    );
+    if (!hwIds.has(output.hwOutputId)) return project;
   }
   return {
     ...project,

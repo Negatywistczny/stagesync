@@ -1,19 +1,30 @@
 import {
+  APPEARANCE_PROFILE_LABELS,
   appearanceFromThemeDefault,
+  normalizeAppearanceProfile,
   parseThemeDefaultEnv,
+  type AppearanceProfileId,
 } from "@stagesync/shared";
 
-const THEME_KEY = "stagesync-theme";
-const CONTRAST_KEY = "stagesync-contrast";
+const PROFILE_KEY = "stagesync-appearance-profile";
+/** Legacy keys (pre-5.3 boolean pair). */
+const LEGACY_THEME_KEY = "stagesync-theme";
+const LEGACY_CONTRAST_KEY = "stagesync-contrast";
 
 /** Fallbacks when `--ss-color-bg` is unset (jsdom / early boot). */
-const THEME_COLOR_LIGHT = "#f4f4f5";
-const THEME_COLOR_DARK = "#000000";
+const THEME_COLOR_BY_PROFILE: Record<AppearanceProfileId, string> = {
+  booth: "#000000",
+  daylight: "#f4f4f5",
+  midnight: "#020617",
+  matrix: "#000000",
+  neon: "#0a0000",
+};
 
 export type AppearanceState = {
-  light: boolean;
-  highContrast: boolean;
+  profile: AppearanceProfileId;
 };
+
+export { APPEARANCE_PROFILE_LABELS };
 
 function readThemeColorHex(fallback: string): string {
   if (typeof getComputedStyle === "undefined") return fallback;
@@ -26,12 +37,41 @@ function readThemeColorHex(fallback: string): string {
   return fallback;
 }
 
+function migrateLegacyProfile(): AppearanceProfileId | null {
+  try {
+    const theme = localStorage.getItem(LEGACY_THEME_KEY);
+    const contrast = localStorage.getItem(LEGACY_CONTRAST_KEY);
+    if (theme == null && contrast == null) return null;
+    const legacyId =
+      theme === "light"
+        ? contrast === "high"
+          ? "light-high"
+          : "light"
+        : contrast === "high"
+          ? "dark-high"
+          : "dark";
+    return normalizeAppearanceProfile(legacyId) ?? "booth";
+  } catch {
+    return null;
+  }
+}
+
+function clearLegacyKeys(): void {
+  try {
+    localStorage.removeItem(LEGACY_THEME_KEY);
+    localStorage.removeItem(LEGACY_CONTRAST_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 /** True when the device already chose a theme (host default must not override). */
 export function hasStoredAppearance(): boolean {
   try {
+    if (localStorage.getItem(PROFILE_KEY) != null) return true;
     return (
-      localStorage.getItem(THEME_KEY) != null ||
-      localStorage.getItem(CONTRAST_KEY) != null
+      localStorage.getItem(LEGACY_THEME_KEY) != null ||
+      localStorage.getItem(LEGACY_CONTRAST_KEY) != null
     );
   } catch {
     return false;
@@ -40,34 +80,50 @@ export function hasStoredAppearance(): boolean {
 
 export function readAppearance(): AppearanceState {
   try {
-    return {
-      light: localStorage.getItem(THEME_KEY) === "light",
-      highContrast: localStorage.getItem(CONTRAST_KEY) === "high",
-    };
+    const stored = localStorage.getItem(PROFILE_KEY);
+    const fromStored = normalizeAppearanceProfile(stored);
+    if (fromStored) return { profile: fromStored };
+
+    const migrated = migrateLegacyProfile();
+    if (migrated) {
+      try {
+        localStorage.setItem(PROFILE_KEY, migrated);
+        clearLegacyKeys();
+      } catch {
+        /* ignore write */
+      }
+      return { profile: migrated };
+    }
   } catch {
-    return { light: false, highContrast: false };
+    /* ignore */
   }
+  return { profile: "booth" };
 }
 
 export function applyAppearance(state: AppearanceState): void {
   const root = document.documentElement;
-  if (state.light) root.setAttribute("data-theme", "light");
-  else root.removeAttribute("data-theme");
-  if (state.highContrast) root.setAttribute("data-contrast", "high");
-  else root.removeAttribute("data-contrast");
+  const profile = normalizeAppearanceProfile(state.profile) ?? "booth";
+  root.setAttribute("data-theme", profile);
+  root.removeAttribute("data-contrast");
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    const fallback = state.light ? THEME_COLOR_LIGHT : THEME_COLOR_DARK;
+    const fallback = THEME_COLOR_BY_PROFILE[profile];
     meta.setAttribute("content", readThemeColorHex(fallback));
   }
 }
 
-export function setAppearance(partial: Partial<AppearanceState>): AppearanceState {
-  const next = { ...readAppearance(), ...partial };
+export function setAppearance(
+  partial: Partial<AppearanceState> | { profile: AppearanceProfileId },
+): AppearanceState {
+  const next: AppearanceState = {
+    profile:
+      normalizeAppearanceProfile(partial.profile) ??
+      readAppearance().profile,
+  };
   try {
-    localStorage.setItem(THEME_KEY, next.light ? "light" : "dark");
-    localStorage.setItem(CONTRAST_KEY, next.highContrast ? "high" : "normal");
+    localStorage.setItem(PROFILE_KEY, next.profile);
+    clearLegacyKeys();
   } catch {
     /* ignore */
   }

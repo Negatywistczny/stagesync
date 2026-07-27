@@ -16,6 +16,7 @@ import {
 } from "@stagesync/shared";
 import {
   readGroupBusMeterDb,
+  readHwOutMeterDb,
   readMasterMeterDb,
   readTrackMeterDb,
 } from "../../../lib/audioPlayback.js";
@@ -33,6 +34,7 @@ export type ChannelMeterReading = {
 export type MixerMeterLevels = {
   tracks: Record<string, ChannelMeterReading>;
   busses: Record<string, ChannelMeterReading>;
+  hwOuts: Record<string, ChannelMeterReading>;
   master: {
     liveL: number;
     liveR: number;
@@ -46,11 +48,13 @@ export type UseMixerMeterLevelsOptions = {
   /** Transport playing — rising edge clears all peak holds. */
   playing?: boolean;
   busIds?: readonly string[];
+  hwIds?: readonly string[];
 };
 
 type HoldLatchStore = {
   tracks: Record<string, PeakHoldState>;
   busses: Record<string, PeakHoldState>;
+  hwOuts: Record<string, PeakHoldState>;
   masterL: PeakHoldState;
   masterR: PeakHoldState;
   click: PeakHoldState;
@@ -60,6 +64,7 @@ function emptyHoldStore(): HoldLatchStore {
   return {
     tracks: {},
     busses: {},
+    hwOuts: {},
     masterL: emptyPeakHold(),
     masterR: emptyPeakHold(),
     click: emptyPeakHold(),
@@ -101,17 +106,20 @@ export function useMixerMeterLevels(
 ): MixerMeterLevels & {
   clearTrackHold: (trackId: string) => void;
   clearBusHold: (busId: string) => void;
+  clearHwHold: (hwOutputId: string) => void;
   clearMasterHold: () => void;
   clearClickHold: () => void;
 } {
   const playing = Boolean(options.playing);
   const busIds = options.busIds ?? [];
+  const hwIds = options.hwIds ?? [];
   const wasPlayingRef = useRef(playing);
   const holdsRef = useRef<HoldLatchStore>(emptyHoldStore());
 
   const [levels, setLevels] = useState<MixerMeterLevels>(() => ({
     tracks: Object.fromEntries(trackIds.map((id) => [id, floorReading()])),
     busses: Object.fromEntries(busIds.map((id) => [id, floorReading()])),
+    hwOuts: Object.fromEntries(hwIds.map((id) => [id, floorReading()])),
     master: {
       liveL: FLOOR,
       liveR: FLOOR,
@@ -123,6 +131,7 @@ export function useMixerMeterLevels(
 
   const idsKey = trackIds.join(",");
   const busKey = busIds.join(",");
+  const hwKey = hwIds.join(",");
 
   useEffect(() => {
     const rising = playing && !wasPlayingRef.current;
@@ -134,6 +143,9 @@ export function useMixerMeterLevels(
     }
     for (const id of Object.keys(store.busses)) {
       store.busses[id] = emptyPeakHold();
+    }
+    for (const id of Object.keys(store.hwOuts)) {
+      store.hwOuts[id] = emptyPeakHold();
     }
     store.masterL = emptyPeakHold();
     store.masterR = emptyPeakHold();
@@ -159,6 +171,16 @@ export function useMixerMeterLevels(
           },
         ]),
       ),
+      hwOuts: Object.fromEntries(
+        Object.keys(prev.hwOuts).map((id) => [
+          id,
+          {
+            liveDb: prev.hwOuts[id]?.liveDb ?? FLOOR,
+            liveDbR: prev.hwOuts[id]?.liveDbR,
+            hold: emptyPeakHold(),
+          },
+        ]),
+      ),
       master: {
         liveL: prev.master.liveL,
         liveR: prev.master.liveR,
@@ -175,6 +197,7 @@ export function useMixerMeterLevels(
       setLevels({
         tracks: Object.fromEntries(trackIds.map((id) => [id, floorReading()])),
         busses: Object.fromEntries(busIds.map((id) => [id, floorReading()])),
+        hwOuts: Object.fromEntries(hwIds.map((id) => [id, floorReading()])),
         master: {
           liveL: FLOOR,
           liveR: FLOOR,
@@ -207,6 +230,15 @@ export function useMixerMeterLevels(
         store.busses[id] = reading.hold;
         busses[id] = reading;
       }
+      const hwOuts: Record<string, ChannelMeterReading> = {};
+      for (const id of hwIds) {
+        const reading = latchChannelPeaks(
+          store.hwOuts[id] ?? emptyPeakHold(),
+          readHwOutMeterDb(id),
+        );
+        store.hwOuts[id] = reading.hold;
+        hwOuts[id] = reading;
+      }
       const masterLive = readMasterMeterDb();
       const clickLive = readClickMeterDb();
       store.masterL = updatePeakHold(store.masterL, masterLive.l);
@@ -215,6 +247,7 @@ export function useMixerMeterLevels(
       setLevels({
         tracks,
         busses,
+        hwOuts,
         master: {
           liveL: masterLive.l,
           liveR: masterLive.r,
@@ -230,8 +263,8 @@ export function useMixerMeterLevels(
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- idsKey/busKey
-  }, [enabled, idsKey, busKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- idsKey/busKey/hwKey
+  }, [enabled, idsKey, busKey, hwKey]);
 
   function clearTrackHold(trackId: string) {
     holdsRef.current.tracks[trackId] = emptyPeakHold();
@@ -263,6 +296,21 @@ export function useMixerMeterLevels(
     });
   }
 
+  function clearHwHold(hwOutputId: string) {
+    holdsRef.current.hwOuts[hwOutputId] = emptyPeakHold();
+    setLevels((prev) => {
+      const cur = prev.hwOuts[hwOutputId];
+      if (!cur) return prev;
+      return {
+        ...prev,
+        hwOuts: {
+          ...prev.hwOuts,
+          [hwOutputId]: { ...cur, hold: emptyPeakHold() },
+        },
+      };
+    });
+  }
+
   function clearMasterHold() {
     holdsRef.current.masterL = emptyPeakHold();
     holdsRef.current.masterR = emptyPeakHold();
@@ -288,6 +336,7 @@ export function useMixerMeterLevels(
     ...levels,
     clearTrackHold,
     clearBusHold,
+    clearHwHold,
     clearMasterHold,
     clearClickHold,
   };

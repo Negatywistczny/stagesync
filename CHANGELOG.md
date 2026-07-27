@@ -5,6 +5,30 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### ⏱️ Timeline & DAW
+- **Mixer — multi-out:** przy urządzeniu z ≥ 4 kanałami możesz dodać patchy HW Out, skierować ścieżkę / bus / próbkę Cue na fizyczne wyjścia i sterować faderem/mute z miernikami — Master zostaje na kanałach 1–2.
+- **Motyw:** w Wyglądzie wybierasz jedną z pięciu skór (Booth Amber, Daylight, Midnight Cyan, Matrix Green, Neon Ember) zamiast osobnych przełączników jasny/kontrast; zapis w Preferencjach zamyka okno i nie cofa skóry przy Anuluj (wyjście audio wywoływane tylko gdy faktycznie się zmienia).
+
+#### 🖥️ App Shell & UI
+- **Preferencje audio:** widać liczbę kanałów wyjścia WebAudio i podpowiedź, gdy stereo blokuje HW Out.
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Menu OS — Plik:** Nowy (utwór / wzór / z wzoru), Otwórz, Zapisz jako, Importuj / Eksportuj bibliotekę — działa też z Timeline, nie tylko z Admina.
+- **Menu OS — Edycja / Widok:** Wytnij / Kopiuj / Wklej steruje schowkiem klipów Timeline; **Wygląd…** otwiera wybór motywu w Timeline albo Preferencje poza nim.
+
+#### 📚 Dokumentacja
+- **INSTALL / DESKTOP:** opis multi-out (Quad/5.1 / Aggregate) oraz nowych ID `STAGESYNC_THEME_DEFAULT`.
+- **DESKTOP:** zaktualizowana tabela pozycji menu systemowego.
+
+### Zmieniono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop — zasobnik:** status hosta i kopiowanie adresu LAN to jedna pozycja menu (klik przy działającym hoście kopiuje URL).
+
 ## [5.2.11](https://github.com/Negatywistczny/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
 
 ### Dodano
@@ -37,7 +61,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW
-- **Różdżka:** przycisk przy warstwie Forma (jak Tap przy Tekście), poza menu T; skrót W + 1/2/3 bez zmian.
+- **Różdżka:** przycisk przy warstwie Forma (jak Tap przy Tekście); skrót W + 1/2/3 bez zmian.
 
 #### 🖥️ App Shell & UI
 - **Admin — Pliki:** przycisk eksportu biblioteki to teraz **Eksport**.
@@ -62,7 +86,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Różdżka:** z powrotem zawsze na pasku narzędzi Timeline (poza menu T); skrót W + 1/2/3 bez zmian.
+- **Różdżka:** z powrotem zawsze na pasku narzędzi Timeline; skrót W + 1/2/3 bez zmian.
 - **Import UG:** podgląd sekcji przed zapisem; edytowalne takty każdej sekcji; opcjonalna Różdżka zaraz po imporcie (Tekst+Akordy → Forma). Puste linie i [Verse]/[Chorus] budują Formę; Countdown bez zmian.
 
 ### Naprawiono
@@ -414,7 +438,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Menu narzędzi Timeline:** zestaw live-show w stylu Logic (Wskaźnik, Ołówek, Gumka, Nożyczki, Połącz, Mute, Solo, Fade, Gain, Zaznaczanie, Zoom) — akord T otwiera menu przy kursorze; na pasku domyślnie cztery podstawowe narzędzia, widoczność pozostałych do wyboru lokalnie. Na audio: podział / scalanie sąsiadów, mute clipu, chwilowe solo ścieżki, fade i gain myszą; marquee obejmuje też clipy audio. Różdżka i Tap (przy warstwie Tekst) poza menu T.
+- **Menu narzędzi Timeline:** zestaw live-show w stylu Logic (Wskaźnik, Ołówek, Gumka, Nożyczki, Połącz, Mute, Solo, Fade, Gain, Zaznaczanie, Zoom) — akord T otwiera menu przy kursorze; na pasku domyślnie cztery podstawowe narzędzia, widoczność pozostałych do wyboru lokalnie. Na audio: podział / scalanie sąsiadów, mute clipu, chwilowe solo ścieżki, fade i gain myszą; marquee obejmuje też clipy audio. Różdżka i Tap (przy warstwie Tekst).
 - **Menu kontekstowe:** PPM na klipach Forma / Tekst / Akordy / Cue / Audio, pustej lane i nagłówku ścieżki — schowek, mute/rozdziel audio, import oraz zmiana nazwy / duplikuj / usuń ścieżkę (także w Mixerze); bez natywnego Look Up / Inspect na nazwie.
 - **Dock ścieżek audio:** zaznaczanie i multi-select ścieżek, Solo/Mute na zaznaczonych (w tym solo wyłącznie tej), edycja nazwy i reset fadera dwuklikiem, nowa ścieżka dwuklikiem pustego docku; układ 2-rzędowy z kolorem/ikoną, skracaniem długiej nazwy i regulowaną szerokością kolumny (zapamiętaną); przy niskiej wysokości — jeden rząd bez fadera.
 - **Mixer:** cztery strefy (Audio | Busy | Click | Master) — przewijanie Audio+Busy, Click i Master przypięte; stripy stałej szerokości z M/ST, PAN (mono) / BAL True Balance (stereo), Peak Hold, faderem +6…−∞, metrami LED i Out = Master|Bus; Busy z dodawaniem/usuwaniem busów; Click = Direct Cue (Mute metronomu w sesji); Stereo Out dual L+R. Kolor i ikona ścieżki wspólne z dockiem i waveformem; przycisk Mikser obok Tempo. Zoom UI skaluje stripy; Zoom H/V w Mixerze wyłączone.
@@ -678,13 +702,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` + pack v5 `docs/examples/v5/library.pack.sample.stagesync.json`; smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
 - **Admin Utwory (pod Wybrany):** import legacy `database.json` z auto-detect (v5 pack vs 4.x `songs[]`) + migracja `migrateLegacy`* przy `POST /api/library/import`; ZIP odroczony (komunikat PL).
-- **Timeline:** marquee + multi-select (`items` id+lane / `primaryId`; zaznaczenie **cross-lane** jak v4) + multi-drag same lane (live preview całej grupy; po puścieniu zachowane zaznaczenie) + clipboard ⌘C/X/V/D (Forma/Tekst/Akordy/Cue; paste @ locator; copy = primary lane); hit-test `data-clip-lane`; pusty obszar pod trackami = marquee/clear — parity zachowania v4, nie clone CSS.
+- **Timeline:** marquee + multi-select (`items` id+lane / `primaryId`; zaznaczenie **cross-lane** jak v4) + multi-drag same lane (live preview całej grupy; po puścieniu zachowane zaznaczenie) + clipboard ⌘C/X/V/D (Forma/Tekst/Akordy/Cue; paste przy locatorze; copy = primary lane); hit-test `data-clip-lane`; pusty obszar pod trackami = marquee/clear — parity zachowania v4, nie clone CSS.
 - **Timeline:** ręczna wysokość ścieżki (drag na dolnej krawędzi docka; dwuklik = Zoom V; `localStorage`; Zoom V zachowuje proporcje) — jak v4 `laneHeights`.
 - **Web:** ekran błędu trasy (`errorElement`) + root ErrorBoundary — Odśwież / Client / Admin zamiast białego ekranu.
 - **Host Restart / Wyłącz:** `POST /api/system/restart|shutdown` + potwierdzenie 2× (jak v4); sieć `GET /api/system/network`.
 - **Schema v5:** `keyMap`, `midiProgramId`, `isTemplate`, `artist` / `genre` / `year`; katalog biblioteki z PC / wzorami / `hasMusicXml`.
 - **Admin parity:** Batch PC, Ostrzeżenia, kolumna PC, Wzory (nowy z wzoru), Eksport/Import `.stagesync.json`, MusicXML upload.
-- **Timeline:** Tonacja (keyMap) edit/readout, Tempo BPM @ playhead, suwaki Zoom H/V/UI, metadane PC/artysta/gatunek.
+- **Timeline:** Tonacja (keyMap) edit/readout, Tempo BPM przy playheadzie, suwaki Zoom H/V/UI, metadane PC/artysta/gatunek.
 - **Wygląd:** jasny motyw + wysoki kontrast (`data-theme` / `data-contrast`) w Admin / Timeline / Client.
 - **Client:** skala tekstu karaoke, auto-scroll, score zoom lokalny; appearance w drawerze globalnym.
 - **Timeline parity follow-up:** Metadane (tytuł / defaultBpm), Loop (region na linijce + `POST /api/transport/loop` SSOT), Follow playhead, Tekst/Akordy/Cue move/resize/pencil, Kotwice (`scoreBarMap`), scissors content, Client H/B + Tap wokalu + notatki Formy.
@@ -711,7 +735,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline clipy:** kolorowe przezroczyste skóry lane (`color-mix` ~16–20% fill / ~45% border: Forma primary, Tekst info, Akordy primary, Cue warning, Kotwice success, mapy info, Countdown dashed muted); selected = mocniejszy outline/`selected-border` bez żółtego flood.
 - **Timeline canvas:** Zoom V (`--tl-row-h`) / Zoom UI (`--tl-zoom-ui`) skalują lane + ruler chrome; suwaki zoom `accent-color: primary`; barlines z `meterMap`; beat ticks na ruler gdy px/bar ≥ 56.
 - **Timeline gesty:** Forma snap do musical barlines (meterMap); Tekst/Akordy/Cue snap do beatu; szersze hit zones trim (12px); Cmd/Ctrl = snap off.
-- **Timeline mapy:** Tempo/Metrum/Tonacja — snap beat; eraser nie rusza seed @ 0.
+- **Timeline mapy:** Tempo/Metrum/Tonacja — snap beat; eraser nie rusza seed przy 0.
 - **Timeline chrome:** header grid (song center, ≤1100); help ~72rem; bez narzędzia Zoom (lupa) na pasku — zoom = suwaki H/V/UI (+ Ctrl/Meta+wheel); metadane ⓘ close clears sheet.
 - **Client stage:** karaoke pełna lista linii + center scroll (jak v4), hero akord + next, Forma sekcja/notatka/lista; header wtórny.
 - **Admin Set:** biblioteka + kolejność w jednym flow; gęstsze karty.
@@ -735,9 +759,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client:** wskaźnik połączenia w headerze (kropka + Połączony/Rozłączony) oraz opóźnienie sieci (`N ms`) z ticków transportu (`sentAtMs`) — regresja vs v4 `#connection-indicator`.
 - **Import UG / Akordy:** linia akordów + tekst = jeden takt jak w v4 (onsets w takcie, długość do następnego) — bez nachodzenia; przy move/split zachowany symbol remnantu (`-r`).
 - **Migrator legacy → akordy:** długość = do następnego onsetu (nie min=takt) + poprawne mapowanie indeksów po sortowaniu — gęste utwory typu Money bez nachodzenia; `sealAkordyLengths` na wyjściu.
-- **Timeline Countdown:** rozciąganie długości gestem (body / prawa krawędź, snap do taktów) + shift treści jak v4; lewa krawędź zablokowana (komunikat); inspector `setCountdownBars` z renormem końca CD @ tick 0; po zmianie długości — regeneracja cyfr CD w regionie Countdown; podczas gestu — scroll na początek timeline (widoczne nowe takty CD) + delta z clientX; grid/ruler dzielą takty też w pre-roll CD.
+- **Timeline Countdown:** rozciąganie długości gestem (body / prawa krawędź, snap do taktów) + shift treści jak v4; lewa krawędź zablokowana (komunikat); inspector `setCountdownBars` z renormem końca CD przy ticku 0; po zmianie długości — regeneracja cyfr CD w regionie Countdown; podczas gestu — scroll na początek timeline (widoczne nowe takty CD) + delta z clientX; grid/ruler dzielą takty też w pre-roll CD.
 - Admin — wiersze wzorów / Batch PC / Scena / Pliki: siatka bez fałszywej kolumny PC, żeby przycisk „Nowy z wzoru” nie zasłaniał nazwy.
-- **Timeline parity vs v4:** locator/loop snap @ beat (Cmd/Ctrl = off); locator `primary` vs playhead `info`; playhead nie jako linia przy pause; toolbar transport/BBT wyśrodkowany; Zoom UI mnoży H+V; meta year + editable metrum/tonacja @ 0.
+- **Timeline parity vs v4:** locator/loop snap do beatu (Cmd/Ctrl = off); locator `primary` vs playhead `info`; playhead nie jako linia przy pause; toolbar transport/BBT wyśrodkowany; Zoom UI mnoży H+V; meta year + editable metrum/tonacja przy 0.
 - **Timeline chrome (korekta bez decyzji PO):** Odrzuć/Zapisz z powrotem jako **ikony**; metronom + follow w **center** przy transporcie; footer bez dublowania Utwór/Pozycja/Połączenie/Stan (conn-dot + zoom jak v4).
 - **Timeline sterowanie:** Ctrl/Meta+wheel (H zoom), Alt+wheel (V/H), Shift+wheel (scroll H); skróty Space / K / C / ⌘S / Z-fit / ←→ locator.
 
@@ -747,7 +771,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Lane Akordy / Cue:** pencil, select, Delete/eraser, inspector (`symbol` / `label`); no-overlap; Client **grid** czyta `akordy.clips`.
 - **Scissors Forma:** `splitClipAt` + tool; Countdown nietykalny.
-- **Tap** (dock Tekst): tap tempo → `tempoMap` @ locator.
+- **Tap** (dock Tekst): tap tempo → `tempoMap` przy locatorze.
 - **Różdżka:** Tekst→Forma, Akordy→Forma, Tekst+Akordy→Forma (`wandContentToForma`).
 - **Import UG:** Timeline song screen + Admin; parser Zod Result (`importUgText`); zły input = komunikat UI.
 - **Undo/Redo sesji:** stos draftu; po Zapisz `dirty=false` i stos zostaje; Odrzuć = snapshot serwera + clear stos; ⌘/Ctrl+Z.
@@ -788,7 +812,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Client karaoke:** rola Tekst z live kontekstem projektu (sekcja Formy, BBT, tempo/metrum @ transport); placeholder braku linii wokalu (`KaraokePane`, `clientKaraoke.ts`).
+- **Client karaoke:** rola Tekst z live kontekstem projektu (sekcja Formy, BBT, tempo/metrum przy transporcie); placeholder braku linii wokalu (`KaraokePane`, `clientKaraoke.ts`).
 - **Client shell:** `useActiveProject`, `DrumsPane`; ikony kart ról na ekranie welcome (parity v4).
 - **Timeline:** tokeny warstw `--ss-z-`*; locator (bursztynowy) + playhead MIDI (cyjan) na linijce w stylu v4.
 
@@ -830,7 +854,7 @@ song picker z biblioteki; read-only lane Tempo/Metrum.
 - **Admin / Client:** link Timeline z wybranym id; status „Sekcja”; rola Client `drums` (Forma).
 - **Chrome shelli:** wspólny `ShellWordmark`; `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`;
 Client — jednolinijkowy nagłówek, popovery ustawień (v4-style).
-- **Snap grid (faza 1):** `quantizeTicks` @ shared, domyślnie takt; ADR [0007](docs/adr/0007-snap-grid.md).
+- **Snap grid (faza 1):** `quantizeTicks` w shared, domyślnie takt; ADR [0007](docs/adr/0007-snap-grid.md).
 - **Stabilność storage/transport:** H1/H5 engine, H2–H4 library CRUD, `ProjectIdSchema` (UUID).
 - Dokumentacja: [docs/api/](docs/api/README.md) (PUT v2 + transport z map).
 tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide.

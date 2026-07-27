@@ -526,9 +526,14 @@ export {
 } from "./library-import.js";
 
 export {
+  APPEARANCE_PROFILE_IDS,
+  APPEARANCE_PROFILE_LABELS,
+  AppearanceProfileIdSchema,
   ThemeDefaultIdSchema,
   appearanceFromThemeDefault,
+  normalizeAppearanceProfile,
   parseThemeDefaultEnv,
+  type AppearanceProfileId,
   type ThemeAppearance,
   type ThemeDefaultId,
 } from "./theme-default.js";

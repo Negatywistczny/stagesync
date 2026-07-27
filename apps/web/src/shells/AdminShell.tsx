@@ -101,6 +101,7 @@ export function AdminShell() {
   const [hostStatusMsg, setHostStatusMsg] = useState<string | null>(null);
   const [createPromptOpen, setCreatePromptOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
 
   const restart = useDoubleConfirm(async () => {
     setHostStatusMsg("Restart serwera…");
@@ -170,14 +171,48 @@ export function AdminShell() {
     if (sectionParam && ADMIN_SECTIONS.has(sectionParam as SectionId)) {
       setSection(sectionParam as SectionId);
     }
-    // Native menu: StageSync → Sprawdź aktualizacje… (ADR 0010 Phase A)
-    if (searchParams.get("action") === "check-update") {
-      setSection("host");
-      setMenuCheckUpdate(true);
+    const action = searchParams.get("action");
+    if (!action) return;
+
+    const clearAction = (fallbackSection?: SectionId) => {
       const next = new URLSearchParams(searchParams);
       next.delete("action");
-      if (!next.get("section")) next.set("section", "host");
+      if (fallbackSection && !next.get("section")) {
+        next.set("section", fallbackSection);
+      }
       setSearchParams(next, { replace: true });
+    };
+
+    // Native menu: StageSync → Sprawdź aktualizacje… (ADR 0010 Phase A)
+    if (action === "check-update") {
+      setSection("host");
+      setMenuCheckUpdate(true);
+      clearAction("host");
+      return;
+    }
+    if (action === "from-template") {
+      setSection("songs");
+      setTemplatesOpen(true);
+      setActionNotice("Wybierz wzór w sekcji Wzory poniżej.");
+      clearAction("songs");
+      return;
+    }
+    if (action === "new") {
+      setSection("songs");
+      setCreatePromptOpen(true);
+      clearAction("songs");
+      return;
+    }
+    if (action === "import") {
+      setSection("songs");
+      setImportModalOpen(true);
+      clearAction("songs");
+      return;
+    }
+    if (action === "export") {
+      // Consume query; export runs via DesktopMenuBridge / SongsView button.
+      setSection("songs");
+      clearAction("songs");
     }
   }, [searchParams, setSearchParams]);
 
@@ -389,6 +424,8 @@ export function AdminShell() {
             selectedId={selectedId}
             selected={selected}
             draftName={draftName}
+            templatesOpen={templatesOpen}
+            onTemplatesOpenChange={setTemplatesOpen}
             onDraftNameChange={setDraftName}
             onSelect={setSelectedId}
             onImport={() => setImportModalOpen(true)}
@@ -638,6 +675,8 @@ function SongsView({
   selectedId,
   selected,
   draftName,
+  templatesOpen = false,
+  onTemplatesOpenChange,
   onDraftNameChange,
   onSelect,
   onImport,
@@ -661,6 +700,8 @@ function SongsView({
   selectedId: string | null;
   selected: Library["projects"][number] | null;
   draftName: string;
+  templatesOpen?: boolean;
+  onTemplatesOpenChange?: (open: boolean) => void;
   onDraftNameChange: (name: string) => void;
   onSelect: (id: string) => void;
   onImport: () => void;
@@ -887,7 +928,13 @@ function SongsView({
             ) : null}
           </div>
 
-          <details className={styles.templates}>
+          <details
+            className={styles.templates}
+            open={templatesOpen}
+            onToggle={(e) => {
+              onTemplatesOpenChange?.(e.currentTarget.open);
+            }}
+          >
             <summary className={styles.templatesSummary}>
               Wzory ({templates.length})
             </summary>

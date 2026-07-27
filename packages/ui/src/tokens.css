@@ -1,14 +1,15 @@
 /**
- * StageSync design tokens — default black / amber (v4 brand).
+ * StageSync design tokens — Booth Amber default + named chrome profiles (5.3).
  * Components must use these variables — no ad-hoc HEX in UI packages.
- * Themes (light / high-contrast via data-theme) come later; keep shells on --ss-* only.
+ * Profiles via html[data-theme="booth|daylight|midnight|matrix|neon"].
+ * Invariants (solo / mute / OSMD paper) stay on :root and are not remapped per skin.
  */
 
 :root {
   /* Native controls follow booth dark (avoids white UA checkbox bleed) */
   color-scheme: dark;
 
-  /* Elevation + scenic borders (black / amber, APCA-safe) */
+  /* Elevation + scenic borders — Booth Amber (v4 brand) */
   --ss-color-bg: #000000;
   --ss-color-surface: #09090b;
   --ss-color-elevated: #18181b;
@@ -35,13 +36,13 @@
   --ss-color-success: #22c55e;
   --ss-color-warning: #fb923c;
   --ss-color-info: #38bdf8;
-  /** Classic DAW Solo (brighter than primary amber). */
+  /** Classic DAW Solo (brighter than primary amber) — THM-03 invariant. */
   --ss-color-solo: #ffcc00;
   --ss-color-solo-fg: #0a0a0a;
-  /** Classic DAW Mute. */
+  /** Classic DAW Mute — THM-03 invariant. */
   --ss-color-mute: #ff3b30;
   --ss-color-mute-fg: #ffffff;
-  /** OSMD / MusicXML paper — always light, independent of chrome theme. */
+  /** OSMD / MusicXML paper — always light (THM-03). */
   --ss-color-osmd-paper: #ffffff;
 
   /* Radii */
@@ -154,48 +155,188 @@
   --ss-z-toast: 70;
 }
 
-/* Light theme — v4 parity via data-theme */
-:root[data-theme="light"] {
-  color-scheme: light;
+/* Booth Amber — explicit profile (same as :root chrome) */
+:root[data-theme="booth"] {
+  color-scheme: dark;
+  --ss-color-bg: #000000;
+  --ss-color-surface: #09090b;
+  --ss-color-elevated: #18181b;
+  --ss-color-text: #fafafa;
+  --ss-color-text-muted: #a3a3a3;
+  --ss-color-primary: #fbbf24;
+  --ss-color-primary-hover: #fcd34d;
+  --ss-color-primary-active: #f59e0b;
+  --ss-color-on-primary: #0a0a0a;
+  --ss-color-secondary: #27272a;
+  --ss-color-secondary-hover: #3f3f46;
+  --ss-color-secondary-active: #18181b;
+  --ss-color-ghost-hover: rgba(250, 250, 250, 0.08);
+  --ss-color-ghost-active: rgba(250, 250, 250, 0.14);
+  --ss-color-border-muted: #1e1e22;
+  --ss-color-border: #3f3f46;
+  --ss-color-border-active: var(--ss-color-border);
+  --ss-color-focus-ring: #22d3ee;
+  --ss-color-selected: rgba(251, 191, 36, 0.16);
+  --ss-color-selected-border: #fbbf24;
+  --ss-color-disabled-bg: #09090b;
+  --ss-color-disabled-text: #52525b;
+  --ss-color-danger: #ef4444;
+  --ss-color-success: #22c55e;
+  --ss-color-warning: #fb923c;
+  --ss-color-info: #38bdf8;
+}
 
+/* Daylight — high-legibility light (plener / słońce) */
+:root[data-theme="daylight"] {
+  color-scheme: light;
   --ss-color-bg: #f4f4f5;
   --ss-color-surface: #ffffff;
   --ss-color-elevated: #fafafa;
-  --ss-color-text: #18181b;
-  --ss-color-text-muted: #52525b;
-  --ss-color-primary: #d97706;
-  --ss-color-primary-hover: #f59e0b;
-  --ss-color-primary-active: #b45309;
+  --ss-color-text: #000000;
+  --ss-color-text-muted: #27272a;
+  --ss-color-primary: #b45309;
+  --ss-color-primary-hover: #d97706;
+  --ss-color-primary-active: #92400e;
   --ss-color-on-primary: #ffffff;
   --ss-color-secondary: #e4e4e7;
   --ss-color-secondary-hover: #d4d4d8;
   --ss-color-secondary-active: #a1a1aa;
   --ss-color-ghost-hover: rgba(24, 24, 27, 0.06);
   --ss-color-ghost-active: rgba(24, 24, 27, 0.12);
-  --ss-color-border-muted: #e4e4e7;
-  --ss-color-border: #a1a1aa;
+  --ss-color-border-muted: #d4d4d8;
+  --ss-color-border: #52525b;
   --ss-color-border-active: var(--ss-color-border);
-  --ss-color-focus-ring: #0891b2;
-  --ss-color-selected: rgba(217, 119, 6, 0.14);
-  --ss-color-selected-border: #d97706;
+  --ss-color-focus-ring: #0e7490;
+  --ss-color-selected: rgba(180, 83, 9, 0.16);
+  --ss-color-selected-border: #b45309;
   --ss-color-disabled-bg: #f4f4f5;
-  --ss-color-disabled-text: #a1a1aa;
+  --ss-color-disabled-text: #71717a;
+  --ss-color-danger: #dc2626;
+  --ss-color-success: #16a34a;
+  --ss-color-warning: #ea580c;
+  --ss-color-info: #0284c7;
 }
 
-/* High contrast — dark */
-html[data-contrast="high"]:not([data-theme="light"]) {
-  --ss-color-text: #ffffff;
-  --ss-color-text-muted: #e4e4e7;
-  --ss-color-border: #a1a1aa;
-  --ss-color-border-muted: #52525b;
-  --ss-color-focus-ring: #67e8f9;
+/* Midnight Cyan — deep navy booth */
+:root[data-theme="midnight"] {
+  color-scheme: dark;
+  --ss-color-bg: #020617;
+  --ss-color-surface: #0f172a;
+  --ss-color-elevated: #1e293b;
+  --ss-color-text: #f8fafc;
+  --ss-color-text-muted: #94a3b8;
+  --ss-color-primary: #22d3ee;
+  --ss-color-primary-hover: #67e8f9;
+  --ss-color-primary-active: #06b6d4;
+  --ss-color-on-primary: #082f49;
+  --ss-color-secondary: #1e293b;
+  --ss-color-secondary-hover: #334155;
+  --ss-color-secondary-active: #0f172a;
+  --ss-color-ghost-hover: rgba(248, 250, 252, 0.08);
+  --ss-color-ghost-active: rgba(248, 250, 252, 0.14);
+  --ss-color-border-muted: #1e293b;
+  --ss-color-border: #475569;
+  --ss-color-border-active: var(--ss-color-border);
+  --ss-color-focus-ring: #a78bfa;
+  --ss-color-selected: rgba(34, 211, 238, 0.16);
+  --ss-color-selected-border: #22d3ee;
+  --ss-color-disabled-bg: #0f172a;
+  --ss-color-disabled-text: #64748b;
+  --ss-color-danger: #f87171;
+  --ss-color-success: #4ade80;
+  --ss-color-warning: #fb923c;
+  --ss-color-info: #60a5fa;
 }
 
-/* High contrast — light */
-html[data-theme="light"][data-contrast="high"] {
+/* Matrix Green — phosphor / low spill */
+:root[data-theme="matrix"] {
+  color-scheme: dark;
+  --ss-color-bg: #000000;
+  --ss-color-surface: #05140a;
+  --ss-color-elevated: #0a1f12;
+  --ss-color-text: #d1fae5;
+  --ss-color-text-muted: #6ee7b7;
+  --ss-color-primary: #22c55e;
+  --ss-color-primary-hover: #4ade80;
+  --ss-color-primary-active: #16a34a;
+  --ss-color-on-primary: #052e16;
+  --ss-color-secondary: #0a1f12;
+  --ss-color-secondary-hover: #14532d;
+  --ss-color-secondary-active: #052e16;
+  --ss-color-ghost-hover: rgba(209, 250, 229, 0.08);
+  --ss-color-ghost-active: rgba(209, 250, 229, 0.14);
+  --ss-color-border-muted: #14532d;
+  --ss-color-border: #166534;
+  --ss-color-border-active: var(--ss-color-border);
+  --ss-color-focus-ring: #86efac;
+  --ss-color-selected: rgba(34, 197, 94, 0.18);
+  --ss-color-selected-border: #22c55e;
+  --ss-color-disabled-bg: #05140a;
+  --ss-color-disabled-text: #3f6212;
+  --ss-color-danger: #f87171;
+  --ss-color-success: #86efac;
+  --ss-color-warning: #fbbf24;
+  --ss-color-info: #5eead4;
+}
+
+/* Neon Ember — dark + red/orange CTA */
+:root[data-theme="neon"] {
+  color-scheme: dark;
+  --ss-color-bg: #0a0000;
+  --ss-color-surface: #1a0505;
+  --ss-color-elevated: #2a0a0a;
+  --ss-color-text: #fef2f2;
+  --ss-color-text-muted: #fca5a5;
+  --ss-color-primary: #f97316;
+  --ss-color-primary-hover: #fb923c;
+  --ss-color-primary-active: #ea580c;
+  --ss-color-on-primary: #1c1917;
+  --ss-color-secondary: #2a0a0a;
+  --ss-color-secondary-hover: #450a0a;
+  --ss-color-secondary-active: #1a0505;
+  --ss-color-ghost-hover: rgba(254, 242, 242, 0.08);
+  --ss-color-ghost-active: rgba(254, 242, 242, 0.14);
+  --ss-color-border-muted: #450a0a;
+  --ss-color-border: #7f1d1d;
+  --ss-color-border-active: var(--ss-color-border);
+  --ss-color-focus-ring: #fbbf24;
+  --ss-color-selected: rgba(249, 115, 22, 0.18);
+  --ss-color-selected-border: #f97316;
+  --ss-color-disabled-bg: #1a0505;
+  --ss-color-disabled-text: #7f1d1d;
+  --ss-color-danger: #ef4444;
+  --ss-color-success: #22c55e;
+  --ss-color-warning: #fbbf24;
+  --ss-color-info: #38bdf8;
+}
+
+/* Legacy alias: light → daylight (pre-5.3 bookmarks / cached HTML) */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ss-color-bg: #f4f4f5;
+  --ss-color-surface: #ffffff;
+  --ss-color-elevated: #fafafa;
   --ss-color-text: #000000;
   --ss-color-text-muted: #27272a;
+  --ss-color-primary: #b45309;
+  --ss-color-primary-hover: #d97706;
+  --ss-color-primary-active: #92400e;
+  --ss-color-on-primary: #ffffff;
+  --ss-color-secondary: #e4e4e7;
+  --ss-color-secondary-hover: #d4d4d8;
+  --ss-color-secondary-active: #a1a1aa;
+  --ss-color-ghost-hover: rgba(24, 24, 27, 0.06);
+  --ss-color-ghost-active: rgba(24, 24, 27, 0.12);
+  --ss-color-border-muted: #d4d4d8;
   --ss-color-border: #52525b;
-  --ss-color-border-muted: #71717a;
+  --ss-color-border-active: var(--ss-color-border);
   --ss-color-focus-ring: #0e7490;
+  --ss-color-selected: rgba(180, 83, 9, 0.16);
+  --ss-color-selected-border: #b45309;
+  --ss-color-disabled-bg: #f4f4f5;
+  --ss-color-disabled-text: #71717a;
+  --ss-color-danger: #dc2626;
+  --ss-color-success: #16a34a;
+  --ss-color-warning: #ea580c;
+  --ss-color-info: #0284c7;
 }

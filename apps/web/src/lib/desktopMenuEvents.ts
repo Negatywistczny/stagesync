@@ -4,6 +4,14 @@ export const DESKTOP_MENU_EVENT = "stagesync:desktop-menu";
 
 export type DesktopMenuAction =
   | "save"
+  | "file-save"
+  | "file-new"
+  | "file-new-template"
+  | "file-new-from-template"
+  | "file-open"
+  | "file-save-as"
+  | "file-import"
+  | "file-export"
   | "transport-play"
   | "transport-stop"
   | "transport-prev"
@@ -19,8 +27,10 @@ export type DesktopMenuAction =
   | "view-zoom-in"
   | "view-zoom-out"
   | "view-zoom-reset"
+  | "appearance"
   | "help-shortcuts"
-  | "preferences";
+  | "preferences"
+  | "diagnostics-export";
 
 export type DesktopMenuDetail = {
   action: DesktopMenuAction | string;
@@ -28,6 +38,14 @@ export type DesktopMenuDetail = {
 
 const KNOWN: ReadonlySet<string> = new Set([
   "save",
+  "file-save",
+  "file-new",
+  "file-new-template",
+  "file-new-from-template",
+  "file-open",
+  "file-save-as",
+  "file-import",
+  "file-export",
   "transport-play",
   "transport-stop",
   "transport-prev",
@@ -43,8 +61,10 @@ const KNOWN: ReadonlySet<string> = new Set([
   "view-zoom-in",
   "view-zoom-out",
   "view-zoom-reset",
+  "appearance",
   "help-shortcuts",
   "preferences",
+  "diagnostics-export",
 ]);
 
 export function isDesktopMenuAction(

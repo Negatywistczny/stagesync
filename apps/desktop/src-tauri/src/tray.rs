@@ -23,8 +23,8 @@ enum HostTrayState {
 }
 
 struct TrayMenuHandles {
+    /// Status hosta; gdy jest adres LAN — klik kopiuje URL.
     status: MenuItem<tauri::Wry>,
-    copy_ip: MenuItem<tauri::Wry>,
     toggle_host: MenuItem<tauri::Wry>,
 }
 
@@ -144,7 +144,7 @@ async fn resolve_host_snapshot(
                     let display = url
                         .trim_start_matches("http://")
                         .trim_start_matches("https://");
-                    format!("Host: działa [{display}]")
+                    format!("Host: działa [{display}] · kopiuj")
                 }
                 None => format!("Host: działa [127.0.0.1:{UI_PORT}]"),
             };
@@ -172,7 +172,7 @@ fn apply_tray_visual(
     host_active: bool,
 ) {
     let _ = state.menu.status.set_text(status_label);
-    let _ = state.menu.copy_ip.set_enabled(lan.is_some());
+    let _ = state.menu.status.set_enabled(lan.is_some());
     let toggle_label = if host_active {
         "Zatrzymaj Host"
     } else {
@@ -209,8 +209,6 @@ pub fn install_tray(
 
     let open = MenuItem::with_id(app, "tray_open", "Otwórz StageSync", true, None::<&str>)?;
     let status = MenuItem::with_id(app, "tray_status", "Host: …", false, None::<&str>)?;
-    let copy_ip =
-        MenuItem::with_id(app, "tray_copy_ip", "Kopiuj adres LAN", false, None::<&str>)?;
     let toggle_host =
         MenuItem::with_id(app, "tray_toggle_host", "Uruchom Host", true, None::<&str>)?;
     let sep = PredefinedMenuItem::separator(app)?;
@@ -218,13 +216,12 @@ pub fn install_tray(
 
     let menu = Menu::with_items(
         app,
-        &[&open, &status, &copy_ip, &toggle_host, &sep, &quit],
+        &[&open, &status, &toggle_host, &sep, &quit],
     )?;
 
     let ui = Arc::new(Mutex::new(TrayUiState {
         menu: TrayMenuHandles {
             status,
-            copy_ip,
             toggle_host,
         },
         icon_state: HostTrayState::Idle,
@@ -248,7 +245,7 @@ pub fn install_tray(
         .show_menu_on_left_click(false)
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "tray_open" => show_main_window(app),
-            "tray_copy_ip" => {
+            "tray_status" => {
                 if let Ok(guard) = ui_menu.lock() {
                     if let Some(url) = guard.last_lan.as_ref() {
                         if let Ok(mut cb) = arboard::Clipboard::new() {

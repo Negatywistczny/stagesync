@@ -1,46 +1,74 @@
 import { z } from "zod";
 
 /**
- * Host default appearance when a client has no localStorage theme yet
- * (`STAGESYNC_THEME_DEFAULT`).
+ * Named chrome appearance profiles (5.3 Colors & Channels).
+ * Applied as `html[data-theme="<id>"]`.
  */
-export const ThemeDefaultIdSchema = z.enum([
-  "dark",
-  "light",
-  "dark-high",
-  "light-high",
+export const AppearanceProfileIdSchema = z.enum([
+  "booth",
+  "daylight",
+  "midnight",
+  "matrix",
+  "neon",
 ]);
 
-export type ThemeDefaultId = z.infer<typeof ThemeDefaultIdSchema>;
+export type AppearanceProfileId = z.infer<typeof AppearanceProfileIdSchema>;
 
-export type ThemeAppearance = {
-  light: boolean;
-  highContrast: boolean;
+export const APPEARANCE_PROFILE_IDS =
+  AppearanceProfileIdSchema.options;
+
+/** Polish labels for UI pickers. */
+export const APPEARANCE_PROFILE_LABELS: Record<AppearanceProfileId, string> = {
+  booth: "Booth Amber",
+  daylight: "Daylight",
+  midnight: "Midnight Cyan",
+  matrix: "Matrix Green",
+  neon: "Neon Ember",
 };
 
-export function appearanceFromThemeDefault(
-  id: ThemeDefaultId,
-): ThemeAppearance {
-  switch (id) {
-    case "light":
-      return { light: true, highContrast: false };
-    case "light-high":
-      return { light: true, highContrast: true };
-    case "dark-high":
-      return { light: false, highContrast: true };
-    default:
-      return { light: false, highContrast: false };
-  }
-}
+/**
+ * Host default when a client has no localStorage profile yet
+ * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
+ * dark/light/*-high aliases.
+ */
+export const ThemeDefaultIdSchema = AppearanceProfileIdSchema;
 
-/** Empty / unknown → null (clients keep code default dark). */
-export function parseThemeDefaultEnv(
+export type ThemeDefaultId = AppearanceProfileId;
+
+/** @deprecated Use AppearanceProfileId — kept for call-site migration. */
+export type ThemeAppearance = { profile: AppearanceProfileId };
+
+const LEGACY_THEME_MAP: Record<string, AppearanceProfileId> = {
+  dark: "booth",
+  light: "daylight",
+  "dark-high": "booth",
+  "light-high": "daylight",
+};
+
+/** Normalize raw id / legacy alias → profile, or null. */
+export function normalizeAppearanceProfile(
   raw: string | undefined | null,
-): ThemeDefaultId | null {
+): AppearanceProfileId | null {
   const t = String(raw ?? "")
     .trim()
     .toLowerCase();
   if (!t) return null;
-  const parsed = ThemeDefaultIdSchema.safeParse(t);
+  const legacy = LEGACY_THEME_MAP[t];
+  if (legacy) return legacy;
+  const parsed = AppearanceProfileIdSchema.safeParse(t);
   return parsed.success ? parsed.data : null;
+}
+
+export function appearanceFromThemeDefault(
+  id: ThemeDefaultId | string,
+): ThemeAppearance {
+  const profile = normalizeAppearanceProfile(id) ?? "booth";
+  return { profile };
+}
+
+/** Empty / unknown → null (clients keep code default booth). */
+export function parseThemeDefaultEnv(
+  raw: string | undefined | null,
+): ThemeDefaultId | null {
+  return normalizeAppearanceProfile(raw);
 }

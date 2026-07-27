@@ -22,7 +22,7 @@ Ikona StageSync zostaje w zasobniku Windows / Menu Bar macOS przez cały czas dz
 
 - **Zamknięcie okna (X)** — chowa okno do zasobnika; **lokalny host nadal działa** (LAN / klienci bez przerwy).
 - **Lewy klik** (lub pozycja **Otwórz StageSync**) — przywraca okno.
-- **Menu kontekstowe:** Status Hosta (wyłączony / działa z adresem LAN / błąd), **Kopiuj adres LAN**, **Uruchom / Zatrzymaj Host**, **Zakończ StageSync**.
+- **Menu kontekstowe:** Status Hosta (wyłączony / działa z adresem LAN / błąd — przy działającym hoście klik kopiuje adres LAN), **Uruchom / Zatrzymaj Host**, **Zakończ StageSync**.
 - **Pełne wyjście** (gasi host + proces aplikacji): tray **Zakończ StageSync**, menu OS **Zakończ**, ⌘/Ctrl+Q.
 
 Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (np. po Force Quit).
@@ -35,13 +35,13 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 
 | Menu | Pozycje |
 |------|---------|
-| **StageSync** | O programie; Sprawdź aktualizacje…; Zakończ |
-| **Plik** | Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zamknij projekt |
-| **Edycja** | Wytnij / Kopiuj / Wklej / Zaznacz wszystko (`⌘/Ctrl+X/C/V/A`) |
-| **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Pełny ekran |
+| **StageSync** | O programie; Preferencje…; Sprawdź aktualizacje…; Zakończ |
+| **Plik** | Nowy (Utwór / Wzór / Z wzoru…); Otwórz…; Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zapisz jako…; Importuj / Eksportuj bibliotekę…; Zamknij projekt |
+| **Edycja** | Cofnij / Ponów; Wytnij / Kopiuj / Wklej (schowek klipów Timeline); Usuń; Zaznacz wszystko |
+| **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Powiększ / Pomniejsz / Rzeczywisty rozmiar; Wygląd…; Pełny ekran |
 | **Transport** | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`) |
 | **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
-| **Pomoc** | Dokumentacja online; Zgłoś problem; O programie (Win/Linux) |
+| **Pomoc** | Skróty klawiszowe…; Dokumentacja online; Zgłoś problem; Eksport logów; O programie (Win/Linux) |
 
 MIDI i zegar muzyczny obsługuje wyłącznie host (serwer) — nie proces okna desktop. Status MIDI widać w Admin → Host.
 
@@ -145,14 +145,22 @@ pnpm --filter @stagesync/desktop tauri build
 | macOS | `.dmg` |
 | Windows | `.msi` |
 
-## Operator: PIN, Safety Net, Sampler, bus→bus, motyw
+## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 
 - **Mixer bus→bus:** wyjście busa na Master albo inny bus (bez pętli).
+- **Mixer multi-out (HW):** gdy `AudioContext.destination.maxChannelCount ≥ 4` (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**, ChannelMerger mapuje Master na ch 1–2 i patchy na kolejne kanały. Track / bus / cue sample → `hw_out`. Przy stereo-only UI pokazuje komunikat (bez atrap Out 3–4). Repatch HW zablokowany w trakcie Play ([ADR 0017](./adr/0017-live-show-control-contracts.md) §7).
 - **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
 - **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
 - **Panic:** globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s). Performer / Client bez globalnego Panic ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8b).
-- **Cues Sampler** — Inspector klipu Cue: próbka, tryb one-shot/gated, GO, Master/Bus.
-- **Motyw:** lokalne przełączniki w ustawieniach; `STAGESYNC_THEME_DEFAULT` dla urządzeń bez lokalnej preferencji.
+- **Cues Sampler** — Inspector klipu Cue: próbka, tryb one-shot/gated, GO, Master/Bus/HW.
+- **Motyw:** picker 5 skór (Booth / Daylight / Midnight / Matrix / Neon); `STAGESYNC_THEME_DEFAULT` dla urządzeń bez lokalnej preferencji.
+
+### Checklist smoke multi-out (operator — bez claim green)
+
+1. Ustaw wyjście systemowe na layout ≥ 4 kanałów (macOS Audio MIDI Setup / Windows Speakers).
+2. Preferencje → Audio: sprawdź „Kanały wyjścia” ≥ 4.
+3. Mixer → **+ Dodaj HW**; skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
+4. Play → próba zmiany Out na/z HW = zablokowana; Pause → OK.
 
 Szczegóły env: [INSTALL.md](./INSTALL.md).
 

@@ -11,6 +11,14 @@ import {
   parseDesktopMenuDetail,
 } from "../lib/desktopMenuEvents.js";
 import {
+  createSongAndOpen,
+  currentTimelineProjectId,
+  downloadLibraryExport,
+  importLibraryFile,
+  listTemplateIds,
+  saveProjectAs,
+} from "../lib/desktopFileMenu.js";
+import {
   isDesktopShell,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
@@ -33,12 +41,27 @@ import {
 } from "../lib/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
+import { ShellPromptDialog } from "./ShellBlockingDialog.js";
 import {
   ServerSettingsModal,
   type PreferencesTab,
 } from "./ServerSettingsModal.js";
 import { QrWrap } from "./shared/index.js";
 import styles from "./DesktopMenuBridge.module.css";
+
+type NamePromptKind =
+  | "new-song"
+  | "new-template"
+  | "new-from-template"
+  | "save-as";
+
+type NamePromptState = {
+  kind: NamePromptKind;
+  title: string;
+  defaultValue: string;
+  templateId?: string;
+  sourceId?: string;
+};
 
 function Modal({
   title,
@@ -297,6 +320,10 @@ export function DesktopMenuBridge() {
   const [restartPending, setRestartPending] = useState(false);
   const restartPendingRef = useRef(false);
   const [restartError, setRestartError] = useState<string | null>(null);
+  const [namePrompt, setNamePrompt] = useState<NamePromptState | null>(null);
+  const [fileBusy, setFileBusy] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const onTimeline = location.pathname.startsWith("/timeline/");
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -374,6 +401,76 @@ export function DesktopMenuBridge() {
     }
   }, []);
 
+  const alertError = useCallback((err: unknown, fallback: string) => {
+    window.alert(err instanceof Error ? err.message : fallback);
+  }, []);
+
+  const confirmNamePrompt = useCallback(
+    (raw: string) => {
+      const prompt = namePrompt;
+      setNamePrompt(null);
+      if (!prompt || fileBusy) return;
+      const name = raw.trim();
+      if (!name) return;
+      setFileBusy(true);
+      void (async () => {
+        try {
+          if (prompt.kind === "new-song") {
+            const created = await createSongAndOpen(name);
+            navigate(`/timeline/${created.id}`);
+            return;
+          }
+          if (prompt.kind === "new-template") {
+            await createSongAndOpen(name, { isTemplate: true });
+            navigate("/admin?section=songs");
+            return;
+          }
+          if (prompt.kind === "new-from-template" && prompt.templateId) {
+            const created = await createSongAndOpen(name, {
+              fromTemplateId: prompt.templateId,
+            });
+            navigate(`/timeline/${created.id}`);
+            return;
+          }
+          if (prompt.kind === "save-as" && prompt.sourceId) {
+            const created = await saveProjectAs(prompt.sourceId, name);
+            navigate(`/timeline/${created.id}`);
+          }
+        } catch (err) {
+          alertError(err, "Operacja pliku nie powiodła się");
+        } finally {
+          setFileBusy(false);
+        }
+      })();
+    },
+    [alertError, fileBusy, namePrompt, navigate],
+  );
+
+  const onImportPicked = useCallback(
+    (file: File | null) => {
+      if (!file || fileBusy) return;
+      setFileBusy(true);
+      void (async () => {
+        try {
+          const result = await importLibraryFile(file);
+          const n = result.createdCount;
+          window.alert(
+            n === 1
+              ? "Zaimportowano 1 utwór."
+              : `Zaimportowano ${n} utworów.`,
+          );
+          navigate("/admin?section=songs");
+        } catch (err) {
+          alertError(err, "Import nie powiódł się");
+        } finally {
+          setFileBusy(false);
+          if (importInputRef.current) importInputRef.current.value = "";
+        }
+      })();
+    },
+    [alertError, fileBusy, navigate],
+  );
+
   useEffect(() => {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
@@ -407,13 +504,116 @@ export function DesktopMenuBridge() {
           setPrefsTab("general");
           setPrefsOpen(true);
           break;
+        case "appearance":
+          // Timeline opens its Wygląd popover; elsewhere → Preferencje → Ogólne.
+          if (!onTimeline) {
+            setPrefsTab("general");
+            setPrefsOpen(true);
+          }
+          break;
+        case "file-new":
+          setNamePrompt({
+            kind: "new-song",
+            title: "Nowy utwór",
+            defaultValue: "Nowy utwór",
+          });
+          break;
+        case "file-new-template":
+          setNamePrompt({
+            kind: "new-template",
+            title: "Nowy wzór",
+            defaultValue: `Wzór ${new Date().toLocaleTimeString("pl")}`,
+          });
+          break;
+        case "file-new-from-template":
+          void (async () => {
+            try {
+              const templates = await listTemplateIds();
+              if (templates.length === 0) {
+                window.alert(
+                  "Brak wzorów w bibliotece. Utwórz wzór (Plik → Nowy → Wzór).",
+                );
+                return;
+              }
+              if (templates.length === 1) {
+                const only = templates[0]!;
+                setNamePrompt({
+                  kind: "new-from-template",
+                  title: `Nowy utwór z wzoru „${only.name}”`,
+                  defaultValue: `Utwór ${new Date().toLocaleTimeString("pl")}`,
+                  templateId: only.id,
+                });
+                return;
+              }
+              navigate("/admin?section=songs&action=from-template");
+            } catch (err) {
+              alertError(err, "Nie udało się wczytać wzorów");
+            }
+          })();
+          break;
+        case "file-open":
+          navigate("/admin?section=songs");
+          break;
+        case "file-save-as": {
+          const sourceId =
+            currentTimelineProjectId(location.pathname) ??
+            getLastTimelineProjectId();
+          if (!sourceId) {
+            window.alert("Brak projektu do zapisania jako…");
+            break;
+          }
+          setNamePrompt({
+            kind: "save-as",
+            title: "Zapisz jako…",
+            defaultValue: "Kopia projektu",
+            sourceId,
+          });
+          break;
+        }
+        case "file-import":
+          importInputRef.current?.click();
+          break;
+        case "file-export":
+          if (fileBusy) break;
+          setFileBusy(true);
+          void downloadLibraryExport()
+            .catch((err) => alertError(err, "Eksport nie powiódł się"))
+            .finally(() => setFileBusy(false));
+          break;
+        case "edit-cut":
+        case "edit-copy":
+        case "edit-paste":
+          // TimelineShell handles clip clipboard; elsewhere yield to OS text.
+          if (!onTimeline && shouldAllowNativeTextClipboard(document.activeElement)) {
+            const cmd =
+              detail.action === "edit-cut"
+                ? "cut"
+                : detail.action === "edit-copy"
+                  ? "copy"
+                  : "paste";
+            try {
+              document.execCommand(cmd);
+            } catch {
+              /* best-effort */
+            }
+          }
+          break;
         default:
           break;
       }
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [goSetlistNeighbor, onTransportPlay, onTransportStop]);
+  }, [
+    alertError,
+    fileBusy,
+    goSetlistNeighbor,
+    location.pathname,
+    navigate,
+    onTimeline,
+    onTransportPlay,
+    onTransportStop,
+  ]);
 
   useEffect(() => {
     function onOpenPrefs(ev: Event) {
@@ -460,6 +660,15 @@ export function DesktopMenuBridge() {
   return (
     <ContextMenuProvider>
       <Outlet />
+      <input
+        ref={importInputRef}
+        type="file"
+        accept=".json,.stagesync.json,application/json"
+        hidden
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => onImportPicked(e.target.files?.[0] ?? null)}
+      />
       {qrOpen ? <HostQrModal onClose={() => setQrOpen(false)} /> : null}
       {restartOpen ? (
         <RestartConfirmModal
@@ -478,6 +687,17 @@ export function DesktopMenuBridge() {
           onClose={() => setPrefsOpen(false)}
         />
       ) : null}
+      <ShellPromptDialog
+        open={Boolean(namePrompt)}
+        title={namePrompt?.title ?? ""}
+        label="Nazwa projektu"
+        defaultValue={namePrompt?.defaultValue ?? ""}
+        confirmLabel={namePrompt?.kind === "save-as" ? "Zapisz" : "Utwórz"}
+        onConfirm={confirmNamePrompt}
+        onCancel={() => {
+          if (!fileBusy) setNamePrompt(null);
+        }}
+      />
     </ContextMenuProvider>
   );
 }

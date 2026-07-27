@@ -120,9 +120,9 @@ export const SETTINGS_SCHEMA = {
     section: "advanced",
     type: "enum",
     label: "Domyślny motyw klientów",
-    hint: "Dla urządzeń bez zapisanego motywu lokalnego (dark / light / *-high). Scenic lock nadpisuje. Wymaga restartu albo odświeżenia klienta.",
-    options: ["dark", "light", "dark-high", "light-high"],
-    defaultValue: "dark",
+    hint: "Dla urządzeń bez zapisanego motywu lokalnego (booth / daylight / midnight / matrix / neon). Stare aliasy dark/light/*-high nadal działają. Wymaga odświeżenia klienta.",
+    options: ["booth", "daylight", "midnight", "matrix", "neon"],
+    defaultValue: "booth",
     restartRequired: false,
   },
 } as const satisfies Record<string, SettingSpec>;

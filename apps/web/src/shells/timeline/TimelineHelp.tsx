@@ -62,9 +62,9 @@ const KEY_GROUPS: ShortcutGroup[] = [
       { keys: "⌘/Ctrl+A", action: "Zaznacz wszystkie klipy" },
       { keys: "⌘/Ctrl+C", action: "Kopiuj klipy (w tym audio)" },
       { keys: "⌘/Ctrl+X", action: "Wytnij zaznaczone klipy" },
-      { keys: "⌘/Ctrl+V", action: "Wklej @ locator" },
+      { keys: "⌘/Ctrl+V", action: "Wklej przy locatorze" },
       { keys: "⌘/Ctrl+D", action: "Duplikuj zaznaczone" },
-      { keys: "⌘/Ctrl+T", action: "Podziel zaznaczony klip @ playhead" },
+      { keys: "⌘/Ctrl+T", action: "Podziel zaznaczony klip przy playheadzie" },
       { keys: "⌘/Ctrl+J", action: "Połącz sąsiednie zaznaczone klipy" },
       { keys: "⌥/Alt+← / →", action: "Nudge zaznaczonego klipu ±1 siatka" },
       { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę audio" },
@@ -168,7 +168,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Schowek",
         detail:
-          "⌘/Ctrl+A zaznacz wszystkie; ⌘/Ctrl+T podział @ playhead; ⌘/Ctrl+J scal; ⌥/Alt+←/→ nudge.",
+          "⌘/Ctrl+A zaznacz wszystkie; ⌘/Ctrl+T podział przy playheadzie; ⌘/Ctrl+J scal; ⌥/Alt+←/→ nudge.",
       },
       {
         term: "Dwuklik klipu",
@@ -255,7 +255,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Pencil (T P)",
         detail:
-          "klik: 1 takt / marker; przeciągnięcie: zakres z nadpisaniem. Na mapach: nowa zmiana @ snap. Na audio: klik w pustym → Import i wstawienie w miejscu kliknięcia (jak Logic).",
+          "klik: 1 takt / marker; przeciągnięcie: zakres z nadpisaniem. Na mapach: nowa zmiana przy snapie. Na audio: klik w pustym → Import i wstawienie w miejscu kliknięcia (jak Logic).",
       },
       {
         term: "Eraser (T E)",
@@ -296,12 +296,12 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Różdżka (W)",
         detail:
-          "przycisk przy warstwie Forma (poza menu T) lub W: Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3).",
+          "przycisk przy warstwie Forma lub W: Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3).",
       },
       {
         term: "Tap",
         detail:
-          "tylko przycisk przy warstwie Tekst: kolejka linii; Spacja = start @ playhead; ↑/↓ = linie; Esc wychodzi.",
+          "tylko przycisk przy warstwie Tekst: kolejka linii; Spacja = start przy playheadzie; ↑/↓ = linie; Esc wychodzi.",
       },
     ],
   },

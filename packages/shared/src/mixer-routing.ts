@@ -61,12 +61,15 @@ export const MixerOutputDestSchema = z.discriminatedUnion("kind", [
 export type MixerOutputDest = z.infer<typeof MixerOutputDestSchema>;
 
 /**
- * Bus output — Master or another bus (DAG). HW on bus strips = Later
- * (same gate as track HW UI).
+ * Bus output — Master, another bus (DAG), or HW (same gate as track HW UI).
  */
 export const BusOutputDestSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("master") }),
   z.object({ kind: z.literal("bus"), busId: z.string().min(1).max(64) }),
+  z.object({
+    kind: z.literal("hw_out"),
+    hwOutputId: z.string().min(1).max(64),
+  }),
 ]);
 
 export type BusOutputDest = z.infer<typeof BusOutputDestSchema>;
@@ -192,7 +195,7 @@ export function resolveTrackOutputDest(
 }
 
 /**
- * Resolve bus output with fail-soft to Master on stale id / self / cycle.
+ * Resolve bus output with fail-soft to Master on stale id / self / cycle / hw.
  */
 export function resolveBusOutputDest(
   output: BusOutputDest | undefined | null,
@@ -200,10 +203,20 @@ export function resolveBusOutputDest(
     fromBusId: string;
     busIds: ReadonlySet<string> | readonly string[];
     busses?: readonly BusEdge[];
+    hwOutputIds?: ReadonlySet<string> | readonly string[];
   },
 ): BusOutputDest {
   if (output == null || output.kind === "master") return { kind: "master" };
   if (!opts) return { kind: "master" };
+  if (output.kind === "hw_out") {
+    if (!opts.hwOutputIds) return { kind: "master" };
+    const set =
+      opts.hwOutputIds instanceof Set
+        ? opts.hwOutputIds
+        : new Set(opts.hwOutputIds);
+    if (set.has(output.hwOutputId)) return output;
+    return { kind: "master" };
+  }
   if (output.kind === "bus") {
     const set =
       opts.busIds instanceof Set ? opts.busIds : new Set(opts.busIds);

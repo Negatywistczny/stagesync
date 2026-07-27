@@ -50,17 +50,24 @@ widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master).
 
 ### Motyw domyślny hosta
 
-`STAGESYNC_THEME_DEFAULT` (`dark` \| `light` \| `dark-high` \| `light-high`) ustawia
-wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
-`themeDefault`).
+`STAGESYNC_THEME_DEFAULT` (`booth` \| `daylight` \| `midnight` \| `matrix` \| `neon`)
+ustawia wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
+`themeDefault`). Aliasy legacy `dark` / `light` / `*-high` mapują się na booth/daylight.
 
 ### Mixer bus→bus
 
 Wyjście busa można skierować na Master albo inny bus (bez pętli).
 
+### Mixer multi-out (HW Out)
+
+Gdy przeglądarka / WebView raportuje `maxChannelCount ≥ 4` (layout głośników Quad/5.1
+albo Aggregate Device), Mixer udostępnia patchy **HW Out** (ChannelMerger → dyskretne
+kanały destination). Track, bus i Cue Sampler mogą iść na `hw_out`. Przy samym stereo
+UI nie listuje atrap — komunikat operatorski. Zob. [DESKTOP.md](./DESKTOP.md).
+
 ### Cues Sampler
 
-Klip Cue może mieć próbkę audio (one-shot / gated) na Master lub Bus — start z
+Klip Cue może mieć próbkę audio (one-shot / gated) na Master, Bus lub HW — start z
 playheadu albo GO w Inspectorze Timeline. Opcjonalnie dokończenie po Stop.
 
 ## Produkcja z GHCR (compose.prod.yml)
@@ -238,7 +245,7 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 | `STAGESYNC_ALLOW_REMOTE_LIFECYCLE` | — | `1` = pozwól na restart/shutdown spoza localhost bez tokenu |
 | `STAGESYNC_OPERATOR_PIN` | — | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`) |
 | `STAGESYNC_SAFETY_ROLE` | `master` | Safety Net: `master` \| `spare` (Spare = bez MIDI OUT; ręczne Przejmij) |
-| `STAGESYNC_THEME_DEFAULT` | — | Domyślny motyw klientów bez lokalnej preferencji (`dark` / `light` / `*-high`) |
+| `STAGESYNC_THEME_DEFAULT` | — | Domyślny motyw klientów bez lokalnej preferencji (`booth` / `daylight` / `midnight` / `matrix` / `neon`) |
 | `STAGESYNC_BACKUPS_DIR` | `{dataDir}/backups` | Katalog kopii (mapowanie przy Przywróć); puste = domyślny podkatalog danych |
 | `SENTRY_DSN` | — | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII) |
 | `VITE_SENTRY_DSN` | — | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania) |
