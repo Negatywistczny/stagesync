@@ -11,9 +11,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Client — wąski telefon:** kafel roli od razu wchodzi w widok (bez **Rozpocznij**); siatka 2×2 wypełnia ekran pod nagłówkiem.
+- **Client / Admin — ≤640px:** jednowierszowy pasek Client (ikona + tytuł + status + ustawienia); Admin — lista sekcji zamiast zakładek, chipy Timeline/Klient, tylko **Ustawienia** w akcjach; mniejsze paddingi workspace.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Console / Performer (Android):** dialog odświeżenia interfejsu z hosta — neutralny opis (różna wersja ekranów, nie tylko „nowsza”), bez hashy i bez żargonu APK.
+- **Launcher (Desktop / Android):** lista hostów pokazuje **nazwę hosta w sieci** (z mDNS / ustawień serwera) zamiast wersji produktu; druga linia: adres IP · `v5.3.0` · projekt. W Admin → Ustawienia serwera: **Nazwa hosta w sieci** (osobno od nazwy urządzenia na Scenie).
+- **Console / Performer (Android):** dialog odświeżenia interfejsu z hosta rozróżnia hosta nowszego, starszego i nieustalonego kierunku — osobny opis i CTA (np. **Dopasuj do hosta** przy starszym hoście), bez hashy i bez żargonu APK.
 - **Console / Performer (Android):** przy sekcji wyszukanych serwerów widoczny przycisk **Odśwież** (jak w launcherze Desktop), zamiast ukrytego odświeżania po kliknięciu w status.
 - **Desktop — zasobnik:** menu podzielone na status, sieć (kopiuj / otwórz w przeglądarce) i sterowanie hostem (w tym restart); tooltip z adresem; ikona ze statyczną kropką stanu; błąd otwiera Launcher.
 

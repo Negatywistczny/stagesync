@@ -62,6 +62,33 @@ export function resolveAdvertiseHostname(): string {
   return normalizeAdvertiseHostname(osHostname());
 }
 
+const HOST_DISPLAY_NAME_MAX = 40;
+const HOST_DISPLAY_NAME_RE =
+  /^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,39}$/u;
+
+/** Operator-facing LAN discovery title (mDNS TXT `hostname`). */
+export function resolveHostDisplayName(): string {
+  const custom = (process.env.STAGESYNC_HOST_DISPLAY_NAME ?? "").trim();
+  if (custom) return normalizeAdvertiseHostname(custom);
+  return resolveAdvertiseHostname();
+}
+
+export function validateHostDisplayName(raw: string): string {
+  const text = raw.trim();
+  if (!text) return "";
+  if (text.length > HOST_DISPLAY_NAME_MAX) {
+    throw new Error(
+      `Nazwa hosta: maksymalnie ${HOST_DISPLAY_NAME_MAX} znaków`,
+    );
+  }
+  if (!HOST_DISPLAY_NAME_RE.test(text)) {
+    throw new Error(
+      "Nazwa hosta: zacznij od litery lub cyfry; dozwolone litery, cyfry, spacja, . _ -",
+    );
+  }
+  return text;
+}
+
 /** `http://{host}.local:{port}` when hostname is a real device name; else null. */
 export function buildMdnsJoinUrl(
   hostname: string,
@@ -94,7 +121,7 @@ export function buildNetworkInfo(port: number): {
   urls: string[];
 } {
   const lan = getLanAddresses();
-  const hostname = resolveAdvertiseHostname();
+  const hostname = resolveHostDisplayName();
   const addresses = lan.map((r) => r.address);
   // LAN first so QR / default selection is phone-reachable; localhost last for local copy.
   const urls = [

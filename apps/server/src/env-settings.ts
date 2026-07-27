@@ -5,6 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { REPO_ROOT } from "./storage/paths.js";
+import { validateHostDisplayName } from "./network-info.js";
 
 export const ENV_PATH = join(REPO_ROOT, ".env");
 
@@ -51,6 +52,15 @@ export const SETTINGS_SCHEMA = {
     hint: "Gdy włączone — bez Bonjour / .local. Wymaga restartu.",
     defaultValue: false,
     restartRequired: true,
+  },
+  STAGESYNC_HOST_DISPLAY_NAME: {
+    section: "network",
+    type: "string",
+    label: "Nazwa hosta w sieci",
+    hint: "Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w drugiej linii. Bez restartu.",
+    defaultValue: "",
+    maxLength: 40,
+    restartRequired: false,
   },
   LOG_LEVEL: {
     section: "logs",
@@ -208,6 +218,9 @@ export function normalizeIncomingValue(
 
   if (spec.maxLength != null && text.length > spec.maxLength) {
     throw new Error(`Pole ${key}: za długa wartość`);
+  }
+  if (key === "STAGESYNC_HOST_DISPLAY_NAME") {
+    return validateHostDisplayName(text);
   }
   return text;
 }

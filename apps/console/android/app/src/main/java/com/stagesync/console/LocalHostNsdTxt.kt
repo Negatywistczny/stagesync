@@ -25,8 +25,8 @@ object LocalHostNsdTxt {
         return truncate(host.ifBlank { "localhost" })
     }
 
-    /** Same display name as Node `bonjour-service` publish. */
-    fun serviceName(version: String): String = "StageSync ${version.trim().ifBlank { "0.0.0" }}"
+    /** Same display name as Node `bonjour-service` publish (version lives in TXT only). */
+    fun serviceName(): String = "StageSync"
 
     fun buildAttributes(
         hostname: String,

@@ -1,9 +1,10 @@
 import { createServer } from "node:http";
-import { hostname as osHostname } from "node:os";
 import { createApp } from "./app.js";
 import { loadDotenvIntoProcess } from "./env-settings.js";
 import { createLifecycle } from "./lifecycle.js";
+import { registerMdnsRefresh, clearMdnsRefresh } from "./mdns-registry.js";
 import { startMdnsAdvertiser } from "./mdns-advertise.js";
+import { resolveHostDisplayName } from "./network-info.js";
 import { initServerSentry } from "./sentry.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { publishSetlistHubFromStores } from "./transport/setlist-hub.js";
@@ -125,7 +126,7 @@ function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
           }
         }
         return {
-          hostname: osHostname(),
+          hostname: resolveHostDisplayName(),
           version,
           project,
           status: transport.getPlaybackStatus(),
@@ -146,7 +147,9 @@ function startListening(retriesLeft = LISTEN_RETRY_MAX): void {
     disposeMdns = () => {
       unsubMdns();
       mdns.stop();
+      clearMdnsRefresh();
     };
+    registerMdnsRefresh(() => mdns.refresh());
   });
 }
 

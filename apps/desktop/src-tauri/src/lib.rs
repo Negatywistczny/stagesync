@@ -991,16 +991,25 @@ pub(crate) fn startup_failure_message(log_tail: &str, last_health_err: Option<&s
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct HealthOk {
     pub version: String,
+    pub hostname: Option<String>,
+}
+
+/// Parse `/api/health` JSON body (after HTTP headers).
+fn parse_health_body(body: &str) -> Option<HealthOk> {
+    let value: serde_json::Value = serde_json::from_str(body.trim()).ok()?;
+    let version = value.get("version")?.as_str()?.to_string();
+    let hostname = value
+        .get("hostname")
+        .and_then(|v| v.as_str())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+    Some(HealthOk { version, hostname })
 }
 
 /// Parse `version` from an HTTP response to `GET /api/health` (body after headers).
 fn parse_health_version(resp: &str) -> Option<String> {
     let body = resp.split("\r\n\r\n").nth(1).or_else(|| resp.split("\n\n").nth(1))?;
-    let value: serde_json::Value = serde_json::from_str(body.trim()).ok()?;
-    value
-        .get("version")
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string())
+    parse_health_body(body).map(|h| h.version)
 }
 
 /// `Ok(None)` = TCP up but not HTTP 200 yet; `Ok(Some)` = healthy StageSync.
@@ -1043,7 +1052,9 @@ pub(crate) async fn check_health_at_timeout(
     let version = parse_health_version(&resp).ok_or_else(|| {
         "odpowiedź /api/health bez pola version (obcy proces na porcie?)".to_string()
     })?;
-    Ok(Some(HealthOk { version }))
+    let body = resp.split("\r\n\r\n").nth(1).or_else(|| resp.split("\n\n").nth(1));
+    let hostname = body.and_then(|b| parse_health_body(b).and_then(|h| h.hostname));
+    Ok(Some(HealthOk { version, hostname }))
 }
 
 /// Standalone desktop: Launcher UI first; local sidecar or remote host on demand (ADR 0014).

@@ -41,3 +41,21 @@
   color: var(--ss-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+.compact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ss-space-1);
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-danger);
+  white-space: nowrap;
+}
+
+.compact.on {
+  color: var(--ss-color-primary);
+}
+
+.compactLatency {
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ss-leading-compact);
+}

@@ -5,6 +5,7 @@
 
 import { localErrorActionsVisibility } from "./localErrorActions.js";
 import { shouldShowUpdateDialog } from "./updateDialog.js";
+import { formatDiscoveryMeta, formatDiscoveryTitle } from "./host-discovery.js";
 
 const SCAN_MIN_MS = 900;
 const LABEL_LOCAL_IDLE = "Uruchom lokalny host";
@@ -458,11 +459,17 @@ function discoveredHostButton(host, onClick) {
   btn.type = "button";
   btn.className = "host hostTile";
 
-  const titleText =
-    (host.hostname && String(host.hostname).trim()) ||
-    host.name ||
-    host.url;
   const urlText = host.url || `http://${host.host}:${host.port}`;
+  const titleText = formatDiscoveryTitle({
+    hostname: host.hostname,
+    origin: urlText,
+    serviceName: host.name,
+  });
+  const metaText = formatDiscoveryMeta({
+    origin: urlText,
+    version: host.version,
+    project: host.project,
+  });
   btn.setAttribute("aria-label", `Połącz z ${titleText} (${urlText})`);
 
   const title = document.createElement("span");
@@ -486,9 +493,7 @@ function discoveredHostButton(host, onClick) {
 
   const meta = document.createElement("span");
   meta.className = "meta";
-  const bits = [urlText];
-  if (host.version) bits.push(`v${host.version}`);
-  meta.textContent = bits.join(" · ");
+  meta.textContent = metaText;
 
   btn.append(title, mid, meta);
   btn.addEventListener("click", onClick);
@@ -526,7 +531,7 @@ function recentHostButton(item, onClick) {
 
   const meta = document.createElement("span");
   meta.className = "meta";
-  meta.textContent = item.url;
+  meta.textContent = formatDiscoveryMeta({ origin: item.url });
 
   btn.append(row, meta);
   btn.addEventListener("click", onClick);

@@ -614,7 +614,7 @@ class LauncherActivity : AppCompatActivity() {
             cancelEmptyScanHint()
             binding.status.text = getString(R.string.status_found, hosts.size)
             hosts.forEach { host ->
-                binding.mdnsList.addView(hostCard(host.name, host.origin))
+                binding.mdnsList.addView(hostCard(host.title, host.meta, host.origin))
             }
         }
         val hint =
@@ -646,23 +646,23 @@ class LauncherActivity : AppCompatActivity() {
         }
         AlertDialog.Builder(this)
             .setTitle(R.string.recent_dialog_title)
-            .setItems(recent.toTypedArray()) { _, which ->
-                val origin = recent[which]
-                binding.urlInput.setText(origin)
-                connect(origin)
+            .setItems(recent.map { it.label }.toTypedArray()) { _, which ->
+                val entry = recent[which]
+                binding.urlInput.setText(entry.url)
+                connect(entry.url, entry.label)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
-    private fun hostCard(name: String, origin: String): View {
+    private fun hostCard(title: String, meta: String, origin: String): View {
         val card =
             LayoutInflater.from(this).inflate(R.layout.item_host_card, binding.mdnsList, false)
-        card.findViewById<TextView>(R.id.hostName).text = name
-        card.findViewById<TextView>(R.id.hostOrigin).text = displayOrigin(origin)
+        card.findViewById<TextView>(R.id.hostName).text = title
+        card.findViewById<TextView>(R.id.hostOrigin).text = meta
         card.setOnClickListener {
             binding.urlInput.setText(origin)
-            connect(origin)
+            connect(origin, title)
         }
         val lp =
             LinearLayout.LayoutParams(
@@ -677,7 +677,7 @@ class LauncherActivity : AppCompatActivity() {
     private fun displayOrigin(origin: String): String =
         origin.removePrefix("http://").removePrefix("https://")
 
-    private fun connect(raw: String) {
+    private fun connect(raw: String, label: String? = null) {
         val origin = RecentHosts.normalizeOrigin(raw)
         if (origin == null) {
             binding.status.setText(R.string.err_bad_url)
@@ -693,7 +693,7 @@ class LauncherActivity : AppCompatActivity() {
                     Toast.makeText(this, R.string.err_health, Toast.LENGTH_SHORT).show()
                     return@runOnUiThread
                 }
-                RecentHosts.push(this, origin)
+                RecentHosts.push(this, origin, label)
                 binding.status.setText(R.string.status_ok)
                 startActivity(
                     Intent(this, HostWebActivity::class.java).putExtra(

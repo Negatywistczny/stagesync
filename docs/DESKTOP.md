@@ -9,7 +9,7 @@ Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016
 Po włączeniu aplikacji widać ekran wyboru hosta (nie od razu Admin):
 
 - **Uruchom lokalny host** — uruchamia wbudowany host na `http://127.0.0.1:4000`, czeka na gotowość, potem otwiera Admin.
-- **Wykryte w sieci** — lista hostów z mDNS (`_stagesync._tcp`); kafle pokazują hostname, projekt (lub „Brak projektu”), stan transportu (Play / Pauza / Stop) oraz IP + wersję. Wymaga włączonego mDNS na hoście i nasłuchu nie tylko na localhost. Preferowane jest IP z LAN (pomijane: loopback, link-local, most Docker `172.17`).
+- **Wykryte w sieci** — lista hostów z mDNS (`_stagesync._tcp`); kafle pokazują **nazwę hosta w sieci** (TXT / ustawienie w Admin → Ustawienia serwera), projekt (lub „Brak projektu”), stan transportu (Play / Pauza / Stop) oraz w drugiej linii adres IP · wersję. Wymaga włączonego mDNS na hoście i nasłuchu nie tylko na localhost. Preferowane jest IP z LAN (pomijane: loopback, link-local, most Docker `172.17`).
 - **Połącz ręcznie** / **Ostatnio używane** — wpisz `http://host:port` (sprawdzenie health, timeout ~3 s → Admin). Przy ostatnich hostach krótki probe (~1,5 s) z diodą online/offline. Różnica wersji host/aplikacja — ostrzeżenie (nie twardy blok).
 
 Błędy startu lokalnego hosta (port zajęty, timeout, uprawnienia, zła wersja, awaria hosta) pokazuje Launcher z logiem, **Ponów**, dyskretną ikoną **Pobierz logi** w nagłówku oraz — przy awarii — przyciskiem **Pobierz logi diagnostyczne** pod banerem błędu — bez białego ekranu. Gdy lokalny host padnie w trakcie sesji, aplikacja wraca do Launchera z komunikatem. Przy utracie połączenia: banner „Utracono połączenie…” + **Wróć do wyboru hosta**.

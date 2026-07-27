@@ -530,6 +530,60 @@
   }
 }
 
+@media (max-width: 640px) {
+  .workspace {
+    padding: var(--ss-space-2);
+  }
+
+  .chromeCompact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "sections aside"
+      "jump jump";
+    align-items: center;
+    padding: var(--ss-space-1) var(--ss-space-2);
+    gap: var(--ss-space-1);
+    overflow-x: hidden;
+  }
+
+  .sectionSelect {
+    grid-area: sections;
+    min-width: 0;
+  }
+
+  .sectionSelectInput {
+    width: 100%;
+    max-width: none;
+    min-height: var(--ss-space-8);
+    padding: var(--ss-space-1) var(--ss-space-2);
+    font-size: var(--ss-text-xs);
+  }
+
+  .chromeCompact .appJump {
+    grid-area: jump;
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+    gap: var(--ss-space-1);
+  }
+
+  .appJumpCompact a,
+  .appJumpCompact .appJumpMuted {
+    font-size: var(--ss-text-xs);
+    padding: var(--ss-space-1) var(--ss-space-2);
+    border-radius: var(--ss-radius-pill);
+    border: 1px solid var(--ss-color-border);
+    background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+  }
+
+  .status {
+    gap: var(--ss-space-1) var(--ss-space-2);
+    padding: var(--ss-space-1) var(--ss-space-2);
+  }
+}
+
 .songRow {
   display: grid;
   grid-template-columns: var(--ss-space-10) minmax(0, 1fr) auto;

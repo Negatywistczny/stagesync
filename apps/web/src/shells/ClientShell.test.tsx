@@ -196,6 +196,23 @@ describe("ClientShell chrome", () => {
     expect(screen.getByTestId("grid-pane")).toBeTruthy();
   });
 
+  it("uses compact connection status on narrow phones (≤640px)", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      (query: string) =>
+        ({
+          matches:
+            query.includes("max-width: 768px") ||
+            query.includes("max-width: 640px"),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as MediaQueryList,
+    );
+    render(<ClientShell />);
+    expect(screen.getByText("12 ms")).toBeTruthy();
+    expect(screen.queryByText("Połączony")).toBeNull();
+  });
+
   it("opens global settings from desktop menu Wygląd (appearance)", () => {
     render(<ClientShell />);
     fireEvent(

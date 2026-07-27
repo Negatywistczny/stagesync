@@ -278,6 +278,59 @@
   line-height: var(--ss-leading-normal);
 }
 
+.apkQrOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+}
+
+.apkQrBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--ss-color-bg) 55%, black);
+}
+
+.apkQrPanel {
+  position: relative;
+  z-index: 1;
+  width: min(24rem, calc(100% - var(--ss-space-6)));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ss-space-3);
+  padding: var(--ss-space-4);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-md);
+  background: var(--ss-color-surface);
+}
+
+.apkQrTitle {
+  margin: 0;
+  text-align: center;
+  font-size: var(--ss-text-md);
+  font-weight: var(--ss-font-weight-semibold);
+  line-height: var(--ss-leading-tight);
+}
+
+.apkQrHint {
+  margin: 0;
+  text-align: center;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}
+
+.apkQrActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ss-space-2);
+  width: 100%;
+}
+
 @media (max-width: 768px) {
   .root {
     flex-direction: column;

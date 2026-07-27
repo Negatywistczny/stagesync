@@ -3,8 +3,8 @@
  * Service type: `_stagesync._tcp` — TXT: hostname, version, project, status, path.
  */
 
-import { hostname as osHostname } from "node:os";
 import { Bonjour } from "bonjour-service";
+import { resolveHostDisplayName } from "./network-info.js";
 
 export type MdnsTransportStatus = "PLAYING" | "PAUSED" | "STOPPED";
 
@@ -24,6 +24,7 @@ export type MdnsAdvertiser = {
 const TXT_VALUE_MAX = 64;
 const REFRESH_DEBOUNCE_MS = 400;
 const NO_PROJECT = "Brak projektu";
+export const MDNS_SERVICE_INSTANCE_NAME = "StageSync";
 
 function mdnsDisabled(): boolean {
   const raw = process.env.STAGESYNC_DISABLE_MDNS;
@@ -75,7 +76,7 @@ function txtEqual(
 
 function defaultMeta(version: string): MdnsTxtMeta {
   return {
-    hostname: osHostname(),
+    hostname: resolveHostDisplayName(),
     version,
     project: NO_PROJECT,
     status: "STOPPED",
@@ -136,7 +137,7 @@ export function startMdnsAdvertiser(opts: {
     const publishWithTxt = (txt: Record<string, string>) => {
       currentTxt = txt;
       service = bonjour.publish({
-        name: `StageSync ${opts.version}`,
+        name: MDNS_SERVICE_INSTANCE_NAME,
         type: "stagesync",
         protocol: "tcp",
         port: opts.port,

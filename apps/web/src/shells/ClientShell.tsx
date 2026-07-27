@@ -11,6 +11,7 @@ import {
 } from "../lib/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
 import { useMqMobile } from "../lib/useMqMobile.js";
+import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
 import {
@@ -98,6 +99,7 @@ const ROLES: { id: RoleId; label: string; icon: string }[] = [
 
 export function ClientShell() {
   const isMobile = useMqMobile();
+  const isCompactMobile = useMqMobileCompact();
   const [nameModal, setNameModal] = useState(false);
   const [name, setName] = useState(() => getStoredDeviceDisplayName() ?? "");
   const [nameDraft, setNameDraft] = useState("");
@@ -313,7 +315,8 @@ export function ClientShell() {
     songTitle,
     bbt: headerBbt,
     transportError,
-    onFullscreen: shouldShowFullscreenControl()
+    compact: isCompactMobile,
+    onFullscreen: shouldShowFullscreenControl() && !isCompactMobile
       ? () => void onFullscreen()
       : undefined,
     globalSettingsOpen: globalSettings,
@@ -705,6 +708,7 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   transportError: string | null;
+  compact?: boolean;
   onFullscreen?: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
@@ -721,6 +725,7 @@ function ClientChrome({
   songTitle,
   bbt,
   transportError,
+  compact = false,
   onFullscreen,
   globalSettingsOpen,
   onToggleGlobalSettings,
@@ -730,35 +735,47 @@ function ClientChrome({
   onDisplayPrefsChange,
 }: ClientHeaderProps) {
   return (
-    <header className={styles.header}>
+    <header
+      className={[styles.header, compact ? styles.headerCompact : ""]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <ShellWordmark
+        iconOnly={compact}
         onClick={started && onBack ? onBack : undefined}
         title={started && onBack ? "Powrót do wyboru ról" : undefined}
       />
 
-      <div className={styles.metronome} aria-hidden>
-        {[1, 2, 3, 4].map((i) => (
-          <span
-            key={i}
-            className={[
-              styles.dot,
-              wsStatus !== "disconnected" && i === bbt.beat
-                ? styles.dotActive
-                : "",
-            ].join(" ")}
-          />
-        ))}
-      </div>
-
       <strong className={styles.songTitle}>{songTitle}</strong>
-      {transportError ? (
+
+      {!compact ? (
+        <div className={styles.metronome} aria-hidden>
+          {[1, 2, 3, 4].map((i) => (
+            <span
+              key={i}
+              className={[
+                styles.dot,
+                wsStatus !== "disconnected" && i === bbt.beat
+                  ? styles.dotActive
+                  : "",
+              ].join(" ")}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      {transportError && !compact ? (
         <span className={styles.transportError} role="alert">
           {transportError}
         </span>
       ) : null}
 
       <div className={styles.headerActions}>
-        <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
+        <ConnectionIndicator
+          status={wsStatus}
+          latencyMs={latencyMs}
+          variant={compact ? "compact" : "status"}
+        />
         <SettingsPopoverAnchor>
           <ShellIconButton
             label="Ustawienia globalne"

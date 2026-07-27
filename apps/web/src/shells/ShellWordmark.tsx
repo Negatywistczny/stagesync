@@ -9,6 +9,8 @@ export type ShellWordmarkProps = {
   /** Wersja aplikacji obok wordmarku (np. w Admin). */
   version?: string;
   className?: string;
+  /** Tylko ikona (bez sufiksu) — wąski pasek Client na telefonie. */
+  iconOnly?: boolean;
   /** Klikalny wordmark (np. powrót do wyboru ról w Client). */
   onClick?: () => void;
   title?: string;
@@ -18,6 +20,7 @@ export function ShellWordmark({
   suffix,
   version,
   className,
+  iconOnly = false,
   onClick,
   title,
 }: ShellWordmarkProps) {
@@ -45,7 +48,15 @@ export function ShellWordmark({
   );
 
   return (
-    <div className={[styles.identity, className].filter(Boolean).join(" ")}>
+    <div
+      className={[
+        styles.identity,
+        iconOnly ? styles.iconOnly : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {onClick ? (
         <button
           type="button"

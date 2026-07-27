@@ -29,7 +29,17 @@ object UiSyncChecker {
         data class ProtocolMismatch(val host: Int, val local: Int) : Gate()
 
         /** Host UI differs → explicit dialog (never silent). */
-        data class UiUpdateAvailable(val hostUiHash: String, val localUiHash: String) : Gate()
+        data class UiUpdateAvailable(
+            val hostUiHash: String,
+            val localUiHash: String,
+            val direction: UiVersionDirection,
+        ) : Gate()
+    }
+
+    enum class UiVersionDirection {
+        HostNewer,
+        HostOlder,
+        Unknown,
     }
 
     fun fetchHealth(origin: String): Health? {
@@ -78,6 +88,7 @@ object UiSyncChecker {
         health: Health,
         localUiHash: String?,
         localProtocol: Int = ShellConfig.PROTOCOL_VERSION,
+        localShellVersion: String? = null,
     ): Gate {
         if (health.protocolVersion != localProtocol) {
             return Gate.ProtocolMismatch(
@@ -91,22 +102,39 @@ object UiSyncChecker {
             health.uiHash != "none" &&
             health.uiHash != localUiHash
         ) {
+            val direction =
+                when (localShellVersion?.let { SemVer.compare(health.version, it) }) {
+                    null -> UiVersionDirection.Unknown
+                    0 -> UiVersionDirection.Unknown
+                    in 1..Int.MAX_VALUE -> UiVersionDirection.HostNewer
+                    else -> UiVersionDirection.HostOlder
+                }
             return Gate.UiUpdateAvailable(
                 hostUiHash = health.uiHash,
                 localUiHash = localUiHash,
+                direction = direction,
             )
         }
         return Gate.Ok
     }
 
-    fun evaluate(origin: String, localUiHash: String?): Gate {
+    fun evaluate(origin: String, localUiHash: String?, localShellVersion: String?): Gate {
         val health = fetchHealth(origin) ?: return Gate.Ok
-        return evaluateHealth(health, localUiHash)
+        return evaluateHealth(health, localUiHash, localShellVersion = localShellVersion)
     }
 
-    fun checkAsync(origin: String, localUiHash: String?, callback: (Gate) -> Unit) {
+    fun checkAsync(
+        origin: String,
+        localUiHash: String?,
+        localShellVersion: String?,
+        callback: (Gate) -> Unit,
+    ) {
         executor.execute {
-            callback(runCatching { evaluate(origin, localUiHash) }.getOrDefault(Gate.Ok))
+            callback(
+                runCatching { evaluate(origin, localUiHash, localShellVersion) }.getOrDefault(
+                    Gate.Ok,
+                ),
+            )
         }
     }
 

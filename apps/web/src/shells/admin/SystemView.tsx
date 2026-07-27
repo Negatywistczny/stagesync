@@ -85,6 +85,10 @@ export function SystemView({
   const [safetyBusy, setSafetyBusy] = useState(false);
   const [diagBusy, setDiagBusy] = useState(false);
   const [diagError, setDiagError] = useState<string | null>(null);
+  const [apkQrDialog, setApkQrDialog] = useState<{
+    product: "Performer" | "Console";
+    url: string;
+  } | null>(null);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
@@ -195,6 +199,18 @@ export function SystemView({
       return null;
     }
   }, [primaryUrl]);
+  const apkQrSvg = useMemo(() => {
+    if (!apkQrDialog) return null;
+    try {
+      return renderSVG(apkQrDialog.url, {
+        ecc: "M",
+        border: 1,
+        pixelSize: 4,
+      });
+    } catch {
+      return null;
+    }
+  }, [apkQrDialog]);
 
   const rateLabel = (n: number | undefined) =>
     n == null ? "—" : String(Math.round(n));
@@ -313,11 +329,13 @@ export function SystemView({
                 product="Performer"
                 ready={performerApkReady}
                 apkUrl={performerApkUrl}
+                onOpenQr={(product, url) => setApkQrDialog({ product, url })}
               />
               <ApkTile
                 product="Console"
                 ready={consoleApkReady}
                 apkUrl={consoleApkUrl}
+                onOpenQr={(product, url) => setApkQrDialog({ product, url })}
               />
             </div>
         </AdminAccordionCard>
@@ -619,6 +637,49 @@ export function SystemView({
             </div>
         </AdminAccordionCard>
       </div>
+      {apkQrDialog ? (
+        <div
+          className={styles.apkQrOverlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="apk-qr-dialog-title"
+        >
+          <button
+            type="button"
+            className={styles.apkQrBackdrop}
+            aria-label="Zamknij okno APK"
+            onClick={() => setApkQrDialog(null)}
+          />
+          <div className={styles.apkQrPanel}>
+            <h3 id="apk-qr-dialog-title" className={styles.apkQrTitle}>
+              Pobierz APK — <BrandName /> {apkQrDialog.product}
+            </h3>
+            {apkQrSvg ? (
+              <QrWrap
+                svg={apkQrSvg}
+                aria-label={`Kod QR APK: ${apkQrDialog.url}`}
+              />
+            ) : (
+              <p className={shell.error}>Nie udało się wygenerować kodu QR.</p>
+            )}
+            <p className={styles.apkQrHint}>
+              Zeskanuj kod na telefonie w tej samej sieci, aby pobrać pakiet
+              instalacyjny.
+            </p>
+            <div className={styles.apkQrActions}>
+              <Button
+                variant="secondary"
+                onClick={() => void openExternalUrl(apkQrDialog.url)}
+              >
+                Otwórz link
+              </Button>
+              <Button variant="ghost" onClick={() => setApkQrDialog(null)}>
+                Zamknij
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -627,10 +688,12 @@ function ApkTile({
   product,
   ready,
   apkUrl,
+  onOpenQr,
 }: {
   product: "Performer" | "Console";
   ready: boolean;
   apkUrl: string | null;
+  onOpenQr: (product: "Performer" | "Console", url: string) => void;
 }) {
   const fullName = `StageSync ${product}`;
   return (
@@ -638,26 +701,18 @@ function ApkTile({
       <h3 className={styles.apkTitle}>
         <BrandName /> {product}
       </h3>
-      <p className={styles.apkStatus}>
-        {ready ? "APK dostępne na hoście" : "APK niedostępne na hoście"}
-      </p>
       <div className={styles.apkActions}>
         {ready && apkUrl ? (
           <Button
             variant="secondary"
             aria-label={`Pobierz APK ${fullName}`}
-            onClick={() => void openExternalUrl(apkUrl)}
+            onClick={() => onOpenQr(product, apkUrl)}
           >
             Pobierz APK
           </Button>
-        ) : null}
-        <Button
-          variant="ghost"
-          aria-label={`Releases — ${fullName}`}
-          onClick={() => void openExternalUrl(DOCS_RELEASES_URL)}
-        >
-          Releases ↗
-        </Button>
+        ) : (
+          <p className={styles.apkStatus}>APK niedostępne na hoście</p>
+        )}
       </div>
     </div>
   );

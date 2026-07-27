@@ -49,6 +49,51 @@
   }
 }
 
+@media (max-width: 640px) {
+  .headerCompact {
+    flex-wrap: nowrap;
+    row-gap: 0;
+    gap: var(--ss-space-2);
+    box-sizing: border-box;
+    height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
+    min-height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
+    max-height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) var(--ss-space-2) 0;
+  }
+
+  .headerCompact .songTitle {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--ss-text-sm);
+  }
+
+  .headerCompact .headerActions {
+    gap: var(--ss-space-1);
+  }
+
+  .welcomeMobile {
+    gap: var(--ss-space-2);
+    padding: var(--ss-space-2);
+    padding-bottom: max(var(--ss-space-2), env(safe-area-inset-bottom, 0px));
+  }
+
+  .welcomeMobile .welcomeHero {
+    gap: var(--ss-space-1);
+  }
+
+  .welcomeMobile .welcomeTitle {
+    font-size: var(--ss-text-lg);
+  }
+
+  .welcomeMobile .roleGrid {
+    gap: var(--ss-space-2);
+  }
+
+  .rolePane {
+    padding: var(--ss-space-1);
+  }
+}
+
 @media (max-width: 400px) {
   .metronome {
     display: none;

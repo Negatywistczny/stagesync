@@ -45,8 +45,12 @@
     <string name="update_need_permission">Zezwól na instalację z tej aplikacji, a następnie wróć — instalator uruchomi się ponownie.</string>
     <string name="ui_apply_title">Odświeżyć interfejs?</string>
     <string name="ui_apply_message">Host ma inną wersję ekranów niż aplikacja. Odświeży wygląd z hosta — bez nowego APK.</string>
+    <string name="ui_apply_message_host_newer">Host ma nowszą wersję ekranów niż aplikacja. Odświeży wygląd z hosta — bez nowego APK.</string>
+    <string name="ui_apply_message_host_older">Host ma starszą wersję ekranów niż aplikacja. Możesz zostać przy obecnym widoku albo dopasować interfejs do hosta.</string>
+    <string name="ui_apply_message_unknown_direction">Host ma inną wersję ekranów niż aplikacja. Nie udało się ustalić, czy host jest nowszy czy starszy.</string>
     <string name="ui_apply_action">Odśwież</string>
-    <string name="ui_apply_blocked_playing">Zatrzymaj odtwarzanie na hoście, aby zastosować nowy interfejs.</string>
+    <string name="ui_apply_action_host_older">Dopasuj do hosta</string>
+    <string name="ui_apply_blocked_playing">Zatrzymaj odtwarzanie na hoście, aby odświeżyć interfejs.</string>
     <string name="ui_apply_downloading">Pobieranie interfejsu z hosta…</string>
     <string name="ui_apply_failed">Nie udało się zastosować interfejsu: %1$s</string>
     <string name="ui_apply_done">Interfejs zaktualizowany</string>

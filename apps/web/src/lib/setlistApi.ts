@@ -471,6 +471,7 @@ function hostMutatingHeaders(extra?: HeadersInit): HeadersInit {
 export type ServerSettingsValues = {
   PORT: string;
   STAGESYNC_BIND_HOST: string;
+  STAGESYNC_HOST_DISPLAY_NAME: string;
   STAGESYNC_DISABLE_MDNS: boolean;
   LOG_LEVEL: string;
   STAGESYNC_DISABLE_AUTO_UPDATE: boolean;

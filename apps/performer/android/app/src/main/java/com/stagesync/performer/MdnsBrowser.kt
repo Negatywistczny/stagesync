@@ -8,19 +8,17 @@ import android.os.Looper
 
 /**
  * Browse `_stagesync._tcp` on LAN (same service type as desktop launcher / server advertise).
- * Resolve → host:port list for the launcher UI.
+ * Resolve → host list for the launcher UI (title + meta from TXT).
  */
 class MdnsBrowser(context: Context) {
-    data class Host(val name: String, val origin: String)
-
     private val nsd = context.getSystemService(Context.NSD_SERVICE) as NsdManager
     private val main = Handler(Looper.getMainLooper())
     private var discoveryListener: NsdManager.DiscoveryListener? = null
     private val resolving = mutableSetOf<String>()
 
-    fun start(onUpdate: (List<Host>) -> Unit) {
+    fun start(onUpdate: (List<HostDiscovery.Host>) -> Unit) {
         stop()
-        val found = linkedMapOf<String, Host>()
+        val found = linkedMapOf<String, HostDiscovery.Host>()
         val listener = object : NsdManager.DiscoveryListener {
             override fun onDiscoveryStarted(serviceType: String) {}
             override fun onDiscoveryStopped(serviceType: String) {}
@@ -46,7 +44,24 @@ class MdnsBrowser(context: Context) {
                             val host = resolved.host?.hostAddress ?: return
                             val port = if (resolved.port > 0) resolved.port else 4000
                             val origin = "http://$host:$port"
-                            found[resolved.serviceName] = Host(resolved.serviceName, origin)
+                            val attrs = resolved.attributes
+                            val hostname = HostDiscovery.txtAttribute(attrs, "hostname")
+                            val version = HostDiscovery.txtAttribute(attrs, "version")
+                            val project = HostDiscovery.txtAttribute(attrs, "project")
+                            val title =
+                                HostDiscovery.formatDiscoveryTitle(
+                                    hostname,
+                                    origin,
+                                    resolved.serviceName,
+                                )
+                            val meta =
+                                HostDiscovery.formatDiscoveryMeta(origin, version, project)
+                            found[resolved.serviceName] =
+                                HostDiscovery.Host(
+                                    title = title,
+                                    meta = meta,
+                                    origin = origin,
+                                )
                             main.post { onUpdate(found.values.toList()) }
                         }
                     },

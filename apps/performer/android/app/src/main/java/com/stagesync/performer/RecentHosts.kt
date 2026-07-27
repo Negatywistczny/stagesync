@@ -2,18 +2,35 @@ package com.stagesync.performer
 
 import android.content.Context
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URI
 
 object RecentHosts {
-    fun load(context: Context): List<String> {
-        val raw = context.getSharedPreferences(ShellConfig.PREFS, Context.MODE_PRIVATE)
-            .getString(ShellConfig.PREFS_RECENT, "[]") ?: "[]"
+    data class Entry(
+        val url: String,
+        val label: String,
+    )
+
+    fun load(context: Context): List<Entry> {
+        val raw =
+            context.getSharedPreferences(ShellConfig.PREFS, Context.MODE_PRIVATE)
+                .getString(ShellConfig.PREFS_RECENT, "[]") ?: "[]"
         return try {
             val arr = JSONArray(raw)
             buildList {
                 for (i in 0 until arr.length()) {
-                    val s = arr.optString(i).trim()
-                    if (s.isNotEmpty()) add(s)
+                    when (val item = arr.get(i)) {
+                        is JSONObject -> {
+                            val url = item.optString("url").trim()
+                            if (url.isEmpty()) continue
+                            val label = item.optString("label").trim().ifBlank { url }
+                            add(Entry(url = url, label = label))
+                        }
+                        is String -> {
+                            val url = item.trim()
+                            if (url.isNotEmpty()) add(Entry(url = url, label = url))
+                        }
+                    }
                 }
             }
         } catch (_: Exception) {
@@ -21,12 +38,21 @@ object RecentHosts {
         }
     }
 
-    fun push(context: Context, origin: String) {
+    fun push(context: Context, origin: String, label: String? = null) {
         val normalized = normalizeOrigin(origin) ?: return
-        val next = (listOf(normalized) + load(context).filter { it != normalized })
-            .take(ShellConfig.MAX_RECENT)
+        val title = label?.trim()?.takeIf { it.isNotEmpty() } ?: normalized
+        val next =
+            (listOf(Entry(url = normalized, label = title)) +
+                load(context).filter { it.url != normalized })
+                .take(ShellConfig.MAX_RECENT)
         val arr = JSONArray()
-        next.forEach { arr.put(it) }
+        next.forEach { entry ->
+            arr.put(
+                JSONObject()
+                    .put("url", entry.url)
+                    .put("label", entry.label),
+            )
+        }
         context.getSharedPreferences(ShellConfig.PREFS, Context.MODE_PRIVATE)
             .edit()
             .putString(ShellConfig.PREFS_RECENT, arr.toString())

@@ -48,4 +48,17 @@ describe("ConnectionIndicator", () => {
     expect(out).toContain("Rozłączony");
     expect(out).not.toContain(" ms");
   });
+
+  it("compact variant shows dot and latency without full label", () => {
+    const out = renderToStaticMarkup(
+      <ConnectionIndicator
+        status="connected"
+        variant="compact"
+        latencyMs={6.2}
+      />,
+    );
+    expect(out).toContain('role="status"');
+    expect(out).toContain("6 ms");
+    expect(out).not.toContain('class="_statusText');
+  });
 });

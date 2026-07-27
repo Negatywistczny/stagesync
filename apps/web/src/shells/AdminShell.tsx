@@ -33,6 +33,7 @@ import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } 
 import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
 import { useMqMobile } from "../lib/useMqMobile.js";
+import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { filterAndSortLibrarySongs } from "./admin/filterLibrarySongs.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
@@ -86,6 +87,7 @@ const ADMIN_SECTIONS = new Set<SectionId>(["songs", "set", "stage", "host"]);
 
 export function AdminShell() {
   useAnnounceDevicePresence();
+  const isCompactMobile = useMqMobileCompact();
   const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -349,25 +351,64 @@ export function AdminShell() {
     <div className={styles.shell}>
       <ConnectionLostBanner status={wsStatus} />
       <div className={styles.chromeWrap}>
-        <header className={styles.chrome}>
-          <div className={styles.chromeBrand}>
-            <ShellWordmark suffix="Admin" version={APP_VERSION} />
-          </div>
+        <header
+          className={[
+            styles.chrome,
+            isCompactMobile ? styles.chromeCompact : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {!isCompactMobile ? (
+            <div className={styles.chromeBrand}>
+              <ShellWordmark suffix="Admin" version={APP_VERSION} />
+            </div>
+          ) : null}
 
-          <nav className={styles.sections} aria-label="Sekcje">
-            {SECTIONS.map((item) => (
-              <Button
-                key={item.id}
-                variant="ghost"
-                selected={section === item.id}
-                onClick={() => setSection(item.id)}
+          {isCompactMobile ? (
+            <div className={styles.sectionSelect}>
+              <Select
+                className={styles.sectionSelectInput}
+                value={section}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (ADMIN_SECTIONS.has(v as SectionId)) {
+                    setSection(v as SectionId);
+                  }
+                }}
+                aria-label="Sekcja Admin"
               >
-                {item.label}
-              </Button>
-            ))}
-          </nav>
+                {SECTIONS.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          ) : (
+            <nav className={styles.sections} aria-label="Sekcje">
+              {SECTIONS.map((item) => (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  selected={section === item.id}
+                  onClick={() => setSection(item.id)}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </nav>
+          )}
 
-          <nav className={styles.appJump} aria-label="Aplikacje">
+          <nav
+            className={[
+              styles.appJump,
+              isCompactMobile ? styles.appJumpCompact : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            aria-label="Aplikacje"
+          >
             {timelineProjectId ? (
               <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
             ) : (
@@ -385,30 +426,34 @@ export function AdminShell() {
             >
               <IconSettings />
             </ShellIconButton>
-            <ShellIconButton
-              ref={restart.buttonRef}
-              label={restart.label}
-              confirming={restart.pending}
-              onClick={restart.arm}
-            >
-              <IconRestart />
-            </ShellIconButton>
-            <ShellIconButton
-              ref={shutdown.buttonRef}
-              label={shutdown.label}
-              confirming={shutdown.pending}
-              danger
-              onClick={shutdown.arm}
-            >
-              <IconPower />
-            </ShellIconButton>
-            {shouldShowFullscreenControl() ? (
-              <ShellIconButton
-                label="Pełny ekran"
-                onClick={() => void toggleAppFullscreen()}
-              >
-                <IconFullscreen />
-              </ShellIconButton>
+            {!isCompactMobile ? (
+              <>
+                <ShellIconButton
+                  ref={restart.buttonRef}
+                  label={restart.label}
+                  confirming={restart.pending}
+                  onClick={restart.arm}
+                >
+                  <IconRestart />
+                </ShellIconButton>
+                <ShellIconButton
+                  ref={shutdown.buttonRef}
+                  label={shutdown.label}
+                  confirming={shutdown.pending}
+                  danger
+                  onClick={shutdown.arm}
+                >
+                  <IconPower />
+                </ShellIconButton>
+                {shouldShowFullscreenControl() ? (
+                  <ShellIconButton
+                    label="Pełny ekran"
+                    onClick={() => void toggleAppFullscreen()}
+                  >
+                    <IconFullscreen />
+                  </ShellIconButton>
+                ) : null}
+              </>
             ) : null}
           </div>
         </header>

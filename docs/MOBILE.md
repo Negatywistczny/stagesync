@@ -64,6 +64,8 @@ W Admin → Host → **Połączenie & Sieć** (lewa kolumna u góry; kafelki Per
 
 W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień — wklejenie adresu.
 
+Sekcja **Wyszukane serwery w sieci**: tytuł kafelka = **nazwa hosta w sieci** (mDNS TXT); druga linia = adres `IP:port` · wersja · opcjonalnie projekt. Na hoście desktop ustawiasz nazwę w Admin → Ustawienia serwera (**Nazwa hosta w sieci**) — to osobne pole od nazwy urządzenia na Scenie.
+
 Gdy plik APK **nie jest częścią instalacji** (brak w bundlu desktop / `data/downloads`), UI pokazuje **pusty stan** (komunikat). Endpoint zwraca **404** z jasnym tekstem. Operator **nie** musi ręcznie kopiować APK do katalogu Documents. Admin sprawdza dostępność przez **same-origin** `HEAD /downloads/…` (nie przez absolutny URL LAN) — dzięki temu lokalny host otwarty jako `localhost` nie myli braku CORS z brakiem pliku.
 
 Host szuka APK automatycznie (pierwszy istniejący, niepusty plik wygrywa):

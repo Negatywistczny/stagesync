@@ -158,7 +158,7 @@ class HostWebActivity : AppCompatActivity() {
     private fun maybeCheckUiGate() {
         if (uiDialogShown || hostOrigin.isEmpty()) return
         val localHash = LocalUiStore.readLocalUiHash(this)
-        UiSyncChecker.checkAsync(hostOrigin, localHash) { gate ->
+        UiSyncChecker.checkAsync(hostOrigin, localHash, shellVersionOrNull()) { gate ->
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 when (gate) {
@@ -194,8 +194,19 @@ class HostWebActivity : AppCompatActivity() {
                 }
                 AlertDialog.Builder(this)
                     .setTitle(R.string.ui_apply_title)
-                    .setMessage(R.string.ui_apply_message)
-                    .setPositiveButton(R.string.ui_apply_action) { _, _ ->
+                    .setMessage(
+                        when (gate.direction) {
+                            UiSyncChecker.UiVersionDirection.HostNewer -> getString(R.string.ui_apply_message_host_newer)
+                            UiSyncChecker.UiVersionDirection.HostOlder -> getString(R.string.ui_apply_message_host_older)
+                            UiSyncChecker.UiVersionDirection.Unknown -> getString(R.string.ui_apply_message_unknown_direction)
+                        },
+                    )
+                    .setPositiveButton(
+                        when (gate.direction) {
+                            UiSyncChecker.UiVersionDirection.HostOlder -> R.string.ui_apply_action_host_older
+                            else -> R.string.ui_apply_action
+                        },
+                    ) { _, _ ->
                         startUiBundleApply()
                     }
                     .setNegativeButton(R.string.update_later, null)
@@ -277,6 +288,13 @@ class HostWebActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun shellVersionOrNull(): String? =
+        try {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        } catch (_: PackageManager.NameNotFoundException) {
+            null
+        }
 
     private fun showUpdateDialog(offer: ApkUpdateChecker.Offer) {
         AlertDialog.Builder(this)

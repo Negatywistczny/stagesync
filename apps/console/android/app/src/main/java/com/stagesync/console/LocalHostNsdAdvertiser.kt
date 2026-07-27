@@ -45,7 +45,7 @@ class LocalHostNsdAdvertiser(
             acquireMulticastLock()
             val info =
                 NsdServiceInfo().apply {
-                    serviceName = LocalHostNsdTxt.serviceName(version)
+                    serviceName = LocalHostNsdTxt.serviceName()
                     serviceType = ShellConfig.MDNS_TYPE
                     setPort(port)
                     for ((key, value) in LocalHostNsdTxt.buildAttributes(hostname, version)) {

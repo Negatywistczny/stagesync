@@ -537,3 +537,12 @@ export {
   type ThemeAppearance,
   type ThemeDefaultId,
 } from "./theme-default.js";
+
+export {
+  formatDiscoveryMeta,
+  formatDiscoveryTitle,
+  formatDiscoveryVersionLabel,
+  normalizeDiscoveryVersion,
+  type FormatDiscoveryMetaInput,
+  type FormatDiscoveryTitleInput,
+} from "./host-discovery.js";

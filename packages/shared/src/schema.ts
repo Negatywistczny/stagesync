@@ -870,6 +870,8 @@ export const HealthResponseSchema = z
     ok: z.literal(true),
     service: z.literal("stagesync-server"),
     version: z.string(),
+    /** LAN discovery title advertised via mDNS TXT / Admin Host. */
+    hostname: z.string().min(1).optional(),
     /** WS/API frame compatibility; shells hard-fallback to Remote Mode on mismatch. */
     protocolVersion: z.number().int().positive(),
     /** Content hash of served full `apps/web` dist (`none` when host has no static UI). */

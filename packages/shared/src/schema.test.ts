@@ -560,6 +560,18 @@ describe("DefaultMeter refine + Setlist coerce", () => {
 });
 
 describe("HealthResponseSchema + UI meta (#692)", () => {
+  it("parses health with optional hostname", () => {
+    const raw = {
+      ok: true as const,
+      service: "stagesync-server" as const,
+      version: "5.3.0",
+      protocolVersion: PROTOCOL_VERSION,
+      uiHash: "abc123",
+      hostname: "FOH Mac Mini",
+    };
+    expect(HealthResponseSchema.parse(raw)).toEqual(raw);
+  });
+
   it("parses health with protocolVersion and uiHash", () => {
     const raw = {
       ok: true as const,

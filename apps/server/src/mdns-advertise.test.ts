@@ -121,6 +121,7 @@ describe("startMdnsAdvertiser", () => {
     });
     expect(publish).toHaveBeenCalledWith(
       expect.objectContaining({
+        name: "StageSync",
         type: "stagesync",
         port: 4000,
         txt: expect.objectContaining({

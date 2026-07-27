@@ -7,8 +7,7 @@ import org.junit.Test
 class LocalHostNsdTxtTest {
     @Test
     fun serviceName_matchesDesktopBonjour() {
-        assertEquals("StageSync 5.2.2", LocalHostNsdTxt.serviceName("5.2.2"))
-        assertEquals("StageSync 0.0.0", LocalHostNsdTxt.serviceName("  "))
+        assertEquals("StageSync", LocalHostNsdTxt.serviceName())
     }
 
     @Test

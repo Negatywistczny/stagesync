@@ -41,9 +41,42 @@ class UiSyncCheckerTest {
             UiSyncChecker.evaluateHealth(
                 UiSyncChecker.Health("5.1.3", 1, "cons-new"),
                 localUiHash = "cons-old",
+                localShellVersion = "5.1.0",
             )
         assertTrue(gate is UiSyncChecker.Gate.UiUpdateAvailable)
-        assertEquals("cons-new", (gate as UiSyncChecker.Gate.UiUpdateAvailable).hostUiHash)
+        val update = gate as UiSyncChecker.Gate.UiUpdateAvailable
+        assertEquals("cons-new", update.hostUiHash)
+        assertEquals(UiSyncChecker.UiVersionDirection.HostNewer, update.direction)
+    }
+
+    @Test
+    fun evaluateHealth_uiUpdateMarksOlderHostDirection() {
+        val gate =
+            UiSyncChecker.evaluateHealth(
+                UiSyncChecker.Health("5.1.0", 1, "cons-old"),
+                localUiHash = "cons-new",
+                localShellVersion = "5.3.0",
+            )
+        assertTrue(gate is UiSyncChecker.Gate.UiUpdateAvailable)
+        assertEquals(
+            UiSyncChecker.UiVersionDirection.HostOlder,
+            (gate as UiSyncChecker.Gate.UiUpdateAvailable).direction,
+        )
+    }
+
+    @Test
+    fun evaluateHealth_uiUpdateMarksUnknownDirectionWhenSemverUnparseable() {
+        val gate =
+            UiSyncChecker.evaluateHealth(
+                UiSyncChecker.Health("next-build", 1, "cons-other"),
+                localUiHash = "cons-local",
+                localShellVersion = "5.3.0",
+            )
+        assertTrue(gate is UiSyncChecker.Gate.UiUpdateAvailable)
+        assertEquals(
+            UiSyncChecker.UiVersionDirection.Unknown,
+            (gate as UiSyncChecker.Gate.UiUpdateAvailable).direction,
+        )
     }
 
     @Test

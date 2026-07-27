@@ -810,7 +810,11 @@ pub async fn connect_remote_host(
         ));
     }
 
-    let label = format!("StageSync {}", health.version);
+    let label = health
+        .hostname
+        .clone()
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| host.clone());
     let _ = push_recent(&app, &origin, &label);
 
     let target = admin_url(&origin);
@@ -1020,7 +1024,13 @@ async fn start_local_host_inner(
         match check_health_at("127.0.0.1", UI_PORT).await {
             Ok(Some(health)) if health.version == expected_version => {
                 let origin = format!("http://127.0.0.1:{UI_PORT}");
-                let _ = push_recent(&app, &origin, &format!("Lokalny host {}", health.version));
+                let label = health
+                    .hostname
+                    .clone()
+                    .filter(|s| !s.is_empty())
+                    .map(|name| format!("{name} (lokalny)"))
+                    .unwrap_or_else(|| "Lokalny host".to_string());
+                let _ = push_recent(&app, &origin, &label);
                 let window = app
                     .get_webview_window("main")
                     .ok_or("Brak okna głównego")?;

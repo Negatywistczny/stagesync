@@ -106,7 +106,7 @@ beforeEach(() => {
 });
 
 describe("SystemView APK download aria", () => {
-  it("names Pobierz APK and Releases per app title", async () => {
+  it("names Pobierz APK per app title and opens QR modal", async () => {
     render(<SystemView statusMsg={null} />);
     await waitFor(() => {
       expect(
@@ -116,12 +116,15 @@ describe("SystemView APK download aria", () => {
     expect(
       screen.getByRole("button", { name: "Pobierz APK StageSync Console" }),
     ).toBeTruthy();
+    act(() => {
+      screen
+        .getByRole("button", { name: "Pobierz APK StageSync Performer" })
+        .click();
+    });
     expect(
-      screen.getByRole("button", { name: "Releases — StageSync Performer" }),
+      screen.getByRole("dialog", { name: "Pobierz APK — StageSync Performer" }),
     ).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Releases — StageSync Console" }),
-    ).toBeTruthy();
+    expect(screen.getByText(/Zeskanuj kod na telefonie/)).toBeTruthy();
   });
 
   it("names Host card regions in two-column order", async () => {

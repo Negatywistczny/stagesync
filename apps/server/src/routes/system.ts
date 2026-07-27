@@ -22,6 +22,7 @@ import {
   releaseMatchesUpdateChannel,
   writeManagedSettings,
 } from "../env-settings.js";
+import { refreshMdnsAdvertise } from "../mdns-registry.js";
 import {
   isOperatorPinRequired,
   verifyOperatorPin,
@@ -373,6 +374,11 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       const before = readManagedSettings().values;
       const { values, envExists } = writeManagedSettings(body.data.values);
       const restartKeys = listRestartRequiredKeys(before, values);
+      if (
+        before.STAGESYNC_HOST_DISPLAY_NAME !== values.STAGESYNC_HOST_DISPLAY_NAME
+      ) {
+        refreshMdnsAdvertise();
+      }
       res.json({
         ok: true,
         values,

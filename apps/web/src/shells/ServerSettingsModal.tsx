@@ -1044,6 +1044,23 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                     <option value="127.0.0.1">localhost</option>
                   </Select>
                 </label>
+                <label className={styles.field}>
+                  <span className={styles.label}>Nazwa hosta w sieci</span>
+                  <Input
+                    maxLength={40}
+                    value={String(server.STAGESYNC_HOST_DISPLAY_NAME ?? "")}
+                    onChange={(e) =>
+                      setServer({
+                        ...server,
+                        STAGESYNC_HOST_DISPLAY_NAME: e.target.value,
+                      })
+                    }
+                    aria-label="Nazwa hosta w sieci"
+                  />
+                  <span className={styles.muted}>
+                    Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w drugiej linii. Osobno od nazwy urządzenia na Scenie.
+                  </span>
+                </label>
                 <label className={styles.checkRow}>
                   <input type="checkbox" checked={Boolean(server.STAGESYNC_DISABLE_MDNS)}
                     onChange={(e) => setServer({ ...server, STAGESYNC_DISABLE_MDNS: e.target.checked })} aria-label="Wyłącz mDNS" />

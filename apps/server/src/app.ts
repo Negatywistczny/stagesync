@@ -12,6 +12,7 @@ import {
   installConsoleFileMirror,
 } from "./file-logger.js";
 import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
+import { resolveHostDisplayName } from "./network-info.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
 import { createMidiProgramChangeHandler } from "./midi/program-change.js";
 import { wireMidiProgramChangeOut } from "./midi/program-change-out.js";
@@ -203,6 +204,7 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
       service: "stagesync-server",
       version: VERSION,
       protocolVersion: PROTOCOL_VERSION,
+      hostname: resolveHostDisplayName(),
       uiHash: uiMeta.uiHash,
       ...(uiMeta.uiHashPerformer
         ? { uiHashPerformer: uiMeta.uiHashPerformer }

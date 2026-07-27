@@ -9,8 +9,8 @@ const STATUS_LABEL: Record<WsStatus, string> = {
 
 export type ConnectionIndicatorProps = {
   status: WsStatus;
-  /** `status` = dot + label (+ optional latency); `label` = text only; `dot` = icon only. */
-  variant?: "status" | "label" | "dot";
+  /** `status` = dot + label (+ optional latency); `label` = text only; `dot` = icon only; `compact` = dot + ms. */
+  variant?: "status" | "label" | "dot" | "compact";
   /** One-way transport latency (ms); shown when connected and finite. */
   latencyMs?: number | null;
   title?: string;
@@ -33,9 +33,37 @@ export function ConnectionIndicator({
   const connected = status === "connected";
   const latencyText =
     connected && variant !== "dot" ? formatLatency(latencyMs) : null;
+  const compactLatency =
+    connected && variant === "compact" ? formatLatency(latencyMs) : null;
   const titleText =
     title ??
     (latencyText ? `${label} · ${latencyText}` : label);
+
+  if (variant === "compact") {
+    return (
+      <span
+        className={[styles.compact, connected ? styles.on : ""]
+          .filter(Boolean)
+          .join(" ")}
+        title={titleText}
+        role="status"
+        aria-live="polite"
+        aria-label={
+          compactLatency ? `${label} · ${compactLatency}` : label
+        }
+      >
+        <span
+          className={[styles.dot, connected ? styles.on : ""]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden
+        />
+        {compactLatency ? (
+          <span className={styles.compactLatency}>{compactLatency}</span>
+        ) : null}
+      </span>
+    );
+  }
 
   if (variant === "dot") {
     return (
