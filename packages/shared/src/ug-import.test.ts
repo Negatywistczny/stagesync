@@ -71,6 +71,20 @@ describe("importUgText", () => {
     expect(r.ok).toBe(false);
   });
 
+  it("honors barsPerLine > 1 and contentFloorTicks", () => {
+    const result = importUgText("[C]one line\n[G]two", {
+      barsPerLine: 2,
+      contentFloorTicks: 960,
+      idPrefix: "custom",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.barsPerLine).toBe(2);
+    expect(result.tekst.clips[0]!.startTicks).toBe(960);
+    expect(result.tekst.clips[0]!.lengthTicks).toBe(7680);
+    expect(result.tekst.clips[0]!.id.startsWith("custom-tekst-")).toBe(true);
+  });
+
   it("Money-style: chord line + lyric = one bar, no overlapping lengths", () => {
     const sample = `Am          F
 Money, money, money
@@ -257,6 +271,18 @@ sing along`;
     expect(next.tekst.clips.length).toBeGreaterThan(0);
   });
 
+  it("reflowUgImportSectionBars fails on meter change mismatch", () => {
+    const result = importUgText("[Verse]\n[C]hi\n\n[Chorus]\n[G]yo");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const badMeter = reflowUgImportSectionBars(result, [4, 4], {
+      meter: { numerator: 3, denominator: 4 },
+    });
+    expect(badMeter.ok).toBe(true);
+    if (!badMeter.ok) return;
+    expect(badMeter.formaMusic.clips[0]!.lengthTicks).toBe(4 * 2880);
+  });
+
   it("reflowUgImportSectionBars stretches Forma and scales content", () => {
     const result = importUgText("[Verse]\n[C]hi\n\n[Chorus]\n[G]yo");
     expect(result.ok).toBe(true);
@@ -268,6 +294,94 @@ sing along`;
     expect(reflowed.formaMusic.clips[1]!.lengthTicks).toBe(4 * 3840);
     expect(reflowed.formaMusic.clips[1]!.startTicks).toBe(8 * 3840);
     expect(reflowed.sections.map((s) => s.estimatedBars)).toEqual([8, 4]);
+  });
+
+  it("rejects invalid CHORD_TOKEN slash-bass and nested parens", () => {
+    const slash = importUgText("C//G\nlyric");
+    expect(slash.ok).toBe(true);
+    if (!slash.ok) return;
+    expect(slash.akordy.clips).toEqual([]);
+
+    const nested = importUgText("((Am7))\nline");
+    expect(nested.ok).toBe(true);
+    if (!nested.ok) return;
+    expect(nested.akordy.clips).toEqual([]);
+  });
+
+  it("barsPerLine > 1 spans multiple bars per lyric line", () => {
+    const sample = `C G
+hello world`;
+    const result = importUgText(sample, { barsPerLine: 2 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.barsPerLine).toBe(2);
+    expect(result.tekst.clips[0]!.lengthTicks).toBe(2 * 3840);
+    expect(result.akordy.clips).toHaveLength(2);
+    expect(result.akordy.clips[0]!.startTicks).toBe(0);
+  });
+
+  it("applyUgImportToProject merges countdown and replaces lanes", () => {
+    const result = importUgText("[Verse]\n[C]hi\n\n[Chorus]\n[G]yo");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const project = {
+      id: "p1",
+      name: "P",
+      ppq: 960,
+      tempoMap: [{ tick: 0, bpm: 120 }],
+      meterMap: [{ tick: 0, numerator: 4, denominator: 4 }],
+      forma: {
+        clips: [
+          {
+            id: "cd",
+            name: "CD",
+            startTicks: -3840,
+            lengthTicks: 3840,
+            kind: "countdown" as const,
+          },
+          {
+            id: "keep-section",
+            name: "Legacy",
+            startTicks: 0,
+            lengthTicks: 3840,
+            kind: "section" as const,
+          },
+        ],
+      },
+      tekst: {
+        clips: [
+          {
+            id: "old-t",
+            startTicks: 0,
+            lengthTicks: 3840,
+            text: "old lyric",
+          },
+        ],
+      },
+      akordy: {
+        clips: [
+          {
+            id: "old-a",
+            startTicks: 0,
+            lengthTicks: 3840,
+            symbol: "Dm",
+          },
+        ],
+      },
+      cue: { clips: [] },
+      score: { clips: [] },
+    };
+    const next = applyUgImportToProject(project as never, result);
+    expect(next.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
+    expect(next.forma.clips.some((c) => c.name === "Legacy")).toBe(false);
+    expect(next.forma.clips.map((c) => c.name)).toEqual([
+      "CD",
+      "Verse",
+      "Chorus",
+    ]);
+    expect(next.tekst.clips.some((c) => c.text === "old lyric")).toBe(false);
+    expect(next.akordy.clips.some((c) => c.symbol === "Dm")).toBe(false);
+    expect(next.akordy.clips.some((c) => c.symbol === "C")).toBe(true);
   });
 });
 

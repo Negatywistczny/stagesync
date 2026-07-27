@@ -1,31 +1,27 @@
 # Triage: Luki testów MIDI host (`midi/host`)
 
 **Źródło:** [Analiza-Testow-MIDI-Host.md](./Analiza-Testow-MIDI-Host.md) (Gemini Deep Search)  
-**Status:** `open`  
+**Status:** `partial`  
 **Obszar:** `apps/server` — clock IN/OUT, SPP, PC debounce, panic, `safeSend`  
-**Data triage:** 2026-07-27
+**Data triage:** 2026-07-27  
+**Ostatnia weryfikacja:** 2026-07-27
 
 ## Werdykt przydatności
 
-**Wysoka (uzupełnienie, nie duplikat audytu).** Audyt MIDI ([Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md](../audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md)) = `closed` (RSK naprawione). Ten dump = **plan pokrycia** pozostałych gałęzi: clock IN beat boundary, `MAX_CLOCK_BURST`, panic partial failure, `applyPorts` + persist.
+**Średnia–wysoka.** `host.test.ts` jest bogaty (safeSend, panic, debounce RSK-07); dump trafnie wskazuje luki clock IN/OUT i burst.
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Następny krok |
-|----|--------|-----------|------|----------------|
-| TST-MH-01 | Clock OUT: `emitClocksThrough`, burst cap, seek → SPP+Continue | P0 | `hypothesis` | `createMockMidiBackend` + transport mock |
-| TST-MH-02 | Clock IN: 24 ticków → `onBeatToWs`, `inputClockCount` | P0 | `hypothesis` | Fake MIDI input messages |
-| TST-MH-03 | PC IN debounce 50 ms latest-wins (timery) | P1 | `hypothesis` | `vi.useFakeTimers` + cleanup `afterEach` |
-| TST-MH-04 | Start/Continue/Stop + `lastSppTicks` przy seek+play | P1 | `hypothesis` | Mapa uncovered → test w `host.test.ts` |
-| TST-MH-05 | `safeSend` / unplug → `lastError`, brak crash | P1 | `confirmed` częściowo | Audyt RSK-MIDI-06 `fixed` — rozszerzyć scenariusze |
-| TST-MH-06 | `panic()` 16×CC — partial failure | P2 | `hypothesis` | Mock backend throw co 2. kanał |
-| TST-MH-07 | `applyPorts` + boot z `config-persist` | P2 | `hypothesis` | Integration z istniejącym persist test |
-
-## Kontekst
-
-- SSOT transport ([ADR 0002](../../../adr/0002-timebase-ssot.md)); PC/debounce ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md)).
-- `isMidiOutAllowed` / Safety Net — testować przy TST-MH-01.
+| ID | Temat | Priorytet | Stan | Dowód |
+|----|--------|-----------|------|--------|
+| TST-MH-01 | Clock OUT: burst, seek → SPP+Continue | P0 | `fixed` | `host.test.ts` — clock OUT caps burst + seek |
+| TST-MH-02 | Clock IN → `onBeatToWs` co 24 ticków | P0 | `fixed` | `host.test.ts` — 24-clock boundary |
+| TST-MH-03 | PC IN debounce 50 ms | P1 | `rejected` | `host.test.ts` — „RSK-07: PC flood debounces 50ms…” |
+| TST-MH-04 | Start/Continue/Stop + `lastSppTicks` | P1 | `confirmed` | Częściowe pokrycie transport edges; brak seek+play matrycy |
+| TST-MH-05 | `safeSend` / unplug | P1 | `fixed` | `host.test.ts` — „safeSend keeps process alive…” |
+| TST-MH-06 | `panic()` partial failure | P2 | `fixed` | `host.test.ts` — mid-flight throw |
+| TST-MH-07 | `applyPorts` + config-persist boot | P2 | `confirmed` | Brak integracji w grep |
 
 ## Następny krok eng
 
-Fala 1: TST-MH-01/02 w `host.test.ts`; fake timers dla TST-MH-03.
+TST-MH-04/07 — opcjonalnie; P0 domknięte.

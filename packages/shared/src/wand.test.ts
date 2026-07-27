@@ -986,4 +986,60 @@ describe("placeContentFromForma", () => {
     expect(result.ok).toBe(false);
     expect(result.message).toBe("Brak clipów do rozmieszczenia");
   });
+
+  it("Layer F weights uneven lyric lines (approximate placement)", () => {
+    const p = sectionProject(5, [
+      "Hi",
+      "Hello world",
+      "A",
+      "Super long lyric line here",
+    ]);
+    const result = placeContentFromForma(p, "tekst");
+    expect(result.ok).toBe(true);
+    expect(result.approximate).toBe(true);
+    const intro = p.forma.clips.find((c) => c.name === "Intro")!;
+    const spans = barSpansFromStarts(
+      result.project.tekst.clips.map((c) => c.startTicks).sort((a, b) => a - b),
+      intro.startTicks,
+      intro.startTicks + intro.lengthTicks,
+    );
+    expect(spans.some((s) => s < 1)).toBe(true);
+    expect(spans.some((s) => s > 1.5)).toBe(true);
+  });
+
+  it("fail-soft ok:false matrix without throwing", () => {
+    const emptyForma = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const noSections = {
+      ...emptyForma,
+      forma: { clips: [] },
+    };
+    expect(placeContentFromForma(noSections, "tekst")).toMatchObject({
+      ok: false,
+      message: "Brak sekcji Formy",
+    });
+
+    const noLyrics = sectionProject(4, []);
+    expect(placeContentFromForma(noLyrics, "tekst")).toMatchObject({
+      ok: false,
+      message: "Brak linii Tekstu",
+    });
+
+    const scoped = sectionProject(4, ["a", "b"]);
+    expect(
+      placeContentFromForma(scoped, "tekst", {
+        sectionIds: ["missing-section"],
+      }),
+    ).toMatchObject({
+      ok: false,
+      message: "Brak linii Tekstu w zaznaczonych sekcjach",
+    });
+
+    const bothEmpty = {
+      ...sectionProject(4, []),
+      akordy: { clips: [] },
+    };
+    expect(placeContentFromForma(bothEmpty, "both")).toMatchObject({
+      ok: false,
+    });
+  });
 });

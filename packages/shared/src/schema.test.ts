@@ -5,8 +5,10 @@ import {
   CreateProjectBodySchema,
   CueSampleConfigSchema,
   ExportLibraryBodySchema,
+  FormaClipSchema,
   HealthResponseSchema,
   LibrarySchema,
+  MeterEventSchema,
   MidiHostConfigSchema,
   PROTOCOL_VERSION,
   ProjectIdSchema,
@@ -354,6 +356,59 @@ describe("PutProjectBodySchema", () => {
     expect(() =>
       PutProjectBodySchema.parse({ ...body, extra: 1 }),
     ).toThrow();
+  });
+
+  it("rejects stale audio bus output on PUT body", () => {
+    const full = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const { id, ...body } = full;
+    void id;
+    const bad = {
+      ...body,
+      audioTracks: [
+        {
+          id: "t1",
+          name: "Track 1",
+          output: { kind: "bus" as const, busId: "ghost-bus" },
+        },
+      ],
+    };
+    expect(() => PutProjectBodySchema.parse(bad)).toThrow(/busId not found/i);
+  });
+});
+
+describe("MeterEventSchema edges", () => {
+  it("rejects invalid meter for PPQ", () => {
+    expect(() =>
+      MeterEventSchema.parse({
+        id: "m2",
+        startTicks: 0,
+        numerator: 5,
+        denominator: 7,
+      }),
+    ).toThrow();
+  });
+});
+
+describe("FormaClipSchema", () => {
+  it("allows negative startTicks for countdown; section may be negative int", () => {
+    expect(
+      FormaClipSchema.parse({
+        id: "cd",
+        name: "CD",
+        startTicks: -3840,
+        lengthTicks: 3840,
+        kind: "countdown",
+      }).kind,
+    ).toBe("countdown");
+    expect(
+      FormaClipSchema.parse({
+        id: "sec",
+        name: "Verse",
+        startTicks: -1,
+        lengthTicks: 3840,
+        kind: "section",
+      }).startTicks,
+    ).toBe(-1);
   });
 });
 
