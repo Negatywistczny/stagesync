@@ -5,13 +5,6 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.4.1](https://github.com/Negatywistczny/stagesync/compare/v5.4.0...v5.4.1) - 2026-07-27
-
-### Naprawiono
-
-#### 🖥️ App Shell & UI
-- **Admin:** sortowanie listy utworów działa ponownie po wprowadzeniu wspólnej nawigacji operatora.
-
 ## [5.4.0](https://github.com/Negatywistczny/stagesync/compare/v5.3.2...v5.4.0) - 2026-07-27
 
 ### Dodano
