@@ -16,7 +16,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Desktop — restart / shutdown hosta:** po restarcie z Admina lub menu OS zostajesz w sesji Admin (flaga `prepare_host_restart` w ACL); wyłączenie serwera (kod 0) nie wraca już do Launchera z fałszywym błędem; zasobnik pokazuje działający host także po restarcie poza sidecarem, a **Zatrzymaj Host** czyści osierocony proces na porcie 4000.
+- **Desktop — restart / shutdown hosta:** po restarcie z Admina lub menu OS zostajesz w sesji Admin zamiast na ekranie Launchera; wyłączenie serwera nie pokazuje już fałszywego błędu przy powrocie; zasobnik wykrywa host po restarcie poza sidecarem, a **Zatrzymaj Host** gasi osierocony proces na porcie 4000.
 - **Launcher — aktualizacja:** podczas pobierania instalatora **Pomiń tę wersję** jest nieaktywny (bez efektu najechania).
 
 ## [5.3.0](https://github.com/Negatywistczny/stagesync/compare/v5.2.11...v5.3.0) - 2026-07-27 — Colors & Channels
