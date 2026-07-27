@@ -1,30 +1,26 @@
 # Triage: Luki testów Różdżki (`wand`)
 
 **Źródło:** [Analiza-Luki-Testow-Wand.md](./Analiza-Luki-Testow-Wand.md) (Gemini Deep Search)  
-**Status:** `open`  
-**Obszar:** `packages/shared` — `placeContentFromForma`, warstwy A–F / L, tryb `both`  
-**Data triage:** 2026-07-27
+**Status:** `partial`  
+**Obszar:** `packages/shared` — `wand.ts`  
+**Data triage:** 2026-07-27  
+**Ostatnia weryfikacja:** 2026-07-27
 
 ## Werdykt przydatności
 
-**Wysoka.** `wand.test.ts` obszerny, ale >50 uncovered lines wg dumpu — głównie Layer C (gap/subsection), Layer F (weight ratio), scope `sectionIds`, tryb `both`, countdown protection. Pure functions — niski koszt wdrożenia.
+**Średnia.** Dump przecenia luki — `wand.test.ts` (~950 linii) już pokrywa countdown, scope, both, approximate, layer C.
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Następny krok |
-|----|--------|-----------|------|----------------|
-| TST-WND-01 | Macierz scenariusz × mode (tekst/akordy/both) × `approximate` | P1 | `hypothesis` | Tabela z dumpu → `it.each` |
-| TST-WND-02 | Pusta Forma, scope `sectionIds`, multi Verse/Chorus | P1 | `hypothesis` | `createProjectV5Seed` + minimal lines |
-| TST-WND-03 | `TEXT_WEIGHT_RATIO_THRESHOLD` — krótka ostatnia linia | P2 | `hypothesis` | Layer F edge |
-| TST-WND-04 | Countdown clips — brak przesunięcia (`vl-cd-*`, ticks ≤ 0) | P0 | `hypothesis` | Regresja parity v4 |
-| TST-WND-05 | Fail-soft: wszystkie ścieżki `ok: false` bez throw | P1 | `hypothesis` | `expect(result.ok).toBe(false)` |
-| TST-WND-06 | `sealAkordyLengths` po ug-import | P2 | `hypothesis` | Wspólny test z [Analiza-Importu-ChordProUG.triage.md](./Analiza-Importu-ChordProUG.triage.md) |
-
-## Kontekst
-
-- Forma nie mutowana; czas przez `resolveMeterAt` — [ADR 0002](../../../adr/0002-timebase-ssot.md).
-- Property-based (opcjonalnie w dumpie) — odłożyć po TST-WND-01.
+| ID | Temat | Priorytet | Stan | Dowód |
+|----|--------|-----------|------|--------|
+| TST-WND-01 | Macierz scenariusz × mode × `approximate` | P1 | `rejected` | Wiele testów `approximate` + `both` mode (L202+, L846+) |
+| TST-WND-02 | Pusta Forma, scope `sectionIds` | P1 | `rejected` | „scopes placement to selected Forma section ids” (L273) |
+| TST-WND-03 | `TEXT_WEIGHT_RATIO_THRESHOLD` edge | P2 | `fixed` | `wand.test.ts` — Layer F uneven lines |
+| TST-WND-04 | Countdown clips nieprzesuwane | P0 | `rejected` | Test vl-cd-2 + skip countdown akordy (L250+, L894) |
+| TST-WND-05 | Fail-soft `ok: false` bez throw | P1 | `fixed` | `wand.test.ts` — ok:false matrix |
+| TST-WND-06 | `sealAkordyLengths` z ug-import | P2 | `rejected` | Pokryte w `ug-import.test.ts` |
 
 ## Następny krok eng
 
-`coverage packages/shared wand` → TST-WND-04 + TST-WND-01 jako pierwsza fala.
+TST-WND-03/05 domknięte w fazie 3.

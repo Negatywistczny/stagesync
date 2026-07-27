@@ -4,6 +4,7 @@ import {
   elapsedToTicks,
   ticksToMs,
   ticksToMsAlongTempoMap,
+  MAX_AUDIO_BUSSES,
   type Project,
 } from "@stagesync/shared";
 import {
@@ -517,6 +518,51 @@ describe("audioLaneEdit", () => {
     expect(p.audioBusses!.find((x) => x.id === a.busId)!.output).toBeUndefined();
   });
 
+  it("setAudioBusOutput rejects A→B→C→A cycle", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    const a = addAudioBus(p, "A");
+    p = a.project;
+    const b = addAudioBus(p, "B");
+    p = b.project;
+    const c = addAudioBus(p, "C");
+    p = c.project;
+    p = setAudioBusOutput(p, a.busId, { kind: "bus", busId: b.busId });
+    p = setAudioBusOutput(p, b.busId, { kind: "bus", busId: c.busId });
+    const cycled = setAudioBusOutput(p, c.busId, {
+      kind: "bus",
+      busId: a.busId,
+    });
+    expect(
+      cycled.audioBusses!.find((x) => x.id === c.busId)!.output,
+    ).toBeUndefined();
+  });
+
+  it("addAudioBus throws RangeError at MAX_AUDIO_BUSSES", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    for (let i = 0; i < MAX_AUDIO_BUSSES; i++) {
+      const added = addAudioBus(p, `Bus ${i + 1}`);
+      p = added.project;
+    }
+    expect(p.audioBusses).toHaveLength(MAX_AUDIO_BUSSES);
+    expect(() => addAudioBus(p, "overflow")).toThrow(RangeError);
+  });
+
+  it("setAudioTrackOutput ignores stale bus and hw ids", () => {
+    let p = createProjectSeed("p1", "Song", "2026-07-21T00:00:00.000Z");
+    const track = addAudioTrack(p, "Gtr");
+    p = track.project;
+    const staleBus = setAudioTrackOutput(p, track.trackId, {
+      kind: "bus",
+      busId: "missing-bus",
+    });
+    expect(staleBus.audioTracks[0]!.output).toBeUndefined();
+    const staleHw = setAudioTrackOutput(p, track.trackId, {
+      kind: "hw_out",
+      hwOutputId: "missing-hw",
+    });
+    expect(staleHw.audioTracks[0]!.output).toBeUndefined();
+  });
+
   it("removeAudioTrack drops track and its clips; no-op missing", () => {
     const p0 = projectWithAudio();
     const trackId = p0.audioTracks[0]!.id;
@@ -888,6 +934,33 @@ describe("split / join / mute / gain tools", () => {
     const abut = abutProject();
     expect(joinAdjacentAudioClips(abut, "left")).toBe(abut);
     expect(joinAdjacentAudioClips(p, "missing")).toBe(p);
+  });
+
+  it("joinAdjacentAudioClips rejects different assetId and source window gap", () => {
+    const abut = abutProject();
+    const gapAsset = {
+      ...abut,
+      audioClips: [
+        abut.audioClips[0]!,
+        {
+          ...abut.audioClips[1]!,
+          assetId: "asset-2",
+        },
+      ],
+    };
+    expect(joinAdjacentAudioClips(gapAsset, "left")).toBe(gapAsset);
+
+    const gapTrim = {
+      ...abut,
+      audioClips: [
+        abut.audioClips[0]!,
+        {
+          ...abut.audioClips[1]!,
+          trimInMs: 500,
+        },
+      ],
+    };
+    expect(joinAdjacentAudioClips(gapTrim, "left")).toBe(gapTrim);
   });
 
   it("toggleAudioClipMute and gainDbFromPointerDelta", () => {

@@ -325,6 +325,27 @@ describe("midi host", () => {
     transport.dispose();
   });
 
+  it("panic returns sent:false when safeSend throws mid-loop", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ outputId: "mock-out-1" });
+    let sendCount = 0;
+    const originalSend = backend.send.bind(backend);
+    backend.send = (msg) => {
+      sendCount += 1;
+      if (sendCount === 2) {
+        throw new Error("partial panic fail");
+      }
+      originalSend(msg);
+    };
+    backend.sent.length = 0;
+    expect(host.panic()).toEqual({ sent: false, channels: 0 });
+    expect(host.getStatus().lastError).toMatch(/partial panic fail/);
+    host.dispose();
+    transport.dispose();
+  });
+
   it("rejects unknown device ids without crashing status", () => {
     const transport = createTransportEngine();
     const backend = createMockMidiBackend();
@@ -377,6 +398,87 @@ describe("midi host", () => {
     host.sendProgramChange(-1);
     host.sendProgramChange(42, 99);
     expect(backend.sent).toHaveLength(0);
+
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("clock OUT caps burst and re-SPP+Continue on seek while playing", () => {
+    vi.useFakeTimers();
+    const transport = createTransportEngine({
+      now: () => performance.now(),
+    });
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({
+      outputId: "mock-out-1",
+      clockOutEnabled: true,
+    });
+
+    transport.play({ bpm: 120 });
+    vi.advanceTimersByTime(40);
+    backend.sent.length = 0;
+
+    transport.seek(50_000);
+    const clocks = backend.sent.filter((m) => m.type === "clock").length;
+    expect(clocks).toBeLessThanOrEqual(24 * 8);
+    expect(backend.sent.some((m) => m.type === "spp")).toBe(true);
+    expect(backend.sent.some((m) => m.type === "continue")).toBe(true);
+
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("clock IN fires onBeatToWs exactly every 24 ticks", async () => {
+    vi.useFakeTimers();
+    const t = 1_000_000;
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const beats: number[] = [];
+    const host = createMidiHost(transport, {
+      backend,
+      now: () => t,
+      onBeatToWs: () => beats.push(t),
+    });
+    host.setConfig({ inputId: "mock-in-1" });
+
+    for (let i = 0; i < 23; i++) {
+      backend.emitInput({ type: "clock" });
+    }
+    expect(beats).toHaveLength(0);
+    backend.emitInput({ type: "clock" });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(beats).toHaveLength(1);
+
+    for (let i = 0; i < 24; i++) {
+      backend.emitInput({ type: "clock" });
+    }
+    await vi.advanceTimersByTimeAsync(50);
+    expect(beats).toHaveLength(2);
+    expect(host.getStatus().rates.beatToWsPerSec).toBe(2);
+
+    host.dispose();
+    transport.dispose();
+  });
+
+  it("panic returns sent:false when output throws mid-flight", () => {
+    const transport = createTransportEngine();
+    const backend = createMockMidiBackend();
+    const host = createMidiHost(transport, { backend });
+    host.setConfig({ outputId: "mock-out-1" });
+
+    let sends = 0;
+    const origSend = backend.send.bind(backend);
+    backend.send = (msg) => {
+      sends += 1;
+      if (sends === 4) {
+        backend.throwOnSend = new Error("USB drop");
+      }
+      origSend(msg);
+    };
+
+    expect(host.panic()).toEqual({ sent: false, channels: 0 });
+    expect(host.getStatus().lastError).toMatch(/USB drop/);
 
     host.dispose();
     transport.dispose();
