@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import { useEffect, useState, type HTMLAttributes, type ReactNode } from "react";
 import styles from "./shellChrome.module.css";
 
 function cx(...parts: Array<string | false | undefined>) {
@@ -81,24 +81,57 @@ export function ShellToolbar({
   );
 }
 
-export type NetworkUrlItem = {
-  url: string;
-  action: ReactNode;
-};
-
 export function NetworkUrlList({
   urls,
+  onCopyError,
+  onCopy,
   "aria-label": ariaLabel = "Adresy sieciowe",
 }: {
-  urls: NetworkUrlItem[];
+  urls: string[];
+  onCopyError?: (message: string) => void;
+  onCopy?: () => void;
   "aria-label"?: string;
 }) {
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!copiedUrl) return;
+    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
+    return () => window.clearTimeout(t);
+  }, [copiedUrl]);
+
+  const copyUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedUrl(url);
+      onCopy?.();
+    } catch {
+      setCopiedUrl(null);
+      onCopyError?.("Nie udało się skopiować URL");
+    }
+  };
+
   return (
     <ul className={styles.urlList} aria-label={ariaLabel}>
-      {urls.map(({ url, action }) => (
+      {urls.map((url) => (
         <li key={url} className={styles.urlRow}>
-          <span className={styles.urlText}>{url}</span>
-          {action}
+          <button
+            type="button"
+            className={styles.urlCopyBtn}
+            onClick={() => {
+              void copyUrl(url);
+            }}
+            aria-label={
+              copiedUrl === url
+                ? `Skopiowano adres: ${url}`
+                : `Kopiuj adres: ${url}`
+            }
+          >
+            <span className={styles.urlText}>{url}</span>
+            {copiedUrl === url ? (
+              <span className={styles.urlCopiedHint}>Skopiowano</span>
+            ) : null}
+          </button>
         </li>
       ))}
     </ul>

@@ -82,12 +82,34 @@
 }
 
 .urlRow {
+  min-width: 0;
+}
+
+.urlCopyBtn {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
   gap: var(--ss-space-2);
+  width: 100%;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.urlCopyBtn:hover .urlText,
+.urlCopyBtn:focus-visible .urlText {
+  color: var(--ss-color-text);
+}
+
+.urlCopyBtn:focus-visible {
+  outline: 2px solid var(--ss-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--ss-radius-sm);
 }
 
 .urlText {
@@ -96,6 +118,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+}
+
+.urlCopiedHint {
+  flex: 0 0 auto;
   font-size: var(--ss-text-xs);
   color: var(--ss-color-text-muted);
 }

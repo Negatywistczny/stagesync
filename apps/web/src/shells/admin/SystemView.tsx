@@ -76,7 +76,6 @@ export function SystemView({
   const [consoleApkUrl, setConsoleApkUrl] = useState<string | null>(null);
   const [performerApkReady, setPerformerApkReady] = useState(false);
   const [consoleApkReady, setConsoleApkReady] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [midi, setMidi] = useState<MidiHostStatus | null>(null);
   const [midiError, setMidiError] = useState<string | null>(null);
   const [safety, setSafety] = useState<SafetyNetStatus | null>(null);
@@ -91,12 +90,6 @@ export function SystemView({
   } | null>(null);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
-
-  useEffect(() => {
-    if (!copiedUrl) return;
-    const t = window.setTimeout(() => setCopiedUrl(null), 2000);
-    return () => window.clearTimeout(t);
-  }, [copiedUrl]);
 
   const refreshMidi = useCallback(async () => {
     try {
@@ -276,30 +269,9 @@ export function SystemView({
                       </p>
                     ) : null}
                     <NetworkUrlList
-                      urls={networkDisplayUrls(network).map((u) => ({
-                        url: u,
-                        action: (
-                          <Button
-                            variant="ghost"
-                            onClick={() => {
-                              void (async () => {
-                                try {
-                                  await navigator.clipboard.writeText(u);
-                                  setCopiedUrl(u);
-                                  setNetworkError(null);
-                                } catch {
-                                  setCopiedUrl(null);
-                                  setNetworkError(
-                                    "Nie udało się skopiować URL",
-                                  );
-                                }
-                              })();
-                            }}
-                          >
-                            {copiedUrl === u ? "Skopiowano" : "Kopiuj"}
-                          </Button>
-                        ),
-                      }))}
+                      urls={networkDisplayUrls(network)}
+                      onCopy={() => setNetworkError(null)}
+                      onCopyError={(msg) => setNetworkError(msg)}
                     />
                     {statusMsg ? (
                       <p className={shell.muted} role="status">

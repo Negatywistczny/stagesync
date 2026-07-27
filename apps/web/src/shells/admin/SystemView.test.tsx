@@ -153,6 +153,25 @@ describe("SystemView APK download aria", () => {
     expect(screen.getByText("http://192.168.1.10:8787")).toBeTruthy();
   });
 
+  it("copies network URL on address click", async () => {
+    const writeText = vi.fn(async () => undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    render(<SystemView statusMsg={null} />);
+    const urlBtn = await screen.findByRole("button", {
+      name: "Kopiuj adres: http://192.168.1.10:8787",
+    });
+    await act(async () => {
+      urlBtn.click();
+    });
+    expect(writeText).toHaveBeenCalledWith("http://192.168.1.10:8787");
+    expect(
+      screen.getByRole("button", {
+        name: "Skopiowano adres: http://192.168.1.10:8787",
+      }),
+    ).toBeTruthy();
+  });
+
   it("on mobile expands one Host card at a time", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: query.includes("max-width: 768px") || query === "(max-width: 768px)",

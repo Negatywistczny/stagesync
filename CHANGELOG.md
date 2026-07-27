@@ -12,6 +12,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Client — wąski telefon:** kafel roli od razu wchodzi w widok (bez **Rozpocznij**); siatka 2×2 wypełnia ekran pod nagłówkiem.
 - **Client / Admin — ≤640px:** jednowierszowy pasek Client (ikona + tytuł + status + ustawienia); Admin — lista sekcji zamiast zakładek, chipy Timeline/Klient, tylko **Ustawienia** w akcjach; mniejsze paddingi workspace.
+- **Admin — Połączenie & Sieć:** adresy hosta kopiujesz kliknięciem w sam adres (bez osobnych przycisków **Kopiuj**), a kafelki APK pokazują tylko akcję **Pobierz APK** z kodem QR i krótką instrukcją skanowania w tej samej sieci LAN.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Launcher (Desktop / Android):** lista hostów pokazuje **nazwę hosta w sieci** (z mDNS / ustawień serwera) zamiast wersji produktu; druga linia: adres IP · `v5.3.0` · projekt. W Admin → Ustawienia serwera: **Nazwa hosta w sieci** (osobno od nazwy urządzenia na Scenie).
