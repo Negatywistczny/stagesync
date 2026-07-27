@@ -33,6 +33,27 @@ export interface ReleaseSpotlight {
 
 export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
   {
+    line: "5.3",
+    badge: "v5.3",
+    name: "Colors & Channels",
+    date: "lipiec 2026",
+    dateIso: "2026-07-27",
+    era: "current",
+    summary:
+      "Multi-out w Mixerze, widoczność stref Audio/Busy/HW Out/Master oraz nowe motywy w Wyglądzie — plus dopracowania menu OS i preferencji audio.",
+    highlights: [
+      { icon: "sliders-horizontal", label: "Mixer multi-out (HW Out patchy)" },
+      { icon: "sliders", label: "Widoczność stref: Audio / Busy / HW Out / Master" },
+      {
+        icon: "file-text",
+        label:
+          "Motywy w Wyglądzie: Booth Amber, Daylight, Midnight Cyan, Matrix Green, Neon Ember",
+      },
+      { icon: "laptop", label: "Preferencje audio: liczba kanałów wyjścia WebAudio" },
+    ],
+    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.3.0",
+  },
+  {
     line: "5.2",
     badge: "v5.2",
     name: "Pocket Stage",
