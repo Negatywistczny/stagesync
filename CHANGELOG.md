@@ -10,6 +10,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### 🖥️ App Shell & UI
+- **Admin (desktop / Tauri):** przywrócone zakładki **Utwory · Set · Scena · Host**, skróty **Timeline · Klient** oraz **Ustawienia** i akcje hosta w górnym pasku — zamiast paska nawigacji operatora na szerokim ekranie.
+- **Klient:** usunięty dodatkowy wiersz z przełącznikiem **Admin · Timeline**; nagłówek znów to jeden pasek z logo, tytułem, statusem i **Ustawieniami** po prawej.
 - **Nawigacja operatora (telefon):** stały układ trzech slotów — przełącznik **Admin · Timeline · Klient** zawsze po lewej, kontekst (sekcja Admin lub tytuł utworu) na środku, **Ustawienia** po prawej; przyciski nie przeskakują między ekranami.
 - **Timeline (telefon):** pasek nawigacji operatora wraca na Timeline — można przejść do Admina lub Klienta bez utknięcia w edytorze.
 

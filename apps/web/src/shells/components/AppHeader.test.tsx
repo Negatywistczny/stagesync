@@ -88,25 +88,43 @@ describe("AppHeader", () => {
     expect(out).toContain("Cofnij");
   });
 
-  it("embeds OperatorNav for timeline on tablet", () => {
-    const out = renderToStaticMarkup(
-      <MemoryRouter initialEntries={["/timeline/p1"]}>
-        <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
-      </MemoryRouter>,
-    );
-    expect(out).toContain('aria-label="Nawigacja operatora"');
-    expect(out).toContain("Timeline");
-  });
-
-  it("omits embedded OperatorNav on compact mobile — shell owns the bar", () => {
+  it("hides app jump and settings on compact mobile when operatorApp is set", () => {
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
     const out = renderToStaticMarkup(
       <MemoryRouter initialEntries={["/timeline/p1"]}>
-        <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
+        <AppHeader
+          suffix="Timeline"
+          version="5.0.0"
+          operatorApp="timeline"
+          appJump={[
+            { to: "/admin", label: "Admin" },
+            { to: "/client", label: "Klient" },
+          ]}
+        />
       </MemoryRouter>,
     );
-    expect(out).not.toContain('aria-label="Nawigacja operatora"');
+    expect(out).not.toContain('aria-label="Aplikacje"');
+    expect(out).not.toContain('aria-label="Ustawienia"');
     expect(out).toContain('data-ss-level="1"');
+  });
+
+  it("shows app jump chips on tablet when operatorApp is set", () => {
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader
+          suffix="Timeline"
+          version="5.0.0"
+          operatorApp="timeline"
+          appJump={[
+            { to: "/admin", label: "Admin" },
+            { to: "/client", label: "Klient" },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+    expect(out).toContain('aria-label="Aplikacje"');
+    expect(out).toContain("Admin");
+    expect(out).toContain('aria-label="Ustawienia"');
   });
 
   it("exposes PL chrome action labels for help, appearance, fullscreen", () => {

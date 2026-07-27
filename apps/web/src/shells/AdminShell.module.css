@@ -47,6 +47,51 @@
   min-width: 0;
 }
 
+.sections {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-1);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.appJump {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-1);
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.appJump a {
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  text-decoration: none;
+}
+
+.appJumpMuted {
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  color: var(--ss-color-disabled-text);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  cursor: not-allowed;
+  user-select: none;
+}
+
+@media (hover: hover) {
+  .appJump a:hover {
+    transition: background-color var(--ss-transition), border-color var(--ss-transition);
+    color: var(--ss-color-primary);
+    background: var(--ss-color-ghost-hover);
+  }
+}
+
 .chromeAside {
   display: flex;
   flex-wrap: nowrap;
@@ -393,8 +438,11 @@
 
   .chrome {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "brand" "nav";
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand aside"
+      "sections sections"
+      "jump jump";
     align-items: center;
     padding: var(--ss-space-2) var(--ss-space-3);
     gap: var(--ss-space-2);
@@ -403,6 +451,40 @@
 
   .chromeBrand {
     grid-area: brand;
+    min-width: 0;
+  }
+
+  .sections {
+    grid-area: sections;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    flex: none;
+    width: 100%;
+    gap: var(--ss-space-1);
+  }
+
+  .sections :global(.ss-btn) {
+    width: 100%;
+    min-width: 0;
+    padding-inline: var(--ss-space-1);
+  }
+
+  .sections :global(.ss-btn__label) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .appJump {
+    grid-area: jump;
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .chromeAside {
+    grid-area: aside;
+    justify-content: flex-end;
     min-width: 0;
   }
 
@@ -454,6 +536,9 @@
   }
 
   .chromeCompact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "nav";
     padding: var(--ss-space-1) var(--ss-space-2);
     padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
     gap: var(--ss-space-1);
@@ -1013,6 +1098,7 @@
 
 /* Focus inside overflow:hidden chrome/cards — inset ring */
 .songRow:focus-visible,
+.appJump a:focus-visible,
 .editLink:focus-visible,
 .input:focus-visible,
 .select:focus-visible {

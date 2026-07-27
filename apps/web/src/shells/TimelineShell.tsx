@@ -5953,6 +5953,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       <AppHeader
         suffix="Timeline"
         version={APP_VERSION}
+        appJump={[
+          { to: "/admin", label: "Admin" },
+          { to: "/client", label: "Klient" },
+        ]}
         operatorApp="timeline"
         operatorNavExternal={isCompactMobile && showOperatorNav}
         history={{

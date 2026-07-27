@@ -3,7 +3,6 @@ import {
   isDesktopShell,
   tauriInvokeAvailable,
 } from "./desktopBridge.js";
-import { hasOperatorSession } from "./operatorSession.js";
 import { getStageSyncNative } from "./nativeShell.js";
 
 export function getUiTarget(): "full" | "performer" | "console" {
@@ -44,10 +43,8 @@ function isTauriDesktopWithOsMenu(): boolean {
  */
 export function shouldShowOperatorNav(pathname: string): boolean {
   if (isPerformerShell()) return false;
-  if (!isOperatorSurfaceRoute(pathname)) {
-    if (pathname !== "/client") return false;
-    return hasOperatorSession() || isConsoleShell();
-  }
+  if (pathname === "/client" || pathname.startsWith("/client/")) return false;
+  if (!isOperatorSurfaceRoute(pathname)) return false;
   if (isTauriDesktopWithOsMenu()) return false;
   return true;
 }

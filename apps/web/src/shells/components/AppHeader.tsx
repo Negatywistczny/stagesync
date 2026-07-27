@@ -17,7 +17,6 @@ import {
 } from "../icons.js";
 import { ShellIconButton } from "../ShellIconButton.js";
 import { ShellWordmark } from "../ShellWordmark.js";
-import { OperatorNav } from "./OperatorNav.js";
 import styles from "./AppHeader.module.css";
 
 export type AppHeaderJumpLink = {
@@ -44,7 +43,7 @@ export type AppHeaderProps = {
   /** Optional center slot (rarely used — Admin tabs stay in L2). */
   center?: ReactNode;
   appJump?: AppHeaderJumpLink[];
-  /** When set, renders unified OperatorNav instead of legacy appJump chips. */
+  /** When set, compact mobile shells render OperatorNav externally — hide duplicate jumps/settings. */
   operatorApp?: OperatorAppId;
   history?: AppHeaderHistory;
   helpPressed?: boolean;
@@ -99,7 +98,7 @@ export function AppHeader({
   const showOperatorNav = operatorApp
     ? shouldShowOperatorNav(pathname)
     : false;
-  const embedOperatorNav = showOperatorNav && operatorApp && !isCompactMobile;
+  const compactOperatorNav = showOperatorNav && isCompactMobile;
 
   if (hideOnDesktop && isDesktopShell()) return null;
 
@@ -127,9 +126,7 @@ export function AppHeader({
       {center ? <div className={styles.center}>{center}</div> : null}
 
       <div className={styles.actions}>
-        {embedOperatorNav ? (
-          <OperatorNav activeApp={operatorApp} className={styles.operatorNav} />
-        ) : !showOperatorNav ? (
+        {compactOperatorNav ? null : appJump.length > 0 ? (
           <nav className={styles.appJump} aria-label="Aplikacje">
             {appJump.map((link) =>
               link.disabled ? (
@@ -217,7 +214,7 @@ export function AppHeader({
           </ShellIconButton>
         ) : null}
 
-        {!showOperatorNav ? (
+        {!compactOperatorNav ? (
           <ShellIconButton label={settingsLabel} onClick={handleSettings}>
             <IconSettings />
           </ShellIconButton>

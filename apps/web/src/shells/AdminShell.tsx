@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Input, Select } from "@stagesync/ui";
 import { MetaBadge, MetaBadgeRow, ShellToolbar } from "./shared/index.js";
 import {
@@ -43,14 +43,22 @@ import {
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
 } from "../lib/clockDisplayPrefs.js";
+import { openPreferences } from "../lib/preferencesEvents.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
 import {
+  ADMIN_SECTIONS,
   isAdminSectionId,
   type AdminSectionId,
 } from "../lib/operatorNavRoutes.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconFullscreen, IconPower, IconRestart, IconTrash } from "./icons.js";
+import {
+  IconFullscreen,
+  IconPower,
+  IconRestart,
+  IconSettings,
+  IconTrash,
+} from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
@@ -364,42 +372,73 @@ export function AdminShell() {
             </div>
           ) : null}
 
-          <OperatorNav
-            activeApp="admin"
-            section={section}
-            onSectionChange={setSection}
-            trailing={
-              !isCompactMobile ? (
-                <>
-                  <ShellIconButton
-                    ref={restart.buttonRef}
-                    label={restart.label}
-                    confirming={restart.pending}
-                    onClick={restart.arm}
+          {isCompactMobile ? (
+            <OperatorNav
+              activeApp="admin"
+              section={section}
+              onSectionChange={setSection}
+            />
+          ) : (
+            <>
+              <nav className={styles.sections} aria-label="Sekcje">
+                {ADMIN_SECTIONS.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant="ghost"
+                    selected={section === item.id}
+                    onClick={() => setSection(item.id)}
                   >
-                    <IconRestart />
-                  </ShellIconButton>
+                    {item.label}
+                  </Button>
+                ))}
+              </nav>
+
+              <nav className={styles.appJump} aria-label="Aplikacje">
+                {timelineProjectId ? (
+                  <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
+                ) : (
+                  <span className={styles.appJumpMuted} aria-disabled>
+                    Timeline
+                  </span>
+                )}
+                <Link to="/client">Klient</Link>
+              </nav>
+
+              <div className={styles.chromeAside}>
+                <ShellIconButton
+                  label="Ustawienia"
+                  onClick={() => openPreferences("general")}
+                >
+                  <IconSettings />
+                </ShellIconButton>
+                <ShellIconButton
+                  ref={restart.buttonRef}
+                  label={restart.label}
+                  confirming={restart.pending}
+                  onClick={restart.arm}
+                >
+                  <IconRestart />
+                </ShellIconButton>
+                <ShellIconButton
+                  ref={shutdown.buttonRef}
+                  label={shutdown.label}
+                  confirming={shutdown.pending}
+                  danger
+                  onClick={shutdown.arm}
+                >
+                  <IconPower />
+                </ShellIconButton>
+                {shouldShowFullscreenControl() ? (
                   <ShellIconButton
-                    ref={shutdown.buttonRef}
-                    label={shutdown.label}
-                    confirming={shutdown.pending}
-                    danger
-                    onClick={shutdown.arm}
+                    label="Pełny ekran"
+                    onClick={() => void toggleAppFullscreen()}
                   >
-                    <IconPower />
+                    <IconFullscreen />
                   </ShellIconButton>
-                  {shouldShowFullscreenControl() ? (
-                    <ShellIconButton
-                      label="Pełny ekran"
-                      onClick={() => void toggleAppFullscreen()}
-                    >
-                      <IconFullscreen />
-                    </ShellIconButton>
-                  ) : null}
-                </>
-              ) : null
-            }
-          />
+                ) : null}
+              </div>
+            </>
+          )}
         </header>
       </div>
 
