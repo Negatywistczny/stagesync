@@ -1,15 +1,20 @@
 import { randomUUID } from "node:crypto";
-import { extname } from "node:path";
 import { Router } from "express";
 import multer from "multer";
 import { createReadStream } from "node:fs";
 import type { Stores } from "../storage/index.js";
+import { extFromName, mimeForExt } from "./assets-helpers.js";
 import { handleRouteError, sendError } from "./errors.js";
+
+export { extFromName, mimeForExt };
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 100 * 1024 * 1024 },
 });
+
+/** @internal Vitest — multer instance for spying */
+export const assetsUploadForTests = upload;
 
 function uploadSingleFile(
   req: import("express").Request,
@@ -33,6 +38,9 @@ function uploadSingleFile(
   });
 }
 
+/** @internal Vitest — multer upload wrapper */
+export const uploadSingleFileForTests = uploadSingleFile;
+
 const AUDIO_EXT = new Set([
   ".mp3",
   ".wav",
@@ -44,36 +52,6 @@ const AUDIO_EXT = new Set([
 ]);
 
 const MUSICXML_EXT = new Set([".musicxml", ".xml", ".mxl"]);
-
-function extFromName(name: string): string {
-  const ext = extname(name).toLowerCase();
-  return ext || ".bin";
-}
-
-function mimeForExt(ext: string): string {
-  switch (ext) {
-    case ".mp3":
-      return "audio/mpeg";
-    case ".wav":
-      return "audio/wav";
-    case ".aiff":
-    case ".aif":
-      return "audio/aiff";
-    case ".m4a":
-      return "audio/mp4";
-    case ".flac":
-      return "audio/flac";
-    case ".ogg":
-      return "audio/ogg";
-    case ".musicxml":
-    case ".xml":
-      return "application/vnd.recordare.musicxml+xml";
-    case ".mxl":
-      return "application/vnd.recordare.musicxml";
-    default:
-      return "application/octet-stream";
-  }
-}
 
 export function createAssetsRouter(stores: Stores): Router {
   const router = Router({ mergeParams: true });
