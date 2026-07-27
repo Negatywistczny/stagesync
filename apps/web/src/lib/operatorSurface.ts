@@ -4,6 +4,7 @@ import {
   tauriInvokeAvailable,
 } from "./desktopBridge.js";
 import { getStageSyncNative } from "./nativeShell.js";
+import { getActiveDevSurface } from "../dev/devSurfaceState.js";
 
 export function getUiTarget(): "full" | "performer" | "console" {
   if (typeof __STAGESYNC_UI_TARGET__ !== "undefined") {
@@ -12,17 +13,31 @@ export function getUiTarget(): "full" | "performer" | "console" {
   return "full";
 }
 
+function getEffectiveUiTarget(): "full" | "performer" | "console" {
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "performer") return "performer";
+  if (devSurface === "console") return "console";
+  return getUiTarget();
+}
+
 function shellKind(): string | undefined {
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "console") return "console";
+  if (devSurface === "performer") return "performer";
   return getStageSyncNative()?.shellKind?.();
 }
 
+export function getEffectiveShellKind(): string | undefined {
+  return shellKind();
+}
+
 export function isPerformerShell(): boolean {
-  if (getUiTarget() === "performer") return true;
+  if (getEffectiveUiTarget() === "performer") return true;
   return shellKind() === "performer";
 }
 
 export function isConsoleShell(): boolean {
-  if (getUiTarget() === "console") return true;
+  if (getEffectiveUiTarget() === "console") return true;
   return shellKind() === "console";
 }
 
@@ -35,6 +50,8 @@ export function isOperatorSurfaceRoute(pathname: string): boolean {
 
 function isTauriDesktopWithOsMenu(): boolean {
   if (!isDesktopShell()) return false;
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "tauri") return true;
   return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
 }
 
@@ -48,3 +65,5 @@ export function shouldShowOperatorNav(pathname: string): boolean {
   if (isTauriDesktopWithOsMenu()) return false;
   return true;
 }
+
+export { setDevSurfaceOverride, getDevSurfaceOverride } from "../dev/devSurfaceState.js";

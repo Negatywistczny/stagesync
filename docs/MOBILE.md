@@ -18,12 +18,16 @@ Performer pozostaje read-only Client-only ([ADR 0016](./adr/0016-android-perform
 
 | Powierzchnia | Pasek L1 (Admin / Timeline / Klient) |
 |--------------|--------------------------------------|
-| **Console** (APK + przeglądarka LAN) | **Tak** — pełne SPA; na `/client` zawsze widoczny |
+| **Console** (APK + przeglądarka LAN) | **Tak** na Admin i Timeline (≤640px); **nie** na `/client` |
 | **Performer** | **Nie** — tylko widok muzyka (`/client`) |
-| **PWA / Safari `/client`** (muzyk) | **Nie** — brak sesji operatora |
-| **Przeglądarka po wejściu z Admin/Timeline** | **Tak** na `/client` — sesja operatora w `sessionStorage` |
+| **PWA / Safari `/client`** (muzyk) | **Nie** |
+| **Desktop Tauri** | **Nie** — menu OS; legacy chrome na Admin |
 
 Skróty klawiaturowe (gdy podłączona klawiatura): `Ctrl/⌘+1…3` (aplikacje), `Alt+1…4` (zakładki Admina). Desktop Tauri używa menu OS — patrz [DESKTOP.md](./DESKTOP.md).
+
+### Dev Layout Matrix (tylko DEV)
+
+Przy `pnpm dev` (Vite + host na `:4000`) otwórz `http://localhost:3000/_dev/layouts` — siatka trzech iframe (telefon / tablet / desktop) z pełnymi shellami i symulacją powierzchni (Tauri, Console, Performer, Web). Trasy nie są dostępne w buildzie produkcyjnym.
 
 ## Instalacja
 

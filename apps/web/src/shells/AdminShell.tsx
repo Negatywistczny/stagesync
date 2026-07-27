@@ -45,11 +45,13 @@ import {
 } from "../lib/clockDisplayPrefs.js";
 import { openPreferences } from "../lib/preferencesEvents.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
+import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
 import {
   ADMIN_SECTIONS,
   isAdminSectionId,
   type AdminSectionId,
 } from "../lib/operatorNavRoutes.js";
+import { openPreferences } from "../lib/preferencesEvents.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -91,6 +93,7 @@ function errMessage(err: unknown): string {
 export function AdminShell() {
   useAnnounceDevicePresence();
   const isCompactMobile = useMqMobileCompact();
+  const showOperatorNav = shouldShowOperatorNav("/admin");
   const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -372,7 +375,7 @@ export function AdminShell() {
             </div>
           ) : null}
 
-          {isCompactMobile ? (
+          {isCompactMobile && showOperatorNav ? (
             <OperatorNav
               activeApp="admin"
               section={section}

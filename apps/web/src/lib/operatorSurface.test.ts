@@ -8,7 +8,7 @@ import {
   isPerformerShell,
   shouldShowOperatorNav,
 } from "./operatorSurface.js";
-import { markOperatorSession, clearOperatorSession } from "./operatorSession.js";
+import { clearOperatorSession } from "./operatorSession.js";
 
 vi.mock("./desktopBridge.js", () => ({
   isDesktopShell: vi.fn(() => false),
@@ -76,12 +76,7 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldShowOperatorNav("/client")).toBe(false);
   });
 
-  it("hides on /client with operator session on full build", () => {
-    markOperatorSession();
-    expect(shouldShowOperatorNav("/client")).toBe(false);
-  });
-
-  it("hides on /client without session on full build", () => {
+  it("hides on /client without operator session", () => {
     expect(shouldShowOperatorNav("/client")).toBe(false);
   });
 

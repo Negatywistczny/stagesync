@@ -548,6 +548,37 @@
     min-height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
   }
 
+  .sectionSelect {
+    grid-area: sections;
+    min-width: 0;
+  }
+
+  .sectionSelectInput {
+    width: 100%;
+    max-width: none;
+    min-height: var(--ss-space-8);
+    padding: var(--ss-space-1) var(--ss-space-2);
+    font-size: var(--ss-text-xs);
+  }
+
+  .chromeCompact .appJump {
+    grid-area: jump;
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+    gap: var(--ss-space-1);
+  }
+
+  .appJumpCompact a,
+  .appJumpCompact .appJumpMuted {
+    font-size: var(--ss-text-xs);
+    padding: var(--ss-space-1) var(--ss-space-2);
+    border-radius: var(--ss-radius-pill);
+    border: 1px solid var(--ss-color-border);
+    background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+  }
+
   .status {
     gap: var(--ss-space-1) var(--ss-space-2);
     padding: var(--ss-space-1) var(--ss-space-2);

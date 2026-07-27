@@ -76,6 +76,7 @@ function sidecarDesktopShell(): boolean {
  */
 /** Explicit shell markers only — not the bare `:4000` hostname heuristic. */
 export function hasExplicitTauriShellMarker(): boolean {
+  if (getActiveDevSurface() === "tauri") return true;
   if (typeof window === "undefined") return false;
   const w = window as unknown as Record<string, unknown>;
   if (w["__STAGESYNC_TAURI_SHELL__"] === true) return true;
@@ -90,9 +91,16 @@ export function hasExplicitTauriShellMarker(): boolean {
 /** Keep in sync with `apps/desktop/src-tauri/src/launcher.rs` (`RETURN_TO_LAUNCHER_HREF`). */
 export const RETURN_TO_LAUNCHER_HREF = "stagesync://launcher/return";
 
+import { getActiveDevSurface } from "../dev/devSurfaceState.js";
+
 /** Returns true when running inside the Tauri desktop shell. */
 export function isDesktopShell(): boolean {
   if (typeof window === "undefined") return false;
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "tauri") return true;
+  if (devSurface === "console" || devSurface === "performer" || devSurface === "web") {
+    return false;
+  }
   if (sidecarDesktopShell()) return true;
   const w = window as unknown as Record<string, unknown>;
   if (w["isTauri"] === true) return true;
@@ -141,6 +149,7 @@ function asError(err: unknown): Error {
 
 /** True when the page can actually call into Tauri (not just hostname heuristics). */
 export function tauriInvokeAvailable(): boolean {
+  if (getActiveDevSurface() === "tauri") return true;
   return Boolean(tauriGlobal()?.core?.invoke ?? tauriInternals()?.invoke);
 }
 

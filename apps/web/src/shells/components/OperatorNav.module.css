@@ -112,6 +112,7 @@
 .compact .segments {
   grid-area: segments;
   flex-shrink: 0;
+  min-width: 9.5rem;
 }
 
 .compact .context {
