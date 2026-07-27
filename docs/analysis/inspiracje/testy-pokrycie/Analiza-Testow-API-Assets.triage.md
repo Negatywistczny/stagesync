@@ -4,7 +4,7 @@
 **Status:** `partial`  
 **Obszar:** `apps/server` — `routes/assets.ts`, `assets-helpers.ts`  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27 — coverage `assets.ts` **69%** lines (`assets-helpers.ts` wydzielony, unit 100%)
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `assets.ts` **68.81%** lines / **51.21%** branches (`assets-helpers.ts` wydzielony, helpers unit ~100%)
 
 ## Werdykt przydatności
 
@@ -22,4 +22,4 @@
 
 ## Limit
 
-Cel **100%** `assets.ts` — brakuje pełnego stream 500 po `headersSent` bez flaky uncaught.
+Lines **68.81%** / branches **51.21%** — brakuje pełnego stream 500 po `headersSent` bez flaky uncaught (TST-AST-04 `limit`).

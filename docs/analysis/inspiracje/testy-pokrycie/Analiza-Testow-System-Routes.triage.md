@@ -1,14 +1,14 @@
 # Triage: Luki testów tras systemowych (`routes/system`)
 
 **Źródło:** [Analiza-Testow-System-Routes.md](./Analiza-Testow-System-Routes.md) (Gemini Deep Search)  
-**Status:** `partial`  
+**Status:** `closed`  
 **Obszar:** `apps/server` — PIN, Safety Net, settings, backup/restore, lifecycle, update  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `system.ts` **77.9%** lines / **65.18%** branches (`system-settings-routes`, `system-routes`, `update-status`)
 
 ## Werdykt przydatności
 
-**Średnia–wysoka.** Dump przecenia braki P0 — część tras ma już dedykowane testy w osobnych plikach (nie tylko `system-routes.test.ts`).
+**Średnia–wysoka.** Wszystkie pozycje P0/P1 rozstrzygnięte (fixed lub rejected); settings/restore/update-status/SSE w dedykowanych testach.
 
 ## Priorytety weryfikacji
 
@@ -22,6 +22,6 @@
 | TST-SYS-06 | `fetchLatestReleaseVersion` — GitHub errors | P2 | `fixed` | `update-status.test.ts` — mock GitHub errors |
 | TST-SYS-07 | `/logs/stream` SSE disconnect | P2 | `fixed` | `system-routes.test.ts` — SSE line + abort |
 
-## Następny krok eng
+## Limit
 
-Backlog P1 domknięty w fazie 2; brak otwartych P0.
+Branches **65.18%** — brak otwartych `confirmed`; reszta to rejected lub fixed.

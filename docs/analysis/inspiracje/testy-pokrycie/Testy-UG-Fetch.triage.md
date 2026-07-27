@@ -1,14 +1,14 @@
 # Triage: Luki testów Ultimate Guitar fetch (`ug/ug-fetch`)
 
 **Źródło:** [Testy-UG-Fetch.md](./Testy-UG-Fetch.md) (Gemini Deep Search)  
-**Status:** `closed`  
+**Status:** `partial`  
 **Obszar:** `apps/server` — HTML→js-store, search, resolve URL, błędy sieci  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `ug-fetch.ts` **91.78%** lines / **69.38%** branches (async `fetch` mocki dodane)
 
 ## Werdykt przydatności
 
-**Wysoka.** `ug-fetch.test.ts` = pure helpers + fixture JSON; **zero** testów async (`fetchUgTab`, `searchUgChords`, `resolveUgTabUrl`).
+**Wysoka.** `ug-fetch.test.ts` — helpers + async (`fetchUgTab`, `searchUgChords`, resolve via search); TST-UGF-06 (router `import.ts`) poza lib.
 
 ## Priorytety weryfikacji
 
@@ -21,6 +21,6 @@
 | TST-UGF-05 | `parseUgSearchResults` + rank | P2 | `fixed` | helpers + `searchUgChords` ranking |
 | TST-UGF-06 | Mapowanie błędów w `routes/import.ts` | P1 | `confirmed` | Granica router vs lib — osobny plik testowy |
 
-## Następny krok eng
+## Limit
 
-TST-UGF-06 (import router) — poza zakresem fazy 2.
+Branches **69.38%**; TST-UGF-06 (mapowanie błędów w `routes/import.ts`) — osobny plik testowy, P1 otwarte.

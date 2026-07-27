@@ -4,11 +4,11 @@
 **Status:** `partial`  
 **Obszar:** `apps/server` — clock IN/OUT, SPP, PC debounce, panic, `safeSend`  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `host.ts` **90.5%** lines / **79.5%** branches (clock IN/OUT + panic partial)
 
 ## Werdykt przydatności
 
-**Średnia–wysoka.** `host.test.ts` jest bogaty (safeSend, panic, debounce RSK-07); dump trafnie wskazuje luki clock IN/OUT i burst.
+**Średnia–wysoka.** P0 clock IN/OUT domknięte; pozostałe: seek+play matryca (P1), `applyPorts` boot (P2).
 
 ## Priorytety weryfikacji
 
@@ -22,6 +22,6 @@
 | TST-MH-06 | `panic()` partial failure | P2 | `fixed` | `host.test.ts` — mid-flight throw |
 | TST-MH-07 | `applyPorts` + config-persist boot | P2 | `confirmed` | Brak integracji w grep |
 
-## Następny krok eng
+## Limit
 
-TST-MH-04/07 — opcjonalnie; P0 domknięte.
+TST-MH-04 (P1) + TST-MH-07 (P2) — opcjonalnie; P0 i panic partial domknięte.

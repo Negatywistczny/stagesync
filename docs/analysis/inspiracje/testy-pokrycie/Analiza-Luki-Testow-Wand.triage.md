@@ -1,14 +1,14 @@
 # Triage: Luki testów Różdżki (`wand`)
 
 **Źródło:** [Analiza-Luki-Testow-Wand.md](./Analiza-Luki-Testow-Wand.md) (Gemini Deep Search)  
-**Status:** `partial`  
+**Status:** `closed`  
 **Obszar:** `packages/shared` — `wand.ts`  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `wand.ts` **95.59%** lines / **88.61%** branches
 
 ## Werdykt przydatności
 
-**Średnia.** Dump przecenia luki — `wand.test.ts` (~950 linii) już pokrywa countdown, scope, both, approximate, layer C.
+**Średnia.** Wszystkie P0/P1 rozstrzygnięte (fixed lub rejected); Layer F + fail-soft matrix dodane w fazie 3.
 
 ## Priorytety weryfikacji
 
@@ -21,6 +21,6 @@
 | TST-WND-05 | Fail-soft `ok: false` bez throw | P1 | `fixed` | `wand.test.ts` — ok:false matrix |
 | TST-WND-06 | `sealAkordyLengths` z ug-import | P2 | `rejected` | Pokryte w `ug-import.test.ts` |
 
-## Następny krok eng
+## Limit
 
-TST-WND-03/05 domknięte w fazie 3.
+Brak otwartych `confirmed`; TST-WND-03/05 domknięte w fazie 3.

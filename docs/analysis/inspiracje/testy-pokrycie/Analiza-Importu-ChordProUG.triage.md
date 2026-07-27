@@ -4,11 +4,11 @@
 **Status:** `partial`  
 **Obszar:** `packages/shared` — `ug-import.ts`  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `ug-import.ts` **93.25%** lines / **84.9%** branches
 
 ## Werdykt przydatności
 
-**Średnia.** `ug-import.test.ts` jest bogaty (Money, reflow, seal); dump = uzupełnienie negatywów regex i `barsPerLine > 1`.
+**Średnia.** P1 z fazy 3 domknięte (negatywy regex, `barsPerLine`, merge); pozostałe: macierz `clipsFromOnsets`, corrupt payload schema.
 
 ## Priorytety weryfikacji
 
@@ -22,6 +22,6 @@
 | TST-UG-06 | `UgImportPayloadSchema` corrupt output | P1 | `confirmed` | Brak testu parse corrupt |
 | TST-UG-07 | `sealAkordyLengths` cross wand | P2 | `rejected` | `ug-import.test.ts` — test seal lengths |
 
-## Następny krok eng
+## Limit
 
-TST-UG-03/06 — opcjonalnie; P1 z fazy 3 domknięte.
+TST-UG-03/06 (P1) — opcjonalna macierz onsets i corrupt `UgImportPayloadSchema`.

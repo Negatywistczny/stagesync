@@ -1,14 +1,14 @@
 # Triage: Luki testów walidacji Zod (`schema`)
 
 **Źródło:** [Analiza-Walidacji-Zod-Schema.md](./Analiza-Walidacji-Zod-Schema.md) (Gemini Deep Search)  
-**Status:** `partial`  
+**Status:** `closed`  
 **Obszar:** `packages/shared` — `schema.ts`, fail-fast na krawędziach  
 **Data triage:** 2026-07-27  
-**Ostatnia weryfikacja:** 2026-07-27
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `schema.ts` **85.66%** lines / **81.81%** branches
 
 ## Werdykt przydatności
 
-**Średnia.** Dump zawiera realne luki, ale część P0 jest już pokryta poza `schema.test.ts` (`mixer-routing.test.ts`) lub w samym `schema.test.ts` (meter refine, setlist, cue, BatchMidiPc).
+**Średnia.** P0/P1 domknięte (fixed lub rejected); TST-ZOD-07 = meta refaktor (`limit`).
 
 ## Priorytety weryfikacji
 
@@ -22,6 +22,6 @@
 | TST-ZOD-06 | Setlist `preprocess` — koercja legacy | P2 | `rejected` | `schema.test.ts` — `SetlistSchema coerces projectIds ↔ items` |
 | TST-ZOD-07 | Grupowanie describe per domena | P2 | `limit` | Meta — refaktor pliku testowego |
 
-## Następny krok eng
+## Limit
 
-P0/P1 z fazy 3 domknięte; TST-ZOD-07 opcjonalny refaktor.
+TST-ZOD-07 opcjonalny refaktor; brak otwartych `confirmed` P0/P1.
