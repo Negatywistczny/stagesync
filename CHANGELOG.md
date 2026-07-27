@@ -5,7 +5,7 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.3.1](https://github.com/Negatywistczny/stagesync/compare/v5.3.0...v5.3.1) - 2026-07-27 — Colors & Channels
 
 ### Zmieniono
 
