@@ -4,6 +4,7 @@ import {
   canChangeServer,
   requestNativeChangeServer,
 } from "../lib/nativeShell.js";
+import { clearOperatorSession } from "../lib/operatorSession.js";
 import styles from "./ChangeServerControl.module.css";
 
 /**
@@ -30,6 +31,7 @@ export function ChangeServerControl({
           variant="ghost"
           aria-label="Zmień serwer StageSync"
           onClick={() => {
+            clearOperatorSession();
             requestNativeChangeServer();
           }}
         >
@@ -51,6 +53,7 @@ export function ChangeServerControl({
       const withScheme = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
       const u = new URL(withScheme);
       if (!u.hostname) throw new Error("bad");
+      clearOperatorSession();
       window.location.assign(`${u.origin}${entryPath}`);
     } catch {
       setError("Niepoprawny adres");

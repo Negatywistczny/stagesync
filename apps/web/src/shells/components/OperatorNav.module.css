@@ -1,0 +1,152 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ss-space-2) var(--ss-space-3);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.segments {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-1);
+  flex: 0 0 auto;
+}
+
+.segmentLink {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  text-decoration: none;
+}
+
+.segmentMuted {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  color: var(--ss-color-disabled-text);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  cursor: not-allowed;
+  user-select: none;
+}
+
+@media (hover: hover) {
+  .segmentLink:hover {
+    transition:
+      background-color var(--ss-transition),
+      border-color var(--ss-transition);
+    color: var(--ss-color-primary);
+    background: var(--ss-color-ghost-hover);
+  }
+}
+
+.sections {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-1);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sectionSelect {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sectionSelectInput {
+  width: 100%;
+  max-width: none;
+  min-height: var(--ss-space-8);
+}
+
+.aside {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-2);
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* —— compact (≤640px) —— */
+
+.compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "sections aside"
+    "jump jump";
+  width: 100%;
+  gap: var(--ss-space-1);
+}
+
+.compact .segments {
+  grid-area: jump;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.compact .sectionSelect {
+  grid-area: sections;
+}
+
+.compact .sections {
+  grid-area: sections;
+  display: none;
+}
+
+.compact .aside {
+  grid-area: aside;
+  margin-left: 0;
+}
+
+.compact .segmentLink,
+.compact .segmentMuted {
+  font-size: var(--ss-text-xs);
+  padding: var(--ss-space-1) var(--ss-space-2);
+  border-radius: var(--ss-radius-pill);
+  border: 1px solid var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+}
+
+/* —— tablet (641–1024px) —— */
+
+.tablet {
+  width: 100%;
+}
+
+.tablet .sections {
+  flex: 1 1 auto;
+}
+
+/* —— wide (>1024px, web operator) —— */
+
+.wide {
+  width: 100%;
+}
+
+.wide .sections {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 640px) {
+  .sectionSelectInput {
+    padding: var(--ss-space-1) var(--ss-space-2);
+    font-size: var(--ss-text-xs);
+  }
+}
+
+.segmentLink:focus-visible,
+.segmentMuted:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: 2px;
+}

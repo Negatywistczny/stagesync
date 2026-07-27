@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Nawigacja operatora (web / Console):** wspólny pasek **Admin · Timeline · Klient** z sekcjami Admina i skrótami `Ctrl/⌘+1…3` oraz `Alt+1…4` (jak menu Widok na desktopie); na tablecie i w przeglądarce LAN zamiast rozproszonych chipów.
+
 ### Zmieniono
 
 #### 🖥️ App Shell & UI

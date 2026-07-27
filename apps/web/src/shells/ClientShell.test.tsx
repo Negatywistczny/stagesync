@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DESKTOP_MENU_EVENT } from "../lib/desktopMenuEvents.js";
@@ -14,6 +15,11 @@ vi.mock("../lib/desktopBridge.js", () => ({
 vi.mock("../lib/nativeShell.js", () => ({
   shouldShowFullscreenControl: () => false,
   canChangeServer: () => false,
+  getStageSyncNative: () => null,
+}));
+
+vi.mock("../lib/operatorSurface.js", () => ({
+  shouldShowOperatorNav: () => false,
 }));
 
 vi.mock("../lib/screenWakeLock.js", () => ({
@@ -117,6 +123,14 @@ function startDrumsRole() {
   if (start) fireEvent.click(start);
 }
 
+function renderClient() {
+  return render(
+    <MemoryRouter>
+      <ClientShell />
+    </MemoryRouter>,
+  );
+}
+
 describe("ClientShell chrome", () => {
   it("does not force Client 44px touch targets on the desktop page root", async () => {
     const { readFileSync } = await import("node:fs");
@@ -135,14 +149,14 @@ describe("ClientShell chrome", () => {
   });
 
   it("uses ShellIconButton (ss-btn--icon) for global settings chrome", () => {
-    render(<ClientShell />);
+    renderClient();
     const settings = screen.getByRole("button", { name: /Ustawienia globalne/i });
     expect(settings.className).toContain("ss-btn");
     expect(settings.className).toContain("ss-btn--icon");
   });
 
   it("does not expose setlist next/prev controls (read-only Client)", () => {
-    render(<ClientShell />);
+    renderClient();
     startGridRole();
 
     expect(
@@ -155,7 +169,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("shows song title in the header without key/tempo/meter/bar meta", () => {
-    render(<ClientShell />);
+    renderClient();
 
     expect(screen.getByText("Test Song")).toBeTruthy();
     expect(screen.queryByLabelText("Meta utworu")).toBeNull();
@@ -171,7 +185,7 @@ describe("ClientShell chrome", () => {
 
 
   it("toggles role tile aria-pressed on the welcome picker", () => {
-    render(<ClientShell />);
+    renderClient();
     const chords = screen.getByRole("button", { name: /Akordy/i });
     expect(chords.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(chords);
@@ -190,7 +204,7 @@ describe("ClientShell chrome", () => {
           removeEventListener: vi.fn(),
         }) as MediaQueryList,
     );
-    render(<ClientShell />);
+    renderClient();
     expect(screen.queryByRole("button", { name: /^Rozpocznij$/i })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Akordy/i }));
     expect(screen.getByTestId("grid-pane")).toBeTruthy();
@@ -208,13 +222,13 @@ describe("ClientShell chrome", () => {
           removeEventListener: vi.fn(),
         }) as MediaQueryList,
     );
-    render(<ClientShell />);
+    renderClient();
     expect(screen.getByText("12 ms")).toBeTruthy();
     expect(screen.queryByText("Połączony")).toBeNull();
   });
 
   it("opens global settings from desktop menu Wygląd (appearance)", () => {
-    render(<ClientShell />);
+    renderClient();
     fireEvent(
       window,
       new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
@@ -226,7 +240,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("edits device name on role picker, not in global settings", () => {
-    render(<ClientShell />);
+    renderClient();
 
     expect(screen.getByRole("button", { name: /Zmień nazwę/i })).toBeTruthy();
 
@@ -239,7 +253,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("opens labelled rename dialog from Zmień nazwę", () => {
-    render(<ClientShell />);
+    renderClient();
     fireEvent.click(screen.getByRole("button", { name: /Zmień nazwę/i }));
     expect(screen.getByRole("dialog", { name: /Zmień nazwę/i })).toBeTruthy();
     expect(
@@ -248,7 +262,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("names instrument pitch group in global settings", () => {
-    render(<ClientShell />);
+    renderClient();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
     expect(
       screen.getByRole("group", { name: "Strój instrumentu transponującego" }),
@@ -259,7 +273,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("names Partytura zoom controls in role settings", () => {
-    render(<ClientShell />);
+    renderClient();
     startScoreRole();
     expect(screen.getByTestId("score-pane")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia Partytura/i }));
@@ -275,7 +289,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("exposes Tekst role settings Auto-scroll and Tap wokalu switches", () => {
-    render(<ClientShell />);
+    renderClient();
     startKaraokeRole();
     expect(screen.getByTestId("karaoke-pane")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia Tekst/i }));
@@ -284,7 +298,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("exposes Akordy role settings display switches", () => {
-    render(<ClientShell />);
+    renderClient();
     startGridRole();
     expect(screen.getByTestId("grid-pane")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia Akordy/i }));
@@ -294,7 +308,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("exposes Forma role settings notes edit switch", () => {
-    render(<ClientShell />);
+    renderClient();
     startDrumsRole();
     expect(screen.getByTestId("drums-pane")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia Forma/i }));

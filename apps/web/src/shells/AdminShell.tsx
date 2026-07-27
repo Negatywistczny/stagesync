@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Input, Select } from "@stagesync/ui";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button, Input } from "@stagesync/ui";
 import { MetaBadge, MetaBadgeRow, ShellToolbar } from "./shared/index.js";
 import {
   formatSetDurationMs,
@@ -44,8 +44,14 @@ import {
   type ClockDisplayFormat,
 } from "../lib/clockDisplayPrefs.js";
 import { openPreferences } from "../lib/preferencesEvents.js";
+import { markOperatorSession } from "../lib/operatorSession.js";
+import {
+  isAdminSectionId,
+  type AdminSectionId,
+} from "../lib/operatorNavRoutes.js";
+import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
-import { IconFullscreen, IconPower, IconRestart, IconSettings, IconTrash } from "./icons.js";
+import { IconFullscreen, IconPower, IconRestart, IconTrash } from "./icons.js";
 import {
   connectionStatusLabel,
 } from "./ConnectionIndicator.js";
@@ -69,21 +75,11 @@ import { SystemView } from "./admin/SystemView.js";
 import { UgImportForm } from "./UgImportForm.js";
 import styles from "./AdminShell.module.css";
 
-type SectionId = "songs" | "set" | "stage" | "host";
-
-const SECTIONS: { id: SectionId; label: string }[] = [
-  { id: "songs", label: "Utwory" },
-  { id: "set", label: "Set" },
-  { id: "stage", label: "Scena" },
-  { id: "host", label: "Host" },
-];
-
 function errMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
   return "Operacja nie powiodła się";
 }
 
-const ADMIN_SECTIONS = new Set<SectionId>(["songs", "set", "stage", "host"]);
 
 export function AdminShell() {
   useAnnounceDevicePresence();
@@ -92,7 +88,7 @@ export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [section, setSection] = useState<SectionId>("songs");
+  const [section, setSection] = useState<AdminSectionId>("songs");
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
@@ -171,14 +167,18 @@ export function AdminShell() {
   }, []);
 
   useEffect(() => {
+    markOperatorSession();
+  }, []);
+
+  useEffect(() => {
     const sectionParam = searchParams.get("section");
-    if (sectionParam && ADMIN_SECTIONS.has(sectionParam as SectionId)) {
-      setSection(sectionParam as SectionId);
+    if (sectionParam && isAdminSectionId(sectionParam)) {
+      setSection(sectionParam);
     }
     const action = searchParams.get("action");
     if (!action) return;
 
-    const clearAction = (fallbackSection?: SectionId) => {
+    const clearAction = (fallbackSection?: AdminSectionId) => {
       const next = new URLSearchParams(searchParams);
       next.delete("action");
       if (fallbackSection && !next.get("section")) {
@@ -365,97 +365,42 @@ export function AdminShell() {
             </div>
           ) : null}
 
-          {isCompactMobile ? (
-            <div className={styles.sectionSelect}>
-              <Select
-                className={styles.sectionSelectInput}
-                value={section}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (ADMIN_SECTIONS.has(v as SectionId)) {
-                    setSection(v as SectionId);
-                  }
-                }}
-                aria-label="Sekcja Admin"
-              >
-                {SECTIONS.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.label}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          ) : (
-            <nav className={styles.sections} aria-label="Sekcje">
-              {SECTIONS.map((item) => (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  selected={section === item.id}
-                  onClick={() => setSection(item.id)}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </nav>
-          )}
-
-          <nav
-            className={[
-              styles.appJump,
-              isCompactMobile ? styles.appJumpCompact : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            aria-label="Aplikacje"
-          >
-            {timelineProjectId ? (
-              <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
-            ) : (
-              <span className={styles.appJumpMuted} aria-disabled>
-                Timeline
-              </span>
-            )}
-            <Link to="/client">Klient</Link>
-          </nav>
-
-          <div className={styles.chromeAside}>
-            <ShellIconButton
-              label="Ustawienia"
-              onClick={() => openPreferences("general")}
-            >
-              <IconSettings />
-            </ShellIconButton>
-            {!isCompactMobile ? (
-              <>
-                <ShellIconButton
-                  ref={restart.buttonRef}
-                  label={restart.label}
-                  confirming={restart.pending}
-                  onClick={restart.arm}
-                >
-                  <IconRestart />
-                </ShellIconButton>
-                <ShellIconButton
-                  ref={shutdown.buttonRef}
-                  label={shutdown.label}
-                  confirming={shutdown.pending}
-                  danger
-                  onClick={shutdown.arm}
-                >
-                  <IconPower />
-                </ShellIconButton>
-                {shouldShowFullscreenControl() ? (
+          <OperatorNav
+            activeApp="admin"
+            section={section}
+            onSectionChange={setSection}
+            trailing={
+              !isCompactMobile ? (
+                <>
                   <ShellIconButton
-                    label="Pełny ekran"
-                    onClick={() => void toggleAppFullscreen()}
+                    ref={restart.buttonRef}
+                    label={restart.label}
+                    confirming={restart.pending}
+                    onClick={restart.arm}
                   >
-                    <IconFullscreen />
+                    <IconRestart />
                   </ShellIconButton>
-                ) : null}
-              </>
-            ) : null}
-          </div>
+                  <ShellIconButton
+                    ref={shutdown.buttonRef}
+                    label={shutdown.label}
+                    confirming={shutdown.pending}
+                    danger
+                    onClick={shutdown.arm}
+                  >
+                    <IconPower />
+                  </ShellIconButton>
+                  {shouldShowFullscreenControl() ? (
+                    <ShellIconButton
+                      label="Pełny ekran"
+                      onClick={() => void toggleAppFullscreen()}
+                    >
+                      <IconFullscreen />
+                    </ShellIconButton>
+                  ) : null}
+                </>
+              ) : null
+            }
+          />
         </header>
       </div>
 

@@ -74,7 +74,8 @@ function sidecarDesktopShell(): boolean {
  * Explicit shell markers only — not the bare `:4000` hostname heuristic
  * (that false-positives a plain browser opening the local host).
  */
-function hasExplicitTauriShellMarker(): boolean {
+/** Explicit shell markers only — not the bare `:4000` hostname heuristic. */
+export function hasExplicitTauriShellMarker(): boolean {
   if (typeof window === "undefined") return false;
   const w = window as unknown as Record<string, unknown>;
   if (w["__STAGESYNC_TAURI_SHELL__"] === true) return true;

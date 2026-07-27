@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { isDesktopShell } from "../../lib/desktopBridge.js";
+import type { OperatorAppId } from "../../lib/operatorNavRoutes.js";
+import { shouldShowOperatorNav } from "../../lib/operatorSurface.js";
 import { openPreferences } from "../../lib/preferencesEvents.js";
 import {
   IconDiscard,
@@ -14,6 +16,7 @@ import {
 } from "../icons.js";
 import { ShellIconButton } from "../ShellIconButton.js";
 import { ShellWordmark } from "../ShellWordmark.js";
+import { OperatorNav } from "./OperatorNav.js";
 import styles from "./AppHeader.module.css";
 
 export type AppHeaderJumpLink = {
@@ -39,7 +42,9 @@ export type AppHeaderProps = {
   version?: string;
   /** Optional center slot (rarely used — Admin tabs stay in L2). */
   center?: ReactNode;
-  appJump: AppHeaderJumpLink[];
+  appJump?: AppHeaderJumpLink[];
+  /** When set, renders unified OperatorNav instead of legacy appJump chips. */
+  operatorApp?: OperatorAppId;
   history?: AppHeaderHistory;
   helpPressed?: boolean;
   onHelp?: () => void;
@@ -69,7 +74,8 @@ export function AppHeader({
   suffix,
   version,
   center,
-  appJump,
+  appJump = [],
+  operatorApp,
   history,
   helpPressed,
   onHelp,
@@ -84,6 +90,11 @@ export function AppHeader({
   wordmarkTitle,
   hideOnDesktop = true,
 }: AppHeaderProps) {
+  const { pathname } = useLocation();
+  const showOperatorNav = operatorApp
+    ? shouldShowOperatorNav(pathname)
+    : false;
+
   if (hideOnDesktop && isDesktopShell()) return null;
 
   const handleSettings = onSettings ?? (() => openPreferences());
@@ -102,23 +113,27 @@ export function AppHeader({
       {center ? <div className={styles.center}>{center}</div> : null}
 
       <div className={styles.actions}>
-        <nav className={styles.appJump} aria-label="Aplikacje">
-          {appJump.map((link) =>
-            link.disabled ? (
-              <span
-                key={link.label}
-                className={styles.appJumpMuted}
-                aria-disabled
-              >
-                {link.label}
-              </span>
-            ) : (
-              <Link key={link.to} to={link.to}>
-                {link.label}
-              </Link>
-            ),
-          )}
-        </nav>
+        {showOperatorNav && operatorApp ? (
+          <OperatorNav activeApp={operatorApp} className={styles.operatorNav} />
+        ) : (
+          <nav className={styles.appJump} aria-label="Aplikacje">
+            {appJump.map((link) =>
+              link.disabled ? (
+                <span
+                  key={link.label}
+                  className={styles.appJumpMuted}
+                  aria-disabled
+                >
+                  {link.label}
+                </span>
+              ) : (
+                <Link key={link.to} to={link.to}>
+                  {link.label}
+                </Link>
+              ),
+            )}
+          </nav>
+        )}
 
         {history ? (
           <>
@@ -188,9 +203,11 @@ export function AppHeader({
           </ShellIconButton>
         ) : null}
 
-        <ShellIconButton label={settingsLabel} onClick={handleSettings}>
-          <IconSettings />
-        </ShellIconButton>
+        {!showOperatorNav ? (
+          <ShellIconButton label={settingsLabel} onClick={handleSettings}>
+            <IconSettings />
+          </ShellIconButton>
+        ) : null}
 
         {onFullscreen ? (
           <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>

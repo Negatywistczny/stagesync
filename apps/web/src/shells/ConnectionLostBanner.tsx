@@ -7,6 +7,7 @@ import {
   canChangeServer,
   requestNativeChangeServer,
 } from "../lib/nativeShell.js";
+import { clearOperatorSession } from "../lib/operatorSession.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import styles from "./ConnectionLostBanner.module.css";
 
@@ -37,6 +38,7 @@ export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
           className={styles.action}
           aria-label="Wróć do wyboru hosta w launcherze"
           onClick={() => {
+            clearOperatorSession();
             if (requestNativeChangeServer()) return;
             void returnToLauncher().catch(() => {
               /* best-effort — user can quit/reopen */

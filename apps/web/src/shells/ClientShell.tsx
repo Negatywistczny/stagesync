@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useLocation } from "react-router-dom";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import {
   DESKTOP_MENU_EVENT,
@@ -86,6 +87,8 @@ import {
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { ShellWordmark } from "./ShellWordmark.js";
+import { OperatorNav } from "./components/OperatorNav.js";
+import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
 import styles from "./ClientShell.module.css";
 
 type RoleId = "karaoke" | "grid" | "score" | "drums";
@@ -98,6 +101,8 @@ const ROLES: { id: RoleId; label: string; icon: string }[] = [
 ];
 
 export function ClientShell() {
+  const { pathname } = useLocation();
+  const showOperatorNav = shouldShowOperatorNav(pathname);
   const isMobile = useMqMobile();
   const isCompactMobile = useMqMobileCompact();
   const [nameModal, setNameModal] = useState(false);
@@ -316,6 +321,7 @@ export function ClientShell() {
     bbt: headerBbt,
     transportError,
     compact: isCompactMobile,
+    hideGlobalSettings: showOperatorNav,
     onFullscreen: shouldShowFullscreenControl() && !isCompactMobile
       ? () => void onFullscreen()
       : undefined,
@@ -326,6 +332,14 @@ export function ClientShell() {
     displayPrefs,
     onDisplayPrefsChange: setDisplayPrefs,
   };
+
+  const operatorNav = showOperatorNav ? (
+    <OperatorNav
+      activeApp="client"
+      onSettings={toggleGlobalSettings}
+      settingsLabel="Ustawienia globalne"
+    />
+  ) : null;
 
   if (nameModal) {
     return (
@@ -360,6 +374,7 @@ export function ClientShell() {
   if (!started) {
     return (
       <div className={styles.page}>
+        {operatorNav}
         <ClientChrome {...headerProps} started={false} />
         <ConnectionLostBanner status={wsStatus} />
         <main
@@ -432,6 +447,7 @@ export function ClientShell() {
 
   return (
     <div className={styles.page}>
+      {operatorNav}
       <ClientChrome {...headerProps} started />
       <ConnectionLostBanner status={wsStatus} />
 
@@ -709,6 +725,7 @@ type ClientHeaderProps = {
   bbt: { bar: number; beat: number };
   transportError: string | null;
   compact?: boolean;
+  hideGlobalSettings?: boolean;
   onFullscreen?: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
@@ -726,6 +743,7 @@ function ClientChrome({
   bbt,
   transportError,
   compact = false,
+  hideGlobalSettings = false,
   onFullscreen,
   globalSettingsOpen,
   onToggleGlobalSettings,
@@ -776,28 +794,43 @@ function ClientChrome({
           latencyMs={latencyMs}
           variant={compact ? "compact" : "status"}
         />
-        <SettingsPopoverAnchor>
-          <ShellIconButton
-            label="Ustawienia globalne"
-            aria-expanded={globalSettingsOpen}
-            aria-controls="global-settings-panel"
-            onClick={onToggleGlobalSettings}
-          >
-            <IconSettings />
-          </ShellIconButton>
-          {globalSettingsOpen ? (
-            <SettingsPopover
-              id="global-settings-panel"
-              title="Ustawienia globalne"
-              onClose={onCloseGlobalSettings}
+        {!hideGlobalSettings ? (
+          <SettingsPopoverAnchor>
+            <ShellIconButton
+              label="Ustawienia globalne"
+              aria-expanded={globalSettingsOpen}
+              aria-controls="global-settings-panel"
+              onClick={onToggleGlobalSettings}
             >
-              <GlobalSettingsFields
-                prefs={displayPrefs}
-                onPrefsChange={onDisplayPrefsChange}
-              />
-            </SettingsPopover>
-          ) : null}
-        </SettingsPopoverAnchor>
+              <IconSettings />
+            </ShellIconButton>
+            {globalSettingsOpen ? (
+              <SettingsPopover
+                id="global-settings-panel"
+                title="Ustawienia globalne"
+                onClose={onCloseGlobalSettings}
+              >
+                <GlobalSettingsFields
+                  prefs={displayPrefs}
+                  onPrefsChange={onDisplayPrefsChange}
+                />
+              </SettingsPopover>
+            ) : null}
+          </SettingsPopoverAnchor>
+        ) : null}
+        {globalSettingsOpen && hideGlobalSettings ? (
+          <SettingsPopover
+            id="global-settings-panel"
+            title="Ustawienia globalne"
+            placement="fixed-top-right"
+            onClose={onCloseGlobalSettings}
+          >
+            <GlobalSettingsFields
+              prefs={displayPrefs}
+              onPrefsChange={onDisplayPrefsChange}
+            />
+          </SettingsPopover>
+        ) : null}
         {onFullscreen ? (
           <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
             <IconFullscreen />

@@ -407,6 +407,7 @@ import {
   parseDesktopMenuDetail,
 } from "../lib/desktopMenuEvents.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
+import { markOperatorSession } from "../lib/operatorSession.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -551,6 +552,11 @@ const TOOL_BY_KEY = Object.fromEntries(
 export function TimelineShell() {
   useAnnounceDevicePresence(["timeline"]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    markOperatorSession();
+  }, []);
+
   const { projectId } = useParams<{ projectId: string }>();
   const lanesCoordRef = useRef<HTMLDivElement>(null);
   const trackRowsRoRef = useRef<ResizeObserver | null>(null);
@@ -5933,10 +5939,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       <AppHeader
         suffix="Timeline"
         version={APP_VERSION}
-        appJump={[
-          { to: "/admin", label: "Admin" },
-          { to: "/client", label: "Klient" },
-        ]}
+        operatorApp="timeline"
         history={{
           canUndo: Boolean(draftHistory && canUndo(draftHistory)),
           canRedo: Boolean(draftHistory && canRedo(draftHistory)),

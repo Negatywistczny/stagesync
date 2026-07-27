@@ -75,6 +75,9 @@ export default defineConfig(({ mode }) => {
         : resolve(rootDir, "index.html");
 
   return {
+    define: {
+      __STAGESYNC_UI_TARGET__: JSON.stringify(target),
+    },
     plugins: [react(), stagesyncUiMetaPlugin(target, distAbs)],
     build: {
       outDir,

@@ -14,6 +14,17 @@ Operator sketch for Android APK install and PWA (**v5.3** Colors & Channels). Pr
 
 Performer pozostaje read-only Client-only ([ADR 0016](./adr/0016-android-performer-console.md)).
 
+## Nawigacja operatora (OperatorNav)
+
+| Powierzchnia | Pasek L1 (Admin / Timeline / Klient) |
+|--------------|--------------------------------------|
+| **Console** (APK + przeglądarka LAN) | **Tak** — pełne SPA; na `/client` zawsze widoczny |
+| **Performer** | **Nie** — tylko widok muzyka (`/client`) |
+| **PWA / Safari `/client`** (muzyk) | **Nie** — brak sesji operatora |
+| **Przeglądarka po wejściu z Admin/Timeline** | **Tak** na `/client` — sesja operatora w `sessionStorage` |
+
+Skróty klawiaturowe (gdy podłączona klawiatura): `Ctrl/⌘+1…3` (aplikacje), `Alt+1…4` (zakładki Admina). Desktop Tauri używa menu OS — patrz [DESKTOP.md](./DESKTOP.md).
+
 ## Instalacja
 
 1. Zbuduj APK lokalnie albo pobierz z GitHub Releases / hosta.

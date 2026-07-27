@@ -34,6 +34,15 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 
 **Domyślny widok po połączeniu:** Admin (`/admin`). Klient (`/client`) też w aplikacji desktop; w przeglądarce / Dockerze root `/` to Client.
 
+### Nawigacja L1 (OperatorNav vs menu OS)
+
+| Powierzchnia | Admin / Timeline / Klient |
+|--------------|---------------------------|
+| **Tauri desktop** | Menu OS **Widok** (`⌘/Ctrl+1…3`, `Alt+1…4`) — bez paska w aplikacji |
+| **Przeglądarka operatora (LAN)** | Pasek **OperatorNav** w aplikacji + te same skróty |
+| **Console Android** | Pasek **OperatorNav** (jak web operator) |
+| **Performer / muzyk `/client`** | Brak przełącznika aplikacji |
+
 ## Menu systemowe
 
 **StageSync** | **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**
