@@ -1,20 +1,26 @@
 //! System tray / menu bar — close-to-tray host control (#813, ADR 0015 lekki tray).
 
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use tauri::image::Image;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager};
+use tokio::sync::Notify;
 
 use crate::launcher::{self, LauncherNav, SidecarRuntime};
 use crate::{check_health_at, UI_PORT};
 
 const TRAY_ID: &str = "stagesync-main-tray";
 const REFRESH_SECS: u64 = 3;
+const COPY_FLASH_SECS: u64 = 2;
+const ERROR_LABEL_MAX_CHARS: usize = 48;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+const LABEL_COPY_LAN: &str = "Kopiuj adres LAN";
+const LABEL_COPIED: &str = "Skopiowano";
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum HostTrayState {
     Idle,
     Starting,
@@ -23,22 +29,44 @@ enum HostTrayState {
 }
 
 struct TrayMenuHandles {
-    /// Status hosta; gdy jest adres LAN — klik kopiuje URL.
     status: MenuItem<tauri::Wry>,
+    copy_lan: MenuItem<tauri::Wry>,
+    open_browser: MenuItem<tauri::Wry>,
     toggle_host: MenuItem<tauri::Wry>,
+    restart_host: MenuItem<tauri::Wry>,
 }
 
 struct TrayIcons {
-    idle: Image<'static>,
+    base: Image<'static>,
+    starting: Image<'static>,
     running: Image<'static>,
     error: Image<'static>,
+}
+
+struct TrayMenuFlags {
+    copy_lan: bool,
+    open_browser: bool,
+    toggle_host: bool,
+    restart_host: bool,
+    status_clickable: bool,
+}
+
+struct HostSnapshot {
+    state: HostTrayState,
+    status_label: String,
+    url: Option<String>,
+    has_managed_child: bool,
+    is_starting: bool,
+    error_detail: Option<String>,
 }
 
 struct TrayUiState {
     menu: TrayMenuHandles,
     icon_state: HostTrayState,
-    last_lan: Option<String>,
+    last_url: Option<String>,
     icons: TrayIcons,
+    copy_flash_until: Option<Instant>,
+    last_tooltip: Option<String>,
 }
 
 fn embed_icon(bytes: &'static [u8]) -> Image<'static> {
@@ -47,9 +75,10 @@ fn embed_icon(bytes: &'static [u8]) -> Image<'static> {
 
 fn load_tray_icons() -> TrayIcons {
     TrayIcons {
-        idle: embed_icon(include_bytes!("../icons/tray/idle.png")),
-        running: embed_icon(include_bytes!("../icons/tray/running.png")),
-        error: embed_icon(include_bytes!("../icons/tray/error.png")),
+        base: embed_icon(include_bytes!("../icons/tray/base.png")),
+        starting: embed_icon(include_bytes!("../icons/tray/dot_starting.png")),
+        running: embed_icon(include_bytes!("../icons/tray/dot_running.png")),
+        error: embed_icon(include_bytes!("../icons/tray/dot_error.png")),
     }
 }
 
@@ -59,6 +88,82 @@ fn show_main_window(app: &AppHandle) {
         let _ = window.show();
         let _ = window.set_focus();
     }
+}
+
+fn truncate_error(err: &str, max_chars: usize) -> String {
+    if err.chars().count() > max_chars {
+        format!("{}…", err.chars().take(max_chars).collect::<String>())
+    } else {
+        err.to_string()
+    }
+}
+
+fn url_display(url: &str) -> String {
+    url.trim_start_matches("http://")
+        .trim_start_matches("https://")
+        .to_string()
+}
+
+fn format_running_status(url: &str) -> String {
+    format!("Host: działa · {}", url_display(url))
+}
+
+fn format_starting_status(detail: &str) -> String {
+    format!("Host: {detail}")
+}
+
+fn format_error_status(short: &str) -> String {
+    format!("Host: błąd — {short}")
+}
+
+fn format_tooltip(state: HostTrayState, url: Option<&str>, error_detail: Option<&str>) -> String {
+    match state {
+        HostTrayState::Idle => "StageSync · Host wyłączony".into(),
+        HostTrayState::Starting => "StageSync · Uruchamianie hosta…".into(),
+        HostTrayState::Running => match url {
+            Some(u) => format!("StageSync · Host gotowy ({})", url_display(u)),
+            None => "StageSync · Host gotowy".into(),
+        },
+        HostTrayState::Error => match error_detail {
+            Some(e) => format!("StageSync · Błąd: {}", truncate_error(e, ERROR_LABEL_MAX_CHARS)),
+            None => "StageSync · Błąd hosta".into(),
+        },
+    }
+}
+
+fn menu_flags(snapshot: &HostSnapshot) -> TrayMenuFlags {
+    let network_ready = snapshot.state == HostTrayState::Running && snapshot.url.is_some();
+    let restart_ready =
+        snapshot.state == HostTrayState::Running && snapshot.has_managed_child && network_ready;
+
+    let toggle_enabled = match snapshot.state {
+        HostTrayState::Starting => snapshot.is_starting || snapshot.has_managed_child,
+        HostTrayState::Running => true,
+        HostTrayState::Error | HostTrayState::Idle => true,
+    };
+
+    TrayMenuFlags {
+        copy_lan: network_ready,
+        open_browser: network_ready,
+        toggle_host: toggle_enabled,
+        restart_host: restart_ready,
+        status_clickable: snapshot.state == HostTrayState::Error,
+    }
+}
+
+fn toggle_label(snapshot: &HostSnapshot) -> &'static str {
+    match snapshot.state {
+        HostTrayState::Starting if snapshot.is_starting => "Anuluj start",
+        HostTrayState::Running | HostTrayState::Starting => "Zatrzymaj Host",
+        HostTrayState::Error | HostTrayState::Idle => "Uruchom Host",
+    }
+}
+
+fn open_url_in_browser(url: &str) -> Result<(), String> {
+    if !(url.starts_with("https://") || url.starts_with("http://")) {
+        return Err("Only http(s) URLs are allowed".into());
+    }
+    open::that(url).map_err(|e| e.to_string())
 }
 
 async fn fetch_primary_lan_url() -> Option<String> {
@@ -115,92 +220,197 @@ async fn fetch_primary_lan_url() -> Option<String> {
     Some(format!("http://127.0.0.1:{UI_PORT}"))
 }
 
-async fn resolve_host_snapshot(
-    runtime: &SidecarRuntime,
-) -> (HostTrayState, String, Option<String>) {
+async fn running_snapshot(
+    has_managed_child: bool,
+    lan: Option<String>,
+) -> HostSnapshot {
+    let url = lan.or_else(|| Some(format!("http://127.0.0.1:{UI_PORT}")));
+    let status_label = url
+        .as_ref()
+        .map(|u| format_running_status(u))
+        .unwrap_or_else(|| format!("Host: działa [127.0.0.1:{UI_PORT}]"));
+    HostSnapshot {
+        state: HostTrayState::Running,
+        status_label,
+        url,
+        has_managed_child,
+        is_starting: false,
+        error_detail: None,
+    }
+}
+
+async fn resolve_host_snapshot(runtime: &SidecarRuntime) -> HostSnapshot {
+    let has_managed_child = runtime.has_child();
     if runtime.is_starting() {
-        return (
-            HostTrayState::Starting,
-            "Host: uruchamianie…".into(),
-            None,
-        );
+        return HostSnapshot {
+            state: HostTrayState::Starting,
+            status_label: format_starting_status("uruchamianie…"),
+            url: None,
+            has_managed_child,
+            is_starting: true,
+            error_detail: None,
+        };
     }
     if let Some(err) = runtime.peek_pending_error() {
-        let short = if err.chars().count() > 48 {
-            format!("{}…", err.chars().take(48).collect::<String>())
-        } else {
-            err
+        let short = truncate_error(&err, ERROR_LABEL_MAX_CHARS);
+        return HostSnapshot {
+            state: HostTrayState::Error,
+            status_label: format_error_status(&short),
+            url: None,
+            has_managed_child,
+            is_starting: false,
+            error_detail: Some(err),
         };
-        return (HostTrayState::Error, format!("Host: błąd — {short}"), None);
     }
     let health = check_health_at("127.0.0.1", UI_PORT).await;
-    if !runtime.has_child() {
+    if !has_managed_child {
         return match health {
-            Ok(Some(_)) => running_snapshot(fetch_primary_lan_url().await).await,
-            _ => (HostTrayState::Idle, "Host: wyłączony".into(), None),
+            Ok(Some(_)) => {
+                running_snapshot(false, fetch_primary_lan_url().await).await
+            }
+            _ => HostSnapshot {
+                state: HostTrayState::Idle,
+                status_label: "Host: wyłączony".into(),
+                url: None,
+                has_managed_child: false,
+                is_starting: false,
+                error_detail: None,
+            },
         };
     }
     match health {
-        Ok(Some(_)) => running_snapshot(fetch_primary_lan_url().await).await,
-        Ok(None) => (
-            HostTrayState::Starting,
-            "Host: startuje (health)…".into(),
-            None,
-        ),
-        Err(_) => (
-            HostTrayState::Error,
-            "Host: proces żyje, brak health".into(),
-            None,
-        ),
+        Ok(Some(_)) => running_snapshot(true, fetch_primary_lan_url().await).await,
+        Ok(None) => HostSnapshot {
+            state: HostTrayState::Starting,
+            status_label: format_starting_status("startuje (health)…"),
+            url: None,
+            has_managed_child: true,
+            is_starting: false,
+            error_detail: None,
+        },
+        Err(_) => HostSnapshot {
+            state: HostTrayState::Error,
+            status_label: format_error_status("proces żyje, brak health"),
+            url: None,
+            has_managed_child: true,
+            is_starting: false,
+            error_detail: Some("proces żyje, brak health".into()),
+        },
     }
 }
 
-async fn running_snapshot(lan: Option<String>) -> (HostTrayState, String, Option<String>) {
-    let label = match &lan {
-        Some(url) => {
-            let display = url
-                .trim_start_matches("http://")
-                .trim_start_matches("https://");
-            format!("Host: działa [{display}] · kopiuj")
-        }
-        None => format!("Host: działa [127.0.0.1:{UI_PORT}]"),
-    };
-    (HostTrayState::Running, label, lan)
-}
+fn apply_tray_visual(tray: &TrayIcon<tauri::Wry>, state: &mut TrayUiState, snapshot: &HostSnapshot) {
+    let flags = menu_flags(snapshot);
 
-fn apply_tray_visual(
-    tray: &TrayIcon<tauri::Wry>,
-    state: &mut TrayUiState,
-    host: HostTrayState,
-    status_label: &str,
-    lan: Option<String>,
-    host_active: bool,
-) {
-    let _ = state.menu.status.set_text(status_label);
-    let _ = state.menu.status.set_enabled(lan.is_some());
-    let toggle_label = if host_active {
-        "Zatrzymaj Host"
+    let _ = state.menu.status.set_text(&snapshot.status_label);
+    let _ = state
+        .menu
+        .status
+        .set_enabled(flags.status_clickable);
+
+    let copy_label = if state
+        .copy_flash_until
+        .is_some_and(|until| Instant::now() < until)
+    {
+        LABEL_COPIED
     } else {
-        "Uruchom Host"
+        LABEL_COPY_LAN
     };
-    let _ = state.menu.toggle_host.set_text(toggle_label);
-    state.last_lan = lan;
+    let _ = state.menu.copy_lan.set_text(copy_label);
+    let _ = state.menu.copy_lan.set_enabled(flags.copy_lan);
+    let _ = state.menu.open_browser.set_enabled(flags.open_browser);
+    let _ = state
+        .menu
+        .toggle_host
+        .set_text(toggle_label(snapshot));
+    let _ = state.menu.toggle_host.set_enabled(flags.toggle_host);
+    let _ = state.menu.restart_host.set_enabled(flags.restart_host);
 
-    if state.icon_state != host {
-        state.icon_state = host;
-        let icon = match host {
+    state.last_url = snapshot.url.clone();
+
+    let tooltip = format_tooltip(
+        snapshot.state,
+        snapshot.url.as_deref(),
+        snapshot.error_detail.as_deref(),
+    );
+    if state.last_tooltip.as_deref() != Some(tooltip.as_str()) {
+        let _ = tray.set_tooltip(Some(&tooltip));
+        state.last_tooltip = Some(tooltip);
+    }
+
+    if state.icon_state != snapshot.state {
+        state.icon_state = snapshot.state;
+        let icon = match snapshot.state {
             HostTrayState::Running => state.icons.running.clone(),
             HostTrayState::Error => state.icons.error.clone(),
-            HostTrayState::Idle | HostTrayState::Starting => state.icons.idle.clone(),
+            HostTrayState::Starting => state.icons.starting.clone(),
+            HostTrayState::Idle => state.icons.base.clone(),
         };
         let _ = tray.set_icon(Some(icon));
-        let tip = match host {
-            HostTrayState::Running => "StageSync — host działa",
-            HostTrayState::Error => "StageSync — błąd hosta",
-            HostTrayState::Starting => "StageSync — uruchamianie hosta",
-            HostTrayState::Idle => "StageSync",
-        };
-        let _ = tray.set_tooltip(Some(tip));
+    }
+}
+
+async fn refresh_tray_ui(
+    app: &AppHandle,
+    runtime: &SidecarRuntime,
+    ui: &Arc<Mutex<TrayUiState>>,
+) {
+    let snapshot = resolve_host_snapshot(runtime).await;
+    if let Some(tray_icon) = app.tray_by_id(TRAY_ID) {
+        if let Ok(mut state) = ui.lock() {
+            apply_tray_visual(&tray_icon, &mut state, &snapshot);
+        }
+    }
+}
+
+fn spawn_copy_flash(ui: Arc<Mutex<TrayUiState>>, notify: Arc<Notify>) {
+    tauri::async_runtime::spawn(async move {
+        {
+            if let Ok(mut state) = ui.lock() {
+                state.copy_flash_until = Some(Instant::now() + Duration::from_secs(COPY_FLASH_SECS));
+            }
+        }
+        notify.notify_one();
+        tokio::time::sleep(Duration::from_secs(COPY_FLASH_SECS)).await;
+        {
+            if let Ok(mut state) = ui.lock() {
+                state.copy_flash_until = None;
+            }
+        }
+        notify.notify_one();
+    });
+}
+
+fn show_launcher_on_error(app: &AppHandle, nav: &LauncherNav) {
+    show_main_window(app);
+    let _ = launcher::navigate_to_launcher(app, nav);
+}
+
+async fn handle_toggle_host(app: AppHandle, runtime: Arc<SidecarRuntime>, nav: Arc<LauncherNav>) {
+    if runtime.is_starting() {
+        runtime.kill_child();
+        let _ = crate::reclaim_ui_port_orphan();
+        return;
+    }
+
+    let host_active = runtime.has_child()
+        || matches!(
+            check_health_at("127.0.0.1", UI_PORT).await,
+            Ok(Some(_))
+        );
+
+    if host_active {
+        runtime.kill_child();
+        let _ = crate::reclaim_ui_port_orphan();
+        let visible = app
+            .get_webview_window("main")
+            .and_then(|w| w.is_visible().ok())
+            .unwrap_or(false);
+        if visible {
+            let _ = launcher::navigate_to_launcher(&app, nav.as_ref());
+        }
+    } else {
+        let _ = launcher::start_local_host_managed(app, runtime).await;
     }
 }
 
@@ -214,34 +424,58 @@ pub fn install_tray(
 
     let open = MenuItem::with_id(app, "tray_open", "Otwórz StageSync", true, None::<&str>)?;
     let status = MenuItem::with_id(app, "tray_status", "Host: …", false, None::<&str>)?;
+    let copy_lan = MenuItem::with_id(app, "tray_copy_lan", LABEL_COPY_LAN, false, None::<&str>)?;
+    let open_browser =
+        MenuItem::with_id(app, "tray_open_browser", "Otwórz w przeglądarce", false, None::<&str>)?;
+    let sep_network = PredefinedMenuItem::separator(app)?;
     let toggle_host =
         MenuItem::with_id(app, "tray_toggle_host", "Uruchom Host", true, None::<&str>)?;
-    let sep = PredefinedMenuItem::separator(app)?;
+    let restart_host =
+        MenuItem::with_id(app, "tray_restart_host", "Restartuj host", false, None::<&str>)?;
+    let sep_control = PredefinedMenuItem::separator(app)?;
     let quit = MenuItem::with_id(app, "tray_quit", "Zakończ StageSync", true, None::<&str>)?;
 
     let menu = Menu::with_items(
         app,
-        &[&open, &status, &toggle_host, &sep, &quit],
+        &[
+            &open,
+            &status,
+            &copy_lan,
+            &open_browser,
+            &sep_network,
+            &toggle_host,
+            &restart_host,
+            &sep_control,
+            &quit,
+        ],
     )?;
+
+    let refresh_notify = Arc::new(Notify::new());
 
     let ui = Arc::new(Mutex::new(TrayUiState {
         menu: TrayMenuHandles {
             status,
+            copy_lan,
+            open_browser,
             toggle_host,
+            restart_host,
         },
         icon_state: HostTrayState::Idle,
-        last_lan: None,
+        last_url: None,
         icons,
+        copy_flash_until: None,
+        last_tooltip: None,
     }));
 
     let runtime_menu = runtime.clone();
     let nav_menu = launcher_nav.clone();
     let ui_menu = ui.clone();
+    let notify_menu = refresh_notify.clone();
 
     let initial_icon = ui
         .lock()
-        .map(|s| s.icons.idle.clone())
-        .unwrap_or_else(|_| embed_icon(include_bytes!("../icons/tray/idle.png")));
+        .map(|s| s.icons.base.clone())
+        .unwrap_or_else(|_| embed_icon(include_bytes!("../icons/tray/base.png")));
 
     let _tray = TrayIconBuilder::with_id(TRAY_ID)
         .icon(initial_icon)
@@ -252,10 +486,26 @@ pub fn install_tray(
             "tray_open" => show_main_window(app),
             "tray_status" => {
                 if let Ok(guard) = ui_menu.lock() {
-                    if let Some(url) = guard.last_lan.as_ref() {
+                    if guard.icon_state == HostTrayState::Error {
+                        show_launcher_on_error(app, nav_menu.as_ref());
+                    }
+                }
+                notify_menu.notify_one();
+            }
+            "tray_copy_lan" => {
+                if let Ok(guard) = ui_menu.lock() {
+                    if let Some(url) = guard.last_url.as_ref() {
                         if let Ok(mut cb) = arboard::Clipboard::new() {
                             let _ = cb.set_text(url.clone());
+                            spawn_copy_flash(ui_menu.clone(), notify_menu.clone());
                         }
+                    }
+                }
+            }
+            "tray_open_browser" => {
+                if let Ok(guard) = ui_menu.lock() {
+                    if let Some(url) = guard.last_url.as_ref() {
+                        let _ = open_url_in_browser(url);
                     }
                 }
             }
@@ -263,28 +513,18 @@ pub fn install_tray(
                 let app = app.clone();
                 let runtime = runtime_menu.clone();
                 let nav = nav_menu.clone();
+                let notify = notify_menu.clone();
                 tauri::async_runtime::spawn(async move {
-                    let host_active = runtime.has_child()
-                        || runtime.is_starting()
-                        || matches!(
-                            check_health_at("127.0.0.1", UI_PORT).await,
-                            Ok(Some(_))
-                        );
-                    if host_active {
-                        runtime.kill_child();
-                        let _ = crate::reclaim_ui_port_orphan();
-                        // Avoid forcing Launcher navigation while the window is hidden
-                        // (close-to-tray); visible session returns to Launcher like return_to_launcher.
-                        let visible = app
-                            .get_webview_window("main")
-                            .and_then(|w| w.is_visible().ok())
-                            .unwrap_or(false);
-                        if visible {
-                            let _ = launcher::navigate_to_launcher(&app, nav.as_ref());
-                        }
-                    } else {
-                        let _ = launcher::start_local_host_managed(app, runtime).await;
-                    }
+                    handle_toggle_host(app, runtime, nav).await;
+                    notify.notify_one();
+                });
+            }
+            "tray_restart_host" => {
+                let runtime = runtime_menu.clone();
+                let notify = notify_menu.clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = launcher::restart_local_host_managed(runtime.as_ref()).await;
+                    notify.notify_one();
                 });
             }
             "tray_quit" => {
@@ -308,21 +548,119 @@ pub fn install_tray(
     let app_handle = app.clone();
     let runtime_refresh = runtime;
     let ui_refresh = ui;
+    let notify_refresh = refresh_notify;
     tauri::async_runtime::spawn(async move {
         loop {
-            let (host, label, lan) = resolve_host_snapshot(runtime_refresh.as_ref()).await;
-            let host_active = matches!(
-                host,
-                HostTrayState::Running | HostTrayState::Starting
-            ) || runtime_refresh.has_child();
-            if let Some(tray_icon) = app_handle.tray_by_id(TRAY_ID) {
-                if let Ok(mut state) = ui_refresh.lock() {
-                    apply_tray_visual(&tray_icon, &mut state, host, &label, lan, host_active);
-                }
-            }
-            tokio::time::sleep(Duration::from_secs(REFRESH_SECS)).await;
+            refresh_tray_ui(&app_handle, runtime_refresh.as_ref(), &ui_refresh).await;
+            let notified = notify_refresh.notified();
+            tokio::pin!(notified);
+            let _ = tokio::time::timeout(Duration::from_secs(REFRESH_SECS), notified).await;
         }
     });
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn truncate_error_short_and_long() {
+        assert_eq!(truncate_error("ok", 48), "ok");
+        let long = "ą".repeat(50);
+        let out = truncate_error(&long, 48);
+        assert!(out.ends_with('…'));
+        assert!(out.chars().count() <= 49);
+    }
+
+    #[test]
+    fn format_running_status_strips_scheme() {
+        assert_eq!(
+            format_running_status("http://192.168.1.5:4000"),
+            "Host: działa · 192.168.1.5:4000"
+        );
+    }
+
+    #[test]
+    fn format_tooltip_running_includes_address() {
+        let tip = format_tooltip(
+            HostTrayState::Running,
+            Some("http://10.0.0.2:4000"),
+            None,
+        );
+        assert!(tip.contains("10.0.0.2:4000"));
+    }
+
+    #[test]
+    fn format_tooltip_error_includes_detail() {
+        let tip = format_tooltip(
+            HostTrayState::Error,
+            None,
+            Some("port zajęty"),
+        );
+        assert!(tip.contains("port zajęty"));
+    }
+
+    #[test]
+    fn menu_flags_running_managed_enables_network_and_restart() {
+        let snap = HostSnapshot {
+            state: HostTrayState::Running,
+            status_label: "x".into(),
+            url: Some("http://127.0.0.1:4000".into()),
+            has_managed_child: true,
+            is_starting: false,
+            error_detail: None,
+        };
+        let f = menu_flags(&snap);
+        assert!(f.copy_lan);
+        assert!(f.open_browser);
+        assert!(f.restart_host);
+    }
+
+    #[test]
+    fn menu_flags_running_orphan_disables_restart() {
+        let snap = HostSnapshot {
+            state: HostTrayState::Running,
+            status_label: "x".into(),
+            url: Some("http://127.0.0.1:4000".into()),
+            has_managed_child: false,
+            is_starting: false,
+            error_detail: None,
+        };
+        let f = menu_flags(&snap);
+        assert!(f.copy_lan);
+        assert!(!f.restart_host);
+    }
+
+    #[test]
+    fn menu_flags_starting_shows_cancel() {
+        let snap = HostSnapshot {
+            state: HostTrayState::Starting,
+            status_label: "x".into(),
+            url: None,
+            has_managed_child: false,
+            is_starting: true,
+            error_detail: None,
+        };
+        assert_eq!(toggle_label(&snap), "Anuluj start");
+        let f = menu_flags(&snap);
+        assert!(!f.copy_lan);
+        assert!(!f.restart_host);
+    }
+
+    #[test]
+    fn menu_flags_error_status_clickable() {
+        let snap = HostSnapshot {
+            state: HostTrayState::Error,
+            status_label: "x".into(),
+            url: None,
+            has_managed_child: false,
+            is_starting: false,
+            error_detail: Some("fail".into()),
+        };
+        let f = menu_flags(&snap);
+        assert!(f.status_clickable);
+        assert!(!f.copy_lan);
+    }
 }

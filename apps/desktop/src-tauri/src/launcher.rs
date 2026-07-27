@@ -644,6 +644,49 @@ pub fn prepare_host_restart(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<(
     Ok(())
 }
 
+/// POST /api/system/restart on loopback (tray / non-WebView contexts).
+pub(crate) async fn post_system_restart_localhost() -> Result<(), String> {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    let addr = format!("127.0.0.1:{UI_PORT}");
+    let connect = tokio::net::TcpStream::connect(&addr);
+    let mut stream = tokio::time::timeout(Duration::from_secs(3), connect)
+        .await
+        .map_err(|_| "Timeout połączenia z hostem.".to_string())?
+        .map_err(|e| format!("Połączenie z hostem: {e}"))?;
+    let req = format!(
+        "POST /api/system/restart HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+    );
+    tokio::time::timeout(Duration::from_secs(3), stream.write_all(req.as_bytes()))
+        .await
+        .map_err(|_| "Timeout wysyłania restartu.".to_string())?
+        .map_err(|e| format!("Wysyłanie restartu: {e}"))?;
+    let mut buf = Vec::new();
+    tokio::time::timeout(Duration::from_secs(3), stream.read_to_end(&mut buf))
+        .await
+        .map_err(|_| "Timeout odpowiedzi hosta.".to_string())?
+        .map_err(|e| format!("Odczyt odpowiedzi: {e}"))?;
+    let resp = String::from_utf8_lossy(&buf);
+    if resp.starts_with("HTTP/1.1 2") || resp.starts_with("HTTP/1.0 2") {
+        Ok(())
+    } else {
+        Err("Restart hosta nie powiódł się.".into())
+    }
+}
+
+/// Restart managed local sidecar via lifecycle API (tray shortcut, no WebView dialog).
+pub(crate) async fn restart_local_host_managed(runtime: &SidecarRuntime) -> Result<(), String> {
+    if !runtime.has_child() {
+        return Err("Brak zarządzanego lokalnego hosta.".into());
+    }
+    match check_health_at("127.0.0.1", UI_PORT).await {
+        Ok(Some(_)) => {}
+        _ => return Err("Host nie jest gotowy.".into()),
+    }
+    runtime.set_expect_restart(true);
+    post_system_restart_localhost().await
+}
+
 /// Kill local sidecar (if any) and navigate WebView back to the bundled Launcher.
 #[tauri::command]
 pub async fn return_to_launcher(app: AppHandle) -> Result<(), String> {

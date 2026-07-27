@@ -10,6 +10,7 @@ import {
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
+import { useMqMobile } from "../lib/useMqMobile.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
 import {
@@ -96,6 +97,7 @@ const ROLES: { id: RoleId; label: string; icon: string }[] = [
 ];
 
 export function ClientShell() {
+  const isMobile = useMqMobile();
   const [nameModal, setNameModal] = useState(false);
   const [name, setName] = useState(() => getStoredDeviceDisplayName() ?? "");
   const [nameDraft, setNameDraft] = useState("");
@@ -274,6 +276,15 @@ export function ClientShell() {
     });
   }
 
+  function onRoleTileClick(id: RoleId) {
+    if (isMobile) {
+      setPicked([id]);
+      setStarted(true);
+      return;
+    }
+    toggleRole(id);
+  }
+
   function submitName(e: FormEvent) {
     e.preventDefault();
     try {
@@ -348,7 +359,14 @@ export function ClientShell() {
       <div className={styles.page}>
         <ClientChrome {...headerProps} started={false} />
         <ConnectionLostBanner status={wsStatus} />
-        <main className={styles.welcome}>
+        <main
+          className={[
+            styles.welcome,
+            isMobile ? styles.welcomeMobile : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className={styles.welcomeHero}>
             <ShellWordmark className={styles.welcomeBrand} />
             <div className={styles.greetingRow}>
@@ -378,8 +396,8 @@ export function ClientShell() {
                   className={[styles.roleTile, on ? styles.roleOn : ""]
                     .filter(Boolean)
                     .join(" ")}
-                  aria-pressed={on}
-                  onClick={() => toggleRole(r.id)}
+                  aria-pressed={isMobile ? undefined : on}
+                  onClick={() => onRoleTileClick(r.id)}
                 >
                   <span className={styles.roleIcon} aria-hidden>
                     {r.icon}
@@ -390,18 +408,20 @@ export function ClientShell() {
             })}
           </div>
 
-          <div className={styles.startBar}>
-            <Button
-              variant="primary"
-              className={styles.startBarBtn}
-              disabled={picked.length === 0}
-              onClick={() => setStarted(true)}
-            >
-              {picked.length === 2
-                ? "Rozpocznij widok dzielony"
-                : "Rozpocznij"}
-            </Button>
-          </div>
+          {!isMobile ? (
+            <div className={styles.startBar}>
+              <Button
+                variant="primary"
+                className={styles.startBarBtn}
+                disabled={picked.length === 0}
+                onClick={() => setStarted(true)}
+              >
+                {picked.length === 2
+                  ? "Rozpocznij widok dzielony"
+                  : "Rozpocznij"}
+              </Button>
+            </div>
+          ) : null}
         </main>
       </div>
     );

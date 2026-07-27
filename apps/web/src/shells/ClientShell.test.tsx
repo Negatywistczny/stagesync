@@ -90,26 +90,31 @@ vi.mock("../transport/useTransport.js", () => ({
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 function startGridRole() {
   fireEvent.click(screen.getByRole("button", { name: /Akordy/i }));
-  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+  const start = screen.queryByRole("button", { name: /^Rozpocznij$/i });
+  if (start) fireEvent.click(start);
 }
 
 function startScoreRole() {
   fireEvent.click(screen.getByRole("button", { name: /Partytura/i }));
-  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+  const start = screen.queryByRole("button", { name: /^Rozpocznij$/i });
+  if (start) fireEvent.click(start);
 }
 
 function startKaraokeRole() {
   fireEvent.click(screen.getByRole("button", { name: /^Tekst$/i }));
-  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+  const start = screen.queryByRole("button", { name: /^Rozpocznij$/i });
+  if (start) fireEvent.click(start);
 }
 
 function startDrumsRole() {
   fireEvent.click(screen.getByRole("button", { name: /^Forma$/i }));
-  fireEvent.click(screen.getByRole("button", { name: /^Rozpocznij$/i }));
+  const start = screen.queryByRole("button", { name: /^Rozpocznij$/i });
+  if (start) fireEvent.click(start);
 }
 
 describe("ClientShell chrome", () => {
@@ -173,6 +178,22 @@ describe("ClientShell chrome", () => {
     expect(chords.getAttribute("aria-pressed")).toBe("true");
     fireEvent.click(chords);
     expect(chords.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("enters a role immediately on phone welcome tiles (no Rozpocznij)", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      (query: string) =>
+        ({
+          matches: query.includes("max-width: 768px"),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as MediaQueryList,
+    );
+    render(<ClientShell />);
+    expect(screen.queryByRole("button", { name: /^Rozpocznij$/i })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Akordy/i }));
+    expect(screen.getByTestId("grid-pane")).toBeTruthy();
   });
 
   it("opens global settings from desktop menu Wygląd (appearance)", () => {

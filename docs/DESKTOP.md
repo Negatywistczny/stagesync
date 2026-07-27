@@ -22,7 +22,12 @@ Ikona StageSync zostaje w zasobniku Windows / Menu Bar macOS przez cały czas dz
 
 - **Zamknięcie okna (X)** — chowa okno do zasobnika; **lokalny host nadal działa** (LAN / klienci bez przerwy).
 - **Lewy klik** (lub pozycja **Otwórz StageSync**) — przywraca okno.
-- **Menu kontekstowe:** Status Hosta (wyłączony / działa z adresem LAN / błąd — przy działającym hoście klik kopiuje adres LAN), **Uruchom / Zatrzymaj Host**, **Zakończ StageSync**.
+- **Menu kontekstowe:**
+  - **Status hosta** (informacyjny: wyłączony / uruchamianie / działa z adresem / błąd); przy błędzie klik otwiera Launcher z komunikatem.
+  - **Kopiuj adres LAN** i **Otwórz w przeglądarce** — gdy host gotowy (także localhost).
+  - **Uruchom / Zatrzymaj Host** (podczas startu: **Anuluj start**), **Restartuj host** (tylko zarządzany lokalny sidecar).
+  - **Zakończ StageSync** — pełne wyjście.
+- **Ikona w zasobniku:** statyczna ikona StageSync z kropką stanu (szara / żółta start / zielona gotowy / czerwona błąd); tooltip z adresem hosta.
 - **Pełne wyjście** (gasi host + proces aplikacji): tray **Zakończ StageSync**, menu OS **Zakończ**, ⌘/Ctrl+Q.
 
 Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (np. po Force Quit).
