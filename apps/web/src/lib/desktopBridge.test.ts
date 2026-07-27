@@ -7,6 +7,7 @@ import {
   installDesktopUpdate,
   isDesktopShell,
   openExternalUrl,
+  RETURN_TO_LAUNCHER_HREF,
   returnToLauncher,
   syncEditHistoryState,
   syncNavRecentProjects,
@@ -341,7 +342,7 @@ describe("desktop update + nav sync + Tauri paths", () => {
 
   it("returnToLauncher rejects without IPC and invokes when present", async () => {
     vi.stubGlobal("window", {
-      location: { hostname: "127.0.0.1", port: "4000" },
+      location: { hostname: "127.0.0.1", port: "4000", assign: vi.fn() },
     });
     expect(canReturnToLauncher()).toBe(false);
     await expect(returnToLauncher()).rejects.toThrow(/Launchera/i);
@@ -350,9 +351,34 @@ describe("desktop update + nav sync + Tauri paths", () => {
     vi.stubGlobal("window", {
       __STAGESYNC_SHELL__: "desktop",
       __TAURI__: { core: { invoke } },
+      location: { assign: vi.fn() },
     });
     expect(canReturnToLauncher()).toBe(true);
     await returnToLauncher();
     expect(invoke).toHaveBeenCalledWith("return_to_launcher", {});
+  });
+
+  it("returnToLauncher uses navigation sentinel when shell marker exists without IPC", async () => {
+    const assign = vi.fn();
+    vi.stubGlobal("window", {
+      __STAGESYNC_SHELL__: "desktop",
+      location: { assign },
+    });
+    expect(canReturnToLauncher()).toBe(true);
+    await returnToLauncher();
+    expect(assign).toHaveBeenCalledWith(RETURN_TO_LAUNCHER_HREF);
+  });
+
+  it("returnToLauncher falls back to sentinel when invoke fails", async () => {
+    const assign = vi.fn();
+    const invoke = vi.fn().mockRejectedValue(new Error("ipc denied"));
+    vi.stubGlobal("window", {
+      __STAGESYNC_TAURI_SHELL__: true,
+      __TAURI__: { core: { invoke } },
+      location: { assign },
+    });
+    await returnToLauncher();
+    expect(invoke).toHaveBeenCalled();
+    expect(assign).toHaveBeenCalledWith(RETURN_TO_LAUNCHER_HREF);
   });
 });

@@ -1,28 +1,25 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.2.11` (`v5.2.11`) — linia **5.2** = **Pocket Stage**; aktywny etap **5.3** = **Colors & Channels**.  
+**Stan:** ostatni cut `5.3.0` (`v5.3.0`) — linia **5.3** = **Colors & Channels**; następny fokus produktowy **5.x Pitch & FX Busses** / residual ops.  
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
-**Polityka:** hero 5.3 = nazwane skóry + WebAudio multi-out. Zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
+**Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
 **Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) · [ADR 0017](./adr/0017-live-show-control-contracts.md). Mobile: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
 **Kierunek audio 6.0+ (Zaakceptowany):** [ADR 0018](./adr/0018-future-audio-architecture.md) · [ROADMAP](./ROADMAP.md).  
 **Specy 5.2+ (hipotezy):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-## Must (Blokery wydania 5.3.0)
-
-- [ ] **HW smoke multi-out** na interfejsie ≥ 4 ch (mac/Win) — checklista w [DESKTOP.md](./DESKTOP.md); **bez claim green**
-
 ## Must (operator residual)
 
-- [ ] **G1–G10** na instalatorach `v5.2.11` / najnowszy **5.2.x** / **5.3.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
+- [ ] **HW smoke multi-out** na interfejsie ≥ 4 ch (mac/Win) — checklista w [DESKTOP.md](./DESKTOP.md); **bez claim green**
+- [ ] **G1–G10** na instalatorach `v5.3.0` / najnowszy **5.3.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 
-## Etap 5.3+ / Later (nie hero 5.3)
+## Etap 5.x+ / Later (po Colors & Channels)
 
 ### 5.x Pitch & FX Busses / 6.0+ audio ([ADR 0018](./adr/0018-future-audio-architecture.md) — Zaakceptowany)
 

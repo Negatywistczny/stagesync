@@ -639,7 +639,7 @@ function ApkTile({
         <BrandName /> {product}
       </h3>
       <p className={styles.apkStatus}>
-        {ready ? "APK dostępne na hoście" : "Brak APK w tej instalacji"}
+        {ready ? "APK dostępne na hoście" : "APK niedostępne na hoście"}
       </p>
       <div className={styles.apkActions}>
         {ready && apkUrl ? (

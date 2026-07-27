@@ -53,7 +53,7 @@ const VIEWPORT_PAD_PX = 8;
 type AnchorPos = {
   top: number;
   right: number;
-  /** Inherited from anchor tree (e.g. Client `--ss-touch-min-client`). */
+  /** Inherited from anchor tree (e.g. Client mobile `--ss-touch-min` = 44px). */
   touchMin: string;
 };
 

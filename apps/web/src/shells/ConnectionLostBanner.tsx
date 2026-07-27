@@ -3,6 +3,10 @@ import {
   canReturnToLauncher,
   returnToLauncher,
 } from "../lib/desktopBridge.js";
+import {
+  canChangeServer,
+  requestNativeChangeServer,
+} from "../lib/nativeShell.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import styles from "./ConnectionLostBanner.module.css";
 
@@ -11,13 +15,13 @@ export type ConnectionLostBannerProps = {
 };
 
 /**
- * Mid-session transport drop: reconnect copy + optional return to Desktop Launcher.
- * Return button only when Tauri IPC is available (local 127.0.0.1:4000).
+ * Mid-session transport drop: reconnect copy + optional return to host picker
+ * (Desktop Launcher via Tauri, or Android Console/Performer via native bridge).
  */
 export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
   if (status === "connected") return null;
 
-  const showReturn = canReturnToLauncher();
+  const showReturn = canReturnToLauncher() || canChangeServer();
   const text =
     status === "connecting"
       ? "Łączenie z hostem…"
@@ -33,6 +37,7 @@ export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
           className={styles.action}
           aria-label="Wróć do wyboru hosta w launcherze"
           onClick={() => {
+            if (requestNativeChangeServer()) return;
             void returnToLauncher().catch(() => {
               /* best-effort — user can quit/reopen */
             });

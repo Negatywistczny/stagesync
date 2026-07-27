@@ -315,10 +315,35 @@ export function apkDownloadUrlsFromJoin(
   }
 }
 
+/**
+ * Same-origin URL for APK HEAD probes.
+ *
+ * Admin often runs on `http://localhost:4000` while QR/join URLs use the LAN IP.
+ * Fetching the absolute LAN `/downloads/*.apk` from localhost is cross-origin and
+ * fails without CORS — falsely looking like a missing APK. Always probe the path
+ * on the page origin; the host serves the same artifact.
+ */
+export function apkSameOriginProbeUrl(url: string): string {
+  try {
+    const base =
+      typeof window !== "undefined" && window.location?.href
+        ? window.location.href
+        : "http://127.0.0.1/";
+    const parsed = new URL(url, base);
+    if (parsed.pathname.startsWith("/downloads/")) {
+      return parsed.pathname;
+    }
+  } catch {
+    /* keep input */
+  }
+  return url;
+}
+
 /** HEAD probe — true only when host has a non-empty APK artifact. */
 export async function probeApkAvailable(url: string): Promise<boolean> {
+  const probeUrl = apkSameOriginProbeUrl(url);
   try {
-    const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+    const res = await fetch(probeUrl, { method: "HEAD", cache: "no-store" });
     if (res.ok) return true;
     // Some proxies strip HEAD — fall back to ranged GET size check is overkill;
     // treat non-OK as unavailable (honest empty-state).

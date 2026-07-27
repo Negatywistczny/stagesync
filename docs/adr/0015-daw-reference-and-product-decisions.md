@@ -95,8 +95,8 @@ W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia
 
 - Konstytucja wskazuje ten ADR (reguła Logic + backlog ≠ decyzja); zakres Logic zawężony — [ADR 0017](./0017-live-show-control-contracts.md).
 - ADR 0008: Flex/Takes/recording/join bounce = **permanent OUT 5.x** (nie „później wg Logic”).
-- TODO: Must = G1–G10 HW; multi-out UI = **5.3 Colors & Channels** (on-tree przy
-  `maxChannelCount ≥ 4`); H-01 / Offline delta = Later; MIDI PC kanały = shipped w 5.2.0;
+- TODO: Must = G1–G10 HW + HW smoke multi-out; multi-out + skóry = shipped w **5.3.0**;
+  H-01 / Offline delta = Later; MIDI PC kanały = shipped w 5.2.0;
   egzekucja kontraktów 0017 = shipped w 5.2.x.
 - CHANGELOG tylko przy zmianach widocznych w produkcie — nie za sam ADR.
 

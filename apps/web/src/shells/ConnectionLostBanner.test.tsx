@@ -7,17 +7,28 @@ import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 
 const canReturn = vi.fn(() => false);
 const returnToLauncher = vi.fn(async () => undefined);
+const canChange = vi.fn(() => false);
+const requestNative = vi.fn(() => false);
 
 vi.mock("../lib/desktopBridge.js", () => ({
   canReturnToLauncher: () => canReturn(),
   returnToLauncher: () => returnToLauncher(),
 }));
 
+vi.mock("../lib/nativeShell.js", () => ({
+  canChangeServer: () => canChange(),
+  requestNativeChangeServer: () => requestNative(),
+}));
+
 afterEach(() => {
   cleanup();
   canReturn.mockReset();
   returnToLauncher.mockReset();
+  canChange.mockReset();
+  requestNative.mockReset();
   canReturn.mockReturnValue(false);
+  canChange.mockReturnValue(false);
+  requestNative.mockReturnValue(false);
   returnToLauncher.mockResolvedValue(undefined);
 });
 
@@ -52,5 +63,19 @@ describe("ConnectionLostBanner", () => {
       }),
     );
     expect(returnToLauncher).toHaveBeenCalled();
+    expect(requestNative).toHaveBeenCalled();
+  });
+
+  it("prefers Android native changeServer when bridge is present", () => {
+    canChange.mockReturnValue(true);
+    requestNative.mockReturnValue(true);
+    render(<ConnectionLostBanner status="disconnected" />);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Wróć do wyboru hosta w launcherze",
+      }),
+    );
+    expect(requestNative).toHaveBeenCalled();
+    expect(returnToLauncher).not.toHaveBeenCalled();
   });
 });

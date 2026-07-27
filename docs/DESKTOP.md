@@ -2,7 +2,7 @@
 
 Okno desktopowe (Admin / Timeline / Client) z wbudowanym lokalnym hostem albo połączeniem z hostem w sieci.
 Szczegóły decyzji: [ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md).  
-Android (sideload Performer / Console, bez Google Play): [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
+Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
 
 ## Start — Launcher
 
@@ -148,7 +148,8 @@ pnpm --filter @stagesync/desktop tauri build
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 
 - **Mixer bus→bus:** wyjście busa na Master albo inny bus (bez pętli).
-- **Mixer multi-out (HW):** gdy `AudioContext.destination.maxChannelCount ≥ 4` (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**, ChannelMerger mapuje Master na ch 1–2 i patchy na kolejne kanały. Track / bus / cue sample → `hw_out`. Przy stereo-only UI pokazuje komunikat (bez atrap Out 3–4). Repatch HW zablokowany w trakcie Play ([ADR 0017](./adr/0017-live-show-control-contracts.md) §7).
+- **Mixer multi-out (HW):** gdy `AudioContext.destination.maxChannelCount ≥ 4` (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**, ChannelMerger mapuje Master na ch 1–2 i patchy na kolejne kanały. Track / bus / cue sample → `hw_out`. Przy stereo-only strefa HW Out jest ukryta (bez atrap Out 3–4). Repatch HW zablokowany w trakcie Play ([ADR 0017](./adr/0017-live-show-control-contracts.md) §7).
+- **Mixer — widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy strefy (nagłówek zostaje); wybór w przeglądarce.
 - **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
 - **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
 - **Panic:** globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s). Performer / Client bez globalnego Panic ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8b).

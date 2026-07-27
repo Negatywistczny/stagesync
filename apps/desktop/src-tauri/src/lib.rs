@@ -1067,6 +1067,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(launcher::return_to_launcher_plugin())
         .manage(nav_state)
         .manage(sidecar_runtime)
         .manage(launcher_nav)

@@ -2,7 +2,7 @@
 
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-27
-- **Etap:** kierunek `6.0+` (nie scope linii 5.x); sekwencja wejścia przez residual `5.3` / `5.x` — **zablokowana PO**
+- **Etap:** kierunek `6.0+` (nie scope linii 5.x); **5.3 Colors & Channels** wydane (`v5.3.0`); następny krok sekwencji = `5.x` Pitch & FX Busses — **zablokowana PO**
 - **Uzupełnia / amenuje (przy major 6.0):** [ADR 0017](./0017-live-show-control-contracts.md) §5 (Flex / Takes / recording = OUT **tylko** dla 5.x; rejestracja wraca w 6.0 — patrz §5 poniżej), [ADR 0015](./0015-daw-reference-and-product-decisions.md), [ADR 0008](./0008-timeline-clip-editing.md)
 - **Nie narusza:** [ADR 0002](./0002-timebase-ssot.md), [ADR 0005](./0005-domain-axioms.md) (Granica 0)
 
@@ -12,7 +12,7 @@ Linia **5.x** ma ustaloną tożsamość: Playback & Show Control — odtwarzanie
 
 Spec *Future Architecture: StageSync 6.0 & Beyond* proponuje ewolucję produktu w stronę **Interactive Live Processing & Master Show Controller**: wejścia live, natywny DSP (Audio Suite), automatyka w czasie rzeczywistym, ścieżki MIDI oraz sterowanie zewnętrznymi VSTi standalone. Ten ADR jest **kontraktem kierunku architektonicznego** — nie claim wdrożenia i nie cut scope 5.3.
 
-Stan obecny (5.2.x): Mixer Master\|Bus + bus→bus DAG; multi-out HW = residual (`maxChannelCount` gate); MIDI I/O + clock + PC na **serwerze**; playback WebAudio w kliencie (`audioPlayback` / `setSinkId`); brak InputStrip / AudioWorklet suite / automation lanes / MIDI tracks.
+Stan obecny (od **5.3.0**): Mixer Master\|Bus + bus→bus DAG; multi-out HW Out gdy `maxChannelCount ≥ 4` (przy stereo strefa ukryta); 5 nazwanych skór (`data-theme`); MIDI I/O + clock + PC na **serwerze**; playback WebAudio w kliencie (`audioPlayback` / `setSinkId`); brak InputStrip / AudioWorklet suite / automation lanes / MIDI tracks.
 
 ## Decyzja
 
@@ -20,7 +20,7 @@ Stan obecny (5.2.x): Mixer Master\|Bus + bus→bus DAG; multi-out HW = residual 
 
 | Linia | Obowiązywanie |
 |-------|----------------|
-| **5.x** | Ten ADR **nie** otwiera Flex / Takes / recording / VSTi / InputStrip / automation w produkcie. Obowiązuje nadal [ADR 0017](./0017-live-show-control-contracts.md) §5. Residual audio 5.3 / 5.x = wyłącznie fundamenty (multi-out, skóry, pitch / FX busses — patrz §4), bez filarów 6.0. |
+| **5.x** | Ten ADR **nie** otwiera Flex / Takes / recording / VSTi / InputStrip / automation w produkcie. Obowiązuje nadal [ADR 0017](./0017-live-show-control-contracts.md) §5. Fundamenty **5.3** (multi-out, skóry) = wydane; dalej w 5.x tylko Pitch & FX Busses (patrz §4), bez filarów 6.0. |
 | **6.0+** | Ten ADR jest SSOT kierunku Live Processing; §5 ADR 0017 uznaje się za **zamknięte dla 5.x**, nie za zakaz na zawsze. Rejestracja + proste narzędzia edycji = **IN** przy major 6.0 (§5). |
 
 ### 1. Zero-Crash Policy (twarde)

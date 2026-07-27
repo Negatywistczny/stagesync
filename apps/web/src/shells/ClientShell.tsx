@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
+import {
+  DESKTOP_MENU_EVENT,
+  parseDesktopMenuDetail,
+} from "../lib/desktopMenuEvents.js";
 import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import {
   releaseScreenWakeLock,
@@ -66,7 +70,12 @@ import {
   SCORE_ZOOM_STEP,
   clampScoreZoom,
 } from "../lib/scorePlayhead.js";
-import { IconFullscreen, IconMixer, IconSettings } from "./icons.js";
+import {
+  IconFullscreen,
+  IconMixer,
+  IconPencil,
+  IconSettings,
+} from "./icons.js";
 import {
   SettingsPopover,
   SettingsPopoverAnchor,
@@ -143,6 +152,17 @@ export function ClientShell() {
     setScoreOctave(loadScoreOctave(projectId));
     setScoreHiddenPartIds(loadScoreHiddenParts(projectId));
   }, [activeProject?.id, state.activeProjectId]);
+
+  useEffect(() => {
+    function onMenu(ev: Event) {
+      const detail = parseDesktopMenuDetail(ev);
+      if (detail?.action !== "appearance") return;
+      setRoleSettings(null);
+      setGlobalSettings(true);
+    }
+    window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
+    return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
+  }, []);
 
   useEffect(() => {
     const onName = () => setName(getStoredDeviceDisplayName() ?? "");
@@ -333,30 +353,15 @@ export function ClientShell() {
             <ShellWordmark className={styles.welcomeBrand} />
             <div className={styles.greetingRow}>
               <p className={styles.greeting}>Cześć, {name}</p>
-              <Button
-                variant="ghost"
-                iconOnly
-                aria-label="Zmień nazwę"
-                title="Zmień nazwę"
+              <ShellIconButton
+                label="Zmień nazwę"
                 onClick={() => {
                   setNameDraft(name);
                   setNameModal(true);
                 }}
               >
-                <svg
-                  className={styles.changeNameIcon}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                >
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-              </Button>
+                <IconPencil />
+              </ShellIconButton>
             </div>
             <h1 className={styles.welcomeTitle}>
               Wybierz <span className={styles.welcomeAccent}>rolę</span>

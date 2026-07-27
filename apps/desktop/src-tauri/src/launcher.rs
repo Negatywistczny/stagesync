@@ -6,9 +6,11 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use mdns_sd::{ServiceDaemon, ServiceEvent};
+use tauri::plugin::{Builder as PluginBuilder, TauriPlugin};
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
+use url::Url;
 
 use crate::{
     append_sidecar_file_log, append_sidecar_log, assert_node_path_usable, check_health_at,
@@ -22,6 +24,10 @@ const MDNS_TOTAL_BUDGET_MS: u64 = 4_000;
 const SERVICE_TYPE: &str = "_stagesync._tcp.local.";
 const VERSION_MISMATCH_PREFIX: &str = "VERSION_MISMATCH:";
 const RECENT_HEALTH_TIMEOUT_MS: u64 = 1_500;
+/// Web `returnToLauncher` fallback when Tauri invoke is missing (remote LAN / no IPC inject).
+/// Keep in sync with `apps/web/src/lib/desktopBridge.ts` (`RETURN_TO_LAUNCHER_HREF`).
+#[allow(dead_code)] // SSOT string for web sync + unit tests (`return_to_launcher_url_tests`)
+pub(crate) const RETURN_TO_LAUNCHER_HREF: &str = "stagesync://launcher/return";
 
 #[derive(Default)]
 pub struct SidecarRuntime {
@@ -459,6 +465,40 @@ pub(crate) fn navigate_to_launcher(app: &AppHandle, nav: &LauncherNav) -> Result
         .map_err(|e| e.to_string())
 }
 
+/// True for the web→shell return sentinel (`stagesync://launcher/return`).
+pub(crate) fn is_return_to_launcher_url(url: &Url) -> bool {
+    url.scheme() == "stagesync" && url.host_str() == Some("launcher")
+}
+
+/// Kill local sidecar (if any) and navigate back to the bundled Launcher.
+pub(crate) fn perform_return_to_launcher(app: &AppHandle) -> Result<(), String> {
+    let runtime = app.state::<Arc<SidecarRuntime>>();
+    runtime.kill_child();
+    let nav = app.state::<Arc<LauncherNav>>();
+    navigate_to_launcher(app, nav.as_ref())
+}
+
+/// Bridge for mid-session return when `window.__TAURI__` is absent (remote host origin,
+/// or local :4000 without IPC inject). Marks every WebView document as a Tauri shell and
+/// intercepts `stagesync://launcher/return` navigations.
+pub fn return_to_launcher_plugin() -> TauriPlugin<tauri::Wry> {
+    PluginBuilder::new("stagesync-return-launcher")
+        .js_init_script(
+            r#"try{Object.defineProperty(window,"__STAGESYNC_TAURI_SHELL__",{value:!0,configurable:!0})}catch(_e){window.__STAGESYNC_TAURI_SHELL__=!0}"#,
+        )
+        .on_navigation(|webview, url| {
+            if !is_return_to_launcher_url(url) {
+                return true;
+            }
+            let app = webview.app_handle().clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = perform_return_to_launcher(&app);
+            });
+            false
+        })
+        .build()
+}
+
 /// Prefer private LAN IPv4; skip loopback / link-local; deprioritize Docker bridge `172.17/16`.
 pub(crate) fn pick_mdns_ipv4<'a, I>(addrs: I) -> Option<String>
 where
@@ -553,13 +593,8 @@ pub async fn cancel_local_host(runtime: State<'_, Arc<SidecarRuntime>>) -> Resul
 
 /// Kill local sidecar (if any) and navigate WebView back to the bundled Launcher.
 #[tauri::command]
-pub async fn return_to_launcher(
-    app: AppHandle,
-    runtime: State<'_, Arc<SidecarRuntime>>,
-    nav: State<'_, Arc<LauncherNav>>,
-) -> Result<(), String> {
-    runtime.kill_child();
-    navigate_to_launcher(&app, nav.as_ref())
+pub async fn return_to_launcher(app: AppHandle) -> Result<(), String> {
+    perform_return_to_launcher(&app)
 }
 
 #[tauri::command]
@@ -1020,6 +1055,27 @@ mod pick_mdns_ipv4_tests {
             pick_mdns_ipv4(addrs.iter()).as_deref(),
             Some("169.254.10.2")
         );
+    }
+}
+
+#[cfg(test)]
+mod return_to_launcher_url_tests {
+    use super::*;
+
+    #[test]
+    fn matches_sentinel_href() {
+        let url = Url::parse(RETURN_TO_LAUNCHER_HREF).unwrap();
+        assert!(is_return_to_launcher_url(&url));
+    }
+
+    #[test]
+    fn rejects_unrelated_urls() {
+        assert!(!is_return_to_launcher_url(
+            &Url::parse("http://127.0.0.1:4000/admin").unwrap()
+        ));
+        assert!(!is_return_to_launcher_url(
+            &Url::parse("stagesync://other/return").unwrap()
+        ));
     }
 }
 

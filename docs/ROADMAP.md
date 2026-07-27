@@ -24,7 +24,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0** | **Overture** — stabilne wydanie + kompletny parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; must A–E + Faza D + OSMD/migration/wand w kodzie; **G1–G10** residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) · [TODO.md](./TODO.md) |
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw hosta | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
-| **5.3** | **Colors & Channels** — multi-out HW + nazwane skóry | Po residual 5.2.x; runtime gate `maxChannelCount` | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
+| **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **5.x** (po 5.3) | **Pitch & FX Busses** — Track Pitch + expanded busses / send-return | Przed major 6.0 | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0+** | Live Processing & Master Show Controller | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
 | **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
@@ -87,22 +87,24 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Dostarczone:** Operator PIN; scenic theme lock + `STAGESYNC_THEME_DEFAULT`; Mixer bus→bus (anti-cycle); Cues Sampler; Safety Net Master/Spare (ręczne Przejmij); Performer/Console Offline-First (zip apply); MIDI PC channel; sideload APK z hosta.
 
-**Świadome OUT / residual:** fizyczne Out 3–4 (HW); Safety Net auto-election; Offline delta/CacheStorage; OAuth; macierz motywów 4 profili — [TODO.md](./TODO.md).
+**Świadome OUT / residual przy cutcie 5.2:** fizyczne Out 3–4 (HW) → **5.3**; Safety Net auto-election; Offline delta/CacheStorage; OAuth — [TODO.md](./TODO.md).
 
 ### Po 5.2.0 / residual 5.2.x
 
 - **Cut `v5.2.1`:** Admin **Przywróć…** (`.bak` / ZIP); opcjonalny Sentry; polish Admin/Client (Host 2×2, Button chrome, Client header); usunięta scenic theme lock — lokalny motyw + `STAGESYNC_THEME_DEFAULT`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - **Cut `v5.2.2`:** design system shared + launcher tokeny; polish Host/Client. Historia: [CHANGELOG.md](../CHANGELOG.md).
 - **Cut `v5.2.3`:** lokalny host Console (NSD / Connect), Admin Host mobile (akordeon + górny pasek), a11y / Timeline dock. Historia: [CHANGELOG.md](../CHANGELOG.md).
-- Dalsze patche **5.2.x** — higiena / ops; checklista: [TODO.md](./TODO.md).
+- Dalsze patche **5.2.x** (do `v5.2.11`) — higiena / ops; historia: [CHANGELOG.md](../CHANGELOG.md).
 
-### 5.3 — **Colors & Channels** (plan)
+### 5.3.0 — **Colors & Channels** — **wydane 2026-07-27**
 
-Hero: multi-out HW + **5 nazwanych skór** (Booth Amber / Daylight / Midnight Cyan / Matrix Green / Neon Ember). **Nie** otwiera Live Input / Audio Suite / automation / VSTi ([ADR 0018](./adr/0018-future-audio-architecture.md)).
+Tag `v5.3.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
-- Mixer: fizyczne Out 3–4+ (ChannelMerger N, CRUD patchy, track/bus/cue → `hw_out`, paseki HW) tylko gdy `maxChannelCount ≥ 4` (brak atrap — [ADR 0011](./adr/0011-ui-parity-behavior.md))
-- Motywy: `data-theme=<profileId>`; THM-03 niezmienniki (Solo/Mute/OSMD/playhead≠locator); bez scenic lock
-- Residual ops **równolegle** (nie hero 5.3): Safety Net auto-election; Offline delta; OAuth; GUI mobile — [TODO.md](./TODO.md)
+**Dostarczone:** Mixer multi-out HW (ChannelMerger N, CRUD patchy, track/bus/cue → `hw_out`) gdy `maxChannelCount ≥ 4` — przy stereo strefa HW Out ukryta (bez atrap); oczka widoczności stref Mixer; **5 nazwanych skór** (Booth Amber / Daylight / Midnight Cyan / Matrix Green / Neon Ember, `data-theme`); menu OS Plik/Edycja/Widok (Wygląd) rozszerzone o Timeline/Client.
+
+**Nie otwiera:** Live Input / Audio Suite / automation / VSTi ([ADR 0018](./adr/0018-future-audio-architecture.md)).
+
+**Residual ops (równolegle, nie hero):** HW smoke multi-out na ≥ 4 ch; G1–G10; Safety Net auto-election; Offline delta; GUI mobile — [TODO.md](./TODO.md).
 
 ### 5.x (po 5.3) — **Pitch & FX Busses**
 

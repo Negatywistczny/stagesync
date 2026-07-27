@@ -48,7 +48,11 @@
   /* Same content-sized flex as Audio — no max-width hole / squeeze. */
   flex: 0 0 auto;
   max-width: none;
-  /* Separator to pinned Click/Master is `.masterRail` left border. */
+  /*
+   * Last scroll-bank zone only (Busy when HW hidden, else HW Out).
+   * Drops right border/margin so `.masterRail` left border is the sole
+   * divider — mid-bank zones keep `.zone` border (Audio|Busy|HW).
+   */
   border-right: none;
   margin-right: 0;
 }
@@ -60,9 +64,17 @@
   justify-content: space-between;
   gap: var(--ss-space-2);
   margin-bottom: var(--ss-space-2);
-  min-height: var(--ss-space-8);
+  min-height: var(--ss-touch-min);
   min-width: 0;
   max-width: 100%;
+}
+
+.zoneHeadStart {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-1);
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .zoneTitle {
@@ -73,6 +85,23 @@
   letter-spacing: var(--ss-tracking-wide);
   text-transform: uppercase;
   color: var(--ss-color-text-muted);
+}
+
+.zoneEye {
+  flex: 0 0 auto;
+  color: var(--ss-color-text-muted);
+}
+
+.zoneEye[aria-pressed="false"] {
+  color: var(--ss-color-text);
+}
+
+.zoneCollapsed {
+  min-width: fit-content;
+}
+
+.zoneCollapsed .zoneHead {
+  margin-bottom: 0;
 }
 
 .addBusBtn {
@@ -125,15 +154,27 @@
 /* Pinned Click + Master — sibling of scroll pane (opaque over scrolled strips). */
 .masterRail {
   display: flex;
+  flex-direction: column;
   flex: 0 0 auto;
   flex-shrink: 0;
   align-items: stretch;
-  gap: var(--ss-space-2);
+  min-width: 0;
+  min-height: 0;
   padding-left: var(--ss-space-2);
   margin-left: 0;
   border-left: 2px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-bg) 92%, var(--ss-color-surface));
   z-index: var(--ss-z-sticky);
+}
+
+.masterRailStrips {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--ss-space-2);
+  min-width: 0;
+  min-height: 0;
 }
 
 .empty {

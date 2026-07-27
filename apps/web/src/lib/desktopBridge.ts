@@ -48,12 +48,14 @@ function tauriInternals(): TauriInternals | undefined {
 }
 
 /**
- * Sidecar desktop serves UI from http://127.0.0.1 — Tauri does not inject
+ * Sidecar desktop serves UI from http://127.0.0.1 — Tauri may omit
  * `window.__TAURI__` on that origin. Server sets this marker via STAGESYNC_SHELL.
+ * Shell plugin also sets `__STAGESYNC_TAURI_SHELL__` on every WebView document.
  */
 function sidecarDesktopShell(): boolean {
   if (typeof window === "undefined") return false;
   const w = window as unknown as Record<string, unknown>;
+  if (w["__STAGESYNC_TAURI_SHELL__"] === true) return true;
   if (w["__STAGESYNC_SHELL__"] === "desktop") return true;
   if (typeof document !== "undefined") {
     const meta = document.querySelector('meta[name="stagesync-shell"]');
@@ -67,6 +69,25 @@ function sidecarDesktopShell(): boolean {
   }
   return false;
 }
+
+/**
+ * Explicit shell markers only — not the bare `:4000` hostname heuristic
+ * (that false-positives a plain browser opening the local host).
+ */
+function hasExplicitTauriShellMarker(): boolean {
+  if (typeof window === "undefined") return false;
+  const w = window as unknown as Record<string, unknown>;
+  if (w["__STAGESYNC_TAURI_SHELL__"] === true) return true;
+  if (w["__STAGESYNC_SHELL__"] === "desktop") return true;
+  if (typeof document !== "undefined") {
+    const meta = document.querySelector('meta[name="stagesync-shell"]');
+    if (meta?.getAttribute("content") === "desktop") return true;
+  }
+  return false;
+}
+
+/** Keep in sync with `apps/desktop/src-tauri/src/launcher.rs` (`RETURN_TO_LAUNCHER_HREF`). */
+export const RETURN_TO_LAUNCHER_HREF = "stagesync://launcher/return";
 
 /** Returns true when running inside the Tauri desktop shell. */
 export function isDesktopShell(): boolean {
@@ -280,15 +301,29 @@ export function openExternalUrl(url: string): Promise<void> {
   return Promise.resolve();
 }
 
-/** True when desktop can navigate back to the bundled Launcher (IPC available). */
+/** True when desktop can navigate back to the bundled Launcher. */
 export function canReturnToLauncher(): boolean {
-  return isDesktopShell() && tauriInvokeAvailable();
+  return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
 }
 
-/** Kill local sidecar (if any) and return WebView to the host picker. */
+/**
+ * Kill local sidecar (if any) and return WebView to the host picker.
+ * Prefers Tauri invoke; falls back to a navigation sentinel intercepted by the shell
+ * when IPC is missing (remote LAN origin, or local :4000 without `__TAURI__` inject).
+ */
 export function returnToLauncher(): Promise<void> {
-  if (!canReturnToLauncher()) {
-    return Promise.reject(new Error("Powrót do Launchera niedostępny w tej sesji"));
+  if (tauriInvokeAvailable()) {
+    return tauriInvoke<void>("return_to_launcher", {}).catch(() => {
+      assignReturnToLauncherHref();
+    });
   }
-  return tauriInvoke<void>("return_to_launcher", {});
+  if (hasExplicitTauriShellMarker()) {
+    assignReturnToLauncherHref();
+    return Promise.resolve();
+  }
+  return Promise.reject(new Error("Powrót do Launchera niedostępny w tej sesji"));
+}
+
+function assignReturnToLauncherHref(): void {
+  window.location.assign(RETURN_TO_LAUNCHER_HREF);
 }

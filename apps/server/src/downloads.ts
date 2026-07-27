@@ -90,9 +90,8 @@ function sendMissingApk(res: Response, filename: string): void {
     .type("text/plain; charset=utf-8")
     .send(
       `StageSync: brak pliku ${filename} na hoście.\n` +
-        `Artefakt nie jest częścią tej instalacji (brak w bundlu / data/downloads). ` +
-        `Pobierz z GitHub Releases albo zbuduj APK lokalnie — host serwuje go automatycznie.\n` +
-        `Patrz docs/MOBILE.md.`,
+        `Artefakt nie leży w bundlu produktu ani w data/downloads. ` +
+        `Pobierz z GitHub Releases albo zbuduj APK lokalnie (patrz docs/MOBILE.md).\n`,
     );
 }
 

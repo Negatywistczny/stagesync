@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { Button } from "@stagesync/ui";
 import { emptyPeakHold, type Project } from "@stagesync/shared";
 import type { TrackSelection } from "../../../lib/timelineSelection.js";
 import {
@@ -17,6 +18,14 @@ import {
   setMetronomePrefs,
   type MetronomePrefs,
 } from "../../../lib/metronomePrefs.js";
+import {
+  loadMixerZoneVisibility,
+  saveMixerZoneVisibility,
+  toggleMixerZoneVisibility,
+  type MixerZoneId,
+  type MixerZoneVisibility,
+} from "../../../lib/mixerZoneVisibility.js";
+import { IconEye, IconEyeOff } from "../../icons.js";
 import { ChannelStripControls } from "./ChannelStripControls.js";
 import type {
   ChannelStripCallbacks,
@@ -48,6 +57,7 @@ export type MixerSurfaceProps = {
   clickCallbacks: ClickStripCallbacks;
   clickMuted: boolean;
   playing: boolean;
+  onAddAudioTrack: () => void;
   onAddBus: () => void;
   onAddHwOut?: () => void;
   onHwGainChange?: (hwOutputId: string, gainDb: number) => void;
@@ -55,6 +65,37 @@ export type MixerSurfaceProps = {
   onHwRemove?: (hwOutputId: string) => void;
   onEmptyDoubleClick?: (e: MouseEvent) => void;
 };
+
+function ZoneEyeToggle({
+  zoneLabel,
+  visible,
+  onToggle,
+}: {
+  zoneLabel: string;
+  visible: boolean;
+  onToggle: () => void;
+}) {
+  const label = visible
+    ? `Ukryj strefę ${zoneLabel}`
+    : `Pokaż strefę ${zoneLabel}`;
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      iconOnly
+      className={styles.zoneEye}
+      aria-label={label}
+      title={label}
+      aria-pressed={visible}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+    >
+      {visible ? <IconEye /> : <IconEyeOff />}
+    </Button>
+  );
+}
 
 export function MixerSurface({
   project,
@@ -71,6 +112,7 @@ export function MixerSurface({
   clickCallbacks,
   clickMuted,
   playing,
+  onAddAudioTrack,
   onAddBus,
   onAddHwOut,
   onHwGainChange,
@@ -97,6 +139,17 @@ export function MixerSurface({
   const [hwCap, setHwCap] = useState<AudioHwCapability>(() =>
     getAudioHwCapability(),
   );
+  const [zoneVis, setZoneVis] = useState<MixerZoneVisibility>(() =>
+    loadMixerZoneVisibility(),
+  );
+
+  function setZoneVisible(zoneId: MixerZoneId) {
+    setZoneVis((prev) => {
+      const next = toggleMixerZoneVisibility(prev, zoneId);
+      saveMixerZoneVisibility(next);
+      return next;
+    });
+  }
 
   useEffect(() => {
     refreshAudioHwCapability();
@@ -160,136 +213,187 @@ export function MixerSurface({
     >
       <div className={styles.bank}>
         <div className={styles.scrollBank}>
-          <section className={styles.zone} aria-label="Ścieżki audio">
+          <section
+            className={[
+              styles.zone,
+              zoneVis.audio ? "" : styles.zoneCollapsed,
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            aria-label="Ścieżki audio"
+          >
             <div className={styles.zoneHead}>
-              <span className={styles.zoneTitle}>Audio</span>
-            </div>
-            <div className={styles.strips}>
-              {project.audioTracks.map((track) => {
-                const callbacks = buildCallbacks(track.id);
-                const reading = meters.tracks[track.id];
-                const channelMode =
-                  track.channelMode === "mono" ? "mono" : "stereo";
-                const outVal = serializeOutputDest(track.output);
-                return (
-                  <ChannelStripControls
-                    key={track.id}
-                    layout="mixer"
-                    strip={{
-                      trackId: track.id,
-                      name: track.name,
-                      muted: Boolean(track.muted),
-                      gainDb: track.gainDb ?? 0,
-                      pan: track.pan ?? 0,
-                      channelMode,
-                      soloed: soloAudioTrackIds.includes(track.id),
-                      selected: trackSelection.ids.includes(track.id),
-                      meterDb: reading?.liveDb,
-                      meterDbR: reading?.liveDbR,
-                      hold: reading?.hold,
-                      color: track.color,
-                      icon: track.icon,
-                      kind: "track",
-                      outputValue: outVal,
-                      outputOptions: trackOutputOptions,
-                      outputDisabled:
-                        playing &&
-                        (outVal.startsWith("hw:") || hwOptions.length > 0),
-                    }}
-                    callbacks={{
-                      ...callbacks,
-                      onHoldClear: () => meters.clearTrackHold(track.id),
-                    }}
-                    renaming={renamingTrackId === track.id}
-                    renameValue={
-                      renamingTrackId === track.id ? renameValue : track.name
-                    }
-                  />
-                );
-              })}
-              {project.audioTracks.length === 0 ? (
-                <p className={styles.empty} role="status" aria-live="polite">
-                  Brak ścieżek — dwuklik albo „+ Dodaj Ścieżkę” na Timeline.
-                </p>
+              <div className={styles.zoneHeadStart}>
+                <span className={styles.zoneTitle}>Audio</span>
+                <ZoneEyeToggle
+                  zoneLabel="Audio"
+                  visible={zoneVis.audio}
+                  onToggle={() => setZoneVisible("audio")}
+                />
+              </div>
+              {zoneVis.audio ? (
+                <button
+                  type="button"
+                  className={styles.addBusBtn}
+                  aria-label="Dodaj Ścieżkę"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddAudioTrack();
+                  }}
+                >
+                  + Dodaj Ścieżkę
+                </button>
               ) : null}
             </div>
+            {zoneVis.audio ? (
+              <div className={styles.strips}>
+                {project.audioTracks.map((track) => {
+                  const callbacks = buildCallbacks(track.id);
+                  const reading = meters.tracks[track.id];
+                  const channelMode =
+                    track.channelMode === "mono" ? "mono" : "stereo";
+                  const outVal = serializeOutputDest(track.output);
+                  return (
+                    <ChannelStripControls
+                      key={track.id}
+                      layout="mixer"
+                      strip={{
+                        trackId: track.id,
+                        name: track.name,
+                        muted: Boolean(track.muted),
+                        gainDb: track.gainDb ?? 0,
+                        pan: track.pan ?? 0,
+                        channelMode,
+                        soloed: soloAudioTrackIds.includes(track.id),
+                        selected: trackSelection.ids.includes(track.id),
+                        meterDb: reading?.liveDb,
+                        meterDbR: reading?.liveDbR,
+                        hold: reading?.hold,
+                        color: track.color,
+                        icon: track.icon,
+                        kind: "track",
+                        outputValue: outVal,
+                        outputOptions: trackOutputOptions,
+                        outputDisabled:
+                          playing &&
+                          (outVal.startsWith("hw:") || hwOptions.length > 0),
+                      }}
+                      callbacks={{
+                        ...callbacks,
+                        onHoldClear: () => meters.clearTrackHold(track.id),
+                      }}
+                      renaming={renamingTrackId === track.id}
+                      renameValue={
+                        renamingTrackId === track.id ? renameValue : track.name
+                      }
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
           </section>
 
           <section
-            className={[styles.zone, styles.busZone].join(" ")}
+            className={[
+              styles.zone,
+              /* Flush right only when Busy is last scroll zone (no HW). */
+              hwCap.uiAllowed ? "" : styles.busZone,
+              zoneVis.bus ? "" : styles.zoneCollapsed,
+            ]
+              .filter(Boolean)
+              .join(" ")}
             aria-label="Busy"
           >
             <div className={styles.zoneHead}>
-              <span className={styles.zoneTitle}>Busy</span>
-              <button
-                type="button"
-                className={styles.addBusBtn}
-                aria-label="Dodaj Bus"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddBus();
-                }}
-              >
-                + Dodaj Bus
-              </button>
-            </div>
-            <div className={styles.strips}>
-              {busses.length === 0 ? (
-                <p className={styles.empty} role="status" aria-live="polite">
-                  Brak busów — użyj „+ Dodaj Bus”.
-                </p>
+              <div className={styles.zoneHeadStart}>
+                <span className={styles.zoneTitle}>Busy</span>
+                <ZoneEyeToggle
+                  zoneLabel="Busy"
+                  visible={zoneVis.bus}
+                  onToggle={() => setZoneVisible("bus")}
+                />
+              </div>
+              {zoneVis.bus ? (
+                <button
+                  type="button"
+                  className={styles.addBusBtn}
+                  aria-label="Dodaj Bus"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddBus();
+                  }}
+                >
+                  + Dodaj Bus
+                </button>
               ) : null}
-              {busses.map((bus) => {
-                const callbacks = buildBusCallbacks(bus.id);
-                const reading = meters.busses[bus.id];
-                const channelMode =
-                  bus.channelMode === "mono" ? "mono" : "stereo";
-                const outVal = serializeOutputDest(bus.output);
-                return (
-                  <ChannelStripControls
-                    key={bus.id}
-                    layout="mixer"
-                    strip={{
-                      trackId: bus.id,
-                      name: bus.name,
-                      muted: Boolean(bus.muted),
-                      gainDb: bus.gainDb ?? 0,
-                      pan: bus.pan ?? 0,
-                      channelMode,
-                      soloed: soloBusIds.includes(bus.id),
-                      selected: false,
-                      meterDb: reading?.liveDb,
-                      meterDbR: reading?.liveDbR,
-                      hold: reading?.hold,
-                      kind: "bus",
-                      outputValue: outVal,
-                      outputOptions: busOutputOptionsFor(bus.id),
-                      outputDisabled:
-                        playing &&
-                        (outVal.startsWith("hw:") || hwOptions.length > 0),
-                    }}
-                    callbacks={{
-                      ...callbacks,
-                      onHoldClear: () => meters.clearBusHold(bus.id),
-                    }}
-                    renaming={renamingBusId === bus.id}
-                    renameValue={
-                      renamingBusId === bus.id ? busRenameValue : bus.name
-                    }
-                  />
-                );
-              })}
             </div>
+            {zoneVis.bus ? (
+              <div className={styles.strips}>
+                {busses.map((bus) => {
+                  const callbacks = buildBusCallbacks(bus.id);
+                  const reading = meters.busses[bus.id];
+                  const channelMode =
+                    bus.channelMode === "mono" ? "mono" : "stereo";
+                  const outVal = serializeOutputDest(bus.output);
+                  return (
+                    <ChannelStripControls
+                      key={bus.id}
+                      layout="mixer"
+                      strip={{
+                        trackId: bus.id,
+                        name: bus.name,
+                        muted: Boolean(bus.muted),
+                        gainDb: bus.gainDb ?? 0,
+                        pan: bus.pan ?? 0,
+                        channelMode,
+                        soloed: soloBusIds.includes(bus.id),
+                        selected: false,
+                        meterDb: reading?.liveDb,
+                        meterDbR: reading?.liveDbR,
+                        hold: reading?.hold,
+                        kind: "bus",
+                        outputValue: outVal,
+                        outputOptions: busOutputOptionsFor(bus.id),
+                        outputDisabled:
+                          playing &&
+                          (outVal.startsWith("hw:") || hwOptions.length > 0),
+                      }}
+                      callbacks={{
+                        ...callbacks,
+                        onHoldClear: () => meters.clearBusHold(bus.id),
+                      }}
+                      renaming={renamingBusId === bus.id}
+                      renameValue={
+                        renamingBusId === bus.id ? busRenameValue : bus.name
+                      }
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
           </section>
 
           {hwCap.uiAllowed ? (
             <section
-              className={[styles.zone, styles.busZone].join(" ")}
+              className={[
+                styles.zone,
+                styles.busZone,
+                zoneVis.hw ? "" : styles.zoneCollapsed,
+              ]
+                .filter(Boolean)
+                .join(" ")}
               aria-label="Wyjścia HW"
             >
               <div className={styles.zoneHead}>
-                <span className={styles.zoneTitle}>HW Out</span>
-                {onAddHwOut ? (
+                <div className={styles.zoneHeadStart}>
+                  <span className={styles.zoneTitle}>HW Out</span>
+                  <ZoneEyeToggle
+                    zoneLabel="HW Out"
+                    visible={zoneVis.hw}
+                    onToggle={() => setZoneVisible("hw")}
+                  />
+                </div>
+                {zoneVis.hw && onAddHwOut ? (
                   <button
                     type="button"
                     className={styles.addBusBtn}
@@ -303,87 +407,100 @@ export function MixerSurface({
                   </button>
                 ) : null}
               </div>
-              <div className={styles.strips}>
-                {hwOuts.length === 0 ? (
-                  <p className={styles.empty} role="status" aria-live="polite">
-                    Brak patchy HW — „+ Dodaj HW” (kanały {hwCap.maxChannelCount}
-                    ).
-                  </p>
-                ) : null}
-                {hwOuts.map((row) => {
-                  const reading = meters.hwOuts?.[row.id];
-                  return (
-                    <HwOutStrip
-                      key={row.id}
-                      id={row.id}
-                      name={row.name}
-                      channelOffset={row.channelOffset}
-                      channelMode={
-                        row.channelMode === "mono" ? "mono" : "stereo"
-                      }
-                      gainDb={row.gainDb ?? 0}
-                      muted={Boolean(row.muted)}
-                      meterDb={reading?.liveDb}
-                      meterDbR={reading?.liveDbR}
-                      hold={reading?.hold ?? emptyPeakHold()}
-                      onGainChange={(v) => onHwGainChange?.(row.id, v)}
-                      onGainReset={() => onHwGainChange?.(row.id, 0)}
-                      onMuteClick={(e) => {
-                        e.stopPropagation();
-                        onHwMuteToggle?.(row.id);
-                      }}
-                      onHoldClear={() => meters.clearHwHold?.(row.id)}
-                      onRemove={() => onHwRemove?.(row.id)}
-                    />
-                  );
-                })}
-              </div>
+              {zoneVis.hw ? (
+                <div className={styles.strips}>
+                  {hwOuts.length === 0 ? (
+                    <p className={styles.empty} role="status" aria-live="polite">
+                      Brak patchy HW — „+ Dodaj HW” (kanały {hwCap.maxChannelCount}
+                      ).
+                    </p>
+                  ) : null}
+                  {hwOuts.map((row) => {
+                    const reading = meters.hwOuts?.[row.id];
+                    return (
+                      <HwOutStrip
+                        key={row.id}
+                        id={row.id}
+                        name={row.name}
+                        channelOffset={row.channelOffset}
+                        channelMode={
+                          row.channelMode === "mono" ? "mono" : "stereo"
+                        }
+                        gainDb={row.gainDb ?? 0}
+                        muted={Boolean(row.muted)}
+                        meterDb={reading?.liveDb}
+                        meterDbR={reading?.liveDbR}
+                        hold={reading?.hold ?? emptyPeakHold()}
+                        onGainChange={(v) => onHwGainChange?.(row.id, v)}
+                        onGainReset={() => onHwGainChange?.(row.id, 0)}
+                        onMuteClick={(e) => {
+                          e.stopPropagation();
+                          onHwMuteToggle?.(row.id);
+                        }}
+                        onHoldClear={() => meters.clearHwHold?.(row.id)}
+                        onRemove={() => onHwRemove?.(row.id)}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
             </section>
-          ) : (
-            <section className={styles.zone} aria-label="Wyjścia HW">
-              <div className={styles.zoneHead}>
-                <span className={styles.zoneTitle}>HW Out</span>
-              </div>
-              <p className={styles.empty} role="status">
-                Multi-out wymaga urządzenia z ≥ 4 kanałami (teraz{" "}
-                {hwCap.maxChannelCount}). Ustaw Quad/5.1 w systemie audio.
-              </p>
-            </section>
-          )}
+          ) : null}
         </div>
 
-        <div className={styles.masterRail}>
-          <ClickStrip
-            state={{
-              muted: clickMuted,
-              gainDb: metroPrefs.masterGainDb,
-              meterDb: meters.click.liveDb,
-              hold: meters.click.hold,
-            }}
-            callbacks={{
-              onMuteClick: clickCallbacks.onMuteClick,
-              onGainChange: (gainDb) => {
-                setMetronomePrefs({ masterGainDb: gainDb });
-              },
-              onGainReset: () => {
-                setMetronomePrefs({ masterGainDb: 0 });
-              },
-              onHoldClear: () => meters.clearClickHold(),
-            }}
-          />
-          <MasterStrip
-            state={{
-              gainDb: project.masterGainDb ?? 0,
-              meterL: meters.master.liveL,
-              meterR: meters.master.liveR,
-              holdL: meters.master.holdL,
-              holdR: meters.master.holdR,
-            }}
-            callbacks={{
-              ...masterCallbacks,
-              onHoldClear: () => meters.clearMasterHold(),
-            }}
-          />
+        <div
+          className={[
+            styles.masterRail,
+            zoneVis.master ? "" : styles.zoneCollapsed,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <div className={styles.zoneHead}>
+            <div className={styles.zoneHeadStart}>
+              <span className={styles.zoneTitle}>Master</span>
+              <ZoneEyeToggle
+                zoneLabel="Master"
+                visible={zoneVis.master}
+                onToggle={() => setZoneVisible("master")}
+              />
+            </div>
+          </div>
+          {zoneVis.master ? (
+            <div className={styles.masterRailStrips}>
+              <ClickStrip
+                state={{
+                  muted: clickMuted,
+                  gainDb: metroPrefs.masterGainDb,
+                  meterDb: meters.click.liveDb,
+                  hold: meters.click.hold,
+                }}
+                callbacks={{
+                  onMuteClick: clickCallbacks.onMuteClick,
+                  onGainChange: (gainDb) => {
+                    setMetronomePrefs({ masterGainDb: gainDb });
+                  },
+                  onGainReset: () => {
+                    setMetronomePrefs({ masterGainDb: 0 });
+                  },
+                  onHoldClear: () => meters.clearClickHold(),
+                }}
+              />
+              <MasterStrip
+                state={{
+                  gainDb: project.masterGainDb ?? 0,
+                  meterL: meters.master.liveL,
+                  meterR: meters.master.liveR,
+                  holdL: meters.master.holdL,
+                  holdR: meters.master.holdR,
+                }}
+                callbacks={{
+                  ...masterCallbacks,
+                  onHoldClear: () => meters.clearMasterHold(),
+                }}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

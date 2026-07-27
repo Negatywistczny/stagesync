@@ -224,16 +224,16 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
         mode === "performer" &&
         !performerReady ? (
           <p className={styles.muted} role="status">
-            Brak pliku Performer w tej instalacji (
+            Host nie serwuje teraz Performer APK (
             {performerUrl ?? "/downloads/stagesync-performer.apk"}). Pobierz z
-            Releases albo zbuduj APK lokalnie — host serwuje go automatycznie.
+            Releases albo zbuduj APK lokalnie — patrz dokumentacja Mobile.
           </p>
         ) : null}
         {!loading && !error && mode === "console" && !consoleReady ? (
           <p className={styles.muted} role="status">
-            Brak pliku Console w tej instalacji (
+            Host nie serwuje teraz Console APK (
             {consoleUrl ?? "/downloads/stagesync-console.apk"}). Pobierz z
-            Releases albo zbuduj APK lokalnie — host serwuje go automatycznie.
+            Releases albo zbuduj APK lokalnie — patrz dokumentacja Mobile.
           </p>
         ) : null}
         {activeUrl && qrSvg ? (
@@ -261,7 +261,7 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
           </p>
         ) : (
           <p className={styles.muted}>
-            QR prowadzi do pliku APK na tym hoście (sideload, bez Google Play).
+            QR prowadzi do pliku APK na tym hoście.
           </p>
         )}
       </div>
@@ -324,6 +324,7 @@ export function DesktopMenuBridge() {
   const [fileBusy, setFileBusy] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
   const onTimeline = location.pathname.startsWith("/timeline/");
+  const onClient = location.pathname.startsWith("/client");
 
   useEffect(() => {
     if (!isDesktopShell()) return;
@@ -505,8 +506,8 @@ export function DesktopMenuBridge() {
           setPrefsOpen(true);
           break;
         case "appearance":
-          // Timeline opens its Wygląd popover; elsewhere → Preferencje → Ogólne.
-          if (!onTimeline) {
+          // Timeline / Client open in-shell Wygląd; Admin → Preferencje → Ogólne.
+          if (!onTimeline && !onClient) {
             setPrefsTab("general");
             setPrefsOpen(true);
           }
@@ -610,6 +611,7 @@ export function DesktopMenuBridge() {
     goSetlistNeighbor,
     location.pathname,
     navigate,
+    onClient,
     onTimeline,
     onTransportPlay,
     onTransportStop,

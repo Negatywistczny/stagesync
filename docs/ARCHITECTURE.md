@@ -6,8 +6,8 @@
 |------|----------|--------|
 | [README](../README.md) | Uruchomienie | Historia, backlog, pełne reguły |
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
-| [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.2.0`) | Odhaczone / historia wydań |
-| [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → 5.1 → 5.2 → …) | Bieżąca checklista (→ TODO) |
+| [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.3.0`) | Odhaczone / historia wydań |
+| [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → 5.1 → 5.2 → 5.3 → …) | Bieżąca checklista (→ TODO) |
 | [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [ui-shell-inventory](./ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |

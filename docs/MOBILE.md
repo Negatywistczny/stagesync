@@ -1,6 +1,6 @@
 # StageSync — Mobile (Performer + Console)
 
-Operator sketch for Android sideload and PWA (**v5.2** Pocket Stage). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](./adr/0016-android-performer-console.md)).
+Operator sketch for Android APK install and PWA (**v5.3** Colors & Channels). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](./adr/0016-android-performer-console.md)).
 
 ## Performer vs Console
 
@@ -14,7 +14,7 @@ Operator sketch for Android sideload and PWA (**v5.2** Pocket Stage). Product na
 
 Performer pozostaje read-only Client-only ([ADR 0016](./adr/0016-android-performer-console.md)).
 
-## Instalacja (sideload, bez Google Play)
+## Instalacja
 
 1. Zbuduj APK lokalnie albo pobierz z GitHub Releases / hosta.
 2. Na Androidzie włącz „Instalacja z nieznanych źródeł” dla przeglądarki / menedżera plików.
@@ -64,7 +64,7 @@ W Admin → Host → **Połączenie & Sieć** (lewa kolumna u góry; kafelki Per
 
 W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień — wklejenie adresu.
 
-Gdy plik APK **nie jest częścią instalacji** (brak w bundlu desktop / `data/downloads`), UI pokazuje **pusty stan** (komunikat). Endpoint zwraca **404** z jasnym tekstem. Operator **nie** musi ręcznie kopiować APK do katalogu Documents.
+Gdy plik APK **nie jest częścią instalacji** (brak w bundlu desktop / `data/downloads`), UI pokazuje **pusty stan** (komunikat). Endpoint zwraca **404** z jasnym tekstem. Operator **nie** musi ręcznie kopiować APK do katalogu Documents. Admin sprawdza dostępność przez **same-origin** `HEAD /downloads/…` (nie przez absolutny URL LAN) — dzięki temu lokalny host otwarty jako `localhost` nie myli braku CORS z brakiem pliku.
 
 Host szuka APK automatycznie (pierwszy istniejący, niepusty plik wygrywa):
 
@@ -76,7 +76,7 @@ Desktop (Tauri): lokalny host trzyma projekty w `~/Documents/StageSync`, a APK s
 
 W repo (sideload MVP) leżą debug APK: `data/downloads/stagesync-performer.apk` oraz `stagesync-console.apk` (build `assembleDebug` / `scripts/build-apk.sh`). Release signed — gdy CI / keystore.
 
-**Console local host — który APK zainstalować:** pakiet `com.stagesync.console.debug`, `versionName` zgodny z monorepo (obecnie 5.2.4), **`versionCode` ≥ 50213** (gdy host już działa — **Połącz z localhostem**; powiadomienie FG z **Otwórz aplikację** / **Zatrzymaj Host**; po `health-ok` launcher otwiera Admin mimo osobnego procesu `:host`; host pack bez Unicode property escapes w `path-to-regexp`; błąd startu z **Wyczyść** / ikoną **Pobierz logi** w nagłówku oraz **Pobierz logi diagnostyczne** pod banerem; `libnode` digidem 16 KB; Admin mobile: akordeon Host + stały górny pasek). Sprawdź w Ustawieniach Androida → Aplikacje → StageSync Console → zaawansowane / informacje o aplikacji. Starszy `versionCode` 50204 pada na imporcie Express (`\p{ID_Start}`); 50206 ma ICU-safe pack + log UI, ale może zostać na „Uruchamianie…” mimo gotowego hosta; 50207–50208 mają status READY / akcje w powiadomieniu, ale ponowne otwarcie launchera przy działającym hoście nadal oferowało „Uruchom” i mogło zawisnąć na starcie; 50209–50212 mają Connect/NSD / wcześniejsze buildy UI Admin mobile — użyj ≥50213 z cutu 5.2.4. APK z hosta i z Releases podpisane stałym kluczem sideload (`launch/android/sideload.keystore`); przy aktualizacji z paczki podpisanym innym kluczem (stare Releases CI) odinstaluj poprzednią aplikację raz.
+**Console local host — który APK zainstalować:** pakiet `com.stagesync.console.debug`, `versionName` zgodny z monorepo (obecnie 5.3.0), **`versionCode` ≥ 50213** (gdy host już działa — **Połącz z localhostem**; powiadomienie FG z **Otwórz aplikację** / **Zatrzymaj Host**; po `health-ok` launcher otwiera Admin mimo osobnego procesu `:host`; host pack bez Unicode property escapes w `path-to-regexp`; błąd startu z **Wyczyść** / ikoną **Pobierz logi** w nagłówku oraz **Pobierz logi diagnostyczne** pod banerem; `libnode` digidem 16 KB; Admin mobile: akordeon Host + stały górny pasek). Sprawdź w Ustawieniach Androida → Aplikacje → StageSync Console → zaawansowane / informacje o aplikacji. Starszy `versionCode` 50204 pada na imporcie Express (`\p{ID_Start}`); 50206 ma ICU-safe pack + log UI, ale może zostać na „Uruchamianie…” mimo gotowego hosta; 50207–50208 mają status READY / akcje w powiadomieniu, ale ponowne otwarcie launchera przy działającym hoście nadal oferowało „Uruchom” i mogło zawisnąć na starcie; 50209–50212 mają Connect/NSD / wcześniejsze buildy UI Admin mobile — użyj ≥50213 z cutu 5.2.4. APK z hosta i z Releases podpisane stałym kluczem sideload (`launch/android/sideload.keystore`); przy aktualizacji z paczki podpisanym innym kluczem (stare Releases CI) odinstaluj poprzednią aplikację raz.
 
 Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz fazę startu do `local-host-phase.txt` — po padnięciu `:host` launcher dokleja ostatnie linie do komunikatu błędu (tag logcat: `SsLocalHost`).
 
@@ -168,7 +168,7 @@ Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` albo uszkodzony build), UI pokazu
 
 ## Zakazy
 
-- Google Play; Capacitor/Cordova-as-magic; auto-update w tle.
+- Capacitor/Cordova-as-magic; auto-update w tle.
 - Natywny **Performer / Console na iOS** (Swift, TestFlight, App Store) — iOS = PWA `/client` only.
 - Sekrety / tokeny wbudowane w APK.
 - Audio / MIDI clock / synteza w procesie **Performer**.

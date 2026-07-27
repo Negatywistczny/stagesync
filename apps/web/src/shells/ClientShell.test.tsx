@@ -4,6 +4,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { DESKTOP_MENU_EVENT } from "../lib/desktopMenuEvents.js";
 import { ClientShell } from "./ClientShell.js";
 
 vi.mock("../lib/desktopBridge.js", () => ({
@@ -112,6 +113,29 @@ function startDrumsRole() {
 }
 
 describe("ClientShell chrome", () => {
+  it("does not force Client 44px touch targets on the desktop page root", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "ClientShell.module.css"),
+      "utf8",
+    );
+    const desktopPageBlock = css.match(/^\.page\s*\{([^}]*)\}/m)?.[1] ?? "";
+    // Unconditional page override would make Desktop Client buttons 44px vs Admin 36px.
+    expect(desktopPageBlock).not.toContain("--ss-touch-min-client");
+    expect(css).toMatch(
+      /@media\s*\(max-width:\s*768px\)\s*\{[\s\S]*?\.page\s*\{[^}]*--ss-touch-min:\s*var\(--ss-touch-min-client\)/,
+    );
+  });
+
+  it("uses ShellIconButton (ss-btn--icon) for global settings chrome", () => {
+    render(<ClientShell />);
+    const settings = screen.getByRole("button", { name: /Ustawienia globalne/i });
+    expect(settings.className).toContain("ss-btn");
+    expect(settings.className).toContain("ss-btn--icon");
+  });
+
   it("does not expose setlist next/prev controls (read-only Client)", () => {
     render(<ClientShell />);
     startGridRole();
@@ -149,6 +173,18 @@ describe("ClientShell chrome", () => {
     expect(chords.getAttribute("aria-pressed")).toBe("true");
     fireEvent.click(chords);
     expect(chords.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("opens global settings from desktop menu Wygląd (appearance)", () => {
+    render(<ClientShell />);
+    fireEvent(
+      window,
+      new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: /Ustawienia globalne/i }),
+    ).toBeTruthy();
+    expect(screen.getByText("Wygląd")).toBeTruthy();
   });
 
   it("edits device name on role picker, not in global settings", () => {

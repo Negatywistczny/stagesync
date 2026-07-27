@@ -10,15 +10,16 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Mixer — multi-out:** przy urządzeniu z ≥ 4 kanałami możesz dodać patchy HW Out, skierować ścieżkę / bus / próbkę Cue na fizyczne wyjścia i sterować faderem/mute z miernikami — Master zostaje na kanałach 1–2.
+- **Mixer — multi-out:** przy urządzeniu z ≥ 4 kanałami możesz dodać patchy HW Out, skierować ścieżkę / bus / próbkę Cue na fizyczne wyjścia i sterować faderem/mute z miernikami — Master zostaje na kanałach 1–2; przy stereo strefa HW Out jest ukryta (bez komunikatu Quad/5.1); Busy i HW Out rozdzielone tą samą kreską stref co Audio|Busy.
+- **Mixer — widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy całej strefy (zostaje zwarty nagłówek); wybór zapamiętany w przeglądarce.
 - **Motyw:** w Wyglądzie wybierasz jedną z pięciu skór (Booth Amber, Daylight, Midnight Cyan, Matrix Green, Neon Ember) zamiast osobnych przełączników jasny/kontrast; zapis w Preferencjach zamyka okno i nie cofa skóry przy Anuluj (wyjście audio wywoływane tylko gdy faktycznie się zmienia).
 
 #### 🖥️ App Shell & UI
-- **Preferencje audio:** widać liczbę kanałów wyjścia WebAudio i podpowiedź, gdy stereo blokuje HW Out.
+- **Preferencje audio:** widać liczbę kanałów wyjścia WebAudio.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Menu OS — Plik:** Nowy (utwór / wzór / z wzoru), Otwórz, Zapisz jako, Importuj / Eksportuj bibliotekę — działa też z Timeline, nie tylko z Admina.
-- **Menu OS — Edycja / Widok:** Wytnij / Kopiuj / Wklej steruje schowkiem klipów Timeline; **Wygląd…** otwiera wybór motywu w Timeline albo Preferencje poza nim.
+- **Menu OS — Edycja / Widok:** Wytnij / Kopiuj / Wklej steruje schowkiem klipów Timeline; **Wygląd…** otwiera motyw w Timeline, ustawienia wyglądu Klienta na Client, albo Preferencje (Ogólne) w Adminie.
 
 #### 📚 Dokumentacja
 - **INSTALL / DESKTOP:** opis multi-out (Quad/5.1 / Aggregate) oraz nowych ID `STAGESYNC_THEME_DEFAULT`.
@@ -26,8 +27,20 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Zmieniono
 
+#### ⏱️ Timeline & DAW
+- **Mixer:** w strefie Audio jest **+ Dodaj Ścieżkę** (jak **+ Dodaj Bus**); usunięte puste komunikaty „Brak ścieżek…” / „Brak busów…”.
+
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Desktop — zasobnik:** status hosta i kopiowanie adresu LAN to jedna pozycja menu (klik przy działającym hoście kopiuje URL).
+
+### Naprawiono
+
+#### 🎛️ Audio / MIDI / Transport
+- **Desktop / sesja:** przy utracie połączenia **Wróć do wyboru hosta** znów przenosi do Launchera — także gdy brak mostka Tauri na hoście w LAN albo lokalnym.
+
+#### 🖥️ App Shell & UI
+- **Client — chrome:** ustawienia, pełny ekran i inne ikony w nagłówku mają ten sam rozmiar i wygląd `Button` co Admin / Timeline (36×36 na Desktop); większe 44×44 tylko na wąskim / PWA.
+- **Admin / Desktop — APK:** kafelki i QR „Pobierz Performer / Console” znów wykrywają APK na lokalnym hoście otwartym przez `localhost` — wcześniej sonda szła na adres LAN (cross-origin) i fałszywie pokazywała brak pliku mimo działającego `/downloads/`.
 
 ## [5.2.11](https://github.com/Negatywistczny/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
 

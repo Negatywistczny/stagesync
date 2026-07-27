@@ -29,7 +29,7 @@ kontrolek — tylko siatka poniżej.
 | `--ss-space-y` | `space-2` | Pionowy rytm |
 | `--ss-scrollbar-width` | `space-2` | Scenic scrollbary — nie redefiniuj w shellach |
 | `--ss-touch-min` | `36px` | Min. hit desktop (icon / Play) — ui-density §5 |
-| `--ss-touch-min-client` | `44px` | Min. hit Client PWA (Client `.page` nadpisuje `--ss-touch-min`) |
+| `--ss-touch-min-client` | `44px` | Min. hit Client PWA / phone — Client `.page` nadpisuje `--ss-touch-min` tylko przy `max-width: 768px` (desktop zostaje przy 36px jak Admin / Timeline) |
 
 ## Breakpointy layoutu (v5.0.0)
 

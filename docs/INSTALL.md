@@ -4,7 +4,7 @@ Host na scenie (rack/server): **Docker Compose** + volume `data/`.
 Aktualizacja bez git-apply — [ADR 0004](./adr/0004-updates-docker.md).
 
 Desktop operatora (standalone): [DESKTOP.md](./DESKTOP.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).  
-Android Performer / Console (sideload): [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md).
+Android Performer / Console: [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md).
 
 ## Wymagania
 
@@ -63,7 +63,7 @@ Wyjście busa można skierować na Master albo inny bus (bez pętli).
 Gdy przeglądarka / WebView raportuje `maxChannelCount ≥ 4` (layout głośników Quad/5.1
 albo Aggregate Device), Mixer udostępnia patchy **HW Out** (ChannelMerger → dyskretne
 kanały destination). Track, bus i Cue Sampler mogą iść na `hw_out`. Przy samym stereo
-UI nie listuje atrap — komunikat operatorski. Zob. [DESKTOP.md](./DESKTOP.md).
+strefa HW Out jest ukryta (bez atrap Out 3–4). Zob. [DESKTOP.md](./DESKTOP.md).
 
 ### Cues Sampler
 
@@ -84,7 +84,7 @@ docker login ghcr.io -u <twój-login-github> -p <PAT>
 ```sh
 cp .env.example .env
 # Wypełnij:
-#   STAGESYNC_VERSION=5.2.0
+#   STAGESYNC_VERSION=5.3.0
 
 #   GHCR_USER=<login>
 #   GHCR_TOKEN=<PAT read:packages>
@@ -148,7 +148,7 @@ Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WAT
 
 ```sh
 # Przywróć poprzednią wersję w .env, np.:
-# STAGESYNC_VERSION=5.2.0
+# STAGESYNC_VERSION=5.3.0
 docker compose -f compose.prod.yml up -d
 ```
 

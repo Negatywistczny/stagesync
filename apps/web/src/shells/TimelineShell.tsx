@@ -6236,6 +6236,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               clickCallbacks={{ onMuteClick: () => void onMetronomeToggle() }}
               clickMuted={!metronomeOn}
               playing={state.playing}
+              onAddAudioTrack={onAddAudioTrack}
               onAddBus={onAddBus}
               onAddHwOut={onAddHwOut}
               onHwGainChange={onHwGainChange}

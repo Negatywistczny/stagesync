@@ -16,6 +16,7 @@ import {
   Drumstick,
   Eraser,
   Eye,
+  EyeOff,
   Guitar,
   Headphones,
   Info,
@@ -158,6 +159,10 @@ export function IconStop(p: IconProps) {
 
 export function IconEye(p: IconProps) {
   return withIcon(Eye, p);
+}
+
+export function IconEyeOff(p: IconProps) {
+  return withIcon(EyeOff, p);
 }
 
 export function IconSettings(p: IconProps) {

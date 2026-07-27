@@ -21,6 +21,7 @@ import {
   networkDisplayUrls,
   apkDownloadUrl,
   apkDownloadUrlsFromJoin,
+  apkSameOriginProbeUrl,
   probeApkAvailable,
   postApplyHostUpdate,
   postMidiPanic,
@@ -543,14 +544,37 @@ describe("setlistApi", () => {
     expect(apkDownloadUrlsFromJoin("not-a-url")).toBeNull();
   });
 
-  it("probeApkAvailable is true only on ok HEAD", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValueOnce({ ok: true, status: 200 }),
+  it("apkSameOriginProbeUrl rewrites LAN download URLs to pathname", () => {
+    expect(
+      apkSameOriginProbeUrl(
+        "http://192.168.0.22:4000/downloads/stagesync-performer.apk",
+      ),
+    ).toBe("/downloads/stagesync-performer.apk");
+    expect(
+      apkSameOriginProbeUrl(
+        "http://10.0.0.1:4000/downloads/stagesync-console.apk",
+      ),
+    ).toBe("/downloads/stagesync-console.apk");
+    expect(apkSameOriginProbeUrl("/downloads/stagesync-performer.apk")).toBe(
+      "/downloads/stagesync-performer.apk",
     );
+    expect(apkSameOriginProbeUrl("http://example.com/other")).toBe(
+      "http://example.com/other",
+    );
+  });
+
+  it("probeApkAvailable is true only on ok HEAD (same-origin path)", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({ ok: true, status: 200 });
+    vi.stubGlobal("fetch", fetchMock);
     await expect(
-      probeApkAvailable("http://x/downloads/stagesync-performer.apk"),
+      probeApkAvailable(
+        "http://192.168.0.22:4000/downloads/stagesync-performer.apk",
+      ),
     ).resolves.toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/downloads/stagesync-performer.apk",
+      expect.objectContaining({ method: "HEAD" }),
+    );
 
     vi.stubGlobal(
       "fetch",

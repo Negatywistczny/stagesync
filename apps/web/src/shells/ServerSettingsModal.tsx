@@ -629,13 +629,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
               <div className={styles.infoRow}>
                 <dt>Kanały wyjścia</dt>
                 <dd>
-                  {maxChannelCount != null
-                    ? `${maxChannelCount}${
-                        maxChannelCount >= 4
-                          ? " (multi-out OK)"
-                          : " (stereo — Quad/5.1 dla HW Out)"
-                      }`
-                    : "—"}
+                  {maxChannelCount != null ? `${maxChannelCount}` : "—"}
                 </dd>
               </div>
               <div className={styles.infoRow}>
