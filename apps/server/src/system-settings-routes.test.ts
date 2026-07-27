@@ -96,6 +96,8 @@ describe("GET/PUT /api/system/settings (router unit)", () => {
     const current = (await get.json()) as {
       values: Record<string, string | number | boolean>;
     };
+    const prevHost = String(current.values.STAGESYNC_BIND_HOST ?? "0.0.0.0");
+    const nextHost = prevHost === "0.0.0.0" ? "127.0.0.1" : "0.0.0.0";
 
     const res = await fetch(`${baseUrl}/api/system/settings`, {
       method: "PUT",
@@ -103,7 +105,7 @@ describe("GET/PUT /api/system/settings (router unit)", () => {
       body: JSON.stringify({
         values: {
           ...current.values,
-          STAGESYNC_BIND_HOST: "127.0.0.1",
+          STAGESYNC_BIND_HOST: nextHost,
         },
       }),
     });

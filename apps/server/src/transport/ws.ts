@@ -85,40 +85,31 @@ export function attachTransportWs(
     });
   });
 
-  const unsubscribe = transport.onChange((msg) => {
-    const payload = JSON.stringify(TransportTickMessageSchema.parse(msg));
+  function broadcastJson(payload: string): void {
     for (const client of wss.clients) {
-      if (client.readyState === client.OPEN) {
+      if (client.readyState !== client.OPEN) continue;
+      try {
         client.send(payload);
+      } catch {
+        /* ignore broken socket — keep fanout for remaining clients */
       }
     }
+  }
+
+  const unsubscribe = transport.onChange((msg) => {
+    broadcastJson(JSON.stringify(TransportTickMessageSchema.parse(msg)));
   });
 
   const unsubStage = stageHub?.onMessage((msg) => {
-    const payload = JSON.stringify(msg);
-    for (const client of wss.clients) {
-      if (client.readyState === client.OPEN) {
-        client.send(payload);
-      }
-    }
+    broadcastJson(JSON.stringify(msg));
   });
 
   const unsubLive = liveDesk?.onMessage((msg) => {
-    const payload = JSON.stringify(msg);
-    for (const client of wss.clients) {
-      if (client.readyState === client.OPEN) {
-        client.send(payload);
-      }
-    }
+    broadcastJson(JSON.stringify(msg));
   });
 
   const unsubSetlist = setlistHub?.onMessage((msg) => {
-    const payload = JSON.stringify(msg);
-    for (const client of wss.clients) {
-      if (client.readyState === client.OPEN) {
-        client.send(payload);
-      }
-    }
+    broadcastJson(JSON.stringify(msg));
   });
 
   wss.on("close", () => {
