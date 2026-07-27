@@ -364,22 +364,24 @@
   .welcomeMobile .roleTile {
     min-height: 0;
     height: 100%;
-    gap: var(--ss-space-3);
-    padding: var(--ss-space-4);
+    gap: var(--ss-space-2);
+    padding: var(--ss-space-3);
   }
 
   .roleTile {
-    gap: var(--ss-space-3);
+    gap: var(--ss-space-2);
     min-height: calc(var(--ss-space-16) + var(--ss-space-4));
     padding: var(--ss-space-3) var(--ss-space-2);
   }
 
   .roleIcon {
-    font-size: var(--ss-text-2xl);
+    font-size: var(--ss-text-3xl);
+    line-height: var(--ss-leading-none);
   }
 
   .roleLabel {
-    font-size: var(--ss-text-md);
+    font-size: var(--ss-text-lg);
+    line-height: var(--ss-leading-compact);
   }
 }
 
