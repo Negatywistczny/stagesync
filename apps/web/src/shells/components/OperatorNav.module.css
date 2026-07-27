@@ -15,7 +15,9 @@
   flex: 0 0 auto;
 }
 
-.segmentLink {
+.segmentLink,
+.segmentMuted,
+.segmentChip {
   display: inline-flex;
   align-items: center;
   padding: var(--ss-space-2) var(--ss-space-3);
@@ -27,13 +29,7 @@
 }
 
 .segmentMuted {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--ss-space-2) var(--ss-space-3);
-  border-radius: var(--ss-radius-sm);
   color: var(--ss-color-disabled-text);
-  font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-weight-medium);
   cursor: not-allowed;
   user-select: none;
 }
@@ -80,42 +76,52 @@
 /* —— compact (≤640px) —— */
 
 .compact {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "sections aside"
-    "jump jump";
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--ss-space-1) var(--ss-space-2);
   width: 100%;
-  gap: var(--ss-space-1);
-}
-
-.compact .segments {
-  grid-area: jump;
-  width: 100%;
-  justify-content: flex-start;
+  min-width: 0;
+  max-height: var(--ss-touch-min-client);
 }
 
 .compact .sectionSelect {
-  grid-area: sections;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: min(42%, 11rem);
+  order: 1;
 }
 
 .compact .sections {
-  grid-area: sections;
   display: none;
 }
 
+.compact .segments {
+  flex: 0 1 auto;
+  min-width: 0;
+  order: 2;
+}
+
 .compact .aside {
-  grid-area: aside;
-  margin-left: 0;
+  flex: 0 0 auto;
+  margin-left: auto;
+  order: 3;
 }
 
 .compact .segmentLink,
-.compact .segmentMuted {
+.compact .segmentMuted,
+.compact .segmentChip {
   font-size: var(--ss-text-xs);
   padding: var(--ss-space-1) var(--ss-space-2);
   border-radius: var(--ss-radius-pill);
   border: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+}
+
+.compact .segmentChip[aria-current="page"] {
+  color: var(--ss-color-primary);
+  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-border));
+  background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
 }
 
 /* —— tablet (641–1024px) —— */
@@ -142,11 +148,14 @@
   .sectionSelectInput {
     padding: var(--ss-space-1) var(--ss-space-2);
     font-size: var(--ss-text-xs);
+    min-height: var(--ss-touch-min-client);
+    max-height: var(--ss-touch-min-client);
   }
 }
 
 .segmentLink:focus-visible,
-.segmentMuted:focus-visible {
+.segmentMuted:focus-visible,
+.segmentChip:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: 2px;
 }

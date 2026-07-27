@@ -112,6 +112,44 @@
   margin-left: auto;
 }
 
+.topChrome {
+  position: sticky;
+  top: 0;
+  z-index: var(--ss-z-sticky);
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+  min-width: 0;
+}
+
+.topChrome > nav {
+  flex: 0 0 auto;
+  padding: var(--ss-space-1) var(--ss-space-2);
+  min-width: 0;
+}
+
+.topChrome .header {
+  position: static;
+  top: auto;
+  z-index: auto;
+  border-bottom: none;
+}
+
+@media (max-width: 640px) {
+  .topChrome {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .topChrome .headerCompact {
+    height: var(--ss-touch-min-client);
+    min-height: var(--ss-touch-min-client);
+    max-height: var(--ss-touch-min-client);
+    padding-top: 0;
+  }
+}
+
 .metronome {
   display: flex;
   flex-shrink: 0;

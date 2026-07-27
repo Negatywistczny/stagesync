@@ -5,6 +5,16 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [5.3.4](https://github.com/Negatywistczny/stagesync/compare/v5.3.3...v5.3.4) - 2026-07-27
+
+### Naprawiono
+
+#### 🖥️ App Shell & UI
+- **Wejście:** adres `/` przekierowuje na **Klienta** zamiast Admina.
+- **Nawigacja operatora (telefon):** jeden wiersz — wybór sekcji Admin, przełącznik **Admin · Timeline · Klient** i **Ustawienia** bez drugiego rzędu chipów; wysokość paska do 44px.
+- **Klient (sesja operatora):** pasek nawigacji nie nachodzi na logo StageSync; na zwykłym widoku muzyka pasek pozostaje ukryty.
+- **Nawigacja operatora:** spójne style przycisków segmentów w Admin, Timeline i Klient.
+
 ## [5.3.3](https://github.com/Negatywistczny/stagesync/compare/v5.3.2...v5.3.3) - 2026-07-27
 
 ### Dodano

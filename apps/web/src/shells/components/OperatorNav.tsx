@@ -65,6 +65,14 @@ export function OperatorNav({
 
   return (
     <nav className={rootClass} aria-label="Nawigacja operatora" data-ss-level="1">
+      {activeApp === "admin" ? (
+        <AdminSectionNav
+          variant={variant}
+          section={section}
+          onSectionChange={onSectionChange}
+        />
+      ) : null}
+
       <div className={styles.segments} aria-label="Aplikacje">
         {OPERATOR_APP_SEGMENTS.map((seg) => {
           const selected = activeApp === seg.id;
@@ -72,7 +80,9 @@ export function OperatorNav({
             return (
               <span
                 key={seg.id}
-                className={styles.segmentMuted}
+                className={[styles.segmentMuted, styles.segmentChip]
+                  .filter(Boolean)
+                  .join(" ")}
                 aria-disabled
               >
                 {seg.label}
@@ -89,7 +99,13 @@ export function OperatorNav({
 
           if (selected) {
             return (
-              <Button key={seg.id} variant="ghost" selected aria-current="page">
+              <Button
+                key={seg.id}
+                variant="ghost"
+                selected
+                className={styles.segmentChip}
+                aria-current="page"
+              >
                 {seg.label}
               </Button>
             );
@@ -99,7 +115,9 @@ export function OperatorNav({
             <Link
               key={seg.id}
               to={to}
-              className={styles.segmentLink}
+              className={[styles.segmentLink, styles.segmentChip]
+                .filter(Boolean)
+                .join(" ")}
               onClick={() => markOperatorSession()}
             >
               {seg.label}
@@ -107,14 +125,6 @@ export function OperatorNav({
           );
         })}
       </div>
-
-      {activeApp === "admin" ? (
-        <AdminSectionNav
-          variant={variant}
-          section={section}
-          onSectionChange={onSectionChange}
-        />
-      ) : null}
 
       <div className={styles.aside}>
         <ShellIconButton label={settingsLabel} onClick={handleSettings}>

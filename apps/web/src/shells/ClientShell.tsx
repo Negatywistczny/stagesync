@@ -341,6 +341,17 @@ export function ClientShell() {
     />
   ) : null;
 
+  const renderClientChrome = (started: boolean) => {
+    const chrome = <ClientChrome {...headerProps} started={started} />;
+    if (!showOperatorNav) return chrome;
+    return (
+      <div className={styles.topChrome}>
+        {operatorNav}
+        {chrome}
+      </div>
+    );
+  };
+
   if (nameModal) {
     return (
       <div className={styles.page}>
@@ -374,8 +385,7 @@ export function ClientShell() {
   if (!started) {
     return (
       <div className={styles.page}>
-        {operatorNav}
-        <ClientChrome {...headerProps} started={false} />
+        {renderClientChrome(false)}
         <ConnectionLostBanner status={wsStatus} />
         <main
           className={[
@@ -447,8 +457,7 @@ export function ClientShell() {
 
   return (
     <div className={styles.page}>
-      {operatorNav}
-      <ClientChrome {...headerProps} started />
+      {renderClientChrome(true)}
       <ConnectionLostBanner status={wsStatus} />
 
       {drumsNoteError ? (
