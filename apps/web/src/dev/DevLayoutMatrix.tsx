@@ -112,6 +112,7 @@ export function DevLayoutMatrix() {
       ) : null}
 
       <div className={styles.grid}>
+        <div className={styles.gridTrack}>
         {DEV_VIEWPORTS.map((vp) => (
           <section key={vp.id} className={styles.card}>
             <div className={styles.label}>{vp.label}</div>
@@ -126,6 +127,7 @@ export function DevLayoutMatrix() {
             </div>
           </section>
         ))}
+        </div>
       </div>
 
       <p className={styles.hint}>

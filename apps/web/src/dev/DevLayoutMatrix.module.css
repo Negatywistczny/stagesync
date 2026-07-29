@@ -49,9 +49,15 @@
 }
 
 .grid {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.gridTrack {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  grid-template-columns: repeat(3, max-content);
   gap: var(--ss-space-4);
+  min-width: max-content;
 }
 
 .card {
@@ -72,12 +78,14 @@
   border-radius: var(--ss-radius-md);
   overflow: hidden;
   background: var(--ss-color-surface);
+  width: max-content;
 }
 
 .frame {
   display: block;
   border: 0;
   background: var(--ss-color-bg);
+  flex: none;
 }
 
 .hint {
