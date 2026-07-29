@@ -148,6 +148,26 @@ describe("ClientShell chrome", () => {
     );
   });
 
+  it("matches AppHeader compact padding on mobile Client chrome", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "ClientShell.module.css"),
+      "utf8",
+    );
+    const compactBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.headerCompact\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(compactBlock).toContain("padding: var(--ss-space-1) var(--ss-space-2)");
+    expect(compactBlock).toContain(
+      "padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px))",
+    );
+    expect(compactBlock).not.toMatch(/\n\s*height:\s*calc\(/);
+    expect(compactBlock).not.toMatch(/\bmax-height:/);
+  });
+
   it("uses ShellIconButton (ss-btn--icon) for global settings chrome", () => {
     renderClient();
     const settings = screen.getByRole("button", { name: /Ustawienia globalne/i });
