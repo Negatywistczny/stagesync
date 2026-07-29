@@ -108,7 +108,8 @@
   min-width: 0;
   box-sizing: border-box;
   overflow: hidden;
-  min-height: var(--ss-touch-min-client);
+  height: var(--ss-touch-min-client);
+  min-height: 0;
   max-height: var(--ss-touch-min-client);
 }
 
@@ -151,9 +152,12 @@
   background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
   min-width: 0;
   max-width: calc(var(--ss-space-16) + var(--ss-space-6));
+  min-height: var(--ss-touch-min);
+  max-height: var(--ss-touch-min);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: var(--ss-leading-compact);
 }
 
 .compact .segmentChip[aria-current="page"] {

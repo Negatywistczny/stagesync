@@ -135,7 +135,7 @@ describe("AdminShell chrome", () => {
     expect(out).not.toContain('aria-label="Nawigacja operatora"');
   });
 
-  it("keeps compact legacy chrome within viewport — no fixed segment min-width", async () => {
+  it("keeps compact chrome within viewport — touch targets and no vertical clamp", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
@@ -144,11 +144,20 @@ describe("AdminShell chrome", () => {
       "utf8",
     );
     expect(css).toMatch(/\.chromeWrap\s*\{[^}]*overflow-x:\s*hidden/);
+    const mobileBlock =
+      css.match(/@media\s*\(max-width:\s*640px\)\s*\{([\s\S]*?)\n\}/)?.[1] ??
+      "";
+    expect(mobileBlock).toContain("--ss-touch-min: var(--ss-touch-min-client)");
     const compactBlock =
+      css.match(/\.chromeCompact\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(compactBlock).toContain("overflow-y: hidden");
+    expect(compactBlock).toContain("var(--ss-touch-min-client) + var(--ss-space-1)");
+    expect(compactBlock).not.toContain("max-height:");
+    const selectBlock =
       css.match(
         /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.sectionSelectInput\s*\{([^}]*)\}/,
       )?.[1] ?? "";
-    expect(compactBlock).toContain("min-height: var(--ss-touch-min)");
-    expect(compactBlock).toContain("max-height: var(--ss-touch-min)");
+    expect(selectBlock).toContain("min-height: var(--ss-touch-min)");
+    expect(selectBlock).toContain("max-height: var(--ss-touch-min)");
   });
 });
