@@ -144,7 +144,7 @@ describe("ClientShell chrome", () => {
     // Unconditional page override would make Desktop Client buttons 44px vs Admin 36px.
     expect(desktopPageBlock).not.toContain("--ss-touch-min-client");
     expect(css).toMatch(
-      /@media\s*\(max-width:\s*768px\)\s*\{[\s\S]*?\.page\s*\{[^}]*--ss-touch-min:\s*var\(--ss-touch-min-client\)/,
+      /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.page\s*\{[^}]*--ss-touch-min:\s*var\(--ss-touch-min-client\)/,
     );
   });
 
@@ -219,7 +219,7 @@ describe("ClientShell chrome", () => {
       "matchMedia",
       (query: string) =>
         ({
-          matches: query.includes("max-width: 768px"),
+          matches: query.includes("max-width: 640px"),
           addEventListener: vi.fn(),
           removeEventListener: vi.fn(),
         }) as MediaQueryList,
@@ -235,9 +235,7 @@ describe("ClientShell chrome", () => {
       "matchMedia",
       (query: string) =>
         ({
-          matches:
-            query.includes("max-width: 768px") ||
-            query.includes("max-width: 640px"),
+          matches: query.includes("max-width: 640px"),
           addEventListener: vi.fn(),
           removeEventListener: vi.fn(),
         }) as MediaQueryList,
@@ -245,6 +243,20 @@ describe("ClientShell chrome", () => {
     renderClient();
     expect(screen.getByText("12 ms")).toBeTruthy();
     expect(screen.queryByText("Połączony")).toBeNull();
+  });
+
+  it("shows Rozpocznij on tablet welcome (641–768px)", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      () =>
+        ({
+          matches: false,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as MediaQueryList,
+    );
+    renderClient();
+    expect(screen.getByRole("button", { name: /^Rozpocznij$/i })).toBeTruthy();
   });
 
   it("opens global settings from desktop menu Wygląd (appearance)", () => {

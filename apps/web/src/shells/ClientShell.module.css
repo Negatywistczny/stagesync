@@ -34,22 +34,12 @@
   min-width: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .page {
-    /* Client PWA / phone — inherits into ShellIconButton / Button. */
+    /* Client PWA / narrow phone — inherits into ShellIconButton / Button. */
     --ss-touch-min: var(--ss-touch-min-client);
   }
 
-  .header {
-    flex-wrap: wrap;
-    row-gap: var(--ss-space-1);
-    overflow-x: hidden;
-    padding-inline: var(--ss-space-2);
-    min-height: max(var(--ss-space-12), var(--ss-touch-min));
-  }
-}
-
-@media (max-width: 640px) {
   .headerCompact {
     flex-wrap: nowrap;
     row-gap: 0;

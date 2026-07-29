@@ -105,22 +105,6 @@
   }
 }
 
-@media (max-width: 768px) {
-  .header {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "brand"
-      "center"
-      "actions";
-  }
-
-  .actions {
-    justify-self: stretch;
-    justify-content: flex-start;
-    min-width: 0;
-  }
-}
-
 @media (max-width: 640px) {
   .header {
     grid-template-columns: minmax(0, 1fr) auto;

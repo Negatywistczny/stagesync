@@ -2,10 +2,10 @@
  * Canonical layout breakpoints for StageSync web (v5.0.0).
  * Keep CSS `@media (max-width: …)` in sync with these values.
  *
- * - Mobile: phones (portrait + landscape) → ≤768px
- * - Mobile compact: narrow phones — single-row chrome → ≤640px
- * - Tablet: tablets in portrait / narrow windows → ≤1024px
- * - Desktop: wider than 1024px (default chrome; do not restyle outside media queries)
+ * - Mobile compact (phone chrome): OperatorNav, compact headers → ≤640px
+ * - Mobile (content / touch): phone-only content layouts → ≤768px
+ * - Tablet: 641–1024px — **desktop-like** app chrome (sections, app jump); not compact mobile
+ * - Desktop: >1024px (default chrome; do not restyle outside media queries)
  */
 
 export const BREAKPOINT_MOBILE_MAX_PX = 768;

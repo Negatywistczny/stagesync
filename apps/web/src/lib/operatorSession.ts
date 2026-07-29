@@ -13,6 +13,7 @@ export const OPERATOR_SESSION_KEY = "stagesync.operatorSession";
 /** Mirrors `isWebBrowserSurface` — kept local to avoid import cycles with operatorSurface. */
 function usesOperatorSessionStorage(): boolean {
   const devSurface = getActiveDevSurface();
+  if (devSurface === "tauri") return false;
   if (devSurface !== null && devSurface !== "web") return false;
 
   if (typeof __STAGESYNC_UI_TARGET__ !== "undefined") {
@@ -25,7 +26,6 @@ function usesOperatorSessionStorage(): boolean {
   if (shellKind === "performer" || shellKind === "console") return false;
 
   if (isDesktopShell()) {
-    if (devSurface === "tauri") return false;
     if (tauriInvokeAvailable() || hasExplicitTauriShellMarker()) return false;
   }
 

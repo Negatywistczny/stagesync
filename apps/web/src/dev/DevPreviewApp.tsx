@@ -1,25 +1,26 @@
-import { useEffect, useRef } from "react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { useEffect, useMemo, useRef } from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { ContextMenuProvider } from "@stagesync/ui";
 import { AdminShell } from "../shells/AdminShell.js";
 import { ClientShell } from "../shells/ClientShell.js";
 import { TimelineShell } from "../shells/TimelineShell.js";
+import { TransportProvider } from "../transport/TransportProvider.js";
 import { applyDevSurfaceMocks } from "./applyDevSurfaceMocks.js";
-import { devRoutePath, parseDevPreviewConfig } from "./devLayoutConfig.js";
-
-function readPreviewConfig() {
-  if (typeof window === "undefined") {
-    return parseDevPreviewConfig("");
-  }
-  return parseDevPreviewConfig(window.location.search);
-}
+import {
+  getDevPreviewConfig,
+  resolveDevPreviewPath,
+} from "./devPreviewConfig.js";
 
 export function DevPreviewApp() {
-  const config = readPreviewConfig();
+  const config = getDevPreviewConfig();
   const appliedKeyRef = useRef<string | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
-  const configKey = `${config.surface}:${config.route}:${config.session}`;
 
-  if (appliedKeyRef.current !== configKey) {
+  const configKey = config
+    ? `${config.surface}:${config.path}:${config.session}:${config.projectId}`
+    : null;
+
+  if (config && appliedKeyRef.current !== configKey) {
     cleanupRef.current?.();
     cleanupRef.current = applyDevSurfaceMocks(config);
     appliedKeyRef.current = configKey;
@@ -33,15 +34,25 @@ export function DevPreviewApp() {
     };
   }, []);
 
-  const entryPath = devRoutePath(config.route);
+  const entry = config ? resolveDevPreviewPath(config) : "/admin";
+  const router = useMemo(
+    () =>
+      createMemoryRouter(
+        [
+          { path: "/admin", element: <AdminShell /> },
+          { path: "/client", element: <ClientShell /> },
+          { path: "/timeline/:projectId", element: <TimelineShell /> },
+        ],
+        { initialEntries: [entry] },
+      ),
+    [entry],
+  );
 
   return (
-    <MemoryRouter initialEntries={[entryPath]}>
-      <Routes>
-        <Route path="/admin" element={<AdminShell />} />
-        <Route path="/client" element={<ClientShell />} />
-        <Route path="/timeline/:projectId" element={<TimelineShell />} />
-      </Routes>
-    </MemoryRouter>
+    <TransportProvider>
+      <ContextMenuProvider>
+        <RouterProvider router={router} />
+      </ContextMenuProvider>
+    </TransportProvider>
   );
 }
