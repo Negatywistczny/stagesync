@@ -123,6 +123,8 @@ export function DevLayoutMatrix() {
                 src={previewUrl}
                 width={vp.width}
                 height={vp.height}
+                style={{ width: `${vp.width}px`, height: `${vp.height}px` }}
+                loading="lazy"
               />
             </div>
           </section>
