@@ -8,12 +8,14 @@ import { DeviceNameGate } from "./shells/DeviceNameGate.js";
 import { OperatorPinGate } from "./shells/OperatorPinGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
+import { buildDevRoutes, isDevOnlyPath } from "./dev/devRoutes.js";
 
 const router = createBrowserRouter([
   {
     errorElement: <RouteErrorPage />,
     element: <DesktopMenuBridge />,
     children: [
+      ...buildDevRoutes(import.meta.env.DEV),
       { path: "/", element: <DesktopRootRedirect /> },
       { path: "/client", element: <ClientShell /> },
       {
@@ -39,11 +41,20 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
+  const bypassDeviceNameGate =
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    isDevOnlyPath(window.location.pathname);
+
   return (
     <TransportProvider>
-      <DeviceNameGate>
+      {bypassDeviceNameGate ? (
         <RouterProvider router={router} />
-      </DeviceNameGate>
+      ) : (
+        <DeviceNameGate>
+          <RouterProvider router={router} />
+        </DeviceNameGate>
+      )}
     </TransportProvider>
   );
 }

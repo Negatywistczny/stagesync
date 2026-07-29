@@ -1,0 +1,72 @@
+.page {
+  min-height: 100vh;
+  background: var(--ss-color-bg);
+  color: var(--ss-color-text);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select {
+  min-width: 180px;
+  border: 1px solid var(--ss-color-border);
+  border-radius: 8px;
+  background: var(--ss-color-surface);
+  color: inherit;
+  padding: 8px 10px;
+}
+
+.sessionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--ss-color-surface);
+  border: 1px solid var(--ss-color-border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
+.frame {
+  width: 100%;
+  border: 1px solid var(--ss-color-border);
+  border-radius: 8px;
+  background: #000;
+}
+
+.url {
+  margin: 0;
+  font: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+  word-break: break-all;
+}
