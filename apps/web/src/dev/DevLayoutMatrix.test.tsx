@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   buildDevPreviewUrl,
+  devPreviewShowsOperatorSession,
   normalizeDevPreviewConfig,
   parseDevPreviewSearch,
   resolveDevPreviewPath,
@@ -43,6 +44,19 @@ describe("devPreviewConfig", () => {
       ),
     ).toEqual({
       surface: "performer",
+      path: "/client",
+      session: false,
+      projectId: "dev-preview",
+    });
+  });
+
+  it("drops session for non-web surfaces", () => {
+    expect(
+      parseDevPreviewSearch(
+        "?surface=console&path=%2Fclient&session=1&projectId=dev-preview",
+      ),
+    ).toEqual({
+      surface: "console",
       path: "/client",
       session: false,
       projectId: "dev-preview",
@@ -91,6 +105,15 @@ describe("devPreviewConfig", () => {
   });
 });
 
+describe("devPreviewShowsOperatorSession", () => {
+  it("is web-only", () => {
+    expect(devPreviewShowsOperatorSession("web")).toBe(true);
+    expect(devPreviewShowsOperatorSession("tauri")).toBe(false);
+    expect(devPreviewShowsOperatorSession("console")).toBe(false);
+    expect(devPreviewShowsOperatorSession("performer")).toBe(false);
+  });
+});
+
 describe("normalizeDevPreviewConfig", () => {
   it("leaves non-performer config unchanged", () => {
     expect(
@@ -104,6 +127,21 @@ describe("normalizeDevPreviewConfig", () => {
       surface: "web",
       path: "/timeline",
       session: true,
+      projectId: "dev-preview",
+    });
+  });
+  it("drops session for tauri surface", () => {
+    expect(
+      normalizeDevPreviewConfig({
+        surface: "tauri",
+        path: "/client",
+        session: true,
+        projectId: "dev-preview",
+      }),
+    ).toEqual({
+      surface: "tauri",
+      path: "/client",
+      session: false,
       projectId: "dev-preview",
     });
   });
@@ -145,6 +183,20 @@ describe("DevLayoutMatrix", () => {
     const iframe = screen.getByTitle("Podgląd 375×667");
     expect(iframe.getAttribute("src")).toContain("surface=performer");
     expect(iframe.getAttribute("src")).toContain("path=%2Fclient");
+    expect(iframe.getAttribute("src")).toContain("session=0");
+  });
+
+  it("hides operator session toggle for non-web surfaces", () => {
+    render(<DevLayoutMatrix />);
+
+    fireEvent.change(screen.getByLabelText("Powierzchnia"), {
+      target: { value: "tauri" },
+    });
+
+    expect(screen.queryByText("Sesja operatora")).toBeNull();
+
+    const iframe = screen.getByTitle("Podgląd 375×667");
+    expect(iframe.getAttribute("src")).toContain("surface=tauri");
     expect(iframe.getAttribute("src")).toContain("session=0");
   });
 });

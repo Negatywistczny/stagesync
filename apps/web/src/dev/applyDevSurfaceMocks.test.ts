@@ -8,9 +8,10 @@ import { getActiveDevSurface } from "./devSurfaceState.js";
 import {
   isConsoleShell,
   isPerformerShell,
+  isWebBrowserSurface,
   shouldShowOperatorNav,
 } from "../lib/operatorSurface.js";
-import { clearOperatorSession } from "../lib/operatorSession.js";
+import { clearOperatorSession, hasOperatorSession } from "../lib/operatorSession.js";
 import { isDesktopShell } from "../lib/desktopBridge.js";
 
 function setPreviewSearch(search: string): void {
@@ -43,6 +44,19 @@ describe("applyDevSurfaceMocks", () => {
     expect(getActiveDevSurface()).toBe("performer");
     expect(isPerformerShell()).toBe(true);
     expect(shouldShowOperatorNav("/client")).toBe(false);
+    expect(hasOperatorSession()).toBe(false);
+
+    cleanup();
+  });
+
+  it("maps console surface to operator nav on /client without web session", () => {
+    setPreviewSearch("?surface=console&path=%2Fclient&session=1&projectId=dev-preview");
+    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+
+    expect(getActiveDevSurface()).toBe("console");
+    expect(isConsoleShell()).toBe(true);
+    expect(hasOperatorSession()).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(true);
 
     cleanup();
   });
@@ -76,7 +90,28 @@ describe("applyDevSurfaceMocks", () => {
     expect(getActiveDevSurface()).toBe("web");
     expect(isPerformerShell()).toBe(false);
     expect(isConsoleShell()).toBe(false);
+    expect(isWebBrowserSurface()).toBe(true);
     expect(shouldShowOperatorNav("/admin")).toBe(true);
+
+    cleanup();
+  });
+
+  it("maps web client with session to operator nav", () => {
+    setPreviewSearch("?surface=web&path=%2Fclient&session=1&projectId=dev-preview");
+    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+
+    expect(hasOperatorSession()).toBe(true);
+    expect(shouldShowOperatorNav("/client")).toBe(true);
+
+    cleanup();
+  });
+
+  it("hides web client operator nav without session", () => {
+    setPreviewSearch("?surface=web&path=%2Fclient&session=0&projectId=dev-preview");
+    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+
+    expect(hasOperatorSession()).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(false);
 
     cleanup();
   });

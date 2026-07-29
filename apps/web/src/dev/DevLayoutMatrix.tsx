@@ -9,6 +9,7 @@ import {
 } from "./devSurfaceTypes.js";
 import {
   buildDevPreviewUrl,
+  devPreviewShowsOperatorSession,
   normalizeDevPreviewConfig,
   type DevPreviewConfig,
 } from "./devPreviewConfig.js";
@@ -34,6 +35,7 @@ export function DevLayoutMatrix() {
   const [hostOk, setHostOk] = useState<boolean | null>(null);
 
   const isPerformerSurface = surface === "performer";
+  const showSessionControl = devPreviewShowsOperatorSession(surface);
 
   const config = useMemo<DevPreviewConfig>(
     () =>
@@ -55,6 +57,8 @@ export function DevLayoutMatrix() {
     setSurface(nextSurface);
     if (nextSurface === "performer") {
       setPath("/client");
+      setSession(false);
+    } else if (!devPreviewShowsOperatorSession(nextSurface)) {
       setSession(false);
     }
   };
@@ -109,12 +113,14 @@ export function DevLayoutMatrix() {
                   ))}
                 </Select>
               </label>
-              <ShellSwitchRow
-                checked={session}
-                onChange={(e) => setSession(e.target.checked)}
-              >
-                Sesja operatora
-              </ShellSwitchRow>
+              {showSessionControl ? (
+                <ShellSwitchRow
+                  checked={session}
+                  onChange={(e) => setSession(e.target.checked)}
+                >
+                  Sesja operatora
+                </ShellSwitchRow>
+              ) : null}
             </>
           ) : (
             <p className={styles.performerHint}>

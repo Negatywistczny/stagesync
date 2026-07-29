@@ -19,10 +19,21 @@ export const PERFORMER_DEV_PREVIEW_CONFIG: Pick<DevPreviewConfig, "path" | "sess
   session: false,
 };
 
-/** Performer app is musician Client only — no admin/timeline routes or operator session. */
+/** Operator session preview toggle applies only to web (LAN browser). */
+export function devPreviewShowsOperatorSession(surface: DevSurface): boolean {
+  return surface === "web";
+}
+
+/** Performer = Client only; operator session is web-only. */
 export function normalizeDevPreviewConfig(config: DevPreviewConfig): DevPreviewConfig {
-  if (config.surface !== "performer") return config;
-  return { ...config, ...PERFORMER_DEV_PREVIEW_CONFIG };
+  let normalized = config;
+  if (config.surface === "performer") {
+    normalized = { ...config, ...PERFORMER_DEV_PREVIEW_CONFIG };
+  }
+  if (!devPreviewShowsOperatorSession(normalized.surface)) {
+    normalized = { ...normalized, session: false };
+  }
+  return normalized;
 }
 
 function parseSurface(raw: string | null): DevSurface {

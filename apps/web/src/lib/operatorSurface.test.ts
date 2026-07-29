@@ -6,6 +6,7 @@ import {
   isConsoleShell,
   isOperatorSurfaceRoute,
   isPerformerShell,
+  isWebBrowserSurface,
   shouldShowOperatorNav,
 } from "./operatorSurface.js";
 import { markOperatorSession, clearOperatorSession } from "./operatorSession.js";
@@ -69,12 +70,24 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldShowOperatorNav("/timeline/p1")).toBe(false);
   });
 
-  it("always hides on /client", () => {
+  it("shows operator nav on console /client without web session", () => {
     (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
       "console";
     expect(isConsoleShell()).toBe(true);
     markOperatorSession();
+    expect(shouldShowOperatorNav("/client")).toBe(true);
+  });
+
+  it("shows on web /client only with operator session", () => {
     expect(shouldShowOperatorNav("/client")).toBe(false);
+    markOperatorSession();
+    expect(isWebBrowserSurface()).toBe(true);
+    expect(shouldShowOperatorNav("/client")).toBe(true);
+  });
+
+  it("shows on web admin and timeline without session", () => {
+    expect(shouldShowOperatorNav("/admin")).toBe(true);
+    expect(shouldShowOperatorNav("/timeline/p1")).toBe(true);
   });
 
   it("detects performer via native bridge", () => {

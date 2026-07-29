@@ -118,8 +118,12 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
     /* ignore quota / private mode */
   }
 
-  if (normalized.session) {
-    markOperatorSession();
+  if (normalized.surface === "web") {
+    if (normalized.session) {
+      markOperatorSession();
+    } else {
+      clearOperatorSession();
+    }
   } else {
     clearOperatorSession();
   }
@@ -128,7 +132,7 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
     setDevSurfaceOverride(null);
     applyNativeShell("web");
     applyTauriMarkers("web", tauriBackup);
-    if (normalized.session) {
+    if (normalized.surface === "web" && normalized.session) {
       clearOperatorSession();
     }
   };
