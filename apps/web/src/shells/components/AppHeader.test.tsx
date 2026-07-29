@@ -127,6 +127,28 @@ describe("AppHeader", () => {
     expect(out).toContain('aria-label="Ustawienia"');
   });
 
+  it("derives app jump chips on tablet when operatorApp is set without appJump", () => {
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
+      </MemoryRouter>,
+    );
+    expect(out).toContain('aria-label="Aplikacje"');
+    expect(out).toContain("Admin");
+    expect(out).toContain("Klient");
+  });
+
+  it("omits embedded OperatorNav on compact mobile — shell owns the bar", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
+      </MemoryRouter>,
+    );
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
+    expect(out).toContain('data-ss-level="1"');
+  });
+
   it("exposes PL chrome action labels for help, appearance, fullscreen", () => {
     const out = html(
       <AppHeader

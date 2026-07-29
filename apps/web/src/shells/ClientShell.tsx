@@ -709,7 +709,6 @@ type ClientHeaderProps = {
   bbt: { bar: number; beat: number };
   transportError: string | null;
   compact?: boolean;
-  hideGlobalSettings?: boolean;
   onFullscreen?: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
@@ -727,7 +726,6 @@ function ClientChrome({
   bbt,
   transportError,
   compact = false,
-  hideGlobalSettings = false,
   onFullscreen,
   globalSettingsOpen,
   onToggleGlobalSettings,
@@ -778,43 +776,28 @@ function ClientChrome({
           latencyMs={latencyMs}
           variant={compact ? "compact" : "status"}
         />
-        {!hideGlobalSettings ? (
-          <SettingsPopoverAnchor>
-            <ShellIconButton
-              label="Ustawienia globalne"
-              aria-expanded={globalSettingsOpen}
-              aria-controls="global-settings-panel"
-              onClick={onToggleGlobalSettings}
-            >
-              <IconSettings />
-            </ShellIconButton>
-            {globalSettingsOpen ? (
-              <SettingsPopover
-                id="global-settings-panel"
-                title="Ustawienia globalne"
-                onClose={onCloseGlobalSettings}
-              >
-                <GlobalSettingsFields
-                  prefs={displayPrefs}
-                  onPrefsChange={onDisplayPrefsChange}
-                />
-              </SettingsPopover>
-            ) : null}
-          </SettingsPopoverAnchor>
-        ) : null}
-        {globalSettingsOpen && hideGlobalSettings ? (
-          <SettingsPopover
-            id="global-settings-panel"
-            title="Ustawienia globalne"
-            placement="fixed-top-right"
-            onClose={onCloseGlobalSettings}
+        <SettingsPopoverAnchor>
+          <ShellIconButton
+            label="Ustawienia globalne"
+            aria-expanded={globalSettingsOpen}
+            aria-controls="global-settings-panel"
+            onClick={onToggleGlobalSettings}
           >
-            <GlobalSettingsFields
-              prefs={displayPrefs}
-              onPrefsChange={onDisplayPrefsChange}
-            />
-          </SettingsPopover>
-        ) : null}
+            <IconSettings />
+          </ShellIconButton>
+          {globalSettingsOpen ? (
+            <SettingsPopover
+              id="global-settings-panel"
+              title="Ustawienia globalne"
+              onClose={onCloseGlobalSettings}
+            >
+              <GlobalSettingsFields
+                prefs={displayPrefs}
+                onPrefsChange={onDisplayPrefsChange}
+              />
+            </SettingsPopover>
+          ) : null}
+        </SettingsPopoverAnchor>
         {onFullscreen ? (
           <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
             <IconFullscreen />

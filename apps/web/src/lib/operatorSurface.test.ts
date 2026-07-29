@@ -8,7 +8,7 @@ import {
   isPerformerShell,
   shouldShowOperatorNav,
 } from "./operatorSurface.js";
-import { clearOperatorSession } from "./operatorSession.js";
+import { markOperatorSession, clearOperatorSession } from "./operatorSession.js";
 
 vi.mock("./desktopBridge.js", () => ({
   isDesktopShell: vi.fn(() => false),
@@ -69,14 +69,11 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldShowOperatorNav("/timeline/p1")).toBe(false);
   });
 
-  it("hides on /client for console shell", () => {
+  it("always hides on /client", () => {
     (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
       "console";
     expect(isConsoleShell()).toBe(true);
-    expect(shouldShowOperatorNav("/client")).toBe(false);
-  });
-
-  it("hides on /client without operator session", () => {
+    markOperatorSession();
     expect(shouldShowOperatorNav("/client")).toBe(false);
   });
 

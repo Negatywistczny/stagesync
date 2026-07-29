@@ -11,6 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
+- **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
 
 ## [5.3.5](https://github.com/Negatywistczny/stagesync/compare/v5.3.4...v5.3.5) - 2026-07-27
 
