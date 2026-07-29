@@ -9,7 +9,9 @@ import { OperatorPinGate } from "./shells/OperatorPinGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
 import { DevApp } from "./dev/DevApp.js";
+import { DevPreviewApp } from "./dev/DevPreviewApp.js";
 import { isDevPreviewRoute } from "./dev/devPreviewConfig.js";
+import { isDevPreviewPath } from "./dev/devRoutes.js";
 
 const router = createBrowserRouter([
   {
@@ -41,7 +43,13 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  if (import.meta.env.DEV && isDevPreviewRoute(window.location?.pathname)) {
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+
+  if (import.meta.env.DEV && isDevPreviewPath(pathname)) {
+    return <DevPreviewApp />;
+  }
+
+  if (import.meta.env.DEV && isDevPreviewRoute(pathname)) {
     return <DevApp />;
   }
 
