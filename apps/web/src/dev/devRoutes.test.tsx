@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { buildDevRoutes, isDevOnlyPath } from "./devRoutes.js";
+import { buildDevRoutes, isDevOnlyPath, isDevPreviewPath } from "./devRoutes.js";
 
 describe("buildDevRoutes", () => {
   it("returns no routes when disabled", () => {
     expect(buildDevRoutes(false)).toEqual([]);
   });
 
-  it("returns layouts and preview routes when enabled", () => {
+  it("returns layouts route when enabled (preview bypasses main router)", () => {
     const routes = buildDevRoutes(true);
-    expect(routes).toHaveLength(2);
+    expect(routes).toHaveLength(1);
     expect(routes[0]?.path).toBe("/_dev/layouts");
-    expect(routes[1]?.path).toBe("/_dev/preview");
+  });
+});
+
+describe("isDevPreviewPath", () => {
+  it("matches preview iframe entry only", () => {
+    expect(isDevPreviewPath("/_dev/preview")).toBe(true);
+    expect(isDevPreviewPath("/_dev/layouts")).toBe(false);
   });
 });
 

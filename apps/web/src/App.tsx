@@ -8,7 +8,8 @@ import { DeviceNameGate } from "./shells/DeviceNameGate.js";
 import { OperatorPinGate } from "./shells/OperatorPinGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
-import { buildDevRoutes, isDevOnlyPath } from "./dev/devRoutes.js";
+import { DevPreviewApp } from "./dev/DevPreviewApp.js";
+import { buildDevRoutes, isDevOnlyPath, isDevPreviewPath } from "./dev/devRoutes.js";
 
 const router = createBrowserRouter([
   {
@@ -41,10 +42,17 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  const bypassDeviceNameGate =
-    import.meta.env.DEV &&
-    typeof window !== "undefined" &&
-    isDevOnlyPath(window.location.pathname);
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  const bypassDeviceNameGate = import.meta.env.DEV && pathname !== "" && isDevOnlyPath(pathname);
+  const isDevPreview = import.meta.env.DEV && isDevPreviewPath(pathname);
+
+  if (isDevPreview) {
+    return (
+      <TransportProvider>
+        <DevPreviewApp />
+      </TransportProvider>
+    );
+  }
 
   return (
     <TransportProvider>
