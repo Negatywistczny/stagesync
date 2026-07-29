@@ -229,7 +229,7 @@ describe("ClientShell chrome", () => {
     );
   });
 
-  it("uses desktop-like role tiles on tablet (2×2, no viewport stretch)", async () => {
+  it("uses square desktop-sized role tiles on tablet (2×2, no viewport stretch)", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
@@ -259,12 +259,17 @@ describe("ClientShell chrome", () => {
     expect(tabletBlock).not.toContain(
       "grid-template-columns: repeat(4, minmax(0, 1fr))",
     );
-    expect(tabletBlock).not.toMatch(/\.roleTile\s*\{[^}]*aspect-ratio:/);
+    expect(tabletBlock).toMatch(/\.roleTile\s*\{[^}]*aspect-ratio:\s*1/);
+    expect(tabletBlock).toMatch(
+      /\.roleGrid\s*\{[^}]*calc\(\(48rem - 3 \* var\(--ss-space-6\)\) \/ 2/,
+    );
     expect(tabletBlock).not.toMatch(/\.roleGrid\s*\{[^}]*grid-template-rows:/);
     expect(tabletBlock).not.toMatch(/\.roleTile\s*\{[^}]*height:\s*100%/);
     expect(tabletBlock).not.toMatch(
       /\.roleIcon\s*\{[^}]*--ss-text-stage-2xl/,
     );
+    expect(tabletBlock).toMatch(/\.roleIcon\s*\{[^}]*--ss-text-3xl/);
+    expect(tabletBlock).toMatch(/\.roleLabel\s*\{[^}]*--ss-text-xl/);
     expect(css).toMatch(
       /@media\s*\(min-width:\s*1025px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/,
     );

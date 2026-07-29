@@ -29,7 +29,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Ustawienia (web):** przycisk ⚙️ w Timeline / Admin / OperatorNav znowu otwiera preferencje — w przeglądarce na `:4000` nagłówek nie chowa się jak w Tauri; na Kliencie z sesją operatora panel globalnych ustawień nie jest przycinany przez overflow nagłówka.
 - **Client:** przycisk ⚙️ znowu otwiera ustawienia Klienta (wygląd, strój instrumentu, polskie nazwy sekcji) zamiast preferencji Admina (serwer, MIDI, host).
 - **Klient (web, sesja operatora):** nagłówek z OperatorNav i przyciskami w chrome nie jest już pionowo przycinany — widoczne są dolne krawędzie przycisków.
-- **Client (tablet):** kafelki wyboru roli mają rozmiar jak na desktopie (kompaktowe, bez rozciągania na wysokość ekranu) — siatka 2×2 zamiast powiększonych kwadratowych kafelków.
+- **Client (tablet):** kafelki wyboru roli są kwadratowe jak na desktopie — siatka 2×2 w kompaktowym rozmiarze (bez rozciągania na szerokość ani wysokość ekranu).
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
 - **Admin (tablet):** sekcje **Set**, **Scena** i **Host** znów w układu desktopowym (podział panelów, bez accordionu telefonu) na tablecie i desktopie (>640px); accordion tylko na telefonie (≤640px).
