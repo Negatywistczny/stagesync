@@ -102,6 +102,8 @@
 
 .chromeWrap {
   position: relative;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .operatorNavEmbed {
@@ -574,9 +576,12 @@
   .sectionSelectInput {
     width: 100%;
     max-width: none;
-    min-height: var(--ss-space-8);
+    box-sizing: border-box;
+    min-height: var(--ss-touch-min);
+    max-height: var(--ss-touch-min);
     padding: var(--ss-space-1) var(--ss-space-2);
     font-size: var(--ss-text-xs);
+    line-height: var(--ss-leading-compact);
   }
 
   .chromeCompact.chromeLegacy .appJump {

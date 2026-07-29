@@ -82,7 +82,9 @@
 .sectionSelectInput {
   width: 100%;
   max-width: none;
-  min-height: var(--ss-space-8);
+  min-height: var(--ss-touch-min);
+  max-height: var(--ss-touch-min);
+  box-sizing: border-box;
 }
 
 .aside {
@@ -98,21 +100,23 @@
 
 .compact {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content);
   grid-template-areas: "segments context aside";
   align-items: center;
   gap: var(--ss-space-1) var(--ss-space-2);
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  overflow: hidden;
   min-height: var(--ss-touch-min-client);
   max-height: var(--ss-touch-min-client);
 }
 
 .compact .segments {
   grid-area: segments;
-  flex-shrink: 0;
-  min-width: calc(var(--ss-space-16) * 2 + var(--ss-space-6));
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .compact .context {
@@ -145,6 +149,11 @@
   border-radius: var(--ss-radius-pill);
   border: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+  min-width: 0;
+  max-width: 5.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .compact .segmentChip[aria-current="page"] {
@@ -181,8 +190,9 @@
   .sectionSelectInput {
     padding: var(--ss-space-1) var(--ss-space-2);
     font-size: var(--ss-text-xs);
-    min-height: var(--ss-touch-min-client);
-    max-height: var(--ss-touch-min-client);
+    line-height: var(--ss-leading-compact);
+    min-height: var(--ss-touch-min);
+    max-height: var(--ss-touch-min);
   }
 }
 

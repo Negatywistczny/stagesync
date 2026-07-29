@@ -81,4 +81,32 @@ describe("OperatorNav", () => {
     expect(out.indexOf("Admin")).toBeLessThan(out.indexOf("Utwory"));
     expect(out.indexOf("Utwory")).toBeLessThan(out.indexOf("Ustawienia"));
   });
+
+  it("uses shrinkable compact grid and touch-min section select height", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        "OperatorNav.module.css",
+      ),
+      "utf8",
+    );
+    const compactBlock =
+      css.match(/\.compact\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(compactBlock).toContain(
+      "grid-template-columns: minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content)",
+    );
+    expect(compactBlock).toContain("overflow: hidden");
+    expect(css).not.toMatch(
+      /\.compact\s+\.segments\s*\{[^}]*min-width:\s*calc\(/,
+    );
+    const selectBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.sectionSelectInput\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(selectBlock).toContain("min-height: var(--ss-touch-min)");
+    expect(selectBlock).toContain("max-height: var(--ss-touch-min)");
+  });
 });

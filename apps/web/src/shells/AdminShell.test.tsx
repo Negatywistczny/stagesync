@@ -130,4 +130,21 @@ describe("AdminShell chrome", () => {
     expect(out).toContain("Klient");
     expect(out).not.toContain('aria-label="Nawigacja operatora"');
   });
+
+  it("keeps compact legacy chrome within viewport — no fixed segment min-width", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "AdminShell.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(/\.chromeWrap\s*\{[^}]*overflow-x:\s*hidden/);
+    const compactBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.sectionSelectInput\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(compactBlock).toContain("min-height: var(--ss-touch-min)");
+    expect(compactBlock).toContain("max-height: var(--ss-touch-min)");
+  });
 });
