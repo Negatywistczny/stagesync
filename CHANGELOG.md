@@ -36,6 +36,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Chrome Admin / Timeline / Klient:** przyciski **Ustawienia** i **Pełny ekran** mają teraz ten sam rozmiar na telefonie, tablecie i desktopie; różni się tylko układ paska.
 - **Nawigacja (telefon):** chipy **Admin · Timeline · Klient**, lista sekcji i skróty aplikacji w nagłówku mają tę samą wysokość co **Ustawienia** i **Pełny ekran** — bez mieszanych 44px i 36px w jednym rzędzie.
 - **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
+- **Admin (telefon):** kafelki **StageSync Performer** i **Console** w sekcji Host są obok siebie w jednym rzędzie — zamiast jeden pod drugim.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Desktop (wąskie okno):** Tauri nie przełącza już Admin / Timeline / Client na chrome telefonu (≤640px) — bez trybu podglądu Timeline i bez mieszanych przycisków względem szerokiego okna; nawigacja L1 zostaje w menu OS.
