@@ -53,7 +53,7 @@ function applyNativeShell(surface: DevSurface): void {
 
 function readTauriBackup(): TauriBackup {
   if (typeof window === "undefined") return {};
-  const w = window as Window & Record<string, unknown>;
+  const w = window as unknown as Record<string, unknown>;
   return {
     tauriShell: w["__STAGESYNC_TAURI_SHELL__"] === true ? true : undefined,
     shell: typeof w["__STAGESYNC_SHELL__"] === "string" ? w["__STAGESYNC_SHELL__"] : undefined,
@@ -64,7 +64,7 @@ function readTauriBackup(): TauriBackup {
 
 function applyTauriMarkers(surface: DevSurface, backup: TauriBackup): void {
   if (typeof window === "undefined") return;
-  const w = window as Window & Record<string, unknown>;
+  const w = window as unknown as Record<string, unknown>;
   if (surface === "tauri") {
     w["__STAGESYNC_TAURI_SHELL__"] = true;
     w["__STAGESYNC_SHELL__"] = "desktop";
