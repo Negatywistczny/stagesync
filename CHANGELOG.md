@@ -10,6 +10,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### 🖥️ App Shell & UI
+- **Admin (desktop):** przywrócony pasek sekcji **Utwory · Set · Scena · Host**, przełącznik **Timeline / Klient** i akcje nagłówka — zamiast pustego chrome bez nawigacji.
+- **Klient:** widok muzyka bez paska nawigacji operatora; **Ustawienia globalne** z powrotem w nagłówku.
+- **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
+- **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
 - **Nawigacja operatora (telefon):** stały układ trzech slotów — przełącznik **Admin · Timeline · Klient** zawsze po lewej, kontekst (sekcja Admin lub tytuł utworu) na środku, **Ustawienia** po prawej; przyciski nie przeskakują między ekranami.
 - **Timeline (telefon):** pasek nawigacji operatora wraca na Timeline — można przejść do Admina lub Klienta bez utknięcia w edytorze.
 

@@ -88,13 +88,16 @@ describe("AppHeader", () => {
     expect(out).toContain("Cofnij");
   });
 
-  it("embeds OperatorNav for timeline on tablet", () => {
+  it("shows app jump links for timeline above compact mobile", () => {
     const out = renderToStaticMarkup(
       <MemoryRouter initialEntries={["/timeline/p1"]}>
         <AppHeader suffix="Timeline" version="5.0.0" operatorApp="timeline" />
       </MemoryRouter>,
     );
-    expect(out).toContain('aria-label="Nawigacja operatora"');
+    expect(out).toContain('aria-label="Aplikacje"');
+    expect(out).toContain("Admin");
+    expect(out).toContain("Klient");
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
     expect(out).toContain("Timeline");
   });
 

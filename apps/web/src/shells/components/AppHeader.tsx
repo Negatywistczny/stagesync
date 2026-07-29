@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { isDesktopShell } from "../../lib/desktopBridge.js";
-import type { OperatorAppId } from "../../lib/operatorNavRoutes.js";
+import {
+  getOperatorAppJumpLinks,
+  type OperatorAppId,
+} from "../../lib/operatorNavRoutes.js";
 import { shouldShowOperatorNav } from "../../lib/operatorSurface.js";
 import { openPreferences } from "../../lib/preferencesEvents.js";
 import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
@@ -17,7 +20,6 @@ import {
 } from "../icons.js";
 import { ShellIconButton } from "../ShellIconButton.js";
 import { ShellWordmark } from "../ShellWordmark.js";
-import { OperatorNav } from "./OperatorNav.js";
 import styles from "./AppHeader.module.css";
 
 export type AppHeaderJumpLink = {
@@ -44,7 +46,7 @@ export type AppHeaderProps = {
   /** Optional center slot (rarely used — Admin tabs stay in L2). */
   center?: ReactNode;
   appJump?: AppHeaderJumpLink[];
-  /** When set, renders unified OperatorNav instead of legacy appJump chips. */
+  /** When set, derives app-jump chips above compact mobile (OperatorNav stays in shell bar). */
   operatorApp?: OperatorAppId;
   history?: AppHeaderHistory;
   helpPressed?: boolean;
@@ -99,7 +101,16 @@ export function AppHeader({
   const showOperatorNav = operatorApp
     ? shouldShowOperatorNav(pathname)
     : false;
-  const embedOperatorNav = showOperatorNav && operatorApp && !isCompactMobile;
+  const operatorNavOnExternalBar = showOperatorNav && isCompactMobile;
+  const resolvedAppJump =
+    appJump.length > 0
+      ? appJump
+      : operatorApp && showOperatorNav && !isCompactMobile
+        ? getOperatorAppJumpLinks(operatorApp)
+        : [];
+  const showAppJumpNav =
+    resolvedAppJump.length > 0 &&
+    (!showOperatorNav || !isCompactMobile);
 
   if (hideOnDesktop && isDesktopShell()) return null;
 
@@ -127,11 +138,9 @@ export function AppHeader({
       {center ? <div className={styles.center}>{center}</div> : null}
 
       <div className={styles.actions}>
-        {embedOperatorNav ? (
-          <OperatorNav activeApp={operatorApp} className={styles.operatorNav} />
-        ) : !showOperatorNav ? (
+        {showAppJumpNav ? (
           <nav className={styles.appJump} aria-label="Aplikacje">
-            {appJump.map((link) =>
+            {resolvedAppJump.map((link) =>
               link.disabled ? (
                 <span
                   key={link.label}
@@ -217,7 +226,7 @@ export function AppHeader({
           </ShellIconButton>
         ) : null}
 
-        {!showOperatorNav ? (
+        {!operatorNavOnExternalBar ? (
           <ShellIconButton label={settingsLabel} onClick={handleSettings}>
             <IconSettings />
           </ShellIconButton>

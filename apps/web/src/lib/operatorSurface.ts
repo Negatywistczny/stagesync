@@ -3,7 +3,7 @@ import {
   isDesktopShell,
   tauriInvokeAvailable,
 } from "./desktopBridge.js";
-import { hasOperatorSession } from "./operatorSession.js";
+import { getActiveDevSurface } from "../dev/devSurfaceState.js";
 import { getStageSyncNative } from "./nativeShell.js";
 
 export function getUiTarget(): "full" | "performer" | "console" {
@@ -13,17 +13,27 @@ export function getUiTarget(): "full" | "performer" | "console" {
   return "full";
 }
 
+function getEffectiveUiTarget(): "full" | "performer" | "console" {
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "performer") return "performer";
+  if (devSurface === "console") return "console";
+  return getUiTarget();
+}
+
 function shellKind(): string | undefined {
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "console") return "console";
+  if (devSurface === "performer") return "performer";
   return getStageSyncNative()?.shellKind?.();
 }
 
 export function isPerformerShell(): boolean {
-  if (getUiTarget() === "performer") return true;
+  if (getEffectiveUiTarget() === "performer") return true;
   return shellKind() === "performer";
 }
 
 export function isConsoleShell(): boolean {
-  if (getUiTarget() === "console") return true;
+  if (getEffectiveUiTarget() === "console") return true;
   return shellKind() === "console";
 }
 
@@ -36,6 +46,8 @@ export function isOperatorSurfaceRoute(pathname: string): boolean {
 
 function isTauriDesktopWithOsMenu(): boolean {
   if (!isDesktopShell()) return false;
+  const devSurface = getActiveDevSurface();
+  if (devSurface === "tauri") return true;
   return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
 }
 
@@ -44,10 +56,8 @@ function isTauriDesktopWithOsMenu(): boolean {
  */
 export function shouldShowOperatorNav(pathname: string): boolean {
   if (isPerformerShell()) return false;
-  if (!isOperatorSurfaceRoute(pathname)) {
-    if (pathname !== "/client") return false;
-    return hasOperatorSession() || isConsoleShell();
-  }
+  if (pathname === "/client" || pathname.startsWith("/client/")) return false;
+  if (!isOperatorSurfaceRoute(pathname)) return false;
   if (isTauriDesktopWithOsMenu()) return false;
   return true;
 }

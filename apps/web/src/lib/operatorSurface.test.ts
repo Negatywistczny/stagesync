@@ -69,19 +69,11 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldShowOperatorNav("/timeline/p1")).toBe(false);
   });
 
-  it("shows on console /client without session", () => {
-  (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
+  it("always hides on /client", () => {
+    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
       "console";
     expect(isConsoleShell()).toBe(true);
-    expect(shouldShowOperatorNav("/client")).toBe(true);
-  });
-
-  it("shows on /client with operator session on full build", () => {
     markOperatorSession();
-    expect(shouldShowOperatorNav("/client")).toBe(true);
-  });
-
-  it("hides on /client without session on full build", () => {
     expect(shouldShowOperatorNav("/client")).toBe(false);
   });
 

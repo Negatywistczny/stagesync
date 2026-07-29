@@ -45,3 +45,34 @@ export const OPERATOR_APP_SEGMENTS: readonly {
   { id: "timeline", label: "Timeline" },
   { id: "client", label: "Klient" },
 ] as const;
+
+export type OperatorAppJumpLink = {
+  to: string;
+  label: string;
+  disabled?: boolean;
+};
+
+/** Legacy app-jump chips for operator surfaces above compact mobile (Timeline AppHeader). */
+export function getOperatorAppJumpLinks(
+  activeApp: OperatorAppId,
+): OperatorAppJumpLink[] {
+  const timelineUrl = getTimelineNavUrl();
+  const timelineDisabled = timelineUrl === "/admin";
+  switch (activeApp) {
+    case "admin":
+      return [
+        { to: timelineUrl, label: "Timeline", disabled: timelineDisabled },
+        { to: getClientNavUrl(), label: "Klient" },
+      ];
+    case "timeline":
+      return [
+        { to: getAdminNavUrl(), label: "Admin" },
+        { to: getClientNavUrl(), label: "Klient" },
+      ];
+    case "client":
+      return [
+        { to: getAdminNavUrl(), label: "Admin" },
+        { to: timelineUrl, label: "Timeline", disabled: timelineDisabled },
+      ];
+  }
+}
