@@ -70,11 +70,16 @@ export function ShellAppearanceFields({
             >
               <span className={styles.swatches} aria-hidden="true">
                 <span
-                  className={styles.dot}
-                  style={{ backgroundColor: swatch.elevated }}
+                  className={`${styles.dot} ${styles.dotElevated}`}
+                  data-swatch="elevated"
+                  style={{
+                    backgroundColor: swatch.elevated,
+                    borderColor: swatch.elevatedBorder,
+                  }}
                 />
                 <span
                   className={styles.dot}
+                  data-swatch="primary"
                   style={{ backgroundColor: swatch.primary }}
                 />
               </span>

@@ -15,7 +15,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
-- **Motyw:** pierwszy punkt przy nazwie skóry pokazuje kolor podniesionej powierzchni (karty, ustawienia), nie tła aplikacji.
+- **Motyw:** pierwszy punkt przy nazwie skóry pokazuje kolor podniesionej powierzchni (karty, ustawienia), nie tła aplikacji — z obramowaniem w kolorze motywu, żeby był czytelny także na jasnych skórach (np. Daylight).
 - **Pełny ekran:** przycisk tylko w przeglądarce LAN (Admin / Timeline / Klient); ukryty w Tauri oraz w natywnych powłokach Console / Performer.
 - **Tablet (641–1024px):** nawigacja jak na desktopie — zakładki sekcji Admin, chipy **Timeline / Klient** i nagłówek Client bez trybu telefonu; **OperatorNav** tylko na wąskim telefonie (≤640px).
 

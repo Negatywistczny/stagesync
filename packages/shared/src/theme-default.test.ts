@@ -36,10 +36,12 @@ describe("theme-default", () => {
     for (const id of APPEARANCE_PROFILE_IDS) {
       const swatch = APPEARANCE_PROFILE_SWATCHES[id];
       expect(swatch.elevated).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(swatch.elevatedBorder).toMatch(/^#[0-9a-fA-F]{6}$/);
       expect(swatch.primary).toMatch(/^#[0-9a-fA-F]{6}$/);
       expect(swatch.elevated).not.toBe(swatch.primary);
     }
     expect(APPEARANCE_PROFILE_SWATCHES.booth.elevated).toBe("#18181b");
+    expect(APPEARANCE_PROFILE_SWATCHES.booth.elevatedBorder).toBe("#1e1e22");
     expect(APPEARANCE_PROFILE_SWATCHES.booth.primary).toBe("#fbbf24");
     expect(APPEARANCE_PROFILE_SWATCHES.midnight.primary).toBe("#22d3ee");
   });

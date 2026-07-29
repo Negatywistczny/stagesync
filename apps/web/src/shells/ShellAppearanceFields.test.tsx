@@ -35,8 +35,20 @@ describe("ShellAppearanceFields", () => {
     expect(booth.getAttribute("aria-checked")).toBe("true");
     const swatchSpans = booth.querySelectorAll("[aria-hidden='true'] span");
     expect(swatchSpans).toHaveLength(2);
-    const elevated = cssColor(swatchSpans[0]!);
-    const primary = cssColor(swatchSpans[1]!);
+    const elevatedDot = swatchSpans[0] as HTMLElement;
+    const primaryDot = swatchSpans[1] as HTMLElement;
+    const elevated = cssColor(elevatedDot);
+    const primary = cssColor(primaryDot);
+    expect(elevatedDot.getAttribute("data-swatch")).toBe("elevated");
+    expect(primaryDot.getAttribute("data-swatch")).toBe("primary");
+    const elevatedBorder = elevatedDot.style.borderColor
+      .replace(/\s/g, "")
+      .toLowerCase();
+    expect(
+      elevatedBorder ===
+        APPEARANCE_PROFILE_SWATCHES.booth.elevatedBorder.toLowerCase() ||
+        elevatedBorder === "rgb(30,30,34)",
+    ).toBe(true);
     expect(
       elevated === APPEARANCE_PROFILE_SWATCHES.booth.elevated.toLowerCase() ||
         elevated === "rgb(24,24,27)",

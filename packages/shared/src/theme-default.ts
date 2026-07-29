@@ -29,17 +29,27 @@ export const APPEARANCE_PROFILE_LABELS: Record<AppearanceProfileId, string> = {
 /**
  * Signature pair for theme pickers (elevated + primary) — mirrors
  * `packages/ui` `--ss-color-elevated` / `--ss-color-primary` per profile.
+ * `elevatedBorder` = `--ss-color-border-muted` so the chip stays legible
+ * when elevated is close to the active row background (e.g. Daylight).
  * Literal HEX so inactive themes stay visible under the active skin.
  */
 export const APPEARANCE_PROFILE_SWATCHES: Record<
   AppearanceProfileId,
-  { elevated: string; primary: string }
+  { elevated: string; elevatedBorder: string; primary: string }
 > = {
-  booth: { elevated: "#18181b", primary: "#fbbf24" },
-  daylight: { elevated: "#fafafa", primary: "#b45309" },
-  midnight: { elevated: "#1e293b", primary: "#22d3ee" },
-  matrix: { elevated: "#0a1f12", primary: "#22c55e" },
-  neon: { elevated: "#2a0a0a", primary: "#f97316" },
+  booth: { elevated: "#18181b", elevatedBorder: "#1e1e22", primary: "#fbbf24" },
+  daylight: {
+    elevated: "#fafafa",
+    elevatedBorder: "#d4d4d8",
+    primary: "#b45309",
+  },
+  midnight: {
+    elevated: "#1e293b",
+    elevatedBorder: "#1e293b",
+    primary: "#22d3ee",
+  },
+  matrix: { elevated: "#0a1f12", elevatedBorder: "#14532d", primary: "#22c55e" },
+  neon: { elevated: "#2a0a0a", elevatedBorder: "#450a0a", primary: "#f97316" },
 };
 
 /**
