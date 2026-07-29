@@ -15,9 +15,9 @@ type PreviewViewport = {
 };
 
 const PREVIEW_VIEWPORTS: PreviewViewport[] = [
-  { label: "Phone 375x667", width: 375, height: 667 },
+  { label: "Mobile 375x667", width: 375, height: 667 },
   { label: "Tablet 768x1024", width: 768, height: 1024 },
-  { label: "Laptop 1280x800", width: 1280, height: 800 },
+  { label: "Desktop 1280x800", width: 1280, height: 800 },
 ];
 
 export function DevLayoutMatrix() {
@@ -82,6 +82,7 @@ export function DevLayoutMatrix() {
                 src={previewUrl}
                 width={viewport.width}
                 height={viewport.height}
+                style={{ width: `${viewport.width}px`, height: `${viewport.height}px` }}
                 loading="lazy"
               />
             </article>

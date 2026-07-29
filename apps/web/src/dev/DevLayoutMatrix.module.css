@@ -1,5 +1,5 @@
 .page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--ss-color-bg);
   color: var(--ss-color-text);
   padding: 16px;
@@ -37,13 +37,16 @@
 }
 
 .grid {
-  overflow-x: auto;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   padding-bottom: 8px;
 }
 
 .gridTrack {
   display: grid;
   grid-template-columns: repeat(3, max-content);
+  align-items: start;
   gap: 16px;
   min-width: max-content;
 }
@@ -69,6 +72,9 @@
   border-radius: 8px;
   background: #000;
   flex: none;
+  width: auto;
+  height: auto;
+  max-width: none;
 }
 
 .url {

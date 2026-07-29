@@ -11,9 +11,9 @@ describe("DevLayoutMatrix", () => {
   it("renders preview iframes with fixed viewport dimensions", () => {
     render(<DevLayoutMatrix />);
 
-    const phone = screen.getByTitle("Phone 375x667");
+    const phone = screen.getByTitle("Mobile 375x667");
     const tablet = screen.getByTitle("Tablet 768x1024");
-    const laptop = screen.getByTitle("Laptop 1280x800");
+    const laptop = screen.getByTitle("Desktop 1280x800");
 
     expect(phone.getAttribute("width")).toBe("375");
     expect(phone.getAttribute("height")).toBe("667");
