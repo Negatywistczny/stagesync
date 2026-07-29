@@ -305,7 +305,6 @@ import {
   peaksToPolylinePoints,
 } from "../lib/waveformPeaks.js";
 import {
-import {
   detectTimelineTier,
   TIMELINE_COARSE_MQ,
   TIMELINE_MOBILE_MQ,
