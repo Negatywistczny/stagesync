@@ -25,7 +25,6 @@ function usesOperatorSessionStorage(): boolean {
   if (shellKind === "performer" || shellKind === "console") return false;
 
   if (isDesktopShell()) {
-    if (devSurface === "tauri") return false;
     if (tauriInvokeAvailable() || hasExplicitTauriShellMarker()) return false;
   }
 
