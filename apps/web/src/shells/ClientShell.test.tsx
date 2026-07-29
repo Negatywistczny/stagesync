@@ -184,6 +184,34 @@ describe("ClientShell chrome", () => {
     expect(compactBlock).not.toMatch(/\bmax-height:/);
   });
 
+  it("stretches welcome role tiles on tablet; 4-col only on wide desktop", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "ClientShell.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    );
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?grid-template-rows:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    );
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?\.roleGrid\s*\{[^}]*flex:\s*1\s+1\s+auto/,
+    );
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?font-size:\s*var\(--ss-text-stage-2xl\)/,
+    );
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*1025px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/,
+    );
+    expect(css).not.toMatch(
+      /@media\s*\(min-width:\s*768px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4/,
+    );
+  });
+
   it("uses ShellIconButton (ss-btn--icon) for global settings chrome", () => {
     renderClient();
     const settings = screen.getByRole("button", { name: /Ustawienia globalne/i });
