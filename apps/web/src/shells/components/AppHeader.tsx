@@ -70,9 +70,123 @@ export type AppHeaderProps = {
    * Plain browser on `:4000` keeps the in-app gear (`isOsMenuDesktopShell` is false).
    */
   hideOnDesktop?: boolean;
-  /** Compact mobile: operator bar above handles notch inset — skip duplicate padding. */
+  /**
+   * Compact mobile: shell owns OperatorNav — omit L1 header (actions move to nav trailing).
+   * Also skips duplicate safe-area padding on the hidden bar.
+   */
   operatorNavExternal?: boolean;
 };
+
+export type AppHeaderActionsProps = Pick<
+  AppHeaderProps,
+  | "history"
+  | "helpPressed"
+  | "onHelp"
+  | "appearancePressed"
+  | "onAppearance"
+  | "onFullscreen"
+  | "connection"
+  | "extraActions"
+> & {
+  /** Actions between Wygląd and Pełny ekran (e.g. Ustawienia in L1 header). */
+  afterAppearance?: ReactNode;
+};
+
+/** Global chrome actions (history, help, appearance, fullscreen) without L1 wrapper. */
+export function AppHeaderActions({
+  history,
+  helpPressed,
+  onHelp,
+  appearancePressed,
+  onAppearance,
+  onFullscreen,
+  connection,
+  extraActions,
+  afterAppearance,
+}: AppHeaderActionsProps) {
+  return (
+    <>
+      {history ? (
+        <>
+          <ShellIconButton
+            label="Cofnij"
+            disabled={!history.canUndo}
+            onClick={history.onUndo}
+          >
+            <IconUndo />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Ponów"
+            disabled={!history.canRedo}
+            onClick={history.onRedo}
+          >
+            <IconRedo />
+          </ShellIconButton>
+          {history.onDiscard ? (
+            <ShellIconButton
+              label="Odrzuć zmiany"
+              className={
+                history.dirty && !history.savePending
+                  ? styles.historyDiscardHot
+                  : undefined
+              }
+              disabled={!history.dirty || Boolean(history.savePending)}
+              onClick={history.onDiscard}
+            >
+              <IconDiscard />
+            </ShellIconButton>
+          ) : null}
+          <ShellIconButton
+            label="Zapisz"
+            aria-keyshortcuts="Meta+S Control+S"
+            pressed={history.dirty && !history.savePending}
+            className={
+              history.dirty && !history.savePending
+                ? styles.historySaveHot
+                : undefined
+            }
+            disabled={!history.dirty || Boolean(history.savePending)}
+            onClick={history.onSave}
+          >
+            <IconSave />
+          </ShellIconButton>
+        </>
+      ) : null}
+
+      {onHelp ? (
+        <ShellIconButton
+          label="Pomoc"
+          aria-keyshortcuts="Shift+/"
+          pressed={helpPressed}
+          onClick={onHelp}
+        >
+          <IconHelp />
+        </ShellIconButton>
+      ) : null}
+
+      {onAppearance ? (
+        <ShellIconButton
+          label="Wygląd"
+          pressed={appearancePressed}
+          onClick={onAppearance}
+        >
+          <IconSun />
+        </ShellIconButton>
+      ) : null}
+
+      {afterAppearance}
+
+      {onFullscreen ? (
+        <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
+          <IconFullscreen />
+        </ShellIconButton>
+      ) : null}
+
+      {connection}
+      {extraActions}
+    </>
+  );
+}
 
 /**
  * Level 1 app chrome — Wordmark, shell jump, global actions.
@@ -117,6 +231,7 @@ export function AppHeader({
     (!showOperatorNav || !isCompactMobile);
 
   if (hideOnDesktop && isOsMenuDesktopShell()) return null;
+  if (operatorNavExternal && isCompactMobile) return null;
 
   const handleSettings = onSettings ?? (() => openPreferences());
 
@@ -162,88 +277,23 @@ export function AppHeader({
           </nav>
         ) : null}
 
-        {history ? (
-          <>
-            <ShellIconButton
-              label="Cofnij"
-              disabled={!history.canUndo}
-              onClick={history.onUndo}
-            >
-              <IconUndo />
-            </ShellIconButton>
-            <ShellIconButton
-              label="Ponów"
-              disabled={!history.canRedo}
-              onClick={history.onRedo}
-            >
-              <IconRedo />
-            </ShellIconButton>
-            {history.onDiscard ? (
-              <ShellIconButton
-                label="Odrzuć zmiany"
-                className={
-                  history.dirty && !history.savePending
-                    ? styles.historyDiscardHot
-                    : undefined
-                }
-                disabled={!history.dirty || Boolean(history.savePending)}
-                onClick={history.onDiscard}
-              >
-                <IconDiscard />
+        <AppHeaderActions
+          history={history}
+          helpPressed={helpPressed}
+          onHelp={onHelp}
+          appearancePressed={appearancePressed}
+          onAppearance={onAppearance}
+          onFullscreen={onFullscreen}
+          connection={connection}
+          extraActions={extraActions}
+          afterAppearance={
+            !operatorNavOnExternalBar ? (
+              <ShellIconButton label={settingsLabel} onClick={handleSettings}>
+                <IconSettings />
               </ShellIconButton>
-            ) : null}
-            <ShellIconButton
-              label="Zapisz"
-              aria-keyshortcuts="Meta+S Control+S"
-              pressed={history.dirty && !history.savePending}
-              className={
-                history.dirty && !history.savePending
-                  ? styles.historySaveHot
-                  : undefined
-              }
-              disabled={!history.dirty || Boolean(history.savePending)}
-              onClick={history.onSave}
-            >
-              <IconSave />
-            </ShellIconButton>
-          </>
-        ) : null}
-
-        {onHelp ? (
-          <ShellIconButton
-            label="Pomoc"
-            aria-keyshortcuts="Shift+/"
-            pressed={helpPressed}
-            onClick={onHelp}
-          >
-            <IconHelp />
-          </ShellIconButton>
-        ) : null}
-
-        {onAppearance ? (
-          <ShellIconButton
-            label="Wygląd"
-            pressed={appearancePressed}
-            onClick={onAppearance}
-          >
-            <IconSun />
-          </ShellIconButton>
-        ) : null}
-
-        {!operatorNavOnExternalBar ? (
-          <ShellIconButton label={settingsLabel} onClick={handleSettings}>
-            <IconSettings />
-          </ShellIconButton>
-        ) : null}
-
-        {onFullscreen ? (
-          <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
-            <IconFullscreen />
-          </ShellIconButton>
-        ) : null}
-
-        {connection}
-        {extraActions}
+            ) : null
+          }
+        />
       </div>
     </header>
   );

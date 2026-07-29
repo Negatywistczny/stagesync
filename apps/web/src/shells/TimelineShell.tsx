@@ -449,7 +449,7 @@ import {
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
-import { AppHeader } from "./components/AppHeader.js";
+import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
 import styles from "./TimelineShell.module.css";
@@ -5879,6 +5879,38 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
   }
 
+  const operatorNavCompact = isCompactMobile && showOperatorNav;
+  const headerHistory = isMobilePreview
+    ? undefined
+    : {
+        canUndo: Boolean(draftHistory && canUndo(draftHistory)),
+        canRedo: Boolean(draftHistory && canRedo(draftHistory)),
+        dirty,
+        savePending,
+        onUndo,
+        onRedo,
+        onSave: () => {
+          void onSave();
+        },
+        onDiscard,
+      };
+  const headerOnFullscreen = shouldShowFullscreenControl()
+    ? () => {
+        void (async () => {
+          try {
+            await toggleAppFullscreen();
+            setFullscreenError(null);
+          } catch (err) {
+            setFullscreenError(
+              err instanceof Error
+                ? err.message
+                : "Nie udało się przełączyć pełnego ekranu",
+            );
+          }
+        })();
+      }
+    : undefined;
+
   return (
     <div
       className={[
@@ -5917,62 +5949,40 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           }
         }}
       />
-      {isCompactMobile && showOperatorNav ? (
-        <div className={styles.operatorNavBar}>
+      {operatorNavCompact ? (
+        <div className={styles.topChrome}>
           <OperatorNav
             activeApp="timeline"
             center={draftProject?.name ?? projectId ?? undefined}
+            trailing={
+              <AppHeaderActions
+                history={headerHistory}
+                helpPressed={helpOpen}
+                onHelp={() => setHelpOpen(true)}
+                appearancePressed={appearanceOpen}
+                onAppearance={() => setAppearanceOpen((v) => !v)}
+                onFullscreen={headerOnFullscreen}
+              />
+            }
           />
         </div>
-      ) : null}
-      <AppHeader
-        suffix="Timeline"
-        version={APP_VERSION}
-        appJump={[
-          { to: "/admin", label: "Admin" },
-          { to: "/client", label: "Klient" },
-        ]}
-        operatorApp="timeline"
-        operatorNavExternal={isCompactMobile && showOperatorNav}
-        history={
-          isMobilePreview
-            ? undefined
-            : {
-                canUndo: Boolean(draftHistory && canUndo(draftHistory)),
-                canRedo: Boolean(draftHistory && canRedo(draftHistory)),
-                dirty,
-                savePending,
-                onUndo,
-                onRedo,
-                onSave: () => {
-                  void onSave();
-                },
-                onDiscard,
-              }
-        }
-        helpPressed={helpOpen}
-        onHelp={() => setHelpOpen(true)}
-        appearancePressed={appearanceOpen}
-        onAppearance={() => setAppearanceOpen((v) => !v)}
-        onFullscreen={
-          shouldShowFullscreenControl()
-            ? () => {
-                void (async () => {
-                  try {
-                    await toggleAppFullscreen();
-                    setFullscreenError(null);
-                  } catch (err) {
-                    setFullscreenError(
-                      err instanceof Error
-                        ? err.message
-                        : "Nie udało się przełączyć pełnego ekranu",
-                    );
-                  }
-                })();
-              }
-            : undefined
-        }
-      />
+      ) : (
+        <AppHeader
+          suffix="Timeline"
+          version={APP_VERSION}
+          appJump={[
+            { to: "/admin", label: "Admin" },
+            { to: "/client", label: "Klient" },
+          ]}
+          operatorApp="timeline"
+          history={headerHistory}
+          helpPressed={helpOpen}
+          onHelp={() => setHelpOpen(true)}
+          appearancePressed={appearanceOpen}
+          onAppearance={() => setAppearanceOpen((v) => !v)}
+          onFullscreen={headerOnFullscreen}
+        />
+      )}
 
       <ConnectionLostBanner status={wsStatus} />
 

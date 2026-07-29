@@ -110,6 +110,25 @@ describe("AppHeader", () => {
     expect(out).toContain("Cofnij");
   });
 
+  it("hides L1 header on compact mobile when operatorNavExternal", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader
+          suffix="Timeline"
+          version="5.0.0"
+          operatorApp="timeline"
+          operatorNavExternal
+          appJump={[
+            { to: "/admin", label: "Admin" },
+            { to: "/client", label: "Klient" },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+    expect(out).toBe("");
+  });
+
   it("hides app jump and settings on compact mobile when operatorApp is set", () => {
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
     const out = renderToStaticMarkup(
@@ -161,6 +180,22 @@ describe("AppHeader", () => {
   });
 
   it("omits embedded OperatorNav on compact mobile — shell owns the bar", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    const out = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <AppHeader
+          suffix="Timeline"
+          version="5.0.0"
+          operatorApp="timeline"
+          operatorNavExternal
+        />
+      </MemoryRouter>,
+    );
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
+    expect(out).toBe("");
+  });
+
+  it("omits embedded OperatorNav on compact mobile without operatorNavExternal", () => {
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
     const out = renderToStaticMarkup(
       <MemoryRouter initialEntries={["/timeline/p1"]}>

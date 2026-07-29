@@ -36,6 +36,36 @@
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
 }
 
+.topChrome {
+  position: relative;
+  z-index: var(--ss-z-sticky);
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  min-width: 0;
+}
+
+.topChrome > nav {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  padding: var(--ss-space-1) var(--ss-space-2);
+}
+
+@media (max-width: 640px) {
+  .topChrome {
+    padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
+  }
+
+  .topChrome > nav {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+  }
+}
+
+/* Legacy — prefer .topChrome on compact mobile. */
 .operatorNavBar {
   position: relative;
   z-index: var(--ss-z-sticky);
@@ -2010,24 +2040,31 @@
 
 .shell[data-tl-tier="mobile"] .toolbar {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
   gap: var(--ss-space-2);
   padding: var(--ss-space-2) var(--ss-space-3);
-  overflow-x: visible;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.shell[data-tl-tier="mobile"] .toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 .shell[data-tl-tier="mobile"] .toolbarCenter {
   flex: 1 1 auto;
   min-width: 0;
-  justify-content: center;
+  justify-content: flex-start;
   margin-left: 0;
 }
 
 .shell[data-tl-tier="mobile"] .songCluster {
-  flex: 1 1 100%;
+  flex: 0 1 auto;
   min-width: 0;
-  justify-content: center;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .shell[data-tl-tier="mobile"] .songPicker {

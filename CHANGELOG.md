@@ -22,6 +22,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
+- **Timeline (telefon):** nagłówek i pasek transportu mieszczą się w dwóch wierszach — bez osobnego paska Level 1 pod **OperatorNav** i bez zawijania setlisty pod transport.
 - **Tap:** przycisk przy warstwie Tekst włącza tylko tryb znaczników wokalu (Spacja = start linii przy playheadzie) — bez zmiany tempa utworu.
 - **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
 
