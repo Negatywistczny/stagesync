@@ -47,6 +47,24 @@
   flex-direction: column;
   gap: 0;
   padding-bottom: var(--ss-space-2);
+  scrollbar-gutter: stable;
+  padding-inline-end: var(--ss-space-1);
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 .head h2 {
@@ -57,10 +75,28 @@
 
 .tabs {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   gap: var(--ss-space-1);
   margin: 0 0 var(--ss-space-3);
   align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: var(--ss-space-2);
+  background: var(--ss-color-elevated);
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs :global(.ss-btn) {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .body {
@@ -291,6 +327,58 @@
   }
 }
 
+@media (min-width: 769px) {
+  .panel {
+    width: min(48rem, 100%);
+    min-width: min(48rem, 100%);
+    height: min(85dvh, 44rem);
+    min-height: min(85dvh, 44rem);
+    max-height: min(85dvh, 44rem);
+  }
+
+  .scroll {
+    overflow: hidden;
+    padding-inline-end: 0;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(9rem, 11rem) minmax(0, 1fr);
+    gap: var(--ss-space-4);
+    align-items: stretch;
+  }
+
+  .tabs {
+    position: static;
+    flex-direction: column;
+    align-items: stretch;
+    overflow-x: visible;
+    overflow-y: auto;
+    margin: 0;
+    padding-bottom: 0;
+    padding-inline-end: var(--ss-space-2);
+    border-inline-end: 1px solid var(--ss-color-border);
+  }
+
+  .tabs :global(.ss-btn) {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .main {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-inline-end: var(--ss-space-1);
+  }
+}
+
+@media (min-width: 1025px) {
+  .panel {
+    width: min(52rem, 100%);
+    min-width: min(52rem, 100%);
+  }
+}
+
 @media (max-width: 768px) {
   .overlay {
     padding: 0;
@@ -307,6 +395,11 @@
 
   .tabs {
     gap: var(--ss-space-1);
+    margin-bottom: var(--ss-space-2);
+  }
+
+  .scroll {
+    padding-inline-end: var(--ss-space-2);
   }
 
   .actions {
@@ -323,32 +416,4 @@
   margin: 0 0 var(--ss-space-3);
   color: var(--ss-color-warning);
   font-size: var(--ss-text-sm);
-}
-
-@media (max-width: 768px) {
-  .overlay {
-    padding: 0;
-    align-items: stretch;
-  }
-
-  .panel {
-    width: 100%;
-    max-height: 100dvh;
-    border-radius: 0;
-    padding: var(--ss-space-3);
-    padding-bottom: max(var(--ss-space-3), env(safe-area-inset-bottom, 0px));
-  }
-
-  .tabs {
-    gap: var(--ss-space-1);
-  }
-
-  .actions {
-    flex-wrap: wrap;
-    justify-content: stretch;
-  }
-
-  .actions > * {
-    flex: 1 1 auto;
-  }
 }

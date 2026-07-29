@@ -1,7 +1,8 @@
 /**
- * Tablet nudge bar — move / edge stretch for any selected timeline clip.
+ * Tablet nudge controls — move / edge stretch for any selected timeline clip.
  * Semantics ported from v4 `applyClipNudgeMove` / `applyClipNudgeResize`
  * (ticks + existing lane edit helpers; not HTML clone).
+ * Layout: dual-edge clusters left/right of the clip (see TimelineShell TouchNudgeBar).
  */
 
 import {

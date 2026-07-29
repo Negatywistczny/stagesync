@@ -1,7 +1,7 @@
 /**
  * Timeline touch tiers — port of v4 `timeline-touch.js` detect logic (not HTML clone).
  * mobile ≤640px → RO player chrome; tablet ≤1024px or coarse pointer; else desktop.
- * Tauri desktop never enters mobile player — OS menu is L1 SSOT; narrow window stays editable.
+ * Same breakpoints on Web, Console, and Tauri.
  */
 
 import { MQ_MOBILE_COMPACT, MQ_TABLET } from "./breakpoints.js";

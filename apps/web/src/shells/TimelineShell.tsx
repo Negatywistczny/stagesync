@@ -182,6 +182,7 @@ import {
   applyTimelineNudge,
   nudgeShowsLeftEdge,
   shouldShowTouchNudge,
+  type NudgeAction,
 } from "../lib/timelineTouchNudge.js";
 import { useTimelineTouchGestures } from "../lib/useTimelineTouchGestures.js";
 import {
@@ -402,6 +403,7 @@ import {
 } from "../lib/desktopMenuEvents.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
+import { openPreferences } from "../lib/preferencesEvents.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
@@ -420,6 +422,7 @@ import {
   IconEye,
   IconFade,
   IconFollow,
+  IconFullscreen,
   IconGain,
   IconInfo,
   IconJoin,
@@ -443,12 +446,7 @@ import {
 } from "./icons.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
-import {
-  SettingsPopover,
-  ShellAppearanceFields,
-} from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
-import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
@@ -679,7 +677,6 @@ export function TimelineShell() {
   const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
@@ -2324,7 +2321,7 @@ export function TimelineShell() {
           h.fitZoom();
           break;
         case "appearance":
-          setAppearanceOpen(true);
+          openPreferences("general");
           break;
         case "help-shortcuts":
           setHelpOpen(true);
@@ -5910,6 +5907,19 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         })();
       }
     : undefined;
+  const timelineHeaderActions = (
+    <AppHeaderActions
+      history={headerHistory}
+      helpPressed={helpOpen}
+      onHelp={() => setHelpOpen(true)}
+      onFullscreen={operatorNavCompact ? undefined : headerOnFullscreen}
+    />
+  );
+  const fullscreenButton = shouldShowFullscreenControl() ? (
+    <ShellIconButton label="Pełny ekran" onClick={headerOnFullscreen}>
+      <IconFullscreen />
+    </ShellIconButton>
+  ) : null;
 
   return (
     <div
@@ -5954,16 +5964,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <OperatorNav
             activeApp="timeline"
             center={draftProject?.name ?? projectId ?? undefined}
-            trailing={
-              <AppHeaderActions
-                history={headerHistory}
-                helpPressed={helpOpen}
-                onHelp={() => setHelpOpen(true)}
-                appearancePressed={appearanceOpen}
-                onAppearance={() => setAppearanceOpen((v) => !v)}
-                onFullscreen={headerOnFullscreen}
-              />
-            }
+            trailing={fullscreenButton}
           />
         </div>
       ) : (
@@ -5978,8 +5979,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           history={headerHistory}
           helpPressed={helpOpen}
           onHelp={() => setHelpOpen(true)}
-          appearancePressed={appearanceOpen}
-          onAppearance={() => setAppearanceOpen((v) => !v)}
           onFullscreen={headerOnFullscreen}
         />
       )}
@@ -5993,31 +5992,36 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       <div className={styles.toolbar} data-ss-level="2">
-        <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
-          {TOOLS.filter(({ id }) => toolbarVisibleSet.has(id)).map(
-            ({ id, title, Icon }) => (
-              <ShellIconButton
-                key={id}
-                label={title}
-                pressed={tool === id}
-                onClick={() => onTool(id)}
-              >
-                <Icon />
-              </ShellIconButton>
-            ),
-          )}
-          <ShellIconButton
-            ref={toolsVisBtnRef}
-            label="Widoczne narzędzia na pasku"
-            pressed={toolsVisOpen}
-            aria-expanded={toolsVisOpen}
-            aria-haspopup="menu"
-            aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
-            onClick={() => setToolsVisOpen((v) => !v)}
-          >
-            <IconSettings />
-          </ShellIconButton>
-        </div>
+        {operatorNavCompact ? (
+          <div className={styles.toolbarHeaderActions}>{timelineHeaderActions}</div>
+        ) : null}
+        {!isMobilePreview ? (
+          <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
+            {TOOLS.filter(({ id }) => toolbarVisibleSet.has(id)).map(
+              ({ id, title, Icon }) => (
+                <ShellIconButton
+                  key={id}
+                  label={title}
+                  pressed={tool === id}
+                  onClick={() => onTool(id)}
+                >
+                  <Icon />
+                </ShellIconButton>
+              ),
+            )}
+            <ShellIconButton
+              ref={toolsVisBtnRef}
+              label="Widoczne narzędzia na pasku"
+              pressed={toolsVisOpen}
+              aria-expanded={toolsVisOpen}
+              aria-haspopup="menu"
+              aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
+              onClick={() => setToolsVisOpen((v) => !v)}
+            >
+              <IconSettings />
+            </ShellIconButton>
+          </div>
+        ) : null}
 
         <div className={styles.toolbarCenter}>
           <div className={styles.transport} role="group" aria-label="Odtwarzanie">
@@ -6148,6 +6152,26 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 }}
               >
                 <IconFollow />
+              </ShellIconButton>
+              <ShellIconButton
+                label="Wskaźnik MIDI (playhead)"
+                pressed={showMidiPlayhead}
+                onClick={() => {
+                  setShowMidiPlayhead((v) => {
+                    const next = !v;
+                    try {
+                      localStorage.setItem(
+                        "stagesync-timeline-midi-playhead",
+                        next ? "1" : "0",
+                      );
+                    } catch {
+                      /* ignore */
+                    }
+                    return next;
+                  });
+                }}
+              >
+                <IconEye />
               </ShellIconButton>
             </div>
           </div>
@@ -8139,119 +8163,25 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         primaryId,
         draftProject,
       ) && draftProject && selectionLane && primaryId ? (
-        <div
-          className={styles.touchNudge}
-          role="toolbar"
-          aria-label="Przesuń i rozciągnij klip"
-        >
-          <Button
-            variant="ghost"
-            iconOnly
-            aria-label="Przesuń w lewo"
-            onClick={() => {
-              commitDraft(
-                applyTimelineNudge(
-                  draftProject,
-                  selectionLane,
-                  primaryId,
-                  "move-left",
-                ),
-              );
-            }}
-          >
-            ◀
-          </Button>
-          <Button
-            variant="ghost"
-            iconOnly
-            aria-label="Przesuń w prawo"
-            onClick={() => {
-              commitDraft(
-                applyTimelineNudge(
-                  draftProject,
-                  selectionLane,
-                  primaryId,
-                  "move-right",
-                ),
-              );
-            }}
-          >
-            ▶
-          </Button>
-          <span className={styles.touchNudgeSep} aria-hidden />
-          {nudgeShowsLeftEdge(draftProject, selectionLane, primaryId) ? (
-            <>
-              <Button
-                variant="ghost"
-                iconOnly
-                aria-label="Wydłuż lewą krawędź"
-                onClick={() => {
-                  commitDraft(
-                    applyTimelineNudge(
-                      draftProject,
-                      selectionLane,
-                      primaryId,
-                      "stretch-left-out",
-                    ),
-                  );
-                }}
-              >
-                ◂|
-              </Button>
-              <Button
-                variant="ghost"
-                iconOnly
-                aria-label="Skróć od lewej"
-                onClick={() => {
-                  commitDraft(
-                    applyTimelineNudge(
-                      draftProject,
-                      selectionLane,
-                      primaryId,
-                      "stretch-left-in",
-                    ),
-                  );
-                }}
-              >
-                |▸
-              </Button>
-            </>
-          ) : null}
-          <Button
-            variant="ghost"
-            iconOnly
-            aria-label="Skróć od prawej"
-            onClick={() => {
-              commitDraft(
-                applyTimelineNudge(
-                  draftProject,
-                  selectionLane,
-                  primaryId,
-                  "stretch-right-in",
-                ),
-              );
-            }}
-          >
-            ◂|
-          </Button>
-          <Button
-            variant="ghost"
-            iconOnly
-            aria-label="Wydłuż prawą krawędź"
-            onClick={() => {
-              commitDraft(
-                applyTimelineNudge(
-                  draftProject,
-                  selectionLane,
-                  primaryId,
-                  "stretch-right-out",
-                ),
-              );
-            }}
-          >
-            |▸
-          </Button>
-        </div>
+        <TouchNudgeBar
+          clipId={primaryId}
+          lane={selectionLane}
+          showLeftEdge={nudgeShowsLeftEdge(
+            draftProject,
+            selectionLane,
+            primaryId,
+          )}
+          onAction={(action) => {
+            commitDraft(
+              applyTimelineNudge(
+                draftProject,
+                selectionLane,
+                primaryId,
+                action,
+              ),
+            );
+          }}
+        />
       ) : null}
 
       {canvasNotice ? (
@@ -8343,33 +8273,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <TimelineHelp onClose={() => setHelpOpen(false)} />
           </div>
         </div>
-      ) : null}
-
-      {appearanceOpen ? (
-        <SettingsPopover
-          title="Wygląd"
-          placement="fixed-top-right"
-          onClose={() => setAppearanceOpen(false)}
-        >
-          <ShellAppearanceFields />
-          <ShellSwitchRow
-            checked={showMidiPlayhead}
-            onChange={(e) => {
-              const next = e.target.checked;
-              setShowMidiPlayhead(next);
-              try {
-                localStorage.setItem(
-                  "stagesync-timeline-midi-playhead",
-                  next ? "1" : "0",
-                );
-              } catch {
-                /* ignore */
-              }
-            }}
-          >
-            Wskaźnik MIDI (playhead)
-          </ShellSwitchRow>
-        </SettingsPopover>
       ) : null}
 
       {songScreenOpen ? (
@@ -8950,6 +8853,178 @@ function FormaClipButton({
         {clip.kind === "countdown" ? `${clip.name} (CD)` : clip.name}
       </span>
     </button>
+  );
+}
+
+function TouchNudgeBar({
+  clipId,
+  lane,
+  showLeftEdge,
+  onAction,
+}: {
+  clipId: string;
+  lane: string;
+  showLeftEdge: boolean;
+  onAction: (action: NudgeAction) => void;
+}) {
+  const leftRef = useRef<HTMLDivElement | null>(null);
+  const rightRef = useRef<HTMLDivElement | null>(null);
+
+  const reposition = useCallback(() => {
+    const leftEdge = leftRef.current;
+    const rightEdge = rightRef.current;
+    if (!rightEdge && !leftEdge) return;
+
+    const clipEl =
+      document.querySelector<HTMLElement>(
+        `[data-clip-id="${CSS.escape(clipId)}"][data-clip-lane="${CSS.escape(lane)}"]`,
+      ) ??
+      document.querySelector<HTMLElement>(
+        `[data-clip-id="${CSS.escape(clipId)}"]`,
+      );
+    const scrollEl = document.querySelector<HTMLElement>("[data-canvas-scroll]");
+    const pad = 4;
+
+    if (!clipEl) {
+      if (leftEdge) leftEdge.style.visibility = "hidden";
+      if (rightEdge) rightEdge.style.visibility = "hidden";
+      return;
+    }
+
+    const clipRect = clipEl.getBoundingClientRect();
+    const scrollRect = scrollEl?.getBoundingClientRect() ?? null;
+    const top = scrollRect
+      ? Math.max(
+          scrollRect.top + pad,
+          Math.min(clipRect.top, scrollRect.bottom - pad),
+        )
+      : Math.max(pad, clipRect.top);
+    const viewLeft = scrollRect ? scrollRect.left : 0;
+    const viewRight = scrollRect ? scrollRect.right : window.innerWidth;
+
+    if (leftEdge) {
+      if (!showLeftEdge) {
+        leftEdge.style.visibility = "hidden";
+      } else {
+        leftEdge.style.visibility = "visible";
+        const leftW = leftEdge.offsetWidth || 52;
+        let leftX = clipRect.left;
+        let leftTx = "translate(-100%, 0)";
+        if (leftX - leftW < viewLeft + pad) {
+          leftX = Math.min(clipRect.left + 2, viewRight - leftW - pad);
+          leftTx = "translate(0, 0)";
+        }
+        leftEdge.style.top = `${top}px`;
+        leftEdge.style.left = `${leftX}px`;
+        leftEdge.style.transform = leftTx;
+      }
+    }
+
+    if (rightEdge) {
+      rightEdge.style.visibility = "visible";
+      const rightW = rightEdge.offsetWidth || 52;
+      let rightX = clipRect.right;
+      let rightTx = "translate(0, 0)";
+      if (rightX + rightW > viewRight - pad) {
+        rightX = Math.max(clipRect.right - 2, viewLeft + rightW + pad);
+        rightTx = "translate(-100%, 0)";
+      }
+      rightEdge.style.top = `${top}px`;
+      rightEdge.style.left = `${rightX}px`;
+      rightEdge.style.transform = rightTx;
+    }
+  }, [clipId, lane, showLeftEdge]);
+
+  useLayoutEffect(() => {
+    reposition();
+    const scrollEl = document.querySelector("[data-canvas-scroll]");
+    scrollEl?.addEventListener("scroll", reposition, { passive: true });
+    window.addEventListener("resize", reposition, { passive: true });
+    return () => {
+      scrollEl?.removeEventListener("scroll", reposition);
+      window.removeEventListener("resize", reposition);
+    };
+  }, [reposition]);
+
+  return (
+    <div
+      className={styles.touchNudge}
+      role="toolbar"
+      aria-label="Przesuń i rozciągnij klip"
+    >
+      {showLeftEdge ? (
+        <div
+          ref={leftRef}
+          className={styles.touchNudgeEdge}
+          data-nudge-edge="left"
+        >
+          <Button
+            variant="ghost"
+            iconOnly
+            className={styles.touchNudgeMove}
+            aria-label="Przesuń w lewo"
+            onClick={() => onAction("move-left")}
+          >
+            ◀
+          </Button>
+          <div className={styles.touchNudgeStretch} data-nudge-group="resize">
+            <Button
+              variant="ghost"
+              iconOnly
+              className={styles.touchNudgeStretchBtn}
+              aria-label="Wydłuż lewą krawędź"
+              onClick={() => onAction("stretch-left-out")}
+            >
+              ◂|
+            </Button>
+            <Button
+              variant="ghost"
+              iconOnly
+              className={styles.touchNudgeStretchBtn}
+              aria-label="Skróć od lewej"
+              onClick={() => onAction("stretch-left-in")}
+            >
+              |▸
+            </Button>
+          </div>
+        </div>
+      ) : null}
+      <div
+        ref={rightRef}
+        className={styles.touchNudgeEdge}
+        data-nudge-edge="right"
+      >
+        <Button
+          variant="ghost"
+          iconOnly
+          className={styles.touchNudgeMove}
+          aria-label="Przesuń w prawo"
+          onClick={() => onAction("move-right")}
+        >
+          ▶
+        </Button>
+        <div className={styles.touchNudgeStretch} data-nudge-group="resize">
+          <Button
+            variant="ghost"
+            iconOnly
+            className={styles.touchNudgeStretchBtn}
+            aria-label="Skróć od prawej"
+            onClick={() => onAction("stretch-right-in")}
+          >
+            ◂|
+          </Button>
+          <Button
+            variant="ghost"
+            iconOnly
+            className={styles.touchNudgeStretchBtn}
+            aria-label="Wydłuż prawą krawędź"
+            onClick={() => onAction("stretch-right-out")}
+          >
+            |▸
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

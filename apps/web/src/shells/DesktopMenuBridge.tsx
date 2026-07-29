@@ -508,7 +508,7 @@ export function DesktopMenuBridge() {
           setPrefsOpen(true);
           break;
         case "appearance":
-          // Timeline / Client open in-shell Wygląd; Admin → Preferencje → Ogólne.
+          // Client handles in-shell; Timeline → openPreferences in TimelineShell.
           if (!onTimeline && !onClient) {
             setPrefsTab("general");
             setPrefsOpen(true);

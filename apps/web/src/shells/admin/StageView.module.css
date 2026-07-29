@@ -318,7 +318,7 @@
   color: var(--ss-color-text-muted);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .root {
     gap: var(--ss-space-2);
     overflow: hidden;

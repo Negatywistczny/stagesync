@@ -49,13 +49,18 @@ describe("timelineTouchTier", () => {
     ).toBe("mobile");
   });
 
-  it("skips mobile player on Tauri desktop even at ≤640px", () => {
+  it("can skip mobile player when allowMobilePlayer is false", () => {
     expect(
       detectTimelineTier(matchesAtWidth(640), { allowMobilePlayer: false }),
     ).toBe("tablet");
     expect(
       detectTimelineTier(matchesAtWidth(500), { allowMobilePlayer: false }),
     ).toBe("tablet");
+  });
+
+  it("enters mobile player at ≤640px when compact chrome is allowed (default)", () => {
+    expect(detectTimelineTier(matchesAtWidth(640))).toBe("mobile");
+    expect(detectTimelineTier(matchesAtWidth(500))).toBe("mobile");
   });
 
   it("detects tablet on coarse when not mobile", () => {

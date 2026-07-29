@@ -33,15 +33,21 @@ describe("useMqMobileCompact", () => {
     vi.mocked(shouldUseMobileCompactChrome).mockReturnValue(true);
   });
 
-  it("matches compact media on web / Console", () => {
+  it("matches compact media on web / Console / Tauri when allowed", () => {
     stubMatchMedia(true);
     const { result } = renderHook(() => useMqMobileCompact());
     expect(result.current).toBe(true);
   });
 
-  it("stays false on Tauri desktop even when viewport is ≤640px", () => {
+  it("stays false when compact chrome is disallowed even at ≤640px", () => {
     vi.mocked(shouldUseMobileCompactChrome).mockReturnValue(false);
     stubMatchMedia(true);
+    const { result } = renderHook(() => useMqMobileCompact());
+    expect(result.current).toBe(false);
+  });
+
+  it("stays false when viewport is wider than 640px", () => {
+    stubMatchMedia(false);
     const { result } = renderHook(() => useMqMobileCompact());
     expect(result.current).toBe(false);
   });

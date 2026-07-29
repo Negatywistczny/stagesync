@@ -4,7 +4,7 @@ import { shouldUseMobileCompactChrome } from "./operatorSurface.js";
 
 /**
  * True when viewport matches narrow-phone chrome (`MQ_MOBILE_COMPACT`, ≤640px).
- * Always false on Tauri desktop (OS menu) — narrow window keeps desktop chrome.
+ * Same on Web, Console, and Tauri — no desktop-shell exception.
  */
 export function useMqMobileCompact(): boolean {
   const [compact, setCompact] = useState(() => {

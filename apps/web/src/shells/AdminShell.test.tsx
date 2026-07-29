@@ -9,6 +9,10 @@ vi.mock("../lib/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
+vi.mock("../lib/useMqTablet.js", () => ({
+  useMqTablet: vi.fn(() => false),
+}));
+
 vi.mock("../lib/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
   shouldShowFullscreenControl: vi.fn(() => false),
@@ -72,6 +76,7 @@ vi.mock("../transport/useTransport.js", () => ({
 
 import { AdminShell } from "./AdminShell.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
+import { useMqTablet } from "../lib/useMqTablet.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
@@ -89,6 +94,7 @@ describe("AdminShell chrome", () => {
   afterEach(() => {
     vi.clearAllMocks();
     vi.mocked(useMqMobileCompact).mockReturnValue(false);
+    vi.mocked(useMqTablet).mockReturnValue(false);
     vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
     vi.mocked(shouldShowFullscreenControl).mockReturnValue(false);
   });
@@ -183,6 +189,32 @@ describe("AdminShell chrome", () => {
     expect(tabletBlock).toContain(".chrome");
     expect(tabletBlock).not.toContain("grid-template-areas");
     expect(tabletBlock).not.toContain("flex-wrap: wrap");
+    expect(tabletBlock).toContain(".sections");
+    expect(tabletBlock).toMatch(/\.sections\s*\{[^}]*overflow-x:\s*auto/);
+    expect(tabletBlock).toMatch(/\.appJump\s*\{[^}]*flex-shrink:\s*0/);
+    expect(tabletBlock).toMatch(
+      /\.appJump\s*\{[^}]*padding-inline-start:\s*var\(--ss-space-3\)/,
+    );
+  });
+
+  it("uses shared phone compact chrome at ≤640px (no Tauri-only legacy header path)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "AdminShell.module.css"),
+      "utf8",
+    );
+    const mobileBlock =
+      css.match(/@media\s*\(max-width:\s*640px\)\s*\{([\s\S]*?)\n\}/)?.[1] ??
+      "";
+    expect(mobileBlock).not.toContain(
+      ".chrome.chromeLegacy:not(.chromeCompact)",
+    );
+    expect(mobileBlock).toContain(".chromeCompact");
+    expect(mobileBlock).toMatch(
+      /\.split\s*\{[^}]*grid-template-columns:\s*1fr/,
+    );
   });
 
   it("keeps compact chrome within viewport — touch targets and no vertical clamp", async () => {

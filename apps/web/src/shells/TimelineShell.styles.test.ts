@@ -26,6 +26,16 @@ describe("TimelineShell styles", () => {
       "utf8",
     );
     expect(css).toMatch(/\.topChrome\s*\{[\s\S]*?flex-direction:\s*column/);
+    const topChromeNavBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.topChrome\s*>\s*nav\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(topChromeNavBlock).toContain(
+      "max-height: var(--ss-touch-min-shell-action)",
+    );
+    expect(css).toMatch(
+      /\.shell\[data-tl-tier="mobile"\]\s+\.toolbarHeaderActions\s*\{/,
+    );
     const mobileToolbar =
       css.match(
         /\.shell\[data-tl-tier="mobile"\]\s+\.toolbar\s*\{([^}]*)\}/,
@@ -37,5 +47,42 @@ describe("TimelineShell styles", () => {
         /\.shell\[data-tl-tier="mobile"\]\s+\.songCluster\s*\{([^}]*)\}/,
       )?.[1] ?? "";
     expect(mobileSong).not.toContain("flex: 1 1 100%");
+  });
+
+  it("hides edit toolbar on mobile tier and keeps grid for tablet/desktop", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /\.shell\[data-tl-tier="mobile"\]\s+\.toolBar[\s\S]*?display:\s*none/,
+    );
+    expect(css).toMatch(/\.toolbar\s*\{[\s\S]*?grid-template-areas:\s*"tools center song"/);
+    expect(css).not.toMatch(
+      /@media\s*\(max-width:\s*768px\)\s*\{[\s\S]*?\.toolbar\s*\{[\s\S]*?display:\s*flex/,
+    );
+  });
+
+  it("places tablet clip nudge tools on both sides with smaller stretch buttons", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /\.touchNudge\s*\{[^}]*pointer-events:\s*none/,
+    );
+    expect(css).toMatch(
+      /\.touchNudgeEdge\s*\{[^}]*flex-direction:\s*column/,
+    );
+    expect(css).toMatch(
+      /\.touchNudgeStretch\s*\{[^}]*flex-direction:\s*row/,
+    );
+    expect(css).toMatch(
+      /\.touchNudgeStretchBtn\s*\{[^}]*--ss-touch-min:\s*var\(--ss-space-8\)/,
+    );
+    expect(css).not.toMatch(/\.touchNudgeSep\s*\{/);
+    expect(css).not.toMatch(
+      /\.touchNudge\s*\{[^}]*transform:\s*translateX\(-50%\)/,
+    );
   });
 });

@@ -62,10 +62,10 @@ export function isOsMenuDesktopShell(): boolean {
 
 /**
  * Phone compact chrome (≤640px OperatorNav / player-only Timeline / compact headers).
- * False on Tauri desktop — narrow window keeps desktop chrome; OS menu owns L1 nav.
+ * Viewport-gated via `useMqMobileCompact` / `detectTimelineTier` — same on Web, Console, and Tauri.
  */
 export function shouldUseMobileCompactChrome(): boolean {
-  return !isOsMenuDesktopShell();
+  return true;
 }
 
 function isClientRoute(pathname: string): boolean {
@@ -92,12 +92,14 @@ export function shouldShowFullscreenControl(): boolean {
 }
 
 /**
- * OperatorNav visibility — Tauri desktop uses OS menu; Performer / musician Client hide it.
- * On /client, web shows nav only with an active operator session; Console always shows it.
+ * OperatorNav visibility for operator routes (Admin / Timeline) and Client when allowed.
+ * Shells show the compact bar only at ≤640px; at wider widths they keep desktop chrome
+ * (Tauri OS menu still hides AppHeader via `isOsMenuDesktopShell`).
+ * Performer / musician Client hide it. On /client, web shows nav only with an active
+ * operator session; Console always shows it; Tauri Client has no web operator session.
  */
 export function shouldShowOperatorNav(pathname: string): boolean {
   if (isPerformerShell()) return false;
-  if (isOsMenuDesktopShell()) return false;
 
   if (isClientRoute(pathname)) {
     if (isConsoleShell()) return true;

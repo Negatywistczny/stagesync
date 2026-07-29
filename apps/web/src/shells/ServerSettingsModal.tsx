@@ -514,21 +514,23 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         </div>
       }
     >
-      <div className={styles.tabs} role="tablist" aria-label="Preferencje">
-        {TABS.map((t) => (
-          <Button
-            key={t.id}
-            variant="ghost"
-            role="tab"
-            aria-selected={tab === t.id}
-            selected={tab === t.id}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </Button>
-        ))}
-      </div>
+      <div className={styles.layout}>
+        <div className={styles.tabs} role="tablist" aria-label="Preferencje">
+          {TABS.map((t) => (
+            <Button
+              key={t.id}
+              variant="ghost"
+              role="tab"
+              aria-selected={tab === t.id}
+              selected={tab === t.id}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
 
+        <div className={styles.main}>
       {tab === "general" ? (
         <div className={styles.body} role="tabpanel">
           <fieldset className={styles.fieldset}>
@@ -1311,6 +1313,8 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           )}
         </div>
       ) : null}
+        </div>
+      </div>
 
       <ShellConfirmDialog
         open={pendingRestore != null}

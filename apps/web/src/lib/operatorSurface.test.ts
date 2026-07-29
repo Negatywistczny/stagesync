@@ -86,25 +86,34 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldShowOperatorNav("/admin")).toBe(false);
   });
 
-  it("hides on Tauri desktop with invoke", () => {
+  it("allows OperatorNav + phone compact chrome on Tauri (viewport gates compact UI)", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
-    expect(shouldShowOperatorNav("/admin")).toBe(false);
     expect(isOsMenuDesktopShell()).toBe(true);
-    expect(shouldUseMobileCompactChrome()).toBe(false);
+    expect(shouldShowOperatorNav("/admin")).toBe(true);
+    expect(shouldShowOperatorNav("/timeline/p1")).toBe(true);
+    expect(shouldUseMobileCompactChrome()).toBe(true);
+    expect(shouldShowFullscreenControl()).toBe(false);
   });
 
-  it("hides on Tauri desktop with explicit shell marker", () => {
+  it("allows OperatorNav on Tauri with explicit shell marker", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     vi.mocked(hasExplicitTauriShellMarker).mockReturnValue(true);
-    expect(shouldShowOperatorNav("/timeline/p1")).toBe(false);
-    expect(shouldUseMobileCompactChrome()).toBe(false);
+    expect(shouldShowOperatorNav("/timeline/p1")).toBe(true);
+    expect(shouldUseMobileCompactChrome()).toBe(true);
   });
 
   it("keeps phone compact chrome on web even when desktop hostname heuristic matches", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     expect(isOsMenuDesktopShell()).toBe(false);
     expect(shouldUseMobileCompactChrome()).toBe(true);
+  });
+
+  it("hides OperatorNav on Tauri /client (no web operator session)", () => {
+    vi.mocked(isDesktopShell).mockReturnValue(true);
+    vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
+    markOperatorSession();
+    expect(shouldShowOperatorNav("/client")).toBe(false);
   });
 
   it("shows operator nav on console /client without web session", () => {

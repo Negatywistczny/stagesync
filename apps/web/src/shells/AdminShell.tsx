@@ -32,6 +32,7 @@ import { prepareHostRestart } from "../lib/desktopBridge.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
+import { useMqTablet } from "../lib/useMqTablet.js";
 import { filterAndSortLibrarySongs } from "./admin/filterLibrarySongs.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { APP_VERSION } from "../lib/appVersion.js";
@@ -94,6 +95,7 @@ export function AdminShell() {
   useAnnounceDevicePresence();
   const { pathname } = useLocation();
   const isCompactMobile = useMqMobileCompact();
+  const isTablet = useMqTablet();
   const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -382,7 +384,11 @@ export function AdminShell() {
         >
           {!isCompactMobile ? (
             <div className={styles.chromeBrand}>
-              <ShellWordmark suffix="Admin" version={APP_VERSION} />
+              <ShellWordmark
+                suffix="Admin"
+                version={APP_VERSION}
+                iconOnly={isTablet}
+              />
             </div>
           ) : null}
 

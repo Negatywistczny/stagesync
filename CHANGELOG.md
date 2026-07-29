@@ -16,15 +16,21 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Motyw:** pierwszy punkt przy nazwie skóry pokazuje kolor podniesionej powierzchni (karty, ustawienia), nie tła aplikacji — z obramowaniem w kolorze motywu, żeby był czytelny także na jasnych skórach (np. Daylight).
+- **Timeline:** usunięto osobny przycisk Wygląd — motyw i skóry są w Preferencjach (⚙️), jak w Adminie i Kliencie.
 - **Pełny ekran:** przycisk tylko w przeglądarce LAN (Admin / Timeline / Klient); ukryty w Tauri oraz w natywnych powłokach Console / Performer.
 - **Tablet (641–1024px):** nawigacja jak na desktopie — zakładki sekcji Admin, chipy **Timeline / Klient** i nagłówek Client bez trybu telefonu; **OperatorNav** tylko na wąskim telefonie (≤640px).
+- **Ustawienia (desktop):** szersze okno preferencji z pionową nawigacją po lewej i treścią po prawej (od 769px); ten sam rozmiar okna przy każdej zakładce — krótsze treści nie zwężają panelu, dłuższe przewijają się wewnątrz; na telefonie zakładki zostają w jednym przewijanym rzędzie u góry.
+
+#### ⏱️ Timeline & DAW
+- **Timeline:** przełącznik wskaźnika MIDI playhead przeniesiony z Wyglądu na pasek transportu (obok „Podążaj za wskaźnikiem”).
 
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
 - **Timeline (telefon):** nagłówek i pasek transportu mieszczą się w dwóch wierszach — bez osobnego paska Level 1 pod **OperatorNav** i bez zawijania setlisty pod transport.
 - **Tap:** przycisk przy warstwie Tekst włącza tylko tryb znaczników wokalu (Spacja = start linii przy playheadzie) — bez zmiany tempa utworu.
-- **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
+- **Timeline (telefon / tablet):** na telefonie (≤640px) znikają narzędzia edycji (wskaźnik, ołówek, gumka itd.) — zostaje transport i setlista; na tablecie (641–1024px) pasek narzędzi wraca na lewą kolumnę siatki z wyśrodkowanym transportem jak na desktopie (v4).
+- **Timeline (tablet):** przyciski przesuwania i rozciągania klipu po obu stronach zaznaczenia (lewo / prawo), z nieco mniejszymi przyciskami rozciągania — jak w v4, nie jako jeden pasek pod klipem.
 
 #### 🖥️ App Shell & UI
 - **Klient:** wskaźnik metronomu w nagłówku jest po lewej (obok logo), a nie przy prawej krawędzi obok ustawień.
@@ -35,6 +41,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
 - **Admin (tablet):** sekcje **Set**, **Scena** i **Host** znów w układu desktopowym (podział panelów, bez accordionu telefonu) na tablecie i desktopie (>640px); accordion tylko na telefonie (≤640px).
+- **Admin (tablet, portret):** zakładki sekcji nie nachodzą już na **Timeline / Klient** — przy wąskim pasku przewijają się w poziomie, a logo zostaje samą ikoną.
+- **Ustawienia (telefon):** zakładki **Ogólne / Serwer** w jednym rzędzie z przewijaniem w poziomie; pionowy pasek przewijania nie zasłania pól formularza.
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
 - **Chrome Admin / Timeline / Klient:** przyciski **Ustawienia** i **Pełny ekran** mają teraz ten sam rozmiar na telefonie, tablecie i desktopie; różni się tylko układ paska.
 - **Nawigacja (telefon):** chipy **Admin · Timeline · Klient**, lista sekcji i skróty aplikacji w nagłówku mają tę samą wysokość co **Ustawienia** i **Pełny ekran** — bez mieszanych 44px i 36px w jednym rzędzie.
@@ -42,7 +50,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin (telefon):** kafelki **StageSync Performer** i **Console** w sekcji Host są obok siebie w jednym rzędzie — zamiast jeden pod drugim.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Desktop (wąskie okno):** Tauri nie przełącza już Admin / Timeline / Client na chrome telefonu (≤640px) — bez trybu podglądu Timeline i bez mieszanych przycisków względem szerokiego okna; nawigacja L1 zostaje w menu OS.
+- **Desktop (wąskie okno ≤640px):** Tauri używa tego samego chrome telefonu co Web LAN i Console (Android) — **OperatorNav**, układ jednej kolumny w Adminie i tryb odtwarzania Timeline; bez osobnego wariantu nagłówka. Menu OS i ukryty przycisk pełnego ekranu bez zmian.
 
 ## [5.3.5](https://github.com/Negatywistczny/stagesync/compare/v5.3.4...v5.3.5) - 2026-07-27
 

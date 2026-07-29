@@ -142,7 +142,7 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 `apps/web` wystawia manifest (`display: standalone`) + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”; Safari (iOS) → Udostępnij → „Do ekranu początkowego” (pełny ekran, status bar `black-translucent`, `viewport-fit=cover`). Wake Lock API w przeglądarce (+ cichy fallback wideo gdy API niedostępne) oraz `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock). Po uśpieniu Safari Client wznawia WebSocket od razu po powrocie do karty. Gestami: `overscroll-behavior-y: none` i `touch-action: manipulation` na shellu Client.
 
-**iOS:** brak natywnego APK / App Store Performer — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/Negatywistyczny/stagesync/issues/809), [#674](https://github.com/Negatywistyczny/stagesync/issues/674)). Natywne powłoki Performer/Console = **tylko Android** ([ADR 0016](./adr/0016-android-performer-console.md)).
+**iOS:** brak natywnego APK / App Store Performer — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)). Natywne powłoki Performer/Console = **tylko Android** ([ADR 0016](./adr/0016-android-performer-console.md)).
 ## H-01 (perf Client) — sonda
 
 Opt-in sonda w Client (PWA / Performer WebView):

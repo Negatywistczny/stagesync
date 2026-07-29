@@ -73,13 +73,13 @@ describe("applyDevSurfaceMocks", () => {
     cleanup();
   });
 
-  it("maps tauri surface to desktop shell without operator nav", () => {
+  it("maps tauri surface to desktop shell with operator nav (compact gated by viewport)", () => {
     setPreviewSearch("?surface=tauri&path=%2Ftimeline&session=0&projectId=dev-preview");
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(getActiveDevSurface()).toBe("tauri");
     expect(isDesktopShell()).toBe(true);
-    expect(shouldShowOperatorNav("/timeline/dev-preview")).toBe(false);
+    expect(shouldShowOperatorNav("/timeline/dev-preview")).toBe(true);
     expect(shouldShowFullscreenControl()).toBe(false);
 
     cleanup();

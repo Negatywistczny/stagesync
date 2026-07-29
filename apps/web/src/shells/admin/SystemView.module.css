@@ -331,7 +331,7 @@
   width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .root {
     flex-direction: column;
     flex-wrap: nowrap;

@@ -282,7 +282,7 @@
   font-size: var(--ss-text-xs);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .setTile {
     grid-template-columns:
       var(--ss-touch-min) var(--ss-space-5) minmax(0, 1fr) var(--ss-touch-min);
