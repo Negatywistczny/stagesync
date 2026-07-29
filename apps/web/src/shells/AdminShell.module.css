@@ -522,6 +522,7 @@
   }
 
   .chromeCompact {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "nav";
@@ -532,14 +533,14 @@
     overflow-y: hidden;
     align-items: center;
     min-height: calc(
-      var(--ss-touch-min-client) + var(--ss-space-1) +
+      var(--ss-touch-min-shell-action) + var(--ss-space-1) +
         max(var(--ss-space-1), env(safe-area-inset-top, 0px))
     );
   }
 
   .chromeCompact .operatorNavEmbed {
     min-height: 0;
-    max-height: var(--ss-touch-min-client);
+    max-height: var(--ss-touch-min-shell-action);
     overflow: hidden;
   }
 
@@ -579,11 +580,17 @@
 
   .appJumpCompact a,
   .appJumpCompact .appJumpMuted {
+    display: inline-flex;
+    align-items: center;
     font-size: var(--ss-text-xs);
     padding: var(--ss-space-1) var(--ss-space-2);
     border-radius: var(--ss-radius-pill);
     border: 1px solid var(--ss-color-border);
     background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+    min-height: var(--ss-touch-min-shell-action);
+    max-height: var(--ss-touch-min-shell-action);
+    line-height: var(--ss-leading-compact);
+    box-sizing: border-box;
   }
 
   .chromeCompact.chromeLegacy .chromeAside {

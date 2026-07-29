@@ -82,8 +82,8 @@
 .sectionSelectInput {
   width: 100%;
   max-width: none;
-  min-height: var(--ss-touch-min);
-  max-height: var(--ss-touch-min);
+  min-height: var(--ss-touch-min-shell-action);
+  max-height: var(--ss-touch-min-shell-action);
   box-sizing: border-box;
 }
 
@@ -108,9 +108,9 @@
   min-width: 0;
   box-sizing: border-box;
   overflow: hidden;
-  height: var(--ss-touch-min-client);
+  height: var(--ss-touch-min-shell-action);
   min-height: 0;
-  max-height: var(--ss-touch-min-client);
+  max-height: var(--ss-touch-min-shell-action);
 }
 
 .compact .segments {
@@ -152,8 +152,8 @@
   background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
   min-width: 0;
   max-width: calc(var(--ss-space-16) + var(--ss-space-6));
-  min-height: var(--ss-touch-min);
-  max-height: var(--ss-touch-min);
+  min-height: var(--ss-touch-min-shell-action);
+  max-height: var(--ss-touch-min-shell-action);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -195,8 +195,8 @@
     padding: var(--ss-space-1) var(--ss-space-2);
     font-size: var(--ss-text-xs);
     line-height: var(--ss-leading-compact);
-    min-height: var(--ss-touch-min);
-    max-height: var(--ss-touch-min);
+    min-height: var(--ss-touch-min-shell-action);
+    max-height: var(--ss-touch-min-shell-action);
   }
 }
 

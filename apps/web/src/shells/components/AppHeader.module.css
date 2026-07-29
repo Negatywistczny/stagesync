@@ -134,11 +134,21 @@
     gap: var(--ss-space-1);
   }
 
+  .actions {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+  }
+
   .appJump a,
   .appJumpMuted {
+    display: inline-flex;
+    align-items: center;
     font-size: var(--ss-text-xs);
     padding: var(--ss-space-1) var(--ss-space-2);
     border-radius: var(--ss-radius-pill);
     border: 1px solid var(--ss-color-border);
+    min-height: var(--ss-touch-min-shell-action);
+    max-height: var(--ss-touch-min-shell-action);
+    line-height: var(--ss-leading-compact);
+    box-sizing: border-box;
   }
 }

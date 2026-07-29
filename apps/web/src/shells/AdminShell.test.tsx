@@ -200,8 +200,9 @@ describe("AdminShell chrome", () => {
     expect(mobileBlock).toContain("--ss-touch-min: var(--ss-touch-min-client)");
     const compactBlock =
       css.match(/\.chromeCompact\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(compactBlock).toContain("--ss-touch-min: var(--ss-touch-min-shell-action)");
     expect(compactBlock).toContain("overflow-y: hidden");
-    expect(compactBlock).toContain("var(--ss-touch-min-client) + var(--ss-space-1)");
+    expect(compactBlock).toContain("var(--ss-touch-min-shell-action) + var(--ss-space-1)");
     expect(compactBlock).not.toContain("max-height:");
     const selectBlock =
       css.match(
@@ -209,5 +210,10 @@ describe("AdminShell chrome", () => {
       )?.[1] ?? "";
     expect(selectBlock).toContain("min-height: var(--ss-touch-min)");
     expect(selectBlock).toContain("max-height: var(--ss-touch-min)");
+    const appJumpBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.appJumpCompact a,\s*\n\s*\.appJumpCompact \.appJumpMuted\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(appJumpBlock).toContain("min-height: var(--ss-touch-min-shell-action)");
   });
 });

@@ -204,6 +204,8 @@ describe("ClientShell chrome", () => {
     expect(compactBlock).toContain(
       "padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px))",
     );
+    expect(compactBlock).toContain("--ss-touch-min: var(--ss-touch-min-shell-action)");
+    expect(compactBlock).toContain("var(--ss-touch-min-shell-action) + var(--ss-space-1)");
     expect(compactBlock).not.toMatch(/\n\s*height:\s*calc\(/);
     expect(compactBlock).not.toMatch(/\bmax-height:/);
   });
@@ -223,7 +225,7 @@ describe("ClientShell chrome", () => {
       )?.[1] ?? "";
 
     expect(topChromeCompactBlock).toContain(
-      "var(--ss-touch-min-client) + var(--ss-space-1) + var(--ss-space-1)",
+      "var(--ss-touch-min-shell-action) + var(--ss-space-1) + var(--ss-space-1)",
     );
   });
 

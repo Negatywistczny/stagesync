@@ -210,5 +210,10 @@ describe("AppHeader", () => {
     const actionsBlock = css.match(/\.actions\s*\{([^}]*)\}/)?.[1] ?? "";
     expect(actionsBlock).toContain("flex-wrap: nowrap");
     expect(actionsBlock).toContain("overflow-x: auto");
+    const mobileAppJumpBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.appJump a,\s*\n\s*\.appJumpMuted\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(mobileAppJumpBlock).toContain("min-height: var(--ss-touch-min-shell-action)");
   });
 });

@@ -32,6 +32,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
 - **Chrome Admin / Timeline / Klient:** przyciski **Ustawienia** i **Pełny ekran** mają teraz ten sam rozmiar na telefonie, tablecie i desktopie; różni się tylko układ paska.
+- **Nawigacja (telefon):** chipy **Admin · Timeline · Klient**, lista sekcji i skróty aplikacji w nagłówku mają tę samą wysokość co **Ustawienia** i **Pełny ekran** — bez mieszanych 44px i 36px w jednym rzędzie.
 - **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)

@@ -142,7 +142,7 @@ describe("OperatorNav", () => {
       "grid-template-columns: minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content)",
     );
     expect(compactBlock).toContain("overflow: hidden");
-    expect(compactBlock).toContain("height: var(--ss-touch-min-client)");
+    expect(compactBlock).toContain("height: var(--ss-touch-min-shell-action)");
     expect(css).not.toMatch(
       /\.compact\s+\.segments\s*\{[^}]*min-width:\s*calc\(/,
     );
@@ -150,7 +150,7 @@ describe("OperatorNav", () => {
       css.match(
         /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.sectionSelectInput\s*\{([^}]*)\}/,
       )?.[1] ?? "";
-    expect(selectBlock).toContain("min-height: var(--ss-touch-min)");
-    expect(selectBlock).toContain("max-height: var(--ss-touch-min)");
+    expect(selectBlock).toContain("min-height: var(--ss-touch-min-shell-action)");
+    expect(selectBlock).toContain("max-height: var(--ss-touch-min-shell-action)");
   });
 });
