@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Motyw:** obok nazwy każdej skóry w Wyglądzie widać dwa kolorowe punkty (tło + akcent) — łatwiej rozpoznać Booth Amber, Daylight, Midnight Cyan, Matrix Green i Neon Ember.
+
 ### Zmieniono
 
 #### 🖥️ App Shell & UI

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   APPEARANCE_PROFILE_IDS,
+  APPEARANCE_PROFILE_SWATCHES,
   ThemeDefaultIdSchema,
   appearanceFromThemeDefault,
   normalizeAppearanceProfile,
@@ -29,5 +30,16 @@ describe("theme-default", () => {
       profile: "daylight",
     });
     expect(normalizeAppearanceProfile("midnight")).toBe("midnight");
+  });
+
+  it("exposes bg + primary swatches for every profile", () => {
+    for (const id of APPEARANCE_PROFILE_IDS) {
+      const swatch = APPEARANCE_PROFILE_SWATCHES[id];
+      expect(swatch.bg).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(swatch.primary).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(swatch.bg).not.toBe(swatch.primary);
+    }
+    expect(APPEARANCE_PROFILE_SWATCHES.booth.primary).toBe("#fbbf24");
+    expect(APPEARANCE_PROFILE_SWATCHES.midnight.primary).toBe("#22d3ee");
   });
 });

@@ -1,5 +1,6 @@
 import {
   APPEARANCE_PROFILE_LABELS,
+  APPEARANCE_PROFILE_SWATCHES,
   appearanceFromThemeDefault,
   normalizeAppearanceProfile,
   parseThemeDefaultEnv,
@@ -13,11 +14,11 @@ const LEGACY_CONTRAST_KEY = "stagesync-contrast";
 
 /** Fallbacks when `--ss-color-bg` is unset (jsdom / early boot). */
 const THEME_COLOR_BY_PROFILE: Record<AppearanceProfileId, string> = {
-  booth: "#000000",
-  daylight: "#f4f4f5",
-  midnight: "#020617",
-  matrix: "#000000",
-  neon: "#0a0000",
+  booth: APPEARANCE_PROFILE_SWATCHES.booth.bg,
+  daylight: APPEARANCE_PROFILE_SWATCHES.daylight.bg,
+  midnight: APPEARANCE_PROFILE_SWATCHES.midnight.bg,
+  matrix: APPEARANCE_PROFILE_SWATCHES.matrix.bg,
+  neon: APPEARANCE_PROFILE_SWATCHES.neon.bg,
 };
 
 export type AppearanceState = {

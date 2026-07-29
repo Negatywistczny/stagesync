@@ -27,6 +27,22 @@ export const APPEARANCE_PROFILE_LABELS: Record<AppearanceProfileId, string> = {
 };
 
 /**
+ * Signature pair for theme pickers (bg + primary) — mirrors
+ * `packages/ui` `--ss-color-bg` / `--ss-color-primary` per profile.
+ * Literal HEX so inactive themes stay visible under the active skin.
+ */
+export const APPEARANCE_PROFILE_SWATCHES: Record<
+  AppearanceProfileId,
+  { bg: string; primary: string }
+> = {
+  booth: { bg: "#000000", primary: "#fbbf24" },
+  daylight: { bg: "#f4f4f5", primary: "#b45309" },
+  midnight: { bg: "#020617", primary: "#22d3ee" },
+  matrix: { bg: "#000000", primary: "#22c55e" },
+  neon: { bg: "#0a0000", primary: "#f97316" },
+};
+
+/**
  * Host default when a client has no localStorage profile yet
  * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
  * dark/light/*-high aliases.

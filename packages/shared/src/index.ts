@@ -528,6 +528,7 @@ export {
 export {
   APPEARANCE_PROFILE_IDS,
   APPEARANCE_PROFILE_LABELS,
+  APPEARANCE_PROFILE_SWATCHES,
   AppearanceProfileIdSchema,
   ThemeDefaultIdSchema,
   appearanceFromThemeDefault,
