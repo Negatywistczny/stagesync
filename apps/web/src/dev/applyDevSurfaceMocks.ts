@@ -16,6 +16,13 @@ type DevNativeBackup = {
   native?: Window["StageSyncNative"];
 };
 
+type TauriBackup = {
+  tauriShell?: boolean;
+  shell?: string;
+  isTauri?: boolean;
+  tauri?: unknown;
+};
+
 function backupNative(): DevNativeBackup {
   if (typeof window === "undefined") return {};
   const w = window as Window & { [DEV_NATIVE_KEY]?: DevNativeBackup };
@@ -43,26 +50,65 @@ function applyNativeShell(surface: DevSurface): void {
   window.StageSyncNative = backup.native;
 }
 
-function applyTauriMarkers(surface: DevSurface): void {
+function readTauriBackup(): TauriBackup {
+  if (typeof window === "undefined") return {};
+  const w = window as Window & Record<string, unknown>;
+  return {
+    tauriShell: w["__STAGESYNC_TAURI_SHELL__"] === true ? true : undefined,
+    shell: typeof w["__STAGESYNC_SHELL__"] === "string" ? w["__STAGESYNC_SHELL__"] : undefined,
+    isTauri: w["isTauri"] === true ? true : undefined,
+    tauri: w["__TAURI__"],
+  };
+}
+
+function applyTauriMarkers(surface: DevSurface, backup: TauriBackup): void {
   if (typeof window === "undefined") return;
   const w = window as Window & Record<string, unknown>;
   if (surface === "tauri") {
     w["__STAGESYNC_TAURI_SHELL__"] = true;
     w["__STAGESYNC_SHELL__"] = "desktop";
     w["isTauri"] = true;
+    w["__TAURI__"] = {
+      core: {
+        invoke: async () => undefined,
+      },
+    };
     return;
   }
-  delete w["__STAGESYNC_TAURI_SHELL__"];
-  if (w["__STAGESYNC_SHELL__"] === "desktop") delete w["__STAGESYNC_SHELL__"];
-  if (w["isTauri"] === true) delete w["isTauri"];
+
+  if (backup.tauriShell === true) {
+    w["__STAGESYNC_TAURI_SHELL__"] = true;
+  } else {
+    delete w["__STAGESYNC_TAURI_SHELL__"];
+  }
+
+  if (backup.shell !== undefined) {
+    w["__STAGESYNC_SHELL__"] = backup.shell;
+  } else if (w["__STAGESYNC_SHELL__"] === "desktop") {
+    delete w["__STAGESYNC_SHELL__"];
+  }
+
+  if (backup.isTauri === true) {
+    w["isTauri"] = true;
+  } else if (w["isTauri"] === true) {
+    delete w["isTauri"];
+  }
+
+  if (backup.tauri !== undefined) {
+    w["__TAURI__"] = backup.tauri;
+  } else {
+    delete w["__TAURI__"];
+  }
 }
 
-export function applyDevSurfaceMocks(config: DevPreviewConfig): void {
-  if (!import.meta.env.DEV) return;
+export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
+  if (!import.meta.env.DEV) return () => {};
+
+  const tauriBackup = readTauriBackup();
 
   setDevSurfaceOverride(config.surface);
   applyNativeShell(config.surface);
-  applyTauriMarkers(config.surface);
+  applyTauriMarkers(config.surface, tauriBackup);
 
   try {
     setStoredDeviceDisplayName("Dev Preview");
@@ -75,6 +121,15 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): void {
   } else {
     clearOperatorSession();
   }
+
+  return () => {
+    setDevSurfaceOverride(null);
+    applyNativeShell("web");
+    applyTauriMarkers("web", tauriBackup);
+    if (config.session) {
+      clearOperatorSession();
+    }
+  };
 }
 
 /** Apply mocks when preview iframe loads (idempotent). */
