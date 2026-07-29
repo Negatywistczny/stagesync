@@ -1,5 +1,11 @@
+/**
+ * @vitest-environment node
+ */
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { ShellIconButton } from "./ShellIconButton.js";
 
 describe("ShellIconButton", () => {
@@ -41,5 +47,18 @@ describe("ShellIconButton", () => {
     expect(out).toContain("confirming");
     expect(out).toContain("danger");
     expect(out).not.toContain("aria-pressed");
+  });
+
+  it("pins shell icon geometry to shared action token", () => {
+    const css = readFileSync(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        "ShellIconButton.module.css",
+      ),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /--ss-touch-min:\s*var\(--ss-touch-min-shell-action\)/,
+    );
   });
 });

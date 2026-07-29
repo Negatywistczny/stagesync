@@ -1,5 +1,7 @@
 /* Accents only — geometry comes from Button iconOnly (--ss-touch-min). */
 .shellIcon {
+  /* Keep shared shell action icons (⚙️/fullscreen) at one canonical size. */
+  --ss-touch-min: var(--ss-touch-min-shell-action);
   border-color: var(--ss-color-border);
   color: var(--ss-color-text-muted);
 }

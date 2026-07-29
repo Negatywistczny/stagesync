@@ -70,6 +70,8 @@
   --ss-touch-min: 36px;
   /** Client PWA min hit target (ui-density §5). */
   --ss-touch-min-client: 44px;
+  /** Shell action icons (Settings / Fullscreen) keep parity across breakpoints. */
+  --ss-touch-min-shell-action: 36px;
 
   --ss-font-sans: "Sora", "IBM Plex Sans", "Segoe UI", sans-serif;
   /* Type scale — size / weight / leading / tracking (no ad-hoc values in UI). */

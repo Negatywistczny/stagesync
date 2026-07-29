@@ -31,6 +31,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
+- **Chrome Admin / Timeline / Klient:** przyciski **Ustawienia** i **Pełny ekran** mają teraz ten sam rozmiar na telefonie, tablecie i desktopie; różni się tylko układ paska.
 - **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
