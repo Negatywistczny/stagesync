@@ -109,6 +109,16 @@ describe("OperatorNav", () => {
     expect(openPreferences).toHaveBeenCalledWith(undefined);
   });
 
+  it("opens preferences from settings gear (client default — no tab)", () => {
+    render(
+      <MemoryRouter initialEntries={["/client"]}>
+        <OperatorNav activeApp="client" />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ustawienia" }));
+    expect(openPreferences).toHaveBeenCalledWith(undefined);
+  });
+
   it("calls custom onSettings instead of openPreferences", () => {
     const onSettings = vi.fn();
     render(

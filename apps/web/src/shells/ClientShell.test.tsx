@@ -310,24 +310,35 @@ describe("ClientShell chrome", () => {
     ).toHaveLength(1);
   });
 
-  it("emits preferences event from header gear without operator session", () => {
+  it("opens global settings from header gear without operator session", () => {
     vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
-    const onOpen = vi.fn();
-    window.addEventListener(OPEN_PREFERENCES_EVENT, onOpen);
     renderClient();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
-    expect(onOpen).toHaveBeenCalledTimes(1);
-    window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpen);
+    const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
+    expect(dialog).toBeTruthy();
+    expect(dialog.parentElement).toBe(document.body);
   });
 
-  it("emits preferences event from OperatorNav gear with operator session", () => {
+  it("opens global settings from OperatorNav gear with operator session", () => {
     vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    renderClient();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
+    expect(dialog).toBeTruthy();
+    // Portaled fixed-top-right — escapes Client `.page` overflow clipping.
+    expect(dialog.parentElement).toBe(document.body);
+  });
+
+  it("does not dispatch openPreferences from Client global settings gear", () => {
     const onOpen = vi.fn();
     window.addEventListener(OPEN_PREFERENCES_EVENT, onOpen);
     renderClient();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
-    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onOpen).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("dialog", { name: /Ustawienia globalne/i }),
+    ).toBeTruthy();
     window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpen);
   });
 
@@ -418,25 +429,40 @@ describe("ClientShell chrome", () => {
     expect(screen.getByRole("button", { name: /^Rozpocznij$/i })).toBeTruthy();
   });
 
-  it("opens preferences event from desktop menu Wygląd (appearance)", () => {
-    const onOpen = vi.fn();
-    window.addEventListener(OPEN_PREFERENCES_EVENT, onOpen);
+  it("opens global settings from desktop menu Wygląd (appearance)", () => {
     renderClient();
     fireEvent(
       window,
       new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
     );
-    expect(onOpen).toHaveBeenCalledTimes(1);
-    window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpen);
+    expect(
+      screen.getByRole("dialog", { name: /Ustawienia globalne/i }),
+    ).toBeTruthy();
+    expect(screen.getByText("Wygląd")).toBeTruthy();
   });
 
-  it("emits preferences event from global settings button", () => {
-    const onOpen = vi.fn();
-    window.addEventListener(OPEN_PREFERENCES_EVENT, onOpen);
+  it("edits device name on role picker, not in global settings", () => {
+    renderClient();
+
+    expect(screen.getByRole("button", { name: /Zmień nazwę/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
+    expect(dialog).toBeTruthy();
+    expect(dialog.parentElement).toBe(document.body);
+    expect(screen.queryByLabelText("Nazwa urządzenia")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Zapisz nazwę/i })).toBeNull();
+  });
+
+  it("names instrument pitch group in global settings", () => {
     renderClient();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
-    expect(onOpen).toHaveBeenCalledTimes(1);
-    window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpen);
+    expect(
+      screen.getByRole("group", { name: "Strój instrumentu transponującego" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Strój koncertowy (C)" }),
+    ).toBeTruthy();
   });
 
   it("opens labelled rename dialog from Zmień nazwę", () => {
