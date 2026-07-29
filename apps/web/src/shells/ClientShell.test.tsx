@@ -229,7 +229,7 @@ describe("ClientShell chrome", () => {
     );
   });
 
-  it("uses desktop-like role tiles on tablet (4-col, no viewport stretch)", async () => {
+  it("uses desktop-like role tiles on tablet (2×2, no viewport stretch)", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
@@ -254,6 +254,9 @@ describe("ClientShell chrome", () => {
       }
     }
     expect(tabletBlock).toContain(
+      "grid-template-columns: repeat(2, minmax(0, 1fr))",
+    );
+    expect(tabletBlock).not.toContain(
       "grid-template-columns: repeat(4, minmax(0, 1fr))",
     );
     expect(tabletBlock).not.toMatch(/\.roleTile\s*\{[^}]*aspect-ratio:/);

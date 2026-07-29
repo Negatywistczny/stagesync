@@ -370,8 +370,9 @@
 }
 
 /*
- * Tablet (641–1024): same 4-col density as desktop — content-sized tiles, not
- * viewport-filling squares. Phone (≤640 + .welcomeMobile) keeps touch-friendly 2×2.
+ * Tablet (641–1024): 2×2 grid with base (desktop-like) tile metrics — no
+ * aspect-ratio stretch or stage-sized icons. Phone (≤640 + .welcomeMobile) keeps
+ * touch-friendly fill; wide desktop (>1024) uses a single 4-col row.
  */
 @media (min-width: 641px) and (max-width: 1024px) {
   .welcome {
@@ -393,7 +394,7 @@
   .roleGrid {
     flex: 0 0 auto;
     width: min(48rem, 100%);
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--ss-space-4);
   }
 
