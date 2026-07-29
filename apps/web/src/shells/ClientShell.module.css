@@ -370,9 +370,8 @@
 }
 
 /*
- * Tablet (641–1024): 2×2 grid with square tiles (1:1) — same proportions as desktop,
- * not stretched to fill viewport height. Phone (≤640 + .welcomeMobile) and wide
- * desktop (>1024) stay separate.
+ * Tablet (641–1024): same 4-col density as desktop — content-sized tiles, not
+ * viewport-filling squares. Phone (≤640 + .welcomeMobile) keeps touch-friendly 2×2.
  */
 @media (min-width: 641px) and (max-width: 1024px) {
   .welcome {
@@ -394,27 +393,8 @@
   .roleGrid {
     flex: 0 0 auto;
     width: min(48rem, 100%);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--ss-space-4);
-  }
-
-  .roleTile {
-    aspect-ratio: 1;
-    width: 100%;
-    min-height: 0;
-    gap: var(--ss-space-4);
-    padding: var(--ss-space-6);
-  }
-
-  .roleIcon {
-    font-size: var(--ss-text-stage-2xl);
-    line-height: var(--ss-leading-none);
-  }
-
-  .roleLabel {
-    font-size: var(--ss-text-xl);
-    font-weight: var(--ss-font-weight-heavy);
-    line-height: var(--ss-leading-compact);
   }
 
   .startBar {
