@@ -1,15 +1,39 @@
 import { describe, expect, it, vi } from "vitest";
+import { MQ_MOBILE_COMPACT } from "./breakpoints.js";
 import {
   detectTimelineTier,
   isMobileTier,
   isTouchTier,
+  TIMELINE_MOBILE_MQ,
   timelineGesturesAllowed,
 } from "./timelineTouchTier.js";
 
+/** Simulate `matchMedia` for a viewport width in px. */
+function matchesAtWidth(widthPx: number) {
+  return (query: string) => {
+    if (query.includes("pointer: coarse")) return false;
+    const match = query.match(/max-width:\s*(\d+)/);
+    if (!match) return false;
+    return widthPx <= Number(match[1]);
+  };
+}
+
 describe("timelineTouchTier", () => {
+  it("uses phone compact breakpoint for player-only tier", () => {
+    expect(TIMELINE_MOBILE_MQ).toBe(MQ_MOBILE_COMPACT);
+  });
+
+  it("detects mobile only at ≤640px, not tablet widths", () => {
+    expect(detectTimelineTier(matchesAtWidth(640))).toBe("mobile");
+    expect(detectTimelineTier(matchesAtWidth(641))).toBe("tablet");
+    expect(detectTimelineTier(matchesAtWidth(768))).toBe("tablet");
+    expect(detectTimelineTier(matchesAtWidth(1024))).toBe("tablet");
+    expect(detectTimelineTier(matchesAtWidth(1025))).toBe("desktop");
+  });
+
   it("detects mobile before coarse", () => {
     expect(
-      detectTimelineTier((q) => q.includes("max-width")),
+      detectTimelineTier((q) => q.includes("max-width: 640")),
     ).toBe("mobile");
   });
 
@@ -43,10 +67,14 @@ describe("timelineTouchTier", () => {
 
   it("default matches uses window.matchMedia when available", () => {
     vi.stubGlobal("window", {
-      matchMedia: (q: string) => ({ matches: q.includes("max-width: 768") }),
+      matchMedia: (q: string) => ({ matches: q.includes("max-width: 640") }),
     });
     expect(detectTimelineTier()).toBe("mobile");
     vi.unstubAllGlobals();
+  });
+
+  it("641–768px viewport is tablet edit mode, not mobile preview", () => {
+    expect(detectTimelineTier(matchesAtWidth(700))).toBe("tablet");
   });
 
   it("default matches returns false when window undefined", () => {
