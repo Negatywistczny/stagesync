@@ -38,7 +38,7 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 
 | Powierzchnia | Admin / Timeline / Klient |
 |--------------|---------------------------|
-| **Tauri desktop** | Menu OS **Widok** (`⌘/Ctrl+1…3`, `Alt+1…4`) — bez paska w aplikacji |
+| **Tauri desktop** | Menu OS **Widok** (`⌘/Ctrl+1…3`, `Alt+1…4`) — bez paska w aplikacji; wąskie okno **nie** przełącza chrome na tryb telefonu |
 | **Przeglądarka operatora (LAN)** | Pasek **OperatorNav** w aplikacji + te same skróty |
 | **Console Android** | Pasek **OperatorNav** (jak web operator) |
 | **Performer / muzyk `/client`** | Brak przełącznika aplikacji |

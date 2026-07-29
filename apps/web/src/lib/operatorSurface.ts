@@ -49,11 +49,23 @@ export function isOperatorSurfaceRoute(pathname: string): boolean {
   return false;
 }
 
-function isTauriDesktopWithOsMenu(): boolean {
+/**
+ * Real Tauri desktop (OS menu SSOT) — not `:4000` hostname heuristic alone,
+ * and not Android Console / Performer.
+ */
+export function isOsMenuDesktopShell(): boolean {
   if (!isDesktopShell()) return false;
   const devSurface = getActiveDevSurface();
   if (devSurface === "tauri") return true;
   return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
+}
+
+/**
+ * Phone compact chrome (≤640px OperatorNav / player-only Timeline / compact headers).
+ * False on Tauri desktop — narrow window keeps desktop chrome; OS menu owns L1 nav.
+ */
+export function shouldUseMobileCompactChrome(): boolean {
+  return !isOsMenuDesktopShell();
 }
 
 function isClientRoute(pathname: string): boolean {
@@ -67,7 +79,7 @@ function isClientRoute(pathname: string): boolean {
 export function isWebBrowserSurface(): boolean {
   if (isPerformerShell()) return false;
   if (isConsoleShell()) return false;
-  if (isTauriDesktopWithOsMenu()) return false;
+  if (isOsMenuDesktopShell()) return false;
   return true;
 }
 
@@ -77,7 +89,7 @@ export function isWebBrowserSurface(): boolean {
  */
 export function shouldShowOperatorNav(pathname: string): boolean {
   if (isPerformerShell()) return false;
-  if (isTauriDesktopWithOsMenu()) return false;
+  if (isOsMenuDesktopShell()) return false;
 
   if (isClientRoute(pathname)) {
     if (isConsoleShell()) return true;

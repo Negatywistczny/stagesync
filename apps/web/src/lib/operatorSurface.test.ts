@@ -5,9 +5,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   isConsoleShell,
   isOperatorSurfaceRoute,
+  isOsMenuDesktopShell,
   isPerformerShell,
   isWebBrowserSurface,
   shouldShowOperatorNav,
+  shouldUseMobileCompactChrome,
 } from "./operatorSurface.js";
 import { markOperatorSession, clearOperatorSession } from "./operatorSession.js";
 
@@ -62,12 +64,21 @@ describe("shouldShowOperatorNav", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
     expect(shouldShowOperatorNav("/admin")).toBe(false);
+    expect(isOsMenuDesktopShell()).toBe(true);
+    expect(shouldUseMobileCompactChrome()).toBe(false);
   });
 
   it("hides on Tauri desktop with explicit shell marker", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     vi.mocked(hasExplicitTauriShellMarker).mockReturnValue(true);
     expect(shouldShowOperatorNav("/timeline/p1")).toBe(false);
+    expect(shouldUseMobileCompactChrome()).toBe(false);
+  });
+
+  it("keeps phone compact chrome on web even when desktop hostname heuristic matches", () => {
+    vi.mocked(isDesktopShell).mockReturnValue(true);
+    expect(isOsMenuDesktopShell()).toBe(false);
+    expect(shouldUseMobileCompactChrome()).toBe(true);
   });
 
   it("shows operator nav on console /client without web session", () => {

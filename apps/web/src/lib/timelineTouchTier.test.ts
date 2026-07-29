@@ -24,17 +24,38 @@ describe("timelineTouchTier", () => {
   });
 
   it("detects mobile only at ≤640px, not tablet widths", () => {
-    expect(detectTimelineTier(matchesAtWidth(640))).toBe("mobile");
-    expect(detectTimelineTier(matchesAtWidth(641))).toBe("tablet");
-    expect(detectTimelineTier(matchesAtWidth(768))).toBe("tablet");
-    expect(detectTimelineTier(matchesAtWidth(1024))).toBe("tablet");
-    expect(detectTimelineTier(matchesAtWidth(1025))).toBe("desktop");
+    expect(
+      detectTimelineTier(matchesAtWidth(640), { allowMobilePlayer: true }),
+    ).toBe("mobile");
+    expect(
+      detectTimelineTier(matchesAtWidth(641), { allowMobilePlayer: true }),
+    ).toBe("tablet");
+    expect(
+      detectTimelineTier(matchesAtWidth(768), { allowMobilePlayer: true }),
+    ).toBe("tablet");
+    expect(
+      detectTimelineTier(matchesAtWidth(1024), { allowMobilePlayer: true }),
+    ).toBe("tablet");
+    expect(
+      detectTimelineTier(matchesAtWidth(1025), { allowMobilePlayer: true }),
+    ).toBe("desktop");
   });
 
   it("detects mobile before coarse", () => {
     expect(
-      detectTimelineTier((q) => q.includes("max-width: 640")),
+      detectTimelineTier((q) => q.includes("max-width: 640"), {
+        allowMobilePlayer: true,
+      }),
     ).toBe("mobile");
+  });
+
+  it("skips mobile player on Tauri desktop even at ≤640px", () => {
+    expect(
+      detectTimelineTier(matchesAtWidth(640), { allowMobilePlayer: false }),
+    ).toBe("tablet");
+    expect(
+      detectTimelineTier(matchesAtWidth(500), { allowMobilePlayer: false }),
+    ).toBe("tablet");
   });
 
   it("detects tablet on coarse when not mobile", () => {
@@ -74,7 +95,9 @@ describe("timelineTouchTier", () => {
   });
 
   it("641–768px viewport is tablet edit mode, not mobile preview", () => {
-    expect(detectTimelineTier(matchesAtWidth(700))).toBe("tablet");
+    expect(
+      detectTimelineTier(matchesAtWidth(700), { allowMobilePlayer: true }),
+    ).toBe("tablet");
   });
 
   it("default matches returns false when window undefined", () => {

@@ -23,6 +23,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
 - **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
 
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop (wąskie okno):** Tauri nie przełącza już Admin / Timeline / Client na chrome telefonu (≤640px) — bez trybu podglądu Timeline i bez mieszanych przycisków względem szerokiego okna; nawigacja L1 zostaje w menu OS.
+
 ## [5.3.5](https://github.com/Negatywistczny/stagesync/compare/v5.3.4...v5.3.5) - 2026-07-27
 
 ### Naprawiono
