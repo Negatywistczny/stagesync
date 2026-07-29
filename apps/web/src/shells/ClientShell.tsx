@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { toggleAppFullscreen } from "../lib/desktopBridge.js";
 import {
   DESKTOP_MENU_EVENT,
@@ -10,9 +11,12 @@ import {
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
+import { getOperatorAppJumpLinks } from "../lib/operatorNavRoutes.js";
+import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
+import { OperatorNav } from "./components/OperatorNav.js";
 import {
   DEVICE_DISPLAY_NAME_CHANGED_EVENT,
   DEVICE_DISPLAY_NAME_MAX,
@@ -97,7 +101,10 @@ const ROLES: { id: RoleId; label: string; icon: string }[] = [
 ];
 
 export function ClientShell() {
+  const { pathname } = useLocation();
+  const showOperatorNav = shouldShowOperatorNav(pathname);
   const isCompactMobile = useMqMobileCompact();
+  const operatorNavCompact = isCompactMobile && showOperatorNav;
   const [nameModal, setNameModal] = useState(false);
   const [name, setName] = useState(() => getStoredDeviceDisplayName() ?? "");
   const [nameDraft, setNameDraft] = useState("");
@@ -314,6 +321,8 @@ export function ClientShell() {
     bbt: headerBbt,
     transportError,
     compact: isCompactMobile,
+    showAppJump: showOperatorNav && !isCompactMobile,
+    hideGlobalSettings: operatorNavCompact,
     onFullscreen: shouldShowFullscreenControl() && !isCompactMobile
       ? () => void onFullscreen()
       : undefined,
@@ -323,6 +332,21 @@ export function ClientShell() {
     onBack: started ? () => setStarted(false) : undefined,
     displayPrefs,
     onDisplayPrefsChange: setDisplayPrefs,
+  };
+
+  const renderClientChrome = (startedFlag: boolean) => {
+    const chrome = <ClientChrome {...headerProps} started={startedFlag} />;
+    if (!operatorNavCompact) return chrome;
+    return (
+      <div className={styles.topChrome}>
+        <OperatorNav
+          activeApp="client"
+          onSettings={toggleGlobalSettings}
+          settingsLabel="Ustawienia globalne"
+        />
+        {chrome}
+      </div>
+    );
   };
 
   if (nameModal) {
@@ -358,7 +382,7 @@ export function ClientShell() {
   if (!started) {
     return (
       <div className={styles.page}>
-        <ClientChrome {...headerProps} started={false} />
+        {renderClientChrome(false)}
         <ConnectionLostBanner status={wsStatus} />
         <main
           className={[
@@ -430,7 +454,7 @@ export function ClientShell() {
 
   return (
     <div className={styles.page}>
-      <ClientChrome {...headerProps} started={true} />
+      {renderClientChrome(true)}
       <ConnectionLostBanner status={wsStatus} />
 
       {drumsNoteError ? (
@@ -707,6 +731,10 @@ type ClientHeaderProps = {
   bbt: { bar: number; beat: number };
   transportError: string | null;
   compact?: boolean;
+  /** Tablet/desktop operator jump chips (Admin / Timeline). */
+  showAppJump?: boolean;
+  /** Compact OperatorNav owns settings — hide duplicate gear in Client chrome. */
+  hideGlobalSettings?: boolean;
   onFullscreen?: () => void;
   globalSettingsOpen: boolean;
   onToggleGlobalSettings: () => void;
@@ -724,6 +752,8 @@ function ClientChrome({
   bbt,
   transportError,
   compact = false,
+  showAppJump = false,
+  hideGlobalSettings = false,
   onFullscreen,
   globalSettingsOpen,
   onToggleGlobalSettings,
@@ -732,6 +762,8 @@ function ClientChrome({
   displayPrefs,
   onDisplayPrefsChange,
 }: ClientHeaderProps) {
+  const appJump = showAppJump ? getOperatorAppJumpLinks("client") : [];
+
   return (
     <header
       className={[styles.header, compact ? styles.headerCompact : ""]
@@ -769,33 +801,67 @@ function ClientChrome({
       ) : null}
 
       <div className={styles.headerActions}>
+        {appJump.length > 0 ? (
+          <nav className={styles.appJump} aria-label="Aplikacje">
+            {appJump.map((link) =>
+              link.disabled ? (
+                <span
+                  key={link.label}
+                  className={styles.appJumpMuted}
+                  aria-disabled
+                >
+                  {link.label}
+                </span>
+              ) : (
+                <Link key={link.to} to={link.to}>
+                  {link.label}
+                </Link>
+              ),
+            )}
+          </nav>
+        ) : null}
         <ConnectionIndicator
           status={wsStatus}
           latencyMs={latencyMs}
           variant={compact ? "compact" : "status"}
         />
-        <SettingsPopoverAnchor>
-          <ShellIconButton
-            label="Ustawienia globalne"
-            aria-expanded={globalSettingsOpen}
-            aria-controls="global-settings-panel"
-            onClick={onToggleGlobalSettings}
-          >
-            <IconSettings />
-          </ShellIconButton>
-          {globalSettingsOpen ? (
-            <SettingsPopover
-              id="global-settings-panel"
-              title="Ustawienia globalne"
-              onClose={onCloseGlobalSettings}
+        {!hideGlobalSettings ? (
+          <SettingsPopoverAnchor>
+            <ShellIconButton
+              label="Ustawienia globalne"
+              aria-expanded={globalSettingsOpen}
+              aria-controls="global-settings-panel"
+              onClick={onToggleGlobalSettings}
             >
-              <GlobalSettingsFields
-                prefs={displayPrefs}
-                onPrefsChange={onDisplayPrefsChange}
-              />
-            </SettingsPopover>
-          ) : null}
-        </SettingsPopoverAnchor>
+              <IconSettings />
+            </ShellIconButton>
+            {globalSettingsOpen ? (
+              <SettingsPopover
+                id="global-settings-panel"
+                title="Ustawienia globalne"
+                onClose={onCloseGlobalSettings}
+              >
+                <GlobalSettingsFields
+                  prefs={displayPrefs}
+                  onPrefsChange={onDisplayPrefsChange}
+                />
+              </SettingsPopover>
+            ) : null}
+          </SettingsPopoverAnchor>
+        ) : null}
+        {globalSettingsOpen && hideGlobalSettings ? (
+          <SettingsPopover
+            id="global-settings-panel"
+            title="Ustawienia globalne"
+            placement="fixed-top-right"
+            onClose={onCloseGlobalSettings}
+          >
+            <GlobalSettingsFields
+              prefs={displayPrefs}
+              onPrefsChange={onDisplayPrefsChange}
+            />
+          </SettingsPopover>
+        ) : null}
         {onFullscreen ? (
           <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
             <IconFullscreen />

@@ -6,6 +6,8 @@ import { MemoryRouter } from "react-router-dom";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DESKTOP_MENU_EVENT } from "../lib/desktopMenuEvents.js";
+import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
+import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ClientShell } from "./ClientShell.js";
 
 vi.mock("../lib/desktopBridge.js", () => ({
@@ -19,7 +21,19 @@ vi.mock("../lib/nativeShell.js", () => ({
 }));
 
 vi.mock("../lib/operatorSurface.js", () => ({
-  shouldShowOperatorNav: () => false,
+  shouldShowOperatorNav: vi.fn(() => false),
+}));
+
+vi.mock("../lib/useMqMobileCompact.js", () => ({
+  useMqMobileCompact: vi.fn(() => false),
+}));
+
+vi.mock("../lib/operatorNavShortcuts.js", () => ({
+  useOperatorNavShortcuts: vi.fn(),
+}));
+
+vi.mock("../lib/lastTimelineProject.js", () => ({
+  getLastTimelineProjectId: vi.fn(() => "proj-1"),
 }));
 
 vi.mock("../lib/screenWakeLock.js", () => ({
@@ -97,6 +111,8 @@ vi.mock("../transport/useTransport.js", () => ({
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
+  vi.mocked(useMqMobileCompact).mockReturnValue(false);
 });
 
 function startGridRole() {
@@ -125,7 +141,7 @@ function startDrumsRole() {
 
 function renderClient() {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={["/client"]}>
       <ClientShell />
     </MemoryRouter>,
   );
@@ -175,6 +191,42 @@ describe("ClientShell chrome", () => {
     expect(settings.className).toContain("ss-btn--icon");
   });
 
+  it("hides operator chrome without operator session", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
+    renderClient();
+    expect(screen.queryByLabelText("Nawigacja operatora")).toBeNull();
+    expect(screen.queryByLabelText("Aplikacje")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    ).toBeTruthy();
+  });
+
+  it("shows Admin/Timeline app jump on tablet/desktop with operator session", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    vi.mocked(useMqMobileCompact).mockReturnValue(false);
+    renderClient();
+    expect(screen.queryByLabelText("Nawigacja operatora")).toBeNull();
+    const apps = screen.getByLabelText("Aplikacje");
+    expect(apps.textContent).toContain("Admin");
+    expect(apps.textContent).toContain("Timeline");
+    expect(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    ).toBeTruthy();
+  });
+
+  it("shows OperatorNav on compact mobile with operator session", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    renderClient();
+    expect(screen.getByLabelText("Nawigacja operatora")).toBeTruthy();
+    expect(screen.getByLabelText("Aplikacje").textContent).toMatch(/Admin/);
+    expect(screen.getByLabelText("Aplikacje").textContent).toMatch(/Klient/);
+    // Settings live on OperatorNav — not a second gear in Client chrome.
+    expect(
+      screen.getAllByRole("button", { name: /Ustawienia globalne/i }),
+    ).toHaveLength(1);
+  });
+
   it("does not expose setlist next/prev controls (read-only Client)", () => {
     renderClient();
     startGridRole();
@@ -215,6 +267,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("enters a role immediately on phone welcome tiles (no Rozpocznij)", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
     vi.stubGlobal(
       "matchMedia",
       (query: string) =>
@@ -231,6 +284,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("uses compact connection status on narrow phones (≤640px)", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
     vi.stubGlobal(
       "matchMedia",
       (query: string) =>
@@ -246,6 +300,7 @@ describe("ClientShell chrome", () => {
   });
 
   it("shows Rozpocznij on tablet welcome (641–768px)", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(false);
     vi.stubGlobal(
       "matchMedia",
       () =>
