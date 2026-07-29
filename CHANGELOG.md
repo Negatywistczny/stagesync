@@ -29,7 +29,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### 🖥️ App Shell & UI
 - **Klient:** wskaźnik metronomu w nagłówku jest po lewej (obok logo), a nie przy prawej krawędzi obok ustawień.
 - **Ustawienia (web):** przycisk ⚙️ w Timeline / Admin / OperatorNav znowu otwiera preferencje — w przeglądarce na `:4000` nagłówek nie chowa się jak w Tauri; na Kliencie z sesją operatora panel globalnych ustawień nie jest przycinany przez overflow nagłówka.
-- **Client:** przycisk ⚙️ znowu otwiera ustawienia Klienta (wygląd, strój instrumentu, polskie nazwy sekcji) zamiast preferencji Admina (serwer, MIDI, host).
+- **Client:** przycisk ⚙️ (oraz OperatorNav / skrót preferencji na `/client`) znowu otwiera ustawienia Klienta (wygląd, strój instrumentu, polskie nazwy sekcji) zamiast preferencji Admina (serwer, MIDI, host).
 - **Klient (web, sesja operatora):** nagłówek z OperatorNav i przyciskami w chrome nie jest już pionowo przycinany — widoczne są dolne krawędzie przycisków.
 - **Client (tablet):** kafelki wyboru roli są kwadratowe jak na desktopie — siatka 2×2 w kompaktowym rozmiarze (bez rozciągania na szerokość ani wysokość ekranu).
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.

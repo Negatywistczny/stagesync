@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   OPEN_PREFERENCES_EVENT,
   parseOpenPreferencesDetail,
@@ -11,17 +12,21 @@ import { ServerSettingsModal } from "../shells/ServerSettingsModal.js";
  * (Tauri menu sync, audio sink restore). Used by DevPreview layout matrix.
  */
 export function PreferencesEventBridge() {
+  const { pathname } = useLocation();
+  const onClient = pathname.startsWith("/client");
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [prefsTab, setPrefsTab] = useState<PreferencesTab>("general");
 
   useEffect(() => {
     function onOpenPrefs(ev: Event) {
+      if (onClient) return;
       const detail = parseOpenPreferencesDetail(ev);
       if (detail?.tab) setPrefsTab(detail.tab);
       else setPrefsTab("general");
       setPrefsOpen(true);
     }
     function onKey(ev: KeyboardEvent) {
+      if (onClient) return;
       if (!(ev.metaKey || ev.ctrlKey) || ev.altKey) return;
       if (ev.key !== "," && ev.code !== "Comma") return;
       if (
@@ -43,7 +48,7 @@ export function PreferencesEventBridge() {
       window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
       window.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [onClient]);
 
   return prefsOpen ? (
     <ServerSettingsModal

@@ -3,6 +3,7 @@
  */
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import {
   OPEN_PREFERENCES_EVENT,
   openPreferences,
@@ -29,9 +30,19 @@ afterEach(() => {
   cleanup();
 });
 
+function renderBridge(path = "/admin") {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route path="*" element={<PreferencesEventBridge />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 describe("PreferencesEventBridge", () => {
   it("opens ServerSettingsModal on openPreferences", () => {
-    render(<PreferencesEventBridge />);
+    renderBridge();
     expect(screen.queryByRole("dialog", { name: "Ustawienia" })).toBeNull();
     act(() => {
       openPreferences("midi");
@@ -42,7 +53,7 @@ describe("PreferencesEventBridge", () => {
   });
 
   it("opens on stagesync:open-preferences CustomEvent", () => {
-    render(<PreferencesEventBridge />);
+    renderBridge();
     act(() => {
       window.dispatchEvent(
         new CustomEvent(OPEN_PREFERENCES_EVENT, { detail: { tab: "audio" } }),
@@ -54,8 +65,16 @@ describe("PreferencesEventBridge", () => {
   });
 
   it("opens on Cmd+,", () => {
-    render(<PreferencesEventBridge />);
+    renderBridge();
     fireEvent.keyDown(window, { key: ",", metaKey: true });
     expect(screen.getByRole("dialog", { name: "Ustawienia" })).toBeTruthy();
+  });
+
+  it("ignores openPreferences on /client (Client shell owns settings)", () => {
+    renderBridge("/client");
+    act(() => {
+      openPreferences("midi");
+    });
+    expect(screen.queryByRole("dialog", { name: "Ustawienia" })).toBeNull();
   });
 });

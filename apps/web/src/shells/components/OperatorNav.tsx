@@ -56,7 +56,11 @@ export function OperatorNav({
   const timelineDisabled = timelineUrl === "/admin";
   const handleSettings =
     onSettings ??
-    (() => openPreferences(activeApp === "admin" ? "general" : undefined));
+    (() => {
+      // Client shell owns SettingsPopover — never route gear to Admin ServerSettingsModal.
+      if (activeApp === "client") return;
+      openPreferences(activeApp === "admin" ? "general" : undefined);
+    });
 
   const rootClass = [
     styles.root,

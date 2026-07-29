@@ -621,6 +621,12 @@ export function DesktopMenuBridge() {
 
   useEffect(() => {
     function onOpenPrefs(ev: Event) {
+      if (onClient) {
+        window.dispatchEvent(
+          new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
+        );
+        return;
+      }
       const detail = parseOpenPreferencesDetail(ev);
       if (detail?.tab) setPrefsTab(detail.tab);
       else setPrefsTab("general");
@@ -639,6 +645,12 @@ export function DesktopMenuBridge() {
         return;
       }
       ev.preventDefault();
+      if (onClient) {
+        window.dispatchEvent(
+          new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
+        );
+        return;
+      }
       setPrefsTab("general");
       setPrefsOpen(true);
     }
@@ -648,7 +660,7 @@ export function DesktopMenuBridge() {
       window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
       window.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [onClient]);
 
   useEffect(() => {
     function onContextMenu(ev: MouseEvent) {
