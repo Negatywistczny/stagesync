@@ -21,6 +21,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
+- **Tap:** przycisk przy warstwie Tekst włącza tylko tryb znaczników wokalu (Spacja = start linii przy playheadzie) — bez zmiany tempa utworu.
 - **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
 
 #### 🖥️ App Shell & UI

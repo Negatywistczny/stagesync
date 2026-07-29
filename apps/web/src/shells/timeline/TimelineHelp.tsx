@@ -47,7 +47,7 @@ const KEY_GROUPS: ShortcutGroup[] = [
       { keys: "1 / 2 / 3", action: "Tekst / Akordy / obie (menu Różdżki)" },
       {
         keys: "Przycisk Tap (Tekst)",
-        action: "Tryb Tap + tempo BPM (bez skrótu)",
+        action: "Tryb Tap — kolejka linii (bez skrótu)",
       },
       { keys: "↑ / ↓", action: "Tap: poprzednia / następna linia" },
       { keys: "Esc", action: "Anuluj akord / odznacz / Tap→Wskaźnik" },

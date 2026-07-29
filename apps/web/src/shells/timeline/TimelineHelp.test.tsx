@@ -45,4 +45,15 @@ describe("TimelineHelp", () => {
     fireEvent.click(screen.getByRole("button", { name: "Zamknij" }));
     expect(onClose).toHaveBeenCalled();
   });
+
+  it("documents Tap as vocal line marking, not tempo", () => {
+    render(<TimelineHelp onClose={() => {}} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Narzędzia i ścieżki" }));
+    const panel = screen.getByRole("tabpanel");
+    expect(panel.textContent).toMatch(/Tap/);
+    expect(panel.textContent).toMatch(/kolejka linii/i);
+    expect(panel.textContent).toMatch(/Spacja/i);
+    expect(panel.textContent).not.toMatch(/tempo BPM/i);
+    expect(panel.textContent).not.toMatch(/BPM przy locatorze/i);
+  });
 });

@@ -305,10 +305,6 @@ import {
   peaksToPolylinePoints,
 } from "../lib/waveformPeaks.js";
 import {
-  applyTapBpm,
-  createTapTempoState,
-  recordTap,
-} from "../lib/tapTempo.js";
 import {
   detectTimelineTier,
   TIMELINE_COARSE_MQ,
@@ -766,8 +762,6 @@ export function TimelineShell() {
       (typeof window !== "undefined" ? detectTimelineTier() : "desktop") !==
       "mobile",
   );
-  const [tapState, setTapState] = useState(createTapTempoState);
-  const [tapBpmHint, setTapBpmHint] = useState<number | null>(null);
   const [touchAlertOpen, setTouchAlertOpen] = useState(false);
   const metroBeatRef = useRef(0);
   const loopDragRef = useRef<{
@@ -2457,26 +2451,6 @@ export function TimelineShell() {
     }
     persistMetronomeOn(next);
     setMetronomeOn(next);
-  }
-
-  /** Tekst dock Tap — activates vocal-tap tool + records tempo taps (no hotkey). */
-  function onTap() {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    setTool("tap");
-    setToolMenu(null);
-    setWandMenu(null);
-    if (!draftProject) return;
-    const { state: nextTap, bpm } = recordTap(tapState, performance.now());
-    setTapState(nextTap);
-    if (bpm == null) {
-      setTapBpmHint(null);
-      return;
-    }
-    setTapBpmHint(bpm);
-    commitDraft(applyTapBpm(draftProject, locatorTicks, bpm));
   }
 
   function onImportUg(result: UgImportOk, runWand: boolean) {
@@ -6588,13 +6562,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           className={
                             tool === "tap" ? styles.tapBtnSelected : undefined
                           }
-                          title={
-                            tapBpmHint
-                              ? `Tap — linie Tekstu + tempo (${tapBpmHint} BPM)`
-                              : "Tap — linie Tekstu + tempo przy locatorze"
-                          }
-                          aria-label="Tap — linie Tekstu i tempo"
-                          onClick={onTap}
+                          title="Tap — kolejka linii Tekstu; Spacja = start przy playheadzie"
+                          aria-label="Tap — kolejka linii Tekstu"
+                          onClick={() => onTool("tap")}
                         >
                           <IconTap />
                         </Button>
