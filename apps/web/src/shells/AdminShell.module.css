@@ -444,63 +444,6 @@
     padding: var(--ss-space-3);
   }
 
-  .chrome {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "brand aside"
-      "sections sections"
-      "jump jump";
-    align-items: center;
-    padding: var(--ss-space-2) var(--ss-space-3);
-    gap: var(--ss-space-2);
-    overflow-x: hidden;
-  }
-
-  .chromeOperatorNav {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "brand" "nav";
-  }
-
-  .chromeBrand {
-    grid-area: brand;
-    min-width: 0;
-  }
-
-  .sections {
-    grid-area: sections;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    flex: none;
-    width: 100%;
-    gap: var(--ss-space-1);
-  }
-
-  .sections :global(.ss-btn) {
-    width: 100%;
-    min-width: 0;
-    padding-inline: var(--ss-space-1);
-  }
-
-  .sections :global(.ss-btn__label) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .appJump {
-    grid-area: jump;
-    margin-left: 0;
-    width: 100%;
-    justify-content: flex-start;
-    min-width: 0;
-  }
-
-  .chromeAside {
-    grid-area: aside;
-    justify-content: flex-end;
-    min-width: 0;
-  }
-
   .nameRow {
     flex-wrap: wrap;
   }

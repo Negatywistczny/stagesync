@@ -10,7 +10,6 @@ import {
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
-import { useMqMobile } from "../lib/useMqMobile.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
@@ -98,7 +97,6 @@ const ROLES: { id: RoleId; label: string; icon: string }[] = [
 ];
 
 export function ClientShell() {
-  const isMobile = useMqMobile();
   const isCompactMobile = useMqMobileCompact();
   const [nameModal, setNameModal] = useState(false);
   const [name, setName] = useState(() => getStoredDeviceDisplayName() ?? "");
@@ -279,7 +277,7 @@ export function ClientShell() {
   }
 
   function onRoleTileClick(id: RoleId) {
-    if (isMobile) {
+    if (isCompactMobile) {
       setPicked([id]);
       setStarted(true);
       return;
@@ -365,7 +363,7 @@ export function ClientShell() {
         <main
           className={[
             styles.welcome,
-            isMobile ? styles.welcomeMobile : "",
+            isCompactMobile ? styles.welcomeMobile : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -399,7 +397,7 @@ export function ClientShell() {
                   className={[styles.roleTile, on ? styles.roleOn : ""]
                     .filter(Boolean)
                     .join(" ")}
-                  aria-pressed={isMobile ? undefined : on}
+                  aria-pressed={isCompactMobile ? undefined : on}
                   onClick={() => onRoleTileClick(r.id)}
                 >
                   <span className={styles.roleIcon} aria-hidden>
@@ -411,7 +409,7 @@ export function ClientShell() {
             })}
           </div>
 
-          {!isMobile ? (
+          {!isCompactMobile ? (
             <div className={styles.startBar}>
               <Button
                 variant="primary"

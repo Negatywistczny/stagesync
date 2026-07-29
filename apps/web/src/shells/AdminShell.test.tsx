@@ -9,10 +9,6 @@ vi.mock("../lib/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-vi.mock("../lib/useMqMobile.js", () => ({
-  useMqMobile: vi.fn(() => false),
-}));
-
 vi.mock("../lib/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
 }));
@@ -128,6 +124,14 @@ describe("AdminShell chrome", () => {
     expect(out).toContain('aria-label="Sekcja Admin"');
     expect(out).toContain('aria-label="Aplikacje"');
     expect(out).toContain("Klient");
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
+  });
+
+  it("renders legacy chrome on tablet when OperatorNav is allowed", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(false);
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    const out = html();
+    expect(out).toContain('aria-label="Sekcje"');
     expect(out).not.toContain('aria-label="Nawigacja operatora"');
   });
 

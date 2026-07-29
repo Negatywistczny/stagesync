@@ -32,7 +32,6 @@ import { prepareHostRestart } from "../lib/desktopBridge.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
 import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
-import { useMqMobile } from "../lib/useMqMobile.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { filterAndSortLibrarySongs } from "./admin/filterLibrarySongs.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
@@ -791,7 +790,7 @@ function SongsView({
   const [dbMenuOpen, setDbMenuOpen] = useState(false);
   const [inspectorProject, setInspectorProject] = useState<Project | null>(null);
   const [openCard, setOpenCard] = useState<"songs" | "inspector">("songs");
-  const mobile = useMqMobile();
+  const compactMobile = useMqMobileCompact();
   const dbMenuId = useId();
   const navigate = useNavigate();
 
@@ -816,7 +815,7 @@ function SongsView({
 
   const selectSong = (id: string) => {
     onSelect(id);
-    if (mobile) setOpenCard("inspector");
+    if (compactMobile) setOpenCard("inspector");
   };
 
   const songsHeadActions = (
@@ -893,15 +892,15 @@ function SongsView({
 
   return (
     <div
-      className={mobile ? styles.accordionStack : styles.split}
-      data-admin-mobile={mobile ? "1" : undefined}
+      className={compactMobile ? styles.accordionStack : styles.split}
+      data-admin-mobile={compactMobile ? "1" : undefined}
     >
       <AdminAccordionCard
         id="songs"
         title="Utwory"
         titleAs="h1"
         ariaLabel="Utwory"
-        mobile={mobile}
+        mobile={compactMobile}
         openId={openCard}
         onOpen={setOpenCard}
         headActions={songsHeadActions}
@@ -1045,12 +1044,12 @@ function SongsView({
         id="inspector"
         title={selected ? draftName || selected.name : "Wybrany utwór"}
         ariaLabel="Wybrany utwór"
-        mobile={mobile}
+        mobile={compactMobile}
         openId={openCard}
         onOpen={setOpenCard}
         desktopHead={inspectorDesktopHead}
       >
-          {mobile && selected ? (
+          {compactMobile && selected ? (
             <div className={styles.inspectorHead}>
               <div className={styles.nameRow}>
                 <Input

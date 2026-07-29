@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Tablet (641–1024px):** nawigacja jak na desktopie — zakładki sekcji Admin, chipy **Timeline / Klient** i nagłówek Client bez trybu telefonu; **OperatorNav** tylko na wąskim telefonie (≤640px).
+
 ### Naprawiono
 
 #### 🖥️ App Shell & UI

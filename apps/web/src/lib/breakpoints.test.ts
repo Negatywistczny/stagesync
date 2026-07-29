@@ -17,4 +17,11 @@ describe("breakpoints", () => {
     expect(MQ_MOBILE_COMPACT).toBe("(max-width: 640px)");
     expect(MQ_TABLET).toBe("(max-width: 1024px)");
   });
+
+  it("documents tablet chrome policy — compact mobile only ≤640px", () => {
+    expect(BREAKPOINT_MOBILE_COMPACT_MAX_PX).toBeLessThan(
+      BREAKPOINT_TABLET_MAX_PX,
+    );
+    expect(BREAKPOINT_MOBILE_COMPACT_MAX_PX + 1).toBe(641);
+  });
 });
