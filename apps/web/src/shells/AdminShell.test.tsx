@@ -11,6 +11,7 @@ vi.mock("../lib/useMqMobileCompact.js", () => ({
 
 vi.mock("../lib/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
+  shouldShowFullscreenControl: vi.fn(() => false),
 }));
 
 vi.mock("../lib/useAnnounceDevicePresence.js", () => ({
@@ -25,7 +26,6 @@ vi.mock("../lib/desktopBridge.js", () => ({
 }));
 
 vi.mock("../lib/nativeShell.js", () => ({
-  shouldShowFullscreenControl: () => false,
   getStageSyncNative: () => null,
 }));
 
@@ -72,7 +72,10 @@ vi.mock("../transport/useTransport.js", () => ({
 
 import { AdminShell } from "./AdminShell.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
-import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
+import {
+  shouldShowFullscreenControl,
+  shouldShowOperatorNav,
+} from "../lib/operatorSurface.js";
 
 function html(): string {
   return renderToStaticMarkup(
@@ -87,6 +90,28 @@ describe("AdminShell chrome", () => {
     vi.clearAllMocks();
     vi.mocked(useMqMobileCompact).mockReturnValue(false);
     vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
+    vi.mocked(shouldShowFullscreenControl).mockReturnValue(false);
+  });
+
+  it("shows fullscreen control on web browser surface", () => {
+    vi.mocked(shouldShowFullscreenControl).mockReturnValue(true);
+    const out = html();
+    expect(out).toContain('aria-label="Pełny ekran"');
+  });
+
+  it("hides fullscreen control on Tauri / native shells", () => {
+    vi.mocked(shouldShowFullscreenControl).mockReturnValue(false);
+    const out = html();
+    expect(out).not.toContain('aria-label="Pełny ekran"');
+  });
+
+  it("shows fullscreen on compact mobile when OperatorNav is active", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    vi.mocked(shouldShowFullscreenControl).mockReturnValue(true);
+    const out = html();
+    expect(out).toContain('aria-label="Nawigacja operatora"');
+    expect(out).toContain('aria-label="Pełny ekran"');
   });
 
   it("renders legacy section buttons on desktop", () => {

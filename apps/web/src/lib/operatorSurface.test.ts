@@ -8,6 +8,7 @@ import {
   isOsMenuDesktopShell,
   isPerformerShell,
   isWebBrowserSurface,
+  shouldShowFullscreenControl,
   shouldShowOperatorNav,
   shouldUseMobileCompactChrome,
 } from "./operatorSurface.js";
@@ -45,6 +46,31 @@ describe("isOperatorSurfaceRoute", () => {
     expect(isOperatorSurfaceRoute("/admin?section=host")).toBe(true);
     expect(isOperatorSurfaceRoute("/timeline/abc")).toBe(true);
     expect(isOperatorSurfaceRoute("/client")).toBe(false);
+  });
+});
+
+describe("shouldShowFullscreenControl", () => {
+  it("shows on web browser surface", () => {
+    expect(isWebBrowserSurface()).toBe(true);
+    expect(shouldShowFullscreenControl()).toBe(true);
+  });
+
+  it("hides on Tauri desktop", () => {
+    vi.mocked(isDesktopShell).mockReturnValue(true);
+    vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
+    expect(shouldShowFullscreenControl()).toBe(false);
+  });
+
+  it("hides on console shell", () => {
+    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
+      "console";
+    expect(shouldShowFullscreenControl()).toBe(false);
+  });
+
+  it("hides on performer shell", () => {
+    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
+      "performer";
+    expect(shouldShowFullscreenControl()).toBe(false);
   });
 });
 

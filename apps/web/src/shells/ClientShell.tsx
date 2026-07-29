@@ -5,14 +5,16 @@ import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
 } from "../lib/desktopMenuEvents.js";
-import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import {
   releaseScreenWakeLock,
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
 import { getOperatorAppJumpLinks } from "../lib/operatorNavRoutes.js";
-import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
+import {
+  shouldShowFullscreenControl,
+  shouldShowOperatorNav,
+} from "../lib/operatorSurface.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
@@ -323,7 +325,7 @@ export function ClientShell() {
     compact: isCompactMobile,
     showAppJump: showOperatorNav && !isCompactMobile,
     hideGlobalSettings: operatorNavCompact,
-    onFullscreen: shouldShowFullscreenControl() && !isCompactMobile
+    onFullscreen: shouldShowFullscreenControl()
       ? () => void onFullscreen()
       : undefined,
     globalSettingsOpen: globalSettings,

@@ -9,6 +9,7 @@ import {
   isConsoleShell,
   isPerformerShell,
   isWebBrowserSurface,
+  shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "../lib/operatorSurface.js";
 import { clearOperatorSession, hasOperatorSession } from "../lib/operatorSession.js";
@@ -79,6 +80,7 @@ describe("applyDevSurfaceMocks", () => {
     expect(getActiveDevSurface()).toBe("tauri");
     expect(isDesktopShell()).toBe(true);
     expect(shouldShowOperatorNav("/timeline/dev-preview")).toBe(false);
+    expect(shouldShowFullscreenControl()).toBe(false);
 
     cleanup();
   });
@@ -92,6 +94,7 @@ describe("applyDevSurfaceMocks", () => {
     expect(isConsoleShell()).toBe(false);
     expect(isWebBrowserSurface()).toBe(true);
     expect(shouldShowOperatorNav("/admin")).toBe(true);
+    expect(shouldShowFullscreenControl()).toBe(true);
 
     cleanup();
   });

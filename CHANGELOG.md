@@ -15,6 +15,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Zmieniono
 
 #### 🖥️ App Shell & UI
+- **Pełny ekran:** przycisk tylko w przeglądarce LAN (Admin / Timeline / Klient); ukryty w Tauri oraz w natywnych powłokach Console / Performer.
 - **Tablet (641–1024px):** nawigacja jak na desktopie — zakładki sekcji Admin, chipy **Timeline / Klient** i nagłówek Client bez trybu telefonu; **OperatorNav** tylko na wąskim telefonie (≤640px).
 
 ### Naprawiono
