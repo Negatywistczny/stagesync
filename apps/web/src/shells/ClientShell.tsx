@@ -778,8 +778,6 @@ function ClientChrome({
         title={started && onBack ? "Powrót do wyboru ról" : undefined}
       />
 
-      <strong className={styles.songTitle}>{songTitle}</strong>
-
       {!compact ? (
         <div className={styles.metronome} aria-hidden>
           {[1, 2, 3, 4].map((i) => (
@@ -795,6 +793,8 @@ function ClientChrome({
           ))}
         </div>
       ) : null}
+
+      <strong className={styles.songTitle}>{songTitle}</strong>
 
       {transportError && !compact ? (
         <span className={styles.transportError} role="alert">

@@ -26,6 +26,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
 
 #### 🖥️ App Shell & UI
+- **Klient:** wskaźnik metronomu w nagłówku jest po lewej (obok logo), a nie przy prawej krawędzi obok ustawień.
 - **Ustawienia (web):** przycisk ⚙️ w Timeline / Admin / OperatorNav znowu otwiera preferencje — w przeglądarce na `:4000` nagłówek nie chowa się jak w Tauri; na Kliencie z sesją operatora panel globalnych ustawień nie jest przycinany przez overflow nagłówka.
 - **Client:** przycisk ⚙️ znowu otwiera ustawienia Klienta (wygląd, strój instrumentu, polskie nazwy sekcji) zamiast preferencji Admina (serwer, MIDI, host).
 - **Klient (web, sesja operatora):** nagłówek z OperatorNav i przyciskami w chrome nie jest już pionowo przycinany — widoczne są dolne krawędzie przycisków.

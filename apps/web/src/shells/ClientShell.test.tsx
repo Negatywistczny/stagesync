@@ -366,6 +366,24 @@ describe("ClientShell chrome", () => {
     ).toBeNull();
   });
 
+  it("renders metronome before song title in desktop Client header", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const tsx = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "ClientShell.tsx"),
+      "utf8",
+    );
+    const headerStart = tsx.indexOf("function ClientChrome");
+    expect(headerStart).toBeGreaterThan(-1);
+    const headerBlock = tsx.slice(headerStart, headerStart + 4000);
+    const metronomePos = headerBlock.indexOf("className={styles.metronome}");
+    const titlePos = headerBlock.indexOf("className={styles.songTitle}");
+    expect(metronomePos).toBeGreaterThan(-1);
+    expect(titlePos).toBeGreaterThan(-1);
+    expect(metronomePos).toBeLessThan(titlePos);
+  });
+
   it("shows song title in the header without key/tempo/meter/bar meta", () => {
     renderClient();
 
