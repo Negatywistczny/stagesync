@@ -198,4 +198,17 @@ describe("AppHeader", () => {
     expect(out).toContain('aria-label="Ponów"');
     expect(out).toContain('aria-label="Aplikacje"');
   });
+
+  it("keeps action row single-line outside compact mobile", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "AppHeader.module.css"),
+      "utf8",
+    );
+    const actionsBlock = css.match(/\.actions\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(actionsBlock).toContain("flex-wrap: nowrap");
+    expect(actionsBlock).toContain("overflow-x: auto");
+  });
 });

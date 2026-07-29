@@ -16,8 +16,6 @@ import {
   shouldShowOperatorNav,
 } from "../lib/operatorSurface.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
-import { ChangeServerControl } from "./ChangeServerControl.js";
-import { OperatorPinFields } from "./OperatorPinFields.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import {
   DEVICE_DISPLAY_NAME_CHANGED_EVENT,
@@ -25,15 +23,13 @@ import {
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
 } from "../lib/deviceNamePrefs.js";
+import { openPreferences } from "../lib/preferencesEvents.js";
 import {
-  INSTRUMENT_PITCH_MANUAL_MAX,
-  INSTRUMENT_PITCH_MANUAL_MIN,
   resolveMeterAt,
   resolveStageCueBanner,
   resolveTempoAt,
   stageCueBannerLabel,
   ticksToBbt,
-  type InstrumentPitchMode,
   type Project,
   type StageCueBannerItem,
 } from "@stagesync/shared";
@@ -42,10 +38,7 @@ import {
   setFormNotesEdit,
   setGridAnimations,
   setHybridPolishB,
-  setInstrumentPitch,
-  setInstrumentPitchManual,
   setLiteralQuality,
-  setSectionNamesPolish,
   type ClientDisplayPrefs,
 } from "../lib/clientDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
@@ -86,7 +79,6 @@ import {
 import {
   SettingsPopover,
   SettingsPopoverAnchor,
-  ShellAppearanceFields,
 } from "./SettingsPopover.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
@@ -112,7 +104,6 @@ export function ClientShell() {
   const [nameDraft, setNameDraft] = useState("");
   const [picked, setPicked] = useState<RoleId[]>([]);
   const [started, setStarted] = useState(false);
-  const [globalSettings, setGlobalSettings] = useState(false);
   const [roleSettings, setRoleSettings] = useState<RoleId | null>(null);
   const {
     state,
@@ -168,8 +159,7 @@ export function ClientShell() {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
       if (detail?.action !== "appearance") return;
-      setRoleSettings(null);
-      setGlobalSettings(true);
+      openPreferences("general");
     }
     window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
     return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
@@ -305,13 +295,7 @@ export function ClientShell() {
     }
   }
 
-  function toggleGlobalSettings() {
-    setRoleSettings(null);
-    setGlobalSettings((open) => !open);
-  }
-
   function toggleRoleSettings(id: RoleId) {
-    setGlobalSettings(false);
     setRoleSettings((current) => (current === id ? null : id));
   }
 
@@ -328,9 +312,7 @@ export function ClientShell() {
     onFullscreen: shouldShowFullscreenControl()
       ? () => void onFullscreen()
       : undefined,
-    globalSettingsOpen: globalSettings,
-    onToggleGlobalSettings: toggleGlobalSettings,
-    onCloseGlobalSettings: () => setGlobalSettings(false),
+    onOpenPreferences: () => openPreferences("general"),
     onBack: started ? () => setStarted(false) : undefined,
     displayPrefs,
     onDisplayPrefsChange: setDisplayPrefs,
@@ -343,7 +325,7 @@ export function ClientShell() {
       <div className={styles.topChrome}>
         <OperatorNav
           activeApp="client"
-          onSettings={toggleGlobalSettings}
+          onSettings={() => openPreferences("general")}
           settingsLabel="Ustawienia globalne"
         />
         {chrome}
@@ -738,9 +720,7 @@ type ClientHeaderProps = {
   /** Compact OperatorNav owns settings — hide duplicate gear in Client chrome. */
   hideGlobalSettings?: boolean;
   onFullscreen?: () => void;
-  globalSettingsOpen: boolean;
-  onToggleGlobalSettings: () => void;
-  onCloseGlobalSettings: () => void;
+  onOpenPreferences: () => void;
   onBack?: () => void;
   displayPrefs: ClientDisplayPrefs;
   onDisplayPrefsChange: (prefs: ClientDisplayPrefs) => void;
@@ -757,12 +737,8 @@ function ClientChrome({
   showAppJump = false,
   hideGlobalSettings = false,
   onFullscreen,
-  globalSettingsOpen,
-  onToggleGlobalSettings,
-  onCloseGlobalSettings,
+  onOpenPreferences,
   onBack,
-  displayPrefs,
-  onDisplayPrefsChange,
 }: ClientHeaderProps) {
   const appJump = showAppJump ? getOperatorAppJumpLinks("client") : [];
 
@@ -831,38 +807,11 @@ function ClientChrome({
           <SettingsPopoverAnchor>
             <ShellIconButton
               label="Ustawienia globalne"
-              aria-expanded={globalSettingsOpen}
-              aria-controls="global-settings-panel"
-              onClick={onToggleGlobalSettings}
+              onClick={onOpenPreferences}
             >
               <IconSettings />
             </ShellIconButton>
-            {globalSettingsOpen ? (
-              <SettingsPopover
-                id="global-settings-panel"
-                title="Ustawienia globalne"
-                onClose={onCloseGlobalSettings}
-              >
-                <GlobalSettingsFields
-                  prefs={displayPrefs}
-                  onPrefsChange={onDisplayPrefsChange}
-                />
-              </SettingsPopover>
-            ) : null}
           </SettingsPopoverAnchor>
-        ) : null}
-        {globalSettingsOpen && hideGlobalSettings ? (
-          <SettingsPopover
-            id="global-settings-panel"
-            title="Ustawienia globalne"
-            placement="fixed-top-right"
-            onClose={onCloseGlobalSettings}
-          >
-            <GlobalSettingsFields
-              prefs={displayPrefs}
-              onPrefsChange={onDisplayPrefsChange}
-            />
-          </SettingsPopover>
         ) : null}
         {onFullscreen ? (
           <ShellIconButton label="Pełny ekran" onClick={onFullscreen}>
@@ -871,118 +820,6 @@ function ClientChrome({
         ) : null}
       </div>
     </header>
-  );
-}
-
-const PITCH_OPTIONS: {
-  id: InstrumentPitchMode;
-  icon: string;
-  label: string;
-  title: string;
-  manualIcon?: boolean;
-}[] = [
-  { id: "concert", icon: "🎹", label: "C", title: "Strój koncertowy (C)" },
-  {
-    id: "bb",
-    icon: "🎺",
-    label: "B♭",
-    title: "Instrument B♭ — korekta +2 półtony",
-  },
-  {
-    id: "eb",
-    icon: "🎷",
-    label: "E♭",
-    title: "Instrument E♭ — korekta +9 półtonów",
-  },
-  {
-    id: "manual",
-    icon: "±",
-    label: "Ręczna",
-    title: "Ręczna — korekta −6…+6 półtonów",
-    manualIcon: true,
-  },
-];
-
-function GlobalSettingsFields({
-  prefs,
-  onPrefsChange,
-}: {
-  prefs: ClientDisplayPrefs;
-  onPrefsChange: (prefs: ClientDisplayPrefs) => void;
-}) {
-  return (
-    <>
-      <p className={styles.fieldLab}>Wygląd</p>
-      <ShellAppearanceFields />
-      <p className={styles.fieldLab}>Strój instrumentu</p>
-      <div
-        className={styles.pitchToggle}
-        role="group"
-        aria-label="Strój instrumentu transponującego"
-      >
-        {PITCH_OPTIONS.map((opt) => {
-          const on = prefs.instrumentPitch === opt.id;
-          return (
-            <Button
-              key={opt.id}
-              variant="ghost"
-              selected={on}
-              className={styles.pitchOption}
-              title={opt.title}
-              aria-label={opt.title}
-              onClick={() => {
-                setInstrumentPitch(opt.id);
-                onPrefsChange({ ...prefs, instrumentPitch: opt.id });
-              }}
-            >
-              <span
-                className={[
-                  styles.pitchIcon,
-                  opt.manualIcon ? styles.pitchIconManual : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                aria-hidden
-              >
-                {opt.icon}
-              </span>
-              <span className={styles.pitchLabel}>{opt.label}</span>
-            </Button>
-          );
-        })}
-      </div>
-      {prefs.instrumentPitch === "manual" ? (
-        <label className={styles.field}>
-          Transpozycja ({prefs.instrumentPitchManual > 0 ? "+" : ""}
-          {prefs.instrumentPitchManual})
-          <input
-            className={styles.prefsRange}
-            type="range"
-            min={INSTRUMENT_PITCH_MANUAL_MIN}
-            max={INSTRUMENT_PITCH_MANUAL_MAX}
-            step={1}
-            value={prefs.instrumentPitchManual}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              setInstrumentPitchManual(n);
-              onPrefsChange({ ...prefs, instrumentPitchManual: n });
-            }}
-          />
-        </label>
-      ) : null}
-      <ShellSwitchRow
-        checked={prefs.sectionNamesPolish}
-        onChange={(e) => {
-          const next = e.target.checked;
-          setSectionNamesPolish(next);
-          onPrefsChange({ ...prefs, sectionNamesPolish: next });
-        }}
-      >
-        Polskie nazwy sekcji
-      </ShellSwitchRow>
-      <OperatorPinFields />
-      <ChangeServerControl entryPath="/client" />
-    </>
   );
 }
 

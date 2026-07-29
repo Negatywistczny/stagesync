@@ -2159,11 +2159,6 @@
 }
 
 @media (max-width: 768px) {
-  .shell {
-    /* Client-sized targets even if tier is tablet (narrow window). */
-    --ss-touch-min: var(--ss-touch-min-client);
-  }
-
   .main {
     grid-template-columns: 1fr;
   }

@@ -46,6 +46,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Nawigacja operatora (telefon):** stały układ trzech slotów — przełącznik **Admin · Timeline · Klient** zawsze po lewej, kontekst (sekcja Admin lub tytuł utworu) na środku, **Ustawienia** po prawej; przyciski nie przeskakują między ekranami.
 - **Timeline (telefon):** pasek nawigacji operatora wraca na Timeline — można przejść do Admina lub Klienta bez utknięcia w edytorze.
 - **Admin (telefon):** nagłówek mieści się w jednym wierszu bez poziomego ani pionowego przewijania; lista sekcji ma tę samą wysokość co przycisk **Ustawienia**.
+- **Chrome Admin / Timeline / Klient:** wszystkie widoczne przyciski **⚙️ Ustawienia** otwierają te same Preferencje (także w dev preview); na tablecie nagłówki zostają w jednym rzędzie, a większe 44px cele dotyku są tylko dla telefonu (≤640px), bez mieszania z zakresem tabletu.
 
 ## [5.3.4](https://github.com/Negatywistczny/stagesync/compare/v5.3.3...v5.3.4) - 2026-07-27
 
