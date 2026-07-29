@@ -173,7 +173,10 @@
 
   .topChrome .headerCompact {
     padding: var(--ss-space-1) var(--ss-space-2);
-    min-height: calc(var(--ss-touch-min-client) + var(--ss-space-2));
+    /* Include both vertical paddings from `.headerCompact` to avoid clipping. */
+    min-height: calc(
+      var(--ss-touch-min-client) + var(--ss-space-1) + var(--ss-space-1)
+    );
   }
 }
 

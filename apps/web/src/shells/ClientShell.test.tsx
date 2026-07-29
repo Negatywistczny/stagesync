@@ -207,6 +207,25 @@ describe("ClientShell chrome", () => {
     expect(compactBlock).not.toMatch(/\bmax-height:/);
   });
 
+  it("allocates vertical height budget for stacked OperatorNav + Client headerCompact", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "ClientShell.module.css"),
+      "utf8",
+    );
+
+    const topChromeCompactBlock =
+      css.match(
+        /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.topChrome\s*\.headerCompact\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+
+    expect(topChromeCompactBlock).toContain(
+      "var(--ss-touch-min-client) + var(--ss-space-1) + var(--ss-space-1)",
+    );
+  });
+
   it("uses square role tiles on tablet; 4-col only on wide desktop", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
