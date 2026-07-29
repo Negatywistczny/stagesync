@@ -1,8 +1,9 @@
 /* @vitest-environment jsdom */
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   buildDevPreviewUrl,
+  normalizeDevPreviewConfig,
   parseDevPreviewSearch,
   resolveDevPreviewPath,
 } from "./devPreviewConfig.js";
@@ -35,6 +36,19 @@ describe("devPreviewConfig", () => {
     });
   });
 
+  it("forces performer surface to client without operator session", () => {
+    expect(
+      parseDevPreviewSearch(
+        "?surface=performer&path=%2Fadmin&session=1&projectId=dev-preview",
+      ),
+    ).toEqual({
+      surface: "performer",
+      path: "/client",
+      session: false,
+      projectId: "dev-preview",
+    });
+  });
+
   it("resolves timeline path with project id", () => {
     expect(
       resolveDevPreviewPath({
@@ -60,6 +74,39 @@ describe("devPreviewConfig", () => {
       "http://localhost:3000/_dev/preview?surface=web&path=%2Fadmin&session=1&projectId=dev-preview",
     );
   });
+
+  it("normalizes performer preview URL to client without operator session", () => {
+    const url = buildDevPreviewUrl(
+      {
+        surface: "performer",
+        path: "/admin",
+        session: true,
+        projectId: "dev-preview",
+      },
+      "http://localhost:3000",
+    );
+    expect(url).toBe(
+      "http://localhost:3000/_dev/preview?surface=performer&path=%2Fclient&session=0&projectId=dev-preview",
+    );
+  });
+});
+
+describe("normalizeDevPreviewConfig", () => {
+  it("leaves non-performer config unchanged", () => {
+    expect(
+      normalizeDevPreviewConfig({
+        surface: "web",
+        path: "/timeline",
+        session: true,
+        projectId: "dev-preview",
+      }),
+    ).toEqual({
+      surface: "web",
+      path: "/timeline",
+      session: true,
+      projectId: "dev-preview",
+    });
+  });
 });
 
 describe("DevLayoutMatrix", () => {
@@ -80,5 +127,24 @@ describe("DevLayoutMatrix", () => {
     expect(screen.getByText("375×667")).toBeTruthy();
     expect(screen.getByText("768×1024")).toBeTruthy();
     expect(screen.getByText("1280×800")).toBeTruthy();
+  });
+
+  it("locks performer surface to client-only preview controls", () => {
+    render(<DevLayoutMatrix />);
+
+    fireEvent.change(screen.getByLabelText("Powierzchnia"), {
+      target: { value: "performer" },
+    });
+
+    expect(screen.queryByLabelText("Trasa")).toBeNull();
+    expect(screen.queryByText("Sesja operatora")).toBeNull();
+    expect(
+      screen.getByText(/Podgląd Performer zawsze używa/),
+    ).toBeTruthy();
+
+    const iframe = screen.getByTitle("Podgląd 375×667");
+    expect(iframe.getAttribute("src")).toContain("surface=performer");
+    expect(iframe.getAttribute("src")).toContain("path=%2Fclient");
+    expect(iframe.getAttribute("src")).toContain("session=0");
   });
 });

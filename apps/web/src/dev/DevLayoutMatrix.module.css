@@ -39,6 +39,12 @@
   min-width: 10rem;
 }
 
+.performerHint {
+  margin: 0;
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
 .banner {
   margin: 0 0 var(--ss-space-4);
   padding: var(--ss-space-3);

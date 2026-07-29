@@ -9,6 +9,7 @@ import {
 } from "./devSurfaceTypes.js";
 import {
   buildDevPreviewUrl,
+  normalizeDevPreviewConfig,
   type DevPreviewConfig,
 } from "./devPreviewConfig.js";
 import styles from "./DevLayoutMatrix.module.css";
@@ -16,7 +17,7 @@ import styles from "./DevLayoutMatrix.module.css";
 const SURFACE_LABELS: Record<DevSurface, string> = {
   tauri: "Desktop Tauri",
   console: "Android Console",
-  performer: "Android Performer",
+  performer: "Android Performer (Client only)",
   web: "Web LAN",
 };
 
@@ -32,13 +33,16 @@ export function DevLayoutMatrix() {
   const [session, setSession] = useState(true);
   const [hostOk, setHostOk] = useState<boolean | null>(null);
 
+  const isPerformerSurface = surface === "performer";
+
   const config = useMemo<DevPreviewConfig>(
-    () => ({
-      surface,
-      path,
-      session,
-      projectId: DEV_PREVIEW_PROJECT_ID,
-    }),
+    () =>
+      normalizeDevPreviewConfig({
+        surface,
+        path,
+        session,
+        projectId: DEV_PREVIEW_PROJECT_ID,
+      }),
     [surface, path, session],
   );
 
@@ -46,6 +50,14 @@ export function DevLayoutMatrix() {
     () => buildDevPreviewUrl(config),
     [config],
   );
+
+  const handleSurfaceChange = (nextSurface: DevSurface) => {
+    setSurface(nextSurface);
+    if (nextSurface === "performer") {
+      setPath("/client");
+      setSession(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +83,7 @@ export function DevLayoutMatrix() {
             Powierzchnia
             <Select
               value={surface}
-              onChange={(e) => setSurface(e.target.value as DevSurface)}
+              onChange={(e) => handleSurfaceChange(e.target.value as DevSurface)}
               aria-label="Powierzchnia"
             >
               {(Object.keys(SURFACE_LABELS) as DevSurface[]).map((id) => (
@@ -81,26 +93,34 @@ export function DevLayoutMatrix() {
               ))}
             </Select>
           </label>
-          <label className={styles.field}>
-            Trasa
-            <Select
-              value={path}
-              onChange={(e) => setPath(e.target.value as DevPreviewRoute)}
-              aria-label="Trasa"
-            >
-              {ROUTE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <ShellSwitchRow
-            checked={session}
-            onChange={(e) => setSession(e.target.checked)}
-          >
-            Sesja operatora
-          </ShellSwitchRow>
+          {!isPerformerSurface ? (
+            <>
+              <label className={styles.field}>
+                Trasa
+                <Select
+                  value={path}
+                  onChange={(e) => setPath(e.target.value as DevPreviewRoute)}
+                  aria-label="Trasa"
+                >
+                  {ROUTE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <ShellSwitchRow
+                checked={session}
+                onChange={(e) => setSession(e.target.checked)}
+              >
+                Sesja operatora
+              </ShellSwitchRow>
+            </>
+          ) : (
+            <p className={styles.performerHint}>
+              Podgląd Performer zawsze używa <code>/client</code> (bez sesji operatora).
+            </p>
+          )}
         </div>
       </header>
 

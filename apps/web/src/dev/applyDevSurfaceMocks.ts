@@ -6,6 +6,7 @@ import { setStoredDeviceDisplayName } from "../lib/deviceNamePrefs.js";
 import type { DevSurface } from "./devSurfaceTypes.js";
 import {
   getDevPreviewConfig,
+  normalizeDevPreviewConfig,
   type DevPreviewConfig,
 } from "./devPreviewConfig.js";
 import { setDevSurfaceOverride } from "./devSurfaceState.js";
@@ -104,11 +105,12 @@ function applyTauriMarkers(surface: DevSurface, backup: TauriBackup): void {
 export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
   if (!import.meta.env.DEV) return () => {};
 
+  const normalized = normalizeDevPreviewConfig(config);
   const tauriBackup = readTauriBackup();
 
-  setDevSurfaceOverride(config.surface);
-  applyNativeShell(config.surface);
-  applyTauriMarkers(config.surface, tauriBackup);
+  setDevSurfaceOverride(normalized.surface);
+  applyNativeShell(normalized.surface);
+  applyTauriMarkers(normalized.surface, tauriBackup);
 
   try {
     setStoredDeviceDisplayName("Dev Preview");
@@ -116,7 +118,7 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
     /* ignore quota / private mode */
   }
 
-  if (config.session) {
+  if (normalized.session) {
     markOperatorSession();
   } else {
     clearOperatorSession();
@@ -126,7 +128,7 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
     setDevSurfaceOverride(null);
     applyNativeShell("web");
     applyTauriMarkers("web", tauriBackup);
-    if (config.session) {
+    if (normalized.session) {
       clearOperatorSession();
     }
   };

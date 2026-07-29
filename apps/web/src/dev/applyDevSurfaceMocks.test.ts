@@ -29,13 +29,20 @@ afterEach(() => {
 });
 
 describe("applyDevSurfaceMocks", () => {
-  it("maps performer surface to hidden operator nav on admin", () => {
-    setPreviewSearch("?surface=performer&path=%2Fadmin&session=0&projectId=dev-preview");
-    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+  it("maps performer surface to client-only preview without operator nav", () => {
+    setPreviewSearch("?surface=performer&path=%2Fadmin&session=1&projectId=dev-preview");
+    const config = getDevPreviewConfig();
+    expect(config).toEqual({
+      surface: "performer",
+      path: "/client",
+      session: false,
+      projectId: "dev-preview",
+    });
+    const cleanup = applyDevSurfaceMocks(config!);
 
     expect(getActiveDevSurface()).toBe("performer");
     expect(isPerformerShell()).toBe(true);
-    expect(shouldShowOperatorNav("/admin")).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(false);
 
     cleanup();
   });
