@@ -402,8 +402,19 @@
   .welcomeMobile .roleTile {
     min-height: 0;
     height: 100%;
-    gap: var(--ss-space-2);
-    padding: var(--ss-space-3);
+    gap: var(--ss-space-3);
+    padding: var(--ss-space-4) var(--ss-space-3);
+  }
+
+  .welcomeMobile .roleIcon {
+    font-size: var(--ss-text-stage-2xl);
+    line-height: var(--ss-leading-none);
+  }
+
+  .welcomeMobile .roleLabel {
+    font-size: var(--ss-text-xl);
+    font-weight: var(--ss-font-weight-heavy);
+    line-height: var(--ss-leading-compact);
   }
 
   .roleTile {
