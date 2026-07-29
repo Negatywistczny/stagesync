@@ -487,6 +487,11 @@
 }
 
 @media (max-width: 640px) {
+  .shell {
+    /* Match Client PWA — Select, segment chips and ⚙️ share 44px targets. */
+    --ss-touch-min: var(--ss-touch-min-client);
+  }
+
   .workspace {
     padding: var(--ss-space-2);
   }
@@ -497,11 +502,20 @@
     grid-template-areas: "nav";
     padding: var(--ss-space-1) var(--ss-space-2);
     padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
-    gap: var(--ss-space-1);
+    gap: 0;
     overflow-x: hidden;
+    overflow-y: hidden;
     align-items: center;
-    max-height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
-    min-height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
+    min-height: calc(
+      var(--ss-touch-min-client) + var(--ss-space-1) +
+        max(var(--ss-space-1), env(safe-area-inset-top, 0px))
+    );
+  }
+
+  .chromeCompact .operatorNavEmbed {
+    min-height: 0;
+    max-height: var(--ss-touch-min-client);
+    overflow: hidden;
   }
 
   .chromeCompact.chromeLegacy {
@@ -509,6 +523,8 @@
     grid-template-areas:
       "sections aside"
       "jump jump";
+    gap: var(--ss-space-1);
+    min-height: auto;
   }
 
   .sectionSelect {

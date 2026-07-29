@@ -99,6 +99,7 @@ describe("OperatorNav", () => {
       "grid-template-columns: minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content)",
     );
     expect(compactBlock).toContain("overflow: hidden");
+    expect(compactBlock).toContain("height: var(--ss-touch-min-client)");
     expect(css).not.toMatch(
       /\.compact\s+\.segments\s*\{[^}]*min-width:\s*calc\(/,
     );
