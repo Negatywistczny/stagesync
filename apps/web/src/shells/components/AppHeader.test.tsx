@@ -2,15 +2,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../lib/desktopBridge.js", () => ({
-  isDesktopShell: vi.fn(() => false),
+vi.mock("../../lib/operatorSurface.js", () => ({
+  shouldShowOperatorNav: vi.fn(
+    (pathname: string) =>
+      pathname.startsWith("/admin") || pathname.startsWith("/timeline"),
+  ),
+  isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
 vi.mock("../../lib/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-import { isDesktopShell } from "../../lib/desktopBridge.js";
+import {
+  isOsMenuDesktopShell,
+  shouldShowOperatorNav,
+} from "../../lib/operatorSurface.js";
 import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import { AppHeader } from "./AppHeader.js";
 
@@ -20,8 +27,12 @@ function html(node: React.ReactElement): string {
 
 describe("AppHeader", () => {
   afterEach(() => {
-    vi.mocked(isDesktopShell).mockReturnValue(false);
+    vi.mocked(isOsMenuDesktopShell).mockReturnValue(false);
     vi.mocked(useMqMobileCompact).mockReturnValue(false);
+    vi.mocked(shouldShowOperatorNav).mockImplementation(
+      (pathname: string) =>
+        pathname.startsWith("/admin") || pathname.startsWith("/timeline"),
+    );
   });
 
   it("renders Level 1 chrome on web", () => {
@@ -41,8 +52,8 @@ describe("AppHeader", () => {
     expect(out).toContain('data-ss-level="1"');
   });
 
-  it("returns null on desktop shell by default", () => {
-    vi.mocked(isDesktopShell).mockReturnValue(true);
+  it("returns null on OS-menu desktop shell by default", () => {
+    vi.mocked(isOsMenuDesktopShell).mockReturnValue(true);
     const out = html(
       <AppHeader
         suffix="Admin"
@@ -52,8 +63,19 @@ describe("AppHeader", () => {
     expect(out).toBe("");
   });
 
-  it("renders on desktop when hideOnDesktop is false", () => {
-    vi.mocked(isDesktopShell).mockReturnValue(true);
+  it("keeps settings gear when only :4000 desktop heuristic matches", () => {
+    // isOsMenuDesktopShell stays false — plain browser must not lose L1 chrome.
+    const out = html(
+      <AppHeader
+        suffix="Timeline"
+        appJump={[{ to: "/admin", label: "Admin" }]}
+      />,
+    );
+    expect(out).toContain('aria-label="Ustawienia"');
+  });
+
+  it("renders on OS-menu desktop when hideOnDesktop is false", () => {
+    vi.mocked(isOsMenuDesktopShell).mockReturnValue(true);
     const out = html(
       <AppHeader
         suffix="Admin"

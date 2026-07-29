@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -25,6 +26,11 @@ vi.mock("../../lib/lastTimelineProject.js", () => ({
   getLastTimelineProjectId: vi.fn(() => "proj-1"),
 }));
 
+vi.mock("../../lib/preferencesEvents.js", () => ({
+  openPreferences: vi.fn(),
+}));
+
+import { openPreferences } from "../../lib/preferencesEvents.js";
 import { OperatorNav } from "./OperatorNav.js";
 import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 
@@ -34,6 +40,7 @@ function html(node: React.ReactElement): string {
 
 describe("OperatorNav", () => {
   afterEach(() => {
+    cleanup();
     vi.clearAllMocks();
     vi.mocked(useMqMobileCompact).mockReturnValue(false);
   });
@@ -80,6 +87,42 @@ describe("OperatorNav", () => {
     );
     expect(out.indexOf("Admin")).toBeLessThan(out.indexOf("Utwory"));
     expect(out.indexOf("Utwory")).toBeLessThan(out.indexOf("Ustawienia"));
+  });
+
+  it("opens preferences from settings gear (admin → general tab)", () => {
+    render(
+      <MemoryRouter initialEntries={["/admin"]}>
+        <OperatorNav activeApp="admin" section="songs" onSectionChange={() => {}} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ustawienia" }));
+    expect(openPreferences).toHaveBeenCalledWith("general");
+  });
+
+  it("opens preferences from settings gear (timeline — no tab)", () => {
+    render(
+      <MemoryRouter initialEntries={["/timeline/p1"]}>
+        <OperatorNav activeApp="timeline" />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ustawienia" }));
+    expect(openPreferences).toHaveBeenCalledWith(undefined);
+  });
+
+  it("calls custom onSettings instead of openPreferences", () => {
+    const onSettings = vi.fn();
+    render(
+      <MemoryRouter initialEntries={["/client"]}>
+        <OperatorNav
+          activeApp="client"
+          onSettings={onSettings}
+          settingsLabel="Ustawienia globalne"
+        />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ustawienia globalne" }));
+    expect(onSettings).toHaveBeenCalledOnce();
+    expect(openPreferences).not.toHaveBeenCalled();
   });
 
   it("uses shrinkable compact grid and touch-min section select height", async () => {

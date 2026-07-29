@@ -50,6 +50,23 @@ describe("SettingsPopover", () => {
     expect(dialog.className).toMatch(/portaled/);
   });
 
+  it("portals fixed-top-right placement to document.body", () => {
+    render(
+      <div data-testid="clipped">
+        <SettingsPopover
+          title="Ustawienia globalne"
+          placement="fixed-top-right"
+          onClose={() => {}}
+        >
+          <p>treść</p>
+        </SettingsPopover>
+      </div>,
+    );
+    const dialog = screen.getByRole("dialog", { name: "Ustawienia globalne" });
+    expect(dialog.parentElement).toBe(document.body);
+    expect(screen.getByTestId("clipped").contains(dialog)).toBe(false);
+  });
+
   it("copies --ss-touch-min from the anchor tree onto the portaled panel", async () => {
     render(
       <div style={{ ["--ss-touch-min" as string]: "44px" }}>

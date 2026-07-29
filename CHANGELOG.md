@@ -23,6 +23,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
 
 #### 🖥️ App Shell & UI
+- **Ustawienia (web):** przycisk ⚙️ w Timeline / Admin / OperatorNav znowu otwiera preferencje — w przeglądarce na `:4000` nagłówek nie chowa się jak w Tauri; na Kliencie z sesją operatora panel globalnych ustawień nie jest przycinany przez overflow nagłówka.
 - **Client (tablet):** kafelki wyboru roli wypełniają wysokość ekranu w siatce 2×2 (większe ikony i etykiety) — zamiast małych chipów z pustką pod spodem; czterokolumnowy układ zostaje na szerokim desktopie.
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.

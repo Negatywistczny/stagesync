@@ -255,6 +255,26 @@ describe("ClientShell chrome", () => {
     ).toHaveLength(1);
   });
 
+  it("opens global settings from header gear without operator session", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
+    renderClient();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
+    expect(dialog).toBeTruthy();
+    expect(dialog.parentElement).toBe(document.body);
+  });
+
+  it("opens global settings from OperatorNav gear with operator session", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    renderClient();
+    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
+    expect(dialog).toBeTruthy();
+    // Portaled fixed-top-right — escapes Client `.page` overflow clipping.
+    expect(dialog.parentElement).toBe(document.body);
+  });
+
   it("does not expose setlist next/prev controls (read-only Client)", () => {
     renderClient();
     startGridRole();

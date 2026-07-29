@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { isDesktopShell } from "../../lib/desktopBridge.js";
 import {
   getOperatorAppJumpLinks,
   type OperatorAppId,
 } from "../../lib/operatorNavRoutes.js";
-import { shouldShowOperatorNav } from "../../lib/operatorSurface.js";
+import {
+  isOsMenuDesktopShell,
+  shouldShowOperatorNav,
+} from "../../lib/operatorSurface.js";
 import { openPreferences } from "../../lib/preferencesEvents.js";
 import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import {
@@ -63,8 +65,9 @@ export type AppHeaderProps = {
   wordmarkOnClick?: () => void;
   wordmarkTitle?: string;
   /**
-   * When true (default), hide on desktop — OS menubar owns these actions (Timeline).
+   * When true (default), hide on real Tauri OS-menu desktop — OS menubar owns these actions (Timeline).
    * Admin keeps Level 1 always visible (`hideOnDesktop={false}`).
+   * Plain browser on `:4000` keeps the in-app gear (`isOsMenuDesktopShell` is false).
    */
   hideOnDesktop?: boolean;
   /** Compact mobile: operator bar above handles notch inset — skip duplicate padding. */
@@ -73,7 +76,8 @@ export type AppHeaderProps = {
 
 /**
  * Level 1 app chrome — Wordmark, shell jump, global actions.
- * By default hidden on desktop (`isDesktopShell`) where the OS menubar owns these actions.
+ * By default hidden on real Tauri OS-menu desktop (`isOsMenuDesktopShell`) —
+ * not the bare `:4000` hostname heuristic (plain browser must keep the gear).
  */
 export function AppHeader({
   suffix,
@@ -112,7 +116,7 @@ export function AppHeader({
     resolvedAppJump.length > 0 &&
     (!showOperatorNav || !isCompactMobile);
 
-  if (hideOnDesktop && isDesktopShell()) return null;
+  if (hideOnDesktop && isOsMenuDesktopShell()) return null;
 
   const handleSettings = onSettings ?? (() => openPreferences());
 

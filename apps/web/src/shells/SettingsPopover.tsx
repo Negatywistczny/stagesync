@@ -58,9 +58,9 @@ type AnchorPos = {
 };
 
 /**
- * Anchor placement is portaled to `document.body` with `position: fixed` so
- * parent overflow (Client mobile header `overflow-x: hidden`, stage panes)
- * cannot clip the dialog.
+ * Anchor and fixed-top-right placements are portaled to `document.body` with
+ * `position: fixed` so parent overflow (Client `.page` / mobile header, stage
+ * panes, OperatorNav chrome) cannot clip the dialog.
  */
 export function SettingsPopover({
   id,
@@ -73,10 +73,13 @@ export function SettingsPopover({
   const anchorRef = useContext(SettingsAnchorContext);
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
   const [pos, setPos] = useState<AnchorPos | null>(null);
-  const portal =
+  const anchorPortal =
     placement === "anchor" &&
     anchorRef != null &&
     typeof document !== "undefined";
+  const fixedPortal =
+    placement === "fixed-top-right" && typeof document !== "undefined";
+  const portal = anchorPortal || fixedPortal;
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -90,7 +93,7 @@ export function SettingsPopover({
   }, [onClose]);
 
   useLayoutEffect(() => {
-    if (!portal || !anchorRef || !panelEl) return;
+    if (!anchorPortal || !anchorRef || !panelEl) return;
     const anchorEl = anchorRef;
 
     function place() {
@@ -121,7 +124,7 @@ export function SettingsPopover({
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
-  }, [portal, anchorRef, panelEl]);
+  }, [anchorPortal, anchorRef, panelEl]);
 
   const panel = (
     <div
@@ -130,7 +133,7 @@ export function SettingsPopover({
       className={[
         styles.panel,
         placement === "fixed-top-right" ? styles.fixedTopRight : "",
-        portal ? styles.portaled : "",
+        anchorPortal ? styles.portaled : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -138,7 +141,7 @@ export function SettingsPopover({
       aria-modal
       aria-labelledby={titleId}
       style={
-        portal
+        anchorPortal
           ? pos
             ? {
                 top: pos.top,

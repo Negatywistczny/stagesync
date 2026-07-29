@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Input, Select } from "@stagesync/ui";
 import { MetaBadge, MetaBadgeRow, ShellToolbar } from "./shared/index.js";
 import {
@@ -90,6 +90,7 @@ function errMessage(err: unknown): string {
 
 export function AdminShell() {
   useAnnounceDevicePresence();
+  const { pathname } = useLocation();
   const isCompactMobile = useMqMobileCompact();
   const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
@@ -343,7 +344,7 @@ export function AdminShell() {
   };
 
   const timelineProjectId = selectedId ?? state.activeProjectId ?? null;
-  const showOperatorNav = isCompactMobile && shouldShowOperatorNav("/admin");
+  const showOperatorNav = isCompactMobile && shouldShowOperatorNav(pathname);
 
   useEffect(() => {
     if (!timelineProjectId) return;
