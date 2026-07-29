@@ -5953,20 +5953,28 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       <AppHeader
         suffix="Timeline"
         version={APP_VERSION}
+        appJump={[
+          { to: "/admin", label: "Admin" },
+          { to: "/client", label: "Klient" },
+        ]}
         operatorApp="timeline"
         operatorNavExternal={isCompactMobile && showOperatorNav}
-        history={{
-          canUndo: Boolean(draftHistory && canUndo(draftHistory)),
-          canRedo: Boolean(draftHistory && canRedo(draftHistory)),
-          dirty,
-          savePending,
-          onUndo,
-          onRedo,
-          onSave: () => {
-            void onSave();
-          },
-          onDiscard,
-        }}
+        history={
+          isMobilePreview
+            ? undefined
+            : {
+                canUndo: Boolean(draftHistory && canUndo(draftHistory)),
+                canRedo: Boolean(draftHistory && canRedo(draftHistory)),
+                dirty,
+                savePending,
+                onUndo,
+                onRedo,
+                onSave: () => {
+                  void onSave();
+                },
+                onDiscard,
+              }
+        }
         helpPressed={helpOpen}
         onHelp={() => setHelpOpen(true)}
         appearancePressed={appearanceOpen}

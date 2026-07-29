@@ -14,6 +14,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
+#### ⏱️ Timeline & DAW
+- **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
+
 #### 🖥️ App Shell & UI
 - **Admin (desktop):** przywrócony pasek sekcji **Utwory · Set · Scena · Host**, przełącznik **Timeline / Klient** i akcje nagłówka — zamiast pustego chrome bez nawigacji.
 - **Klient:** widok muzyka bez paska nawigacji operatora; **Ustawienia globalne** z powrotem w nagłówku.

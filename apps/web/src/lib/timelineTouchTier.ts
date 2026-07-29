@@ -1,13 +1,13 @@
 /**
  * Timeline touch tiers — port of v4 `timeline-touch.js` detect logic (not HTML clone).
- * mobile ≤768px → RO player chrome; tablet ≤1024px or coarse pointer; else desktop.
+ * mobile ≤640px → RO player chrome; tablet ≤1024px or coarse pointer; else desktop.
  */
 
-import { MQ_MOBILE, MQ_TABLET } from "./breakpoints.js";
+import { MQ_MOBILE_COMPACT, MQ_TABLET } from "./breakpoints.js";
 
 export type TimelineTouchTier = "desktop" | "tablet" | "mobile";
 
-export const TIMELINE_MOBILE_MQ = MQ_MOBILE;
+export const TIMELINE_MOBILE_MQ = MQ_MOBILE_COMPACT;
 export const TIMELINE_TABLET_MQ = MQ_TABLET;
 export const TIMELINE_COARSE_MQ = "(pointer: coarse)";
 
