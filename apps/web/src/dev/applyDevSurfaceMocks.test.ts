@@ -8,9 +8,10 @@ import { getActiveDevSurface } from "./devSurfaceState.js";
 import {
   isConsoleShell,
   isPerformerShell,
+  isWebBrowserSurface,
   shouldShowOperatorNav,
 } from "../lib/operatorSurface.js";
-import { clearOperatorSession } from "../lib/operatorSession.js";
+import { clearOperatorSession, hasOperatorSession } from "../lib/operatorSession.js";
 
 function setPreviewSearch(search: string): void {
   window.history.replaceState({}, "", `/_dev/preview${search}`);
@@ -27,13 +28,32 @@ afterEach(() => {
 });
 
 describe("applyDevSurfaceMocks", () => {
-  it("maps performer surface to hidden operator nav on admin", () => {
-    setPreviewSearch("?surface=performer&route=admin");
-    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+  it("maps performer surface to client-only preview without operator nav", () => {
+    setPreviewSearch("?surface=performer&route=admin&session=1");
+    const config = getDevPreviewConfig();
+    expect(config).toEqual({
+      surface: "performer",
+      route: "client",
+      session: false,
+    });
+    const cleanup = applyDevSurfaceMocks(config!);
 
     expect(getActiveDevSurface()).toBe("performer");
     expect(isPerformerShell()).toBe(true);
-    expect(shouldShowOperatorNav("/admin")).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(false);
+    expect(hasOperatorSession()).toBe(false);
+
+    cleanup();
+  });
+
+  it("maps console surface to operator nav on /client without web session", () => {
+    setPreviewSearch("?surface=console&route=client&session=1");
+    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+
+    expect(getActiveDevSurface()).toBe("console");
+    expect(isConsoleShell()).toBe(true);
+    expect(hasOperatorSession()).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(true);
 
     cleanup();
   });
@@ -69,7 +89,28 @@ describe("applyDevSurfaceMocks", () => {
     expect(getActiveDevSurface()).toBe("web");
     expect(isPerformerShell()).toBe(false);
     expect(isConsoleShell()).toBe(false);
+    expect(isWebBrowserSurface()).toBe(true);
     expect(shouldShowOperatorNav("/admin")).toBe(true);
+
+    cleanup();
+  });
+
+  it("maps web client with session to operator nav", () => {
+    setPreviewSearch("?surface=web&route=client&session=1");
+    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+
+    expect(hasOperatorSession()).toBe(true);
+    expect(shouldShowOperatorNav("/client")).toBe(true);
+
+    cleanup();
+  });
+
+  it("hides web client operator nav without session", () => {
+    setPreviewSearch("?surface=web&route=client");
+    const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
+
+    expect(hasOperatorSession()).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(false);
 
     cleanup();
   });

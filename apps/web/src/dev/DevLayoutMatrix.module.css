@@ -36,6 +36,12 @@
   gap: 8px;
 }
 
+.performerHint {
+  margin: 0;
+  font: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+}
+
 .grid {
   flex: 1;
   min-height: 0;

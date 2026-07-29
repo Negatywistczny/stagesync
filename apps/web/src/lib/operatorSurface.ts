@@ -5,6 +5,7 @@ import {
 } from "./desktopBridge.js";
 import { getActiveDevSurface } from "../dev/devSurfaceState.js";
 import { getStageSyncNative } from "./nativeShell.js";
+import { hasOperatorSession } from "./operatorSession.js";
 
 export function getUiTarget(): "full" | "performer" | "console" {
   if (typeof __STAGESYNC_UI_TARGET__ !== "undefined") {
@@ -51,13 +52,35 @@ function isTauriDesktopWithOsMenu(): boolean {
   return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
 }
 
+function isClientRoute(pathname: string): boolean {
+  return pathname === "/client" || pathname.startsWith("/client/");
+}
+
+/**
+ * Web browser LAN operator — operator session in sessionStorage applies only here.
+ * Desktop Tauri, Android Console, and Performer use fixed shell behavior.
+ */
+export function isWebBrowserSurface(): boolean {
+  if (isPerformerShell()) return false;
+  if (isConsoleShell()) return false;
+  if (isTauriDesktopWithOsMenu()) return false;
+  return true;
+}
+
 /**
  * OperatorNav visibility — Tauri desktop uses OS menu; Performer / musician Client hide it.
+ * On /client, web shows nav only with an active operator session; Console always shows it.
  */
 export function shouldShowOperatorNav(pathname: string): boolean {
   if (isPerformerShell()) return false;
-  if (pathname === "/client" || pathname.startsWith("/client/")) return false;
-  if (!isOperatorSurfaceRoute(pathname)) return false;
   if (isTauriDesktopWithOsMenu()) return false;
+
+  if (isClientRoute(pathname)) {
+    if (isConsoleShell()) return true;
+    if (isWebBrowserSurface()) return hasOperatorSession();
+    return false;
+  }
+
+  if (!isOperatorSurfaceRoute(pathname)) return false;
   return true;
 }

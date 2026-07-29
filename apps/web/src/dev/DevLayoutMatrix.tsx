@@ -6,6 +6,8 @@ import {
   type DevRoute,
   type DevSurface,
   buildDevPreviewUrl,
+  devPreviewShowsOperatorSession,
+  normalizeDevPreviewConfig,
 } from "./devLayoutConfig.js";
 
 type PreviewViewport = {
@@ -25,10 +27,23 @@ export function DevLayoutMatrix() {
   const [route, setRoute] = useState<DevRoute>(DEFAULT_DEV_PREVIEW_CONFIG.route);
   const [session, setSession] = useState<boolean>(DEFAULT_DEV_PREVIEW_CONFIG.session);
 
+  const isPerformerSurface = surface === "performer";
+  const showSessionControl = devPreviewShowsOperatorSession(surface);
+
   const previewUrl = useMemo(() => {
-    const config: DevPreviewConfig = { surface, route, session };
+    const config: DevPreviewConfig = normalizeDevPreviewConfig({ surface, route, session });
     return buildDevPreviewUrl(config);
   }, [route, session, surface]);
+
+  const handleSurfaceChange = (nextSurface: DevSurface) => {
+    setSurface(nextSurface);
+    if (nextSurface === "performer") {
+      setRoute("client");
+      setSession(false);
+    } else if (!devPreviewShowsOperatorSession(nextSurface)) {
+      setSession(false);
+    }
+  };
 
   return (
     <main className={styles.page}>
@@ -38,34 +53,42 @@ export function DevLayoutMatrix() {
           <select
             className={styles.select}
             value={surface}
-            onChange={(event) => setSurface(event.target.value as DevSurface)}
+            onChange={(event) => handleSurfaceChange(event.target.value as DevSurface)}
           >
             <option value="web">web</option>
             <option value="tauri">tauri</option>
             <option value="console">console</option>
-            <option value="performer">performer</option>
+            <option value="performer">Android Performer (Client only)</option>
           </select>
         </label>
-        <label className={styles.control}>
-          <span>Route</span>
-          <select
-            className={styles.select}
-            value={route}
-            onChange={(event) => setRoute(event.target.value as DevRoute)}
-          >
-            <option value="admin">/admin</option>
-            <option value="timeline">/timeline/:projectId</option>
-            <option value="client">/client</option>
-          </select>
-        </label>
-        <label className={styles.sessionLabel}>
-          <input
-            type="checkbox"
-            checked={session}
-            onChange={(event) => setSession(event.target.checked)}
-          />
-          <span>Operator session</span>
-        </label>
+        {!isPerformerSurface ? (
+          <>
+            <label className={styles.control}>
+              <span>Route</span>
+              <select
+                className={styles.select}
+                value={route}
+                onChange={(event) => setRoute(event.target.value as DevRoute)}
+              >
+                <option value="admin">/admin</option>
+                <option value="timeline">/timeline/:projectId</option>
+                <option value="client">/client</option>
+              </select>
+            </label>
+            {showSessionControl ? (
+              <label className={styles.sessionLabel}>
+                <input
+                  type="checkbox"
+                  checked={session}
+                  onChange={(event) => setSession(event.target.checked)}
+                />
+                <span>Operator session</span>
+              </label>
+            ) : null}
+          </>
+        ) : (
+          <p className={styles.performerHint}>Performer previews always use /client (no operator session).</p>
+        )}
       </section>
 
       <section className={styles.grid}>

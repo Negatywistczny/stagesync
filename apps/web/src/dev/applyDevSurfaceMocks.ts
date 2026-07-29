@@ -2,7 +2,11 @@ import {
   clearOperatorSession,
   markOperatorSession,
 } from "../lib/operatorSession.js";
-import type { DevPreviewConfig, DevSurface } from "./devLayoutConfig.js";
+import {
+  normalizeDevPreviewConfig,
+  type DevPreviewConfig,
+  type DevSurface,
+} from "./devLayoutConfig.js";
 import { setDevSurfaceOverride } from "./devSurfaceState.js";
 
 const DEV_NATIVE_KEY = "__stagesync_dev_native__";
@@ -47,7 +51,7 @@ function applyNativeShell(surface: DevSurface): void {
 
 function applyTauriMarkers(surface: DevSurface, backup: TauriBackup): void {
   if (typeof window === "undefined") return;
-  const w = window as Window & Record<string, unknown>;
+  const w = window as unknown as Record<string, unknown>;
   if (surface === "tauri") {
     w["__STAGESYNC_TAURI_SHELL__"] = true;
     w["__STAGESYNC_SHELL__"] = "desktop";
@@ -87,26 +91,31 @@ function applyTauriMarkers(surface: DevSurface, backup: TauriBackup): void {
 
 function readTauriBackup(): TauriBackup {
   if (typeof window === "undefined") return {};
-  const w = window as Window & Record<string, unknown>;
+  const w = window as unknown as Record<string, unknown>;
   return {
     tauriShell: w["__STAGESYNC_TAURI_SHELL__"] === true ? true : undefined,
     shell: typeof w["__STAGESYNC_SHELL__"] === "string" ? w["__STAGESYNC_SHELL__"] : undefined,
     isTauri: w["isTauri"] === true ? true : undefined,
-    tauri: w["__TAURI__"] as Window["__TAURI__"] | undefined,
+    tauri: w["__TAURI__"],
   };
 }
 
 export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
   if (!import.meta.env.DEV) return () => {};
 
+  const normalized = normalizeDevPreviewConfig(config);
   const tauriBackup = readTauriBackup();
 
-  setDevSurfaceOverride(config.surface);
-  applyNativeShell(config.surface);
-  applyTauriMarkers(config.surface, tauriBackup);
+  setDevSurfaceOverride(normalized.surface);
+  applyNativeShell(normalized.surface);
+  applyTauriMarkers(normalized.surface, tauriBackup);
 
-  if (config.session) {
-    markOperatorSession();
+  if (normalized.surface === "web") {
+    if (normalized.session) {
+      markOperatorSession();
+    } else {
+      clearOperatorSession();
+    }
   } else {
     clearOperatorSession();
   }
@@ -115,7 +124,7 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
     setDevSurfaceOverride(null);
     applyNativeShell("web");
     applyTauriMarkers("web", tauriBackup);
-    if (config.session) {
+    if (normalized.surface === "web" && normalized.session) {
       clearOperatorSession();
     }
   };
