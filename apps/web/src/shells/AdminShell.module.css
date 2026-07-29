@@ -32,7 +32,7 @@
   z-index: var(--ss-z-sticky);
   flex: 0 0 auto;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--ss-space-3) var(--ss-space-5);
   padding: var(--ss-space-3) var(--ss-space-5);
@@ -63,6 +63,31 @@
   gap: var(--ss-space-1);
   flex: 0 0 auto;
   margin-left: auto;
+}
+
+/* Tablet (641–1024): keep desktop single-row chrome; compact spacing to fit. */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .chrome {
+    gap: var(--ss-space-2) var(--ss-space-3);
+    padding: var(--ss-space-2) var(--ss-space-3);
+  }
+
+  .chromeBrand {
+    flex: 0 0 auto;
+  }
+
+  .sections :global(.ss-btn) {
+    padding-inline: var(--ss-space-2);
+  }
+
+  .appJump a,
+  .appJumpMuted {
+    padding: var(--ss-space-1) var(--ss-space-2);
+  }
+
+  .chromeAside {
+    gap: var(--ss-space-1);
+  }
 }
 
 .appJump a {

@@ -132,7 +132,32 @@ describe("AdminShell chrome", () => {
     vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
     const out = html();
     expect(out).toContain('aria-label="Sekcje"');
+    expect(out).toContain('aria-label="Aplikacje"');
     expect(out).not.toContain('aria-label="Nawigacja operatora"');
+    expect(out).not.toContain("chromeCompact");
+  });
+
+  it("keeps tablet chrome on a single flex row (no wrap)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "AdminShell.module.css"),
+      "utf8",
+    );
+    const chromeBlock = css.match(/\.chrome\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(chromeBlock).toContain("flex-wrap: nowrap");
+    expect(chromeBlock).not.toContain("flex-wrap: wrap");
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)/,
+    );
+    const tabletBlock =
+      css.match(
+        /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{([\s\S]*?)\n\}/,
+      )?.[1] ?? "";
+    expect(tabletBlock).toContain(".chrome");
+    expect(tabletBlock).not.toContain("grid-template-areas");
+    expect(tabletBlock).not.toContain("flex-wrap: wrap");
   });
 
   it("keeps compact chrome within viewport — touch targets and no vertical clamp", async () => {

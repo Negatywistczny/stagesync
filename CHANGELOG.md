@@ -18,6 +18,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline (tablet):** edycja utworu i pełny pasek narzędzi wracają na tablecie (641–1024px); tryb podglądu / odtwarzania tylko na telefonie (≤640px), bez **Cofnij**, **Zapisz** i narzędzi edycji w nagłówku.
 
 #### 🖥️ App Shell & UI
+- **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
 - **Timeline (web >640px):** chipy **Admin / Klient** zamiast wbudowanego paska operatora na tablecie i desktopie w przeglądarce.
 
