@@ -4,12 +4,12 @@ import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
 } from "../lib/desktopMenuEvents.js";
-import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import {
   releaseScreenWakeLock,
   requestScreenWakeLock,
 } from "../lib/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
+import { shouldShowFullscreenControl } from "../lib/operatorSurface.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
@@ -314,7 +314,7 @@ export function ClientShell() {
     bbt: headerBbt,
     transportError,
     compact: isCompactMobile,
-    onFullscreen: shouldShowFullscreenControl() && !isCompactMobile
+    onFullscreen: shouldShowFullscreenControl()
       ? () => void onFullscreen()
       : undefined,
     globalSettingsOpen: globalSettings,

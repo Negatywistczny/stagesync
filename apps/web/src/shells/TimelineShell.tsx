@@ -400,7 +400,6 @@ import {
   syncNavRecentProjects,
   syncNavTimelineProjectId,
 } from "../lib/desktopBridge.js";
-import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
 import {
   DESKTOP_MENU_EVENT,
@@ -408,7 +407,10 @@ import {
 } from "../lib/desktopMenuEvents.js";
 import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
-import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
+import {
+  shouldShowFullscreenControl,
+  shouldShowOperatorNav,
+} from "../lib/operatorSurface.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";

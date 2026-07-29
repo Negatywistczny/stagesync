@@ -1,6 +1,6 @@
 /**
  * Android WebView bridge (`StageSyncNative`) + immersive-shell helpers.
- * Desktop browser / Tauri keep fullscreen; native kiosk + mobile PWA hide it.
+ * Fullscreen control visibility lives in `operatorSurface` (web browser only).
  */
 
 import { MQ_MOBILE } from "./breakpoints.js";
@@ -84,11 +84,6 @@ export function isImmersiveClientSurface(): boolean {
     matchesMedia(MQ_MOBILE) || matchesMedia("(pointer: coarse)");
 
   return standalone && mobileSurface;
-}
-
-/** Fullscreen control: keep for desktop browser / Tauri; hide on Android shells + mobile PWA. */
-export function shouldShowFullscreenControl(): boolean {
-  return !isImmersiveClientSurface();
 }
 
 /** Returns true when the native host picker was requested. */

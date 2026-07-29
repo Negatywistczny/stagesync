@@ -68,6 +68,14 @@ export function isWebBrowserSurface(): boolean {
 }
 
 /**
+ * Fullscreen control (HTML Fullscreen API) — web browser only.
+ * Hidden on Tauri (OS window / menu), Console, and Performer.
+ */
+export function shouldShowFullscreenControl(): boolean {
+  return isWebBrowserSurface();
+}
+
+/**
  * OperatorNav visibility — Tauri desktop uses OS menu; Performer / musician Client hide it.
  * On /client, web shows nav only with an active operator session; Console always shows it.
  */

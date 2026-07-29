@@ -10,7 +10,6 @@ import {
   isImmersiveClientSurface,
   isNativeAndroidShell,
   requestNativeChangeServer,
-  shouldShowFullscreenControl,
 } from "./nativeShell.js";
 
 afterEach(() => {
@@ -36,20 +35,19 @@ describe("nativeShell", () => {
     expect(isNativeAndroidShell()).toBe(false);
   });
 
-  it("hides fullscreen on native Android shell", () => {
+  it("treats native Android shell as immersive", () => {
     window.StageSyncNative = { shellKind: () => "console" };
     expect(isImmersiveClientSurface()).toBe(true);
-    expect(shouldShowFullscreenControl()).toBe(false);
   });
 
-  it("hides fullscreen for Android UA without bridge", () => {
+  it("treats Android UA as immersive without bridge", () => {
     vi.stubGlobal("navigator", {
       userAgent: "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36",
     });
-    expect(shouldShowFullscreenControl()).toBe(false);
+    expect(isImmersiveClientSurface()).toBe(true);
   });
 
-  it("hides fullscreen for mobile standalone PWA", () => {
+  it("treats mobile standalone PWA as immersive", () => {
     window.matchMedia = ((q: string) =>
       ({
         matches:
@@ -63,10 +61,10 @@ describe("nativeShell", () => {
         dispatchEvent: () => false,
         onchange: null,
       })) as typeof window.matchMedia;
-    expect(shouldShowFullscreenControl()).toBe(false);
+    expect(isImmersiveClientSurface()).toBe(true);
   });
 
-  it("keeps fullscreen for desktop browser", () => {
+  it("does not treat desktop browser as immersive", () => {
     window.matchMedia = ((q: string) =>
       ({
         matches: false,
@@ -78,7 +76,7 @@ describe("nativeShell", () => {
         dispatchEvent: () => false,
         onchange: null,
       })) as typeof window.matchMedia;
-    expect(shouldShowFullscreenControl()).toBe(true);
+    expect(isImmersiveClientSurface()).toBe(false);
   });
 
   it("changeServer only when bridge exposes it", () => {

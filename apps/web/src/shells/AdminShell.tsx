@@ -30,7 +30,6 @@ import { uploadProjectMusicXml } from "../lib/projectAssetsApi.js";
 import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
 import { prepareHostRestart } from "../lib/desktopBridge.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
-import { shouldShowFullscreenControl } from "../lib/nativeShell.js";
 import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { filterAndSortLibrarySongs } from "./admin/filterLibrarySongs.js";
@@ -49,7 +48,10 @@ import {
   isAdminSectionId,
   type AdminSectionId,
 } from "../lib/operatorNavRoutes.js";
-import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
+import {
+  shouldShowFullscreenControl,
+  shouldShowOperatorNav,
+} from "../lib/operatorSurface.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -355,6 +357,15 @@ export function AdminShell() {
     void syncNavRecentProjects(recent);
   }, [timelineProjectId, library]);
 
+  const fullscreenButton = shouldShowFullscreenControl() ? (
+    <ShellIconButton
+      label="Pełny ekran"
+      onClick={() => void toggleAppFullscreen()}
+    >
+      <IconFullscreen />
+    </ShellIconButton>
+  ) : null;
+
   return (
     <div className={styles.shell}>
       <ConnectionLostBanner status={wsStatus} />
@@ -380,6 +391,7 @@ export function AdminShell() {
               section={section}
               onSectionChange={setSection}
               className={styles.operatorNavEmbed}
+              trailing={fullscreenButton}
             />
           ) : (
             <>
@@ -463,16 +475,9 @@ export function AdminShell() {
                     >
                       <IconPower />
                     </ShellIconButton>
-                    {shouldShowFullscreenControl() ? (
-                      <ShellIconButton
-                        label="Pełny ekran"
-                        onClick={() => void toggleAppFullscreen()}
-                      >
-                        <IconFullscreen />
-                      </ShellIconButton>
-                    ) : null}
                   </>
                 ) : null}
+                {fullscreenButton}
               </div>
             </>
           )}

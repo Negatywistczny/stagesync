@@ -6,6 +6,10 @@ import { MemoryRouter } from "react-router-dom";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DESKTOP_MENU_EVENT } from "../lib/desktopMenuEvents.js";
+import {
+  shouldShowFullscreenControl,
+  shouldShowOperatorNav,
+} from "../lib/operatorSurface.js";
 import { ClientShell } from "./ClientShell.js";
 
 vi.mock("../lib/desktopBridge.js", () => ({
@@ -13,13 +17,13 @@ vi.mock("../lib/desktopBridge.js", () => ({
 }));
 
 vi.mock("../lib/nativeShell.js", () => ({
-  shouldShowFullscreenControl: () => false,
   canChangeServer: () => false,
   getStageSyncNative: () => null,
 }));
 
 vi.mock("../lib/operatorSurface.js", () => ({
-  shouldShowOperatorNav: () => false,
+  shouldShowOperatorNav: vi.fn(() => false),
+  shouldShowFullscreenControl: vi.fn(() => false),
 }));
 
 vi.mock("../lib/screenWakeLock.js", () => ({
@@ -132,6 +136,26 @@ function renderClient() {
 }
 
 describe("ClientShell chrome", () => {
+  it("shows fullscreen control on web browser surface", () => {
+    vi.mocked(shouldShowFullscreenControl).mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={["/client"]}>
+        <ClientShell />
+      </MemoryRouter>,
+    );
+    expect(screen.getByLabelText("Pełny ekran")).toBeTruthy();
+  });
+
+  it("hides fullscreen control on Tauri / native shells", () => {
+    vi.mocked(shouldShowFullscreenControl).mockReturnValue(false);
+    render(
+      <MemoryRouter initialEntries={["/client"]}>
+        <ClientShell />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByLabelText("Pełny ekran")).toBeNull();
+  });
+
   it("does not force Client 44px touch targets on the desktop page root", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
