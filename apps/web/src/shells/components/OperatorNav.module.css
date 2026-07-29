@@ -150,7 +150,7 @@
   border: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
   min-width: 0;
-  max-width: 5.5rem;
+  max-width: calc(var(--ss-space-16) + var(--ss-space-6));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
