@@ -69,22 +69,24 @@ export function DevLayoutMatrix() {
       </section>
 
       <section className={styles.grid}>
-        {PREVIEW_VIEWPORTS.map((viewport) => (
-          <article key={viewport.label} className={styles.card}>
-            <strong>{viewport.label}</strong>
-            <span className={styles.label}>
-              frame: {viewport.width}x{viewport.height}
-            </span>
-            <iframe
-              className={styles.frame}
-              title={viewport.label}
-              src={previewUrl}
-              width={viewport.width}
-              height={viewport.height}
-              loading="lazy"
-            />
-          </article>
-        ))}
+        <div className={styles.gridTrack}>
+          {PREVIEW_VIEWPORTS.map((viewport) => (
+            <article key={viewport.label} className={styles.card}>
+              <strong>{viewport.label}</strong>
+              <span className={styles.label}>
+                frame: {viewport.width}x{viewport.height}
+              </span>
+              <iframe
+                className={styles.frame}
+                title={viewport.label}
+                src={previewUrl}
+                width={viewport.width}
+                height={viewport.height}
+                loading="lazy"
+              />
+            </article>
+          ))}
+        </div>
       </section>
 
       <p className={styles.url}>{previewUrl}</p>

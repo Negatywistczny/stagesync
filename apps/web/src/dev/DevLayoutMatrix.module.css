@@ -37,9 +37,15 @@
 }
 
 .grid {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.gridTrack {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, max-content);
   gap: 16px;
+  min-width: max-content;
 }
 
 .card {
@@ -58,10 +64,11 @@
 }
 
 .frame {
-  width: 100%;
+  display: block;
   border: 1px solid var(--ss-color-border);
   border-radius: 8px;
   background: #000;
+  flex: none;
 }
 
 .url {
