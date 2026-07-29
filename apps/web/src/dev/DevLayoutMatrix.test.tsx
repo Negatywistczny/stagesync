@@ -26,6 +26,7 @@ import {
 
 afterEach(() => {
   cleanup();
+  vi.clearAllMocks();
 });
 
 describe("devPreviewConfig", () => {
@@ -239,5 +240,19 @@ describe("DevLayoutMatrix", () => {
       expect.any(Blob),
       expect.stringMatching(/^web-admin-phone-\d{8}-\d{6}\.png$/),
     );
+  });
+
+  it("shows a visible error when screenshot capture fails", async () => {
+    vi.mocked(requestDevPreviewScreenshot).mockRejectedValueOnce(
+      new Error("Tainted canvases may not be exported"),
+    );
+
+    render(<DevLayoutMatrix />);
+    fireEvent.click(screen.getByRole("button", { name: "Zrzut ekranu 375×667" }));
+
+    expect(
+      await screen.findByText(/Zrzut ekranu nie powiódł się: Tainted canvases may not be exported/),
+    ).toBeTruthy();
+    expect(downloadBlob).not.toHaveBeenCalled();
   });
 });

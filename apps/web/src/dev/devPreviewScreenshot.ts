@@ -1,3 +1,4 @@
+import { domToBlob } from "modern-screenshot";
 import type { DevPreviewRoute } from "./devSurfaceTypes.js";
 import type { DevSurface } from "./devSurfaceTypes.js";
 
@@ -23,57 +24,6 @@ type DevPreviewScreenshotResponse = {
 
 const SCREENSHOT_TIMEOUT_MS = 15_000;
 
-function copyElementComputedStyles(source: Element, target: HTMLElement): void {
-  const computed = window.getComputedStyle(source);
-  for (let i = 0; i < computed.length; i += 1) {
-    const prop = computed.item(i);
-    if (!prop) continue;
-    target.style.setProperty(
-      prop,
-      computed.getPropertyValue(prop),
-      computed.getPropertyPriority(prop),
-    );
-  }
-}
-
-function cloneWithComputedStyles(source: HTMLElement): HTMLElement {
-  const clone = source.cloneNode(false) as HTMLElement;
-  copyElementComputedStyles(source, clone);
-
-  for (const child of source.childNodes) {
-    if (child instanceof HTMLElement) {
-      clone.appendChild(cloneWithComputedStyles(child));
-      continue;
-    }
-    if (child instanceof Text) {
-      clone.appendChild(child.cloneNode());
-    }
-  }
-
-  return clone;
-}
-
-function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Failed to render screenshot SVG"));
-    img.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error("Failed to encode screenshot PNG"));
-        return;
-      }
-      resolve(blob);
-    }, type);
-  });
-}
-
 function dataUrlToBlob(dataUrl: string): Blob {
   const [header, body] = dataUrl.split(",");
   const mime = header?.match(/data:(.*?);base64/)?.[1] ?? "image/png";
@@ -86,51 +36,24 @@ function dataUrlToBlob(dataUrl: string): Blob {
 }
 
 /**
- * Rasterizes a DOM subtree via SVG foreignObject (no extra deps).
- * External images / canvas / video may be blank or taint the canvas.
+ * Rasterizes a DOM subtree with modern-screenshot (dev-only).
+ * SVG foreignObject capture taints canvas in Chromium and cannot export PNG.
  */
 export async function captureElementToPng(
   element: HTMLElement,
   width: number,
   height: number,
 ): Promise<Blob> {
-  const clone = cloneWithComputedStyles(element);
-  clone.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-
-  const wrapper = document.createElement("div");
-  wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-  wrapper.style.width = `${width}px`;
-  wrapper.style.height = `${height}px`;
-  wrapper.style.overflow = "hidden";
-  wrapper.style.margin = "0";
-  wrapper.style.padding = "0";
-  wrapper.appendChild(clone);
-
-  const xhtml = new XMLSerializer().serializeToString(wrapper);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-<foreignObject width="100%" height="100%">
-${xhtml}
-</foreignObject>
-</svg>`;
-
-  const url = URL.createObjectURL(
-    new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
-  );
-
-  try {
-    const img = await loadImage(url);
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      throw new Error("Canvas 2D unavailable");
-    }
-    ctx.drawImage(img, 0, 0, width, height);
-    return canvasToBlob(canvas, "image/png");
-  } finally {
-    URL.revokeObjectURL(url);
+  const blob = await domToBlob(element, {
+    width,
+    height,
+    scale: 1,
+    backgroundColor: null,
+  });
+  if (!blob) {
+    throw new Error("Failed to encode screenshot PNG");
   }
+  return blob;
 }
 
 export function formatDevPreviewScreenshotTimestamp(date = new Date()): string {
@@ -154,8 +77,11 @@ export function downloadBlob(blob: Blob, filename: string): void {
   anchor.href = url;
   anchor.download = filename;
   anchor.rel = "noopener";
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(anchor);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export async function requestDevPreviewScreenshot(

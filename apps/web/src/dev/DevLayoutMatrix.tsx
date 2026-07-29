@@ -41,6 +41,7 @@ export function DevLayoutMatrix() {
   const [capturingViewportId, setCapturingViewportId] = useState<string | null>(
     null,
   );
+  const [screenshotError, setScreenshotError] = useState<string | null>(null);
   const iframeRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
 
   const isPerformerSurface = surface === "performer";
@@ -64,8 +65,12 @@ export function DevLayoutMatrix() {
 
   const handleScreenshot = async (viewportId: string, width: number, height: number) => {
     const iframe = iframeRefs.current[viewportId];
-    if (!iframe) return;
+    if (!iframe) {
+      setScreenshotError("Podgląd nie jest jeszcze gotowy.");
+      return;
+    }
 
+    setScreenshotError(null);
     setCapturingViewportId(viewportId);
     try {
       const blob = await requestDevPreviewScreenshot(iframe, width, height);
@@ -74,6 +79,11 @@ export function DevLayoutMatrix() {
         buildDevPreviewScreenshotFilename(surface, path, viewportId),
       );
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Nie udało się wykonać zrzutu ekranu";
+      setScreenshotError(message);
       console.error("[DevLayoutMatrix] screenshot failed", error);
     } finally {
       setCapturingViewportId(null);
@@ -161,6 +171,12 @@ export function DevLayoutMatrix() {
         <p className={styles.banner} role="status">
           Wymaga hosta — uruchom <code>pnpm dev</code> (serwer na porcie 4000).
           Podgląd shelli w iframe może nie wczytać danych bez API.
+        </p>
+      ) : null}
+
+      {screenshotError ? (
+        <p className={styles.errorBanner} role="alert">
+          Zrzut ekranu nie powiódł się: {screenshotError}
         </p>
       ) : null}
 

@@ -54,6 +54,15 @@
   font-size: var(--ss-text-sm);
 }
 
+.errorBanner {
+  margin: 0 0 var(--ss-space-4);
+  padding: var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  border: 1px solid color-mix(in srgb, var(--ss-color-danger) 45%, var(--ss-color-border));
+  background: color-mix(in srgb, var(--ss-color-danger) 12%, transparent);
+  font-size: var(--ss-text-sm);
+}
+
 .grid {
   flex: 1;
   min-height: 0;
