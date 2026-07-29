@@ -1,8 +1,10 @@
-import { useEffect, useRef } from "react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { useEffect, useMemo, useRef } from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { ContextMenuProvider } from "@stagesync/ui";
 import { AdminShell } from "../shells/AdminShell.js";
 import { ClientShell } from "../shells/ClientShell.js";
 import { TimelineShell } from "../shells/TimelineShell.js";
+import { TransportProvider } from "../transport/TransportProvider.js";
 import { applyDevSurfaceMocks } from "./applyDevSurfaceMocks.js";
 import {
   getDevPreviewConfig,
@@ -33,14 +35,24 @@ export function DevPreviewApp() {
   }, []);
 
   const entry = config ? resolveDevPreviewPath(config) : "/admin";
+  const router = useMemo(
+    () =>
+      createMemoryRouter(
+        [
+          { path: "/admin", element: <AdminShell /> },
+          { path: "/client", element: <ClientShell /> },
+          { path: "/timeline/:projectId", element: <TimelineShell /> },
+        ],
+        { initialEntries: [entry] },
+      ),
+    [entry],
+  );
 
   return (
-    <MemoryRouter initialEntries={[entry]}>
-      <Routes>
-        <Route path="/admin" element={<AdminShell />} />
-        <Route path="/client" element={<ClientShell />} />
-        <Route path="/timeline/:projectId" element={<TimelineShell />} />
-      </Routes>
-    </MemoryRouter>
+    <TransportProvider>
+      <ContextMenuProvider>
+        <RouterProvider router={router} />
+      </ContextMenuProvider>
+    </TransportProvider>
   );
 }
