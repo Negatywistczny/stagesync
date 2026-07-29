@@ -207,7 +207,7 @@ describe("ClientShell chrome", () => {
     expect(compactBlock).not.toMatch(/\bmax-height:/);
   });
 
-  it("stretches welcome role tiles on tablet; 4-col only on wide desktop", async () => {
+  it("uses square role tiles on tablet; 4-col only on wide desktop", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
@@ -215,18 +215,28 @@ describe("ClientShell chrome", () => {
       join(dirname(fileURLToPath(import.meta.url)), "ClientShell.module.css"),
       "utf8",
     );
-    expect(css).toMatch(
-      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    const tabletQuery = "@media (min-width: 641px) and (max-width: 1024px)";
+    const tabletStart = css.indexOf(tabletQuery);
+    expect(tabletStart).toBeGreaterThan(-1);
+    const blockOpen = css.indexOf("{", tabletStart);
+    let depth = 0;
+    let tabletBlock = "";
+    for (let i = blockOpen; i < css.length; i++) {
+      if (css[i] === "{") depth++;
+      else if (css[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          tabletBlock = css.slice(blockOpen + 1, i);
+          break;
+        }
+      }
+    }
+    expect(tabletBlock).toContain(
+      "grid-template-columns: repeat(2, minmax(0, 1fr))",
     );
-    expect(css).toMatch(
-      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?grid-template-rows:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
-    );
-    expect(css).toMatch(
-      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?\.roleGrid\s*\{[^}]*flex:\s*1\s+1\s+auto/,
-    );
-    expect(css).toMatch(
-      /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1024px\)\s*\{[\s\S]*?font-size:\s*var\(--ss-text-stage-2xl\)/,
-    );
+    expect(tabletBlock).toMatch(/\.roleTile\s*\{[^}]*aspect-ratio:\s*1/);
+    expect(tabletBlock).not.toMatch(/\.roleGrid\s*\{[^}]*grid-template-rows:/);
+    expect(tabletBlock).not.toMatch(/\.roleTile\s*\{[^}]*height:\s*100%/);
     expect(css).toMatch(
       /@media\s*\(min-width:\s*1025px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/,
     );

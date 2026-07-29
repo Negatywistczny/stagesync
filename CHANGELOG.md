@@ -25,7 +25,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Ustawienia (web):** przycisk ⚙️ w Timeline / Admin / OperatorNav znowu otwiera preferencje — w przeglądarce na `:4000` nagłówek nie chowa się jak w Tauri; na Kliencie z sesją operatora panel globalnych ustawień nie jest przycinany przez overflow nagłówka.
-- **Client (tablet):** kafelki wyboru roli wypełniają wysokość ekranu w siatce 2×2 (większe ikony i etykiety) — zamiast małych chipów z pustką pod spodem; czterokolumnowy układ zostaje na szerokim desktopie.
+- **Klient (web, sesja operatora):** nagłówek z OperatorNav i przyciskami w chrome nie jest już pionowo przycinany — widoczne są dolne krawędzie przycisków.
+- **Client (tablet):** kafelki wyboru roli kwadratowe (1:1) w siatce 2×2 — jak na desktopie, bez rozciągania na wysokość ekranu; czterokolumnowy układ zostaje na szerokim desktopie.
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.

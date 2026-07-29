@@ -361,17 +361,15 @@
 }
 
 /*
- * Tablet (641–1024): keep 2×2 role grid and stretch tiles into remaining
- * viewport height — avoid the old ≥768 4-col chip row that left empty space.
- * Phone (≤640 + .welcomeMobile) and wide desktop (>1024) stay separate.
+ * Tablet (641–1024): 2×2 grid with square tiles (1:1) — same proportions as desktop,
+ * not stretched to fill viewport height. Phone (≤640 + .welcomeMobile) and wide
+ * desktop (>1024) stay separate.
  */
 @media (min-width: 641px) and (max-width: 1024px) {
   .welcome {
     gap: var(--ss-space-4);
     padding: var(--ss-space-6) var(--ss-space-5) var(--ss-space-6);
     padding-bottom: max(var(--ss-space-6), env(safe-area-inset-bottom, 0px));
-    overflow: hidden;
-    justify-content: stretch;
   }
 
   .welcomeHero {
@@ -385,18 +383,16 @@
   }
 
   .roleGrid {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     width: min(48rem, 100%);
-    min-height: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: var(--ss-space-4);
-    align-content: stretch;
   }
 
   .roleTile {
+    aspect-ratio: 1;
+    width: 100%;
     min-height: 0;
-    height: 100%;
     gap: var(--ss-space-4);
     padding: var(--ss-space-6);
   }
