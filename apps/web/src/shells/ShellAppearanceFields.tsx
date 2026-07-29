@@ -71,7 +71,7 @@ export function ShellAppearanceFields({
               <span className={styles.swatches} aria-hidden="true">
                 <span
                   className={styles.dot}
-                  style={{ backgroundColor: swatch.bg }}
+                  style={{ backgroundColor: swatch.elevated }}
                 />
                 <span
                   className={styles.dot}

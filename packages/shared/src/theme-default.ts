@@ -27,19 +27,19 @@ export const APPEARANCE_PROFILE_LABELS: Record<AppearanceProfileId, string> = {
 };
 
 /**
- * Signature pair for theme pickers (bg + primary) — mirrors
- * `packages/ui` `--ss-color-bg` / `--ss-color-primary` per profile.
+ * Signature pair for theme pickers (elevated + primary) — mirrors
+ * `packages/ui` `--ss-color-elevated` / `--ss-color-primary` per profile.
  * Literal HEX so inactive themes stay visible under the active skin.
  */
 export const APPEARANCE_PROFILE_SWATCHES: Record<
   AppearanceProfileId,
-  { bg: string; primary: string }
+  { elevated: string; primary: string }
 > = {
-  booth: { bg: "#000000", primary: "#fbbf24" },
-  daylight: { bg: "#f4f4f5", primary: "#b45309" },
-  midnight: { bg: "#020617", primary: "#22d3ee" },
-  matrix: { bg: "#000000", primary: "#22c55e" },
-  neon: { bg: "#0a0000", primary: "#f97316" },
+  booth: { elevated: "#18181b", primary: "#fbbf24" },
+  daylight: { elevated: "#fafafa", primary: "#b45309" },
+  midnight: { elevated: "#1e293b", primary: "#22d3ee" },
+  matrix: { elevated: "#0a1f12", primary: "#22c55e" },
+  neon: { elevated: "#2a0a0a", primary: "#f97316" },
 };
 
 /**
