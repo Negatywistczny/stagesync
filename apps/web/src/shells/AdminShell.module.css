@@ -104,6 +104,12 @@
   position: relative;
 }
 
+.operatorNavEmbed {
+  grid-area: nav;
+  width: 100%;
+  min-width: 0;
+}
+
 /* —— Workspace —— */
 
 .workspace {
@@ -449,6 +455,11 @@
     overflow-x: hidden;
   }
 
+  .chromeOperatorNav {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "brand" "nav";
+  }
+
   .chromeBrand {
     grid-area: brand;
     min-width: 0;
@@ -548,6 +559,13 @@
     min-height: calc(var(--ss-touch-min-client) + env(safe-area-inset-top, 0px));
   }
 
+  .chromeCompact.chromeLegacy {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "sections aside"
+      "jump jump";
+  }
+
   .sectionSelect {
     grid-area: sections;
     min-width: 0;
@@ -561,7 +579,7 @@
     font-size: var(--ss-text-xs);
   }
 
-  .chromeCompact .appJump {
+  .chromeCompact.chromeLegacy .appJump {
     grid-area: jump;
     margin-left: 0;
     width: 100%;
@@ -577,6 +595,12 @@
     border-radius: var(--ss-radius-pill);
     border: 1px solid var(--ss-color-border);
     background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+  }
+
+  .chromeCompact.chromeLegacy .chromeAside {
+    grid-area: aside;
+    justify-content: flex-end;
+    min-width: 0;
   }
 
   .status {

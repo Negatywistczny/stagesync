@@ -9,6 +9,10 @@ vi.mock("../lib/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
+vi.mock("../lib/useMqMobile.js", () => ({
+  useMqMobile: vi.fn(() => false),
+}));
+
 vi.mock("../lib/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
 }));
@@ -17,21 +21,16 @@ vi.mock("../lib/useAnnounceDevicePresence.js", () => ({
   useAnnounceDevicePresence: vi.fn(),
 }));
 
-vi.mock("../transport/useTransport.js", () => ({
-  useTransport: () => ({
-    state: {
-      playing: false,
-      bpm: 120,
-      timeSignature: { numerator: 4, denominator: 4 },
-      ppq: 960,
-      activeProjectId: null,
-    },
-    displayTicks: 0,
-    wsStatus: "connected",
-    play: vi.fn(),
-    commandPending: false,
-    setlistSnapshot: { enabled: false, next: null, currentIndex: -1 },
-  }),
+vi.mock("../lib/desktopBridge.js", () => ({
+  prepareHostRestart: vi.fn(),
+  syncNavRecentProjects: vi.fn(),
+  syncNavTimelineProjectId: vi.fn(),
+  toggleAppFullscreen: vi.fn(),
+}));
+
+vi.mock("../lib/nativeShell.js", () => ({
+  shouldShowFullscreenControl: () => false,
+  getStageSyncNative: () => null,
 }));
 
 vi.mock("../lib/libraryApi.js", () => ({
@@ -51,20 +50,33 @@ vi.mock("../lib/setlistApi.js", () => ({
   postSystemShutdown: vi.fn(),
 }));
 
-vi.mock("../lib/desktopBridge.js", () => ({
-  prepareHostRestart: vi.fn(),
-  syncNavRecentProjects: vi.fn(),
-  syncNavTimelineProjectId: vi.fn(),
-  toggleAppFullscreen: vi.fn(),
+vi.mock("../lib/operatorNavShortcuts.js", () => ({
+  useOperatorNavShortcuts: vi.fn(),
 }));
 
-vi.mock("../lib/nativeShell.js", () => ({
-  shouldShowFullscreenControl: () => false,
+vi.mock("../lib/useMqTablet.js", () => ({
+  useMqTablet: vi.fn(() => false),
 }));
 
+vi.mock("../transport/useTransport.js", () => ({
+  useTransport: () => ({
+    state: {
+      bpm: 120,
+      timeSignature: { numerator: 4, denominator: 4 },
+      ppq: 960,
+      activeProjectId: null,
+    },
+    displayTicks: 0,
+    wsStatus: "connected",
+    play: vi.fn(),
+    commandPending: false,
+    setlistSnapshot: { enabled: false },
+  }),
+}));
+
+import { AdminShell } from "./AdminShell.js";
 import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
 import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
-import { AdminShell } from "./AdminShell.js";
 
 function html(): string {
   return renderToStaticMarkup(
@@ -76,11 +88,12 @@ function html(): string {
 
 describe("AdminShell chrome", () => {
   afterEach(() => {
+    vi.clearAllMocks();
     vi.mocked(useMqMobileCompact).mockReturnValue(false);
     vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
   });
 
-  it("renders legacy section tabs on desktop", () => {
+  it("renders legacy section buttons on desktop", () => {
     const out = html();
     expect(out).toContain('aria-label="Sekcje"');
     expect(out).toContain("Utwory");
@@ -88,16 +101,33 @@ describe("AdminShell chrome", () => {
     expect(out).toContain("Scena");
     expect(out).toContain("Host");
     expect(out).toContain('aria-label="Aplikacje"');
-    expect(out).toContain("Timeline");
     expect(out).toContain("Klient");
+    expect(out).toContain("Ustawienia");
     expect(out).not.toContain('aria-label="Nawigacja operatora"');
   });
 
-  it("renders OperatorNav on compact mobile when enabled", () => {
+  it("renders legacy chrome on desktop when OperatorNav is allowed", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    const out = html();
+    expect(out).toContain('aria-label="Sekcje"');
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
+  });
+
+  it("renders OperatorNav on compact mobile when allowed", () => {
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
     vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
     const out = html();
     expect(out).toContain('aria-label="Nawigacja operatora"');
     expect(out).not.toContain('aria-label="Sekcje"');
+  });
+
+  it("falls back to legacy compact chrome when OperatorNav is hidden", () => {
+    vi.mocked(useMqMobileCompact).mockReturnValue(true);
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
+    const out = html();
+    expect(out).toContain('aria-label="Sekcja Admin"');
+    expect(out).toContain('aria-label="Aplikacje"');
+    expect(out).toContain("Klient");
+    expect(out).not.toContain('aria-label="Nawigacja operatora"');
   });
 });

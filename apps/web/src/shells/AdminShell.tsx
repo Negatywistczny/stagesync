@@ -45,13 +45,12 @@ import {
 } from "../lib/clockDisplayPrefs.js";
 import { openPreferences } from "../lib/preferencesEvents.js";
 import { markOperatorSession } from "../lib/operatorSession.js";
-import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
 import {
   ADMIN_SECTIONS,
   isAdminSectionId,
   type AdminSectionId,
 } from "../lib/operatorNavRoutes.js";
-import { openPreferences } from "../lib/preferencesEvents.js";
+import { shouldShowOperatorNav } from "../lib/operatorSurface.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -93,7 +92,6 @@ function errMessage(err: unknown): string {
 export function AdminShell() {
   useAnnounceDevicePresence();
   const isCompactMobile = useMqMobileCompact();
-  const showOperatorNav = shouldShowOperatorNav("/admin");
   const [searchParams, setSearchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -346,6 +344,7 @@ export function AdminShell() {
   };
 
   const timelineProjectId = selectedId ?? state.activeProjectId ?? null;
+  const showOperatorNav = isCompactMobile && shouldShowOperatorNav("/admin");
 
   useEffect(() => {
     if (!timelineProjectId) return;
@@ -365,6 +364,7 @@ export function AdminShell() {
           className={[
             styles.chrome,
             isCompactMobile ? styles.chromeCompact : "",
+            showOperatorNav ? styles.chromeOperatorNav : styles.chromeLegacy,
           ]
             .filter(Boolean)
             .join(" ")}
@@ -375,28 +375,59 @@ export function AdminShell() {
             </div>
           ) : null}
 
-          {isCompactMobile && showOperatorNav ? (
+          {showOperatorNav ? (
             <OperatorNav
               activeApp="admin"
               section={section}
               onSectionChange={setSection}
+              className={styles.operatorNavEmbed}
             />
           ) : (
             <>
-              <nav className={styles.sections} aria-label="Sekcje">
-                {ADMIN_SECTIONS.map((item) => (
-                  <Button
-                    key={item.id}
-                    variant="ghost"
-                    selected={section === item.id}
-                    onClick={() => setSection(item.id)}
+              {isCompactMobile ? (
+                <div className={styles.sectionSelect}>
+                  <Select
+                    className={styles.sectionSelectInput}
+                    value={section}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (isAdminSectionId(v)) {
+                        setSection(v);
+                      }
+                    }}
+                    aria-label="Sekcja Admin"
                   >
-                    {item.label}
-                  </Button>
-                ))}
-              </nav>
+                    {ADMIN_SECTIONS.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              ) : (
+                <nav className={styles.sections} aria-label="Sekcje">
+                  {ADMIN_SECTIONS.map((item) => (
+                    <Button
+                      key={item.id}
+                      variant="ghost"
+                      selected={section === item.id}
+                      onClick={() => setSection(item.id)}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                </nav>
+              )}
 
-              <nav className={styles.appJump} aria-label="Aplikacje">
+              <nav
+                className={[
+                  styles.appJump,
+                  isCompactMobile ? styles.appJumpCompact : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                aria-label="Aplikacje"
+              >
                 {timelineProjectId ? (
                   <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
                 ) : (
@@ -414,30 +445,34 @@ export function AdminShell() {
                 >
                   <IconSettings />
                 </ShellIconButton>
-                <ShellIconButton
-                  ref={restart.buttonRef}
-                  label={restart.label}
-                  confirming={restart.pending}
-                  onClick={restart.arm}
-                >
-                  <IconRestart />
-                </ShellIconButton>
-                <ShellIconButton
-                  ref={shutdown.buttonRef}
-                  label={shutdown.label}
-                  confirming={shutdown.pending}
-                  danger
-                  onClick={shutdown.arm}
-                >
-                  <IconPower />
-                </ShellIconButton>
-                {shouldShowFullscreenControl() ? (
-                  <ShellIconButton
-                    label="Pełny ekran"
-                    onClick={() => void toggleAppFullscreen()}
-                  >
-                    <IconFullscreen />
-                  </ShellIconButton>
+                {!isCompactMobile ? (
+                  <>
+                    <ShellIconButton
+                      ref={restart.buttonRef}
+                      label={restart.label}
+                      confirming={restart.pending}
+                      onClick={restart.arm}
+                    >
+                      <IconRestart />
+                    </ShellIconButton>
+                    <ShellIconButton
+                      ref={shutdown.buttonRef}
+                      label={shutdown.label}
+                      confirming={shutdown.pending}
+                      danger
+                      onClick={shutdown.arm}
+                    >
+                      <IconPower />
+                    </ShellIconButton>
+                    {shouldShowFullscreenControl() ? (
+                      <ShellIconButton
+                        label="Pełny ekran"
+                        onClick={() => void toggleAppFullscreen()}
+                      >
+                        <IconFullscreen />
+                      </ShellIconButton>
+                    ) : null}
+                  </>
                 ) : null}
               </div>
             </>
