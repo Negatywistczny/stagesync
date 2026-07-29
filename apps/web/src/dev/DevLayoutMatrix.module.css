@@ -100,6 +100,11 @@
   max-width: none;
 }
 
+.cardActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .hint {
   margin: var(--ss-space-4) 0 0;
   font-size: var(--ss-text-sm);

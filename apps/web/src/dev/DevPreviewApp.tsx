@@ -11,6 +11,7 @@ import {
   getDevPreviewConfig,
   resolveDevPreviewPath,
 } from "./devPreviewConfig.js";
+import { installDevPreviewScreenshotListener } from "./devPreviewScreenshot.js";
 
 function DevPreviewLayout() {
   return (
@@ -37,7 +38,9 @@ export function DevPreviewApp() {
   }
 
   useEffect(() => {
+    const removeScreenshotListener = installDevPreviewScreenshotListener();
     return () => {
+      removeScreenshotListener();
       cleanupRef.current?.();
       cleanupRef.current = null;
       appliedKeyRef.current = null;

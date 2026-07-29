@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Select } from "@stagesync/ui";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Select } from "@stagesync/ui";
 import { ShellSwitchRow } from "../shells/ShellSwitchRow.js";
 import {
   DEV_PREVIEW_PROJECT_ID,
@@ -13,6 +13,11 @@ import {
   normalizeDevPreviewConfig,
   type DevPreviewConfig,
 } from "./devPreviewConfig.js";
+import {
+  buildDevPreviewScreenshotFilename,
+  downloadBlob,
+  requestDevPreviewScreenshot,
+} from "./devPreviewScreenshot.js";
 import styles from "./DevLayoutMatrix.module.css";
 
 const SURFACE_LABELS: Record<DevSurface, string> = {
@@ -33,6 +38,10 @@ export function DevLayoutMatrix() {
   const [path, setPath] = useState<DevPreviewRoute>("/admin");
   const [session, setSession] = useState(true);
   const [hostOk, setHostOk] = useState<boolean | null>(null);
+  const [capturingViewportId, setCapturingViewportId] = useState<string | null>(
+    null,
+  );
+  const iframeRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
 
   const isPerformerSurface = surface === "performer";
   const showSessionControl = devPreviewShowsOperatorSession(surface);
@@ -52,6 +61,24 @@ export function DevLayoutMatrix() {
     () => buildDevPreviewUrl(config),
     [config],
   );
+
+  const handleScreenshot = async (viewportId: string, width: number, height: number) => {
+    const iframe = iframeRefs.current[viewportId];
+    if (!iframe) return;
+
+    setCapturingViewportId(viewportId);
+    try {
+      const blob = await requestDevPreviewScreenshot(iframe, width, height);
+      downloadBlob(
+        blob,
+        buildDevPreviewScreenshotFilename(surface, path, viewportId),
+      );
+    } catch (error) {
+      console.error("[DevLayoutMatrix] screenshot failed", error);
+    } finally {
+      setCapturingViewportId(null);
+    }
+  };
 
   const handleSurfaceChange = (nextSurface: DevSurface) => {
     setSurface(nextSurface);
@@ -144,6 +171,9 @@ export function DevLayoutMatrix() {
             <div className={styles.label}>{vp.label}</div>
             <div className={styles.frameWrap}>
               <iframe
+                ref={(node) => {
+                  iframeRefs.current[vp.id] = node;
+                }}
                 className={styles.frame}
                 title={`Podgląd ${vp.label}`}
                 src={previewUrl}
@@ -152,6 +182,20 @@ export function DevLayoutMatrix() {
                 style={{ width: `${vp.width}px`, height: `${vp.height}px` }}
                 loading="lazy"
               />
+            </div>
+            <div className={styles.cardActions}>
+              <Button
+                type="button"
+                variant="secondary"
+                loading={capturingViewportId === vp.id}
+                disabled={capturingViewportId !== null && capturingViewportId !== vp.id}
+                aria-label={`Zrzut ekranu ${vp.label}`}
+                onClick={() => {
+                  void handleScreenshot(vp.id, vp.width, vp.height);
+                }}
+              >
+                Zrzut ekranu
+              </Button>
             </div>
           </section>
         ))}

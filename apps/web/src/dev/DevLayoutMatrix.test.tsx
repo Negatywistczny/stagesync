@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   buildDevPreviewUrl,
@@ -9,6 +9,20 @@ import {
   resolveDevPreviewPath,
 } from "./devPreviewConfig.js";
 import { DevLayoutMatrix } from "./DevLayoutMatrix.js";
+
+vi.mock("./devPreviewScreenshot.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./devPreviewScreenshot.js")>();
+  return {
+    ...actual,
+    requestDevPreviewScreenshot: vi.fn().mockResolvedValue(new Blob(["png"], { type: "image/png" })),
+    downloadBlob: vi.fn(),
+  };
+});
+
+import {
+  downloadBlob,
+  requestDevPreviewScreenshot,
+} from "./devPreviewScreenshot.js";
 
 afterEach(() => {
   cleanup();
@@ -198,5 +212,32 @@ describe("DevLayoutMatrix", () => {
     const iframe = screen.getByTitle("Podgląd 375×667");
     expect(iframe.getAttribute("src")).toContain("surface=tauri");
     expect(iframe.getAttribute("src")).toContain("session=0");
+  });
+
+  it("renders screenshot button under each preview card", () => {
+    render(<DevLayoutMatrix />);
+
+    const buttons = screen.getAllByRole("button", { name: /Zrzut ekranu/i });
+    expect(buttons).toHaveLength(3);
+    expect(screen.getByRole("button", { name: "Zrzut ekranu 375×667" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Zrzut ekranu 768×1024" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Zrzut ekranu 1280×800" })).toBeTruthy();
+  });
+
+  it("captures screenshot from the clicked preview iframe", async () => {
+    render(<DevLayoutMatrix />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Zrzut ekranu 375×667" }));
+
+    await vi.waitFor(() => {
+      expect(requestDevPreviewScreenshot).toHaveBeenCalledTimes(1);
+    });
+
+    const iframe = screen.getByTitle("Podgląd 375×667");
+    expect(requestDevPreviewScreenshot).toHaveBeenCalledWith(iframe, 375, 667);
+    expect(downloadBlob).toHaveBeenCalledWith(
+      expect.any(Blob),
+      expect.stringMatching(/^web-admin-phone-\d{8}-\d{6}\.png$/),
+    );
   });
 });
