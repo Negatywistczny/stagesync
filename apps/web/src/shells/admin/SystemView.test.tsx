@@ -16,6 +16,7 @@ vi.mock("../../lib/desktopBridge.js", () => ({
   installDesktopUpdate: vi.fn(),
   openExternalUrl: vi.fn(),
   formatUnknownError: (e: unknown) => String(e),
+  isDesktopShell: () => false,
 }));
 
 vi.mock("../../lib/setlistApi.js", async (importOriginal) => {
@@ -172,9 +173,10 @@ describe("SystemView APK download aria", () => {
     ).toBeTruthy();
   });
 
-  it("on mobile expands one Host card at a time", async () => {
+  it("on compact mobile expands one Host card at a time", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
-      matches: query.includes("max-width: 768px") || query === "(max-width: 768px)",
+      matches:
+        query.includes("max-width: 640px") || query === "(max-width: 640px)",
       media: query,
       addEventListener: () => {},
       removeEventListener: () => {},

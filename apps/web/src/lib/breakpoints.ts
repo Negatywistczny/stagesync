@@ -2,8 +2,8 @@
  * Canonical layout breakpoints for StageSync web (v5.0.0).
  * Keep CSS `@media (max-width: …)` in sync with these values.
  *
- * - Mobile compact (phone chrome): OperatorNav, compact headers → ≤640px
- * - Mobile (content / touch): phone-only content layouts → ≤768px
+ * - Mobile compact (phone chrome + Admin section accordion): ≤640px
+ * - Mobile (content / touch): phone-only content layouts → ≤768px (non-Admin surfaces)
  * - Tablet: 641–1024px — **desktop-like** app chrome (sections, app jump); not compact mobile
  * - Desktop: >1024px (default chrome; do not restyle outside media queries)
  */

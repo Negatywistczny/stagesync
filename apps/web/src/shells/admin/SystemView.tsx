@@ -45,7 +45,7 @@ import {
 } from "../../lib/androidLatest.js";
 import { isAndroidUpdateSurface } from "../../lib/nativeShell.js";
 
-import { useMqMobile } from "../../lib/useMqMobile.js";
+import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import { BrandName } from "../BrandName.js";
 import shell from "../AdminShell.module.css";
@@ -66,7 +66,7 @@ export function SystemView({
   autoCheckUpdate = false,
   onAutoCheckUpdateConsumed,
 }: SystemViewProps) {
-  const mobile = useMqMobile();
+  const compactMobile = useMqMobileCompact();
   const [openCard, setOpenCard] = useState<HostCardId>("network");
   const [lines, setLines] = useState<HostLogLine[]>([]);
   const [paused, setPaused] = useState(false);
@@ -235,15 +235,15 @@ export function SystemView({
 
   return (
     <div
-      className={mobile ? shell.accordionStack : styles.root}
-      data-host-mobile={mobile ? "1" : undefined}
+      className={compactMobile ? shell.accordionStack : styles.root}
+      data-host-mobile={compactMobile ? "1" : undefined}
     >
-      <div className={mobile ? shell.accordionFlatten : styles.column}>
+      <div className={compactMobile ? shell.accordionFlatten : styles.column}>
         <AdminAccordionCard
           id="network"
           title="Połączenie & Sieć"
           ariaLabel="Połączenie i sieć"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           className={styles.card}
@@ -316,7 +316,7 @@ export function SystemView({
           id="about"
           title="O Aplikacji & Aktualizacje"
           ariaLabel="O aplikacji i aktualizacje"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           className={styles.card}
@@ -348,12 +348,12 @@ export function SystemView({
         </AdminAccordionCard>
       </div>
 
-      <div className={mobile ? shell.accordionFlatten : styles.column}>
+      <div className={compactMobile ? shell.accordionFlatten : styles.column}>
         <AdminAccordionCard
           id="logs"
           title="Logi serwera"
           ariaLabel="Logi serwera"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           className={styles.card}
@@ -438,7 +438,7 @@ export function SystemView({
           id="midi"
           title="MIDI & Safety Net"
           ariaLabel="MIDI i Safety Net"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           className={styles.card}

@@ -13,7 +13,7 @@ import {
   type PresenceClient,
   type SessionStageMessage,
 } from "../../lib/setlistApi.js";
-import { useMqMobile } from "../../lib/useMqMobile.js";
+import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import shell from "../AdminShell.module.css";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
@@ -120,7 +120,7 @@ export function StageView() {
   const [liveDesk, setLiveDesk] = useState<LiveDeskSettingsDto | null>(null);
   const [liveDeskError, setLiveDeskError] = useState<string | null>(null);
   const [liveDeskSaving, setLiveDeskSaving] = useState(false);
-  const mobile = useMqMobile();
+  const compactMobile = useMqMobileCompact();
   const [openCard, setOpenCard] = useState<StageCardId>("messages");
 
   const refreshMessages = useCallback(async () => {
@@ -294,15 +294,15 @@ export function StageView() {
 
   return (
     <div
-      className={mobile ? shell.accordionStack : styles.root}
-      data-admin-mobile={mobile ? "1" : undefined}
+      className={compactMobile ? shell.accordionStack : styles.root}
+      data-admin-mobile={compactMobile ? "1" : undefined}
     >
       <AdminAccordionCard
         id="korekta"
         title="Korekta na scenie"
         titleAs="h1"
         ariaLabel="Korekta na scenie"
-        mobile={mobile}
+        mobile={compactMobile}
         openId={openCard}
         onOpen={setOpenCard}
         className={styles.masterBar}
@@ -397,13 +397,13 @@ export function StageView() {
           )}
       </AdminAccordionCard>
 
-      <div className={mobile ? shell.accordionFlatten : styles.bottom}>
+      <div className={compactMobile ? shell.accordionFlatten : styles.bottom}>
         <AdminAccordionCard
           id="messages"
           title="Komunikaty"
           titleAs="h1"
           ariaLabel="Komunikaty"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           className={styles.panel}
@@ -579,7 +579,7 @@ export function StageView() {
           title="Klienci"
           titleAs="h1"
           ariaLabel="Klienci"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           className={styles.panel}

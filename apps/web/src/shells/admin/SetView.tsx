@@ -23,7 +23,7 @@ import {
   putSetlist,
 } from "../../lib/setlistApi.js";
 import { setlistBudgetPercent } from "../../lib/setlistBudget.js";
-import { useMqMobile } from "../../lib/useMqMobile.js";
+import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import { catalogSongBadges } from "./songCatalogBadges.js";
@@ -114,7 +114,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const [pickIds, setPickIds] = useState<string[]>([]);
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const templateMenuId = "set-template-menu";
-  const mobile = useMqMobile();
+  const compactMobile = useMqMobileCompact();
   const [openCard, setOpenCard] = useState<SetCardId>("set");
 
   useEffect(() => {
@@ -428,7 +428,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const libraryInner = (
     <>
       <div className={shell.setColHead}>
-        {mobile ? null : (
+        {compactMobile ? null : (
           <strong className={shell.setColTitle}>Biblioteka</strong>
         )}
         <input
@@ -716,7 +716,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
     </ul>
   ) : null;
 
-  if (mobile) {
+  if (compactMobile) {
     return (
       <div className={shell.accordionStack} data-admin-mobile="1">
         <div className={shell.accordionChrome}>
@@ -728,7 +728,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
           title="Biblioteka"
           titleAs="h1"
           ariaLabel="Biblioteka"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           bodyClassName={[shell.cardBody, shell.cardBodyFill].join(" ")}
@@ -740,7 +740,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
           title={`Set (${draftItems.length})`}
           titleAs="h1"
           ariaLabel="Kolejność setu"
-          mobile={mobile}
+          mobile={compactMobile}
           openId={openCard}
           onOpen={setOpenCard}
           bodyClassName={[shell.cardBody, shell.cardBodyFill].join(" ")}

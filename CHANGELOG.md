@@ -32,6 +32,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client (tablet):** kafelki wyboru roli mają rozmiar jak na desktopie (kompaktowe, bez rozciągania na wysokość ekranu) — siatka 2×2 zamiast powiększonych kwadratowych kafelków.
 - **Klient (web, sesja operatora):** po wejściu z Admina/Timeline na **Klienta** wraca nawigacja operatora — na telefonie pasek **Admin · Timeline · Klient**, na tablecie/desktopie chipy **Admin / Timeline**; bez sesji zostaje widok muzyka.
 - **Admin (tablet):** nagłówek znowu w jednym wierszu (sekcje, **Timeline / Klient**, ustawienia) — bez zawijania na drugi rząd.
+- **Admin (tablet):** sekcje **Set**, **Scena** i **Host** znów w układu desktopowym (podział panelów, bez accordionu telefonu) na tablecie i desktopie (>640px); accordion tylko na telefonie (≤640px).
 - **Klient (telefon):** przycisk **Ustawienia** w nagłówku ma ten sam odstęp od krawędzi co Admin i Timeline.
 - **Chrome Admin / Timeline / Klient:** przyciski **Ustawienia** i **Pełny ekran** mają teraz ten sam rozmiar na telefonie, tablecie i desktopie; różni się tylko układ paska.
 - **Nawigacja (telefon):** chipy **Admin · Timeline · Klient**, lista sekcji i skróty aplikacji w nagłówku mają tę samą wysokość co **Ustawienia** i **Pełny ekran** — bez mieszanych 44px i 36px w jednym rzędzie.

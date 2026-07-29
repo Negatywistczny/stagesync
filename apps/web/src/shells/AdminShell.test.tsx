@@ -216,4 +216,22 @@ describe("AdminShell chrome", () => {
       )?.[1] ?? "";
     expect(appJumpBlock).toContain("min-height: var(--ss-touch-min-shell-action)");
   });
+
+  it("section views use compact breakpoint for accordion (641px+ desktop layout)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const adminDir = join(dirname(fileURLToPath(import.meta.url)), "admin");
+    for (const file of ["SetView.tsx", "StageView.tsx", "SystemView.tsx"]) {
+      const src = readFileSync(join(adminDir, file), "utf8");
+      expect(src).toContain("useMqMobileCompact");
+      expect(src).not.toContain("useMqMobile.js");
+    }
+    const shellSrc = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "AdminShell.tsx"),
+      "utf8",
+    );
+    expect(shellSrc).toContain("useMqMobileCompact");
+    expect(shellSrc).not.toContain("useMqMobile.js");
+  });
 });

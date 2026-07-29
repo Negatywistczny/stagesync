@@ -48,9 +48,9 @@ describe("StageView regions and delete aria", () => {
     ).toBeTruthy();
   });
 
-  it("on mobile expands one Scena card at a time", async () => {
+  it("on compact mobile expands one Scena card at a time", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
-      matches: query.includes("max-width: 768px"),
+      matches: query.includes("max-width: 640px"),
       media: query,
       addEventListener: () => {},
       removeEventListener: () => {},
