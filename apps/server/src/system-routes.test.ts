@@ -262,4 +262,178 @@ describe("system routes — network / logs / apply-update / settings edges", () 
       await new Promise<void>((r) => server.close(() => r()));
     }
   });
+
+  it("POST restore returns 400 for corrupt ZIP archive", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-restore-bad-zip-"));
+    dirs.push(dataDir);
+    const zipPath = join(dataDir, "bad.zip");
+    await writeFile(zipPath, "not-a-zip", "utf8");
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: zipPath, confirm: true }),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { ok?: boolean; error?: string };
+      expect(body.ok).toBe(false);
+      expect(String(body.error ?? "")).toMatch(/ZIP|archiwum|odczytu/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("POST restore returns 400 for ZIP path traversal entry", async () => {
+    const { buildStoreZip } = await import("./diagnostics-zip.js");
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-restore-trav-"));
+    dirs.push(dataDir);
+    const zipPath = join(dataDir, "evil.zip");
+    await writeFile(
+      zipPath,
+      buildStoreZip([
+        { name: "../outside.json", data: Buffer.from("x", "utf8") },
+      ]),
+    );
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: zipPath, confirm: true }),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { ok?: boolean; error?: string };
+      expect(body.ok).toBe(false);
+      expect(String(body.error ?? "")).toMatch(/Niedozwolona|ścieżka/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("GET /logs/stream delivers SSE lines and cleans up on disconnect", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-sse-"));
+    dirs.push(dataDir);
+    const { app, logBuffer } = createApp({ dataDir });
+    const server = await new Promise<Server>((resolve) => {
+      const s = app.listen(0, "127.0.0.1", () => resolve(s));
+    });
+    const { port } = server.address() as AddressInfo;
+    const baseUrl = `http://127.0.0.1:${port}`;
+    try {
+      const ac = new AbortController();
+      const streamRes = await fetch(`${baseUrl}/api/system/logs/stream`, {
+        signal: ac.signal,
+      });
+      expect(streamRes.status).toBe(200);
+      expect(streamRes.headers.get("content-type")).toMatch(
+        /text\/event-stream/,
+      );
+
+      logBuffer.push("info", "sse-line");
+      const reader = streamRes.body!.getReader();
+      const decoder = new TextDecoder();
+      let chunk = "";
+      for (let i = 0; i < 20; i++) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        chunk += decoder.decode(value, { stream: true });
+        if (chunk.includes("sse-line")) break;
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      expect(chunk).toContain("sse-line");
+
+      ac.abort();
+      await expect(reader.read()).rejects.toThrow();
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("POST restore returns 400 for corrupt ZIP archive", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-restore-bad-zip-"));
+    dirs.push(dataDir);
+    const zipPath = join(dataDir, "bad.zip");
+    await writeFile(zipPath, "not-a-zip", "utf8");
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: zipPath, confirm: true }),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { ok?: boolean; error?: string };
+      expect(body.ok).toBe(false);
+      expect(String(body.error ?? "")).toMatch(/ZIP|archiwum|odczytu/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("POST restore returns 400 for ZIP path traversal entry", async () => {
+    const { buildStoreZip } = await import("./diagnostics-zip.js");
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-restore-trav-"));
+    dirs.push(dataDir);
+    const zipPath = join(dataDir, "evil.zip");
+    await writeFile(
+      zipPath,
+      buildStoreZip([
+        { name: "../outside.json", data: Buffer.from("x", "utf8") },
+      ]),
+    );
+    const { server, baseUrl } = await listen(dataDir);
+    try {
+      const res = await fetch(`${baseUrl}/api/system/restore`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: zipPath, confirm: true }),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { ok?: boolean; error?: string };
+      expect(body.ok).toBe(false);
+      expect(String(body.error ?? "")).toMatch(/Niedozwolona|ścieżka/i);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
+
+  it("GET /logs/stream delivers SSE lines and cleans up on disconnect", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-sys-sse-"));
+    dirs.push(dataDir);
+    const { app, logBuffer } = createApp({ dataDir });
+    const server = await new Promise<Server>((resolve) => {
+      const s = app.listen(0, "127.0.0.1", () => resolve(s));
+    });
+    const { port } = server.address() as AddressInfo;
+    const baseUrl = `http://127.0.0.1:${port}`;
+    try {
+      const ac = new AbortController();
+      const streamRes = await fetch(`${baseUrl}/api/system/logs/stream`, {
+        signal: ac.signal,
+      });
+      expect(streamRes.status).toBe(200);
+      expect(streamRes.headers.get("content-type")).toMatch(
+        /text\/event-stream/,
+      );
+
+      logBuffer.push("info", "sse-line");
+      const reader = streamRes.body!.getReader();
+      const decoder = new TextDecoder();
+      let chunk = "";
+      for (let i = 0; i < 20; i++) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        chunk += decoder.decode(value, { stream: true });
+        if (chunk.includes("sse-line")) break;
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      expect(chunk).toContain("sse-line");
+
+      ac.abort();
+      await expect(reader.read()).rejects.toThrow();
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
+  });
 });

@@ -12,6 +12,8 @@ import {
   isAudioAssetDecodeFailed,
   loadAudioBuffer,
   panicCueSamples,
+  readHwOutMeterDb,
+  readTrackMeterDb,
   restartAudioPlayback,
   resumeAndSyncAudioPlayback,
   shouldSoftStopPastSongEnd,
@@ -1113,5 +1115,236 @@ describe("audioPlayback helpers", () => {
     panicCueSamples();
     expect(getAudioPlaybackDebugState().activeCueCount).toBe(0);
     expect(sources[0]?.stop).toHaveBeenCalled();
+  });
+
+  it("readTrackMeterDb returns floor without bus; live peaks after sync", async () => {
+    expect(readTrackMeterDb("ghost").l).toBeLessThanOrEqual(-59.9);
+    expect(readHwOutMeterDb("missing-hw").l).toBeLessThanOrEqual(-59.9);
+
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+      buffer: null as AudioBuffer | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    expect(Number.isFinite(readTrackMeterDb("tr-1").l)).toBe(true);
+  });
+
+  it("advancing playhead past clip end releases active source", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const source = {
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+      buffer: null as AudioBuffer | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+    const clip = project.audioClips[0]!;
+    const past = clip.startTicks + clip.lengthTicks + 5000;
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: past }, ctx);
+    expect(getAudioPlaybackDebugState().activeCount).toBe(0);
+    expect(source.stop).toHaveBeenCalled();
+  });
+
+  it("routes track output to hardware out bus (ensureHwOutBus)", async () => {
+    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
+    const hwConnects: Array<{ node: unknown; args: unknown[] }> = [];
+    const source = {
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+      buffer: null as AudioBuffer | null,
+    };
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => source),
+      createChannelMerger: vi.fn(() => {
+        const node = {
+          connect: vi.fn((...args: unknown[]) => {
+            hwConnects.push({ node, args });
+          }),
+          disconnect: vi.fn(),
+        };
+        return node;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    let project = createProjectV5Seed("p1", "HW", "2026-07-25T00:00:00.000Z");
+    project = {
+      ...project,
+      audioHardwareOutputs: [
+        {
+          id: "hw-1",
+          name: "Out 1",
+          channelMode: "stereo",
+          channelOffset: 0,
+        },
+      ],
+      assets: [
+        {
+          id: "asset-1",
+          storageName: "kick.wav",
+          originalName: "kick.wav",
+          kind: "audio",
+          mimeType: "audio/wav",
+          sizeBytes: 100,
+          durationMs: 1000,
+        },
+      ],
+      audioTracks: [
+        {
+          id: "tr-1",
+          name: "Track",
+          output: { kind: "hw_out", hwOutputId: "hw-1" },
+        },
+      ],
+      audioClips: [
+        {
+          id: "clip-1",
+          trackId: "tr-1",
+          assetId: "asset-1",
+          startTicks: 0,
+          lengthTicks: 3840,
+          muted: false,
+          gainDb: 0,
+        },
+      ],
+    };
+    await ensureAudioBuffered("p1", project, 0, ctx);
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
+    expect(readHwOutMeterDb("hw-1").l).toBeLessThanOrEqual(0);
+    expect(hwConnects.length).toBeGreaterThan(0);
+  });
+
+  it("cue GO next-beat defers start; choke stops prior one-shot", async () => {
+    vi.useFakeTimers();
+    const timeouts: Array<{ fn: () => void; ms: number }> = [];
+    vi.stubGlobal("window", {
+      setTimeout: (fn: () => void, ms: number) => {
+        timeouts.push({ fn, ms });
+        return 0;
+      },
+    });
+    const fakeBuf = { duration: 1, numberOfChannels: 1, sampleRate: 48000 };
+    const makeSource = () => ({
+      buffer: null as unknown,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      onended: null as (() => void) | null,
+    });
+    const sources: ReturnType<typeof makeSource>[] = [];
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => {
+        const s = makeSource();
+        sources.push(s);
+        return s;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    let project = createProjectV5Seed("p1", "Cue", "2026-07-25T00:00:00.000Z");
+    project = {
+      ...project,
+      assets: [
+        {
+          id: "hit",
+          storageName: "hit.wav",
+          originalName: "hit.wav",
+          kind: "audio",
+          mimeType: "audio/wav",
+          sizeBytes: 8,
+        },
+      ],
+      cue: {
+        clips: [
+          {
+            id: "cue-beat",
+            startTicks: 0,
+            lengthTicks: 960,
+            label: "Hit",
+            sample: {
+              assetId: "hit",
+              mode: "one-shot",
+              quantization: "next-beat",
+            },
+          },
+          {
+            id: "cue-choke",
+            startTicks: 0,
+            lengthTicks: 960,
+            label: "Choke",
+            sample: {
+              assetId: "hit",
+              mode: "one-shot",
+              quantization: "immediate",
+              polyphony: "choke",
+            },
+          },
+        ],
+      },
+    };
+    await ensureAudioBuffered("p1", project, 0, ctx);
+
+    expect(fireCueSampleGo("p1", project, "cue-beat", 100, ctx)).toBe(true);
+    expect(sources).toHaveLength(0);
+    expect(timeouts.length).toBeGreaterThan(0);
+    timeouts[0]!.fn();
+    expect(sources[0]?.start).toHaveBeenCalled();
+
+    expect(fireCueSampleGo("p1", project, "cue-choke", 0, ctx)).toBe(true);
+    expect(fireCueSampleGo("p1", project, "cue-choke", 0, ctx)).toBe(true);
+    expect(sources[1]?.stop).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 });

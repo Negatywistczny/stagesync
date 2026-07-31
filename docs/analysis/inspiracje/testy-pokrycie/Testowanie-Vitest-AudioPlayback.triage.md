@@ -1,31 +1,27 @@
 # Triage: Strategia testów WebAudio (`audioPlayback`)
 
 **Źródło:** [Testowanie-Vitest-AudioPlayback.md](./Testowanie-Vitest-AudioPlayback.md) (Gemini Deep Search)  
-**Status:** `open`  
-**Obszar:** `apps/web` — scheduler odtwarzania zsynchronizowany z transportem SSOT  
-**Data triage:** 2026-07-27
+**Status:** `partial`  
+**Obszar:** `apps/web` — `audioPlayback.ts`  
+**Data triage:** 2026-07-27  
+**Ostatnia weryfikacja:** 2026-07-27 — coverage `audioPlayback.ts` **75.35%** lines / **70.45%** branches
 
 ## Werdykt przydatności
 
-**Średnia–wysoka (złożoność vs payoff).** ~1500 linii; istnieją `mockAudioContext` i częściowe testy. Dump wskazuje luki: `syncAudioPlayback` release poza `stillNeeded`, fade mid-clip, `ensureHwOutBus`, cue quantization, race `loadAudioBuffer`+`stopEpoch`. Wymaga dyscypliny mocków — ryzyko flaky przy `setTimeout`/AudioParam.
+**Średnia.** Faza 4 domknęła release/HW/cue/metry; pozostałe: pełna macierza helperów + mid-fade ramp.
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Następny krok |
-|----|--------|-----------|------|----------------|
-| TST-APB-01 | Pure helpers: `busSoloMutesBus`, `graphKey`, `isClipAudible` — pełne pokrycie | P1 | `hypothesis` | Wydzielić jeśli zagnieżdżone |
-| TST-APB-02 | `syncAudioPlayback` — clip poza playhead → `releaseActiveSource` | P1 | `hypothesis` | Mock context + tick advance |
-| TST-APB-03 | `startClip` — loop invalid window, fade-in w środku fade-out | P1 | `hypothesis` | Assert `linearRampToValueAtTime` |
-| TST-APB-04 | `ensureDestGraph` / `ensureHwOutBus` — HW fail-soft, channel layout | P1 | `hypothesis` | Po 5.3 multi-out |
-| TST-APB-05 | Cue samples: quantization, polyphony choke, `playPostStop` | P1 | `hypothesis` | Fake timers next-beat |
-| TST-APB-06 | Race: `clearAudioBufferCache` + in-flight load + `stopEpoch` | P0 | `hypothesis` | Deterministyczna kolejność promise |
-| TST-APB-07 | Metry `readTrackMeterDb` bez prawdziwego analysera | P2 | `hypothesis` | Stub analyser |
+| ID | Temat | Priorytet | Stan | Dowód |
+|----|--------|-----------|------|--------|
+| TST-APB-01 | Pure helpers `busSoloMutesBus`, `graphKey`, `isClipAudible` | P1 | `confirmed` | Częściowe; pełna macierza z dumpu niezweryfikowana |
+| TST-APB-02 | `releaseActiveSource` poza `stillNeeded` | P1 | `fixed` | `audioPlayback.test.ts` — playhead past clip |
+| TST-APB-03 | `startClip` fade mid-clip / invalid loop | P1 | `confirmed` | Brak testów ramp mid-fade-out |
+| TST-APB-04 | `ensureHwOutBus` po 5.3 multi-out | P1 | `fixed` | `audioPlayback.test.ts` — hw_out routing |
+| TST-APB-05 | Cue quantization / choke / `playPostStop` | P1 | `fixed` | `audioPlayback.test.ts` — next-beat + choke |
+| TST-APB-06 | Race cache + `stopEpoch` | P0 | `rejected` | „late decode after clearAudioBufferCache…” (L568+) |
+| TST-APB-07 | Metry bez analysera | P2 | `fixed` | `readTrackMeterDb` floor + after sync |
 
-## Kontekst
+## Limit
 
-- SSOT serwer ([ADR 0002](../../../adr/0002-timebase-ssot.md)); bez własnego zegara klienta.
-- Powiązane: [Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md](../audyty-silnik/Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md) (`closed` — bugi; ten dump = coverage).
-
-## Następny krok eng
-
-TST-APB-01 + TST-APB-06; unikać testów z prawdziwym `decodeAudioData` w CI.
+Lines **75.35%**; TST-APB-01/03 (P1) — macierza helperów i mid-fade-out ramp.
