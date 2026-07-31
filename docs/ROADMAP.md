@@ -27,6 +27,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **5.x** (po 5.3) | **Pitch & FX Busses** — Track Pitch + expanded busses / send-return | Przed major 6.0 | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0+** | Live Processing & Master Show Controller | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
+| **7.x+** (Later) | Karaoke & Jukebox Ecosystem | Po 6.0 — epik Later; **bez** otwartego major cutu / scope report | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
 | **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
 ### Zamknięte etapy (α3–β1)
@@ -128,6 +129,17 @@ Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (
 **Zero-Crash:** native DSP w WebAudio/Worklet/WASM; ciężkie VST tylko jako zewnętrzne procesy MIDI. **SSOT czasu** bez zmian ([ADR 0002](./adr/0002-timebase-ssot.md)). Recording OUT w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5); **IN w 6.0** z prostymi narzędziami edycji ([ADR 0018](./adr/0018-future-audio-architecture.md) §5). Flex / Take Folders = nie must 6.0.
 
 Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
+
+### 7.x+ (Later) — Karaoke & Jukebox Ecosystem
+
+Epik Later (**po 6.0**): lokalny ekosystem karaoke / jukebox na LAN —
+[#824](https://github.com/Negatywistczny/stagesync/issues/824). **Nie** otwiera major cutu ani
+scope reportu — tylko kierunek w ROADMAP + bullet w [TODO.md](./TODO.md).
+
+Kierunek (z epiku, bez dopisywania scope poza issue): multi-role Lyrics AST (duety / backing);
+widok publiczny `/karaoke`; guest `/request` na lokalnym Wi‑Fi; tryby setlisty Gig vs Jukebox +
+moderacja kolejki. Zależność od silnika STEM / pitch z linii **6.0**. Polityka: 100 % LAN, zero
+cloud; izolacja wydajności `/karaoke` i `/request` względem `/client`.
 
 ## Zasady operacyjne
 

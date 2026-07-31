@@ -38,4 +38,8 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — Later (nie mylić z FG notification lokalnego hosta Console)
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 
+### 7.x+ Karaoke & Jukebox (Later)
+
+- [ ] [#824](https://github.com/Negatywistczny/stagesync/issues/824) **Karaoke & Jukebox Ecosystem** — Later **7.x** (po 6.0): multi-role Lyrics AST, `/karaoke`, `/request`, tryby Gig/Jukebox + kolejka; 100 % LAN; zależność od STEM/pitch 6.0 — szczegóły tylko w epiku ([ROADMAP](./ROADMAP.md))
+
 **OUT (nie wraca do TODO):** natywny **StageSync Performer na iOS** (Swift/WKWebView / TestFlight) — ścieżka iOS = **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)); natywne APK = Android only ([ADR 0016](./adr/0016-android-performer-console.md)).
