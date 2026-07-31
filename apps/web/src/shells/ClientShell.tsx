@@ -88,6 +88,7 @@ import {
   SettingsPopoverAnchor,
   ShellAppearanceFields,
 } from "./SettingsPopover.js";
+import { ShellNotificationFields } from "./ShellNotificationFields.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellSwitchRow } from "./ShellSwitchRow.js";
 import { ShellWordmark } from "./ShellWordmark.js";
@@ -914,6 +915,8 @@ function GlobalSettingsFields({
     <>
       <p className={styles.fieldLab}>Wygląd</p>
       <ShellAppearanceFields />
+      <p className={styles.fieldLab}>Powiadomienia</p>
+      <ShellNotificationFields />
       <p className={styles.fieldLab}>Strój instrumentu</p>
       <div
         className={styles.pitchToggle}

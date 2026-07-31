@@ -46,6 +46,8 @@
     <string name="status_ok">Połączono</string>
     <string name="err_bad_url">Niepoprawny adres</string>
     <string name="err_health">Serwer nie odpowiada</string>
+    <string name="push_channel_critical">Ważne aktualizacje</string>
+    <string name="push_channel_announcements">Komunikaty</string>
     <string name="qr_hint">Zeskanuj kod QR „Dołącz do hosta” z panelu Admin albo wklej adres poniżej.</string>
     <string name="qr_scanning">Skieruj aparat na kod QR hosta…</string>
     <string name="qr_preview_cd">Podgląd kamery do skanowania kodu QR</string>

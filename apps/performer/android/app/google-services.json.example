@@ -1,0 +1,21 @@
+# google-services.json (FCM) — nie commituj sekretów
+
+Aby włączyć Firebase Cloud Messaging w APK Performer / Console (#810):
+
+1. Utwórz projekt Firebase i aplikacje Android:
+   - `com.stagesync.performer` / `com.stagesync.performer.debug`
+   - `com.stagesync.console` / `com.stagesync.console.debug`
+2. Pobierz `google-services.json` do:
+   - `apps/performer/android/app/google-services.json`
+   - `apps/console/android/app/google-services.json`
+3. W `app/build.gradle.kts` dodaj plugin `com.google.gms.google-services` oraz
+   `implementation(platform("com.google.firebase:firebase-bom:…"))` +
+   `firebase-messaging`.
+4. Dodaj `FirebaseMessagingService` ustawiając `FcmTokenHolder.token` w `onNewToken`
+   oraz wyświetlający powiadomienie w kanałach `critical_updates` / `announcements`.
+5. Na hoście ustaw `STAGESYNC_FCM_AVAILABLE=1` (opcjonalnie `STAGESYNC_FCM_PROJECT_ID`).
+
+Bez tego pliku APK buduje się normalnie — działają **lokalne** powiadomienia sceniczne
+i rejestracja tokenów po stronie WebPush (VAPID), nie zdalny FCM z konsoli Firebase.
+
+Ten plik (`google-services.json.example`) jest tylko dokumentacją — nie jest ładowany przez Gradle.

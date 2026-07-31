@@ -183,6 +183,13 @@ Domyślny `./apps/console/scripts/build-apk.sh` pakuje `libnode.so` (arm64-v8a +
 
 Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` albo uszkodzony build), UI pokazuje uczciwy komunikat (fail-open), nie fałszywy sukces. **Performer** nigdy nie bundluje lokalnego hosta.
 
+## Powiadomienia systemowe (#810)
+
+- **Lokalne alerty sceniczne** (np. utrata hosta w tle): włączane w Ustawieniach klienta / Admin → Ogólne → Powiadomienia (nie na cold start). Kanały Android: `critical_updates`, `announcements` — **osobne** od FG powiadomienia lokalnego hosta Console.
+- **Rejestracja tokenu:** `POST /api/push/tokens` na hoście (`data/host/push-tokens.json`).
+- **WebPush:** opcjonalne `STAGESYNC_VAPID_PUBLIC_KEY` / `PRIVATE_KEY` (`.env.example`).
+- **FCM:** opcjonalny `google-services.json` w APK (nie w gicie) — instrukcja: `apps/*/android/app/google-services.json.example`. Bez pliku APK buduje się normalnie; zdalny push z konsoli Firebase wymaga FCM.
+
 ## Zakazy
 
 - Capacitor/Cordova-as-magic; auto-update w tle.

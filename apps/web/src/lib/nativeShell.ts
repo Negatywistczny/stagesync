@@ -10,6 +10,18 @@ export type StageSyncNativeBridge = {
   keepScreenOnNative?: () => boolean;
   /** Finish HostWebActivity → return to launcher host picker. */
   changeServer?: () => void;
+  /** #810 — request POST_NOTIFICATIONS / system permission (contextual). */
+  requestNotificationPermission?: () => void;
+  /** #810 — granted | denied | default */
+  notificationPermission?: () => string;
+  /** #810 — local scenic notification (no cloud). */
+  showLocalNotification?: (
+    title: string,
+    body: string,
+    channel?: string,
+  ) => void;
+  /** #810 — FCM registration token when google-services present. */
+  getFcmToken?: () => string | null;
 };
 
 declare global {

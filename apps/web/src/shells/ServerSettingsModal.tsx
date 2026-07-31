@@ -55,6 +55,7 @@ import {
 } from "../lib/setlistApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
+import { ShellNotificationFields } from "./ShellNotificationFields.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { DeviceNameFields } from "./DeviceNameFields.js";
 import { ShellConfirmDialog } from "./ShellBlockingDialog.js";
@@ -542,6 +543,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   setDraft((d) => ({ ...d, appearance }))
                 }
               />
+              <ShellNotificationFields />
             </div>
           </fieldset>
 

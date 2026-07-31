@@ -1108,3 +1108,56 @@ export const MidiHostStatusSchema = z
   .strict();
 
 export type MidiHostStatus = z.infer<typeof MidiHostStatusSchema>;
+
+/** Push surface: where the token was registered (#810). */
+export const PushPlatformSchema = z.enum([
+  "android-performer",
+  "android-console",
+  "web",
+  "desktop",
+]);
+
+export type PushPlatform = z.infer<typeof PushPlatformSchema>;
+
+/** Android / WebPush channel ids (must match native channel strings). */
+export const PushChannelSchema = z.enum([
+  "critical_updates",
+  "announcements",
+]);
+
+export type PushChannel = z.infer<typeof PushChannelSchema>;
+
+/** Client → host: register FCM / WebPush token for this device. */
+export const PushTokenRegisterBodySchema = z
+  .object({
+    token: z.string().min(8).max(4096),
+    platform: PushPlatformSchema,
+    /** Optional stable device label (not a secret). */
+    deviceLabel: z.string().max(120).optional(),
+  })
+  .strict();
+
+export type PushTokenRegisterBody = z.infer<typeof PushTokenRegisterBodySchema>;
+
+/** Client → host: remove a previously registered token. */
+export const PushTokenUnregisterBodySchema = z
+  .object({
+    token: z.string().min(8).max(4096),
+  })
+  .strict();
+
+export type PushTokenUnregisterBody = z.infer<
+  typeof PushTokenUnregisterBodySchema
+>;
+
+/** Public push config for clients (no private keys). */
+export const PushPublicConfigSchema = z
+  .object({
+    /** WebPush VAPID public key (base64url), when host can accept web subscriptions. */
+    vapidPublicKey: z.string().min(1).optional(),
+    /** True when Android FCM is expected (operator docs / build with google-services). */
+    fcmAvailable: z.boolean(),
+  })
+  .strict();
+
+export type PushPublicConfig = z.infer<typeof PushPublicConfigSchema>;

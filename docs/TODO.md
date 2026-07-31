@@ -20,6 +20,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 ## Should / Higiena (nie blokuje)
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
+- [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — w toku: lokalne alerty + rejestracja tokenów + kanały; FCM wymaga `google-services.json` (opt-in, ADR 0016 — zero sekretów w APK). Nie mylić z FG notification lokalnego hosta Console.
 
 ## Etap 5.x+ / Later (po Colors & Channels)
 
@@ -35,7 +36,6 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] [#674](https://github.com/Negatywistczny/stagesync/issues/674) **Performer + Console — residual:** smoke P-HW/C-HW na tablecie (w tym C-HW3 lokalny host) — **bez claim HW green**; native MIDI na Console host = niedostępne na Androidzie ([ADR 0016](./adr/0016-android-performer-console.md); [MOBILE.md](./MOBILE.md))
 - [ ] [#692](https://github.com/Negatywistczny/stagesync/issues/692) **Offline-First UI — residual:** delta / CacheStorage per-asset po `ui-manifest`
 - [ ] **Safety Net (residual):** auto-election / lease split-brain — MVP zamknięte w [#437](https://github.com/Negatywistczny/stagesync/issues/437); to tylko Later ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
-- [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — Later (nie mylić z FG notification lokalnego hosta Console)
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 
 ### 7.x+ Karaoke & Jukebox (Later)

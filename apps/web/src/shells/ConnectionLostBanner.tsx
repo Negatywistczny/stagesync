@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@stagesync/ui";
 import {
   canReturnToLauncher,
@@ -7,6 +8,7 @@ import {
   canChangeServer,
   requestNativeChangeServer,
 } from "../lib/nativeShell.js";
+import { maybeNotifyHostDisconnect } from "../lib/pushNotifications.js";
 import { clearOperatorSession } from "../lib/operatorSession.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import styles from "./ConnectionLostBanner.module.css";
@@ -18,8 +20,13 @@ export type ConnectionLostBannerProps = {
 /**
  * Mid-session transport drop: reconnect copy + optional return to host picker
  * (Desktop Launcher via Tauri, or Android Console/Performer via native bridge).
+ * Also fires a local scenic notification when the page is backgrounded (#810).
  */
 export function ConnectionLostBanner({ status }: ConnectionLostBannerProps) {
+  useEffect(() => {
+    maybeNotifyHostDisconnect(status);
+  }, [status]);
+
   if (status === "connected") return null;
 
   const showReturn = canReturnToLauncher() || canChangeServer();

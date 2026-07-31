@@ -36,6 +36,9 @@ import java.net.URI
 class HostWebActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_ORIGIN = "origin"
+        const val EXTRA_PUSH_PATH = "push_path"
+        private const val PREFS = "stagesync_console"
+        private const val PREF_LAST_ORIGIN = "last_origin"
     }
 
     private lateinit var binding: ActivityHostWebBinding
@@ -46,6 +49,11 @@ class HostWebActivity : AppCompatActivity() {
     private var remoteMode = false
     private var pendingApkFile: File? = null
     private var assetLoader: WebViewAssetLoader? = null
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            PushNotifications.ensureChannels(this)
+        }
 
     private val localHostStoppedReceiver =
         object : BroadcastReceiver() {
@@ -83,12 +91,21 @@ class HostWebActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         enterImmersive()
 
-        val origin = intent.getStringExtra(EXTRA_ORIGIN)?.trimEnd('/')
+        val origin =
+            intent.getStringExtra(EXTRA_ORIGIN)?.trimEnd('/')
+                ?: getSharedPreferences(PREFS, MODE_PRIVATE)
+                    .getString(PREF_LAST_ORIGIN, null)
+                    ?.trimEnd('/')
         if (origin.isNullOrEmpty()) {
             finish()
             return
         }
         hostOrigin = origin
+        getSharedPreferences(PREFS, MODE_PRIVATE)
+            .edit()
+            .putString(PREF_LAST_ORIGIN, origin)
+            .apply()
+        PushNotifications.ensureChannels(this)
         hostAuthority =
             try {
                 URI(origin).host ?: ""
@@ -436,5 +453,42 @@ class HostWebActivity : AppCompatActivity() {
         fun changeServer() {
             runOnUiThread { finish() }
         }
+
+        @android.webkit.JavascriptInterface
+        fun requestNotificationPermission() {
+            runOnUiThread {
+                if (android.os.Build.VERSION.SDK_INT < 33) {
+                    PushNotifications.ensureChannels(this@HostWebActivity)
+                    return@runOnUiThread
+                }
+                if (PushNotifications.hasPostPermission(this@HostWebActivity)) {
+                    PushNotifications.ensureChannels(this@HostWebActivity)
+                    return@runOnUiThread
+                }
+                notificationPermissionLauncher.launch(
+                    android.Manifest.permission.POST_NOTIFICATIONS,
+                )
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun notificationPermission(): String =
+            PushNotifications.permissionStatus(this@HostWebActivity)
+
+        @android.webkit.JavascriptInterface
+        fun showLocalNotification(title: String, body: String, channel: String?) {
+            runOnUiThread {
+                PushNotifications.showLocal(
+                    this@HostWebActivity,
+                    title,
+                    body,
+                    channel ?: PushNotifications.CHANNEL_CRITICAL,
+                    "/admin",
+                )
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun getFcmToken(): String? = FcmTokenHolder.token
     }
 }
