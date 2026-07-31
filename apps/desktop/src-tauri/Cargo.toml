@@ -1,6 +1,6 @@
 [package]
 name = "stagesync-desktop"
-version = "5.3.6"
+version = "5.3.7"
 description = "StageSync thin desktop shell (ADR 0010)"
 authors = ["StageSync"]
 edition = "2021"
