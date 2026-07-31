@@ -2,7 +2,7 @@
 
 - **Status:** Zaakceptowany
 - **Data:** 2026-07-27
-- **Etap:** kierunek `6.0+` (nie scope linii 5.x); **5.3 Colors & Channels** wydane (`v5.3.0`); następny krok sekwencji = `5.x` Pitch & FX Busses — **zablokowana PO**
+- **Etap:** kierunek `6.0+` (nie scope linii 5.x); **5.3 Colors & Channels** wydane (`v5.3.0`); sekwencja late 5.x = **5.4 Content Model → 5.5 Ingest → 5.6 Pitch & FX** (PO 2026-07-31) — Input/Suite/Automation nadal OUT z 5.x
 - **Uzupełnia / amenuje (przy major 6.0):** [ADR 0017](./0017-live-show-control-contracts.md) §5 (Flex / Takes / recording = OUT **tylko** dla 5.x; rejestracja wraca w 6.0 — patrz §5 poniżej), [ADR 0015](./0015-daw-reference-and-product-decisions.md), [ADR 0008](./0008-timeline-clip-editing.md)
 - **Nie narusza:** [ADR 0002](./0002-timebase-ssot.md), [ADR 0005](./0005-domain-axioms.md) (Granica 0)
 
@@ -20,7 +20,7 @@ Stan obecny (od **5.3.0**): Mixer Master\|Bus + bus→bus DAG; multi-out HW Out 
 
 | Linia | Obowiązywanie |
 |-------|----------------|
-| **5.x** | Ten ADR **nie** otwiera Flex / Takes / recording / VSTi / InputStrip / automation w produkcie. Obowiązuje nadal [ADR 0017](./0017-live-show-control-contracts.md) §5. Fundamenty **5.3** (multi-out, skóry) = wydane; dalej w 5.x tylko Pitch & FX Busses (patrz §4), bez filarów 6.0. |
+| **5.x** | Ten ADR **nie** otwiera Flex / Takes / recording / VSTi / InputStrip / automation w produkcie. Obowiązuje nadal [ADR 0017](./0017-live-show-control-contracts.md) §5. Fundamenty **5.3** (multi-out, skóry) = wydane; late 5.x = Content Model (5.4) + Ingest (5.5) + Pitch & FX Busses (5.6) — bez filarów 6.0. |
 | **6.0+** | Ten ADR jest SSOT kierunku Live Processing; §5 ADR 0017 uznaje się za **zamknięte dla 5.x**, nie za zakaz na zawsze. Rejestracja + proste narzędzia edycji = **IN** przy major 6.0 (§5). |
 
 ### 1. Zero-Crash Policy (twarde)
@@ -48,27 +48,35 @@ Stan obecny (od **5.3.0**): Mixer Master\|Bus + bus→bus DAG; multi-out HW Out 
 
 ### 4. Sekwencja wejścia (zablokowana PO)
 
+**Aktualizacja PO (2026-07-31):** przed Pitch & FX wchodzą dwa minory **treści** (ortogonalne do grafu audio) — fundament pod import timed lyrics i Karaoke **7.0**. **Nie** otwierają Input / Suite / automation / recording w 5.x.
+
 ```
 [5.3] Colors & Channels — multi-out HW + nazwane skóry
-  → [5.x] Pitch & FX Busses — Track Pitch + expanded busses / send-return
+  → [5.4] Content Model — Lyrics AST (sylaby w tickach) + migrator
+  → [5.5] Ingest MVP — UltraStar → ticks; bridging US+UG (fixtures)
+  → [5.6] Pitch & FX Busses — Track Pitch + expanded busses / send-return
   → [6.0+] Input, Automation, Standalone VSTi Controller
-      (+ Audio Suite; recording + proste edit; MIDI Patch Matrix)
+      (+ Audio Suite; STEM / mute lead; recording + proste edit; MIDI Patch Matrix)
+  → [7.0+] Karaoke & Jukebox (/karaoke, /request, Gig vs Jukebox)
 ```
 
 | Linia | Hero | Zakres | Explicitly OUT |
 |-------|------|--------|----------------|
 | **5.3** | **Colors & Channels** | Multi-out HW (`maxChannelCount` gate) + nazwane skóry | InputStrip, Suite, automation, VSTi, recording |
-| **5.x** (po 5.3) | **Pitch & FX Busses** | Track Pitch Shift + expanded busses / send-return FX (WebAudio) | Live input, VST in-process, automation lanes, recording |
-| **6.0+** | Live Processing & Master Show Controller | Filary 1–4; recording + proste narzędzia edycji; MIDI Patch Matrix; fokus standalone VSTi | In-process VST; wbudowane synthy WebAudio (→ 6.x+); Flex / Take Folders jako must 6.0 |
+| **5.4** | **Content Model** | `formatVersion` + Lyrics AST (ticks); role/melodia w schemacie; migrator | `/karaoke` TV, `/request`, UltraStar bridging, Input/Suite/automation |
+| **5.5** | **Ingest MVP** | UltraStar → ticks; Text-Anchor gdy fixtures; UG zostaje | Cloud AI ingest; MusicXML-as-grid jako must |
+| **5.6** | **Pitch & FX Busses** | Track Pitch Shift + expanded busses / send-return FX (WebAudio) | Live input, VST in-process, automation lanes, recording |
+| **6.0+** | Live Processing & Master Show Controller | Filary 1–4; STEM / mute lead; recording + proste edit; MIDI Patch Matrix; fokus standalone VSTi | In-process VST; wbudowane synthy WebAudio (→ 6.x+); Flex / Take Folders jako must 6.0 |
+| **7.0+** | Karaoke & Jukebox | `/karaoke`, `/request`, Gig/Jukebox — [#824](https://github.com/Negatywistczny/stagesync/issues/824) | Cloud karaoke; zależność od 5.4–5.6 + 6.x STEM/pitch |
 
-Szczegóły checklisty: [ROADMAP](../ROADMAP.md), [TODO](../TODO.md). Implementacja filarów 6.0 = dopiero po osobnym scope report + akceptacji PO przed kodem.
+Szczegóły checklisty: [ROADMAP](../ROADMAP.md), [TODO](../TODO.md), [report-scope-5.4](../analysis/reports/report-scope-5.4.md). Implementacja filarów 6.0 = dopiero po osobnym scope report + akceptacji PO przed kodem.
 
 ### 5. Decyzje PO zamknięte (sesja 2026-07-27)
 
 | Temat | Decyzja |
 |-------|---------|
 | Status ADR | **Zaakceptowany** |
-| Sekwencja | **5.3** Colors & Channels → **5.x** Pitch & FX Busses → **6.0+** Input / Automation / Standalone VSTi Controller |
+| Sekwencja | **5.3** → **5.4** Content Model → **5.5** Ingest → **5.6** Pitch & FX → **6.0+** Input / Automation / VSTi → **7.0+** Karaoke (PO 2026-07-31; treści przed Pitch) |
 | Tick Engine | Automation + MIDI **zawsze** czytają host Tick Engine (SSOT); bez client musical clock |
 | **Recording** | **IN w 6.0** — wprowadzenie rejestracji z **prostymi narzędziami edycji**. Nadpisuje wcześniejsze „otwarte / może OUT w alpha”. Linia **5.x** nadal OUT ([ADR 0017](./0017-live-show-control-contracts.md) §5); major 6.0 otwiera zakres. |
 | **MIDI Ports** | **IN w 6.0** — prosty panel UI: konfiguracja portów + mapowanie virtual bus (**MIDI Patch Matrix**) |
@@ -88,9 +96,10 @@ Szczegóły checklisty: [ROADMAP](../ROADMAP.md), [TODO](../TODO.md). Implementa
 ### 7. Residual (prawdziwie otwarte — nie domykać w kodzie „na zapas”)
 
 1. Automation: tylko parametry Mixer/DSP, czy też clip gain / Forma?
-2. Track Pitch (5.x): globalny vs per-track; szczegóły sync Chord AST + OSMD
+2. Track Pitch (5.6): globalny vs per-track; szczegóły sync Chord AST + OSMD
 3. Desktop low-latency: czy wystarczy WebAudio + preferencje bufora, czy kiedykolwiek natywny sidecar audio (**bez** VST) — konflikt z thin shell?
 4. Hot-unplug wejść / wyjść i fail-safe (FOH): mute vs fold-to-Master — kontynuacja Q z [Recenzja Live FOH](../analysis/inspiracje/spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.triage.md)
+5. STEM / mute lead w 6.x: kontrakt Mixer vs osobne ścieżki assetów — needed dla Karaoke 7.0 ([#824](https://github.com/Negatywistczny/stagesync/issues/824))
 
 ### 8. Parity v4 (nie wymyślać wstecz)
 
@@ -98,7 +107,7 @@ v4 / parytet 5.0: Host MIDI I/O, clock, Program Change, odtwarzanie audio, Mixer
 
 ## Konsekwencje
 
-- [ROADMAP](../ROADMAP.md) / [TODO](../TODO.md): sekwencja 5.3 → 5.x Pitch & FX → 6.0 zlinkowana do tego ADR; bez must blockerów 5.0 z filarów 6.0.
+- [ROADMAP](../ROADMAP.md) / [TODO](../TODO.md): sekwencja **5.3 → 5.4 Content → 5.5 Ingest → 5.6 Pitch & FX → 6.0 → 7.0** zlinkowana do tego ADR; bez must blockerów 5.0 z filarów 6.0; treści nie otwierają Input/Suite/automation w 5.x.
 - [ADR 0017](./0017-live-show-control-contracts.md) §5: historia **5.x OUT** bez zmiany; przy major **6.0** rejestracja + proste edit wracają **zgodnie z tym ADR** (supersedes „permanent” poza linią 5.x).
 - [ARCHITECTURE](../ARCHITECTURE.md): wskaźnik do tego ADR przy mapie decyzji audio.
 - CHANGELOG: **brak** wpisu za sam ADR / ROADMAP / TODO (changelog.mdc — docs deweloperskie).
