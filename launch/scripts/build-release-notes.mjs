@@ -81,7 +81,8 @@ const repo = process.env.GITHUB_REPOSITORY ?? "Negatywistczny/stagesync";
 const tag = `v${version}`;
 const base = `https://github.com/${repo}/releases/download/${tag}`;
 const dmgUrl = `${base}/StageSync_${version}_aarch64.dmg`;
-const msiUrl = `${base}/StageSync_${version}_x64.msi`;
+const msiVersion = toWixVersion(version);
+const msiUrl = `${base}/StageSync_${msiVersion}_x86_64.msi`;
 const performerApkUrl = `${base}/StageSync-Performer-v${version}.apk`;
 const consoleApkUrl = `${base}/StageSync-Console-v${version}.apk`;
 const changelogUrl = changelogPermalink(repo, tag, version, date, hero);
@@ -274,12 +275,34 @@ function changelogPermalink(repository, gitTag, ver, releaseDate, heroName) {
   return anchor ? `${baseUrl}#${anchor}` : baseUrl;
 }
 
+/** MSI/WiX requires numeric major.minor.patch[.build]; map SemVer pre-release to 4th field. */
+function toWixVersion(semver) {
+  // Nested beta docs cuts: 5.0.0-beta.1.1 → 5.0.0.10101 (room after shipped beta.1 = .10001).
+  const nestedBeta = semver.match(/^(\d+)\.(\d+)\.(\d+)-beta\.(\d+)\.(\d+)$/);
+  if (nestedBeta) {
+    const [, major, minor, patch, n, m] = nestedBeta;
+    return `${major}.${minor}.${patch}.${10000 + Number(n) * 100 + Number(m)}`;
+  }
+  const match = semver.match(/^(\d+)\.(\d+)\.(\d+)(?:-([^.]+)\.(\d+))?$/);
+  if (!match) return semver.replace(/-.*$/, "");
+  const [, major, minor, patch, prereleaseTag, prereleaseNum] = match;
+  if (!prereleaseTag) return `${major}.${minor}.${patch}`;
+  const n = Number(prereleaseNum);
+  if (prereleaseTag === "beta") {
+    // beta.1 already shipped as .10001; beta.2+ use *100 spacing so nested .N.M fits underneath.
+    if (n === 1) return `${major}.${minor}.${patch}.10001`;
+    return `${major}.${minor}.${patch}.${10000 + n * 100}`;
+  }
+  return `${major}.${minor}.${patch}.${n}`;
+}
+
 /** Approximate GitHub heading slug (good enough for CHANGELOG H2 anchors). */
 function githubHeadingAnchor(headingText) {
   // Drop punctuation (incl. em dash / &); each leftover space → one "-" (GFM-like).
   return headingText
     .toLowerCase()
-    .replace(/[^\p{L}\p{N} -]/gu, "")
+    .replace(/[^\p{L}\p{N} —-]/gu, "")
     .trim()
-    .replace(/ /g, "-");
+    .replace(/—/g, " ")
+    .replace(/\s+/g, "-");
 }

@@ -93,7 +93,7 @@ assert.doesNotMatch(
 assert.match(ok.stdout, /Pełna historia zmian: \[CHANGELOG\.md\]/);
 assert.match(
   ok.stdout,
-  /blob\/v5\.1\.0\/CHANGELOG\.md#510---2026-07-24--launch--mix/,
+  /blob\/v5\.1\.0\/CHANGELOG\.md#510---2026-07-24-launch-mix/,
 );
 assert.match(
   ok.stdout,
@@ -105,7 +105,7 @@ assert.match(
 );
 assert.match(
   ok.stdout,
-  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x64\.msi\)/,
+  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x86_64\.msi\)/,
 );
 assert.doesNotMatch(ok.stdout, /StageSync 5\.1\.0 \(\.dmg\)/);
 assert.doesNotMatch(ok.stdout, /\| System \/ aplikacja \| Plik \|/);
