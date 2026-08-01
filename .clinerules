@@ -1,0 +1,53 @@
+# StageSync v5 — Skonsolidowane Reguły Projektowe (.clinerules)
+
+Niniejszy plik zawiera kluczowe zasady, standardy i ograniczenia projektowe StageSync v5, skonsolidowane z reguł Cursor. Przed każdą zmianą należy sprawdzić indeks decyzji w `docs/adr/` oraz aktualne raporty w `docs/analysis/reports/`.
+
+## 🚫 Twarde Zakazy
+
+- **Zakaz Stubów:** Nie wolno dodawać „atrap” funkcji (np. `disabled` przyciski na zapas). Jeśli funkcja nie jest gotowa, nie powinno być jej w UI.
+- **Zakaz Tailwind CSS i Inline-Styles:** Kategoryczny zakaz stosowania Tailwind CSS. Należy używać wyłącznie **CSS Modules** (`*.module.css`).
+- **Zakaz Inline-Styles:** Wyjątkiem są wartości dynamiczne (np. pozycjonowanie playhead w %).
+- **Zakaz Kopiowania Chrome z Legacy:** Nie kopiuj HTML/CSS z v4 1:1. Używaj wyłącznie `@stagesync/ui` + tokeny `--ss-*`.
+- **Zakaz Żargonu w Changelog:** W `CHANGELOG.md` zakaz używania statusów operacyjnych typu „G1-G10”, „claim green”, „residual”.
+- **Zakaz Samodzielnych Redesignów:** Każda nietrywialna zmiana UI (kolory, IA) wymaga pisemnego uzasadnienia lub prośby PO.
+- **Zakaz Nowych Plików w Root:** Nie dodawaj plików w katalogu głównym bez zgody (poza dozwolonym toolingiem).
+- **Zakaz Literówek w Ownerze:** Kanoniczny owner GitHub to **`Negatywistczny`** (bez dodatkowego „y”).
+
+## 🏛️ Architektura i SSOT
+
+- **Autorytet Serwera (`apps/server`):** Odpowiada za transport, stan projektu i precyzyjny timing.
+- **Playhead Klienta (`apps/web`):** Wygładzanie pozycji odbywa się wyłącznie między tickami serwera. Klient nie posiada własnego zegara muzycznego.
+- **Czysty Czas (`@stagesync/shared`):** Funkcje czasowe muszą być czyste (bez `Date.now()`). Kanon: integer **ticks** + stałe **PPQ**.
+- **Granice Monorepo:**
+  - `apps/server`: API, persystencja, transport.
+  - `apps/web`: UI.
+  - `packages/shared`: Logika domenowa, czysty czas, Zod (bez DOM/FS).
+  - `packages/ui`: Design system, bez logiki biznesowej.
+  - `data/`: Runtime (projekty, logi).
+
+## 💻 Standardy Kodu
+
+- **TypeScript & Zod:** Walidacja na krawędziach (HTTP, IPC, pliki). Strategia: **Fail Fast**.
+- **Trunk-based Development:** Domyślnie pracuj na `main`. Gałęzie/PR tylko na wyraźną prośbę.
+- **CSS & UI Density:**
+  - Siatka przestrzenna **4pt/8pt** (zmienne `--ss-space-*`).
+  - Jednostki `rem` zaokrąglane do siatki 4px/8px.
+  - Tokeny kolorów, typografii i odstępów wyłącznie ze zmiennych `--ss-*`.
+  - Minimalna strefa dotykowa: 36x36px (desktop), 44x44px (mobile/PWA).
+- **APCA & Ergonomia:** Zakaz czystego białego tekstu na czarnym tle (używaj `--ss-color-text`).
+
+## 📚 Dokumentacja i Proces
+
+- **Changelog (Keep a Changelog):** Wpisy tylko dla zmian widocznych dla użytkownika. Agreguj commity. Format: H3 (Dodano/Zmieniono/Naprawiono) + H4 z emoji (np. `#### ⏱️ Timeline & DAW`).
+- **TODO Hygiene:** Plik `docs/TODO.md` zawiera tylko aktywne zadania. Zakaz trzymania `[x]`.
+- **Analiza Projektowa:**
+  - Raporty: `docs/analysis/reports/report-<temat>.md` (commitowane).
+  - Notatki: `docs/analysis/working/working-<temat>.md` (ignorowane przez git).
+- **Versioning:** SemVer zarządzany w root `package.json`. Tagowanie `vMAJOR.MINOR.PATCH`.
+
+## 🛠️ Procedura Sprawdzania Przed Zmianą
+
+1. **Sprawdź ADR:** Przejrzyj `docs/adr/` pod kątem decyzji związanych z zadaniem.
+2. **Sprawdź TODO:** Zweryfikuj priorytety w `docs/TODO.md`.
+3. **Sprawdź Raporty:** Zapoznaj się z ostatnimi audytami w `docs/analysis/reports/`.
+4. **Zasada Parity:** Do wersji 5.0.0 zachowanie v4 jest priorytetem (chyba że ADR stanowi inaczej).
