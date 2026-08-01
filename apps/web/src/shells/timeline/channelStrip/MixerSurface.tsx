@@ -4,7 +4,7 @@
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Button } from "@stagesync/ui";
-import { emptyPeakHold, type Project } from "@stagesync/shared";
+import { emptyPeakHold, listMasterStereoPairOptions, resolveMasterOutputRouting, type Project } from "@stagesync/shared";
 import type { TrackSelection } from "../../../lib/timelineSelection.js";
 import {
   AUDIO_HW_CAPABILITY_EVENT,
@@ -12,6 +12,7 @@ import {
   refreshAudioHwCapability,
   type AudioHwCapability,
 } from "../../../lib/audioHwCapability.js";
+import { canAddHardwareOutput } from "../../../lib/audioHwEdit.js";
 import {
   getMetronomePrefs,
   METRONOME_PREFS_CHANGED_EVENT,
@@ -47,6 +48,8 @@ export type MixerSurfaceProps = {
   trackSelection: TrackSelection;
   soloAudioTrackIds: readonly string[];
   soloBusIds: readonly string[];
+  selectedBusId?: string | null;
+  selectedHwOutputId?: string | null;
   renamingTrackId: string | null;
   renameValue: string;
   renamingBusId: string | null;
@@ -60,9 +63,14 @@ export type MixerSurfaceProps = {
   onAddAudioTrack: () => void;
   onAddBus: () => void;
   onAddHwOut?: () => void;
+  onHwSelect?: (hwOutputId: string, e: MouseEvent) => void;
+  onHwContextMenu?: (hwOutputId: string, e: MouseEvent) => void;
   onHwGainChange?: (hwOutputId: string, gainDb: number) => void;
   onHwMuteToggle?: (hwOutputId: string) => void;
-  onHwRemove?: (hwOutputId: string) => void;
+  onHwChannelModeChange?: (
+    hwOutputId: string,
+    mode: "mono" | "stereo",
+  ) => void;
   onEmptyDoubleClick?: (e: MouseEvent) => void;
 };
 
@@ -102,6 +110,8 @@ export function MixerSurface({
   trackSelection,
   soloAudioTrackIds,
   soloBusIds,
+  selectedBusId = null,
+  selectedHwOutputId = null,
   renamingTrackId,
   renameValue,
   renamingBusId,
@@ -115,9 +125,11 @@ export function MixerSurface({
   onAddAudioTrack,
   onAddBus,
   onAddHwOut,
+  onHwSelect,
+  onHwContextMenu,
   onHwGainChange,
   onHwMuteToggle,
-  onHwRemove,
+  onHwChannelModeChange,
   onEmptyDoubleClick,
 }: MixerSurfaceProps) {
   const trackIds = project.audioTracks.map((t) => t.id);
@@ -142,6 +154,25 @@ export function MixerSurface({
   const [zoneVis, setZoneVis] = useState<MixerZoneVisibility>(() =>
     loadMixerZoneVisibility(),
   );
+  const canAddHw = canAddHardwareOutput(
+    hwOuts,
+    hwCap.maxChannelCount,
+    "stereo",
+    project.masterOutput,
+  );
+
+  const masterOutOptions: OutputSelectorOption[] = useMemo(() => {
+    if (!hwCap.uiAllowed) return [];
+    return listMasterStereoPairOptions(hwCap.maxChannelCount, hwOuts)
+      .filter((o) => !o.blocked || o.channelOffset === resolveMasterOutputRouting(project.masterOutput).channelOffset)
+      .map((o) => ({
+        value: `ch:${o.channelOffset}`,
+        label: o.blocked ? `${o.label} (zajęte)` : o.label,
+      }));
+  }, [hwCap.uiAllowed, hwCap.maxChannelCount, hwOuts, project.masterOutput]);
+
+  const masterOutValue = `ch:${resolveMasterOutputRouting(project.masterOutput).channelOffset}`;
+
 
   function setZoneVisible(zoneId: MixerZoneId) {
     setZoneVis((prev) => {
@@ -236,12 +267,13 @@ export function MixerSurface({
                   type="button"
                   className={styles.addBusBtn}
                   aria-label="Dodaj Ścieżkę"
+                  title="Dodaj ścieżkę"
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddAudioTrack();
                   }}
                 >
-                  + Dodaj Ścieżkę
+                  + Dodaj
                 </button>
               ) : null}
             </div>
@@ -318,12 +350,13 @@ export function MixerSurface({
                   type="button"
                   className={styles.addBusBtn}
                   aria-label="Dodaj Bus"
+                  title="Dodaj bus"
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddBus();
                   }}
                 >
-                  + Dodaj Bus
+                  + Dodaj
                 </button>
               ) : null}
             </div>
@@ -347,7 +380,7 @@ export function MixerSurface({
                         pan: bus.pan ?? 0,
                         channelMode,
                         soloed: soloBusIds.includes(bus.id),
-                        selected: false,
+                        selected: selectedBusId === bus.id,
                         meterDb: reading?.liveDb,
                         meterDbR: reading?.liveDbR,
                         hold: reading?.hold,
@@ -398,23 +431,24 @@ export function MixerSurface({
                     type="button"
                     className={styles.addBusBtn}
                     aria-label="Dodaj wyjście HW"
+                    title={
+                      canAddHw
+                        ? "Dodaj wyjście HW"
+                        : `Brak wolnych kanałów (max ${hwCap.maxChannelCount})`
+                    }
+                    disabled={!canAddHw}
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!canAddHw) return;
                       onAddHwOut();
                     }}
                   >
-                    + Dodaj HW
+                    + Dodaj
                   </button>
                 ) : null}
               </div>
               {zoneVis.hw ? (
                 <div className={styles.strips}>
-                  {hwOuts.length === 0 ? (
-                    <p className={styles.empty} role="status" aria-live="polite">
-                      Brak patchy HW — „+ Dodaj HW” (kanały {hwCap.maxChannelCount}
-                      ).
-                    </p>
-                  ) : null}
                   {hwOuts.map((row) => {
                     const reading = meters.hwOuts?.[row.id];
                     return (
@@ -428,9 +462,15 @@ export function MixerSurface({
                         }
                         gainDb={row.gainDb ?? 0}
                         muted={Boolean(row.muted)}
+                        selected={selectedHwOutputId === row.id}
                         meterDb={reading?.liveDb}
                         meterDbR={reading?.liveDbR}
                         hold={reading?.hold ?? emptyPeakHold()}
+                        onSelect={(e) => onHwSelect?.(row.id, e)}
+                        onContextMenu={(e) => onHwContextMenu?.(row.id, e)}
+                        onChannelModeChange={(mode) =>
+                          onHwChannelModeChange?.(row.id, mode)
+                        }
                         onGainChange={(v) => onHwGainChange?.(row.id, v)}
                         onGainReset={() => onHwGainChange?.(row.id, 0)}
                         onMuteClick={(e) => {
@@ -438,7 +478,6 @@ export function MixerSurface({
                           onHwMuteToggle?.(row.id);
                         }}
                         onHoldClear={() => meters.clearHwHold?.(row.id)}
-                        onRemove={() => onHwRemove?.(row.id)}
                       />
                     );
                   })}
@@ -493,6 +532,9 @@ export function MixerSurface({
                   meterR: meters.master.liveR,
                   holdL: meters.master.holdL,
                   holdR: meters.master.holdR,
+                  outputValue: masterOutValue,
+                  outputOptions: masterOutOptions,
+                  outputDisabled: playing && masterOutOptions.length > 0,
                 }}
                 callbacks={{
                   ...masterCallbacks,

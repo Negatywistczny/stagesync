@@ -1,9 +1,11 @@
 /**
  * Pinned Stereo Out / master strip — dual L+R meters + master fader (no pan).
+ * Optional Out selector remaps Master onto a physical stereo pair.
  */
 
 import type { MasterStripCallbacks, MasterStripState } from "./channelStripTypes.js";
 import { DualDbReadout } from "./DualDbReadout.js";
+import { OutputSelector } from "./OutputSelector.js";
 import { PeakMeter } from "./PeakMeter.js";
 import { VerticalFader } from "./VerticalFader.js";
 import styles from "./ChannelStripControls.module.css";
@@ -19,6 +21,8 @@ export function MasterStrip({ state, callbacks }: MasterStripProps) {
     holdDb: Math.max(state.holdL.holdDb, state.holdR.holdDb),
     clipped: state.holdL.clipped || state.holdR.clipped,
   };
+  const hasOutSelector =
+    state.outputOptions != null && state.outputOptions.length > 0;
 
   return (
     <div
@@ -28,7 +32,17 @@ export function MasterStrip({ state, callbacks }: MasterStripProps) {
     >
       {/* Spacers align DualDb / fader with track strips (M·ST, Out, Pan). */}
       <div className={styles.channelModeSpacer} aria-hidden />
-      <div className={styles.outputSelectSpacer} aria-hidden />
+      {hasOutSelector ? (
+        <OutputSelector
+          value={state.outputValue ?? "ch:0"}
+          options={state.outputOptions!}
+          aria-label="Out Master"
+          disabled={Boolean(state.outputDisabled)}
+          onChange={(v) => callbacks.onOutputChange?.(v)}
+        />
+      ) : (
+        <div className={styles.outputSelectSpacer} aria-hidden />
+      )}
       <div className={styles.masterPanSpacer} aria-hidden />
 
       <DualDbReadout

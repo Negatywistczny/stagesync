@@ -31,6 +31,7 @@ export function channelModeFromChannelCount(count: number): ChannelMode {
 
 /**
  * Logical HW patch row — tracks/busses reference `id`, not raw channel indices.
+ * Supports {@link ChannelMode} mono (1 ch) and stereo (2 ch from `channelOffset`).
  * UI listing is gated by {@link hwOutputUiAllowed}.
  */
 export const AudioHardwareOutputSchema = z.object({
@@ -45,6 +46,130 @@ export const AudioHardwareOutputSchema = z.object({
 
 export type AudioHardwareOutput = z.infer<typeof AudioHardwareOutputSchema>;
 
+/**
+ * Canonical name for a logical HW patch (mono or stereo).
+ * Same Zod shape as {@link AudioHardwareOutputSchema}.
+ */
+export const HwOutputPatchSchema = AudioHardwareOutputSchema;
+export type HwOutputPatch = AudioHardwareOutput;
+
+/**
+ * Physical destination for the Master / Stereo Out sum.
+ * Omit / default → CH 1–2 (`channelOffset: 0`, stereo).
+ */
+export const MasterOutputRoutingSchema = z
+  .object({
+    /** 0-based device channel; stereo uses offset + offset+1. */
+    channelOffset: z.number().int().min(0).max(62).optional(),
+    /**
+     * Master sum is stereo today; mono reserved for future Direct Out–style maps.
+     * Omit → stereo.
+     */
+    channelMode: ChannelModeSchema.optional(),
+  })
+  .strict();
+
+export type MasterOutputRouting = z.infer<typeof MasterOutputRoutingSchema>;
+
+export function hardwarePatchChannelWidth(mode: ChannelMode): number {
+  return mode === "mono" ? 1 : 2;
+}
+
+/** Resolved Master physical map (defaults CH 1–2 stereo). */
+export function resolveMasterOutputRouting(
+  routing: MasterOutputRouting | undefined | null,
+): { channelOffset: number; channelMode: ChannelMode } {
+  const channelMode = resolveChannelMode(routing?.channelMode);
+  let channelOffset = 0;
+  if (
+    routing?.channelOffset != null &&
+    Number.isFinite(routing.channelOffset)
+  ) {
+    channelOffset = Math.max(0, Math.min(62, Math.floor(routing.channelOffset)));
+  }
+  // Prefer even start for stereo pairs (device CH 1–2, 3–4, …).
+  if (channelMode === "stereo" && channelOffset % 2 === 1) {
+    channelOffset = Math.max(0, channelOffset - 1);
+  }
+  return { channelOffset, channelMode };
+}
+
+/** Inclusive channel indices occupied by a patch / Master map. */
+export function channelRangeOccupied(
+  channelOffset: number,
+  mode: ChannelMode,
+): { start: number; end: number } {
+  const width = hardwarePatchChannelWidth(mode);
+  return { start: channelOffset, end: channelOffset + width - 1 };
+}
+
+export function channelRangesOverlap(
+  a: { start: number; end: number },
+  b: { start: number; end: number },
+): boolean {
+  return a.start <= b.end && b.start <= a.end;
+}
+
+/**
+ * True when Master physical map overlaps any HW patch (invalid project state).
+ */
+export function masterOutputOverlapsHwPatches(
+  master: MasterOutputRouting | undefined | null,
+  hwPatches: readonly HwOutputPatch[],
+): boolean {
+  const m = resolveMasterOutputRouting(master);
+  const masterRange = channelRangeOccupied(m.channelOffset, m.channelMode);
+  for (const row of hwPatches) {
+    const mode = resolveChannelMode(row.channelMode);
+    const range = channelRangeOccupied(row.channelOffset, mode);
+    if (channelRangesOverlap(masterRange, range)) return true;
+  }
+  return false;
+}
+
+/**
+ * Stereo pair options for Master Out selector (labels are 1-based CH).
+ * Options that collide with existing HW patches are marked `blocked`.
+ */
+export function listMasterStereoPairOptions(
+  maxChannelCount: number,
+  hwPatches: readonly HwOutputPatch[] = [],
+): readonly {
+  channelOffset: number;
+  label: string;
+  blocked: boolean;
+}[] {
+  const n = Number.isFinite(maxChannelCount)
+    ? Math.max(0, Math.floor(maxChannelCount))
+    : 0;
+  const out: {
+    channelOffset: number;
+    label: string;
+    blocked: boolean;
+  }[] = [];
+  for (let offset = 0; offset + 1 < n; offset += 2) {
+    const range = channelRangeOccupied(offset, "stereo");
+    let blocked = false;
+    for (const row of hwPatches) {
+      const mode = resolveChannelMode(row.channelMode);
+      if (
+        channelRangesOverlap(
+          range,
+          channelRangeOccupied(row.channelOffset, mode),
+        )
+      ) {
+        blocked = true;
+        break;
+      }
+    }
+    out.push({
+      channelOffset: offset,
+      label: `CH ${offset + 1}–${offset + 2}`,
+      blocked,
+    });
+  }
+  return out;
+}
 /**
  * Mix destination for an audio track (and unified target for future HW).
  * Fake Out 3–4 in UI is forbidden until {@link hwOutputUiAllowed}.

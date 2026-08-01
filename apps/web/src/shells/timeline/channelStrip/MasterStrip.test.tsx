@@ -31,4 +31,31 @@ describe("MasterStrip", () => {
     expect(out).toContain(">L<");
     expect(out).toContain(">R<");
   });
+
+  it("renders Master Out selector when multi-out options are provided", () => {
+    const out = renderToStaticMarkup(
+      <MasterStrip
+        state={{
+          gainDb: 0,
+          meterL: -60,
+          meterR: -60,
+          holdL: hold,
+          holdR: hold,
+          outputValue: "ch:0",
+          outputOptions: [
+            { value: "ch:0", label: "CH 1–2" },
+            { value: "ch:2", label: "CH 3–4" },
+          ],
+        }}
+        callbacks={{
+          onGainChange: () => {},
+          onGainReset: () => {},
+          onOutputChange: () => {},
+        }}
+      />,
+    );
+    expect(out).toContain('aria-label="Out Master"');
+    expect(out).toContain("CH 1–2");
+    expect(out).toContain("CH 3–4");
+  });
 });

@@ -64,12 +64,19 @@ export type MasterStripState = {
   meterR: number;
   holdL: PeakHoldState;
   holdR: PeakHoldState;
+  /** Serialized physical map: `ch:<offset>` (default `ch:0`). */
+  outputValue?: string;
+  outputOptions?: readonly OutputSelectorOption[];
+  /** ADR 0017 — lock Master physical remapping while PLAYING. */
+  outputDisabled?: boolean;
 };
 
 export type MasterStripCallbacks = {
   onGainChange: (gainDb: number) => void;
   onGainReset: () => void;
   onHoldClear?: () => void;
+  /** Raw select value `ch:<offset>`. */
+  onOutputChange?: (value: string) => void;
 };
 
 export type ClickStripCallbacks = {

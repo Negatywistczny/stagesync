@@ -8,9 +8,11 @@ import {
   AudioBusSchema,
   AudioHardwareOutputSchema,
   ChannelModeSchema,
+  MasterOutputRoutingSchema,
   MixerOutputDestSchema,
   MAX_AUDIO_HARDWARE_OUTPUTS,
   busGraphHasCycle,
+  masterOutputOverlapsHwPatches,
 } from "./mixer-routing.js";
 import {
   AppearanceProfileIdSchema,
@@ -592,6 +594,11 @@ const ProjectSchemaV5Object = z
     audioClips: z.array(AudioClipSchema).max(512),
     /** Project sum / Stereo Out fader (dB); omit = 0 dB. */
     masterGainDb: z.number().finite().min(-60).max(24).optional(),
+    /**
+     * Physical device map for Master / Stereo Out (default CH 1–2).
+     * Remap to another stereo pair when the interface has ≥4 channels.
+     */
+    masterOutput: MasterOutputRoutingSchema.optional(),
     tekst: z.object({
       clips: z.array(TekstClipSchema),
     }),
@@ -676,6 +683,18 @@ export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
         code: z.ZodIssueCode.custom,
         message: "Bus routing graph must be acyclic (bus→bus cycle)",
         path: ["audioBusses"],
+      });
+    }
+    if (
+      masterOutputOverlapsHwPatches(
+        project.masterOutput,
+        project.audioHardwareOutputs ?? [],
+      )
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Master output channels overlap a hardware output patch",
+        path: ["masterOutput", "channelOffset"],
       });
     }
     const assetById = new Map(project.assets.map((a) => [a.id, a]));
@@ -781,6 +800,18 @@ export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
         code: z.ZodIssueCode.custom,
         message: "Bus routing graph must be acyclic (bus→bus cycle)",
         path: ["audioBusses"],
+      });
+    }
+    if (
+      masterOutputOverlapsHwPatches(
+        project.masterOutput,
+        project.audioHardwareOutputs ?? [],
+      )
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Master output channels overlap a hardware output patch",
+        path: ["masterOutput", "channelOffset"],
       });
     }
     const assetById = new Map(project.assets.map((a) => [a.id, a]));

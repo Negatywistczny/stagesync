@@ -67,7 +67,7 @@ const KEY_GROUPS: ShortcutGroup[] = [
       { keys: "⌘/Ctrl+T", action: "Podziel zaznaczony klip przy playheadzie" },
       { keys: "⌘/Ctrl+J", action: "Połącz sąsiednie zaznaczone klipy" },
       { keys: "⌥/Alt+← / →", action: "Nudge zaznaczonego klipu ±1 siatka" },
-      { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę audio" },
+      { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę / bus / HW Out" },
       { keys: "⌘/Ctrl+Z", action: "Undo (z zaznaczeniem)" },
       { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
     ],

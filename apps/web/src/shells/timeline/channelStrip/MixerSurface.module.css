@@ -124,13 +124,18 @@
   min-width: 0;
 }
 
+.addBusBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .addBusBtn:focus-visible {
   outline: 2px solid var(--ss-color-focus-ring);
   outline-offset: 2px;
 }
 
 @media (hover: hover) {
-  .addBusBtn:hover {
+  .addBusBtn:hover:not(:disabled) {
     border-color: var(--ss-color-primary);
     background: color-mix(in srgb, var(--ss-color-primary) 28%, var(--ss-color-bg));
   }

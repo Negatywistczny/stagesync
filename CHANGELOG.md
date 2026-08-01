@@ -5,6 +5,16 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Mixer:** w nagłówkach stref Audio / Busy / HW Out przycisk to **+ Dodaj** (bez obcinania dłuższych etykiet); pusta strefa HW Out bez komunikatu diagnostycznego.
+- **Mixer — HW Out:** usunięto przycisk × przy Mute (ryzyko live); usuwanie przez PPM albo Delete/Backspace na zaznaczonym pasku; **+ Dodaj** wyłącza się, gdy wyczerpano kanały fizycznego urządzenia (Master zajmuje wyjścia 1–2).
+- **Mixer — HW Out:** stereo patch ma podwójny miernik L/R (jak Master); tryb M/ST na pasku; model patchy mono/stereo gotowy pod dalszą rozbudowę.
+- **Mixer — Master:** przy multi-out można przemapować Stereo Out na inną parę fizyczną (domyślnie CH 1–2); zmiana zablokowana w trakcie Play.
+
 ## [5.3.7](https://github.com/Negatywistczny/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
 
 ### Dodano

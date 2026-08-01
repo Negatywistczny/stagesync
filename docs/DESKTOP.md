@@ -174,7 +174,7 @@ pnpm --filter @stagesync/desktop tauri build
 
 1. Ustaw wyjście systemowe na layout ≥ 4 kanałów (macOS Audio MIDI Setup / Windows Speakers).
 2. Preferencje → Audio: sprawdź „Kanały wyjścia” ≥ 4.
-3. Mixer → **+ Dodaj HW**; skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
+3. Mixer → **+ Dodaj** w strefie HW Out; skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
 4. Play → próba zmiany Out na/z HW = zablokowana; Pause → OK.
 
 Szczegóły env: [INSTALL.md](./INSTALL.md).

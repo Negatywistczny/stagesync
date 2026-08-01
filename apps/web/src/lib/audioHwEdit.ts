@@ -1,11 +1,17 @@
 /**
- * CRUD for project.audioHardwareOutputs (logical HW patches).
+ * CRUD for project.audioHardwareOutputs (logical HW patches / HwOutputPatch).
  */
 
 import {
   MAX_AUDIO_HARDWARE_OUTPUTS,
+  hardwarePatchChannelWidth,
+  masterOutputOverlapsHwPatches,
+  resolveChannelMode,
+  resolveMasterOutputRouting,
   type AudioHardwareOutput,
   type ChannelMode,
+  type HwOutputPatch,
+  type MasterOutputRouting,
   type Project,
 } from "@stagesync/shared";
 
@@ -20,20 +26,86 @@ export function nextHardwareOutputName(
   return `HW ${max + 1}`;
 }
 
-/** Next free stereo pair offset (≥ 2; Master uses 0–1). */
+export function hardwareOutputChannelWidth(mode: ChannelMode): number {
+  return hardwarePatchChannelWidth(mode);
+}
+
+/**
+ * Physical channels already spoken for: Master map + each HW patch.
+ */
+export function allocatedPhysicalChannelCount(
+  existing: readonly HwOutputPatch[],
+  masterOutput?: MasterOutputRouting | null,
+): number {
+  const master = resolveMasterOutputRouting(masterOutput);
+  let n = hardwarePatchChannelWidth(master.channelMode);
+  for (const row of existing) {
+    n += hardwarePatchChannelWidth(resolveChannelMode(row.channelMode));
+  }
+  return n;
+}
+
+function occupiedChannelSet(
+  existing: readonly HwOutputPatch[],
+  masterOutput?: MasterOutputRouting | null,
+): Set<number> {
+  const occupied = new Set<number>();
+  const master = resolveMasterOutputRouting(masterOutput);
+  const mWidth = hardwarePatchChannelWidth(master.channelMode);
+  for (let i = 0; i < mWidth; i++) occupied.add(master.channelOffset + i);
+  for (const row of existing) {
+    const width = hardwarePatchChannelWidth(resolveChannelMode(row.channelMode));
+    for (let i = 0; i < width; i++) occupied.add(row.channelOffset + i);
+  }
+  return occupied;
+}
+
+/**
+ * Next free device offset for a new HW patch (avoids Master + existing patches).
+ * Prefers even starts for stereo. Returns `-1` when none fit below an optional cap.
+ */
 export function nextHardwareChannelOffset(
   existing: readonly AudioHardwareOutput[],
   mode: ChannelMode = "stereo",
+  masterOutput?: MasterOutputRouting | null,
+  maxChannelCount?: number,
 ): number {
-  let maxEnd = 1; // Master occupies 0–1
-  for (const row of existing) {
-    const width = row.channelMode === "mono" ? 1 : 2;
-    maxEnd = Math.max(maxEnd, row.channelOffset + width - 1);
+  const width = hardwarePatchChannelWidth(mode);
+  const occupied = occupiedChannelSet(existing, masterOutput);
+  const cap =
+    maxChannelCount != null && Number.isFinite(maxChannelCount)
+      ? Math.floor(maxChannelCount)
+      : 64;
+  for (let start = 0; start + width <= cap; start++) {
+    if (mode === "stereo" && start % 2 === 1) continue;
+    let free = true;
+    for (let i = 0; i < width; i++) {
+      if (occupied.has(start + i)) {
+        free = false;
+        break;
+      }
+    }
+    if (free) return start;
   }
-  const start = maxEnd + 1;
-  // Prefer even offsets for stereo pairs
-  if (mode === "stereo" && start % 2 === 1) return start + 1;
-  return start;
+  return -1;
+}
+
+/**
+ * Whether another HW patch fits on the device (`maxChannelCount` from
+ * AudioContext.destination). Respects Master physical map.
+ */
+export function canAddHardwareOutput(
+  existing: readonly AudioHardwareOutput[],
+  maxChannelCount: number,
+  mode: ChannelMode = "stereo",
+  masterOutput?: MasterOutputRouting | null,
+): boolean {
+  if (!Number.isFinite(maxChannelCount) || maxChannelCount < 4) return false;
+  if (existing.length >= MAX_AUDIO_HARDWARE_OUTPUTS) return false;
+  return (
+    nextHardwareChannelOffset(existing, mode, masterOutput, maxChannelCount) >=
+    0
+  );
 }
 
 export function addAudioHardwareOutput(
@@ -41,6 +113,7 @@ export function addAudioHardwareOutput(
   partial?: Partial<
     Pick<AudioHardwareOutput, "name" | "channelOffset" | "channelMode">
   >,
+  opts?: { maxChannelCount?: number },
 ): { project: Project; hwOutputId: string } {
   const rows = project.audioHardwareOutputs ?? [];
   if (rows.length >= MAX_AUDIO_HARDWARE_OUTPUTS) {
@@ -49,11 +122,33 @@ export function addAudioHardwareOutput(
     );
   }
   const mode = partial?.channelMode === "mono" ? "mono" : "stereo";
+  if (
+    opts?.maxChannelCount != null &&
+    !canAddHardwareOutput(
+      rows,
+      opts.maxChannelCount,
+      mode,
+      project.masterOutput,
+    )
+  ) {
+    throw new RangeError(
+      `No free hardware channels (max ${opts.maxChannelCount})`,
+    );
+  }
   const hwOutputId = crypto.randomUUID();
   const name =
     partial?.name?.trim() || nextHardwareOutputName(rows);
   const channelOffset =
-    partial?.channelOffset ?? nextHardwareChannelOffset(rows, mode);
+    partial?.channelOffset ??
+    nextHardwareChannelOffset(
+      rows,
+      mode,
+      project.masterOutput,
+      opts?.maxChannelCount,
+    );
+  if (channelOffset < 0) {
+    throw new RangeError("No free hardware channels");
+  }
   const row: AudioHardwareOutput = {
     id: hwOutputId,
     name: name.slice(0, 80),
@@ -141,4 +236,43 @@ export function removeAudioHardwareOutput(
     cue: { ...project.cue, clips: cueClips },
     audioHardwareOutputs: rows.filter((r) => r.id !== hwOutputId),
   };
+}
+
+/** Set / clear Master physical device map (omit offset 0 stereo = default). */
+export function setMasterOutputRouting(
+  project: Project,
+  routing: MasterOutputRouting | null,
+): Project {
+  if (routing == null) {
+    if (project.masterOutput == null) return project;
+    const { masterOutput: _drop, ...rest } = project;
+    void _drop;
+    return rest;
+  }
+  const resolved = resolveMasterOutputRouting(routing);
+  const next: MasterOutputRouting = {};
+  if (resolved.channelOffset !== 0) {
+    next.channelOffset = resolved.channelOffset;
+  }
+  if (resolved.channelMode === "mono") {
+    next.channelMode = "mono";
+  }
+  const candidate = Object.keys(next).length === 0 ? null : next;
+  if (
+    masterOutputOverlapsHwPatches(
+      candidate,
+      project.audioHardwareOutputs ?? [],
+    )
+  ) {
+    throw new RangeError(
+      "Master output channels overlap a hardware output patch",
+    );
+  }
+  if (candidate == null) {
+    if (project.masterOutput == null) return project;
+    const { masterOutput: _drop, ...rest } = project;
+    void _drop;
+    return rest;
+  }
+  return { ...project, masterOutput: candidate };
 }

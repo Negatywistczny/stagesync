@@ -33,6 +33,7 @@ import {
   projectEndTicks,
   resolveBusOutputDest,
   resolveChannelMode,
+  resolveMasterOutputRouting,
   resolveMeterAt,
   resolveTempoAt,
   resolveTrackOutputDest,
@@ -123,7 +124,9 @@ type MasterBus = {
   splitter: ChannelSplitterNode;
   analyserL: AnalyserNode;
   analyserR: AnalyserNode;
-  /** Present when multi-out is active — feeds destination merger ch 0–1. */
+  /** Device channel offset for L (R = offset+1 when stereo multi-out). */
+  channelOffset: number;
+  /** Present when multi-out is active — feeds destination merger. */
   toMergerSplit?: ChannelSplitterNode;
 };
 
@@ -473,13 +476,23 @@ function ensureDestGraph(ctx: AudioContext): DestGraph | null {
   return destGraph;
 }
 
-function ensureMasterBus(ctx: AudioContext): MasterBus {
+function ensureMasterBus(ctx: AudioContext, project: Project): MasterBus {
   const graph = ensureDestGraph(ctx);
   const multi = graph != null;
+  const routing = resolveMasterOutputRouting(project.masterOutput);
+  const width = routing.channelMode === "mono" ? 1 : 2;
+  let channelOffset = routing.channelOffset;
+  if (multi && graph && channelOffset + width > graph.channelCount) {
+    channelOffset = 0;
+  }
 
   if (masterBus) {
     const hadMulti = Boolean(masterBus.toMergerSplit);
-    if (hadMulti === multi && (!multi || masterBus.toMergerSplit)) {
+    if (
+      hadMulti === multi &&
+      masterBus.channelOffset === channelOffset &&
+      (!multi || masterBus.toMergerSplit)
+    ) {
       return masterBus;
     }
     disconnectSafe(masterBus.gain);
@@ -506,13 +519,25 @@ function ensureMasterBus(ctx: AudioContext): MasterBus {
   if (multi && graph) {
     toMergerSplit = ctx.createChannelSplitter(2);
     gain.connect(toMergerSplit);
-    toMergerSplit.connect(graph.merger, 0, 0);
-    toMergerSplit.connect(graph.merger, 1, 1);
+    toMergerSplit.connect(graph.merger, 0, channelOffset);
+    if (width >= 2) {
+      toMergerSplit.connect(graph.merger, 1, channelOffset + 1);
+    } else {
+      // Mono Master map: fold R into the same physical channel.
+      toMergerSplit.connect(graph.merger, 1, channelOffset);
+    }
   } else {
     gain.connect(ctx.destination);
   }
 
-  masterBus = { gain, splitter, analyserL, analyserR, toMergerSplit };
+  masterBus = {
+    gain,
+    splitter,
+    analyserL,
+    analyserR,
+    channelOffset,
+    toMergerSplit,
+  };
   return masterBus;
 }
 
@@ -592,6 +617,7 @@ function connectRouteToDest(
     const busses = project.audioBusses ?? [];
     const g = ensureGroupBus(
       ctx,
+      project,
       dest.busId,
       resolveChannelMode(
         busses.find((b) => b.id === dest.busId)?.channelMode,
@@ -617,6 +643,7 @@ function connectRouteToDest(
 
 function ensureGroupBus(
   ctx: AudioContext,
+  project: Project,
   busId: string,
   mode: ChannelMode,
 ): GroupBusNode {
@@ -627,7 +654,7 @@ function ensureGroupBus(
     groupBuses.delete(busId);
     groupWiredDest.delete(busId);
   }
-  const master = ensureMasterBus(ctx);
+  const master = ensureMasterBus(ctx, project);
   const node = createChannelBus(ctx, mode);
   outputNode(node).connect(master.gain);
   groupBuses.set(busId, node);
@@ -637,6 +664,7 @@ function ensureGroupBus(
 
 function ensureTrackBus(
   ctx: AudioContext,
+  project: Project,
   trackId: string,
   mode: ChannelMode,
 ): TrackBus {
@@ -647,7 +675,7 @@ function ensureTrackBus(
     trackBuses.delete(trackId);
     trackWiredDest.delete(trackId);
   }
-  const master = ensureMasterBus(ctx);
+  const master = ensureMasterBus(ctx, project);
   const bus = createChannelBus(ctx, mode);
   outputNode(bus).connect(master.gain);
   trackBuses.set(trackId, bus);
@@ -690,7 +718,7 @@ function applyBusParams(
   soloTrackIds?: readonly string[],
   soloBusIds?: readonly string[],
 ): void {
-  const master = ensureMasterBus(ctx);
+  const master = ensureMasterBus(ctx, project);
   const now = ctx.currentTime;
   setParamDezippered(
     master.gain.gain,
@@ -706,7 +734,7 @@ function applyBusParams(
 
   for (const bus of busses) {
     const mode = resolveChannelMode(bus.channelMode);
-    const node = ensureGroupBus(ctx, bus.id, mode);
+    const node = ensureGroupBus(ctx, project, bus.id, mode);
     let lin = gainDbToLinear(bus.gainDb);
     if (bus.muted) lin = 0;
     if (busSoloMutesBus(bus.id, soloTrackIds, soloBusIds)) lin = 0;
@@ -743,7 +771,7 @@ function applyBusParams(
   const alive = new Set(project.audioTracks.map((t) => t.id));
   for (const track of project.audioTracks) {
     const mode = resolveChannelMode(track.channelMode);
-    const tBus = ensureTrackBus(ctx, track.id, mode);
+    const tBus = ensureTrackBus(ctx, project, track.id, mode);
     setParamDezippered(tBus.gain.gain, gainDbToLinear(track.gainDb), now);
     applyBalanceOrPan(tBus, track.pan ?? 0, now);
     const dest = resolveTrackOutputDest(track.output, busIdSet, hwIdSet);
@@ -951,7 +979,7 @@ function startCueSample(
   source.connect(gain);
   gain.connect(pan);
 
-  const master = ensureMasterBus(ctx);
+  const master = ensureMasterBus(ctx, project);
   let dest: AudioNode = master.gain;
   if (sample.output?.kind === "bus") {
     const busId = sample.output.busId;
@@ -959,6 +987,7 @@ function startCueSample(
     if (bus) {
       dest = ensureGroupBus(
         ctx,
+        project,
         bus.id,
         resolveChannelMode(bus.channelMode),
       ).gain;
@@ -1169,6 +1198,16 @@ function graphKey(input: AudioPlaybackInput): string {
       .join(";"),
     (input.soloTrackIds ?? []).join(","),
     (input.soloBusIds ?? []).join(","),
+    (() => {
+      const m = resolveMasterOutputRouting(input.project.masterOutput);
+      return `masterOut:${m.channelOffset}:${m.channelMode}`;
+    })(),
+    (input.project.audioHardwareOutputs ?? [])
+      .map(
+        (h) =>
+          `${h.id}:${h.channelOffset}:${resolveChannelMode(h.channelMode)}`,
+      )
+      .join(";"),
     input.project.cue.clips
       .map((c) => {
         const s = c.sample;
@@ -1339,7 +1378,7 @@ function startClip(
   levelGain.gain.value = gainDbToLinear(clip.gainDb);
 
   const trackMode = resolveChannelMode(track?.channelMode);
-  const trackBus = ensureTrackBus(ctx, clip.trackId, trackMode);
+  const trackBus = ensureTrackBus(ctx, project, clip.trackId, trackMode);
   const extras = connectWithOptionalDownmix(
     ctx,
     source,

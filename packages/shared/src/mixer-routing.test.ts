@@ -11,9 +11,12 @@ import {
   hwOutputUiAllowed,
   isHwOutRepatchBlockedWhilePlaying,
   isTrackRoutedToBus,
+  listMasterStereoPairOptions,
+  masterOutputOverlapsHwPatches,
   nextBusName,
   resolveBusOutputDest,
   resolveChannelMode,
+  resolveMasterOutputRouting,
   resolveTrackOutputDest,
   wouldCreateBusCycle,
 } from "./mixer-routing.js";
@@ -106,6 +109,58 @@ describe("mixer routing", () => {
     expect(hwOutputUiAllowed(3)).toBe(false);
     expect(hwOutputUiAllowed(4)).toBe(true);
     expect(hwOutputUiAllowed(8)).toBe(true);
+  });
+
+  it("resolveMasterOutputRouting defaults to CH 1–2 stereo", () => {
+    expect(resolveMasterOutputRouting(undefined)).toEqual({
+      channelOffset: 0,
+      channelMode: "stereo",
+    });
+    expect(resolveMasterOutputRouting({ channelOffset: 4 })).toEqual({
+      channelOffset: 4,
+      channelMode: "stereo",
+    });
+    expect(resolveMasterOutputRouting({ channelOffset: 3 })).toEqual({
+      channelOffset: 2,
+      channelMode: "stereo",
+    });
+  });
+
+  it("listMasterStereoPairOptions marks HW collisions", () => {
+    const opts = listMasterStereoPairOptions(8, [
+      {
+        id: "h1",
+        name: "HW 1",
+        channelOffset: 2,
+        channelMode: "stereo",
+      },
+    ]);
+    expect(opts.map((o) => o.channelOffset)).toEqual([0, 2, 4, 6]);
+    expect(opts.find((o) => o.channelOffset === 2)?.blocked).toBe(true);
+    expect(opts.find((o) => o.channelOffset === 0)?.blocked).toBe(false);
+  });
+
+  it("masterOutputOverlapsHwPatches", () => {
+    expect(
+      masterOutputOverlapsHwPatches({ channelOffset: 2 }, [
+        {
+          id: "h1",
+          name: "HW",
+          channelOffset: 2,
+          channelMode: "stereo",
+        },
+      ]),
+    ).toBe(true);
+    expect(
+      masterOutputOverlapsHwPatches(undefined, [
+        {
+          id: "h1",
+          name: "HW",
+          channelOffset: 2,
+          channelMode: "stereo",
+        },
+      ]),
+    ).toBe(false);
   });
 
   it("blocks hw_out repatch while playing (ADR 0017 §7)", () => {

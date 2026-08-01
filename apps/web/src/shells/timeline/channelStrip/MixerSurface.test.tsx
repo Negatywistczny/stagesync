@@ -166,6 +166,12 @@ describe("MixerSurface", () => {
     expect(screen.queryByRole("region", { name: "Wyjścia HW" })).toBeNull();
     expect(screen.getByRole("button", { name: "Dodaj Ścieżkę" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Dodaj Bus" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Dodaj Ścieżkę" }).textContent).toBe(
+      "+ Dodaj",
+    );
+    expect(screen.getByRole("button", { name: "Dodaj Bus" }).textContent).toBe(
+      "+ Dodaj",
+    );
     expect(screen.queryByText(/Brak ścieżek/)).toBeNull();
     expect(screen.queryByText(/Brak busów/)).toBeNull();
     expect(screen.queryByText(/Multi-out wymaga/)).toBeNull();
@@ -254,11 +260,61 @@ describe("MixerSurface", () => {
     renderMixer({ onAddHwOut: () => {} });
 
     expect(screen.getByRole("region", { name: "Wyjścia HW" })).toBeTruthy();
-    expect(screen.getByText(/Brak patchy HW/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Ukryj strefę HW Out" }));
     expect(screen.queryByText(/Brak patchy HW/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Dodaj wyjście HW" }).textContent).toBe(
+      "+ Dodaj",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ukryj strefę HW Out" }));
     expect(screen.queryByRole("button", { name: "Dodaj wyjście HW" })).toBeNull();
     expect(screen.getByRole("button", { name: "Pokaż strefę HW Out" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Wyjścia HW" })).toBeTruthy();
+  });
+
+  it("disables Add HW when device channel budget is exhausted", () => {
+    hwCap.maxChannelCount = 4;
+    hwCap.uiAllowed = true;
+    const project = createProjectSeed(
+      "song-1",
+      "Test Song",
+      "2026-07-26T00:00:00.000Z",
+    );
+    project.audioHardwareOutputs = [
+      {
+        id: "hw-1",
+        name: "HW 1",
+        channelOffset: 2,
+        channelMode: "stereo",
+      },
+    ];
+    const onAddHwOut = vi.fn();
+    render(
+      <MixerSurface
+        project={project}
+        trackSelection={{ ids: [], primaryId: null }}
+        soloAudioTrackIds={[]}
+        soloBusIds={[]}
+        renamingTrackId={null}
+        renameValue=""
+        renamingBusId={null}
+        busRenameValue=""
+        buildCallbacks={() => emptyCallbacks()}
+        buildBusCallbacks={() => emptyCallbacks()}
+        masterCallbacks={{
+          onGainChange: () => {},
+          onGainReset: () => {},
+        }}
+        clickCallbacks={{ onMuteClick: () => {} }}
+        clickMuted={false}
+        playing={false}
+        onAddAudioTrack={() => {}}
+        onAddBus={() => {}}
+        onAddHwOut={onAddHwOut}
+      />,
+    );
+    const addHw = screen.getByRole("button", { name: "Dodaj wyjście HW" });
+    expect(addHw).toHaveProperty("disabled", true);
+    expect(addHw.getAttribute("title")).toMatch(/Brak wolnych kanałów/);
+    fireEvent.click(addHw);
+    expect(onAddHwOut).not.toHaveBeenCalled();
   });
 });

@@ -260,9 +260,14 @@ import {
 } from "../lib/audioLaneEdit.js";
 import {
   addAudioHardwareOutput,
+  canAddHardwareOutput,
   removeAudioHardwareOutput,
+  setMasterOutputRouting,
   updateAudioHardwareOutput,
 } from "../lib/audioHwEdit.js";
+import {
+  getAudioHwCapability,
+} from "../lib/audioHwCapability.js";
 import {
   ChannelStripControls,
   MixerSurface,
@@ -820,6 +825,10 @@ export function TimelineShell() {
     useState<TrackSelection>(EMPTY_TRACK_SELECTION);
   const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
   const [soloBusIds, setSoloBusIds] = useState<string[]>([]);
+  const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
+  const [selectedHwOutputId, setSelectedHwOutputId] = useState<string | null>(
+    null,
+  );
   const [timelineSurface, setTimelineSurface] =
     useState<TimelineSurface>("timeline");
   const [trackRename, setTrackRename] = useState<{
@@ -837,6 +846,10 @@ export function TimelineShell() {
   const laneAudioFileRef = useRef<HTMLInputElement>(null);
   const trackSelectionRef = useRef(trackSelection);
   trackSelectionRef.current = trackSelection;
+  const selectedBusIdRef = useRef(selectedBusId);
+  selectedBusIdRef.current = selectedBusId;
+  const selectedHwOutputIdRef = useRef(selectedHwOutputId);
+  selectedHwOutputIdRef.current = selectedHwOutputId;
   const primaryId = clipSelection.primaryId;
   const selectionLane = primaryLane(clipSelection);
 
@@ -844,6 +857,8 @@ export function TimelineShell() {
   useEffect(() => {
     if (clipSelection.items.length > 0) {
       setTrackSelection(clearTrackSelection());
+      setSelectedBusId(null);
+      setSelectedHwOutputId(null);
     }
   }, [clipSelection]);
 
@@ -1213,6 +1228,21 @@ export function TimelineShell() {
       return;
     }
     if (!clipSelection.items.length) {
+      const hwId = selectedHwOutputIdRef.current;
+      if (hwId) {
+        const next = removeAudioHardwareOutput(draft, hwId);
+        if (next !== draft) commitDraft(next);
+        setSelectedHwOutputId(null);
+        return;
+      }
+      const busId = selectedBusIdRef.current;
+      if (busId) {
+        const next = removeAudioBus(draft, busId);
+        if (next !== draft) commitDraft(next);
+        setSelectedBusId(null);
+        setSoloBusIds((prev) => prev.filter((id) => id !== busId));
+        return;
+      }
       const ids = trackSelectionRef.current.ids;
       if (!ids.length) return;
       let next = draft;
@@ -1614,6 +1644,8 @@ export function TimelineShell() {
           clearMapSelection();
           setSelectedAnchorId(null);
           setTrackSelection(clearTrackSelection());
+          setSelectedBusId(null);
+          setSelectedHwOutputId(null);
           return;
         }
         case "split-at-playhead":
@@ -4132,6 +4164,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       return;
     }
     setClipSelection(clearSelection());
+    setSelectedBusId(null);
+    setSelectedHwOutputId(null);
     const alreadySelected = isAudioTrackSelected(trackSelection, trackId);
     const trackCount = alreadySelected ? trackSelection.ids.length : 1;
     if (!alreadySelected) {
@@ -4174,6 +4208,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       return;
     }
     setClipSelection(clearSelection());
+    setSelectedBusId(null);
+    setSelectedHwOutputId(null);
     const orderedIds = (draftProject?.audioTracks ?? []).map((t) => t.id);
     if (e.shiftKey) {
       setTrackSelection(
@@ -4280,6 +4316,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         if (!draftProject) return;
         commitDraft(setMasterGainDb(draftProject, 0));
       },
+      onOutputChange: (value) => {
+        if (!draftProject || state.playing) return;
+        const m = /^ch:(\d+)$/.exec(value);
+        if (!m) return;
+        const channelOffset = Number(m[1]);
+        try {
+          commitDraft(
+            setMasterOutputRouting(draftProject, { channelOffset }),
+          );
+        } catch (err) {
+          setLoadError(
+            err instanceof Error
+              ? err.message
+              : "Nie udało się zmienić wyjścia Master",
+          );
+        }
+      },
     };
   }
 
@@ -4301,6 +4354,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   }
 
   function openBusContextMenu(busId: string, clientX: number, clientY: number) {
+    setClipSelection(clearSelection());
+    setTrackSelection(clearTrackSelection());
+    setSelectedHwOutputId(null);
+    setSelectedBusId(busId);
     openContextMenu({
       x: clientX,
       y: clientY,
@@ -4319,6 +4376,37 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             if (!draftProject) return;
             commitDraft(removeAudioBus(draftProject, busId));
             setSoloBusIds((prev) => prev.filter((id) => id !== busId));
+            setSelectedBusId((prev) => (prev === busId ? null : prev));
+          },
+        },
+      ],
+    });
+  }
+
+  function openHwContextMenu(
+    hwOutputId: string,
+    clientX: number,
+    clientY: number,
+  ) {
+    setClipSelection(clearSelection());
+    setTrackSelection(clearTrackSelection());
+    setSelectedBusId(null);
+    setSelectedHwOutputId(hwOutputId);
+    openContextMenu({
+      x: clientX,
+      y: clientY,
+      label: "Menu HW Out",
+      items: [
+        {
+          id: "remove",
+          label: "Usuń wyjście HW",
+          danger: true,
+          onSelect: () => {
+            if (!draftProject) return;
+            commitDraft(removeAudioHardwareOutput(draftProject, hwOutputId));
+            setSelectedHwOutputId((prev) =>
+              prev === hwOutputId ? null : prev,
+            );
           },
         },
       ],
@@ -4339,8 +4427,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   function onAddHwOut() {
     if (!draftProject) return;
+    const maxChannelCount = getAudioHwCapability().maxChannelCount;
+    const rows = draftProject.audioHardwareOutputs ?? [];
+    if (
+      !canAddHardwareOutput(
+        rows,
+        maxChannelCount,
+        "stereo",
+        draftProject.masterOutput,
+      )
+    ) {
+      return;
+    }
     try {
-      const { project } = addAudioHardwareOutput(draftProject);
+      const { project } = addAudioHardwareOutput(draftProject, undefined, {
+        maxChannelCount,
+      });
       commitDraft(project);
     } catch (err) {
       setLoadError(
@@ -4368,15 +4470,39 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     );
   }
 
-  function onHwRemove(hwOutputId: string) {
+  function onHwChannelModeChange(
+    hwOutputId: string,
+    mode: "mono" | "stereo",
+  ) {
     if (!draftProject) return;
-    commitDraft(removeAudioHardwareOutput(draftProject, hwOutputId));
+    commitDraft(
+      updateAudioHardwareOutput(draftProject, hwOutputId, { channelMode: mode }),
+    );
+  }
+
+  function onHwSelect(hwOutputId: string, e: React.MouseEvent) {
+    if ((e.target as HTMLElement).closest("button, label, input")) {
+      return;
+    }
+    setClipSelection(clearSelection());
+    setTrackSelection(clearTrackSelection());
+    setSelectedBusId(null);
+    setSelectedHwOutputId(hwOutputId);
+  }
+
+  function onHwContextMenu(hwOutputId: string, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    openHwContextMenu(hwOutputId, e.clientX, e.clientY);
   }
 
   function buildBusCallbacks(busId: string): ChannelStripCallbacks {
     return {
       onSelect: () => {
-        /* bus selection not in trackSelection */
+        setClipSelection(clearSelection());
+        setTrackSelection(clearTrackSelection());
+        setSelectedHwOutputId(null);
+        setSelectedBusId(busId);
       },
       onContextMenu: (e) => {
         e.preventDefault();
@@ -6261,6 +6387,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               trackSelection={trackSelection}
               soloAudioTrackIds={soloAudioTrackIds}
               soloBusIds={soloBusIds}
+              selectedBusId={selectedBusId}
+              selectedHwOutputId={selectedHwOutputId}
               renamingTrackId={trackRename?.trackId ?? null}
               renameValue={trackRename?.name ?? ""}
               renamingBusId={busRename?.busId ?? null}
@@ -6274,9 +6402,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               onAddAudioTrack={onAddAudioTrack}
               onAddBus={onAddBus}
               onAddHwOut={onAddHwOut}
+              onHwSelect={onHwSelect}
+              onHwContextMenu={onHwContextMenu}
               onHwGainChange={onHwGainChange}
               onHwMuteToggle={onHwMuteToggle}
-              onHwRemove={onHwRemove}
+              onHwChannelModeChange={onHwChannelModeChange}
               onEmptyDoubleClick={(e) => {
                 if ((e.target as HTMLElement).closest("button, input, select"))
                   return;
