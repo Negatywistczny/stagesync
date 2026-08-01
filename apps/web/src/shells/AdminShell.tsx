@@ -50,6 +50,7 @@ import {
   type AdminSectionId,
 } from "../lib/operatorNavRoutes.js";
 import {
+  isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "../lib/operatorSurface.js";
@@ -93,6 +94,7 @@ function errMessage(err: unknown): string {
 
 export function AdminShell() {
   useAnnounceDevicePresence();
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const isCompactMobile = useMqMobileCompact();
   const isTablet = useMqTablet();
@@ -382,12 +384,14 @@ export function AdminShell() {
             .filter(Boolean)
             .join(" ")}
         >
-          {!isCompactMobile ? (
+          {!isCompactMobile && !isOsMenuDesktopShell() ? (
             <div className={styles.chromeBrand}>
               <ShellWordmark
                 suffix="Admin"
                 version={APP_VERSION}
                 iconOnly={isTablet}
+                onClick={() => navigate("/")}
+                title="Wróć do wyboru hosta"
               />
             </div>
           ) : null}

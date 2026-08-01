@@ -6106,6 +6106,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           helpPressed={helpOpen}
           onHelp={() => setHelpOpen(true)}
           onFullscreen={headerOnFullscreen}
+          hideOnDesktop={!shouldShowOperatorNav(pathname)}
         />
       )}
 
@@ -6202,7 +6203,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 {tempoAtPlayhead} BPM
               </Button>
             )}
-            {!isMobilePreview ? (
             <ShellIconButton
               label={
                 timelineSurface === "mixer"
@@ -6219,7 +6219,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             >
               <IconMixer />
             </ShellIconButton>
-            ) : null}
             <div className={styles.transportExtras}>
               <ShellIconButton
                 label="Pętla — przeciągnij zakres na linijce, potem włącz"
@@ -8296,6 +8295,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         <TouchNudgeBar
           clipId={primaryId}
           lane={selectionLane}
+          gesturePreview={gesturePreview}
           showLeftEdge={nudgeShowsLeftEdge(
             draftProject,
             selectionLane,
@@ -8990,11 +8990,13 @@ function TouchNudgeBar({
   clipId,
   lane,
   showLeftEdge,
+  gesturePreview,
   onAction,
 }: {
   clipId: string;
   lane: string;
   showLeftEdge: boolean;
+  gesturePreview: FormaGesturePreview | null;
   onAction: (action: NudgeAction) => void;
 }) {
   const leftRef = useRef<HTMLDivElement | null>(null);
@@ -9063,7 +9065,7 @@ function TouchNudgeBar({
       rightEdge.style.left = `${rightX}px`;
       rightEdge.style.transform = rightTx;
     }
-  }, [clipId, lane, showLeftEdge]);
+  }, [clipId, lane, showLeftEdge, gesturePreview]);
 
   useLayoutEffect(() => {
     reposition();

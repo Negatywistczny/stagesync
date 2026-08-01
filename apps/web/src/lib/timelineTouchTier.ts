@@ -4,12 +4,17 @@
  * Same breakpoints on Web, Console, and Tauri.
  */
 
-import { MQ_MOBILE_COMPACT, MQ_TABLET } from "./breakpoints.js";
+import {
+  MQ_LANDSCAPE_PHONE,
+  MQ_MOBILE_COMPACT,
+  MQ_TABLET,
+} from "./breakpoints.js";
 import { shouldUseMobileCompactChrome } from "./operatorSurface.js";
 
 export type TimelineTouchTier = "desktop" | "tablet" | "mobile";
 
 export const TIMELINE_MOBILE_MQ = MQ_MOBILE_COMPACT;
+export const TIMELINE_LANDSCAPE_PHONE_MQ = MQ_LANDSCAPE_PHONE;
 export const TIMELINE_TABLET_MQ = MQ_TABLET;
 export const TIMELINE_COARSE_MQ = "(pointer: coarse)";
 
@@ -25,8 +30,11 @@ export function detectTimelineTier(
 ): TimelineTouchTier {
   const allowMobilePlayer =
     options?.allowMobilePlayer ?? shouldUseMobileCompactChrome();
-  if (matches(TIMELINE_MOBILE_MQ) && allowMobilePlayer) return "mobile";
-  if (matches(TIMELINE_TABLET_MQ) || matches(TIMELINE_COARSE_MQ)) return "tablet";
+  const isMobile =
+    matches(TIMELINE_MOBILE_MQ) || matches(TIMELINE_LANDSCAPE_PHONE_MQ);
+  if (isMobile && allowMobilePlayer) return "mobile";
+  if (matches(TIMELINE_TABLET_MQ) || matches(TIMELINE_COARSE_MQ))
+    return "tablet";
   return "desktop";
 }
 

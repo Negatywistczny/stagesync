@@ -57,6 +57,9 @@ export function isOsMenuDesktopShell(): boolean {
   if (!isDesktopShell()) return false;
   const devSurface = getActiveDevSurface();
   if (devSurface === "tauri") return true;
+  // If we are in real Tauri but in DEV mode, we might want to see the headers
+  // unless we are specifically in a preview that mocks "tauri" surface.
+  if (import.meta.env.DEV && devSurface === null) return false;
   return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
 }
 

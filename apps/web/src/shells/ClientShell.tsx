@@ -12,6 +12,7 @@ import {
 import { Button, Input } from "@stagesync/ui";
 import { getOperatorAppJumpLinks } from "../lib/operatorNavRoutes.js";
 import {
+  isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "../lib/operatorSurface.js";
@@ -320,6 +321,7 @@ export function ClientShell() {
     wsStatus,
     latencyMs,
     started,
+    pathname,
     songTitle,
     bbt: headerBbt,
     transportError,
@@ -733,6 +735,7 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   transportError: string | null;
+  pathname: string;
   compact?: boolean;
   /** Tablet/desktop operator jump chips (Admin / Timeline). */
   showAppJump?: boolean;
@@ -754,6 +757,7 @@ function ClientChrome({
   songTitle,
   bbt,
   transportError,
+  pathname,
   compact = false,
   showAppJump = false,
   hideGlobalSettings = false,
@@ -766,6 +770,8 @@ function ClientChrome({
   onDisplayPrefsChange,
 }: ClientHeaderProps) {
   const appJump = showAppJump ? getOperatorAppJumpLinks("client") : [];
+
+  if (isOsMenuDesktopShell() && !shouldShowOperatorNav(pathname)) return null;
 
   return (
     <header

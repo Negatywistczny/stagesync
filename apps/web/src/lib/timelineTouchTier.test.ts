@@ -8,15 +8,23 @@ import {
   timelineGesturesAllowed,
 } from "./timelineTouchTier.js";
 
-/** Simulate `matchMedia` for a viewport width in px. */
-function matchesAtWidth(widthPx: number) {
+/** Simulate `matchMedia` for a viewport dimension in px. */
+function matchesAtViewport(widthPx: number, heightPx = 1000) {
   return (query: string) => {
     if (query.includes("pointer: coarse")) return false;
-    const match = query.match(/max-width:\s*(\d+)/);
-    if (!match) return false;
-    return widthPx <= Number(match[1]);
+    const widthMatch = query.match(/max-width:\s*(\d+)px/);
+    const heightMatch = query.match(/max-height:\s*(\d+)px/);
+
+    let ok = true;
+    if (widthMatch) ok = ok && widthPx <= Number(widthMatch[1]);
+    if (heightMatch) ok = ok && heightPx <= Number(heightMatch[1]);
+    if (!widthMatch && !heightMatch) ok = false;
+    return ok;
   };
 }
+
+/** Legacy helper for existing tests. */
+const matchesAtWidth = (w: number) => matchesAtViewport(w);
 
 describe("timelineTouchTier", () => {
   it("uses phone compact breakpoint for player-only tier", () => {
@@ -25,10 +33,10 @@ describe("timelineTouchTier", () => {
 
   it("detects mobile only at ≤640px, not tablet widths", () => {
     expect(
-      detectTimelineTier(matchesAtWidth(640), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(640), { allowMobilePlayer: true }),
     ).toBe("mobile");
     expect(
-      detectTimelineTier(matchesAtWidth(641), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(641, 1000), { allowMobilePlayer: true }),
     ).toBe("tablet");
     expect(
       detectTimelineTier(matchesAtWidth(768), { allowMobilePlayer: true }),
@@ -101,7 +109,19 @@ describe("timelineTouchTier", () => {
 
   it("641–768px viewport is tablet edit mode, not mobile preview", () => {
     expect(
-      detectTimelineTier(matchesAtWidth(700), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(700, 1000), { allowMobilePlayer: true }),
+    ).toBe("tablet");
+  });
+
+  it("detects mobile in landscape low-height viewports (up to 960x500)", () => {
+    expect(
+      detectTimelineTier(matchesAtViewport(960, 500), { allowMobilePlayer: true }),
+    ).toBe("mobile");
+    expect(
+      detectTimelineTier(matchesAtViewport(961, 500), { allowMobilePlayer: true }),
+    ).toBe("tablet");
+    expect(
+      detectTimelineTier(matchesAtViewport(960, 501), { allowMobilePlayer: true }),
     ).toBe("tablet");
   });
 

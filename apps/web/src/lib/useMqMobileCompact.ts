@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { MQ_MOBILE_COMPACT } from "./breakpoints.js";
+import { MQ_LANDSCAPE_PHONE, MQ_MOBILE_COMPACT } from "./breakpoints.js";
 import { shouldUseMobileCompactChrome } from "./operatorSurface.js";
 
 /**
- * True when viewport matches narrow-phone chrome (`MQ_MOBILE_COMPACT`, ≤640px).
+ * True when viewport matches narrow-phone chrome (`MQ_MOBILE_COMPACT`, ≤640px)
+ * or landscape phone with low viewport height.
  * Same on Web, Console, and Tauri — no desktop-shell exception.
  */
 export function useMqMobileCompact(): boolean {
   const [compact, setCompact] = useState(() => {
     if (typeof window === "undefined" || !window.matchMedia) return false;
     if (!shouldUseMobileCompactChrome()) return false;
-    return window.matchMedia(MQ_MOBILE_COMPACT).matches;
+    return (
+      window.matchMedia(MQ_MOBILE_COMPACT).matches ||
+      window.matchMedia(MQ_LANDSCAPE_PHONE).matches
+    );
   });
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -18,11 +22,17 @@ export function useMqMobileCompact(): boolean {
       setCompact(false);
       return;
     }
-    const mq = window.matchMedia(MQ_MOBILE_COMPACT);
-    const sync = () => setCompact(mq.matches);
+    const mqCompact = window.matchMedia(MQ_MOBILE_COMPACT);
+    const mqLandscape = window.matchMedia(MQ_LANDSCAPE_PHONE);
+
+    const sync = () => setCompact(mqCompact.matches || mqLandscape.matches);
     sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
+    mqCompact.addEventListener("change", sync);
+    mqLandscape.addEventListener("change", sync);
+    return () => {
+      mqCompact.removeEventListener("change", sync);
+      mqLandscape.removeEventListener("change", sync);
+    };
   }, []);
   return compact;
 }
