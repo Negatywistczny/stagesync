@@ -12,6 +12,29 @@ import { createApp } from "./app.js";
 import { attachTransportWs, TRANSPORT_WS_PATH } from "./transport/ws.js";
 import { createTransportEngine } from "./transport/engine.js";
 
+async function rmWithRetry(path: string): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await rm(path, { recursive: true, force: true });
+      return;
+    } catch (err) {
+      lastError = err;
+      const code =
+        err && typeof err === "object" && "code" in err
+          ? String((err as NodeJS.ErrnoException).code)
+          : "";
+      if (code !== "ENOTEMPTY") {
+        throw err;
+      }
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 25 * (attempt + 1));
+      });
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Failed to remove temp dir");
+}
+
 describe("transport REST + WS", () => {
   let server: Server;
   let baseUrl: string;
@@ -157,7 +180,7 @@ describe("transport REST + WS", () => {
       expect(typeof state.serverTimeMs).toBe("number");
     } finally {
       await new Promise<void>((resolve) => localServer.close(() => resolve()));
-      await rm(dataDir, { recursive: true, force: true });
+      await rmWithRetry(dataDir);
     }
   });
 
@@ -208,7 +231,7 @@ describe("transport REST + WS", () => {
     } finally {
       transport.dispose();
       await new Promise<void>((resolve) => localServer.close(() => resolve()));
-      await rm(dataDir, { recursive: true, force: true });
+      await rmWithRetry(dataDir);
     }
   });
 

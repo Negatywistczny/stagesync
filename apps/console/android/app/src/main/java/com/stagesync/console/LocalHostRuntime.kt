@@ -139,7 +139,7 @@ object LocalHostRuntime {
             }
         }
         return buildString {
-            append("Lokalny host nie jest gotowy w tym buildzie")
+            append("Lokalny host nie jest jeszcze gotowy w tym buildzie")
             if (missing.isNotEmpty()) {
                 append(": ")
                 append(missing.joinToString("; "))

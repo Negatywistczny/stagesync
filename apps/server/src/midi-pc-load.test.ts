@@ -24,6 +24,26 @@ function putBody(project: Project) {
   return PutProjectBodySchema.parse(body);
 }
 
+async function waitForTransportState(
+  baseUrl: string,
+  predicate: (state: ReturnType<typeof TransportStateSchema.parse>) => boolean,
+  timeoutMs = 1200,
+): Promise<ReturnType<typeof TransportStateSchema.parse>> {
+  const started = Date.now();
+  let last: ReturnType<typeof TransportStateSchema.parse> | null = null;
+  while (Date.now() - started < timeoutMs) {
+    last = TransportStateSchema.parse(
+      await (await fetch(`${baseUrl}/api/transport`)).json(),
+    );
+    if (predicate(last)) return last;
+    await new Promise<void>((resolve) => setTimeout(resolve, 25));
+  }
+  if (last) return last;
+  return TransportStateSchema.parse(
+    await (await fetch(`${baseUrl}/api/transport`)).json(),
+  );
+}
+
 describe("MIDI program change → load project", () => {
   let dataDir: string;
   let server: Server;
@@ -81,10 +101,9 @@ describe("MIDI program change → load project", () => {
     });
 
     backend.emitInput({ type: "program", channel: 0, program: 12 });
-    await new Promise((r) => setTimeout(r, 80)); // debounce 50ms + load I/O
-
-    const state = TransportStateSchema.parse(
-      await (await fetch(`${baseUrl}/api/transport`)).json(),
+    const state = await waitForTransportState(
+      baseUrl,
+      (s) => s.activeProjectId === created.id,
     );
     expect(state.activeProjectId).toBe(created.id);
     expect(state.playing).toBe(false);
