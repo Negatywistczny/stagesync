@@ -5,23 +5,21 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.3.7](https://github.com/Negatywistczny/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
 
 ### Dodano
 
 #### 🖥️ App Shell & UI
-- **Powiadomienia:** w Ustawieniach (Klient i Admin → Ogólne) można włączyć powiadomienia systemowe — zgoda nie jest wymagana przy starcie. Przy utracie połączenia z hostem, gdy aplikacja jest w tle, pojawia się lokalny alert. Token urządzenia rejestruje się u hosta; zdalny Push (FCM / WebPush) działa po skonfigurowaniu opcjonalnych kluczy (bez sekretów w APK).
-
-## [5.3.7](https://github.com/Negatywistczny/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
+- **Powiadomienia:** w Ustawieniach (Klient i Admin → Ogólne) można włączyć powiadomienia systemowe; przy utracie połączenia z hostem i pracy aplikacji w tle pojawia się lokalny alert. Token urządzenia rejestruje się u hosta, a zdalny Push (FCM / WebPush) działa po skonfigurowaniu opcjonalnych kluczy bez publikowania sekretów w APK.
 
 ### Naprawiono
 
 #### 🖥️ App Shell & UI
-- **Stabilizacja patcha:** uporządkowano i zweryfikowano główne ścieżki UI/transportu dla bieżącego cutu, tak aby patch był gotowy do release’a bez wchodzenia w nowy zakres funkcjonalny.
+- **Stabilizacja cutu:** uporządkowano i zweryfikowano główne ścieżki UI i transportu dla bieżącego cutu, dzięki czemu patch był gotowy do release’a bez wchodzenia w nowy zakres funkcjonalny.
 - **Testy i build:** potwierdzono poprawność testów server/web oraz buildów po przygotowaniu środowiska Node 20.
 
 #### 📦 Packaging & Desktop
-- **Release readiness:** zaktualizowano wersję aplikacji i odświeżono metadane release dla kolejnego minora.
+- **Wersja i metadane:** zaktualizowano numer wersji aplikacji i odświeżono metadane release dla kolejnego minora.
 
 ## [5.3.6](https://github.com/Negatywistczny/stagesync/compare/v5.3.5...v5.3.6) - 2026-07-29
 
