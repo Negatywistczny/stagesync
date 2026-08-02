@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
+import type { ButtonHTMLAttributes, ReactNode, RefObject } from "react";
 import { Button } from "@stagesync/ui";
 import styles from "./ShellIconButton.module.css";
 
@@ -10,7 +10,7 @@ export type ShellIconButtonProps = {
   confirming?: boolean;
   /** Danger tone for confirming / hover (e.g. shutdown). */
   danger?: boolean;
-  ref?: Ref<HTMLButtonElement>;
+  ref?: RefObject<HTMLButtonElement | null>;
 } & Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
   | "disabled"

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
+import type { ButtonHTMLAttributes, ReactNode, RefObject } from "react";
 import "./button.css";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
@@ -13,7 +13,7 @@ export type ButtonProps = {
   /** Square icon-only geometry (ss-btn--icon). */
   iconOnly?: boolean;
   className?: string;
-  ref?: Ref<HTMLButtonElement>;
+  ref?: RefObject<HTMLButtonElement | null>;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
 /**

@@ -15,25 +15,25 @@
     "migrate:legacy": "tsx src/cli/migrate-legacy.ts"
   },
   "dependencies": {
-    "@sentry/node": "^10.68.0",
+    "@sentry/node": "^10.69.0",
     "@stagesync/shared": "workspace:*",
-    "bonjour-service": "^1.4.3",
+    "bonjour-service": "^1.4.4",
     "easymidi": "^3.2.0",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "multer": "^2.2.0",
     "ws": "^8.21.1"
   },
   "devDependencies": {
     "@stagesync/eslint-config": "workspace:*",
     "@stagesync/typescript-config": "workspace:*",
-    "@types/express": "^5.0.3",
+    "@types/express": "^5.0.6",
     "@types/multer": "^2.2.0",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.1.2",
     "@types/ws": "^8.18.1",
-    "@vitest/coverage-v8": "^3.2.4",
-    "eslint": "^9.39.5",
-    "tsx": "^4.20.3",
-    "typescript": "5.9.3",
-    "vitest": "^3.2.4"
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.0",
+    "tsx": "^4.23.4",
+    "typescript": "7.0.2",
+    "vitest": "^4.1.10"
   }
 }
