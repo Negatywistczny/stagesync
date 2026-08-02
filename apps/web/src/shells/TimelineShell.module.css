@@ -79,6 +79,30 @@
   }
 }
 
+@media (max-width: 960px) and (max-height: 500px) {
+  .topChrome {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+    gap: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    align-items: center;
+    padding: var(--ss-space-1) var(--ss-space-2);
+    padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
+    min-height: calc(
+      var(--ss-touch-min-shell-action) + var(--ss-space-1) +
+        max(var(--ss-space-1), env(safe-area-inset-top, 0px))
+    );
+  }
+
+  .topChrome > nav {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+    padding: 0;
+    min-height: 0;
+    max-height: var(--ss-touch-min-shell-action);
+    overflow: hidden;
+  }
+}
+
 .toolbarHeaderActions {
   display: none;
 }

@@ -766,3 +766,23 @@
     );
   }
 }
+
+@media (max-height: 550px) {
+  .mixerStrip {
+    gap: calc(var(--ss-space-1) * var(--tl-zoom-ui, 1));
+    padding: calc(var(--ss-space-1) * var(--tl-zoom-ui, 1))
+      calc(var(--ss-space-1) * var(--tl-zoom-ui, 1));
+  }
+  .faderMeterRow {
+    min-height: 80px;
+  }
+  .masterPanSpacer {
+    height: calc(var(--ss-space-6) + var(--ss-space-2) + var(--ss-text-xs));
+  }
+  .mixerToolsSpacer {
+    height: calc(var(--ss-space-6) * var(--tl-zoom-ui, 1));
+  }
+  .outputSelectSpacer {
+    height: calc(var(--ss-text-xs) + var(--ss-space-3));
+  }
+}

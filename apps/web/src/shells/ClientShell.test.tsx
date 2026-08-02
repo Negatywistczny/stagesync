@@ -26,6 +26,7 @@ vi.mock("../lib/nativeShell.js", () => ({
 vi.mock("../lib/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
   shouldShowFullscreenControl: vi.fn(() => false),
+  isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
 vi.mock("../lib/useMqMobileCompact.js", () => ({
@@ -419,7 +420,7 @@ describe("ClientShell chrome", () => {
           matches: query.includes("max-width: 640px"),
           addEventListener: vi.fn(),
           removeEventListener: vi.fn(),
-        }) as MediaQueryList,
+        }) as unknown as MediaQueryList,
     );
     renderClient();
     expect(screen.queryByRole("button", { name: /^Rozpocznij$/i })).toBeNull();
@@ -436,7 +437,7 @@ describe("ClientShell chrome", () => {
           matches: query.includes("max-width: 640px"),
           addEventListener: vi.fn(),
           removeEventListener: vi.fn(),
-        }) as MediaQueryList,
+        }) as unknown as MediaQueryList,
     );
     renderClient();
     expect(screen.getByText("12 ms")).toBeTruthy();
@@ -452,7 +453,7 @@ describe("ClientShell chrome", () => {
           matches: false,
           addEventListener: vi.fn(),
           removeEventListener: vi.fn(),
-        }) as MediaQueryList,
+        }) as unknown as MediaQueryList,
     );
     renderClient();
     expect(screen.getByRole("button", { name: /^Rozpocznij$/i })).toBeTruthy();

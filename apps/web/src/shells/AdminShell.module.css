@@ -634,6 +634,106 @@
   }
 }
 
+@media (max-width: 960px) and (max-height: 500px) {
+  .shell {
+    /* Match Client PWA — Select, segment chips and ⚙️ share 44px targets. */
+    --ss-touch-min: var(--ss-touch-min-client);
+  }
+
+  .workspace {
+    padding: var(--ss-space-2);
+  }
+
+  /* Songs / inspector: stack columns on phone (same Web / Console / Tauri). */
+  .split {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .chromeCompact {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "nav";
+    padding: var(--ss-space-1) var(--ss-space-2);
+    padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
+    gap: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    align-items: center;
+    min-height: calc(
+      var(--ss-touch-min-shell-action) + var(--ss-space-1) +
+        max(var(--ss-space-1), env(safe-area-inset-top, 0px))
+    );
+  }
+
+  .chromeCompact .operatorNavEmbed {
+    min-height: 0;
+    max-height: var(--ss-touch-min-shell-action);
+    overflow: hidden;
+  }
+
+  .chromeCompact.chromeLegacy {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "sections aside"
+      "jump jump";
+    gap: var(--ss-space-1);
+    min-height: auto;
+  }
+
+  .sectionSelect {
+    grid-area: sections;
+    min-width: 0;
+  }
+
+  .sectionSelectInput {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    min-height: var(--ss-touch-min);
+    max-height: var(--ss-touch-min);
+    padding: var(--ss-space-1) var(--ss-space-2);
+    font-size: var(--ss-text-xs);
+    line-height: var(--ss-leading-compact);
+  }
+
+  .chromeCompact.chromeLegacy .appJump {
+    grid-area: jump;
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+    gap: var(--ss-space-1);
+  }
+
+  .appJumpCompact a,
+  .appJumpCompact .appJumpMuted {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--ss-text-xs);
+    padding: var(--ss-space-1) var(--ss-space-2);
+    border-radius: var(--ss-radius-pill);
+    border: 1px solid var(--ss-color-border);
+    background: color-mix(in srgb, var(--ss-color-elevated) 55%, transparent);
+    min-height: var(--ss-touch-min-shell-action);
+    max-height: var(--ss-touch-min-shell-action);
+    line-height: var(--ss-leading-compact);
+    box-sizing: border-box;
+  }
+
+  .chromeCompact.chromeLegacy .chromeAside {
+    grid-area: aside;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .status {
+    gap: var(--ss-space-1) var(--ss-space-2);
+    padding: var(--ss-space-1) var(--ss-space-2);
+  }
+}
+
 .songRow {
   display: grid;
   grid-template-columns: var(--ss-space-10) minmax(0, 1fr) auto;

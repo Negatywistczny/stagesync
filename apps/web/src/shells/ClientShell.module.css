@@ -2237,3 +2237,110 @@
     border-bottom: 1px solid var(--ss-color-border);
   }
 }
+
+@media (max-width: 960px) and (max-height: 500px) {
+  .page {
+    --ss-touch-min: var(--ss-touch-min-client);
+  }
+
+  .headerCompact {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+    flex-wrap: nowrap;
+    row-gap: 0;
+    gap: var(--ss-space-2);
+    box-sizing: border-box;
+    padding: var(--ss-space-1) var(--ss-space-2);
+    padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
+    min-height: calc(
+      var(--ss-touch-min-shell-action) + var(--ss-space-1) +
+        max(var(--ss-space-1), env(safe-area-inset-top, 0px))
+    );
+  }
+
+  .headerCompact .songTitle {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--ss-text-sm);
+  }
+
+  .headerCompact .headerActions {
+    gap: var(--ss-space-1);
+  }
+
+  .welcomeMobile {
+    gap: var(--ss-space-3);
+    padding: var(--ss-space-3) var(--ss-space-2);
+    padding-bottom: max(var(--ss-space-3), env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    justify-content: stretch;
+  }
+
+  .welcomeMobile .welcomeHero {
+    flex: 0 0 auto;
+    gap: var(--ss-space-2);
+    width: 100%;
+  }
+
+  .welcomeMobile .welcomeBrand {
+    display: none;
+  }
+
+  .welcomeMobile .welcomeTitle {
+    font-size: var(--ss-text-xl);
+  }
+
+  .welcomeMobile .roleGrid {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: 1fr;
+    gap: var(--ss-space-2);
+    align-content: stretch;
+  }
+
+  .welcomeMobile .roleTile {
+    min-height: 0;
+    height: 100%;
+    gap: var(--ss-space-3);
+    padding: var(--ss-space-4) var(--ss-space-3);
+  }
+
+  .welcomeMobile .roleIcon {
+    font-size: var(--ss-text-stage-2xl);
+    line-height: var(--ss-leading-none);
+  }
+
+  .welcomeMobile .roleLabel {
+    font-size: var(--ss-text-xl);
+    font-weight: var(--ss-font-weight-heavy);
+    line-height: var(--ss-leading-compact);
+  }
+
+  .topChrome {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+    gap: 0;
+    overflow-x: hidden;
+    padding: 0 var(--ss-space-2);
+    padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px));
+  }
+
+  .topChrome > nav {
+    --ss-touch-min: var(--ss-touch-min-shell-action);
+    padding: 0;
+    min-height: 0;
+    max-height: var(--ss-touch-min-shell-action);
+    overflow: hidden;
+  }
+
+  .topChrome .headerCompact {
+    padding: var(--ss-space-1) 0;
+    min-height: calc(
+      var(--ss-touch-min-shell-action) + var(--ss-space-1) + var(--ss-space-1)
+    );
+  }
+
+  .rolePane {
+    padding: var(--ss-space-1);
+  }
+}

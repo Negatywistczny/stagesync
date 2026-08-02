@@ -10,7 +10,7 @@ import {
   IconAutoAdvance,
   IconChevronLeft,
   IconChevronRight,
-  IconEye,
+  IconIndicator,
   IconFollow,
   IconInfo,
   IconLoop,
@@ -193,6 +193,14 @@ export function TimelineToolbar({
               <IconPlay />
             )}
           </Button>
+          <ShellIconButton
+            label="Pętla — przeciągnij zakres na linijce, potem włącz"
+            aria-keyshortcuts="c"
+            pressed={loopOn}
+            onClick={onLoopToggle}
+          >
+            <IconLoop />
+          </ShellIconButton>
           <span className={styles.bbt} aria-live="polite">
             {clockLabel}
           </span>
@@ -213,31 +221,7 @@ export function TimelineToolbar({
               {tempoAtPlayhead} BPM
             </Button>
           )}
-          <ShellIconButton
-            label={
-              timelineSurface === "mixer"
-                ? "Wróć do Timeline"
-                : "Mikser"
-            }
-            aria-keyshortcuts="x"
-            pressed={timelineSurface === "mixer"}
-            onClick={() =>
-              setTimelineSurface((s) =>
-                s === "mixer" ? "timeline" : "mixer",
-              )
-            }
-          >
-            <IconMixer />
-          </ShellIconButton>
           <div className={styles.transportExtras}>
-            <ShellIconButton
-              label="Pętla — przeciągnij zakres na linijce, potem włącz"
-              aria-keyshortcuts="c"
-              pressed={loopOn}
-              onClick={onLoopToggle}
-            >
-              <IconLoop />
-            </ShellIconButton>
             <Button
               variant="ghost"
               className={styles.metaChip}
@@ -260,55 +244,71 @@ export function TimelineToolbar({
                 ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
                 : "—"}
             </Button>
-            <ShellIconButton
-              label="Metronom"
-              aria-keyshortcuts="k"
-              pressed={metronomeOn}
-              onClick={() => void onMetronomeToggle()}
-            >
-              <IconMetronome />
-            </ShellIconButton>
-            <ShellIconButton
-              label="Podążaj za wskaźnikiem"
-              pressed={followPlayhead}
-              onClick={() => {
-                setFollowPlayhead((v) => {
-                  const next = !v;
-                  try {
-                    localStorage.setItem(
-                      "stagesync-timeline-follow-playhead",
-                      next ? "1" : "0",
-                    );
-                  } catch {
-                    /* ignore */
-                  }
-                  return next;
-                });
-              }}
-            >
-              <IconFollow />
-            </ShellIconButton>
-            <ShellIconButton
-              label="Wskaźnik MIDI (playhead)"
-              pressed={showMidiPlayhead}
-              onClick={() => {
-                setShowMidiPlayhead((v) => {
-                  const next = !v;
-                  try {
-                    localStorage.setItem(
-                      "stagesync-timeline-midi-playhead",
-                      next ? "1" : "0",
-                    );
-                  } catch {
-                    /* ignore */
-                  }
-                  return next;
-                });
-              }}
-            >
-              <IconEye />
-            </ShellIconButton>
           </div>
+          <ShellIconButton
+            label="Metronom"
+            aria-keyshortcuts="k"
+            pressed={metronomeOn}
+            onClick={() => void onMetronomeToggle()}
+          >
+            <IconMetronome />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Podążaj za wskaźnikiem"
+            pressed={followPlayhead}
+            onClick={() => {
+              setFollowPlayhead((v) => {
+                const next = !v;
+                try {
+                  localStorage.setItem(
+                    "stagesync-timeline-follow-playhead",
+                    next ? "1" : "0",
+                  );
+                } catch {
+                  /* ignore */
+                }
+                return next;
+              });
+            }}
+          >
+            <IconFollow />
+          </ShellIconButton>
+          <ShellIconButton
+            label="Wskaźnik MIDI (playhead)"
+            pressed={showMidiPlayhead}
+            onClick={() => {
+              setShowMidiPlayhead((v) => {
+                const next = !v;
+                try {
+                  localStorage.setItem(
+                    "stagesync-timeline-midi-playhead",
+                    next ? "1" : "0",
+                  );
+                } catch {
+                  /* ignore */
+                }
+                return next;
+              });
+            }}
+          >
+            <IconIndicator />
+          </ShellIconButton>
+          <ShellIconButton
+            label={
+              timelineSurface === "mixer"
+                ? "Wróć do Timeline"
+                : "Mikser"
+            }
+            aria-keyshortcuts="x"
+            pressed={timelineSurface === "mixer"}
+            onClick={() =>
+              setTimelineSurface((s) =>
+                s === "mixer" ? "timeline" : "mixer",
+              )
+            }
+          >
+            <IconMixer />
+          </ShellIconButton>
         </div>
       </div>
 

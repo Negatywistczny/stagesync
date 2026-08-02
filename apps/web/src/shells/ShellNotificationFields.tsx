@@ -65,10 +65,6 @@ export function ShellNotificationFields() {
   return (
     <Field label="Powiadomienia systemowe">
       <div className={styles.stack}>
-        <p className={styles.hint}>
-          Alerty o utracie hosta i ważne komunikaty (kanały Critical /
-          Announcements). Zgoda nie jest wymagana przy starcie aplikacji.
-        </p>
         <p className={styles.meta} data-testid="push-permission">
           Uprawnienie: {permission}
           {enabled ? " · włączone w StageSync" : " · wyłączone"}

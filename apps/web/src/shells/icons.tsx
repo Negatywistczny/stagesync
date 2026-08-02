@@ -243,6 +243,10 @@ export function IconZoomIn(p: IconProps) {
   return withIcon(ZoomIn, p);
 }
 
+export function IconIndicator(p: IconProps) {
+  return withIcon(CircleDot, p);
+}
+
 
 const TRACK_ICON_MAP: Record<TrackIcon, ComponentType<LucideProps>> = {
   mic: Mic,
