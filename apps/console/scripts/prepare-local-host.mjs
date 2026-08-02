@@ -484,10 +484,17 @@ async function packServerTree(destServer) {
     throw new Error("server dist missing after build");
   }
 
-  console.log("[local-host] pnpm deploy --prod @stagesync/server");
+  console.log("[local-host] pnpm deploy --prod --legacy @stagesync/server");
   await rm(destServer, { recursive: true, force: true });
   await mkdir(destServer, { recursive: true });
-  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", destServer]);
+  run("pnpm", [
+    "--filter",
+    "@stagesync/server",
+    "deploy",
+    "--prod",
+    "--legacy",
+    destServer,
+  ]);
 
   await rm(join(destServer, "dist"), { recursive: true, force: true });
   await cp(serverDistDir, join(destServer, "dist"), {

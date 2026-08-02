@@ -459,7 +459,15 @@ async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
   await mkdir(sidecarServerDir, { recursive: true });
 
   // Default isolated linker — hoisted deploy leaves an empty node_modules (no express).
-  run("pnpm", ["--filter", "@stagesync/server", "deploy", "--prod", sidecarServerDir]);
+  // pnpm 10+: --legacy (or workspace forceLegacyDeploy) for non-injected workspaces.
+  run("pnpm", [
+    "--filter",
+    "@stagesync/server",
+    "deploy",
+    "--prod",
+    "--legacy",
+    sidecarServerDir,
+  ]);
 
   // Use the compiled dist from the monorepo build (not deploy's copied sources).
   await rm(join(sidecarServerDir, "dist"), { recursive: true, force: true });
