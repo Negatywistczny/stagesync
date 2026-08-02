@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CLI: migrate legacy 4.x database.json → StageSync v5 projects.
+ * CLI: migrate legacy 4.x database.json → StageSync v6 projects.
  *
  *   pnpm migrate:legacy -- --input path/to/database.json --dry-run
  *   pnpm migrate:legacy -- --input path/to/database.json --data-dir ./data --apply
@@ -50,7 +50,7 @@ function usage(): void {
 
 Options:
   --input         Path to legacy 4.x database.json
-  --data-dir      v5 data root (contains library/ + projects/)
+  --data-dir      data root (contains library/ + projects/)
   --uploads-dir   Legacy uploads/ (MusicXML / audio / local covers). Default: <input-dir>/uploads or ../uploads
   --dry-run       Report only (default if --apply omitted)
   --apply         Write project.json files + merge library/setlist + copy pending assets

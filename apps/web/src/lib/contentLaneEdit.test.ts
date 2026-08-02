@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import {
+  createProjectV6Seed,
+  type TekstClip,
+} from "@stagesync/shared";
 import {
   commitContentGesture,
   joinAdjacentContentClips,
@@ -26,7 +29,7 @@ import {
 
 describe("contentLaneEdit", () => {
   it("finds content clip covering ticks for scissors hit-test", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilTekstClick(p, 0, "A");
     p = pencilTekstClick(p, 3840, "B");
     const a = p.tekst.clips.find((c) => c.text === "A")!;
@@ -37,8 +40,8 @@ describe("contentLaneEdit", () => {
     expect(contentClipCoveringTicks(p, "tekst", 3840 * 4)).toBeNull();
   });
 
-  it("moves tekst clip without overlap", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+  it("moves tekst clip and shifts all blocks by Δstart", () => {
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilTekstClick(p, 0, "A");
     p = pencilTekstClick(p, 3840, "B");
     const id = p.tekst.clips.find((c) => c.text === "A")!.id;
@@ -46,10 +49,51 @@ describe("contentLaneEdit", () => {
     const moved = p.tekst.clips.find((c) => c.id === id)!;
     expect(moved.startTicks).toBe(7680);
     expect(moved.text).toBe("A");
+    expect(moved.blocks[0]!.startTicks).toBe(7680);
+    expect(moved.blocks[0]!.lengthTicks).toBe(moved.lengthTicks);
+  });
+
+  it("resizes single-block tekst and syncs sole block", () => {
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = pencilTekstClick(p, 0, "A");
+    const id = p.tekst.clips[0]!.id;
+    p = commitResizeContentClip(p, "tekst", id, "end", 7680, "bar");
+    const clip = p.tekst.clips[0]!;
+    expect(clip.lengthTicks).toBe(7680);
+    expect(clip.blocks).toHaveLength(1);
+    expect(clip.blocks[0]!).toMatchObject({
+      startTicks: clip.startTicks,
+      lengthTicks: 7680,
+      text: "A",
+    });
+  });
+
+  it("split multi-block inherits blocks in each tick window", () => {
+    const multi: TekstClip = {
+      id: "tekst-m",
+      startTicks: 0,
+      lengthTicks: 3840,
+      text: "abc",
+      blocks: [
+        { id: "b0", startTicks: 0, lengthTicks: 1000, text: "a" },
+        { id: "b1", startTicks: 1000, lengthTicks: 1000, text: "b" },
+        { id: "b2", startTicks: 2000, lengthTicks: 1840, text: "c" },
+      ],
+    };
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    p = { ...p, tekst: { clips: [multi] } };
+    const split = splitContentClipAt(p, "tekst", "tekst-m", 1500, "off");
+    expect(split.tekst.clips).toHaveLength(2);
+    const left = split.tekst.clips.find((c) => c.id === "tekst-m")!;
+    const right = split.tekst.clips.find((c) => c.id !== "tekst-m")!;
+    expect(left.blocks.map((b) => b.id)).toEqual(["b0", "b1"]);
+    expect(left.blocks[1]!.lengthTicks).toBe(500);
+    expect(right.blocks.map((b) => b.id)).toEqual(["b1", "b2"]);
+    expect(right.blocks[0]!.startTicks).toBe(1500);
   });
 
   it("resizes akordy clip end", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilAkordyClick(p, 0, "C");
     const id = p.akordy.clips[0]!.id;
     p = commitResizeContentClip(p, "akordy", id, "end", 7680, "bar");
@@ -58,7 +102,7 @@ describe("contentLaneEdit", () => {
   });
 
   it("resizes cue clip start", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilCueClick(p, 0, "Go");
     const id = p.cue.clips[0]!.id;
     p = commitResizeContentClip(p, "cue", id, "start", 1920, "off");
@@ -66,17 +110,19 @@ describe("contentLaneEdit", () => {
     expect(p.cue.clips[0]!.label).toBe("Go");
   });
 
-  it("commitPencilContentSpan creates multi-bar tekst clip", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+  it("commitPencilContentSpan creates multi-bar tekst clip with block", () => {
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const next = commitPencilContentSpan(p, "tekst", 0, 15360, "bar");
     expect(next.tekst.clips).toHaveLength(1);
     expect(next.tekst.clips[0]!.startTicks).toBe(0);
     expect(next.tekst.clips[0]!.lengthTicks).toBe(15360);
+    expect(next.tekst.clips[0]!.blocks).toHaveLength(1);
+    expect(next.tekst.clips[0]!.blocks[0]!.lengthTicks).toBe(15360);
   });
 
   it("pencil-draw gesture preview snaps content to beat grid", () => {
     setSessionSnapMode("beat");
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const session: FormaGestureSession = {
       kind: "move",
       clipId: "x",
@@ -86,14 +132,13 @@ describe("contentLaneEdit", () => {
       originClipLength: 3840,
       lane: "tekst",
     };
-    // 500 ticks → nearest beat 960 (not barline 0) when session snap = beat
     const preview = previewContentFromSession(p, session, 500, false, false);
     expect(preview.startTicks).toBe(960);
     setSessionSnapMode("bar");
   });
 
   it("pencil-draw gesture preview + commit (akordy) matches Forma path", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const session: FormaGestureSession = {
       kind: "pencil-draw",
       clipId: null,
@@ -128,7 +173,7 @@ describe("contentLaneEdit", () => {
   });
 
   it("pencil-draw click (dx < threshold) inserts 1 bar on cue", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const session: FormaGestureSession = {
       kind: "pencil-draw",
       clipId: null,
@@ -147,7 +192,6 @@ describe("contentLaneEdit", () => {
       false,
       52,
     );
-    // 4/4 @ PPQ 960 → 1 bar = 3840
     expect(preview.lengthTicks).toBe(3840);
     const next = commitContentGesture(p, "cue", session, preview, false, false);
     expect(next.cue.clips[0]!.lengthTicks).toBe(3840);
@@ -164,7 +208,7 @@ describe("contentLaneEdit remaining", () => {
     expect(resolveSplitParentId("clip-1-r-2")).toBe("clip-1");
     expect(resolveSplitParentId("plain")).toBe("plain");
 
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilAkordyClick(p, 0, "G");
     p = pencilCueClick(p, 0, "Go");
     expect(contentClipCoveringTicks(p, "akordy", 1)?.id).toBe(p.akordy.clips[0]!.id);
@@ -174,9 +218,10 @@ describe("contentLaneEdit remaining", () => {
     const tid = p.tekst.clips[0]!.id;
     const split = splitContentClipAt(p, "tekst", tid, 1920, "off");
     expect(split.tekst.clips.length).toBeGreaterThan(1);
+    expect(split.tekst.clips.every((c) => c.blocks.length >= 1)).toBe(true);
     expect(splitContentClipAt(p, "tekst", "missing", 100)).toBe(p);
 
-    p = pencilTekstClick(createProjectV5Seed("p2", "S", "2026-07-20T12:00:00.000Z"), 0, "A");
+    p = pencilTekstClick(createProjectV6Seed("p2", "S", "2026-07-20T12:00:00.000Z"), 0, "A");
     p = pencilTekstClick(p, 3840, "B");
     const a = p.tekst.clips.find((c) => c.text === "A")!;
     const b = p.tekst.clips.find((c) => c.text === "B")!;
@@ -185,6 +230,7 @@ describe("contentLaneEdit remaining", () => {
     expect(commitMoveContentClips(p, "tekst", [a.id, b.id], a.id, a.startTicks, "off")).toBe(p);
     const multi = commitMoveContentClips(p, "tekst", [a.id, b.id], a.id, 7680, "bar");
     expect(multi.tekst.clips.find((c) => c.id === a.id)!.startTicks).toBe(7680);
+    expect(multi.tekst.clips.find((c) => c.id === a.id)!.blocks[0]!.startTicks).toBe(7680);
 
     expect(contentAsForma(p, "tekst")[0]!.kind).toBe("section");
 
@@ -281,7 +327,6 @@ describe("contentLaneEdit remaining", () => {
     );
     expect(rEnd.lengthTicks).toBe(1);
 
-    // single-move gesture (no moveIds)
     const singleMove = commitContentGesture(
       p,
       "tekst",
@@ -292,23 +337,22 @@ describe("contentLaneEdit remaining", () => {
     );
     expect(singleMove.tekst.clips.find((c) => c.id === a.id)!.startTicks).toBe(11520);
 
-    // overwrite pencil creates remnant (-r) preserving payload
-    let base = createProjectV5Seed("p3", "S", "2026-07-20T12:00:00.000Z");
+    let base = createProjectV6Seed("p3", "S", "2026-07-20T12:00:00.000Z");
     base = pencilTekstClick(base, 0, "Keep");
     const overTekst = commitPencilContentSpan(base, "tekst", 1920, 5760, "off");
     expect(overTekst.tekst.clips.some((c) => c.text === "Keep" || c.id.includes("-r"))).toBe(true);
-    base = pencilAkordyClick(createProjectV5Seed("p4", "S", "2026-07-20T12:00:00.000Z"), 0, "Em");
+    expect(overTekst.tekst.clips.every((c) => c.blocks.length >= 1)).toBe(true);
+    base = pencilAkordyClick(createProjectV6Seed("p4", "S", "2026-07-20T12:00:00.000Z"), 0, "Em");
     const overAk = commitPencilContentSpan(base, "akordy", 1920, 5760, "off");
     expect(overAk.akordy.clips.some((c) => c.symbol === "Em" || c.symbol === "C")).toBe(true);
   });
 
-  it("joinAdjacentContentClips merges abutting or is identity", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+  it("joinAdjacentContentClips merges abutting blocks", () => {
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilTekstClick(p, 0, "A");
     p = pencilTekstClick(p, 3840, "B");
     const a = p.tekst.clips.find((c) => c.text === "A")!;
     const b = p.tekst.clips.find((c) => c.text === "B")!;
-    // Make B abut A (pencil may leave gap depending on snap — force geometry)
     p = {
       ...p,
       tekst: {
@@ -324,6 +368,11 @@ describe("contentLaneEdit remaining", () => {
     expect(joined.tekst.clips[0]!.id).toBe(a.id);
     expect(joined.tekst.clips[0]!.lengthTicks).toBe(7680);
     expect(joined.tekst.clips[0]!.text).toBe("A");
+    expect(joined.tekst.clips[0]!.blocks).toHaveLength(2);
+    expect(joined.tekst.clips[0]!.blocks.map((x) => x.text)).toEqual([
+      "A",
+      "B",
+    ]);
 
     expect(joinAdjacentContentClips(p, "tekst", "missing")).toBe(p);
     const gap = {
@@ -354,5 +403,6 @@ describe("contentLaneEdit remaining", () => {
     );
     expect(fromRight.tekst.clips).toHaveLength(1);
     expect(fromRight.tekst.clips[0]!.id).toBe(a.id);
+    expect(fromRight.tekst.clips[0]!.blocks).toHaveLength(2);
   });
 });

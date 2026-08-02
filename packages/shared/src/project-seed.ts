@@ -4,6 +4,10 @@ import type {
   ProjectV3,
   ProjectV4,
   ProjectV5,
+  ProjectV6,
+  TekstBlock,
+  TekstClip,
+  TekstClipLine,
 } from "./schema.js";
 
 /** Alpha.3 seed: Countdown 2 bars @ PPQ 960, Intro from tick 0. */
@@ -70,8 +74,8 @@ export const DEFAULT_TEMPLATE_PROJECT_ID =
 /** Bundled wzór „Template” — Countdown + Intro, bez MIDI PC. */
 export function createDefaultTemplateProject(
   updatedAt: string,
-): ProjectV5 {
-  return createProjectV5Seed(
+): ProjectV6 {
+  return createProjectV6Seed(
     DEFAULT_TEMPLATE_PROJECT_ID,
     "Template",
     updatedAt,
@@ -89,13 +93,23 @@ export function createProjectV5Seed(
   return upgradeProjectV4ToV5(createProjectV4Seed(id, name, updatedAt), opts);
 }
 
-/** @deprecated Prefer createProjectV5Seed. */
+/** Content Model seed — v6 with tekst blocks + empty melody. */
+export function createProjectV6Seed(
+  id: string,
+  name: string,
+  updatedAt: string,
+  opts?: { midiProgramId?: number; isTemplate?: boolean },
+): ProjectV6 {
+  return upgradeProjectV5ToV6(createProjectV5Seed(id, name, updatedAt, opts));
+}
+
+/** @deprecated Prefer createProjectV6Seed. */
 export function createProjectSeed(
   id: string,
   name: string,
   updatedAt: string,
-): ProjectV5 {
-  return createProjectV5Seed(id, name, updatedAt);
+): ProjectV6 {
+  return createProjectV6Seed(id, name, updatedAt);
 }
 
 export function upgradeProjectV1ToV2(v1: {
@@ -148,6 +162,43 @@ export function upgradeProjectV4ToV5(
           midiProgramId:
             opts?.midiProgramId != null ? opts.midiProgramId : 0,
         }),
+  };
+}
+
+/** One whole-line block matching clip timing/text (V5→V6 migrate / producers). */
+export function wholeLineTekstBlock(
+  clip: Pick<TekstClipLine, "id" | "startTicks" | "lengthTicks" | "text">,
+): TekstBlock {
+  return {
+    id: `${clip.id}-block-0`,
+    startTicks: clip.startTicks,
+    lengthTicks: clip.lengthTicks,
+    text: clip.text,
+  };
+}
+
+/** Attach a single whole-line block (UG / legacy / countdown / migrate). */
+export function withWholeLineTekstBlocks(
+  clip: TekstClipLine,
+): TekstClip {
+  return {
+    ...clip,
+    blocks: [wholeLineTekstBlock(clip)],
+  };
+}
+
+/**
+ * V5 → V6: one block = whole line; empty melody lane.
+ * Preserves tekst / akordy / audio / cue / meta as-is.
+ */
+export function upgradeProjectV5ToV6(v5: ProjectV5): ProjectV6 {
+  return {
+    ...v5,
+    formatVersion: 6,
+    tekst: {
+      clips: v5.tekst.clips.map((clip) => withWholeLineTekstBlocks(clip)),
+    },
+    melody: { clips: [] },
   };
 }
 

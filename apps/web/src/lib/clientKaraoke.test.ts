@@ -1,15 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
-  createProjectV5Seed,
+  createProjectV6Seed,
   DEFAULT_PPQ,
   ticksPerBar,
+  withWholeLineTekstBlocks,
+  type Project,
+  type TekstClip,
 } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
+  collectTekstBlockRoles,
+  filterTekstBlocksByRole,
   formatKaraokeTransportLine,
   groupKaraokeSections,
   isPlaceholderLyric,
+  mapKaraokeBlocks,
   mergeTekstWithCountdownDigits,
+  resolveActiveBlockId,
   resolveFormaClipForLyric,
   resolveFormaClipForLyricStart,
 } from "./clientKaraoke.js";
@@ -17,8 +24,17 @@ import {
 const BAR = ticksPerBar({ numerator: 4, denominator: 4 }, DEFAULT_PPQ); // 3840
 const BEAT = DEFAULT_PPQ; // 960
 
+function lineClip(
+  partial: Omit<TekstClip, "blocks"> & { blocks?: TekstClip["blocks"] },
+): TekstClip {
+  if (partial.blocks != null && partial.blocks.length > 0) {
+    return partial as TekstClip;
+  }
+  return withWholeLineTekstBlocks(partial);
+}
+
 describe("clientKaraoke", () => {
-  const project = createProjectV5Seed(
+  const project = createProjectV6Seed(
     "id",
     "Demo Song",
     "2026-07-20T00:00:00.000Z",
@@ -32,6 +48,8 @@ describe("clientKaraoke", () => {
     expect(ctx?.bbtLabel).toBe("1.1");
     expect(ctx?.hasLyricLines).toBe(false);
     expect(ctx?.lines).toEqual([]);
+    expect(ctx?.activeBlockId).toBeNull();
+    expect(ctx?.availableRoles).toEqual([]);
   });
 
   it("formatKaraokeTransportLine includes section and tempo", () => {
@@ -69,6 +87,11 @@ describe("clientKaraoke", () => {
     const cd = ctx?.sections.find((s) => s.kind === "countdown");
     expect(cd?.useProgress).toBe(false);
     expect(cd?.lines.some((l) => l.text === "2")).toBe(true);
+    // Migrated 1:1 digit → one whole-line block active with the line.
+    const digit = ctx?.lines.find((l) => l.text === "2");
+    expect(digit?.blocks).toHaveLength(1);
+    expect(digit?.blocks?.[0]?.active).toBe(true);
+    expect(ctx?.activeBlockId).toBe(digit?.blocks?.[0]?.id);
   });
 
   it("exposes section bar strip when section has no lyrics (CL-01 / v4 progress)", () => {
@@ -94,7 +117,7 @@ describe("clientKaraoke", () => {
   });
 
   it("groups lyric lines under Forma section cards", () => {
-    const withLyrics = {
+    const withLyrics: Project = {
       ...project,
       forma: {
         clips: [
@@ -110,18 +133,18 @@ describe("clientKaraoke", () => {
       },
       tekst: {
         clips: [
-          {
+          lineClip({
             id: "tx-1",
             text: "Line in Intro",
             startTicks: 0,
             lengthTicks: 1920,
-          },
-          {
+          }),
+          lineClip({
             id: "tx-2",
             text: "Line in Verse",
             startTicks: 7680,
             lengthTicks: 1920,
-          },
+          }),
         ],
       },
     };
@@ -147,22 +170,22 @@ describe("clientKaraoke", () => {
   });
 
   it("does not highlight lyric lines during rests between clips (v4 findActiveLine)", () => {
-    const withGap = {
+    const withGap: Project = {
       ...project,
       tekst: {
         clips: [
-          {
+          lineClip({
             id: "tx-a",
             text: "A",
             startTicks: 0,
             lengthTicks: 2 * BEAT,
-          },
-          {
+          }),
+          lineClip({
             id: "tx-b",
             text: "B",
             startTicks: 4 * BEAT,
             lengthTicks: 2 * BEAT,
-          },
+          }),
         ],
       },
     };
@@ -173,6 +196,7 @@ describe("clientKaraoke", () => {
     const inRest = buildKaraokeLiveContext(withGap, 3 * BEAT)!;
     expect(inRest.lines.every((l) => !l.active)).toBe(true);
     expect(inRest.lyricLine).toBeNull();
+    expect(inRest.activeBlockId).toBeNull();
 
     const inB = buildKaraokeLiveContext(withGap, 5 * BEAT)!;
     expect(inB.lines.find((l) => l.active)?.text).toBe("B");
@@ -188,7 +212,7 @@ describe("clientKaraoke", () => {
 
   it("assigns przedtakt (last-bar onset before next Forma) to next section", () => {
     // v4 resolveVocalSectionId: Hello @ 2 beats before Verse → Verse, not CD.
-    const withPickup = {
+    const withPickup: Project = {
       ...project,
       forma: {
         clips: [
@@ -217,26 +241,26 @@ describe("clientKaraoke", () => {
       },
       tekst: {
         clips: [
-          {
+          lineClip({
             id: "tx-pickup",
             text: "Hello",
             // 2 beats before Verse — straddles CD→Verse boundary
             startTicks: -2 * BEAT,
             lengthTicks: 4 * BEAT,
-          },
-          {
+          }),
+          lineClip({
             id: "tx-verse",
             text: "World",
             startTicks: 2 * BEAT,
             lengthTicks: 2 * BEAT,
-          },
-          {
+          }),
+          lineClip({
             id: "tx-early",
             text: "Stay on CD",
             // More than one bar before Verse — not pickup
             startTicks: -2 * BAR + BEAT,
             lengthTicks: BEAT,
-          },
+          }),
         ],
       },
     };
@@ -271,12 +295,12 @@ describe("clientKaraoke", () => {
   });
 
   it("keeps Countdown digits on Countdown despite pickup window", () => {
-    const digit = {
+    const digit = lineClip({
       id: "tx-digit",
       text: "1",
       startTicks: -2 * BEAT,
       lengthTicks: BEAT,
-    };
+    });
     const host = resolveFormaClipForLyric(
       project,
       project.forma.clips.filter(
@@ -302,17 +326,17 @@ describe("clientKaraoke", () => {
   });
 
   it("groups orphan lyrics outside any Forma span", () => {
-    const orphanProj = {
+    const orphanProj: Project = {
       ...project,
       forma: { clips: [] },
       tekst: {
         clips: [
-          {
+          lineClip({
             id: "orphan-1",
             text: "Lost",
             startTicks: 0,
             lengthTicks: BEAT,
-          },
+          }),
         ],
       },
     };
@@ -327,13 +351,222 @@ describe("clientKaraoke", () => {
   });
 
   it("activeGroup is null when playhead is past all Forma clips", () => {
-    const p = {
+    const p: Project = {
       ...project,
-      tekst: { clips: [] as typeof project.tekst.clips },
+      tekst: { clips: [] },
     };
     const ctx = buildKaraokeLiveContext(p, 500_000);
     expect(ctx).not.toBeNull();
     expect(ctx!.sectionBars).toEqual([]);
     expect(ctx!.sectionName).toBe("—");
+  });
+
+  describe("block highlight (half-open)", () => {
+    const multiBlock = lineClip({
+      id: "tx-multi",
+      text: "Hello world",
+      startTicks: 0,
+      lengthTicks: 4 * BEAT,
+      blocks: [
+        {
+          id: "b-hello",
+          text: "Hello ",
+          startTicks: 0,
+          lengthTicks: BEAT,
+        },
+        {
+          id: "b-world",
+          text: "world",
+          startTicks: 2 * BEAT,
+          lengthTicks: BEAT,
+        },
+      ],
+    });
+
+    const withMulti: Project = {
+      ...project,
+      tekst: { clips: [multiBlock] },
+    };
+
+    it("resolveActiveBlockId uses half-open windows", () => {
+      expect(resolveActiveBlockId(multiBlock.blocks, 0)).toBe("b-hello");
+      expect(resolveActiveBlockId(multiBlock.blocks, BEAT - 1)).toBe("b-hello");
+      expect(resolveActiveBlockId(multiBlock.blocks, BEAT)).toBeNull();
+      expect(resolveActiveBlockId(multiBlock.blocks, 2 * BEAT)).toBe("b-world");
+      expect(resolveActiveBlockId(multiBlock.blocks, 3 * BEAT)).toBeNull();
+      expect(resolveActiveBlockId(undefined, 0)).toBeNull();
+    });
+
+    it("highlights active block; gap keeps line active without token", () => {
+      const onHello = buildKaraokeLiveContext(withMulti, BEAT / 2)!;
+      expect(onHello.lines[0]?.active).toBe(true);
+      expect(onHello.activeBlockId).toBe("b-hello");
+      expect(onHello.lines[0]?.blocks?.map((b) => [b.id, b.active, b.past])).toEqual([
+        ["b-hello", true, false],
+        ["b-world", false, false],
+      ]);
+
+      const inGap = buildKaraokeLiveContext(withMulti, BEAT + 10)!;
+      expect(inGap.lines[0]?.active).toBe(true);
+      expect(inGap.activeBlockId).toBeNull();
+      expect(inGap.lines[0]?.blocks?.every((b) => !b.active)).toBe(true);
+      expect(inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
+        true,
+      );
+
+      const onWorld = buildKaraokeLiveContext(withMulti, 2 * BEAT + 10)!;
+      expect(onWorld.activeBlockId).toBe("b-world");
+      expect(onWorld.lines[0]?.blocks?.find((b) => b.id === "b-world")?.active).toBe(
+        true,
+      );
+      expect(onWorld.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
+        true,
+      );
+    });
+
+    it("single whole-line block mirrors line active window (migrate 1:1)", () => {
+      const one: Project = {
+        ...project,
+        tekst: {
+          clips: [
+            lineClip({
+              id: "tx-one",
+              text: "Whole",
+              startTicks: 0,
+              lengthTicks: 2 * BEAT,
+            }),
+          ],
+        },
+      };
+      const ctx = buildKaraokeLiveContext(one, BEAT)!;
+      expect(ctx.lines[0]?.blocks).toHaveLength(1);
+      expect(ctx.lines[0]?.active).toBe(true);
+      expect(ctx.lines[0]?.blocks?.[0]?.active).toBe(true);
+      expect(ctx.lines[0]?.blocks?.[0]?.text).toBe("Whole");
+      expect(ctx.activeBlockId).toBe(ctx.lines[0]?.blocks?.[0]?.id);
+
+      const past = buildKaraokeLiveContext(one, 2 * BEAT)!;
+      expect(past.lines[0]?.active).toBe(false);
+      expect(past.lines[0]?.blocks?.[0]?.active).toBe(false);
+      expect(past.lines[0]?.blocks?.[0]?.past).toBe(true);
+      expect(past.activeBlockId).toBeNull();
+    });
+
+    it("mapKaraokeBlocks returns undefined without blocks", () => {
+      expect(
+        mapKaraokeBlocks({ blocks: undefined as unknown as TekstClip["blocks"] }, 0, true),
+      ).toBeUndefined();
+      expect(mapKaraokeBlocks({ blocks: [] }, 0, true)).toBeUndefined();
+    });
+  });
+
+  describe("role filter", () => {
+    const dualRole = lineClip({
+      id: "tx-roles",
+      text: "You me",
+      startTicks: 0,
+      lengthTicks: 4 * BEAT,
+      blocks: [
+        {
+          id: "b-v1",
+          text: "You ",
+          startTicks: 0,
+          lengthTicks: 2 * BEAT,
+          role: "vocal_1",
+        },
+        {
+          id: "b-v2",
+          text: "me",
+          startTicks: 2 * BEAT,
+          lengthTicks: 2 * BEAT,
+          role: "vocal_2",
+        },
+      ],
+    });
+
+    const withRoles: Project = {
+      ...project,
+      tekst: { clips: [dualRole] },
+    };
+
+    it("collectTekstBlockRoles lists distinct roles", () => {
+      expect(collectTekstBlockRoles([dualRole])).toEqual([
+        "vocal_1",
+        "vocal_2",
+      ]);
+    });
+
+    it("filterTekstBlocksByRole keeps untagged and all", () => {
+      const mixed = [
+        ...dualRole.blocks,
+        {
+          id: "b-all",
+          text: "!",
+          startTicks: 0,
+          lengthTicks: BEAT,
+          role: "all" as const,
+        },
+        {
+          id: "b-free",
+          text: "?",
+          startTicks: 0,
+          lengthTicks: BEAT,
+        },
+      ];
+      expect(filterTekstBlocksByRole(mixed, "vocal_1").map((b) => b.id)).toEqual([
+        "b-v1",
+        "b-all",
+        "b-free",
+      ]);
+    });
+
+    it("buildKaraokeLiveContext filters blocks when ≥2 roles", () => {
+      const all = buildKaraokeLiveContext(withRoles, BEAT)!;
+      expect(all.availableRoles).toEqual(["vocal_1", "vocal_2"]);
+      expect(all.lines[0]?.blocks).toHaveLength(2);
+
+      const onlyV1 = buildKaraokeLiveContext(withRoles, BEAT, {
+        roleFilter: "vocal_1",
+      })!;
+      expect(onlyV1.lines[0]?.blocks?.map((b) => b.id)).toEqual(["b-v1"]);
+      expect(onlyV1.activeBlockId).toBe("b-v1");
+
+      const onlyV2 = buildKaraokeLiveContext(withRoles, 3 * BEAT, {
+        roleFilter: "vocal_2",
+      })!;
+      expect(onlyV2.lines[0]?.blocks?.map((b) => b.id)).toEqual(["b-v2"]);
+      expect(onlyV2.activeBlockId).toBe("b-v2");
+    });
+
+    it("ignores roleFilter when fewer than 2 roles present", () => {
+      const single: Project = {
+        ...project,
+        tekst: {
+          clips: [
+            lineClip({
+              id: "tx-one-role",
+              text: "Solo",
+              startTicks: 0,
+              lengthTicks: BEAT,
+              blocks: [
+                {
+                  id: "b-solo",
+                  text: "Solo",
+                  startTicks: 0,
+                  lengthTicks: BEAT,
+                  role: "vocal_1",
+                },
+              ],
+            }),
+          ],
+        },
+      };
+      const ctx = buildKaraokeLiveContext(single, 0, {
+        roleFilter: "vocal_2",
+      })!;
+      expect(ctx.availableRoles).toEqual(["vocal_1"]);
+      expect(ctx.lines[0]?.blocks).toHaveLength(1);
+      expect(ctx.lines[0]?.blocks?.[0]?.id).toBe("b-solo");
+    });
   });
 });

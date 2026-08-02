@@ -17,6 +17,7 @@ import {
   ProjectSchemaV3,
   ProjectSchemaV4,
   ProjectSchemaV5,
+  ProjectSchemaV6,
   PutMidiHostConfigBodySchema,
   PutProjectBodySchema,
   PutSetlistBodySchema,
@@ -30,9 +31,11 @@ import {
   createProjectV3Seed,
   createProjectV4Seed,
   createProjectV5Seed,
+  createProjectV6Seed,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
   upgradeProjectV4ToV5,
+  upgradeProjectV5ToV6,
 } from "./project-seed.js";
 
 describe("LibrarySchema", () => {
@@ -118,7 +121,7 @@ describe("ProjectSchemaV5", () => {
       "Song",
       "2026-07-19T12:00:00.000Z",
     );
-    expect(ProjectSchema.parse(raw)).toEqual(raw);
+    expect(ProjectSchemaV5.parse(raw)).toEqual(raw);
     expect(raw.formatVersion).toBe(5);
     expect(raw.keyMap.length).toBeGreaterThan(0);
     expect(raw.midiProgramId).toBe(0);
@@ -134,7 +137,7 @@ describe("ProjectSchemaV5", () => {
 
   it("rejects empty name", () => {
     expect(() =>
-      ProjectSchema.parse({
+      ProjectSchemaV5.parse({
         ...createProjectV5Seed("abc", "X", "2026-07-19T12:00:00.000Z"),
         name: "",
       }),
@@ -188,12 +191,12 @@ describe("ProjectSchemaV5", () => {
         ],
       },
     };
-    expect(ProjectSchema.parse(withAsset).cue.clips[0]?.sample?.assetId).toBe(
+    expect(ProjectSchemaV5.parse(withAsset).cue.clips[0]?.sample?.assetId).toBe(
       "a1",
     );
 
     expect(() =>
-      ProjectSchema.parse({
+      ProjectSchemaV5.parse({
         ...withAsset,
         cue: {
           clips: [
@@ -210,7 +213,7 @@ describe("ProjectSchemaV5", () => {
     ).toThrow(/audio asset/i);
 
     expect(() =>
-      ProjectSchema.parse({
+      ProjectSchemaV5.parse({
         ...withAsset,
         cue: {
           clips: [
@@ -249,6 +252,281 @@ describe("ProjectSchemaV5", () => {
         artist: "x".repeat(201),
       }),
     ).toThrow();
+  });
+});
+
+describe("ProjectSchemaV6", () => {
+  it("parses a v6 project seed", () => {
+    const raw = createProjectV6Seed(
+      "abc",
+      "Song",
+      "2026-07-19T12:00:00.000Z",
+    );
+    expect(ProjectSchema.parse(raw)).toEqual(raw);
+    expect(raw.formatVersion).toBe(6);
+    expect(raw.melody).toEqual({ clips: [] });
+    expect(raw.tekst.clips).toEqual([]);
+    expect(raw.keyMap.length).toBeGreaterThan(0);
+    expect(raw.midiProgramId).toBe(0);
+  });
+
+  it("rejects tekst clip without blocks", () => {
+    const seed = createProjectV6Seed(
+      "abc",
+      "Song",
+      "2026-07-19T12:00:00.000Z",
+    );
+    expect(() =>
+      ProjectSchema.parse({
+        ...seed,
+        tekst: {
+          clips: [
+            {
+              id: "t1",
+              startTicks: 0,
+              lengthTicks: 960,
+              text: "Hello",
+            },
+          ],
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("rejects empty blocks array", () => {
+    const seed = createProjectV6Seed(
+      "abc",
+      "Song",
+      "2026-07-19T12:00:00.000Z",
+    );
+    expect(() =>
+      ProjectSchema.parse({
+        ...seed,
+        tekst: {
+          clips: [
+            {
+              id: "t1",
+              startTicks: 0,
+              lengthTicks: 960,
+              text: "Hello",
+              blocks: [],
+            },
+          ],
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("accepts multi-block line and optional role / melody note", () => {
+    const seed = createProjectV6Seed(
+      "abc",
+      "Song",
+      "2026-07-19T12:00:00.000Z",
+    );
+    const raw = {
+      ...seed,
+      tekst: {
+        clips: [
+          {
+            id: "t1",
+            startTicks: 0,
+            lengthTicks: 1920,
+            text: "Hello world",
+            blocks: [
+              {
+                id: "b1",
+                startTicks: 0,
+                lengthTicks: 960,
+                text: "Hello",
+                role: "vocal_1" as const,
+              },
+              {
+                id: "b2",
+                startTicks: 960,
+                lengthTicks: 960,
+                text: "world",
+              },
+            ],
+          },
+        ],
+      },
+      melody: {
+        clips: [
+          {
+            id: "m1",
+            startTicks: 0,
+            lengthTicks: 480,
+            pitchMidi: 60,
+          },
+        ],
+      },
+    };
+    const parsed = ProjectSchema.parse(raw);
+    expect(parsed.tekst.clips[0]?.blocks).toHaveLength(2);
+    expect(parsed.tekst.clips[0]?.blocks[0]?.role).toBe("vocal_1");
+    expect(parsed.melody.clips[0]?.pitchMidi).toBe(60);
+  });
+
+  it("rejects melody pitchMidi out of range", () => {
+    const seed = createProjectV6Seed(
+      "abc",
+      "Song",
+      "2026-07-19T12:00:00.000Z",
+    );
+    expect(() =>
+      ProjectSchema.parse({
+        ...seed,
+        melody: {
+          clips: [
+            { id: "m1", startTicks: 0, lengthTicks: 480, pitchMidi: 128 },
+          ],
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("upgrades v5 to v6 with one whole-line block; preserves lanes", () => {
+    const v5 = {
+      ...createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z"),
+      tekst: {
+        clips: [
+          {
+            id: "line-1",
+            startTicks: 100,
+            lengthTicks: 2000,
+            text: "Whole line",
+            sourceSection: "Verse",
+          },
+        ],
+      },
+      akordy: {
+        clips: [
+          {
+            id: "a1",
+            startTicks: 100,
+            lengthTicks: 960,
+            symbol: "Am",
+          },
+        ],
+      },
+      assets: [
+        {
+          id: "audio-1",
+          storageName: "x.wav",
+          originalName: "x.wav",
+          kind: "audio" as const,
+          mimeType: "audio/wav",
+          sizeBytes: 10,
+        },
+      ],
+      audioTracks: [{ id: "tr-1", name: "Stem" }],
+      audioClips: [
+        {
+          id: "ac-1",
+          trackId: "tr-1",
+          assetId: "audio-1",
+          startTicks: 0,
+          lengthTicks: 3840,
+        },
+      ],
+    };
+    expect(ProjectSchemaV5.parse(v5).formatVersion).toBe(5);
+
+    const v6 = upgradeProjectV5ToV6(v5);
+    const parsed = ProjectSchemaV6.parse(v6);
+    expect(parsed.formatVersion).toBe(6);
+    expect(parsed.melody).toEqual({ clips: [] });
+    expect(parsed.tekst.clips).toHaveLength(1);
+    expect(parsed.tekst.clips[0]).toEqual({
+      id: "line-1",
+      startTicks: 100,
+      lengthTicks: 2000,
+      text: "Whole line",
+      sourceSection: "Verse",
+      blocks: [
+        {
+          id: "line-1-block-0",
+          startTicks: 100,
+          lengthTicks: 2000,
+          text: "Whole line",
+        },
+      ],
+    });
+    expect(parsed.akordy.clips).toEqual(v5.akordy.clips);
+    expect(parsed.audioClips).toEqual(v5.audioClips);
+    expect(parsed.assets).toEqual(v5.assets);
+    expect(parsed.name).toBe("Song");
+    expect(parsed.keyMap).toEqual(v5.keyMap);
+  });
+
+  it("rejects unknown keys (strict)", () => {
+    const raw = {
+      ...createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z"),
+      legacyField: true,
+    };
+    expect(() => ProjectSchemaV6.parse(raw)).toThrow();
+  });
+
+  it("rejects empty name", () => {
+    expect(() =>
+      ProjectSchema.parse({
+        ...createProjectV6Seed("abc", "X", "2026-07-19T12:00:00.000Z"),
+        name: "",
+      }),
+    ).toThrow();
+  });
+
+  it("accepts Cue sample config and rejects stale sample bus / asset", () => {
+    const seed = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const withAsset = {
+      ...seed,
+      assets: [
+        {
+          id: "a1",
+          storageName: "hit.wav",
+          originalName: "hit.wav",
+          kind: "audio" as const,
+          mimeType: "audio/wav",
+          sizeBytes: 100,
+        },
+      ],
+      audioBusses: [{ id: "bus-a", name: "Bus A" }],
+      cue: {
+        clips: [
+          {
+            id: "c1",
+            startTicks: 0,
+            lengthTicks: 960,
+            label: "Hit",
+            sample: {
+              assetId: "a1",
+              mode: "one-shot" as const,
+              output: { kind: "bus" as const, busId: "bus-a" },
+            },
+          },
+        ],
+      },
+    };
+    expect(ProjectSchema.parse(withAsset).cue.clips[0]?.sample?.assetId).toBe(
+      "a1",
+    );
+
+    expect(() =>
+      ProjectSchema.parse({
+        ...withAsset,
+        cue: {
+          clips: [
+            {
+              id: "c1",
+              startTicks: 0,
+              lengthTicks: 960,
+              label: "Hit",
+              sample: { assetId: "missing" },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/audio asset/i);
   });
 });
 
@@ -340,17 +618,19 @@ describe("ClientHelloMessageSchema", () => {
 });
 
 describe("PutProjectBodySchema", () => {
-  it("parses full v5 body without id (keeps updatedAt for OCC)", () => {
-    const full = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+  it("parses full v6 body without id (keeps updatedAt for OCC)", () => {
+    const full = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const { id, ...body } = full;
     void id;
     const parsed = PutProjectBodySchema.parse(body);
     expect(parsed.name).toBe("Song");
     expect(parsed.updatedAt).toBe("2026-07-19T12:00:00.000Z");
+    expect(parsed.formatVersion).toBe(6);
+    expect(parsed.melody).toEqual({ clips: [] });
   });
 
   it("rejects unknown keys", () => {
-    const full = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const full = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const { id, ...body } = full;
     void id;
     expect(() =>
@@ -359,7 +639,7 @@ describe("PutProjectBodySchema", () => {
   });
 
   it("rejects stale audio bus output on PUT body", () => {
-    const full = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
+    const full = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const { id, ...body } = full;
     void id;
     const bad = {

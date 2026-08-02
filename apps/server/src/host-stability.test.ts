@@ -64,6 +64,6 @@ describe("host stability — volume migrate / shadow backup", () => {
     const disk = JSON.parse(
       await readFile(join(projDir, "project.json"), "utf8"),
     ) as { formatVersion: number };
-    expect(disk.formatVersion).toBe(5);
+    expect(disk.formatVersion).toBe(6);
   });
 });

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed, type Project } from "@stagesync/shared";
+import {
+  createProjectV6Seed,
+  withWholeLineTekstBlocks,
+  type Project,
+} from "@stagesync/shared";
 import {
   buildClipboardFromClips,
   deleteClipsOnLane,
@@ -13,7 +17,7 @@ import { audioLaneId } from "./timelineTracks.js";
 const TS = "2026-07-22T00:00:00.000Z";
 
 function seedWithAudio(): Project {
-  const base = createProjectV5Seed("p1", "Song", TS);
+  const base = createProjectV6Seed("p1", "Song", TS);
   return {
     ...base,
     audioTracks: [{ id: "track-a", name: "A" }],
@@ -73,11 +77,20 @@ describe("timelineClipboard", () => {
       subsections: [1, 2],
     });
 
-    expect(
-      buildClipboardFromClips("tekst", [
-        { id: "t", startTicks: 0, lengthTicks: 100, text: "hi" },
-      ])?.items[0]!.payload.text,
-    ).toBe("hi");
+    const tekstBoard = buildClipboardFromClips("tekst", [
+      {
+        id: "t",
+        startTicks: 0,
+        lengthTicks: 100,
+        text: "hi",
+        blocks: [
+          { id: "b0", startTicks: 0, lengthTicks: 50, text: "h" },
+          { id: "b1", startTicks: 50, lengthTicks: 50, text: "i" },
+        ],
+      },
+    ]);
+    expect(tekstBoard?.items[0]!.payload.text).toBe("hi");
+    expect(tekstBoard?.items[0]!.payload.blocks).toHaveLength(2);
     expect(
       buildClipboardFromClips("tekst", [
         { id: "t", startTicks: 0, lengthTicks: 100 },
@@ -147,7 +160,7 @@ describe("timelineClipboard", () => {
   });
 
   it("pasteClipboardWithDelta returns null on empty or zero delta", () => {
-    const p = createProjectV5Seed("p", "S", TS);
+    const p = createProjectV6Seed("p", "S", TS);
     const empty: TimelineClipboard = { lane: "forma", items: [] };
     expect(pasteClipboardWithDelta(p, empty, 100)).toBeNull();
     const board = buildClipboardFromClips("forma", [
@@ -157,7 +170,7 @@ describe("timelineClipboard", () => {
   });
 
   it("pastes forma with note/subsections and shifts by delta", () => {
-    const p = createProjectV5Seed("p", "S", TS);
+    const p = createProjectV6Seed("p", "S", TS);
     const board = buildClipboardFromClips("forma", [
       {
         id: "f",
@@ -274,12 +287,17 @@ describe("timelineClipboard", () => {
   });
 
   it("pastes tekst/akordy/cue preserving neighbor fields and cue extras", () => {
-    let p = createProjectV5Seed("p", "S", TS);
+    let p = createProjectV6Seed("p", "S", TS);
     p = {
       ...p,
       tekst: {
         clips: [
-          { id: "t-old", startTicks: 0, lengthTicks: 3840, text: "old" },
+          withWholeLineTekstBlocks({
+            id: "t-old",
+            startTicks: 0,
+            lengthTicks: 3840,
+            text: "old",
+          }),
         ],
       },
       akordy: {
@@ -302,26 +320,41 @@ describe("timelineClipboard", () => {
     };
 
     const tekstBoard = buildClipboardFromClips("tekst", [
-      { id: "t", startTicks: 0, lengthTicks: 1920, text: "new" },
+      {
+        id: "t",
+        startTicks: 0,
+        lengthTicks: 1920,
+        text: "new",
+        blocks: [
+          { id: "nb0", startTicks: 0, lengthTicks: 960, text: "ne" },
+          { id: "nb1", startTicks: 960, lengthTicks: 960, text: "w" },
+        ],
+      },
     ])!;
     const tekstPaste = pasteClipboardAt(p, tekstBoard, 7680)!;
-    expect(
-      tekstPaste.project.tekst.clips.find((c) => c.id === tekstPaste.newIds[0])
-        ?.text,
-    ).toBe("new");
+    const pastedTekst = tekstPaste.project.tekst.clips.find(
+      (c) => c.id === tekstPaste.newIds[0],
+    )!;
+    expect(pastedTekst.text).toBe("new");
+    expect(pastedTekst.blocks).toHaveLength(2);
+    expect(pastedTekst.blocks.map((b) => b.startTicks)).toEqual([7680, 8640]);
     expect(
       tekstPaste.project.tekst.clips.find((c) => c.id === "t-old")?.text,
     ).toBe("old");
+    expect(
+      tekstPaste.project.tekst.clips.find((c) => c.id === "t-old")?.blocks
+        .length,
+    ).toBe(1);
 
     const emptyTekst = buildClipboardFromClips("tekst", [
       { id: "t2", startTicks: 0, lengthTicks: 100 },
     ])!;
     const emptyTekstPaste = pasteClipboardAt(p, emptyTekst, 9600)!;
-    expect(
-      emptyTekstPaste.project.tekst.clips.find(
-        (c) => c.id === emptyTekstPaste.newIds[0],
-      )?.text,
-    ).toBe("");
+    const emptyClip = emptyTekstPaste.project.tekst.clips.find(
+      (c) => c.id === emptyTekstPaste.newIds[0],
+    )!;
+    expect(emptyClip.text).toBe("");
+    expect(emptyClip.blocks).toHaveLength(1);
 
     const akordyBoard = buildClipboardFromClips("akordy", [
       { id: "a", startTicks: 0, lengthTicks: 1920, symbol: "G" },
@@ -400,7 +433,7 @@ describe("timelineClipboard", () => {
   });
 
   it("pasteClipboardAt returns null for empty clipboard", () => {
-    const p = createProjectV5Seed("p", "S", TS);
+    const p = createProjectV6Seed("p", "S", TS);
     expect(pasteClipboardAt(p, { lane: "forma", items: [] }, 0)).toBeNull();
   });
 
@@ -421,7 +454,14 @@ describe("timelineClipboard", () => {
         ],
       },
       tekst: {
-        clips: [{ id: "t1", startTicks: 0, lengthTicks: 100, text: "a" }],
+        clips: [
+          withWholeLineTekstBlocks({
+            id: "t1",
+            startTicks: 0,
+            lengthTicks: 100,
+            text: "a",
+          }),
+        ],
       },
       akordy: {
         clips: [{ id: "a1", startTicks: 0, lengthTicks: 100, symbol: "C" }],

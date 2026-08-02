@@ -4,12 +4,14 @@ import {
   createProjectV3Seed,
   createProjectV4Seed,
   createProjectV5Seed,
+  createProjectV6Seed,
   createDefaultTemplateProject,
   DEFAULT_TEMPLATE_PROJECT_ID,
   upgradeProjectV1ToV2,
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
   upgradeProjectV4ToV5,
+  upgradeProjectV5ToV6,
   createProjectSeed,
   nextMidiProgramId,
 } from "./project-seed.js";
@@ -61,8 +63,10 @@ describe("createDefaultTemplateProject", () => {
     const p = createDefaultTemplateProject("2026-07-21T00:00:00.000Z");
     expect(p.id).toBe(DEFAULT_TEMPLATE_PROJECT_ID);
     expect(p.name).toBe("Template");
+    expect(p.formatVersion).toBe(6);
     expect(p.isTemplate).toBe(true);
     expect(p.midiProgramId).toBeUndefined();
+    expect(p.melody).toEqual({ clips: [] });
   });
 });
 
@@ -74,6 +78,20 @@ describe("createProjectV5Seed", () => {
       "2026-07-20T00:00:00.000Z",
     );
     expect(p.formatVersion).toBe(5);
+    expect(p.keyMap[0]?.key).toEqual({ tonic: "C", mode: "major" });
+    expect(p.midiProgramId).toBe(0);
+  });
+});
+
+describe("createProjectV6Seed", () => {
+  it("includes empty melody and formatVersion 6", () => {
+    const p = createProjectV6Seed(
+      "id-1",
+      "Demo",
+      "2026-07-20T00:00:00.000Z",
+    );
+    expect(p.formatVersion).toBe(6);
+    expect(p.melody).toEqual({ clips: [] });
     expect(p.keyMap[0]?.key).toEqual({ tonic: "C", mode: "major" });
     expect(p.midiProgramId).toBe(0);
   });
@@ -114,9 +132,10 @@ describe("upgradeProjectV3ToV4", () => {
 });
 
 describe("createProjectSeed / nextMidiProgramId", () => {
-  it("createProjectSeed aliases createProjectV5Seed", () => {
+  it("createProjectSeed aliases createProjectV6Seed", () => {
     const p = createProjectSeed("id", "N", "2026-07-20T00:00:00.000Z");
-    expect(p.formatVersion).toBe(5);
+    expect(p.formatVersion).toBe(6);
+    expect(p.melody).toEqual({ clips: [] });
     expect(p.midiProgramId).toBe(0);
   });
 
@@ -166,5 +185,34 @@ describe("upgradeProjectV4ToV5", () => {
     const song = upgradeProjectV4ToV5(v4, { midiProgramId: 42 });
     expect(song.midiProgramId).toBe(42);
     expect(song.isTemplate).toBeUndefined();
+  });
+});
+
+describe("upgradeProjectV5ToV6", () => {
+  it("adds whole-line blocks and empty melody", () => {
+    const v5 = {
+      ...createProjectV5Seed("id", "Song", "2026-07-20T00:00:00.000Z"),
+      tekst: {
+        clips: [
+          {
+            id: "t1",
+            startTicks: 0,
+            lengthTicks: 960,
+            text: "Hi",
+          },
+        ],
+      },
+    };
+    const v6 = upgradeProjectV5ToV6(v5);
+    expect(v6.formatVersion).toBe(6);
+    expect(v6.melody).toEqual({ clips: [] });
+    expect(v6.tekst.clips[0]?.blocks).toEqual([
+      {
+        id: "t1-block-0",
+        startTicks: 0,
+        lengthTicks: 960,
+        text: "Hi",
+      },
+    ]);
   });
 });

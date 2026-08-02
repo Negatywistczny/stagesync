@@ -95,9 +95,18 @@ describe("migrateLegacySong", () => {
       projectId: PID,
       updatedAt: FIXED_AT,
     });
+    expect(project.formatVersion).toBe(6);
+    expect(project.melody).toEqual({ clips: [] });
     expect(project.akordy.clips[0]?.symbol).toBe("C");
     expect(project.akordy.clips[0]?.startTicks).toBe(0);
     expect(project.tekst.clips.some((c) => c.text === "Hello")).toBe(true);
+    const hello = project.tekst.clips.find((c) => c.text === "Hello");
+    expect(hello?.blocks).toHaveLength(1);
+    expect(hello?.blocks[0]).toMatchObject({
+      text: "Hello",
+      startTicks: hello!.startTicks,
+      lengthTicks: hello!.lengthTicks,
+    });
     expect(project.tekst.clips.every((c) => c.id !== "vl-rest")).toBe(true);
     expect(project.tekst.clips.every((c) => !/^vl-cd-/i.test(c.id))).toBe(true);
     expect(project.cue.clips[0]?.label).toBe("Lights");

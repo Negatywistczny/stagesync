@@ -1,9 +1,10 @@
 /**
- * Ultimate Guitar / ChordPro-lite import → Forma sections + Tekst + Akordy (V5).
+ * Ultimate Guitar / ChordPro-lite import → Forma sections + Tekst + Akordy (V6).
  *
  * Parity with legacy line timing:
  * - Chord line + lyric line = **barsPerLine** bars (default 1), chords in first bar
  * - Clip length = ticks until next onset (not 1 bar per chord)
+ * - Each tekst line gets one whole-line block (Content Model).
  *
  * Sections: blank lines and Verse/Chorus-style headers → Forma music clips.
  * Fail-soft: returns Result — never throws for bad user input.
@@ -11,6 +12,7 @@
 
 import { z } from "zod";
 import { toLiteralStorage } from "./chord-display.js";
+import { withWholeLineTekstBlocks } from "./project-seed.js";
 import { cleanUgTabContent } from "./ug-content.js";
 import {
   AkordClipSchema,
@@ -411,13 +413,15 @@ export function importUgText(
           } else {
             cursor += lineTicks;
           }
-          tekstClips.push({
-            id: tekstId,
-            startTicks: lineStart,
-            lengthTicks: lineTicks,
-            text: lyric,
-            sourceSection: sectionName,
-          });
+          tekstClips.push(
+            withWholeLineTekstBlocks({
+              id: tekstId,
+              startTicks: lineStart,
+              lengthTicks: lineTicks,
+              text: lyric,
+              sourceSection: sectionName,
+            }),
+          );
           continue;
         }
 
@@ -445,13 +449,15 @@ export function importUgText(
           } else {
             cursor += lineTicks;
           }
-          tekstClips.push({
-            id: tekstId,
-            startTicks: lineStart,
-            lengthTicks: lineTicks,
-            text: lyric,
-            sourceSection: sectionName,
-          });
+          tekstClips.push(
+            withWholeLineTekstBlocks({
+              id: tekstId,
+              startTicks: lineStart,
+              lengthTicks: lineTicks,
+              text: lyric,
+              sourceSection: sectionName,
+            }),
+          );
         }
       }
 
@@ -614,7 +620,18 @@ export function reflowUgImportSectionBars(
     return clip;
   };
 
-  const tekstClips = imported.tekst.clips.map(mapClip);
+  const tekstClips = imported.tekst.clips.map((clip) => {
+    const mapped = mapClip(clip);
+    return withWholeLineTekstBlocks({
+      id: mapped.id,
+      startTicks: mapped.startTicks,
+      lengthTicks: mapped.lengthTicks,
+      text: mapped.text,
+      ...(mapped.sourceSection != null
+        ? { sourceSection: mapped.sourceSection }
+        : {}),
+    });
+  });
   const akordClips = sealAkordyLengths(imported.akordy.clips.map(mapClip));
   const sections = imported.sections.map((s, i) => ({
     ...s,

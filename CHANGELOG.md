@@ -7,10 +7,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Naprawiono
+### Dodano
 
-#### 📦 Packaging & Desktop (Tauri / Docker)
-- **Wydania (Windows):** link pobierania MSI w notatkach release wskazuje kanoniczną nazwę `_x64.msi` (bez sufiksu locale / `x86_64`).
+#### ⚙️ Serwer & API
+- **Projekt:** fundament timed lyrics pod linię Syllables — bloki tekstu na liniach (pozycje w tickach), opcjonalne role wokalu i ścieżka melodii; starsze projekty przechodzą automatycznie przy odczycie i zapisie — treść, akordy i audio zostają.
+
+#### 🖥️ App Shell & UI
+- **Klient (Karaoke):** gdy linia ma kilka bloków czasowych, podświetlenie podąża za aktywnym fragmentem w sync z transportem; jedna cała linia jako jeden blok wygląda jak dotychczas.
 
 ## [5.3.8](https://github.com/Negatywistczny/stagesync/compare/v5.3.7...v5.3.8) - 2026-08-02
 

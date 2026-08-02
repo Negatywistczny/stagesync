@@ -7,6 +7,7 @@ import {
   createProjectV3Seed,
   createProjectV4Seed,
   createProjectV5Seed,
+  createProjectV6Seed,
 } from "@stagesync/shared";
 import {
   ConflictError,
@@ -148,11 +149,12 @@ describe("storage/index", () => {
     const id3 = "00000000-0000-4000-8000-000000000003";
     const id4 = "00000000-0000-4000-8000-000000000004";
     const id5 = "00000000-0000-4000-8000-000000000005";
+    const id6 = "00000000-0000-4000-8000-000000000006";
     await writeLib(dataDir, {
       version: 1,
       projects: [
         {
-          id: id5,
+          id: id6,
           name: "Tpl",
           updatedAt: "2026-07-21T00:00:00.000Z",
           isTemplate: true,
@@ -183,17 +185,26 @@ describe("storage/index", () => {
     await writeProjectFile(
       dataDir,
       id5,
-      createProjectV5Seed(id5, "Tpl", "2026-07-21T00:00:00.000Z", {
+      createProjectV5Seed(id5, "V5", "2026-07-21T00:00:00.000Z", {
+        isTemplate: true,
+      }),
+    );
+    await writeProjectFile(
+      dataDir,
+      id6,
+      createProjectV6Seed(id6, "Tpl", "2026-07-21T00:00:00.000Z", {
         isTemplate: true,
       }),
     );
 
     const stores = createStores(dataDir);
-    expect((await stores.getProject(id1)).formatVersion).toBe(5);
-    expect((await stores.getProject(id2)).formatVersion).toBe(5);
-    expect((await stores.getProject(id3)).formatVersion).toBe(5);
-    expect((await stores.getProject(id4)).formatVersion).toBe(5);
-    expect(await stores.migrateProjectOnDisk(id5)).toBe(false);
+    expect((await stores.getProject(id1)).formatVersion).toBe(6);
+    expect((await stores.getProject(id2)).formatVersion).toBe(6);
+    expect((await stores.getProject(id3)).formatVersion).toBe(6);
+    expect((await stores.getProject(id4)).formatVersion).toBe(6);
+    expect((await stores.getProject(id5)).formatVersion).toBe(6);
+    expect(await stores.migrateProjectOnDisk(id6)).toBe(false);
+    expect(await stores.migrateProjectOnDisk(id5)).toBe(true);
     expect(await stores.migrateProjectOnDisk(id1)).toBe(true);
 
     const orphan = "00000000-0000-4000-8000-0000000000aa";

@@ -166,7 +166,7 @@ describe("normalizeLibraryImport", () => {
       name: string;
       forma: { clips: unknown[] };
     };
-    expect(first.formatVersion).toBe(5);
+    expect(first.formatVersion).toBe(6);
     expect(first.name).toBe("Template");
     expect(first.forma.clips.length).toBeGreaterThan(0);
   });

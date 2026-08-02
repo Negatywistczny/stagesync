@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectV6Seed } from "@stagesync/shared";
 import {
   batchMidiProgramIds,
   createProject,
@@ -13,7 +13,7 @@ import {
   updateProject,
 } from "./libraryApi.js";
 
-const project = createProjectV5Seed(
+const project = createProjectV6Seed(
   "00000000-0000-4000-8000-000000000001",
   "Demo",
   "2026-07-19T12:00:00.000Z",

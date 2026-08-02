@@ -1,16 +1,19 @@
 import {
   formatSectionNameForDisplay,
   type Project,
+  type TekstBlockRole,
 } from "@stagesync/shared";
 import {
   buildKaraokeLiveContext,
+  TEKST_BLOCK_ROLE_LABELS,
+  type KaraokeLine,
   type KaraokeSectionGroup,
 } from "../../lib/clientKaraoke.js";
 import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
 import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js";
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 type KaraokePaneProps = {
   project: Project | null;
@@ -23,6 +26,34 @@ type KaraokePaneProps = {
   onVocalTap?: () => void;
   onVocalTapStep?: (dir: -1 | 1) => void;
 };
+
+const ROLE_FILTER_KEY = "stagesync-karaoke-role-filter";
+
+function readStoredRoleFilter(): TekstBlockRole | null {
+  try {
+    const v = localStorage.getItem(ROLE_FILTER_KEY);
+    if (
+      v === "vocal_1" ||
+      v === "vocal_2" ||
+      v === "backing" ||
+      v === "all"
+    ) {
+      return v;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function writeStoredRoleFilter(role: TekstBlockRole | null): void {
+  try {
+    if (role == null) localStorage.removeItem(ROLE_FILTER_KEY);
+    else localStorage.setItem(ROLE_FILTER_KEY, role);
+  } catch {
+    /* ignore */
+  }
+}
 
 function readAutoScroll(): boolean {
   try {
@@ -109,6 +140,35 @@ function SectionProgressBars({
   );
 }
 
+function KaraokeLineText({ line }: { line: KaraokeLine }) {
+  const blocks = line.blocks;
+  if (blocks == null || blocks.length === 0) {
+    return <>{line.text}</>;
+  }
+  return (
+    <>
+      {blocks.map((block) => (
+        <span
+          key={block.id}
+          data-block-id={block.id}
+          data-block-active={block.active ? "true" : undefined}
+          data-block-past={block.past ? "true" : undefined}
+          className={[
+            styles.karaokeBlock,
+            block.active ? styles.karaokeBlockActive : "",
+            !block.active && block.past ? styles.karaokeBlockPast : "",
+            !block.active && !block.past ? styles.karaokeBlockUpcoming : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {block.text}
+        </span>
+      ))}
+    </>
+  );
+}
+
 export function KaraokePane({
   project,
   displayTicks,
@@ -124,6 +184,9 @@ export function KaraokePane({
   const activeRef = useRef<HTMLElement | null>(null);
   /** v4 `karaokeScrollKey` — scroll only when the active line/section id changes. */
   const scrollKeyRef = useRef<string | null>(null);
+  const [roleFilter, setRoleFilter] = useState<TekstBlockRole | null>(() =>
+    readStoredRoleFilter(),
+  );
 
   const bindActiveRef = (isTarget: boolean) =>
     isTarget
@@ -155,7 +218,11 @@ export function KaraokePane({
   }, [vocalTapOn, onVocalTap, onVocalTapStep]);
 
   const ctx =
-    project != null ? buildKaraokeLiveContext(project, displayTicks) : null;
+    project != null
+      ? buildKaraokeLiveContext(project, displayTicks, { roleFilter })
+      : null;
+
+  const showRoleFilter = ctx != null && ctx.availableRoles.length >= 2;
 
   const activeLineId = ctx?.lines.find((l) => l.active)?.id ?? null;
   const activeSection = ctx?.sections.find((s) => s.active) ?? null;
@@ -246,6 +313,40 @@ export function KaraokePane({
           </Button>
         </div>
       ) : null}
+      {showRoleFilter ? (
+        <label className={styles.karaokeRoleFilter}>
+          Rola wokalu
+          <select
+            className={styles.karaokeRoleSelect}
+            aria-label="Filtr roli wokalu"
+            data-testid="karaoke-role-filter"
+            value={
+              roleFilter != null && ctx.availableRoles.includes(roleFilter)
+                ? roleFilter
+                : ""
+            }
+            onChange={(e) => {
+              const v = e.target.value;
+              const next =
+                v === "vocal_1" ||
+                v === "vocal_2" ||
+                v === "backing" ||
+                v === "all"
+                  ? v
+                  : null;
+              setRoleFilter(next);
+              writeStoredRoleFilter(next);
+            }}
+          >
+            <option value="">Wszystkie</option>
+            {ctx.availableRoles.map((role) => (
+              <option key={role} value={role}>
+                {TEKST_BLOCK_ROLE_LABELS[role]}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {hasContent ? (
         <div
           ref={scrollRef}
@@ -287,20 +388,28 @@ export function KaraokePane({
                   />
                   {sec.lines.length > 0 ? (
                     <div className={styles.karaokeSectionLines}>
-                      {sec.lines.map((line) => (
-                        <p
-                          key={line.id}
-                          ref={bindActiveRef(line.active)}
-                          className={[
-                            styles.karaokeLine,
-                            line.active ? styles.karaokeLineActive : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        >
-                          {line.text}
-                        </p>
-                      ))}
+                      {sec.lines.map((line) => {
+                        const hasBlocks =
+                          line.blocks != null && line.blocks.length > 0;
+                        return (
+                          <p
+                            key={line.id}
+                            ref={bindActiveRef(line.active)}
+                            data-line-id={line.id}
+                            data-line-active={line.active ? "true" : undefined}
+                            className={[
+                              styles.karaokeLine,
+                              line.active && !hasBlocks
+                                ? styles.karaokeLineActive
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          >
+                            <KaraokeLineText line={line} />
+                          </p>
+                        );
+                      })}
                     </div>
                   ) : null}
                 </section>

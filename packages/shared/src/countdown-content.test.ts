@@ -33,8 +33,34 @@ describe("countdown-content", () => {
   it("syntheticCountdownTekstClips maps labels into CD span ticks", () => {
     const clips = syntheticCountdownTekstClips(-7680, 2, 3840);
     expect(clips).toEqual([
-      { id: "vl-cd-2", text: "2", startTicks: -7680, lengthTicks: 3840 },
-      { id: "vl-cd-1", text: "1", startTicks: -3840, lengthTicks: 3840 },
+      {
+        id: "vl-cd-2",
+        text: "2",
+        startTicks: -7680,
+        lengthTicks: 3840,
+        blocks: [
+          {
+            id: "vl-cd-2-block-0",
+            startTicks: -7680,
+            lengthTicks: 3840,
+            text: "2",
+          },
+        ],
+      },
+      {
+        id: "vl-cd-1",
+        text: "1",
+        startTicks: -3840,
+        lengthTicks: 3840,
+        blocks: [
+          {
+            id: "vl-cd-1-block-0",
+            startTicks: -3840,
+            lengthTicks: 3840,
+            text: "1",
+          },
+        ],
+      },
     ]);
   });
 
@@ -184,7 +210,20 @@ describe("countdown-content", () => {
   it("synthetic clips guard barTicks and expose akordy ids", () => {
     const tekst = syntheticCountdownTekstClips(-100, 1, 0);
     expect(tekst).toEqual([
-      { id: "vl-cd-1", text: "1", startTicks: -100, lengthTicks: 1 },
+      {
+        id: "vl-cd-1",
+        text: "1",
+        startTicks: -100,
+        lengthTicks: 1,
+        blocks: [
+          {
+            id: "vl-cd-1-block-0",
+            startTicks: -100,
+            lengthTicks: 1,
+            text: "1",
+          },
+        ],
+      },
     ]);
     const ak = syntheticCountdownAkordClips(-200, 1, 50.7);
     expect(ak).toEqual([

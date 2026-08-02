@@ -4,6 +4,7 @@ import {
   ticksPerBar,
   type FormaClip,
   type Project,
+  type TekstClip,
 } from "@stagesync/shared";
 import { snapEditTicks } from "./formaCanvas.js";
 import {
@@ -14,6 +15,7 @@ import {
   type SubsectionRange,
 } from "./formaSubsections.js";
 import { logicBarFromTicks, ticksFromLogicBar } from "./scoreBarEdit.js";
+import { shiftTekstBlocks } from "./tekstBlocks.js";
 
 export function renameFormaClip(project: Project, clipId: string, name: string): Project {
   const trimmed = name.trim();
@@ -35,6 +37,20 @@ function shiftStartTicks<T extends { startTicks: number }>(
 ): T {
   if (item.startTicks < fromTicks) return item;
   return { ...item, startTicks: item.startTicks + deltaTicks };
+}
+
+function shiftTekstClipFrom(
+  clip: TekstClip,
+  fromTicks: number,
+  deltaTicks: number,
+): TekstClip {
+  if (clip.startTicks < fromTicks) return clip;
+  const blocks = shiftTekstBlocks(clip.blocks, deltaTicks);
+  return {
+    ...clip,
+    startTicks: clip.startTicks + deltaTicks,
+    blocks: blocks.length > 0 ? blocks : clip.blocks,
+  };
 }
 
 /**
@@ -74,7 +90,9 @@ export function shiftProjectContentFromTicks(
     ...project,
     forma: { clips: formaClips },
     tekst: {
-      clips: project.tekst.clips.map((c) => shiftStartTicks(c, from, delta)),
+      clips: project.tekst.clips.map((c) =>
+        shiftTekstClipFrom(c, from, delta),
+      ),
     },
     akordy: {
       clips: project.akordy.clips.map((c) => shiftStartTicks(c, from, delta)),
@@ -123,13 +141,20 @@ function shiftAllProjectTicks(project: Project, deltaTicks: number): Project {
     ...c,
     startTicks: c.startTicks + delta,
   });
-  const meter = resolveMeterAt(project, 0);
+  const bumpTekst = (c: TekstClip): TekstClip => {
+    const blocks = shiftTekstBlocks(c.blocks, delta);
+    return {
+      ...c,
+      startTicks: c.startTicks + delta,
+      blocks: blocks.length > 0 ? blocks : c.blocks,
+    };
+  };  const meter = resolveMeterAt(project, 0);
   const barTicks = ticksPerBar(meter, project.ppq);
   const deltaBars = barTicks > 0 ? Math.round(delta / barTicks) : 0;
   return {
     ...project,
     forma: { clips: project.forma.clips.map(bump) },
-    tekst: { clips: project.tekst.clips.map(bump) },
+    tekst: { clips: project.tekst.clips.map(bumpTekst) },
     akordy: { clips: project.akordy.clips.map(bump) },
     cue: { clips: project.cue.clips.map(bump) },
     audioClips: project.audioClips.map(bump),

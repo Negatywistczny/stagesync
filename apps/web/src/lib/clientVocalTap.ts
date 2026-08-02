@@ -4,6 +4,7 @@
 
 import { type Project, type TekstClip } from "@stagesync/shared";
 import { contentFloorTicks } from "./formaCanvas.js";
+import { moveTekstClipStart } from "./tekstBlocks.js";
 
 export function vocalTapQueue(project: Project): TekstClip[] {
   const floor = contentFloorTicks(project.forma.clips);
@@ -23,7 +24,7 @@ export function vocalTapMarkTicks(
 
 /**
  * Set clip startTicks (keep length); clamp to content floor and optional
- * minimum (previous tap line end) so taps do not stack.
+ * minimum (previous tap line end) so taps do not stack. Δstart on all blocks.
  */
 export function applyVocalTap(
   project: Project,
@@ -40,7 +41,7 @@ export function applyVocalTap(
   );
   const start = Math.max(minStart, Math.trunc(atTicks));
   const clips = project.tekst.clips.map((c) =>
-    c.id === clipId ? { ...c, startTicks: start } : c,
+    c.id === clipId ? moveTekstClipStart(c, start) : c,
   );
   return { ...project, tekst: { clips } };
 }

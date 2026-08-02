@@ -4,13 +4,14 @@ import { access, mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises
 import { join } from "node:path";
 import {
   LibrarySchema,
+  ProjectSchema,
   ProjectSchemaV1,
   ProjectSchemaV2,
   ProjectSchemaV3,
   ProjectSchemaV4,
   ProjectSchemaV5,
   SetlistSchema,
-  createProjectV5Seed,
+  createProjectV6Seed,
   createDefaultTemplateProject,
   defaultSetlist,
   ensureFormaSubsections,
@@ -26,6 +27,7 @@ import {
   upgradeProjectV2ToV3,
   upgradeProjectV3ToV4,
   upgradeProjectV4ToV5,
+  upgradeProjectV5ToV6,
   type Library,
   type LibraryProjectEntry,
   type Project,
@@ -120,6 +122,15 @@ function isProjectV4(raw: unknown): boolean {
   );
 }
 
+function isProjectV5(raw: unknown): boolean {
+  return (
+    raw !== null &&
+    typeof raw === "object" &&
+    "formatVersion" in raw &&
+    (raw as { formatVersion: number }).formatVersion === 5
+  );
+}
+
 function libraryEntryFromProject(project: Project): LibraryProjectEntry {
   const key = resolveKeyAt(project, 0);
   const keyLabel = key ? formatKeySignature(key) : undefined;
@@ -151,26 +162,37 @@ function libraryEntryFromProject(project: Project): LibraryProjectEntry {
   };
 }
 
-function upgradeToV5(raw: unknown): Project {
+/** V1…V5 → V6 via seed-chain upgrades; V6 validated in place. */
+function upgradeToV6(raw: unknown): Project {
   let project: Project;
   if (isProjectV1(raw)) {
-    project = upgradeProjectV4ToV5(
-      upgradeProjectV3ToV4(
-        upgradeProjectV2ToV3(upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw))),
+    project = upgradeProjectV5ToV6(
+      upgradeProjectV4ToV5(
+        upgradeProjectV3ToV4(
+          upgradeProjectV2ToV3(upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw))),
+        ),
       ),
     );
   } else if (isProjectV2(raw)) {
-    project = upgradeProjectV4ToV5(
-      upgradeProjectV3ToV4(upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw))),
+    project = upgradeProjectV5ToV6(
+      upgradeProjectV4ToV5(
+        upgradeProjectV3ToV4(upgradeProjectV2ToV3(ProjectSchemaV2.parse(raw))),
+      ),
     );
   } else if (isProjectV3(raw)) {
-    project = upgradeProjectV4ToV5(
-      upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw)),
+    project = upgradeProjectV5ToV6(
+      upgradeProjectV4ToV5(
+        upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw)),
+      ),
     );
   } else if (isProjectV4(raw)) {
-    project = upgradeProjectV4ToV5(ProjectSchemaV4.parse(raw));
+    project = upgradeProjectV5ToV6(
+      upgradeProjectV4ToV5(ProjectSchemaV4.parse(raw)),
+    );
+  } else if (isProjectV5(raw)) {
+    project = upgradeProjectV5ToV6(ProjectSchemaV5.parse(raw));
   } else {
-    project = ProjectSchemaV5.parse(raw);
+    project = ProjectSchema.parse(raw);
   }
   // Migrated / early-α projects often lack Forma subsections — recompute v4 4-bar.
   return ensureFormaSubsections(project);
@@ -207,7 +229,7 @@ export function createStores(dataDir?: string) {
       const seedPath = join(paths.seedProjectsDir, entry.id, "project.json");
       try {
         const raw = await readJsonFile(seedPath);
-        await writeProject(upgradeToV5(raw));
+        await writeProject(upgradeToV6(raw));
       } catch (err) {
         if (errCode(err) === "ENOENT") continue;
         throw new StorageError(
@@ -327,7 +349,7 @@ export function createStores(dataDir?: string) {
     const safeId = assertSafeProjectId(paths, id);
     try {
       const raw = await readJsonFile(projectFile(paths, safeId));
-      return upgradeToV5(raw);
+      return upgradeToV6(raw);
     } catch (err) {
       if (errCode(err) === "ENOENT") {
         throw new NotFoundError(`Project not found: ${safeId}`);
@@ -340,7 +362,7 @@ export function createStores(dataDir?: string) {
   }
 
   async function writeProject(project: Project): Promise<void> {
-    const parsed = ProjectSchemaV5.parse(ensureFormaSubsections(project));
+    const parsed = ProjectSchema.parse(ensureFormaSubsections(project));
     const dir = projectDir(paths, parsed.id);
     await mkdir(dir, { recursive: true });
     await writeJsonAtomic(projectFile(paths, parsed.id), parsed);
@@ -349,7 +371,7 @@ export function createStores(dataDir?: string) {
   function needsSchemaRewrite(raw: unknown): boolean {
     if (raw === null || typeof raw !== "object") return true;
     const fv = (raw as { formatVersion?: unknown }).formatVersion;
-    return fv !== 5;
+    return fv !== 6;
   }
 
   return {
@@ -364,7 +386,7 @@ export function createStores(dataDir?: string) {
     },
 
     /**
-     * Upgrade on-disk project to v5 when `formatVersion !== 5`.
+     * Upgrade on-disk project to v6 when `formatVersion !== 6`.
      * Shadow-backs up before overwrite. Returns true if rewritten.
      */
     async migrateProjectOnDisk(
@@ -376,11 +398,11 @@ export function createStores(dataDir?: string) {
         const file = projectFile(paths, safeId);
         const raw = await readProjectRaw(safeId);
         if (!needsSchemaRewrite(raw)) {
-          // Validate shape on boot; leave v5 files untouched.
-          upgradeToV5(raw);
+          // Validate shape on boot; leave v6 files untouched.
+          upgradeToV6(raw);
           return false;
         }
-        const upgraded = upgradeToV5(raw);
+        const upgraded = upgradeToV6(raw);
         const bak = await shadowBackup(file, "schema");
         if (bak) opts?.onBackup?.(bak);
         await writeProject(upgraded);
@@ -456,7 +478,7 @@ export function createStores(dataDir?: string) {
           if (pc == null) {
             throw new StorageError("No free MIDI Program Change (0–127)");
           }
-          project = ProjectSchemaV5.parse({
+          project = ProjectSchema.parse({
             ...tpl,
             id,
             name,
@@ -468,12 +490,12 @@ export function createStores(dataDir?: string) {
             audioClips: [],
           });
         } else if (isTemplate) {
-          project = createProjectV5Seed(id, name, updatedAt, {
+          project = createProjectV6Seed(id, name, updatedAt, {
             isTemplate: true,
           });
         } else {
           const pc = nextMidiProgramId(library.projects) ?? 0;
-          project = createProjectV5Seed(id, name, updatedAt, {
+          project = createProjectV6Seed(id, name, updatedAt, {
             midiProgramId: pc,
           });
         }
@@ -499,7 +521,7 @@ export function createStores(dataDir?: string) {
           );
         }
         const updatedAt = new Date().toISOString();
-        const next = ProjectSchemaV5.parse({
+        const next = ProjectSchema.parse({
           ...body,
           id: safeId,
           updatedAt,
@@ -547,7 +569,7 @@ export function createStores(dataDir?: string) {
           if (project.isTemplate === true) {
             throw new StorageError(`Cannot assign PC to template ${a.id}`);
           }
-          const next = ProjectSchemaV5.parse({
+          const next = ProjectSchema.parse({
             ...project,
             midiProgramId: a.midiProgramId,
             updatedAt: new Date().toISOString(),
@@ -681,7 +703,7 @@ export function createStores(dataDir?: string) {
           ];
         }
 
-        const next = ProjectSchemaV5.parse({
+        const next = ProjectSchema.parse({
           ...project,
           updatedAt: new Date().toISOString(),
           assets,
@@ -717,7 +739,7 @@ export function createStores(dataDir?: string) {
             throw new StorageError(`Failed to delete asset file ${assetId}`, err);
           }
         }
-        const next = ProjectSchemaV5.parse({
+        const next = ProjectSchema.parse({
           ...project,
           updatedAt: new Date().toISOString(),
           assets: project.assets.filter((a) => a.id !== assetId),

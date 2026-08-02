@@ -42,9 +42,15 @@ Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o r
 | **5.1** | **Launch & Mix** |
 | **5.2** | **Pocket Stage** |
 | **5.3** | **Colors & Channels** |
-| **5.4** | **Content Model** |
-| **5.5** | **Ingest** |
-| **5.6** | **Pitch & FX** |
+| **5.4** | **Syllables** |
+| **5.5** | **Pitch & FX** |
+
+### Linie 6.x
+
+| Linia | Nazwa |
+|-------|-------|
+| **6.0** | **Live Suite** |
+| **6.1** | **Karaoke & Jukebox** |
 
 ## Release (gdy użytkownik prosi)
 

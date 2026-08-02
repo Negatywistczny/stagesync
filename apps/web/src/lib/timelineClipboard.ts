@@ -7,6 +7,7 @@ import {
   type AudioClip,
   type FormaClip,
   type Project,
+  type TekstBlock,
 } from "@stagesync/shared";
 import { contentFloorTicks } from "./formaCanvas.js";
 import {
@@ -16,12 +17,19 @@ import {
 import type { ClipSelectionLane } from "./timelineSelection.js";
 import { isAudioSelectionLane } from "./timelineSelection.js";
 import { audioTrackIdFromLane } from "./timelineTracks.js";
+import {
+  newTekstClipWithBlocks,
+  remapTekstClipGeometry,
+  shiftTekstBlocks,
+} from "./tekstBlocks.js";
 
 export type ClipboardPayload = {
   name?: string;
   note?: string;
   subsections?: number[];
   text?: string;
+  /** Tekst syllable/word blocks (clip-absolute at copy time). */
+  blocks?: TekstBlock[];
   symbol?: string;
   label?: string;
   roles?: Array<"karaoke" | "grid" | "score" | "drums">;
@@ -56,6 +64,7 @@ type TimedPayloadClip = {
   note?: string;
   subsections?: number[];
   text?: string;
+  blocks?: TekstBlock[];
   symbol?: string;
   label?: string;
   roles?: Array<"karaoke" | "grid" | "score" | "drums">;
@@ -99,7 +108,12 @@ export function buildClipboardFromClips(
         lane,
         startTicks: c.startTicks,
         lengthTicks: c.lengthTicks,
-        payload: { text: c.text ?? "" },
+        payload: {
+          text: c.text ?? "",
+          ...(c.blocks?.length
+            ? { blocks: c.blocks.map((b) => ({ ...b })) }
+            : {}),
+        },
       };
     }
     if (lane === "akordy") {
@@ -259,24 +273,42 @@ export function pasteClipboardAt(
     });
     if (lane === "tekst") {
       const byId = new Map(next.tekst.clips.map((c) => [c.id, c]));
+      const text = item.payload.text ?? "";
+      const originStart = item.startTicks;
+      const delta = start - originStart;
+      const pastedBlocks = item.payload.blocks?.length
+        ? shiftTekstBlocks(
+            item.payload.blocks.map((b) => ({ ...b })),
+            delta,
+          )
+        : undefined;
       const clips = placed
         .filter((c) => c.kind === "section")
         .map((c) => {
           if (c.id === id) {
-            return {
+            if (pastedBlocks?.length) {
+              return {
+                id: c.id,
+                startTicks: c.startTicks,
+                lengthTicks: c.lengthTicks,
+                text,
+                blocks: pastedBlocks,
+              };
+            }
+            return newTekstClipWithBlocks({
               id: c.id,
               startTicks: c.startTicks,
               lengthTicks: c.lengthTicks,
-              text: item.payload.text ?? "",
-            };
+              text,
+            });
           }
           const prev = byId.get(c.id);
-          return {
+          return remapTekstClipGeometry(prev, {
             id: c.id,
             startTicks: c.startTicks,
             lengthTicks: c.lengthTicks,
             text: prev?.text ?? "",
-          };
+          });
         });
       next = { ...next, tekst: { clips } };
     } else if (lane === "akordy") {

@@ -3,6 +3,7 @@
  * Storage holds Forma Countdown length; Client synthesizes "2"…"1" at render.
  */
 
+import { withWholeLineTekstBlocks } from "./project-seed.js";
 import { resolveMeterAt } from "./project-resolve.js";
 import { ticksPerBar } from "./time.js";
 import type { AkordClip, Project, TekstClip } from "./schema.js";
@@ -47,12 +48,14 @@ export function syntheticCountdownTekstClips(
 ): TekstClip[] {
   const bar = Math.max(1, Math.trunc(barTicks));
   const start = Math.trunc(startTicks);
-  return countdownDigitLabels(bars).map(({ barOffset, label }) => ({
-    id: `vl-cd-${label}`,
-    text: label,
-    startTicks: start + barOffset * bar,
-    lengthTicks: bar,
-  }));
+  return countdownDigitLabels(bars).map(({ barOffset, label }) =>
+    withWholeLineTekstBlocks({
+      id: `vl-cd-${label}`,
+      text: label,
+      startTicks: start + barOffset * bar,
+      lengthTicks: bar,
+    }),
+  );
 }
 
 /** Ephemeral Akordy clips for Client grid during Countdown. */

@@ -15,6 +15,12 @@ describe("importUgText", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.tekst.clips.length).toBeGreaterThanOrEqual(1);
+    expect(result.tekst.clips[0]?.blocks).toHaveLength(1);
+    expect(result.tekst.clips[0]?.blocks[0]).toMatchObject({
+      text: result.tekst.clips[0]!.text,
+      startTicks: result.tekst.clips[0]!.startTicks,
+      lengthTicks: result.tekst.clips[0]!.lengthTicks,
+    });
     expect(result.akordy.clips.some((c) => c.symbol === "C")).toBe(true);
     expect(result.akordy.clips.some((c) => c.symbol === "G")).toBe(true);
   });

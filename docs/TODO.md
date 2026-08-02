@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.3.8` (`v5.3.8`) — linia **5.3** = **Colors & Channels**; następny fokus produktowy **5.4 Content Model** → **5.5 Ingest** → **5.6 Pitch & FX** → **6.0** / **7.0**.
+**Stan:** ostatni cut `5.3.8` (`v5.3.8`) — SemVer produktu **zostaje 5.3.8** do cutu release. Następny hero = **5.4 Syllables** (schema V6 + migrator **na `main`**; cut gdy widoczny UltraStar → Karaoke). Potem **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** (linia **7.0 nie istnieje**).
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -10,7 +10,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-**Release policy (2026-07-31):** sekwencja po 5.3 = **5.4 Content Model** → **5.5 Ingest MVP** → **5.6 Pitch & FX** (Content/Ingest przed Pitch — [ADR 0018](./adr/0018-future-audio-architecture.md) §4); patche 5.3.x nadal OK dla residual chrome/ops.
+**Release policy:** sekwencja PO 2026-08-02 = **5.4 Syllables** (fundament schemy + Ingest w jednym hero) → **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); patche 5.3.x nadal OK dla residual chrome/ops do cutu 5.4. Schema V6 **nie** jest osobnym cutem.
 
 ## Must (operator residual)
 
@@ -22,17 +22,13 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — w toku: lokalne alerty + rejestracja tokenów + kanały; FCM wymaga `google-services.json` (opt-in, ADR 0016 — zero sekretów w APK). Nie mylić z FG notification lokalnego hosta Console.
 
-## Etap 5.4+ / Later (po Colors & Channels)
+## Etap 5.4+ / Later
 
-### 5.4 Content Model (następny fokus)
+### 5.4 Syllables / 5.5 Pitch & FX / 6.0 Live Suite
 
-- [ ] **5.4 — Content Model:** `formatVersion` bump + migrator; Lyrics AST (sylaby / word blocks w **tickach**); opcjonalne role wokalu + melodia w schemacie; Client highlight po sylabach gdy dane są — scope [report-scope-5.4.md](./analysis/reports/report-scope-5.4.md). **OUT:** `/karaoke` TV, `/request`, UltraStar bridging, Input / Suite / automation
-
-### 5.5 Ingest MVP / 5.6 Pitch & FX / 6.0+ audio
-
-- [ ] **5.5 — Ingest MVP:** UltraStar → ticks → `tekst` (+ melody); Text-Anchor Bridging dopiero z golden fixtures; UG/ChordPro zostaje; bez cloud AI — [triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)
-- [ ] **5.6 — Pitch & FX Busses:** Track Pitch Shift + expanded busses / send-return FX (WebAudio; bez VST in-process) — [ADR 0018](./adr/0018-future-audio-architecture.md)
-- [ ] **6.0 filary (po major + scope report):** Input & Live Processing (+ recording + proste edit); Audio Suite (Worklet/WASM) + **STEM / mute lead**; Automation lanes (host Tick Engine SSOT); MIDI Patch Matrix + Standalone VSTi Controller (PC/CC) — wbudowane synthy WebAudio = Later 6.x+; szczegóły / OUT w [ADR 0018](./adr/0018-future-audio-architecture.md)
+- [ ] **5.4 — Syllables (do cutu):** UltraStar → ticks → `tekst` (+ melody); Text-Anchor Bridging dopiero z golden fixtures; UG/ChordPro zostaje; bez cloud AI — fundament schemy V6 już na `main` ([report-scope-5.4](./analysis/reports/report-scope-5.4.md); [triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md))
+- [ ] **5.5 — Pitch & FX:** Track Pitch Shift + expanded busses / send-return FX (WebAudio; bez VST in-process) — [ADR 0018](./adr/0018-future-audio-architecture.md)
+- [ ] **6.0 Live Suite (po major + scope report):** Input & Live Processing (+ recording + proste edit); Audio Suite (Worklet/WASM) + **STEM / mute lead**; Automation lanes (host Tick Engine SSOT); MIDI Patch Matrix + Standalone VSTi Controller (PC/CC) — wbudowane synthy WebAudio = Later 6.x+; szczegóły / OUT w [ADR 0018](./adr/0018-future-audio-architecture.md)
 
 ### Residual ops / mobile
 
@@ -43,8 +39,8 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] **Safety Net (residual):** auto-election / lease split-brain — MVP zamknięte w [#437](https://github.com/Negatywistczny/stagesync/issues/437); to tylko Later ([triage](./analysis/inspiracje/spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md))
 - [ ] **Parity residual (N/A v4 → opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki (bez menu T); skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w widoku roli Client
 
-### 7.0+ Karaoke & Jukebox (Later)
+### 6.1 Karaoke & Jukebox (Later)
 
-- [ ] [#824](https://github.com/Negatywistczny/stagesync/issues/824) **Karaoke & Jukebox Ecosystem** — major **7.0** (po 6.0): `/karaoke`, `/request`, tryby Gig/Jukebox + kolejka; 100 % LAN; zależności: Content/Ingest **5.4–5.5**, Pitch **5.6**, STEM/pitch **6.x** — szczegóły w epiku ([ROADMAP](./ROADMAP.md))
+- [ ] [#824](https://github.com/Negatywistczny/stagesync/issues/824) **Karaoke & Jukebox** — **6.1** (po 6.0 Live Suite; dawne „7.0” **nie istnieje**): `/karaoke`, `/request`, tryby Gig/Jukebox + kolejka; 100 % LAN; zależności: Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** — szczegóły w epiku ([ROADMAP](./ROADMAP.md))
 
 **OUT (nie wraca do TODO):** natywny **StageSync Performer na iOS** (Swift/WKWebView / TestFlight) — ścieżka iOS = **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)); natywne APK = Android only ([ADR 0016](./adr/0016-android-performer-console.md)).

@@ -13,6 +13,7 @@ import {
   type FormaClip,
   type Project,
   type SnapMode,
+  type TekstClip,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
 import type { FormaGesturePreview, FormaGestureSession } from "./timelineGesture.js";
@@ -21,6 +22,11 @@ import {
   resolvePencilRangeTicks,
   contentSnapModeFromModifiers,
 } from "./timelineGesture.js";
+import {
+  joinTekstClips,
+  newTekstClipWithBlocks,
+  remapTekstClipGeometry,
+} from "./tekstBlocks.js";
 
 export type ContentLaneId = "tekst" | "akordy" | "cue";
 
@@ -108,17 +114,17 @@ function mapFormaBack(
 ): Project {
   if (lane === "tekst") {
     const byId = new Map(project.tekst.clips.map((c) => [c.id, c]));
-    const clips = formaClips
+    const clips: TekstClip[] = formaClips
       .filter((c) => c.kind === "section")
       .map((c) => {
         const prev =
           byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
-        return {
+        return remapTekstClipGeometry(prev, {
           id: c.id,
           startTicks: c.startTicks,
           lengthTicks: c.lengthTicks,
           text: prev?.text ?? "",
-        };
+        });
       });
     return { ...project, tekst: { clips } };
   }
@@ -166,12 +172,10 @@ export function splitContentClipAt(
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
   const snapped = Math.max(floor, snapEditTicks(project, atTicks, mode));
-  const idPrefix =
-    lane === "tekst" ? "tekst" : lane === "akordy" ? "akord" : "cue";
   const before = contentAsForma(project, lane);
+  // Default right id = `${clipId}-r` so resolveSplitParentId preserves payload/blocks.
   const clips = splitClipAt(before, clipId, snapped, {
     contentFloorTicks: floor,
-    rightId: `${idPrefix}-${crypto.randomUUID()}`,
   });
   if (clips === before) return project;
   return mapFormaBack(project, lane, clips);
@@ -179,6 +183,7 @@ export function splitContentClipAt(
 
 /**
  * Join abutting content clips on a lane (gap 0). Keeps left payload / id.
+ * Tekst: concatenates `blocks[]` from both sides.
  */
 export function joinAdjacentContentClips(
   project: Project,
@@ -201,6 +206,18 @@ export function joinAdjacentContentClips(
     right = cur;
   }
   if (!right) return project;
+
+  if (lane === "tekst") {
+    const leftClip = project.tekst.clips.find((c) => c.id === left.id);
+    const rightClip = project.tekst.clips.find((c) => c.id === right!.id);
+    if (!leftClip || !rightClip) return project;
+    const merged = joinTekstClips(leftClip, rightClip);
+    const clips = project.tekst.clips
+      .filter((c) => c.id !== left.id && c.id !== right!.id)
+      .concat(merged);
+    return { ...project, tekst: { clips } };
+  }
+
   const merged: FormaClip = {
     ...left,
     lengthTicks: left.lengthTicks + right.lengthTicks,
@@ -318,25 +335,25 @@ export function commitPencilContentSpan(
 
   if (lane === "tekst") {
     const byId = new Map(project.tekst.clips.map((c) => [c.id, c]));
-    const clips = placed
+    const clips: TekstClip[] = placed
       .filter((c) => c.kind === "section")
       .map((c) => {
         if (c.id === newClip.id) {
-          return {
+          return newTekstClipWithBlocks({
             id: c.id,
             startTicks: c.startTicks,
             lengthTicks: c.lengthTicks,
             text: "",
-          };
+          });
         }
         const prev =
           byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
-        return {
+        return remapTekstClipGeometry(prev, {
           id: c.id,
           startTicks: c.startTicks,
           lengthTicks: c.lengthTicks,
           text: prev?.text ?? "",
-        };
+        });
       });
     return { ...project, tekst: { clips } };
   }

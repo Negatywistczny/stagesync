@@ -9,8 +9,8 @@ export type MigrateVolumeResult = {
 };
 
 /**
- * On boot: ensure library/setlist exist; upgrade every on-disk project to v5
- * and write back when the raw file was older than v5 (shadow backup first).
+ * On boot: ensure library/setlist exist; upgrade every on-disk project to v6
+ * and write back when the raw file was older than v6 (shadow backup first).
  * Fail-fast on Zod / I/O — caller should abort listen.
  */
 export async function migrateVolumeOnBoot(

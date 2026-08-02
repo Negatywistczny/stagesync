@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createProjectSeed,
-  createProjectV5Seed,
+  createProjectV6Seed,
   elapsedToTicks,
   type Project,
 } from "@stagesync/shared";
@@ -57,7 +57,7 @@ function projectWithAudio(): Project {
 
 describe("timelineTouchNudge", () => {
   it("shows nudge for any selected lane on tablet", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const section = p.forma.clips.find((c) => c.kind === "section")!;
     expect(shouldShowTouchNudge("tablet", "forma", section.id, p)).toBe(true);
     expect(shouldShowTouchNudge("desktop", "forma", section.id, p)).toBe(false);
@@ -66,7 +66,7 @@ describe("timelineTouchNudge", () => {
   });
 
   it("moves and stretches Forma section by bar", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilFormaClick(p, 7680, "Verse");
     const id = p.forma.clips.find((c) => c.name === "Verse")!.id;
     const before = p.forma.clips.find((c) => c.id === id)!;
@@ -88,7 +88,7 @@ describe("timelineTouchNudge", () => {
   });
 
   it("moves and trims Tekst / Akordy clips", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilTekstClick(p, 0, "Hi");
     const tekstId = p.tekst.clips[0]!.id;
     const step = nudgeStepTicks(p, 0, "bar");
@@ -118,7 +118,7 @@ describe("timelineTouchNudge", () => {
   });
 
   it("Countdown move changes length; left edge hidden", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     expect(nudgeShowsLeftEdge(p, "forma", cd.id)).toBe(false);
     const bars = countdownBars(p, cd);
@@ -128,14 +128,14 @@ describe("timelineTouchNudge", () => {
   });
 
   it("nudgeStepTicks covers beat/off/subdivision modes", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     expect(nudgeStepTicks(p, 0, "beat")).toBe(960);
     expect(nudgeStepTicks(p, 0, "off")).toBe(960);
     expect(nudgeStepTicks(p, 0, { kind: "subdivision", parts: 4 })).toBe(240);
   });
 
   it("moves cue clips and covers left move / stretch-out", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       cue: {
@@ -161,7 +161,7 @@ describe("timelineTouchNudge", () => {
   });
 
   it("Countdown stretch-right changes length; unknown action no-ops", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     const bars = countdownBars(p, cd);
     const stretched = applyTimelineNudge(
@@ -183,7 +183,7 @@ describe("timelineTouchNudge", () => {
   });
 
   it("missing clip and unknown lane are no-ops", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     expect(applyTimelineNudge(p, "forma", "missing", "move-right", "bar")).toBe(
       p,
     );
@@ -194,7 +194,7 @@ describe("timelineTouchNudge", () => {
   });
 
   it("Countdown at max bars move-right is a no-op", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectV6Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = setCountdownBars(p, MAX_COUNTDOWN_BARS);
     const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     expect(applyTimelineNudge(p, "forma", cd.id, "move-right", "bar")).toEqual(

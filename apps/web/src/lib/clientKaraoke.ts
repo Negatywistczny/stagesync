@@ -8,6 +8,8 @@ import {
   toDisplayBar,
   type FormaClip,
   type Project,
+  type TekstBlock,
+  type TekstBlockRole,
   type TekstClip,
   type TimeSignature,
 } from "@stagesync/shared";
@@ -17,11 +19,21 @@ import {
 } from "./clientBarCells.js";
 import { resolveTekstClipAt } from "./tekstEdit.js";
 
+/** Timed syllable / word token for Client Karaoke highlight. */
+export type KaraokeLineBlock = {
+  id: string;
+  text: string;
+  active: boolean;
+  past: boolean;
+};
+
 export type KaraokeLine = {
   id: string;
   text: string;
   startTicks: number;
   active: boolean;
+  /** Present when the clip has timed blocks (V6+). */
+  blocks?: KaraokeLineBlock[];
 };
 
 /** Forma section card — v4 `.karaoke-section` with lines or progress bars. */
@@ -55,6 +67,33 @@ export type KaraokeLiveContext = {
   sectionBars: ClientBarCell[];
   /** Current beat in bar (1-based) — transport only; no line scale-pulse. */
   currentBeat: number;
+  /**
+   * Active block within the active line (half-open window).
+   * Null when the line is active but no block covers `displayTicks`.
+   */
+  activeBlockId: string | null;
+  /** Distinct block roles in lyric data — show filter UI when length ≥ 2. */
+  availableRoles: TekstBlockRole[];
+};
+
+export type KaraokeBuildOptions = {
+  /** When set, keep blocks with matching role, `all`, or no role. */
+  roleFilter?: TekstBlockRole | null;
+};
+
+const ROLE_ORDER: TekstBlockRole[] = [
+  "vocal_1",
+  "vocal_2",
+  "backing",
+  "all",
+];
+
+/** Polish labels for the optional Karaoke role filter. */
+export const TEKST_BLOCK_ROLE_LABELS: Record<TekstBlockRole, string> = {
+  vocal_1: "Wokal 1",
+  vocal_2: "Wokal 2",
+  backing: "Backing",
+  all: "Wszyscy",
 };
 
 /** v4 `isPlaceholderVocalLine` — empty or `[Label]` placeholders. */
@@ -62,6 +101,94 @@ export function isPlaceholderLyric(text: string): boolean {
   const t = String(text || "").trim();
   if (!t) return true;
   return /^\[[^\]]+\]$/i.test(t);
+}
+
+/** Distinct roles present on lyric blocks (stable order). */
+export function collectTekstBlockRoles(
+  clips: Pick<TekstClip, "blocks">[],
+): TekstBlockRole[] {
+  const found = new Set<TekstBlockRole>();
+  for (const clip of clips) {
+    for (const block of clip.blocks ?? []) {
+      if (block.role) found.add(block.role);
+    }
+  }
+  return ROLE_ORDER.filter((r) => found.has(r));
+}
+
+/** Keep untagged / `all` blocks plus those matching `roleFilter`. */
+export function filterTekstBlocksByRole(
+  blocks: TekstBlock[],
+  roleFilter?: TekstBlockRole | null,
+): TekstBlock[] {
+  if (roleFilter == null) return blocks;
+  return blocks.filter(
+    (b) => b.role == null || b.role === "all" || b.role === roleFilter,
+  );
+}
+
+/**
+ * Half-open block window: `[start, start+length)`.
+ * Returns null when no block covers `displayTicks`.
+ */
+export function resolveActiveBlockId(
+  blocks: Pick<TekstBlock, "id" | "startTicks" | "lengthTicks">[] | undefined,
+  displayTicks: number,
+): string | null {
+  if (blocks == null || blocks.length === 0) return null;
+  for (const b of blocks) {
+    if (
+      displayTicks >= b.startTicks &&
+      displayTicks < b.startTicks + b.lengthTicks
+    ) {
+      return b.id;
+    }
+  }
+  return null;
+}
+
+/**
+ * Map clip blocks → highlight tokens. `undefined` when the clip has no blocks
+ * (legacy / display-only without V6 shape). Empty array = all filtered out.
+ */
+export function mapKaraokeBlocks(
+  clip: Pick<TekstClip, "blocks">,
+  displayTicks: number,
+  lineActive: boolean,
+  roleFilter?: TekstBlockRole | null,
+): KaraokeLineBlock[] | undefined {
+  const raw = clip.blocks;
+  if (raw == null || raw.length === 0) return undefined;
+  return filterTekstBlocksByRole(raw, roleFilter).map((b) => {
+    const end = b.startTicks + b.lengthTicks;
+    return {
+      id: b.id,
+      text: b.text,
+      active:
+        lineActive &&
+        displayTicks >= b.startTicks &&
+        displayTicks < end,
+      past: displayTicks >= end,
+    };
+  });
+}
+
+function toKaraokeLine(
+  clip: TekstClip,
+  displayTicks: number,
+  activeLineId: string | null,
+  roleFilter?: TekstBlockRole | null,
+): KaraokeLine | null {
+  const lineActive = activeLineId != null && clip.id === activeLineId;
+  const blocks = mapKaraokeBlocks(clip, displayTicks, lineActive, roleFilter);
+  if (blocks != null && blocks.length === 0) return null;
+  return {
+    id: clip.id,
+    text: clip.text,
+    startTicks: clip.startTicks,
+    active: lineActive,
+    ...(blocks != null ? { blocks } : {}),
+  };
 }
 
 /** Persisted Tekst + synthetic CD digits (display-only) when playhead in/near CD. */
@@ -186,6 +313,7 @@ export function groupKaraokeSections(
   lyricClips: TekstClip[],
   displayTicks: number,
   activeLineId: string | null,
+  roleFilter?: TekstBlockRole | null,
 ): KaraokeSectionGroup[] {
   const formaClips = formaClipsForKaraoke(project);
   const activeForma = resolveFormaClipAt(project, displayTicks);
@@ -196,12 +324,8 @@ export function groupKaraokeSections(
   const orphanLines: KaraokeLine[] = [];
 
   for (const c of lyricClips) {
-    const line: KaraokeLine = {
-      id: c.id,
-      text: c.text,
-      startTicks: c.startTicks,
-      active: activeLineId != null && c.id === activeLineId,
-    };
+    const line = toKaraokeLine(c, displayTicks, activeLineId, roleFilter);
+    if (!line) continue;
     const host = resolveFormaClipForLyric(project, formaClips, c);
     if (host) {
       buckets.get(host.id)!.push(line);
@@ -268,6 +392,7 @@ export function groupKaraokeSections(
 export function buildKaraokeLiveContext(
   project: Project | null,
   displayTicks: number,
+  opts?: KaraokeBuildOptions,
 ): KaraokeLiveContext | null {
   if (!project) return null;
   const section = resolveFormaClipAt(project, displayTicks);
@@ -299,18 +424,37 @@ export function buildKaraokeLiveContext(
   const activeLineId =
     activeIdx >= 0 ? (clips[activeIdx]?.id ?? null) : null;
 
-  const lines: KaraokeLine[] = clips.map((c) => ({
-    id: c.id,
-    text: c.text,
-    startTicks: c.startTicks,
-    active: activeLineId != null && c.id === activeLineId,
-  }));
+  const availableRoles = collectTekstBlockRoles(clips);
+  // Apply filter only when ≥2 roles are present and the choice is still valid.
+  const requested = opts?.roleFilter ?? null;
+  const roleFilter =
+    availableRoles.length >= 2 &&
+    requested != null &&
+    availableRoles.includes(requested)
+      ? requested
+      : null;
+
+  const lines: KaraokeLine[] = [];
+  for (const c of clips) {
+    const line = toKaraokeLine(c, displayTicks, activeLineId, roleFilter);
+    if (line) lines.push(line);
+  }
+
+  const activeClip = activeIdx >= 0 ? (clips[activeIdx] ?? null) : null;
+  const activeBlockId =
+    activeClip != null
+      ? resolveActiveBlockId(
+          filterTekstBlocksByRole(activeClip.blocks ?? [], roleFilter),
+          displayTicks,
+        )
+      : null;
 
   const sections = groupKaraokeSections(
     project,
     clips,
     displayTicks,
     activeLineId,
+    roleFilter,
   );
 
   const activeGroup =
@@ -333,6 +477,8 @@ export function buildKaraokeLiveContext(
     sections,
     sectionBars,
     currentBeat: bbt.beat,
+    activeBlockId,
+    availableRoles,
   };
 }
 

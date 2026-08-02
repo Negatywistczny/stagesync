@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectV6Seed } from "@stagesync/shared";
 import {
   deleteProjectAsset,
   uploadProjectAudio,
   uploadProjectMusicXml,
 } from "./projectAssetsApi.js";
 
-const project = createProjectV5Seed(
+const project = createProjectV6Seed(
   "00000000-0000-4000-8000-000000000001",
   "Demo",
   "2026-07-23T12:00:00.000Z",

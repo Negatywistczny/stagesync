@@ -12,6 +12,7 @@ import {
   type TimeSignature,
 } from "./time.js";
 import { ProjectSchema, normalizeKeyTonic, type Project, type FormaClip } from "./schema.js";
+import { withWholeLineTekstBlocks } from "./project-seed.js";
 import { sealAkordyLengths } from "./ug-import.js";
 import { scrubCountdownDigitClips } from "./countdown-content.js";
 import {
@@ -395,7 +396,7 @@ export function mapLegacySubsectionOffsets(
 }
 
 /**
- * Migrate one legacy 4.x song object → Project formatVersion 5.
+ * Migrate one legacy 4.x song object → Project formatVersion 6.
  * Fail-fast via Zod at the end ([ADR 0005] ACL).
  */
 export function migrateLegacySong(
@@ -538,13 +539,13 @@ export function migrateLegacySong(
     );
   const tekstClips = contentVocal.map(({ line, lengthBeats }, i) => {
     const sourceSection = asString(line.sourceSection, "").trim();
-    return {
+    return withWholeLineTekstBlocks({
       id: asString(line.id, `tekst-${i}`),
       startTicks: toTicks(asFiniteNumber(line.startAbs, 0), shiftQuarters, ppq),
       lengthTicks: Math.max(1, absBeatToTicks(lengthBeats, ppq)),
       text: asString(line.text, ""),
       ...(sourceSection ? { sourceSection } : {}),
-    };
+    });
   });
 
   // Akordy — length from onsets (or legacy lengthBeats); never min=bar for dense lines
@@ -729,7 +730,7 @@ export function migrateLegacySong(
   const draft = {
     id: projectId,
     name: asString(song.title ?? song.name, "Untitled"),
-    formatVersion: 5 as const,
+    formatVersion: 6 as const,
     updatedAt,
     ppq: DEFAULT_PPQ,
     defaultBpm,
@@ -744,6 +745,7 @@ export function migrateLegacySong(
     tekst: { clips: tekstClips },
     akordy: { clips: akordyClips },
     cue: { clips: cueClips },
+    melody: { clips: [] },
     scoreBarMap,
     ...(midiProgramId != null ? { midiProgramId } : {}),
     ...(song.isTemplate === true ? { isTemplate: true } : {}),

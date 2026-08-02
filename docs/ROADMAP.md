@@ -25,11 +25,10 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0`; host Launcher (lokalny/LAN/remote); Mixer (Master\|Bus); menu narzędzi T + skróty | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console, motyw hosta | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 | **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
-| **5.4** | **Content Model** — Lyrics AST (sylaby w tickach) + migrator | Fundament zapisu pod ingest + Karaoke 7.x; **przed** Pitch | [report-scope-5.4](./analysis/reports/report-scope-5.4.md) · [TODO.md](./TODO.md) |
-| **5.5** | **Ingest MVP** — UltraStar → ticks; bridging US+UG (fixtures) | Lepszy import offline; AST tylko IR na krawędzi | [TODO.md](./TODO.md) · [triage ingestii](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md) |
-| **5.6** | **Pitch & FX Busses** — Track Pitch + expanded send-return | Most do Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
-| **6.0+** | Live Processing & Master Show Controller | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
-| **7.0+** | Karaoke & Jukebox Ecosystem | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od 5.4–5.6 + STEM/pitch 6.x | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
+| **5.4** | **Syllables** — Lyrics AST (ticks) + widoczny UltraStar → Karaoke | Schema V6 + migrator **na `main`**; cut gdy Ingest UltraStar widoczny w produkcie (nie osobny hero „Content Model” / „Ingest”) | [report-scope-5.4](./analysis/reports/report-scope-5.4.md) · [TODO.md](./TODO.md) · [CHANGELOG](../CHANGELOG.md) |
+| **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
+| **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
+| **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
 | **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
 ### Zamknięte etapy (α3–β1)
@@ -103,7 +102,7 @@ Tag `v5.2.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 Tag `v5.3.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
-**Decyzja release (2026-07-27):** po `v5.3.0` parity/chrome szły jako **patche 5.3.x**. **Następny fokus produktowy (2026-07-31):** sekwencja **5.4 → 5.5 → 5.6** (Content → Ingest → Pitch & FX), potem major **6.0** / **7.0**.
+**Decyzja release (2026-07-27; sekwencja PO 2026-08-02):** po `v5.3.0` parity/chrome szły jako **patche 5.3.x**. Następny hero = **5.4 Syllables** (fundament schemy V6 **na `main`** + widoczny UltraStar → Karaoke w tym samym cutcie — **bez** osobnego hero Content Model / Ingest). Potem **5.5 Pitch & FX** → major **6.0 Live Suite** → **6.1 Karaoke & Jukebox** (dawne „7.0” — linia **7.0 nie istnieje**).
 
 **Dostarczone:** Mixer multi-out HW (ChannelMerger N, CRUD patchy, track/bus/cue → `hw_out`) gdy `maxChannelCount ≥ 4` — przy stereo strefa HW Out ukryta (bez atrap); oczka widoczności stref Mixer; **5 nazwanych skór** (Booth Amber / Daylight / Midnight Cyan / Matrix Green / Neon Ember, `data-theme`); menu OS Plik/Edycja/Widok (Wygląd) rozszerzone o Timeline/Client.
 
@@ -111,38 +110,36 @@ Tag `v5.3.0`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Residual ops (równolegle, nie hero):** HW smoke multi-out na ≥ 4 ch; G1–G10; Safety Net auto-election; Offline delta; GUI mobile — [TODO.md](./TODO.md).
 
-### 5.4 — **Content Model** (następny fokus)
+### 5.4 — **Syllables** — fundament na `main`; cut gdy Ingest widoczny
 
-Fundament zapisu pod timed lyrics i przyszłe karaoke — **bez** okna TV i bez UltraStar bridging.
+Hero linii: timed lyrics + **widoczny** UltraStar → Karaoke. Schema V6 / migrator / Karaoke block highlight **już na trunku** — **nie** osobny cut „Content Model”; SemVer produktu nadal **5.3.8** do cutu `5.4.0`. Schema V6 **nie** jest osobnym hero cutem.
 
-- `formatVersion` bump + migrator (ticks SSOT — [ADR 0002](./adr/0002-timebase-ssot.md))
-- Lyrics AST: sylaby / word blocks; opcjonalne role wokalu; opcjonalna melodia (pitch) w danych
-- Client Karaoke/Grid: highlight po sylabach gdy dane są
-- Scope: [report-scope-5.4.md](./analysis/reports/report-scope-5.4.md)
+**Fundament (na `main`):**
+- `formatVersion` 6 + migrator V5→V6 (ticks SSOT — [ADR 0002](./adr/0002-timebase-ssot.md))
+- Lyrics AST: bloki na liniach `tekst`; opcjonalne role wokalu; ścieżka melodii w schemacie (bez UI edycji)
+- Client Karaoke: highlight aktywnego bloku gdy linia ma podział czasowy
 
-### 5.5 — **Ingest MVP**
-
-Deterministyczny import offline z timed sylabami; UG/ChordPro zostaje.
-
-- Pure parser UltraStar → ticks → `tekst` (+ melody gdy w schemacie 5.4)
+**Do cutu 5.4.0 (Ingest w tym samym hero):**
+- Pure parser UltraStar → ticks → `tekst` (+ melody gdy w schemacie)
 - Text-Anchor Bridging (US+UG) dopiero ze golden fixtures
-- MusicXML/MIDI jako siatka taktowa = Later (nie blokuje MVP)
+- UG/ChordPro zostaje; MusicXML/MIDI jako siatka taktowa = Later
 - Triage: [Architektura-Ingestii…triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)
+- Scope / status: [report-scope-5.4.md](./analysis/reports/report-scope-5.4.md)
 
-### 5.6 — **Pitch & FX Busses**
+### 5.5 — **Pitch & FX**
 
 - Track Pitch Shift (sync z Chord AST / OSMD — residual w [ADR 0018](./adr/0018-future-audio-architecture.md) §7)
 - Expanded busses / send-return FX (WebAudio; bez in-process VST)
-- Cel: przygotowanie grafu pod Audio Suite 6.0 **bez** InputStrip / automation / recording
+- Cel: przygotowanie grafu pod **Live Suite 6.0** **bez** InputStrip / automation / recording
 
-### 6.0+ — Live Processing & Master Show Controller
+### 6.0 — **Live Suite**
 
-Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (**Zaakceptowany**).
+Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (**Zaakceptowany**). Dawna nazwa robocza: Live Processing & Master Show Controller.
 
 | Filar | Zakres (docelowy) |
 |-------|-------------------|
 | 1 | Input & Live Processing (InputStrip, `getUserMedia`, mapowanie wejść) + **recording + proste narzędzia edycji** |
-| 2 | StageSync Audio Suite (Worklet / WASM — Limiter, EQ, Comp, Pitch, Reverb, Delay, LUFS…) + **STEM / mute lead** (kontrakt Mixer pod Karaoke 7.0) |
+| 2 | StageSync Audio Suite (Worklet / WASM — Limiter, EQ, Comp, Pitch, Reverb, Delay, LUFS…) + **STEM / mute lead** (kontrakt Mixer pod Karaoke **6.1**) |
 | 3 | Real-Time Automation (lane’y; **host Tick Engine** SSOT — bez client musical clock) |
 | 4 | MIDI Tracks + **Standalone VSTi Controller** (PC/CC); **MIDI Patch Matrix**; wbudowane synthy WebAudio = Later 6.x+ |
 
@@ -150,11 +147,11 @@ Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (
 
 Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
 
-### 7.0+ — Karaoke & Jukebox Ecosystem
+### 6.1 — **Karaoke & Jukebox**
 
-Major **po 6.0** ([#824](https://github.com/Negatywistczny/stagesync/issues/824)): lokalny ekosystem karaoke / jukebox na LAN.
+Minor **po 6.0** ([#824](https://github.com/Negatywistczny/stagesync/issues/824)): lokalny ekosystem karaoke / jukebox na LAN. **Linia 7.0 nie istnieje** (PO 2026-08-02 — dawne „7.0” = **6.1**).
 
-Kierunek: multi-role Lyrics AST (fundament w **5.4**); widok publiczny `/karaoke`; guest `/request` na lokalnym Wi‑Fi; tryby setlisty Gig vs Jukebox + moderacja kolejki. Zależności: Content/Ingest (**5.4–5.5**), Pitch (**5.6**), Suite/STEM (**6.x**). Polityka: 100 % LAN, zero cloud; izolacja wydajności `/karaoke` i `/request` względem `/client`.
+Kierunek: multi-role Lyrics AST (fundament w **5.4 Syllables**); widok publiczny `/karaoke`; guest `/request` na lokalnym Wi‑Fi; tryby setlisty Gig vs Jukebox + moderacja kolejki. Zależności: Syllables (**5.4**), Pitch (**5.5**), Suite/STEM (**6.0**). Polityka: 100 % LAN, zero cloud; izolacja wydajności `/karaoke` i `/request` względem `/client`.
 
 ## Zasady operacyjne
 
@@ -177,9 +174,8 @@ Kierunek: multi-role Lyrics AST (fundament w **5.4**); widok publiczny `/karaoke
     Audyt: [report-v4-v5-parity-audit.md](./analysis/reports/report-v4-v5-parity-audit.md) ·
     UI-diff: [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
 11. **Audio 6.0+** ([ADR 0018](./adr/0018-future-audio-architecture.md)): Zero-Crash (Worklet/WASM vs
-    VST external); sekwencja **5.3 Colors & Channels → 5.x Pitch & FX Busses → 6.0+** Input /
-    Automation / Standalone VSTi; **bez** otwierania recording/VSTi w 5.x
-    ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5).
+    VST external); sekwencja **5.3 Colors & Channels → 5.4 Syllables → 5.5 Pitch & FX → 6.0 Live Suite → 6.1 Karaoke**;
+    **bez** otwierania recording/VSTi w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5).
 
 ## Granica 0
 

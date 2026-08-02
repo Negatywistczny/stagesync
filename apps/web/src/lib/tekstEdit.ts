@@ -10,6 +10,12 @@ import {
   type TekstClip,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
+import {
+  moveTekstClipStart,
+  newTekstClipWithBlocks,
+  remapTekstClipGeometry,
+  syncSoleTekstBlock,
+} from "./tekstBlocks.js";
 
 /** Adapt Tekst clips to FormaClip-shaped insert helper (kind section). */
 function asFormaLike(clip: TekstClip) {
@@ -32,12 +38,12 @@ export function pencilTekstClick(
   const barTicks = ticksPerBar(meter, project.ppq);
   const floor = contentFloorTicks(project.forma.clips);
 
-  const newClip: TekstClip = {
+  const newClip = newTekstClipWithBlocks({
     id: `tekst-${crypto.randomUUID()}`,
     startTicks,
     lengthTicks: barTicks,
     text,
-  };
+  });
 
   // Reuse no-overlap insert on a synthetic Forma-shaped list, then map back.
   const synthetic = [
@@ -56,12 +62,12 @@ export function pencilTekstClick(
       const prev =
         project.tekst.clips.find((t) => t.id === c.id) ??
         project.tekst.clips.find((t) => t.id === parentId);
-      return {
+      return remapTekstClipGeometry(prev, {
         id: c.id,
         startTicks: c.startTicks,
         lengthTicks: c.lengthTicks,
         text: prev?.text ?? "",
-      };
+      });
     });
 
   return { ...project, tekst: { clips } };
@@ -73,13 +79,33 @@ export function deleteTekstClip(project: Project, clipId: string): Project {
   return { ...project, tekst: { clips } };
 }
 
+/**
+ * Update line text. Single block → sync block text; multi-block → clip.text only
+ * (do not guess syllable splits).
+ */
 export function setTekstClipText(
   project: Project,
   clipId: string,
   text: string,
 ): Project {
+  const clips = project.tekst.clips.map((c) => {
+    if (c.id !== clipId) return c;
+    if (c.blocks.length === 1) {
+      return syncSoleTekstBlock({ ...c, text });
+    }
+    return { ...c, text };
+  });
+  return { ...project, tekst: { clips } };
+}
+
+/** Inspector start edit: keep length, Δstart on all blocks. */
+export function setTekstClipStart(
+  project: Project,
+  clipId: string,
+  startTicks: number,
+): Project {
   const clips = project.tekst.clips.map((c) =>
-    c.id === clipId ? { ...c, text } : c,
+    c.id === clipId ? moveTekstClipStart(c, startTicks) : c,
   );
   return { ...project, tekst: { clips } };
 }

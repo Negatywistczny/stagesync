@@ -494,9 +494,20 @@ function sealTekstLengths(
   return sorted.map((c, i) => {
     const end =
       i + 1 < sorted.length ? sorted[i + 1]!.startTicks : endTicks;
+    const lengthTicks = Math.max(1, end - c.startTicks);
+    const next = { ...c, lengthTicks };
+    if ((next.blocks?.length ?? 0) !== 1) return next;
+    const only = next.blocks[0]!;
     return {
-      ...c,
-      lengthTicks: Math.max(1, end - c.startTicks),
+      ...next,
+      blocks: [
+        {
+          ...only,
+          startTicks: next.startTicks,
+          lengthTicks: next.lengthTicks,
+          text: next.text,
+        },
+      ],
     };
   });
 }

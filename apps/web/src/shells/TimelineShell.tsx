@@ -141,6 +141,7 @@ import {
 import {
   deleteTekstClip,
   pencilTekstClick,
+  setTekstClipStart,
   setTekstClipText,
 } from "../lib/tekstEdit.js";
 import {
@@ -354,6 +355,7 @@ import {
   formatStartBarBeat,
   moveClipStartKeepLength,
   parseStartBarBeat,
+  ticksFromDisplayBarBeat,
 } from "../lib/clipStartEdit.js";
 import {
   audioTrackIdFromLane,
@@ -7163,18 +7165,18 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         parsed.bar,
                         parsed.beat,
                       );
-                      commitDraft({
-                        ...draftProject,
-                        tekst: {
-                          clips: moveClipStartKeepLength(
-                            draftProject,
-                            draftProject.tekst.clips,
-                            selectedTekstClip.id,
-                            parsed.bar,
-                            beat,
-                          ),
-                        },
-                      });
+                      const startTicks = ticksFromDisplayBarBeat(
+                        draftProject,
+                        parsed.bar,
+                        beat,
+                      );
+                      commitDraft(
+                        setTekstClipStart(
+                          draftProject,
+                          selectedTekstClip.id,
+                          startTicks,
+                        ),
+                      );
                     }}
                   />
                 </label>

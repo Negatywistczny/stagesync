@@ -3,7 +3,9 @@ import {
   BatchMidiPcBodySchema,
   ExportLibraryBodySchema,
   normalizeLibraryImport,
+  ProjectSchema,
   ProjectSchemaV5,
+  upgradeProjectV5ToV6,
   type PutProjectBody,
 } from "@stagesync/shared";
 import type { Stores } from "../storage/index.js";
@@ -90,9 +92,8 @@ export function createLibraryRouter(stores: Stores): Router {
             id: project.id,
             name,
             updatedAt: project.updatedAt,
-            formatVersion: 5 as const,
             ppq: project.ppq,
-            // Templates must not carry midiProgramId (ProjectSchemaV5).
+            // Templates must not carry midiProgramId.
             // createProject always assigns a PC — scrub it for template imports.
             isTemplate: isTemplate ? true : undefined,
             midiProgramId: isTemplate
@@ -106,7 +107,23 @@ export function createLibraryRouter(stores: Stores): Router {
             audioTracks: Array.isArray(src.audioTracks) ? src.audioTracks : [],
             audioClips: Array.isArray(src.audioClips) ? src.audioClips : [],
           };
-          const parsed = ProjectSchemaV5.parse(candidate);
+          const srcFv =
+            typeof src.formatVersion === "number" ? src.formatVersion : 5;
+          const parsed =
+            srcFv >= 6
+              ? ProjectSchema.parse({ ...candidate, formatVersion: 6 as const })
+              : (() => {
+                  const { melody: _melody, ...withoutMelody } = candidate as {
+                    melody?: unknown;
+                  } & typeof candidate;
+                  void _melody;
+                  return upgradeProjectV5ToV6(
+                    ProjectSchemaV5.parse({
+                      ...withoutMelody,
+                      formatVersion: 5 as const,
+                    }),
+                  );
+                })();
           const { id: _id, ...body } = parsed;
           void _id;
           await stores.putProject(project.id, body as PutProjectBody);

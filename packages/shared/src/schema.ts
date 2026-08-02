@@ -397,8 +397,8 @@ export const ProjectSchemaV3 = z
 
 export type ProjectV3 = z.infer<typeof ProjectSchemaV3>;
 
-/** Content lane clip — Tekst (α7). */
-export const TekstClipSchema = z.object({
+/** V4/V5 line clip — no syllable blocks. */
+export const TekstClipLineSchema = z.object({
   id: z.string().min(1),
   startTicks: z.number().int(),
   lengthTicks: z.number().int().positive(),
@@ -407,7 +407,48 @@ export const TekstClipSchema = z.object({
   sourceSection: z.string().max(200).optional(),
 });
 
+export type TekstClipLine = z.infer<typeof TekstClipLineSchema>;
+
+/** Optional vocal role on a timed tekst block (Client filter / future). */
+export const TekstBlockRoleSchema = z.enum([
+  "vocal_1",
+  "vocal_2",
+  "backing",
+  "all",
+]);
+
+export type TekstBlockRole = z.infer<typeof TekstBlockRoleSchema>;
+
+/**
+ * Timed tekst block (syllable / word) — positions are clip-absolute ticks
+ * (same coordinate system as the parent line clip).
+ */
+export const TekstBlockSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  lengthTicks: z.number().int().positive(),
+  text: z.string().max(2000),
+  role: TekstBlockRoleSchema.optional(),
+});
+
+export type TekstBlock = z.infer<typeof TekstBlockSchema>;
+
+/** Content lane clip — Tekst (V6+): line + required blocks (min 1). */
+export const TekstClipSchema = TekstClipLineSchema.extend({
+  blocks: z.array(TekstBlockSchema).min(1),
+});
+
 export type TekstClip = z.infer<typeof TekstClipSchema>;
+
+/** Thin melody note clip (schema-only in 5.4 — no Timeline editor). */
+export const MelodyNoteClipSchema = z.object({
+  id: z.string().min(1),
+  startTicks: z.number().int(),
+  lengthTicks: z.number().int().positive(),
+  pitchMidi: z.number().int().min(0).max(127),
+});
+
+export type MelodyNoteClip = z.infer<typeof MelodyNoteClipSchema>;
 
 /** Content lane clip — Akordy (α7 schema; edit optional). */
 export const AkordClipSchema = z.object({
@@ -501,7 +542,7 @@ export const ProjectSchemaV4 = z
     audioTracks: z.array(AudioTrackSchema).max(64),
     audioClips: z.array(AudioClipSchema).max(512),
     tekst: z.object({
-      clips: z.array(TekstClipSchema),
+      clips: z.array(TekstClipLineSchema),
     }),
     akordy: z.object({
       clips: z.array(AkordClipSchema),
@@ -600,7 +641,7 @@ const ProjectSchemaV5Object = z
      */
     masterOutput: MasterOutputRoutingSchema.optional(),
     tekst: z.object({
-      clips: z.array(TekstClipSchema),
+      clips: z.array(TekstClipLineSchema),
     }),
     akordy: z.object({
       clips: z.array(AkordClipSchema),
@@ -619,235 +660,174 @@ const ProjectSchemaV5Object = z
   })
   .strict();
 
-export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
-  (project, ctx) => {
-    if (project.isTemplate === true && project.midiProgramId != null) {
+type ProjectRoutingFields = {
+  isTemplate?: boolean;
+  midiProgramId?: number;
+  audioTracks: z.infer<typeof AudioTrackSchema>[];
+  audioBusses?: z.infer<typeof AudioBusSchema>[];
+  audioHardwareOutputs?: z.infer<typeof AudioHardwareOutputSchema>[];
+  masterOutput?: z.infer<typeof MasterOutputRoutingSchema>;
+  assets: z.infer<typeof ProjectAssetSchema>[];
+  cue: { clips: z.infer<typeof CueClipSchema>[] };
+};
+
+/** Shared mixer / cue sample ACL for V5+ project documents and PUT bodies. */
+function refineProjectRouting(
+  project: ProjectRoutingFields,
+  ctx: z.RefinementCtx,
+): void {
+  if (project.isTemplate === true && project.midiProgramId != null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Template must not have midiProgramId",
+      path: ["midiProgramId"],
+    });
+  }
+  const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
+  const hwIds = new Set(
+    (project.audioHardwareOutputs ?? []).map((h) => h.id),
+  );
+  project.audioTracks.forEach((track, i) => {
+    if (track.output?.kind === "bus" && !busIds.has(track.output.busId)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Template must not have midiProgramId",
-        path: ["midiProgramId"],
-      });
-    }
-    const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
-    const hwIds = new Set(
-      (project.audioHardwareOutputs ?? []).map((h) => h.id),
-    );
-    project.audioTracks.forEach((track, i) => {
-      if (track.output?.kind === "bus" && !busIds.has(track.output.busId)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Track output busId not found: ${track.output.busId}`,
-          path: ["audioTracks", i, "output", "busId"],
-        });
-      }
-      if (
-        track.output?.kind === "hw_out" &&
-        !hwIds.has(track.output.hwOutputId)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Track output hwOutputId not found: ${track.output.hwOutputId}`,
-          path: ["audioTracks", i, "output", "hwOutputId"],
-        });
-      }
-    });
-    (project.audioBusses ?? []).forEach((bus, i) => {
-      if (bus.output?.kind === "hw_out") {
-        if (!hwIds.has(bus.output.hwOutputId)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Bus output hwOutputId not found: ${bus.output.hwOutputId}`,
-            path: ["audioBusses", i, "output", "hwOutputId"],
-          });
-        }
-        return;
-      }
-      if (bus.output?.kind !== "bus") return;
-      if (!busIds.has(bus.output.busId)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Bus output busId not found: ${bus.output.busId}`,
-          path: ["audioBusses", i, "output", "busId"],
-        });
-      }
-      if (bus.output.busId === bus.id) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Bus cannot route to itself",
-          path: ["audioBusses", i, "output", "busId"],
-        });
-      }
-    });
-    if (busGraphHasCycle(project.audioBusses ?? [])) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Bus routing graph must be acyclic (bus→bus cycle)",
-        path: ["audioBusses"],
+        message: `Track output busId not found: ${track.output.busId}`,
+        path: ["audioTracks", i, "output", "busId"],
       });
     }
     if (
-      masterOutputOverlapsHwPatches(
-        project.masterOutput,
-        project.audioHardwareOutputs ?? [],
-      )
+      track.output?.kind === "hw_out" &&
+      !hwIds.has(track.output.hwOutputId)
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Master output channels overlap a hardware output patch",
-        path: ["masterOutput", "channelOffset"],
+        message: `Track output hwOutputId not found: ${track.output.hwOutputId}`,
+        path: ["audioTracks", i, "output", "hwOutputId"],
       });
     }
-    const assetById = new Map(project.assets.map((a) => [a.id, a]));
-    project.cue.clips.forEach((clip, i) => {
-      const sample = clip.sample;
-      if (!sample) return;
-      const asset = assetById.get(sample.assetId);
-      if (!asset || asset.kind !== "audio") {
+  });
+  (project.audioBusses ?? []).forEach((bus, i) => {
+    if (bus.output?.kind === "hw_out") {
+      if (!hwIds.has(bus.output.hwOutputId)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Cue sample assetId must reference an audio asset: ${sample.assetId}`,
-          path: ["cue", "clips", i, "sample", "assetId"],
+          message: `Bus output hwOutputId not found: ${bus.output.hwOutputId}`,
+          path: ["audioBusses", i, "output", "hwOutputId"],
         });
       }
-      if (
-        sample.output?.kind === "bus" &&
-        !busIds.has(sample.output.busId)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Cue sample busId not found: ${sample.output.busId}`,
-          path: ["cue", "clips", i, "sample", "output", "busId"],
-        });
-      }
-      if (
-        sample.output?.kind === "hw_out" &&
-        !hwIds.has(sample.output.hwOutputId)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Cue sample hwOutputId not found: ${sample.output.hwOutputId}`,
-          path: ["cue", "clips", i, "sample", "output", "hwOutputId"],
-        });
-      }
+      return;
+    }
+    if (bus.output?.kind !== "bus") return;
+    if (!busIds.has(bus.output.busId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Bus output busId not found: ${bus.output.busId}`,
+        path: ["audioBusses", i, "output", "busId"],
+      });
+    }
+    if (bus.output.busId === bus.id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bus cannot route to itself",
+        path: ["audioBusses", i, "output", "busId"],
+      });
+    }
+  });
+  if (busGraphHasCycle(project.audioBusses ?? [])) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Bus routing graph must be acyclic (bus→bus cycle)",
+      path: ["audioBusses"],
     });
-  },
+  }
+  if (
+    masterOutputOverlapsHwPatches(
+      project.masterOutput,
+      project.audioHardwareOutputs ?? [],
+    )
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Master output channels overlap a hardware output patch",
+      path: ["masterOutput", "channelOffset"],
+    });
+  }
+  const assetById = new Map(project.assets.map((a) => [a.id, a]));
+  project.cue.clips.forEach((clip, i) => {
+    const sample = clip.sample;
+    if (!sample) return;
+    const asset = assetById.get(sample.assetId);
+    if (!asset || asset.kind !== "audio") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Cue sample assetId must reference an audio asset: ${sample.assetId}`,
+        path: ["cue", "clips", i, "sample", "assetId"],
+      });
+    }
+    if (sample.output?.kind === "bus" && !busIds.has(sample.output.busId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Cue sample busId not found: ${sample.output.busId}`,
+        path: ["cue", "clips", i, "sample", "output", "busId"],
+      });
+    }
+    if (
+      sample.output?.kind === "hw_out" &&
+      !hwIds.has(sample.output.hwOutputId)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Cue sample hwOutputId not found: ${sample.output.hwOutputId}`,
+        path: ["cue", "clips", i, "sample", "output", "hwOutputId"],
+      });
+    }
+  });
+}
+
+export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
+  refineProjectRouting,
 );
 
 export type ProjectV5 = z.infer<typeof ProjectSchemaV5>;
-export type Project = ProjectV5;
 
-/** Canonical project schema (v5). */
-export const ProjectSchema = ProjectSchemaV5;
+/**
+ * V6 — Content Model: tekst blocks (timed lyrics) + thin melody lane.
+ * Line `text` remains SSOT for Timeline; `blocks` carry timing / split.
+ */
+const ProjectSchemaV6Object = ProjectSchemaV5Object.omit({
+  formatVersion: true,
+  tekst: true,
+})
+  .extend({
+    formatVersion: z.literal(6),
+    tekst: z.object({
+      clips: z.array(TekstClipSchema),
+    }),
+    melody: z.object({
+      clips: z.array(MelodyNoteClipSchema),
+    }),
+  })
+  .strict();
+
+export const ProjectSchemaV6 = ProjectSchemaV6Object.superRefine(
+  refineProjectRouting,
+);
+
+export type ProjectV6 = z.infer<typeof ProjectSchemaV6>;
+export type Project = ProjectV6;
+
+/** Canonical project schema (v6). */
+export const ProjectSchema = ProjectSchemaV6;
 
 /**
  * Full-document PUT. `updatedAt` is the client's known version (OCC token);
  * server compares to disk and returns 409 on mismatch, then assigns a new stamp.
  */
-export const PutProjectBodySchema = ProjectSchemaV5Object.omit({
+export const PutProjectBodySchema = ProjectSchemaV6Object.omit({
   id: true,
 })
   .strict()
-  .superRefine((project, ctx) => {
-    // Same mixer routing rules as ProjectSchemaV5 (OCC PUT body).
-    const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
-    const hwIds = new Set(
-      (project.audioHardwareOutputs ?? []).map((h) => h.id),
-    );
-    project.audioTracks.forEach((track, i) => {
-      if (track.output?.kind === "bus" && !busIds.has(track.output.busId)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Track output busId not found: ${track.output.busId}`,
-          path: ["audioTracks", i, "output", "busId"],
-        });
-      }
-      if (
-        track.output?.kind === "hw_out" &&
-        !hwIds.has(track.output.hwOutputId)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Track output hwOutputId not found: ${track.output.hwOutputId}`,
-          path: ["audioTracks", i, "output", "hwOutputId"],
-        });
-      }
-    });
-    (project.audioBusses ?? []).forEach((bus, i) => {
-      if (bus.output?.kind === "hw_out") {
-        if (!hwIds.has(bus.output.hwOutputId)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Bus output hwOutputId not found: ${bus.output.hwOutputId}`,
-            path: ["audioBusses", i, "output", "hwOutputId"],
-          });
-        }
-        return;
-      }
-      if (bus.output?.kind !== "bus") return;
-      if (!busIds.has(bus.output.busId) || bus.output.busId === bus.id) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            bus.output.busId === bus.id
-              ? "Bus cannot route to itself"
-              : `Bus output busId not found: ${bus.output.busId}`,
-          path: ["audioBusses", i, "output", "busId"],
-        });
-      }
-    });
-    if (busGraphHasCycle(project.audioBusses ?? [])) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Bus routing graph must be acyclic (bus→bus cycle)",
-        path: ["audioBusses"],
-      });
-    }
-    if (
-      masterOutputOverlapsHwPatches(
-        project.masterOutput,
-        project.audioHardwareOutputs ?? [],
-      )
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Master output channels overlap a hardware output patch",
-        path: ["masterOutput", "channelOffset"],
-      });
-    }
-    const assetById = new Map(project.assets.map((a) => [a.id, a]));
-    project.cue.clips.forEach((clip, i) => {
-      const sample = clip.sample;
-      if (!sample) return;
-      const asset = assetById.get(sample.assetId);
-      if (!asset || asset.kind !== "audio") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Cue sample assetId must reference an audio asset: ${sample.assetId}`,
-          path: ["cue", "clips", i, "sample", "assetId"],
-        });
-      }
-      if (
-        sample.output?.kind === "bus" &&
-        !busIds.has(sample.output.busId)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Cue sample busId not found: ${sample.output.busId}`,
-          path: ["cue", "clips", i, "sample", "output", "busId"],
-        });
-      }
-      if (
-        sample.output?.kind === "hw_out" &&
-        !hwIds.has(sample.output.hwOutputId)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Cue sample hwOutputId not found: ${sample.output.hwOutputId}`,
-          path: ["cue", "clips", i, "sample", "output", "hwOutputId"],
-        });
-      }
-    });
-  });
+  .superRefine(refineProjectRouting);
 
 export type PutProjectBody = z.infer<typeof PutProjectBodySchema>;
 

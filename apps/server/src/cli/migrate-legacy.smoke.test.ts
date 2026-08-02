@@ -32,7 +32,7 @@ describe("migrate-legacy fixtures (M9)", () => {
     });
     expect(result.projects).toHaveLength(1);
     expect(result.projects[0]!.project.name).toBe("Template");
-    expect(result.projects[0]!.project.formatVersion).toBe(5);
+    expect(result.projects[0]!.project.formatVersion).toBe(6);
     expect(result.projects[0]!.project.forma.clips.length).toBeGreaterThan(0);
   });
 

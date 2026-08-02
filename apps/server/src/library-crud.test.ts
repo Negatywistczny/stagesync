@@ -60,7 +60,7 @@ describe("library / projects CRUD", () => {
     expect(createRes.status).toBe(201);
     const created = ProjectSchema.parse(await createRes.json());
     expect(created.name).toBe("First Song");
-    expect(created.formatVersion).toBe(5);
+    expect(created.formatVersion).toBe(6);
     expect(created.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
     expect(
       created.forma.clips.find((c) => c.kind === "countdown")?.startTicks,
@@ -181,6 +181,37 @@ describe("library / projects CRUD", () => {
     expect(Array.isArray(errBody.details)).toBe(true);
   });
 
+  it("returns 400 when PUT tekst clip lacks blocks", async () => {
+    const createRes = await fetch(`${baseUrl}/api/projects`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "NoBlocks" }),
+    });
+    const created = ProjectSchema.parse(await createRes.json());
+    const body = putBody(created);
+    const res = await fetch(`${baseUrl}/api/projects/${created.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...body,
+        tekst: {
+          clips: [
+            {
+              id: "tekst-line-1",
+              startTicks: 0,
+              lengthTicks: 1920,
+              text: "Hello",
+            },
+          ],
+        },
+      }),
+    });
+    expect(res.status).toBe(400);
+    const errBody = (await res.json()) as { ok: boolean; details?: unknown };
+    expect(errBody.ok).toBe(false);
+    expect(Array.isArray(errBody.details)).toBe(true);
+  });
+
   it("returns 409 on stale updatedAt (OCC)", async () => {
     const createRes = await fetch(`${baseUrl}/api/projects`, {
       method: "POST",
@@ -259,7 +290,7 @@ describe("library / projects CRUD", () => {
     const getRes = await fetch(`${baseUrl}/api/projects/${id}`);
     expect(getRes.status).toBe(200);
     const upgraded = ProjectSchema.parse(await getRes.json());
-    expect(upgraded.formatVersion).toBe(5);
+    expect(upgraded.formatVersion).toBe(6);
     expect(upgraded.forma.clips.length).toBeGreaterThan(0);
   });
 
@@ -323,7 +354,7 @@ describe("library / projects CRUD", () => {
         await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
       ).json(),
     );
-    expect(project.formatVersion).toBe(5);
+    expect(project.formatVersion).toBe(6);
     expect(project.forma.clips.length).toBeGreaterThan(0);
   });
 

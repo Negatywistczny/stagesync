@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import {
+  createProjectV6Seed,
+  withWholeLineTekstBlocks,
+} from "@stagesync/shared";
 import {
   addFormaSubsection,
   applyCountdownLengthFromBoundary,
@@ -14,7 +17,7 @@ import {
 import { insertFormaSubsectionAt } from "./formaEdit.js";
 
 describe("formaInspector", () => {
-  const project = createProjectV5Seed(
+  const project = createProjectV6Seed(
     "id",
     "Demo",
     "2026-07-20T00:00:00.000Z",
@@ -106,18 +109,18 @@ describe("formaInspector", () => {
       ...project,
       tekst: {
         clips: [
-          {
+          withWholeLineTekstBlocks({
             id: "vl-cd-1",
             text: "1",
             startTicks: -3840,
             lengthTicks: 25920,
-          },
-          {
+          }),
+          withWholeLineTekstBlocks({
             id: "vl-line",
             text: "Hello",
             startTicks: 3840,
             lengthTicks: 3840,
-          },
+          }),
         ],
       },
     };
@@ -249,18 +252,18 @@ describe("formaInspector", () => {
       ...project,
       tekst: {
         clips: [
-          {
+          withWholeLineTekstBlocks({
             id: "pre-lyric",
             text: "gone",
             startTicks: -2000,
             lengthTicks: 500,
-          },
-          {
+          }),
+          withWholeLineTekstBlocks({
             id: "keep",
             text: "stay",
             startTicks: 100,
             lengthTicks: 500,
-          },
+          }),
         ],
       },
     };
