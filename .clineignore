@@ -1,0 +1,50 @@
+# .clignore / .clineignore
+# Plik ignorujący dla agentów takich jak Cline / Roo Code / VS Code Search,
+# zapobiegający niepotrzebnemu skanowaniu i zużyciu tokenów.
+
+node_modules/
+.git/
+.turbo/
+.husky/
+dist/
+dist-performer/
+dist-console/
+build/
+coverage/
+
+# Pliki binarne
+**/*.apk
+**/*.aab
+**/*.so
+**/*.dmg
+**/*.bmp
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.ico
+**/*.wav
+**/*.mp3
+**/*.zip
+**/*.tar.gz
+**/*.tgz
+
+# Dane i pliki wykonywalne platform
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/bin/
+apps/desktop/src-tauri/lib/
+apps/*/android/.gradle/
+apps/*/android/local.properties
+apps/*/android/**/build/
+apps/*/android/**/.cxx/
+
+# Wygenerowane pliki i bundle
+apps/*/android/app/src/main/assets/www/
+apps/console/android/app/src/main/jniLibs/
+apps/console/android/app/src/main/assets/host/
+apps/desktop/launcher/vendor/
+
+# Blokady pakietów
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

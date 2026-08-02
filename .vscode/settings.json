@@ -1,0 +1,14 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    ".gitignore": ".cline*, .cursor*, .dockerignore, .editorconfig, .npmrc, .nvmrc",
+    "package.json": "pnpm-*, turbo.json, knip.jsonc, commitlint.config.js, codecov.yml",
+    "Dockerfile": "compose*.yml, .dockerignore",
+    "README.md": "CHANGELOG.md, LICENSE"
+  },
+  "files.exclude": {
+    "**/.turbo": true,
+    "**/.husky": true
+  }
+}

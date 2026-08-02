@@ -1,0 +1,51 @@
+# .cursorignore
+# Ten plik ignoruje pliki i katalogi przed indeksowaniem i odpytywaniem przez Cursor AI,
+# co zapobiega nadmiernemu zużyciu tokenów.
+
+# Główne wykluczenia
+node_modules/
+.git/
+.turbo/
+.husky/
+dist/
+dist-performer/
+dist-console/
+build/
+coverage/
+
+# Pliki binarne i bazy danych
+**/*.apk
+**/*.aab
+**/*.so
+**/*.dmg
+**/*.bmp
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.ico
+**/*.wav
+**/*.mp3
+**/*.zip
+**/*.tar.gz
+**/*.tgz
+
+# Dane i pliki wykonywalne specyficzne dla platform
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/bin/
+apps/desktop/src-tauri/lib/
+apps/*/android/.gradle/
+apps/*/android/local.properties
+apps/*/android/**/build/
+apps/*/android/**/.cxx/
+
+# Wygenerowane pliki i bundle offline-first
+apps/*/android/app/src/main/assets/www/
+apps/console/android/app/src/main/jniLibs/
+apps/console/android/app/src/main/assets/host/
+apps/desktop/launcher/vendor/
+
+# Blokady pakietów (często bardzo duże pliki tekstowe)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
