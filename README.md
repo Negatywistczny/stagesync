@@ -58,7 +58,7 @@
 * 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.msi` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
   *Instrukcja krok po kroku: [docs/DESKTOP.md](docs/DESKTOP.md)*
 * 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/INSTALL.md](docs/INSTALL.md) *(Compose, GHCR, porty)*.
-* 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 20** + **pnpm 9** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*.
+* 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 22** + **pnpm 11** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*.
 
 ```bash
 git clone https://github.com/Negatywistczny/stagesync.git

@@ -1291,7 +1291,7 @@ export function TimelineShell() {
     const lane = primaryLane(clipSelection);
     if (!lane) return false;
     const idSet = new Set(idsOnLane(clipSelection, lane));
-    let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
+    let clips: Parameters<typeof buildClipboardFromClips>[1];
     if (lane === "forma") {
       clips = draft.forma.clips.filter(
         (c) => idSet.has(c.id) && c.kind === "section",
@@ -1374,7 +1374,7 @@ export function TimelineShell() {
     const id = clipSelection.primaryId;
     if (!draft || !lane || !id) return false;
     const at = displayTicks;
-    let next = draft;
+    let next: typeof draft;
     if (lane === "forma") {
       next = splitFormaClipAt(draft, id, at);
     } else if (lane === "tekst" || lane === "akordy" || lane === "cue") {
@@ -1394,7 +1394,7 @@ export function TimelineShell() {
     const lane = primaryLane(clipSelection);
     const id = clipSelection.primaryId;
     if (!draft || !lane || !id) return false;
-    let next = draft;
+    let next: typeof draft;
     if (lane === "forma") {
       next = joinFormaAtClick(draft, id, displayTicks);
     } else if (lane === "tekst" || lane === "akordy" || lane === "cue") {

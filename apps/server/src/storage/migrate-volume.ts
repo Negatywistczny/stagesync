@@ -21,7 +21,7 @@ export async function migrateVolumeOnBoot(
   await stores.getSetlist();
 
   const paths = stores.paths;
-  let entries: string[] = [];
+  let entries: string[];
   try {
     entries = await readdir(paths.projectsDir);
   } catch (err) {

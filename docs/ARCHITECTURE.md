@@ -23,7 +23,7 @@
 
 | Paczka / app | Stack | Odpowiedzialność |
 |--------------|-------|------------------|
-| `apps/server` | Express (Node 20, `.nvmrc`) | API, persystencja, transport SSOT |
+| `apps/server` | Express (Node 22, `.nvmrc`) | API, persystencja, transport SSOT |
 | `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
 | `apps/desktop` | Tauri + Node sidecar | Shell desktop + Launcher ([ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md)) |
 | `apps/performer` | Kotlin WebView | StageSync Performer → `/client` ([ADR 0016](./adr/0016-android-performer-console.md)) |

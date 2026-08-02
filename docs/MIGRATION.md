@@ -10,7 +10,7 @@ Zob. [report-scope-alpha9.md](./analysis/reports/report-scope-alpha9.md),
 
 ## Wymagania
 
-- Node 20+
+- Node 22+
 - Zainstalowane zależności monorepo (`pnpm install`)
 
 ## Dry-run (bez zapisu)

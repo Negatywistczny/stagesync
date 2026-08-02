@@ -8,12 +8,10 @@ import {
 
 describe("tapTempo", () => {
   it("needs two taps before emitting BPM", () => {
-    let state = createTapTempoState();
-    let bpm: number | null = null;
-    ({ state, bpm } = recordTap(state, 1000));
-    expect(bpm).toBeNull();
-    ({ state, bpm } = recordTap(state, 1500));
-    expect(bpm).toBe(120);
+    const first = recordTap(createTapTempoState(), 1000);
+    expect(first.bpm).toBeNull();
+    const second = recordTap(first.state, 1500);
+    expect(second.bpm).toBe(120);
   });
 
   it("ignores non-finite now and clamps BPM range", () => {

@@ -316,9 +316,13 @@ export async function fetchUgTab(url: string): Promise<UgFetchResult> {
   } catch (err) {
     const e = err as { name?: string; message?: string };
     if (e.name === "TimeoutError" || e.name === "AbortError") {
-      throw new Error("Przekroczono limit czasu pobierania strony UG.");
+      throw new Error("Przekroczono limit czasu pobierania strony UG.", {
+        cause: err,
+      });
     }
-    throw new Error(`Błąd pobierania: ${e.message || String(err)}`);
+    throw new Error(`Błąd pobierania: ${e.message || String(err)}`, {
+      cause: err,
+    });
   }
 
   const { resolvedUrl, status, html } = resolved;
@@ -361,9 +365,13 @@ export async function searchUgChords(
   } catch (err) {
     const e = err as { name?: string; message?: string };
     if (e.name === "TimeoutError" || e.name === "AbortError") {
-      throw new Error("Przekroczono limit czasu wyszukiwania UG.");
+      throw new Error("Przekroczono limit czasu wyszukiwania UG.", {
+        cause: err,
+      });
     }
-    throw new Error(`Błąd wyszukiwania UG: ${e.message || String(err)}`);
+    throw new Error(`Błąd wyszukiwania UG: ${e.message || String(err)}`, {
+      cause: err,
+    });
   }
 
   if (isCloudflareChallenge(html)) {

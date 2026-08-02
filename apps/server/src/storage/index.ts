@@ -575,7 +575,7 @@ export function createStores(dataDir?: string) {
           await access(projectFile(paths, safeId), constants.F_OK);
           onDisk = true;
         } catch {
-          onDisk = false;
+          /* missing on disk */
         }
 
         if (idx === -1 && !onDisk) {

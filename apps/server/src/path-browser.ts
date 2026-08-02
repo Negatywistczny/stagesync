@@ -118,8 +118,10 @@ export function listBrowseDirectory(
     stat = statSync(absPath);
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
-    if (code === "ENOENT") throw new Error("Katalog nie istnieje");
-    throw new Error("Nie można odczytać katalogu");
+    if (code === "ENOENT") {
+      throw new Error("Katalog nie istnieje", { cause: err });
+    }
+    throw new Error("Nie można odczytać katalogu", { cause: err });
   }
   if (!stat.isDirectory()) {
     throw new Error("Oczekiwano katalogu");

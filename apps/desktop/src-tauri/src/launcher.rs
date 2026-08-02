@@ -723,8 +723,12 @@ pub async fn discover_lan_hosts() -> Result<Vec<DiscoveredHost>, String> {
                     let hostname = txt("hostname");
                     let project = txt("project");
                     let status = txt("status");
-                    let ip = pick_mdns_ipv4(info.get_addresses().iter())
-                        .unwrap_or_else(|| host.clone());
+                    let addrs: Vec<IpAddr> = info
+                        .get_addresses()
+                        .iter()
+                        .map(|a| a.to_ip_addr())
+                        .collect();
+                    let ip = pick_mdns_ipv4(addrs.iter()).unwrap_or_else(|| host.clone());
                     let url = format!("http://{ip}:{port}");
                     if out.iter().any(|h| h.url == url) {
                         continue;

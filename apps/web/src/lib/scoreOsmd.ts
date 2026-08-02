@@ -322,10 +322,9 @@ export function applyScorePartVisibility(
   if (!Array.isArray(instruments) || instruments.length === 0) return;
   const hidden = new Set(hiddenIds);
   const parts = listScoreParts(osmd);
-  let visibleCount = parts.filter((p) => !hidden.has(p.id)).length;
+  const visibleCount = parts.filter((p) => !hidden.has(p.id)).length;
   if (visibleCount === 0 && parts.length > 0) {
     hidden.delete(parts[0]!.id);
-    visibleCount = 1;
   }
   instruments.forEach((instr, index) => {
     const id = scoreInstrumentId(

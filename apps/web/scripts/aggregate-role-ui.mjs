@@ -25,6 +25,15 @@ function requireFile(path, label) {
   }
 }
 
+/** Vite 8 / Rolldown may emit route literals with `, ', or " quotes. */
+function hasQuotedPath(js, path) {
+  return (
+    js.includes(`"${path}"`) ||
+    js.includes(`'${path}'`) ||
+    js.includes(`\`${path}\``)
+  );
+}
+
 function readRoleJs(distDir) {
   const assets = join(distDir, "assets");
   requireFile(assets, `${distDir} assets/`);
@@ -37,10 +46,11 @@ function readRoleJs(distDir) {
 function assertPerformerIsolation() {
   requireFile(join(performerDist, "index.html"), "performer index.html");
   const js = readRoleJs(performerDist);
-  if (!js.includes('"/client"')) {
+  if (!hasQuotedPath(js, "/client")) {
     throw new Error("aggregate-role-ui: performer JS missing /client route");
   }
-  if (js.includes("/timeline/:projectId") || js.includes('path:"/timeline')) {
+  // Route table leak markers (shared path helpers may still mention /timeline).
+  if (js.includes("/timeline/:projectId") || js.includes('path:"/timeline') || js.includes("path:`/timeline")) {
     throw new Error(
       "aggregate-role-ui: performer JS includes Timeline routes — dual-entry leak",
     );
@@ -55,15 +65,20 @@ function assertPerformerIsolation() {
 function assertConsoleFullSpa() {
   requireFile(join(consoleDist, "index.html"), "console index.html");
   const js = readRoleJs(consoleDist);
-  if (!js.includes('"/admin"')) {
+  if (!hasQuotedPath(js, "/admin")) {
     throw new Error("aggregate-role-ui: console JS missing /admin route");
   }
-  if (!js.includes('"/client"')) {
+  if (!hasQuotedPath(js, "/client")) {
     throw new Error(
       "aggregate-role-ui: console JS missing /client route — full desktop parity required",
     );
   }
-  if (!js.includes("/timeline/:projectId") && !js.includes('"/timeline/')) {
+  if (
+    !js.includes("/timeline/:projectId") &&
+    !hasQuotedPath(js, "/timeline/") &&
+    !js.includes('"/timeline/') &&
+    !js.includes("`/timeline/")
+  ) {
     throw new Error("aggregate-role-ui: console JS missing Timeline route");
   }
   // Client Score (OSMD) must ship in Console full SPA (minified symbols may rename).

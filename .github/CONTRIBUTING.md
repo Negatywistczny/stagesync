@@ -2,8 +2,8 @@
 
 ## Środowisko
 
-- **Node.js 20** — [`.nvmrc`](.nvmrc) (`nvm use`); root `engines`: `>=20 <21`.
-- **pnpm 9** — `packageManager` w root `package.json`.
+- **Node.js 22** — [`.nvmrc`](.nvmrc) (`nvm use`); root `engines`: `>=22 <23`.
+- **pnpm 11** — `packageManager` w root `package.json`.
 
 ## Język (kanon)
 

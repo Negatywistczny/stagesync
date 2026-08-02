@@ -29,9 +29,12 @@ export const config = [
     plugins: {
       "react-hooks": pluginReactHooks,
     },
-    settings: { react: { version: "detect" } },
+    settings: { react: { version: "19.2" } },
     rules: {
-      ...pluginReactHooks.configs.recommended.rules,
+      // Classic hooks only — react-hooks@7 `recommended` also enables React Compiler
+      // rules (refs / set-state-in-effect / immutability) that the app is not ready for.
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
     },

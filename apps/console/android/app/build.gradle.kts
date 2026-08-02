@@ -1,17 +1,17 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
 }
 
 android {
     namespace = "com.stagesync.console"
-    compileSdk = 34
+    compileSdk = 37
+    // Keep NDK 26 pin for nodejs-mobile JNI bridge (libnode); AGP 9 default is r28c.
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
         applicationId = "com.stagesync.console"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         // Keep in sync with root package.json (host /api/health.version).
         // versionCode patch digit bumps for Console sideload diagnostics builds
         // without a SemVer cut (50207 = READY via shared status file after :host split).
@@ -79,9 +79,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     buildFeatures {
         viewBinding = true
     }
@@ -118,15 +115,15 @@ tasks.named("preBuild").configure {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.activity:activity-ktx:1.9.1")
-    implementation("androidx.webkit:webkit:1.11.0")
-    implementation("androidx.camera:camera-camera2:1.3.4")
-    implementation("androidx.camera:camera-lifecycle:1.3.4")
-    implementation("androidx.camera:camera-view:1.3.4")
+    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.14.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.2")
+    implementation("androidx.activity:activity-ktx:1.13.0")
+    implementation("androidx.webkit:webkit:1.16.0")
+    implementation("androidx.camera:camera-camera2:1.6.1")
+    implementation("androidx.camera:camera-lifecycle:1.6.1")
+    implementation("androidx.camera:camera-view:1.6.1")
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     testImplementation("junit:junit:4.13.2")
 }

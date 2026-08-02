@@ -4,11 +4,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 class LocalHostStatusTest {
     @Test
     fun read_empty_isNone() {
-        val dir = createTempDir(prefix = "ss-host-status-")
+        val dir = createTempDirectory(prefix = "ss-host-status-").toFile()
         try {
             assertEquals(LocalHostStatus.Snapshot.None, LocalHostStatus.read(dir))
             LocalHostStatus.clear(dir)
@@ -20,7 +21,7 @@ class LocalHostStatusTest {
 
     @Test
     fun writeReady_roundTrip() {
-        val dir = createTempDir(prefix = "ss-host-ready-")
+        val dir = createTempDirectory(prefix = "ss-host-ready-").toFile()
         try {
             LocalHostStatus.writeReady(dir, "http://127.0.0.1:4000")
             val snap = LocalHostStatus.read(dir)
@@ -36,7 +37,7 @@ class LocalHostStatusTest {
 
     @Test
     fun writeFailed_preservesMultiline() {
-        val dir = createTempDir(prefix = "ss-host-failed-")
+        val dir = createTempDirectory(prefix = "ss-host-failed-").toFile()
         try {
             LocalHostStatus.writeFailed(dir, "line-a\nline-b")
             val snap = LocalHostStatus.read(dir)
@@ -52,7 +53,7 @@ class LocalHostStatusTest {
 
     @Test
     fun writeReady_blankOrigin_usesLoopback() {
-        val dir = createTempDir(prefix = "ss-host-blank-")
+        val dir = createTempDirectory(prefix = "ss-host-blank-").toFile()
         try {
             LocalHostStatus.writeReady(dir, "  ")
             val snap = LocalHostStatus.read(dir) as LocalHostStatus.Snapshot.Ready

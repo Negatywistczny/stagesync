@@ -4,11 +4,12 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 class HostProcessLogTest {
     @Test
     fun appendDiagnostics_includesTailAndPhase() {
-        val dir = createTempDir(prefix = "ss-host-log-")
+        val dir = createTempDirectory(prefix = "ss-host-log-").toFile()
         try {
             HostProcessLog.writePhase(dir, "extract")
             HostProcessLog.writePhase(dir, "node-start")
@@ -33,7 +34,7 @@ class HostProcessLogTest {
 
     @Test
     fun appendDiagnostics_emptyLogHint() {
-        val dir = createTempDir(prefix = "ss-host-log-empty-")
+        val dir = createTempDirectory(prefix = "ss-host-log-empty-").toFile()
         try {
             HostProcessLog.writePhase(dir, "redirect-stdio")
             val msg = HostProcessLog.appendDiagnostics(dir, "died")

@@ -1,3 +1,14 @@
 packages:
   - "apps/*"
   - "packages/*"
+# pnpm 11 defaults to 1440m; keep 0 so fresh lockfile entries from
+# `pnpm update --latest` remain installable in CI without waiting a day.
+minimumReleaseAge: 0
+allowBuilds:
+  "@julusian/midi": true
+  esbuild: true
+  gl: true
+# eslint-plugin-react@7 peers ESLint ≤9; flat config still works on ESLint 10.
+peerDependencyRules:
+  allowedVersions:
+    "eslint-plugin-react>eslint": "10"

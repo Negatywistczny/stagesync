@@ -83,7 +83,6 @@ export function snapTicksToBarStartAlongMeterMap(
     return snapTicksToBarStart(ticks, defaultMeter, ppq);
   }
 
-  let prev = 0;
   let cursor = 0;
   let guard = 0;
   while (guard < 100_000) {
@@ -95,12 +94,11 @@ export function snapTicksToBarStartAlongMeterMap(
       return next;
     }
     if (ticks === next) return next;
-    prev = cursor;
     cursor = next;
     guard += 1;
     if (cursor > ticks + perBar) {
       // Should have returned inside loop; fall back.
-      return prev;
+      return cursor - perBar;
     }
   }
   throw new RangeError("snapTicksToBarStartAlongMeterMap exceeded max bars");
