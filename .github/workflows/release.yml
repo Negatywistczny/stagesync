@@ -237,17 +237,23 @@ jobs:
           args: --verbose
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
-      - name: Rename MSI without en-US locale suffix
+      - name: Rename MSI without locale suffix
         shell: bash
         run: |
           set -euo pipefail
           MSI_DIR="apps/desktop/src-tauri/target/release/bundle/msi"
           shopt -s nullglob
-          for f in "$MSI_DIR"/*_en-US.msi; do
+          # WiX/Tauri may emit StageSync_*_x64_en-US.msi or *_x64_pl-PL.msi
+          for f in "$MSI_DIR"/*.msi; do
             base="$(basename "$f")"
-            dest="$MSI_DIR/${base/_en-US/}"
-            mv "$f" "$dest"
-            echo "Renamed $base → $(basename "$dest")"
+            # Strip trailing _xx-YY locale before .msi
+            dest_base="$(echo "$base" | sed -E 's/_[a-z]{2}-[A-Z]{2}\.msi$/.msi/')"
+            # Normalize arch token if present as x86_64
+            dest_base="${dest_base/_x86_64./_x64.}"
+            if [ "$base" != "$dest_base" ]; then
+              mv "$f" "$MSI_DIR/$dest_base"
+              echo "Renamed $base → $dest_base"
+            fi
           done
 
       - name: Upload msi artifact
@@ -489,28 +495,50 @@ jobs:
           set -euo pipefail
           TAG="v${{ env.VERSION }}"
           REPO="${{ github.repository }}"
+          MSI_NAME="StageSync_${{ env.VERSION }}_x64.msi"
           cd dist
           shopt -s nullglob
-          for f in *_en-US.msi; do
-            dest="${f/_en-US/}"
-            mv "$f" "$dest"
-            echo "Renamed $f → $dest"
-          done
-          # Windows job may already strip _en-US before the artifact upload.
-          # Always publish the friendly MSI name and drop the locale-suffixed copy.
+          # Normalize any WiX locale / arch suffix → canonical StageSync_VERSION_x64.msi
           for f in *.msi; do
             case "$f" in
-              *_en-US.msi) continue ;;
+              *.sig) continue ;;
             esac
-            gh release delete-asset "$TAG" "${f/.msi/_en-US.msi}" -R "$REPO" --yes 2>/dev/null || true
-            gh release upload "$TAG" "$f" -R "$REPO" --clobber
-            echo "Uploaded $f"
+            normalized="$(echo "$f" | sed -E 's/_[a-z]{2}-[A-Z]{2}\.msi$/.msi/; s/_x86_64\./_x64./')"
+            if [ "$normalized" != "$f" ]; then
+              mv "$f" "$normalized"
+              echo "Renamed $f → $normalized"
+              f="$normalized"
+            fi
+            if [ "$f" != "$MSI_NAME" ]; then
+              mv "$f" "$MSI_NAME"
+              echo "Canonicalized → $MSI_NAME"
+            fi
           done
+          # Drop stale locale-suffixed assets Tauri may have uploaded earlier.
+          for stale in \
+            "StageSync_${{ env.VERSION }}_x64_en-US.msi" \
+            "StageSync_${{ env.VERSION }}_x64_pl-PL.msi" \
+            "StageSync_${{ env.VERSION }}_x86_64.msi" \
+            "StageSync_${{ env.VERSION }}_x86_64_en-US.msi" \
+            "StageSync_${{ env.VERSION }}_x86_64_pl-PL.msi"
+          do
+            gh release delete-asset "$TAG" "$stale" -R "$REPO" --yes 2>/dev/null || true
+            gh release delete-asset "$TAG" "${stale}.sig" -R "$REPO" --yes 2>/dev/null || true
+          done
+          if [ -f "$MSI_NAME" ]; then
+            gh release upload "$TAG" "$MSI_NAME" -R "$REPO" --clobber
+            echo "Uploaded $MSI_NAME"
+            if [ -f "${MSI_NAME}.sig" ]; then
+              gh release upload "$TAG" "${MSI_NAME}.sig" -R "$REPO" --clobber
+            fi
+          else
+            echo "ERROR: $MSI_NAME missing after rename" >&2
+            ls -la *.msi || true
+            exit 1
+          fi
           # Point latest.json Windows updater URLs at the friendly MSI asset
-          # (Tauri uploads _en-US.msi first; we delete it after rename, so the
-          # asset id in latest.json goes stale unless rewritten).
+          # (Tauri uploads locale-suffixed MSI first; rewrite after canonicalize).
           if gh release download "$TAG" -R "$REPO" -p latest.json -D . 2>/dev/null; then
-            MSI_NAME="StageSync_${{ env.VERSION }}_x64.msi"
             MSI_ID=$(gh release view "$TAG" -R "$REPO" --json assets \
               --jq ".assets[] | select(.name==\"$MSI_NAME\") | .apiUrl" \
               | sed 's#.*/assets/##')

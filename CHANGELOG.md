@@ -5,6 +5,13 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Wydania (Windows):** link pobierania MSI w notatkach release wskazuje kanoniczną nazwę `_x64.msi` (bez sufiksu locale / `x86_64`).
+
 ## [5.3.8](https://github.com/Negatywistczny/stagesync/compare/v5.3.7...v5.3.8) - 2026-08-02
 
 ### Dodano

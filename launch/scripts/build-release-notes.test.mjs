@@ -105,8 +105,10 @@ assert.match(
 );
 assert.match(
   ok.stdout,
-  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x86_64\.msi\)/,
+  /\[Windows \(64-bit\)\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/releases\/download\/v5\.1\.0\/StageSync_5\.1\.0_x64\.msi\)/,
 );
+assert.doesNotMatch(ok.stdout, /_x86_64\.msi/);
+assert.doesNotMatch(ok.stdout, /_pl-PL\.msi/);
 assert.doesNotMatch(ok.stdout, /StageSync 5\.1\.0 \(\.dmg\)/);
 assert.doesNotMatch(ok.stdout, /\| System \/ aplikacja \| Plik \|/);
 // APKs only from 5.2.0 — no dead Android links on 5.1.x.

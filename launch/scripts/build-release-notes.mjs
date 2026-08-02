@@ -81,8 +81,8 @@ const repo = process.env.GITHUB_REPOSITORY ?? "Negatywistczny/stagesync";
 const tag = `v${version}`;
 const base = `https://github.com/${repo}/releases/download/${tag}`;
 const dmgUrl = `${base}/StageSync_${version}_aarch64.dmg`;
-const msiVersion = toWixVersion(version);
-const msiUrl = `${base}/StageSync_${msiVersion}_x86_64.msi`;
+/** Canonical Windows asset — see release.yml rename (strips WiX locale suffix). */
+const msiUrl = `${base}/StageSync_${toWixVersion(version)}_x64.msi`;
 const performerApkUrl = `${base}/StageSync-Performer-v${version}.apk`;
 const consoleApkUrl = `${base}/StageSync-Console-v${version}.apk`;
 const changelogUrl = changelogPermalink(repo, tag, version, date, hero);
