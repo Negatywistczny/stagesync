@@ -37,7 +37,6 @@ data/
 - Import legacy 4.x należy do osobnego migratora później; nie dual-write starych kształtów do tego układu.
 - Usunięcie katalogu projektu usuwa też `assets/` — brak globalnego katalogu uploadów.
 
-## Powiązane (inspiracja, nie SSOT)
+## Powiązane
 
-- [Gemini-Diagnoza-V4-Fundamenty-V5.md](../analysis/inspiracje/historia-bootstrap/Gemini-Diagnoza-V4-Fundamenty-V5.md)
-  — wczesna diagnoza storage / monorepo; triage `archive`.
+- Układ runtime: [ARCHITECTURE.md](../ARCHITECTURE.md) · konstytucja (Granica 0 / storage).

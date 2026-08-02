@@ -40,7 +40,7 @@ Przyjmujemy **Tauri** jako desktop shell w β1:
    - **Host (B):** Status / Ustawienia… → Host; Klienci → Scena; Kod QR… (LAN URL z `GET /api/system/network`); Restart hosta
    - **Pomoc:** Dokumentacja online; Zgłoś problem; O programie (Windows/Linux — na macOS w StageSync)
    - Ostatnie utwory Timeline w `localStorage` + sync do menu natywnego
-   - **Faza D** → **5.0.0** — [ROADMAP.md](../ROADMAP.md) § Desktop OS menu. Bez gray-out „na zapas”.
+   - **Faza D** → **5.0.0** (wydane) — pełna Edycja / zoom / Pomoc; bez gray-out „na zapas”. Historia: [CHANGELOG](../../CHANGELOG.md).
 
 ## Konsekwencje
 

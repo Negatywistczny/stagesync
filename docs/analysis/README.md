@@ -32,8 +32,7 @@ Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../R
 
 Eksperymentalne audyty zewnętrzne (Deep Search itd.). **Nie są kanonem** — wymagają triage i repro w kodzie.
 
-Inspiracje: [inspiracje/README.md](./inspiracje/README.md) — kategorie `historia-bootstrap/`, `audyty-silnik/`, `referencje-daw/`, `ui/`.
-
+Inspiracje: [inspiracje/README.md](./inspiracje/README.md) — kategorie `audyty-silnik/`, `referencje-daw/`, `spec-5.2+/`, `testy-pokrycie/`, `www/`.
 ## working/
 
 Lokalny scratch agenta. Ignorowane przez git.

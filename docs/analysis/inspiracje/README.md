@@ -54,11 +54,9 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 
 | Katalog | Po co | Typowy status dokumentu |
 |---------|--------|-------------------------|
-| [`historia-bootstrap/`](./historia-bootstrap/) | Dlaczego V5 / konstytucja / monorepo | `archive` |
 | [`audyty-silnik/`](./audyty-silnik/) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
 | [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
 | [`spec-5.2+/`](./spec-5.2+/) | Specyfikacje wprowadzenia feature linii **5.2+** (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer HW) — hipotezy / design, nie claim Done | `open` → … |
-| [`ui/`](./ui/) | Gęstość / kontrast vs `ui-density` / `@stagesync/ui` | `open` → … |
 | [`www/`](./www/) | Audyt / strategia witryny marketingowej `apps/www` | `closed` |
 | [`testy-pokrycie/`](./testy-pokrycie/) | Plany uzupełnienia testów Vitest (luki coverage, mocki, priorytety P0–P2) — **nie** zastępują audytów bugów w `audyty-silnik/` | `partial` |
 
@@ -84,21 +82,6 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 ```
 
 ## Indeks
-
-### historia-bootstrap/
-
-Wszystkie dumpy poniżej = **`archive`** (provenance bootstrapa v5). Nie TODO / nie CHANGELOG.
-Konflikt z ADR / konstytucją / CONTRIBUTING → **wygrywa SSOT repo**.
-
-| Raport | Źródło | Triage | Status |
-|--------|--------|--------|--------|
-| [Architektura-Oprogramowania-i-Ortogonalnosc.md](./historia-bootstrap/Architektura-Oprogramowania-i-Ortogonalnosc.md) | Deep Search / esej | [triage](./historia-bootstrap/Architektura-Oprogramowania-i-Ortogonalnosc.triage.md) | `archive` |
-| [Claude-Struktura-Repo.md](./historia-bootstrap/Claude-Struktura-Repo.md) | Claude | [triage](./historia-bootstrap/Claude-Struktura-Repo.triage.md) | `archive` |
-| [Gemini-Diagnoza-V4-Fundamenty-V5.md](./historia-bootstrap/Gemini-Diagnoza-V4-Fundamenty-V5.md) | Gemini | [triage](./historia-bootstrap/Gemini-Diagnoza-V4-Fundamenty-V5.triage.md) | `archive` |
-| [Gemini-Plan-Wdrozenia-Monorepo-V5.md](./historia-bootstrap/Gemini-Plan-Wdrozenia-Monorepo-V5.md) | Gemini | [triage](./historia-bootstrap/Gemini-Plan-Wdrozenia-Monorepo-V5.triage.md) | `archive` |
-| [GPT-Konstytucja-Projektu.md](./historia-bootstrap/GPT-Konstytucja-Projektu.md) | GPT | [triage](./historia-bootstrap/GPT-Konstytucja-Projektu.triage.md) | `archive` |
-| [GPT-Project-Standard.md](./historia-bootstrap/GPT-Project-Standard.md) | GPT | [triage](./historia-bootstrap/GPT-Project-Standard.triage.md) | `archive` |
-| [Struktura-Projektu-Aplikacji-Webowej.md](./historia-bootstrap/Struktura-Projektu-Aplikacji-Webowej.md) | Deep Search / esej | [triage](./historia-bootstrap/Struktura-Projektu-Aplikacji-Webowej.triage.md) | `archive` |
 
 ### audyty-silnik/
 
@@ -136,7 +119,6 @@ Specyfikacje intro feature linii **5.2** (Pocket Stage) i residual **5.2+** — 
 | [Ocena-decyzji-Sampler-Cue.md](./spec-5.2+/Ocena-decyzji-Sampler-Cue.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-decyzji-Sampler-Cue.triage.md) | `partial` |
 | [Safety-Net-dla-StageSync-v5.2.md](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md) | `partial` |
 | [Ocena-Safety-Net-StageSync-437.md](./spec-5.2+/Ocena-Safety-Net-StageSync-437.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Safety-Net-StageSync-437.triage.md) | `partial` |
-| [Ocena-Safety-Net-StageSync-437-v1.md](./spec-5.2+/Ocena-Safety-Net-StageSync-437-v1.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Safety-Net-StageSync-437-v1.triage.md) | `superseded` |
 | [Ocena-Decyzji-Produktowych-StageSync.md](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync.triage.md) | `partial` |
 | [Ocena-Decyzji-Produktowych-StageSync-v1.md](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync-v1.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync-v1.triage.md) | `open` |
 | [Recenzja-Decyzji-Live-FOH-Audio.md](./spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.triage.md) | `partial` |
@@ -144,12 +126,6 @@ Specyfikacje intro feature linii **5.2** (Pocket Stage) i residual **5.2+** — 
 | [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `closed` |
 | [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `partial` |
 | [Architektura-Ingestii-Danych-Muzycznych-StageSync.md](./spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md) | `open` |
-
-### ui/
-
-| Raport | Źródło | Triage | Status |
-|--------|--------|--------|--------|
-| [Reguly-UI-dla-Cursor-V5.md](./ui/Reguly-UI-dla-Cursor-V5.md) | Deep Search / UI | [triage](./ui/Reguly-UI-dla-Cursor-V5.triage.md) | `archive` |
 
 ### www/
 

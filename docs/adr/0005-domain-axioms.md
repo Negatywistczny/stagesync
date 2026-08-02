@@ -62,7 +62,6 @@ nie jest fundamentem domeny — jest wymienną warstwą dostarczania.
 - UI polish, motywy, CI, Docker — warstwy Stuff / Skin; nie wymagają zmiany
   aksjomatów.
 
-## Powiązane (inspiracja, nie SSOT)
+## Powiązane
 
-- [Architektura-Oprogramowania-i-Ortogonalnosc.md](../analysis/inspiracje/historia-bootstrap/Architektura-Oprogramowania-i-Ortogonalnosc.md)
-  — język pace layers / blast radius; triage `archive`.
+- Egzekucja: [konstytucja](../../.cursor/rules/constitution.mdc) · [ARCHITECTURE.md](../ARCHITECTURE.md).

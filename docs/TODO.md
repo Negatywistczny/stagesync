@@ -10,7 +10,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-**Release policy:** sekwencja PO 2026-08-02 = **5.4 Syllables** (fundament schemy + Ingest w jednym hero) → **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); patche 5.3.x nadal OK dla residual chrome/ops do cutu 5.4. Schema V6 **nie** jest osobnym cutem.
+**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); **5.4 Syllables** wydane (`v5.4.0`).
 
 ## Must (operator residual)
 

@@ -6,16 +6,13 @@
 **Data triage:** 2026-07-26  
 **Companion:** [Safety-Net-dla-StageSync-v5.2.triage.md](./Safety-Net-dla-StageSync-v5.2.triage.md) · [Ocena-Decyzji-Produktowych-StageSync.triage.md](./Ocena-Decyzji-Produktowych-StageSync.triage.md) · [#437](https://github.com/Negatywistczny/stagesync/issues/437)
 
-## Provenance / duplikaty
+## Provenance
 
-| Plik | Rola |
-|------|------|
-| Ten dump (122 linii) | **Kanon** — KEEP architektury + REVISE docs; Decision 5 = shared dir OK jako prosta ścieżka |
-| [Ocena-Safety-Net-StageSync-437-v1.md](./Ocena-Safety-Net-StageSync-437-v1.md) | Krótszy sibling — **Decision 5 = REVISE** (odrzuć NFS/SMB); triage → `superseded` z notą różnicy |
+Ten dump = **kanon** (KEEP architektury + REVISE docs; Decision 5 = shared dir OK jako prosta ścieżka). Krótszy sibling v1 (Decision 5 = REVISE / odrzuć NFS/SMB) usunięty z repo jako `superseded`.
 
 ## Werdykt przydatności
 
-**Wysoka — potwierdza MVP Safety Net jako uczciwy Hot Standby, nie Zero-Glitch HA.** KEEP 1–4 zgodne z companion Safety Net i dyskiem. REVISE docs (Manual Hot Standby / zewnętrzny switch audio) = hipoteza docs operatorskiej. Shared data: ten dump łagodniejszy niż v1 / CRIT-RES D7 — **nie rozstrzygać bez PO**.
+**Wysoka — potwierdza MVP Safety Net jako uczciwy Hot Standby, nie Zero-Glitch HA.** KEEP 1–4 zgodne z companion Safety Net i dyskiem. REVISE docs (Manual Hot Standby / zewnętrzny switch audio) = hipoteza docs operatorskiej. Shared data vs CRIT-RES D7 — **nie rozstrzygać bez PO**.
 
 ## Macierz
 

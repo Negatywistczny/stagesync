@@ -69,7 +69,7 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 ## IN (must) — Menu OS Faza B (B)
 
-Źródło: [ROADMAP](../../ROADMAP.md) § Desktop OS menu · residual β1.
+Źródło: [ADR 0010](../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop · residual β1.
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|
@@ -86,7 +86,7 @@ Reuse Faza A: `install_desktop_menu` + navigate / eventy WebView.
 
 ## IN (must) — Menu OS Faza C (C)
 
-Źródło: [ROADMAP](../../ROADMAP.md) § Desktop OS menu.
+Źródło: [ADR 0010](../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop.
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|

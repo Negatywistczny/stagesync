@@ -25,30 +25,22 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0` | [CHANGELOG](../CHANGELOG.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 | **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
-| **5.4** | **Syllables** — Lyrics AST (ticks) + widoczny UltraStar → Karaoke | Schema V6 + migrator **na `main`**; cut gdy Ingest UltraStar widoczny w produkcie | [report-scope-5.4](./analysis/reports/report-scope-5.4.md) · [TODO.md](./TODO.md) |
+| **5.4.0** | **Syllables** — Lyrics AST (ticks) + UltraStar → Karaoke | **Wydane 2026-08-02** — tag `v5.4.0`; format V6 + import UltraStar + highlight Karaoke | [CHANGELOG](../CHANGELOG.md) · [report-scope-5.4](./analysis/reports/report-scope-5.4.md) |
 | **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
 | **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
 | **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 
-Zamknięte cuty (α3–5.3): hero w tabeli; historia wydań w [CHANGELOG.md](../CHANGELOG.md);
+Zamknięte cuty (α3–5.4): hero w tabeli; historia wydań w [CHANGELOG.md](../CHANGELOG.md);
 scope reports w `docs/analysis/reports/`. Aktywny plan tylko poniżej + [TODO.md](./TODO.md).
 
-### 5.4 — **Syllables** — fundament na `main`; cut gdy Ingest widoczny
+### 5.4.0 — **Syllables** — **wydane 2026-08-02**
 
-Hero linii: timed lyrics + **widoczny** UltraStar → Karaoke. Schema V6 / migrator / Karaoke block highlight **już na trunku** — **nie** osobny cut „Content Model”; SemVer produktu nadal **5.3.8** do cutu `5.4.0`. Schema V6 **nie** jest osobnym hero cutem.
+Tag `v5.4.0`. Historia: [CHANGELOG.md](../CHANGELOG.md). Scope: [report-scope-5.4.md](./analysis/reports/report-scope-5.4.md).
 
-**Fundament (na `main`):**
-- `formatVersion` 6 + migrator V5→V6 (ticks SSOT — [ADR 0002](./adr/0002-timebase-ssot.md))
-- Lyrics AST: bloki na liniach `tekst`; opcjonalne role wokalu; ścieżka melodii w schemacie (bez UI edycji)
-- Client Karaoke: highlight aktywnego bloku gdy linia ma podział czasowy
+**Dostarczone:** `formatVersion` 6 + migrator V5→V6; Lyrics AST (bloki na `tekst`); import UltraStar → ticks; Client Karaoke highlight bloku; UG/ChordPro zostaje.
 
-**Do cutu 5.4.0 (Ingest w tym samym hero):**
-- Pure parser UltraStar → ticks → `tekst` (+ melody gdy w schemacie)
-- Text-Anchor Bridging (US+UG) dopiero ze golden fixtures
-- UG/ChordPro zostaje; MusicXML/MIDI jako siatka taktowa = Later
-- Triage: [Architektura-Ingestii…triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)
-- Scope / status: [report-scope-5.4.md](./analysis/reports/report-scope-5.4.md)
+**Residual 5.4.x / Later:** Text-Anchor Bridging (US+UG) ze golden fixtures; MusicXML/MIDI jako siatka taktowa — [TODO.md](./TODO.md).
 
 ### 5.5 — **Pitch & FX**
 
@@ -82,7 +74,7 @@ Kierunek: multi-role Lyrics AST (fundament w **5.4 Syllables**); widok publiczny
 1. **Jeden aktywny etap w TODO** — tylko otwarte Must / Should / Later; zamknięte → [CHANGELOG](../CHANGELOG.md), potem usuń z TODO ([todo-hygiene](../.cursor/rules/todo-hygiene.mdc)).
 2. **Scope report** przed kodem hero cutu (`docs/analysis/reports/report-scope-…`); ROADMAP trzyma hero + done na wysokim poziomie.
 3. **Parity vs v4** ([ADR 0011](./adr/0011-ui-parity-behavior.md)): zachowanie w `STAGESYNC-APP-LEGACY`; **nie** clone chrome; **zakaz stubów**. Audyt: [parity](./analysis/reports/report-v4-v5-parity-audit.md) · [ui-diff](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
-4. **Audio 6.0+** ([ADR 0018](./adr/0018-future-audio-architecture.md)): sekwencja **5.4 Syllables → 5.5 Pitch & FX → 6.0 Live Suite → 6.1 Karaoke**; **bez** recording/VSTi w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5).
+4. **Audio 6.0+** ([ADR 0018](./adr/0018-future-audio-architecture.md)): sekwencja **5.5 Pitch & FX → 6.0 Live Suite → 6.1 Karaoke** (Syllables **5.4** wydane); **bez** recording/VSTi w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5).
 5. **G1–G10** — residual operatorski na HW; **bez claim green** bez dowodu ([report-beta-gate](./analysis/reports/report-beta-gate.md); [TODO](./TODO.md)).
 
 ## Granica 0
