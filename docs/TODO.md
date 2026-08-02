@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.3.2` (`v5.3.2`) — linia **5.3** = **Colors & Channels**; następny fokus produktowy **5.4 Content Model** → **5.5 Ingest** → **5.6 Pitch & FX** → **6.0** / **7.0**.  
+**Stan:** ostatni cut `5.3.8` (`v5.3.8`) — linia **5.3** = **Colors & Channels**; następny fokus produktowy **5.4 Content Model** → **5.5 Ingest** → **5.6 Pitch & FX** → **6.0** / **7.0**.
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  

@@ -211,7 +211,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Mikser",
         detail:
-          "ikona obok Tempo (X); pionowe paski: M / ST (PAN vs True Balance BAL), ciemny baner z cienkim paskiem koloru ścieżki, fader z podziałką, peak LED (mono 1 pasek / stereo L+R; zielony / żółty −6 / czerwony clip), S/M; Out = Master|Bus; Busy / Click / Master z muted banerami; przypięty Stereo Out.",
+          "ikona obok Tempo (X); pionowe paski: M / ST (PAN vs True Balance BAL), ciemny baner z cienkim paskiem koloru ścieżki, fader z podziałką, peak LED (mono 1 pasek / stereo L+R; zielony / żółty −6 / czerwony clip), S/M; Out = Master|Bus|HW; Busy / Click / Master; HW Out: M/ST, L/R, PPM/Delete; Master Out = para fizyczna przy multi-out; przypięty Stereo Out.",
       },
       {
         term: "Dock",

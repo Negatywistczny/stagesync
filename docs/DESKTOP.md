@@ -162,7 +162,7 @@ pnpm --filter @stagesync/desktop tauri build
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 
 - **Mixer bus→bus:** wyjście busa na Master albo inny bus (bez pętli).
-- **Mixer multi-out (HW):** gdy `AudioContext.destination.maxChannelCount ≥ 4` (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**, ChannelMerger mapuje Master na ch 1–2 i patchy na kolejne kanały. Track / bus / cue sample → `hw_out`. Przy stereo-only strefa HW Out jest ukryta (bez atrap Out 3–4). Repatch HW zablokowany w trakcie Play ([ADR 0017](./adr/0017-live-show-control-contracts.md) §7).
+- **Mixer multi-out (HW):** gdy urządzenie audio ma ≥ 4 kanały (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**. Master domyślnie idzie na CH 1–2 (można przemapować na inną wolną parę w selektorze Out na pasku Master — zablokowane w Play). Patchy HW: **+ Dodaj** (wyłącza się po wyczerpaniu kanałów), M/ST, dual L/R przy stereo, usuwanie przez PPM albo Delete/Backspace (bez × przy Mute). Ścieżka / bus / próbka Cue mogą iść na HW. Przy stereo-only strefa HW Out jest ukryta. Zmiana wyjścia fizycznego zablokowana w trakcie Play ([ADR 0017](./adr/0017-live-show-control-contracts.md) §7).
 - **Mixer — widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy strefy (nagłówek zostaje); wybór w przeglądarce.
 - **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
 - **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
@@ -174,8 +174,9 @@ pnpm --filter @stagesync/desktop tauri build
 
 1. Ustaw wyjście systemowe na layout ≥ 4 kanałów (macOS Audio MIDI Setup / Windows Speakers).
 2. Preferencje → Audio: sprawdź „Kanały wyjścia” ≥ 4.
-3. Mixer → **+ Dodaj** w strefie HW Out; skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
-4. Play → próba zmiany Out na/z HW = zablokowana; Pause → OK.
+3. Mixer → **+ Dodaj** w strefie HW Out (przy 4 kanałach zmieści się jedna para stereo poza Masterem); skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
+4. Play → próba zmiany Out na/z HW albo remap Master = zablokowana; Pause → OK.
+5. Opcjonalnie: Out na Masterze → inna para (np. CH 5–6), gdy urządzenie ma ≥ 6 kanałów i slot jest wolny.
 
 Szczegóły env: [INSTALL.md](./INSTALL.md).
 

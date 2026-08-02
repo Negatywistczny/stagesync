@@ -57,10 +57,11 @@ export function isOsMenuDesktopShell(): boolean {
   if (!isDesktopShell()) return false;
   const devSurface = getActiveDevSurface();
   if (devSurface === "tauri") return true;
-  // If we are in real Tauri but in DEV mode, we might want to see the headers
-  // unless we are specifically in a preview that mocks "tauri" surface.
+  // Real Tauri (invoke / shell marker) wins over DEV hostname heuristics.
+  if (tauriInvokeAvailable() || hasExplicitTauriShellMarker()) return true;
+  // Browser `pnpm dev` with desktop hostname alone is not OS-menu Tauri.
   if (import.meta.env.DEV && devSurface === null) return false;
-  return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
+  return false;
 }
 
 /**

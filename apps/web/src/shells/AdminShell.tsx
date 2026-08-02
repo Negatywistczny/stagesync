@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Select } from "@stagesync/ui";
+import { Button, Select } from "@stagesync/ui";
 import {
   applyUgImportToProject,
   importUgText,
@@ -420,19 +420,14 @@ export function AdminShell() {
               ) : (
                 <nav className={styles.sections} aria-label="Sekcje">
                   {ADMIN_SECTIONS.map((item) => (
-                    <button
+                    <Button
                       key={item.id}
-                      type="button"
-                      className={[
-                        styles.sectionButton,
-                        section === item.id ? styles.sectionButtonOn : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
+                      variant="ghost"
+                      selected={section === item.id}
                       onClick={() => setSection(item.id)}
                     >
                       {item.label}
-                    </button>
+                    </Button>
                   ))}
                 </nav>
               )}

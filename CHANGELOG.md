@@ -5,33 +5,35 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.3.8](https://github.com/Negatywistczny/stagesync/compare/v5.3.7...v5.3.8) - 2026-08-02
 
 ### Dodano
 
 #### ⏱️ Timeline & DAW
-- **Ustawienia:** nowy, modularny podział preferencji na zakładki: **Audio** (wybór urządzeń, kompensacja opóźnień), **Ogólne** (wygląd, zegar, nazwa), **Metronom** (głośność, dźwięki), **MIDI** (konfiguracja wejść/wyjść, panic) oraz **Serwer**.
-- **Timeline:** wydzielony dedykowany komponent paska narzędzi `TimelineToolbar` grupujący kontrolki odtwarzania, nawigacji utworów i wyboru narzędzi.
-- **Mixer:** wbudowany dok miksera `MixerDock` dla łatwego zarządzania poziomami i routingiem ścieżek bezpośrednio z poziomu osi czasu.
+- **Ustawienia:** preferencje podzielone na zakładki **Audio** (urządzenia, kompensacja opóźnień), **Ogólne** (wygląd, zegar, nazwa), **Metronom**, **MIDI** oraz **Serwer**.
 
 #### 🖥️ App Shell & UI
-- **Responsywność:** pełne wsparcie dla trybu horyzontalnego (landscape) na telefonach oraz zunifikowana obsługa viewportów i gestów dotykowych na osi czasu.
-- **Widoki mobilne:** zoptymalizowane i elastyczne dopasowanie interfejsu (nagłówki, nawigacja operatora, widok klienta) na ekranach smartfonów i tabletów.
-- **Panel Admina:** wydzielone i modularne okna dialogowe (m.in. import pliku MusicXML, seryjna edycja MIDI Program Change — Batch PC) oraz odświeżony widok piosenek i biblioteki utworów.
+- **Telefon (landscape):** lepsze dopasowanie nagłówków, nawigacji operatora i widoku Klienta w poziomie.
+- **Admin:** osobne okna importu MusicXML i seryjnej edycji MIDI Program Change (Batch PC); odświeżony widok biblioteki utworów.
 
 #### ⚙️ Serwer & API
-- **CORS:** dodano obsługę CORS dla klientów mobilnych w celu stabilizacji połączeń zewnętrznych z hostem.
+- **CORS:** obsługa CORS dla klientów mobilnych — stabilniejsze połączenia z hostem spoza originu.
 
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW
 - **Mixer:** w nagłówkach stref Audio / Busy / HW Out przycisk to **+ Dodaj** (bez obcinania dłuższych etykiet); pusta strefa HW Out bez komunikatu diagnostycznego.
-- **Mixer — HW Out:** usunięto przycisk × przy Mute (ryzyko live); usuwanie przez PPM albo Delete/Backspace na zaznaczonym pasku; **+ Dodaj** wyłącza się, gdy wyczerpano kanały fizycznego urządzenia (Master zajmuje wyjścia 1–2).
-- **Mixer — HW Out:** stereo patch ma podwójny miernik L/R (jak Master); tryb M/ST na pasku; model patchy mono/stereo gotowy pod dalszą rozbudowę.
+- **Mixer — HW Out:** usunięto przycisk × przy Mute (ryzyko live); usuwanie przez PPM albo Delete/Backspace na zaznaczonym pasku; **+ Dodaj** wyłącza się po wyczerpaniu kanałów urządzenia (Master zajmuje wyjścia 1–2); stereo ma podwójny miernik L/R i przełącznik M/ST.
 - **Mixer — Master:** przy multi-out można przemapować Stereo Out na inną parę fizyczną (domyślnie CH 1–2); zmiana zablokowana w trakcie Play.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Wydania:** zoptymalizowany format generowania adresów URL dla instalatorów MSI w skryptach przygotowania release notes.
+- **Wydania:** poprawiony format linków do instalatorów MSI w notatkach release.
+
+### Naprawiono
+
+#### 🖥️ App Shell & UI
+- **Admin (desktop):** zakładki **Utwory / Set / Scena / Host** znowu wyglądają jak przyciski UI (akcent przy aktywnej sekcji) — nie jak szare przyciski systemowe.
+- **Desktop (Tauri):** wykrywanie powłoki OS menu nie psuje się w trybie deweloperskim — przycisk pełnego ekranu zostaje ukryty także przy `tauri dev`.
 
 ## [5.3.7](https://github.com/Negatywistczny/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
 

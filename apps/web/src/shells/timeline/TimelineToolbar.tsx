@@ -6,6 +6,8 @@ import {
   type Project,
   type TimeSignature,
 } from "@stagesync/shared";
+import type { MapLaneId } from "../../lib/mapLaneEdit.js";
+import type { FormaToolId } from "../../lib/timelineGesture.js";
 import {
   IconAutoAdvance,
   IconChevronLeft,
@@ -28,10 +30,10 @@ interface TimelineToolbarProps {
   operatorNavCompact: boolean;
   timelineHeaderActions: React.ReactNode;
   isMobilePreview: boolean;
-  tools: { id: string; title: string; Icon: React.ComponentType }[];
+  tools: { id: FormaToolId; title: string; Icon: React.ComponentType }[];
   toolbarVisibleSet: Set<string>;
   tool: string;
-  onTool: (id: any) => void;
+  onTool: (id: FormaToolId) => void;
   toolsVisBtnRef: React.RefObject<HTMLButtonElement | null>;
   toolsVisOpen: boolean;
   toolsVisMenuId: string;
@@ -47,7 +49,7 @@ interface TimelineToolbarProps {
   clockLabel: string;
   tempoAtPlayhead: number;
   displayTicks: number;
-  openMapEdit: (kind: any, ticks: number) => void;
+  openMapEdit: (kind: MapLaneId, ticks: number) => void;
   timelineSurface: "timeline" | "mixer";
   setTimelineSurface: (v: "timeline" | "mixer" | ((v: "timeline" | "mixer") => "timeline" | "mixer")) => void;
   loopOn: boolean;
