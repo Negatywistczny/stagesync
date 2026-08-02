@@ -16,7 +16,7 @@
     "sync:launcher-ui": "node launch/scripts/sync-launcher-ui.mjs",
     "lint:ss-css": "node launch/scripts/lint-ss-css.mjs",
     "lint:knip": "knip --no-exit-code",
-    "prepare": "husky"
+    "prepare": "node -e \"try{require('child_process').execSync('husky',{stdio:'inherit'})}catch{}\""
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
