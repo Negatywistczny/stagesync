@@ -484,6 +484,19 @@ export {
 } from "./ug-import.js";
 
 export {
+  importUltrastarText,
+  applyUltrastarImportToProject,
+  ultrastarHeaderBpmToMetronome,
+  ticksPerUltrastarBeat,
+  ultrastarBeatToTicks,
+  type UltrastarImportErr,
+  type UltrastarImportOk,
+  type UltrastarImportOptions,
+  type UltrastarImportResult,
+  type ApplyUltrastarOptions,
+} from "./ultrastar-import.js";
+
+export {
   cleanUgTabContent,
   decodeHtmlEntities,
   isUgAsciiTabLine,

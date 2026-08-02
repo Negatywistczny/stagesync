@@ -20,6 +20,7 @@ import {
   ticksToBbt,
   toDisplayBar,
   applyUgImportToProject,
+  applyUltrastarImportToProject,
   normalizeKeyTonic,
   placeContentFromForma,
   projectEndTicks,
@@ -30,6 +31,7 @@ import {
   type FormaClip,
   type Project,
   type UgImportOk,
+  type UltrastarImportOk,
   type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
@@ -444,6 +446,7 @@ import { ShellIconButton } from "./ShellIconButton.js";
 import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
+import { UltrastarImportForm } from "./UltrastarImportForm.js";
 import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
 import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
@@ -675,6 +678,7 @@ export function TimelineShell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
   const [ugModalOpen, setUgModalOpen] = useState(false);
+  const [ultrastarModalOpen, setUltrastarModalOpen] = useState(false);
   const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
@@ -2486,6 +2490,17 @@ export function TimelineShell() {
         : `Import UG: ${result.sections.length} sekcji — Różdżka (W) gdy Formę dopracujesz`,
     );
     setUgModalOpen(false);
+    setSongScreenOpen(false);
+  }
+
+  function onImportUltrastar(result: UltrastarImportOk) {
+    if (!draftProject) return;
+    const next = applyUltrastarImportToProject(draftProject, result);
+    commitDraft(next);
+    flashCanvasNotice(
+      `Import UltraStar: ${result.syllableCount} sylab / ${result.tekst.clips.length} linii — sprawdź Karaoke`,
+    );
+    setUltrastarModalOpen(false);
     setSongScreenOpen(false);
   }
 
@@ -8236,6 +8251,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 >
                   Importuj UG
                 </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setUltrastarModalOpen(true);
+                  }}
+                >
+                  Importuj UltraStar
+                </Button>
               </div>
             </div>
           </div>
@@ -8274,6 +8297,44 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                 }}
                 onCancel={() => setUgModalOpen(false)}
                 onApply={({ result, runWand }) => onImportUg(result, runWand)}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {ultrastarModalOpen && draftProject ? (
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="ultrastar-import-title"
+        >
+          <button
+            type="button"
+            className={styles.backdrop}
+            aria-label="Zamknij"
+            onClick={() => setUltrastarModalOpen(false)}
+          />
+          <div className={styles.overlayPanel}>
+            <div className={styles.overlayHead}>
+              <h2 id="ultrastar-import-title">Importuj UltraStar</h2>
+              <ShellIconButton
+                label="Zamknij"
+                onClick={() => setUltrastarModalOpen(false)}
+              >
+                <IconClose />
+              </ShellIconButton>
+            </div>
+            <div className={styles.overlayBody}>
+              <UltrastarImportForm
+                applyLabel="Importuj do draftu"
+                importOptions={{
+                  ppq: draftProject.ppq,
+                  meter: resolveMeterAt(draftProject, 0),
+                }}
+                onCancel={() => setUltrastarModalOpen(false)}
+                onApply={onImportUltrastar}
               />
             </div>
           </div>

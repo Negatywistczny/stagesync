@@ -9,6 +9,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+#### ⏱️ Timeline & DAW
+- **Import UltraStar:** wklejenie lub plik `.txt` (USDX) buduje timed sylaby i ścieżkę melodii; w Karaoke podświetlenie idzie po blokach w sync z transportem.
+
 #### ⚙️ Serwer & API
 - **Projekt:** fundament timed lyrics pod linię Syllables — bloki tekstu na liniach (pozycje w tickach), opcjonalne role wokalu i ścieżka melodii; starsze projekty przechodzą automatycznie przy odczycie i zapisie — treść, akordy i audio zostają.
 
