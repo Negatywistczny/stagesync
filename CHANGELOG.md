@@ -7,6 +7,21 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Dodano
+
+#### ⏱️ Timeline & DAW
+- **Ustawienia:** nowy, modularny podział preferencji na zakładki: **Audio** (wybór urządzeń, kompensacja opóźnień), **Ogólne** (wygląd, zegar, nazwa), **Metronom** (głośność, dźwięki), **MIDI** (konfiguracja wejść/wyjść, panic) oraz **Serwer**.
+- **Timeline:** wydzielony dedykowany komponent paska narzędzi `TimelineToolbar` grupujący kontrolki odtwarzania, nawigacji utworów i wyboru narzędzi.
+- **Mixer:** wbudowany dok miksera `MixerDock` dla łatwego zarządzania poziomami i routingiem ścieżek bezpośrednio z poziomu osi czasu.
+
+#### 🖥️ App Shell & UI
+- **Responsywność:** pełne wsparcie dla trybu horyzontalnego (landscape) na telefonach oraz zunifikowana obsługa viewportów i gestów dotykowych na osi czasu.
+- **Widoki mobilne:** zoptymalizowane i elastyczne dopasowanie interfejsu (nagłówki, nawigacja operatora, widok klienta) na ekranach smartfonów i tabletów.
+- **Panel Admina:** wydzielone i modularne okna dialogowe (m.in. import pliku MusicXML, seryjna edycja MIDI Program Change — Batch PC) oraz odświeżony widok piosenek i biblioteki utworów.
+
+#### ⚙️ Serwer & API
+- **CORS:** dodano obsługę CORS dla klientów mobilnych w celu stabilizacji połączeń zewnętrznych z hostem.
+
 ### Zmieniono
 
 #### ⏱️ Timeline & DAW
@@ -14,6 +29,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Mixer — HW Out:** usunięto przycisk × przy Mute (ryzyko live); usuwanie przez PPM albo Delete/Backspace na zaznaczonym pasku; **+ Dodaj** wyłącza się, gdy wyczerpano kanały fizycznego urządzenia (Master zajmuje wyjścia 1–2).
 - **Mixer — HW Out:** stereo patch ma podwójny miernik L/R (jak Master); tryb M/ST na pasku; model patchy mono/stereo gotowy pod dalszą rozbudowę.
 - **Mixer — Master:** przy multi-out można przemapować Stereo Out na inną parę fizyczną (domyślnie CH 1–2); zmiana zablokowana w trakcie Play.
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Wydania:** zoptymalizowany format generowania adresów URL dla instalatorów MSI w skryptach przygotowania release notes.
 
 ## [5.3.7](https://github.com/Negatywistczny/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
 
