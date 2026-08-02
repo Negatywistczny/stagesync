@@ -27,16 +27,35 @@ function getArg(name) {
   return process.argv[idx + 1];
 }
 
-function run(cmd, args, { cwd = repoRoot } = {}) {
+function run(cmd, args, { cwd = repoRoot, env } = {}) {
   const res = spawnSync(cmd, args, {
     cwd,
     stdio: "inherit",
     // Windows runners resolve pnpm/tar via cmd when shell is enabled.
     shell: process.platform === "win32",
+    env: env ? { ...process.env, ...env } : undefined,
   });
   if (res.status !== 0) {
     throw new Error(`Command failed: ${cmd} ${args.join(" ")}`);
   }
+}
+
+/**
+ * `pnpm deploy --prod` writes workspace state with production=true / dev=false
+ * (pnpm 10+/11). The next `pnpm <script>` then auto-runs `install --production`
+ * and strips @tauri-apps/cli, typescript, and other build tooling. Reset.
+ */
+async function restoreWorkspaceInstall() {
+  // deploy --prod leaves production=true/dev=false in this file; a plain
+  // `pnpm install` may no-op while state still forces the next script run to
+  // `install --production` (drops @tauri-apps/cli). Clear state, then reinstall.
+  const statePath = join(repoRoot, "node_modules/.pnpm-workspace-state-v1.json");
+  console.log("[sidecar] restoring full workspace install after deploy --prod");
+  await rm(statePath, { force: true });
+  run("pnpm", ["install", "--frozen-lockfile"], {
+    // Non-TTY (and some local shells) otherwise abort modules purge.
+    env: { CI: process.env.CI || "true" },
+  });
 }
 
 async function downloadFile(url, destPath) {
@@ -490,6 +509,9 @@ async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
   await materializePnpmLayoutForTauriBundle(join(sidecarServerDir, "node_modules"));
 
   await assertDeployHasRuntimeDeps(sidecarServerDir);
+
+  // Deploy poisons the monorepo install state; Tauri CLI must remain available.
+  await restoreWorkspaceInstall();
 }
 
 /**

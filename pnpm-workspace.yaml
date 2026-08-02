@@ -7,6 +7,8 @@ minimumReleaseAge: 0
 # pnpm 10+ requires injected workspace deps for `pnpm deploy`; keep legacy
 # deploy for desktop sidecar + Console local-host packaging.
 forceLegacyDeploy: true
+# Avoid TTY prompt when install switches away from deploy --prod state.
+confirmModulesPurge: false
 allowBuilds:
   "@julusian/midi": true
   esbuild: true

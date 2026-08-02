@@ -161,6 +161,13 @@ jobs:
         with:
           workspaces: apps/desktop/src-tauri
 
+      # pnpm deploy --prod (sidecar) marks workspace production-only; restore
+      # so tauri-action still finds @tauri-apps/cli (devDependency).
+      - name: Restore JS deps after sidecar deploy
+        run: |
+          rm -f node_modules/.pnpm-workspace-state-v1.json
+          pnpm install --frozen-lockfile
+
       - name: Build Tauri (macOS — dmg + updater)
         uses: tauri-apps/tauri-action@v1
         env:
@@ -223,6 +230,11 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
+
+      - name: Restore JS deps after sidecar deploy
+        run: |
+          rm -f node_modules/.pnpm-workspace-state-v1.json
+          pnpm install --frozen-lockfile
 
       - name: Build Tauri (Windows — msi + updater)
         uses: tauri-apps/tauri-action@v1

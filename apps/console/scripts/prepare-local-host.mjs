@@ -56,15 +56,30 @@ const skipServer = process.argv.includes("--skip-server");
 const withServer =
   process.argv.includes("--with-server") || !skipServer;
 
-function run(cmd, args, cwd = repoRoot) {
+function run(cmd, args, cwd = repoRoot, env) {
   const res = spawnSync(cmd, args, {
     cwd,
     stdio: "inherit",
     shell: process.platform === "win32",
+    env: env ? { ...process.env, ...env } : undefined,
   });
   if (res.status !== 0) {
     throw new Error(`command failed: ${cmd} ${args.join(" ")}`);
   }
+}
+
+/**
+ * `pnpm deploy --prod` marks workspace state production-only (pnpm 10+/11).
+ * Subsequent `pnpm --filter @stagesync/web build` then strips typescript /
+ * @stagesync/typescript-config via auto `install --production`.
+ */
+async function restoreWorkspaceInstall() {
+  const statePath = join(repoRoot, "node_modules/.pnpm-workspace-state-v1.json");
+  console.log("[local-host] restoring full workspace install after deploy --prod");
+  await rm(statePath, { force: true });
+  run("pnpm", ["install", "--frozen-lockfile"], repoRoot, {
+    CI: process.env.CI || "true",
+  });
 }
 
 async function download(url, dest) {
@@ -528,6 +543,9 @@ async function packServerTree(destServer) {
   }
   await cp(androidBootSrc, join(destServer, "android-boot.mjs"));
   console.log("[local-host] wrote server/android-boot.mjs");
+
+  // Deploy poisons monorepo install state; web build needs full deps.
+  await restoreWorkspaceInstall();
 }
 
 async function packWebAndSeed(hostRoot) {
@@ -569,9 +587,11 @@ async function packWebAndSeed(hostRoot) {
 async function packServerAssets() {
   console.log("[local-host] packing host assets (server + web + seed)…");
   await mkdir(hostAssets, { recursive: true });
+  // Build/copy web while the workspace still has full (non-prod) deps.
+  // packServerTree's deploy --prod would otherwise poison install state first.
+  await packWebAndSeed(hostAssets);
   await rm(join(hostAssets, "server"), { recursive: true, force: true });
   await packServerTree(join(hostAssets, "server"));
-  await packWebAndSeed(hostAssets);
 
   await writeFile(
     join(hostAssets, "READY"),
