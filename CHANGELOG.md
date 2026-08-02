@@ -5,7 +5,7 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.4.0](https://github.com/Negatywistczny/stagesync/compare/v5.3.8...v5.4.0) - 2026-08-02 — Syllables
 
 ### Dodano
 
@@ -13,7 +13,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Import UltraStar:** wklejenie lub plik `.txt` (USDX) buduje timed sylaby i ścieżkę melodii; w Karaoke podświetlenie idzie po blokach w sync z transportem.
 
 #### ⚙️ Serwer & API
-- **Projekt:** fundament timed lyrics pod linię Syllables — bloki tekstu na liniach (pozycje w tickach), opcjonalne role wokalu i ścieżka melodii; starsze projekty przechodzą automatycznie przy odczycie i zapisie — treść, akordy i audio zostają.
+- **Projekt:** fundament timed lyrics — bloki tekstu na liniach (pozycje w tickach), opcjonalne role wokalu i ścieżka melodii; starsze projekty przechodzą automatycznie przy odczycie i zapisie — treść, akordy i audio zostają.
 
 #### 🖥️ App Shell & UI
 - **Klient (Karaoke):** gdy linia ma kilka bloków czasowych, podświetlenie podąża za aktywnym fragmentem w sync z transportem; jedna cała linia jako jeden blok wygląda jak dotychczas.

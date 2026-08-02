@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** ostatni cut `5.3.8` (`v5.3.8`) — SemVer produktu **zostaje 5.3.8** do cutu release. Następny hero = **5.4 Syllables** (schema V6 + migrator **na `main`**; cut gdy widoczny UltraStar → Karaoke). Potem **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** (linia **7.0 nie istnieje**).
+**Stan:** wydane **`5.4.0`** (**Syllables**) — UltraStar → timed lyrics + Karaoke highlight; format V6. Następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -26,8 +26,8 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ### 5.4 Syllables / 5.5 Pitch & FX / 6.0 Live Suite
 
-- [ ] **5.4 — Syllables (do cutu):** UltraStar → ticks → `tekst` (+ melody); Text-Anchor Bridging dopiero z golden fixtures; UG/ChordPro zostaje; bez cloud AI — fundament schemy V6 już na `main` ([report-scope-5.4](./analysis/reports/report-scope-5.4.md); [triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md))
 - [ ] **5.5 — Pitch & FX:** Track Pitch Shift + expanded busses / send-return FX (WebAudio; bez VST in-process) — [ADR 0018](./adr/0018-future-audio-architecture.md)
+- [ ] **5.4.x Should — Text-Anchor Bridging (US+UG):** dopiero ze golden fixtures — [triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)
 - [ ] **6.0 Live Suite (po major + scope report):** Input & Live Processing (+ recording + proste edit); Audio Suite (Worklet/WASM) + **STEM / mute lead**; Automation lanes (host Tick Engine SSOT); MIDI Patch Matrix + Standalone VSTi Controller (PC/CC) — wbudowane synthy WebAudio = Later 6.x+; szczegóły / OUT w [ADR 0018](./adr/0018-future-audio-architecture.md)
 
 ### Residual ops / mobile

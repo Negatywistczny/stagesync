@@ -3,7 +3,7 @@
 **Wersja:** `5.4.x` — **Syllables**  
 **Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [ADR 0011](../../adr/0011-ui-parity-behavior.md) · [ADR 0018](../../adr/0018-future-audio-architecture.md) §4 · triage [Architektura ingestii](../inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)  
 **Bramka wejścia:** linia **5.3** Colors & Channels wydana (`v5.3.0`+); residual ops / G1–G10 nie blokują startu schemy  
-**Status (2026-08-02):** **fundament na `main`** — schema V6 + migrator + Karaoke block highlight w kodzie; produkt SemVer nadal `5.3.8`. **Cut `5.4.0` gdy Ingest UltraStar → Karaoke jest widoczny** w produkcie. Schema V6 **nie** jest osobnym hero cutem; dawne „Content Model” / „Ingest” = jeden hero **Syllables** (PO 2026-08-02).
+**Status (2026-08-02):** **wydane `v5.4.0`** — schema V6 + migrator + Karaoke block highlight + import UltraStar. Text-Anchor US+UG = Should / 5.4.x ze golden fixtures.
 
 ## Cel
 
