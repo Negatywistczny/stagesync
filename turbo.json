@@ -44,7 +44,10 @@
     "DEV",
     "NODE_ENV",
     "SS_TEST_A",
-    "SS_TEST_B"
+    "SS_TEST_B",
+    "STAGESYNC_VAPID_PUBLIC_KEY",
+    "STAGESYNC_FCM_AVAILABLE",
+    "STAGESYNC_FCM_PROJECT_ID"
   ],
   "tasks": {
     "build": {

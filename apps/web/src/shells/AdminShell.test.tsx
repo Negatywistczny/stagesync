@@ -16,6 +16,7 @@ vi.mock("../lib/useMqTablet.js", () => ({
 vi.mock("../lib/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
   shouldShowFullscreenControl: vi.fn(() => false),
+  isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
 vi.mock("../lib/useAnnounceDevicePresence.js", () => ({

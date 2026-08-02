@@ -270,7 +270,6 @@ import {
 } from "../lib/audioHwCapability.js";
 import {
   ChannelStripControls,
-  MixerSurface,
 } from "./timeline/channelStrip/index.js";
 import type {
   ChannelStripCallbacks,
@@ -418,32 +417,20 @@ import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
-  IconAutoAdvance,
   IconChecked,
-  IconChevronLeft,
-  IconChevronRight,
   IconClose,
   IconEraser,
   IconEye,
   IconFade,
-  IconFollow,
   IconFullscreen,
   IconGain,
-  IconInfo,
   IconJoin,
-  IconLoop,
   IconMarquee,
-  IconMetronome,
-  IconMixer,
   IconMute,
-  IconPause,
   IconPencil,
-  IconPlay,
   IconPointer,
   IconScissors,
-  IconSettings,
   IconSolo,
-  IconStop,
   IconTap,
   IconUnchecked,
   IconWand,
@@ -455,6 +442,8 @@ import { ShellIconButton } from "./ShellIconButton.js";
 import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
+import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
+import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
 
 type ToolId = FormaToolId;
@@ -2763,7 +2752,7 @@ export function TimelineShell() {
       window.removeEventListener("pointercancel", onUp);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- session id gates; handlers use refs
-  }, [gestureSession?.pointerId, gestureSession?.kind, gestureSession?.clipId]);
+  }, [gestureSession?.pointerId, gestureSession?.kind, gestureSession?.clipId, gesturePreview]);
 
   function beginContentPencilDraw(
     e: React.PointerEvent<HTMLElement>,
@@ -6118,253 +6107,55 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </p>
       ) : null}
 
-      <div className={styles.toolbar} data-ss-level="2">
-        {operatorNavCompact ? (
-          <div className={styles.toolbarHeaderActions}>{timelineHeaderActions}</div>
-        ) : null}
-        {!isMobilePreview ? (
-          <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
-            {TOOLS.filter(({ id }) => toolbarVisibleSet.has(id)).map(
-              ({ id, title, Icon }) => (
-                <ShellIconButton
-                  key={id}
-                  label={title}
-                  pressed={tool === id}
-                  onClick={() => onTool(id)}
-                >
-                  <Icon />
-                </ShellIconButton>
-              ),
-            )}
-            <ShellIconButton
-              ref={toolsVisBtnRef}
-              label="Widoczne narzędzia na pasku"
-              pressed={toolsVisOpen}
-              aria-expanded={toolsVisOpen}
-              aria-haspopup="menu"
-              aria-controls={toolsVisOpen ? toolsVisMenuId : undefined}
-              onClick={() => setToolsVisOpen((v) => !v)}
-            >
-              <IconSettings />
-            </ShellIconButton>
-          </div>
-        ) : null}
-
-        <div className={styles.toolbarCenter}>
-          <div className={styles.transport} role="group" aria-label="Odtwarzanie">
-            <ShellIconButton
-              label="Zatrzymaj"
-              disabled={commandPending}
-              onClick={() => void onStopClick()}
-            >
-              <IconStop />
-            </ShellIconButton>
-            <Button
-              variant="ghost"
-              iconOnly
-              className={styles.playAccent}
-              selected={state.playing && !audioBuffering}
-              loading={audioBuffering}
-              aria-label={
-                audioBuffering
-                  ? "Buforowanie audio"
-                  : state.playing
-                    ? "Pauza"
-                    : "Odtwarzaj"
-              }
-              disabled={commandPending || audioBuffering}
-              onClick={() =>
-                void (state.playing ? onPauseClick() : onPlayClick())
-              }
-            >
-              {audioBuffering ? null : state.playing ? (
-                <IconPause />
-              ) : (
-                <IconPlay />
-              )}
-            </Button>
-            <span className={styles.bbt} aria-live="polite">
-              {clockLabel}
-            </span>
-            {isMobilePreview ? (
-              <span className={styles.metaChip} aria-label={`Tempo ${tempoAtPlayhead} BPM`}>
-                {tempoAtPlayhead} BPM
-              </span>
-            ) : (
-              <Button
-                variant="ghost"
-                className={styles.metaChip}
-                title="Tempo — kliknij, aby edytować przy playheadzie"
-                aria-label="Tempo — kliknij, aby edytować przy playheadzie"
-                onClick={() => {
-                  openMapEdit("tempo", displayTicks);
-                }}
-              >
-                {tempoAtPlayhead} BPM
-              </Button>
-            )}
-            <ShellIconButton
-              label={
-                timelineSurface === "mixer"
-                  ? "Wróć do Timeline"
-                  : "Mikser"
-              }
-              aria-keyshortcuts="x"
-              pressed={timelineSurface === "mixer"}
-              onClick={() =>
-                setTimelineSurface((s) =>
-                  s === "mixer" ? "timeline" : "mixer",
-                )
-              }
-            >
-              <IconMixer />
-            </ShellIconButton>
-            <div className={styles.transportExtras}>
-              <ShellIconButton
-                label="Pętla — przeciągnij zakres na linijce, potem włącz"
-                aria-keyshortcuts="c"
-                pressed={loopOn}
-                onClick={onLoopToggle}
-              >
-                <IconLoop />
-              </ShellIconButton>
-              <Button
-                variant="ghost"
-                className={styles.metaChip}
-                title="Metrum — kliknij, aby edytować przy playheadzie"
-                aria-label="Metrum — kliknij, aby edytować przy playheadzie"
-                onClick={() => {
-                  openMapEdit("metrum", displayTicks);
-                }}
-              >
-                {meterAtPlayhead.numerator}/{meterAtPlayhead.denominator}
-              </Button>
-              <Button
-                variant="ghost"
-                className={styles.metaChip}
-                title="Tonacja — kliknij, aby edytować"
-                aria-label="Tonacja — kliknij, aby edytować"
-                onClick={() => openMapEdit("tonacja", displayTicks)}
-              >
-                {draftProject
-                  ? formatKeySignature(resolveKeyAt(draftProject, displayTicks))
-                  : "—"}
-              </Button>
-              <ShellIconButton
-                label="Metronom"
-                aria-keyshortcuts="k"
-                pressed={metronomeOn}
-                onClick={() => void onMetronomeToggle()}
-              >
-                <IconMetronome />
-              </ShellIconButton>
-              <ShellIconButton
-                label="Podążaj za wskaźnikiem"
-                pressed={followPlayhead}
-                onClick={() => {
-                  setFollowPlayhead((v) => {
-                    const next = !v;
-                    try {
-                      localStorage.setItem(
-                        "stagesync-timeline-follow-playhead",
-                        next ? "1" : "0",
-                      );
-                    } catch {
-                      /* ignore */
-                    }
-                    return next;
-                  });
-                }}
-              >
-                <IconFollow />
-              </ShellIconButton>
-              <ShellIconButton
-                label="Wskaźnik MIDI (playhead)"
-                pressed={showMidiPlayhead}
-                onClick={() => {
-                  setShowMidiPlayhead((v) => {
-                    const next = !v;
-                    try {
-                      localStorage.setItem(
-                        "stagesync-timeline-midi-playhead",
-                        next ? "1" : "0",
-                      );
-                    } catch {
-                      /* ignore */
-                    }
-                    return next;
-                  });
-                }}
-              >
-                <IconEye />
-              </ShellIconButton>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.songCluster} role="group" aria-label="Setlista">
-          {!isMobilePreview ? (
-          <ShellIconButton
-            label="Metadane utworu"
-            disabled={!draftProject}
-            pressed={songMetaOpen}
-            onClick={() => {
-              if (!draftProject) return;
-              clearClipSelection();
-              clearMapSelection();
-              setInspectorVisible(true);
-              setSongMetaOpen(true);
-            }}
-          >
-            <IconInfo />
-          </ShellIconButton>
-          ) : null}
-          <ShellIconButton
-            label="Poprzedni utwór setlisty"
-            disabled={!prevSetlistId}
-            onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
-          >
-            <IconChevronLeft />
-          </ShellIconButton>
-          <button
-            type="button"
-            className={styles.songPicker}
-            onClick={() => setSongScreenOpen(true)}
-            aria-haspopup="dialog"
-            aria-expanded={songScreenOpen}
-            aria-controls={songScreenOpen ? songScreenId : undefined}
-          >
-            {draftProject?.name ?? "Wybierz utwór"}
-          </button>
-          <ShellIconButton
-            label="Następny utwór setlisty"
-            disabled={!nextSetlistId}
-            onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
-          >
-            <IconChevronRight />
-          </ShellIconButton>
-          <span className={styles.songClusterExtra}>
-            <ShellIconButton
-              label="Auto-setlista"
-              disabled={!setlistEnabled || commandPending}
-              pressed={autoAdvance}
-              onClick={() => {
-                void (async () => {
-                  try {
-                    const v = await patchSetlistAutoAdvance(!autoAdvance);
-                    setAutoAdvance(v.autoAdvance.enabled);
-                  } catch {
-                    /* ignore */
-                  }
-                })();
-              }}
-            >
-              <IconAutoAdvance />
-            </ShellIconButton>
-          </span>
-        </div>
-
-      </div>
+      <TimelineToolbar
+        operatorNavCompact={operatorNavCompact}
+        timelineHeaderActions={timelineHeaderActions}
+        isMobilePreview={isMobilePreview}
+        tools={TOOLS}
+        toolbarVisibleSet={toolbarVisibleSet}
+        tool={tool}
+        onTool={onTool}
+        toolsVisBtnRef={toolsVisBtnRef}
+        toolsVisOpen={toolsVisOpen}
+        toolsVisMenuId={toolsVisMenuId}
+        setToolsVisOpen={setToolsVisOpen}
+        commandPending={commandPending}
+        onStopClick={onStopClick}
+        state={state}
+        audioBuffering={audioBuffering}
+        onPauseClick={onPauseClick}
+        onPlayClick={onPlayClick}
+        clockLabel={clockLabel}
+        tempoAtPlayhead={tempoAtPlayhead}
+        displayTicks={displayTicks}
+        openMapEdit={openMapEdit}
+        timelineSurface={timelineSurface}
+        setTimelineSurface={setTimelineSurface}
+        loopOn={loopOn}
+        onLoopToggle={onLoopToggle}
+        meterAtPlayhead={meterAtPlayhead}
+        draftProject={draftProject}
+        metronomeOn={metronomeOn}
+        onMetronomeToggle={onMetronomeToggle}
+        followPlayhead={followPlayhead}
+        setFollowPlayhead={setFollowPlayhead}
+        showMidiPlayhead={showMidiPlayhead}
+        setShowMidiPlayhead={setShowMidiPlayhead}
+        songMetaOpen={songMetaOpen}
+        clearClipSelection={clearClipSelection}
+        clearMapSelection={clearMapSelection}
+        setInspectorVisible={setInspectorVisible}
+        setSongMetaOpen={setSongMetaOpen}
+        prevSetlistId={prevSetlistId}
+        nextSetlistId={nextSetlistId}
+        songScreenOpen={songScreenOpen}
+        setSongScreenOpen={setSongScreenOpen}
+        songScreenId={songScreenId}
+        setlistEnabled={setlistEnabled}
+        autoAdvance={autoAdvance}
+        patchSetlistAutoAdvance={patchSetlistAutoAdvance}
+        setAutoAdvance={setAutoAdvance}
+      />
 
       <div
         className={[
@@ -6381,22 +6172,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       >
         <div className={styles.timelinePane}>
           {timelineSurface === "mixer" && draftProject ? (
-            <MixerSurface
-              project={draftProject}
+            <MixerDock
+              draftProject={draftProject}
               trackSelection={trackSelection}
               soloAudioTrackIds={soloAudioTrackIds}
               soloBusIds={soloBusIds}
               selectedBusId={selectedBusId}
               selectedHwOutputId={selectedHwOutputId}
-              renamingTrackId={trackRename?.trackId ?? null}
-              renameValue={trackRename?.name ?? ""}
-              renamingBusId={busRename?.busId ?? null}
-              busRenameValue={busRename?.name ?? ""}
-              buildCallbacks={buildChannelStripCallbacks}
+              trackRename={trackRename}
+              busRename={busRename}
+              buildChannelStripCallbacks={buildChannelStripCallbacks}
               buildBusCallbacks={buildBusCallbacks}
-              masterCallbacks={buildMasterStripCallbacks()}
-              clickCallbacks={{ onMuteClick: () => void onMetronomeToggle() }}
-              clickMuted={!metronomeOn}
+              buildMasterStripCallbacks={buildMasterStripCallbacks()}
+              onMetronomeToggle={onMetronomeToggle}
+              metronomeOn={metronomeOn}
               playing={state.playing}
               onAddAudioTrack={onAddAudioTrack}
               onAddBus={onAddBus}
@@ -6406,11 +6195,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               onHwGainChange={onHwGainChange}
               onHwMuteToggle={onHwMuteToggle}
               onHwChannelModeChange={onHwChannelModeChange}
-              onEmptyDoubleClick={(e) => {
-                if ((e.target as HTMLElement).closest("button, input, select"))
-                  return;
-                onAddAudioTrack();
-              }}
             />
           ) : (
           <div
@@ -8295,7 +8079,6 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         <TouchNudgeBar
           clipId={primaryId}
           lane={selectionLane}
-          gesturePreview={gesturePreview}
           showLeftEdge={nudgeShowsLeftEdge(
             draftProject,
             selectionLane,
@@ -8990,13 +8773,11 @@ function TouchNudgeBar({
   clipId,
   lane,
   showLeftEdge,
-  gesturePreview,
   onAction,
 }: {
   clipId: string;
   lane: string;
   showLeftEdge: boolean;
-  gesturePreview: FormaGesturePreview | null;
   onAction: (action: NudgeAction) => void;
 }) {
   const leftRef = useRef<HTMLDivElement | null>(null);
@@ -9065,7 +8846,7 @@ function TouchNudgeBar({
       rightEdge.style.left = `${rightX}px`;
       rightEdge.style.transform = rightTx;
     }
-  }, [clipId, lane, showLeftEdge, gesturePreview]);
+  }, [clipId, lane, showLeftEdge]);
 
   useLayoutEffect(() => {
     reposition();

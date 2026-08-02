@@ -1,5 +1,5 @@
 import { useId, useEffect, useRef, useState, type ReactNode } from "react";
-import { Button, Input, Select, Slider } from "@stagesync/ui";
+import { Button } from "@stagesync/ui";
 import {
   applyAppearance,
   readAppearance,
@@ -14,8 +14,6 @@ import {
 } from "../lib/audioOutputPrefs.js";
 import { refreshAudioHwCapability } from "../lib/audioHwCapability.js";
 import {
-  AUDIO_LATENCY_MAX_MS,
-  AUDIO_LATENCY_MIN_MS,
   clampLatencyCompensationMs,
   getStoredLatencyCompensationMs,
   setStoredLatencyCompensationMs,
@@ -27,13 +25,9 @@ import {
 } from "../lib/clockDisplayPrefs.js";
 import { getMetronomeAudioContext, previewMetronomeClick } from "../lib/metronome.js";
 import {
-  clampMetronomeVolume,
   getMetronomePrefs,
-  METRONOME_VOLUME_MAX,
-  METRONOME_VOLUME_MIN,
   setMetronomePrefs,
   type MetronomePrefs,
-  type MetronomeTimbre,
 } from "../lib/metronomePrefs.js";
 import {
   getStoredDeviceDisplayName,
@@ -54,12 +48,13 @@ import {
   type ServerSettingsValues,
 } from "../lib/setlistApi.js";
 import { useTransport } from "../transport/useTransport.js";
-import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
-import { ShellNotificationFields } from "./ShellNotificationFields.js";
-import { ChangeServerControl } from "./ChangeServerControl.js";
-import { DeviceNameFields } from "./DeviceNameFields.js";
 import { ShellConfirmDialog } from "./ShellBlockingDialog.js";
 import { ShellIconButton } from "./ShellIconButton.js";
+import { GeneralSettingsTab } from "./settings/tabs/GeneralSettingsTab.js";
+import { AudioSettingsTab } from "./settings/tabs/AudioSettingsTab.js";
+import { MidiSettingsTab } from "./settings/tabs/MidiSettingsTab.js";
+import { MetronomeSettingsTab } from "./settings/tabs/MetronomeSettingsTab.js";
+import { ServerSettingsTab } from "./settings/tabs/ServerSettingsTab.js";
 import styles from "./ServerSettingsModal.module.css";
 
 export type { PreferencesTab };
@@ -98,13 +93,14 @@ const TABS: { id: SettingsTab; label: string }[] = [
 ];
 
 function readLocalSnapshot(): PrefsSnapshot {
+  const metro = getMetronomePrefs();
   return {
     appearance: readAppearance(),
     clockFormat: getStoredClockDisplayFormat(),
     deviceName: getStoredDeviceDisplayName() ?? "",
     sinkId: getStoredAudioOutputDeviceId() ?? "",
     latencyCompMs: getStoredLatencyCompensationMs(),
-    metro: getMetronomePrefs(),
+    metro,
     midi: null,
   };
 }
@@ -179,6 +175,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const [tab, setTab] = useState<SettingsTab>(initialTab);
 
   const snapshotRef = useRef<PrefsSnapshot>(readLocalSnapshot());
+
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const [draft, setDraft] = useState<PrefsSnapshot>(() => snapshotRef.current);
@@ -224,6 +221,11 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   function isBakName(name: string): boolean {
     return name.toLowerCase().endsWith(".bak");
   }
+
+  useEffect(() => {
+    snapshotRef.current = readLocalSnapshot();
+    setDraft(snapshotRef.current);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -339,8 +341,6 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         return;
       }
 
-      // Persist local prefs first, then advance snapshot so Discard/Escape
-      // cannot wipe a theme already written to localStorage.
       setAppearance(draft.appearance);
       setStoredClockDisplayFormat(draft.clockFormat);
       setStoredLatencyCompensationMs(draft.latencyCompMs);
@@ -423,7 +423,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
     try {
       await previewMetronomeClick(draft.metro, true);
     } catch {
-      /* autoplay / audio failure — no fake success */
+      /* ignore preview error */
     } finally {
       setPreviewBusy(false);
     }
@@ -532,789 +532,219 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         </div>
 
         <div className={styles.main}>
-      {tab === "general" ? (
-        <div className={styles.body} role="tabpanel">
-          <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Wygląd</legend>
-            <div className={styles.controlStack}>
-              <ShellAppearanceFields
-                value={draft.appearance}
-                onChange={(appearance) =>
-                  setDraft((d) => ({ ...d, appearance }))
-                }
-              />
-              <ShellNotificationFields />
-            </div>
-          </fieldset>
-
-          <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Format zegara</legend>
-            <div className={styles.controlStack}>
-              <label className={styles.radioRow}>
-                <input
-                  type="radio"
-                  name="clock-format"
-                  checked={draft.clockFormat === "bbt"}
-                  aria-label="Format zegara BBT (Takt.Beat)"
-                  onChange={() =>
-                    setDraft((d) => ({ ...d, clockFormat: "bbt" }))
-                  }
-                />
-                <span>BBT (Takt.Beat)</span>
-              </label>
-              <label className={styles.radioRow}>
-                <input
-                  type="radio"
-                  name="clock-format"
-                  checked={draft.clockFormat === "time"}
-                  aria-label="Format zegara MM:SS.ms"
-                  onChange={() =>
-                    setDraft((d) => ({ ...d, clockFormat: "time" }))
-                  }
-                />
-                <span>MM:SS.ms</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <DeviceNameFields
-            value={draft.deviceName}
-            onChange={(deviceName) => {
-              setDeviceNameError(null);
-              setDraft((d) => ({ ...d, deviceName }));
-            }}
-            error={deviceNameError}
-          />
-          <ChangeServerControl entryPath="/admin" />
-        </div>
-      ) : null}
-
-      {tab === "audio" ? (
-        <div className={styles.body} role="tabpanel">
-          {audioError ? (
-            <p className={styles.error} role="alert">
-              {audioError}
-            </p>
-          ) : null}
-
-          <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Urządzenia Wyjściowe</legend>
-            <label className={styles.field}>
-              <span className={styles.label}>Wyjście audio</span>
-              <Select
-                disabled={saveBusy}
-                value={draft.sinkId}
-                aria-label="Wyjście audio"
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, sinkId: e.target.value }))
-                }
-              >
-                <option value="">Domyślne systemu</option>
-                {outputs.map((d) => (
-                  <option key={d.deviceId} value={d.deviceId}>
-                    {d.label || d.deviceId}
-                  </option>
-                ))}
-              </Select>
-            </label>
-          </fieldset>
-
-          <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Parametry Silnika</legend>
-            <dl className={styles.infoList}>
-              <div className={styles.infoRow}>
-                <dt>Sample Rate</dt>
-                <dd>
-                  {sampleRate != null
-                    ? `${Math.round(sampleRate)} Hz`
-                    : "—"}
-                </dd>
-              </div>
-              <div className={styles.infoRow}>
-                <dt>Kanały wyjścia</dt>
-                <dd>
-                  {maxChannelCount != null ? `${maxChannelCount}` : "—"}
-                </dd>
-              </div>
-              <div className={styles.infoRow}>
-                <dt>Latencja sieci</dt>
-                <dd>{networkLatencyLabel}</dd>
-              </div>
-            </dl>
-
-            <label className={styles.field}>
-              <span className={styles.label}>
-                Kompensacja latencji ({draft.latencyCompMs > 0 ? "+" : ""}
-                {draft.latencyCompMs} ms)
-              </span>
-              <div className={styles.latencyRow}>
-                <Slider
-                  className={styles.latencySlider}
-                  min={AUDIO_LATENCY_MIN_MS}
-                  max={AUDIO_LATENCY_MAX_MS}
-                  step={1}
-                  value={draft.latencyCompMs}
-                  aria-label="Kompensacja latencji wyjścia"
-                  onValueChange={(v) =>
-                    setDraft((d) => ({
-                      ...d,
-                      latencyCompMs: clampLatencyCompensationMs(v),
-                    }))
-                  }
-                />
-                <input
-                  className={styles.number}
-                  type="number"
-                  min={AUDIO_LATENCY_MIN_MS}
-                  max={AUDIO_LATENCY_MAX_MS}
-                  step={1}
-                  value={draft.latencyCompMs}
-                  aria-label="Kompensacja latencji (ms)"
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      latencyCompMs: clampLatencyCompensationMs(
-                        Number(e.target.value),
-                      ),
-                    }))
-                  }
-                />
-              </div>
-            </label>
-          </fieldset>
-        </div>
-      ) : null}
-
-      {tab === "midi" ? (
-        <div className={styles.body} role="tabpanel">
-          {midiError ? (
-            <p className={styles.error} role="alert">
-              {midiError}
-            </p>
-          ) : null}
-          {midiReady && midiStatus && midiDraft ? (
-            <>
-              {!midiStatus.available ? (
-                <p className={styles.muted}>
-                  MIDI niedostępne w tym środowisku.
-                </p>
-              ) : null}
-              <div className={styles.panicBlock}>
-                <Button
-                  variant="secondary"
-                  className={styles.panicBtn}
-                  disabled={
-                    panicBusy ||
-                    saveBusy ||
-                    !midiStatus.available ||
-                    !midiStatus.config.outputId
-                  }
-                  loading={panicBusy}
-                  onPointerDown={(e) => {
-                    if (e.button !== 0) return;
-                    e.preventDefault();
-                    startPanicHold();
-                  }}
-                  onPointerUp={() => clearPanicHold()}
-                  onPointerLeave={() => clearPanicHold()}
-                  onPointerCancel={() => clearPanicHold()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                  }}
-                >
-                  {panicHoldMs > 0
-                    ? `Przytrzymaj… ${Math.min(100, Math.round((panicHoldMs / 1000) * 100))}%`
-                    : "MIDI Panic / Reset Controllers"}
-                </Button>
-                {panicConfirm ? (
-                  <p className={styles.confirm} role="status">
-                    Wysłano sygnał Reset
-                  </p>
-                ) : (
-                  <p className={styles.muted}>
-                    Przytrzymaj ~1 s — awaryjne wyciszenie nut i Reset Controllers
-                    na wszystkich kanałach wyjścia MIDI (bez PIN-u).
-                  </p>
-                )}
-              </div>
-              <fieldset className={styles.fieldset}>
-                <legend className={styles.legend}>Porty MIDI</legend>
-                <label className={styles.field}>
-                  <span className={styles.label}>Wejście MIDI</span>
-                  <Select
-                    disabled={saveBusy || !midiStatus.available}
-                    value={midiDraft.inputId ?? ""}
-                    aria-label="Wejście MIDI"
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setDraft((d) =>
-                        d.midi
-                          ? {
-                              ...d,
-                              midi: {
-                                ...d.midi,
-                                inputId: v === "" ? null : v,
-                              },
-                            }
-                          : d,
-                      );
-                    }}
-                  >
-                    <option value="">—</option>
-                    {midiStatus.inputs.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.label}>Wyjście MIDI</span>
-                  <Select
-                    disabled={saveBusy || !midiStatus.available}
-                    value={midiDraft.outputId ?? ""}
-                    aria-label="Wyjście MIDI"
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setDraft((d) =>
-                        d.midi
-                          ? {
-                              ...d,
-                              midi: {
-                                ...d.midi,
-                                outputId: v === "" ? null : v,
-                              },
-                            }
-                          : d,
-                      );
-                    }}
-                  >
-                    <option value="">—</option>
-                    {midiStatus.outputs.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.label}>
-                    Kanał wejściowy Program Change
-                  </span>
-                  <Select
-                    disabled={saveBusy || !midiStatus.available}
-                    value={
-                      midiDraft.inputChannel == null
-                        ? ""
-                        : String(midiDraft.inputChannel)
-                    }
-                    aria-label="Kanał wejściowy Program Change"
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setDraft((d) =>
-                        d.midi
-                          ? {
-                              ...d,
-                              midi: {
-                                ...d.midi,
-                                inputChannel: v === "" ? null : Number(v),
-                              },
-                            }
-                          : d,
-                      );
-                    }}
-                  >
-                    <option value="">Omni (wszystkie kanały)</option>
-                    {Array.from({ length: 16 }, (_, i) => (
-                      <option key={i} value={String(i)}>
-                        Kanał {i + 1}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.label}>
-                    Kanał wyjściowy Program Change
-                  </span>
-                  <Select
-                    disabled={saveBusy || !midiStatus.available}
-                    value={String(midiDraft.outputChannel)}
-                    aria-label="Kanał wyjściowy Program Change"
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setDraft((d) =>
-                        d.midi
-                          ? {
-                              ...d,
-                              midi: {
-                                ...d.midi,
-                                outputChannel: v,
-                              },
-                            }
-                          : d,
-                      );
-                    }}
-                  >
-                    {Array.from({ length: 16 }, (_, i) => (
-                      <option key={i} value={String(i)}>
-                        Kanał {i + 1}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label className={styles.checkRow}>
-                  <input
-                    type="checkbox"
-                    checked={midiDraft.clockOutEnabled}
-                    disabled={saveBusy || !midiStatus.available}
-                    aria-label="MIDI Clock OUT"
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setDraft((d) =>
-                        d.midi
-                          ? {
-                              ...d,
-                              midi: {
-                                ...d.midi,
-                                clockOutEnabled: checked,
-                              },
-                            }
-                          : d,
-                      );
-                    }}
-                  />
-                  <span>Clock OUT</span>
-                </label>
-              </fieldset>
-            </>
-          ) : midiError ? null : (
-            <p className={styles.muted}>Wczytywanie…</p>
+          {tab === "general" && (
+            <GeneralSettingsTab
+              appearance={draft.appearance}
+              onAppearanceChange={(appearance) => setDraft((d) => ({ ...d, appearance }))}
+              clockFormat={draft.clockFormat}
+              onClockFormatChange={(clockFormat) => setDraft((d) => ({ ...d, clockFormat }))}
+              deviceName={draft.deviceName}
+              onDeviceNameChange={(deviceName) => {
+                setDeviceNameError(null);
+                setDraft((d) => ({ ...d, deviceName }));
+              }}
+              deviceNameError={deviceNameError}
+            />
           )}
-        </div>
-      ) : null}
 
-      {tab === "metronome" ? (
-        <div className={styles.body} role="tabpanel">
-          <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Głośność</legend>
-            <label className={styles.field}>
-              <span className={styles.label}>
-                Akcent (beat 1) — {draft.metro.accentVolume}%
-              </span>
-              <div className={styles.latencyRow}>
-                <Slider
-                  className={styles.latencySlider}
-                  min={METRONOME_VOLUME_MIN}
-                  max={METRONOME_VOLUME_MAX}
-                  step={1}
-                  value={draft.metro.accentVolume}
-                  aria-label="Głośność akcentu metronomu"
-                  onValueChange={(v) =>
-                    setDraft((d) => ({
-                      ...d,
-                      metro: {
-                        ...d.metro,
-                        accentVolume: clampMetronomeVolume(v),
-                      },
-                    }))
-                  }
-                />
-                <input
-                  className={styles.number}
-                  type="number"
-                  min={METRONOME_VOLUME_MIN}
-                  max={METRONOME_VOLUME_MAX}
-                  step={1}
-                  value={draft.metro.accentVolume}
-                  aria-label="Głośność akcentu (%)"
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      metro: {
-                        ...d.metro,
-                        accentVolume: clampMetronomeVolume(
-                          Number(e.target.value),
-                        ),
-                      },
-                    }))
-                  }
-                />
-              </div>
-            </label>
-            <label className={styles.field}>
-              <span className={styles.label}>
-                Pozostałe beaty — {draft.metro.beatVolume}%
-              </span>
-              <div className={styles.latencyRow}>
-                <Slider
-                  className={styles.latencySlider}
-                  min={METRONOME_VOLUME_MIN}
-                  max={METRONOME_VOLUME_MAX}
-                  step={1}
-                  value={draft.metro.beatVolume}
-                  aria-label="Głośność pozostałych beatów metronomu"
-                  onValueChange={(v) =>
-                    setDraft((d) => ({
-                      ...d,
-                      metro: {
-                        ...d.metro,
-                        beatVolume: clampMetronomeVolume(v),
-                      },
-                    }))
-                  }
-                />
-                <input
-                  className={styles.number}
-                  type="number"
-                  min={METRONOME_VOLUME_MIN}
-                  max={METRONOME_VOLUME_MAX}
-                  step={1}
-                  value={draft.metro.beatVolume}
-                  aria-label="Głośność beatów (%)"
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      metro: {
-                        ...d.metro,
-                        beatVolume: clampMetronomeVolume(
-                          Number(e.target.value),
-                        ),
-                      },
-                    }))
-                  }
-                />
-              </div>
-            </label>
-          </fieldset>
+          {tab === "audio" && (
+            <AudioSettingsTab
+              audioError={audioError}
+              saveBusy={saveBusy}
+              sinkId={draft.sinkId}
+              onSinkIdChange={(sinkId) => setDraft((d) => ({ ...d, sinkId }))}
+              outputs={outputs}
+              sampleRate={sampleRate}
+              maxChannelCount={maxChannelCount}
+              networkLatencyLabel={networkLatencyLabel}
+              latencyCompMs={draft.latencyCompMs}
+              onLatencyCompMsChange={(ms) =>
+                setDraft((d) => ({
+                  ...d,
+                  latencyCompMs: clampLatencyCompensationMs(ms),
+                }))
+              }
+            />
+          )}
 
-          <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Dźwięk metronomu</legend>
-            <div className={styles.timbreRow}>
-              <Select
-                value={draft.metro.timbre}
-                aria-label="Dźwięk metronomu"
-                onChange={(e) =>
-                  setDraft((d) => ({
-                    ...d,
-                    metro: {
-                      ...d.metro,
-                      timbre: e.target.value as MetronomeTimbre,
-                    },
-                  }))
+          {tab === "midi" && (
+            <MidiSettingsTab
+              midiError={midiError}
+              midiReady={midiReady}
+              midiStatus={midiStatus}
+              midiDraft={midiDraft}
+              saveBusy={saveBusy}
+              panicBusy={panicBusy}
+              panicHoldMs={panicHoldMs}
+              panicConfirm={panicConfirm}
+              onPanicHoldStart={startPanicHold}
+              onPanicHoldEnd={clearPanicHold}
+              onMidiDraftChange={(midi) => setDraft((d) => ({ ...d, midi }))}
+            />
+          )}
+
+          {tab === "metronome" && (
+            <MetronomeSettingsTab
+              metro={draft.metro}
+              onMetroChange={(metro) => setDraft((d) => ({ ...d, metro }))}
+              previewBusy={previewBusy}
+              saveBusy={saveBusy}
+              onPreviewClick={() => {
+                void onPreviewMetronome();
+              }}
+            />
+          )}
+
+          {tab === "server" && (
+            <ServerSettingsTab
+              restartNote={restartNote}
+              server={server}
+              onServerChange={setServer}
+              serverMeta={serverMeta}
+              browseField={browseField}
+              onBrowseFieldChange={setBrowseField}
+              browseData={browseData}
+              onBrowseDataChange={setBrowseData}
+              restoreMsg={restoreMsg}
+              onRestoreMsgChange={setRestoreMsg}
+              restoreBusy={restoreBusy}
+              onRestoreClick={() => {
+                setBrowseField("__restore__");
+                setRestoreMsg(null);
+                setRestoreSelected([]);
+                const start =
+                  serverMeta?.resolved?.backupsDir ||
+                  serverMeta?.resolved?.dataDir ||
+                  String(server?.STAGESYNC_BACKUPS_DIR || server?.STAGESYNC_DATA_DIR || "");
+                void browseServerPath({
+                  path: start,
+                  mode: "file",
+                  ext: restoreBrowseExt,
+                })
+                  .then(setBrowseData)
+                  .catch((err) => {
+                    setBrowseData(null);
+                    setRestoreMsg(
+                      err instanceof Error
+                        ? err.message
+                        : "Nie udało się otworzyć przeglądarki plików",
+                    );
+                  });
+              }}
+              onBrowseUp={() => {
+                if (browseData?.parent) {
+                  void browseServerPath({
+                    path: browseData.parent,
+                    mode: browseMode,
+                    ext: isRestoreBrowse ? restoreBrowseExt : undefined,
+                  }).then((next) => {
+                    setBrowseData(next);
+                    if (isRestoreBrowse) setRestoreSelected([]);
+                  });
                 }
-              >
-                <option value="default">Domyślny</option>
-                <option value="woodblock">Woodblock</option>
-                <option value="bell">Bell</option>
-              </Select>
-              <Button
-                type="button"
-                variant="secondary"
-                loading={previewBusy}
-                disabled={previewBusy || saveBusy}
-                aria-label="Odsłuch kliknięcia metronomu"
-                onClick={() => {
-                  void onPreviewMetronome();
-                }}
-              >
-                Odsłuch
-              </Button>
-            </div>
-          </fieldset>
-        </div>
-      ) : null}
-
-
-      {tab === "server" ? (
-        <div className={styles.body} role="tabpanel">
-          {restartNote ? (
-            <p className={styles.restartNote} role="status">{restartNote}</p>
-          ) : null}
-          {server ? (
-            <>
-              <fieldset className={styles.fieldset}>
-                <legend className={styles.legend}>Sieć &amp; Klienci</legend>
-                <label className={styles.field}>
-                  <span className={styles.label}>Port HTTP</span>
-                  <input className={styles.number} type="number" min={1} max={65535} value={server.PORT || "4000"}
-                    onChange={(e) => setServer({ ...server, PORT: e.target.value })} aria-label="Port HTTP" />
-                  <span className={styles.muted}>Domyślnie 4000 · wymaga restartu</span>
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.label}>Bind host</span>
-                  <Select value={server.STAGESYNC_BIND_HOST || "0.0.0.0"}
-                    onChange={(e) => setServer({ ...server, STAGESYNC_BIND_HOST: e.target.value })} aria-label="Host nasłuchu">
-                    <option value="0.0.0.0">0.0.0.0 (LAN)</option>
-                    <option value="127.0.0.1">localhost</option>
-                  </Select>
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.label}>Nazwa hosta w sieci</span>
-                  <Input
-                    maxLength={40}
-                    value={String(server.STAGESYNC_HOST_DISPLAY_NAME ?? "")}
-                    onChange={(e) =>
-                      setServer({
-                        ...server,
-                        STAGESYNC_HOST_DISPLAY_NAME: e.target.value,
-                      })
-                    }
-                    aria-label="Nazwa hosta w sieci"
-                  />
-                  <span className={styles.muted}>
-                    Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w drugiej linii. Osobno od nazwy urządzenia na Scenie.
-                  </span>
-                </label>
-                <label className={styles.checkRow}>
-                  <input type="checkbox" checked={Boolean(server.STAGESYNC_DISABLE_MDNS)}
-                    onChange={(e) => setServer({ ...server, STAGESYNC_DISABLE_MDNS: e.target.checked })} aria-label="Wyłącz mDNS" />
-                  <span>Wyłącz ogłoszenie mDNS</span>
-                </label>
-              </fieldset>
-              <fieldset className={styles.fieldset}>
-                <legend className={styles.legend}>Logi &amp; Utrzymanie</legend>
-                <label className={styles.field}>
-                  <span className={styles.label}>Poziom logów</span>
-                  <Select value={server.LOG_LEVEL || "info"}
-                    onChange={(e) => setServer({ ...server, LOG_LEVEL: e.target.value })} aria-label="Poziom logów">
-                    <option value="info">info</option>
-                    <option value="debug">debug</option>
-                    <option value="warn">warn</option>
-                    <option value="error">error</option>
-                  </Select>
-                </label>
-                <label className={styles.checkRow}>
-                  <input type="checkbox" checked={!server.STAGESYNC_DISABLE_AUTO_UPDATE}
-                    onChange={(e) => setServer({ ...server, STAGESYNC_DISABLE_AUTO_UPDATE: !e.target.checked })} aria-label="Aktualizacje automatyczne" />
-                  <span>Aktualizacje z Admina</span>
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.label}>Kanał aktualizacji</span>
-                  <Select value={server.STAGESYNC_UPDATE_CHANNEL || "stable"}
-                    onChange={(e) => setServer({ ...server, STAGESYNC_UPDATE_CHANNEL: e.target.value })} aria-label="Kanał">
-                    <option value="stable">Stable</option>
-                    <option value="beta">Beta</option>
-                    <option value="rc">RC</option>
-                  </Select>
-                </label>
-              </fieldset>
-              <details className={styles.fieldset}>
-                <summary className={styles.legend}>Zaawansowane — Ścieżki plików</summary>
-                {([
-                  ["STAGESYNC_DATA_DIR", "dataDir", serverMeta?.resolved?.dataDir],
-                  ["STAGESYNC_BACKUPS_DIR", "backupDir", serverMeta?.resolved?.backupsDir],
-                  ["STAGESYNC_ASSETS_DIR", "assetsDir", serverMeta?.resolved?.assetsHint],
-                ] as const).map(([key, label, ph]) => (
-                  <label key={key} className={styles.field}>
-                    <span className={styles.label}>{label}</span>
-                    <div className={styles.latencyRow}>
-                      <Input style={{ flex: 1 }} type="text" value={String(server[key] ?? "")}
-                        placeholder={ph ?? ""} onChange={(e) => setServer({ ...server, [key]: e.target.value })} aria-label={label} />
-                      <Button
-                        variant="secondary"
-                        aria-label={`Przeglądaj katalog — ${label}`}
-                        onClick={() => {
-                        setBrowseField(key);
-                        setRestoreMsg(null);
-                        void browseServerPath({ path: String(server[key] || ""), mode: "dir" }).then(setBrowseData).catch(() => setBrowseData(null));
-                      }}>…</Button>
-                    </div>
-                  </label>
-                ))}
-                <div className={styles.field}>
-                  <span className={styles.label}>Przywróć z kopii</span>
-                  <p className={styles.muted}>
-                    Wybierz plik <code>.bak</code> (shadow backup), kilka plików
-                    <code>.bak</code>, albo archiwum <code>.zip</code> z drzewem
-                    danych / kopiami. Host nadpisze pliki w katalogu danych
-                    (najpierw zrobi kopię <code>pre-restore</code>).
-                  </p>
-                  <div className={styles.latencyRow}>
-                    <Button
-                      variant="secondary"
-                      disabled={restoreBusy}
-                      aria-label="Przywróć z pliku .bak lub .zip"
+              }}
+              onBrowseSelect={() => {
+                if (server && browseField && browseData) {
+                  setServer({ ...server, [browseField]: browseData.envPath });
+                  setBrowseField(null);
+                  setBrowseData(null);
+                }
+              }}
+              isRestoreBrowse={isRestoreBrowse}
+              restoreSelectedCount={restoreSelected.length}
+              onRestoreSelectedClick={() => {
+                const n = restoreSelected.length;
+                setPendingRestore({
+                  paths: restoreSelected.map((s) => s.path),
+                  label:
+                    n === 1
+                      ? restoreSelected[0]!.name
+                      : `${n} plików .bak`,
+                });
+              }}
+              onRestoreDirClick={() => {
+                const baks = browseData?.entries.filter(
+                  (e) => e.type === "file" && isBakName(e.name),
+                ) ?? [];
+                if (baks.length === 0) {
+                  setRestoreMsg(
+                    "W tym katalogu nie ma plików .bak do przywrócenia",
+                  );
+                  return;
+                }
+                setPendingRestore({
+                  paths: baks.map((e) => e.path),
+                  label: `wszystkie .bak w katalogu (${baks.length})`,
+                });
+              }}
+              onBrowseCancel={() => {
+                setBrowseField(null);
+                setBrowseData(null);
+                setRestoreSelected([]);
+              }}
+              renderBrowseEntry={(e) => {
+                const selected =
+                  isRestoreBrowse &&
+                  e.type === "file" &&
+                  isBakName(e.name) &&
+                  restoreSelected.some((s) => s.path === e.path);
+                return (
+                  <li key={e.path}>
+                    <button type="button" className={styles.select} style={{
+                      width: "100%",
+                      textAlign: "left",
+                      ...(selected
+                        ? { outline: "2px solid var(--ss-color-primary)" }
+                        : {}),
+                    }}
                       onClick={() => {
-                        setBrowseField("__restore__");
-                        setRestoreMsg(null);
-                        setRestoreSelected([]);
-                        const start =
-                          serverMeta?.resolved?.backupsDir ||
-                          serverMeta?.resolved?.dataDir ||
-                          String(server.STAGESYNC_BACKUPS_DIR || server.STAGESYNC_DATA_DIR || "");
-                        void browseServerPath({
-                          path: start,
-                          mode: "file",
-                          ext: restoreBrowseExt,
-                        })
-                          .then(setBrowseData)
-                          .catch((err) => {
-                            setBrowseData(null);
-                            setRestoreMsg(
-                              err instanceof Error
-                                ? err.message
-                                : "Nie udało się otworzyć przeglądarki plików",
-                            );
-                          });
-                      }}
-                    >
-                      Przywróć…
-                    </Button>
-                  </div>
-                  {restoreMsg ? (
-                    <p className={styles.muted} role="status">
-                      {restoreMsg}
-                    </p>
-                  ) : null}
-                </div>
-                {browseField && browseData ? (
-                  <div className={styles.panicBlock}>
-                    <p className={styles.muted}>{browseData.envPath}</p>
-                    <div className={styles.latencyRow}>
-                      <Button variant="ghost" disabled={!browseData.parent} onClick={() => {
-                        if (browseData.parent) {
+                        if (e.type === "dir") {
                           void browseServerPath({
-                            path: browseData.parent,
+                            path: e.path,
                             mode: browseMode,
                             ext: isRestoreBrowse ? restoreBrowseExt : undefined,
                           }).then((next) => {
                             setBrowseData(next);
                             if (isRestoreBrowse) setRestoreSelected([]);
                           });
+                          return;
                         }
-                      }}>W górę</Button>
-                      {!isRestoreBrowse ? (
-                        <Button variant="primary" onClick={() => {
-                          setServer({ ...server, [browseField]: browseData.envPath });
+                        if (isZipName(e.name)) {
+                          setPendingRestore({
+                            paths: [e.path],
+                            label: e.name,
+                          });
                           setBrowseField(null);
                           setBrowseData(null);
-                        }}>Wybierz</Button>
-                      ) : (
-                        <>
-                          <Button
-                            variant="primary"
-                            disabled={restoreSelected.length === 0 || restoreBusy}
-                            onClick={() => {
-                              const n = restoreSelected.length;
-                              setPendingRestore({
-                                paths: restoreSelected.map((s) => s.path),
-                                label:
-                                  n === 1
-                                    ? restoreSelected[0]!.name
-                                    : `${n} plików .bak`,
-                              });
-                            }}
-                          >
-                            Przywróć zaznaczone
-                            {restoreSelected.length > 0
-                              ? ` (${restoreSelected.length})`
-                              : ""}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            disabled={restoreBusy}
-                            onClick={() => {
-                              const baks = browseData.entries.filter(
-                                (e) => e.type === "file" && isBakName(e.name),
-                              );
-                              if (baks.length === 0) {
-                                setRestoreMsg(
-                                  "W tym katalogu nie ma plików .bak do przywrócenia",
-                                );
-                                return;
-                              }
-                              setPendingRestore({
-                                paths: baks.map((e) => e.path),
-                                label: `wszystkie .bak w katalogu (${baks.length})`,
-                              });
-                            }}
-                          >
-                            Przywróć katalog (.bak)
-                          </Button>
-                        </>
-                      )}
-                      <Button variant="ghost" onClick={() => {
-                        setBrowseField(null);
-                        setBrowseData(null);
-                        setRestoreSelected([]);
-                      }}>Anuluj</Button>
-                    </div>
-                    <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                      {browseData.entries
-                        .filter((e) =>
-                          isRestoreBrowse ? e.type === "dir" || e.type === "file" : e.type === "dir",
-                        )
-                        .map((e) => {
-                          const selected =
-                            isRestoreBrowse &&
-                            e.type === "file" &&
-                            isBakName(e.name) &&
-                            restoreSelected.some((s) => s.path === e.path);
-                          return (
-                        <li key={e.path}>
-                          <button type="button" className={styles.select} style={{
-                            width: "100%",
-                            textAlign: "left",
-                            ...(selected
-                              ? { outline: "2px solid var(--ss-color-primary)" }
-                              : {}),
-                          }}
-                            onClick={() => {
-                              if (e.type === "dir") {
-                                void browseServerPath({
-                                  path: e.path,
-                                  mode: browseMode,
-                                  ext: isRestoreBrowse ? restoreBrowseExt : undefined,
-                                }).then((next) => {
-                                  setBrowseData(next);
-                                  if (isRestoreBrowse) setRestoreSelected([]);
-                                });
-                                return;
-                              }
-                              if (isZipName(e.name)) {
-                                setPendingRestore({
-                                  paths: [e.path],
-                                  label: e.name,
-                                });
-                                setBrowseField(null);
-                                setBrowseData(null);
-                                setRestoreSelected([]);
-                                return;
-                              }
-                              if (isBakName(e.name)) {
-                                setRestoreSelected((prev) => {
-                                  const exists = prev.some((s) => s.path === e.path);
-                                  if (exists) {
-                                    return prev.filter((s) => s.path !== e.path);
-                                  }
-                                  return [...prev, { path: e.path, name: e.name }];
-                                });
-                                return;
-                              }
-                            }}
-                          >
-                            {e.type === "dir"
-                              ? "📁"
-                              : isZipName(e.name)
-                                ? "📦"
-                                : selected
-                                  ? "☑"
-                                  : "☐"}{" "}
-                            {e.name}
-                          </button>
-                        </li>
-                          );
-                        })}
-                    </ul>
-                  </div>
-                ) : null}
-              </details>
-            </>
-          ) : (
-            <p className={styles.muted}>Wczytywanie ustawień serwera…</p>
+                          setRestoreSelected([]);
+                          return;
+                        }
+                        if (isBakName(e.name)) {
+                          setRestoreSelected((prev) => {
+                            const exists = prev.some((s) => s.path === e.path);
+                            if (exists) {
+                              return prev.filter((s) => s.path !== e.path);
+                            }
+                            return [...prev, { path: e.path, name: e.name }];
+                          });
+                          return;
+                        }
+                      }}
+                    >
+                      {e.type === "dir"
+                        ? "📁"
+                        : isZipName(e.name)
+                          ? "📦"
+                          : selected
+                            ? "☑"
+                            : "☐"}{" "}
+                      {e.name}
+                    </button>
+                  </li>
+                );
+              }}
+            />
           )}
-        </div>
-      ) : null}
         </div>
       </div>
 
@@ -1362,7 +792,6 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   );
 }
 
-/** Alias for openPreferences / DesktopMenuBridge. */
 export function PreferencesModal(props: Props) {
   return <ServerSettingsModal {...props} />;
 }
