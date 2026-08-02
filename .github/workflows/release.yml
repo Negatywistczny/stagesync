@@ -290,13 +290,13 @@ jobs:
         run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v5.6.0
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Android platform + build-tools
         run: |
@@ -372,13 +372,13 @@ jobs:
         run: node launch/scripts/sync-version.mjs --version ${{ env.VERSION }}
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v5.6.0
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Android platform, build-tools, NDK, CMake
         run: |
