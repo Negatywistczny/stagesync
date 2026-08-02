@@ -175,10 +175,6 @@ importers:
         version: 3.2.7(@types/node@26.1.2)(jiti@2.6.1)(jsdom@29.1.1)(terser@5.49.0)(tsx@4.23.4)(yaml@2.9.0)
 
   apps/www:
-    dependencies:
-      '@stagesync/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
     devDependencies:
       '@stagesync/typescript-config':
         specifier: workspace:*
