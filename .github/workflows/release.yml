@@ -164,6 +164,7 @@ jobs:
       # pnpm deploy --prod (sidecar) marks workspace production-only; restore
       # so tauri-action still finds @tauri-apps/cli (devDependency).
       - name: Restore JS deps after sidecar deploy
+        shell: bash
         run: |
           rm -f node_modules/.pnpm-workspace-state-v1.json
           pnpm install --frozen-lockfile
@@ -232,6 +233,7 @@ jobs:
           workspaces: apps/desktop/src-tauri
 
       - name: Restore JS deps after sidecar deploy
+        shell: bash
         run: |
           rm -f node_modules/.pnpm-workspace-state-v1.json
           pnpm install --frozen-lockfile

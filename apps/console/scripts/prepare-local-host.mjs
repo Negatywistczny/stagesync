@@ -587,11 +587,11 @@ async function packWebAndSeed(hostRoot) {
 async function packServerAssets() {
   console.log("[local-host] packing host assets (server + web + seed)…");
   await mkdir(hostAssets, { recursive: true });
-  // Build/copy web while the workspace still has full (non-prod) deps.
-  // packServerTree's deploy --prod would otherwise poison install state first.
-  await packWebAndSeed(hostAssets);
   await rm(join(hostAssets, "server"), { recursive: true, force: true });
+  // deploy --prod poisons workspace state; packServerTree restores full install
+  // before we return, so the web build below still has typescript + shared.
   await packServerTree(join(hostAssets, "server"));
+  await packWebAndSeed(hostAssets);
 
   await writeFile(
     join(hostAssets, "READY"),
