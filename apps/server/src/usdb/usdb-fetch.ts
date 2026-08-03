@@ -517,6 +517,7 @@ async function withUsdbSession<T>(
         clearUsdbSessionCache();
         throw new Error(
           "Nie udało się odnowić sesji USDB — sprawdź dane konta (Import UltraStar → Konto USDB).",
+          { cause: retryErr },
         );
       }
       throw retryErr;
