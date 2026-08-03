@@ -170,7 +170,7 @@ function acceptChordToken(raw: string): string | null {
 export function normalizeLyricToken(raw: string): string {
   return raw
     .normalize("NFD")
-    .replace(/\p{M}/gu, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
 }
