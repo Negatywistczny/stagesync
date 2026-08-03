@@ -55,3 +55,86 @@ export async function deleteProjectAsset(
   }
   return ProjectSchema.parse(await res.json());
 }
+
+export type YoutubeAudioJobResponse = {
+  jobId: string;
+  status: "pending" | "downloading" | "done" | "error";
+  progress: number;
+  assetId?: string;
+  error?: string;
+  message?: string;
+};
+
+export async function startYoutubeAudioImport(
+  projectId: string,
+  videoId: string,
+): Promise<YoutubeAudioJobResponse> {
+  const res = await fetch(
+    `/api/projects/${encodeURIComponent(projectId)}/assets/from-youtube`,
+    {
+      method: "POST",
+      headers: mergeApiHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ videoId }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as YoutubeAudioJobResponse;
+}
+
+export async function pollYoutubeAudioJob(
+  projectId: string,
+  jobId: string,
+): Promise<YoutubeAudioJobResponse> {
+  const res = await fetch(
+    `/api/projects/${encodeURIComponent(projectId)}/assets/from-youtube/${encodeURIComponent(jobId)}`,
+    { headers: mergeApiHeaders() },
+  );
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as YoutubeAudioJobResponse;
+}
+
+/** Session YouTube download (no project yet — new song wizard). */
+export async function startSessionYoutubeImport(
+  videoId: string,
+): Promise<YoutubeAudioJobResponse> {
+  const res = await fetch(`/api/import/audio/youtube`, {
+    method: "POST",
+    headers: mergeApiHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ videoId }),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as YoutubeAudioJobResponse;
+}
+
+export async function pollSessionYoutubeJob(
+  jobId: string,
+): Promise<YoutubeAudioJobResponse & { ready?: boolean }> {
+  const res = await fetch(
+    `/api/import/audio/youtube/${encodeURIComponent(jobId)}`,
+    { headers: mergeApiHeaders() },
+  );
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  return (await res.json()) as YoutubeAudioJobResponse & { ready?: boolean };
+}
+
+export async function fetchSessionYoutubeFile(jobId: string): Promise<File> {
+  const res = await fetch(
+    `/api/import/audio/youtube/${encodeURIComponent(jobId)}/file`,
+    { headers: mergeApiHeaders() },
+  );
+  if (!res.ok) {
+    throw new Error(await readApiError(res));
+  }
+  const blob = await res.blob();
+  return new File([blob], "youtube-audio.mp3", {
+    type: blob.type || "audio/mpeg",
+  });
+}

@@ -37,6 +37,13 @@ export const TEMPO_SOLVER_SEED_METRO_MAX_RATIO = 0.15;
 /** Pickup / anacrusis must not exceed this many bars before section Beat 1. */
 export const TEMPO_SOLVER_ANACRUSIS_MAX_BARS = 1;
 
+/**
+ * Absolute BPM band for Pass-1 seed and tick↔ms tempo segments.
+ * Floor stays low enough for slow ballads (Pass 1 must not bump 45 → 60).
+ */
+export const TEMPO_MAP_MIN_BPM = 40;
+export const TEMPO_MAP_MAX_BPM = 320;
+
 export type TempoAnchorKind =
   | "section"
   | "phrase"
@@ -83,6 +90,12 @@ export type MultiPassTempoSolverInput = {
     name: string;
     pipeBarCount: number;
     chordCount: number;
+    /**
+     * Forma length in bars (pipe / UltraStar section walls / lyric fallback).
+     * When set for vocal sections, wins over raw US ms span sizing.
+     * Chords never define length — they only fill the container.
+     */
+    structuralBars?: number;
     /** Min/max ms of US words aligned into this section (empty = instrumental). */
     vocalMsRange: { startMs: number; endMs: number } | null;
   }[];
@@ -95,8 +108,17 @@ export type MultiPassTempoSolverInput = {
    * than {@link TEMPO_SOLVER_SEED_METRO_MAX_RATIO}, this becomes seed SSOT.
    */
   referenceMetronomeBpm?: number;
+  /**
+   * Pipe+GAP editorial BPM for anacrusis bar gaps (Intro→vocal section).
+   * When set, pickup detection uses this instead of seed after metro fallback.
+   */
+  layoutBpm?: number;
   contentFloorTicks?: number;
   idPrefix?: string;
+  /** Smart Tempo: backing audio duration (ms) — caps map / warns on overflow. */
+  audioDurationMs?: number;
+  /** Smart Tempo: trim before Beat 1 on waveform (ms) — metronome grid only. */
+  audioStartOffsetMs?: number;
 };
 
 export type MultiPassTempoSolverResult = {
@@ -104,6 +126,8 @@ export type MultiPassTempoSolverResult = {
   tempoMap: TempoEvent[];
   sections: TempoSolverSectionPlan[];
   warnings: string[];
+  /** Explicit Tempo Nodes (wallMs ↔ targetTick) emitted for Beat Mapper. */
+  tempoNodes: { wallMs: number; targetTick: number }[];
 };
 
 const DEFAULT_METER: TimeSignature = { numerator: 4, denominator: 4 };
@@ -150,7 +174,13 @@ export function computeSeedBpmFromAnchors(
     const sec = (b.ms - a.ms) / 1000;
     if (sec <= 0.05 || bars < 1) continue;
     const bpm = (bars * qpb * 60) / sec;
-    if (Number.isFinite(bpm) && bpm >= 40 && bpm <= 300) bpms.push(bpm);
+    if (
+      Number.isFinite(bpm) &&
+      bpm >= TEMPO_MAP_MIN_BPM &&
+      bpm <= TEMPO_MAP_MAX_BPM
+    ) {
+      bpms.push(bpm);
+    }
   }
   if (bpms.length === 0) {
     const bySec = new Map<number, TempoSolverAnchor[]>();
@@ -168,7 +198,13 @@ export function computeSeedBpmFromAnchors(
       const sec = (last.ms - first.ms) / 1000;
       if (bars >= 1 && sec > 0.05) {
         const bpm = (bars * qpb * 60) / sec;
-        if (Number.isFinite(bpm) && bpm >= 40 && bpm <= 300) bpms.push(bpm);
+        if (
+          Number.isFinite(bpm) &&
+          bpm >= TEMPO_MAP_MIN_BPM &&
+          bpm <= TEMPO_MAP_MAX_BPM
+        ) {
+          bpms.push(bpm);
+        }
       }
     }
   }
@@ -260,6 +296,111 @@ export function sectionBeat1Ms(
   return vocalStartMs;
 }
 
+export type AnacrusisGapInput = {
+  sections: readonly {
+    pipeBarCount: number;
+    vocalMsRange: { startMs: number; endMs: number } | null;
+  }[];
+  plans: readonly Pick<
+    TempoSolverSectionPlan,
+    "fromPipe" | "pristineBars" | "startMs"
+  >[];
+  layoutBpm: number;
+  meter?: TimeSignature;
+  ppq?: number;
+};
+
+/**
+ * Infer section Beat 1 ms from a vocal onset on a constant-BPM bar grid
+ * (pickup → next barline; near-downbeat → this barline). Mirrors
+ * {@link sectionStartFromVocalTicks} in wall-clock space.
+ */
+export function sectionBeat1MsFromVocalMs(
+  vocalStartMs: number,
+  barMs: number,
+): number {
+  if (!(barMs > 0) || !Number.isFinite(vocalStartMs)) return vocalStartMs;
+  const t = Math.max(0, vocalStartMs);
+  const rem = t % barMs;
+  if (rem <= 1e-6) return t;
+  if (rem <= barMs / 8) return t - rem;
+  return t - rem + barMs;
+}
+
+/**
+ * Extra bars on the previous section to absorb an anacrusis pickup before the
+ * next Forma Beat 1. New Forma always starts on the strong beat / barline; no
+ * empty intermediate GAP bar.
+ *
+ * When the previous section is pipe / instrumental, extend by 1 bar (pickup
+ * lives in that last bar). When the previous section is already a vocal US
+ * wall spanning to this Beat 1, length is already correct — do not add another
+ * bar (that would insert an empty gap).
+ */
+export function anacrusisPickupBarsBeforeSection(
+  sectionIndex: number,
+  input: AnacrusisGapInput,
+): number {
+  if (sectionIndex <= 0) return 0;
+  const meter = input.meter ?? DEFAULT_METER;
+  const ppq = input.ppq ?? DEFAULT_PPQ;
+  const barTicks = ticksPerBar(meter, ppq);
+  const barMs = ticksToMs(barTicks, input.layoutBpm, meter, ppq);
+  if (!(barMs > 0)) return 0;
+
+  const prevPlan = input.plans[sectionIndex - 1]!;
+  const prevSec = input.sections[sectionIndex - 1]!;
+  const currPlan = input.plans[sectionIndex]!;
+  const currSec = input.sections[sectionIndex]!;
+  if (!currSec.vocalMsRange) return 0;
+
+  const vocalStart = currSec.vocalMsRange.startMs;
+  const beat1Ms =
+    currPlan.startMs > vocalStart
+      ? currPlan.startMs
+      : sectionBeat1MsFromVocalMs(vocalStart, barMs);
+  if (!isAnacrusisMs(vocalStart, beat1Ms, input.layoutBpm, meter, ppq)) {
+    return 0;
+  }
+
+  // Vocal→vocal with US walls already ends on this Beat 1.
+  const prevIsInstrumental =
+    prevPlan.fromPipe || prevSec.vocalMsRange == null;
+  return prevIsInstrumental ? 1 : 0;
+}
+
+/** Contiguous Forma tick walls; anacrusis pickup extends the preceding section. */
+export function layoutContiguousFormaPlans(
+  plans: TempoSolverSectionPlan[],
+  sections: AnacrusisGapInput["sections"],
+  floorTicks: number,
+  barTicks: number,
+  layoutBpm: number,
+  meter: TimeSignature = DEFAULT_METER,
+  ppq: number = DEFAULT_PPQ,
+): void {
+  const gapInput: AnacrusisGapInput = {
+    sections,
+    plans,
+    layoutBpm,
+    meter,
+    ppq,
+  };
+  for (let si = 1; si < plans.length; si++) {
+    const extra = anacrusisPickupBarsBeforeSection(si, gapInput);
+    if (extra > 0) {
+      plans[si - 1]!.pristineBars += extra;
+    }
+  }
+  let cursor = floorTicks;
+  for (let si = 0; si < plans.length; si++) {
+    const p = plans[si]!;
+    p.startTicks = cursor;
+    p.lengthTicks = p.pristineBars * barTicks;
+    cursor = p.startTicks + p.lengthTicks;
+  }
+}
+
 export function pristineBarsFromMsSpan(
   startMs: number,
   endMs: number,
@@ -328,22 +469,34 @@ export function thinMsTickAnchors(
   return out;
 }
 
+/**
+ * Exact BPM for a tick↔ms span. Soft clamp toward seed happens only in the
+ * soft path of {@link tempoEventsFromMsTickAnchors} — never here — so
+ * audio-driven / Forma wall maps can follow the recording without ping-ponging
+ * between seed ±8% walls on every noisy beat.
+ */
 function bpmForTickSpan(
   lengthTicks: number,
   durationMs: number,
   meter: TimeSignature,
   ppq: number,
+  seedBpm?: number,
 ): number {
-  if (durationMs <= 0 || lengthTicks <= 0) return 120;
-  let lo = 20;
-  let hi = 320;
+  if (durationMs <= 0 || lengthTicks <= 0) {
+    return seedBpm != null && seedBpm > 0 ? seedBpm : 120;
+  }
+  let lo = TEMPO_MAP_MIN_BPM;
+  let hi = TEMPO_MAP_MAX_BPM;
   for (let i = 0; i < 48; i++) {
     const mid = (lo + hi) / 2;
     const ms = ticksToMs(lengthTicks, mid, meter, ppq);
     if (ms > durationMs) lo = mid;
     else hi = mid;
   }
-  return Math.round(((lo + hi) / 2) * 100) / 100;
+  return Math.min(
+    TEMPO_MAP_MAX_BPM,
+    Math.max(TEMPO_MAP_MIN_BPM, Math.round(((lo + hi) / 2) * 100) / 100),
+  );
 }
 
 export type MsTickAnchor = {
@@ -426,7 +579,7 @@ export function tempoEventsFromMsTickAnchors(
   const first = dedup[0]!;
   if (first.targetTick > floorTicks && first.ms > 0) {
     const tickLen = first.targetTick - floorTicks;
-    const raw = bpmForTickSpan(tickLen, first.ms, meter, ppq);
+    const raw = bpmForTickSpan(tickLen, first.ms, meter, ppq, seedBpm);
     prevBpm = soft ? softClampBpmToSeed(seedBpm, raw) : raw;
     out.push({ startTicks: floorTicks, bpm: prevBpm });
   } else {
@@ -441,7 +594,7 @@ export function tempoEventsFromMsTickAnchors(
     const durMs = b.ms - a.ms;
     if (tickLen <= 0) continue;
     const raw =
-      durMs > 1 ? bpmForTickSpan(tickLen, durMs, meter, ppq) : seedBpm;
+      durMs > 1 ? bpmForTickSpan(tickLen, durMs, meter, ppq, seedBpm) : seedBpm;
     const bpm = soft ? softClampBpmAdjacent(seedBpm, prevBpm, raw) : raw;
     prevBpm = bpm;
     const last = out[out.length - 1];
@@ -509,29 +662,32 @@ export function runMultiPassTempoSolver(
         accent?.ms ?? null,
       );
       endMs = Math.max(startMs, vr.endMs);
-      pristineBars = pristineBarsFromMsSpan(
-        startMs,
-        endMs,
-        seedBpm,
-        meter,
-        ppq,
-      );
-      // Phrase structure (C+B): Forma MUST cover all structural barOffsets
-      // and all chords — never compress chords into a short container.
-      let structBars = 1;
-      for (const a of input.anchors) {
-        if (a.sectionIndex !== si || a.barOffset == null) continue;
-        structBars = Math.max(structBars, Math.trunc(a.barOffset) + 1);
+      // Forma length SSOT when provided (US walls / pipe / lyric fallback).
+      if (sec.structuralBars != null && sec.structuralBars > 0) {
+        pristineBars = Math.max(1, Math.trunc(sec.structuralBars));
+      } else {
+        pristineBars = pristineBarsFromMsSpan(
+          startMs,
+          endMs,
+          seedBpm,
+          meter,
+          ppq,
+        );
+        let structBars = 1;
+        for (const a of input.anchors) {
+          if (a.sectionIndex !== si || a.barOffset == null) continue;
+          structBars = Math.max(structBars, Math.trunc(a.barOffset) + 1);
+        }
+        pristineBars = Math.max(pristineBars, structBars);
       }
-      if (sec.chordCount > 0) {
-        structBars = Math.max(structBars, sec.chordCount);
-      }
-      pristineBars = Math.max(pristineBars, structBars);
     } else {
-      // Instrumental without pipe: one bar per chord on pristine grid.
-      pristineBars = Math.max(1, sec.chordCount > 0 ? sec.chordCount : 1);
+      // Instrumental without pipe: UG structural bars / lyric fallback.
+      pristineBars =
+        sec.structuralBars != null && sec.structuralBars > 0
+          ? Math.max(1, Math.trunc(sec.structuralBars))
+          : 1;
       warnings.push(
-        `Sekcja „${sec.name}” bez wokalu US — długość Formy z przybliżenia akordów.`,
+        `Sekcja „${sec.name}” bez wokalu US — długość Formy z przybliżenia strukturalnego.`,
       );
     }
 
@@ -547,13 +703,22 @@ export function runMultiPassTempoSolver(
     });
   }
 
-  // Contiguous Forma tick layout (walls immutable afterward).
-  let cursor = floor;
-  for (const p of plans) {
-    p.startTicks = cursor;
-    p.lengthTicks = p.pristineBars * barTicks;
-    cursor = p.startTicks + p.lengthTicks;
-  }
+  const layoutBpm =
+    input.layoutBpm != null &&
+    Number.isFinite(input.layoutBpm) &&
+    input.layoutBpm > 0
+      ? input.layoutBpm
+      : seedBpm;
+
+  layoutContiguousFormaPlans(
+    plans,
+    input.sections,
+    floor,
+    barTicks,
+    layoutBpm,
+    meter,
+    ppq,
+  );
 
   // Lock instrumental / pipe wall-clock end to the next section Beat 1 so
   // Verse Forma start aligns with the first accent in the recording.
@@ -645,10 +810,32 @@ export function runMultiPassTempoSolver(
     pruned.push({ id: `${prefix}-te-1`, startTicks: floor, bpm: seedBpm });
   }
 
+  const tempoNodes = plans.map((p) => ({
+    wallMs: Math.max(0, p.startMs),
+    targetTick: p.startTicks,
+  }));
+  if (plans.length > 0) {
+    const last = plans[plans.length - 1]!;
+    tempoNodes.push({
+      wallMs: Math.max(0, last.endMs),
+      targetTick: last.startTicks + last.lengthTicks,
+    });
+  }
+
+  if (input.audioDurationMs != null && input.audioDurationMs > 0) {
+    const lastWall = tempoNodes[tempoNodes.length - 1]?.wallMs ?? 0;
+    if (lastWall > input.audioDurationMs) {
+      warnings.push(
+        `Mapa tempa (${Math.round(lastWall / 1000)}s) przekracza długość audio (${Math.round(input.audioDurationMs / 1000)}s).`,
+      );
+    }
+  }
+
   return {
     seedBpm,
     tempoMap: pruned,
     sections: plans,
     warnings,
+    tempoNodes,
   };
 }

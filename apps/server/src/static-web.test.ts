@@ -95,3 +95,58 @@ describe("static web SPA", () => {
     });
   });
 });
+
+describe("dev UI redirect (API-only server)", () => {
+  let server: Server;
+  let baseUrl: string;
+  let prevRepoDev: string | undefined;
+  let prevNodeEnv: string | undefined;
+  let prevStaticDir: string | undefined;
+
+  beforeEach(() => {
+    prevRepoDev = process.env.STAGESYNC_REPO_DEV;
+    prevNodeEnv = process.env.NODE_ENV;
+    prevStaticDir = process.env.STAGESYNC_STATIC_DIR;
+    delete process.env.STAGESYNC_REPO_DEV;
+    delete process.env.STAGESYNC_STATIC_DIR;
+    process.env.NODE_ENV = "development";
+  });
+
+  afterEach(async () => {
+    if (prevRepoDev === undefined) delete process.env.STAGESYNC_REPO_DEV;
+    else process.env.STAGESYNC_REPO_DEV = prevRepoDev;
+    if (prevNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = prevNodeEnv;
+    if (prevStaticDir === undefined) delete process.env.STAGESYNC_STATIC_DIR;
+    else process.env.STAGESYNC_STATIC_DIR = prevStaticDir;
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => (err ? reject(err) : resolve()));
+    });
+  });
+
+  async function listenApiOnly(): Promise<void> {
+    const { app } = createApp({
+      dataDir: await mkdtemp(join(tmpdir(), "ss-web-")),
+      staticDir: null,
+      disableFileLogs: true,
+    });
+    server = await new Promise<Server>((resolve) => {
+      const s = app.listen(0, "127.0.0.1", () => resolve(s));
+    });
+    const { port } = server.address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${port}`;
+  }
+
+  it("redirects loopback /admin to Vite dev origin", async () => {
+    await listenApiOnly();
+    const res = await fetch(`${baseUrl}/admin`, { redirect: "manual" });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe("http://127.0.0.1:3000/admin");
+  });
+
+  it("does not redirect /api routes", async () => {
+    await listenApiOnly();
+    const res = await fetch(`${baseUrl}/api/health`);
+    expect(res.status).toBe(200);
+  });
+});

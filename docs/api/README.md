@@ -34,7 +34,7 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 | `POST` | `/api/system/logs/clear` | Czyści ring-buffer |
 | `GET` | `/api/system/network` | Adresy LAN, port, wersja, opcjonalnie `dataDir` |
 | `GET` | `/api/system/settings` | Zarządzane wartości `.env` (Admin Ustawienia; loopback/token); sekrety (np. hasło USDB) zamaskowane — `secretsConfigured` |
-| `PUT` | `/api/system/settings` | Zapis zarządzanych kluczy do `.env` |
+| `PUT` | `/api/system/settings` | Zapis zarządzanych kluczy do `.env` (`{dataDir}/host/.env` przy `STAGESYNC_DATA_DIR`) |
 | `GET` | `/api/system/browse` | Picker katalogów / plików (repo + home); `?mode=file&ext=.bak` lub `.bak,.zip` |
 | `POST` | `/api/system/restore` | Przywróć `.bak` / wiele `.bak` (`paths[]`, max 64) / archiwum `.zip` do drzewa danych (`confirm: true`); PIN + ACL lifecycle; przed nadpisaniem `pre-restore` |
 | `GET` | `/api/system/update-status` | Porównanie wersji vs GitHub Releases (Docker); w shellu desktop — soft skip |
@@ -87,13 +87,15 @@ transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
 | Metoda | Ścieżka | Opis |
 |--------|---------|------|
 | `GET` | `/api/import/ultrastar/account` | `{ configured, user }` — status konta USDB na hoście (bez hasła) |
-| `PUT` | `/api/import/ultrastar/account` | `{ user, pass? }` — zapis konta do `.env` hosta (puste `user` = usuń; puste/`pass` pominięte = bez zmiany hasła) |
+| `PUT` | `/api/import/ultrastar/account` | `{ user, pass? }` — zapis konta do zarządzanego `.env` hosta (`{STAGESYNC_DATA_DIR}/host/.env` gdy ustawione; inaczej `.env` w root repo) (puste `user` = usuń; puste/`pass` pominięte = bez zmiany hasła) |
+
 | `POST` | `/api/import/ultrastar/account/test` | `{ user?, pass? }` — test logowania USDB (override lub zapisane dane) |
 | `POST` | `/api/import/ultrastar` | `{ url }` — pobranie `.txt` UltraStar z USDB; wymaga konta USDB (UI lub `STAGESYNC_USDB_*`) |
 | `POST` | `/api/import/ultrastar/search` | `{ title, artist? }` — wyszukiwarka USDB (max 25 wyników) |
 
 Konto USDB: zalecany zapis z UI (Import UltraStar → Konto USDB / Ustawienia serwera).
-Te same klucze `STAGESYNC_USDB_USER` / `STAGESYNC_USDB_PASS` w `.env` lub env procesu;
+Te same klucze `STAGESYNC_USDB_USER` / `STAGESYNC_USDB_PASS` w zarządzanym `.env`
+(`{dataDir}/host/.env` przy `STAGESYNC_DATA_DIR`, inaczej root repo) lub env procesu;
 przy starcie już ustawione process env wygrywa z plikiem `.env`. Zapis z UI aktualizuje runtime od razu.
 
 ### Project

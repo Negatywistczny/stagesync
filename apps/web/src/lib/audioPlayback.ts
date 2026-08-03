@@ -53,6 +53,11 @@ import {
   refreshAudioHwCapability,
 } from "./audioHwCapability.js";
 import {
+  formatBytesMb,
+  noteMemoryCheckpoint,
+  registerMemoryContributor,
+} from "./memoryPressure.js";
+import {
   getMetronomeAudioContext,
   resumeMetronomeAudio,
 } from "./metronome.js";
@@ -178,7 +183,13 @@ let masterBus: MasterBus | null = null;
 let destGraph: DestGraph | null = null;
 
 const SEEK_JUMP_TICKS = 480;
-const MAX_BUFFER_CACHE = 32;
+/**
+ * Hard cap on retained decoded PCM — entry count alone was unsafe
+ * (32 × ~3–8 min stereo @ 48 kHz ≈ multi-GB).
+ */
+const MAX_BUFFER_CACHE = 8;
+/** Soft RAM budget for decoded AudioBuffers (~float32 PCM). */
+const MAX_BUFFER_CACHE_BYTES = 384 * 1024 * 1024;
 const ANALYSER_FFT = 256;
 /** Short linear ramp — avoids zipper clicks on live fader / mute / solo. */
 const GAIN_DEZIPPER_SEC = 0.012;
@@ -187,18 +198,134 @@ const trackWiredDest = new Map<string, string>();
 /** Last wired group-bus output: `"master"` | `bus:<id>` | `hw:<id>`. */
 const groupWiredDest = new Map<string, string>();
 
+export type LoadAudioBufferOptions = {
+  /**
+   * When false, decode for meta/waveform without pinning into the playback cache
+   * (still reuses a cache hit if present). Default true.
+   */
+  cache?: boolean;
+};
+
+export type AudioBufferCacheStats = {
+  entries: number;
+  approxBytes: number;
+  maxEntries: number;
+  maxBytes: number;
+};
+
+export type AudioBufferCacheEntry = {
+  key: string;
+  approxBytes: number;
+  durationSec: number;
+  channels: number;
+};
+
 function cacheKey(projectId: string, assetId: string): string {
   return `${projectId}:${assetId}`;
+}
+
+/** Approx float32 PCM footprint (Web Audio keeps channel data as Float32). */
+export function estimateAudioBufferBytes(buffer: AudioBuffer): number {
+  const channels = Math.max(1, buffer.numberOfChannels);
+  const frames = Math.max(0, buffer.length);
+  return frames * channels * 4;
+}
+
+function bufferCacheApproxBytes(): number {
+  let total = 0;
+  for (const buf of bufferCache.values()) {
+    total += estimateAudioBufferBytes(buf);
+  }
+  return total;
+}
+
+export function getAudioBufferCacheStats(): AudioBufferCacheStats {
+  return {
+    entries: bufferCache.size,
+    approxBytes: bufferCacheApproxBytes(),
+    maxEntries: MAX_BUFFER_CACHE,
+    maxBytes: MAX_BUFFER_CACHE_BYTES,
+  };
+}
+
+/** Per-entry cache listing for memory diagnostics. */
+export function getAudioBufferCacheEntries(): AudioBufferCacheEntry[] {
+  const out: AudioBufferCacheEntry[] = [];
+  for (const [key, buf] of bufferCache) {
+    out.push({
+      key,
+      approxBytes: estimateAudioBufferBytes(buf),
+      durationSec: buf.duration,
+      channels: buf.numberOfChannels,
+    });
+  }
+  return out;
+}
+
+export function getAudioBufferInflightCount(): number {
+  return inflight.size;
 }
 
 function rememberBuffer(key: string, decoded: AudioBuffer): void {
   failedAssets.delete(key);
   if (bufferCache.has(key)) bufferCache.delete(key);
   bufferCache.set(key, decoded);
-  while (bufferCache.size > MAX_BUFFER_CACHE) {
-    const oldest = bufferCache.keys().next().value;
-    if (oldest === undefined) break;
-    bufferCache.delete(oldest);
+
+  const evicted: string[] = [];
+  const evictWhileOver = () => {
+    while (
+      bufferCache.size > MAX_BUFFER_CACHE ||
+      bufferCacheApproxBytes() > MAX_BUFFER_CACHE_BYTES
+    ) {
+      let oldest: string | undefined;
+      for (const candidate of bufferCache.keys()) {
+        if (candidate === key) continue;
+        oldest = candidate;
+        break;
+      }
+      if (oldest === undefined) break;
+      bufferCache.delete(oldest);
+      evicted.push(oldest);
+    }
+  };
+  evictWhileOver();
+
+  // Single asset larger than the budget: keep it alone (must be playable).
+  if (
+    bufferCache.size > 1 &&
+    bufferCacheApproxBytes() > MAX_BUFFER_CACHE_BYTES
+  ) {
+    for (const candidate of [...bufferCache.keys()]) {
+      if (candidate !== key) {
+        bufferCache.delete(candidate);
+        evicted.push(candidate);
+      }
+    }
+  }
+
+  const bytes = estimateAudioBufferBytes(decoded);
+  const stats = getAudioBufferCacheStats();
+  ensureAudioMemoryContributor();
+  if (evicted.length > 0 || bytes >= 64 * 1024 * 1024) {
+    noteMemoryCheckpoint(
+      evicted.length > 0 ? "audio-cache-evict" : "audio-decode-large",
+      {
+        key,
+        bytes,
+        evicted,
+        cacheEntries: stats.entries,
+        cacheApproxBytes: stats.approxBytes,
+        cacheKeys: getAudioBufferCacheEntries().map((e) => e.key),
+      },
+    );
+  } else if (stats.approxBytes >= stats.maxBytes * 0.75) {
+    noteMemoryCheckpoint("audio-cache-near-budget", {
+      key,
+      bytes,
+      cacheEntries: stats.entries,
+      cacheApproxBytes: stats.approxBytes,
+      maxBytes: stats.maxBytes,
+    });
   }
 }
 
@@ -231,50 +358,67 @@ export async function loadAudioBuffer(
   projectId: string,
   assetId: string,
   ctx: AudioContext = getMetronomeAudioContext(),
+  options?: LoadAudioBufferOptions,
 ): Promise<AudioBuffer | null> {
+  const retain = options?.cache !== false;
   const key = cacheKey(projectId, assetId);
   const hit = bufferCache.get(key);
   if (hit) {
-    rememberBuffer(key, hit);
+    if (retain) rememberBuffer(key, hit);
     return hit;
   }
-  const pending = inflight.get(key);
-  if (pending) return pending;
 
   const genGlobal = bufferCacheGlobalGen;
   const genProject = bufferCacheProjectGen.get(projectId) ?? 0;
 
-  const job = (async () => {
-    try {
-      const res = await fetch(assetFileUrl(projectId, assetId));
-      if (!res.ok) {
+  let pending = inflight.get(key);
+  if (!pending) {
+    pending = (async () => {
+      try {
+        const res = await fetch(assetFileUrl(projectId, assetId));
+        if (!res.ok) {
+          markFailed(key);
+          return null;
+        }
+        const raw = await res.arrayBuffer();
+        if (raw.byteLength > 100 * 1024 * 1024) {
+          markFailed(key);
+          noteMemoryCheckpoint("audio-fetch-rejected-too-large", {
+            key,
+            compressedBytes: raw.byteLength,
+          });
+          return null;
+        }
+        if (raw.byteLength >= 20 * 1024 * 1024) {
+          noteMemoryCheckpoint("audio-fetch-large", {
+            key,
+            compressedBytes: raw.byteLength,
+            inflight: inflight.size,
+          });
+        }
+        // decodeAudioData detaches the buffer — avoid an extra .slice() copy.
+        return await ctx.decodeAudioData(raw);
+      } catch {
         markFailed(key);
         return null;
+      } finally {
+        inflight.delete(key);
       }
-      const raw = await res.arrayBuffer();
-      if (raw.byteLength > 100 * 1024 * 1024) {
-        markFailed(key);
-        return null;
-      }
-      const decoded = await ctx.decodeAudioData(raw.slice(0));
-      // Cleared while fetch/decode was in flight — do not re-pollute cache.
-      if (
-        genGlobal !== bufferCacheGlobalGen ||
-        (bufferCacheProjectGen.get(projectId) ?? 0) !== genProject
-      ) {
-        return null;
-      }
-      rememberBuffer(key, decoded);
-      return decoded;
-    } catch {
-      markFailed(key);
-      return null;
-    } finally {
-      inflight.delete(key);
-    }
-  })();
-  inflight.set(key, job);
-  return job;
+    })();
+    inflight.set(key, pending);
+  }
+
+  const decoded = await pending;
+  if (!decoded) return null;
+  // Cleared while fetch/decode was in flight — do not re-pollute cache.
+  if (
+    genGlobal !== bufferCacheGlobalGen ||
+    (bufferCacheProjectGen.get(projectId) ?? 0) !== genProject
+  ) {
+    return retain ? null : decoded;
+  }
+  if (retain) rememberBuffer(key, decoded);
+  return decoded;
 }
 
 /**
@@ -1501,8 +1645,14 @@ export function syncAudioPlayback(
   const jumped =
     lastDisplayTicks != null &&
     Math.abs(input.displayTicks - lastDisplayTicks) > SEEK_JUMP_TICKS;
+  // Loop wrap: ticks jumped backward while looping — stop active sources so a
+  // clip positioned at the exclusive loop end cannot ring across the wrap.
+  const loopWrapped =
+    input.loopEnabled &&
+    lastDisplayTicks != null &&
+    input.displayTicks < lastDisplayTicks;
   const graphChanged = gKey !== lastGraphKey;
-  if (jumped || graphChanged) {
+  if (jumped || loopWrapped || graphChanged) {
     stopEpoch += 1;
     stopAll();
     firedCueIds.clear();
@@ -1612,3 +1762,24 @@ export function restartAudioPlayback(
   lastGraphKey = "";
   syncAudioPlayback(projectId, input, ctx);
 }
+
+/** Idempotent — safe after test resets of the memory-pressure registry. */
+export function ensureAudioMemoryContributor(): void {
+  registerMemoryContributor({
+    id: "audio-buffer-cache",
+    label: "Cache PCM (odtwarzanie)",
+    approxBytes: () => bufferCacheApproxBytes(),
+    detail: () => {
+      const stats = getAudioBufferCacheStats();
+      const keys = getAudioBufferCacheEntries()
+        .map(
+          (e) =>
+            `${e.key} ${formatBytesMb(e.approxBytes)} ${e.durationSec.toFixed(0)}s`,
+        )
+        .join("; ");
+      return `${stats.entries}/${stats.maxEntries} · ${formatBytesMb(stats.approxBytes)} / ${formatBytesMb(stats.maxBytes)}${keys ? ` · ${keys}` : ""} · inflight=${inflight.size} · voices=${active.length}+${activeCues.length}`;
+    },
+  });
+}
+
+ensureAudioMemoryContributor();

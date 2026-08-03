@@ -1125,6 +1125,7 @@ pub fn run() {
             launcher::launcher_get_ignored_version,
             launcher::launcher_set_ignored_version,
             launcher::get_sidecar_log_tail,
+            launcher::save_launcher_log,
             launcher::cancel_local_host,
             launcher::prepare_host_restart,
             launcher::discover_lan_hosts,

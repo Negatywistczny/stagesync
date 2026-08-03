@@ -4,16 +4,12 @@
  *
  * Timing (ING-06 / ADR 0002 / USDX format):
  * - Wall clock (USDX): `t_ms = GAP + beat × 60000 / (BPM_header × 4)`.
+ * - `#BPM` is **decode-only** (beat→ms relative to the MP3). Smart Tempo must
+ *   not use the file metronome as TempoMap / Forma SSOT — audio Adapt + UG↔text.
  * - Authors usually write `#BPM` ≈ 4× musical quarter BPM (e.g. 369.2 → 92.3).
- * - File metronome = header / 4. Optional editorial **grid BPM** may differ.
- * - Placement is always wall-clock → ticks at place BPM:
- *   `ticks = secondsToTicks(t_ms/1000, single-event tempo map @ placeBpm)`.
- *   Same place BPM for tekst + project tempo keeps lyrics coherent with MP3.
- *   Beat-locking US beats onto a foreign grid BPM is forbidden — it splits
- *   vocals from audio (~6+ bars drift mid-song).
- * - Storage is integer ticks only (never ms).
- * - Note `startBeat` values are absolute from beat 0 (not phrase-relative),
- *   unless `#RELATIVE:yes` (unsupported — treat as absolute).
+ * - File metronome = header / 4. Optional editorial **grid BPM** may differ for
+ *   intermediate tick placement before remap onto the audio TempoMap.
+ * - Placement recovers wall-clock → ticks; storage is integer ticks only.
  *
  * Word boundaries: trailing **or** leading whitespace closes / opens a word
  * (USDX treats both as equivalent). Do not `.trim()` before that check.
@@ -36,6 +32,7 @@ import {
   type TekstClip,
 } from "./schema.js";
 import { secondsToTicks } from "./tempo-map.js";
+import { extractYoutubeVideoId } from "./smart-tempo.js";
 import { DEFAULT_PPQ, type TimeSignature } from "./time.js";
 
 export type UltrastarImportOk = {
@@ -54,6 +51,12 @@ export type UltrastarImportOk = {
   gapMs: number;
   /** Wall-clock ms of the first note onset (GAP + beat₀). */
   firstVocalMs: number;
+  /** Local filename hint from `#MP3:` (UltraStar header). */
+  mp3Hint: string | null;
+  /** Raw `#VIDEO:` value (URL or id). */
+  videoUrl: string | null;
+  /** Parsed YouTube id when `#VIDEO` references YouTube. */
+  youtubeVideoId: string | null;
   tekst: { clips: TekstClip[] };
   melody: { clips: MelodyNoteClip[] };
   noteCount: number;
@@ -179,12 +182,20 @@ export function ultrastarBeatToTicks(
 
 /**
  * Suggest editorial grid BPM so the first vocal lands ~`pipeBarCount + pickup`
- * bars from 0 (pickup in the bar after the pipe grid; Verse on the next line).
+ * bars after Beat 1 (pickup in the last Intro bar; Verse on the next line).
+ *
+ * `firstVocalMs` is file-absolute (UltraStar `#GAP`). Pass `beat1Ms` (Audio
+ * Start Offset / editorial Beat 1) so pre-roll silence is not counted as
+ * musical bars — otherwise SingStar-style GAP (~35s) with Beat 1 ~2–3s yields
+ * a systematically low seed (~113 instead of ~120–123 like Logic Adapt).
+ *
  * Returns null when inputs are unusable.
  */
 export function suggestGridBpmFromPipeAndFirstVocal(opts: {
   pipeBarCount: number;
   firstVocalMs: number;
+  /** File ms of Beat 1 / content epoch (default 0 = assume song starts at 0). */
+  beat1Ms?: number;
   meter?: TimeSignature;
   /** Extra bars after pipe for a typical anacrusis (default 0.5). */
   pickupBars?: number;
@@ -198,11 +209,14 @@ export function suggestGridBpmFromPipeAndFirstVocal(opts: {
   ) {
     return null;
   }
+  const beat1 = Math.max(0, Math.round(opts.beat1Ms ?? 0));
+  const contentMs = firstVocalMs - beat1;
+  if (!(contentMs > 0)) return null;
   const meter = opts.meter ?? { numerator: 4, denominator: 4 };
   const pickup = opts.pickupBars ?? 0.5;
   const targetBars = pipeBarCount + pickup;
   const quartersPerBar = (meter.numerator * 4) / meter.denominator;
-  const seconds = firstVocalMs / 1000;
+  const seconds = contentMs / 1000;
   const bpm = (targetBars * quartersPerBar * 60) / seconds;
   if (!Number.isFinite(bpm) || bpm < 40 || bpm > 300) return null;
   return Math.round(bpm * 100) / 100;
@@ -349,6 +363,8 @@ export function importUltrastarText(
   let headerBpm: number | null = null;
   let gapMs = 0;
   let player: number | null = null;
+  let mp3Hint: string | null = null;
+  let videoUrl: string | null = null;
 
   const notes: RawNote[] = [];
   /** Phrases: arrays of note indices; `-` starts a new phrase. */
@@ -386,6 +402,12 @@ export function importUltrastarText(
           gapMs = n;
           break;
         }
+        case "MP3":
+          mp3Hint = header.value.trim() || null;
+          break;
+        case "VIDEO":
+          videoUrl = header.value.trim() || null;
+          break;
         case "P":
         case "P1":
           player = 1;
@@ -452,6 +474,7 @@ export function importUltrastarText(
       : ultrastarMetronomeBpm;
 
   const firstVocalMs = ultrastarBeatToMs(notes[0]!.startBeat, gapMs, headerBpm);
+  const youtubeVideoId = videoUrl ? extractYoutubeVideoId(videoUrl) : null;
 
   const placeTempoMap = [{ startTicks: 0, bpm: placeBpm }];
   const msToTicksSafe = (ms: number): number | null => {
@@ -589,6 +612,9 @@ export function importUltrastarText(
     ultrastarMetronomeBpm,
     gapMs,
     firstVocalMs,
+    mp3Hint,
+    videoUrl,
+    youtubeVideoId,
     tekst: payload.tekst,
     melody: payload.melody,
     noteCount: notes.length,

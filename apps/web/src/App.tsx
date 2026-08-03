@@ -5,6 +5,7 @@ import { ClientShell } from "./shells/ClientShell.js";
 import { DesktopMenuBridge } from "./shells/DesktopMenuBridge.js";
 import { DesktopRootRedirect } from "./shells/DesktopRootRedirect.js";
 import { DeviceNameGate } from "./shells/DeviceNameGate.js";
+import { MemoryPressureBanner } from "./shells/MemoryPressureBanner.js";
 import { OperatorPinGate } from "./shells/OperatorPinGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
@@ -55,6 +56,7 @@ export default function App() {
 
   return (
     <TransportProvider>
+      <MemoryPressureBanner />
       <DeviceNameGate>
         <RouterProvider router={router} />
       </DeviceNameGate>

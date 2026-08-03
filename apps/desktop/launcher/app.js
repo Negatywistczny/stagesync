@@ -1,6 +1,6 @@
 /** @typedef {{ name: string, host: string, port: number, version?: string | null, url: string, hostname?: string | null, project?: string | null, status?: string | null }} DiscoveredHost */
 /** @typedef {{ url: string, label: string }} RecentHost */
-/** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null, ignoredVersion?: string | null }} LauncherBootstrap */
+/** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null, ignoredVersion?: string | null, localHostUrl?: string | null }} LauncherBootstrap */
 /** @typedef {{ available: boolean, version?: string | null, current: string, notes?: string | null }} DesktopUpdateInfo */
 
 import { localErrorActionsVisibility } from "./localErrorActions.js";
@@ -254,8 +254,16 @@ function friendlyConnectError(raw, url) {
 function friendlyLocalError(raw) {
   const text = String(raw?.message ?? raw ?? "");
   const lower = text.toLowerCase();
-  if (lower.includes("eaddrinuse") || lower.includes("port 4000 jest zajęty")) {
-    return "Port 4000 jest zajęty. Zamknij inne instancje StageSync i spróbuj ponownie.";
+  if (
+    lower.includes("eaddrinuse") ||
+    lower.includes("address already in use") ||
+    lower.includes("port 4000 jest zajęty")
+  ) {
+    return (
+      "Port 4000 jest zajęty (np. przez `pnpm dev`). " +
+      "Zatrzymaj drugi serwer albo użyj Połącz ręcznie: http://127.0.0.1:4000 — " +
+      "przekieruje do UI deweloperskiego na :3000."
+    );
   }
   if (
     lower.includes("eacces") ||
@@ -313,10 +321,10 @@ function downloadTextFile(filename, content) {
   URL.revokeObjectURL(url);
 }
 
-function downloadLocalLog() {
+function buildLocalLogExport() {
   const message = lastLocalErrorMessage || el.localError.textContent || "";
   const log = lastLocalLog || el.localLog.textContent || "";
-  if (!log.trim()) return;
+  if (!log.trim()) return null;
   const parts = [
     "# StageSync — log startu lokalnego hosta",
     `# ${new Date().toISOString()}`,
@@ -326,7 +334,35 @@ function downloadLocalLog() {
   }
   parts.push("", "## Log hosta", log.trim());
   const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  downloadTextFile(`stagesync-host-${stamp}.log`, `${parts.join("\n")}\n`);
+  return {
+    filename: `stagesync-host-${stamp}.log`,
+    content: `${parts.join("\n")}\n`,
+  };
+}
+
+async function downloadLocalLog() {
+  const payload = buildLocalLogExport();
+  if (!payload) {
+    el.localProgress.hidden = false;
+    el.localProgress.textContent =
+      "Brak logu do pobrania. Sprawdź ~/Documents/StageSync/logs/sidecar.log albo spróbuj uruchomić host ponownie.";
+    return;
+  }
+  try {
+    const savedPath = await invoke("save_launcher_log", payload);
+    el.localProgress.hidden = false;
+    el.localProgress.textContent = `Zapisano log: ${savedPath}`;
+  } catch (err) {
+    // WKWebView on macOS cancels blob URL downloads (NSURLError -999).
+    try {
+      downloadTextFile(payload.filename, payload.content);
+    } catch {
+      showLocalError(
+        friendlyLocalError(err),
+        lastLocalLog || el.localLog.textContent || undefined,
+      );
+    }
+  }
 }
 
 function syncLocalErrorActions() {
@@ -687,8 +723,14 @@ async function init() {
 
   if (bootstrap.hasSidecar) {
     el.btnLocal.disabled = false;
-    el.localHint.hidden = true;
-    el.localHint.textContent = "";
+    if (bootstrap.localHostUrl) {
+      el.localHint.hidden = false;
+      el.localHint.textContent = `Host już działa (${bootstrap.localHostUrl}). Kliknij „Uruchom lokalny host” albo Połącz ręcznie — UI dev przekieruje z :4000 na :3000.`;
+      el.manualUrl.value = bootstrap.localHostUrl.replace(/\/$/, "");
+    } else {
+      el.localHint.hidden = true;
+      el.localHint.textContent = "";
+    }
   } else if (bootstrap.stagesyncUrl) {
     el.btnLocal.disabled = true;
     el.localHint.hidden = false;
@@ -698,7 +740,7 @@ async function init() {
     el.btnLocal.disabled = true;
     el.localHint.hidden = false;
     el.localHint.textContent =
-      "Brak bundla sidecara. Uruchom serwer (`pnpm dev`) i połącz ręcznie do http://127.0.0.1:4000.";
+      "Brak bundla sidecara. Uruchom `pnpm dev` i połącz ręcznie: http://127.0.0.1:4000 (API; UI na :3000).";
     el.manualUrl.placeholder = "http://127.0.0.1:4000";
   }
   syncLocalButtonAria();

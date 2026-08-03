@@ -35,6 +35,9 @@ kopiuje plik jako `.env` i nie musi nic zmieniać. Docker i Compose zawsze ustaw
 
 ```
 ~/Documents/StageSync/
+  host/
+    .env                # zarządzane ustawienia Admin / Konto USDB (Desktop/Docker)
+    midi-config.json
   library/
     library.json        # indeks biblioteki (seeded z library.template.json)
     setlist.json

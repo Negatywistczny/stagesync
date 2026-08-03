@@ -6,7 +6,7 @@
   "build": {
     "frontendDist": "../launcher",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeDevCommand": "node ../../launch/scripts/sync-launcher-ui.mjs && npx --yes serve ./launcher -l 1420 --no-clipboard",
+    "beforeDevCommand": "node ../../launch/scripts/sync-launcher-ui.mjs && node ../../launch/scripts/sync-sidecar-server.mjs && npx --yes serve ./launcher -l 1420 --no-clipboard",
     "beforeBuildCommand": "node ../../launch/scripts/sync-launcher-ui.mjs"
   },
   "app": {

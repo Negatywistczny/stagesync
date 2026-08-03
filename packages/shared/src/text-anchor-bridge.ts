@@ -6,6 +6,7 @@ import {
   type FormaClip,
   type MelodyNoteClip,
   type Project,
+  type TekstBlock,
   type TekstClip,
   type TempoEvent,
 } from "./schema.js";
@@ -15,10 +16,13 @@ import {
   ticksToSeconds,
 } from "./tempo-map.js";
 import {
+  applySeedMetronomeFallback,
   runMultiPassTempoSolver,
+  sectionBeat1Ms,
   weightForTempoAnchorKind,
   pristineBarsFromMsSpan,
   type TempoSolverAnchor,
+  type TempoSolverSectionPlan,
 } from "./tempo-map-solver.js";
 import {
   applyUltrastarImportToProject,
@@ -26,6 +30,17 @@ import {
   suggestGridBpmFromPipeAndFirstVocal,
   type UltrastarImportOk,
 } from "./ultrastar-import.js";
+import {
+  layoutFormaFromAlignedWords,
+  msPerBarAtBpm,
+  placeUsUgBackingAudioClip,
+  runAudioDrivenSmartTempo,
+  suggestBeat1MsFromPipeAndGap,
+  tempoMapFromTempoNodes,
+  type AudioAnalysisResult,
+  type SmartTempoAudioRef,
+  type TempoNode,
+} from "./smart-tempo.js";
 import { splitUgSections } from "./ug-import.js";
 import { cleanUgTabContent } from "./ug-content.js";
 import {
@@ -43,20 +58,19 @@ import {
 } from "./ug-pipe-bars.js";
 
 /**
- * Text-Anchor Bridging — Różdżka 2.0 + MultiPass TempoMap (final SSOT):
+ * Text-Anchor Bridging — Różdżka 2.0 + Smart Tempo (audio SSOT):
  *
- * 1. **Forma S3** — immutable walls from {@link runMultiPassTempoSolver}
- *    (pipe bars OR pristineBars from vocal ms @ seedBpm, floored by structural
- *    barOffsets / chord count). No preferTwoBarGrid; no offset compress.
- * 2. **Vocals** — UltraStar wall-clock remapped via solver TempoMap
- *    (`secondsToTicks`). `sourceSection` is align-first (UG↔US).
- * 3. **Chords** — vocal onsets on structural Beat 1/3 from phrase framing
- *    (US syllable ms only orients phrase bar counts + soft TempoMap).
- *    Pipe cells = 1 bar each; instrumental without pipe = even pristineBars
- *    grid. Lengths = next onset − current (last → Forma wall).
- * 4. **Seed / TempoMap** — Pass-1 / pipe; metro fallback ±15%; map uses
- *    **exact** BPM between Forma section walls (tekst↔MP3↔Forma lock). US
- *    syllable ms only orients phrase/Forma bar counts — not per-line BPM kinks.
+ * **With audio analysis (Smart Tempo):**
+ * 1. **TempoMap** — ONLY from precomputed audio beat grid (`runAudioDrivenSmartTempo`).
+ *    UltraStar `#BPM` is decode-only (beat→ms); it must NOT seed tempo, Forma, or layout.
+ * 2. **Vocals / melody** — exact UltraStar wall-clock ms → content-epoch TempoMap
+ *    (no beat-grid snap — lyrics stay in sync with MP3 as authored in US).
+ * 3. **Forma** — walls from UG↔US word links (`layoutFormaFromAlignedWords`);
+ *    pipe bar counts only for wordless / instrumental sections (audio seed grid).
+ * 4. **Chords** — on aligned US word times (ms→ticks); grid fill only without a word.
+ *
+ * **Without audio (experimental legacy):**
+ * Sparse map from {@link runMultiPassTempoSolver} — orientational US timing, marked approximate.
  *
  * Storage stays integer ticks only (ADR 0002). Fail-soft Result — never throws
  * for ordinary user input.
@@ -64,10 +78,10 @@ import {
 /** Below this align ratio, import is still allowed but marked approximate. */
 export const TEXT_ANCHOR_WEAK_ALIGN = 0.55;
 
-/** Default bars per UG chord change when section has no pipe grid. */
+/** Default bars per UG chord change when **filling** a Forma container (not length SSOT). */
 export const DEFAULT_BARS_PER_CHORD = 2;
 
-/** Default bars per lyric line when section has no chords and no pipe. */
+/** Default bars per lyric line when section has no US walls and no pipe. */
 export const DEFAULT_BARS_PER_LINE = 1;
 
 const CHORD_TOKEN =
@@ -133,6 +147,12 @@ export type TextAnchorBridgeOk = {
     chordCount: number;
     anchored: boolean;
   }[];
+  /** Tempo Nodes for Beat Mapper (wallMs ↔ targetTick). */
+  tempoNodes: TempoNode[];
+  /** When Smart Tempo audio was used for this bridge. */
+  smartTempoAudio?: SmartTempoAudioRef;
+  mp3Hint?: string | null;
+  youtubeVideoId?: string | null;
 };
 
 export type TextAnchorBridgeErr = {
@@ -156,6 +176,19 @@ export type TextAnchorBridgeOptions = {
    * (suggested pipe+GAP BPM is informational only — never auto-applied).
    */
   gridBpm?: number;
+  /** Smart Tempo: backing audio ground truth (duration + peaks). */
+  smartTempoAudio?: SmartTempoAudioRef;
+  /** Precomputed onset/beat analysis from apps/web (required for audio SSOT tempo). */
+  audioAnalysis?: AudioAnalysisResult;
+  /** Beat Mapper draft nodes — override solver map only when user-edited. */
+  draftTempoNodes?: readonly TempoNode[];
+  /** True when Beat Mapper nodes were dragged by the user (not auto-seeded). */
+  draftTempoNodesUserEdited?: boolean;
+  /**
+   * True when Beat Mapper Audio Start Offset was set by the user.
+   * Skips chord↔syllable Beat 1 auto-nudge so the manual offset sticks.
+   */
+  audioStartOffsetUserEdited?: boolean;
 };
 
 function acceptChordToken(raw: string): string | null {
@@ -847,7 +880,8 @@ export function enforceMinChordGap(
 /**
  * Even bars-per-chord when a known span already divides evenly.
  * Otherwise floor — never round up (that would require stretching Forma).
- * Used for diagnostics; container length uses {@link sectionLengthBarsFromUg}.
+ * Used to **fill** a frozen container; length SSOT is {@link sectionLengthBarsFromUg}
+ * / UltraStar walls — not chords × {@link DEFAULT_BARS_PER_CHORD}.
  */
 export function barsPerChordForSection(
   spanBars: number,
@@ -859,9 +893,9 @@ export function barsPerChordForSection(
 }
 
 /**
- * Hard container length in bars from UG structure (step 1).
- * Pipe wins; else chords × {@link DEFAULT_BARS_PER_CHORD}; else lyric lines ×
- * {@link DEFAULT_BARS_PER_LINE}; else 1.
+ * Fallback Forma length in bars from UG structure alone (no UltraStar walls).
+ * Pipe wins; else lyric lines × {@link DEFAULT_BARS_PER_LINE}; else 1.
+ * Chords never define length — they only fill the container.
  */
 export function sectionLengthBarsFromUg(sec: {
   pipeBarCount: number;
@@ -871,11 +905,75 @@ export function sectionLengthBarsFromUg(sec: {
   barsPerLine?: number;
 }): number {
   if (sec.pipeBarCount > 0) return sec.pipeBarCount;
-  const bpc = Math.max(1, Math.trunc(sec.barsPerChord ?? DEFAULT_BARS_PER_CHORD));
-  if (sec.chords.length > 0) return Math.max(1, sec.chords.length * bpc);
   const bpl = Math.max(1, Math.trunc(sec.barsPerLine ?? DEFAULT_BARS_PER_LINE));
   if (sec.lyricLineCount > 0) return Math.max(1, sec.lyricLineCount * bpl);
   return 1;
+}
+
+/**
+ * Forma length from successive UltraStar section Beat 1 walls (ms), else
+ * {@link sectionLengthBarsFromUg}. Pipe unchanged. Chords ignored for length.
+ */
+export function structuralBarsFromUsWalls(
+  ugSections: readonly {
+    pipeBarCount: number;
+    chords: readonly unknown[];
+    lyricLineCount: number;
+    barsPerLine?: number;
+  }[],
+  vocalMsRanges: readonly ({ startMs: number; endMs: number } | null)[],
+  sizingBpm: number,
+  meter: TimeSignature = { numerator: 4, denominator: 4 },
+  ppq: number = DEFAULT_PPQ,
+): number[] {
+  const n = ugSections.length;
+  const beat1Ms: (number | null)[] = [];
+  for (let si = 0; si < n; si++) {
+    const vr = vocalMsRanges[si] ?? null;
+    if (!vr) {
+      beat1Ms.push(null);
+      continue;
+    }
+    // Wall = first strong beat: pickup syllables stay before Beat 1.
+    beat1Ms.push(
+      sectionBeat1Ms(vr.startMs, vr.endMs, sizingBpm, meter, ppq, null),
+    );
+  }
+  const out: number[] = [];
+  for (let si = 0; si < n; si++) {
+    const sec = ugSections[si]!;
+    if (sec.pipeBarCount > 0) {
+      out.push(sec.pipeBarCount);
+      continue;
+    }
+    const b1 = beat1Ms[si];
+    let nextB1: number | null = null;
+    for (let j = si + 1; j < n; j++) {
+      if (beat1Ms[j] != null) {
+        nextB1 = beat1Ms[j] ?? null;
+        break;
+      }
+    }
+    if (b1 != null && nextB1 != null && nextB1 > b1) {
+      out.push(pristineBarsFromMsSpan(b1, nextB1, sizingBpm, meter, ppq));
+      continue;
+    }
+    const vr = vocalMsRanges[si];
+    if (b1 != null && vr) {
+      out.push(
+        pristineBarsFromMsSpan(
+          b1,
+          Math.max(b1, vr.endMs),
+          sizingBpm,
+          meter,
+          ppq,
+        ),
+      );
+      continue;
+    }
+    out.push(sectionLengthBarsFromUg(sec));
+  }
+  return out;
 }
 
 /**
@@ -931,13 +1029,11 @@ export type FreezeFormaContainersResult = {
 /**
  * Step 1 — freeze immutable Forma containers.
  *
- * Nominal length from UG (pipe / chords×2 / lyric lines). Starts are
- * **sequential** (`cursor += lengthTicks`) from UG structure — US first-word
- * never shoves a later Forma start (no „nachodzi” cascade). Instrumental /
- * pipe sections may **cap** or **extend** to the next US vocal barline
- * (absorb pickup). Vocal chord-grid keeps exact
- * `chords × {@link DEFAULT_BARS_PER_CHORD}` bars (no shrink). Walls are then
- * read-only — chord fill must not move them.
+ * Length SSOT: UG pipe **or** UltraStar section Beat 1 walls (difference of
+ * successive desired starts). Chords only fill the container — never define
+ * length. Instrumental / pipe sections may cap or extend to the next US vocal
+ * barline (absorb pickup). Anacrusis lives in the previous section; the new
+ * Forma always starts on the barline. Walls are then read-only.
  */
 export function freezeFormaContainers(
   input: FreezeFormaContainersInput,
@@ -953,13 +1049,11 @@ export function freezeFormaContainers(
   const desiredStart: (number | null)[] = [];
   const anchored: boolean[] = [];
   const fromPipe: boolean[] = [];
-  const chordCount: number[] = [];
 
   for (let si = 0; si < n; si++) {
     const sec = input.ugSections[si]!;
     ugLengthBars.push(sectionLengthBarsFromUg(sec));
     fromPipe.push(sec.pipeBarCount > 0);
-    chordCount.push(sec.chords.length);
     const ticks = input.sectionUsTicks[si] ?? [];
     if (ticks.length > 0) {
       const first = Math.min(...ticks);
@@ -981,7 +1075,7 @@ export function freezeFormaContainers(
     }
   }
 
-  /** Next US-derived vocal barline after index `from` (for instrumental absorb). */
+  /** Next US-derived vocal barline after index `from`. */
   const nextDesiredAfter = (from: number): number | null => {
     for (let j = from + 1; j < n; j++) {
       const want = desiredStart[j];
@@ -1001,23 +1095,20 @@ export function freezeFormaContainers(
   let cursor = floor;
 
   for (let si = 0; si < n; si++) {
-    // Sequential Forma from UG — US timing annotates vocals later, never
-    // shoves this start when a prior chords×2 container overruns the US word.
     const start = cursor;
 
     let bars = Math.max(1, ugLengthBars[si]!);
     const nextWant = nextDesiredAfter(si);
     const instrumental = fromPipe[si]! || !anchored[si]!;
-    // Vocal chord-grid: keep exact chords×2 (no shrink). Pipe / other
-    // instrumentals may cap or absorb pickup up to the next US vocal.
-    const vocalChordGrid =
-      !instrumental && chordCount[si]! > 0 && !fromPipe[si]!;
 
     if (nextWant != null && nextWant > start) {
       const availBars = Math.max(1, Math.floor((nextWant - start) / barTicks));
-      if (!vocalChordGrid) {
+      if (!instrumental) {
+        // Vocal: UltraStar wall span is length SSOT (chords only fill).
+        bars = availBars;
+      } else {
         bars = Math.min(bars, availBars);
-        if (instrumental && availBars > bars) {
+        if (availBars > bars) {
           bars = availBars;
         }
       }
@@ -1416,6 +1507,112 @@ function remapTickAlongSolverMap(
   }
 }
 
+/**
+ * Map UltraStar place-BPM ticks → content-epoch TempoMap ticks using exact
+ * wall-clock ms (no beat-grid snap). Lyrics/melody stay in sync with MP3 as
+ * authored in the US file; TempoMap only converts ms→ticks.
+ */
+function remapTickAlongAudioMapContinuous(
+  ticks: number,
+  placeBpm: number,
+  tempoMap: readonly TempoEvent[],
+  seedBpm: number,
+  meter: TimeSignature,
+  ppq: number,
+  floor: number,
+  audioStartOffsetMs: number = 0,
+): number {
+  const wallMs = ticksToWallMs(ticks, placeBpm, meter, ppq, floor);
+  const offset = Math.max(0, audioStartOffsetMs);
+  const contentMs = Math.max(0, wallMs - offset);
+  try {
+    return (
+      secondsToTicks(contentMs / 1000, tempoMap, seedBpm, meter, ppq) + floor
+    );
+  } catch {
+    return remapTickAlongSolverMap(
+      ticks,
+      placeBpm,
+      tempoMap,
+      seedBpm,
+      meter,
+      ppq,
+      floor,
+    );
+  }
+}
+
+/**
+ * After tempo remap: keep UltraStar durations; only untangle inverted/duplicate
+ * onsets so blocks stay ordered (no beat-grid reflow, no stretch-to-next).
+ */
+export function normalizeTekstBlockTimings<T extends TekstBlock>(
+  blocks: readonly T[],
+  clipStartTicks: number,
+  clipEndTicks: number,
+): T[] {
+  if (blocks.length === 0) return [];
+  const out = blocks
+    .slice()
+    .sort(
+      (a, b) =>
+        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+    )
+    .map((b) => ({ ...b, lengthTicks: Math.max(1, b.lengthTicks) }));
+
+  if (out[0]!.startTicks < clipStartTicks) {
+    out[0] = { ...out[0]!, startTicks: clipStartTicks };
+  }
+  for (let i = 1; i < out.length; i++) {
+    const minStart = out[i - 1]!.startTicks + 1;
+    if (out[i]!.startTicks < minStart) {
+      out[i] = { ...out[i]!, startTicks: minStart };
+    }
+  }
+
+  for (let i = 0; i < out.length; i++) {
+    const start = out[i]!.startTicks;
+    let length = Math.max(1, out[i]!.lengthTicks);
+    const nextStart =
+      i + 1 < out.length ? out[i + 1]!.startTicks : clipEndTicks;
+    if (start + length > nextStart && nextStart > start) {
+      length = Math.max(1, nextStart - start);
+    }
+    out[i] = { ...out[i]!, lengthTicks: length };
+  }
+  return out;
+}
+
+function remapTekstClipsWithMapFn(
+  clips: readonly TekstClip[],
+  mapStart: (t: number) => number,
+  mapEnd: (t: number) => number = mapStart,
+): TekstClip[] {
+  return clips.map((clip) => {
+    const startTicks = mapStart(clip.startTicks);
+    const endTicks = mapEnd(clip.startTicks + clip.lengthTicks);
+    const clipEnd = Math.max(startTicks + 1, endTicks);
+    let blocks = (clip.blocks ?? []).map((b) => {
+      const bStart = mapStart(b.startTicks);
+      const bEnd = mapEnd(b.startTicks + b.lengthTicks);
+      return {
+        ...b,
+        startTicks: bStart,
+        lengthTicks: Math.max(1, bEnd - bStart),
+      };
+    });
+    if (blocks.length > 0) {
+      blocks = normalizeTekstBlockTimings(blocks, startTicks, clipEnd);
+    }
+    return {
+      ...clip,
+      startTicks,
+      lengthTicks: Math.max(1, clipEnd - startTicks),
+      ...(blocks.length > 0 ? { blocks } : {}),
+    };
+  });
+}
+
 function remapTekstClipsAlongSolverMap(
   clips: readonly TekstClip[],
   placeBpm: number,
@@ -1427,23 +1624,20 @@ function remapTekstClipsAlongSolverMap(
 ): TekstClip[] {
   const mapT = (t: number) =>
     remapTickAlongSolverMap(t, placeBpm, tempoMap, seedBpm, meter, ppq, floor);
+  return remapTekstClipsWithMapFn(clips, mapT);
+}
+
+function remapMelodyClipsWithMapFn(
+  clips: readonly MelodyNoteClip[],
+  mapT: (t: number) => number,
+): MelodyNoteClip[] {
   return clips.map((clip) => {
     const startTicks = mapT(clip.startTicks);
     const endTicks = mapT(clip.startTicks + clip.lengthTicks);
-    const blocks = (clip.blocks ?? []).map((b) => {
-      const bStart = mapT(b.startTicks);
-      const bEnd = mapT(b.startTicks + b.lengthTicks);
-      return {
-        ...b,
-        startTicks: bStart,
-        lengthTicks: Math.max(1, bEnd - bStart),
-      };
-    });
     return {
       ...clip,
       startTicks,
       lengthTicks: Math.max(1, endTicks - startTicks),
-      ...(blocks.length > 0 ? { blocks } : {}),
     };
   });
 }
@@ -1459,15 +1653,7 @@ function remapMelodyClipsAlongSolverMap(
 ): MelodyNoteClip[] {
   const mapT = (t: number) =>
     remapTickAlongSolverMap(t, placeBpm, tempoMap, seedBpm, meter, ppq, floor);
-  return clips.map((clip) => {
-    const startTicks = mapT(clip.startTicks);
-    const endTicks = mapT(clip.startTicks + clip.lengthTicks);
-    return {
-      ...clip,
-      startTicks,
-      lengthTicks: Math.max(1, endTicks - startTicks),
-    };
-  });
+  return remapMelodyClipsWithMapFn(clips, mapT);
 }
 
 /**
@@ -1698,22 +1884,86 @@ export function bridgeUsUgImport(
     );
   }
 
-  const solverSections = ugSections.map((sec, si) => {
+  const vocalMsRanges = ugSections.map((_, si) => {
     const msList = sectionUsMs[si] ?? [];
-    const vocalMsRange =
-      msList.length > 0
-        ? {
-            startMs: Math.min(...msList),
-            endMs: Math.max(...msList),
-          }
-        : null;
-    return {
-      name: sec.name,
-      pipeBarCount: sec.pipeBarCount,
-      chordCount: sec.chords.length,
-      vocalMsRange,
-    };
+    return msList.length > 0
+      ? {
+          startMs: Math.min(...msList),
+          endMs: Math.max(...msList),
+        }
+      : null;
   });
+
+  const pipeSeed = (() => {
+    const pipeSec = ugSections.find((s) => s.pipeBarCount > 0);
+    if (!pipeSec || !(us.firstVocalMs > 0)) return null;
+    // Content-relative seed: exclude pre-roll. Use editorial Beat 1 @ 120 prior
+    // (not a possibly-late transient offset) so SingStar GAP ~35s → ~120, and
+    // chord↔syllable align still sees a stable barMs.
+    let beat1Ms = 0;
+    if (pipeSec.pipeBarCount >= 12) {
+      beat1Ms = suggestBeat1MsFromPipeAndGap({
+        gapMs: us.firstVocalMs,
+        pipeBarCount: pipeSec.pipeBarCount,
+        layoutBpm: 120,
+        meter,
+        ppq,
+      });
+    }
+    const passed = Math.max(
+      0,
+      options.smartTempoAudio?.audioStartOffsetMs ?? 0,
+    );
+    // When editorial Beat 1 > 0 (pre-roll in GAP) and the caller trim is near
+    // it, prefer the measured offset for a finer seed (~123 vs 120). Never
+    // adopt a late transient when editorial says Beat 1 is at 0.
+    if (
+      beat1Ms > 0 &&
+      passed > 0 &&
+      Math.abs(passed - beat1Ms) <= msPerBarAtBpm(120, meter, ppq) * 0.5
+    ) {
+      beat1Ms = passed;
+    }
+    return suggestGridBpmFromPipeAndFirstVocal({
+      pipeBarCount: pipeSec.pipeBarCount,
+      firstVocalMs: us.firstVocalMs,
+      beat1Ms,
+      meter,
+    });
+  })();
+
+  const useAudioSmartTempo =
+    (options.smartTempoAudio?.durationMs ?? 0) > 0 &&
+    options.audioAnalysis != null &&
+    (options.audioAnalysis.beatMs.length > 0 ||
+      options.audioAnalysis.onsetsMs.length > 0);
+
+  // Legacy solver sizing may use US metro fallback. Smart Tempo never sizes
+  // Forma from `#BPM` — word links + audio seed only (see layout after map).
+  const formaSizingBpm = useAudioSmartTempo
+    ? pipeSeed ??
+      (options.audioAnalysis!.estimatedBpm > 0
+        ? options.audioAnalysis!.estimatedBpm
+        : 120)
+    : applySeedMetronomeFallback(
+        pipeSeed ?? placeBpm,
+        us.ultrastarMetronomeBpm,
+      );
+  const wallBars = structuralBarsFromUsWalls(
+    ugSections,
+    vocalMsRanges,
+    formaSizingBpm,
+    meter,
+    ppq,
+  );
+
+  const solverSections = ugSections.map((sec, si) => ({
+    name: sec.name,
+    pipeBarCount: sec.pipeBarCount,
+    chordCount: sec.chords.length,
+    structuralBars: wallBars[si]!,
+    vocalMsRange: vocalMsRanges[si]!,
+  }));
 
   const anchors: TempoSolverAnchor[] = [];
   for (let si = 0; si < ugSections.length; si++) {
@@ -1832,9 +2082,16 @@ export function bridgeUsUgImport(
 
     const phraseMs = phraseMsBySection.get(si) ?? [];
     const vr0 = solverSections[si]!.vocalMsRange;
-    const bpmEst =
-      us.ultrastarMetronomeBpm > 0 ? us.ultrastarMetronomeBpm : placeBpm;
+    const bpmEst = useAudioSmartTempo
+      ? formaSizingBpm
+      : us.ultrastarMetronomeBpm > 0
+        ? us.ultrastarMetronomeBpm
+        : placeBpm;
+    const spanBars = wallBars[si] ?? sectionLengthBarsFromUg(ugSections[si]!);
+    const fillBpc = barsPerChordForSection(spanBars, secChords.length);
     const barsPerLine = groups.map((g, gi) => {
+      // Left-aligned single chord per lyric line → fill density from Forma span.
+      if (g.chords.length === 1) return fillBpc;
       const start = phraseMs[gi] ?? vr0?.startMs ?? 0;
       const end =
         phraseMs[gi + 1] ??
@@ -1938,13 +2195,16 @@ export function bridgeUsUgImport(
     }
 
     // Forma Beat 1 ms = first chord (barOffset 0); end covers last chord.
-    const vr = solverSections[si]!.vocalMsRange;
-    if (vr) {
-      const planned = chordMsPlans.filter((p) => p.sectionIndex === si);
-      const first = planned.find((p) => p.barOffset === 0) ?? planned[0];
-      if (first) vr.startMs = first.ms;
-      if (planned.length > 0) {
-        vr.endMs = Math.max(vr.endMs, ...planned.map((p) => p.ms));
+    // Legacy solver only — Smart Tempo Forma comes from word links after Adapt.
+    if (!useAudioSmartTempo) {
+      const vr = solverSections[si]!.vocalMsRange;
+      if (vr) {
+        const planned = chordMsPlans.filter((p) => p.sectionIndex === si);
+        const first = planned.find((p) => p.barOffset === 0) ?? planned[0];
+        if (first) vr.startMs = first.ms;
+        if (planned.length > 0) {
+          vr.endMs = Math.max(vr.endMs, ...planned.map((p) => p.ms));
+        }
       }
     }
   }
@@ -2000,32 +2260,213 @@ export function bridgeUsUgImport(
         )
       : anchors;
 
-  const pipeSeed = (() => {
-    const pipeSec = ugSections.find((s) => s.pipeBarCount > 0);
-    if (!pipeSec || !(us.firstVocalMs > 0)) return null;
-    return suggestGridBpmFromPipeAndFirstVocal({
-      pipeBarCount: pipeSec.pipeBarCount,
-      firstVocalMs: us.firstVocalMs,
-      meter,
-    });
-  })();
+  let seedBpm: number;
+  let tempoMap: TempoEvent[];
+  let tempoNodes: TempoNode[];
+  let formaSections: TempoSolverSectionPlan[];
+  let effectiveAudioOffset = options.smartTempoAudio?.audioStartOffsetMs ?? 0;
 
-  const solver = runMultiPassTempoSolver({
-    anchors: seedAnchors,
-    sections: solverSections,
-    meter,
-    ppq,
-    fallbackBpm: pipeSeed ?? placeBpm,
-    referenceMetronomeBpm: us.ultrastarMetronomeBpm,
-    contentFloorTicks: floor,
-    idPrefix: prefix,
-  });
-  warnings.push(...solver.warnings);
-  if (solver.warnings.some((w) => /bez wokalu/i.test(w))) {
-    approximate = true;
+  if (useAudioSmartTempo) {
+    // TempoMap = audio only. `#BPM` / pipe BPM never seed Adapt.
+    const audioBpm =
+      options.audioAnalysis!.estimatedBpm > 0
+        ? options.audioAnalysis!.estimatedBpm
+        : 0;
+    // Do not nudge audioStartOffset from chord↔syllable — text stays US wall-clock.
+    const audioResult = runAudioDrivenSmartTempo({
+      analysis: options.audioAnalysis!,
+      durationMs: options.smartTempoAudio!.durationMs,
+      audioStartOffsetMs: effectiveAudioOffset,
+      meter,
+      ppq,
+      floorTicks: floor,
+      idPrefix: prefix,
+      fallbackBpm: audioBpm > 0 ? audioBpm : 120,
+    });
+    warnings.push(...audioResult.warnings);
+    seedBpm = audioResult.seedBpm;
+    const userEditedDraft =
+      options.draftTempoNodesUserEdited === true &&
+      options.draftTempoNodes != null &&
+      options.draftTempoNodes.length > 0;
+    tempoMap = userEditedDraft
+      ? tempoMapFromTempoNodes(
+          options.draftTempoNodes!,
+          seedBpm,
+          floor,
+          meter,
+          ppq,
+          prefix,
+          {
+            audioDurationMs:
+              options.smartTempoAudio!.durationMs > 0
+                ? options.smartTempoAudio!.durationMs
+                : undefined,
+          },
+        )
+      : audioResult.tempoMap;
+    tempoNodes = userEditedDraft
+      ? [...options.draftTempoNodes!]
+      : audioResult.tempoNodes;
+
+    // Placeholder — Forma rebuilt from word ticks after tekst remap below.
+    formaSections = ugSections.map((sec, si) => ({
+      sectionIndex: si,
+      name: sec.name,
+      startMs: vocalMsRanges[si]?.startMs ?? 0,
+      endMs: vocalMsRanges[si]?.endMs ?? 0,
+      pristineBars: 1,
+      fromPipe: sec.pipeBarCount > 0 && vocalMsRanges[si] == null,
+      startTicks: floor,
+      lengthTicks: barTicks,
+    }));
+  } else {
+    if (
+      (options.smartTempoAudio?.durationMs ?? 0) > 0 &&
+      !options.audioAnalysis
+    ) {
+      warnings.push(
+        "Audio bez analizy tempa — sync eksperymentalny (UltraStar orientacyjny).",
+      );
+      approximate = true;
+    } else if (!options.smartTempoAudio?.durationMs) {
+      warnings.push(
+        "Import bez podkładu audio — sync UltraStar jest orientacyjny (eksperymentalny).",
+      );
+      approximate = true;
+    }
+
+    const solver = runMultiPassTempoSolver({
+      anchors: seedAnchors,
+      sections: solverSections,
+      meter,
+      ppq,
+      fallbackBpm: pipeSeed ?? placeBpm,
+      referenceMetronomeBpm: us.ultrastarMetronomeBpm,
+      layoutBpm: pipeSeed ?? undefined,
+      contentFloorTicks: floor,
+      idPrefix: prefix,
+    });
+    warnings.push(...solver.warnings);
+    seedBpm = solver.seedBpm;
+    const userEditedDraft =
+      options.draftTempoNodesUserEdited === true &&
+      options.draftTempoNodes != null &&
+      options.draftTempoNodes.length > 0;
+    tempoMap = userEditedDraft
+      ? tempoMapFromTempoNodes(
+          options.draftTempoNodes!,
+          solver.seedBpm,
+          floor,
+          meter,
+          ppq,
+          prefix,
+          {
+            audioDurationMs:
+              (options.smartTempoAudio?.durationMs ?? 0) > 0
+                ? options.smartTempoAudio!.durationMs
+                : undefined,
+          },
+        )
+      : solver.tempoMap;
+    tempoNodes = userEditedDraft
+      ? [...options.draftTempoNodes!]
+      : solver.tempoNodes;
+    formaSections = solver.sections;
+    if (solver.warnings.some((w) => /bez wokalu/i.test(w))) {
+      approximate = true;
+    }
   }
 
-  const formaMusic: FormaClip[] = solver.sections.map((p) =>
+  // Align-first sourceSection on place-BPM ticks, then remap vocals AlongMap.
+  const tekstAligned = annotateTekstSourceSectionsFromAlign(
+    us.tekst.clips,
+    usWords,
+    ugWords,
+    align.mapAtoB,
+  );
+  // Exact US wall-clock → TempoMap (no beat snap). Melody same path.
+  const mapUsAudio = useAudioSmartTempo
+    ? (t: number) =>
+        remapTickAlongAudioMapContinuous(
+          t,
+          placeBpm,
+          tempoMap,
+          seedBpm,
+          meter,
+          ppq,
+          floor,
+          effectiveAudioOffset,
+        )
+    : (t: number) =>
+        remapTickAlongSolverMap(
+          t,
+          placeBpm,
+          tempoMap,
+          seedBpm,
+          meter,
+          ppq,
+          floor,
+        );
+
+  const tekstAnnotated = {
+    clips: remapTekstClipsWithMapFn(tekstAligned, mapUsAudio),
+  };
+  const melodyRemapped = {
+    clips: remapMelodyClipsWithMapFn(us.melody.clips, mapUsAudio),
+  };
+
+  if (useAudioSmartTempo) {
+    // First/last in UG reading order — NOT min/max time. A single misaligned
+    // early word (Math.min) was pulling Chorus Forma onto leftover Verse lyrics.
+    const sectionWordTicksInOrder: number[][] = ugSections.map(() => []);
+    for (let gi = 0; gi < ugWords.length; gi++) {
+      const gw = ugWords[gi]!;
+      const bj = align.mapAtoB[gi];
+      if (bj == null) continue;
+      const uw = usWords[bj];
+      if (!uw) continue;
+      sectionWordTicksInOrder[gw.sectionIndex]!.push(mapUsAudio(uw.startTicks));
+    }
+    const sectionFirstLastTicks = sectionWordTicksInOrder.map((ticks) => {
+      if (ticks.length === 0) {
+        return { first: null as number | null, last: null as number | null };
+      }
+      return { first: ticks[0]!, last: ticks[ticks.length - 1]! };
+    });
+    // Monotonic section starts: skip outlier early aligns within a section.
+    let prevFirst = floor;
+    for (let si = 0; si < sectionFirstLastTicks.length; si++) {
+      const ticks = sectionWordTicksInOrder[si]!;
+      if (ticks.length === 0) continue;
+      let first = ticks[0]!;
+      for (const t of ticks) {
+        if (t >= prevFirst) {
+          first = t;
+          break;
+        }
+      }
+      if (first < prevFirst) first = prevFirst;
+      sectionFirstLastTicks[si] = {
+        first,
+        last: Math.max(first, ticks[ticks.length - 1]!),
+      };
+      prevFirst = first;
+    }
+    formaSections = layoutFormaFromAlignedWords(
+      ugSections.map((sec, si) => ({
+        name: sec.name,
+        pipeBarCount: sec.pipeBarCount,
+        firstWordTicks: sectionFirstLastTicks[si]!.first,
+        lastWordTicks: sectionFirstLastTicks[si]!.last,
+      })),
+      floor,
+      meter,
+      ppq,
+    );
+  }
+
+  const formaMusic: FormaClip[] = formaSections.map((p) =>
     Object.freeze({
       id: `${prefix}-forma-${p.sectionIndex + 1}`,
       name: p.name.slice(0, 120),
@@ -2035,7 +2476,7 @@ export function bridgeUsUgImport(
     }),
   );
 
-  const containers: SectionContainer[] = solver.sections.map((p) =>
+  const containers: SectionContainer[] = formaSections.map((p) =>
     Object.freeze({
       sectionIndex: p.sectionIndex,
       name: p.name.slice(0, 120),
@@ -2057,36 +2498,6 @@ export function bridgeUsUgImport(
       anchored: c.anchored,
     }),
   );
-
-  // Align-first sourceSection on place-BPM ticks, then remap vocals AlongMap.
-  const tekstAligned = annotateTekstSourceSectionsFromAlign(
-    us.tekst.clips,
-    usWords,
-    ugWords,
-    align.mapAtoB,
-  );
-  const tekstAnnotated = {
-    clips: remapTekstClipsAlongSolverMap(
-      tekstAligned,
-      placeBpm,
-      solver.tempoMap,
-      solver.seedBpm,
-      meter,
-      ppq,
-      floor,
-    ),
-  };
-  const melodyRemapped = {
-    clips: remapMelodyClipsAlongSolverMap(
-      us.melody.clips,
-      placeBpm,
-      solver.tempoMap,
-      solver.seedBpm,
-      meter,
-      ppq,
-      floor,
-    ),
-  };
 
   const akordClips: AkordClip[] = [];
   let seq = 0;
@@ -2160,41 +2571,84 @@ export function bridgeUsUgImport(
         approximate = true;
       }
     } else if (list.length > 0) {
-      // Vocal: structural Beat 1/3 from phrase framing. US syllable ms only
-      // oriented Forma/barOffsets + soft TempoMap — not hard onset chase.
-      const plans = chordMsPlans
-        .filter((p) => p.sectionIndex === si)
-        .sort((a, b) => a.orderInSection - b.orderInSection);
       const paired: { startTicks: number; symbol: string }[] = [];
       let usedApprox = false;
 
-      for (const p of plans) {
-        const targetTick = Math.min(
-          win.endTicks - 1,
-          win.startTicks + p.barOffset * barTicks,
-        );
-        if (p.structuralOnly) usedApprox = true;
-        paired.push({ startTicks: targetTick, symbol: p.symbol });
-      }
-
-      if (plans.length < list.length) {
-        usedApprox = true;
-        // Fallback leftovers on remaining structural slots.
-        const usedOrders = new Set(plans.map((p) => p.orderInSection));
-        const offsets = structuralBarOffsetsForChordLines(list);
-        const offsetByOrder = new Map(
-          offsets.map((o) => [o.orderInSection, o.barOffset]),
-        );
+      if (useAudioSmartTempo) {
+        // Word-linked: chord time = aligned US word wall-clock → audio map.
         for (const c of list) {
-          if (usedOrders.has(c.orderInSection)) continue;
-          const barOffset = offsetByOrder.get(c.orderInSection) ?? 0;
-          paired.push({
-            startTicks: Math.min(
-              win.endTicks - 1,
-              win.startTicks + barOffset * barTicks,
-            ),
-            symbol: c.symbol,
-          });
+          let t: number | null = null;
+          if (c.ugWordIndex != null) {
+            const bj = align.mapAtoB[c.ugWordIndex];
+            if (bj != null && usWords[bj]) {
+              t = mapUsAudio(usWords[bj]!.startTicks);
+            }
+          }
+          if (t == null) {
+            const plan = chordMsPlans.find(
+              (p) =>
+                p.sectionIndex === si && p.orderInSection === c.orderInSection,
+            );
+            if (plan && !plan.structuralOnly) {
+              try {
+                const contentMs = Math.max(
+                  0,
+                  plan.ms - Math.max(0, effectiveAudioOffset),
+                );
+                t =
+                  secondsToTicks(
+                    contentMs / 1000,
+                    tempoMap,
+                    seedBpm,
+                    meter,
+                    ppq,
+                  ) + floor;
+              } catch {
+                t = null;
+              }
+            }
+          }
+          if (t == null) {
+            usedApprox = true;
+            const slot = paired.length;
+            const span = Math.max(1, win.endTicks - win.startTicks);
+            t = win.startTicks + Math.floor((slot * span) / Math.max(1, list.length));
+          }
+          paired.push({ startTicks: t, symbol: c.symbol });
+        }
+      } else {
+        // Legacy: structural Beat 1/3 from phrase framing.
+        const plans = chordMsPlans
+          .filter((p) => p.sectionIndex === si)
+          .sort((a, b) => a.orderInSection - b.orderInSection);
+
+        for (const p of plans) {
+          const targetTick = Math.min(
+            win.endTicks - 1,
+            win.startTicks + p.barOffset * barTicks,
+          );
+          if (p.structuralOnly) usedApprox = true;
+          paired.push({ startTicks: targetTick, symbol: p.symbol });
+        }
+
+        if (plans.length < list.length) {
+          usedApprox = true;
+          const usedOrders = new Set(plans.map((p) => p.orderInSection));
+          const offsets = structuralBarOffsetsForChordLines(list);
+          const offsetByOrder = new Map(
+            offsets.map((o) => [o.orderInSection, o.barOffset]),
+          );
+          for (const c of list) {
+            if (usedOrders.has(c.orderInSection)) continue;
+            const barOffset = offsetByOrder.get(c.orderInSection) ?? 0;
+            paired.push({
+              startTicks: Math.min(
+                win.endTicks - 1,
+                win.startTicks + barOffset * barTicks,
+              ),
+              symbol: c.symbol,
+            });
+          }
         }
       }
 
@@ -2256,16 +2710,27 @@ export function bridgeUsUgImport(
     usWordCount: usWords.length,
     title: us.title,
     artist: us.artist,
-    metronomeBpm: solver.seedBpm,
+    metronomeBpm: seedBpm,
     ultrastarMetronomeBpm: us.ultrastarMetronomeBpm,
     suggestedGridBpm: null,
-    tempoMap: solver.tempoMap,
-    seedBpm: solver.seedBpm,
+    tempoMap,
+    seedBpm,
     tekst: tekstAnnotated,
     melody: melodyRemapped,
     formaMusic: { clips: formaMusic },
     akordy: { clips: akordClips },
     sections: sectionPreview,
+    tempoNodes,
+    ...(options.smartTempoAudio
+      ? {
+          smartTempoAudio: {
+            ...options.smartTempoAudio,
+            audioStartOffsetMs: effectiveAudioOffset,
+          },
+        }
+      : {}),
+    mp3Hint: us.mp3Hint,
+    youtubeVideoId: us.youtubeVideoId,
   };
 }
 
@@ -2291,19 +2756,33 @@ function sameWordPrev(
 
 /**
  * Suggest editorial grid BPM from UltraStar wall-clock + first UG pipe section.
+ * Pass `beat1Ms` when Audio Start Offset / Beat 1 is known so pre-roll is
+ * excluded from the pipe+pickup span (Logic-band seed ~120–123, not ~113).
+ * When `beat1Ms` is omitted/0 and the pipe Intro is long, bootstraps a
+ * provisional Beat 1 @ 120 BPM so SingStar-style GAP is not counted from 0.
  */
 export function suggestGridBpmFromUsUgTexts(
   ultrastarText: string,
   ugText: string,
-  options: Pick<TextAnchorBridgeOptions, "meter"> = {},
+  options: Pick<TextAnchorBridgeOptions, "meter"> & { beat1Ms?: number } = {},
 ): number | null {
   const us = importUltrastarText(ultrastarText, { meter: options.meter });
   if (!us.ok) return null;
   const pipeSec = parseUgBridgeSections(ugText).find((s) => s.pipeBarCount > 0);
   if (!pipeSec) return null;
+  let beat1Ms = Math.max(0, Math.round(options.beat1Ms ?? 0));
+  if (beat1Ms <= 0 && pipeSec.pipeBarCount >= 12 && us.firstVocalMs > 0) {
+    beat1Ms = suggestBeat1MsFromPipeAndGap({
+      gapMs: us.firstVocalMs,
+      pipeBarCount: pipeSec.pipeBarCount,
+      layoutBpm: 120,
+      meter: options.meter,
+    });
+  }
   return suggestGridBpmFromPipeAndFirstVocal({
     pipeBarCount: pipeSec.pipeBarCount,
     firstVocalMs: us.firstVocalMs,
+    beat1Ms,
     meter: options.meter,
   });
 }
@@ -2343,16 +2822,20 @@ export function bridgeUsUgFromTexts(
     ...bridged,
     suggestedGridBpm: suggested,
     ultrastarMetronomeBpm: us.ultrastarMetronomeBpm,
+    mp3Hint: us.mp3Hint,
+    youtubeVideoId: us.youtubeVideoId,
   };
 }
 
 export type ApplyUsUgBridgeOptions = {
   applyBpm?: boolean;
+  smartTempoAudio?: SmartTempoAudioRef;
 };
 
 /**
  * Merge bridge result into Project: US tekst/melody/BPM, UG-named Forma (keep
- * Countdown), anchored akordy, MultiPass TempoMap. Does not touch audio / cue.
+ * Countdown), anchored akordy, MultiPass TempoMap. Optionally places backing
+ * audio clip (Smart Tempo).
  */
 export function applyUsUgBridgeToProject(
   project: Project,
@@ -2360,6 +2843,7 @@ export function applyUsUgBridgeToProject(
   options: ApplyUsUgBridgeOptions = {},
 ): Project {
   const applyBpm = options.applyBpm !== false;
+  const audioRef = options.smartTempoAudio ?? bridged.smartTempoAudio;
   const countdown = project.forma.clips.filter((c) => c.kind === "countdown");
   // sourceSection already align-first from bridge — do not re-annotate geometrically.
   const tekst = bridged.tekst.clips;
@@ -2374,6 +2858,9 @@ export function applyUsUgBridgeToProject(
       ultrastarMetronomeBpm: bridged.ultrastarMetronomeBpm,
       gapMs: 0,
       firstVocalMs: 0,
+      mp3Hint: bridged.mp3Hint ?? null,
+      videoUrl: null,
+      youtubeVideoId: bridged.youtubeVideoId ?? null,
       tekst: { clips: tekst },
       melody: bridged.melody,
       noteCount: bridged.melody.clips.length,
@@ -2382,7 +2869,7 @@ export function applyUsUgBridgeToProject(
     },
     { applyBpm: false },
   );
-  return {
+  let next: Project = {
     ...withUs,
     forma: { clips: [...countdown, ...bridged.formaMusic.clips] },
     akordy: bridged.akordy,
@@ -2395,6 +2882,23 @@ export function applyUsUgBridgeToProject(
         }
       : {}),
   };
+  // Wizard may pass a synthetic `local-*` id before server upload — skip stub.
+  const placeableAsset =
+    audioRef?.assetId &&
+    !audioRef.assetId.startsWith("local-") &&
+    audioRef.durationMs > 0
+      ? audioRef
+      : null;
+  if (placeableAsset) {
+    next = placeUsUgBackingAudioClip(next, {
+      assetId: placeableAsset.assetId,
+      durationMs: placeableAsset.durationMs,
+      waveformPeaks: placeableAsset.peaks,
+      audioStartOffsetMs: placeableAsset.audioStartOffsetMs ?? 0,
+      startTicks: 0,
+    });
+  }
+  return next;
 }
 
 /** Annotate tekst clips with sourceSection from forma affinity (onset).

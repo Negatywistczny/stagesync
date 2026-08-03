@@ -30,6 +30,7 @@ import {
   resolveTrackColor,
   channelModeFromChannelCount,
   isHwOutRepatchBlockedWhilePlaying,
+  wrapDisplayTicks,
   type FormaClip,
   type Project,
   type TextAnchorBridgeOk,
@@ -454,7 +455,7 @@ import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
 import { UltrastarImportForm } from "./UltrastarImportForm.js";
-import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
+import { CombinedUsUgImportForm, type UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
 import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
 import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
@@ -1552,6 +1553,10 @@ export function TimelineShell() {
       if (isEditableKeyboardTarget(e.target)) {
         return;
       }
+      // Import overlays own Space & shortcuts — don't drive Timeline transport.
+      if (combinedImportModalOpen || ugModalOpen || ultrastarModalOpen) {
+        return;
+      }
       const h = keyHandlersRef.current;
       const action = resolveTimelineShortcut({
         key: e.key,
@@ -1790,6 +1795,7 @@ export function TimelineShell() {
     clearMapSelection,
     closeContextMenu,
     closeMobileInspector,
+    combinedImportModalOpen,
     commitDraft,
     copyClipSelection,
     cutClipSelection,
@@ -1808,6 +1814,8 @@ export function TimelineShell() {
     toggleInspectorPanel,
     toolMenu,
     toolsVisOpen,
+    ugModalOpen,
+    ultrastarModalOpen,
   ]);
 
   useEffect(() => {
@@ -2165,7 +2173,7 @@ export function TimelineShell() {
     if (!metronomeOn || !state.playing) {
       metroBeatRef.current = metronomeBeatIndex(
         displayTicks,
-        state.timeSignature,
+        meterAtPlayhead,
         state.ppq,
       );
       return;
@@ -2175,19 +2183,29 @@ export function TimelineShell() {
         enabled: metronomeOn,
         playing: state.playing,
         displayTicks,
-        bpm: state.bpm,
-        timeSignature: state.timeSignature,
+        bpm: tempoAtPlayhead,
+        timeSignature: meterAtPlayhead,
         ppq: state.ppq,
+        tempoMaps: draftProject
+          ? {
+              defaultBpm: draftProject.defaultBpm,
+              defaultMeter: draftProject.defaultMeter,
+              tempoMap: draftProject.tempoMap,
+              meterMap: draftProject.meterMap,
+              ppq: draftProject.ppq,
+            }
+          : null,
       },
       metroBeatRef.current,
     );
   }, [
     displayTicks,
+    draftProject,
     metronomeOn,
-    state.bpm,
+    meterAtPlayhead,
     state.playing,
     state.ppq,
-    state.timeSignature,
+    tempoAtPlayhead,
   ]);
 
   // Soft-clock AlongMap — same TempoMap math as server engine / audio (P3).
@@ -2208,6 +2226,9 @@ export function TimelineShell() {
 
   // WebAudio clip playback — sync to server ticks (ADR 0008 / 0002).
   // Latency compensation is a client-only tick offset (Preferences); SSOT unchanged.
+  // Soft-clock + lead must stay inside the transport loop (exclusive end) so a
+  // clip starting on the loop end (e.g. bar 2.1 while cycling bar 1) never
+  // arms early at the wrap boundary.
   useEffect(() => {
     if (!projectId || !draftProject) {
       stopAudioPlayback();
@@ -2219,9 +2240,20 @@ export function TimelineShell() {
       stopAudioPlayback();
       return;
     }
-    const audioTicks =
-      displayTicks +
-      ticksFromSyncLeadAlongMap(latencyCompMs, displayTicks, draftProject);
+    const leadTicks = ticksFromSyncLeadAlongMap(
+      latencyCompMs,
+      displayTicks,
+      draftProject,
+    );
+    let audioTicks = displayTicks + leadTicks;
+    const loopRange = usableLoopRange(state.loop);
+    if (loopOn && loopRange) {
+      audioTicks = wrapDisplayTicks(audioTicks, {
+        enabled: true,
+        startTicks: loopRange.startTicks,
+        endTicks: loopRange.endTicks,
+      });
+    }
     syncAudioPlayback(projectId, {
       project: draftProject,
       playing: state.playing,
@@ -2237,6 +2269,7 @@ export function TimelineShell() {
     displayTicks,
     state.bpm,
     state.ppq,
+    state.loop,
     latencyCompMs,
     loopOn,
     soloAudioTrackIds,
@@ -2272,7 +2305,11 @@ export function TimelineShell() {
       let changed = false;
       for (const asset of missing) {
         if (cancelled) return;
-        const buf = await loadAudioBuffer(projectId, asset.id);
+        // Waveform meta only — do not pin full PCM into the playback cache
+        // (eager decode of every asset used to retain multi-GB of AudioBuffers).
+        const buf = await loadAudioBuffer(projectId, asset.id, undefined, {
+          cache: false,
+        });
         if (cancelled) return;
         setFailedAudioAssetIds(getFailedAudioAssetIds(projectId));
         if (!buf) continue;
@@ -2647,7 +2684,10 @@ export function TimelineShell() {
     setSongMetaOpen(false);
   }
 
-  async function onImportUsUgBridge(result: TextAnchorBridgeOk) {
+  async function onImportUsUgBridge(payload: UsUgApplyPayload) {
+    const result = payload.bridge;
+    const smartAudio = payload.smartTempoAudio;
+    const pendingFile = payload.pendingAudioFile;
     const warn =
       result.approximate || result.warnings.length > 0
         ? " · sprawdź Formę / akordy"
@@ -2659,9 +2699,32 @@ export function TimelineShell() {
         const name =
           result.title?.trim() ||
           `Import US+UG ${new Date().toLocaleTimeString("pl")}`;
-        const saved = await createSongWithContent(name, (shell) =>
-          applyUsUgBridgeToProject(shell, result),
+        let saved = await createSongWithContent(name, (shell) =>
+          applyUsUgBridgeToProject(shell, result, {
+            // Place clip only after real upload (skip synthetic local-* ids).
+            smartTempoAudio: pendingFile ? undefined : smartAudio,
+          }),
         );
+        if (pendingFile && saved.id) {
+          saved = await uploadProjectAudio(saved.id, pendingFile, {
+            startTicks: 0,
+          });
+          const asset = saved.assets.at(-1);
+          if (asset && smartAudio) {
+            const withClip = applyUsUgBridgeToProject(saved, result, {
+              smartTempoAudio: {
+                ...smartAudio,
+                assetId: asset.id,
+              },
+            });
+            saved = await putProject(saved.id, {
+              ...withClip,
+              id: saved.id,
+              updatedAt: saved.updatedAt,
+              midiProgramId: saved.midiProgramId,
+            });
+          }
+        }
         closeImportModals();
         setSongScreenOpen(false);
         setSongMetaOpen(false);
@@ -2678,7 +2741,27 @@ export function TimelineShell() {
       return;
     }
     if (!draftProject) return;
-    const next = applyUsUgBridgeToProject(draftProject, result);
+    const baseDraft = payload.serverProjectSnapshot
+      ? {
+          ...draftProject,
+          updatedAt: payload.serverProjectSnapshot.updatedAt,
+          assets: payload.serverProjectSnapshot.assets,
+          audioTracks: payload.serverProjectSnapshot.audioTracks,
+          audioClips: payload.serverProjectSnapshot.audioClips,
+        }
+      : draftProject;
+    let next = applyUsUgBridgeToProject(baseDraft, result, {
+      smartTempoAudio: smartAudio,
+    });
+    if (pendingFile && projectId) {
+      next = await uploadProjectAudio(projectId, pendingFile, { startTicks: 0 });
+      const asset = next.assets.at(-1);
+      if (asset && smartAudio) {
+        next = applyUsUgBridgeToProject(next, result, {
+          smartTempoAudio: { ...smartAudio, assetId: asset.id },
+        });
+      }
+    }
     commitDraft(next);
     flashCanvasNotice(`Import US+UG: ${summary} — Zapisz (⌘S)`);
     closeImportModals();
@@ -8589,25 +8672,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             aria-label="Zamknij"
             onClick={closeImportModals}
           />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="us-ug-import-title">
-                {importAsNewSong
-                  ? "Import US+UG (eksperymentalny) — nowy utwór"
-                  : "Import US+UG (eksperymentalny)"}
-              </h2>
+          <div
+            className={[styles.overlayPanel, styles.usUgOverlayPanel]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            <div className={styles.usUgOverlayHead}>
+              <h2 id="us-ug-import-title">Import US+UG</h2>
               <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
               </ShellIconButton>
             </div>
-            <div className={styles.overlayBody}>
+            <div className={styles.usUgOverlayBody}>
               <CombinedUsUgImportForm
-                applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do draftu"
-                }
+                applyLabel="Importuj do projektu"
                 applying={importApplying}
+                projectId={importAsNewSong ? undefined : projectId ?? undefined}
                 importOptions={importPreviewOptions}
                 initialTitle={
                   importAsNewSong ? undefined : draftProject?.name

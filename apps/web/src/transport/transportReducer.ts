@@ -4,6 +4,7 @@
  */
 
 import type { TempoMapProject, TransportAnchor, TransportState } from "@stagesync/shared";
+import type { TransportLoop } from "@stagesync/shared";
 import type { LiveDeskState, SetlistSnapshotState, StageCue } from "./transportContext.js";
 
 const MAX_LATENCY_MS = 60_000;
@@ -23,6 +24,18 @@ export function toTransportAnchor(
     timeSignature: state.timeSignature,
     ppq: state.ppq,
     ...(tempoMaps ? { tempoMaps } : {}),
+  };
+}
+
+/** Soft-clock loop from transport state (inclusive start / exclusive end). */
+export function transportLoopForSoftClock(
+  loop: TransportState["loop"],
+): TransportLoop | null {
+  if (!loop?.enabled) return null;
+  return {
+    enabled: true,
+    startTicks: loop.startTicks,
+    endTicks: loop.endTicks,
   };
 }
 

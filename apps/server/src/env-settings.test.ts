@@ -1,6 +1,6 @@
-import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   getSettingsSchemaForClient,
@@ -12,6 +12,8 @@ import {
   parseEnvContent,
   readManagedSettings,
   releaseMatchesUpdateChannel,
+  REPO_ENV_PATH,
+  resolveEnvPath,
   SETTINGS_SCHEMA,
   writeManagedSettings,
   type ManagedSettingsValues,
@@ -19,12 +21,57 @@ import {
 
 describe("env-settings", () => {
   const dirs: string[] = [];
+  const prevDataDir = process.env.STAGESYNC_DATA_DIR;
   afterEach(async () => {
     delete process.env.STAGESYNC_USDB_USER;
     delete process.env.STAGESYNC_USDB_PASS;
+    if (prevDataDir === undefined) delete process.env.STAGESYNC_DATA_DIR;
+    else process.env.STAGESYNC_DATA_DIR = prevDataDir;
     await Promise.all(
       dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })),
     );
+  });
+
+  it("resolves managed .env under STAGESYNC_DATA_DIR/host", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-env-data-"));
+    dirs.push(dir);
+    delete process.env.STAGESYNC_DATA_DIR;
+    expect(resolveEnvPath()).toBe(REPO_ENV_PATH);
+
+    process.env.STAGESYNC_DATA_DIR = dir;
+    expect(resolveEnvPath()).toBe(join(dir, "host", ".env"));
+  });
+
+  it("writes managed settings into dataDir/host without an existing file", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-env-write-data-"));
+    dirs.push(dir);
+    process.env.STAGESYNC_DATA_DIR = dir;
+
+    writeManagedSettings({
+      STAGESYNC_USDB_USER: "alice",
+      STAGESYNC_USDB_PASS: "s3cret",
+    });
+    const envPath = join(dir, "host", ".env");
+    const raw = parseEnvContent(await readFile(envPath, "utf8"));
+    expect(raw.STAGESYNC_USDB_USER).toBe("alice");
+    expect(raw.STAGESYNC_USDB_PASS).toBe("s3cret");
+  });
+
+  it("loadDotenv bootstraps DATA_DIR from repo then loads host/.env", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "ss-env-boot-data-"));
+    dirs.push(dataDir);
+    delete process.env.STAGESYNC_DATA_DIR;
+    delete process.env.SS_TEST_HOST_ONLY;
+
+    const hostEnv = join(dataDir, "host", ".env");
+    await mkdir(dirname(hostEnv), { recursive: true });
+    await writeFile(hostEnv, "SS_TEST_HOST_ONLY=from-host\n", "utf8");
+
+    // Simulate: DATA_DIR already set by launcher/compose (desktop path).
+    process.env.STAGESYNC_DATA_DIR = dataDir;
+    loadDotenvIntoProcess();
+    expect(process.env.SS_TEST_HOST_ONLY).toBe("from-host");
+    delete process.env.SS_TEST_HOST_ONLY;
   });
 
   it("parses quoted values, comments, and skips bad lines", () => {

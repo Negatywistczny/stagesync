@@ -44,6 +44,7 @@ import {
   shouldAcceptServerTick,
   stageCueFromWs,
   toTransportAnchor,
+  transportLoopForSoftClock,
   transportWsUrl,
   upsertStageCue,
 } from "./transportReducer.js";
@@ -68,6 +69,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
   const tempoMapsRef = useRef<TempoMapProject | null>(null);
+  const loopRef = useRef(transportLoopForSoftClock(defaultTransportState().loop));
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
@@ -102,6 +104,8 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       if (serverTimeMs !== undefined) {
         lastServerTimeMsRef.current = serverTimeMs;
       }
+      const softLoop = transportLoopForSoftClock(next.loop);
+      loopRef.current = softLoop;
       const anchor = toTransportAnchor(next, tempoMapsRef.current);
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
@@ -127,6 +131,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         frameTime,
         receiptMsRef.current,
         true,
+        loopRef.current,
       );
       const committed = commitDisplayTicks(next);
       noteH01Raf(next, committed);

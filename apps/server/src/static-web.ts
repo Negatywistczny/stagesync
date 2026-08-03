@@ -22,6 +22,63 @@ export function injectDesktopShellMarker(html: string): string {
   return `${DESKTOP_SHELL_MARKER}${html}`;
 }
 
+const DEFAULT_DEV_UI_ORIGIN = "http://127.0.0.1:3000";
+
+function isLoopbackRemoteAddress(ip: string | undefined): boolean {
+  if (!ip) return false;
+  return (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip === "::ffff:127.0.0.1" ||
+    ip.endsWith("127.0.0.1")
+  );
+}
+
+/** Vite dev server origin when `pnpm dev` runs web (:3000) + API (:4000). */
+export function resolveDevUiOrigin(): string | null {
+  if (process.env.STAGESYNC_DEV_UI_REDIRECT === "0") return null;
+  const fromEnv = process.env.STAGESYNC_DEV_UI_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "") || null;
+
+  // Docker / sidecar / prod: static bundle path is always configured explicitly.
+  if (process.env.STAGESYNC_STATIC_DIR?.trim()) return null;
+  if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "test") {
+    return null;
+  }
+
+  return DEFAULT_DEV_UI_ORIGIN;
+}
+
+/**
+ * When no static bundle is mounted, redirect loopback browser navigation to Vite.
+ * API-only :4000 during `pnpm dev` otherwise returns Express "Cannot GET /admin".
+ */
+export function mountDevUiRedirect(app: Express): void {
+  const devUiOrigin = resolveDevUiOrigin();
+  if (!devUiOrigin) return;
+
+  app.use((req, res, next) => {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      next();
+      return;
+    }
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/ws") ||
+      req.path.startsWith("/downloads")
+    ) {
+      next();
+      return;
+    }
+    const remote = req.socket.remoteAddress;
+    if (!isLoopbackRemoteAddress(remote)) {
+      next();
+      return;
+    }
+    res.redirect(302, `${devUiOrigin}${req.originalUrl}`);
+  });
+}
+
 /** Resolve static web root: env override, then common Docker / monorepo paths. */
 export function resolveStaticDir(): string | null {
   const fromEnv = process.env.STAGESYNC_STATIC_DIR?.trim();

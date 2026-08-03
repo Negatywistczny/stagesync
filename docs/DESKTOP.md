@@ -139,14 +139,17 @@ Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji**
 ```sh
 # Terminal A — opcjonalny zewnętrzny host
 docker compose up --build
-# albo: pnpm dev
+# albo: pnpm dev   → UI :3000, API :4000
 
 # Terminal B — shell
 pnpm install
 pnpm --filter @stagesync/desktop tauri dev
 ```
 
-Opcjonalnie: `STAGESYNC_URL=http://127.0.0.1:4000/admin pnpm --filter @stagesync/desktop tauri dev`
+Opcjonalnie (cienki shell bez sidecara):
+
+- `pnpm dev`: `STAGESYNC_URL=http://127.0.0.1:3000/admin pnpm --filter @stagesync/desktop tauri dev`
+- Docker Compose (UI + API na :4000): `STAGESYNC_URL=http://127.0.0.1:4000/admin …`
 
 ## Build lokalny (macOS / Windows)
 

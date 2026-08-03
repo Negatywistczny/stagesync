@@ -2,6 +2,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-3);
+  padding: var(--ss-space-4);
+  min-width: 0;
+}
+
+.stepPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.stepStatus {
+  margin: 0;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  border: 1px solid var(--ss-color-border);
+  background: var(--ss-color-elevated);
+  color: var(--ss-color-text);
+  font-size: var(--ss-text-sm);
 }
 
 .error {
@@ -16,17 +35,29 @@
   font-size: var(--ss-text-sm);
 }
 
+.lead {
+  margin: 0;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-normal);
+}
+
 .searchRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ss-space-2);
+  gap: var(--ss-space-3);
 }
 
 .searchRow > :global(input),
 .searchRow > :global(.ss-input) {
-  flex: 1 1 calc(var(--ss-space-16) * 4);
-  min-width: calc(var(--ss-space-16) * 3);
+  flex: 1 1 calc(var(--ss-space-16) * 5);
+  min-width: calc(var(--ss-space-16) * 4);
+}
+
+.fullTextarea {
+  width: 100%;
+  min-height: calc(var(--ss-space-16) * 8);
 }
 
 .urlBlock {
@@ -108,12 +139,15 @@
 .preview {
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
-  padding: var(--ss-space-3);
+  padding: var(--ss-space-4);
   background: var(--ss-color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
 }
 
 .previewTitle {
-  margin: 0 0 var(--ss-space-2);
+  margin: 0;
   font-size: var(--ss-text-sm);
   font-weight: var(--ss-font-weight-semibold);
 }

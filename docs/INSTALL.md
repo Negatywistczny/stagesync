@@ -161,6 +161,15 @@ pnpm install
 pnpm dev   # web :3000 + server :4000
 ```
 
+| URL (dev) | Opis |
+|-----------|------|
+| http://localhost:3000/admin | Admin (Vite + HMR) |
+| http://localhost:3000/client | Client |
+| http://localhost:3000/timeline | Timeline |
+| http://localhost:4000/api/health | API / health (bez UI) |
+
+Wejście na `:4000/admin` z tej samej maszyny przekierowuje do `:3000`, gdy serwer działa bez bundla UI (`STAGESYNC_STATIC_DIR` nieustawione).
+
 Zob. [README.md](../README.md).
 
 ## Folder danych użytkownika
@@ -171,6 +180,8 @@ i przeglądać ręcznie w Finderze (macOS) lub Eksploratorze (Windows).
 
 ```
 ~/Documents/StageSync/
+  host/
+    .env                # ustawienia Admin / Konto USDB (zapis z UI)
   library/
     library.json        # indeks biblioteki
     setlist.json

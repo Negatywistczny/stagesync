@@ -129,19 +129,45 @@ export function filterTekstBlocksByRole(
 }
 
 /**
- * Half-open block window: `[start, start+length)`.
- * Returns null when no block covers `displayTicks`.
+ * Half-open highlight window for a syllable block: hold until the next block
+ * starts (fills micro-gaps / 1-tick US notes). Last block holds to `lineEndTicks`.
+ */
+export function highlightEndTicksForBlock(
+  blocks: readonly Pick<TekstBlock, "startTicks" | "lengthTicks">[],
+  index: number,
+  lineEndTicks: number,
+): number {
+  const b = blocks[index];
+  if (b == null) return lineEndTicks;
+  const next = blocks[index + 1];
+  if (next != null && next.startTicks > b.startTicks) {
+    return next.startTicks;
+  }
+  const authored = b.startTicks + Math.max(1, b.lengthTicks);
+  return Math.max(authored, lineEndTicks);
+}
+
+/**
+ * Half-open block window: `[start, highlightEnd)`.
+ * Holds each syllable until the next onset (or line end) so short/collapsed
+ * UltraStar notes stay yellow instead of flashing off in one tick.
  */
 export function resolveActiveBlockId(
   blocks: Pick<TekstBlock, "id" | "startTicks" | "lengthTicks">[] | undefined,
   displayTicks: number,
+  lineEndTicks?: number,
 ): string | null {
   if (blocks == null || blocks.length === 0) return null;
-  for (const b of blocks) {
-    if (
-      displayTicks >= b.startTicks &&
-      displayTicks < b.startTicks + b.lengthTicks
-    ) {
+  const lineEnd =
+    lineEndTicks ??
+    Math.max(
+      ...blocks.map((b) => b.startTicks + Math.max(1, b.lengthTicks)),
+      displayTicks + 1,
+    );
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    const end = highlightEndTicksForBlock(blocks, i, lineEnd);
+    if (displayTicks >= b.startTicks && displayTicks < end) {
       return b.id;
     }
   }
@@ -152,9 +178,10 @@ export function resolveActiveBlockId(
  * Map clip blocks → highlight tokens. `undefined` when the clip has no blocks
  * (legacy / display-only without V6 shape). Empty array = all filtered out.
  * Word gaps: restore trailing spaces from `clip.text` when blocks were trimmed.
+ * Active window holds until the next syllable (see {@link highlightEndTicksForBlock}).
  */
 export function mapKaraokeBlocks(
-  clip: Pick<TekstClip, "blocks" | "text">,
+  clip: Pick<TekstClip, "blocks" | "text" | "startTicks" | "lengthTicks">,
   displayTicks: number,
   lineActive: boolean,
   roleFilter?: TekstBlockRole | null,
@@ -162,15 +189,14 @@ export function mapKaraokeBlocks(
   const raw = clip.blocks;
   if (raw == null || raw.length === 0) return undefined;
   const spaced = withTekstBlockWordSpaces(clip.text, raw);
-  return filterTekstBlocksByRole(spaced, roleFilter).map((b) => {
-    const end = b.startTicks + b.lengthTicks;
+  const filtered = filterTekstBlocksByRole(spaced, roleFilter);
+  const lineEnd = clip.startTicks + Math.max(1, clip.lengthTicks);
+  return filtered.map((b, i) => {
+    const end = highlightEndTicksForBlock(filtered, i, lineEnd);
     return {
       id: b.id,
       text: b.text,
-      active:
-        lineActive &&
-        displayTicks >= b.startTicks &&
-        displayTicks < end,
+      active: lineActive && displayTicks >= b.startTicks && displayTicks < end,
       past: displayTicks >= end,
     };
   });
@@ -449,6 +475,7 @@ export function buildKaraokeLiveContext(
       ? resolveActiveBlockId(
           filterTekstBlocksByRole(activeClip.blocks ?? [], roleFilter),
           displayTicks,
+          activeClip.startTicks + Math.max(1, activeClip.lengthTicks),
         )
       : null;
 

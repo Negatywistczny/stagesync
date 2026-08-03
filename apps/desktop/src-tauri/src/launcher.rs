@@ -108,6 +108,8 @@ pub struct LauncherBootstrap {
     pub last_error: Option<String>,
     /// Skipped update version (operator „Pomiń tę wersję”).
     pub ignored_version: Option<String>,
+    /// Loopback host already healthy on :4000 (reuse on „Uruchom lokalny host”).
+    pub local_host_url: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -579,7 +581,7 @@ where
 }
 
 #[tauri::command]
-pub fn get_launcher_bootstrap(
+pub async fn get_launcher_bootstrap(
     app: AppHandle,
     runtime: State<'_, Arc<SidecarRuntime>>,
 ) -> Result<LauncherBootstrap, String> {
@@ -594,12 +596,21 @@ pub fn get_launcher_bootstrap(
         .unwrap_or(false);
     let stagesync_url = std::env::var("STAGESYNC_URL").ok().filter(|s| !s.trim().is_empty());
     let last_error = runtime.take_pending_error();
+    let mut local_host_url = None;
+    if has_sidecar {
+        if let Ok(ExistingLocalHostProbe::Ready(_)) =
+            probe_existing_local_host(&expected_version).await
+        {
+            local_host_url = Some(format!("http://127.0.0.1:{UI_PORT}"));
+        }
+    }
     Ok(LauncherBootstrap {
         has_sidecar,
         stagesync_url,
         expected_version,
         last_error,
         ignored_version: load_prefs(&app).ignored_version,
+        local_host_url,
     })
 }
 
@@ -625,10 +636,108 @@ pub fn launcher_list_recent(app: AppHandle) -> Result<Vec<RecentHost>, String> {
     Ok(load_recent(&app))
 }
 
+fn tail_sidecar_log_file(path: &std::path::Path) -> Option<String> {
+    let raw = std::fs::read_to_string(path).ok()?;
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let cap = crate::SIDECAR_LOG_CAP;
+    if trimmed.len() <= cap {
+        return Some(trimmed.to_string());
+    }
+    Some(format!("…\n{}", &trimmed[trimmed.len() - cap..]))
+}
+
 #[tauri::command]
 pub fn get_sidecar_log_tail(runtime: State<'_, Arc<SidecarRuntime>>) -> Result<String, String> {
     let guard = runtime.log_tail.lock().map_err(|e| e.to_string())?;
-    Ok(guard.clone())
+    if !guard.trim().is_empty() {
+        return Ok(guard.clone());
+    }
+    drop(guard);
+    let path_guard = runtime.log_path.lock().map_err(|e| e.to_string())?;
+    Ok(path_guard
+        .as_ref()
+        .and_then(|p| tail_sidecar_log_file(p))
+        .unwrap_or_default())
+}
+
+enum ExistingLocalHostProbe {
+    Ready(crate::HealthOk),
+    NotReady,
+}
+
+/// When something healthy already listens on loopback :4000 (e.g. `pnpm dev`), join it
+/// instead of spawning a second sidecar that will EADDRINUSE and exit before health poll.
+async fn probe_existing_local_host(
+    expected_version: &str,
+) -> Result<ExistingLocalHostProbe, String> {
+    match crate::check_health_at("127.0.0.1", UI_PORT).await {
+        Ok(Some(health)) if health.version == expected_version => {
+            Ok(ExistingLocalHostProbe::Ready(health))
+        }
+        Ok(Some(_health)) => Ok(ExistingLocalHostProbe::NotReady),
+        Ok(None) | Err(_) => Ok(ExistingLocalHostProbe::NotReady),
+    }
+}
+
+async fn join_existing_local_host(
+    app: &AppHandle,
+    health: &crate::HealthOk,
+) -> Result<(), String> {
+    let origin = format!("http://127.0.0.1:{UI_PORT}");
+    let label = health
+        .hostname
+        .clone()
+        .filter(|s| !s.is_empty())
+        .map(|name| format!("{name} (lokalny)"))
+        .unwrap_or_else(|| "Lokalny host".to_string());
+    let _ = push_recent(app, &origin, &label);
+    let window = app
+        .get_webview_window("main")
+        .ok_or("Brak okna głównego")?;
+    window
+        .navigate(nav_url("/admin").parse().map_err(|e| format!("{e}"))?)
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+async fn try_join_existing_local_host(
+    app: &AppHandle,
+    expected_version: &str,
+) -> Result<bool, String> {
+    match probe_existing_local_host(expected_version).await? {
+        ExistingLocalHostProbe::Ready(health) => {
+            join_existing_local_host(app, &health).await?;
+            Ok(true)
+        }
+        ExistingLocalHostProbe::NotReady => Ok(false),
+    }
+}
+
+/// Save launcher diagnostic log to Downloads (WKWebView blob downloads fail with NSURLError -999).
+#[tauri::command]
+pub fn save_launcher_log(
+    app: AppHandle,
+    filename: String,
+    content: String,
+) -> Result<String, String> {
+    let name = filename.trim();
+    if name.is_empty() || name.contains('/') || name.contains('\\') || name.contains("..") {
+        return Err("Nieprawidłowa nazwa pliku.".into());
+    }
+    if content.trim().is_empty() {
+        return Err("Log jest pusty.".into());
+    }
+    let dir = app
+        .path()
+        .download_dir()
+        .map_err(|e| format!("Brak folderu Pobrane: {e}"))?;
+    std::fs::create_dir_all(&dir).map_err(|e| format!("Nie można utworzyć Pobranych: {e}"))?;
+    let path = dir.join(name);
+    std::fs::write(&path, content).map_err(|e| format!("Zapis logu: {e}"))?;
+    Ok(path.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
@@ -916,6 +1025,13 @@ async fn start_local_host_inner(
     let expected_version = app.package_info().version.to_string();
     emit_status(&app, "Uruchamiam lokalny host…", false);
 
+    if try_join_existing_local_host(&app, &expected_version)
+        .await
+        .unwrap_or(false)
+    {
+        return Ok(());
+    }
+
     let apk_downloads_dir = resolve_apk_downloads_dir(&resource_dir);
 
     let (mut rx, child) = app
@@ -991,14 +1107,20 @@ async fn start_local_host_inner(
                         append_sidecar_log(&mut log, &chunk);
                     }
                     append_sidecar_file_log(&sidecar_log_path, &chunk);
+                    if let Ok(mut guard) = runtime.child.lock() {
+                        let _ = guard.take();
+                    }
+                    if try_join_existing_local_host(&app, &expected_version)
+                        .await
+                        .unwrap_or(false)
+                    {
+                        return Ok(());
+                    }
                     let log_tail = runtime
                         .log_tail
                         .lock()
                         .map(|g| g.clone())
                         .unwrap_or_default();
-                    if let Ok(mut guard) = runtime.child.lock() {
-                        let _ = guard.take();
-                    }
                     return Err(startup_failure_message(
                         &log_tail,
                         Some(&format!("proces hosta zakończył się (kod {code})")),
@@ -1131,16 +1253,22 @@ async fn start_local_host_inner(
         }
 
         if Instant::now() >= deadline {
-            let log_tail = runtime
-                .log_tail
-                .lock()
-                .map(|g| g.clone())
-                .unwrap_or_default();
             if let Ok(mut guard) = runtime.child.lock() {
                 if let Some(child) = guard.take() {
                     let _ = child.kill();
                 }
             }
+            if try_join_existing_local_host(&app, &expected_version)
+                .await
+                .unwrap_or(false)
+            {
+                return Ok(());
+            }
+            let log_tail = runtime
+                .log_tail
+                .lock()
+                .map(|g| g.clone())
+                .unwrap_or_default();
             let detail = (!last_health_err.is_empty()).then_some(last_health_err.as_str());
             return Err(startup_failure_message(&log_tail, detail));
         }

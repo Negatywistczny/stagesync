@@ -67,6 +67,8 @@ pnpm install
 pnpm dev
 ```
 
+Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/INSTALL.md](docs/INSTALL.md).
+
 > 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📦 Monorepo

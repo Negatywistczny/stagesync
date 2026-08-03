@@ -10,6 +10,8 @@ import {
   localTicksPerBeat,
   linearPeakToMeterDb,
   ticksToMs,
+  ticksToMsAlongTempoMap,
+  type TempoMapProject,
   type TimeSignature,
 } from "@stagesync/shared";
 import {
@@ -83,8 +85,9 @@ export async function resumeMetronomeAudio(
   }
 }
 
-const BASE_ACCENT_GAIN = 0.08;
-const BASE_BEAT_GAIN = 0.045;
+/** Peak gain @ 100 % accent/beat volume and 0 dB Click fader (Direct Cue). */
+export const BASE_ACCENT_GAIN = 0.7;
+export const BASE_BEAT_GAIN = 0.45;
 
 type TimbreProfile = {
   type: OscillatorType;
@@ -114,25 +117,43 @@ const TIMBRE_PROFILES: Record<MetronomeTimbre, TimbreProfile> = {
   },
 };
 
+/** Linear peak for one click (prefs × master fader). */
+export function clickLevelLinear(
+  accent: boolean,
+  prefs: MetronomePrefs = getMetronomePrefs(),
+): number {
+  const masterLin = masterClickGainLinear(prefs);
+  if (masterLin <= 0) return 0;
+  const volPct = accent ? prefs.accentVolume : prefs.beatVolume;
+  const base = accent ? BASE_ACCENT_GAIN : BASE_BEAT_GAIN;
+  return base * (volPct / 100) * masterLin;
+}
+
+/**
+ * Max lateness for an audible catch-up click. Deeper misses only advance the
+ * beat cursor — stacking many past clicks at `currentTime` caused loud bangs.
+ */
+export const MAX_LATE_CLICK_MS = 40;
+
 function scheduleClick(
   ctx: AudioContext,
   when: number,
   accent: boolean,
   prefs = getMetronomePrefs(),
 ) {
-  const masterLin = masterClickGainLinear(prefs);
-  if (masterLin <= 0) return;
+  const level = clickLevelLinear(accent, prefs);
+  if (level <= 0) return;
 
   const profile = TIMBRE_PROFILES[prefs.timbre];
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = profile.type;
   osc.frequency.value = accent ? profile.accentHz : profile.beatHz;
-  const level =
-    (accent ? BASE_ACCENT_GAIN : BASE_BEAT_GAIN) *
-    ((accent ? prefs.accentVolume : prefs.beatVolume) / 100) *
-    masterLin;
-  gain.gain.value = Math.max(0.0001, level);
+  // Anchor the envelope at `when` — setting `.value` + ramp from "now" decays
+  // look-ahead clicks to near-silence before the oscillator starts, while
+  // late catch-up clicks (when ≈ now) stayed full level → quiet/loud spikes.
+  const peak = Math.max(0.0001, level);
+  gain.gain.setValueAtTime(peak, when);
   gain.gain.exponentialRampToValueAtTime(
     0.0001,
     when + profile.durationSec * 0.85,
@@ -146,6 +167,19 @@ function scheduleClick(
 }
 
 /**
+ * Schedule one metronome click at `when` (AudioContext time).
+ * Synchronous — safe inside rAF audition loops (no await stack).
+ */
+export function scheduleMetronomeClickAt(
+  when: number,
+  accent = true,
+  prefs: MetronomePrefs = getMetronomePrefs(),
+  ctx: AudioContext = getMetronomeAudioContext(),
+): void {
+  scheduleClick(ctx, when, accent, prefs);
+}
+
+/**
  * Play one click for Preferences preview (user gesture → resume + schedule).
  * Uses draft prefs when provided so Odsłuch matches the unsaved timbre/volume.
  */
@@ -155,7 +189,7 @@ export async function previewMetronomeClick(
   ctx: AudioContext = getMetronomeAudioContext(),
 ): Promise<void> {
   await resumeMetronomeAudio(ctx);
-  scheduleClick(ctx, ctx.currentTime, accent, prefs);
+  scheduleMetronomeClickAt(ctx.currentTime, accent, prefs, ctx);
 }
 
 /** Live Click cue peak dB (not Master). Missing analyser → floor. */
@@ -182,7 +216,28 @@ export type MetronomeTickInput = {
   bpm: number;
   timeSignature: TimeSignature;
   ppq: number;
+  /**
+   * When set, click lead time uses TempoMap/meterMap (Smart Tempo).
+   * Flat `bpm` remains fallback when maps are absent.
+   */
+  tempoMaps?: TempoMapProject | null;
 };
+
+function aheadMsToBeat(
+  fromTicks: number,
+  toTicks: number,
+  input: MetronomeTickInput,
+): number {
+  if (input.tempoMaps) {
+    return ticksToMsAlongTempoMap(fromTicks, toTicks, input.tempoMaps);
+  }
+  return ticksToMs(
+    toTicks - fromTicks,
+    input.bpm,
+    input.timeSignature,
+    input.ppq,
+  );
+}
 
 /**
  * Schedule clicks for beats crossed since `lastScheduledBeat`.
@@ -193,7 +248,7 @@ export function advanceMetronomeClicks(
   lastScheduledBeat: number,
   ctx: AudioContext = getMetronomeAudioContext(),
 ): number {
-  if (!input.enabled || !input.playing || ctx.state !== "running") {
+  if (!input.enabled || !input.playing) {
     return lastScheduledBeat;
   }
 
@@ -201,28 +256,37 @@ export function advanceMetronomeClicks(
   if (perBeat <= 0) return lastScheduledBeat;
 
   const currentBeat = Math.floor(input.displayTicks / perBeat);
+
+  // Keep the beat cursor aligned while the context is unlocking so the first
+  // running frame does not dump a burst of late clicks (or stay mute forever).
+  if (ctx.state !== "running") {
+    return currentBeat;
+  }
+
   let beat = lastScheduledBeat;
   const now = ctx.currentTime;
   const MAX_BEATS_PER_ADVANCE = 64;
-  let scheduled = 0;
+  let advanced = 0;
+  let scheduledAudible = 0;
 
-  while (beat < currentBeat && scheduled < MAX_BEATS_PER_ADVANCE) {
+  while (beat < currentBeat && advanced < MAX_BEATS_PER_ADVANCE) {
     beat += 1;
-    scheduled += 1;
+    advanced += 1;
     const beatStartTicks = beat * perBeat;
-    // Schedule slightly ahead; if late, play ASAP
-    const aheadMs = ticksToMs(
-      beatStartTicks - input.displayTicks,
-      input.bpm,
-      input.timeSignature,
-      input.ppq,
+    const aheadMs = aheadMsToBeat(
+      input.displayTicks,
+      beatStartTicks,
+      input,
     );
+    // Past the lateness window: advance cursor only (no stacked bang).
+    if (aheadMs < -MAX_LATE_CLICK_MS) continue;
     const when = Math.max(now, now + aheadMs / 1000);
     const beatInBar =
       ((beat % input.timeSignature.numerator) +
         input.timeSignature.numerator) %
       input.timeSignature.numerator;
     scheduleClick(ctx, when, beatInBar === 0);
+    scheduledAudible += 1;
   }
 
   // Large seek/jump: skip ahead without scheduling every missed click.
@@ -230,7 +294,44 @@ export function advanceMetronomeClicks(
     beat = currentBeat;
   }
 
+  // Look-ahead only when no audible catch-up this frame — schedule the next
+  // beat in the future (AlongMap lead). Silent cursor catch-up (seek / lag)
+  // still allows look-ahead so the next click is not skipped.
+  const upcoming = beat + 1;
+  if (
+    scheduledAudible === 0 &&
+    upcoming === currentBeat + 1
+  ) {
+    const beatStartTicks = upcoming * perBeat;
+    const aheadMs = aheadMsToBeat(
+      input.displayTicks,
+      beatStartTicks,
+      input,
+    );
+    if (aheadMs > 1 && aheadMs < msPerBarHint(input)) {
+      const when = now + aheadMs / 1000;
+      const beatInBar =
+        ((upcoming % input.timeSignature.numerator) +
+          input.timeSignature.numerator) %
+        input.timeSignature.numerator;
+      scheduleClick(ctx, when, beatInBar === 0);
+      beat = upcoming;
+    }
+  }
+
   return beat;
+}
+
+/** Upper bound for look-ahead window (~1 bar @ local or flat BPM). */
+function msPerBarHint(input: MetronomeTickInput): number {
+  const beats = Math.max(1, input.timeSignature.numerator);
+  if (input.tempoMaps) {
+    const from = input.displayTicks;
+    const to = from + localTicksPerBeat(input.timeSignature, input.ppq) * beats;
+    return Math.max(50, Math.abs(aheadMsToBeat(from, to, input)) * 1.25);
+  }
+  const beatMs = 60_000 / Math.max(1, input.bpm);
+  return beatMs * beats * 1.25;
 }
 
 /** Reset beat cursor (Stop / seek). */

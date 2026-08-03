@@ -219,9 +219,9 @@ const TOOL_SECTIONS: ToolSection[] = [
           "nazwa + S/M w pierwszym rzędzie, fader na pełną szerokość w drugim; przeciągnij prawą krawędź kolumny (zapamiętane).",
       },
       {
-        term: "Import US+UG (eksperymentalny)",
+        term: "Import US+UG",
         detail:
-          "Wybierz utwór → Import US+UG (eksperymentalny): tworzy nowy utwór (UltraStar czas+tekst, potem UG Forma+akordy). Nadpisanie draftu: Metadane (ⓘ) → Import US+UG → Importuj do draftu → Zapisz (⌘S). Mostek buduje Formę i akordy oraz przybliżoną mapę tempa z timingów UltraStar — sync z MP3 bywa niedokładny (mapa z sylab to proteza). Docelowo: Smart Tempo z audio. Słabe dopasowanie wymaga potwierdzenia. Osobne Import UG / UltraStar zostają; Różdżka (W) = naprawa / sam UG.",
+          "Wybierz utwór → Import US+UG: UltraStar (czas+tekst) → UG (Forma+akordy) → audio (DnD/MP3 lub YouTube gdy yt-dlp na hoście) → Beat Mapper (fala, Beat 1, odsłuch z klikiem). Tekst/melodia idą dokładnie po czasie UltraStar względem MP3 (bez snapa sylab do siatki); Forma/akordy z powiązań UG↔tekst (pipe tylko dla instrumentali). Bez MP3 status pozostaje eksperymentalny. Nadpisanie draftu: Metadane (ⓘ) → Import US+UG → Zapisz (⌘S). Smart Tempo = mapa podąża za nagraniem (bez Flex Time). Słabe dopasowanie wymaga potwierdzenia.",
       },
       {
         term: "Import UG",

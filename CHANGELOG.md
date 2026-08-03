@@ -5,6 +5,40 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo (Import US+UG):** kreator Desktop Studio (dwukolumnowe kroki USDB/UG z listą kart wyników, osobne karty plik/YouTube, panoramiczny Beat Mapper z kafelkami sekcji), podkład audio (DnD / upload MP3, YouTube przez yt-dlp — także przy nowym utworze; **płynny pasek postępu** od pobierania YouTube przez dekodowanie aż do analizy tempa; kotwica Beat 1 z długiego pipe Intro + `#GAP` tak, by przedtakt wokalu lądował w ostatnim takcie Intro, a Verse na barlinie Formy — transient tylko gdy blisko tej kotwicy; po analizie onsetów Beat 1 dociąga do najbliższego ataku w ±¼ beatu, także „do przodu”, gdy offset siedział za atakiem; po wczytaniu UG ponownie liczy kotwicę pipe+GAP, gdy audio weszło wcześniej i złapało pierwszy transient), analiza audio offline (strumień energii / transienty → autocorrelacja BPM z interpolacją lagów → siatka beatów **z lokalnym okresem z onsetów** i silniejszą inercją mediany IBI — gęste fill’e / ósemki nie wciągają mapy w double-time ani nie przyspieszają Adapt o kilka BPM w jednym takcie; bez stałego okresu seeda na cały utwór) → **seed mapy = mediana IBI** siatki (z odrzuceniem outlierów half/double-time), nie sam peak ACF; mapa tempa o gęstości zbliżonej do Logic Smart Tempo, średnio co 1–2 takty, bez skoków z pojedynczych blipów IBI; `#BPM` UltraStar służy tylko do odczytu czasu względem MP3, nie do Formy ani seedu; pipe/`#GAP` tylko do Beat 1 / sekcji bez tekstu), tekst/melodia z UltraStar trafiają **dokładnie** po czasie US względem MP3 — bez snapa sylab do siatki beatów; **Forma i akordy z powiązań UG↔tekst** (ściana sekcji = pierwsze zalignowane słowo / granica następnej; akord na słowie UG; pipe tylko dla instrumentali bez słów), Visual Beat Mapper (koperta fali DAW, domyślny widok przybliżony na początek utworu, Ctrl/⌘+kółko zoom, Shift+kółko pan, Spacja tylko lokalnie z metronomem, przeciąganie Beat 1), Drift Gate; sticky nagłówek/stopka; po imporcie klip od tick 0 z przycięciem ciszy przed Beat 1 (`trimInMs` = offset; mapa tempa w epoce treści: Beat 1 → takt 1); parser UltraStar czyta `#MP3` / `#VIDEO` (także USDB `a=` / `v=` + `co=` / `bg=`); import bez audio pozostaje eksperymentalny (orientacyjny sync UltraStar).
+
+#### 🖥️ App Shell & UI
+- **Pamięć (web):** przy wysokim zużyciu RAM przeglądarki pojawia się ostrzeżenie u góry (z możliwością ukrycia); w konsoli (F12) logi `[stagesync-mem]` z rozbiciem przyczyny — sterta JS, cache PCM odtwarzania, bufor importu US+UG, scratch analizy tempa — żeby przy kolejnym skoku dało się od razu wskazać źródło.
+
+### Zmieniono
+
+#### 🎛️ Audio / MIDI / Transport
+- **Metronom:** domyślna głośność klika jest wyraźnie wyższa — przy faderze Click na 0 dB akcent i pozostałe beaty są dobrze słyszalne obok podkładu (Ustawienia → Metronom nadal balansują akcent vs reszta); przy Smart Tempo kliki liczą lead time po mapie tempa/metrum (AlongMap), a nie po płaskim BPM sesji — metronom nie „znika” ani nie rozjeżdża się względem playheada; głośność look-ahead i klików „w porę” jest spójna (bez cichych klików na wyprzedzeniu i nagłych strzałów przy doganianiu).
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo (Import US+UG):** analiza onsetów obejmuje **cały** plik audio (do 8 min), nie tylko pierwsze ~90 s z doklejaną stałą siatką — mapa tempa nie zostaje już przy 2–3 węzłach na 5‑minutowy utwór; siatka beatów trzyma lokalny okres z onsetów (bez kumulacyjnego przyspieszania playheada/metronomu względem audio) i nie przyspiesza nagle przy gęstym klastrze onsetów (np. ok. taktu 5) — inercja mediany IBI + odrzucenie przejść double-time; seed BPM bierze medianę IBI siatki zamiast zawyżonego peaku ACF — mapa nie jest już „dociągana” w górę do szybszego seeda; węzły mapy nie wstawiają już skoku z pojedynczego blipu IBI przy wymuszonym odświeżeniu co 1–2 takty; Beat 1 dociąga do onsetu ataku w obie strony (MP3 na barlinie); po dojściu pipe Intro kotwica pipe+GAP zastępuje przypadkowy pierwszy transient; siatka po dodaniu podkładu obejmuje cały utwór; gdy estymacja z audio jest słaba, odstępy beatów startują od metronomu pliku UltraStar (mapa tempa nadal z audio/onsetów); silny peak z audio nie jest już nadpisywany odległym metronomem UltraStar (header/4); mapa nie skacze co beat między ścianami ±8% seeda; długie intro nie ląduje na stałym 120 BPM z pustą siatką; Beat Mapper: żółty znacznik kursora nie zostaje po odsłuchu/zoomie, niebieski Beat 1 = początek osi taktów (**Ustaw Beat 1 w miejscu kursora** przycina ciszę przed kotwicą i kotwiczy mapę); przy długim intro pipe + `#GAP` Beat 1 ustawia się redakcyjnie tak, by przedtakt wokalu wpadł w ostatni takt Intro, a Verse Formy zaczął się od kolejnego taktowego (nie od przypadkowego pierwszego transientu o takt za późno); gdy nagranie jest ciche do wokalu, kotwica zostaje przy `#GAP`; po wczytaniu audio mostek dogrywa drobną korektę Beat 1 względem pierwszej sylaby powiązanej z akordem sekcji (bez snapa wszystkich sylab do siatki) — **ręczny Audio Start Offset zostaje** (auto-korekta tylko przy pierwszym wczytaniu, nie walczy z wpisem użytkownika); sekcje wokalne Formy biorą długość ze ścian UltraStar (pipe dla instrumentali; akordy tylko wypełniają kontener) — bez ucięcia ostatniego taktu; Zapis po imporcie z podkładem w istniejącym utworze nie kończy się konfliktem wersji; anakrusa wokalu wchodzi w ostatni takt Intro (bez pustego taktu pośredniego), a kolejna sekcja wokalna startuje od następnej barlinii Formy; tekst, akordy i Forma na jednej osi (interwały BPM z audio); mapa tempa z audio nie jest nadpisywana auto-zaznaczonymi węzłami sekcji — tylko ręczna edycja w Beat Mapperze; brak końcówki tempa ~20 BPM i klip audio liczy długość po mapie tempa od tick 0 (po trimie Beat 1); gęsta mapa tempa z Beat Mappera (setki zdarzeń na dłuższych utworach) zapisuje się poprawnie zamiast zostawiać pusty szablon Countdown+Intro; przy nowym utworze z podkładem klip audio jest utrwalany po uploadzie (nie tylko w pamięci).
+
+#### 🎛️ Audio / MIDI / Transport
+- **Playback / pamięć:** cache zdekodowanego audio ma limit bajtowy (~384 MB) i max 8 plików zamiast 32 pełnych PCM naraz — Timeline nie powinien już zjadać wielu GB RAM przy setliście / waveformach; generowanie peaków waveformu nie pinuje już wszystkich utworów w cache playbacku.
+- **Metronom:** przy zawieszonym AudioContext kursor beatów dogania playhead bez schedulowania (po unlock nie ma burstu spóźnionych klików ani „martwego” metronomu); mocno spóźnione catch-up nie składają się w jeden głośny strzał — kursor dogania w ciszy, a kolejny klik idzie look-ahead.
+- **Loop / playback:** klip audio ustawiony na granicy pętli (np. takt 2.1 przy cyklu taktu 1) nie słychać już na końcu cyklu — soft-clock nie przekracza końca pętli między tickami serwera, kompensacja latency jest zawijana w zakres pętli, a przejście wrap wyłącza aktywne głosy.
+
+#### 🖥️ App Shell & UI
+- **Klient (Karaoke):** podświetlenie sylab trzyma się do następnej sylaby (albo końca linii) — krótkie nuty UltraStar nie gasną już w jednej klatce.
+
+#### 📚 Dokumentacja
+- **Pomoc Timeline:** Import US+UG — tekst/melodia dokładnie po czasie UltraStar względem MP3 (bez snapa sylab do siatki); Forma/akordy z powiązań z tekstem (UG↔US).
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop / Ustawienia hosta:** zapis konta USDB i pozostałych ustawień serwera trafia do `{folder danych}/host/.env` (np. `Documents\\StageSync\\host\\.env`), a nie do katalogu instalacji w Program Files — bez błędu EPERM przy imporcie UltraStar na Windows.
+
 ## [5.4.1](https://github.com/Negatywistczny/stagesync/compare/v5.4.0...v5.4.1) - 2026-08-03
 
 ### Dodano

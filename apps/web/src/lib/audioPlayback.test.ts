@@ -7,6 +7,7 @@ import {
   clearAudioBufferCache,
   ensureAudioBuffered,
   fireCueSampleGo,
+  getAudioBufferCacheStats,
   getAudioPlaybackDebugState,
   getFailedAudioAssetIds,
   isAudioAssetDecodeFailed,
@@ -22,6 +23,15 @@ import {
   syncAudioPlayback,
 } from "./audioPlayback.js";
 import * as metronome from "./metronome.js";
+
+function fakeAudioBuffer(approxBytes: number, channels = 2): AudioBuffer {
+  const length = Math.max(1, Math.ceil(approxBytes / (channels * 4)));
+  return {
+    duration: length / 48_000,
+    numberOfChannels: channels,
+    length,
+  } as AudioBuffer;
+}
 
 function mockAudioParam(value = 1) {
   const param = {
@@ -595,6 +605,67 @@ describe("audioPlayback helpers", () => {
     );
     clearAudioBufferCache("p1");
     await expect(loadAudioBuffer("p1", "asset-1", ctx)).resolves.toBeNull();
+  });
+
+  it("buffer cache evicts by entry count and byte budget", async () => {
+    const decoded = new Map<string, AudioBuffer>();
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async (raw: ArrayBuffer) => {
+        const id = new TextDecoder().decode(new Uint8Array(raw));
+        return decoded.get(id)!;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const assetId = String(url).split("/").at(-2)!;
+        return {
+          ok: true,
+          arrayBuffer: async () => new TextEncoder().encode(assetId).buffer,
+        };
+      }),
+    );
+
+    // 9 tiny entries → cap 8
+    for (let i = 0; i < 9; i++) {
+      const id = `small-${i}`;
+      decoded.set(id, fakeAudioBuffer(1024));
+      await loadAudioBuffer("p1", id, ctx);
+    }
+    expect(getAudioBufferCacheStats().entries).toBe(8);
+
+    clearAudioBufferCache("p1");
+
+    // Two ~200 MiB buffers exceed 384 MiB budget → only newest retained
+    const big = 200 * 1024 * 1024;
+    decoded.set("big-a", fakeAudioBuffer(big));
+    decoded.set("big-b", fakeAudioBuffer(big));
+    await loadAudioBuffer("p1", "big-a", ctx);
+    await loadAudioBuffer("p1", "big-b", ctx);
+    const stats = getAudioBufferCacheStats();
+    expect(stats.entries).toBe(1);
+    expect(stats.approxBytes).toBeLessThanOrEqual(stats.maxBytes);
+  });
+
+  it("loadAudioBuffer cache:false does not pin decoded PCM", async () => {
+    const fakeBuf = fakeAudioBuffer(64 * 1024 * 1024);
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const buf = await loadAudioBuffer("p1", "wave-only", ctx, { cache: false });
+    expect(buf).toBe(fakeBuf);
+    expect(getAudioBufferCacheStats().entries).toBe(0);
+
+    await loadAudioBuffer("p1", "wave-only", ctx);
+    expect(getAudioBufferCacheStats().entries).toBe(1);
   });
 
   it("resumeAndSync skips start when suppressed during AudioContext resume", async () => {
@@ -1891,5 +1962,63 @@ describe("audioPlayback helpers", () => {
     });
     expect(source.start).not.toHaveBeenCalled();
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
+  });
+
+  it("loop wrap (backward jump) stops active sources so clip at exclusive end does not ring", async () => {
+    const fakeBuf = { duration: 2, numberOfChannels: 2 } as AudioBuffer;
+    const sources: Array<{
+      buffer: AudioBuffer | null;
+      connect: ReturnType<typeof vi.fn>;
+      disconnect: ReturnType<typeof vi.fn>;
+      start: ReturnType<typeof vi.fn>;
+      stop: ReturnType<typeof vi.fn>;
+      onended: (() => void) | null;
+      context: BaseAudioContext;
+    }> = [];
+    const ctx = mockAudioContext({
+      decodeAudioData: vi.fn(async () => fakeBuf),
+      createBufferSource: vi.fn(() => {
+        const source = {
+          buffer: null as AudioBuffer | null,
+          connect: vi.fn(),
+          disconnect: vi.fn(),
+          start: vi.fn(),
+          stop: vi.fn(),
+          onended: null as (() => void) | null,
+          context: { sampleRate: 44100 } as BaseAudioContext,
+        };
+        sources.push(source);
+        return source;
+      }),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+
+    const project = projectWithClipUnderPlayhead();
+    await ensureAudioBuffered("p1", project, 0, ctx);
+
+    // Simulate playback near end of short loop: ticks = 400 (< SEEK_JUMP_TICKS)
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 400, loopEnabled: true },
+      ctx,
+    );
+    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
+
+    // Wrap: ticks jump backward to 0 (loop restart)
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 0, loopEnabled: true },
+      ctx,
+    );
+    // First source must have been stopped (loop wrap tear-down)
+    expect(sources[0]!.stop).toHaveBeenCalled();
+    // A new source may have been started for the clip at tick 0
+    expect(getAudioPlaybackDebugState().activeCount).toBeLessThanOrEqual(1);
   });
 });

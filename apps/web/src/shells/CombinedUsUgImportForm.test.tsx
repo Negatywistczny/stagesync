@@ -31,7 +31,7 @@ describe("CombinedUsUgImportForm", () => {
   it("prefills search fields from initialTitle / initialArtist", () => {
     render(
       <CombinedUsUgImportForm
-        applyLabel="Importuj do draftu"
+        applyLabel="Importuj do projektu"
         initialTitle="The Winner Takes It All"
         initialArtist="ABBA"
         onCancel={() => {}}
@@ -53,36 +53,56 @@ describe("CombinedUsUgImportForm", () => {
 
     render(
       <CombinedUsUgImportForm
-        applyLabel="Importuj do draftu"
+        applyLabel="Importuj do projektu"
         onCancel={() => {}}
         onApply={onApply}
       />,
     );
 
+    expect(
+      screen.getByText("Krok 1 z 4: Plik UltraStar (.txt)"),
+    ).toBeTruthy();
+
     fireEvent.change(screen.getByLabelText("Tekst UltraStar"), {
       target: { value: us },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Dalej — UG" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
+
+    expect(
+      screen.getByText("Krok 2 z 4: Tabulatura Ultimate Guitar"),
+    ).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Tekst Ultimate Guitar"), {
       target: { value: ug },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Podgląd mostka" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
 
-    expect(await screen.findByText(/Dopasowanie słów/i)).toBeTruthy();
     expect(
-      screen.getByLabelText("Tempo siatki (sugerowane)"),
+      screen.getByText("Krok 3 z 4: Ścieżka Audio"),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Importuj do draftu" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dalej bez audio" }));
+
+    expect(
+      await screen.findByText("Krok 4 z 4: Weryfikacja Siatki i Tempa"),
+    ).toBeTruthy();
+    expect(await screen.findByText(/Dopasowanie\s+\d+%/i)).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Importuj do projektu" }),
+    );
 
     await waitFor(() => {
       expect(onApply).toHaveBeenCalledTimes(1);
     });
     const arg = onApply.mock.calls[0]![0];
-    expect(arg.ok).toBe(true);
-    expect(arg.sections.map((s: { name: string }) => s.name)).toEqual([
+    expect(arg.bridge.ok).toBe(true);
+    expect(arg.bridge.sections.map((s: { name: string }) => s.name)).toEqual([
       "Verse",
       "Chorus",
     ]);
+    // Payload must carry bridged content (not an empty seed / template).
+    expect(arg.bridge.formaMusic.clips.length).toBeGreaterThan(0);
+    expect(arg.bridge.tekst.clips.length).toBeGreaterThan(0);
+    expect(arg.bridge.akordy.clips.length).toBeGreaterThan(0);
+    expect(arg.bridge.tempoMap.length).toBeGreaterThan(0);
   });
 });

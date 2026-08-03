@@ -1,11 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   advanceMetronomeClicks,
+  BASE_ACCENT_GAIN,
+  BASE_BEAT_GAIN,
+  clickLevelLinear,
+  MAX_LATE_CLICK_MS,
   metronomeBeatIndex,
   previewMetronomeClick,
   resumeMetronomeAudio,
+  scheduleMetronomeClickAt,
   sharedAudioContextOptions,
 } from "./metronome.js";
+import {
+  DEFAULT_METRONOME_PREFS,
+  type MetronomePrefs,
+} from "./metronomePrefs.js";
 import { setMetronomePrefs } from "./metronomePrefs.js";
 
 const TS_4_4 = { numerator: 4, denominator: 4 } as const;
@@ -18,9 +27,11 @@ function mockAudioContext(state: AudioContextState = "running") {
     stop: ReturnType<typeof vi.fn>;
     connect: ReturnType<typeof vi.fn>;
   }> = [];
+  const starts: number[] = [];
   const gains: Array<{
     gain: {
       value: number;
+      setValueAtTime: ReturnType<typeof vi.fn>;
       exponentialRampToValueAtTime: ReturnType<typeof vi.fn>;
     };
     connect: ReturnType<typeof vi.fn>;
@@ -42,7 +53,9 @@ function mockAudioContext(state: AudioContextState = "running") {
       const osc = {
         type: "sine" as OscillatorType,
         frequency: { value: 0 },
-        start: vi.fn(),
+        start: vi.fn((when?: number) => {
+          if (typeof when === "number") starts.push(when);
+        }),
         stop: vi.fn(),
         connect: vi.fn(),
       };
@@ -53,6 +66,7 @@ function mockAudioContext(state: AudioContextState = "running") {
       const gain = {
         gain: {
           value: 0,
+          setValueAtTime: vi.fn(),
           exponentialRampToValueAtTime: vi.fn(),
         },
         connect: vi.fn(),
@@ -69,8 +83,36 @@ function mockAudioContext(state: AudioContextState = "running") {
     context: ctx,
   }));
 
-  return { ctx: ctx as unknown as AudioContext, oscillators, gains };
+  return { ctx: ctx as unknown as AudioContext, oscillators, gains, starts };
 }
+
+describe("clickLevelLinear", () => {
+  const fullPrefs: MetronomePrefs = {
+    ...DEFAULT_METRONOME_PREFS,
+    accentVolume: 100,
+    beatVolume: 100,
+    masterGainDb: 0,
+  };
+
+  it("uses raised base gains at default prefs and 0 dB Click fader", () => {
+    expect(BASE_ACCENT_GAIN).toBe(0.7);
+    expect(BASE_BEAT_GAIN).toBe(0.45);
+    expect(clickLevelLinear(true, fullPrefs)).toBe(BASE_ACCENT_GAIN);
+    expect(clickLevelLinear(false, fullPrefs)).toBe(BASE_BEAT_GAIN);
+  });
+
+  it("scales with accent/beat volume and master fader", () => {
+    expect(
+      clickLevelLinear(true, { ...fullPrefs, accentVolume: 50 }),
+    ).toBeCloseTo(BASE_ACCENT_GAIN * 0.5);
+    expect(
+      clickLevelLinear(false, { ...fullPrefs, masterGainDb: -6 }),
+    ).toBeCloseTo(BASE_BEAT_GAIN * 0.501, 2);
+    expect(
+      clickLevelLinear(true, { ...fullPrefs, masterGainDb: -60 }),
+    ).toBe(0);
+  });
+});
 
 describe("sharedAudioContextOptions", () => {
   it("uses playback latency and does not force a low sampleRate", () => {
@@ -125,23 +167,96 @@ describe("metronome", () => {
       timeSignature: TS_4_4,
       ppq: 960,
     };
-    expect(advanceMetronomeClicks(base, 0, ctx)).toBe(0);
+    // Suspended: advance cursor without scheduling (resume-safe).
+    expect(advanceMetronomeClicks(base, 0, ctx)).toBe(2);
+    expect(oscillators).toHaveLength(0);
     expect(
       advanceMetronomeClicks({ ...base, enabled: false }, 0, mockAudioContext().ctx),
     ).toBe(0);
     expect(
       advanceMetronomeClicks({ ...base, playing: false }, 0, mockAudioContext().ctx),
     ).toBe(0);
-    expect(oscillators).toHaveLength(0);
   });
 
-  it("schedules accent on bar beat and normal clicks between", () => {
+  it("schedules ahead using TempoMap when provided", () => {
+    const { ctx, oscillators, starts } = mockAudioContext("running");
+    const tempoMaps = {
+      defaultBpm: 120,
+      defaultMeter: TS_4_4,
+      tempoMap: [
+        { id: "t0", startTicks: 0, bpm: 120 },
+        { id: "t1", startTicks: 1920, bpm: 60 },
+      ],
+      meterMap: [] as {
+        startTicks: number;
+        numerator: number;
+        denominator: number;
+      }[],
+      ppq: 960,
+    };
+    // Caught up at beat 2 (display mid-beat @ 60 BPM region) → look-ahead beat 3.
+    const next = advanceMetronomeClicks(
+      {
+        enabled: true,
+        playing: true,
+        displayTicks: 2400,
+        bpm: 120,
+        timeSignature: TS_4_4,
+        ppq: 960,
+        tempoMaps,
+      },
+      2,
+      ctx,
+    );
+    expect(next).toBe(3);
+    expect(oscillators.length).toBe(1);
+    // 2880−2400 = 480 ticks @ 60 BPM = 500 ms; ctx.currentTime 1 → start 1.5.
+    // Flat 120 would be 250 ms → start 1.25.
+    expect(starts[0]).toBeCloseTo(1.5, 2);
+  });
+
+  it("anchors click gain envelope at schedule time (look-ahead safe)", () => {
+    const { ctx, gains, starts } = mockAudioContext("running");
+    const when = 1.4;
+    scheduleMetronomeClickAt(when, false, undefined, ctx);
+    expect(starts[0]).toBe(when);
+    expect(gains[0]!.gain.setValueAtTime).toHaveBeenCalledWith(
+      BASE_BEAT_GAIN,
+      when,
+    );
+    expect(gains[0]!.gain.exponentialRampToValueAtTime).toHaveBeenCalled();
+    const rampAt = gains[0]!.gain.exponentialRampToValueAtTime.mock
+      .calls[0]![1] as number;
+    expect(rampAt).toBeGreaterThan(when);
+  });
+
+  it("look-ahead accent uses bar downbeat frequency", () => {
+    const { ctx, oscillators } = mockAudioContext("running");
+    // Caught up at beat 3 → look-ahead beat 4 (bar downbeat / accent).
+    const next = advanceMetronomeClicks(
+      {
+        enabled: true,
+        playing: true,
+        displayTicks: 960 * 3 + 100,
+        bpm: 120,
+        timeSignature: TS_4_4,
+        ppq: 960,
+      },
+      3,
+      ctx,
+    );
+    expect(next).toBe(4);
+    expect(oscillators).toHaveLength(1);
+    expect(oscillators[0]!.frequency.value).toBe(1200);
+  });
+
+  it("look-ahead normal beat uses non-accent frequency", () => {
     const { ctx, oscillators } = mockAudioContext("running");
     const next = advanceMetronomeClicks(
       {
         enabled: true,
         playing: true,
-        displayTicks: 3840,
+        displayTicks: 100,
         bpm: 120,
         timeSignature: TS_4_4,
         ppq: 960,
@@ -149,14 +264,12 @@ describe("metronome", () => {
       0,
       ctx,
     );
-    expect(next).toBe(4);
-    expect(oscillators).toHaveLength(4);
-    // Beat index 4 ≡ bar downbeat (accent); beats 1–3 are normal clicks.
+    expect(next).toBe(1);
+    expect(oscillators).toHaveLength(1);
     expect(oscillators[0]!.frequency.value).toBe(800);
-    expect(oscillators[3]!.frequency.value).toBe(1200);
   });
 
-  it("skips ahead without scheduling every click on large seek", () => {
+  it("skips deeply late catch-up clicks without stacking a bang", () => {
     const { ctx, oscillators } = mockAudioContext("running");
     const next = advanceMetronomeClicks(
       {
@@ -170,8 +283,32 @@ describe("metronome", () => {
       0,
       ctx,
     );
-    expect(next).toBe(200);
-    expect(oscillators.length).toBe(64);
+    // Cursor jumps; no burst of past oscillators; look-ahead may schedule +1.
+    expect(next).toBe(201);
+    expect(oscillators.length).toBe(1);
+    expect(MAX_LATE_CLICK_MS).toBe(40);
+  });
+
+  it("still fires a barely-late catch-up click once", () => {
+    const { ctx, oscillators, starts } = mockAudioContext("running");
+    // Mid-beat 2: lastScheduled=1 → while schedules beat 2 only (~slightly late).
+    // 120 BPM → 500 ms/beat; display 20 ticks past beat 2 ≈ 10.4 ms late.
+    const next = advanceMetronomeClicks(
+      {
+        enabled: true,
+        playing: true,
+        displayTicks: 960 * 2 + 20,
+        bpm: 120,
+        timeSignature: TS_4_4,
+        ppq: 960,
+      },
+      1,
+      ctx,
+    );
+    expect(next).toBe(2);
+    expect(oscillators).toHaveLength(1);
+    expect(starts[0]).toBe(1);
+    // Audible catch-up blocks same-frame look-ahead.
   });
 
   it("resumeMetronomeAudio resumes suspended context and unlocks", async () => {

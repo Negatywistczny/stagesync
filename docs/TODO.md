@@ -14,7 +14,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ## Must (najbliższy patch 5.4.2)
 
-- [ ] **Smart Tempo (audio → TempoMap):** mapa tempa / wyrównanie do MP3 z analizy podkładu (kierunek Logic Smart Tempo), nie z niedokładnych timingów sylab UltraStar; Import US+UG przestaje być autorem „protezy” TempoMap — US = treść + orientacja, audio = SSOT wall-clock↔takt. Import US+UG pozostaje **eksperymentalny** do domknięcia tej pozycji.
+- [ ] **Smart Tempo (5.4.2):** green PO na projekcie wzorcowym (np. Winner) z MP3 — Beat Mapper + odsłuch; Import US+UG bez etykiety „eksperymentalny” po domknięciu. Kod: audio→TempoMap, Drift Gate, yt-dlp async, `#MP3`/`#VIDEO`.
 
 ## Must (operator residual)
 
