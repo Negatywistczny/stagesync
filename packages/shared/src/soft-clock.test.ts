@@ -47,6 +47,27 @@ describe("getDisplayTicks", () => {
       wrapDisplayTicks(1000 + DEFAULT_PPQ, loop),
     );
   });
+
+  it("advances along optional tempoMaps across a BPM drop", () => {
+    const mapped: TransportAnchor = {
+      positionTicks: 0,
+      bpm: 120,
+      timeSignature: { numerator: 4, denominator: 4 },
+      ppq: DEFAULT_PPQ,
+      tempoMaps: {
+        defaultBpm: 120,
+        defaultMeter: { numerator: 4, denominator: 4 },
+        tempoMap: [
+          { id: "t0", startTicks: 0, bpm: 120 },
+          { id: "t1", startTicks: 1920, bpm: 60 },
+        ],
+        meterMap: [],
+        ppq: DEFAULT_PPQ,
+      },
+    };
+    // 2000ms: 1s@120 → 1920; 1s@60 → +960
+    expect(getDisplayTicks(mapped, 2000, 0, true)).toBe(2880);
+  });
 });
 
 describe("wrapDisplayTicks", () => {

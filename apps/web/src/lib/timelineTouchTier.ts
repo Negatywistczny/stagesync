@@ -1,7 +1,9 @@
 /**
  * Timeline touch tiers — port of v4 `timeline-touch.js` detect logic (not HTML clone).
- * mobile ≤640px → RO player chrome; tablet ≤1024px or coarse pointer; else desktop.
- * Same breakpoints on Web, Console, and Tauri.
+ * mobile ≤640px / landscape phone → RO player chrome;
+ * tablet = primary coarse pointer (touch) when not mobile;
+ * else desktop (mouse / fine pointer — full drag even in a narrow window).
+ * Same rules on Web, Console, and Tauri.
  */
 
 import {
@@ -15,6 +17,7 @@ export type TimelineTouchTier = "desktop" | "tablet" | "mobile";
 
 export const TIMELINE_MOBILE_MQ = MQ_MOBILE_COMPACT;
 export const TIMELINE_LANDSCAPE_PHONE_MQ = MQ_LANDSCAPE_PHONE;
+/** Layout breakpoint only — does **not** force tablet edit / nudge mode. */
 export const TIMELINE_TABLET_MQ = MQ_TABLET;
 export const TIMELINE_COARSE_MQ = "(pointer: coarse)";
 
@@ -33,8 +36,8 @@ export function detectTimelineTier(
   const isMobile =
     matches(TIMELINE_MOBILE_MQ) || matches(TIMELINE_LANDSCAPE_PHONE_MQ);
   if (isMobile && allowMobilePlayer) return "mobile";
-  if (matches(TIMELINE_TABLET_MQ) || matches(TIMELINE_COARSE_MQ))
-    return "tablet";
+  // Nudge / no free drag only for touch primary — not merely a narrow desktop window.
+  if (matches(TIMELINE_COARSE_MQ)) return "tablet";
   return "desktop";
 }
 

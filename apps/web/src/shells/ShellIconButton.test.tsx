@@ -61,4 +61,26 @@ describe("ShellIconButton", () => {
       /--ss-touch-min:\s*var\(--ss-touch-min-shell-action\)/,
     );
   });
+
+  it("keeps a muted border in the default state (not hover-only)", () => {
+    const css = readFileSync(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        "ShellIconButton.module.css",
+      ),
+      "utf8",
+    );
+    const shellIconBlock =
+      css.match(/\.shellIcon\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(shellIconBlock).toMatch(
+      /border:\s*1px\s+solid\s+var\(--ss-color-border\)/,
+    );
+    expect(shellIconBlock).not.toMatch(/border:\s*none|border-color:\s*transparent/);
+    expect(css).toMatch(
+      /\.shellIcon:hover:not\(:disabled\)\s*\{[^}]*border-color:\s*var\(--ss-color-primary\)/,
+    );
+    expect(css).toMatch(
+      /\.shellIcon\[aria-disabled="true"\]\s*\{[^}]*border-color:\s*var\(--ss-color-border-muted\)/,
+    );
+  });
 });

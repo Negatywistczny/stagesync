@@ -655,6 +655,8 @@ export function AdminShell() {
               applyLabel="Importuj do utworu"
               disabled={commandPending}
               applying={commandPending}
+              initialTitle={selected?.name}
+              initialArtist={selected?.artist}
               onCancel={() => setImportModalOpen(false)}
               onApply={async ({ text, barsPerLine, sectionBars, runWand }) => {
                 if (!selectedId) return;

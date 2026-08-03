@@ -31,19 +31,19 @@ describe("timelineTouchTier", () => {
     expect(TIMELINE_MOBILE_MQ).toBe(MQ_MOBILE_COMPACT);
   });
 
-  it("detects mobile only at ≤640px, not tablet widths", () => {
+  it("keeps mouse desktop edit at tablet widths when pointer is fine", () => {
     expect(
       detectTimelineTier(matchesAtViewport(640), { allowMobilePlayer: true }),
     ).toBe("mobile");
     expect(
       detectTimelineTier(matchesAtViewport(641, 1000), { allowMobilePlayer: true }),
-    ).toBe("tablet");
+    ).toBe("desktop");
     expect(
       detectTimelineTier(matchesAtWidth(768), { allowMobilePlayer: true }),
-    ).toBe("tablet");
+    ).toBe("desktop");
     expect(
       detectTimelineTier(matchesAtWidth(1024), { allowMobilePlayer: true }),
-    ).toBe("tablet");
+    ).toBe("desktop");
     expect(
       detectTimelineTier(matchesAtWidth(1025), { allowMobilePlayer: true }),
     ).toBe("desktop");
@@ -51,18 +51,30 @@ describe("timelineTouchTier", () => {
 
   it("detects mobile before coarse", () => {
     expect(
-      detectTimelineTier((q) => q.includes("max-width: 640"), {
-        allowMobilePlayer: true,
-      }),
+      detectTimelineTier(
+        (q) =>
+          q.includes("max-width: 640") || q.includes("pointer: coarse"),
+        {
+          allowMobilePlayer: true,
+        },
+      ),
     ).toBe("mobile");
   });
 
   it("can skip mobile player when allowMobilePlayer is false", () => {
+    // Fine pointer + phone width → desktop mouse edit (not forced tablet nudge).
     expect(
       detectTimelineTier(matchesAtWidth(640), { allowMobilePlayer: false }),
-    ).toBe("tablet");
+    ).toBe("desktop");
     expect(
       detectTimelineTier(matchesAtWidth(500), { allowMobilePlayer: false }),
+    ).toBe("desktop");
+    expect(
+      detectTimelineTier(
+        (q) =>
+          q.includes("max-width: 640") || q.includes("pointer: coarse"),
+        { allowMobilePlayer: false },
+      ),
     ).toBe("tablet");
   });
 
@@ -77,10 +89,10 @@ describe("timelineTouchTier", () => {
     ).toBe("tablet");
   });
 
-  it("detects tablet on width ≤1024 when not mobile", () => {
+  it("does not treat width ≤1024 alone as tablet", () => {
     expect(
       detectTimelineTier((q) => q.includes("max-width: 1024")),
-    ).toBe("tablet");
+    ).toBe("desktop");
   });
 
   it("defaults to desktop", () => {
@@ -107,10 +119,10 @@ describe("timelineTouchTier", () => {
     vi.unstubAllGlobals();
   });
 
-  it("641–768px viewport is tablet edit mode, not mobile preview", () => {
+  it("641–768px fine-pointer viewport stays desktop edit, not tablet nudge", () => {
     expect(
       detectTimelineTier(matchesAtViewport(700, 1000), { allowMobilePlayer: true }),
-    ).toBe("tablet");
+    ).toBe("desktop");
   });
 
   it("detects mobile in landscape low-height viewports (up to 960x500)", () => {
@@ -119,10 +131,10 @@ describe("timelineTouchTier", () => {
     ).toBe("mobile");
     expect(
       detectTimelineTier(matchesAtViewport(961, 500), { allowMobilePlayer: true }),
-    ).toBe("tablet");
+    ).toBe("desktop");
     expect(
       detectTimelineTier(matchesAtViewport(960, 501), { allowMobilePlayer: true }),
-    ).toBe("tablet");
+    ).toBe("desktop");
   });
 
   it("default matches returns false when window undefined", () => {

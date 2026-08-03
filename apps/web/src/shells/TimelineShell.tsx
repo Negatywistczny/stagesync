@@ -21,6 +21,8 @@ import {
   toDisplayBar,
   applyUgImportToProject,
   applyUltrastarImportToProject,
+  applyUsUgBridgeToProject,
+  DEFAULT_PPQ,
   normalizeKeyTonic,
   placeContentFromForma,
   projectEndTicks,
@@ -30,7 +32,9 @@ import {
   isHwOutRepatchBlockedWhilePlaying,
   type FormaClip,
   type Project,
+  type TextAnchorBridgeOk,
   type UgImportOk,
+  type UgTabMetadata,
   type UltrastarImportOk,
   type SnapMode,
   type WandMode,
@@ -90,6 +94,7 @@ import {
   selectAllProjectClips,
   selectRangeTo,
   selectSingle,
+  selectionIdsAfterFormaMove,
   setSelection,
   toggleAudioTrackSelected,
   toggleSelected,
@@ -273,6 +278,7 @@ import {
 } from "../lib/audioHwCapability.js";
 import {
   ChannelStripControls,
+  TaperGainSlider,
 } from "./timeline/channelStrip/index.js";
 import type {
   ChannelStripCallbacks,
@@ -302,7 +308,7 @@ import {
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
 } from "../lib/clockDisplayPrefs.js";
-import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
+import { ticksFromSyncLeadAlongMap } from "../lib/syncLead.js";
 import {
   hasNonCollapsedDomTextSelection,
   isEditableKeyboardTarget,
@@ -315,13 +321,14 @@ import {
 import {
   detectTimelineTier,
   TIMELINE_COARSE_MQ,
+  TIMELINE_LANDSCAPE_PHONE_MQ,
   TIMELINE_MOBILE_MQ,
-  TIMELINE_TABLET_MQ,
   timelineGesturesAllowed,
   TOUCH_FULL_EDIT_MSG,
   type TimelineTouchTier,
 } from "../lib/timelineTouchTier.js";
 import { APP_VERSION } from "../lib/appVersion.js";
+import { createSongWithContent } from "../lib/desktopFileMenu.js";
 import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
 import {
   fetchSetlist,
@@ -447,6 +454,7 @@ import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
 import { UltrastarImportForm } from "./UltrastarImportForm.js";
+import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
 import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
 import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
@@ -586,6 +594,7 @@ export function TimelineShell() {
     stop,
     seek,
     setLoop,
+    setSoftClockTempoMaps,
     setlistSnapshot,
   } = useTransport();
   const { openAt: openContextMenu, close: closeContextMenu } = useContextMenu();
@@ -679,6 +688,10 @@ export function TimelineShell() {
   const [songScreenOpen, setSongScreenOpen] = useState(false);
   const [ugModalOpen, setUgModalOpen] = useState(false);
   const [ultrastarModalOpen, setUltrastarModalOpen] = useState(false);
+  /** Song picker → new library song; Metadane (ⓘ) → overwrite current draft. */
+  const [importAsNewSong, setImportAsNewSong] = useState(false);
+  const [importApplying, setImportApplying] = useState(false);
+  const [combinedImportModalOpen, setCombinedImportModalOpen] = useState(false);
   const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
@@ -1160,15 +1173,15 @@ export function TimelineShell() {
     const syncTier = () => setTouchTier(detectTimelineTier());
     syncTier();
     const mobileMq = window.matchMedia(TIMELINE_MOBILE_MQ);
-    const tabletMq = window.matchMedia(TIMELINE_TABLET_MQ);
+    const landscapeMq = window.matchMedia(TIMELINE_LANDSCAPE_PHONE_MQ);
     const coarseMq = window.matchMedia(TIMELINE_COARSE_MQ);
     mobileMq.addEventListener("change", syncTier);
-    tabletMq.addEventListener("change", syncTier);
+    landscapeMq.addEventListener("change", syncTier);
     coarseMq.addEventListener("change", syncTier);
     window.addEventListener("resize", syncTier);
     return () => {
       mobileMq.removeEventListener("change", syncTier);
-      tabletMq.removeEventListener("change", syncTier);
+      landscapeMq.removeEventListener("change", syncTier);
       coarseMq.removeEventListener("change", syncTier);
       window.removeEventListener("resize", syncTier);
     };
@@ -1498,7 +1511,7 @@ export function TimelineShell() {
         playing: true,
         displayTicks:
           startTicks +
-          ticksFromSyncLeadMs(latencyCompMs, state.bpm, state.ppq),
+          ticksFromSyncLeadAlongMap(latencyCompMs, startTicks, draft),
         soloTrackIds: soloAudioTrackIds,
         soloBusIds,
       });
@@ -2178,6 +2191,22 @@ export function TimelineShell() {
     state.timeSignature,
   ]);
 
+  // Soft-clock AlongMap — same TempoMap math as server engine / audio (P3).
+  useEffect(() => {
+    if (!draftProject) {
+      setSoftClockTempoMaps(null);
+      return;
+    }
+    setSoftClockTempoMaps({
+      defaultBpm: draftProject.defaultBpm,
+      defaultMeter: draftProject.defaultMeter,
+      tempoMap: draftProject.tempoMap,
+      meterMap: draftProject.meterMap,
+      ppq: draftProject.ppq,
+    });
+    return () => setSoftClockTempoMaps(null);
+  }, [draftProject, setSoftClockTempoMaps]);
+
   // WebAudio clip playback — sync to server ticks (ADR 0008 / 0002).
   // Latency compensation is a client-only tick offset (Preferences); SSOT unchanged.
   useEffect(() => {
@@ -2193,7 +2222,7 @@ export function TimelineShell() {
     }
     const audioTicks =
       displayTicks +
-      ticksFromSyncLeadMs(latencyCompMs, state.bpm, state.ppq);
+      ticksFromSyncLeadAlongMap(latencyCompMs, displayTicks, draftProject);
     syncAudioPlayback(projectId, {
       project: draftProject,
       playing: state.playing,
@@ -2429,7 +2458,7 @@ export function TimelineShell() {
         playing: true,
         displayTicks:
           locatorTicks +
-          ticksFromSyncLeadMs(latencyCompMs, state.bpm, state.ppq),
+          ticksFromSyncLeadAlongMap(latencyCompMs, locatorTicks, draftProject),
         soloTrackIds: soloAudioTrackIds,
         soloBusIds,
       });
@@ -2460,6 +2489,13 @@ export function TimelineShell() {
     await stop();
     // Match server home (Countdown start / pre-roll), not tick 0 past CD (#41).
     setLocatorTicks(transportHomeTicks(draftRef.current));
+    // Scroll canvas to CD / song start (same feel as after Countdown length change).
+    requestAnimationFrame(() => {
+      scrollCanvasToStart(
+        canvasScrollRef.current ??
+          (document.querySelector("[data-canvas-scroll]") as HTMLElement | null),
+      );
+    });
   }
 
   async function onMetronomeToggle() {
@@ -2476,32 +2512,179 @@ export function TimelineShell() {
     setMetronomeOn(next);
   }
 
-  function onImportUg(result: UgImportOk, runWand: boolean) {
-    if (!draftProject) return;
-    let next = applyUgImportToProject(draftProject, result);
+  function closeImportModals() {
+    setUgModalOpen(false);
+    setUltrastarModalOpen(false);
+    setCombinedImportModalOpen(false);
+    setImportAsNewSong(false);
+    setImportApplying(false);
+  }
+
+  function openImportUg(asNew: boolean) {
+    setImportAsNewSong(asNew);
+    setUgModalOpen(true);
+  }
+
+  function openImportUltrastar(asNew: boolean) {
+    setImportAsNewSong(asNew);
+    setUltrastarModalOpen(true);
+  }
+
+  function openImportUsUg(asNew: boolean) {
+    setImportAsNewSong(asNew);
+    setCombinedImportModalOpen(true);
+  }
+
+  const importPreviewOptions = importAsNewSong
+    ? {
+        ppq: DEFAULT_PPQ,
+        meter: { numerator: 4, denominator: 4 } as const,
+      }
+    : draftProject
+      ? {
+          ppq: draftProject.ppq,
+          meter: resolveMeterAt(draftProject, 0),
+        }
+      : {
+          ppq: DEFAULT_PPQ,
+          meter: { numerator: 4, denominator: 4 } as const,
+        };
+
+  function mergeUgIntoProject(
+    project: Project,
+    result: UgImportOk,
+    runWand: boolean,
+    metadata?: UgTabMetadata | null,
+  ): Project {
+    let next = applyUgImportToProject(project, result);
+    const title = metadata?.title?.trim();
+    const artist = metadata?.artist?.trim();
+    if (title) next = { ...next, name: title.slice(0, 200) };
+    if (artist) next = { ...next, artist: artist.slice(0, 200) };
     if (runWand) {
       const wand = placeContentFromForma(next, "both");
       if (wand.ok) next = wand.project;
     }
+    return next;
+  }
+
+  async function onImportUg(
+    result: UgImportOk,
+    runWand: boolean,
+    metadata?: UgTabMetadata | null,
+  ) {
+    if (importAsNewSong) {
+      setImportApplying(true);
+      try {
+        const name =
+          metadata?.title?.trim() ||
+          `Import UG ${new Date().toLocaleTimeString("pl")}`;
+        const saved = await createSongWithContent(name, (shell) =>
+          mergeUgIntoProject(shell, result, runWand, metadata),
+        );
+        closeImportModals();
+        setSongScreenOpen(false);
+        flashCanvasNotice(
+          runWand
+            ? `Nowy utwór „${saved.name}”: Import UG (${result.sections.length} sekcji) + Różdżka`
+            : `Nowy utwór „${saved.name}”: Import UG (${result.sections.length} sekcji)`,
+        );
+        navigate(`/timeline/${saved.id}`);
+      } catch (err) {
+        setImportApplying(false);
+        flashCanvasNotice(
+          err instanceof Error ? err.message : "Import UG nie powiódł się",
+        );
+      }
+      return;
+    }
+    if (!draftProject) return;
+    const next = mergeUgIntoProject(draftProject, result, runWand, metadata);
     commitDraft(next);
     flashCanvasNotice(
       runWand
         ? `Import UG: ${result.sections.length} sekcji + Różdżka — sprawdź Formę i Tap`
         : `Import UG: ${result.sections.length} sekcji — Różdżka (W) gdy Formę dopracujesz`,
     );
-    setUgModalOpen(false);
+    closeImportModals();
     setSongScreenOpen(false);
   }
 
-  function onImportUltrastar(result: UltrastarImportOk) {
+  async function onImportUltrastar(result: UltrastarImportOk) {
+    if (importAsNewSong) {
+      setImportApplying(true);
+      try {
+        const name =
+          result.title?.trim() ||
+          `Import UltraStar ${new Date().toLocaleTimeString("pl")}`;
+        const saved = await createSongWithContent(name, (shell) =>
+          applyUltrastarImportToProject(shell, result),
+        );
+        closeImportModals();
+        setSongScreenOpen(false);
+        setSongMetaOpen(false);
+        flashCanvasNotice(
+          `Nowy utwór „${saved.name}”: Import UltraStar (${result.syllableCount} sylab)`,
+        );
+        navigate(`/timeline/${saved.id}`);
+      } catch (err) {
+        setImportApplying(false);
+        flashCanvasNotice(
+          err instanceof Error
+            ? err.message
+            : "Import UltraStar nie powiódł się",
+        );
+      }
+      return;
+    }
     if (!draftProject) return;
     const next = applyUltrastarImportToProject(draftProject, result);
     commitDraft(next);
     flashCanvasNotice(
-      `Import UltraStar: ${result.syllableCount} sylab / ${result.tekst.clips.length} linii — sprawdź Karaoke`,
+      `Import UltraStar: ${result.syllableCount} sylab / ${result.tekst.clips.length} linii w draftcie — Zapisz (⌘S), aby utrwalić`,
     );
-    setUltrastarModalOpen(false);
+    closeImportModals();
     setSongScreenOpen(false);
+    setSongMetaOpen(false);
+  }
+
+  async function onImportUsUgBridge(result: TextAnchorBridgeOk) {
+    const warn =
+      result.approximate || result.warnings.length > 0
+        ? " · sprawdź Formę / akordy"
+        : "";
+    const summary = `${result.sections.length} sekcji · ${result.akordy.clips.length} akordów · dopasowanie ${Math.round(result.alignScore * 100)}%${warn}`;
+    if (importAsNewSong) {
+      setImportApplying(true);
+      try {
+        const name =
+          result.title?.trim() ||
+          `Import US+UG ${new Date().toLocaleTimeString("pl")}`;
+        const saved = await createSongWithContent(name, (shell) =>
+          applyUsUgBridgeToProject(shell, result),
+        );
+        closeImportModals();
+        setSongScreenOpen(false);
+        setSongMetaOpen(false);
+        flashCanvasNotice(`Nowy utwór „${saved.name}”: Import US+UG (${summary})`);
+        navigate(`/timeline/${saved.id}`);
+      } catch (err) {
+        setImportApplying(false);
+        flashCanvasNotice(
+          err instanceof Error
+            ? err.message
+            : "Import US+UG nie powiódł się",
+        );
+      }
+      return;
+    }
+    if (!draftProject) return;
+    const next = applyUsUgBridgeToProject(draftProject, result);
+    commitDraft(next);
+    flashCanvasNotice(`Import US+UG: ${summary} — Zapisz (⌘S)`);
+    closeImportModals();
+    setSongScreenOpen(false);
+    setSongMetaOpen(false);
   }
 
   function rawTicksAtClientX(clientX: number): number | null {
@@ -2727,12 +2910,19 @@ export function TimelineShell() {
           Math.max(0, Math.min(session.boundarySubIdx, maxIdx)),
         );
       }
-    } else if (session.kind === "move" && session.moveIds?.length) {
+    } else if (session.kind === "move" && session.clipId) {
+      // TE-24 cascade: moveIds may include later sections for the commit, but
+      // selection stays on the primary unless the user had explicit multi-select.
+      const selectIds = selectionIdsAfterFormaMove(
+        session.clipId,
+        session.moveIds ?? [session.clipId],
+        Boolean(session.explicitMulti),
+      );
       setClipSelection((prev) =>
         setSelection(
           [
             ...prev.items.filter((i) => i.lane !== "forma"),
-            ...session.moveIds!.map((id) => ({ id, lane: "forma" as const })),
+            ...selectIds.map((id) => ({ id, lane: "forma" as const })),
           ],
           session.clipId,
         ),
@@ -3441,6 +3631,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       originClipStart: clip.startTicks,
       originClipLength: clip.lengthTicks,
       moveIds: kind === "move" ? moveIds : undefined,
+      explicitMulti: kind === "move" ? inMulti : undefined,
       optionCopy: kind === "move" ? Boolean(e.altKey) : undefined,
     };
     const preview = previewFromSession(
@@ -7115,6 +7306,32 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     </select>
                   </span>
                 </label>
+                <div className={styles.inspField}>
+                  Import (nadpisuje bieżący utwór)
+                  <div className={styles.metaKeyRow}>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={() => openImportUsUg(false)}
+                    >
+                      Import US+UG (eksperymentalny)
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => openImportUg(false)}
+                    >
+                      Importuj UG
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => openImportUltrastar(false)}
+                    >
+                      Importuj UltraStar
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : selectedMapLane && selectedMapIds.length > 0 ? (
               <div className={styles.inspBody}>
@@ -7760,13 +7977,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     }}
                     title="Dwuklik — 0.0 dB"
                   >
-                    <Slider
+                    <TaperGainSlider
                       aria-label="Fader ścieżki"
-                      min={-24}
-                      max={12}
-                      step={0.5}
-                      value={selectedDockAudioTrack.gainDb ?? 0}
-                      onValueChange={(v) => {
+                      gainDb={selectedDockAudioTrack.gainDb ?? 0}
+                      onGainChange={(v) => {
                         if (!draftProject) return;
                         commitDraft(
                           setAudioTrackGainDb(
@@ -8244,18 +8458,20 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               ) : null}
               <div className={styles.overlayActions}>
                 <Button
+                  variant="primary"
+                  onClick={() => openImportUsUg(true)}
+                >
+                  Import US+UG (eksperymentalny)
+                </Button>
+                <Button
                   variant="secondary"
-                  onClick={() => {
-                    setUgModalOpen(true);
-                  }}
+                  onClick={() => openImportUg(true)}
                 >
                   Importuj UG
                 </Button>
                 <Button
                   variant="secondary"
-                  onClick={() => {
-                    setUltrastarModalOpen(true);
-                  }}
+                  onClick={() => openImportUltrastar(true)}
                 >
                   Importuj UltraStar
                 </Button>
@@ -8265,7 +8481,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
       ) : null}
 
-      {ugModalOpen && draftProject ? (
+      {ugModalOpen && (importAsNewSong || draftProject) ? (
         <div
           className={styles.overlay}
           role="dialog"
@@ -8276,34 +8492,45 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             type="button"
             className={styles.backdrop}
             aria-label="Zamknij"
-            onClick={() => setUgModalOpen(false)}
+            onClick={closeImportModals}
           />
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
-              <h2 id="ug-import-title">Importuj Ultimate Guitar</h2>
-              <ShellIconButton
-                label="Zamknij"
-                onClick={() => setUgModalOpen(false)}
-              >
+              <h2 id="ug-import-title">
+                {importAsNewSong
+                  ? "Importuj Ultimate Guitar — nowy utwór"
+                  : "Importuj Ultimate Guitar"}
+              </h2>
+              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
               </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
               <UgImportForm
-                applyLabel="Importuj do draftu"
-                importOptions={{
-                  ppq: draftProject.ppq,
-                  meter: resolveMeterAt(draftProject, 0),
-                }}
-                onCancel={() => setUgModalOpen(false)}
-                onApply={({ result, runWand }) => onImportUg(result, runWand)}
+                applyLabel={
+                  importAsNewSong
+                    ? "Utwórz nowy utwór"
+                    : "Importuj do draftu"
+                }
+                applying={importApplying}
+                importOptions={importPreviewOptions}
+                initialTitle={
+                  importAsNewSong ? undefined : draftProject?.name
+                }
+                initialArtist={
+                  importAsNewSong ? undefined : draftProject?.artist
+                }
+                onCancel={closeImportModals}
+                onApply={({ result, runWand, metadata }) =>
+                  onImportUg(result, runWand, metadata)
+                }
               />
             </div>
           </div>
         </div>
       ) : null}
 
-      {ultrastarModalOpen && draftProject ? (
+      {ultrastarModalOpen && (importAsNewSong || draftProject) ? (
         <div
           className={styles.overlay}
           role="dialog"
@@ -8314,27 +8541,83 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             type="button"
             className={styles.backdrop}
             aria-label="Zamknij"
-            onClick={() => setUltrastarModalOpen(false)}
+            onClick={closeImportModals}
           />
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
-              <h2 id="ultrastar-import-title">Importuj UltraStar</h2>
-              <ShellIconButton
-                label="Zamknij"
-                onClick={() => setUltrastarModalOpen(false)}
-              >
+              <h2 id="ultrastar-import-title">
+                {importAsNewSong
+                  ? "Importuj UltraStar — nowy utwór"
+                  : "Importuj UltraStar"}
+              </h2>
+              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
               </ShellIconButton>
             </div>
             <div className={styles.overlayBody}>
               <UltrastarImportForm
-                applyLabel="Importuj do draftu"
-                importOptions={{
-                  ppq: draftProject.ppq,
-                  meter: resolveMeterAt(draftProject, 0),
-                }}
-                onCancel={() => setUltrastarModalOpen(false)}
+                applyLabel={
+                  importAsNewSong
+                    ? "Utwórz nowy utwór"
+                    : "Importuj do draftu"
+                }
+                applying={importApplying}
+                importOptions={importPreviewOptions}
+                initialTitle={
+                  importAsNewSong ? undefined : draftProject?.name
+                }
+                initialArtist={
+                  importAsNewSong ? undefined : draftProject?.artist
+                }
+                onCancel={closeImportModals}
                 onApply={onImportUltrastar}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {combinedImportModalOpen && (importAsNewSong || draftProject) ? (
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="us-ug-import-title"
+        >
+          <button
+            type="button"
+            className={styles.backdrop}
+            aria-label="Zamknij"
+            onClick={closeImportModals}
+          />
+          <div className={styles.overlayPanel}>
+            <div className={styles.overlayHead}>
+              <h2 id="us-ug-import-title">
+                {importAsNewSong
+                  ? "Import US+UG (eksperymentalny) — nowy utwór"
+                  : "Import US+UG (eksperymentalny)"}
+              </h2>
+              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
+                <IconClose />
+              </ShellIconButton>
+            </div>
+            <div className={styles.overlayBody}>
+              <CombinedUsUgImportForm
+                applyLabel={
+                  importAsNewSong
+                    ? "Utwórz nowy utwór"
+                    : "Importuj do draftu"
+                }
+                applying={importApplying}
+                importOptions={importPreviewOptions}
+                initialTitle={
+                  importAsNewSong ? undefined : draftProject?.name
+                }
+                initialArtist={
+                  importAsNewSong ? undefined : draftProject?.artist
+                }
+                onCancel={closeImportModals}
+                onApply={onImportUsUgBridge}
               />
             </div>
           </div>

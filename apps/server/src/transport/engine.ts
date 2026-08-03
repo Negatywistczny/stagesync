@@ -1,11 +1,13 @@
 /**
  * In-memory transport SSOT: position from originMs + elapsed (never += on timer).
  * Loop wrap is server-authoritative (inclusive start / exclusive end).
+ * When a project tempoMap is loaded, elapsed advances along the map (piecewise).
  */
 
 import {
   DEFAULT_PPQ,
   TRANSPORT_TICK_INTERVAL_MS,
+  advanceTicksAlongTempoMap,
   assertValidTimeSignature,
   defaultTransportState,
   elapsedToTicks,
@@ -16,6 +18,7 @@ import {
   resolveTempoAt,
   transportHomeTicks,
   type Project,
+  type TempoMapProject,
   type TimeSignature,
   type TransportLoop,
   type TransportLoopBody,
@@ -31,6 +34,16 @@ export type TransportEngineOptions = {
 };
 
 type Listener = (msg: TransportTickMessage) => void;
+
+function mapsFromProject(project: Project): TempoMapProject {
+  return {
+    defaultBpm: project.defaultBpm,
+    defaultMeter: { ...project.defaultMeter },
+    tempoMap: project.tempoMap,
+    meterMap: project.meterMap,
+    ppq: project.ppq,
+  };
+}
 
 /**
  * In-memory transport SSOT: position from originMs + elapsed (never += on timer).
@@ -51,6 +64,15 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   let loop: TransportLoop | null = null;
   const ppq = DEFAULT_PPQ;
 
+  /** Active project maps for piecewise tempo; null → constant bpm path. */
+  let activeMaps: TempoMapProject | null = null;
+  /**
+   * When true, samplePosition uses {@link advanceTicksAlongTempoMap}.
+   * Explicit play({ bpm }) / play({ timeSignature }) disables map playback
+   * until the next loadProject / play(project) without overrides.
+   */
+  let useTempoMap = false;
+
   let originMs = 0;
   let originTicks = 0;
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -59,11 +81,22 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   function samplePosition(): number {
     if (!playing) return positionTicks;
     const elapsedMs = Math.max(0, now() - originMs);
-    let ticks = originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
+    let ticks: number;
+    if (useTempoMap && activeMaps) {
+      ticks = advanceTicksAlongTempoMap(originTicks, elapsedMs, activeMaps);
+      bpm = resolveTempoAt(activeMaps, ticks);
+      timeSignature = { ...resolveMeterAt(activeMaps, ticks) };
+    } else {
+      ticks = originTicks + elapsedToTicks(elapsedMs, bpm, timeSignature, ppq);
+    }
     const wrap = loopWrapTicks(ticks, loop);
     if (wrap != null) {
       ticks = wrap;
       positionTicks = wrap;
+      if (useTempoMap && activeMaps) {
+        bpm = resolveTempoAt(activeMaps, ticks);
+        timeSignature = { ...resolveMeterAt(activeMaps, ticks) };
+      }
       reanchor();
     }
     return ticks;
@@ -72,6 +105,8 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
   function applyMapsFromProject(project: Project, atTicks?: number): void {
     const ticks = atTicks ?? samplePosition();
     positionTicks = ticks;
+    activeMaps = mapsFromProject(project);
+    useTempoMap = true;
     bpm = resolveTempoAt(project, ticks);
     timeSignature = { ...resolveMeterAt(project, ticks) };
   }
@@ -195,9 +230,22 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       } else {
         if (opts.bpm !== undefined) {
           bpm = opts.bpm;
+          useTempoMap = false;
         }
         if (opts.timeSignature !== undefined) {
           timeSignature = { ...opts.timeSignature };
+          useTempoMap = false;
+        }
+        // play() without overrides after loadProject keeps useTempoMap + activeMaps
+        if (
+          project == null &&
+          opts.bpm === undefined &&
+          opts.timeSignature === undefined &&
+          activeMaps
+        ) {
+          useTempoMap = true;
+          bpm = resolveTempoAt(activeMaps, positionTicks);
+          timeSignature = { ...resolveMeterAt(activeMaps, positionTicks) };
         }
       }
 
@@ -229,6 +277,9 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       positionTicks = home;
       if (project) {
         applyMapsFromProject(project, home);
+      } else if (activeMaps) {
+        bpm = resolveTempoAt(activeMaps, home);
+        timeSignature = { ...resolveMeterAt(activeMaps, home) };
       }
       notify();
       return snapshot();
@@ -240,8 +291,13 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       }
       positionTicks = nextTicks;
       if (project) {
+        activeMaps = mapsFromProject(project);
+        useTempoMap = true;
         bpm = resolveTempoAt(project, positionTicks);
         timeSignature = { ...resolveMeterAt(project, positionTicks) };
+      } else if (activeMaps && useTempoMap) {
+        bpm = resolveTempoAt(activeMaps, positionTicks);
+        timeSignature = { ...resolveMeterAt(activeMaps, positionTicks) };
       }
       if (playing) {
         reanchor();
@@ -294,6 +350,8 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       idleReason = "stopped";
       stopTimer();
       loop = null;
+      activeMaps = null;
+      useTempoMap = false;
       notify();
       return snapshot();
     },

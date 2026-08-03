@@ -454,9 +454,41 @@ describe("clientKaraoke", () => {
 
     it("mapKaraokeBlocks returns undefined without blocks", () => {
       expect(
-        mapKaraokeBlocks({ blocks: undefined as unknown as TekstClip["blocks"] }, 0, true),
+        mapKaraokeBlocks(
+          {
+            text: "",
+            blocks: undefined as unknown as TekstClip["blocks"],
+          },
+          0,
+          true,
+        ),
       ).toBeUndefined();
-      expect(mapKaraokeBlocks({ blocks: [] }, 0, true)).toBeUndefined();
+      expect(
+        mapKaraokeBlocks({ text: "", blocks: [] }, 0, true),
+      ).toBeUndefined();
+    });
+
+    it("mapKaraokeBlocks restores word spaces from line text when blocks are trimmed", () => {
+      const tokens = mapKaraokeBlocks(
+        {
+          text: "I hear the drums",
+          blocks: [
+            { id: "b1", text: "I", startTicks: 0, lengthTicks: BEAT },
+            { id: "b2", text: "hear", startTicks: BEAT, lengthTicks: BEAT },
+            { id: "b3", text: "the", startTicks: 2 * BEAT, lengthTicks: BEAT },
+            { id: "b4", text: "drums", startTicks: 3 * BEAT, lengthTicks: BEAT },
+          ],
+        },
+        0,
+        true,
+      );
+      expect(tokens?.map((b) => b.text)).toEqual([
+        "I ",
+        "hear ",
+        "the ",
+        "drums",
+      ]);
+      expect(tokens?.map((b) => b.text).join("")).toBe("I hear the drums");
     });
   });
 

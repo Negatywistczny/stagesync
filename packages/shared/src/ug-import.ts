@@ -263,7 +263,20 @@ function isSkipMetaDirective(line: string): boolean {
 }
 
 /** Split raw text into named section buckets (blank line / headers). */
-export function splitUgSections(raw: string): RawSection[] {
+export type SplitUgSectionsOptions = {
+  /**
+   * When true (default), a blank line starts a new anonymous section — classic
+   * UG import. Text-Anchor bridge sets false so blank lines inside [Verse]
+   * do not invent „Sekcja N”.
+   */
+  splitOnBlankLines?: boolean;
+};
+
+export function splitUgSections(
+  raw: string,
+  options: SplitUgSectionsOptions = {},
+): RawSection[] {
+  const splitOnBlank = options.splitOnBlankLines !== false;
   const out: RawSection[] = [];
   let current: RawSection = { name: null, lines: [] };
 
@@ -277,7 +290,7 @@ export function splitUgSections(raw: string): RawSection[] {
   for (const lineRaw of raw.split("\n")) {
     const line = lineRaw.trim();
     if (!line) {
-      if (current.lines.length > 0 || current.name) flush();
+      if (splitOnBlank && (current.lines.length > 0 || current.name)) flush();
       continue;
     }
     if (isSkipMetaDirective(line)) continue;
@@ -287,7 +300,8 @@ export function splitUgSections(raw: string): RawSection[] {
       current = { name: header, lines: [] };
       continue;
     }
-    current.lines.push(line);
+    // Keep leading indent — UG chord-above columns (Chorus „    G”) are musical.
+    current.lines.push(lineRaw.replace(/\s+$/u, ""));
   }
   flush();
   return out.filter((s) => s.lines.length > 0);

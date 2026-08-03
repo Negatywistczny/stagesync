@@ -219,9 +219,19 @@ const TOOL_SECTIONS: ToolSection[] = [
           "nazwa + S/M w pierwszym rzędzie, fader na pełną szerokość w drugim; przeciągnij prawą krawędź kolumny (zapamiętane).",
       },
       {
+        term: "Import US+UG (eksperymentalny)",
+        detail:
+          "Wybierz utwór → Import US+UG (eksperymentalny): tworzy nowy utwór (UltraStar czas+tekst, potem UG Forma+akordy). Nadpisanie draftu: Metadane (ⓘ) → Import US+UG → Importuj do draftu → Zapisz (⌘S). Mostek buduje Formę i akordy oraz przybliżoną mapę tempa z timingów UltraStar — sync z MP3 bywa niedokładny (mapa z sylab to proteza). Docelowo: Smart Tempo z audio. Słabe dopasowanie wymaga potwierdzenia. Osobne Import UG / UltraStar zostają; Różdżka (W) = naprawa / sam UG.",
+      },
+      {
         term: "Import UG",
         detail:
-          "Wybierz utwór → Importuj UG: szukaj lub wklej link Ultimate Guitar (Chords) → Pobierz → podgląd sekcji, edycja taktów, opcjonalna Różdżka. Wklejenie tekstu pozostaje jako zapas. Puste linie / [Verse]/[Chorus] → Forma.",
+          "Wybierz utwór → Importuj UG: tworzy nowy utwór w bibliotece (szukaj / link Ultimate Guitar → podgląd → Utwórz nowy utwór). Nadpisanie bieżącego: Metadane utworu (ⓘ) → Importuj UG. Wklejenie tekstu zostaje jako zapas. Puste linie / [Verse]/[Chorus] → Forma.",
+      },
+      {
+        term: "Import UltraStar",
+        detail:
+          "Wybierz utwór → Importuj UltraStar: tworzy nowy utwór (USDB / link / wklej .txt → Utwórz nowy utwór). Nadpisanie draftu: Metadane (ⓘ) → Importuj UltraStar → Importuj do draftu → Zapisz (⌘S). Konto USDB: Konto USDB w dialogu albo Ustawienia serwera. Melisma „~” nie trafia do tekstu; tempo z pliku aktualizuje metronom.",
       },
       {
         term: "Import",
@@ -296,7 +306,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       {
         term: "Różdżka (W)",
         detail:
-          "przycisk przy warstwie Forma lub W: Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3).",
+          "naprawa / sam UG: przycisk przy warstwie Forma lub W — Tekst→Forma / Akordy→Forma / obie (1 / 2 / 3). Przy imporcie US+UG struktura powstaje z mostka; Różdżka nie jest domyślną ścieżką.",
       },
       {
         term: "Tap",

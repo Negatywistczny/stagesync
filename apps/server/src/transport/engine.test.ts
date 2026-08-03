@@ -226,6 +226,29 @@ describe("TransportEngine", () => {
     engine.dispose();
   });
 
+  it("advances along tempoMap across a mid-span BPM drop", () => {
+    let t = 0;
+    const project = createProjectV5Seed(
+      "00000000-0000-4000-8000-0000000000tm",
+      "T",
+      "2026-07-20T00:00:00.000Z",
+      { midiProgramId: 1 },
+    );
+    project.defaultBpm = 120;
+    project.tempoMap = [
+      { id: "t0", startTicks: 0, bpm: 120 },
+      { id: "t1", startTicks: 1920, bpm: 60 },
+    ];
+    const engine = createTransportEngine({ now: () => t });
+    engine.loadProject(project.id, project);
+    engine.play({}, project);
+    // 1s @ 120 → 1920; +1s @ 60 → +960 = 2880
+    t = 2000;
+    expect(engine.getState().positionTicks).toBe(2880);
+    expect(engine.getState().bpm).toBe(60);
+    engine.dispose();
+  });
+
   it("play applies explicit timeSignature override", () => {
     const engine = createTransportEngine();
     engine.play({ timeSignature: { numerator: 3, denominator: 4 } });

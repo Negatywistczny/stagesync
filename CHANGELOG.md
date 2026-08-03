@@ -5,6 +5,43 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [5.4.1](https://github.com/Negatywistczny/stagesync/compare/v5.4.0...v5.4.1) - 2026-08-03
+
+### Dodano
+
+#### ⏱️ Timeline & DAW
+- **Import UltraStar:** wyszukiwanie na USDB (tytuł / artysta) oraz pobranie pliku z linku — jak przy Ultimate Guitar; konto USDB ustawia się w dialogu importu (**Konto USDB**) albo w Ustawieniach serwera (zapis na hoście); przy wygaśnięciu sesji host sam loguje się ponownie zapisanymi danymi i ponawia żądanie (komunikat o sesji tylko gdy ponowne logowanie też się nie uda); **Testuj połączenie** i logowanie nie odrzucają poprawnego konta przez mylący HTML odpowiedzi USDB (po sukcesie strona nadal pokazuje „Please login” — host weryfikuje sesję na stronie przeglądania); przy złym haśle, braku sieci albo limicie prób komunikat po polsku wskazuje Konto USDB; wklejenie i plik `.txt` są od razu widoczne w dialogu; parser zachowuje spacje końcowe / początkowe sylab (granice słów USDX — bez sklejania „Aboutthin”), zapisuje spacje na końcach słów w blokach sylab (Client nie skleja „Ihearthedrums”), usuwa melisma `~` z tekstu i liczy `#GAP`/`#BPM`→ticki przez mapę tempa; lyrics trafiają na ścieżkę Tekst (nie na Formę); lista wyników USDB czyta wiersze `data-songid` (nie myli tytułu z tekstem „There are N results…”); z **Wybierz utwór** powstaje nowy utwór w bibliotece, z Metadanych (ⓘ) — nadpisanie bieżącego draftu (Zapisz ⌘S).
+- **Import US+UG (eksperymentalny):** mostek buduje Formę na czystej siatce taktów i przybliżoną mapę tempa ze ścian sekcji (timing UltraStar jest orientacyjny — sync z MP3 bywa niedokładny; w UI status eksperymentalny do Smart Tempo w 5.4.2); `sourceSection` z dopasowania UG↔US; akordy na strukturalnych Beat 1/3; pipe = 1 takt/komórka; słabe dopasowanie wymaga potwierdzenia; osobne Import UG / UltraStar oraz Różdżka zostają; z **Wybierz utwór** powstaje nowy utwór, z Metadanych (ⓘ) — nadpisanie draftu.
+
+#### 🎛️ Audio / MIDI / Transport
+- **Transport / mapa tempa:** playhead i seek idą po mapie tempa (i metrum) projektu — zmiana BPM w trakcie utworu nie rozjeżdża pozycji względem audio; soft-clock między tickami serwera korzysta z tej samej matematyki (AlongMap), a kompensacja latency / sync-lead też liczy offset po mapie zamiast płaskiego BPM.
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Import UG:** w **Wybierz utwór** import tworzy nowy utwór w bibliotece (nie nadpisuje otwartego); nadpisanie bieżącego draftu zostaje w Metadanych utworu (ⓘ).
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Transport Stop:** po Stop canvas przewija się na początek (Countdown / start utworu), razem z locatorem — nie zostaje w miejscu playheada.
+- **Edycja clipów (wąskie okno):** na komputerze z myszką zwężenie okna nie włącza już trybu tabletu — zostaje przeciąganie i resize myszką; przyciski ◀▶ / rozciągania tylko przy wskaźniku dotykowym.
+- **Import UltraStar:** po imporcie metronom i mapa tempa (event @ 0) dostają BPM z pliku — sylaby nie lądują „obok” audio przez stare 120 BPM; melisma `~` nie dokleja się do słów (np. „Conversation” zamiast „Convers~~tion”); import jest w draftcie — komunikat przypomina o **Zapisz**; kolejne wersy / frazy nie rozjeżdżają się w czasie względem audio (pierwszy wers był OK, dalsze miały za duże odstępy).
+- **Forma:** klik w sekcję zaznacza tylko ten clip (nie całą kaskadę przesuwanych sekcji).
+- **Chrome / pasek narzędzi:** obwódka przycisków ikon (narzędzia, transport, setlista, nagłówek) jest zawsze widoczna — także górna krawędź (kontenery ze scrollem poziomym mają wstawkę, żeby ramka nie ginęła na krawędzi przycięcia); na hover tylko wzmacnia kolor.
+- **Fader ścieżki:** skala w docku i Inspektorze jak na Mixerze — skrajny dół to pełne wyciszenie (−∞ / −60 dB), ta sama krzywa co strip miksera.
+- **Mixer — mierniki poziomu:** płynniejsze wskazanie (szybki atak, wolniejszy spadek) zamiast skoków co klatkę; skala LED zielona → żółta → czerwona (−12 / 0 dB) zamiast samego zielonego.
+- **Mixer — busy:** dodanie pustych busów (bez routingu ścieżek na nie) nie podbija już głośności ścieżek audio — wcześniej każdy „+ Dodaj Bus” przebudowywał głosy clipów i mógł zostawiać stare połączenia w grafie WebAudio, przez co poziom rósł na stałe.
+- **Audio / Timeline:** klipy audio wypełniają wysokość toru (jak Forma), zamiast niskiego paska pod etykietą.
+- **Ścieżki audio:** usunięcie toru i **Zapisz** naprawdę zapisuje usunięcie — ścieżka (i jej clipy) nie wracają już po odświeżeniu.
+
+#### 🎛️ Audio / MIDI / Transport
+- **Playback / MP3:** odtwarzanie backingów bliżej jakości systemowego odtwarzacza macOS — kontekst audio w trybie muzycznym (większe bufory zamiast ścieżki „interactive”), stereo Master na domyślnej ścieżce speakers (discrete multi-out tylko gdy są HW Outy albo niezerowy remap Mastera), bez wymuszania niskiego sample rate; po seeku / scrubie playheada w trakcie Play / Pause / zmianie grafu poprzedni głos jest zatrzymywany, a stary BufferSource nie wyłącza już nowego głosu tego samego klipu (wcześniej pętla restartów nakładała ścieżki na siebie i brzmiała jak zniekształcone częstotliwości / „aliasing”); usunięcie klipu audio w trakcie odtwarzania nie zostawia już uciętych resztek dźwięku — fade i poziom są wyciszane przed stop, a opóźnione ładowanie pliku nie odpala głosu skasowanego klipu.
+
+#### 🖥️ App Shell & UI
+- **Klient (Karaoke / tekst):** słowa nie sklejają się między sylabami — spacje z linii są zachowane przy podświetlaniu bloków (np. „I hear the drums”, nie „Ihearthedrums”).
+- **Klient (Akordy):** kafelki cyklu biorą akord z bieżącego clipu na playheadzie (także półtaktowe / kotwiczone przy słowach po imporcie US+UG), a szerokość kafelka jest proporcjonalna do czasu trwania — nie tylko do początku taktu.
+
 ## [5.4.0](https://github.com/Negatywistczny/stagesync/compare/v5.3.8...v5.4.0) - 2026-08-02 — Syllables
 
 ### Dodano

@@ -27,13 +27,27 @@ let sharedCtx: AudioContext | null = null;
 let clickAnalyser: AnalyserNode | null = null;
 let clickAnalyserBuf: Float32Array | null = null;
 
+/**
+ * Options for the shared realtime AudioContext.
+ * - `latencyHint: "playback"` — larger render buffers (music path). Chrome’s
+ *   bare `new AudioContext()` matches interactive (~5 ms) and is more prone to
+ *   underrun crackle on backing tracks.
+ * - Never set `sampleRate` — keep the device default (typically 48 kHz). Forcing
+ *   22.05/44.1 when the device is 48 kHz adds an extra SRC step and dulls MP3s
+ *   vs QuickTime / Music.
+ */
+export function sharedAudioContextOptions(): AudioContextOptions {
+  return { latencyHint: "playback" };
+}
+
 export function getMetronomeAudioContext(): AudioContext {
   if (!sharedCtx) {
     const Ctx =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext })
         .webkitAudioContext;
-    sharedCtx = new Ctx();
+    const opts = sharedAudioContextOptions();
+    sharedCtx = new Ctx(opts);
   }
   return sharedCtx;
 }

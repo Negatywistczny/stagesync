@@ -33,7 +33,7 @@ Klient web: Vite proxy `/api` + `/ws`; playhead tylko między tickami serwera.
 | `GET` | `/api/system/logs/stream` | SSE stream logów |
 | `POST` | `/api/system/logs/clear` | Czyści ring-buffer |
 | `GET` | `/api/system/network` | Adresy LAN, port, wersja, opcjonalnie `dataDir` |
-| `GET` | `/api/system/settings` | Zarządzane wartości `.env` (Admin Ustawienia; loopback/token) |
+| `GET` | `/api/system/settings` | Zarządzane wartości `.env` (Admin Ustawienia; loopback/token); sekrety (np. hasło USDB) zamaskowane — `secretsConfigured` |
 | `PUT` | `/api/system/settings` | Zapis zarządzanych kluczy do `.env` |
 | `GET` | `/api/system/browse` | Picker katalogów / plików (repo + home); `?mode=file&ext=.bak` lub `.bak,.zip` |
 | `POST` | `/api/system/restore` | Przywróć `.bak` / wiele `.bak` (`paths[]`, max 64) / archiwum `.zip` do drzewa danych (`confirm: true`); PIN + ACL lifecycle; przed nadpisaniem `pre-restore` |
@@ -81,6 +81,20 @@ transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
 |--------|---------|------|
 | `POST` | `/api/import/ultimate-guitar` | `{ url }` — pobranie zakładki Chords z UG (serwer); `{ content, metadata }` (treść już wyczyszczona pod `importUgText`) |
 | `POST` | `/api/import/ultimate-guitar/search` | `{ title, artist? }` — wyszukiwarka (max 25 wyników Chords) |
+
+### Import (UltraStar / USDB)
+
+| Metoda | Ścieżka | Opis |
+|--------|---------|------|
+| `GET` | `/api/import/ultrastar/account` | `{ configured, user }` — status konta USDB na hoście (bez hasła) |
+| `PUT` | `/api/import/ultrastar/account` | `{ user, pass? }` — zapis konta do `.env` hosta (puste `user` = usuń; puste/`pass` pominięte = bez zmiany hasła) |
+| `POST` | `/api/import/ultrastar/account/test` | `{ user?, pass? }` — test logowania USDB (override lub zapisane dane) |
+| `POST` | `/api/import/ultrastar` | `{ url }` — pobranie `.txt` UltraStar z USDB; wymaga konta USDB (UI lub `STAGESYNC_USDB_*`) |
+| `POST` | `/api/import/ultrastar/search` | `{ title, artist? }` — wyszukiwarka USDB (max 25 wyników) |
+
+Konto USDB: zalecany zapis z UI (Import UltraStar → Konto USDB / Ustawienia serwera).
+Te same klucze `STAGESYNC_USDB_USER` / `STAGESYNC_USDB_PASS` w `.env` lub env procesu;
+przy starcie już ustawione process env wygrywa z plikiem `.env`. Zapis z UI aktualizuje runtime od razu.
 
 ### Project
 

@@ -1,3 +1,4 @@
+import { advanceTicksAlongTempoMap, type TempoMapProject } from "./tempo-map.js";
 import { elapsedToTicks } from "./time.js";
 import {
   isUsableLoop,
@@ -9,6 +10,11 @@ export type TransportAnchor = {
   bpm: number;
   timeSignature: { numerator: number; denominator: number };
   ppq: number;
+  /**
+   * Optional project maps for piecewise soft-clock extrapolation between
+   * server ticks. When omitted, uses constant {@link bpm} / timeSignature.
+   */
+  tempoMaps?: TempoMapProject | null;
 };
 
 /**
@@ -17,6 +23,9 @@ export type TransportAnchor = {
  *
  * Optional `loop` wraps extrapolated ticks into the loop range (inclusive start /
  * exclusive end) so the display matches server wrap between WS ticks.
+ *
+ * When `anchor.tempoMaps` is set, elapsed advances along the tempo/meter maps
+ * (same math as the server engine).
  *
  * @example
  * // 4/4 @ 120 BPM, PPQ 960: 500 ms ≈ one quarter = 960 ticks
@@ -47,13 +56,22 @@ export function getDisplayTicks(
     return Number.isFinite(anchor.positionTicks) ? anchor.positionTicks : 0;
   }
   const elapsedMs = Math.max(0, currentTimestampMs - localReceiptMs);
-  const elapsedTicks = elapsedToTicks(
-    elapsedMs,
-    anchor.bpm,
-    anchor.timeSignature,
-    anchor.ppq,
-  );
-  const raw = anchor.positionTicks + elapsedTicks;
+  let raw: number;
+  if (anchor.tempoMaps) {
+    raw = advanceTicksAlongTempoMap(
+      anchor.positionTicks,
+      elapsedMs,
+      anchor.tempoMaps,
+    );
+  } else {
+    const elapsedTicks = elapsedToTicks(
+      elapsedMs,
+      anchor.bpm,
+      anchor.timeSignature,
+      anchor.ppq,
+    );
+    raw = anchor.positionTicks + elapsedTicks;
+  }
   return wrapDisplayTicks(raw, loop);
 }
 

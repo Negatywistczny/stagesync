@@ -59,16 +59,52 @@ export function refreshAudioHwCapability(
 }
 
 /**
- * Apply discrete multi-channel layout on the destination when UI allows.
- * Returns the channel count used for ChannelMerger (2 when gated off).
+ * Apply destination channel layout for Mixer HW Out.
+ * Returns the channel count used for ChannelMerger (2 when multi-out inactive).
+ *
+ * When multi-out is inactive: restore **speakers** stereo (browser media path).
+ * Forcing `discrete` on stereo — or opening an N-ch discrete stream on an
+ * interface while only Master 1–2 is used — sounded thinner / worse than
+ * QuickTime / Music. Activate discrete N-ch only when HW outs / non-default
+ * Master map actually need ChannelMerger addressing.
+ *
+ * Skip no-op writes: applyBusParams → ensureDestGraph runs every transport
+ * tick; re-assigning destination.channel* can glitch the stream even when
+ * values are unchanged.
  */
 export function applyDestinationChannelLayout(
   ctx: AudioContext,
   maxChannelCount = refreshAudioHwCapability(ctx).maxChannelCount,
+  multiOutActive = false,
 ): number {
-  const n = hwOutputUiAllowed(maxChannelCount) ? maxChannelCount : 2;
+  const dest = ctx.destination;
+  const canMulti = hwOutputUiAllowed(maxChannelCount);
+  if (!multiOutActive || !canMulti) {
+    if (
+      dest.channelCount === 2 &&
+      dest.channelCountMode === "explicit" &&
+      dest.channelInterpretation === "speakers"
+    ) {
+      return 2;
+    }
+    try {
+      dest.channelCount = 2;
+      dest.channelCountMode = "explicit";
+      dest.channelInterpretation = "speakers";
+    } catch {
+      /* some browsers reject — keep whatever the engine allows */
+    }
+    return 2;
+  }
+  const n = Math.floor(maxChannelCount);
+  if (
+    dest.channelCount === n &&
+    dest.channelCountMode === "explicit" &&
+    dest.channelInterpretation === "discrete"
+  ) {
+    return n;
+  }
   try {
-    const dest = ctx.destination;
     dest.channelCount = n;
     dest.channelCountMode = "explicit";
     dest.channelInterpretation = "discrete";

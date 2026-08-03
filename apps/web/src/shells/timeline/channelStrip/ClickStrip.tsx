@@ -6,6 +6,7 @@
 import type { PeakHoldState } from "@stagesync/shared";
 import { Button } from "@stagesync/ui";
 import { DualDbReadout } from "./DualDbReadout.js";
+import { meterPaintKey } from "./meterPaint.js";
 import { PeakMeter } from "./PeakMeter.js";
 import { VerticalFader } from "./VerticalFader.js";
 import styles from "./ChannelStripControls.module.css";
@@ -59,7 +60,11 @@ export function ClickStrip({ state, callbacks }: ClickStripProps) {
           onGainReset={callbacks.onGainReset}
           aria-label="Fader Click"
         />
-        <PeakMeter db={state.meterDb} aria-label="Miernik Click" />
+        <PeakMeter
+          db={state.meterDb}
+          paintKeyL={meterPaintKey("click", "metro", "l")}
+          aria-label="Miernik Click"
+        />
       </div>
 
       <div className={styles.mixerTools}>

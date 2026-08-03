@@ -2,12 +2,21 @@
 .shellIcon {
   /* Keep shared shell action icons (⚙️/fullscreen) at one canonical size. */
   --ss-touch-min: var(--ss-touch-min-shell-action);
-  border-color: var(--ss-color-border);
+  /*
+   * Full border shorthand (not border-color alone): ghost Button ships
+   * `border: 1px solid transparent` at the same specificity, so a late
+   * injection of button.css would wipe a color-only override and leave
+   * chrome icons borderless until :hover paints primary.
+   */
+  border: 1px solid var(--ss-color-border);
   color: var(--ss-color-text-muted);
 }
 
-.shellIcon:disabled {
+.shellIcon:disabled,
+.shellIcon[aria-disabled="true"] {
   color: var(--ss-color-disabled-text);
+  /* Beat .ss-btn[aria-disabled] transparent border — keep muted outline. */
+  border-color: var(--ss-color-border-muted);
 }
 
 @media (hover: hover) {

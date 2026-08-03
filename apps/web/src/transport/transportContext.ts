@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import type {
+  TempoMapProject,
   TransportLoopBody,
   TransportPlayBody,
   TransportState,
@@ -60,6 +61,11 @@ export type TransportContextValue = {
   stop: () => Promise<void>;
   seek: (positionTicks: number) => Promise<void>;
   setLoop: (body: TransportLoopBody) => Promise<void>;
+  /**
+   * Project tempo/meter maps for soft-clock AlongMap between server ticks.
+   * Pass `null` to fall back to constant tick BPM.
+   */
+  setSoftClockTempoMaps: (maps: TempoMapProject | null) => void;
   /** Latest session cue (compat); prefer `stageCues` for multi-message SSOT. */
   stageCue: StageCue | null;
   /** Active session cues from WS snapshot / upsert / dismiss. */

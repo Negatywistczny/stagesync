@@ -1,0 +1,73 @@
+#TITLE:The Winner Takes It All
+#ARTIST:ABBA
+#BPM:339.36
+#GAP:33000
+: 0 5 25 I 
+: 5 6 25 don't 
+: 11 3 25 wan
+: 14 2 25 na 
+: 16 9 25 talk 
+- 27
+: 129 5 25 About 
+: 134 6 25 things 
+: 140 7 25 we've 
+: 147 4 25 go
+: 151 5 25 ne 
+: 156 16 25 through 
+- 174
+: 256 4 25 Though 
+: 260 5 25 it's 
+: 265 8 25 hurting 
+: 273 10 25 me 
+- 285
+: 368 4 25 Now 
+: 372 5 25 it's 
+: 377 20 25 history 
+- 399
+: 512 4 25 I've 
+: 516 6 25 played 
+: 522 19 25 all 
+: 541 4 25 my 
+: 545 7 25 cards 
+- 554
+: 638 5 25 And 
+: 643 5 25 that's 
+: 648 4 25 what 
+: 652 4 25 you've 
+: 656 8 25 done, 
+: 664 19 25 too 
+- 685
+: 768 6 25 Nothing 
+: 774 4 25 more 
+: 778 4 25 to 
+: 782 12 25 say 
+- 796
+: 896 3 25 No 
+: 899 4 25 more 
+: 903 6 25 ace 
+: 909 4 25 to 
+: 913 19 25 play 
+- 934
+: 1016 3 25 The 
+: 1019 3 25 win
+: 1022 4 25 ner 
+: 1026 7 25 takes 
+: 1033 2 25 it 
+: 1035 20 25 all 
+- 1057
+: 1144 3 25 The 
+: 1147 4 25 lo
+: 1151 4 25 ser's 
+: 1155 6 25 stan
+: 1161 4 25 ding 
+: 1165 19 25 small 
+- 1186
+: 1272 6 25 Beside 
+: 1278 4 25 the 
+: 1282 20 25 victory 
+- 1304
+: 1379 5 25 That's 
+: 1384 4 25 her 
+: 1388 20 25 destiny 
+- 1410
+E

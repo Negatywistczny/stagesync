@@ -143,6 +143,12 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--ss-space-1);
+  /*
+   * overflow-x:auto forces overflow-y to auto (CSS Overflow). Without a
+   * vertical inset, the 1px button border sits on the scrollport clip edge
+   * and the top (and sometimes bottom) edge disappears.
+   */
+  padding-block: 1px;
 }
 
 .transportExtras {
@@ -152,6 +158,7 @@
   gap: var(--ss-space-1);
   flex: 1 1 auto;
   min-width: 0;
+  padding-block: 1px;
 }
 
 .songClusterExtra {
@@ -233,7 +240,8 @@
 
 /* Color accent only — geometry from Button iconOnly. */
 .playAccent {
-  border-color: var(--ss-color-primary);
+  /* Full border — ghost Button defaults to transparent (same cascade pitfall as ShellIconButton). */
+  border: 1px solid var(--ss-color-primary);
   color: var(--ss-color-primary);
 }
 
@@ -328,6 +336,8 @@
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Same scrollport clip inset as .toolBar / .transport (see above). */
+  padding-block: 1px;
 }
 
 .songCluster::-webkit-scrollbar {
@@ -2055,6 +2065,7 @@
 }
 
 .shell[data-tl-tier="mobile"] .formaClip,
+.shell[data-tl-tier="mobile"] .audioClip,
 .shell[data-tl-tier="mobile"] .mapSegment {
   cursor: default;
 }
@@ -2258,11 +2269,15 @@
 }
 
 .audioClip {
+  position: absolute;
+  top: calc(var(--ss-space-1) * var(--tl-zoom-ui));
+  bottom: calc(var(--ss-space-1) * var(--tl-zoom-ui));
   display: flex;
   align-items: stretch;
   overflow: hidden;
   padding: 0;
-  position: relative;
+  box-sizing: border-box;
+  min-width: 0;
   background: color-mix(
     in srgb,
     var(--tl-track-color, var(--ss-color-primary)) 28%,
@@ -2273,6 +2288,8 @@
     var(--tl-track-color, var(--ss-color-primary)) 55%,
     transparent
   );
+  touch-action: none;
+  user-select: none;
 }
 
 .audioClipMuted {

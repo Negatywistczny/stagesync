@@ -35,10 +35,12 @@ import {
   type ChordNameClassNames,
 } from "./ChordName.js";
 
-/** v4 `--slot-bar-units`: 1-bar = square; N-bar = N× square width. */
-function slotBarUnitsStyle(bars: number): CSSProperties {
+/** v4 `--slot-bar-units`: 1-bar = square; N-bar = N× square width (fractional OK). */
+function slotBarUnitsStyle(barUnits: number): CSSProperties {
+  const units =
+    Number.isFinite(barUnits) && barUnits > 0 ? barUnits : 1;
   return {
-    ["--slot-bar-units" as string]: String(Math.max(1, Math.round(bars))),
+    ["--slot-bar-units" as string]: String(units),
   };
 }
 
@@ -720,11 +722,12 @@ function CycleRow({
           active && (step.active || (!hasActiveStep && i === 0));
         return (
           <div
-            key={`${step.symbol}-${i}`}
+            key={`${step.symbol}-${i}-${step.bars}`}
             className={[
               styles.cycleCell,
               cellActive ? styles.cycleCellActive : "",
               isCdDigit ? styles.cycleCellCountdown : "",
+              step.isSubBar ? styles.cycleCellSubBar : "",
             ]
               .filter(Boolean)
               .join(" ")}

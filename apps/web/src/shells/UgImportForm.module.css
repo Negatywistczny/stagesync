@@ -187,3 +187,25 @@
   justify-content: flex-end;
   gap: var(--ss-space-2);
 }
+
+.warnList {
+  margin: var(--ss-space-2) 0 0;
+  padding-left: var(--ss-space-4);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-warning, var(--ss-color-text-muted));
+}
+
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-3);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text);
+  cursor: pointer;
+}
+
+.checkRow input {
+  margin-top: var(--ss-space-1);
+  flex: 0 0 auto;
+}

@@ -26,6 +26,8 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
 | **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **5.4.0** | **Syllables** — Lyrics AST (ticks) + UltraStar → Karaoke | **Wydane 2026-08-02** — tag `v5.4.0`; format V6 + import UltraStar + highlight Karaoke | [CHANGELOG](../CHANGELOG.md) · [report-scope-5.4](./analysis/reports/report-scope-5.4.md) |
+| **5.4.1** | Syllables patch — US+UG eksperymentalny, transport AlongMap… | **Wydane 2026-08-03** — tag `v5.4.1` | [CHANGELOG](../CHANGELOG.md) |
+| **5.4.2** | **Smart Tempo** — mapa tempa z audio (nie z sylab US) | Następny patch 5.4.x; Import US+UG pozostaje eksperymentalny do cutu | [TODO.md](./TODO.md) |
 | **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
 | **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
@@ -38,9 +40,19 @@ scope reports w `docs/analysis/reports/`. Aktywny plan tylko poniżej + [TODO.md
 
 Tag `v5.4.0`. Historia: [CHANGELOG.md](../CHANGELOG.md). Scope: [report-scope-5.4.md](./analysis/reports/report-scope-5.4.md).
 
-**Dostarczone:** `formatVersion` 6 + migrator V5→V6; Lyrics AST (bloki na `tekst`); import UltraStar → ticks; Client Karaoke highlight bloku; UG/ChordPro zostaje.
+**Dostarczone:** `formatVersion` 6 + migrator V5→V6; Lyrics AST (bloki na `tekst`); import UltraStar → ticks; Client Karaoke highlight bloku; UG/ChordPro; **Text-Anchor Bridging (US+UG)** — Forma/akordy na tickach wokalu + wizard Import US+UG.
 
-**Residual 5.4.x / Later:** Text-Anchor Bridging (US+UG) ze golden fixtures; MusicXML/MIDI jako siatka taktowa — [TODO.md](./TODO.md).
+**Residual 5.4.x / Later:** **5.4.2 Smart Tempo** (audio → TempoMap; Import US+UG eksperymentalny do tego cutu) — [TODO.md](./TODO.md). MusicXML/MIDI jako siatka taktowa — Later.
+
+### 5.4.1 — Syllables patch — **wydane 2026-08-03**
+
+Tag `v5.4.1`. Import US+UG w UI jako **eksperymentalny** (sync MP3 przybliżony). Historia: [CHANGELOG.md](../CHANGELOG.md).
+
+### 5.4.2 — Smart Tempo (plan)
+
+- TempoMap / wyrównanie wall-clock↔takt z **analizy audio** (kierunek Logic Smart Tempo), nie z timingów sylab UltraStar
+- Import US+UG: Forma/akordy/tekst; mapa tempa przestaje być protezą z US
+- Zamknięcie statusu „eksperymentalny” US+UG po green sync z MP3
 
 ### 5.5 — **Pitch & FX**
 

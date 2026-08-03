@@ -37,6 +37,10 @@ describe("ChannelStripControls", () => {
     expect(out).toContain('aria-label="Wycisz ścieżkę: Backing Vox"');
     expect(out).toContain('aria-label="Fader Backing Vox"');
     expect(out).toContain('aria-label="Kolor i ikona: Backing Vox"');
+    // Same Mixer taper (0…1), not legacy linear −24…+12.
+    expect(out).toContain('min="0"');
+    expect(out).toContain('max="1"');
+    expect(out).not.toContain('min="-24"');
   });
 
   it("flips Solo / Mute labels when active", () => {

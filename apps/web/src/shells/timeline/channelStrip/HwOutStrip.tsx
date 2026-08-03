@@ -8,6 +8,7 @@ import type { MouseEvent } from "react";
 import type { ChannelMode, PeakHoldState } from "@stagesync/shared";
 import { Button, SegmentedControl } from "@stagesync/ui";
 import { DualDbReadout } from "./DualDbReadout.js";
+import { meterPaintKey } from "./meterPaint.js";
 import { PeakMeter } from "./PeakMeter.js";
 import { VerticalFader } from "./VerticalFader.js";
 import styles from "./ChannelStripControls.module.css";
@@ -33,6 +34,7 @@ export type HwOutStripProps = {
 };
 
 export function HwOutStrip({
+  id,
   name,
   channelOffset,
   channelMode,
@@ -112,6 +114,10 @@ export function HwOutStrip({
         <PeakMeter
           db={meterDb}
           dbR={isStereo ? (meterDbR ?? -60) : undefined}
+          paintKeyL={meterPaintKey("hw", id, "l")}
+          paintKeyR={
+            isStereo ? meterPaintKey("hw", id, "r") : undefined
+          }
           aria-label={`Miernik ${name}`}
         />
       </div>

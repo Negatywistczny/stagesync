@@ -486,6 +486,7 @@ export type ServerSettingsValues = {
 export type ServerSettingsResponse = {
   values: ServerSettingsValues;
   envExists: boolean;
+  secretsConfigured?: Record<string, boolean>;
   schema: Record<string, {
     section: string;
     type: string;
@@ -495,6 +496,7 @@ export type ServerSettingsResponse = {
     defaultValue: string | boolean | null;
     pathKind: "dir" | "file" | null;
     restartRequired: boolean;
+    secret?: boolean;
   }>;
   restartRequired?: boolean;
   restartKeys?: string[];

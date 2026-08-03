@@ -4,8 +4,10 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   getSettingsSchemaForClient,
+  listConfiguredSecrets,
   listRestartRequiredKeys,
   loadDotenvIntoProcess,
+  maskSecretSettingsValues,
   normalizeIncomingValue,
   parseEnvContent,
   readManagedSettings,
@@ -18,6 +20,8 @@ import {
 describe("env-settings", () => {
   const dirs: string[] = [];
   afterEach(async () => {
+    delete process.env.STAGESYNC_USDB_USER;
+    delete process.env.STAGESYNC_USDB_PASS;
     await Promise.all(
       dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })),
     );
@@ -164,6 +168,37 @@ describe("env-settings", () => {
     expect(process.env.STAGESYNC_DISABLE_AUTO_UPDATE).toBeUndefined();
   });
 
+  it("persists USDB credentials, masks secrets, keeps password on empty", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ss-usdb-env-"));
+    dirs.push(dir);
+    const envPath = join(dir, ".env");
+    await writeFile(envPath, "", "utf8");
+
+    writeManagedSettings(
+      { STAGESYNC_USDB_USER: "alice", STAGESYNC_USDB_PASS: "s3cret" },
+      envPath,
+    );
+    expect(process.env.STAGESYNC_USDB_USER).toBe("alice");
+    expect(process.env.STAGESYNC_USDB_PASS).toBe("s3cret");
+
+    const raw = readManagedSettings(envPath);
+    expect(raw.values.STAGESYNC_USDB_USER).toBe("alice");
+    expect(raw.values.STAGESYNC_USDB_PASS).toBe("s3cret");
+    expect(listConfiguredSecrets(raw.values).STAGESYNC_USDB_PASS).toBe(true);
+    expect(maskSecretSettingsValues(raw.values).STAGESYNC_USDB_PASS).toBe("");
+
+    writeManagedSettings(
+      { STAGESYNC_USDB_USER: "bob", STAGESYNC_USDB_PASS: "" },
+      envPath,
+    );
+    expect(process.env.STAGESYNC_USDB_USER).toBe("bob");
+    expect(process.env.STAGESYNC_USDB_PASS).toBe("s3cret");
+
+    writeManagedSettings({ STAGESYNC_USDB_USER: "" }, envPath);
+    expect(process.env.STAGESYNC_USDB_USER).toBeUndefined();
+    expect(process.env.STAGESYNC_USDB_PASS).toBeUndefined();
+  });
+
   it("loads dotenv only for unset process keys", async () => {
     const dir = await mkdtemp(join(tmpdir(), "ss-dotenv-"));
     dirs.push(dir);
@@ -191,6 +226,8 @@ describe("env-settings", () => {
     expect(schema.PORT?.options).toBeNull();
     expect(schema.LOG_LEVEL?.options).toContain("debug");
     expect(schema.STAGESYNC_DATA_DIR?.pathKind).toBe("dir");
+    expect(schema.STAGESYNC_USDB_PASS?.secret).toBe(true);
+    expect(schema.STAGESYNC_USDB_USER?.section).toBe("imports");
   });
 
   it("lists restart-required keys that changed", () => {

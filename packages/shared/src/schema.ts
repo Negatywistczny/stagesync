@@ -113,6 +113,8 @@ export const TempoEventSchema = z.object({
   bpm: BpmSchema,
 });
 
+export type TempoEvent = z.infer<typeof TempoEventSchema>;
+
 export const MeterEventSchema = z
   .object({
     id: z.string().min(1),
@@ -126,6 +128,8 @@ export const MeterEventSchema = z
       ctx,
     ),
   );
+
+export type MeterEvent = z.infer<typeof MeterEventSchema>;
 
 export const DefaultMeterSchema = z
   .object({

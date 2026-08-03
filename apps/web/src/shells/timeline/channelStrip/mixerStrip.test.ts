@@ -24,8 +24,9 @@ describe("formatPanReadout", () => {
 });
 
 describe("meter LED bands (shared)", () => {
-  it("matches strip colour thresholds", () => {
-    expect(meterDbPeakBand(-12)).toBe("safe");
+  it("matches strip colour thresholds (−12 warn / 0 clip)", () => {
+    expect(meterDbPeakBand(-20)).toBe("safe");
+    expect(meterDbPeakBand(-12)).toBe("warn");
     expect(meterDbPeakBand(-6)).toBe("warn");
     expect(meterDbPeakBand(1)).toBe("clip");
   });

@@ -6,6 +6,7 @@ import {
   ticksPerBar,
   ticksToBbtAlongMeterMap,
   toDisplayBar,
+  withTekstBlockWordSpaces,
   type FormaClip,
   type Project,
   type TekstBlock,
@@ -150,16 +151,18 @@ export function resolveActiveBlockId(
 /**
  * Map clip blocks → highlight tokens. `undefined` when the clip has no blocks
  * (legacy / display-only without V6 shape). Empty array = all filtered out.
+ * Word gaps: restore trailing spaces from `clip.text` when blocks were trimmed.
  */
 export function mapKaraokeBlocks(
-  clip: Pick<TekstClip, "blocks">,
+  clip: Pick<TekstClip, "blocks" | "text">,
   displayTicks: number,
   lineActive: boolean,
   roleFilter?: TekstBlockRole | null,
 ): KaraokeLineBlock[] | undefined {
   const raw = clip.blocks;
   if (raw == null || raw.length === 0) return undefined;
-  return filterTekstBlocksByRole(raw, roleFilter).map((b) => {
+  const spaced = withTekstBlockWordSpaces(clip.text, raw);
+  return filterTekstBlocksByRole(spaced, roleFilter).map((b) => {
     const end = b.startTicks + b.lengthTicks;
     return {
       id: b.id,

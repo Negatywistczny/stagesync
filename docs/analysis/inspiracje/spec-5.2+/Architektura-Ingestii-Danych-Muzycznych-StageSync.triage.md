@@ -13,7 +13,7 @@
 
 **Hard conflict z SSOT repo:** kanoniczna pozycja w StageSync to **integer ticks + PPQ** (ADR 0002), nie `startTimeMs` / `durationMs` w storage. Proponowany `StageSyncSongAST` to **osobny IR** — wolno go trzymać tylko jako wynik parserów na krawędzi, potem mapować do `Project` (`forma` / `tekst` / `akordy` / `cue` / ewentualnie nowa ścieżka melodii). Nie wdrażać AST z ms jako drugiego SSOT czasu.
 
-**Już częściowo on-tree:** ChordPro-lite / Plain CRD → Forma + Tekst + Akordy (`importUgText`, UG fetch). **Brak w produkcie:** UltraStar lexer, Text-Anchor Bridging (US+UG), Default Grid Placement jako osobny moduł, `melodyTrack`, flagi `isAutoPlaced` / `isUserOverridden`, MusicXML/MIDI jako autorytet siatki taktowej dla akordów (MusicXML = asset score, nie engine ingestii).
+**Już częściowo on-tree:** ChordPro-lite / Plain CRD → Forma + Tekst + Akordy (`importUgText`, UG fetch). UltraStar lexer → ticks + melody. **Text-Anchor Bridging (US+UG)** — `text-anchor-bridge.ts` + wizard Import US+UG. **Brak w produkcie:** MusicXML/MIDI jako autorytet siatki taktowej; flagi `isAutoPlaced` / `isUserOverridden` w schemacie.
 
 ## Macierz hipotez
 

@@ -150,6 +150,42 @@ describe("KaraokePane block highlight", () => {
     expect(world2?.getAttribute("data-block-active")).toBe("true");
   });
 
+  it("keeps spaces between words when blocks were trimmed (US import)", () => {
+    const project = baseProject([
+      lineClip({
+        id: "tx-drums",
+        text: "I hear the drums",
+        startTicks: 0,
+        lengthTicks: 4 * BEAT,
+        blocks: [
+          { id: "b-i", text: "I", startTicks: 0, lengthTicks: BEAT },
+          { id: "b-hear", text: "hear", startTicks: BEAT, lengthTicks: BEAT },
+          { id: "b-the", text: "the", startTicks: 2 * BEAT, lengthTicks: BEAT },
+          {
+            id: "b-drums",
+            text: "drums",
+            startTicks: 3 * BEAT,
+            lengthTicks: BEAT,
+          },
+        ],
+      }),
+    ]);
+
+    render(
+      <KaraokePane
+        project={project}
+        displayTicks={0}
+        loading={false}
+        hasActiveProjectId
+        prefs={prefs}
+      />,
+    );
+
+    const line = document.querySelector('[data-line-id="tx-drums"]');
+    expect(line?.textContent).toBe("I hear the drums");
+    expect(line?.textContent).not.toBe("Ihearthedrums");
+  });
+
   it("single migrated block looks like whole-line highlight", () => {
     const project = baseProject([
       lineClip({

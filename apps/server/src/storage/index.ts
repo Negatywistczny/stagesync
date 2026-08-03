@@ -521,16 +521,16 @@ export function createStores(dataDir?: string) {
           );
         }
         const updatedAt = new Date().toISOString();
+        // Assets: union-preserve — concurrent upload must not vanish if PUT
+        // omits a freshly written asset id. Tracks/clips: client is SSOT (delete
+        // must stick on Save); do not re-merge deleted rows from disk.
         const next = ProjectSchema.parse({
           ...body,
           id: safeId,
           updatedAt,
           assets: mergePreserveById(existing.assets, body.assets),
-          audioTracks: mergePreserveById(
-            existing.audioTracks,
-            body.audioTracks,
-          ),
-          audioClips: mergePreserveById(existing.audioClips, body.audioClips),
+          audioTracks: body.audioTracks,
+          audioClips: body.audioClips,
         });
         await writeProject(next);
         const library = await ensureLibrary();

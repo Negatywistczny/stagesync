@@ -314,6 +314,11 @@ export type FormaGestureSession = {
   originBoundaryRel?: number;
   /** Multi-move same lane (v4 moveIds); resize ignores. */
   moveIds?: string[];
+  /**
+   * Forma: `moveIds` came from explicit multi-select (`resolveMoveIds`), not TE-24 cascade.
+   * Cascade companions move with the drag but must not become selected on pointer-up.
+   */
+  explicitMulti?: boolean;
   /** Alt/⌥+drag: copy at drop; originals stay (v4 optionCopy / TE-07). */
   optionCopy?: boolean;
   /** Fade gesture: fade ms at pointerdown. */

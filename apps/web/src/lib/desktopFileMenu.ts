@@ -3,7 +3,11 @@
  * Pure-ish helpers + side-effecting import/export matching Admin SongsView.
  */
 
-import { looksLikeZipBytes, ZIP_IMPORT_UNSUPPORTED_PL } from "@stagesync/shared";
+import {
+  looksLikeZipBytes,
+  ZIP_IMPORT_UNSUPPORTED_PL,
+  type Project,
+} from "@stagesync/shared";
 import {
   createProject,
   exportLibraryPack,
@@ -27,6 +31,29 @@ export async function createSongAndOpen(
   const created = await createProject(name, opts);
   pushRecentTimelineProject(created.id, created.name);
   return { id: created.id, name: created.name };
+}
+
+/**
+ * Create an empty library song, apply `build` (import merge), PUT with OCC
+ * token from the shell, then mark recent. Used by Timeline „Wybierz utwór”
+ * import buttons (new song — not overwrite draft).
+ */
+export async function createSongWithContent(
+  name: string,
+  build: (shell: Project) => Project,
+): Promise<Project> {
+  const trimmed = name.trim() || "Nowy utwór";
+  const created = await createProject(trimmed);
+  const next = build(created);
+  const saved = await putProject(created.id, {
+    ...next,
+    id: created.id,
+    // Keep shell MIDI PC + OCC token (same as saveProjectAs).
+    updatedAt: created.updatedAt,
+    midiProgramId: created.midiProgramId,
+  });
+  pushRecentTimelineProject(saved.id, saved.name);
+  return saved;
 }
 
 export async function saveProjectAs(

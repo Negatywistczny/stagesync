@@ -39,8 +39,9 @@
 }
 
 /*
- * Full-track LED scale (−60…+6):
- * green until −6 dB (54/66), yellow to 0 dB (60/66), red above.
+ * Full-track LED scale (−60…+6 = 66 dB):
+ * green until −12 dB (48/66), yellow to 0 dB (60/66), red above.
+ * Stops must stay in sync with METER_BAND_WARN_DB / METER_BAND_CLIP_DB.
  */
 .leds {
   position: absolute;
@@ -48,23 +49,25 @@
   background: linear-gradient(
     to top,
     var(--ss-color-success) 0%,
-    var(--ss-color-success) calc(100% * 54 / 66),
-    var(--ss-color-warning) calc(100% * 54 / 66),
+    var(--ss-color-success) calc(100% * 48 / 66),
+    var(--ss-color-warning) calc(100% * 48 / 66),
     var(--ss-color-warning) calc(100% * 60 / 66),
     var(--ss-color-danger) calc(100% * 60 / 66),
     var(--ss-color-danger) 100%
   );
 }
 
-/* Covers unused top of the LED scale (level = 100% − dim). */
+/* Covers unused top of the LED scale (level = 100% − dim). No CSS transition —
+ * height is driven every rAF with ballistics (transition fought the needle). */
 .dim {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
+  height: 100%;
   background: color-mix(in srgb, var(--ss-color-bg) 78%, var(--ss-color-border));
-  transition: height 50ms linear;
   pointer-events: none;
+  will-change: height;
 }
 
 .chLabel {

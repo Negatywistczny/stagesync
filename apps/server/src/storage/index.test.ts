@@ -321,6 +321,68 @@ describe("storage/index", () => {
     ).rejects.toBeInstanceOf(ConflictError);
   });
 
+  it("putProject lets client delete audio tracks and clips", async () => {
+    const dataDir = await tmpData();
+    const stores = createStores(dataDir);
+    const project = await stores.createProject("Stems");
+    const withTracks = await stores.putProject(project.id, {
+      ...project,
+      updatedAt: project.updatedAt,
+      audioTracks: [
+        { id: "tr-a", name: "A" },
+        { id: "tr-b", name: "B" },
+      ],
+      audioClips: [
+        {
+          id: "clip-a",
+          trackId: "tr-a",
+          assetId: "00000000-0000-4000-8000-0000000000aa",
+          startTicks: 0,
+          lengthTicks: 960,
+        },
+        {
+          id: "clip-b",
+          trackId: "tr-b",
+          assetId: "00000000-0000-4000-8000-0000000000bb",
+          startTicks: 0,
+          lengthTicks: 960,
+        },
+      ],
+      assets: [
+        {
+          id: "00000000-0000-4000-8000-0000000000aa",
+          storageName: "a.wav",
+          originalName: "a.wav",
+          kind: "audio",
+          mimeType: "audio/wav",
+          sizeBytes: 4,
+        },
+        {
+          id: "00000000-0000-4000-8000-0000000000bb",
+          storageName: "b.wav",
+          originalName: "b.wav",
+          kind: "audio",
+          mimeType: "audio/wav",
+          sizeBytes: 4,
+        },
+      ],
+    });
+    expect(withTracks.audioTracks).toHaveLength(2);
+    expect(withTracks.audioClips).toHaveLength(2);
+
+    const dropped = await stores.putProject(withTracks.id, {
+      ...withTracks,
+      updatedAt: withTracks.updatedAt,
+      audioTracks: withTracks.audioTracks.filter((t) => t.id === "tr-a"),
+      audioClips: withTracks.audioClips.filter((c) => c.trackId === "tr-a"),
+    });
+    expect(dropped.audioTracks.map((t) => t.id)).toEqual(["tr-a"]);
+    expect(dropped.audioClips.map((c) => c.id)).toEqual(["clip-a"]);
+    // Assets still merge-preserved when omitted from a later PUT is separate;
+    // here we keep both assets in the body.
+    expect(dropped.assets).toHaveLength(2);
+  });
+
   it("batchMidiProgramIds and patchSetlistAutoAdvance", async () => {
     const dataDir = await tmpData();
     const stores = createStores(dataDir);

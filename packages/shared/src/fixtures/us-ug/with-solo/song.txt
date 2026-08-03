@@ -1,0 +1,10 @@
+#TITLE:With Solo
+#ARTIST:Fixture
+#BPM:480
+#GAP:0
+: 0 4 0 Play 
+: 8 4 0 soft 
+-
+: 96 4 0 Sing 
+: 104 4 0 loud 
+E

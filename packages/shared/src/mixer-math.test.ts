@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  advanceMeterBallistics,
   clampFaderGainDb,
   clampPan,
   balanceGains,
@@ -101,6 +102,7 @@ describe("meterDbToUnit", () => {
 describe("meterDbPeakBand", () => {
   it("classifies safe / warn / clip", () => {
     expect(meterDbPeakBand(-20)).toBe("safe");
+    expect(meterDbPeakBand(-12)).toBe("warn");
     expect(meterDbPeakBand(-6)).toBe("warn");
     expect(meterDbPeakBand(-0.1)).toBe("warn");
     expect(meterDbPeakBand(0)).toBe("warn");
@@ -111,6 +113,38 @@ describe("meterDbPeakBand", () => {
   it("treats non-finite as safe", () => {
     expect(meterDbPeakBand(Number.NaN)).toBe("safe");
     expect(meterDbPeakBand(Number.NEGATIVE_INFINITY)).toBe("safe");
+  });
+});
+
+describe("advanceMeterBallistics", () => {
+  it("attacks toward a louder target quickly", () => {
+    const next = advanceMeterBallistics(-40, -6, 0.03);
+    expect(next).toBeGreaterThan(-40);
+    expect(next).toBeLessThanOrEqual(-6);
+    // Near-instant attack: most of the way there in ~30ms.
+    expect(next).toBeGreaterThan(-12);
+  });
+
+  it("releases toward a quieter target more slowly", () => {
+    const next = advanceMeterBallistics(-6, -40, 0.02);
+    expect(next).toBeLessThan(-6);
+    expect(next).toBeGreaterThan(-40);
+    // Must not snap to target in one short frame.
+    expect(next).toBeGreaterThan(-20);
+  });
+
+  it("snaps on zero dt when rising; holds when falling", () => {
+    expect(advanceMeterBallistics(-30, -10, 0)).toBe(-10);
+    expect(advanceMeterBallistics(-10, -30, 0)).toBe(-10);
+  });
+
+  it("floors non-finite inputs", () => {
+    expect(advanceMeterBallistics(Number.NaN, -12, 0.016)).toBeLessThanOrEqual(
+      -12,
+    );
+    expect(
+      advanceMeterBallistics(-12, Number.NaN, 0.5, { releaseSec: 0 }),
+    ).toBe(METER_DB_MIN);
   });
 });
 

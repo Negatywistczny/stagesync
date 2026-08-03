@@ -17,7 +17,9 @@ import {
 import { buildStoreZip, type ZipEntry } from "../diagnostics-zip.js";
 import {
   getSettingsSchemaForClient,
+  listConfiguredSecrets,
   listRestartRequiredKeys,
+  maskSecretSettingsValues,
   readManagedSettings,
   releaseMatchesUpdateChannel,
   writeManagedSettings,
@@ -342,7 +344,8 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       const { values, envExists } = readManagedSettings();
       res.set("Cache-Control", "no-store");
       res.json({
-        values,
+        values: maskSecretSettingsValues(values),
+        secretsConfigured: listConfiguredSecrets(values),
         envExists,
         schema: getSettingsSchemaForClient(),
         restartRequired: true,
@@ -381,7 +384,8 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       }
       res.json({
         ok: true,
-        values,
+        values: maskSecretSettingsValues(values),
+        secretsConfigured: listConfiguredSecrets(values),
         envExists,
         schema: getSettingsSchemaForClient(),
         restartRequired: restartKeys.length > 0,

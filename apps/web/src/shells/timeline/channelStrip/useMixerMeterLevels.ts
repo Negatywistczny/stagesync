@@ -1,10 +1,11 @@
 /**
  * rAF polling of WebAudio analyser taps (Mixer meters) + peak-hold latch.
+ * Live needle paints via {@link tickMeterPaint} (ballistics, no React/frame).
  * Hold auto-resets on Play rising edge only (not Stop); manual clear via API.
  * Stereo tracks/busses expose L+R; hold latches max(L,R).
  *
  * Holds live in a ref so clear (click / Play edge) cannot lose a race against
- * a concurrent rAF `setLevels` that still had the pre-clear latch in `prev`.
+ * a concurrent rAF that still had the pre-clear latch in `prev`.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -21,6 +22,12 @@ import {
   readTrackMeterDb,
 } from "../../../lib/audioPlayback.js";
 import { readClickMeterDb } from "../../../lib/metronome.js";
+import {
+  clearMeterPaintTargets,
+  meterPaintKey,
+  setMeterPaintTarget,
+  tickMeterPaint,
+} from "./meterPaint.js";
 
 const FLOOR = linearPeakToMeterDb(0);
 
@@ -75,6 +82,10 @@ function floorReading(hold: PeakHoldState = emptyPeakHold()): ChannelMeterReadin
   return { liveDb: FLOOR, hold };
 }
 
+function holdChanged(a: PeakHoldState, b: PeakHoldState): boolean {
+  return a.holdDb !== b.holdDb || a.clipped !== b.clipped;
+}
+
 /**
  * Pure latch step — used by the hook and unit-tested for clear-vs-tick ordering.
  * Clear must write the store *before* the next tick reads it.
@@ -99,6 +110,17 @@ export function clearThenLatch(
   return latchChannelPeaks(emptyPeakHold(), peaks);
 }
 
+function publishChannelTargets(
+  kind: "track" | "bus" | "hw",
+  id: string,
+  peaks: { l: number; r?: number },
+): void {
+  setMeterPaintTarget(meterPaintKey(kind, id, "l"), peaks.l);
+  if (peaks.r != null) {
+    setMeterPaintTarget(meterPaintKey(kind, id, "r"), peaks.r);
+  }
+}
+
 export function useMixerMeterLevels(
   trackIds: readonly string[],
   enabled: boolean,
@@ -115,6 +137,7 @@ export function useMixerMeterLevels(
   const hwIds = options.hwIds ?? [];
   const wasPlayingRef = useRef(playing);
   const holdsRef = useRef<HoldLatchStore>(emptyHoldStore());
+  const lastTsRef = useRef(0);
 
   const [levels, setLevels] = useState<MixerMeterLevels>(() => ({
     tracks: Object.fromEntries(trackIds.map((id) => [id, floorReading()])),
@@ -194,6 +217,8 @@ export function useMixerMeterLevels(
   useEffect(() => {
     if (!enabled) {
       holdsRef.current = emptyHoldStore();
+      clearMeterPaintTargets();
+      lastTsRef.current = 0;
       setLevels({
         tracks: Object.fromEntries(trackIds.map((id) => [id, floorReading()])),
         busses: Object.fromEntries(busIds.map((id) => [id, floorReading()])),
@@ -210,59 +235,92 @@ export function useMixerMeterLevels(
     }
 
     let raf = 0;
-    const tick = () => {
+    let seeded = false;
+    const tick = (ts: number) => {
+      const prevTs = lastTsRef.current;
+      lastTsRef.current = ts;
+      const dtSec = prevTs > 0 ? Math.min(0.1, (ts - prevTs) / 1000) : 1 / 60;
+
       const store = holdsRef.current;
+      let anyHoldChanged = false;
+
       const tracks: Record<string, ChannelMeterReading> = {};
       for (const id of trackIds) {
-        const reading = latchChannelPeaks(
-          store.tracks[id] ?? emptyPeakHold(),
-          readTrackMeterDb(id),
-        );
+        const peaks = readTrackMeterDb(id);
+        publishChannelTargets("track", id, peaks);
+        const prevHold = store.tracks[id] ?? emptyPeakHold();
+        const reading = latchChannelPeaks(prevHold, peaks);
+        if (holdChanged(prevHold, reading.hold)) anyHoldChanged = true;
         store.tracks[id] = reading.hold;
         tracks[id] = reading;
       }
       const busses: Record<string, ChannelMeterReading> = {};
       for (const id of busIds) {
-        const reading = latchChannelPeaks(
-          store.busses[id] ?? emptyPeakHold(),
-          readGroupBusMeterDb(id),
-        );
+        const peaks = readGroupBusMeterDb(id);
+        publishChannelTargets("bus", id, peaks);
+        const prevHold = store.busses[id] ?? emptyPeakHold();
+        const reading = latchChannelPeaks(prevHold, peaks);
+        if (holdChanged(prevHold, reading.hold)) anyHoldChanged = true;
         store.busses[id] = reading.hold;
         busses[id] = reading;
       }
       const hwOuts: Record<string, ChannelMeterReading> = {};
       for (const id of hwIds) {
-        const reading = latchChannelPeaks(
-          store.hwOuts[id] ?? emptyPeakHold(),
-          readHwOutMeterDb(id),
-        );
+        const peaks = readHwOutMeterDb(id);
+        publishChannelTargets("hw", id, peaks);
+        const prevHold = store.hwOuts[id] ?? emptyPeakHold();
+        const reading = latchChannelPeaks(prevHold, peaks);
+        if (holdChanged(prevHold, reading.hold)) anyHoldChanged = true;
         store.hwOuts[id] = reading.hold;
         hwOuts[id] = reading;
       }
       const masterLive = readMasterMeterDb();
+      setMeterPaintTarget(meterPaintKey("master", "stereo", "l"), masterLive.l);
+      setMeterPaintTarget(meterPaintKey("master", "stereo", "r"), masterLive.r);
       const clickLive = readClickMeterDb();
+      setMeterPaintTarget(meterPaintKey("click", "metro", "l"), clickLive);
+
+      const prevMasterL = store.masterL;
+      const prevMasterR = store.masterR;
+      const prevClick = store.click;
       store.masterL = updatePeakHold(store.masterL, masterLive.l);
       store.masterR = updatePeakHold(store.masterR, masterLive.r);
       store.click = updatePeakHold(store.click, clickLive);
-      setLevels({
-        tracks,
-        busses,
-        hwOuts,
-        master: {
-          liveL: masterLive.l,
-          liveR: masterLive.r,
-          holdL: store.masterL,
-          holdR: store.masterR,
-        },
-        click: {
-          liveDb: clickLive,
-          hold: store.click,
-        },
-      });
+      if (
+        holdChanged(prevMasterL, store.masterL) ||
+        holdChanged(prevMasterR, store.masterR) ||
+        holdChanged(prevClick, store.click)
+      ) {
+        anyHoldChanged = true;
+      }
+
+      tickMeterPaint(dtSec);
+
+      if (anyHoldChanged || !seeded) {
+        seeded = true;
+        setLevels({
+          tracks,
+          busses,
+          hwOuts,
+          master: {
+            liveL: masterLive.l,
+            liveR: masterLive.r,
+            holdL: store.masterL,
+            holdR: store.masterR,
+          },
+          click: {
+            liveDb: clickLive,
+            hold: store.click,
+          },
+        });
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      lastTsRef.current = 0;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- idsKey/busKey/hwKey
   }, [enabled, idsKey, busKey, hwKey]);
 

@@ -20,6 +20,19 @@ export const METER_DB_MIN = -60;
 export const METER_DB_MAX = 6;
 
 /**
+ * LED / peak-band thresholds on the meter scale (dB).
+ * Green (safe) below warn; yellow warn…clip; red above clip.
+ * Wider yellow than a tiny −6…0 slice so hot levels read clearly.
+ */
+export const METER_BAND_WARN_DB = -12;
+export const METER_BAND_CLIP_DB = 0;
+
+/** Near-instant rise so transients light the meter. */
+export const METER_ATTACK_SEC = 0.012;
+/** Slower fall (Logic-ish peak ballistics) — avoids framey needle chatter. */
+export const METER_RELEASE_SEC = 0.32;
+
+/**
  * Practical mute floor stored in schema / GainNode (−∞ on the taper).
  * Matches {@link gainDbToLinear} clamp and AudioTrack.gainDb min.
  */
@@ -93,13 +106,40 @@ export function meterDbToUnit(db: number): number {
 }
 
 /**
- * Peak band for LED meter colour: green &lt; −6, yellow −6…0, red &gt; 0.
+ * Peak band for LED meter colour:
+ * green &lt; {@link METER_BAND_WARN_DB}, yellow … {@link METER_BAND_CLIP_DB}, red above.
  */
 export function meterDbPeakBand(db: number): MeterPeakBand {
   if (!(db > Number.NEGATIVE_INFINITY) || !Number.isFinite(db)) return "safe";
-  if (db > 0) return "clip";
-  if (db >= -6) return "warn";
+  if (db > METER_BAND_CLIP_DB) return "clip";
+  if (db >= METER_BAND_WARN_DB) return "warn";
   return "safe";
+}
+
+/**
+ * Peak-meter ballistics: fast attack, slower release.
+ * `dtSec` is the frame delta (clamped); non-finite inputs → floor.
+ */
+export function advanceMeterBallistics(
+  currentDb: number,
+  targetDb: number,
+  dtSec: number,
+  opts?: { readonly attackSec?: number; readonly releaseSec?: number },
+): number {
+  const cur = Number.isFinite(currentDb) ? currentDb : METER_DB_MIN;
+  const tgt = Number.isFinite(targetDb) ? targetDb : METER_DB_MIN;
+  const dt = Number.isFinite(dtSec) ? Math.min(0.1, Math.max(0, dtSec)) : 0;
+  if (dt === 0) return tgt >= cur ? tgt : cur;
+  const attack = opts?.attackSec ?? METER_ATTACK_SEC;
+  const release = opts?.releaseSec ?? METER_RELEASE_SEC;
+  if (tgt >= cur) {
+    if (!(attack > 0)) return tgt;
+    const a = 1 - Math.exp(-dt / attack);
+    return cur + (tgt - cur) * a;
+  }
+  if (!(release > 0)) return tgt;
+  const a = 1 - Math.exp(-dt / release);
+  return cur + (tgt - cur) * a;
 }
 
 /** Finite dB for schema / GainNode (−∞ → floor). */

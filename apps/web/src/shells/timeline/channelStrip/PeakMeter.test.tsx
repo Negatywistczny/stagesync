@@ -8,6 +8,19 @@ describe("PeakMeter", () => {
     expect(out).toContain('role="meter"');
     expect(out).toContain('aria-label="Poziom"');
     expect(out).toContain('aria-valuenow="-12"');
+    expect(out).toContain('data-band="safe"');
+  });
+
+  it("marks warn / clip bands from static db", () => {
+    expect(renderToStaticMarkup(<PeakMeter db={-12} />)).toContain(
+      'data-band="warn"',
+    );
+    expect(renderToStaticMarkup(<PeakMeter db={-6} />)).toContain(
+      'data-band="warn"',
+    );
+    expect(renderToStaticMarkup(<PeakMeter db={1.5} />)).toContain(
+      'data-band="clip"',
+    );
   });
 
   it("accepts custom label and dual L/R columns", () => {

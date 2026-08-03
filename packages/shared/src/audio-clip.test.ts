@@ -53,7 +53,8 @@ describe("gainDbToLinear", () => {
 
   it("clamps extreme dB so WebAudio never sees Infinity", () => {
     expect(gainDbToLinear(9999)).toBe(gainDbToLinear(24));
-    expect(gainDbToLinear(-9999)).toBe(gainDbToLinear(-60));
+    expect(gainDbToLinear(-9999)).toBe(0);
+    expect(gainDbToLinear(-60)).toBe(0);
   });
 
   it("treats non-finite as unity", () => {

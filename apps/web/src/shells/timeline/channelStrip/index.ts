@@ -18,5 +18,6 @@ export {
 export { PeakMeter } from "./PeakMeter.js";
 export { PanKnob, formatPanReadout } from "./PanKnob.js";
 export { TrackAppearancePicker } from "./TrackAppearancePicker.js";
+export { TaperGainSlider } from "./TaperGainSlider.js";
 export { VerticalFader } from "./VerticalFader.js";
 export { useMixerMeterLevels } from "./useMixerMeterLevels.js";

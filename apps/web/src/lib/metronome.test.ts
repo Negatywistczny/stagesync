@@ -4,6 +4,7 @@ import {
   metronomeBeatIndex,
   previewMetronomeClick,
   resumeMetronomeAudio,
+  sharedAudioContextOptions,
 } from "./metronome.js";
 import { setMetronomePrefs } from "./metronomePrefs.js";
 
@@ -70,6 +71,15 @@ function mockAudioContext(state: AudioContextState = "running") {
 
   return { ctx: ctx as unknown as AudioContext, oscillators, gains };
 }
+
+describe("sharedAudioContextOptions", () => {
+  it("uses playback latency and does not force a low sampleRate", () => {
+    const opts = sharedAudioContextOptions();
+    expect(opts.latencyHint).toBe("playback");
+    expect(opts).not.toHaveProperty("sampleRate");
+    expect(opts.sampleRate).toBeUndefined();
+  });
+});
 
 describe("metronome", () => {
   const store = new Map<string, string>();

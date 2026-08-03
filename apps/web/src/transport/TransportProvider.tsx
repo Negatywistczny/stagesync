@@ -10,6 +10,7 @@ import {
   TransportWsServerMessageSchema,
   defaultTransportState,
   getDisplayTicks,
+  type TempoMapProject,
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
@@ -66,6 +67,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   );
 
   const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
+  const tempoMapsRef = useRef<TempoMapProject | null>(null);
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
@@ -100,7 +102,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       if (serverTimeMs !== undefined) {
         lastServerTimeMsRef.current = serverTimeMs;
       }
-      const anchor = toTransportAnchor(next);
+      const anchor = toTransportAnchor(next, tempoMapsRef.current);
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
       playingRef.current = next.playing;
@@ -415,6 +417,14 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     [runCommand],
   );
 
+  const setSoftClockTempoMaps = useCallback((maps: TempoMapProject | null) => {
+    tempoMapsRef.current = maps;
+    anchorRef.current = {
+      ...anchorRef.current,
+      tempoMaps: maps ?? undefined,
+    };
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
@@ -428,6 +438,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       stop,
       seek,
       setLoop,
+      setSoftClockTempoMaps,
       stageCue,
       stageCues,
       liveDesk,
@@ -446,6 +457,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       stop,
       seek,
       setLoop,
+      setSoftClockTempoMaps,
       stageCue,
       stageCues,
       liveDesk,

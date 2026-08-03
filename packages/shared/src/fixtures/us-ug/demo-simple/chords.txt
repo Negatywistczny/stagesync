@@ -1,0 +1,5 @@
+[Verse]
+[C]Hello [G]world
+
+[Chorus]
+[Am]Chorus [F]line

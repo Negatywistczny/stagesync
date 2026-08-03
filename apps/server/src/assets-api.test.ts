@@ -169,6 +169,9 @@ describe("project assets API", () => {
     const afterPut = ProjectSchema.parse(await putRes.json());
     expect(afterPut.assets).toHaveLength(1);
     expect(afterPut.assets[0]?.id).toBe(withAsset.assets[0]?.id);
+    // Tracks/clips follow the PUT body — intentional delete must stick.
+    expect(afterPut.audioTracks).toEqual([]);
+    expect(afterPut.audioClips).toEqual([]);
   });
 
   it("deletes asset", async () => {

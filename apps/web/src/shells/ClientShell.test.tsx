@@ -107,6 +107,7 @@ vi.mock("../transport/useTransport.js", () => ({
     setlistSnapshot: { projectIds: ["song-1", "song-2"], enabled: true },
     play: vi.fn(),
     seek: vi.fn(),
+    setSoftClockTempoMaps: vi.fn(),
     commandPending: false,
     error: null,
     announcePresence: vi.fn(),

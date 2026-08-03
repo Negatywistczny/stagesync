@@ -19,6 +19,7 @@ import {
   rectsIntersect,
   resolveMoveIds,
   resolveMuteButtonClick,
+  selectionIdsAfterFormaMove,
   selectAudioTrack,
   selectAudioTrackRange,
   selectRangeTo,
@@ -109,6 +110,17 @@ describe("timelineSelection", () => {
     expect(resolveMoveIds(multi, "f", "forma")).toEqual(["f"]);
     expect(isClipSelected(multi, "f", "forma")).toBe(true);
     expect(isClipSelected(multi, "f", "akordy")).toBe(false);
+  });
+
+  it("selectionIdsAfterFormaMove: cascade moveIds do not expand selection", () => {
+    const cascade = ["intro", "verse", "chorus"];
+    expect(selectionIdsAfterFormaMove("intro", cascade, false)).toEqual([
+      "intro",
+    ]);
+    expect(selectionIdsAfterFormaMove("intro", cascade, true)).toEqual(cascade);
+    expect(selectionIdsAfterFormaMove("intro", ["intro"], false)).toEqual([
+      "intro",
+    ]);
   });
 
   it("isMultiSelectClick ignores Alt (temporary zoom in v4)", () => {

@@ -41,6 +41,8 @@
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  /* overflow-x:auto → overflow-y:auto; inset so icon borders aren't clipped. */
+  padding-block: 1px;
 }
 
 .actions::-webkit-scrollbar {

@@ -38,7 +38,7 @@ kontrolek — tylko siatka poniżej.
 | Próg | Media query | Typowe użycie |
 |------|-------------|---------------|
 | Mobile | `max-width: 768px` | Telefony; Timeline `data-tl-tier="mobile"` |
-| Tablet | `max-width: 1024px` | Tablety / wąskie okna; Timeline `data-tl-tier="tablet"` (lub `pointer: coarse`) |
+| Tablet | `max-width: 1024px` | Layout chrome; Timeline `data-tl-tier="tablet"` tylko przy `pointer: coarse` (nie przy samym wąskim oknie myszy) |
 
 Zmiany layoutu tylko w `@media (max-width: …)` albo pod `[data-tl-tier="mobile"|"tablet"]` — bez restylowania domyślnego chrome desktop.
 

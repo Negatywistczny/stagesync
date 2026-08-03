@@ -14,7 +14,9 @@
  *
  * Mono file on a stereo bus is upmixed on trackGain before the splitter (otherwise L-only).
  * Bus may feed Master, another bus (acyclic), or HW out when
- * `maxChannelCount ≥ 4` (discrete ChannelMerger). Otherwise HW fail-softs to Master.
+ * `maxChannelCount ≥ 4` **and** HW outs / remapped Master are active
+ * (discrete ChannelMerger). Otherwise Master connects speakers-stereo to
+ * destination; HW fail-softs to Master when multi-out is inactive.
  * Click / metronome stays on a separate Direct Cue path (never through Master).
  */
 
@@ -40,7 +42,7 @@ import {
   STEREO_DOWNMIX_LINEAR,
   trimInMsOf,
   trimOutMsOf,
-  ticksToMs,
+  ticksToMsAlongTempoMap,
   type AudioHardwareOutput,
   type ChannelMode,
   type Project,
@@ -421,16 +423,26 @@ function createChannelBus(ctx: AudioContext, mode: ChannelMode): TrackBus {
   };
 }
 
+/** Last scheduled dezipper target — avoids re-ramping every transport tick. */
+const dezipperTargets = new WeakMap<AudioParam, number>();
+
 /**
  * Dezipper an AudioParam (fader / balance / mute). Instant `.value =` while
  * signal is present (or right after local suppress) causes clicks/pops.
+ * Skip when the same target is already scheduled (mid-ramp thrash would
+ * modulate gain every tick and sound like distortion / aliasing).
  */
 function setParamDezippered(
   param: AudioParam,
   value: number,
   currentTime: number,
 ): void {
-  if (param.value === value) return;
+  if (dezipperTargets.get(param) === value) return;
+  if (param.value === value) {
+    dezipperTargets.set(param, value);
+    return;
+  }
+  dezipperTargets.set(param, value);
   try {
     param.cancelScheduledValues(currentTime);
     param.setValueAtTime(param.value, currentTime);
@@ -455,10 +467,12 @@ function applyBalanceOrPan(
   setParamDezippered(bus.gainR.gain, r, currentTime);
 }
 
-function ensureDestGraph(ctx: AudioContext): DestGraph | null {
+function ensureDestGraph(ctx: AudioContext, project: Project): DestGraph | null {
   refreshAudioHwCapability(ctx);
-  const n = applyDestinationChannelLayout(ctx, getAudioMaxChannelCount());
-  if (!hwOutputUiAllowed(n)) {
+  const maxCh = getAudioMaxChannelCount();
+  const needMulti = projectNeedsMultiOutDest(project, maxCh);
+  const n = applyDestinationChannelLayout(ctx, maxCh, needMulti);
+  if (!needMulti) {
     if (destGraph) {
       disconnectSafe(destGraph.merger);
       destGraph = null;
@@ -476,8 +490,22 @@ function ensureDestGraph(ctx: AudioContext): DestGraph | null {
   return destGraph;
 }
 
+/**
+ * Discrete multi-channel destination only when something actually addresses
+ * channels beyond a plain stereo Master→destination (HW outs or remapped Master).
+ */
+function projectNeedsMultiOutDest(
+  project: Project,
+  maxChannelCount: number,
+): boolean {
+  if (!hwOutputUiAllowed(maxChannelCount)) return false;
+  if ((project.audioHardwareOutputs ?? []).length > 0) return true;
+  const routing = resolveMasterOutputRouting(project.masterOutput);
+  return routing.channelOffset !== 0;
+}
+
 function ensureMasterBus(ctx: AudioContext, project: Project): MasterBus {
-  const graph = ensureDestGraph(ctx);
+  const graph = ensureDestGraph(ctx, project);
   const multi = graph != null;
   const routing = resolveMasterOutputRouting(project.masterOutput);
   const width = routing.channelMode === "mono" ? 1 : 2;
@@ -550,9 +578,10 @@ function disconnectHwOut(node: HwOutBus): void {
 
 function ensureHwOutBus(
   ctx: AudioContext,
+  project: Project,
   row: AudioHardwareOutput,
 ): HwOutBus | null {
-  const graph = ensureDestGraph(ctx);
+  const graph = ensureDestGraph(ctx, project);
   if (!graph) return null;
   const mode = resolveChannelMode(row.channelMode);
   const width = mode === "mono" ? 1 : 2;
@@ -631,7 +660,7 @@ function connectRouteToDest(
       (h) => h.id === dest.hwOutputId,
     );
     if (row) {
-      const hw = ensureHwOutBus(ctx, row);
+      const hw = ensureHwOutBus(ctx, project, row);
       if (hw) {
         out.connect(hw.gain);
         return;
@@ -653,6 +682,12 @@ function ensureGroupBus(
     disconnectBusNodes(hit);
     groupBuses.delete(busId);
     groupWiredDest.delete(busId);
+    // Bus node rebuilt (e.g. mono↔stereo): force tracks/cues that fed the old
+    // gain to rewire — disconnect() only clears outputs, not incoming edges.
+    const destKey = `bus:${busId}`;
+    for (const [trackId, wired] of trackWiredDest) {
+      if (wired === destKey) trackWiredDest.delete(trackId);
+    }
   }
   const master = ensureMasterBus(ctx, project);
   const node = createChannelBus(ctx, mode);
@@ -801,7 +836,7 @@ function applyBusParams(
   const hwRows = project.audioHardwareOutputs ?? [];
   const hwAlive = new Set(hwRows.map((h) => h.id));
   for (const row of hwRows) {
-    const node = ensureHwOutBus(ctx, row);
+    const node = ensureHwOutBus(ctx, project, row);
     if (!node) continue;
     let lin = gainDbToLinear(row.gainDb);
     if (row.muted) lin = 0;
@@ -897,6 +932,20 @@ function emptyReleaseBuffer(ctx: BaseAudioContext): AudioBuffer {
 
 /** Stop + detach + swap buffer so WebKit can drop decoded audio RAM (WA-MEM-02). */
 function releaseActiveSource(a: ActiveSource): void {
+  // Clear before stop — BufferSource fires `ended` after stop(); a handler that
+  // matched by clipId would wipe a replacement voice started for the same clip
+  // (restart thrash → choppy / “aliased” playback).
+  a.source.onended = null;
+  try {
+    const audioCtx = a.source.context ?? a.fadeGain.context;
+    const now = audioCtx.currentTime;
+    a.fadeGain.gain.cancelScheduledValues(now);
+    a.fadeGain.gain.setValueAtTime(0, now);
+    a.levelGain.gain.cancelScheduledValues(now);
+    a.levelGain.gain.setValueAtTime(0, now);
+  } catch {
+    /* context closed or unavailable */
+  }
   try {
     a.source.stop();
   } catch {
@@ -908,14 +957,14 @@ function releaseActiveSource(a: ActiveSource): void {
   } catch {
     /* assign may throw if context closed */
   }
-  try {
-    a.source.disconnect();
-    a.fadeGain.disconnect();
-    a.levelGain.disconnect();
-    for (const n of a.extras) disconnectSafe(n);
-  } catch {
-    /* */
-  }
+  // Disconnect each node separately. A single try/catch around the chain is
+  // unsafe: if source.disconnect() throws (e.g. already detached after buffer
+  // swap on WebKit), levelGain would stay wired into the track bus — the next
+  // graph rebuild then stacks another voice and loudness creeps up permanently.
+  disconnectSafe(a.source);
+  disconnectSafe(a.fadeGain);
+  disconnectSafe(a.levelGain);
+  for (const n of a.extras) disconnectSafe(n);
 }
 
 function releaseCueSample(a: ActiveCueSample): void {
@@ -924,13 +973,9 @@ function releaseCueSample(a: ActiveCueSample): void {
   } catch {
     /* */
   }
-  try {
-    a.source.disconnect();
-    a.gain.disconnect();
-    a.pan.disconnect();
-  } catch {
-    /* */
-  }
+  disconnectSafe(a.source);
+  disconnectSafe(a.gain);
+  disconnectSafe(a.pan);
 }
 
 /** PANIC — stop all cue samples including playPostStop. */
@@ -998,7 +1043,7 @@ function startCueSample(
       (h) => h.id === hwOutputId,
     );
     if (row) {
-      const hw = ensureHwOutBus(ctx, row);
+      const hw = ensureHwOutBus(ctx, project, row);
       if (hw) dest = hw.gain;
     }
   }
@@ -1007,12 +1052,12 @@ function startCueSample(
   const mode = sample.mode ?? "one-shot";
   let dur = buf.duration;
   if (mode === "gated") {
-    const bpm = resolveTempoAt(project, clip.startTicks);
-    const meter = resolveMeterAt(project, clip.startTicks);
-    dur = Math.max(
-      0.01,
-      ticksToMs(clip.lengthTicks, bpm, meter, project.ppq) / 1000,
+    const alongMs = ticksToMsAlongTempoMap(
+      clip.startTicks,
+      clip.startTicks + clip.lengthTicks,
+      project,
     );
+    dur = Math.max(0.01, alongMs / 1000);
   }
   try {
     if (mode === "gated") source.start(0, 0, dur);
@@ -1047,11 +1092,9 @@ export function fireCueSampleGo(
   if (q === "next-beat") {
     const beatTicks = Math.max(1, project.ppq);
     const next = Math.ceil((displayTicks + 1) / beatTicks) * beatTicks;
-    const bpm = resolveTempoAt(project, displayTicks);
-    const meter = resolveMeterAt(project, displayTicks);
     const delayMs = Math.max(
       0,
-      ticksToMs(next - displayTicks, bpm, meter, project.ppq),
+      ticksToMsAlongTempoMap(displayTicks, next, project),
     );
     window.setTimeout(() => {
       startCueSample(projectId, project, clip, ctx);
@@ -1152,10 +1195,16 @@ export function getAudioPlaybackDebugState(): {
   stopEpoch: number;
   /** Linear gain currently applied to each group bus (post mute/solo). */
   groupBusGainLinear: Record<string, number>;
+  /** Linear gain currently applied to each track bus fader. */
+  trackGainLinear: Record<string, number>;
 } {
   const groupBusGainLinear: Record<string, number> = {};
   for (const [id, bus] of groupBuses) {
     groupBusGainLinear[id] = bus.gain.gain.value;
+  }
+  const trackGainLinear: Record<string, number> = {};
+  for (const [id, bus] of trackBuses) {
+    trackGainLinear[id] = bus.gain.gain.value;
   }
   return {
     activeCount: active.length,
@@ -1163,12 +1212,18 @@ export function getAudioPlaybackDebugState(): {
     suppressed: playbackSuppressed,
     stopEpoch,
     groupBusGainLinear,
+    trackGainLinear,
   };
 }
 
 /**
- * Structural graph key — mute/solo/clip geometry / routing / channel mode.
- * Track gain/pan/balance/master and clip `gainDb` update live (no restart).
+ * Structural graph key — mute/solo/clip geometry / track routing / channel mode.
+ * Track/bus/master gain/pan and clip `gainDb` update live (no restart).
+ *
+ * Idle group-bus rows are intentionally omitted: add/remove/mute/gain/pan on a
+ * bus is handled by {@link applyBusParams}. Listing every bus here used to
+ * rebuild all clip voices on "+ Dodaj Bus" even with zero sends — and any
+ * incomplete voice teardown then stacked levelGain→track edges (loudness creep).
  */
 function graphKey(input: AudioPlaybackInput): string {
   return [
@@ -1187,13 +1242,6 @@ function graphKey(input: AudioPlaybackInput): string {
               ? `hw:${t.output.hwOutputId}`
               : "master";
         return `${t.id}:${t.muted}:${resolveChannelMode(t.channelMode)}:${out}`;
-      })
-      .join(";"),
-    (input.project.audioBusses ?? [])
-      .map((b) => {
-        const out =
-          b.output?.kind === "bus" ? `bus:${b.output.busId}` : "master";
-        return `${b.id}:${b.muted}:${resolveChannelMode(b.channelMode)}:${out}`;
       })
       .join(";"),
     (input.soloTrackIds ?? []).join(","),
@@ -1300,6 +1348,7 @@ function startClip(
       if (!loaded || epoch !== stopEpoch || playbackSuppressed) return;
       const snap = lastSyncArgs;
       if (!snap || snap.projectId !== projectId || !snap.input.playing) return;
+      if (!snap.input.project.audioClips.some((c) => c.id === clipId)) return;
       if (active.some((a) => a.clipId === clipId)) return;
       startClip(
         projectId,
@@ -1397,17 +1446,20 @@ function startClip(
   } catch {
     return;
   }
-  source.onended = () => {
-    active = active.filter((a) => a.clipId !== clipId);
-  };
-  active.push({
+  const entry: ActiveSource = {
     clipId,
     trackId: clip.trackId,
     source,
     fadeGain,
     levelGain,
     extras,
-  });
+  };
+  // Match by entry identity — NOT clipId. After stop()/seek, the old source's
+  // `ended` event must not remove a newly started voice for the same clip.
+  source.onended = () => {
+    active = active.filter((a) => a !== entry);
+  };
+  active.push(entry);
 }
 
 /**
@@ -1445,16 +1497,17 @@ export function syncAudioPlayback(
     return;
   }
 
-  const epochAtStart = stopEpoch;
   const gKey = graphKey(input);
   const jumped =
     lastDisplayTicks != null &&
     Math.abs(input.displayTicks - lastDisplayTicks) > SEEK_JUMP_TICKS;
   const graphChanged = gKey !== lastGraphKey;
   if (jumped || graphChanged) {
+    stopEpoch += 1;
     stopAll();
     firedCueIds.clear();
   }
+  const epochAtStart = stopEpoch;
 
   const prevTicks = lastDisplayTicks;
   lastDisplayTicks = input.displayTicks;
@@ -1506,17 +1559,20 @@ export function syncAudioPlayback(
     ctx,
   );
 
-  // Live clip gainDb (not part of graphKey).
+  // Live clip gainDb (not part of graphKey) — only write when changed.
   for (const a of active) {
     const clip = clipById.get(a.clipId);
     if (!clip) continue;
-    a.levelGain.gain.value = gainDbToLinear(clip.gainDb);
+    const lin = gainDbToLinear(clip.gainDb);
+    if (a.levelGain.gain.value !== lin) {
+      a.levelGain.gain.value = lin;
+    }
   }
 
   for (const a of [...active]) {
     if (!stillNeeded.has(a.clipId)) {
       releaseActiveSource(a);
-      active = active.filter((x) => x.clipId !== a.clipId);
+      active = active.filter((x) => x !== a);
     }
   }
 }

@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** wydane **`5.4.0`** (**Syllables**) — UltraStar → timed lyrics + Karaoke highlight; format V6. Następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
+**Stan:** cut **`5.4.1`** (Syllables patch) — Import US+UG oznaczony jako **eksperymentalny**; następny patch **5.4.2**: **Smart Tempo z audio**. Potem fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -10,24 +10,28 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); **5.4 Syllables** wydane (`v5.4.0`).
+**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** — patch **5.4.2** = Smart Tempo.
+
+## Must (najbliższy patch 5.4.2)
+
+- [ ] **Smart Tempo (audio → TempoMap):** mapa tempa / wyrównanie do MP3 z analizy podkładu (kierunek Logic Smart Tempo), nie z niedokładnych timingów sylab UltraStar; Import US+UG przestaje być autorem „protezy” TempoMap — US = treść + orientacja, audio = SSOT wall-clock↔takt. Import US+UG pozostaje **eksperymentalny** do domknięcia tej pozycji.
 
 ## Must (operator residual)
 
 - [ ] **HW smoke multi-out** na interfejsie ≥ 4 ch (mac/Win) — checklista w [DESKTOP.md](./DESKTOP.md); **bez claim green**
-- [ ] **G1–G10** na instalatorach `v5.3.0` / najnowszy **5.3.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
+- [ ] **G1–G10** na instalatorach `v5.3.0` / najnowszy **5.3.x** / **5.4.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 
-- [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; batch DOM meterów Mixer przy wielu stripach; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
+- [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — w toku: lokalne alerty + rejestracja tokenów + kanały; FCM wymaga `google-services.json` (opt-in, ADR 0016 — zero sekretów w APK). Nie mylić z FG notification lokalnego hosta Console.
+- [ ] **Import US+UG (eksperymentalny):** higiena mostka / zero-length chords / coverage Formy — bez udawania syncu MP3 do czasu Smart Tempo
 
 ## Etap 5.4+ / Later
 
 ### 5.4 Syllables / 5.5 Pitch & FX / 6.0 Live Suite
 
 - [ ] **5.5 — Pitch & FX:** Track Pitch Shift + expanded busses / send-return FX (WebAudio; bez VST in-process) — [ADR 0018](./adr/0018-future-audio-architecture.md)
-- [ ] **5.4.x Should — Text-Anchor Bridging (US+UG):** dopiero ze golden fixtures — [triage](./analysis/inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)
 - [ ] **6.0 Live Suite (po major + scope report):** Input & Live Processing (+ recording + proste edit); Audio Suite (Worklet/WASM) + **STEM / mute lead**; Automation lanes (host Tick Engine SSOT); MIDI Patch Matrix + Standalone VSTi Controller (PC/CC) — wbudowane synthy WebAudio = Later 6.x+; szczegóły / OUT w [ADR 0018](./adr/0018-future-audio-architecture.md)
 
 ### Residual ops / mobile

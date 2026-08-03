@@ -35,6 +35,9 @@ export type UgImportFormProps = {
   disabled?: boolean;
   applying?: boolean;
   importOptions?: Omit<UgImportOptions, "barsPerLine">;
+  /** Prefill UG search from project name / artist when known. */
+  initialTitle?: string;
+  initialArtist?: string;
   onCancel: () => void;
   onApply: (payload: UgImportApplyPayload) => void | Promise<void>;
 };
@@ -44,11 +47,13 @@ export function UgImportForm({
   disabled = false,
   applying = false,
   importOptions,
+  initialTitle = "",
+  initialArtist = "",
   onCancel,
   onApply,
 }: UgImportFormProps) {
-  const [searchTitle, setSearchTitle] = useState("");
-  const [searchArtist, setSearchArtist] = useState("");
+  const [searchTitle, setSearchTitle] = useState(() => initialTitle.trim());
+  const [searchArtist, setSearchArtist] = useState(() => initialArtist.trim());
   const [searchHits, setSearchHits] = useState<UgSearchHit[]>([]);
   const [searchMessage, setSearchMessage] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
@@ -139,6 +144,12 @@ export function UgImportForm({
       setUrl(data.metadata.url || target);
       setMetadata(data.metadata);
       setText(data.content);
+      if (data.metadata.title?.trim()) {
+        setSearchTitle((prev) => prev.trim() || data.metadata.title!.trim());
+      }
+      if (data.metadata.artist?.trim()) {
+        setSearchArtist((prev) => prev.trim() || data.metadata.artist!.trim());
+      }
       setShowPaste(false);
       setFetchStatus(
         [

@@ -1,0 +1,10 @@
+#TITLE:Hello Demo
+#ARTIST:StageSync
+#BPM:480
+#GAP:0
+: 0 4 0 Hello 
+: 8 4 0 world 
+-
+: 32 4 0 Chorus 
+: 40 4 0 line 
+E

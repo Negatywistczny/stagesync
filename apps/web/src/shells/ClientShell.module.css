@@ -782,8 +782,10 @@
     color-mix(in srgb, var(--ss-color-primary) 40%, transparent);
 }
 
-/* Timed blocks (V6+). Single whole-line block → same look as `.karaokeLineActive`. */
+/* Timed blocks (V6+). Single whole-line block → same look as `.karaokeLineActive`.
+ * pre-wrap keeps trailing word-boundary spaces between adjacent spans. */
 .karaokeBlock {
+  white-space: pre-wrap;
   transition:
     color var(--karaoke-hl-ms) ease-in-out,
     text-shadow var(--karaoke-hl-ms) ease-in-out,
@@ -1262,6 +1264,14 @@
   border-color: color-mix(in srgb, var(--ss-color-info) 85%, transparent) !important;
   background: color-mix(in srgb, var(--ss-color-info) 14%, transparent) !important;
   box-shadow: 0 0 24px color-mix(in srgb, var(--ss-color-info) 22%, transparent);
+}
+
+.cycleCellSubBar {
+  padding: var(--ss-space-1);
+}
+
+.cycleCellSubBar .cycleCellSymbol {
+  font-size: min(var(--ss-text-xl), calc(var(--phrase-bar-size) * 0.28));
 }
 
 .cycleCellSymbol {

@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createSongAndOpen,
+  createSongWithContent,
   currentTimelineProjectId,
   downloadLibraryExport,
   importLibraryFile,
@@ -12,7 +13,7 @@ import {
 } from "./desktopFileMenu.js";
 import * as libraryApi from "./libraryApi.js";
 import * as lastTimeline from "./lastTimelineProject.js";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectV5Seed, createProjectV6Seed } from "@stagesync/shared";
 
 vi.mock("./libraryApi.js");
 vi.mock("./lastTimelineProject.js");
@@ -38,6 +39,36 @@ describe("desktopFileMenu", () => {
     const out = await createSongAndOpen("Song");
     expect(out).toEqual({ id: "p1", name: "Song" });
     expect(push).toHaveBeenCalledWith("p1", "Song");
+  });
+
+  it("createSongWithContent creates, merges, puts with OCC, pushes recent", async () => {
+    const shell = createProjectV6Seed("new", "Shell", "2026-02-01T00:00:00.000Z");
+    shell.midiProgramId = 11;
+    vi.mocked(libraryApi.createProject).mockResolvedValue(shell);
+    vi.mocked(libraryApi.putProject).mockImplementation(async (id, body) => ({
+      ...body,
+      id,
+    }));
+    const push = vi.spyOn(lastTimeline, "pushRecentTimelineProject");
+
+    const out = await createSongWithContent("From UG", (p) => ({
+      ...p,
+      name: "Renamed by import",
+      defaultBpm: 90,
+    }));
+
+    expect(libraryApi.createProject).toHaveBeenCalledWith("From UG");
+    expect(libraryApi.putProject).toHaveBeenCalledWith(
+      "new",
+      expect.objectContaining({
+        name: "Renamed by import",
+        defaultBpm: 90,
+        updatedAt: shell.updatedAt,
+        midiProgramId: 11,
+      }),
+    );
+    expect(out.name).toBe("Renamed by import");
+    expect(push).toHaveBeenCalledWith("new", "Renamed by import");
   });
 
   it("saveProjectAs clones with optimistic updatedAt and new midiProgramId", async () => {

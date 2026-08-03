@@ -85,4 +85,57 @@ describe("TimelineShell styles", () => {
       /\.touchNudge\s*\{[^}]*transform:\s*translateX\(-50%\)/,
     );
   });
+
+  it("keeps Play accent border present in the default state", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
+      "utf8",
+    );
+    const playAccent =
+      css.match(/\.playAccent\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(playAccent).toMatch(
+      /border:\s*1px\s+solid\s+var\(--ss-color-primary\)/,
+    );
+  });
+
+  it("insets toolbar scroll clusters so icon button borders are not clipped", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
+      "utf8",
+    );
+    const sharedCluster =
+      css.match(
+        /\.toolBar,\s*\.toolbarCenter,\s*\.transport\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(sharedCluster).toMatch(/padding-block:\s*1px/);
+    expect(css).toMatch(/\.toolBar\s*\{[^}]*overflow-x:\s*auto/);
+    expect(css).toMatch(/\.transport\s*\{[^}]*overflow-x:\s*auto/);
+    const songCluster =
+      css.match(/\.songCluster\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(songCluster).toMatch(/padding-block:\s*1px/);
+    expect(songCluster).toMatch(/overflow-x:\s*auto/);
+    const transportExtras =
+      css.match(/\.transportExtras\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(transportExtras).toMatch(/padding-block:\s*1px/);
+  });
+
+  it("audio clips fill lane height like Forma (absolute top/bottom)", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
+      "utf8",
+    );
+    const audioClip = css.match(/\.audioClip\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(audioClip).toMatch(/position:\s*absolute/);
+    expect(audioClip).toMatch(
+      /top:\s*calc\(var\(--ss-space-1\)\s*\*\s*var\(--tl-zoom-ui\)\)/,
+    );
+    expect(audioClip).toMatch(
+      /bottom:\s*calc\(var\(--ss-space-1\)\s*\*\s*var\(--tl-zoom-ui\)\)/,
+    );
+    const formaClip = css.match(/\.formaClip\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(formaClip).toMatch(/position:\s*absolute/);
+    expect(formaClip).toMatch(
+      /top:\s*calc\(var\(--ss-space-1\)\s*\*\s*var\(--tl-zoom-ui\)\)/,
+    );
+  });
 });

@@ -5,6 +5,7 @@
 
 import type { MasterStripCallbacks, MasterStripState } from "./channelStripTypes.js";
 import { DualDbReadout } from "./DualDbReadout.js";
+import { meterPaintKey } from "./meterPaint.js";
 import { OutputSelector } from "./OutputSelector.js";
 import { PeakMeter } from "./PeakMeter.js";
 import { VerticalFader } from "./VerticalFader.js";
@@ -64,6 +65,8 @@ export function MasterStrip({ state, callbacks }: MasterStripProps) {
         <PeakMeter
           db={state.meterL}
           dbR={state.meterR}
+          paintKeyL={meterPaintKey("master", "stereo", "l")}
+          paintKeyR={meterPaintKey("master", "stereo", "r")}
           aria-label="Miernik Stereo Out"
         />
       </div>

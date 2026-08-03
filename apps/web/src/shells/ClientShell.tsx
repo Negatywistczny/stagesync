@@ -51,7 +51,7 @@ import {
 } from "../lib/clientDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
 import { putProject } from "../lib/libraryApi.js";
-import { ticksFromSyncLeadMs } from "../lib/syncLead.js";
+import { ticksFromSyncLeadAlongMap, ticksFromSyncLeadMs } from "../lib/syncLead.js";
 import { useActiveProject } from "../lib/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
@@ -126,20 +126,43 @@ export function ClientShell() {
     seek,
     error: transportError,
     announcePresence,
+    setSoftClockTempoMaps,
   } = useTransport();
   // H-01 probe: counts ClientShell commits while soft-clock advances (?ss_perf=h01).
   noteH01ConsumerRender();
-  const displayTicks =
-    rawDisplayTicks +
-    ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq);
-
-  const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const {
     activeProject,
     setActiveProject,
     loading: projectLoading,
     reload: reloadActiveProject,
   } = useActiveProject(state.activeProjectId);
+
+  useEffect(() => {
+    if (!activeProject) {
+      setSoftClockTempoMaps(null);
+      return;
+    }
+    setSoftClockTempoMaps({
+      defaultBpm: activeProject.defaultBpm,
+      defaultMeter: activeProject.defaultMeter,
+      tempoMap: activeProject.tempoMap,
+      meterMap: activeProject.meterMap,
+      ppq: activeProject.ppq,
+    });
+    return () => setSoftClockTempoMaps(null);
+  }, [activeProject, setSoftClockTempoMaps]);
+
+  const displayTicks =
+    rawDisplayTicks +
+    (activeProject
+      ? ticksFromSyncLeadAlongMap(
+          liveDesk.syncLeadMs,
+          rawDisplayTicks,
+          activeProject,
+        )
+      : ticksFromSyncLeadMs(liveDesk.syncLeadMs, state.bpm, state.ppq));
+
+  const headerBbt = ticksToBbt(displayTicks, state.timeSignature, state.ppq);
   const prevWsStatusRef = useRef(wsStatus);
   const [displayPrefs, setDisplayPrefs] = useState(loadClientDisplayPrefs);
   const [vocalTapOn, setVocalTapOn] = useState(false);

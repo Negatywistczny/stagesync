@@ -102,6 +102,56 @@ export function ServerSettingsTab({
       </fieldset>
       
       <fieldset className={styles.fieldset}>
+        <legend className={styles.legend}>Import UltraStar (USDB)</legend>
+        <p className={styles.muted}>
+          Konto na{" "}
+          <a href="https://usdb.animux.de" target="_blank" rel="noreferrer">
+            usdb.animux.de
+          </a>{" "}
+          do wyszukiwania i pobierania. Zapis na hoście (bez restartu). Hasło nie
+          wraca z API — puste pole = bez zmiany.
+        </p>
+        <label className={styles.field}>
+          <span className={styles.label}>Użytkownik USDB</span>
+          <Input
+            type="text"
+            autoComplete="username"
+            value={String(server.STAGESYNC_USDB_USER ?? "")}
+            onChange={(e) =>
+              onServerChange({
+                ...server,
+                STAGESYNC_USDB_USER: e.target.value,
+              })
+            }
+            aria-label="Użytkownik USDB"
+          />
+        </label>
+        <label className={styles.field}>
+          <span className={styles.label}>Hasło USDB</span>
+          <Input
+            type="password"
+            autoComplete="current-password"
+            value={String(server.STAGESYNC_USDB_PASS ?? "")}
+            placeholder={
+              serverMeta?.secretsConfigured?.STAGESYNC_USDB_PASS
+                ? "Zostaw puste, aby nie zmieniać"
+                : undefined
+            }
+            onChange={(e) =>
+              onServerChange({
+                ...server,
+                STAGESYNC_USDB_PASS: e.target.value,
+              })
+            }
+            aria-label="Hasło USDB"
+          />
+          {serverMeta?.secretsConfigured?.STAGESYNC_USDB_PASS ? (
+            <span className={styles.muted}>Hasło jest zapisane na hoście.</span>
+          ) : null}
+        </label>
+      </fieldset>
+
+      <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Logi & Utrzymanie</legend>
         <label className={styles.field}>
           <span className={styles.label}>Poziom logów</span>

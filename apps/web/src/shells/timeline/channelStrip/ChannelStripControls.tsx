@@ -3,7 +3,7 @@
  */
 
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
-import { Button, SegmentedControl, Slider } from "@stagesync/ui";
+import { Button, SegmentedControl } from "@stagesync/ui";
 import {
   resolveTrackColor,
   resolveTrackIcon,
@@ -20,7 +20,9 @@ import {
   parseOutputDest,
 } from "./OutputSelector.js";
 import { PanKnob } from "./PanKnob.js";
+import { meterPaintKey } from "./meterPaint.js";
 import { PeakMeter } from "./PeakMeter.js";
+import { TaperGainSlider } from "./TaperGainSlider.js";
 import { TrackAppearancePicker } from "./TrackAppearancePicker.js";
 import { VerticalFader } from "./VerticalFader.js";
 import styles from "./ChannelStripControls.module.css";
@@ -224,14 +226,11 @@ export function ChannelStripControls({
       }}
       title="Dwuklik — 0.0 dB"
     >
-      <Slider
+      <TaperGainSlider
         className={faderClassName ?? styles.fader}
         aria-label={`Fader ${strip.name}`}
-        min={-24}
-        max={12}
-        step={0.5}
-        value={strip.gainDb}
-        onValueChange={callbacks.onGainChange}
+        gainDb={strip.gainDb}
+        onGainChange={callbacks.onGainChange}
       />
     </div>
   );
@@ -317,6 +316,16 @@ export function ChannelStripControls({
           <PeakMeter
             db={strip.meterDb ?? -60}
             dbR={isStereo ? (strip.meterDbR ?? -60) : undefined}
+            paintKeyL={meterPaintKey(
+              isBus ? "bus" : "track",
+              strip.trackId,
+              "l",
+            )}
+            paintKeyR={
+              isStereo
+                ? meterPaintKey(isBus ? "bus" : "track", strip.trackId, "r")
+                : undefined
+            }
             showChannelLabels={false}
             aria-label={`Miernik ${strip.name}`}
           />

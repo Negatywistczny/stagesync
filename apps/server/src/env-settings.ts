@@ -12,7 +12,7 @@ export const ENV_PATH = join(REPO_ROOT, ".env");
 export type SettingType = "string" | "number" | "boolean" | "enum";
 
 export type SettingSpec = {
-  section: "network" | "logs" | "maintenance" | "advanced";
+  section: "network" | "logs" | "maintenance" | "advanced" | "imports";
   type: SettingType;
   label: string;
   hint?: string;
@@ -23,6 +23,8 @@ export type SettingSpec = {
   defaultValue: string | boolean;
   pathKind?: "dir" | "file";
   restartRequired?: boolean;
+  /** Never return plaintext over GET; empty PUT keeps existing value (null clears). */
+  secret?: boolean;
 };
 
 export const SETTINGS_SCHEMA = {
@@ -134,6 +136,25 @@ export const SETTINGS_SCHEMA = {
     options: ["booth", "daylight", "midnight", "matrix", "neon"],
     defaultValue: "booth",
     restartRequired: false,
+  },
+  STAGESYNC_USDB_USER: {
+    section: "imports",
+    type: "string",
+    label: "USDB — użytkownik",
+    hint: "Konto na usdb.animux.de (Import UltraStar). Bez restartu. Zalecane: formularz w dialogu Import UltraStar → Konto USDB.",
+    defaultValue: "",
+    maxLength: 120,
+    restartRequired: false,
+  },
+  STAGESYNC_USDB_PASS: {
+    section: "imports",
+    type: "string",
+    label: "USDB — hasło",
+    hint: "Hasło konta USDB. Nie jest zwracane w API; puste pole przy zapisie = bez zmiany.",
+    defaultValue: "",
+    maxLength: 200,
+    restartRequired: false,
+    secret: true,
   },
 } as const satisfies Record<string, SettingSpec>;
 
@@ -272,8 +293,26 @@ export function writeManagedSettings(
   const normalized: Record<string, string | null> = {};
   for (const [key, rawValue] of Object.entries(updates || {})) {
     if (!(key in SETTINGS_SCHEMA)) continue;
-    const spec = SETTINGS_SCHEMA[key as SettingsKey];
+    const spec = SETTINGS_SCHEMA[key as SettingsKey] as SettingSpec;
+    if (spec.secret) {
+      // null = explicit clear; empty / undefined = keep existing secret.
+      if (rawValue === null) {
+        normalized[key] = null;
+        continue;
+      }
+      if (rawValue === undefined || String(rawValue).trim() === "") {
+        continue;
+      }
+    }
     normalized[key] = normalizeIncomingValue(key, rawValue, spec);
+  }
+
+  // Clearing USDB user always drops the stored password too.
+  if (
+    "STAGESYNC_USDB_USER" in normalized &&
+    normalized.STAGESYNC_USDB_USER == null
+  ) {
+    normalized.STAGESYNC_USDB_PASS = null;
   }
 
   const content = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
@@ -316,6 +355,32 @@ export function writeManagedSettings(
   return readManagedSettings(envPath);
 }
 
+export function maskSecretSettingsValues(
+  values: ManagedSettingsValues,
+): ManagedSettingsValues {
+  const out = { ...values } as ManagedSettingsValues;
+  for (const key of Object.keys(SETTINGS_SCHEMA) as SettingsKey[]) {
+    const spec = SETTINGS_SCHEMA[key] as SettingSpec;
+    if (!spec.secret) continue;
+    (out as Record<SettingsKey, string | boolean>)[key] = "";
+  }
+  return out;
+}
+
+export function listConfiguredSecrets(
+  values: ManagedSettingsValues,
+): Record<string, boolean> {
+  const result: Record<string, boolean> = {};
+  for (const key of Object.keys(SETTINGS_SCHEMA) as SettingsKey[]) {
+    const spec = SETTINGS_SCHEMA[key] as SettingSpec;
+    if (!spec.secret) continue;
+    const raw = values[key];
+    result[key] =
+      typeof raw === "string" ? raw.trim().length > 0 : Boolean(raw);
+  }
+  return result;
+}
+
 export function getSettingsSchemaForClient(): Record<
   string,
   {
@@ -327,6 +392,7 @@ export function getSettingsSchemaForClient(): Record<
     defaultValue: string | boolean | null;
     pathKind: "dir" | "file" | null;
     restartRequired: boolean;
+    secret: boolean;
   }
 > {
   return Object.fromEntries(
@@ -343,6 +409,7 @@ export function getSettingsSchemaForClient(): Record<
           defaultValue: spec.defaultValue ?? null,
           pathKind: spec.pathKind ?? null,
           restartRequired: Boolean(spec.restartRequired),
+          secret: Boolean(spec.secret),
         },
       ];
     }),

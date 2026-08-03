@@ -7,8 +7,10 @@ import {
 import {
   mergeAkordyWithCountdownDigits,
   buildGridLiveContext,
+  chordStepsForTickRange,
   compressBarChordsToProgression,
   cycleGridTemplateColumns,
+  cycleStepsWithActive,
   cycleTotalBars,
   detectCycleLength,
   progressionForBarChords,
@@ -223,8 +225,8 @@ describe("clientGrid", () => {
     expect(ctx0.nextCycle.length).toBeGreaterThan(0);
     expect(ctx0.nextCycle.every((s) => s.symbol === "Dm")).toBe(true);
     expect(ctx0.hero).toBe("Am");
-    // Mid-band wrap of single-chord cycle → same symbol; last bar → next row.
-    expect(ctx0.heroNext).toBe("Am");
+    // Single-chord subsection → next row preview on last bar.
+    expect(ctx0.heroNext).toBe("Dm");
     expect(ctx0.carouselKey).toContain("forma-verse:0");
 
     const ctx0Last = buildGridLiveContext(p, 3 * BAR + 100);
@@ -232,12 +234,12 @@ describe("clientGrid", () => {
 
     const ctx1 = buildGridLiveContext(p, 4 * BAR + 100);
     expect(ctx1.nextCycle.every((s) => s.symbol === "G")).toBe(true);
-    expect(ctx1.heroNext).toBe("Dm");
+    expect(ctx1.heroNext).toBe("G");
     expect(buildGridLiveContext(p, 7 * BAR + 100).heroNext).toBe("G");
 
     const ctx2 = buildGridLiveContext(p, 8 * BAR + 100);
     expect(ctx2.nextCycle).toEqual([]);
-    expect(ctx2.heroNext).toBe("G");
+    expect(ctx2.heroNext).toBeNull();
     expect(buildGridLiveContext(p, 11 * BAR + 100).heroNext).toBeNull();
   });
 
@@ -331,27 +333,38 @@ describe("clientGrid", () => {
     expect(last.startRel).toBe(3840);
   });
 
-  it("resolveHeroNextSymbol covers empty / wrap / next-band paths", () => {
-    expect(resolveHeroNextSymbol([], [{ symbol: "N", bars: 1, active: false, activeBarInStep: null }], 0, 4)).toBe("N");
-    expect(resolveHeroNextSymbol([], [], 0, 4)).toBeNull();
+  it("resolveHeroNextSymbol covers empty / next-in-row / next-band paths", () => {
+    expect(
+      resolveHeroNextSymbol(
+        [],
+        [{ symbol: "N", bars: 1, active: false, activeBarInStep: null }],
+      ),
+    ).toBe("N");
+    expect(resolveHeroNextSymbol([], [])).toBeNull();
     const cycle = [
       { symbol: "A", bars: 1, active: true, activeBarInStep: 1 },
       { symbol: "B", bars: 1, active: false, activeBarInStep: null },
     ];
-    expect(resolveHeroNextSymbol(cycle, [], 0, 4)).toBe("B");
+    expect(resolveHeroNextSymbol(cycle, [])).toBe("B");
     const lastActive = [
       { symbol: "A", bars: 1, active: false, activeBarInStep: null },
       { symbol: "B", bars: 1, active: true, activeBarInStep: 1 },
     ];
-    expect(resolveHeroNextSymbol(lastActive, [], 0, 4)).toBe("A");
     expect(
-      resolveHeroNextSymbol(lastActive, [{ symbol: "X", bars: 1, active: false, activeBarInStep: null }], 3, 4),
+      resolveHeroNextSymbol(lastActive, [
+        { symbol: "X", bars: 1, active: false, activeBarInStep: null },
+      ]),
     ).toBe("X");
   });
 
   it("cycleGridTemplateColumns and cycleTotalBars handle empty/invalid", () => {
     expect(cycleGridTemplateColumns([])).toBe("");
-    expect(cycleGridTemplateColumns([{ bars: Number.NaN }, { bars: 2 }])).toBe("1fr 2fr");
+    expect(cycleGridTemplateColumns([{ bars: Number.NaN }, { bars: 2 }])).toBe(
+      "1fr 2fr",
+    );
+    expect(cycleGridTemplateColumns([{ bars: 0.5 }, { bars: 1 }])).toBe(
+      "0.5fr 1fr",
+    );
     expect(cycleTotalBars([])).toBe(0);
     expect(
       cycleTotalBars([
@@ -359,6 +372,51 @@ describe("clientGrid", () => {
         { symbol: "B", bars: 2, active: false, activeBarInStep: null },
       ]),
     ).toBe(2);
+    expect(
+      cycleTotalBars([
+        { symbol: "A", bars: 0.5, active: false, activeBarInStep: null },
+        { symbol: "B", bars: 1, active: false, activeBarInStep: null },
+      ]),
+    ).toBe(1.5);
+  });
+
+  it("chordStepsForTickRange uses clip onsets (not only bar starts)", () => {
+    let p: Project = createProjectV5Seed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    );
+    const half = BAR / 2;
+    p = {
+      ...p,
+      akordy: {
+        clips: [
+          {
+            id: "c1",
+            symbol: "C",
+            startTicks: 0,
+            lengthTicks: half,
+          },
+          {
+            id: "g1",
+            symbol: "G",
+            startTicks: half,
+            lengthTicks: half,
+          },
+        ],
+      },
+    };
+    const steps = chordStepsForTickRange(p, p.akordy.clips, 0, BAR);
+    expect(steps.map((s) => s.symbol)).toEqual(["C", "G"]);
+    expect(steps[0]!.barUnits).toBeCloseTo(0.5, 5);
+    expect(steps[1]!.barUnits).toBeCloseTo(0.5, 5);
+
+    const cycle = cycleStepsWithActive(steps, half + 10);
+    expect(cycle.find((s) => s.active)?.symbol).toBe("G");
+
+    const ctx = buildGridLiveContext(p, half + 10);
+    expect(ctx.cycle.some((s) => s.active && s.symbol === "G")).toBe(true);
+    expect(ctx.hero).toBe("G");
   });
 
   it("buildGridLiveContext empty project and no chords", () => {
@@ -454,7 +512,7 @@ describe("clientGrid", () => {
     expect(ctx.carouselKey).toBe("");
   });
 
-  it("barChordsForRange empty when section beyond walked bar map", () => {
+  it("chordStepsForTickRange works when bar map cannot walk the range", () => {
     const far = 20_000_000;
     let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
@@ -476,7 +534,11 @@ describe("clientGrid", () => {
         ],
       },
     };
-    expect(resolveNextPhraseBand(p, -1)).toBeNull();
+    expect(
+      chordStepsForTickRange(p, p.akordy.clips, far, far + BAR).map(
+        (s) => s.symbol,
+      ),
+    ).toEqual(["C"]);
     expect(sectionBarChords(p, far + 100)).toBeNull();
   });
 

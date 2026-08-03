@@ -4,6 +4,7 @@
  */
 
 import type { AudioClip, Project, ProjectAsset } from "./schema.js";
+import { FADER_GAIN_FLOOR_DB } from "./mixer-math.js";
 import { ticksToMsAlongTempoMap } from "./tempo-map-ms.js";
 import {
   DEFAULT_PPQ,
@@ -22,10 +23,14 @@ function ppqOf(ctx: AudioTempoCtx): number {
   return ctx.ppq ?? DEFAULT_PPQ;
 }
 
-/** Convert gain dB to linear amplitude (0 dB → 1). */
+/**
+ * Convert gain dB to linear amplitude (0 dB → 1).
+ * At / below {@link FADER_GAIN_FLOOR_DB} (−∞ on Mixer fader) → 0 (full mute).
+ */
 export function gainDbToLinear(gainDb: number | undefined): number {
   if (gainDb == null || !Number.isFinite(gainDb)) return 1;
-  const clamped = Math.min(24, Math.max(-60, gainDb));
+  if (gainDb <= FADER_GAIN_FLOOR_DB) return 0;
+  const clamped = Math.min(24, Math.max(FADER_GAIN_FLOOR_DB, gainDb));
   return Math.pow(10, clamped / 20);
 }
 

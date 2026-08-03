@@ -5,7 +5,6 @@
 
 import {
   clampFaderGainDb,
-  FADER_GAIN_FLOOR_DB,
   gainDbToLinear,
 } from "@stagesync/shared";
 
@@ -197,9 +196,9 @@ export function setMetronomePrefs(partial: Partial<MetronomePrefs>): MetronomePr
   return next;
 }
 
-/** Linear multiplier from Mixer Click fader (0 dB → 1). Floor → near-zero. */
+/** Linear multiplier from Mixer Click fader (0 dB → 1). Floor → 0 (full mute). */
 export function masterClickGainLinear(prefs?: MetronomePrefs): number {
   const db = (prefs ?? getMetronomePrefs()).masterGainDb;
-  if (!Number.isFinite(db) || db <= FADER_GAIN_FLOOR_DB) return 0;
+  if (!Number.isFinite(db)) return 0;
   return gainDbToLinear(db);
 }

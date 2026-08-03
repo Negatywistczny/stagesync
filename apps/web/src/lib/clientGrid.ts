@@ -7,7 +7,9 @@
 import type { AkordClip, FormaClip, Project } from "@stagesync/shared";
 import {
   resolveFormaClipAt,
+  resolveMeterAt,
   syntheticCountdownDisplayFromProject,
+  ticksPerBar,
 } from "@stagesync/shared";
 import { resolveAkordClipAt } from "./akordyEdit.js";
 import { barsInTickRange } from "./clientBarCells.js";
@@ -18,10 +20,21 @@ import {
 
 export type GridCycleStep = {
   symbol: string;
+  /** Duration in bar units (may be fractional, e.g. 0.5 for a half-bar tile). */
   bars: number;
   active: boolean;
   /** Which bar within this step is current (1-based), when active. */
   activeBarInStep: number | null;
+  /** True when the tile is narrower than one full bar (v4 sub-bar slot). */
+  isSubBar?: boolean;
+};
+
+/** Raw chord span within a subsection — built from akord clip windows, not bar starts. */
+export type ChordStepSpan = {
+  symbol: string;
+  startTicks: number;
+  endTicks: number;
+  barUnits: number;
 };
 
 export type GridLiveContext = {
@@ -139,6 +152,83 @@ export function progressionForBarChords(
 function chordAtTicks(clips: AkordClip[], atTicks: number): string {
   const hit = resolveMergedAkordAt(clips, atTicks);
   return hit?.symbol?.trim() ? hit.symbol : "—";
+}
+
+function barUnitsForSpan(
+  project: Project,
+  startTicks: number,
+  endTicks: number,
+): number {
+  const span = Math.max(0, endTicks - startTicks);
+  if (span <= 0) return 0.25;
+  const meter = resolveMeterAt(project, startTicks);
+  const barTicks = ticksPerBar(meter, project.ppq);
+  if (barTicks <= 0) return 1;
+  return Math.max(0.25, span / barTicks);
+}
+
+/**
+ * Chord tiles for a tick range — one step per overlapping akord clip (v4 phrase slots).
+ * Uses clip onsets/lengths so word-anchored / half-bar changes are not lost at bar starts.
+ */
+export function chordStepsForTickRange(
+  project: Project,
+  clips: AkordClip[],
+  rangeStart: number,
+  rangeEnd: number,
+): ChordStepSpan[] {
+  const start = Math.trunc(rangeStart);
+  const end = Math.trunc(rangeEnd);
+  if (!(end > start)) return [];
+
+  const overlapping = clips
+    .filter((c) => {
+      const sym = c.symbol?.trim();
+      if (!sym || sym === "—") return false;
+      const clipEnd = c.startTicks + c.lengthTicks;
+      return c.startTicks < end && clipEnd > start;
+    })
+    .sort(
+      (a, b) =>
+        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+    );
+
+  const steps: ChordStepSpan[] = [];
+  for (const clip of overlapping) {
+    const stepStart = Math.max(clip.startTicks, start);
+    const stepEnd = Math.min(clip.startTicks + clip.lengthTicks, end);
+    if (stepEnd <= stepStart) continue;
+    steps.push({
+      symbol: clip.symbol.trim(),
+      startTicks: stepStart,
+      endTicks: stepEnd,
+      barUnits: barUnitsForSpan(project, stepStart, stepEnd),
+    });
+  }
+  return mergeAdjacentChordSteps(project, steps);
+}
+
+/** Merge touching steps with the same symbol into one wider tile. */
+export function mergeAdjacentChordSteps(
+  project: Project,
+  steps: ChordStepSpan[],
+): ChordStepSpan[] {
+  if (steps.length === 0) return [];
+  const out: ChordStepSpan[] = [{ ...steps[0]! }];
+  for (let i = 1; i < steps.length; i++) {
+    const cur = steps[i]!;
+    const last = out[out.length - 1]!;
+    if (
+      cur.symbol === last.symbol &&
+      cur.startTicks <= last.endTicks + 1
+    ) {
+      last.endTicks = Math.max(last.endTicks, cur.endTicks);
+      last.barUnits = barUnitsForSpan(project, last.startTicks, last.endTicks);
+      continue;
+    }
+    out.push({ ...cur });
+  }
+  return out;
 }
 
 /**
@@ -276,9 +366,43 @@ export function resolveNextPhraseBand(
   subsectionIndex: number;
   subsectionCount: number;
   barChords: string[];
+  rangeStart: number;
+  rangeEnd: number;
 } | null {
   const clips = mergeAkordyWithCountdownDigits(project, displayTicks);
   const section = resolveFormaClipAt(project, displayTicks);
+
+  const bandFromRange = (
+    sectionName: string,
+    sectionId: string,
+    subsectionIndex: number,
+    subsectionCount: number,
+    rangeStart: number,
+    rangeEnd: number,
+  ) => {
+    const spans = chordStepsForTickRange(
+      project,
+      clips,
+      rangeStart,
+      rangeEnd,
+    );
+    const { barChords } = barChordsForRange(
+      project,
+      clips,
+      rangeStart,
+      rangeEnd,
+    );
+    if (spans.length === 0 && !barChords.some((c) => c !== "—")) return null;
+    return {
+      sectionName,
+      sectionId,
+      subsectionIndex,
+      subsectionCount,
+      barChords,
+      rangeStart,
+      rangeEnd,
+    };
+  };
 
   if (!section || section.kind === "countdown") {
     const cd = project.forma.clips.find((c) => c.kind === "countdown");
@@ -291,20 +415,14 @@ export function resolveNextPhraseBand(
     const first = ranges[0]!;
     const rangeStart = nextSec.startTicks + first.startRel;
     const rangeEnd = rangeStart + first.lengthRel;
-    const { barChords } = barChordsForRange(
-      project,
-      clips,
+    return bandFromRange(
+      nextSec.name,
+      nextSec.id,
+      0,
+      ranges.length,
       rangeStart,
       rangeEnd,
     );
-    if (!barChords.some((c) => c !== "—")) return null;
-    return {
-      sectionName: nextSec.name,
-      sectionId: nextSec.id,
-      subsectionIndex: 0,
-      subsectionCount: ranges.length,
-      barChords,
-    };
   }
 
   const ranges = subsectionRanges(section.subsections, section.lengthTicks);
@@ -313,20 +431,14 @@ export function resolveNextPhraseBand(
     const next = ranges[sub.index + 1]!;
     const rangeStart = section.startTicks + next.startRel;
     const rangeEnd = rangeStart + next.lengthRel;
-    const { barChords } = barChordsForRange(
-      project,
-      clips,
+    return bandFromRange(
+      section.name,
+      section.id,
+      next.index,
+      ranges.length,
       rangeStart,
       rangeEnd,
     );
-    if (!barChords.some((c) => c !== "—")) return null;
-    return {
-      sectionName: section.name,
-      sectionId: section.id,
-      subsectionIndex: next.index,
-      subsectionCount: ranges.length,
-      barChords,
-    };
   }
 
   const nextSec = firstNonCountdownAfter(
@@ -338,20 +450,14 @@ export function resolveNextPhraseBand(
   const first = nextRanges[0]!;
   const rangeStart = nextSec.startTicks + first.startRel;
   const rangeEnd = rangeStart + first.lengthRel;
-  const { barChords } = barChordsForRange(
-    project,
-    clips,
+  return bandFromRange(
+    nextSec.name,
+    nextSec.id,
+    0,
+    nextRanges.length,
     rangeStart,
     rangeEnd,
   );
-  if (!barChords.some((c) => c !== "—")) return null;
-  return {
-    sectionName: nextSec.name,
-    sectionId: nextSec.id,
-    subsectionIndex: 0,
-    subsectionCount: nextRanges.length,
-    barChords,
-  };
 }
 
 function cycleWithActive(
@@ -372,28 +478,57 @@ function cycleWithActive(
       bars: step.bars,
       active,
       activeBarInStep: active ? pos - start + 1 : null,
+      isSubBar: step.bars < 1 - 1e-6,
     };
   });
 }
 
-function cyclePreview(steps: { chord: string; bars: number }[]): GridCycleStep[] {
+/** Mark active tile from playhead position within clip spans (not bar-start sampling). */
+export function cycleStepsWithActive(
+  steps: ChordStepSpan[],
+  displayTicks: number,
+): GridCycleStep[] {
+  const t = Math.trunc(displayTicks);
+  return steps.map((step) => {
+    const active = t >= step.startTicks && t < step.endTicks;
+    return {
+      symbol: step.symbol,
+      bars: step.barUnits,
+      active,
+      activeBarInStep: active ? 1 : null,
+      isSubBar: step.barUnits < 1 - 1e-6,
+    };
+  });
+}
+
+function cyclePreview(steps: ChordStepSpan[]): GridCycleStep[] {
+  return steps.map((step) => ({
+    symbol: step.symbol,
+    bars: step.barUnits,
+    active: false,
+    activeBarInStep: null,
+    isSubBar: step.barUnits < 1 - 1e-6,
+  }));
+}
+
+function cyclePreviewFromProgression(
+  steps: { chord: string; bars: number }[],
+): GridCycleStep[] {
   return steps.map((step) => ({
     symbol: step.chord,
     bars: step.bars,
     active: false,
     activeBarInStep: null,
+    isSubBar: step.bars < 1 - 1e-6,
   }));
 }
 
 /**
- * Next hero chord — port of legacy getNextCycleChordInfo / phrase next cell.
- * Within cycle → next step; last step mid-subsection → wrap; end of band → next row.
+ * Next hero chord — within the active row, then upcoming phrase row.
  */
 export function resolveHeroNextSymbol(
   cycle: GridCycleStep[],
   nextCycle: GridCycleStep[],
-  barIndexInSection: number,
-  totalBarsInSubsection: number,
 ): string | null {
   if (cycle.length === 0) {
     return nextCycle[0]?.symbol ?? null;
@@ -402,13 +537,10 @@ export function resolveHeroNextSymbol(
   if (activeIdx >= 0 && activeIdx + 1 < cycle.length) {
     return cycle[activeIdx + 1]!.symbol;
   }
-  const onLastBarOfBand =
-    totalBarsInSubsection > 0 &&
-    barIndexInSection >= totalBarsInSubsection - 1;
-  if (!onLastBarOfBand && cycle.length > 0) {
-    return cycle[0]!.symbol;
+  if (activeIdx >= 0) {
+    return nextCycle[0]?.symbol ?? null;
   }
-  return nextCycle[0]?.symbol ?? null;
+  return nextCycle[0]?.symbol ?? cycle[0]?.symbol ?? null;
 }
 
 /**
@@ -421,8 +553,9 @@ export function cycleGridTemplateColumns(
   if (steps.length === 0) return "";
   return steps
     .map((s) => {
-      const bars = Number.isFinite(s.bars) ? Math.max(1, Math.round(s.bars)) : 1;
-      return `${bars}fr`;
+      const units =
+        Number.isFinite(s.bars) && s.bars > 0 ? s.bars : 1;
+      return `${units}fr`;
     })
     .join(" ");
 }
@@ -430,7 +563,8 @@ export function cycleGridTemplateColumns(
 /** Sum of bar units in the cycle — drives proportional tile columns. */
 export function cycleTotalBars(cycle: readonly GridCycleStep[]): number {
   return cycle.reduce((sum, step) => {
-    const bars = Number.isFinite(step.bars) ? Math.max(0, step.bars) : 0;
+    const bars =
+      Number.isFinite(step.bars) && step.bars > 0 ? step.bars : 0;
     return sum + bars;
   }, 0);
 }
@@ -482,9 +616,19 @@ export function buildGridLiveContext(
   const nextBand = resolveNextPhraseBand(project, displayTicks);
 
   let cycle: GridCycleStep[] = [];
-  if (sectionInfo && sectionInfo.barChords.some((c) => c !== "—")) {
-    const steps = progressionForBarChords(sectionInfo.barChords);
-    cycle = cycleWithActive(steps, sectionInfo.barIndexInSection);
+  if (sectionInfo) {
+    const spans = chordStepsForTickRange(
+      project,
+      clips,
+      sectionInfo.rangeStart,
+      sectionInfo.rangeEnd,
+    );
+    if (spans.length > 0) {
+      cycle = cycleStepsWithActive(spans, displayTicks);
+    } else if (sectionInfo.barChords.some((c) => c !== "—")) {
+      const steps = progressionForBarChords(sectionInfo.barChords);
+      cycle = cycleWithActive(steps, sectionInfo.barIndexInSection);
+    }
   } else if (countdownPreview && current) {
     // Single active CD digit tile so hero/active still have a row identity.
     cycle = [
@@ -497,23 +641,32 @@ export function buildGridLiveContext(
     ];
   }
 
-  const nextCycle = nextBand
-    ? cyclePreview(progressionForBarChords(nextBand.barChords))
-    : [];
+  const nextSpans =
+    nextBand != null
+      ? chordStepsForTickRange(
+          project,
+          clips,
+          nextBand.rangeStart,
+          nextBand.rangeEnd,
+        )
+      : [];
+  const nextCycle =
+    nextSpans.length > 0
+      ? cyclePreview(nextSpans)
+      : nextBand
+        ? cyclePreviewFromProgression(
+            progressionForBarChords(nextBand.barChords),
+          )
+        : [];
 
   const hero =
-    cycle.find((s) => s.active)?.symbol ??
-    current?.symbol ??
-    "—";
+    current?.symbol?.trim() && current.symbol !== "—"
+      ? current.symbol
+      : cycle.find((s) => s.active)?.symbol ?? "—";
 
   const heroNext = countdownPreview
     ? upcoming[0]?.symbol ?? nextCycle[0]?.symbol ?? null
-    : resolveHeroNextSymbol(
-        cycle,
-        nextCycle,
-        sectionInfo?.barIndexInSection ?? 0,
-        sectionInfo?.totalBarsInSubsection ?? 0,
-      );
+    : resolveHeroNextSymbol(cycle, nextCycle);
 
   const carouselKey = countdownPreview
     ? `cd:${section?.id ?? "cd"}`

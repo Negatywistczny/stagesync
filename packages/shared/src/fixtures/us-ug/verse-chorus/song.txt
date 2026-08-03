@@ -1,0 +1,18 @@
+#TITLE:Verse Chorus
+#ARTIST:Fixture
+#BPM:400
+#GAP:1000
+: 0 4 0 I 
+: 8 4 0 hear 
+: 16 4 0 the 
+: 24 4 0 drums 
+-
+: 64 4 0 Echoing 
+: 80 4 0 tonight 
+-
+: 128 4 0 Its 
+: 136 4 0 gonna 
+: 148 4 0 take 
+: 160 4 0 a 
+: 168 4 0 lot 
+E

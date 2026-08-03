@@ -222,6 +222,19 @@ export function resolveMoveIds(
   return [dragClipId];
 }
 
+/**
+ * Forma post-move selection: TE-24 cascade companions move with the drag but must not
+ * become selected. Expand to `moveIds` only after an explicit multi-select gesture.
+ */
+export function selectionIdsAfterFormaMove(
+  clipId: string,
+  moveIds: string[],
+  explicitMulti: boolean,
+): string[] {
+  if (explicitMulti && moveIds.length > 0) return [...moveIds];
+  return [clipId];
+}
+
 export function isMultiSelectClick(e: {
   metaKey?: boolean;
   ctrlKey?: boolean;

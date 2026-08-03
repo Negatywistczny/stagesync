@@ -3,7 +3,7 @@
  * Provider stays a thin adapter over these reducers.
  */
 
-import type { TransportAnchor, TransportState } from "@stagesync/shared";
+import type { TempoMapProject, TransportAnchor, TransportState } from "@stagesync/shared";
 import type { LiveDeskState, SetlistSnapshotState, StageCue } from "./transportContext.js";
 
 const MAX_LATENCY_MS = 60_000;
@@ -13,12 +13,16 @@ export function formatTransportError(err: unknown, fallback: string): string {
   return message.slice(0, 500);
 }
 
-export function toTransportAnchor(state: TransportState): TransportAnchor {
+export function toTransportAnchor(
+  state: TransportState,
+  tempoMaps?: TempoMapProject | null,
+): TransportAnchor {
   return {
     positionTicks: state.positionTicks,
     bpm: state.bpm,
     timeSignature: state.timeSignature,
     ppq: state.ppq,
+    ...(tempoMaps ? { tempoMaps } : {}),
   };
 }
 

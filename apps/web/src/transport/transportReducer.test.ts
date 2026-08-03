@@ -35,6 +35,19 @@ describe("transportReducer", () => {
     });
   });
 
+  it("toTransportAnchor attaches optional tempoMaps", () => {
+    const state = defaultTransportState();
+    const maps = {
+      defaultBpm: 120,
+      defaultMeter: { numerator: 4, denominator: 4 },
+      tempoMap: [{ id: "t0", startTicks: 0, bpm: 100 }],
+      meterMap: [],
+      ppq: state.ppq,
+    };
+    expect(toTransportAnchor(state, maps).tempoMaps).toBe(maps);
+    expect(toTransportAnchor(state, null).tempoMaps).toBeUndefined();
+  });
+
   it("noteLatencySample clamps and EMAs", () => {
     expect(noteLatencySample(0, 1_000, 1_000_060_000)).toBe(60_000);
     const next = noteLatencySample(50_000, 1_000, 1_010_000);
