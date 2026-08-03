@@ -19,20 +19,21 @@ vi.mock("../../lib/desktopBridge.js", () => ({
   isDesktopShell: () => false,
 }));
 
-vi.mock("../../lib/setlistApi.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../lib/setlistApi.js")>();
+/** Sync mock — async importOriginal can race under coverage and leave real fetch hanging. */
+const setlistMocks = vi.hoisted(() => {
+  const networkInfo = {
+    port: 8787,
+    hostname: "stage",
+    lanAddresses: ["192.168.1.10"],
+    urls: ["http://192.168.1.10:8787", "http://localhost:8787"],
+    version: "5.2.3",
+    mdnsEnabled: true,
+  };
   return {
-    ...actual,
+    networkInfo,
     clearHostLogs: vi.fn(async () => undefined),
     downloadDiagnosticsExport: vi.fn(async () => undefined),
-    fetchNetworkInfo: vi.fn(async () => ({
-      port: 8787,
-      hostname: "stage",
-      lanAddresses: ["192.168.1.10"],
-      urls: ["http://192.168.1.10:8787", "http://localhost:8787"],
-      version: "5.2.3",
-      mdnsEnabled: true,
-    })),
+    fetchNetworkInfo: vi.fn(async () => networkInfo),
     fetchMidiHostStatus: vi.fn(async () => ({
       available: false,
       backend: "none",
@@ -62,15 +63,64 @@ vi.mock("../../lib/setlistApi.js", async (importOriginal) => {
       role: "master",
       midiOutAllowed: true,
     })),
-    apkDownloadUrlsFromJoin: () => ({
-      performer: "http://192.168.1.10:8787/downloads/stagesync-performer.apk",
-      console: "http://192.168.1.10:8787/downloads/stagesync-console.apk",
-    }),
     probeApkAvailable: vi.fn(async () => true),
     postApplyHostUpdate: vi.fn(async () => undefined),
     postSafetyNetPromote: vi.fn(async () => undefined),
   };
 });
+
+vi.mock("../../lib/setlistApi.js", () => ({
+  clearHostLogs: setlistMocks.clearHostLogs,
+  downloadDiagnosticsExport: setlistMocks.downloadDiagnosticsExport,
+  fetchNetworkInfo: setlistMocks.fetchNetworkInfo,
+  fetchMidiHostStatus: setlistMocks.fetchMidiHostStatus,
+  fetchHostUpdateStatus: setlistMocks.fetchHostUpdateStatus,
+  fetchSafetyNetStatus: setlistMocks.fetchSafetyNetStatus,
+  probeApkAvailable: setlistMocks.probeApkAvailable,
+  postApplyHostUpdate: setlistMocks.postApplyHostUpdate,
+  postSafetyNetPromote: setlistMocks.postSafetyNetPromote,
+  pickPrimaryJoinUrl: (info: {
+    lanAddresses: string[];
+    port: number;
+    urls: string[];
+  }) => {
+    const lan = info.lanAddresses[0];
+    if (lan) return `http://${lan}:${info.port}`;
+    return info.urls[0] ?? null;
+  },
+  networkDisplayUrls: (info: {
+    port: number;
+    hostname: string;
+    urls: string[];
+    mdnsEnabled?: boolean;
+  }) => {
+    if (info.mdnsEnabled !== true) return info.urls;
+    const host = info.hostname.trim();
+    if (!host || host === "localhost" || host === "127.0.0.1") return info.urls;
+    const mdns = `http://${host}.local:${info.port}`;
+    if (info.urls.includes(mdns)) return info.urls;
+    const localhostIdx = info.urls.findIndex((u) =>
+      /localhost|127\.0\.0\.1/i.test(u),
+    );
+    if (localhostIdx < 0) return [...info.urls, mdns];
+    return [
+      ...info.urls.slice(0, localhostIdx),
+      mdns,
+      ...info.urls.slice(localhostIdx),
+    ];
+  },
+  apkDownloadUrlsFromJoin: (join: string) => {
+    try {
+      const origin = new URL(join).origin;
+      return {
+        performer: `${origin}/downloads/stagesync-performer.apk`,
+        console: `${origin}/downloads/stagesync-console.apk`,
+      };
+    } catch {
+      return null;
+    }
+  },
+}));
 
 import { SystemView } from "./SystemView.js";
 
@@ -80,6 +130,13 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  setlistMocks.fetchNetworkInfo.mockResolvedValue(setlistMocks.networkInfo);
+  setlistMocks.probeApkAvailable.mockResolvedValue(true);
+  setlistMocks.fetchHostUpdateStatus.mockResolvedValue({
+    current: "5.2.3",
+    latest: null,
+    updateAvailable: false,
+  });
   vi.stubGlobal(
     "matchMedia",
     (query: string) => ({
@@ -226,8 +283,7 @@ describe("SystemView APK download aria", () => {
   });
 
   it("hides Aktualizuj host when update exists but Watchtower apply is unavailable", async () => {
-    const { fetchHostUpdateStatus } = await import("../../lib/setlistApi.js");
-    vi.mocked(fetchHostUpdateStatus).mockResolvedValueOnce({
+    setlistMocks.fetchHostUpdateStatus.mockResolvedValueOnce({
       current: "5.2.5",
       latest: "5.2.6",
       updateAvailable: true,
