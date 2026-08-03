@@ -1536,7 +1536,6 @@ export function TimelineShell() {
     seek,
     soloAudioTrackIds,
     soloBusIds,
-    state.bpm,
     state.positionTicks,
     state.ppq,
     state.timeSignature,
