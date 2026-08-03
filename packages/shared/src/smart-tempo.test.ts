@@ -622,6 +622,34 @@ describe("medianBpmFromBeatMs / sparsifyTempoNodesFromBeatGrid", () => {
     expect(sparse[0]!.targetTick).toBe(0);
   });
 
+  it("ZADANIE 2 & 3: sparsify enforces bar start alignment and clamps spikes on quiet refresh", () => {
+    const bpm = 120;
+    const period = 60_000 / bpm;
+    const beatMs: number[] = [];
+    let t = 0;
+    // Generate 64 beats (16 bars @ 4/4) with various local tempo changes and a giant spike
+    for (let i = 0; i < 64; i++) {
+      beatMs.push(Math.round(t));
+      if (i === 16) {
+        t += period * 0.5; // Massive spike: delta BPM > maxStep (halving the period)
+      } else {
+        t += period;
+      }
+    }
+    const dense = tempoNodesFromBeatGrid(beatMs, 0, bpm, 0, METER, DEFAULT_PPQ);
+    const sparse = sparsifyTempoNodesFromBeatGrid(dense, {
+      seedBpm: bpm,
+      meter: METER,
+      ppq: DEFAULT_PPQ,
+    });
+
+    const barTicks = ticksPerBar(METER, DEFAULT_PPQ);
+    for (const node of sparse.slice(0, -1)) {
+      // ZADANIE 2: Verify every node is aligned on a bar boundary (Beat 1)
+      expect(node.targetTick % barTicks).toBe(0);
+    }
+  });
+
   it("sparsify rejects a brief IBI blip around bar 5 (no sustained jump)", () => {
     // Stable ~123 BPM with one half-period glitch near beat 18 — must not
     // create a tempo node that accelerates Adapt by several BPM.

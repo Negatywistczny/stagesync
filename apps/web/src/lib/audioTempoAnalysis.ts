@@ -16,13 +16,13 @@ import {
 } from "./memoryPressure.js";
 
 const FRAME_SIZE = 1024;
-const BASE_HOP_SIZE = 512;
+const BASE_HOP_SIZE = 256;
 const ONSET_THRESHOLD = 0.02;
 const MIN_BPM = 60;
 const MAX_BPM = 200;
 
 /** First N seconds scanned for onset / BPM detection (UI path). */
-export const DEFAULT_MAX_ANALYSIS_SEC = 30;
+export const DEFAULT_MAX_ANALYSIS_SEC = 120;
 /** Hard stop so import never hangs on analysis. */
 export const DEFAULT_ANALYSIS_TIMEOUT_MS = 3_500;
 const DEFAULT_DOWNSAMPLE = 6;
@@ -83,7 +83,7 @@ export function buildImportTempoAnalysisOptions(opts?: {
   // duration is not yet known.
   const maxAnalysisSec = Math.min(
     480,
-    Math.max(120, durationSec, gapSec + barSec * 32),
+    Math.max(180, durationSec, gapSec + barSec * 32),
   );
   return {
     maxAnalysisSec,
@@ -112,9 +112,28 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
 
 function effectiveHopSize(monoLength: number): number {
   const hops = Math.ceil(monoLength / BASE_HOP_SIZE);
-  if (hops <= 4_000) return BASE_HOP_SIZE;
-  if (hops <= 8_000) return BASE_HOP_SIZE * 2;
+  if (hops <= 8_000) return BASE_HOP_SIZE;
+  if (hops <= 16_000) return BASE_HOP_SIZE * 2;
   return BASE_HOP_SIZE * 4;
+}
+
+/**
+ * Cap hop for ACF BPM search. Onset picking may use a coarser hop on long
+ * files, but integer-lag ACF must resolve mid-tempo: with hop·downsample that
+ * yields ~46 ms/lag, ~123 BPM falls between lag N≈129 and N+1≈117 — parabolic
+ * interp cannot invent a ridge that never appears as a local max. Target
+ * ≈≤2.5 BPM lag quantum around 120 (≳40 lags per quarter-note period).
+ */
+const ACF_MAX_HOP_SIZE = 512;
+/** Minimum lags per beat period @ 120 BPM for ACF lag search. */
+const ACF_MIN_LAGS_PER_BEAT = 40;
+
+function acfHopSize(onsetHop: number, sampleRate: number): number {
+  const maxForResolution = Math.max(
+    64,
+    Math.floor(sampleRate / ACF_MIN_LAGS_PER_BEAT),
+  );
+  return Math.min(onsetHop, maxForResolution, ACF_MAX_HOP_SIZE);
 }
 
 function mixToMonoCapped(
@@ -221,7 +240,7 @@ function pickOnsetsFromFlux(
 
 /**
  * Autocorrelation peak-picking on onset strength → BPM in [MIN_BPM, MAX_BPM].
- * Prefers the peak nearest `seedHint` when several octave candidates score well.
+ * Prefers the peak nearest `seedHint` when several candidates score comparably.
  */
 export function estimateBpmFromOnsetStrength(
   flux: Float32Array,
@@ -229,7 +248,21 @@ export function estimateBpmFromOnsetStrength(
   hopSize: number,
   seedHint?: number,
 ): number {
-  if (flux.length < 8) return 0;
+  return estimateBpmFromOnsetStrengthDetailed(
+    flux,
+    sampleRate,
+    hopSize,
+    seedHint,
+  ).bpm;
+}
+
+function estimateBpmFromOnsetStrengthDetailed(
+  flux: Float32Array,
+  sampleRate: number,
+  hopSize: number,
+  seedHint?: number,
+): AcfEstimateResult {
+  if (flux.length < 8) return { bpm: 0, competitorBpms: [] };
   let mean = 0;
   for (let i = 0; i < flux.length; i++) mean += flux[i] ?? 0;
   mean /= flux.length;
@@ -243,7 +276,7 @@ export function estimateBpmFromOnsetStrength(
     flux.length - 1,
     Math.round(((60 / MIN_BPM) * sampleRate) / hopSize),
   );
-  if (maxLag <= minLag) return 0;
+  if (maxLag <= minLag) return { bpm: 0, competitorBpms: [] };
 
   type Peak = { lag: number; score: number; bpm: number };
   const peaks: Peak[] = [];
@@ -270,7 +303,7 @@ export function estimateBpmFromOnsetStrength(
     }
   }
   peaks.sort((a, b) => b.score - a.score);
-  if (peaks.length === 0) return 0;
+  if (peaks.length === 0) return { bpm: 0, competitorBpms: [] };
 
   // Parabolic interpolation around the strongest integer lag for sub-lag BPM.
   const refineLagBpm = (lag: number, scoreAtLag: number): number => {
@@ -308,46 +341,198 @@ export function estimateBpmFromOnsetStrength(
     return (60 * sampleRate) / (refinedLag * hopSize);
   };
 
-  const top = peaks.slice(0, 8);
-  if (top.length === 0) return 0;
+  // Keep more raw peaks so a secondary ridge near seed can compete — reconcile
+  // still requires comparable metric (weak near-seed ghosts must not win).
+  const top = peaks.slice(0, 16);
+  if (top.length === 0) return { bpm: 0, competitorBpms: [] };
 
-  type Cand = { bpm: number; score: number; lag: number };
-  const cands: Cand[] = [];
+  type Cand = {
+    bpm: number;
+    score: number;
+    lag: number;
+    /** Derived via ×0.5/×2 — not a real ACF lag peak. */
+    octaveMate: boolean;
+  };
+  const realPeaks: Cand[] = [];
   for (const p of top) {
     const refined = refineLagBpm(p.lag, p.score);
-    cands.push({ bpm: refined, score: p.score, lag: p.lag });
+    realPeaks.push({
+      bpm: refined,
+      score: p.score,
+      lag: p.lag,
+      octaveMate: false,
+    });
+  }
+  const cands: Cand[] = [...realPeaks];
+  for (const p of realPeaks) {
     for (const factor of [0.5, 2] as const) {
-      const bpm = refined * factor;
+      const bpm = p.bpm * factor;
       if (bpm < MIN_BPM || bpm > MAX_BPM) continue;
-      // Octave mates keep most of the lag score; musical prior decides.
-      cands.push({ bpm, score: p.score * 0.9, lag: p.lag });
+      // Promote octave mate only when a real secondary peak exists near that
+      // period (relative 4%) — invented ×2 without lag evidence stays out.
+      const hasRealNear = realPeaks.some(
+        (r) => Math.abs(r.bpm - bpm) / bpm <= ACF_OCTAVE_MATE_REL,
+      );
+      if (!hasRealNear) continue;
+      cands.push({
+        bpm,
+        score: p.score * ACF_OCTAVE_MATE_SCORE_SCALE,
+        lag: p.lag,
+        octaveMate: true,
+      });
     }
   }
 
-  /** Soft prior: prefer pop/dance musical octave (~110–135), not half-time. */
-  const musicalPrior = (bpm: number): number => {
-    const center = 121;
-    const diff = bpm - center;
-    const gauss = Math.exp(-0.5 * (diff / 15) ** 2);
-    return Math.max(0.45, gauss);
-  };
+  return pickBestAcfBpmDetailed(cands, seedHint);
+}
 
-  let best = cands[0]!;
-  let bestMetric = -Infinity;
-  for (const c of cands) {
-    let metric = c.score * musicalPrior(c.bpm);
-    // Optional soft hint (pipe ~120). Must not dominate — never snap to hint.
+/**
+ * Soft octave prior around the conventional mid-tempo default (same as
+ * {@link DEFAULT_RESULT}.estimatedBpm). Wide σ — only weakly down-weights
+ * half-time vs full; never a song-specific band.
+ */
+function musicalPriorBpm(bpm: number): number {
+  const center = 120;
+  const diff = bpm - center;
+  const gauss = Math.exp(-0.5 * (diff / 18) ** 2);
+  return Math.max(0.45, gauss);
+}
+
+export type AcfPeakCandidate = {
+  bpm: number;
+  score: number;
+  lag?: number;
+  octaveMate?: boolean;
+};
+
+export type AcfEstimateResult = {
+  bpm: number;
+  /** Other real ACF peaks (same scan) for reconcile competition. */
+  competitorBpms: number[];
+};
+
+/** Relative score floor for “competitive” ACF peaks (within ~12% of best). */
+const ACF_COMPARABLE_METRIC_RATIO = 0.88;
+/** Soft seed pull applies within ±20% of seed. */
+const ACF_SEED_SOFT_RADIUS = 0.2;
+/** Extra metric weight for proximity to seed inside that radius. */
+const ACF_SEED_DIST_WEIGHT = 0.35;
+/** Real-peak proximity required before promoting an octave mate. */
+const ACF_OCTAVE_MATE_REL = 0.04;
+const ACF_OCTAVE_MATE_SCORE_SCALE = 0.85;
+
+/**
+ * Choose among ACF peaks. When several real peaks have comparable metrics,
+ * prefer the one nearer `seedHint` (else mid-tempo prior) — not raw max alone.
+ */
+export function pickBestAcfBpm(
+  candidates: readonly AcfPeakCandidate[],
+  seedHint?: number,
+): number {
+  return pickBestAcfBpmDetailed(candidates, seedHint).bpm;
+}
+
+function pickBestAcfBpmDetailed(
+  candidates: readonly AcfPeakCandidate[],
+  seedHint?: number,
+): AcfEstimateResult {
+  if (candidates.length === 0) return { bpm: 0, competitorBpms: [] };
+
+  const scored = candidates.map((c) => {
+    let metric = c.score * musicalPriorBpm(c.bpm);
+    if (c.octaveMate) metric *= 0.92;
     if (seedHint != null && seedHint > 0) {
       const dist = Math.abs(c.bpm - seedHint) / seedHint;
-      if (dist <= 0.2) metric *= 1 - dist * 0.2;
+      if (dist <= ACF_SEED_SOFT_RADIUS) {
+        metric *= 1 - dist * ACF_SEED_DIST_WEIGHT;
+      }
     }
-    if (metric > bestMetric) {
-      best = c;
-      bestMetric = metric;
-    }
+    return { ...c, metric };
+  });
+
+  scored.sort((a, b) => b.metric - a.metric);
+
+  console.log("[SMART TEMPO DIAGNOSTICS] Top 5 szczytów ACF (po prior + seed):");
+  console.table(
+    scored.slice(0, 5).map((c) => ({
+      BPM: c.bpm.toFixed(2),
+      "Surowy Score": c.score.toFixed(4),
+      Metric: c.metric.toFixed(4),
+      OctaveMate: c.octaveMate ? "tak" : "nie",
+      Lag: c.lag ?? "—",
+    })),
+  );
+
+  let best = scored[0]!;
+  const anchor = seedHint != null && seedHint > 0 ? seedHint : 120;
+  const comparable = scored.filter(
+    (c) =>
+      c.metric >= best.metric * ACF_COMPARABLE_METRIC_RATIO && !c.octaveMate,
+  );
+  if (comparable.length >= 2) {
+    best = comparable.reduce((a, b) =>
+      Math.abs(a.bpm - anchor) <= Math.abs(b.bpm - anchor) ? a : b,
+    );
   }
 
-  return Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, best.bpm)) * 100) / 100;
+  const finalAcfBpm =
+    Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, best.bpm)) * 100) / 100;
+  // Only comparable-strength real peaks may challenge the winner in reconcile —
+  // a weak lag ghost near the seed (classic ~112 after coarse-hop skip) must not.
+  const competitorBpms = scored
+    .filter(
+      (c) =>
+        !c.octaveMate &&
+        c.metric >= best.metric * ACF_COMPARABLE_METRIC_RATIO &&
+        Math.abs(c.bpm - finalAcfBpm) >= 0.5,
+    )
+    .map(
+      (c) =>
+        Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, c.bpm)) * 100) / 100,
+    )
+    .slice(0, 5);
+
+  if (
+    seedHint != null &&
+    seedHint > 0 &&
+    Math.abs(finalAcfBpm - seedHint) / seedHint > 0.05
+  ) {
+    const nearSeed = scored.filter(
+      (c) =>
+        !c.octaveMate &&
+        Math.abs(c.bpm - seedHint) / seedHint <= ACF_SEED_SOFT_RADIUS,
+    );
+    console.log(
+      `[SMART TEMPO DIAGNOSTICS] ACF vs seed: wybrany ${finalAcfBpm.toFixed(2)} ` +
+        `(Δ ${(((finalAcfBpm - seedHint) / seedHint) * 100).toFixed(1)}%); ` +
+        `szczyty w ±20% seeda: ${
+          nearSeed.length === 0
+            ? "brak (rozdzielczość lagu / downsample — nie wymyślamy BPM)"
+            : nearSeed
+                .slice(0, 5)
+                .map(
+                  (c) =>
+                    `${c.bpm.toFixed(1)}@${c.metric.toFixed(3)}${
+                      c.metric >= best.metric * ACF_COMPARABLE_METRIC_RATIO
+                        ? ""
+                        : " weak"
+                    }`,
+                )
+                .join(", ")
+        }`,
+    );
+  }
+
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsetStrength -> wybrany peak ACF: ${finalAcfBpm.toFixed(2)} BPM` +
+      (seedHint != null && seedHint > 0
+        ? ` (seedHint ${seedHint.toFixed(2)})`
+        : "") +
+      (competitorBpms.length > 0
+        ? `; konkurenci porównywalni: ${competitorBpms.map((b) => b.toFixed(2)).join(", ")}`
+        : "; brak porównywalnych konkurentów"),
+  );
+  return { bpm: finalAcfBpm, competitorBpms };
 }
 
 function estimateBpmFromOnsets(onsetsMs: readonly number[]): number {
@@ -361,52 +546,160 @@ function estimateBpmFromOnsets(onsetsMs: readonly number[]): number {
   intervals.sort((a, b) => a - b);
   const median = intervals[Math.floor(intervals.length / 2)]!;
   const bpm = 60_000 / median;
-  return Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
+  const finalBpm =
+    Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsets (IBI) -> Mediana IBI: ${median.toFixed(1)} ms, Wyliczone surowe BPM: ${finalBpm.toFixed(2)}`,
+  );
+  return finalBpm;
 }
+
+/** Histogram bin width for pairwise inter-onset periods (ms). */
+const ONSET_PERIOD_HIST_BIN_MS = 10;
+/** Min pairwise samples in the peak bin before trusting the histogram. */
+const ONSET_PERIOD_HIST_MIN_COUNT = 3;
+/**
+ * If consecutive-onset BPM is ≥ this factor × histogram BPM, treat consecutive
+ * IBI as subdivision and prefer the histogram period (general octave rule).
+ */
+const ONSET_SUBDIVISION_RATIO = 1.6;
+
+/**
+ * Dominant beat period from a pairwise onset-interval histogram over the full
+ * legal BPM range — not adjacent IBI alone (syllables/fills → false double-time).
+ */
+export function estimateBpmFromOnsetPeriodHistogram(
+  onsetsMs: readonly number[],
+): number {
+  if (onsetsMs.length < 4) return 0;
+  const minPeriod = 60_000 / MAX_BPM;
+  const maxPeriod = 60_000 / MIN_BPM;
+  const binCount = Math.floor((maxPeriod - minPeriod) / ONSET_PERIOD_HIST_BIN_MS) + 1;
+  const counts = new Int32Array(binCount);
+  const sums = new Float64Array(binCount);
+
+  for (let i = 0; i < onsetsMs.length; i++) {
+    const t0 = onsetsMs[i]!;
+    for (let j = i + 1; j < Math.min(i + 8, onsetsMs.length); j++) {
+      const dt = onsetsMs[j]! - t0;
+      if (dt > maxPeriod) break;
+      if (dt < minPeriod) continue;
+      const bi = Math.min(
+        binCount - 1,
+        Math.max(0, Math.floor((dt - minPeriod) / ONSET_PERIOD_HIST_BIN_MS)),
+      );
+      counts[bi]! += 1;
+      sums[bi]! += dt;
+    }
+  }
+
+  let bestBin = -1;
+  let bestCount = 0;
+  for (let b = 0; b < binCount; b++) {
+    if ((counts[b] ?? 0) > bestCount) {
+      bestCount = counts[b]!;
+      bestBin = b;
+    }
+  }
+  if (bestBin < 0 || bestCount < ONSET_PERIOD_HIST_MIN_COUNT) return 0;
+
+  const medianPeriod = sums[bestBin]! / counts[bestBin]!;
+  const bpm = 60_000 / medianPeriod;
+  const finalBpm =
+    Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsetPeriodHistogram -> okres ${medianPeriod.toFixed(1)} ms → ${finalBpm.toFixed(2)} BPM (n=${bestCount})`,
+  );
+  return finalBpm;
+}
+
+/** Relative disagreement vs seed in the same octave before consulting competitors. */
+const RECONCILE_SEED_REL_TOL = 0.06;
+/** Competing peak must still be within this relative distance of seed. */
+const RECONCILE_COMPETITOR_SEED_REL = 0.08;
+/**
+ * Competing peak must also stay near the ACF winner (same musical reading).
+ * Blocks weak near-seed ghosts (~112 when ACF≈128) that invent a "compromise".
+ */
+const RECONCILE_COMPETITOR_ACF_REL = 0.1;
 
 /**
  * Prefer audio-derived BPM. `seedBpm` is only an octave / weak-confidence hint
  * (e.g. UltraStar header) — it must **not** replace a confident audio peak with
- * an editorial pipe+GAP formula (that invented ~113 BPM instead of Adapt).
+ * an editorial pipe+GAP formula.
  *
- * Half-time ACF peaks (~60–75) are folded to the musical octave when a seed is
- * near 2× or when the doubled value sits in the common pop range (~110–160).
+ * Half/double-time peaks fold via octave factors. Same-octave ACF that diverges
+ * >{@link RECONCILE_SEED_REL_TOL} from seed yields to a competing candidate
+ * nearer the seed when one is supplied — never a hardcoded BPM window.
  */
 export function reconcileEstimatedBpm(
   estimated: number,
   seedBpm: number | undefined,
   onsetCount: number,
+  competingBpms?: readonly number[],
 ): number {
   const fallback = seedBpm != null && seedBpm > 0 ? seedBpm : 120;
-  if (!(estimated > 0)) return fallback;
+  let finalResult = fallback;
+  let reason = "fallback";
+  if (!(estimated > 0)) {
+    console.log(
+      `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated.toFixed(2)}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, ostateczny wynik: ${fallback.toFixed(2)} (powód: brak ACF → seed/fallback)`,
+    );
+    return fallback;
+  }
 
-  const normalizeToSeed = (bpm: number): number | null => {
+  const normalizeToSeed = (
+    bpm: number,
+  ): { value: number; sameOctave: boolean } | null => {
     if (!(seedBpm != null && seedBpm > 0)) return null;
     for (const factor of [1, 0.5, 2] as const) {
       const candidate = bpm * factor;
       const ratio = candidate / seedBpm;
       if (ratio >= 1 / 1.2 && ratio <= 1.2) {
-        // Same octave: keep the audio peak. Cross-octave: use the hint as
-        // octave center (not 2× a half-time peak → e.g. 64×2=128 vs true ~123).
-        return factor === 1 ? bpm : seedBpm;
+        return {
+          value: factor === 1 ? bpm : seedBpm,
+          sameOctave: factor === 1,
+        };
       }
     }
     return null;
   };
 
-  /** Fold obvious half/double-time ACF errors using audio evidence only. */
+  /** Fold obvious half/double-time ACF errors using octave evidence only. */
   const preferMusicalOctave = (bpm: number): number => {
     if (bpm >= 55 && bpm < 80) {
       const doubled = bpm * 2;
-      // Only fold into the tight pop band — avoid landing on US-metro ~127.5
-      // from a blind 64×2 when true Adapt is ~122–124.
-      if (doubled >= 115 && doubled <= 130) return doubled;
+      if (doubled >= MIN_BPM && doubled <= MAX_BPM) {
+        // Prefer seed as octave center when present (handled by normalize);
+        // without seed, only fold when 2× stays in a mid-tempo prior band.
+        if (doubled >= 100 && doubled <= 160) return doubled;
+      }
     }
     if (bpm > 160 && bpm <= MAX_BPM) {
       const halved = bpm / 2;
-      if (halved >= 100 && halved <= 140) return halved;
+      if (halved >= 80 && halved <= 140) return halved;
     }
     return bpm;
+  };
+
+  const pickNearerCompetitor = (seed: number, acf: number): number | null => {
+    if (!competingBpms || competingBpms.length === 0) return null;
+    let best: number | null = null;
+    let bestDist = Math.abs(acf - seed);
+    for (const c of competingBpms) {
+      if (!(c > 0)) continue;
+      const dist = Math.abs(c - seed);
+      const acfRel = Math.abs(c - acf) / acf;
+      if (
+        dist < bestDist &&
+        dist / seed <= RECONCILE_COMPETITOR_SEED_REL &&
+        acfRel <= RECONCILE_COMPETITOR_ACF_REL
+      ) {
+        best = c;
+        bestDist = dist;
+      }
+    }
+    return best;
   };
 
   const lowConfidence =
@@ -414,21 +707,51 @@ export function reconcileEstimatedBpm(
     (onsetCount === 0 && (estimated === 120 || estimated === 0));
 
   if (lowConfidence) {
-    return Math.round(fallback * 100) / 100;
+    finalResult = Math.round(fallback * 100) / 100;
+    reason = "niska pewność onsetów → seed/fallback";
+  } else if (!(seedBpm != null && seedBpm > 0)) {
+    finalResult = Math.round(preferMusicalOctave(estimated) * 100) / 100;
+    reason = "brak seeda → ACF (+ oktawa muzyczna)";
+  } else {
+    const normalized = normalizeToSeed(estimated);
+    if (normalized != null) {
+      let chosen = normalized.value;
+      reason = normalized.sameOctave
+        ? "ACF w tej samej oktawie co seed"
+        : "ACF half/double → seed jako środek oktawy";
+      if (normalized.sameOctave) {
+        const rel = Math.abs(estimated - seedBpm) / seedBpm;
+        if (rel > RECONCILE_SEED_REL_TOL) {
+          const nearer = pickNearerCompetitor(seedBpm, estimated);
+          if (nearer != null) {
+            chosen = nearer;
+            reason = `konkurent bliżej seeda (${nearer.toFixed(2)}; ACF Δ>${(
+              RECONCILE_SEED_REL_TOL * 100
+            ).toFixed(0)}%, nadal w ±${(
+              RECONCILE_COMPETITOR_ACF_REL * 100
+            ).toFixed(0)}% ACF)`;
+          } else {
+            reason = `ACF trzymany (Δ seed ${(rel * 100).toFixed(1)}%; brak silnego konkurenta w ±${(
+              RECONCILE_COMPETITOR_SEED_REL * 100
+            ).toFixed(0)}% seeda i ±${(
+              RECONCILE_COMPETITOR_ACF_REL * 100
+            ).toFixed(0)}% ACF; comps=[${(competingBpms ?? [])
+              .map((b) => b.toFixed(2))
+              .join(", ")}])`;
+          }
+        }
+      }
+      finalResult = Math.round(chosen * 100) / 100;
+    } else {
+      finalResult = Math.round(preferMusicalOctave(estimated) * 100) / 100;
+      reason = "ACF poza oktawą seeda → oktawa muzyczna";
+    }
   }
 
-  if (!(seedBpm != null && seedBpm > 0)) {
-    return Math.round(preferMusicalOctave(estimated) * 100) / 100;
-  }
-
-  const normalized = normalizeToSeed(estimated);
-  // Keep audio (octave-folded toward hint if needed) — never overwrite with seed.
-  if (normalized != null) {
-    return Math.round(normalized * 100) / 100;
-  }
-
-  // Audio and hint disagree even after octave fold — still kill half-time peaks.
-  return Math.round(preferMusicalOctave(estimated) * 100) / 100;
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated.toFixed(2)}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, comps: [${(competingBpms ?? []).map((b) => b.toFixed(2)).join(", ")}], ostateczny wynik: ${finalResult.toFixed(2)} (powód: ${reason})`,
+  );
+  return finalResult;
 }
 
 /**
@@ -439,7 +762,8 @@ function quickEstimateBpmFromEnergy(
   sampleRate: number,
   seedHint?: number,
 ): number {
-  const hopSize = Math.max(BASE_HOP_SIZE * 2, effectiveHopSize(mono.length));
+  const onsetHop = Math.max(BASE_HOP_SIZE * 2, effectiveHopSize(mono.length));
+  const hopSize = acfHopSize(onsetHop, sampleRate);
   const flux = computeOnsetStrengthEnvelope(mono, hopSize);
   const fromAc = estimateBpmFromOnsetStrength(
     flux,
@@ -511,10 +835,15 @@ const LOCAL_PERIOD_STEP_LO = 0.85;
 const LOCAL_PERIOD_STEP_HI = 1.2;
 /**
  * Hard gate vs stable quarter-note reference (median IBI + period hint).
- * Rejects half-beat / double-time snaps from subdivision onsets.
+ * Rejects half-beat / double-time snaps and bar-level IBIs treated as beats.
  */
-const STABLE_PERIOD_STEP_LO = 0.78;
-const STABLE_PERIOD_STEP_HI = 1.28;
+const STABLE_PERIOD_STEP_LO = 0.82;
+const STABLE_PERIOD_STEP_HI = 1.18;
+/** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
+const PERIOD_HINT_STABLE_WEIGHT = 0.42;
+/** Clamp local period vs hint — wide enough for ~6% rubato, not half-time. */
+const PERIOD_HINT_CLAMP_LO = 0.82;
+const PERIOD_HINT_CLAMP_HI = 1.22;
 
 /**
  * Ellis-style beat path with a **variable local period** driven by onsets.
@@ -532,9 +861,10 @@ function buildBeatGridViterbi(
 ): number[] | null {
   if (onsetsMs.length < 4) return null;
   const periodHint = 60_000 / estimatedBpm;
+  console.log(`[SMART TEMPO DIAGNOSTICS] buildBeatGridViterbi -> Startowe periodHint: ${periodHint.toFixed(1)} ms, odpowiadające BPM: ${estimatedBpm.toFixed(2)}`);
   const t0 = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, periodHint);
-  const minPeriod = periodHint * 0.72;
-  const maxPeriod = periodHint * 1.38;
+  const minPeriod = periodHint * PERIOD_HINT_CLAMP_LO;
+  const maxPeriod = periodHint * PERIOD_HINT_CLAMP_HI;
   const nBeats = Math.min(
     maxBeats,
     Math.max(2, Math.floor(gridDurationMs / minPeriod) + 1),
@@ -585,8 +915,10 @@ function buildBeatGridViterbi(
         p.recentIbis.length >= 3
           ? medianOfPositive(p.recentIbis)
           : p.localPeriod;
-      // Blend hint so a briefly corrupted local period cannot redefine "stable".
-      const stableRef = 0.55 * recentMed + 0.45 * periodHint;
+      // Soft hint — onset median dominates so a wrong first guess can climb.
+      const stableRef =
+        (1 - PERIOD_HINT_STABLE_WEIGHT) * recentMed +
+        PERIOD_HINT_STABLE_WEIGHT * periodHint;
       for (let b = 0; b < bins; b++) {
         const t =
           center + ((b - half) / half) * p.localPeriod * BEAT_SNAP_FRAC;
@@ -638,6 +970,23 @@ function buildBeatGridViterbi(
     if (cur.length === 0) break;
     layers.push(cur);
     prev = cur;
+
+    if (beat <= 3) {
+      console.log(`[SMART TEMPO DIAGNOSTICS] Kroki Viterbiego (Krok ${beat}):`);
+      const logs = cur.map((c, idx) => {
+        const pCell = layers[beat - 1]?.[c.prevIdx];
+        const dtVal = pCell ? c.t - pCell.t : 0;
+        return {
+          Kandydat: idx + 1,
+          t: c.t,
+          "dt (ms)": dtVal ? dtVal.toFixed(1) : "N/A",
+          "p.localPeriod": pCell ? pCell.localPeriod.toFixed(1) : "N/A",
+          newLocal: c.localPeriod.toFixed(1),
+          score: c.score.toFixed(4)
+        };
+      });
+      console.table(logs);
+    }
   }
 
   const last = layers[layers.length - 1]!;
@@ -690,8 +1039,8 @@ export function buildBeatGrid(
   if (viterbi) return viterbi;
 
   const periodHint = 60_000 / estimatedBpm;
-  const minPeriod = periodHint * 0.72;
-  const maxPeriod = periodHint * 1.38;
+  const minPeriod = periodHint * PERIOD_HINT_CLAMP_LO;
+  const maxPeriod = periodHint * PERIOD_HINT_CLAMP_HI;
   let period = periodHint;
   let t = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, period);
   const beats: number[] = [Math.round(t)];
@@ -708,7 +1057,9 @@ export function buildBeatGrid(
       const snapDt = nearest - t;
       const stable =
         recentIbis.length >= 3 ? medianOfPositive(recentIbis) : period;
-      const stableRef = 0.55 * stable + 0.45 * periodHint;
+      const stableRef =
+        (1 - PERIOD_HINT_STABLE_WEIGHT) * stable +
+        PERIOD_HINT_STABLE_WEIGHT * periodHint;
       // Ignore subdivision onsets that would look like double-time.
       if (
         snapDt >= stableRef * STABLE_PERIOD_STEP_LO &&
@@ -769,6 +1120,100 @@ function gridDurationMsForAnalysis(
   return Math.min(bufferDurationMs, Math.max(1, Math.round(maxAnalysisSec * 1000)));
 }
 
+/**
+ * Fold pairwise-histogram BPM into the musical octave of ACF/seed.
+ * Bar-ish / half-time modes (~64 when ACF≈128) must not enter periodHint raw.
+ */
+export function foldHistogramBpmToMusicalOctave(
+  histBpm: number,
+  acfBpm: number,
+  seedBpm?: number,
+): number {
+  if (!(histBpm > 0)) return 0;
+  const doubled = histBpm * 2;
+  const halved = histBpm / 2;
+  const near = (a: number, b: number, rel = 0.25): boolean =>
+    b > 0 && Math.abs(a - b) / b <= rel;
+
+  // Half-time histogram vs ACF or seed → promote 2× (or seed as octave center).
+  if (histBpm >= 55 && histBpm < 80 && doubled >= MIN_BPM && doubled <= MAX_BPM) {
+    if (acfBpm > 0 && near(doubled, acfBpm, 0.12)) {
+      return Math.round(doubled * 100) / 100;
+    }
+    if (seedBpm != null && seedBpm > 0 && near(doubled, seedBpm, 0.2)) {
+      return Math.round(seedBpm * 100) / 100;
+    }
+    if (doubled >= 100 && doubled <= 160) {
+      return Math.round(doubled * 100) / 100;
+    }
+  }
+  // Double-time histogram vs mid-tempo anchors → halve.
+  if (histBpm > 160 && histBpm <= MAX_BPM && halved >= MIN_BPM) {
+    if (acfBpm > 0 && near(halved, acfBpm, 0.12)) {
+      return Math.round(halved * 100) / 100;
+    }
+    if (seedBpm != null && seedBpm > 0 && near(halved, seedBpm, 0.2)) {
+      return Math.round(seedBpm * 100) / 100;
+    }
+    if (halved >= 80 && halved <= 140) {
+      return Math.round(halved * 100) / 100;
+    }
+  }
+  return Math.round(histBpm * 100) / 100;
+}
+
+/**
+ * Merge ACF / consecutive-IBI / pairwise-histogram evidence into a raw BPM
+ * plus competitor list for reconcile. Consecutive IBI that looks like a
+ * subdivision of the histogram mode is not treated as the beat tempo.
+ */
+function refineRawBpmWithOnsetEvidence(
+  acf: AcfEstimateResult,
+  onsetsMs: readonly number[],
+  seedBpm?: number,
+): { estimate: number; competitors: number[] } {
+  const competitors = [...acf.competitorBpms];
+  let estimate = acf.bpm;
+  if (!(estimate > 0)) {
+    estimate = estimateBpmFromOnsets(onsetsMs);
+  }
+
+  const histRaw = estimateBpmFromOnsetPeriodHistogram(onsetsMs);
+  const histBpm = foldHistogramBpmToMusicalOctave(histRaw, estimate, seedBpm);
+  if (histRaw > 0 && histBpm > 0 && Math.abs(histBpm - histRaw) >= 0.5) {
+    console.log(
+      `[SMART TEMPO DIAGNOSTICS] histogram octave fold: ${histRaw.toFixed(2)} → ${histBpm.toFixed(2)} (acf=${estimate.toFixed(2)}, seed=${seedBpm != null && seedBpm > 0 ? seedBpm.toFixed(2) : "brak"})`,
+    );
+  }
+  if (histBpm > 0) competitors.push(histBpm);
+
+  const adjBpm = estimateBpmFromOnsets(onsetsMs);
+  if (histBpm > 0 && adjBpm > 0) {
+    const ratio = adjBpm / histBpm;
+    if (
+      ratio >= ONSET_SUBDIVISION_RATIO &&
+      ratio <= ONSET_SUBDIVISION_RATIO * 1.5
+    ) {
+      // Consecutive IBI is subdivision of the dominant pairwise period —
+      // do not promote adjBpm; hist already competes in reconcile.
+    } else if (
+      adjBpm >= 100 &&
+      adjBpm <= 140 &&
+      (estimate < 90 || estimate > 150)
+    ) {
+      estimate = adjBpm;
+    }
+  } else if (
+    adjBpm >= 100 &&
+    adjBpm <= 140 &&
+    (estimate < 90 || estimate > 150)
+  ) {
+    estimate = adjBpm;
+  }
+
+  return { estimate, competitors };
+}
+
 function analyzeFromMono(
   mono: Float32Array,
   sampleRate: number,
@@ -787,29 +1232,26 @@ function analyzeFromMono(
   const hopSize = effectiveHopSize(mono.length);
   let onsetsMs: number[] = [];
   let rawEstimate = 0;
+  let competitors: number[] = [];
   if (skipOnsets) {
     rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);
   } else {
     const flux = computeOnsetStrengthEnvelope(mono, hopSize);
     onsetsMs = pickOnsetsFromFlux(flux, sampleRate, hopSize);
-    rawEstimate = estimateBpmFromOnsetStrength(
-      flux,
+    const bpmHop = acfHopSize(hopSize, sampleRate);
+    const acfFlux =
+      bpmHop === hopSize
+        ? flux
+        : computeOnsetStrengthEnvelope(mono, bpmHop);
+    const acf = estimateBpmFromOnsetStrengthDetailed(
+      acfFlux,
       sampleRate,
-      hopSize,
+      bpmHop,
       seedBpm,
     );
-    if (!(rawEstimate > 0)) {
-      rawEstimate = estimateBpmFromOnsets(onsetsMs);
-    }
-    // Onset IBI in the musical octave beats a half/double-time ACF peak.
-    const onsetBpm = estimateBpmFromOnsets(onsetsMs);
-    if (
-      onsetBpm >= 100 &&
-      onsetBpm <= 140 &&
-      (rawEstimate < 90 || rawEstimate > 150)
-    ) {
-      rawEstimate = onsetBpm;
-    }
+    const refined = refineRawBpmWithOnsetEvidence(acf, onsetsMs, seedBpm);
+    rawEstimate = refined.estimate;
+    competitors = refined.competitors;
     if (!(rawEstimate > 0)) {
       rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);
     }
@@ -818,6 +1260,7 @@ function analyzeFromMono(
     rawEstimate,
     seedBpm,
     onsetsMs.length,
+    competitors,
   );
   const phaseAnchor = onsetsMs[0] ?? 0;
   let beatMs = buildBeatGrid(
@@ -830,6 +1273,9 @@ function analyzeFromMono(
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
   const estimatedBpm = ibiBpm > 0 ? ibiBpm : periodHintBpm;
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
+  );
   return { onsetsMs, beatMs, estimatedBpm };
 }
 
@@ -869,6 +1315,7 @@ async function analyzeFromMonoAsync(
   const hopSize = effectiveHopSize(mono.length);
   let onsetsMs: number[] = [];
   let rawEstimate = 0;
+  let competitors: number[] = [];
   if (skipOnsets) {
     throwIfAborted(signal);
     report(0.35);
@@ -904,23 +1351,20 @@ async function analyzeFromMonoAsync(
     report(0.88);
     onsetsMs = pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
     throwIfAborted(signal);
-    rawEstimate = estimateBpmFromOnsetStrength(
-      asyncFlux,
+    const bpmHop = acfHopSize(hopSize, sampleRate);
+    let acfFlux = asyncFlux;
+    if (bpmHop !== hopSize) {
+      acfFlux = computeOnsetStrengthEnvelope(mono, bpmHop);
+    }
+    const acf = estimateBpmFromOnsetStrengthDetailed(
+      acfFlux,
       sampleRate,
-      hopSize,
+      bpmHop,
       seedBpm,
     );
-    if (!(rawEstimate > 0)) {
-      rawEstimate = estimateBpmFromOnsets(onsetsMs);
-    }
-    const onsetBpm = estimateBpmFromOnsets(onsetsMs);
-    if (
-      onsetBpm >= 100 &&
-      onsetBpm <= 140 &&
-      (rawEstimate < 90 || rawEstimate > 150)
-    ) {
-      rawEstimate = onsetBpm;
-    }
+    const refined = refineRawBpmWithOnsetEvidence(acf, onsetsMs, seedBpm);
+    rawEstimate = refined.estimate;
+    competitors = refined.competitors;
     if (!(rawEstimate > 0)) {
       rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);
     }
@@ -930,6 +1374,7 @@ async function analyzeFromMonoAsync(
     rawEstimate,
     seedBpm,
     onsetsMs.length,
+    competitors,
   );
   const phaseAnchor = onsetsMs[0] ?? 0;
   let beatMs = await buildBeatGridAsync(
@@ -943,6 +1388,9 @@ async function analyzeFromMonoAsync(
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
   const estimatedBpm = ibiBpm > 0 ? ibiBpm : periodHintBpm;
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
+  );
   report(1);
   return { onsetsMs, beatMs, estimatedBpm };
 }

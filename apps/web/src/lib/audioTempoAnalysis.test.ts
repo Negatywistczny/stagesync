@@ -1,11 +1,15 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
+import { medianBpmFromBeatMs } from "@stagesync/shared";
 import {
   analyzeAudioTempo,
   analyzeAudioTempoAsync,
   buildBeatGrid,
   buildImportTempoAnalysisOptions,
   DEFAULT_ANALYSIS_TIMEOUT_MS,
+  estimateBpmFromOnsetPeriodHistogram,
   estimateBpmFromOnsetStrength,
+  foldHistogramBpmToMusicalOctave,
+  pickBestAcfBpm,
   reconcileEstimatedBpm,
 } from "./audioTempoAnalysis.js";
 
@@ -162,6 +166,59 @@ describe("analyzeAudioTempo", () => {
     expect(reconcileEstimatedBpm(122, 120, 40)).toBeCloseTo(122, 0);
   });
 
+  it("reconcileEstimatedBpm prefers competing peak nearer seed when ACF diverges >6%", () => {
+    // Same octave, ACF far from seed, but a competing real peak nearer seed.
+    expect(
+      reconcileEstimatedBpm(128.45, 120, 40, [123.1, 96]),
+    ).toBeCloseTo(123.1, 1);
+    // Without a nearer competitor, keep the audio peak (no song-specific snap).
+    expect(reconcileEstimatedBpm(128.45, 120, 40)).toBeCloseTo(128.45, 1);
+  });
+
+  it("reconcileEstimatedBpm rejects weak near-seed ghost (~112.5) vs ACF ~128", () => {
+    // Regression: coarse-hop ACF ghost + half-time hist must not invent a
+    // seed/ACF "compromise" periodHint (112.5 → Viterbi collapse toward ~91).
+    const out = reconcileEstimatedBpm(128.45, 120, 40, [63.92, 112.5, 64.28, 81.46]);
+    expect(out).toBeGreaterThan(120);
+    expect(out).toBeLessThan(132);
+    expect(Math.abs(out - 112.5)).toBeGreaterThan(5);
+  });
+
+  it("foldHistogramBpmToMusicalOctave lifts half-time hist toward ACF/seed", () => {
+    expect(foldHistogramBpmToMusicalOctave(63.92, 128.45, 120)).toBeCloseTo(
+      127.84,
+      1,
+    );
+    expect(foldHistogramBpmToMusicalOctave(63.92, 0, 120)).toBeCloseTo(120, 0);
+    expect(foldHistogramBpmToMusicalOctave(129.2, 128.45, 120)).toBeCloseTo(
+      129.2,
+      1,
+    );
+  });
+
+  it("pickBestAcfBpm prefers seed-near peak when scores are comparable", () => {
+    const chosen = pickBestAcfBpm(
+      [
+        { bpm: 128.4, score: 0.82 },
+        { bpm: 123.0, score: 0.79 },
+        { bpm: 64.2, score: 0.7, octaveMate: false },
+      ],
+      120,
+    );
+    expect(chosen).toBeGreaterThanOrEqual(120);
+    expect(chosen).toBeLessThanOrEqual(125);
+  });
+
+  it("pickBestAcfBpm does not invent octave mate without a real secondary peak", () => {
+    // Only a strong half-time peak — ×2 mate must not win without lag evidence
+    // (mate candidates are filtered before pick; here we only pass the real peak).
+    const chosen = pickBestAcfBpm(
+      [{ bpm: 64.0, score: 0.9 }],
+      120,
+    );
+    expect(chosen).toBeCloseTo(64, 0);
+  });
+
   it("estimateBpmFromOnsetStrength recovers click-track tempo via autocorrelation", () => {
     const sampleRate = 44_100;
     const hop = 512;
@@ -229,10 +286,38 @@ describe("analyzeAudioTempo", () => {
     expect(Math.min(...beats.slice(1).map((b, i) => b - beats[i]!))).toBeGreaterThan(400);
   });
 
+  it("buildBeatGrid with ~112 or ~128 hint does not median-collapse to ~91 on ~490ms onsets", () => {
+    // Regular mid-tempo quarters (~122 BPM). Wrong/soft hints must not let
+    // bar-level IBIs redefine the beat period (regression: 112.5 → median ~91).
+    const period = 490;
+    const onsets: number[] = [];
+    let t = 40;
+    for (let i = 0; i < 64; i++) {
+      onsets.push(Math.round(t + (i % 4 === 0 ? 5 : 0)));
+      t += period;
+    }
+    for (const hint of [112.5, 128.45]) {
+      const beats = buildBeatGrid(
+        onsets,
+        hint,
+        onsets[onsets.length - 1]! + period,
+        128,
+        onsets[0],
+      );
+      expect(beats.length).toBeGreaterThan(24);
+      const median = medianBpmFromBeatMs(beats);
+      expect(median).toBeGreaterThan(105);
+      expect(median).toBeLessThan(135);
+      expect(Math.abs(median - 91)).toBeGreaterThan(10);
+    }
+  });
+
   it("buildBeatGrid follows local onset period (no cumulative fast drift from high hint)", () => {
-    // True ~122.7 BPM (period ~488.9 ms) with a too-fast ACF/seed hint of 128.
-    // Fixed-period Viterbi locked to ~469 ms and ran ahead of audio late in the song.
-    const period = 60_000 / 122.7;
+    // Arbitrary mid-tempo true period vs a ~6% too-fast hint. Tracker must
+    // follow onsets, not lock early bars to the wrong hint period.
+    const trueBpm = 110;
+    const period = 60_000 / trueBpm;
+    const wrongHint = trueBpm * 1.06;
     const onsets: number[] = [];
     let t = 0;
     for (let i = 0; i < 80; i++) {
@@ -241,7 +326,7 @@ describe("analyzeAudioTempo", () => {
     }
     const beats = buildBeatGrid(
       onsets,
-      128,
+      wrongHint,
       onsets[onsets.length - 1]! + period,
       128,
       0,
@@ -249,13 +334,32 @@ describe("analyzeAudioTempo", () => {
     expect(beats.length).toBeGreaterThan(32);
     const early = (beats[8]! - beats[0]!) / 8;
     const late = (beats[40]! - beats[32]!) / 8;
-    expect(early).toBeGreaterThan(470);
-    expect(early).toBeLessThan(510);
-    expect(late).toBeGreaterThan(470);
-    expect(late).toBeLessThan(510);
-    // No cumulative lock to 128 BPM (~468.75 ms)
-    expect(Math.abs(late - 60_000 / 128)).toBeGreaterThan(8);
+    const earlyBpm = 60_000 / early;
+    const lateBpm = 60_000 / late;
+    expect(earlyBpm).toBeGreaterThan(trueBpm * 0.96);
+    expect(earlyBpm).toBeLessThan(trueBpm * 1.04);
+    expect(lateBpm).toBeGreaterThan(trueBpm * 0.96);
+    expect(lateBpm).toBeLessThan(trueBpm * 1.04);
+    // Must not stay locked to the wrong hint
+    expect(Math.abs(lateBpm - wrongHint)).toBeGreaterThan(trueBpm * 0.02);
     expect(Math.abs(late - period)).toBeLessThan(12);
+  });
+
+  it("estimateBpmFromOnsetPeriodHistogram prefers pairwise period over subdivision IBI", () => {
+    // Quarters at period P plus mid-beat subdivisions → consecutive median is
+    // ~P/2; pairwise histogram should still recover ~P.
+    const period = 500; // 120 BPM — arbitrary mid-tempo fixture
+    const onsets: number[] = [];
+    let t = 0;
+    for (let i = 0; i < 40; i++) {
+      onsets.push(Math.round(t));
+      onsets.push(Math.round(t + period / 2));
+      t += period;
+    }
+    onsets.sort((a, b) => a - b);
+    const hist = estimateBpmFromOnsetPeriodHistogram(onsets);
+    expect(hist).toBeGreaterThan(110);
+    expect(hist).toBeLessThan(130);
   });
 
   it("buildBeatGrid ignores dense 8th-note cluster around bar 5 (no double-time jump)", () => {
