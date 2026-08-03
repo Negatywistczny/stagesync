@@ -421,7 +421,7 @@ export function tempoEventsFromMsTickAnchors(
   }
 
   const out: { startTicks: number; bpm: number }[] = [];
-  let prevBpm = seedBpm;
+  let prevBpm: number;
 
   const first = dedup[0]!;
   if (first.targetTick > floorTicks && first.ms > 0) {

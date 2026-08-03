@@ -1920,7 +1920,7 @@ export function bridgeUsUgImport(
               )
             : [];
         const accent = findHarmonicAccentSyllable(scoped);
-        let ms: number | null = accent
+        const ms: number | null = accent
           ? wallMsFromPlaceTicks(accent.startTicks)
           : scopeStart != null
             ? wallMsFromPlaceTicks(scopeStart)
