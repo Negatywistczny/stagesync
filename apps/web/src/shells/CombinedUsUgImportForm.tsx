@@ -299,11 +299,15 @@ export function CombinedUsUgImportForm({
                 // Carry US search / file meta into UG so operator does not retype.
                 const fromUsTitle =
                   usTitle.trim() ||
-                  (usPreview.ok ? usPreview.title?.trim() : "") ||
+                  (usPreview?.ok === true
+                    ? (usPreview.title?.trim() ?? "")
+                    : "") ||
                   "";
                 const fromUsArtist =
                   usArtist.trim() ||
-                  (usPreview.ok ? usPreview.artist?.trim() : "") ||
+                  (usPreview?.ok === true
+                    ? (usPreview.artist?.trim() ?? "")
+                    : "") ||
                   "";
                 if (fromUsTitle) {
                   setUgTitle((prev) => prev.trim() || fromUsTitle);
