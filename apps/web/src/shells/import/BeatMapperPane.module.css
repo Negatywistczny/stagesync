@@ -310,7 +310,7 @@
   gap: var(--ss-space-2);
   flex: 1 1 auto;
   min-height: 0;
-  max-height: 11.25rem; /* 180px */
+  max-height: 11.25rem; /* ss-css-allow — section list max height 180px */
   overflow-y: auto;
 }
 
