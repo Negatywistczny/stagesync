@@ -1354,7 +1354,7 @@ export function CombinedUsUgImportForm({
               type="button"
               variant="primary"
               disabled={locked || !canApply}
-              loading={busyApply}
+              loading={busyApply || Boolean(applying)}
               onClick={() => void apply()}
             >
               {applyLabel}

@@ -40,6 +40,7 @@ import {
   type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
+import { yieldToUi } from "../lib/audioTempoAnalysis.js";
 import {
   buildBarMarks,
   buildRulerBeatMarks,
@@ -2684,8 +2685,9 @@ export function TimelineShell() {
         ? " · sprawdź Formę / akordy"
         : "";
     const summary = `${result.sections.length} sekcji · ${result.akordy.clips.length} akordów · dopasowanie ${Math.round(result.alignScore * 100)}%${warn}`;
+    setImportApplying(true);
+    await yieldToUi();
     if (importAsNewSong) {
-      setImportApplying(true);
       try {
         const name =
           result.title?.trim() ||
