@@ -14,6 +14,7 @@ import {
   suggestGridBpmFromUsUgTexts,
   parseUgBridgeSections,
   snapBeat1MsToOnset,
+  runAudioDrivenSmartTempo,
   type SmartTempoAudioRef,
   type TempoNode,
   type TextAnchorBridgeOk,
