@@ -6,7 +6,7 @@
 **Data triage:** 2026-08-03  
 **Ostatnia aktualizacja:** 2026-08-03 (mapowanie na kod 5.4.2 + lukę free-run playback)  
 **Kąt:** referencja algorytmiczna + UX Logic dla **5.4.2 Smart Tempo** — nie SSOT; nie claim Done  
-**Companion:** [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md) § Smart Tempo · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) / [ADR 0017](../../../adr/0017-live-show-control-contracts.md) (Flex OUT 5.x) · `packages/shared/src/smart-tempo.ts` · `apps/web/src/lib/audioTempoAnalysis.ts` · `apps/web/src/lib/audioPlayback.ts` · [ROADMAP 5.4.2](../../../ROADMAP.md) · [TODO Smart Tempo](../../../TODO.md)
+**Companion:** [Implementacja-Smart-Tempo-w-Antigravity.triage.md](./Implementacja-Smart-Tempo-w-Antigravity.triage.md) (blueprint vs dysk 5.4.2) · [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md) § Smart Tempo · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) / [ADR 0017](../../../adr/0017-live-show-control-contracts.md) (Flex OUT 5.x) · `packages/shared/src/smart-tempo.ts` · `apps/web/src/lib/audioTempoAnalysis.ts` · `apps/web/src/lib/audioPlayback.ts` · [ROADMAP 5.4.2](../../../ROADMAP.md) · [TODO](../../../TODO.md)
 
 ## Werdykt przydatności
 
@@ -22,12 +22,12 @@
 
 | ID | Temat | Priorytet | Stan | Notatka |
 |----|--------|-----------|------|---------|
-| DTM-01 | Tryb **Adapt**: globalna mapa śledzi rubato nagrania | P0 | `confirmed` / partial on-tree | = Smart Tempo 5.4.2 (ADR 0015). Import + Beat Mapper + `runAudioDrivenSmartTempo`. Green PO (Winner) nadal otwarte w TODO. |
+| DTM-01 | Tryb **Adapt**: globalna mapa śledzi rubato nagrania | P0 | `confirmed` / shipped 5.4.2 | = Smart Tempo (ADR 0015). Import + Beat Mapper + `runAudioDrivenSmartTempo`. Jakość vs Logic na żywym groove = Later · [AST](./Implementacja-Smart-Tempo-w-Antigravity.triage.md). |
 | DTM-02 | Tryb **Keep**: stretch audio do sztywnej siatki | P0 | `limit` / **OUT 5.x** | Flex Time — ADR 0017. Nie otwierać w 5.4.2. |
 | DTM-03 | Tryb **Auto** (Keep vs Adapt) | P2 | `hypothesis` | Bez Keep-stretch: Auto = „buduj mapę vs flat BPM”. |
 | DTM-04 | Flex Time (Slicing / Phase Vocoder) | P0 | `limit` / **OUT 5.x** | Referencja konkurencji; nie backlog 5.x. |
 | DTM-05 | Storage `timeSeconds` / `sampleIndex` jako kanon | P0 | `limit` / **REVISE** | ADR 0002: ticks. Mapuj `ITempoNode` → `TempoEvent` / `TempoNode`. |
-| DTM-06 | Pipeline ODF (multi-band / complex-domain) + ACF + **Viterbi / Ellis α** (beat inertia) | P1 | `hypothesis` / partial | Dziś: energy flux + ACF + snap grid (`audioTempoAnalysis.ts`); sparsify + Drift Gate (`smart-tempo.ts`). **Brak** pełnego DP/Viterbi z kosztem przejścia $F(\Delta t,\tau_p)$ — największa luka jakości vs Logic przy synkopach / ciszy. |
+| DTM-06 | Pipeline ODF (multi-band / complex-domain) + ACF + **Viterbi / Ellis α** (beat inertia) | P1 | `partial` | Sub-bas dual-band + ACF + DP-ish `buildBeatGridViterbi` + sparsify/Drift Gate — on-tree (5.4.2; [AST triage](./Implementacja-Smart-Tempo-w-Antigravity.triage.md)). **Brak** pełnego Ellis DBN / complex-domain ODF; luka jakości przy żywym groove / ciszy. |
 | DTM-07 | Essentia.js / WASM + Worker + SharedArrayBuffer | P1 | `hypothesis` | Upgrade po bench vs obecny TS; nie „na zapas” (COOP/COEP / SAB). |
 | DTM-08 | BeatNet / „Beat This!” w przeglądarce | P2 | `limit` | Dump: słabe / ciężkie w WWW. Nie MVP. |
 | DTM-09 | HMM / Bar Pointer / joint downbeat+meter | P2 | `hypothesis` | Metrum dziś z projektu / UG; nie z MIR. |
@@ -46,7 +46,7 @@
 | Drift Gate / rzadkie węzły | `evaluateDriftGate`, `sparsifyTempoNodesFromBeatGrid` |
 | Beat Mapper + offset Beat 1 | Import UI / `BeatMapperPane` |
 | Keep / Flex stretch | **OUT** |
-| Essentia / WASM / Viterbi full | **Brak** |
+| Essentia / WASM / full Ellis DBN | **Brak** (Viterbi-like DP on-tree — [AST](./Implementacja-Smart-Tempo-w-Antigravity.triage.md)) |
 | Ciągły re-seek audio podczas play | **Brak** (tylko jump / graph change) |
 
 ## Pipeline dumpu vs StageSync (skrót)

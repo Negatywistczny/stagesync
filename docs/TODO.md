@@ -25,7 +25,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — w toku: lokalne alerty + rejestracja tokenów + kanały; FCM wymaga `google-services.json` (opt-in, ADR 0016 — zero sekretów w APK). Nie mylić z FG notification lokalnego hosta Console.
-- [ ] **Import US+UG (eksperymentalny):** higiena mostka / zero-length chords / coverage Formy — bez udawania syncu MP3 do czasu Smart Tempo
+- [ ] **Import US+UG:** higiena mostka / zero-length chords / coverage Formy — Smart Tempo **5.4.2** wydane; tu residual mostka (nie drugi silnik tempa) · [AST triage](./analysis/inspiracje/spec-5.2+/Implementacja-Smart-Tempo-w-Antigravity.triage.md)
 
 ## Etap 5.4+ / Later
 

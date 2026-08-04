@@ -42,7 +42,7 @@ Tag `v5.4.0`. Historia: [CHANGELOG.md](../CHANGELOG.md). Scope: [report-scope-5.
 
 **Dostarczone:** `formatVersion` 6 + migrator V5→V6; Lyrics AST (bloki na `tekst`); import UltraStar → ticks; Client Karaoke highlight bloku; UG/ChordPro; **Text-Anchor Bridging (US+UG)** — Forma/akordy na tickach wokalu + wizard Import US+UG.
 
-**Residual 5.4.x / Later:** **5.4.2 Smart Tempo** (audio → TempoMap; Import US+UG eksperymentalny do tego cutu) — [TODO.md](./TODO.md). MusicXML/MIDI jako siatka taktowa — Later.
+**Residual 5.4.x / Later:** Import US+UG mostek / higiena — [TODO.md](./TODO.md); jakość mapy Smart Tempo (żywy groove / MIR Later) — [AST triage](./analysis/inspiracje/spec-5.2+/Implementacja-Smart-Tempo-w-Antigravity.triage.md). MusicXML/MIDI jako siatka taktowa — Later.
 
 ### 5.4.1 — Syllables patch — **wydane 2026-08-03**
 
