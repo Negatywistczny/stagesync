@@ -48,6 +48,7 @@ import { isAndroidUpdateSurface } from "../../lib/nativeShell.js";
 import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import { BrandName } from "../BrandName.js";
+import { Link } from "react-router-dom";
 import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import styles from "./SystemView.module.css";
@@ -607,6 +608,25 @@ export function SystemView({
                 </div>
               </div>
             </div>
+        </AdminAccordionCard>
+
+        <AdminAccordionCard
+          title="Analiza Smart Tempo vs Logic Pro — Wizualizacja Dokładności Siatki Taktowej"
+          summary="Dedykowany panel wizualizacji dokładności tempa, histogramów, wykresu CDF i timeline drift"
+          badge="Dedykowana Strona"
+        >
+          <div style={{ padding: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "flex-start" }}>
+            <p className={shell.muted} style={{ margin: 0 }}>
+              Dedykowana strona analizy i porównywania benchmarków Smart Tempo dostępna jest pod adresem <code style={{ color: "#60a5fa" }}>/smart-tempo</code>.
+            </p>
+            <Link
+              to="/smart-tempo"
+              className={shell.primaryButton}
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}
+            >
+              📊 Otwórz Stronę Benchmarku Smart Tempo (/smart-tempo) ➔
+            </Link>
+          </div>
         </AdminAccordionCard>
       </div>
       {apkQrDialog ? (

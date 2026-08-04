@@ -9,6 +9,7 @@ import { MemoryPressureBanner } from "./shells/MemoryPressureBanner.js";
 import { OperatorPinGate } from "./shells/OperatorPinGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
+import { SmartTempoPage } from "./shells/pages/SmartTempoPage.js";
 import { DevApp } from "./dev/DevApp.js";
 import { DevPreviewApp } from "./dev/DevPreviewApp.js";
 import { isDevPreviewRoute } from "./dev/devPreviewConfig.js";
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
           </OperatorPinGate>
         ),
       },
+      { path: "/smart-tempo", element: <SmartTempoPage /> },
       { path: "/timeline", element: <Navigate to="/admin" replace /> },
       { path: "*", element: <Navigate to="/" replace /> },
     ],

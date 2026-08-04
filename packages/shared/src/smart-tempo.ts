@@ -30,7 +30,7 @@ import { secondsToTicksAlongMap, type TempoMapProject } from "./tempo-map.js";
 import { sectionStartFromVocalTicks } from "./ug-pipe-bars.js";
 
 /** Min |ΔBPM| to emit a Logic-like sparse tempo node (smoothed local tempo). */
-export const SMART_TEMPO_SPARSE_MIN_BPM_DELTA = 0.15;
+export const SMART_TEMPO_SPARSE_MIN_BPM_DELTA = 0.0;
 /** Median window in beats for local tempo (~2 bars in 4/4 — resists IBI blips). */
 export const SMART_TEMPO_SPARSE_WINDOW_BEATS = 4;
 /** Minimum bars between sparse tempo nodes (Logic ~1–2). */
@@ -930,7 +930,7 @@ export function pruneTempoMapByBpmDelta(
   seedBpm: number,
   floorTicks: number,
   idPrefix: string,
-  deltaBpm: number = TEMPO_SOLVER_PRUNE_DELTA_BPM,
+  deltaBpm: number = 0.5,
 ): TempoEvent[] {
   if (events.length === 0) {
     return [{ id: `${idPrefix}-te-1`, startTicks: floorTicks, bpm: seedBpm }];

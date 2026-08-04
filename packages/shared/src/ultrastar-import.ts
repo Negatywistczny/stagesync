@@ -146,7 +146,11 @@ export function ultrastarHeaderBpmToMetronome(headerBpm: number): number {
   if (!Number.isFinite(headerBpm) || headerBpm <= 0) {
     throw new RangeError("UltraStar #BPM must be finite > 0");
   }
-  return headerBpm / 4;
+  let bpm = headerBpm / 4;
+  while (bpm >= 145) {
+    bpm = bpm / 2;
+  }
+  return Math.round(bpm * 100) / 100;
 }
 
 /**
@@ -217,7 +221,10 @@ export function suggestGridBpmFromPipeAndFirstVocal(opts: {
   const targetBars = pipeBarCount + pickup;
   const quartersPerBar = (meter.numerator * 4) / meter.denominator;
   const seconds = contentMs / 1000;
-  const bpm = (targetBars * quartersPerBar * 60) / seconds;
+  let bpm = (targetBars * quartersPerBar * 60) / seconds;
+  while (bpm >= 145) {
+    bpm = bpm / 2;
+  }
   if (!Number.isFinite(bpm) || bpm < 40 || bpm > 300) return null;
   return Math.round(bpm * 100) / 100;
 }
@@ -655,25 +662,10 @@ export function tempoMapWithImportedBpm(
 export function applyUltrastarImportToProject(
   project: Project,
   imported: UltrastarImportOk,
-  options: ApplyUltrastarOptions = {},
+  _options: ApplyUltrastarOptions = {},
 ): Project {
-  const applyBpm = options.applyBpm !== false;
-  const hasAudioTempoMap =
-    project.tempoMap.length > 1 ||
-    project.assets.some((a) => a.kind === "audio") ||
-    project.audioClips.length > 0;
-  const shouldApplyBpm = applyBpm && !hasAudioTempoMap;
   return {
     ...project,
-    ...(shouldApplyBpm
-      ? {
-          defaultBpm: imported.metronomeBpm,
-          tempoMap: tempoMapWithImportedBpm(
-            project.tempoMap,
-            imported.metronomeBpm,
-          ),
-        }
-      : {}),
     ...(imported.title?.trim()
       ? { name: imported.title.trim().slice(0, 200) }
       : {}),

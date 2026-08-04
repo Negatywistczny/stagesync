@@ -344,9 +344,18 @@ export function CombinedUsUgImportForm({
   const beat1ResolveOpts = useMemo(
     () => ({
       pipeBarCount: pipeIntroBarCount,
-      layoutBpm: suggestedGridBpm ?? fileMetroBpm ?? 120,
+      layoutBpm:
+        smartTempoAudio?.estimatedBpm != null &&
+        smartTempoAudio.estimatedBpm > 0
+          ? smartTempoAudio.estimatedBpm
+          : suggestedGridBpm ?? fileMetroBpm ?? 120,
     }),
-    [pipeIntroBarCount, suggestedGridBpm, fileMetroBpm],
+    [
+      pipeIntroBarCount,
+      smartTempoAudio?.estimatedBpm,
+      suggestedGridBpm,
+      fileMetroBpm,
+    ],
   );
 
   const gridBpmDisplay =
@@ -376,7 +385,7 @@ export function CombinedUsUgImportForm({
         fileMetroBpm != null &&
         Math.abs(gridBpmForBridge - fileMetroBpm) < 0.05
       );
-    return bridgeUsUgFromTexts(usText, ugText, {
+    const res = bridgeUsUgFromTexts(usText, ugText, {
       ...importOptions,
       idPrefix: "bridge",
       ...(passGrid ? { gridBpm: gridBpmForBridge } : {}),
@@ -392,6 +401,10 @@ export function CombinedUsUgImportForm({
           }
         : {}),
     });
+    if (res.ok) {
+      console.log(`[IMPORT_PHASE_BRIDGED] step=${step} seedBpm=${res.seedBpm} tempoMap[0]=${res.tempoMap[0]?.bpm} offset=${audioStartOffsetMs}ms userEditedNodes=${draftTempoNodesUserEdited}`);
+    }
+    return res;
   }, [
     usText,
     ugText,
@@ -403,6 +416,8 @@ export function CombinedUsUgImportForm({
     audioStartOffsetUserEdited,
     draftTempoNodesUserEdited,
     deferredTempoNodes,
+    step,
+    audioStartOffsetMs,
   ]);
 
   const displayTempoNodes = useMemo(() => {
@@ -423,6 +438,7 @@ export function CombinedUsUgImportForm({
   useEffect(() => {
     setDraftTempoNodes([]);
     setDraftTempoNodesUserEdited(false);
+    setGridBpmDraft(null);
   }, [audioAnalysis]);
 
   const error =
@@ -578,7 +594,6 @@ export function CombinedUsUgImportForm({
           await analyzeAudioTempoAsync(buffer, {
             ...buildImportTempoAnalysisOptions({
               gapMs,
-              seedBpm: suggestedGridBpm ?? 120,
               durationMs: Math.round(buffer.duration * 1000),
             }),
             onProgress: (ratio) => {
@@ -712,7 +727,6 @@ export function CombinedUsUgImportForm({
           await analyzeAudioTempoAsync(buffer, {
             ...buildImportTempoAnalysisOptions({
               gapMs,
-              seedBpm: suggestedGridBpm ?? 120,
               durationMs: Math.round(buffer.duration * 1000),
             }),
             onProgress: (ratio) => {
@@ -922,7 +936,6 @@ export function CombinedUsUgImportForm({
           await analyzeAudioTempoAsync(buffer, {
             ...buildImportTempoAnalysisOptions({
               gapMs,
-              seedBpm: suggestedGridBpm ?? 120,
               durationMs: Math.round(buffer.duration * 1000),
             }),
             onProgress: (ratio) => {
@@ -1057,7 +1070,6 @@ export function CombinedUsUgImportForm({
         await analyzeAudioTempoAsync(buffer, {
           ...buildImportTempoAnalysisOptions({
             gapMs,
-            seedBpm: suggestedGridBpm ?? 120,
             durationMs: Math.round(buffer.duration * 1000),
           }),
           onProgress: (ratio) => {
@@ -1290,6 +1302,7 @@ export function CombinedUsUgImportForm({
             peaks: smartTempoAudio.peaks,
           }
         : undefined;
+      console.log(`[APPLY_SUBMIT] seedBpm=${bridgeOk.seedBpm} tempoMap[0]=${bridgeOk.tempoMap[0]?.bpm} audioOffset=${audioPayload?.audioStartOffsetMs}ms estimatedBpm=${audioPayload?.estimatedBpm}`);
       await onApply({
         bridge: bridgeOk,
         smartTempoAudio: audioPayload,
@@ -1418,8 +1431,7 @@ export function CombinedUsUgImportForm({
                 />
                 {usPreview?.ok ? (
                   <p className={styles.notice} role="status">
-                    {usPreview.syllableCount} sylab ·{" "}
-                    {usPreview.ultrastarMetronomeBpm.toFixed(1)} BPM
+                    {usPreview.syllableCount} sylab (UltraStar Tekst)
                     {usPreview.youtubeVideoId
                       ? ` · YouTube ${usPreview.youtubeVideoId}`
                       : ""}

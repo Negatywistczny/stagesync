@@ -8,6 +8,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../lib/desktopBridge.js", () => ({
@@ -165,7 +166,11 @@ beforeEach(() => {
 
 describe("SystemView APK download aria", () => {
   it("names Pobierz APK per app title and opens QR modal", async () => {
-    render(<SystemView statusMsg={null} />);
+    render(
+      <MemoryRouter>
+        <SystemView statusMsg={null} />
+      </MemoryRouter>
+    );
     await waitFor(() => {
       expect(
         screen.getByRole("button", { name: "Pobierz APK StageSync Performer" }),
@@ -186,7 +191,11 @@ describe("SystemView APK download aria", () => {
   });
 
   it("names Host card regions in two-column order", async () => {
-    render(<SystemView statusMsg={null} />);
+    render(
+      <MemoryRouter>
+        <SystemView statusMsg={null} />
+      </MemoryRouter>
+    );
     await waitFor(() => {
       expect(
         screen.getByRole("region", { name: "Połączenie i sieć" }),
@@ -204,7 +213,11 @@ describe("SystemView APK download aria", () => {
   });
 
   it("shows mDNS .local join URL next to LAN addresses", async () => {
-    render(<SystemView statusMsg={null} />);
+    render(
+      <MemoryRouter>
+        <SystemView statusMsg={null} />
+      </MemoryRouter>
+    );
     await waitFor(() => {
       expect(screen.getByText("http://stage.local:8787")).toBeTruthy();
     });
@@ -215,7 +228,11 @@ describe("SystemView APK download aria", () => {
     const writeText = vi.fn(async () => undefined);
     Object.assign(navigator, { clipboard: { writeText } });
 
-    render(<SystemView statusMsg={null} />);
+    render(
+      <MemoryRouter>
+        <SystemView statusMsg={null} />
+      </MemoryRouter>
+    );
     const urlBtn = await screen.findByRole("button", {
       name: "Kopiuj adres: http://192.168.1.10:8787",
     });
@@ -243,7 +260,11 @@ describe("SystemView APK download aria", () => {
       onchange: null,
     }));
 
-    render(<SystemView statusMsg={null} />);
+    render(
+      <MemoryRouter>
+        <SystemView statusMsg={null} />
+      </MemoryRouter>
+    );
     await waitFor(() => {
       expect(
         screen.getByRole("button", { name: /Połączenie & Sieć/ }),
@@ -292,7 +313,11 @@ describe("SystemView APK download aria", () => {
       error: null,
     });
 
-    render(<SystemView statusMsg={null} />);
+    render(
+      <MemoryRouter>
+        <SystemView statusMsg={null} />
+      </MemoryRouter>
+    );
     const check = await screen.findByRole("button", {
       name: "Sprawdź aktualizacje",
     });

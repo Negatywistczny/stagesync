@@ -23,7 +23,7 @@ export const TEMPO_SOLVER_HIGH_WEIGHT = 0.85;
 export const TEMPO_SOLVER_SECTION_WEIGHT = 1.0;
 export const TEMPO_SOLVER_CHORD_WEIGHT = 0.85;
 export const TEMPO_SOLVER_SYLLABLE_WEIGHT = 0.3;
-export const TEMPO_SOLVER_PRUNE_DELTA_BPM = 0.5;
+export const TEMPO_SOLVER_PRUNE_DELTA_BPM = 0;
 /**
  * Soft bound for emitted BPM vs seed (±). Exact (ms→tick) segments may still
  * exceed this when wall-clock forces it (e.g. pipe Intro @ GAP vs metro seed).
@@ -576,16 +576,8 @@ export function tempoEventsFromMsTickAnchors(
   const out: { startTicks: number; bpm: number }[] = [];
   let prevBpm: number;
 
-  const first = dedup[0]!;
-  if (first.targetTick > floorTicks && first.ms > 0) {
-    const tickLen = first.targetTick - floorTicks;
-    const raw = bpmForTickSpan(tickLen, first.ms, meter, ppq, seedBpm);
-    prevBpm = soft ? softClampBpmToSeed(seedBpm, raw) : raw;
-    out.push({ startTicks: floorTicks, bpm: prevBpm });
-  } else {
-    out.push({ startTicks: floorTicks, bpm: seedBpm });
-    prevBpm = seedBpm;
-  }
+  out.push({ startTicks: floorTicks, bpm: seedBpm });
+  prevBpm = seedBpm;
 
   for (let i = 0; i + 1 < dedup.length; i++) {
     const a = dedup[i]!;
@@ -594,7 +586,11 @@ export function tempoEventsFromMsTickAnchors(
     const durMs = b.ms - a.ms;
     if (tickLen <= 0) continue;
     const raw =
-      durMs > 1 ? bpmForTickSpan(tickLen, durMs, meter, ppq, seedBpm) : seedBpm;
+      a.targetTick === floorTicks
+        ? seedBpm
+        : durMs > 1
+          ? bpmForTickSpan(tickLen, durMs, meter, ppq, seedBpm)
+          : seedBpm;
     const bpm = soft ? softClampBpmAdjacent(seedBpm, prevBpm, raw) : raw;
     prevBpm = bpm;
     const last = out[out.length - 1];

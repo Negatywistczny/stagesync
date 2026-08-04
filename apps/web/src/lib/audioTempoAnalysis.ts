@@ -14,6 +14,7 @@ import {
   noteMemoryCheckpoint,
   registerMemoryContributor,
 } from "./memoryPressure.js";
+import { resolveAudioLeadInDelayMs } from "./audioLeadInResolver.js";
 
 const FRAME_SIZE = 1024;
 const BASE_HOP_SIZE = 256;
@@ -202,6 +203,78 @@ function adaptiveOnsetThreshold(flux: Float32Array): number {
   const p90 = sorted[Math.floor(sorted.length * 0.9)] ?? median;
   const adaptive = median + (p90 - median) * 0.35;
   return Math.max(ONSET_THRESHOLD * 0.5, Math.min(0.12, adaptive));
+}
+
+/** Biquad IIR Bandpass Filter helper for Dual-Band Onset Decomposition. */
+export function createBiquadBandpass(centerFreq: number, q: number, sampleRate: number) {
+  const w0 = (2 * Math.PI * centerFreq) / sampleRate;
+  const alpha = Math.sin(w0) / (2 * q);
+  const b0 = alpha;
+  const b1 = 0;
+  const b2 = -alpha;
+  const a0 = 1 + alpha;
+  const a1 = -2 * Math.cos(w0);
+  const a2 = 1 - alpha;
+
+  const nb0 = b0 / a0;
+  const nb1 = b1 / a0;
+  const nb2 = b2 / a0;
+  const na1 = a1 / a0;
+  const na2 = a2 / a0;
+
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+
+  return {
+    processSample(x: number): number {
+      const y = nb0 * x + nb1 * x1 + nb2 * x2 - na1 * y1 - na2 * y2;
+      x2 = x1;
+      x1 = x;
+      y2 = y1;
+      y1 = y;
+      return y;
+    },
+  };
+}
+
+/**
+ * Smart Tempo 5.5: Dual-Band Onset Decomposition
+ * Extracts kickOnsets (20-150Hz) for Beat 1 Downbeat Lock
+ * and snareOnsets (800-3500Hz) for Beats 2 & 4 Subdivision.
+ */
+export function extractDualBandOnsets(
+  mono: Float32Array,
+  sampleRate: number,
+  hopSize: number = 256
+): { kickOnsetsMs: number[]; snareOnsetsMs: number[] } {
+  if (mono.length === 0) return { kickOnsetsMs: [], snareOnsetsMs: [] };
+
+  const kickFilter = createBiquadBandpass(80, 1.2, sampleRate);
+  const snareFilter = createBiquadBandpass(1800, 1.0, sampleRate);
+
+  const envLen = Math.floor(mono.length / hopSize);
+  const kickEnv = new Float32Array(envLen);
+  const snareEnv = new Float32Array(envLen);
+
+  for (let h = 0; h < envLen; h++) {
+    let kSum = 0;
+    let sSum = 0;
+    const start = h * hopSize;
+    for (let s = 0; s < hopSize; s++) {
+      const idx = start + s;
+      if (idx < mono.length) {
+        const x = mono[idx]!;
+        kSum += Math.abs(kickFilter.processSample(x));
+        sSum += Math.abs(snareFilter.processSample(x));
+      }
+    }
+    kickEnv[h] = kSum / hopSize;
+    snareEnv[h] = sSum / hopSize;
+  }
+
+  const kickOnsetsMs = pickOnsetsFromFlux(kickEnv, sampleRate, hopSize);
+  const snareOnsetsMs = pickOnsetsFromFlux(snareEnv, sampleRate, hopSize);
+
+  return { kickOnsetsMs, snareOnsetsMs };
 }
 
 function pickOnsetsFromFlux(
@@ -402,6 +475,53 @@ function musicalPriorBpm(bpm: number): number {
   const diff = bpm - center;
   const gauss = Math.exp(-0.5 * (diff / 18) ** 2);
   return Math.max(0.45, gauss);
+}
+
+/**
+ * Smart Tempo 5.5: Strict Octave Lock Guard
+ * Folds 2x double-time BPM estimates back to quarter-note beat tempo.
+ */
+export function reconcileOctaveBpmWithBarHarmonics(
+  estimatedBpm: number,
+  kickOnsetsMs?: readonly number[]
+): number {
+  if (!(estimatedBpm > 0)) return estimatedBpm;
+
+  // If estimated BPM is >=145 (double-time trap), fold to half tempo
+  if (estimatedBpm >= 145) {
+    const halfBpm = estimatedBpm / 2;
+    if (halfBpm >= 65 && halfBpm <= 125) {
+      console.log(`[SMART TEMPO 5.5 OCTAVE GUARD] Folded double-time ${estimatedBpm.toFixed(2)} BPM -> ${halfBpm.toFixed(2)} BPM`);
+      return Math.round(halfBpm * 100) / 100;
+    }
+  }
+
+  if (kickOnsetsMs && kickOnsetsMs.length >= 6) {
+    const sorted = kickOnsetsMs.slice().sort((a, b) => a - b);
+    const ibis: number[] = [];
+    for (let i = 0; i + 1 < sorted.length; i++) {
+      const dt = sorted[i + 1]! - sorted[i]!;
+      // Quarter note or half note IBIs (approx 350ms to 1200ms)
+      if (dt >= 350 && dt <= 650) {
+        ibis.push(dt);
+      } else if (dt > 650 && dt <= 1200) {
+        ibis.push(dt / 2);
+      }
+    }
+    if (ibis.length >= 5) {
+      ibis.sort((a, b) => a - b);
+      const medianIbi = ibis[Math.floor(ibis.length / 2)]!;
+      const kickBpm = Math.round((60_000 / medianIbi) * 100) / 100;
+      if (kickBpm >= 95 && kickBpm <= 145) {
+        if (Math.abs(estimatedBpm - kickBpm) / kickBpm <= 0.08 && Math.abs(estimatedBpm - kickBpm) > 0.5) {
+          console.log(`[SMART TEMPO LOW-END RHYTHM LOCK] Refined estimatedBpm ${estimatedBpm.toFixed(2)} -> ${kickBpm.toFixed(2)} BPM from low-end kick transients`);
+          return kickBpm;
+        }
+      }
+    }
+  }
+
+  return estimatedBpm;
 }
 
 export type AcfPeakCandidate = {
@@ -895,13 +1015,13 @@ const LOCAL_PERIOD_STEP_HI = 1.18;
  * Hard gate vs stable quarter-note reference (median IBI + period hint).
  * Rejects half-beat / double-time snaps and 1.5-beat syncopation traps.
  */
-const STABLE_PERIOD_STEP_LO = 0.82;
-const STABLE_PERIOD_STEP_HI = 1.22;
+const STABLE_PERIOD_STEP_LO = 0.94;
+const STABLE_PERIOD_STEP_HI = 1.06;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
 const PERIOD_HINT_STABLE_WEIGHT = 0.15;
 /** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band. */
-const PERIOD_HINT_CLAMP_LO = 0.85;
-const PERIOD_HINT_CLAMP_HI = 1.18;
+const PERIOD_HINT_CLAMP_LO = 0.94;
+const PERIOD_HINT_CLAMP_HI = 1.06;
 
 function estimateInitialLocalPeriod(
   onsetsMs: readonly number[],
@@ -932,8 +1052,8 @@ function estimateInitialLocalPeriod(
   }
   // Clamp result to ±5% of periodHint: intro-onset pairs can yield a sub-beat
   // period (e.g. 8th-note gaps) which causes Viterbi to latch onto a 2× tempo.
-  const clampLo = periodHint * 0.95;
-  const clampHi = periodHint * 1.05;
+  const clampLo = periodHint * 0.90;
+  const clampHi = periodHint * 1.10;
   if (barDiffs.length >= 2) {
     const v = medianOfPositive(barDiffs);
     return Math.max(clampLo, Math.min(clampHi, v));
@@ -958,6 +1078,7 @@ function buildBeatGridViterbi(
   gridDurationMs: number,
   maxBeats: number,
   phaseAnchorMs: number,
+  kickOnsetsMs?: readonly number[],
 ): number[] | null {
   if (onsetsMs.length < 4) return null;
   const rawPeriodHint = 60_000 / estimatedBpm;
@@ -988,7 +1109,18 @@ function buildBeatGridViterbi(
     if (relDiff >= 0.25 && relDiff <= 0.75) {
       return 0;
     }
-    return 1 - dist / win;
+    const baseScore = 1 - dist / win;
+
+    // Sub-Bass Priority (20-150Hz Kick Onsets get 1.8x weight boost)
+    let kickBonus = 0;
+    if (kickOnsetsMs && kickOnsetsMs.length > 0) {
+      const nearestKick = nearestOnsetMs(kickOnsetsMs, t);
+      if (Math.abs(nearestKick - t) <= win * 0.5) {
+        kickBonus = 0.8;
+      }
+    }
+
+    return baseScore + kickBonus;
   };
 
   type Cell = {
@@ -1029,15 +1161,10 @@ function buildBeatGridViterbi(
       // Stable reference uses rawPeriodHint anchor so octave-shifted intro
       // onsets cannot pull stableRef toward a 2× tempo throughout the song.
       const stableRef =
-        (1 - PERIOD_HINT_STABLE_WEIGHT) * recentMed +
-        PERIOD_HINT_STABLE_WEIGHT * rawPeriodHint;
+        0.85 * recentMed + 0.15 * rawPeriodHint;
       for (let b = 0; b < bins; b++) {
-        let t =
+        const t =
           center + ((b - half) / half) * p.localPeriod * BEAT_SNAP_FRAC;
-        const nearCenter = nearestOnsetMs(onsetsMs, center);
-        if (b === half && Math.abs(nearCenter - center) <= p.localPeriod * BEAT_SNAP_FRAC) {
-          t = nearCenter;
-        }
         if (t < 0 || t > gridDurationMs + p.localPeriod * 0.1) continue;
         const dt = t - p.t;
         if (
@@ -1064,14 +1191,16 @@ function buildBeatGridViterbi(
         }
         const med = medianOfPositive(nextRecent);
         const nearOnset = nearestOnsetMs(onsetsMs, t);
-        const hasOnset = Math.abs(nearOnset - t) <= 30;
+        const distToOnset = Math.abs(nearOnset - t);
+        const hasOnset = distToOnset <= 30;
+        const snappedT = hasOnset ? nearOnset : t;
         let newLocal = hasOnset
-          ? 0.25 * rawPeriodHint + 0.50 * med + 0.25 * p.localPeriod
-          : 0.75 * p.localPeriod + 0.25 * med;
+          ? 0.55 * dt + 0.30 * med + 0.15 * p.localPeriod
+          : 0.60 * med + 0.40 * p.localPeriod;
         newLocal = Math.max(minPeriod, Math.min(maxPeriod, newLocal));
-        const s = p.score + scoreAt(t, newLocal) - tempoPen * 2.50;
+        const s = p.score + scoreAt(snappedT, newLocal) - tempoPen * 2.50;
         candidates.push({
-          t,
+          t: snappedT,
           localPeriod: newLocal,
           score: s,
           prevIdx: pi,
@@ -1149,6 +1278,7 @@ export function buildBeatGrid(
   gridDurationMs: number,
   maxBeats: number,
   phaseAnchorMs: number = 0,
+  kickOnsetsMs?: readonly number[],
 ): number[] {
   if (!(gridDurationMs > 0) || !(estimatedBpm > 0)) return [];
   const viterbi = buildBeatGridViterbi(
@@ -1157,6 +1287,7 @@ export function buildBeatGrid(
     gridDurationMs,
     maxBeats,
     phaseAnchorMs,
+    kickOnsetsMs,
   );
   if (viterbi) return viterbi;
 
@@ -1296,10 +1427,19 @@ function estimateBpmFromBarHarmonics(onsetsMs: readonly number[]): number {
   
   const strongOnsets = sorted;
 
+  // Anchor onsets from multiple positions: intro (first 20 s) + mid-track (30–70 s).
+  // A 12 s intro-only window with ≤8 onsets is insufficient for slow-attack songs
+  // (Smells Like Teen Spirit, The Winner Takes It All). More anchors = more votes.
+  const t0onset = sorted[0] ?? 0;
+  const introOnsets = sorted.filter((t) => t <= t0onset + 20_000).slice(0, 8);
+  const midOnsets = sorted
+    .filter((t) => t >= t0onset + 30_000 && t <= t0onset + 70_000)
+    .slice(0, 5);
+  const startOnsets = [...new Set([...introOnsets, ...midOnsets])];
+
   for (let barMs = 1700; barMs <= 2400; barMs += 1.0) {
     let score = 0;
     const pMs = barMs / 4;
-    const startOnsets = strongOnsets.filter((t) => t <= (strongOnsets[0] ?? 0) + 12_000).slice(0, 8);
 
     for (const t0 of startOnsets) {
       let subScore = 0;
@@ -1375,11 +1515,21 @@ function refineRawBpmWithOnsetEvidence(
   }
   if (histBpm > 0) {
     competitors.push(histBpm);
-    // Onset period histogram has sub-millisecond period resolution.
-    // Use it to refine coarse ACF when they agree within 3.5%.
-    if (estimate > 0 && Math.abs(histBpm - estimate) / estimate <= 0.035) {
-      estimate = histBpm;
-    }
+  }
+
+  // Consensus ruleset:
+  // 1. If acf.bpm and barBpm agree within 2.5%, rhythm section kick/bass has consensus -> use barBpm!
+  // 2. Else if histBpm and barBpm agree within 2.5%, onset harmonic period has consensus -> use barBpm!
+  // 3. Else if histBpm and acf.bpm agree within 3.5% -> use histBpm!
+  if (acf.bpm > 0 && barBpm > 0 && Math.abs(barBpm - acf.bpm) / acf.bpm <= 0.025) {
+    estimate = Math.round(barBpm * 100) / 100;
+    console.log(`[SMART TEMPO DIAGNOSTICS] Consensus: ACF (${acf.bpm.toFixed(2)}) & BarHarmonics (${barBpm.toFixed(2)}) agree -> ${estimate} BPM`);
+  } else if (histBpm > 0 && barBpm > 0 && Math.abs(barBpm - histBpm) / histBpm <= 0.025) {
+    estimate = Math.round(barBpm * 100) / 100;
+    console.log(`[SMART TEMPO DIAGNOSTICS] Consensus: Histogram (${histBpm.toFixed(2)}) & BarHarmonics (${barBpm.toFixed(2)}) agree -> ${estimate} BPM`);
+  } else if (histBpm > 0 && acf.bpm > 0 && Math.abs(histBpm - acf.bpm) / acf.bpm <= 0.035) {
+    estimate = Math.round(histBpm * 100) / 100;
+    console.log(`[SMART TEMPO DIAGNOSTICS] Consensus: Histogram (${histBpm.toFixed(2)}) & ACF (${acf.bpm.toFixed(2)}) agree -> ${estimate} BPM`);
   }
 
   const adjBpm = estimateBpmFromOnsets(onsetsMs);
@@ -1407,6 +1557,46 @@ function refineRawBpmWithOnsetEvidence(
   }
 
   return { estimate, competitors };
+}
+
+function alignGlobalPhase(
+  beatMs: readonly number[],
+  onsetsMs: readonly number[],
+  maxWindowMs = 60,
+): number[] {
+  if (beatMs.length === 0 || onsetsMs.length === 0) return [...beatMs];
+
+  const earlyBeats = beatMs.slice(0, 12);
+  const shifts: number[] = [];
+
+  for (const b of earlyBeats) {
+    const near = nearestOnsetMs(onsetsMs, b);
+    const dist = Math.abs(near - b);
+    if (dist <= maxWindowMs) {
+      shifts.push(near - b);
+    }
+  }
+
+  if (shifts.length === 0) return [...beatMs];
+
+  shifts.sort((a, b) => a - b);
+  const medianShift = shifts[Math.floor(shifts.length / 2)]!;
+
+  return beatMs.map((b) => Math.max(0, Math.round(b + medianShift)));
+}
+
+function snapToLocalOnset(
+  beatMs: readonly number[],
+  onsetsMs: readonly number[],
+  maxSnapMs = 25,
+): number[] {
+  if (onsetsMs.length === 0 || beatMs.length === 0) return [...beatMs];
+
+  return beatMs.map((b) => {
+    const near = nearestOnsetMs(onsetsMs, b);
+    if (Math.abs(near - b) <= maxSnapMs) return near;
+    return b;
+  });
 }
 
 function snapBeatGridToOnsets(
@@ -1447,12 +1637,29 @@ export function analyzeFromMono(
     const flux = computeOnsetStrengthEnvelope(mono, hopSize);
     onsetsMs = pickOnsetsFromFlux(flux, sampleRate, hopSize);
     const bpmHop = acfHopSize(hopSize, sampleRate);
-    const acfFlux =
+    const rawFlux =
       bpmHop === hopSize
         ? flux
         : computeOnsetStrengthEnvelope(mono, bpmHop);
+
+    // Weight ACF flux with low-frequency (100 Hz) rhythm energy so kick/bass
+    // pulse guides autocorrelation away from high-frequency vocal/piano arpeggio traps.
+    const kickFilter = createBiquadBandpass(100, 1.0, sampleRate);
+    const envLen = Math.floor(mono.length / bpmHop);
+    const kickEnv = new Float32Array(envLen);
+    for (let h = 0; h < envLen; h++) {
+      let kSum = 0;
+      const start = h * bpmHop;
+      for (let s = 0; s < bpmHop; s++) {
+        const idx = start + s;
+        if (idx < mono.length) {
+          kSum += Math.abs(kickFilter.processSample(mono[idx]!));
+        }
+      }
+      kickEnv[h] = kSum / bpmHop;
+    }
     const acf = estimateBpmFromOnsetStrengthDetailed(
-      acfFlux,
+      kickEnv,
       sampleRate,
       bpmHop,
       seedBpm,
@@ -1464,29 +1671,40 @@ export function analyzeFromMono(
       rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);
     }
   }
-  const periodHintBpm = reconcileEstimatedBpm(
+  const { kickOnsetsMs } = extractDualBandOnsets(mono, sampleRate, hopSize);
+  const kickBarBpm = estimateBpmFromBarHarmonics(kickOnsetsMs);
+  if (
+    kickBarBpm >= 90 &&
+    kickBarBpm <= 155 &&
+    (seedBpm == null || seedBpm <= 0) &&
+    ((rawEstimate > 0 && Math.abs(kickBarBpm - rawEstimate) / rawEstimate <= 0.05) ||
+     (competitors.length > 0 && competitors.some((c) => Math.abs(kickBarBpm - c) / c <= 0.05)))
+  ) {
+    console.log(`[SMART TEMPO LOW-END LOCK] Override rawEstimate ${rawEstimate.toFixed(2)} -> ${kickBarBpm.toFixed(2)} BPM from low-pass kick harmonics`);
+    rawEstimate = kickBarBpm;
+  }
+  const periodHintBpmRaw = reconcileEstimatedBpm(
     rawEstimate,
     seedBpm,
     onsetsMs.length,
     competitors,
   );
-  const phaseAnchor = 0;
+  const periodHintBpm = reconcileOctaveBpmWithBarHarmonics(periodHintBpmRaw, kickOnsetsMs);
+  const leadInDelayMs = resolveAudioLeadInDelayMs({ channelData: mono, sampleRate });
+  const phaseAnchor = leadInDelayMs;
   let beatMs = buildBeatGrid(
     onsetsMs,
     periodHintBpm,
     gridDurationMs,
     maxBeats,
     phaseAnchor,
+    kickOnsetsMs,
   );
 
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
-  beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 30);
+  beatMs = alignGlobalPhase(beatMs, onsetsMs, 60);
+  beatMs = snapToLocalOnset(beatMs, onsetsMs, 25);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
-  // Prefer periodHintBpm (from bar-harmonics reconciliation) over the raw
-  // beat-grid median: Viterbi can latch onto 8th-note or syncopated onsets
-  // and produce a median ~10% faster than the true quarter-note period.
-  // Trust ibiBpm only when within ±10% of periodHintBpm (was ±5% — too tight
-  // when Viterbi clamp limits grid to ≤126 BPM and true tempo is ~123 BPM).
   const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
   const estimatedBpm = ibiBpm > 0 && ibiBpmDeviation <= 0.10 ? ibiBpm : periodHintBpm;
   console.log(
@@ -1602,12 +1820,13 @@ export async function analyzeFromMonoAsync(
     phaseAnchor,
   );
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
-  beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 10);
-  const ibiBpm = medianBpmFromBeatMs(beatMs);
-  // Prefer periodHintBpm (from bar-harmonics reconciliation) over the raw
-  // beat-grid median: Viterbi can latch onto 8th-note or syncopated onsets
-  // and produce a median ~10% faster than the true quarter-note period.
-  // Trust ibiBpm only when within ±10% of periodHintBpm.
+  const ibiBpmClean = medianBpmFromBeatMs(beatMs);
+
+  // Two-stage phase alignment & tight onset snapping
+  beatMs = alignGlobalPhase(beatMs, onsetsMs, 60);
+  beatMs = snapToLocalOnset(beatMs, onsetsMs, 25);
+
+  const ibiBpm = ibiBpmClean; // alias — snap grid kept for beat display, not BPM
   const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
   const estimatedBpm = periodHintBpm > 0 ? periodHintBpm : ibiBpm;
   console.log(
