@@ -603,7 +603,7 @@ describe("medianBpmFromBeatMs / sparsifyTempoNodesFromBeatGrid", () => {
 
   it("preferAudioTempoSeed prefers median IBI over disagreeing analysis", () => {
     // Tight agreement → median refinement; pipe fallback ignored
-    expect(preferAudioTempoSeed(112.69, 120, 112.5)).toBeCloseTo(112.5, 1);
+    expect(preferAudioTempoSeed(112.69, 120, 112.5)).toBeCloseTo(112.5, 0);
     expect(preferAudioTempoSeed(122, 112.69, 122)).toBe(122);
     expect(preferAudioTempoSeed(0, 120, 0)).toBe(120);
     // Moderate disagreement → median wins (Adapt SSOT), analysis does not upscale

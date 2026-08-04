@@ -2885,9 +2885,7 @@ export function applyUsUgBridgeToProject(
           defaultBpm:
             audioRef?.estimatedBpm && audioRef.estimatedBpm > 0
               ? audioRef.estimatedBpm
-              : hasAudioTempoMap
-                ? project.defaultBpm
-                : bridged.seedBpm,
+              : bridged.seedBpm,
           tempoMap:
             audioRef?.tempoMap && audioRef.tempoMap.length > 0
               ? audioRef.tempoMap.map((e, idx) => ({
@@ -2895,11 +2893,9 @@ export function applyUsUgBridgeToProject(
                   startTicks: e.startTicks,
                   bpm: e.bpm,
                 }))
-              : hasAudioTempoMap
-                ? project.tempoMap
-                : bridged.tempoMap.length > 0
-                  ? bridged.tempoMap
-                  : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
+              : bridged.tempoMap.length > 0
+                ? bridged.tempoMap
+                : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
         }
       : {}),
   };

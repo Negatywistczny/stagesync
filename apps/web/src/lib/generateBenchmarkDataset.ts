@@ -1,0 +1,285 @@
+/**
+ * Generator script to create Smart Tempo benchmark accuracy dataset JSON.
+ */
+import fs from "node:fs";
+import path from "node:path";
+import { execSync } from "node:child_process";
+import { analyzeAudioTempoAsync } from "./audioTempoAnalysis.js";
+import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap } from "@stagesync/shared";
+
+const FIXTURES_DIR = path.resolve(
+  process.cwd(),
+  "apps/web/test/fixtures/smart-tempo-train-data",
+);
+
+function parseTimecodeToMs(tc: string): number {
+  const parts = tc.trim().split(":");
+  if (parts.length >= 3) {
+    const hrs = parseInt(parts[0]!, 10) - 1;
+    const mins = parseInt(parts[1]!, 10);
+    const secs = parseInt(parts[2]!, 10);
+    let extraMs = 0;
+    if (parts[3]) {
+      const val = parseFloat(parts[3]);
+      extraMs = (val / 25) * 1000;
+    }
+    return (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs;
+  }
+  return 0;
+}
+
+function parseRtfReference(rtfPath: string) {
+  const content = fs.readFileSync(rtfPath, "utf-8");
+  const lines = content.split("\n");
+  const points: { bar: number; bpm: number; timecodeMs: number }[] = [];
+
+  for (const line of lines) {
+    const cleanLine = line
+      .replace(/\\[a-z0-9]+/gi, "")
+      .replace(/[{}\\]/g, "")
+      .trim();
+    const parts = cleanLine
+      .split(/\t+|\s{2,}/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length >= 2) {
+      const firstCol = parts[0]!;
+      const barMatch = firstCol.match(/^(\d+)/);
+      if (barMatch) {
+        const barNum = parseInt(barMatch[1]!, 10);
+        const bpmStr = parts[1]!.replace(",", ".");
+        const bpmVal = parseFloat(bpmStr);
+        const tc = parts[2] ?? "";
+        const timecodeMs = tc ? parseTimecodeToMs(tc) : 0;
+        if (!isNaN(barNum) && !isNaN(bpmVal) && bpmVal > 40 && bpmVal < 250) {
+          points.push({ bar: barNum, bpm: bpmVal, timecodeMs });
+        }
+      }
+    }
+  }
+  return points;
+}
+
+function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
+  const tmpWav = path.join(
+    process.cwd(),
+    `node_modules/.cache/temp_bench_${Date.now()}_${Math.random().toString(36).slice(2)}.wav`,
+  );
+  fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
+  try {
+    execSync(
+      `afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`,
+      { stdio: "ignore" },
+    );
+  } catch {
+    execSync(
+      `ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`,
+      { stdio: "ignore" },
+    );
+  }
+  const buf = fs.readFileSync(tmpWav);
+  try {
+    fs.unlinkSync(tmpWav);
+  } catch (err) {
+    void err;
+  }
+
+  const headerOffset = buf.toString("ascii", 0, 4) === "RIFF" ? 44 : 0;
+  const dataBuf = buf.subarray(headerOffset);
+  const floatData = new Float32Array(
+    dataBuf.buffer,
+    dataBuf.byteOffset,
+    Math.floor(dataBuf.byteLength / 4),
+  );
+  const sampleRate = 44100;
+  const duration = floatData.length / sampleRate;
+
+  return {
+    length: floatData.length,
+    duration,
+    sampleRate,
+    numberOfChannels: 1,
+    getChannelData: () => floatData,
+  } as unknown as AudioBuffer;
+}
+
+export type BarDataPoint = {
+  trackName: string;
+  bar: number;
+  timeSec: number;
+  refBpm: number;
+  estBpm: number;
+  refBarMs: number;
+  estBarMs: number;
+  errorMs: number;
+  tier: "exact" | "close" | "fail";
+};
+
+export type TrackBenchmarkDataset = {
+  id: string;
+  name: string;
+  artist: string;
+  durationSec: number;
+  barsCount: number;
+  exactPct: number;
+  closePct: number;
+  failPct: number;
+  avgErrorMs: number;
+  medianErrorMs: number;
+  p95ErrorMs: number;
+  bars: BarDataPoint[];
+};
+
+async function main() {
+  const files = fs.readdirSync(FIXTURES_DIR);
+  const rtfFiles = files.filter((f) => f.endsWith(".rtf")).sort();
+
+  const allTracks: TrackBenchmarkDataset[] = [];
+
+  for (const rtfFile of rtfFiles) {
+    const baseName = rtfFile.replace(/\.rtf$/, "");
+    const mp3File = files.find(
+      (f) =>
+        f.endsWith(".mp3") &&
+        f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)),
+    );
+    if (!mp3File) continue;
+
+    const rtfPath = path.join(FIXTURES_DIR, rtfFile);
+    const mp3Path = path.join(FIXTURES_DIR, mp3File);
+    const points = parseRtfReference(rtfPath);
+    const audioBuf = loadAudioBufferFromMp3(mp3Path);
+    const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
+      maxAnalysisSec: 300,
+      fullTrackGrid: true,
+    });
+
+    const smartRes = runAudioDrivenSmartTempo({
+      analysis,
+      durationMs: Math.round(audioBuf.duration * 1000),
+      audioStartOffsetMs: 0,
+    });
+
+    const barPoints: BarDataPoint[] = [];
+
+    const beatMs = smartRes.beatMs;
+
+    // --- Structural Anchor Bar Alignment ---
+    // 1. Find which Logic Pro reference point is physically closest to beatMs[0]
+    let firstValidRef = points[0]!;
+    let minDiff = Infinity;
+    for (const p of points) {
+      const diff = Math.abs(p.timecodeMs - beatMs[0]!);
+      if (diff < minDiff) {
+        minDiff = diff;
+        firstValidRef = p;
+      }
+    }
+    const anchorBar = firstValidRef.bar;
+    const anchorMs = firstValidRef.timecodeMs;
+
+    // 2. Find which beat in beatMs is physically closest to anchorMs
+    let anchorIdx = 0;
+    let minBeatDiff = Infinity;
+    for (let i = 0; i < beatMs.length; i++) {
+      const diff = Math.abs(beatMs[i]! - anchorMs);
+      if (diff < minBeatDiff) { minBeatDiff = diff; anchorIdx = i; }
+    }
+
+    const silenceOffset = beatMs[anchorIdx]! - anchorMs;
+    console.log(`[BENCHMARK] ${baseName}: beatMs.length = ${beatMs.length}, anchorBar = ${anchorBar}, anchorMs = ${anchorMs.toFixed(1)}, anchorIdx = ${anchorIdx}, anchorBeatMs = ${beatMs[anchorIdx]!.toFixed(1)}, silenceOffset = ${silenceOffset.toFixed(1)}ms`);
+
+    // Compute local BPM from 4-beat IBI around a given beat index
+    function estBpmAtBeatIdx(idx: number): number {
+      if (idx + 4 < beatMs.length) {
+        const span = beatMs[idx + 4]! - beatMs[idx]!;
+        return span > 0 ? 240_000 / span : smartRes.seedBpm;
+      }
+      if (idx - 4 >= 0) {
+        const span = beatMs[idx]! - beatMs[idx - 4]!;
+        return span > 0 ? 240_000 / span : smartRes.seedBpm;
+      }
+      return smartRes.seedBpm;
+    }
+
+    // 3. Compute errors using nearest beat alignment
+    for (const refPt of points) {
+      const refMs = refPt.timecodeMs + silenceOffset;
+      if (refMs < beatMs[0]! - 500) continue;
+
+      let estMs = beatMs[0]!;
+      let targetIdx = 0;
+      let minNearestDiff = Infinity;
+      for (let i = 0; i < beatMs.length; i++) {
+        const diff = Math.abs(beatMs[i]! - refMs);
+        if (diff < minNearestDiff) {
+          minNearestDiff = diff;
+          estMs = beatMs[i]!;
+          targetIdx = i;
+        }
+      }
+      const estBpm = estBpmAtBeatIdx(targetIdx);
+
+      const refBarMs = 240_000 / refPt.bpm;
+      const estBarMs = 240_000 / estBpm;
+      const timeSec = refMs / 1000;
+
+      const errorMs = Math.round(Math.abs(estMs - refMs) * 10) / 10;
+
+      const tier: "exact" | "close" | "fail" =
+        errorMs <= 60 ? "exact" : errorMs <= 125 ? "close" : "fail";
+
+      barPoints.push({
+        trackName: baseName,
+        bar: refPt.bar,
+        timeSec: Math.round(timeSec * 10) / 10,
+        refBpm: Math.round(refPt.bpm * 100) / 100,
+        estBpm: Math.round(estBpm * 100) / 100,
+        refBarMs: Math.round(refBarMs * 10) / 10,
+        estBarMs: Math.round(estBarMs * 10) / 10,
+        errorMs,
+        tier,
+      });
+    }
+
+    const n = barPoints.length;
+    const sortedErrors = barPoints.map((b) => b.errorMs).sort((a, b) => a - b);
+    const exactCount = barPoints.filter((b) => b.tier === "exact").length;
+    const closeCount = barPoints.filter((b) => b.tier === "close").length;
+    const failCount = barPoints.filter((b) => b.tier === "fail").length;
+    const sumErr = sortedErrors.reduce((a, b) => a + b, 0);
+
+    const medianErrorMs = sortedErrors[Math.floor(n / 2)] ?? 0;
+    const p95ErrorMs = sortedErrors[Math.floor(n * 0.95)] ?? 0;
+
+    let artist = "Logic Pro Benchmark";
+    if (baseName.includes("Billie")) artist = "Michael Jackson";
+    else if (baseName.includes("Survive")) artist = "Gloria Gaynor";
+    else if (baseName.includes("Teen Spirit")) artist = "Nirvana";
+    else if (baseName.includes("Winner")) artist = "ABBA";
+
+    allTracks.push({
+      id: baseName.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+      name: baseName,
+      artist,
+      durationSec: Math.round(audioBuf.duration),
+      barsCount: n,
+      exactPct: Math.round((exactCount / n) * 1000) / 10,
+      closePct: Math.round((closeCount / n) * 1000) / 10,
+      failPct: Math.round((failCount / n) * 1000) / 10,
+      avgErrorMs: Math.round((sumErr / n) * 10) / 10,
+      medianErrorMs: Math.round(medianErrorMs * 10) / 10,
+      p95ErrorMs: Math.round(p95ErrorMs * 10) / 10,
+      bars: barPoints,
+    });
+  }
+
+  const outPath = path.resolve(
+    process.cwd(),
+    "apps/web/src/lib/smartTempoBenchmarkData.json",
+  );
+  fs.writeFileSync(outPath, JSON.stringify(allTracks, null, 2));
+  console.log(`Saved benchmark dataset to ${outPath}`);
+}
+
+main().catch(console.error);

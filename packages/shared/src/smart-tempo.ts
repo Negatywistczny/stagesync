@@ -30,7 +30,7 @@ import { secondsToTicksAlongMap, type TempoMapProject } from "./tempo-map.js";
 import { sectionStartFromVocalTicks } from "./ug-pipe-bars.js";
 
 /** Min |ΔBPM| to emit a Logic-like sparse tempo node (smoothed local tempo). */
-export const SMART_TEMPO_SPARSE_MIN_BPM_DELTA = 0.15;
+export const SMART_TEMPO_SPARSE_MIN_BPM_DELTA = 0.0;
 /** Median window in beats for local tempo (~2 bars in 4/4 — resists IBI blips). */
 export const SMART_TEMPO_SPARSE_WINDOW_BEATS = 4;
 /** Minimum bars between sparse tempo nodes (Logic ~1–2). */
@@ -749,16 +749,16 @@ export function preferAudioTempoSeed(
 
   let chosen = 120;
   if (grid > 0 && median > 0) {
-    const ratio = median / grid;
-    if (ratio >= 0.85 && ratio <= 1.20) {
+    const diffPct = Math.abs(grid - median) / median;
+    if (diffPct > 0.03 && diffPct < 0.35) {
       chosen = Math.round(median * 100) / 100;
     } else {
       chosen = Math.round(grid * 100) / 100;
     }
-  } else if (median > 0) {
-    chosen = Math.round(median * 100) / 100;
   } else if (grid > 0) {
     chosen = Math.round(grid * 100) / 100;
+  } else if (median > 0) {
+    chosen = Math.round(median * 100) / 100;
   } else if (fallback > 0) {
     chosen = Math.round(fallback * 100) / 100;
   }
@@ -858,11 +858,15 @@ export function sparsifyTempoNodesFromBeatGrid(
     .slice()
     .sort((a, b) => a.targetTick - b.targetTick || a.wallMs - b.wallMs);
 
+  const minAllowedBpm = seed > 0 ? seed * 0.90 : 40;
+  const maxAllowedBpm = seed > 0 ? seed * 1.10 : 300;
+  const clampBpm = (val: number) => (val > 0 ? Math.min(maxAllowedBpm, Math.max(minAllowedBpm, val)) : seed);
+
   const firstBpm =
     sorted.length > 1
       ? instantaneousBpmBetweenNodes(sorted[0]!, sorted[1]!, meter, ppq)
       : 0;
-  const inst: number[] = [firstBpm > 0 ? firstBpm : seed];
+  const inst: number[] = [clampBpm(firstBpm)];
   for (let i = 1; i < sorted.length; i++) {
     const bpm = instantaneousBpmBetweenNodes(
       sorted[i - 1]!,
@@ -870,7 +874,7 @@ export function sparsifyTempoNodesFromBeatGrid(
       meter,
       ppq,
     );
-    inst.push(bpm > 0 ? bpm : inst[i - 1]!);
+    inst.push(clampBpm(bpm));
   }
 
   const half = Math.floor(windowBeats / 2);
@@ -930,7 +934,7 @@ export function pruneTempoMapByBpmDelta(
   seedBpm: number,
   floorTicks: number,
   idPrefix: string,
-  deltaBpm: number = TEMPO_SOLVER_PRUNE_DELTA_BPM,
+  deltaBpm: number = 0.5,
 ): TempoEvent[] {
   if (events.length === 0) {
     return [{ id: `${idPrefix}-te-1`, startTicks: floorTicks, bpm: seedBpm }];
@@ -1024,20 +1028,13 @@ export function tempoNodesFromBeatGrid(
   }
 
   // ── Standalone audio (offset === 0): wallMs=0 = Bar 1 Beat 1 ──
-  const gridPeriod = bpm > 0 ? 60_000 / bpm : 500;
-  const firstBeatMs = source[0] ?? 0;
-  const pickupBeats = firstBeatMs / gridPeriod;
-
   let nodes: TempoNode[] = [];
-  if (firstBeatMs > 30) {
-    nodes.push({ wallMs: 0, targetTick: floorTicks });
-  }
 
   // Each detected beat in the Viterbi grid corresponds to exactly 1 beat (perBeat ticks),
   // preserving section-level tempo changes (rubato intro, verse/chorus transitions).
   for (let i = 0; i < source.length; i++) {
     const ms = source[i]!;
-    const tick = floorTicks + Math.round((i + pickupBeats) * perBeat);
+    const tick = floorTicks + i * perBeat;
     nodes.push({ wallMs: Math.max(0, ms), targetTick: tick });
   }
 
@@ -1211,13 +1208,16 @@ export function runAudioDrivenSmartTempo(
     const prev = rawDense[i - 1]!;
     return n.wallMs - prev.wallMs >= 200 || n.targetTick === prev.targetTick;
   });
-  const sparseNodes = sparsifyTempoNodesFromBeatGrid(denseNodes, {
+  const tempoNodes = tempoNodesAtBarBoundaries(
+    beatMs,
+    offset,
     seedBpm,
+    floor,
     meter,
     ppq,
-  });
+  );
   const tempoMap = tempoMapFromTempoNodes(
-    sparseNodes,
+    tempoNodes.length > 0 ? tempoNodes : denseNodes,
     seedBpm,
     floor,
     meter,
@@ -1226,14 +1226,6 @@ export function runAudioDrivenSmartTempo(
     {
       audioDurationMs: input.durationMs > 0 ? input.durationMs : undefined,
     },
-  );
-  const tempoNodes = tempoNodesAtBarBoundaries(
-    beatMs,
-    offset,
-    seedBpm,
-    floor,
-    meter,
-    ppq,
   );
 
   const lastWall = beatMs[beatMs.length - 1] ?? 0;

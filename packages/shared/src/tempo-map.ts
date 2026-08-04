@@ -87,7 +87,11 @@ function integrationAnchors(project: TempoMapProject): IntegrationAnchor[] {
 
 function msFromZeroToTick(toTicks: number, project: TempoMapProject): number {
   if (toTicks === 0) return 0;
-  if (toTicks < 0) return -msFromZeroToTick(-toTicks, project);
+  if (toTicks < 0) {
+    const bpm = resolveTempoAt(project, 0);
+    const meter = resolveMeterAt(project, 0);
+    return ticksToMs(toTicks, bpm, meter, project.ppq);
+  }
   const anchors = integrationAnchors(project);
   let lo = 0;
   let hi = anchors.length - 1;

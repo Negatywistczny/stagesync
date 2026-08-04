@@ -402,8 +402,8 @@ E
     const next = applyUltrastarImportToProject(base, imported);
     expect(next.name).toBe("Imported");
     expect(next.artist).toBe("Band");
-    expect(next.defaultBpm).toBe(100);
-    expect(next.tempoMap[0]!.bpm).toBe(100);
+    expect(next.defaultBpm).toBe(120);
+    expect(next.tempoMap[0]!.bpm).toBe(120);
     expect(next.tekst.clips).toHaveLength(2);
     expect(next.melody.clips).toHaveLength(2);
     expect(next.akordy.clips).toEqual(base.akordy.clips);
@@ -411,7 +411,7 @@ E
     expect(ProjectSchema.parse(next).formatVersion).toBe(6);
   });
 
-  it("updates existing tempoMap @ tick 0 (does not leave stale 120 BPM)", () => {
+  it("leaves existing project tempoMap unchanged (UltraStar #BPM is decode-only)", () => {
     const imported = importUltrastarText(`#TITLE:Africa
 #BPM:369.2
 #GAP:23300
@@ -420,19 +420,15 @@ E
 `);
     expect(imported.ok).toBe(true);
     if (!imported.ok) return;
-    expect(imported.metronomeBpm).toBe(92.3);
 
     const base = createProjectSeed("p1", "Old", "2026-08-02T12:00:00.000Z");
     expect(base.tempoMap[0]!.bpm).toBe(120);
     const next = applyUltrastarImportToProject(base, imported);
-    expect(next.defaultBpm).toBe(92.3);
+    expect(next.defaultBpm).toBe(120);
     expect(next.tempoMap).toHaveLength(1);
     expect(next.tempoMap[0]!.startTicks).toBe(0);
-    expect(next.tempoMap[0]!.bpm).toBe(92.3);
+    expect(next.tempoMap[0]!.bpm).toBe(120);
     expect(next.tekst.clips.length).toBeGreaterThan(0);
-    expect(next.tekst.clips[0]!.startTicks).toBe(
-      elapsedToTicks(23300, 92.3, METER, DEFAULT_PPQ),
-    );
   });
 });
 

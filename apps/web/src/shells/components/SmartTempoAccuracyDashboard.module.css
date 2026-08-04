@@ -1,0 +1,572 @@
+/* SmartTempoAccuracyDashboard.module.css — Premium Dark Mode Analytics UI Polish */
+
+.container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-6, 24px);
+  padding: 28px;
+  background: var(--ss-color-bg, #0B0F17);
+  color: var(--ss-color-text, #F3F4F6);
+  font-family: var(--ss-font-sans, system-ui, -apple-system, sans-serif);
+  border-radius: var(--ss-radius-lg, 14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+}
+
+/* Header Layout & Controls (Row 1 & Row 2) */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.headerRow1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #FFFFFF;
+}
+
+.badgeHeader {
+  font-size: 0.725rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9CA3AF;
+}
+
+.headerControlsRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gradeModeToggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.gradeModeBtn {
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gradeModeBtn:hover {
+  color: #F3F4F6;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gradeModeActiveDaw {
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.gradeModeActiveStage {
+  background: #8B5CF6 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.compareSelect {
+  background: rgba(255, 255, 255, 0.06);
+  color: #F3F4F6;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.compareSelect:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.compareSelect:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Row 2: Track Selector Pills */
+.headerRow2 {
+  display: flex;
+  align-items: center;
+}
+
+.trackSelector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  overflow-x: auto;
+}
+
+.trackBtn {
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.trackBtn:hover {
+  color: #F3F4F6;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.trackBtnActive {
+  background: #3B82F6 !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* KPI Cards Section */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.kpiCard {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpiCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.kpiCardExact {
+  border-left: 4px solid #10B981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.kpiCardClose {
+  border-left: 4px solid #F59E0B;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.kpiCardFail {
+  border-left: 4px solid #EF4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.kpiCardStats {
+  border-left: 4px solid #6366F1;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.kpiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpiLabel {
+  font-size: 0.775rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9CA3AF;
+}
+
+.kpiBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.badgeExact { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+.badgeClose { background: rgba(245, 158, 11, 0.2); color: #FBBF24; }
+.badgeFail  { background: rgba(239, 68, 68, 0.2); color: #F87171; }
+.badgeStats { background: rgba(99, 102, 241, 0.2); color: #818CF8; }
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.kpiValue {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+}
+
+.deltaBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 1;
+}
+
+.deltaGood {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.deltaBad {
+  background: rgba(239, 68, 68, 0.18);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.deltaNeutral {
+  background: rgba(156, 163, 175, 0.18);
+  color: #9CA3AF;
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.kpiMeta {
+  font-size: 0.775rem;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Main Charts Grid Layout */
+.chartGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chartCardFull {
+  grid-column: 1 / -1;
+}
+
+.chartTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chartTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #F3F4F6;
+}
+
+.chartDesc {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #9CA3AF;
+  margin-top: 3px;
+}
+
+.chartControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.775rem;
+  color: #9CA3AF;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxInput {
+  accent-color: #3B82F6;
+  cursor: pointer;
+}
+
+/* Histogram Container */
+.histogramWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.histogramBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 200px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.histogramCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.barValueTag {
+  font-size: 0.725rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #F3F4F6;
+  white-space: nowrap;
+}
+
+.barValueSub {
+  font-size: 0.65rem;
+  color: #9CA3AF;
+  font-weight: 400;
+}
+
+.barFill {
+  width: 100%;
+  max-width: 44px;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.barFill:hover {
+  filter: brightness(1.2);
+}
+
+.barFillExact { background: linear-gradient(180deg, #34D399 0%, #10B981 100%); }
+.barFillClose { background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%); }
+.barFillFail  { background: linear-gradient(180deg, #F87171 0%, #EF4444 100%); }
+
+.histogramLabel {
+  position: absolute;
+  bottom: -24px;
+  font-size: 0.725rem;
+  color: #9CA3AF;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Legend / Threshold Indicator */
+.thresholdLegend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 8px;
+  font-size: 0.775rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9CA3AF;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dotExact { background: #10B981; }
+.dotClose { background: #F59E0B; }
+.dotFail  { background: #EF4444; }
+
+/* SVG Chart Wrapper */
+.svgChartWrap {
+  width: 100%;
+  height: 240px;
+  position: relative;
+}
+
+.svgChart {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.cdfArea {
+  fill: url(#cdfGradient);
+  opacity: 0.35;
+}
+
+.cdfLine {
+  fill: none;
+  stroke: #10B981;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.refLine {
+  stroke-dasharray: 4 4;
+  stroke-width: 1.5;
+}
+
+.refLineExact { stroke: #10B981; }
+.refLineClose { stroke: #F59E0B; }
+
+.refText {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: #CBD5E1;
+}
+
+/* Timeline Drift Plot — Cleaned Spiderweb */
+.driftPoint {
+  transition: r 0.15s ease, fill-opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.driftPoint:hover {
+  r: 4px !important;
+  fill-opacity: 1 !important;
+}
+
+.driftPointExact { fill: #10B981; }
+.driftPointClose { fill: #F59E0B; }
+.driftPointFail  { fill: #EF4444; }
+
+.driftLine {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1px;
+}
+
+.compareLine {
+  fill: none;
+  stroke: #94A3B8;
+  stroke-width: 1px;
+  opacity: 0.15;
+  stroke-dasharray: 3 3;
+}
+
+/* Floating Tooltip */
+.tooltip {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.775rem;
+  color: #F3F4F6;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  white-space: nowrap;
+}
+
+.tooltipTitle {
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+  font-size: 0.825rem;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 3px;
+}

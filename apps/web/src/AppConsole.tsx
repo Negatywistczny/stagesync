@@ -7,6 +7,7 @@ import { DesktopRootRedirect } from "./shells/DesktopRootRedirect.js";
 import { DeviceNameGate } from "./shells/DeviceNameGate.js";
 import { RouteErrorPage } from "./shells/RouteErrorPage.js";
 import { TimelineShell } from "./shells/TimelineShell.js";
+import { SmartTempoPage } from "./shells/pages/SmartTempoPage.js";
 
 /**
  * Console SPA — full desktop parity routes (Admin + Timeline + Client).
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { path: "/client", element: <ClientShell /> },
       { path: "/admin", element: <AdminShell /> },
       { path: "/timeline/:projectId", element: <TimelineShell /> },
+      { path: "/smart-tempo", element: <SmartTempoPage /> },
       { path: "/timeline", element: <Navigate to="/admin" replace /> },
       { path: "*", element: <Navigate to="/" replace /> },
     ],
