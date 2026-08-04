@@ -975,25 +975,18 @@ export function tempoNodesFromBeatGrid(
       source = [offset, ...source];
     }
     const originIdx = closestBeatIndex(source, offset);
+    const firstBeatTicks = Math.max(0, floorTicks - originIdx * perBeat);
     let nodes: TempoNode[] = source.map((ms, i) => ({
-      wallMs: Math.max(0, ms),
-      targetTick: floorTicks + (i - originIdx) * perBeat,
+      wallMs: i === originIdx ? offset : Math.max(0, ms),
+      targetTick: firstBeatTicks + i * perBeat,
     }));
-    nodes.push({ wallMs: offset, targetTick: floorTicks });
     nodes = dedupeTempoNodesByWallMs(nodes);
 
-    // Affine lock: file@Beat1 → floorTicks while preserving relative intervals.
-    const uOff = interpolateTickAtWallMs(nodes, offset);
-    const shift = floorTicks - uOff;
-    if (Math.abs(shift) > 1e-6) {
-      for (const n of nodes) {
-        n.targetTick = Math.round(n.targetTick + shift);
-      }
-    }
 
-    // Drop pre-roll nodes (negative / before Beat 1 on the tick axis).
+
+    // Keep pre-roll audio nodes down to wallMs=0 (targetTick=0).
     nodes = nodes.filter(
-      (n) => n.wallMs >= offset - 1 && n.targetTick >= floorTicks - 1,
+      (n) => n.wallMs >= -1 && n.targetTick >= -1,
     );
     if (nodes.length === 0) {
       nodes = [{ wallMs: offset, targetTick: floorTicks }];
@@ -1010,14 +1003,8 @@ export function tempoNodesFromBeatGrid(
       });
     }
 
-    if (nodes[0]!.targetTick !== floorTicks) {
-      const lift = floorTicks - nodes[0]!.targetTick;
-      for (const n of nodes) n.targetTick += lift;
-    }
-    nodes[0]!.wallMs = Math.min(nodes[0]!.wallMs, offset);
-    if (offset > 0) {
-      nodes[0]!.wallMs = offset;
-      nodes[0]!.targetTick = floorTicks;
+    if (nodes[0]!.targetTick > 0 && nodes[0]!.wallMs > 0) {
+      nodes.unshift({ wallMs: 0, targetTick: 0 });
     }
     return dedupeTempoNodesByWallMs(nodes);
   }
@@ -1191,7 +1178,7 @@ export function runAudioDrivenSmartTempo(
   // otherwise average a single short interval into a multi-BPM Adapt jump.
   beatMs = sanitizeBeatGridIbis(beatMs, seedBpm);
 
-  const denseNodes = tempoNodesFromBeatGrid(
+  const rawDense = tempoNodesFromBeatGrid(
     beatMs,
     offset,
     seedBpm,
@@ -1199,6 +1186,11 @@ export function runAudioDrivenSmartTempo(
     meter,
     ppq,
   );
+  const denseNodes = rawDense.filter((n, i) => {
+    if (i === 0) return true;
+    const prev = rawDense[i - 1]!;
+    return n.wallMs - prev.wallMs >= 200 || n.targetTick === prev.targetTick;
+  });
   const sparseNodes = sparsifyTempoNodesFromBeatGrid(denseNodes, {
     seedBpm,
     meter,
