@@ -871,9 +871,9 @@ export function sparsifyTempoNodesFromBeatGrid(
   let lastBpm = smoothed[0]!;
   for (let i = 1; i < sorted.length - 1; i++) {
     const n = sorted[i]!;
-    const floorTicks = sorted[0]!.targetTick;
+    const originTick = Math.floor(sorted[0]!.targetTick / barTicks) * barTicks;
     const perBeat = localTicksPerBeat(meter, ppq);
-    const relTicks = Math.abs(n.targetTick - floorTicks);
+    const relTicks = Math.abs(n.targetTick - originTick);
     const modBar = relTicks % barTicks;
     const isBarStart = modBar <= perBeat * 0.5 || barTicks - modBar <= perBeat * 0.5;
     if (!isBarStart) continue;
@@ -1069,8 +1069,14 @@ export function tempoNodesAtBarBoundaries(
     Math.round((meter.numerator * 4) / meter.denominator),
   );
   const out: TempoNode[] = [];
-  for (let i = 0; i < dense.length; i += beatsPerBar) {
+  if (dense.length > 0 && dense[0]!.wallMs < (dense[1]?.wallMs ?? 1) - 1) {
+    out.push({ ...dense[0]! });
+  }
+  const firstBeatIdx = dense.findIndex((n) => n.targetTick >= floorTicks);
+  const start = firstBeatIdx >= 0 ? firstBeatIdx : 0;
+  for (let i = start; i < dense.length; i += beatsPerBar) {
     if (out.length >= SMART_TEMPO_MAX_UI_NODES) break;
+    if (out.length > 0 && out[out.length - 1]!.wallMs === dense[i]!.wallMs) continue;
     out.push({ ...dense[i]! });
   }
   const last = dense[dense.length - 1];
