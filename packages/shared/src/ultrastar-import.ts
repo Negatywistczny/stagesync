@@ -662,8 +662,16 @@ export function tempoMapWithImportedBpm(
 export function applyUltrastarImportToProject(
   project: Project,
   imported: UltrastarImportOk,
-  _options: ApplyUltrastarOptions = {},
+  options: ApplyUltrastarOptions = {},
 ): Project {
+  const bpm = imported.metronomeBpm;
+  const bpmUpdates =
+    options.applyBpm && bpm && bpm > 0
+      ? {
+          defaultBpm: bpm,
+          tempoMap: tempoMapWithImportedBpm(project.tempoMap, bpm),
+        }
+      : {};
   return {
     ...project,
     ...(imported.title?.trim()
@@ -674,5 +682,6 @@ export function applyUltrastarImportToProject(
       : {}),
     tekst: imported.tekst,
     melody: imported.melody,
+    ...bpmUpdates,
   };
 }

@@ -192,8 +192,8 @@ export function SmartTempoAccuracyDashboard({
     if (!compareRun) return null;
 
     let baseExactPct = compareRun.summary.dawGrade?.exactPct ?? compareRun.summary.exactPct;
-    let baseClosePct = compareRun.summary.dawGrade?.closePct ?? compareRun.summary.closePct;
-    let baseFailPct = compareRun.summary.dawGrade?.failPct ?? compareRun.summary.failPct;
+    const baseClosePct = compareRun.summary.dawGrade?.closePct ?? compareRun.summary.closePct;
+    const baseFailPct = compareRun.summary.dawGrade?.failPct ?? compareRun.summary.failPct;
 
     let basePerfectPct = compareRun.summary.stageGrade?.perfectPct ?? 15.0;
     let baseAcceptablePct = compareRun.summary.stageGrade?.acceptablePct ?? 25.0;

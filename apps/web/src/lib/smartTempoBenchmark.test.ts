@@ -32,9 +32,9 @@ const FIXTURES_DIR = path.resolve(
 // Accuracy tiers (bar period error in milliseconds)
 // ---------------------------------------------------------------------------
 /** 🟢 EXACT: DAW-grade accuracy (≤60ms ≈ ±3.6 BPM at 120 BPM). */
-const EXACT_THRESHOLD_MS = 60;
+export const EXACT_THRESHOLD_MS = 60;
 /** 🟡 CLOSE: acceptable rubato drift — usable but not ideal (60–125ms). */
-const CLOSE_THRESHOLD_MS = 125;
+export const CLOSE_THRESHOLD_MS = 125;
 // 🔴 FAIL: > 125 ms — structural error (≥ one sixteenth note at 120 BPM, clearly audible)
 
 // ---------------------------------------------------------------------------
@@ -147,6 +147,7 @@ export function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
 // ---------------------------------------------------------------------------
 describe("Smart Tempo Train Data Accuracy Benchmark", () => {
   it("meets accuracy gates: ≥60% 🟢 EXACT (≤60ms) and ≤10% 🔴 FAIL (>125ms)", async (ctx) => {
+    // eslint-disable-next-line turbo/no-undeclared-env-vars
     if (!process.env.RUN_SMART_TEMPO_BENCHMARK || !hasDecoderAndFixtures()) {
       ctx.skip();
       return;

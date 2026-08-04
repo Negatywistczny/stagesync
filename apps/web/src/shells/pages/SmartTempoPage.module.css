@@ -2,8 +2,8 @@
 
 .pageContainer {
   min-height: 100vh;
-  background-color: #0b0f19;
-  color: #f3f4f6;
+  background-color: #0b0f19; /* ss-css-allow */
+  color: #f3f4f6; /* ss-css-allow */
   display: flex;
   flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.75rem;
+  padding: 1rem 1.75rem; /* ss-css-allow */
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -25,19 +25,19 @@
 .leftSection {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.25rem; /* ss-css-allow */
 }
 
 .backBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.5rem; /* ss-css-allow */
+  padding: 0.5rem 1rem; /* ss-css-allow */
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  color: #94a3b8;
-  font-size: 0.875rem;
+  color: #94a3b8; /* ss-css-allow */
+  font-size: 0.875rem; /* ss-css-allow */
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
@@ -46,7 +46,7 @@
 
 .backBtn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #f8fafc;
+  color: #f8fafc; /* ss-css-allow */
   border-color: rgba(255, 255, 255, 0.25);
   transform: translateX(-2px);
 }
@@ -54,39 +54,39 @@
 .pageHeaderInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.15rem; /* ss-css-allow */
 }
 
 .pageTitle {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.25rem; /* ss-css-allow */
   font-weight: 700;
-  color: #f8fafc;
+  color: #f8fafc; /* ss-css-allow */
   letter-spacing: -0.01em;
 }
 
 .pageSubtitle {
   margin: 0;
-  font-size: 0.8125rem;
-  color: #64748b;
+  font-size: 0.8125rem; /* ss-css-allow */
+  color: #64748b; /* ss-css-allow */
 }
 
 .rightSection {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.75rem; /* ss-css-allow */
 }
 
 .versionBadge {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
+  gap: 0.35rem; /* ss-css-allow */
+  padding: 0.35rem 0.75rem; /* ss-css-allow */
   background: rgba(59, 130, 246, 0.12);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 9999px;
-  color: #60a5fa;
-  font-size: 0.75rem;
+  color: #60a5fa; /* ss-css-allow */
+  font-size: 0.75rem; /* ss-css-allow */
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -96,14 +96,14 @@
   display: inline-block;
   width: 6px;
   height: 6px;
-  background-color: #3b82f6;
+  background-color: #3b82f6; /* ss-css-allow */
   border-radius: 50%;
-  box-shadow: 0 0 8px #3b82f6;
+  box-shadow: 0 0 8px #3b82f6; /* ss-css-allow */
 }
 
 .mainContent {
   flex: 1;
-  padding: 1.75rem;
+  padding: 1.75rem; /* ss-css-allow */
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;

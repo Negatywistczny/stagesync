@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { analyzeAudioTempoAsync } from "./audioTempoAnalysis.js";
-import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap } from "@stagesync/shared";
+import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
