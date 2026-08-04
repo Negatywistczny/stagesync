@@ -673,7 +673,6 @@ export function CombinedUsUgImportForm({
       projectAudioAssets,
       usPreview,
       beat1ResolveOpts,
-      suggestedGridBpm,
     ],
   );
 
@@ -821,7 +820,7 @@ export function CombinedUsUgImportForm({
         setIngestProgress(null);
       }
     },
-    [projectId, usPreview, suggestedGridBpm, beat1ResolveOpts],
+    [projectId, usPreview, beat1ResolveOpts],
   );
 
   async function fetchYoutubeAudio(videoIdOverride?: string | null) {

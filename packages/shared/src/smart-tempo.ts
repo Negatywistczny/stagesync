@@ -22,7 +22,6 @@ import {
   layoutContiguousFormaPlans,
   tempoEventsFromMsTickAnchors,
   TEMPO_MAP_MIN_BPM,
-  TEMPO_SOLVER_PRUNE_DELTA_BPM,
   type MsTickAnchor,
   type TempoSolverSectionPlan,
 } from "./tempo-map-solver.js";

@@ -1546,7 +1546,7 @@ export function analyzeFromMono(
   let rawEstimate: number;
   let competitors: number[] = [];
   let acfFlux: Float32Array | undefined;
-  let bpmHop = acfHopSize(hopSize, sampleRate);
+  const bpmHop = acfHopSize(hopSize, sampleRate);
 
   if (skipOnsets) {
     rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);

@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { analyzeAudioTempoAsync } from "./audioTempoAnalysis.js";
-import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap } from "@stagesync/shared";
+import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
@@ -40,7 +40,7 @@ function parseRtfReference(rtfPath: string) {
       .trim();
     const parts = cleanLine
       .split(/\t+|\s{2,}/)
-      .map((p) => p.trim())
+      .map((p: string) => p.trim())
       .filter(Boolean);
     if (parts.length >= 2) {
       const firstCol = parts[0]!;
@@ -132,14 +132,14 @@ export type TrackBenchmarkDataset = {
 
 async function main() {
   const files = fs.readdirSync(FIXTURES_DIR);
-  const rtfFiles = files.filter((f) => f.endsWith(".rtf")).sort();
+  const rtfFiles = files.filter((f: string) => f.endsWith(".rtf")).sort();
 
   const allTracks: TrackBenchmarkDataset[] = [];
 
   for (const rtfFile of rtfFiles) {
     const baseName = rtfFile.replace(/\.rtf$/, "");
     const mp3File = files.find(
-      (f) =>
+      (f: string) =>
         f.endsWith(".mp3") &&
         f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)),
     );

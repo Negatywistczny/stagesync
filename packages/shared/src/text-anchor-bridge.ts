@@ -2871,11 +2871,6 @@ export function applyUsUgBridgeToProject(
     },
     { applyBpm: false },
   );
-  const hasAudioTempoMap =
-    project.assets.some((a) => a.kind === "audio") ||
-    project.audioClips.length > 0 ||
-    (project.tempoMap.length > 1 &&
-      project.tempoMap.some((e) => e.id?.startsWith("stm-")));
   let next: Project = {
     ...withUs,
     forma: { clips: [...countdown, ...bridged.formaMusic.clips] },

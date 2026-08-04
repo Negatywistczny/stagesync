@@ -20,7 +20,7 @@ function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
     execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" });
   }
   const buf = fs.readFileSync(tmpWav);
-  try { fs.unlinkSync(tmpWav); } catch {}
+  try { fs.unlinkSync(tmpWav); } catch { /* ignore */ }
 
   const headerOffset = buf.toString("ascii", 0, 4) === "RIFF" ? 44 : 0;
   const dataBuf = buf.subarray(headerOffset);
