@@ -349,7 +349,7 @@ describe("runAudioDrivenSmartTempo", () => {
       mae += Math.abs(bpmAtBar(bar) - bpm);
     }
     mae /= logicish.length;
-    expect(mae).toBeLessThan(3.5);
+    expect(mae).toBeLessThan(1.5);
   });
 
   it("caps fallback beat grid for very long audio", () => {
@@ -789,9 +789,28 @@ describe("tempoMapFromTempoNodes", () => {
       "t",
       { audioDurationMs: 5000 },
     );
-    // ±15% seed band (safety) — pathological BAR*40 segment is clipped.
-    expect(map.every((ev) => ev.bpm >= 120 * 0.85)).toBe(true);
-    expect(map.every((ev) => ev.bpm <= 120 * 1.15)).toBe(true);
+    // ±35% seed band (safety) — pathological BAR*40 segment is clipped.
+    expect(map.every((ev) => ev.bpm >= 120 * 0.65)).toBe(true);
+    expect(map.every((ev) => ev.bpm <= 120 * 1.45)).toBe(true);
+  });
+
+  it("preserves section tempo changes (rubato / accelerando) within ±35% of seed", () => {
+    const BAR = ticksPerBar(METER, DEFAULT_PPQ);
+    const map = tempoMapFromTempoNodes(
+      [
+        { wallMs: 0, targetTick: 0 },
+        { wallMs: 2000, targetTick: BAR }, // ~120 BPM
+        { wallMs: 3777, targetTick: BAR * 2 }, // ~135 BPM
+      ],
+      120,
+      0,
+      METER,
+      DEFAULT_PPQ,
+      "t",
+      { audioDurationMs: 4000 },
+    );
+    expect(map.length).toBeGreaterThan(1);
+    expect(map[1]!.bpm).toBeGreaterThan(125);
   });
 });
 

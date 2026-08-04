@@ -166,6 +166,11 @@ describe("analyzeAudioTempo", () => {
     expect(reconcileEstimatedBpm(122, 120, 40)).toBeCloseTo(122, 0);
   });
 
+  it("reconcileEstimatedBpm preserves fast tempos (>160 BPM) without halving", () => {
+    expect(reconcileEstimatedBpm(175.5, undefined, 40)).toBeCloseTo(175.5, 1);
+    expect(reconcileEstimatedBpm(180.0, undefined, 40)).toBeCloseTo(180.0, 1);
+  });
+
   it("reconcileEstimatedBpm prefers competing peak nearer seed when ACF diverges >6%", () => {
     // Same octave, ACF far from seed, but a competing real peak nearer seed.
     expect(

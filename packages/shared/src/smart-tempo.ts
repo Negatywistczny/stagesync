@@ -471,7 +471,7 @@ export function refineBeatGridWithOnsets(
     const expected = cappedBeats[i]!;
     const prev = out[out.length - 1]!;
     const period = expected - (cappedBeats[i - 1] ?? prev);
-    const windowMs = Math.max(period * 0.45, msPerBarAtBpm(seedBpm, meter, ppq) * 0.25);
+    const windowMs = period * 0.15;
     const near = findOnsetNearExpected(onsetsMs, expected, windowMs);
     const observed = near ?? expected;
     const gate = evaluateDriftGate(observed, expected, {
@@ -738,7 +738,14 @@ export function preferAudioTempoSeed(
   const fallback = fallbackBpm > 0 ? fallbackBpm : 0;
 
   let chosen = 120;
-  if (median > 0) {
+  if (grid > 0 && median > 0) {
+    const ratio = median / grid;
+    if (ratio >= 0.85 && ratio <= 1.20) {
+      chosen = Math.round(median * 100) / 100;
+    } else {
+      chosen = Math.round(grid * 100) / 100;
+    }
+  } else if (median > 0) {
     chosen = Math.round(median * 100) / 100;
   } else if (grid > 0) {
     chosen = Math.round(grid * 100) / 100;
@@ -864,7 +871,11 @@ export function sparsifyTempoNodesFromBeatGrid(
   let lastBpm = smoothed[0]!;
   for (let i = 1; i < sorted.length - 1; i++) {
     const n = sorted[i]!;
-    const isBarStart = n.targetTick % barTicks === 0;
+    const floorTicks = sorted[0]!.targetTick;
+    const perBeat = localTicksPerBeat(meter, ppq);
+    const relTicks = Math.abs(n.targetTick - floorTicks);
+    const modBar = relTicks % barTicks;
+    const isBarStart = modBar <= perBeat * 0.5 || barTicks - modBar <= perBeat * 0.5;
     if (!isBarStart) continue;
 
     const last = out[out.length - 1]!;
@@ -957,44 +968,84 @@ export function tempoNodesFromBeatGrid(
   if (source.length < 2) {
     source = beatMs.length > 0 ? [...beatMs] : [offset];
   }
-  if (source[0]! > offset + 1) {
-    source = [offset, ...source];
-  }
 
-  const originIdx = closestBeatIndex(source, offset);
-  let nodes: TempoNode[] = source.map((ms, i) => ({
-    wallMs: Math.max(0, ms),
-    targetTick: floorTicks + (i - originIdx) * perBeat,
-  }));
-
-  nodes.push({ wallMs: offset, targetTick: floorTicks });
-  nodes = dedupeTempoNodesByWallMs(nodes);
-
-  // Affine lock: file@Beat1 → floorTicks while preserving relative intervals.
-  const uOff = interpolateTickAtWallMs(nodes, offset);
-  const shift = floorTicks - uOff;
-  if (Math.abs(shift) > 1e-6) {
-    for (const n of nodes) {
-      n.targetTick = Math.round(n.targetTick + shift);
+  if (offset > 0) {
+    // ── GAP scenario (original logic, unchanged) ──
+    if (source[0]! > offset + 1) {
+      source = [offset, ...source];
     }
-  }
-
-  // Drop pre-roll nodes (negative / before Beat 1 on the tick axis).
-  nodes = nodes.filter(
-    (n) => n.wallMs >= offset - 1 && n.targetTick >= floorTicks - 1,
-  );
-  if (nodes.length === 0) {
-    nodes = [{ wallMs: offset, targetTick: floorTicks }];
-  } else {
+    const originIdx = closestBeatIndex(source, offset);
+    let nodes: TempoNode[] = source.map((ms, i) => ({
+      wallMs: Math.max(0, ms),
+      targetTick: floorTicks + (i - originIdx) * perBeat,
+    }));
     nodes.push({ wallMs: offset, targetTick: floorTicks });
     nodes = dedupeTempoNodesByWallMs(nodes);
+
+    // Affine lock: file@Beat1 → floorTicks while preserving relative intervals.
+    const uOff = interpolateTickAtWallMs(nodes, offset);
+    const shift = floorTicks - uOff;
+    if (Math.abs(shift) > 1e-6) {
+      for (const n of nodes) {
+        n.targetTick = Math.round(n.targetTick + shift);
+      }
+    }
+
+    // Drop pre-roll nodes (negative / before Beat 1 on the tick axis).
+    nodes = nodes.filter(
+      (n) => n.wallMs >= offset - 1 && n.targetTick >= floorTicks - 1,
+    );
+    if (nodes.length === 0) {
+      nodes = [{ wallMs: offset, targetTick: floorTicks }];
+    } else {
+      nodes.push({ wallMs: offset, targetTick: floorTicks });
+      nodes = dedupeTempoNodesByWallMs(nodes);
+    }
+
+    if (nodes.length === 1) {
+      const period = 60_000 / bpm;
+      nodes.push({
+        wallMs: offset + period,
+        targetTick: floorTicks + perBeat,
+      });
+    }
+
+    if (nodes[0]!.targetTick !== floorTicks) {
+      const lift = floorTicks - nodes[0]!.targetTick;
+      for (const n of nodes) n.targetTick += lift;
+    }
+    nodes[0]!.wallMs = Math.min(nodes[0]!.wallMs, offset);
+    if (offset > 0) {
+      nodes[0]!.wallMs = offset;
+      nodes[0]!.targetTick = floorTicks;
+    }
+    return dedupeTempoNodesByWallMs(nodes);
   }
 
-  // Ensure a seed-BPM step exists when only one node survives.
+  // ── Standalone audio (offset === 0): wallMs=0 = Bar 1 Beat 1 ──
+  const gridPeriod = bpm > 0 ? 60_000 / bpm : 500;
+  const firstBeatMs = source[0] ?? 0;
+  const pickupBeats = firstBeatMs / gridPeriod;
+
+  let nodes: TempoNode[] = [];
+  if (firstBeatMs > 30) {
+    nodes.push({ wallMs: 0, targetTick: floorTicks });
+  }
+
+  // Each detected beat in the Viterbi grid corresponds to exactly 1 beat (perBeat ticks),
+  // preserving section-level tempo changes (rubato intro, verse/chorus transitions).
+  for (let i = 0; i < source.length; i++) {
+    const ms = source[i]!;
+    const tick = floorTicks + Math.round((i + pickupBeats) * perBeat);
+    nodes.push({ wallMs: Math.max(0, ms), targetTick: tick });
+  }
+
+  nodes = dedupeTempoNodesByWallMs(nodes);
+
   if (nodes.length === 1) {
     const period = 60_000 / bpm;
     nodes.push({
-      wallMs: offset + period,
+      wallMs: period,
       targetTick: floorTicks + perBeat,
     });
   }
@@ -1002,11 +1053,6 @@ export function tempoNodesFromBeatGrid(
   if (nodes[0]!.targetTick !== floorTicks) {
     const lift = floorTicks - nodes[0]!.targetTick;
     for (const n of nodes) n.targetTick += lift;
-  }
-  nodes[0]!.wallMs = Math.min(nodes[0]!.wallMs, offset);
-  if (offset > 0) {
-    nodes[0]!.wallMs = offset;
-    nodes[0]!.targetTick = floorTicks;
   }
 
   return dedupeTempoNodesByWallMs(nodes);
@@ -1076,6 +1122,7 @@ export function runAudioDrivenSmartTempo(
   const gridBpm =
     input.analysis.estimatedBpm > 0 ? input.analysis.estimatedBpm : lockBpm;
 
+  const cameFromViterbi = input.analysis.beatMs.length > 0;
   let beatMs = input.analysis.beatMs.slice(0, SMART_TEMPO_MAX_BEATS);
   if (beatMs.length === 0 && input.analysis.onsetsMs.length > 0) {
     beatMs = input.analysis.onsetsMs.slice(0, SMART_TEMPO_MAX_BEATS);
@@ -1118,17 +1165,19 @@ export function runAudioDrivenSmartTempo(
     }
   }
 
-  const refineBpm = lockBpm > 0 ? lockBpm : gridBpm;
-  beatMs = refineBeatGridWithOnsets(
-    beatMs,
-    input.analysis.onsetsMs,
-    refineBpm,
-    meter,
-    ppq,
-  );
-  beatMs = selfConsistentScaleBeatGrid(beatMs, input.analysis.onsetsMs);
+  if (!cameFromViterbi) {
+    const refineBpm = lockBpm > 0 ? lockBpm : gridBpm;
+    beatMs = refineBeatGridWithOnsets(
+      beatMs,
+      input.analysis.onsetsMs,
+      refineBpm,
+      meter,
+      ppq,
+    );
+    beatMs = selfConsistentScaleBeatGrid(beatMs, input.analysis.onsetsMs);
+  }
 
-  // Prefer median IBI from the refined grid — more stable than a single AC peak.
+  // Prefer median IBI from the grid — more stable than a single AC peak.
   const medianBpm = medianBpmFromBeatMs(
     beatMs.filter((ms) => ms >= offset - 1),
   );
@@ -1136,17 +1185,7 @@ export function runAudioDrivenSmartTempo(
   // fallbackBpm is a last resort / soft half-time octave — never a pipe+GAP lock.
   const seedBpm = preferAudioTempoSeed(gridBpm, lockBpm, medianBpm);
 
-  // Never upscale the grid toward a faster ACF/analysis seed. Only rescale for
-  // half-time recovery (median ~55–80, seed ≥100 after octave fold).
-  if (
-    medianBpm >= 55 &&
-    medianBpm < 80 &&
-    seedBpm >= 100 &&
-    Math.abs(medianBpm - seedBpm) / seedBpm >= 0.03 &&
-    Math.abs(medianBpm - seedBpm) / seedBpm <= 0.55
-  ) {
-    beatMs = rescaleBeatGridToBpm(beatMs, seedBpm);
-  }
+  // Keep Viterbi beat grid timing as detected from actual audio onsets.
 
   // Drop double-time IBI blips before sparsify — quiet 1–2 bar nodes would
   // otherwise average a single short interval into a multi-BPM Adapt jump.
@@ -1267,6 +1306,8 @@ export type AlignedWordFormaSection = {
   name: string;
   /** Instrumental pipe length; ignored for sections with words. */
   pipeBarCount: number;
+  /** Structural bar count from UG layout / pristine section bars. */
+  structuralBars?: number;
   /** First aligned UG↔US word tick on the audio TempoMap (null = no lyrics). */
   firstWordTicks: number | null;
   /** Last aligned word tick (inclusive onset); used when no following section. */
@@ -1328,6 +1369,24 @@ export function layoutFormaFromAlignedWords(
     let startTicks: number;
     let lengthTicks: number;
     let startMs = 0;
+
+    if (sec.structuralBars != null && sec.structuralBars > 0) {
+      startTicks = cursor;
+      const pristineBars = Math.max(1, Math.trunc(sec.structuralBars));
+      lengthTicks = pristineBars * barTicks;
+      cursor += lengthTicks;
+      plans.push({
+        sectionIndex: si,
+        name: sec.name,
+        startMs: 0,
+        endMs: 0,
+        pristineBars,
+        fromPipe: sec.pipeBarCount > 0,
+        startTicks,
+        lengthTicks,
+      });
+      continue;
+    }
 
     if (beat1Ticks[si] != null) {
       const vocalStart = Math.max(floorTicks, beat1Ticks[si]!);
@@ -1476,24 +1535,21 @@ export function tempoMapFromTempoNodes(
     barTicks,
     { soft: false },
   );
-  // Safety band around seed (±10%) — Logic ballads stay ~±3%; wider still
-  // clips octave/phase glitches without the old per-beat ±8% ping-pong.
+  // Safety band around seed (±35%) — clips extreme octave/phase glitches while
+  // preserving natural rubato, accelerando, and structural section tempo changes.
   const bandLo = Math.max(
     TEMPO_MAP_MIN_BPM,
-    seedBpm > 0 ? seedBpm * 0.9 : TEMPO_MAP_MIN_BPM,
+    seedBpm > 0 ? seedBpm * 0.65 : TEMPO_MAP_MIN_BPM,
   );
   const bandHi = Math.min(
     BPM_MAX,
-    seedBpm > 0 ? seedBpm * 1.1 : BPM_MAX,
+    seedBpm > 0 ? seedBpm * 1.45 : BPM_MAX,
   );
   const capped = raw.map((ev) => ({
     startTicks: ev.startTicks,
     bpm: Math.min(bandHi, Math.max(bandLo, ev.bpm)),
   }));
-  // First event = analysis seed (opening segment often short after Beat 1 trim).
-  if (capped.length > 0 && seedBpm > 0) {
-    capped[0] = { ...capped[0]!, bpm: seedBpm };
-  }
+
   // ProjectSchema.tempoMap.max(2048) — keep persisted maps within limit.
   const limited = capped.slice(0, SMART_TEMPO_MAX_BEATS);
   const asEvents: TempoEvent[] = limited.map((ev, i) => ({
@@ -1616,11 +1672,6 @@ export function placeUsUgBackingAudioClip(
   );
   const floor = Math.max(0, Math.floor(startTicks));
 
-  const existingIdx = project.audioClips.findIndex(
-    (c) =>
-      c.id === US_UG_BACKING_CLIP_ID ||
-      (c.trackId === track!.id && c.assetId === assetId),
-  );
   const clipPayload: AudioClip = {
     id: US_UG_BACKING_CLIP_ID,
     trackId: track.id,
@@ -1630,20 +1681,10 @@ export function placeUsUgBackingAudioClip(
     trimInMs: trimInMs > 0 ? trimInMs : undefined,
     trimOutMs: undefined,
   };
-  let audioClips: AudioClip[];
-  if (existingIdx >= 0) {
-    audioClips = project.audioClips.map((c, i) =>
-      i === existingIdx ? { ...c, ...clipPayload } : c,
-    );
-  } else {
-    const onTrack = project.audioClips.filter((c) => c.trackId === track!.id);
-    audioClips =
-      onTrack.length > 0
-        ? project.audioClips.map((c) =>
-            c.trackId === track!.id ? { ...c, ...clipPayload } : c,
-          )
-        : [...project.audioClips, clipPayload];
-  }
+  const otherClips = project.audioClips.filter(
+    (c) => c.id !== US_UG_BACKING_CLIP_ID && c.trackId !== track!.id,
+  );
+  const audioClips = [...otherClips, clipPayload];
 
   return { ...project, assets, audioTracks, audioClips };
 }
