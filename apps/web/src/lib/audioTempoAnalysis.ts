@@ -1578,11 +1578,11 @@ export async function analyzeFromMonoAsync(
       bpmHop,
       seedBpm,
     );
-    const refined = refineRawBpmWithOnsetEvidence(acf, onsetsMs, seedBpm);
-    rawEstimate = refined.estimate;
-    competitors = refined.competitors;
-    if (!(rawEstimate > 0)) {
-      rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);
+    const { kickOnsetsMs } = extractDualBandOnsets(mono, sampleRate, hopSize);
+    const kickBarBpm = estimateBpmFromBarHarmonics(kickOnsetsMs);
+    if (kickBarBpm >= 90 && kickBarBpm <= 155 && (seedBpm == null || seedBpm <= 0)) {
+      console.log(`[SMART TEMPO LOW-END LOCK] Override rawEstimate ${rawEstimate.toFixed(2)} -> ${kickBarBpm.toFixed(2)} BPM from low-pass kick harmonics`);
+      rawEstimate = kickBarBpm;
     }
     report(0.94);
   }
