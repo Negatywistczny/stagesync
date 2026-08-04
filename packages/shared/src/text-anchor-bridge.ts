@@ -2878,10 +2878,16 @@ export function applyUsUgBridgeToProject(
     akordy: bridged.akordy,
     ...(applyBpm
       ? {
-          defaultBpm: bridged.seedBpm,
-          tempoMap: bridged.tempoMap.length > 0
-            ? bridged.tempoMap
-            : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
+          defaultBpm:
+            audioRef?.estimatedBpm && audioRef.estimatedBpm > 0
+              ? audioRef.estimatedBpm
+              : bridged.seedBpm,
+          tempoMap:
+            audioRef?.tempoMap && audioRef.tempoMap.length > 0
+              ? audioRef.tempoMap
+              : bridged.tempoMap.length > 0
+                ? bridged.tempoMap
+                : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
         }
       : {}),
   };
