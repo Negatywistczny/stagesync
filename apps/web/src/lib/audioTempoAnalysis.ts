@@ -647,7 +647,7 @@ export function reconcileEstimatedBpm(
   const fallback = seedBpm != null && seedBpm > 0 ? seedBpm : 120;
   if (!(estimated > 0)) {
     console.log(
-      `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated.toFixed(2)}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, ostateczny wynik: ${fallback.toFixed(2)} (powód: brak ACF → seed/fallback)`,
+      `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated?.toFixed(2) ?? "brak"}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, ostateczny wynik: ${fallback.toFixed(2)} (powód: brak ACF → seed/fallback)`,
     );
     return fallback;
   }
@@ -1578,10 +1578,12 @@ export async function analyzeFromMonoAsync(
       bpmHop,
       seedBpm,
     );
-    const { kickOnsetsMs } = extractDualBandOnsets(mono, sampleRate, hopSize);
-    const kickBarBpm = estimateBpmFromBarHarmonics(kickOnsetsMs);
+    const refined = refineRawBpmWithOnsetEvidence(acf, onsetsMs, seedBpm);
+    rawEstimate = refined.estimate;
+    competitors = refined.competitors;
+    const kickBarBpm = estimateBpmFromBarHarmonics(onsetsMs);
     if (kickBarBpm >= 90 && kickBarBpm <= 155 && (seedBpm == null || seedBpm <= 0)) {
-      console.log(`[SMART TEMPO LOW-END LOCK] Override rawEstimate ${rawEstimate.toFixed(2)} -> ${kickBarBpm.toFixed(2)} BPM from low-pass kick harmonics`);
+      console.log(`[SMART TEMPO LOW-END LOCK] Override rawEstimate ${rawEstimate?.toFixed(2) ?? "brak"} -> ${kickBarBpm.toFixed(2)} BPM from bar harmonics`);
       rawEstimate = kickBarBpm;
     }
     report(0.94);

@@ -858,11 +858,15 @@ export function sparsifyTempoNodesFromBeatGrid(
     .slice()
     .sort((a, b) => a.targetTick - b.targetTick || a.wallMs - b.wallMs);
 
+  const minAllowedBpm = seed > 0 ? seed * 0.90 : 40;
+  const maxAllowedBpm = seed > 0 ? seed * 1.10 : 300;
+  const clampBpm = (val: number) => (val > 0 ? Math.min(maxAllowedBpm, Math.max(minAllowedBpm, val)) : seed);
+
   const firstBpm =
     sorted.length > 1
       ? instantaneousBpmBetweenNodes(sorted[0]!, sorted[1]!, meter, ppq)
       : 0;
-  const inst: number[] = [firstBpm > 0 ? firstBpm : seed];
+  const inst: number[] = [clampBpm(firstBpm)];
   for (let i = 1; i < sorted.length; i++) {
     const bpm = instantaneousBpmBetweenNodes(
       sorted[i - 1]!,
@@ -870,7 +874,7 @@ export function sparsifyTempoNodesFromBeatGrid(
       meter,
       ppq,
     );
-    inst.push(bpm > 0 ? bpm : inst[i - 1]!);
+    inst.push(clampBpm(bpm));
   }
 
   const half = Math.floor(windowBeats / 2);

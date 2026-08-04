@@ -259,6 +259,8 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       failBars += trackFail;
     }
 
+    if (totalBars === 0) return;
+
     const exactPct = (exactBars / totalBars) * 100;
     const closePct = (closeBars / totalBars) * 100;
     const failPct = (failBars / totalBars) * 100;
