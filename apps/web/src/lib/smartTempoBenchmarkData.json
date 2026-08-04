@@ -955,21 +955,21 @@
     "artist": "Logic Pro Benchmark",
     "durationSec": 261,
     "barsCount": 75,
-    "exactPct": 9.3,
-    "closePct": 12,
+    "exactPct": 6.7,
+    "closePct": 14.7,
     "failPct": 78.7,
-    "avgErrorMs": 186.6,
-    "medianErrorMs": 220.7,
-    "p95ErrorMs": 243.2,
+    "avgErrorMs": 181.9,
+    "medianErrorMs": 212.9,
+    "p95ErrorMs": 233.3,
     "bars": [
       {
         "trackName": "I will survive",
         "bar": 4,
         "timeSec": 6.3,
         "refBpm": 115.25,
-        "estBpm": 128.4,
+        "estBpm": 127.72,
         "refBarMs": 2082.4,
-        "estBarMs": 1869.2,
+        "estBarMs": 1879.1,
         "errorMs": 0,
         "tier": "exact"
       },
@@ -978,10 +978,10 @@
         "bar": 5,
         "timeSec": 8.4,
         "refBpm": 118.83,
-        "estBpm": 124.83,
+        "estBpm": 123.6,
         "refBarMs": 2019.7,
-        "estBarMs": 1922.7,
-        "errorMs": 212.4,
+        "estBarMs": 1941.8,
+        "errorMs": 202.5,
         "tier": "fail"
       },
       {
@@ -989,21 +989,21 @@
         "bar": 7,
         "timeSec": 12.4,
         "refBpm": 121.64,
-        "estBpm": 120.36,
+        "estBpm": 123.5,
         "refBarMs": 1973.1,
-        "estBarMs": 1993.9,
-        "errorMs": 55.7,
-        "tier": "exact"
+        "estBarMs": 1943.2,
+        "errorMs": 116.7,
+        "tier": "close"
       },
       {
         "trackName": "I will survive",
         "bar": 8,
         "timeSec": 14.4,
         "refBpm": 125.07,
-        "estBpm": 123.9,
+        "estBpm": 124.74,
         "refBarMs": 1919,
-        "estBarMs": 1937,
-        "errorMs": 79.2,
+        "estBarMs": 1924,
+        "errorMs": 89.5,
         "tier": "close"
       },
       {
@@ -1011,10 +1011,10 @@
         "bar": 9,
         "timeSec": 16.3,
         "refBpm": 122.57,
-        "estBpm": 125.03,
+        "estBpm": 122.5,
         "refBarMs": 1958.1,
-        "estBarMs": 1919.5,
-        "errorMs": 97.1,
+        "estBarMs": 1959.2,
+        "errorMs": 94.3,
         "tier": "close"
       },
       {
@@ -1022,21 +1022,21 @@
         "bar": 10,
         "timeSec": 18.2,
         "refBpm": 116.22,
-        "estBpm": 122.77,
+        "estBpm": 123.4,
         "refBarMs": 2065.1,
-        "estBarMs": 1954.9,
-        "errorMs": 57.8,
-        "tier": "exact"
+        "estBarMs": 1944.9,
+        "errorMs": 94.8,
+        "tier": "close"
       },
       {
         "trackName": "I will survive",
         "bar": 12,
         "timeSec": 22.4,
         "refBpm": 118.07,
-        "estBpm": 122.4,
+        "estBpm": 122.84,
         "refBarMs": 2032.6,
-        "estBarMs": 1960.7,
-        "errorMs": 160.4,
+        "estBarMs": 1953.7,
+        "errorMs": 143.5,
         "tier": "fail"
       },
       {
@@ -1047,7 +1047,7 @@
         "estBpm": 120.82,
         "refBarMs": 1988.9,
         "estBarMs": 1986.5,
-        "errorMs": 233.7,
+        "errorMs": 223.8,
         "tier": "fail"
       },
       {
@@ -1058,7 +1058,7 @@
         "estBpm": 118.94,
         "refBarMs": 2004.7,
         "estBarMs": 2017.8,
-        "errorMs": 238.4,
+        "errorMs": 228.5,
         "tier": "fail"
       },
       {
@@ -1069,7 +1069,7 @@
         "estBpm": 120.46,
         "refBarMs": 1997.9,
         "estBarMs": 1992.4,
-        "errorMs": 217.2,
+        "errorMs": 207.3,
         "tier": "fail"
       },
       {
@@ -1080,7 +1080,7 @@
         "estBpm": 119.92,
         "refBarMs": 2019,
         "estBarMs": 2001.3,
-        "errorMs": 215.5,
+        "errorMs": 205.6,
         "tier": "fail"
       },
       {
@@ -1091,7 +1091,7 @@
         "estBpm": 120.72,
         "refBarMs": 1997.7,
         "estBarMs": 1988.1,
-        "errorMs": 237.4,
+        "errorMs": 227.5,
         "tier": "fail"
       },
       {
@@ -1102,18 +1102,18 @@
         "estBpm": 119.35,
         "refBarMs": 2013.3,
         "estBarMs": 2010.9,
-        "errorMs": 219.8,
+        "errorMs": 209.9,
         "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 27,
-        "timeSec": 52.5,
+        "timeSec": 52.4,
         "refBpm": 120.49,
         "estBpm": 118.98,
         "refBarMs": 1991.8,
         "estBarMs": 2017.2,
-        "errorMs": 234.2,
+        "errorMs": 224.3,
         "tier": "fail"
       },
       {
@@ -1124,18 +1124,18 @@
         "estBpm": 120.57,
         "refBarMs": 2019.1,
         "estBarMs": 1990.5,
-        "errorMs": 217.9,
+        "errorMs": 208,
         "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 30,
-        "timeSec": 58.5,
+        "timeSec": 58.4,
         "refBpm": 120.1,
         "estBpm": 119.18,
         "refBarMs": 1998.3,
         "estBarMs": 2013.8,
-        "errorMs": 242.6,
+        "errorMs": 232.7,
         "tier": "fail"
       },
       {
@@ -1146,7 +1146,7 @@
         "estBpm": 120.66,
         "refBarMs": 1987.1,
         "estBarMs": 1989.1,
-        "errorMs": 228.6,
+        "errorMs": 218.7,
         "tier": "fail"
       },
       {
@@ -1157,7 +1157,7 @@
         "estBpm": 119.15,
         "refBarMs": 2016.1,
         "estBarMs": 2014.3,
-        "errorMs": 229.1,
+        "errorMs": 219.2,
         "tier": "fail"
       },
       {
@@ -1168,7 +1168,7 @@
         "estBpm": 120.72,
         "refBarMs": 1999.6,
         "estBarMs": 1988,
-        "errorMs": 205.8,
+        "errorMs": 195.9,
         "tier": "fail"
       },
       {
@@ -1179,7 +1179,7 @@
         "estBpm": 119.09,
         "refBarMs": 2014.5,
         "estBarMs": 2015.2,
-        "errorMs": 220.3,
+        "errorMs": 210.4,
         "tier": "fail"
       },
       {
@@ -1190,7 +1190,7 @@
         "estBpm": 118.69,
         "refBarMs": 1999.1,
         "estBarMs": 2022.1,
-        "errorMs": 237.1,
+        "errorMs": 227.2,
         "tier": "fail"
       },
       {
@@ -1201,7 +1201,7 @@
         "estBpm": 120.83,
         "refBarMs": 1985.4,
         "estBarMs": 1986.2,
-        "errorMs": 228.2,
+        "errorMs": 218.3,
         "tier": "fail"
       },
       {
@@ -1212,7 +1212,7 @@
         "estBpm": 120.19,
         "refBarMs": 2017.4,
         "estBarMs": 1996.9,
-        "errorMs": 230.4,
+        "errorMs": 220.5,
         "tier": "fail"
       },
       {
@@ -1223,7 +1223,7 @@
         "estBpm": 119.63,
         "refBarMs": 1986.5,
         "estBarMs": 2006.2,
-        "errorMs": 247.1,
+        "errorMs": 237.2,
         "tier": "fail"
       },
       {
@@ -1234,7 +1234,7 @@
         "estBpm": 118.9,
         "refBarMs": 2022.2,
         "estBarMs": 2018.5,
-        "errorMs": 230.1,
+        "errorMs": 220.2,
         "tier": "fail"
       },
       {
@@ -1245,7 +1245,7 @@
         "estBpm": 120.58,
         "refBarMs": 1980.3,
         "estBarMs": 1990.3,
-        "errorMs": 237.6,
+        "errorMs": 227.7,
         "tier": "fail"
       },
       {
@@ -1256,7 +1256,7 @@
         "estBpm": 120.66,
         "refBarMs": 2001.7,
         "estBarMs": 1989.1,
-        "errorMs": 223.3,
+        "errorMs": 213.4,
         "tier": "fail"
       },
       {
@@ -1267,7 +1267,7 @@
         "estBpm": 119.72,
         "refBarMs": 2016,
         "estBarMs": 2004.7,
-        "errorMs": 227.1,
+        "errorMs": 217.2,
         "tier": "fail"
       },
       {
@@ -1278,7 +1278,7 @@
         "estBpm": 119.67,
         "refBarMs": 1991.3,
         "estBarMs": 2005.5,
-        "errorMs": 243.2,
+        "errorMs": 233.3,
         "tier": "fail"
       },
       {
@@ -1289,7 +1289,7 @@
         "estBpm": 120.5,
         "refBarMs": 2017.5,
         "estBarMs": 1991.7,
-        "errorMs": 229.1,
+        "errorMs": 219.2,
         "tier": "fail"
       },
       {
@@ -1297,10 +1297,10 @@
         "bar": 56,
         "timeSec": 110.5,
         "refBpm": 120.13,
-        "estBpm": 119.33,
+        "estBpm": 119.18,
         "refBarMs": 1997.8,
-        "estBarMs": 2011.3,
-        "errorMs": 257.9,
+        "estBarMs": 2013.7,
+        "errorMs": 249.5,
         "tier": "fail"
       },
       {
@@ -1311,7 +1311,7 @@
         "estBpm": 119.31,
         "refBarMs": 1993.3,
         "estBarMs": 2011.5,
-        "errorMs": 232.1,
+        "errorMs": 222.2,
         "tier": "fail"
       },
       {
@@ -1322,7 +1322,7 @@
         "estBpm": 118.89,
         "refBarMs": 2038.9,
         "estBarMs": 2018.7,
-        "errorMs": 223.1,
+        "errorMs": 213.2,
         "tier": "fail"
       },
       {
@@ -1333,7 +1333,7 @@
         "estBpm": 118.85,
         "refBarMs": 1997.1,
         "estBarMs": 2019.3,
-        "errorMs": 243.2,
+        "errorMs": 233.3,
         "tier": "fail"
       },
       {
@@ -1344,7 +1344,7 @@
         "estBpm": 118.76,
         "refBarMs": 2007.4,
         "estBarMs": 2020.9,
-        "errorMs": 226.1,
+        "errorMs": 216.2,
         "tier": "fail"
       },
       {
@@ -1355,7 +1355,7 @@
         "estBpm": 125.62,
         "refBarMs": 1997.7,
         "estBarMs": 1910.6,
-        "errorMs": 180.2,
+        "errorMs": 190.1,
         "tier": "fail"
       },
       {
@@ -1366,8 +1366,8 @@
         "estBpm": 121.54,
         "refBarMs": 1983.9,
         "estBarMs": 1974.6,
-        "errorMs": 115.3,
-        "tier": "close"
+        "errorMs": 125.2,
+        "tier": "fail"
       },
       {
         "trackName": "I will survive",
@@ -1377,7 +1377,7 @@
         "estBpm": 122.01,
         "refBarMs": 2043.6,
         "estBarMs": 1967,
-        "errorMs": 102.6,
+        "errorMs": 112.6,
         "tier": "close"
       },
       {
@@ -1388,7 +1388,7 @@
         "estBpm": 121.58,
         "refBarMs": 2106.9,
         "estBarMs": 1973.9,
-        "errorMs": 26.9,
+        "errorMs": 36.8,
         "tier": "exact"
       },
       {
@@ -1399,18 +1399,18 @@
         "estBpm": 121.57,
         "refBarMs": 2081.6,
         "estBarMs": 1974.1,
-        "errorMs": 108.8,
+        "errorMs": 98.9,
         "tier": "close"
       },
       {
         "trackName": "I will survive",
         "bar": 77,
-        "timeSec": 152.8,
+        "timeSec": 152.7,
         "refBpm": 120.52,
         "estBpm": 121.57,
         "refBarMs": 1991.4,
         "estBarMs": 1974.1,
-        "errorMs": 215.9,
+        "errorMs": 206,
         "tier": "fail"
       },
       {
@@ -1421,7 +1421,7 @@
         "estBpm": 120.69,
         "refBarMs": 2010,
         "estBarMs": 1988.5,
-        "errorMs": 204,
+        "errorMs": 194.1,
         "tier": "fail"
       },
       {
@@ -1432,7 +1432,7 @@
         "estBpm": 120.72,
         "refBarMs": 1992.3,
         "estBarMs": 1988,
-        "errorMs": 230.8,
+        "errorMs": 220.9,
         "tier": "fail"
       },
       {
@@ -1443,7 +1443,7 @@
         "estBpm": 120.56,
         "refBarMs": 1993.8,
         "estBarMs": 1990.7,
-        "errorMs": 225.4,
+        "errorMs": 215.5,
         "tier": "fail"
       },
       {
@@ -1454,18 +1454,18 @@
         "estBpm": 119.17,
         "refBarMs": 2006.4,
         "estBarMs": 2013.9,
-        "errorMs": 229.5,
+        "errorMs": 219.6,
         "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 90,
-        "timeSec": 178.8,
+        "timeSec": 178.7,
         "refBpm": 120.22,
         "estBpm": 119.64,
         "refBarMs": 1996.3,
         "estBarMs": 2006,
-        "errorMs": 242.1,
+        "errorMs": 232.2,
         "tier": "fail"
       },
       {
@@ -1476,7 +1476,7 @@
         "estBpm": 120.08,
         "refBarMs": 1987.7,
         "estBarMs": 1998.7,
-        "errorMs": 231.7,
+        "errorMs": 221.8,
         "tier": "fail"
       },
       {
@@ -1487,29 +1487,29 @@
         "estBpm": 126.92,
         "refBarMs": 2030.9,
         "estBarMs": 1891,
-        "errorMs": 233.3,
+        "errorMs": 223.4,
         "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 95,
-        "timeSec": 188.8,
+        "timeSec": 188.7,
         "refBpm": 119.78,
         "estBpm": 124.62,
         "refBarMs": 2003.8,
         "estBarMs": 1925.9,
-        "errorMs": 85.1,
+        "errorMs": 95.1,
         "tier": "close"
       },
       {
         "trackName": "I will survive",
         "bar": 96,
-        "timeSec": 190.8,
+        "timeSec": 190.7,
         "refBpm": 118.67,
         "estBpm": 127.57,
         "refBarMs": 2022.4,
         "estBarMs": 1881.3,
-        "errorMs": 8.3,
+        "errorMs": 18.2,
         "tier": "exact"
       },
       {
@@ -1520,18 +1520,18 @@
         "estBpm": 124.36,
         "refBarMs": 1981.8,
         "estBarMs": 1930,
-        "errorMs": 128.5,
-        "tier": "fail"
+        "errorMs": 118.5,
+        "tier": "close"
       },
       {
         "trackName": "I will survive",
         "bar": 98,
-        "timeSec": 194.8,
+        "timeSec": 194.7,
         "refBpm": 119.15,
         "estBpm": 122.06,
         "refBarMs": 2014.2,
         "estBarMs": 1966.2,
-        "errorMs": 184.1,
+        "errorMs": 174.2,
         "tier": "fail"
       },
       {
@@ -1542,7 +1542,7 @@
         "estBpm": 120.18,
         "refBarMs": 1993.3,
         "estBarMs": 1997,
-        "errorMs": 229.1,
+        "errorMs": 219.2,
         "tier": "fail"
       },
       {
@@ -1553,7 +1553,7 @@
         "estBpm": 119.07,
         "refBarMs": 2018,
         "estBarMs": 2015.6,
-        "errorMs": 226.9,
+        "errorMs": 217,
         "tier": "fail"
       },
       {
@@ -1564,7 +1564,7 @@
         "estBpm": 120.63,
         "refBarMs": 1984.6,
         "estBarMs": 1989.6,
-        "errorMs": 225.7,
+        "errorMs": 215.8,
         "tier": "fail"
       },
       {
@@ -1575,7 +1575,7 @@
         "estBpm": 120.04,
         "refBarMs": 2017.1,
         "estBarMs": 1999.4,
-        "errorMs": 223.7,
+        "errorMs": 213.8,
         "tier": "fail"
       },
       {
@@ -1586,7 +1586,7 @@
         "estBpm": 119.77,
         "refBarMs": 2000.1,
         "estBarMs": 2003.9,
-        "errorMs": 237.9,
+        "errorMs": 228,
         "tier": "fail"
       },
       {
@@ -1597,7 +1597,7 @@
         "estBpm": 119.68,
         "refBarMs": 1983.7,
         "estBarMs": 2005.3,
-        "errorMs": 238.8,
+        "errorMs": 228.9,
         "tier": "fail"
       },
       {
@@ -1608,7 +1608,7 @@
         "estBpm": 120.12,
         "refBarMs": 2007.4,
         "estBarMs": 1998,
-        "errorMs": 220.7,
+        "errorMs": 210.8,
         "tier": "fail"
       },
       {
@@ -1619,18 +1619,18 @@
         "estBpm": 121.18,
         "refBarMs": 1969.5,
         "estBarMs": 1980.5,
-        "errorMs": 222.8,
+        "errorMs": 212.9,
         "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 109,
-        "timeSec": 216.8,
+        "timeSec": 216.7,
         "refBpm": 119.12,
         "estBpm": 118.63,
         "refBarMs": 2014.8,
         "estBarMs": 2023.1,
-        "errorMs": 217.9,
+        "errorMs": 208,
         "tier": "fail"
       },
       {
@@ -1641,7 +1641,7 @@
         "estBpm": 120.77,
         "refBarMs": 1997.2,
         "estBarMs": 1987.3,
-        "errorMs": 206.8,
+        "errorMs": 196.9,
         "tier": "fail"
       },
       {
@@ -1652,7 +1652,7 @@
         "estBpm": 119.58,
         "refBarMs": 2027.8,
         "estBarMs": 2007,
-        "errorMs": 217.1,
+        "errorMs": 207.2,
         "tier": "fail"
       },
       {
@@ -1663,7 +1663,7 @@
         "estBpm": 117.61,
         "refBarMs": 1991.1,
         "estBarMs": 2040.6,
-        "errorMs": 240.5,
+        "errorMs": 230.6,
         "tier": "fail"
       },
       {
@@ -1674,7 +1674,7 @@
         "estBpm": 114.65,
         "refBarMs": 2002.9,
         "estBarMs": 2093.3,
-        "errorMs": 79.7,
+        "errorMs": 69.8,
         "tier": "close"
       },
       {
@@ -1685,7 +1685,7 @@
         "estBpm": 114.93,
         "refBarMs": 1982.1,
         "estBarMs": 2088.2,
-        "errorMs": 96.9,
+        "errorMs": 106.9,
         "tier": "close"
       },
       {
@@ -1696,7 +1696,7 @@
         "estBpm": 115.88,
         "refBarMs": 2010,
         "estBarMs": 2071.1,
-        "errorMs": 199.5,
+        "errorMs": 209.4,
         "tier": "fail"
       },
       {
@@ -1707,7 +1707,7 @@
         "estBpm": 123.66,
         "refBarMs": 1984.2,
         "estBarMs": 1940.9,
-        "errorMs": 228.4,
+        "errorMs": 218.5,
         "tier": "fail"
       },
       {
@@ -1718,7 +1718,7 @@
         "estBpm": 122.23,
         "refBarMs": 2007.6,
         "estBarMs": 1963.4,
-        "errorMs": 216.1,
+        "errorMs": 226.1,
         "tier": "fail"
       },
       {
@@ -1729,7 +1729,7 @@
         "estBpm": 122.23,
         "refBarMs": 1992.1,
         "estBarMs": 1963.4,
-        "errorMs": 130.6,
+        "errorMs": 140.5,
         "tier": "fail"
       },
       {
@@ -1740,7 +1740,7 @@
         "estBpm": 122.23,
         "refBarMs": 2016,
         "estBarMs": 1963.4,
-        "errorMs": 70.3,
+        "errorMs": 80.2,
         "tier": "close"
       },
       {
@@ -1751,7 +1751,7 @@
         "estBpm": 122.23,
         "refBarMs": 2560,
         "estBarMs": 1963.4,
-        "errorMs": 28.5,
+        "errorMs": 18.5,
         "tier": "exact"
       },
       {
@@ -1762,7 +1762,7 @@
         "estBpm": 122.23,
         "refBarMs": 2640,
         "estBarMs": 1963.4,
-        "errorMs": 164.1,
+        "errorMs": 174.1,
         "tier": "fail"
       },
       {
@@ -1773,7 +1773,7 @@
         "estBpm": 122.23,
         "refBarMs": 2800,
         "estBarMs": 1963.4,
-        "errorMs": 174.2,
+        "errorMs": 164.2,
         "tier": "fail"
       },
       {
@@ -1784,7 +1784,7 @@
         "estBpm": 122.23,
         "refBarMs": 2880.3,
         "estBarMs": 1963.4,
-        "errorMs": 29,
+        "errorMs": 19.1,
         "tier": "exact"
       }
     ]
