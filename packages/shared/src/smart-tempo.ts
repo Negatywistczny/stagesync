@@ -31,13 +31,13 @@ import { secondsToTicksAlongMap, type TempoMapProject } from "./tempo-map.js";
 import { sectionStartFromVocalTicks } from "./ug-pipe-bars.js";
 
 /** Min |ΔBPM| to emit a Logic-like sparse tempo node (smoothed local tempo). */
-export const SMART_TEMPO_SPARSE_MIN_BPM_DELTA = 0.45;
+export const SMART_TEMPO_SPARSE_MIN_BPM_DELTA = 0.15;
 /** Median window in beats for local tempo (~2 bars in 4/4 — resists IBI blips). */
-export const SMART_TEMPO_SPARSE_WINDOW_BEATS = 8;
+export const SMART_TEMPO_SPARSE_WINDOW_BEATS = 4;
 /** Minimum bars between sparse tempo nodes (Logic ~1–2). */
 export const SMART_TEMPO_SPARSE_MIN_BAR_GAP = 1;
 /** Cap |ΔBPM| vs previous sparse segment (rejects onset-snap spikes). */
-export const SMART_TEMPO_SPARSE_MAX_BPM_STEP = 3;
+export const SMART_TEMPO_SPARSE_MAX_BPM_STEP = 5;
 
 /** Canonical import backing track — one clip per project on re-import. */
 export const US_UG_BACKING_TRACK_NAME = "US+UG Backing";
@@ -64,6 +64,14 @@ export type SmartTempoAudioRef = {
    * leading silence stays in the file but is not audible from timeline tick 0.
    */
   audioStartOffsetMs?: number;
+  /** Audio-detected BPM from Smart Tempo analysis. */
+  estimatedBpm?: number;
+  /** Pre-built tempo map from runAudioDrivenSmartTempo. */
+  tempoMap?: readonly { id?: string; startTicks: number; bpm: number }[];
+  /** Pre-built tempo nodes from runAudioDrivenSmartTempo. */
+  tempoNodes?: readonly TempoNode[];
+  /** Full audio analysis result (onsets, beats, estimatedBpm). */
+  analysis?: AudioAnalysisResult;
 };
 
 /** Precomputed audio analysis (pure data — no AudioBuffer). Produced in apps/web. */
@@ -840,7 +848,7 @@ export function sparsifyTempoNodesFromBeatGrid(
     Math.floor((opts.minBarGap ?? SMART_TEMPO_SPARSE_MIN_BAR_GAP) * barTicks),
   );
   /** Force a refresh node even when |ΔBPM| is tiny (Logic ~1–2 bar spacing). */
-  const maxQuietTicks = Math.max(minTicks, 2 * barTicks);
+  const maxQuietTicks = Math.max(minTicks, 1 * barTicks);
   const maxStep = opts.maxBpmStep ?? SMART_TEMPO_SPARSE_MAX_BPM_STEP;
   const seed = opts.seedBpm > 0 ? opts.seedBpm : 120;
 

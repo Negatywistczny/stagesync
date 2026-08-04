@@ -222,9 +222,9 @@ export function BeatMapperPane({
     return Math.max(0, audio?.durationMs ?? 0);
   }, [localAudioBuffer, audio?.durationMs]);
 
-  const peaks = audio?.peaks ?? [];
+  const peaks = useMemo(() => audio?.peaks ?? [], [audio?.peaks]);
 
-  const meter = { numerator: 4, denominator: 4 } as const;
+  const meter = useMemo(() => ({ numerator: 4, denominator: 4 } as const), []);
 
   const tempoProject = useMemo((): TempoMapProject => {
     return {
@@ -234,7 +234,7 @@ export function BeatMapperPane({
       meterMap: [],
       ppq: DEFAULT_PPQ,
     };
-  }, [bridge.seedBpm, bridge.tempoMap]);
+  }, [bridge.seedBpm, bridge.tempoMap, meter]);
 
   const viewDurationMs = useMemo(() => {
     if (!(durationMs > 0)) return 1;
@@ -306,7 +306,7 @@ export function BeatMapperPane({
 
   const chordBlocks = useMemo(() => {
     return bridge.akordy.clips.map((c: AkordClip) => {
-      let ms = 0;
+      let ms: number;
       try {
         ms = ticksToMsAlongTempoMap(0, c.startTicks, tempoProject);
       } catch {

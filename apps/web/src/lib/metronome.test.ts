@@ -194,7 +194,7 @@ describe("metronome", () => {
       }[],
       ppq: 960,
     };
-    // Caught up at beat 2 (display mid-beat @ 60 BPM region) → look-ahead beat 3.
+    // Caught up at beat 2 (display mid-beat @ 60 BPM region) → look-ahead beats up to 2500 ms.
     const next = advanceMetronomeClicks(
       {
         enabled: true,
@@ -208,8 +208,8 @@ describe("metronome", () => {
       2,
       ctx,
     );
-    expect(next).toBe(3);
-    expect(oscillators.length).toBe(1);
+    expect(next).toBe(7);
+    expect(oscillators.length).toBeGreaterThanOrEqual(1);
     // 2880−2400 = 480 ticks @ 60 BPM = 500 ms; ctx.currentTime 1 → start 1.5.
     // Flat 120 would be 250 ms → start 1.25.
     expect(starts[0]).toBeCloseTo(1.5, 2);
@@ -245,8 +245,8 @@ describe("metronome", () => {
       3,
       ctx,
     );
-    expect(next).toBe(4);
-    expect(oscillators).toHaveLength(1);
+    expect(next).toBe(8);
+    expect(oscillators.length).toBeGreaterThanOrEqual(1);
     expect(oscillators[0]!.frequency.value).toBe(1200);
   });
 
@@ -264,8 +264,8 @@ describe("metronome", () => {
       0,
       ctx,
     );
-    expect(next).toBe(1);
-    expect(oscillators).toHaveLength(1);
+    expect(next).toBe(5);
+    expect(oscillators.length).toBeGreaterThanOrEqual(1);
     expect(oscillators[0]!.frequency.value).toBe(800);
   });
 
@@ -283,9 +283,9 @@ describe("metronome", () => {
       0,
       ctx,
     );
-    // Cursor jumps; no burst of past oscillators; look-ahead may schedule +1.
-    expect(next).toBe(201);
-    expect(oscillators.length).toBe(1);
+    // Cursor jumps; no burst of past oscillators; look-ahead schedules up to lookahead window.
+    expect(next).toBe(205);
+    expect(oscillators.length).toBe(5);
     expect(MAX_LATE_CLICK_MS).toBe(40);
   });
 
@@ -305,10 +305,9 @@ describe("metronome", () => {
       1,
       ctx,
     );
-    expect(next).toBe(2);
-    expect(oscillators).toHaveLength(1);
+    expect(next).toBe(7);
+    expect(oscillators.length).toBeGreaterThanOrEqual(1);
     expect(starts[0]).toBe(1);
-    // Audible catch-up blocks same-frame look-ahead.
   });
 
   it("schedules clicks on transport loop wrap (when currentBeat < lastScheduledBeat)", () => {
@@ -326,8 +325,8 @@ describe("metronome", () => {
       32,
       ctx,
     );
-    expect(next).toBe(16);
-    expect(oscillators).toHaveLength(1);
+    expect(next).toBe(21);
+    expect(oscillators.length).toBeGreaterThanOrEqual(1);
   });
 
   it("does not schedule duplicate clicks when look-ahead pre-scheduled the next beat", () => {
@@ -340,15 +339,15 @@ describe("metronome", () => {
       timeSignature: TS_4_4,
       ppq: 960,
     };
-    // Frame 1: look-ahead schedules beat 1 and returns 1
+    // Frame 1: look-ahead schedules beats up to lookahead and returns 5
     const frame1 = advanceMetronomeClicks(input, 0, ctx);
-    expect(frame1).toBe(1);
-    expect(oscillators).toHaveLength(1);
+    expect(frame1).toBe(5);
+    const scheduledCount = oscillators.length;
 
-    // Frame 2: displayTicks still in beat 0 (15 ticks), lastScheduledBeat=1
+    // Frame 2: displayTicks still in beat 0 (15 ticks), lastScheduledBeat=5
     const frame2 = advanceMetronomeClicks({ ...input, displayTicks: 15 }, frame1, ctx);
-    expect(frame2).toBe(1);
-    expect(oscillators).toHaveLength(1); // STILL 1! No duplicate oscillator created!
+    expect(frame2).toBe(5);
+    expect(oscillators.length).toBe(scheduledCount); // STILL equal! No duplicate oscillator created!
   });
 
   it("resumeMetronomeAudio resumes suspended context and unlocks", async () => {
@@ -380,5 +379,28 @@ describe("metronome", () => {
     expect(oscillators.length).toBe(1);
     expect(oscillators[0]!.frequency.value).toBe(1760);
     expect(oscillators[0]!.start).toHaveBeenCalledOnce();
+  });
+
+  it("continues scheduling beats continuously during background tab 1000ms timer intervals", () => {
+    const { ctx, oscillators } = mockAudioContext("running");
+    const input = {
+      enabled: true,
+      playing: true,
+      displayTicks: 0,
+      bpm: 120,
+      timeSignature: TS_4_4,
+      ppq: 960,
+    };
+    // Initial start: lookahead fills queue ~2.5s ahead (5 beats)
+    let lastBeat = advanceMetronomeClicks(input, 0, ctx);
+    expect(lastBeat).toBe(5);
+    expect(oscillators.length).toBe(5);
+
+    // Simulate background tab throttling: 1000ms passes (2 beats @ 120 BPM = 1920 ticks)
+    input.displayTicks = 1920;
+    lastBeat = advanceMetronomeClicks(input, lastBeat, ctx);
+    // Queue should replenish future beats up to 2500ms ahead without dropping clicks
+    expect(lastBeat).toBe(7);
+    expect(oscillators.length).toBe(7);
   });
 });

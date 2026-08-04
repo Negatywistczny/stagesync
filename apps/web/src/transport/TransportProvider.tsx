@@ -82,10 +82,16 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     roles: string[];
   } | null>(null);
 
+  const fallbackIntervalRef = useRef<number | null>(null);
+
   const stopRaf = useCallback(() => {
     if (rafIdRef.current !== 0) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = 0;
+    }
+    if (fallbackIntervalRef.current !== null) {
+      clearInterval(fallbackIntervalRef.current);
+      fallbackIntervalRef.current = null;
     }
   }, []);
 
@@ -127,23 +133,34 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
     // Equality bail when integer ticks unchanged; opt-in probe: ?ss_perf=h01
     // (docs/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
-    const loop = (frameTime: number) => {
-      if (!playingRef.current) {
-        rafIdRef.current = 0;
-        return;
-      }
+    const tick = (timeMs: number) => {
+      if (!playingRef.current) return;
       const next = getDisplayTicks(
         anchorRef.current,
-        frameTime,
+        timeMs,
         receiptMsRef.current,
         true,
         loopRef.current,
       );
       const committed = commitDisplayTicks(next);
       noteH01Raf(next, committed);
+    };
+
+    const loop = (frameTime: number) => {
+      if (!playingRef.current) {
+        rafIdRef.current = 0;
+        return;
+      }
+      tick(frameTime);
       rafIdRef.current = requestAnimationFrame(loop);
     };
     rafIdRef.current = requestAnimationFrame(loop);
+
+    fallbackIntervalRef.current = window.setInterval(() => {
+      if (playingRef.current) {
+        tick(performance.now());
+      }
+    }, 200);
   }, [commitDisplayTicks, stopRaf]);
 
   const sendHello = useCallback(() => {

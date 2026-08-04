@@ -2379,7 +2379,6 @@ export function bridgeUsUgImport(
       approximate = true;
     }
   }
-
   // Align-first sourceSection on place-BPM ticks, then remap vocals AlongMap.
   const tekstAligned = annotateTekstSourceSectionsFromAlign(
     us.tekst.clips,
@@ -2773,8 +2772,8 @@ export function suggestGridBpmFromUsUgTexts(
   if (!us.ok) return null;
   const pipeSec = parseUgBridgeSections(ugText).find((s) => s.pipeBarCount > 0);
   if (!pipeSec) return null;
-  let beat1Ms = Math.max(0, Math.round(options.beat1Ms ?? 0));
-  if (beat1Ms <= 0 && pipeSec.pipeBarCount >= 12 && us.firstVocalMs > 0) {
+  let beat1Ms = 0;
+  if (pipeSec.pipeBarCount >= 12 && us.firstVocalMs > 0) {
     beat1Ms = suggestBeat1MsFromPipeAndGap({
       gapMs: us.firstVocalMs,
       pipeBarCount: pipeSec.pipeBarCount,
@@ -2872,6 +2871,11 @@ export function applyUsUgBridgeToProject(
     },
     { applyBpm: false },
   );
+  const hasAudioTempoMap =
+    project.assets.some((a) => a.kind === "audio") ||
+    project.audioClips.length > 0 ||
+    (project.tempoMap.length > 1 &&
+      project.tempoMap.some((e) => e.id?.startsWith("stm-")));
   let next: Project = {
     ...withUs,
     forma: { clips: [...countdown, ...bridged.formaMusic.clips] },
@@ -2881,13 +2885,21 @@ export function applyUsUgBridgeToProject(
           defaultBpm:
             audioRef?.estimatedBpm && audioRef.estimatedBpm > 0
               ? audioRef.estimatedBpm
-              : bridged.seedBpm,
+              : hasAudioTempoMap
+                ? project.defaultBpm
+                : bridged.seedBpm,
           tempoMap:
             audioRef?.tempoMap && audioRef.tempoMap.length > 0
-              ? audioRef.tempoMap
-              : bridged.tempoMap.length > 0
-                ? bridged.tempoMap
-                : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
+              ? audioRef.tempoMap.map((e, idx) => ({
+                  id: e.id ?? `stm-${idx}`,
+                  startTicks: e.startTicks,
+                  bpm: e.bpm,
+                }))
+              : hasAudioTempoMap
+                ? project.tempoMap
+                : bridged.tempoMap.length > 0
+                  ? bridged.tempoMap
+                  : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
         }
       : {}),
   };

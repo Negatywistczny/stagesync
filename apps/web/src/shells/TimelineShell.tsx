@@ -33,7 +33,6 @@ import {
   wrapDisplayTicks,
   type FormaClip,
   type Project,
-  type TextAnchorBridgeOk,
   type UgImportOk,
   type UgTabMetadata,
   type UltrastarImportOk,

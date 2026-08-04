@@ -305,25 +305,6 @@ export function CombinedUsUgImportForm({
     [pipeIntroBarCount, suggestedGridBpm, fileMetroBpm],
   );
 
-  const importTempoOptions = useMemo(
-    () =>
-      buildImportTempoAnalysisOptions({
-        gapMs: usPreview?.ok === true ? usPreview.gapMs : null,
-        // Soft octave center for ACF only — pipe/~120, never UltraStar `#BPM`.
-        seedBpm: suggestedGridBpm ?? 120,
-        durationMs:
-          smartTempoAudio?.durationMs ??
-          (localBuffer != null
-            ? Math.round(localBuffer.duration * 1000)
-            : null),
-      }),
-    [
-      suggestedGridBpm,
-      smartTempoAudio?.durationMs,
-      localBuffer,
-    ],
-  );
-
   const gridBpmDisplay =
     gridBpmDraft ??
     (smartTempoAudio?.estimatedBpm != null && smartTempoAudio.estimatedBpm > 0
@@ -335,9 +316,13 @@ export function CombinedUsUgImportForm({
           : "");
   const gridBpmForBridge = parseGridBpmInput(gridBpmDisplay);
 
-  const audioRefForBridge = smartTempoAudio
-    ? { ...smartTempoAudio, audioStartOffsetMs }
-    : undefined;
+  const audioRefForBridge = useMemo(
+    () =>
+      smartTempoAudio
+        ? { ...smartTempoAudio, audioStartOffsetMs }
+        : undefined,
+    [smartTempoAudio, audioStartOffsetMs],
+  );
 
   const bridged = useMemo(() => {
     if (!usText.trim() || !ugText.trim()) return null;

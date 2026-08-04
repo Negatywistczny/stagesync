@@ -645,14 +645,14 @@ export function reconcileEstimatedBpm(
   competingBpms?: readonly number[],
 ): number {
   const fallback = seedBpm != null && seedBpm > 0 ? seedBpm : 120;
-  let finalResult = fallback;
-  let reason = "fallback";
   if (!(estimated > 0)) {
     console.log(
       `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated.toFixed(2)}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, ostateczny wynik: ${fallback.toFixed(2)} (powód: brak ACF → seed/fallback)`,
     );
     return fallback;
   }
+  let finalResult: number;
+  let reason: string;
 
   const normalizeToSeed = (
     bpm: number,
@@ -889,19 +889,19 @@ const LOCAL_PERIOD_IBI_WINDOW = 8;
  * Tighter than the old 0.7–1.35 band so a dense 8th-note cluster cannot
  * yank the tracker into double-time in one hop.
  */
-const LOCAL_PERIOD_STEP_LO = 0.94;
-const LOCAL_PERIOD_STEP_HI = 1.06;
+const LOCAL_PERIOD_STEP_LO = 0.85;
+const LOCAL_PERIOD_STEP_HI = 1.18;
 /**
  * Hard gate vs stable quarter-note reference (median IBI + period hint).
  * Rejects half-beat / double-time snaps and 1.5-beat syncopation traps.
  */
-const STABLE_PERIOD_STEP_LO = 0.94;
-const STABLE_PERIOD_STEP_HI = 1.06;
+const STABLE_PERIOD_STEP_LO = 0.82;
+const STABLE_PERIOD_STEP_HI = 1.22;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
-const PERIOD_HINT_STABLE_WEIGHT = 0.40;
+const PERIOD_HINT_STABLE_WEIGHT = 0.15;
 /** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band. */
-const PERIOD_HINT_CLAMP_LO = 0.92;
-const PERIOD_HINT_CLAMP_HI = 1.08;
+const PERIOD_HINT_CLAMP_LO = 0.85;
+const PERIOD_HINT_CLAMP_HI = 1.18;
 
 function estimateInitialLocalPeriod(
   onsetsMs: readonly number[],
@@ -930,11 +930,17 @@ function estimateInitialLocalPeriod(
       }
     }
   }
+  // Clamp result to ±5% of periodHint: intro-onset pairs can yield a sub-beat
+  // period (e.g. 8th-note gaps) which causes Viterbi to latch onto a 2× tempo.
+  const clampLo = periodHint * 0.95;
+  const clampHi = periodHint * 1.05;
   if (barDiffs.length >= 2) {
-    return medianOfPositive(barDiffs);
+    const v = medianOfPositive(barDiffs);
+    return Math.max(clampLo, Math.min(clampHi, v));
   }
   if (beatDiffs.length >= 2) {
-    return medianOfPositive(beatDiffs);
+    const v = medianOfPositive(beatDiffs);
+    return Math.max(clampLo, Math.min(clampHi, v));
   }
   return periodHint;
 }
@@ -961,8 +967,11 @@ function buildBeatGridViterbi(
     `[SMART TEMPO DIAGNOSTICS] buildBeatGridViterbi -> initialLocalPeriod: ${initialLocalPeriod.toFixed(1)} ms (${(60_000 / initialLocalPeriod).toFixed(2)} BPM), rawPeriodHint: ${rawPeriodHint.toFixed(1)} ms (${estimatedBpm.toFixed(2)} BPM)`,
   );
   const t0 = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, initialLocalPeriod);
-  const minPeriod = periodHint * PERIOD_HINT_CLAMP_LO;
-  const maxPeriod = periodHint * PERIOD_HINT_CLAMP_HI;
+  // Hard octave clamp is anchored to the reconciled rawPeriodHint, NOT initialLocalPeriod.
+  // This ensures Viterbi cannot latch onto 8th-note / syncopated sub-beat periods.
+  // e.g. rawPeriodHint=517ms (115.96 BPM) → minPeriod=476ms → 128 BPM (469ms) is rejected.
+  const minPeriod = rawPeriodHint * PERIOD_HINT_CLAMP_LO;
+  const maxPeriod = rawPeriodHint * PERIOD_HINT_CLAMP_HI;
   const nBeats = Math.min(
     maxBeats,
     Math.max(2, Math.floor(gridDurationMs / minPeriod) + 1),
@@ -1017,10 +1026,11 @@ function buildBeatGridViterbi(
         p.recentIbis.length >= 3
           ? medianOfPositive(p.recentIbis)
           : p.localPeriod;
-      // Soft hint — onset median dominates so a wrong first guess can climb.
+      // Stable reference uses rawPeriodHint anchor so octave-shifted intro
+      // onsets cannot pull stableRef toward a 2× tempo throughout the song.
       const stableRef =
         (1 - PERIOD_HINT_STABLE_WEIGHT) * recentMed +
-        PERIOD_HINT_STABLE_WEIGHT * periodHint;
+        PERIOD_HINT_STABLE_WEIGHT * rawPeriodHint;
       for (let b = 0; b < bins; b++) {
         let t =
           center + ((b - half) / half) * p.localPeriod * BEAT_SNAP_FRAC;
@@ -1056,7 +1066,7 @@ function buildBeatGridViterbi(
         const nearOnset = nearestOnsetMs(onsetsMs, t);
         const hasOnset = Math.abs(nearOnset - t) <= 30;
         let newLocal = hasOnset
-          ? 0.25 * periodHint + 0.50 * med + 0.25 * p.localPeriod
+          ? 0.25 * rawPeriodHint + 0.50 * med + 0.25 * p.localPeriod
           : 0.75 * p.localPeriod + 0.25 * med;
         newLocal = Math.max(minPeriod, Math.min(maxPeriod, newLocal));
         const s = p.score + scoreAt(t, newLocal) - tempoPen * 2.50;
@@ -1274,7 +1284,7 @@ export function foldHistogramBpmToMusicalOctave(
   return Math.round(histBpm * 100) / 100;
 }
 
-function estimateBpmFromBarHarmonics(onsetsMs: readonly number[], seedBpm?: number): number {
+function estimateBpmFromBarHarmonics(onsetsMs: readonly number[]): number {
   if (onsetsMs.length < 10) return 0;
   const sorted = onsetsMs.slice().sort((a, b) => a - b);
   let bestP = 0;
@@ -1319,16 +1329,15 @@ function estimateBpmFromBarHarmonics(onsetsMs: readonly number[], seedBpm?: numb
   }
 
   // Take average period of top downbeat candidates (within 10% of maxScore)
-  const topCands = candidates.filter((c) => c.score >= maxScore * 0.90);
-  if (topCands.length > 0) {
-    const avgP = topCands.reduce((acc, c) => acc + c.barMs / 4, 0) / topCands.length;
-    bestP = avgP;
+  const bestCand = candidates.find((c) => Math.abs(c.score - maxScore) < 1e-6);
+  if (bestCand) {
+    bestP = bestCand.barMs / 4;
   }
 
   if (bestP <= 0) return 0;
   const bpm = 60_000 / bestP;
   console.log(
-    `[SMART TEMPO DIAGNOSTICS] barHarmonics top candidates avg -> bestP: ${bestP.toFixed(1)} ms (${bpm.toFixed(2)} BPM, top ${topCands.length} cands)`,
+    `[SMART TEMPO DIAGNOSTICS] barHarmonics best candidate -> bestP: ${bestP.toFixed(1)} ms (${bpm.toFixed(2)} BPM)`,
   );
   return Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
 }
@@ -1349,7 +1358,7 @@ function refineRawBpmWithOnsetEvidence(
     estimate = estimateBpmFromOnsets(onsetsMs);
   }
 
-  const barBpm = estimateBpmFromBarHarmonics(onsetsMs, seedBpm);
+  const barBpm = estimateBpmFromBarHarmonics(onsetsMs);
   console.log(
     `[SMART TEMPO DIAGNOSTICS] estimateBpmFromBarHarmonics -> ${barBpm > 0 ? barBpm.toFixed(2) + " BPM" : "brak"}`,
   );
@@ -1430,7 +1439,7 @@ export function analyzeFromMono(
   const maxBeats = fullTrackGrid ? MAX_BEATS_FULL_TRACK : MAX_BEATS_WINDOW;
   const hopSize = effectiveHopSize(mono.length);
   let onsetsMs: number[] = [];
-  let rawEstimate = 0;
+  let rawEstimate: number;
   let competitors: number[] = [];
   if (skipOnsets) {
     rawEstimate = quickEstimateBpmFromEnergy(mono, sampleRate, seedBpm);
@@ -1473,9 +1482,15 @@ export function analyzeFromMono(
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
   beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 30);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
-  const estimatedBpm = ibiBpm > 0 ? ibiBpm : periodHintBpm;
+  // Prefer periodHintBpm (from bar-harmonics reconciliation) over the raw
+  // beat-grid median: Viterbi can latch onto 8th-note or syncopated onsets
+  // and produce a median ~10% faster than the true quarter-note period.
+  // Trust ibiBpm only when within ±10% of periodHintBpm (was ±5% — too tight
+  // when Viterbi clamp limits grid to ≤126 BPM and true tempo is ~123 BPM).
+  const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
+  const estimatedBpm = ibiBpm > 0 && ibiBpmDeviation <= 0.10 ? ibiBpm : periodHintBpm;
   console.log(
-    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
+    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
   );
   return { onsetsMs, beatMs, estimatedBpm };
 }
@@ -1515,7 +1530,7 @@ export async function analyzeFromMonoAsync(
   const maxBeats = fullTrackGrid ? MAX_BEATS_FULL_TRACK : MAX_BEATS_WINDOW;
   const hopSize = effectiveHopSize(mono.length);
   let onsetsMs: number[] = [];
-  let rawEstimate = 0;
+  let rawEstimate: number;
   let competitors: number[] = [];
   if (skipOnsets) {
     throwIfAborted(signal);
@@ -1589,9 +1604,14 @@ export async function analyzeFromMonoAsync(
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
   beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 30);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
-  const estimatedBpm = ibiBpm > 0 ? ibiBpm : periodHintBpm;
+  // Prefer periodHintBpm (from bar-harmonics reconciliation) over the raw
+  // beat-grid median: Viterbi can latch onto 8th-note or syncopated onsets
+  // and produce a median ~10% faster than the true quarter-note period.
+  // Trust ibiBpm only when within ±10% of periodHintBpm.
+  const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
+  const estimatedBpm = ibiBpm > 0 && ibiBpmDeviation <= 0.10 ? ibiBpm : periodHintBpm;
   console.log(
-    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
+    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
   );
   report(1);
   return { onsetsMs, beatMs, estimatedBpm };

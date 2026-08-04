@@ -134,6 +134,28 @@ export function clickLevelLinear(
  * beat cursor — stacking many past clicks at `currentTime` caused loud bangs.
  */
 export const MAX_LATE_CLICK_MS = 40;
+export const METRONOME_LOOKAHEAD_MS = 2500;
+export const MAX_LOOKAHEAD_BEATS = 8;
+export const MAX_BEATS_PER_ADVANCE = 64;
+
+type ScheduledClickNode = {
+  osc: OscillatorNode;
+  when: number;
+};
+
+const scheduledClickNodes: ScheduledClickNode[] = [];
+
+export function cancelScheduledMetronomeClicks(): void {
+  for (const node of scheduledClickNodes) {
+    try {
+      node.osc.stop();
+      node.osc.disconnect();
+    } catch {
+      /* ignore */
+    }
+  }
+  scheduledClickNodes.length = 0;
+}
 
 function scheduleClick(
   ctx: AudioContext,
@@ -164,6 +186,16 @@ function scheduleClick(
   gain.connect(cue);
   osc.start(when);
   osc.stop(when + profile.durationSec);
+
+  scheduledClickNodes.push({ osc, when });
+  if (scheduledClickNodes.length > 64) {
+    const cutoff = ctx.currentTime - 0.5;
+    for (let i = scheduledClickNodes.length - 1; i >= 0; i--) {
+      if (scheduledClickNodes[i]!.when < cutoff) {
+        scheduledClickNodes.splice(i, 1);
+      }
+    }
+  }
 }
 
 /**
@@ -249,6 +281,7 @@ export function advanceMetronomeClicks(
   ctx: AudioContext = getMetronomeAudioContext(),
 ): number {
   if (!input.enabled || !input.playing) {
+    cancelScheduledMetronomeClicks();
     return lastScheduledBeat;
   }
 
@@ -264,12 +297,17 @@ export function advanceMetronomeClicks(
     return currentBeat;
   }
 
-  let beat =
-    lastScheduledBeat > currentBeat + 1 ? currentBeat - 1 : lastScheduledBeat;
+  // Loop wrap or backward seek: reset cursor and cancel pending nodes if currentBeat fell behind lastScheduledBeat
+  const isSeekBackwardsOrWrap =
+    lastScheduledBeat > currentBeat + MAX_LOOKAHEAD_BEATS;
+
+  if (isSeekBackwardsOrWrap) {
+    cancelScheduledMetronomeClicks();
+  }
+
+  let beat = isSeekBackwardsOrWrap ? currentBeat - 1 : lastScheduledBeat;
   const now = ctx.currentTime;
-  const MAX_BEATS_PER_ADVANCE = 64;
   let advanced = 0;
-  let scheduledAudible = 0;
 
   while (beat < currentBeat && advanced < MAX_BEATS_PER_ADVANCE) {
     beat += 1;
@@ -288,37 +326,37 @@ export function advanceMetronomeClicks(
         input.timeSignature.numerator) %
       input.timeSignature.numerator;
     scheduleClick(ctx, when, beatInBar === 0);
-    scheduledAudible += 1;
   }
 
-  // Large seek/jump: skip ahead without scheduling every missed click.
+  // Large seek/jump forward: skip ahead without scheduling every missed click.
   if (beat < currentBeat) {
     beat = currentBeat;
   }
+  advanced = 0;
 
-  // Look-ahead only when no audible catch-up this frame — schedule the next
-  // beat in the future (AlongMap lead). Silent cursor catch-up (seek / lag)
-  // still allows look-ahead so the next click is not skipped.
-  const upcoming = beat + 1;
-  if (
-    scheduledAudible === 0 &&
-    upcoming === currentBeat + 1
-  ) {
+  // Look-ahead scheduling: queue upcoming beats up to lookahead window into WebAudio.
+  // This allows metronome playback to continue seamlessly even when rAF pauses in background tabs.
+  const lookaheadMs = Math.max(METRONOME_LOOKAHEAD_MS, msPerBarHint(input));
+  let upcoming = Math.max(beat + 1, currentBeat + 1);
+  while (advanced < MAX_BEATS_PER_ADVANCE) {
     const beatStartTicks = upcoming * perBeat;
     const aheadMs = aheadMsToBeat(
       input.displayTicks,
       beatStartTicks,
       input,
     );
-    if (aheadMs > 1 && aheadMs < msPerBarHint(input)) {
-      const when = now + aheadMs / 1000;
-      const beatInBar =
-        ((upcoming % input.timeSignature.numerator) +
-          input.timeSignature.numerator) %
-        input.timeSignature.numerator;
-      scheduleClick(ctx, when, beatInBar === 0);
-      beat = upcoming;
+    if (aheadMs <= 1 || aheadMs > lookaheadMs) {
+      break;
     }
+    const when = Math.max(now, now + aheadMs / 1000);
+    const beatInBar =
+      ((upcoming % input.timeSignature.numerator) +
+        input.timeSignature.numerator) %
+      input.timeSignature.numerator;
+    scheduleClick(ctx, when, beatInBar === 0);
+    beat = upcoming;
+    upcoming += 1;
+    advanced += 1;
   }
 
   return beat;

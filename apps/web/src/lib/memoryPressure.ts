@@ -96,7 +96,7 @@ function readJsHeap(): JsHeapSnapshot | null {
 function collectContributors(): MemoryContributorSnapshot[] {
   const out: MemoryContributorSnapshot[] = [];
   for (const c of contributors.values()) {
-    let approxBytes = 0;
+    let approxBytes: number;
     try {
       approxBytes = Math.max(0, Math.floor(c.approxBytes()));
     } catch {
