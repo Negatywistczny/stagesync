@@ -748,7 +748,14 @@ export function preferAudioTempoSeed(
   const fallback = fallbackBpm > 0 ? fallbackBpm : 0;
 
   let chosen = 120;
-  if (grid > 0) {
+  if (grid > 0 && median > 0) {
+    const diffPct = Math.abs(grid - median) / median;
+    if (diffPct > 0.03 && diffPct < 0.35) {
+      chosen = Math.round(median * 100) / 100;
+    } else {
+      chosen = Math.round(grid * 100) / 100;
+    }
+  } else if (grid > 0) {
     chosen = Math.round(grid * 100) / 100;
   } else if (median > 0) {
     chosen = Math.round(median * 100) / 100;

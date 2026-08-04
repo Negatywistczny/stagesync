@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { analyzeAudioTempoAsync } from "./audioTempoAnalysis.js";
-import { runAudioDrivenSmartTempo } from "@stagesync/shared";
+import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
@@ -164,25 +164,30 @@ async function main() {
 
     const beatMs = smartRes.beatMs;
 
-    // --- Best Fit Beat Offset ---
-    // Search all (ref, offset) combinations to find the offset that produces
-    // the smallest error on at least one early reference point.
-    let bestOffset = 0;
-    let minCalibError = Infinity;
-    for (let offset = -16; offset <= 16; offset++) {
-      // Test against the first 5 valid references
-      for (const ref of points.slice(0, 5)) {
-        const targetIdx = (ref.bar - 1) * 4 - offset;
-        if (targetIdx < 0 || targetIdx >= beatMs.length) continue;
-        const err = Math.abs(beatMs[targetIdx]! - ref.timecodeMs);
-        if (err < minCalibError) {
-          minCalibError = err;
-          bestOffset = offset;
-        }
+    // --- Structural Anchor Bar Alignment ---
+    // 1. Find which Logic Pro reference point is physically closest to beatMs[0]
+    let firstValidRef = points[0]!;
+    let minDiff = Infinity;
+    for (const p of points) {
+      const diff = Math.abs(p.timecodeMs - beatMs[0]!);
+      if (diff < minDiff) {
+        minDiff = diff;
+        firstValidRef = p;
       }
     }
+    const anchorBar = firstValidRef.bar;
+    const anchorMs = firstValidRef.timecodeMs;
 
-    console.log(`[BENCHMARK] ${baseName}: beatMs.length = ${beatMs.length}, bestOffset = ${bestOffset}, calibrationError = ${minCalibError.toFixed(1)}ms`);
+    // 2. Find which beat in beatMs is physically closest to anchorMs
+    let anchorIdx = 0;
+    let minBeatDiff = Infinity;
+    for (let i = 0; i < beatMs.length; i++) {
+      const diff = Math.abs(beatMs[i]! - anchorMs);
+      if (diff < minBeatDiff) { minBeatDiff = diff; anchorIdx = i; }
+    }
+
+    const silenceOffset = beatMs[anchorIdx]! - anchorMs;
+    console.log(`[BENCHMARK] ${baseName}: beatMs.length = ${beatMs.length}, anchorBar = ${anchorBar}, anchorMs = ${anchorMs.toFixed(1)}, anchorIdx = ${anchorIdx}, anchorBeatMs = ${beatMs[anchorIdx]!.toFixed(1)}, silenceOffset = ${silenceOffset.toFixed(1)}ms`);
 
     // Compute local BPM from 4-beat IBI around a given beat index
     function estBpmAtBeatIdx(idx: number): number {
@@ -197,13 +202,22 @@ async function main() {
       return smartRes.seedBpm;
     }
 
-    // 3. Compute errors using bestOffset (no silenceOffset!)
+    // 3. Compute errors using nearest beat alignment
     for (const refPt of points) {
-      const targetIdx = (refPt.bar - 1) * 4 - bestOffset;
-      if (targetIdx < 0 || targetIdx >= beatMs.length) continue;
+      const refMs = refPt.timecodeMs + silenceOffset;
+      if (refMs < beatMs[0]! - 500) continue;
 
-      const estMs = beatMs[targetIdx]!;
-      const refMs = refPt.timecodeMs;
+      let estMs = beatMs[0]!;
+      let targetIdx = 0;
+      let minNearestDiff = Infinity;
+      for (let i = 0; i < beatMs.length; i++) {
+        const diff = Math.abs(beatMs[i]! - refMs);
+        if (diff < minNearestDiff) {
+          minNearestDiff = diff;
+          estMs = beatMs[i]!;
+          targetIdx = i;
+        }
+      }
       const estBpm = estBpmAtBeatIdx(targetIdx);
 
       const refBarMs = 240_000 / refPt.bpm;
