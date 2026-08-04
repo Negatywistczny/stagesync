@@ -8,7 +8,10 @@ import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap, type TempoMapProject 
 // ---------------------------------------------------------------------------
 // Environment guard — skip on runners without an audio decoder
 // ---------------------------------------------------------------------------
-function hasDecoder(): boolean {
+function hasDecoderAndFixtures(): boolean {
+  if (!fs.existsSync(FIXTURES_DIR)) return false;
+  const hasAudio = fs.readdirSync(FIXTURES_DIR).some((f) => f.endsWith(".mp3") || f.endsWith(".wav") || f.endsWith(".m4a"));
+  if (!hasAudio) return false;
   for (const cmd of ["afconvert", "ffmpeg"]) {
     try {
       execSync(`which ${cmd}`, { stdio: "ignore" });
@@ -19,7 +22,6 @@ function hasDecoder(): boolean {
   }
   return false;
 }
-
 
 const FIXTURES_DIR = path.resolve(
   __dirname,
@@ -145,7 +147,7 @@ export function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
 // ---------------------------------------------------------------------------
 describe("Smart Tempo Train Data Accuracy Benchmark", () => {
   it("meets accuracy gates: ≥60% 🟢 EXACT (≤60ms) and ≤10% 🔴 FAIL (>125ms)", async (ctx) => {
-    if (!hasDecoder()) {
+    if (!hasDecoderAndFixtures()) {
       ctx.skip();
       return;
     }
@@ -212,10 +214,10 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       let totalErrorMs = 0;
       const errorsMsList: number[] = [];
 
-      const t0RefMs = points[0]?.timecodeMs ?? 0;
+      const t0AudioMs = analysis.beatMs[0] ?? 0;
       for (const refPt of points) {
         const targetTick = (refPt.bar - 1) * barTicks;
-        const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject) + t0RefMs;
+        const estMs = t0AudioMs + ticksToMsAlongTempoMap(0, targetTick, benchProject);
         const refMs = refPt.timecodeMs;
 
         // Timestamp Drift in milliseconds on timeline (errorMs = Math.abs(t_estimated_beat - t_reference_beat))

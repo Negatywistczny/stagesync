@@ -170,13 +170,12 @@ async function main() {
       meterMap: [{ id: "m0", startTicks: 0, numerator: 4, denominator: 4 }],
       ppq,
     };
-    const bar1Pt = points.find((p) => p.bar === 1) ?? points[0];
-    const refT0Ms = bar1Pt?.timecodeMs ?? 0;
+    const t0AudioMs = analysis.beatMs[0] ?? 0;
 
     for (const refPt of points) {
       const targetTick = (refPt.bar - 1) * barTicks;
-      const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject);
-      const refMs = refPt.timecodeMs - refT0Ms;
+      const estMs = t0AudioMs + ticksToMsAlongTempoMap(0, targetTick, benchProject);
+      const refMs = refPt.timecodeMs;
       const estBpmAtBar = smartRes.tempoMap[0]?.bpm ?? analysis.estimatedBpm;
 
       const refBarMs = 240_000 / refPt.bpm;
