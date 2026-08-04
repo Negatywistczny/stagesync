@@ -1035,7 +1035,7 @@ function buildBeatGridViterbi(
   );
   const bins = 9;
   const half = Math.floor(bins / 2);
-  const scoreAt = (t: number, localPeriod: number): number => {
+  const scoreAt = (t: number, localPeriod: number, beatIdx: number = 0): number => {
     if (onsetsMs.length === 0) return 0;
     const nearest = nearestOnsetMs(onsetsMs, t);
     const dist = Math.abs(nearest - t);
@@ -1045,8 +1045,9 @@ function buildBeatGridViterbi(
     if (relDiff >= 0.25 && relDiff <= 0.75) {
       return 0;
     }
+    const isDownbeat = beatIdx % 4 === 0;
     const phaseOffset = Math.abs((t - t0) % localPeriod);
-    const downbeatBonus = phaseOffset <= win || Math.abs(phaseOffset - localPeriod) <= win ? 0.35 : 0;
+    const downbeatBonus = isDownbeat || phaseOffset <= win || Math.abs(phaseOffset - localPeriod) <= win ? 0.50 : 0;
     const onsetBonus = dist <= 25 ? 5.0 * (1 - dist / 25) : 0;
     return (1 - dist / win) + downbeatBonus + onsetBonus;
   };
@@ -1134,7 +1135,7 @@ function buildBeatGridViterbi(
           ? 0.25 * rawPeriodHint + 0.50 * med + 0.25 * p.localPeriod
           : 0.75 * p.localPeriod + 0.25 * med;
         newLocal = Math.max(minPeriod, Math.min(maxPeriod, newLocal));
-        const s = p.score + scoreAt(t, newLocal) - tempoPen * 2.50;
+        const s = p.score + scoreAt(t, newLocal, beat) - tempoPen * 2.50;
         candidates.push({
           t,
           localPeriod: newLocal,

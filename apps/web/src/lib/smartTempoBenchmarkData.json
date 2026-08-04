@@ -5,21 +5,21 @@
     "artist": "Michael Jackson",
     "durationSec": 296,
     "barsCount": 85,
-    "exactPct": 24.7,
-    "closePct": 24.7,
-    "failPct": 50.6,
-    "avgErrorMs": 125,
-    "medianErrorMs": 128.4,
-    "p95ErrorMs": 240.4,
+    "exactPct": 20,
+    "closePct": 27.1,
+    "failPct": 52.9,
+    "avgErrorMs": 133.4,
+    "medianErrorMs": 141.2,
+    "p95ErrorMs": 241.2,
     "bars": [
       {
         "trackName": "Billie Jean",
         "bar": 2,
         "timeSec": 2.3,
         "refBpm": 117.35,
-        "estBpm": 121.95,
+        "estBpm": 121.89,
         "refBarMs": 2045.1,
-        "estBarMs": 1968,
+        "estBarMs": 1969,
         "errorMs": 0,
         "tier": "exact"
       },
@@ -28,10 +28,10 @@
         "bar": 4,
         "timeSec": 6.4,
         "refBpm": 116.32,
-        "estBpm": 121.83,
+        "estBpm": 121.77,
         "refBarMs": 2063.3,
-        "estBarMs": 1970,
-        "errorMs": 101.4,
+        "estBarMs": 1971,
+        "errorMs": 100.4,
         "tier": "close"
       },
       {
@@ -39,10 +39,10 @@
         "bar": 6,
         "timeSec": 10.5,
         "refBpm": 116.91,
-        "estBpm": 119.7,
+        "estBpm": 119.64,
         "refBarMs": 2052.9,
-        "estBarMs": 2005,
-        "errorMs": 236.6,
+        "estBarMs": 2006,
+        "errorMs": 233.6,
         "tier": "fail"
       },
       {
@@ -53,7 +53,7 @@
         "estBpm": 119.52,
         "refBarMs": 2067.2,
         "estBarMs": 2008,
-        "errorMs": 148,
+        "errorMs": 153,
         "tier": "fail"
       },
       {
@@ -61,10 +61,10 @@
         "bar": 10,
         "timeSec": 18.7,
         "refBpm": 117.45,
-        "estBpm": 117.24,
+        "estBpm": 117.5,
         "refBarMs": 2043.5,
-        "estBarMs": 2047,
-        "errorMs": 0.6,
+        "estBarMs": 2042.6,
+        "errorMs": 10.8,
         "tier": "exact"
       },
       {
@@ -75,7 +75,7 @@
         "estBpm": 119.52,
         "refBarMs": 2067.5,
         "estBarMs": 2008,
-        "errorMs": 4.4,
+        "errorMs": 2.6,
         "tier": "exact"
       },
       {
@@ -83,10 +83,10 @@
         "bar": 13,
         "timeSec": 24.9,
         "refBpm": 117.4,
-        "estBpm": 121.27,
+        "estBpm": 120.83,
         "refBarMs": 2044.2,
-        "estBarMs": 1979,
-        "errorMs": 116.4,
+        "estBarMs": 1986.2,
+        "errorMs": 109.4,
         "tier": "close"
       },
       {
@@ -94,10 +94,10 @@
         "bar": 15,
         "timeSec": 29,
         "refBpm": 117.98,
-        "estBpm": 120.85,
+        "estBpm": 120.79,
         "refBarMs": 2034.3,
-        "estBarMs": 1986,
-        "errorMs": 234.8,
+        "estBarMs": 1987,
+        "errorMs": 243.8,
         "tier": "fail"
       },
       {
@@ -108,7 +108,7 @@
         "estBpm": 119.4,
         "refBarMs": 2064.9,
         "estBarMs": 2010,
-        "errorMs": 185.2,
+        "errorMs": 195.2,
         "tier": "fail"
       },
       {
@@ -116,10 +116,10 @@
         "bar": 20,
         "timeSec": 39.3,
         "refBpm": 117.83,
-        "estBpm": 118.75,
+        "estBpm": 118.69,
         "refBarMs": 2036.8,
-        "estBarMs": 2021,
-        "errorMs": 93.4,
+        "estBarMs": 2022,
+        "errorMs": 81.4,
         "tier": "close"
       },
       {
@@ -127,10 +127,10 @@
         "bar": 21,
         "timeSec": 41.3,
         "refBpm": 116.41,
-        "estBpm": 122.14,
+        "estBpm": 122.08,
         "refBarMs": 2061.7,
-        "estBarMs": 1965,
-        "errorMs": 101.6,
+        "estBarMs": 1966,
+        "errorMs": 88.6,
         "tier": "close"
       },
       {
@@ -138,10 +138,10 @@
         "bar": 23,
         "timeSec": 45.5,
         "refBpm": 116.6,
-        "estBpm": 116.67,
+        "estBpm": 118.46,
         "refBarMs": 2058.3,
-        "estBarMs": 2057,
-        "errorMs": 234.6,
+        "estBarMs": 2026,
+        "errorMs": 243.4,
         "tier": "fail"
       },
       {
@@ -149,10 +149,10 @@
         "bar": 24,
         "timeSec": 47.5,
         "refBpm": 118.07,
-        "estBpm": 116.5,
+        "estBpm": 114.78,
         "refBarMs": 2032.7,
-        "estBarMs": 2060,
-        "errorMs": 236.8,
+        "estBarMs": 2091,
+        "errorMs": 251.8,
         "tier": "fail"
       },
       {
@@ -160,10 +160,10 @@
         "bar": 25,
         "timeSec": 49.5,
         "refBpm": 115.84,
-        "estBpm": 117.82,
+        "estBpm": 111.58,
         "refBarMs": 2071.8,
-        "estBarMs": 2037,
-        "errorMs": 246.2,
+        "estBarMs": 2151,
+        "errorMs": 231.2,
         "tier": "fail"
       },
       {
@@ -171,32 +171,32 @@
         "bar": 27,
         "timeSec": 53.7,
         "refBpm": 117.02,
-        "estBpm": 117.76,
+        "estBpm": 112.62,
         "refBarMs": 2051,
-        "estBarMs": 2038,
-        "errorMs": 199,
-        "tier": "fail"
+        "estBarMs": 2131,
+        "errorMs": 92,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 29,
         "timeSec": 57.8,
         "refBpm": 118,
-        "estBpm": 120.54,
+        "estBpm": 112.46,
         "refBarMs": 2034,
-        "estBarMs": 1991,
-        "errorMs": 199.4,
-        "tier": "fail"
+        "estBarMs": 2134,
+        "errorMs": 75.4,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 30,
         "timeSec": 59.8,
         "refBpm": 114.85,
-        "estBpm": 120.06,
+        "estBpm": 114.89,
         "refBarMs": 2089.7,
-        "estBarMs": 1999,
-        "errorMs": 155.2,
+        "estBarMs": 2089,
+        "errorMs": 174.2,
         "tier": "fail"
       },
       {
@@ -204,43 +204,43 @@
         "bar": 31,
         "timeSec": 61.9,
         "refBpm": 117.63,
-        "estBpm": 121.7,
+        "estBpm": 115.55,
         "refBarMs": 2040.3,
-        "estBarMs": 1972,
-        "errorMs": 66.2,
-        "tier": "close"
+        "estBarMs": 2077,
+        "errorMs": 175.2,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 33,
         "timeSec": 66,
         "refBpm": 115.16,
-        "estBpm": 118.28,
+        "estBpm": 121.21,
         "refBarMs": 2084.1,
-        "estBarMs": 2029,
-        "errorMs": 16.8,
-        "tier": "exact"
+        "estBarMs": 1980,
+        "errorMs": 236.8,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 34,
         "timeSec": 68.1,
         "refBpm": 116.74,
-        "estBpm": 116.11,
+        "estBpm": 121.21,
         "refBarMs": 2055.8,
-        "estBarMs": 2067,
-        "errorMs": 37.4,
-        "tier": "exact"
+        "estBarMs": 1980,
+        "errorMs": 133.6,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 36,
         "timeSec": 72.2,
         "refBpm": 117.48,
-        "estBpm": 120.12,
+        "estBpm": 120.06,
         "refBarMs": 2042.9,
-        "estBarMs": 1998,
-        "errorMs": 46,
+        "estBarMs": 1999,
+        "errorMs": 23,
         "tier": "exact"
       },
       {
@@ -248,21 +248,21 @@
         "bar": 38,
         "timeSec": 76.3,
         "refBpm": 115.54,
-        "estBpm": 119.28,
+        "estBpm": 121.58,
         "refBarMs": 2077.3,
-        "estBarMs": 2012,
-        "errorMs": 149.4,
-        "tier": "fail"
+        "estBarMs": 1974,
+        "errorMs": 86.4,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 40,
         "timeSec": 80.4,
         "refBpm": 116.61,
-        "estBpm": 116.22,
+        "estBpm": 125.26,
         "refBarMs": 2058.2,
-        "estBarMs": 2065,
-        "errorMs": 229,
+        "estBarMs": 1916,
+        "errorMs": 198,
         "tier": "fail"
       },
       {
@@ -270,21 +270,21 @@
         "bar": 42,
         "timeSec": 84.5,
         "refBpm": 117.19,
-        "estBpm": 116.9,
+        "estBpm": 122.5,
         "refBarMs": 2048,
-        "estBarMs": 2053,
-        "errorMs": 253.8,
-        "tier": "fail"
+        "estBarMs": 1959.2,
+        "errorMs": 31.2,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 46,
         "timeSec": 92.7,
         "refBpm": 116.09,
-        "estBpm": 120.6,
+        "estBpm": 120.06,
         "refBarMs": 2067.4,
-        "estBarMs": 1990,
-        "errorMs": 182.8,
+        "estBarMs": 1999,
+        "errorMs": 203.8,
         "tier": "fail"
       },
       {
@@ -292,21 +292,21 @@
         "bar": 47,
         "timeSec": 94.8,
         "refBpm": 117.8,
-        "estBpm": 117.88,
+        "estBpm": 120,
         "refBarMs": 2037.3,
-        "estBarMs": 2036,
-        "errorMs": 111.2,
-        "tier": "close"
+        "estBarMs": 2000,
+        "errorMs": 141.2,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 48,
         "timeSec": 96.8,
         "refBpm": 116.03,
-        "estBpm": 116.45,
+        "estBpm": 119.7,
         "refBarMs": 2068.4,
-        "estBarMs": 2061,
-        "errorMs": 109.2,
+        "estBarMs": 2005,
+        "errorMs": 103.2,
         "tier": "close"
       },
       {
@@ -314,32 +314,32 @@
         "bar": 50,
         "timeSec": 101,
         "refBpm": 116.64,
-        "estBpm": 116.5,
+        "estBpm": 120.79,
         "refBarMs": 2057.6,
-        "estBarMs": 2060,
-        "errorMs": 55,
-        "tier": "exact"
+        "estBarMs": 1987,
+        "errorMs": 68,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 54,
         "timeSec": 109.2,
         "refBpm": 117.24,
-        "estBpm": 120.72,
+        "estBpm": 116.45,
         "refBarMs": 2047,
-        "estBarMs": 1988.1,
-        "errorMs": 81.4,
-        "tier": "close"
+        "estBarMs": 2061,
+        "errorMs": 201.6,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 55,
         "timeSec": 111.3,
         "refBpm": 116.19,
-        "estBpm": 122.39,
+        "estBpm": 115.55,
         "refBarMs": 2065.5,
-        "estBarMs": 1960.9,
-        "errorMs": 146.9,
+        "estBarMs": 2077,
+        "errorMs": 209,
         "tier": "fail"
       },
       {
@@ -347,10 +347,10 @@
         "bar": 56,
         "timeSec": 113.3,
         "refBpm": 117.32,
-        "estBpm": 119.94,
+        "estBpm": 116.34,
         "refBarMs": 2045.7,
-        "estBarMs": 2001,
-        "errorMs": 246.8,
+        "estBarMs": 2063,
+        "errorMs": 225.2,
         "tier": "fail"
       },
       {
@@ -358,10 +358,10 @@
         "bar": 58,
         "timeSec": 117.4,
         "refBpm": 116.35,
-        "estBpm": 117.7,
+        "estBpm": 121.03,
         "refBarMs": 2062.8,
-        "estBarMs": 2039,
-        "errorMs": 150.4,
+        "estBarMs": 1983,
+        "errorMs": 187.4,
         "tier": "fail"
       },
       {
@@ -369,21 +369,21 @@
         "bar": 60,
         "timeSec": 121.5,
         "refBpm": 116.51,
-        "estBpm": 121.52,
+        "estBpm": 120.18,
         "refBarMs": 2060,
-        "estBarMs": 1975,
-        "errorMs": 61,
-        "tier": "close"
+        "estBarMs": 1997,
+        "errorMs": 38,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 61,
         "timeSec": 123.6,
         "refBpm": 117.52,
-        "estBpm": 121.58,
+        "estBpm": 122.14,
         "refBarMs": 2042.3,
-        "estBarMs": 1974,
-        "errorMs": 20,
+        "estBarMs": 1965,
+        "errorMs": 21,
         "tier": "exact"
       },
       {
@@ -391,10 +391,10 @@
         "bar": 62,
         "timeSec": 125.6,
         "refBpm": 115.39,
-        "estBpm": 120.79,
+        "estBpm": 117.94,
         "refBarMs": 2079.8,
-        "estBarMs": 1987,
-        "errorMs": 88,
+        "estBarMs": 2035,
+        "errorMs": 98,
         "tier": "close"
       },
       {
@@ -402,10 +402,10 @@
         "bar": 63,
         "timeSec": 127.7,
         "refBpm": 116.86,
-        "estBpm": 118.99,
+        "estBpm": 118.81,
         "refBarMs": 2053.8,
-        "estBarMs": 2017,
-        "errorMs": 181,
+        "estBarMs": 2020,
+        "errorMs": 143,
         "tier": "fail"
       },
       {
@@ -413,10 +413,10 @@
         "bar": 65,
         "timeSec": 131.8,
         "refBpm": 116.32,
-        "estBpm": 119.64,
+        "estBpm": 119.46,
         "refBarMs": 2063.4,
-        "estBarMs": 2006,
-        "errorMs": 204,
+        "estBarMs": 2009,
+        "errorMs": 247,
         "tier": "fail"
       },
       {
@@ -424,10 +424,10 @@
         "bar": 66,
         "timeSec": 133.9,
         "refBpm": 118.05,
-        "estBpm": 120.79,
+        "estBpm": 120.91,
         "refBarMs": 2033,
-        "estBarMs": 1987,
-        "errorMs": 143.6,
+        "estBarMs": 1985,
+        "errorMs": 189.6,
         "tier": "fail"
       },
       {
@@ -438,18 +438,18 @@
         "estBpm": 121.4,
         "refBarMs": 2075.2,
         "estBarMs": 1977,
-        "errorMs": 104.2,
-        "tier": "close"
+        "errorMs": 148.2,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 68,
         "timeSec": 138,
         "refBpm": 118.06,
-        "estBpm": 119.05,
+        "estBpm": 118.99,
         "refBarMs": 2032.9,
-        "estBarMs": 2016,
-        "errorMs": 4.8,
+        "estBarMs": 2017,
+        "errorMs": 48.8,
         "tier": "exact"
       },
       {
@@ -460,7 +460,7 @@
         "estBpm": 122.14,
         "refBarMs": 2061,
         "estBarMs": 1965,
-        "errorMs": 13.2,
+        "errorMs": 31.8,
         "tier": "exact"
       },
       {
@@ -468,21 +468,21 @@
         "bar": 71,
         "timeSec": 144.2,
         "refBpm": 117.18,
-        "estBpm": 119.71,
+        "estBpm": 119.52,
         "refBarMs": 2048.2,
-        "estBarMs": 2004.8,
-        "errorMs": 149.6,
-        "tier": "fail"
+        "estBarMs": 2008,
+        "errorMs": 105.8,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 73,
         "timeSec": 148.3,
         "refBpm": 116.39,
-        "estBpm": 119.34,
+        "estBpm": 121.89,
         "refBarMs": 2062,
-        "estBarMs": 2011,
-        "errorMs": 227,
+        "estBarMs": 1969,
+        "errorMs": 217,
         "tier": "fail"
       },
       {
@@ -490,10 +490,10 @@
         "bar": 74,
         "timeSec": 150.3,
         "refBpm": 117.73,
-        "estBpm": 121.4,
+        "estBpm": 118.69,
         "refBarMs": 2038.6,
-        "estBarMs": 1977,
-        "errorMs": 180.4,
+        "estBarMs": 2022,
+        "errorMs": 184.4,
         "tier": "fail"
       },
       {
@@ -504,40 +504,40 @@
         "estBpm": 119.4,
         "refBarMs": 2066.5,
         "estBarMs": 2010,
-        "errorMs": 118.6,
-        "tier": "close"
+        "errorMs": 167.6,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 77,
         "timeSec": 156.5,
         "refBpm": 115.61,
-        "estBpm": 121.58,
+        "estBpm": 121.52,
         "refBarMs": 2075.9,
-        "estBarMs": 1974,
-        "errorMs": 14.2,
-        "tier": "exact"
+        "estBarMs": 1975,
+        "errorMs": 65.2,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 78,
         "timeSec": 158.6,
         "refBpm": 116.84,
-        "estBpm": 118.46,
+        "estBpm": 118.52,
         "refBarMs": 2054.1,
-        "estBarMs": 2026,
-        "errorMs": 88.6,
-        "tier": "close"
+        "estBarMs": 2025,
+        "errorMs": 36.6,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 80,
         "timeSec": 162.7,
         "refBpm": 117.58,
-        "estBpm": 121.95,
+        "estBpm": 121.89,
         "refBarMs": 2041.1,
-        "estBarMs": 1968,
-        "errorMs": 196,
+        "estBarMs": 1969,
+        "errorMs": 144,
         "tier": "fail"
       },
       {
@@ -545,10 +545,10 @@
         "bar": 81,
         "timeSec": 164.7,
         "refBpm": 116.07,
-        "estBpm": 120.42,
+        "estBpm": 118.75,
         "refBarMs": 2067.7,
-        "estBarMs": 1993,
-        "errorMs": 230.8,
+        "estBarMs": 2021,
+        "errorMs": 216.2,
         "tier": "fail"
       },
       {
@@ -559,7 +559,7 @@
         "estBpm": 121.52,
         "refBarMs": 2037.9,
         "estBarMs": 1975,
-        "errorMs": 153.8,
+        "errorMs": 207.8,
         "tier": "fail"
       },
       {
@@ -567,43 +567,43 @@
         "bar": 83,
         "timeSec": 168.8,
         "refBpm": 116.99,
-        "estBpm": 118.75,
+        "estBpm": 118.69,
         "refBarMs": 2051.5,
-        "estBarMs": 2021,
-        "errorMs": 90.4,
-        "tier": "close"
+        "estBarMs": 2022,
+        "errorMs": 144.4,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 87,
         "timeSec": 177,
         "refBpm": 117.66,
-        "estBpm": 121.06,
+        "estBpm": 120.42,
         "refBarMs": 2039.8,
-        "estBarMs": 1982.5,
-        "errorMs": 107,
-        "tier": "close"
+        "estBarMs": 1993,
+        "errorMs": 50,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 88,
         "timeSec": 179.1,
         "refBpm": 116.55,
-        "estBpm": 118.9,
+        "estBpm": 119.31,
         "refBarMs": 2059.2,
-        "estBarMs": 2018.5,
-        "errorMs": 164.5,
-        "tier": "fail"
+        "estBarMs": 2011.5,
+        "errorMs": 97,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 90,
         "timeSec": 183.2,
         "refBpm": 116.01,
-        "estBpm": 121.27,
+        "estBpm": 120,
         "refBarMs": 2068.7,
-        "estBarMs": 1979,
-        "errorMs": 222.2,
+        "estBarMs": 2000,
+        "errorMs": 220.8,
         "tier": "fail"
       },
       {
@@ -611,10 +611,10 @@
         "bar": 91,
         "timeSec": 185.2,
         "refBpm": 117.26,
-        "estBpm": 121.4,
+        "estBpm": 121.27,
         "refBarMs": 2046.8,
-        "estBarMs": 1977,
-        "errorMs": 138.4,
+        "estBarMs": 1979,
+        "errorMs": 197.4,
         "tier": "fail"
       },
       {
@@ -622,32 +622,32 @@
         "bar": 93,
         "timeSec": 189.3,
         "refBpm": 117.18,
-        "estBpm": 122.01,
+        "estBpm": 119.17,
         "refBarMs": 2048.2,
-        "estBarMs": 1967,
-        "errorMs": 36.6,
-        "tier": "exact"
+        "estBarMs": 2014,
+        "errorMs": 97.6,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 94,
         "timeSec": 191.4,
         "refBpm": 116.62,
-        "estBpm": 121.05,
+        "estBpm": 123.14,
         "refBarMs": 2058,
-        "estBarMs": 1982.7,
-        "errorMs": 43.2,
-        "tier": "exact"
+        "estBarMs": 1949,
+        "errorMs": 64.8,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 98,
         "timeSec": 199.6,
         "refBpm": 115.45,
-        "estBpm": 119.88,
+        "estBpm": 120.91,
         "refBarMs": 2078.8,
-        "estBarMs": 2002,
-        "errorMs": 233.2,
+        "estBarMs": 1985,
+        "errorMs": 197.8,
         "tier": "fail"
       },
       {
@@ -655,10 +655,10 @@
         "bar": 99,
         "timeSec": 201.7,
         "refBpm": 118,
-        "estBpm": 118.99,
+        "estBpm": 119.34,
         "refBarMs": 2033.9,
-        "estBarMs": 2017,
-        "errorMs": 156.4,
+        "estBarMs": 2011,
+        "errorMs": 228.4,
         "tier": "fail"
       },
       {
@@ -669,7 +669,7 @@
         "estBpm": 120.66,
         "refBarMs": 2058.9,
         "estBarMs": 1989,
-        "errorMs": 138.2,
+        "errorMs": 204.2,
         "tier": "fail"
       },
       {
@@ -677,21 +677,21 @@
         "bar": 102,
         "timeSec": 207.9,
         "refBpm": 117.11,
-        "estBpm": 118.46,
+        "estBpm": 118.4,
         "refBarMs": 2049.3,
-        "estBarMs": 2026,
-        "errorMs": 2.8,
-        "tier": "exact"
+        "estBarMs": 2027,
+        "errorMs": 64.2,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 103,
         "timeSec": 209.9,
         "refBpm": 115.46,
-        "estBpm": 120.85,
+        "estBpm": 120.79,
         "refBarMs": 2078.7,
-        "estBarMs": 1986,
-        "errorMs": 24.4,
+        "estBarMs": 1987,
+        "errorMs": 43.6,
         "tier": "exact"
       },
       {
@@ -699,21 +699,21 @@
         "bar": 104,
         "timeSec": 212,
         "refBpm": 116.76,
-        "estBpm": 120.04,
+        "estBpm": 120.42,
         "refBarMs": 2055.5,
-        "estBarMs": 1999.3,
-        "errorMs": 117.2,
-        "tier": "close"
+        "estBarMs": 1993,
+        "errorMs": 48.2,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 106,
         "timeSec": 216.1,
         "refBpm": 117.41,
-        "estBpm": 120.66,
+        "estBpm": 120.54,
         "refBarMs": 2044.1,
-        "estBarMs": 1989,
-        "errorMs": 248.4,
+        "estBarMs": 1991,
+        "errorMs": 179.4,
         "tier": "fail"
       },
       {
@@ -721,10 +721,10 @@
         "bar": 108,
         "timeSec": 220.2,
         "refBpm": 116.2,
-        "estBpm": 122.7,
+        "estBpm": 122.64,
         "refBarMs": 2065.4,
-        "estBarMs": 1956,
-        "errorMs": 170.2,
+        "estBarMs": 1957,
+        "errorMs": 241.2,
         "tier": "fail"
       },
       {
@@ -732,43 +732,43 @@
         "bar": 110,
         "timeSec": 224.3,
         "refBpm": 116.47,
-        "estBpm": 120.2,
+        "estBpm": 120.12,
         "refBarMs": 2060.7,
-        "estBarMs": 1996.7,
-        "errorMs": 1.3,
-        "tier": "exact"
+        "estBarMs": 1998,
+        "errorMs": 70.4,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 111,
         "timeSec": 226.4,
         "refBpm": 117.45,
-        "estBpm": 121.52,
+        "estBpm": 121.46,
         "refBarMs": 2043.5,
-        "estBarMs": 1975,
-        "errorMs": 69,
-        "tier": "close"
+        "estBarMs": 1976,
+        "errorMs": 4,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 113,
         "timeSec": 230.5,
         "refBpm": 116.56,
-        "estBpm": 121.52,
+        "estBpm": 121.46,
         "refBarMs": 2059.1,
-        "estBarMs": 1975,
-        "errorMs": 164.6,
-        "tier": "fail"
+        "estBarMs": 1976,
+        "errorMs": 90.6,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 115,
         "timeSec": 234.6,
         "refBpm": 117.49,
-        "estBpm": 120.18,
+        "estBpm": 119.46,
         "refBarMs": 2042.8,
-        "estBarMs": 1997,
-        "errorMs": 192,
+        "estBarMs": 2009,
+        "errorMs": 221,
         "tier": "fail"
       },
       {
@@ -776,32 +776,32 @@
         "bar": 117,
         "timeSec": 238.7,
         "refBpm": 116.67,
-        "estBpm": 125.65,
+        "estBpm": 125.39,
         "refBarMs": 2057.1,
-        "estBarMs": 1910,
-        "errorMs": 75.6,
-        "tier": "close"
+        "estBarMs": 1914,
+        "errorMs": 153.6,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 121,
         "timeSec": 246.9,
         "refBpm": 116.2,
-        "estBpm": 123.14,
+        "estBpm": 121.09,
         "refBarMs": 2065.5,
-        "estBarMs": 1949,
-        "errorMs": 53.8,
-        "tier": "exact"
+        "estBarMs": 1982,
+        "errorMs": 209.8,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 122,
         "timeSec": 249,
         "refBpm": 117.57,
-        "estBpm": 123.08,
+        "estBpm": 118.11,
         "refBarMs": 2041.4,
-        "estBarMs": 1950,
-        "errorMs": 65.6,
+        "estBarMs": 2032,
+        "errorMs": 123.4,
         "tier": "close"
       },
       {
@@ -809,32 +809,32 @@
         "bar": 124,
         "timeSec": 253,
         "refBpm": 115.93,
-        "estBpm": 125.07,
+        "estBpm": 121.09,
         "refBarMs": 2070.3,
-        "estBarMs": 1919,
-        "errorMs": 239,
-        "tier": "fail"
+        "estBarMs": 1982,
+        "errorMs": 84,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 126,
         "timeSec": 257.2,
         "refBpm": 116.88,
-        "estBpm": 122.7,
+        "estBpm": 120.91,
         "refBarMs": 2053.4,
-        "estBarMs": 1956,
-        "errorMs": 43.4,
-        "tier": "exact"
+        "estBarMs": 1985,
+        "errorMs": 99.4,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 128,
         "timeSec": 261.3,
         "refBpm": 116.3,
-        "estBpm": 122.32,
+        "estBpm": 119.76,
         "refBarMs": 2063.6,
-        "estBarMs": 1962,
-        "errorMs": 240.4,
+        "estBarMs": 2004,
+        "errorMs": 167.6,
         "tier": "fail"
       },
       {
@@ -842,10 +842,10 @@
         "bar": 129,
         "timeSec": 263.3,
         "refBpm": 118.15,
-        "estBpm": 118.46,
+        "estBpm": 120.3,
         "refBarMs": 2031.3,
-        "estBarMs": 2026,
-        "errorMs": 135.2,
+        "estBarMs": 1995,
+        "errorMs": 230.8,
         "tier": "fail"
       },
       {
@@ -853,10 +853,10 @@
         "bar": 130,
         "timeSec": 265.4,
         "refBpm": 117.15,
-        "estBpm": 117.3,
+        "estBpm": 119.58,
         "refBarMs": 2048.6,
-        "estBarMs": 2046,
-        "errorMs": 128.4,
+        "estBarMs": 2007,
+        "errorMs": 213.4,
         "tier": "fail"
       },
       {
@@ -864,43 +864,43 @@
         "bar": 132,
         "timeSec": 269.5,
         "refBpm": 116.34,
-        "estBpm": 118.99,
+        "estBpm": 122.32,
         "refBarMs": 2062.8,
-        "estBarMs": 2017,
-        "errorMs": 161.4,
-        "tier": "fail"
+        "estBarMs": 1962,
+        "errorMs": 106.4,
+        "tier": "close"
       },
       {
         "trackName": "Billie Jean",
         "bar": 134,
         "timeSec": 273.6,
         "refBpm": 117.78,
-        "estBpm": 123.65,
+        "estBpm": 123.84,
         "refBarMs": 2037.7,
-        "estBarMs": 1941,
-        "errorMs": 68,
-        "tier": "close"
+        "estBarMs": 1938,
+        "errorMs": 38,
+        "tier": "exact"
       },
       {
         "trackName": "Billie Jean",
         "bar": 135,
         "timeSec": 275.6,
         "refBpm": 116.65,
-        "estBpm": 120.3,
+        "estBpm": 118.52,
         "refBarMs": 2057.4,
-        "estBarMs": 1995,
-        "errorMs": 29,
-        "tier": "exact"
+        "estBarMs": 2025,
+        "errorMs": 138,
+        "tier": "fail"
       },
       {
         "trackName": "Billie Jean",
         "bar": 139,
         "timeSec": 283.9,
         "refBpm": 116.73,
-        "estBpm": 121.21,
+        "estBpm": 120.18,
         "refBarMs": 2056,
-        "estBarMs": 1980,
-        "errorMs": 168.4,
+        "estBarMs": 1997,
+        "errorMs": 143.4,
         "tier": "fail"
       },
       {
@@ -908,10 +908,10 @@
         "bar": 141,
         "timeSec": 288,
         "refBpm": 117.16,
-        "estBpm": 120.12,
+        "estBpm": 119.88,
         "refBarMs": 2048.5,
-        "estBarMs": 1998,
-        "errorMs": 23.8,
+        "estBarMs": 2002,
+        "errorMs": 25.8,
         "tier": "exact"
       },
       {
@@ -919,10 +919,10 @@
         "bar": 142,
         "timeSec": 290,
         "refBpm": 115.81,
-        "estBpm": 120.06,
+        "estBpm": 119.94,
         "refBarMs": 2072.3,
-        "estBarMs": 1999,
-        "errorMs": 25,
+        "estBarMs": 2001,
+        "errorMs": 19,
         "tier": "exact"
       },
       {
@@ -930,10 +930,10 @@
         "bar": 143,
         "timeSec": 292.1,
         "refBpm": 109.11,
-        "estBpm": 120.12,
+        "estBpm": 119.88,
         "refBarMs": 2199.7,
-        "estBarMs": 1998,
-        "errorMs": 100,
+        "estBarMs": 2002,
+        "errorMs": 92,
         "tier": "close"
       },
       {
@@ -941,10 +941,10 @@
         "bar": 144,
         "timeSec": 294.3,
         "refBpm": 105.29,
-        "estBpm": 120.12,
+        "estBpm": 119.94,
         "refBarMs": 2279.4,
-        "estBarMs": 1998,
-        "errorMs": 197.4,
+        "estBarMs": 2001,
+        "errorMs": 210.4,
         "tier": "fail"
       }
     ]
@@ -955,11 +955,11 @@
     "artist": "Logic Pro Benchmark",
     "durationSec": 261,
     "barsCount": 75,
-    "exactPct": 6.7,
-    "closePct": 14.7,
-    "failPct": 78.7,
-    "avgErrorMs": 181.9,
-    "medianErrorMs": 212.9,
+    "exactPct": 5.3,
+    "closePct": 12,
+    "failPct": 82.7,
+    "avgErrorMs": 186.5,
+    "medianErrorMs": 213.8,
     "p95ErrorMs": 233.3,
     "bars": [
       {
@@ -1352,10 +1352,10 @@
         "bar": 71,
         "timeSec": 140.5,
         "refBpm": 120.14,
-        "estBpm": 125.62,
+        "estBpm": 122.33,
         "refBarMs": 1997.7,
-        "estBarMs": 1910.6,
-        "errorMs": 190.1,
+        "estBarMs": 1962,
+        "errorMs": 138.7,
         "tier": "fail"
       },
       {
@@ -1363,9 +1363,9 @@
         "bar": 73,
         "timeSec": 144.5,
         "refBpm": 120.98,
-        "estBpm": 121.54,
+        "estBpm": 114.99,
         "refBarMs": 1983.9,
-        "estBarMs": 1974.6,
+        "estBarMs": 2087.1,
         "errorMs": 125.2,
         "tier": "fail"
       },
@@ -1374,43 +1374,43 @@
         "bar": 74,
         "timeSec": 146.5,
         "refBpm": 117.44,
-        "estBpm": 122.01,
+        "estBpm": 117.55,
         "refBarMs": 2043.6,
-        "estBarMs": 1967,
-        "errorMs": 112.6,
-        "tier": "close"
+        "estBarMs": 2041.7,
+        "errorMs": 225.1,
+        "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 75,
         "timeSec": 148.6,
         "refBpm": 113.91,
-        "estBpm": 121.58,
+        "estBpm": 115.83,
         "refBarMs": 2106.9,
-        "estBarMs": 1973.9,
-        "errorMs": 36.8,
-        "tier": "exact"
+        "estBarMs": 2072,
+        "errorMs": 224,
+        "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 76,
         "timeSec": 150.7,
         "refBpm": 115.3,
-        "estBpm": 121.57,
+        "estBpm": 115.85,
         "refBarMs": 2081.6,
-        "estBarMs": 1974.1,
-        "errorMs": 98.9,
-        "tier": "close"
+        "estBarMs": 2071.6,
+        "errorMs": 186.4,
+        "tier": "fail"
       },
       {
         "trackName": "I will survive",
         "bar": 77,
         "timeSec": 152.7,
         "refBpm": 120.52,
-        "estBpm": 121.57,
+        "estBpm": 117.12,
         "refBarMs": 1991.4,
-        "estBarMs": 1974.1,
-        "errorMs": 206,
+        "estBarMs": 2049.2,
+        "errorMs": 176.8,
         "tier": "fail"
       },
       {
@@ -1418,10 +1418,10 @@
         "bar": 79,
         "timeSec": 156.7,
         "refBpm": 119.4,
-        "estBpm": 120.69,
+        "estBpm": 118.13,
         "refBarMs": 2010,
-        "estBarMs": 1988.5,
-        "errorMs": 194.1,
+        "estBarMs": 2031.7,
+        "errorMs": 237.3,
         "tier": "fail"
       },
       {
@@ -1795,21 +1795,21 @@
     "artist": "Nirvana",
     "durationSec": 278,
     "barsCount": 88,
-    "exactPct": 25,
-    "closePct": 25,
-    "failPct": 50,
-    "avgErrorMs": 120.9,
-    "medianErrorMs": 126.4,
-    "p95ErrorMs": 230.4,
+    "exactPct": 23.9,
+    "closePct": 22.7,
+    "failPct": 53.4,
+    "avgErrorMs": 124.5,
+    "medianErrorMs": 129.6,
+    "p95ErrorMs": 232.4,
     "bars": [
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 1,
         "timeSec": 1.1,
         "refBpm": 110.45,
-        "estBpm": 123.33,
+        "estBpm": 116.45,
         "refBarMs": 2172.9,
-        "estBarMs": 1946,
+        "estBarMs": 2061,
         "errorMs": 0,
         "tier": "exact"
       },
@@ -1818,55 +1818,55 @@
         "bar": 2,
         "timeSec": 4.9,
         "refBpm": 109.85,
-        "estBpm": 119.7,
+        "estBpm": 118.17,
         "refBarMs": 2184.8,
-        "estBarMs": 2005,
-        "errorMs": 90,
-        "tier": "close"
+        "estBarMs": 2031,
+        "errorMs": 221,
+        "tier": "fail"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 3,
         "timeSec": 7.1,
         "refBpm": 113.14,
-        "estBpm": 124.22,
+        "estBpm": 117.13,
         "refBarMs": 2121.3,
-        "estBarMs": 1932,
-        "errorMs": 92.6,
-        "tier": "close"
+        "estBarMs": 2049,
+        "errorMs": 130.4,
+        "tier": "fail"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 4,
         "timeSec": 9.2,
         "refBpm": 117.96,
-        "estBpm": 122.26,
+        "estBpm": 114.18,
         "refBarMs": 2034.6,
-        "estBarMs": 1963,
-        "errorMs": 197.2,
-        "tier": "fail"
+        "estBarMs": 2102,
+        "errorMs": 58.2,
+        "tier": "exact"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 6,
         "timeSec": 13.3,
         "refBpm": 119.52,
-        "estBpm": 123.97,
+        "estBpm": 112.78,
         "refBarMs": 2008,
-        "estBarMs": 1936,
-        "errorMs": 30,
-        "tier": "exact"
+        "estBarMs": 2128,
+        "errorMs": 206,
+        "tier": "fail"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 7,
         "timeSec": 15.3,
         "refBpm": 118.31,
-        "estBpm": 123.58,
+        "estBpm": 114.57,
         "refBarMs": 2028.6,
-        "estBarMs": 1942,
-        "errorMs": 40.4,
-        "tier": "exact"
+        "estBarMs": 2094.8,
+        "errorMs": 193.2,
+        "tier": "fail"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -1895,10 +1895,10 @@
         "bar": 10,
         "timeSec": 21.4,
         "refBpm": 114.45,
-        "estBpm": 119.82,
+        "estBpm": 119.88,
         "refBarMs": 2097,
-        "estBarMs": 2003,
-        "errorMs": 216.8,
+        "estBarMs": 2002,
+        "errorMs": 217.8,
         "tier": "fail"
       },
       {
@@ -2731,9 +2731,9 @@
         "bar": 130,
         "timeSec": 267,
         "refBpm": 117.68,
-        "estBpm": 120.97,
+        "estBpm": 120.66,
         "refBarMs": 2039.5,
-        "estBarMs": 1984,
+        "estBarMs": 1989,
         "errorMs": 4.4,
         "tier": "exact"
       },
@@ -2742,10 +2742,10 @@
         "bar": 132,
         "timeSec": 271.1,
         "refBpm": 117.07,
-        "estBpm": 121.4,
+        "estBpm": 120.91,
         "refBarMs": 2050,
-        "estBarMs": 1977,
-        "errorMs": 114.6,
+        "estBarMs": 1985,
+        "errorMs": 101.6,
         "tier": "close"
       },
       {
@@ -2753,10 +2753,10 @@
         "bar": 134,
         "timeSec": 275.2,
         "refBpm": 106.68,
-        "estBpm": 121.4,
+        "estBpm": 120.91,
         "refBarMs": 2249.8,
-        "estBarMs": 1977,
-        "errorMs": 230.4,
+        "estBarMs": 1985,
+        "errorMs": 236.6,
         "tier": "fail"
       },
       {
@@ -2764,10 +2764,10 @@
         "bar": 135,
         "timeSec": 277.4,
         "refBpm": 107.12,
-        "estBpm": 121.4,
+        "estBpm": 120.91,
         "refBarMs": 2240.5,
-        "estBarMs": 1977,
-        "errorMs": 40.2,
+        "estBarMs": 1985,
+        "errorMs": 3.2,
         "tier": "exact"
       }
     ]
@@ -2778,12 +2778,12 @@
     "artist": "ABBA",
     "durationSec": 297,
     "barsCount": 100,
-    "exactPct": 30,
-    "closePct": 37,
-    "failPct": 33,
-    "avgErrorMs": 101.8,
-    "medianErrorMs": 89.6,
-    "p95ErrorMs": 229,
+    "exactPct": 23,
+    "closePct": 26,
+    "failPct": 51,
+    "avgErrorMs": 122.7,
+    "medianErrorMs": 126,
+    "p95ErrorMs": 224,
     "bars": [
       {
         "trackName": "The Winner Takes It All",
@@ -2804,7 +2804,7 @@
         "estBpm": 133.7,
         "refBarMs": 1932.3,
         "estBarMs": 1795,
-        "errorMs": 191.4,
+        "errorMs": 190.4,
         "tier": "fail"
       },
       {
@@ -2815,7 +2815,7 @@
         "estBpm": 134.38,
         "refBarMs": 1938.6,
         "estBarMs": 1786,
-        "errorMs": 116.2,
+        "errorMs": 117.2,
         "tier": "close"
       },
       {
@@ -2823,10 +2823,10 @@
         "bar": 11,
         "timeSec": 20.6,
         "refBpm": 124.45,
-        "estBpm": 134.3,
+        "estBpm": 134.38,
         "refBarMs": 1928.4,
-        "estBarMs": 1787,
-        "errorMs": 166.2,
+        "estBarMs": 1786,
+        "errorMs": 164.2,
         "tier": "fail"
       },
       {
@@ -2837,8 +2837,8 @@
         "estBpm": 134.38,
         "refBarMs": 1935.9,
         "estBarMs": 1786,
-        "errorMs": 122.4,
-        "tier": "close"
+        "errorMs": 125.4,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -2848,7 +2848,7 @@
         "estBpm": 134.38,
         "refBarMs": 1915,
         "estBarMs": 1786,
-        "errorMs": 178.2,
+        "errorMs": 174.2,
         "tier": "fail"
       },
       {
@@ -2856,10 +2856,10 @@
         "bar": 15,
         "timeSec": 28.3,
         "refBpm": 122.16,
-        "estBpm": 134.3,
+        "estBpm": 134.38,
         "refBarMs": 1964.7,
-        "estBarMs": 1787,
-        "errorMs": 48.2,
+        "estBarMs": 1786,
+        "errorMs": 44.2,
         "tier": "exact"
       },
       {
@@ -2870,7 +2870,7 @@
         "estBpm": 134.38,
         "refBarMs": 1949.4,
         "estBarMs": 1786,
-        "errorMs": 140.6,
+        "errorMs": 135.6,
         "tier": "fail"
       },
       {
@@ -2878,10 +2878,10 @@
         "bar": 18,
         "timeSec": 34.2,
         "refBpm": 120.8,
-        "estBpm": 132.01,
+        "estBpm": 132.09,
         "refBarMs": 1986.8,
-        "estBarMs": 1818,
-        "errorMs": 25,
+        "estBarMs": 1817,
+        "errorMs": 30,
         "tier": "exact"
       },
       {
@@ -2892,7 +2892,7 @@
         "estBpm": 132.38,
         "refBarMs": 1990.4,
         "estBarMs": 1813,
-        "errorMs": 68.2,
+        "errorMs": 62.2,
         "tier": "close"
       },
       {
@@ -2903,7 +2903,7 @@
         "estBpm": 132.89,
         "refBarMs": 1968.6,
         "estBarMs": 1806,
-        "errorMs": 111.2,
+        "errorMs": 117.2,
         "tier": "close"
       },
       {
@@ -2911,10 +2911,10 @@
         "bar": 23,
         "timeSec": 44.1,
         "refBpm": 119.88,
-        "estBpm": 132.38,
+        "estBpm": 132.45,
         "refBarMs": 2002,
-        "estBarMs": 1813,
-        "errorMs": 9.2,
+        "estBarMs": 1812,
+        "errorMs": 3.2,
         "tier": "exact"
       },
       {
@@ -2922,10 +2922,10 @@
         "bar": 24,
         "timeSec": 46.1,
         "refBpm": 122.52,
-        "estBpm": 133.11,
+        "estBpm": 133.19,
         "refBarMs": 1958.8,
-        "estBarMs": 1803,
-        "errorMs": 187.4,
+        "estBarMs": 1802,
+        "errorMs": 194.4,
         "tier": "fail"
       },
       {
@@ -2933,10 +2933,10 @@
         "bar": 26,
         "timeSec": 50,
         "refBpm": 120.31,
-        "estBpm": 135.94,
+        "estBpm": 135.33,
         "refBarMs": 1994.9,
-        "estBarMs": 1765.5,
-        "errorMs": 29.4,
+        "estBarMs": 1773.5,
+        "errorMs": 37.4,
         "tier": "exact"
       },
       {
@@ -2944,10 +2944,10 @@
         "bar": 28,
         "timeSec": 54,
         "refBpm": 122.43,
-        "estBpm": 132.11,
+        "estBpm": 131.46,
         "refBarMs": 1960.3,
-        "estBarMs": 1816.6,
-        "errorMs": 17.6,
+        "estBarMs": 1825.6,
+        "errorMs": 8.6,
         "tier": "exact"
       },
       {
@@ -2955,10 +2955,10 @@
         "bar": 30,
         "timeSec": 57.9,
         "refBpm": 123.48,
-        "estBpm": 129.17,
+        "estBpm": 129.24,
         "refBarMs": 1943.7,
-        "estBarMs": 1858,
-        "errorMs": 223.2,
+        "estBarMs": 1857,
+        "errorMs": 214.2,
         "tier": "fail"
       },
       {
@@ -2969,7 +2969,7 @@
         "estBpm": 130.72,
         "refBarMs": 1983.4,
         "estBarMs": 1836,
-        "errorMs": 86.2,
+        "errorMs": 76.2,
         "tier": "close"
       },
       {
@@ -2977,10 +2977,10 @@
         "bar": 33,
         "timeSec": 63.8,
         "refBpm": 122.65,
-        "estBpm": 130.08,
+        "estBpm": 130.15,
         "refBarMs": 1956.7,
-        "estBarMs": 1845,
-        "errorMs": 64.6,
+        "estBarMs": 1844,
+        "errorMs": 74.6,
         "tier": "close"
       },
       {
@@ -2991,7 +2991,7 @@
         "estBpm": 129.59,
         "refBarMs": 1911.6,
         "estBarMs": 1852,
-        "errorMs": 176.8,
+        "errorMs": 187.8,
         "tier": "fail"
       },
       {
@@ -3002,7 +3002,7 @@
         "estBpm": 129.59,
         "refBarMs": 1947.7,
         "estBarMs": 1852,
-        "errorMs": 225,
+        "errorMs": 214,
         "tier": "fail"
       },
       {
@@ -3010,11 +3010,11 @@
         "bar": 36,
         "timeSec": 69.6,
         "refBpm": 124.85,
-        "estBpm": 129.59,
+        "estBpm": 129.66,
         "refBarMs": 1922.3,
-        "estBarMs": 1852,
-        "errorMs": 134.6,
-        "tier": "fail"
+        "estBarMs": 1851,
+        "errorMs": 123.6,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -3024,8 +3024,8 @@
         "estBpm": 129.59,
         "refBarMs": 1941.5,
         "estBarMs": 1852,
-        "errorMs": 65,
-        "tier": "close"
+        "errorMs": 53,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -3035,7 +3035,7 @@
         "estBpm": 127.73,
         "refBarMs": 1960.5,
         "estBarMs": 1879,
-        "errorMs": 28.2,
+        "errorMs": 40.2,
         "tier": "exact"
       },
       {
@@ -3043,10 +3043,10 @@
         "bar": 39,
         "timeSec": 75.4,
         "refBpm": 123.54,
-        "estBpm": 125.46,
+        "estBpm": 125.52,
         "refBarMs": 1942.7,
-        "estBarMs": 1913,
-        "errorMs": 109.6,
+        "estBarMs": 1912,
+        "errorMs": 121.6,
         "tier": "close"
       },
       {
@@ -3054,10 +3054,10 @@
         "bar": 41,
         "timeSec": 79.3,
         "refBpm": 120.87,
-        "estBpm": 128.82,
+        "estBpm": 128.89,
         "refBarMs": 1985.5,
-        "estBarMs": 1863,
-        "errorMs": 229,
+        "estBarMs": 1862,
+        "errorMs": 224,
         "tier": "fail"
       },
       {
@@ -3065,10 +3065,10 @@
         "bar": 42,
         "timeSec": 81.3,
         "refBpm": 123.66,
-        "estBpm": 128.73,
+        "estBpm": 129.03,
         "refBarMs": 1940.8,
-        "estBarMs": 1864.4,
-        "errorMs": 110.6,
+        "estBarMs": 1860,
+        "errorMs": 97.6,
         "tier": "close"
       },
       {
@@ -3076,10 +3076,10 @@
         "bar": 43,
         "timeSec": 83.2,
         "refBpm": 125.63,
-        "estBpm": 129.83,
+        "estBpm": 129.59,
         "refBarMs": 1910.4,
-        "estBarMs": 1848.6,
-        "errorMs": 38.2,
+        "estBarMs": 1852,
+        "errorMs": 20.8,
         "tier": "exact"
       },
       {
@@ -3089,9 +3089,9 @@
         "refBpm": 125.3,
         "estBpm": 126.06,
         "refBarMs": 1915.4,
-        "estBarMs": 1903.8,
-        "errorMs": 62.8,
-        "tier": "close"
+        "estBarMs": 1903.9,
+        "errorMs": 44.6,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -3101,7 +3101,7 @@
         "estBpm": 126.18,
         "refBarMs": 1918.6,
         "estBarMs": 1902,
-        "errorMs": 1.6,
+        "errorMs": 17.6,
         "tier": "exact"
       },
       {
@@ -3109,21 +3109,21 @@
         "bar": 53,
         "timeSec": 102.4,
         "refBpm": 126.77,
-        "estBpm": 132.01,
+        "estBpm": 132.09,
         "refBarMs": 1893.1,
-        "estBarMs": 1818,
-        "errorMs": 120.6,
-        "tier": "close"
+        "estBarMs": 1817,
+        "errorMs": 137.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 54,
         "timeSec": 104.2,
         "refBpm": 125.23,
-        "estBpm": 129.87,
+        "estBpm": 129.8,
         "refBarMs": 1916.5,
-        "estBarMs": 1848,
-        "errorMs": 193,
+        "estBarMs": 1849,
+        "errorMs": 211,
         "tier": "fail"
       },
       {
@@ -3134,7 +3134,7 @@
         "estBpm": 124.48,
         "refBarMs": 1884.5,
         "estBarMs": 1928,
-        "errorMs": 205.8,
+        "errorMs": 187.8,
         "tier": "fail"
       },
       {
@@ -3142,10 +3142,10 @@
         "bar": 56,
         "timeSec": 108,
         "refBpm": 125.71,
-        "estBpm": 122.64,
+        "estBpm": 122.95,
         "refBarMs": 1909.2,
-        "estBarMs": 1957,
-        "errorMs": 229.8,
+        "estBarMs": 1952,
+        "errorMs": 232.2,
         "tier": "fail"
       },
       {
@@ -3153,11 +3153,11 @@
         "bar": 58,
         "timeSec": 111.9,
         "refBpm": 124.43,
-        "estBpm": 119.94,
+        "estBpm": 120,
         "refBarMs": 1928.9,
-        "estBarMs": 2001,
-        "errorMs": 119.6,
-        "tier": "close"
+        "estBarMs": 2000,
+        "errorMs": 137.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -3167,18 +3167,18 @@
         "estBpm": 122.32,
         "refBarMs": 1908.5,
         "estBarMs": 1962,
-        "errorMs": 45.4,
-        "tier": "exact"
+        "errorMs": 64.4,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 60,
         "timeSec": 115.7,
         "refBpm": 127.6,
-        "estBpm": 123.03,
+        "estBpm": 122.51,
         "refBarMs": 1880.9,
-        "estBarMs": 1950.7,
-        "errorMs": 5.8,
+        "estBarMs": 1959,
+        "errorMs": 13.2,
         "tier": "exact"
       },
       {
@@ -3186,10 +3186,10 @@
         "bar": 61,
         "timeSec": 117.6,
         "refBpm": 125.65,
-        "estBpm": 121.99,
+        "estBpm": 122.57,
         "refBarMs": 1910,
-        "estBarMs": 1967.3,
-        "errorMs": 75.7,
+        "estBarMs": 1958,
+        "errorMs": 65,
         "tier": "close"
       },
       {
@@ -3200,8 +3200,8 @@
         "estBpm": 120.18,
         "refBarMs": 1870,
         "estBarMs": 1997,
-        "errorMs": 139,
-        "tier": "fail"
+        "errorMs": 119,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -3211,7 +3211,7 @@
         "estBpm": 123.46,
         "refBarMs": 1894,
         "estBarMs": 1944,
-        "errorMs": 222,
+        "errorMs": 242,
         "tier": "fail"
       },
       {
@@ -3219,10 +3219,10 @@
         "bar": 64,
         "timeSec": 123.3,
         "refBpm": 127.96,
-        "estBpm": 125.79,
+        "estBpm": 125.85,
         "refBarMs": 1875.6,
-        "estBarMs": 1908,
-        "errorMs": 169.2,
+        "estBarMs": 1907,
+        "errorMs": 189.2,
         "tier": "fail"
       },
       {
@@ -3233,7 +3233,7 @@
         "estBpm": 124.68,
         "refBarMs": 1915.2,
         "estBarMs": 1925,
-        "errorMs": 138,
+        "errorMs": 159,
         "tier": "fail"
       },
       {
@@ -3241,10 +3241,10 @@
         "bar": 66,
         "timeSec": 127,
         "refBpm": 128.05,
-        "estBpm": 124.61,
+        "estBpm": 124.68,
         "refBarMs": 1874.3,
-        "estBarMs": 1926,
-        "errorMs": 129,
+        "estBarMs": 1925,
+        "errorMs": 150,
         "tier": "fail"
       },
       {
@@ -3255,7 +3255,7 @@
         "estBpm": 126.58,
         "refBarMs": 1905.8,
         "estBarMs": 1896,
-        "errorMs": 78.6,
+        "errorMs": 100.6,
         "tier": "close"
       },
       {
@@ -3263,10 +3263,10 @@
         "bar": 68,
         "timeSec": 130.8,
         "refBpm": 128.01,
-        "estBpm": 125.98,
+        "estBpm": 125.73,
         "refBarMs": 1874.8,
-        "estBarMs": 1905,
-        "errorMs": 91,
+        "estBarMs": 1908.8,
+        "errorMs": 113,
         "tier": "close"
       },
       {
@@ -3274,10 +3274,10 @@
         "bar": 69,
         "timeSec": 132.7,
         "refBpm": 125.96,
-        "estBpm": 124.35,
+        "estBpm": 124.66,
         "refBarMs": 1905.4,
-        "estBarMs": 1930,
-        "errorMs": 62,
+        "estBarMs": 1925.2,
+        "errorMs": 80.2,
         "tier": "close"
       },
       {
@@ -3285,10 +3285,10 @@
         "bar": 70,
         "timeSec": 134.6,
         "refBpm": 127.65,
-        "estBpm": 124.42,
+        "estBpm": 124.35,
         "refBarMs": 1880.1,
-        "estBarMs": 1929,
-        "errorMs": 32.4,
+        "estBarMs": 1930,
+        "errorMs": 55.4,
         "tier": "exact"
       },
       {
@@ -3296,54 +3296,54 @@
         "bar": 72,
         "timeSec": 138.4,
         "refBpm": 125.6,
-        "estBpm": 121.95,
+        "estBpm": 123.58,
         "refBarMs": 1910.9,
-        "estBarMs": 1968,
-        "errorMs": 143.6,
-        "tier": "fail"
+        "estBarMs": 1942,
+        "errorMs": 91.6,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 76,
         "timeSec": 146,
         "refBpm": 127.25,
-        "estBpm": 119.94,
+        "estBpm": 126.05,
         "refBarMs": 1886,
-        "estBarMs": 2001,
-        "errorMs": 90.2,
-        "tier": "close"
+        "estBarMs": 1904,
+        "errorMs": 157.8,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 77,
         "timeSec": 147.9,
         "refBpm": 125.4,
-        "estBpm": 122.45,
+        "estBpm": 126.05,
         "refBarMs": 1913.8,
-        "estBarMs": 1960,
-        "errorMs": 26,
-        "tier": "exact"
+        "estBarMs": 1904,
+        "errorMs": 177,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 78,
         "timeSec": 149.8,
         "refBpm": 127.57,
-        "estBpm": 121.77,
+        "estBpm": 125.07,
         "refBarMs": 1881.3,
-        "estBarMs": 1971,
-        "errorMs": 70.8,
-        "tier": "close"
+        "estBarMs": 1919,
+        "errorMs": 165.8,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 79,
         "timeSec": 151.7,
         "refBpm": 124.89,
-        "estBpm": 126.52,
+        "estBpm": 125.65,
         "refBarMs": 1921.7,
-        "estBarMs": 1897,
-        "errorMs": 161,
+        "estBarMs": 1910,
+        "errorMs": 204,
         "tier": "fail"
       },
       {
@@ -3351,43 +3351,43 @@
         "bar": 81,
         "timeSec": 155.5,
         "refBpm": 124.02,
-        "estBpm": 123.65,
+        "estBpm": 126.12,
         "refBarMs": 1935.2,
-        "estBarMs": 1941,
-        "errorMs": 106.2,
-        "tier": "close"
+        "estBarMs": 1903,
+        "errorMs": 174.2,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 82,
         "timeSec": 157.5,
         "refBpm": 124.99,
-        "estBpm": 123.58,
+        "estBpm": 126.12,
         "refBarMs": 1920.2,
-        "estBarMs": 1942,
-        "errorMs": 106.8,
-        "tier": "close"
+        "estBarMs": 1903,
+        "errorMs": 136.8,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 84,
         "timeSec": 161.3,
         "refBpm": 127.66,
-        "estBpm": 124.74,
+        "estBpm": 124.8,
         "refBarMs": 1880.1,
-        "estBarMs": 1924,
-        "errorMs": 129.8,
-        "tier": "fail"
+        "estBarMs": 1923,
+        "errorMs": 102.8,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 85,
         "timeSec": 163.2,
         "refBpm": 125.45,
-        "estBpm": 126.18,
+        "estBpm": 124.48,
         "refBarMs": 1913.1,
-        "estBarMs": 1902,
-        "errorMs": 173.4,
+        "estBarMs": 1928,
+        "errorMs": 145.4,
         "tier": "fail"
       },
       {
@@ -3395,10 +3395,10 @@
         "bar": 87,
         "timeSec": 167,
         "refBpm": 125.42,
-        "estBpm": 124.42,
+        "estBpm": 124.03,
         "refBarMs": 1913.6,
-        "estBarMs": 1929,
-        "errorMs": 223.6,
+        "estBarMs": 1935,
+        "errorMs": 189.6,
         "tier": "fail"
       },
       {
@@ -3406,10 +3406,10 @@
         "bar": 88,
         "timeSec": 168.9,
         "refBpm": 125.98,
-        "estBpm": 126.78,
+        "estBpm": 126.85,
         "refBarMs": 1905,
-        "estBarMs": 1893,
-        "errorMs": 237.8,
+        "estBarMs": 1892,
+        "errorMs": 209.8,
         "tier": "fail"
       },
       {
@@ -3417,10 +3417,10 @@
         "bar": 90,
         "timeSec": 172.7,
         "refBpm": 128.12,
-        "estBpm": 125.98,
+        "estBpm": 121.64,
         "refBarMs": 1873.2,
-        "estBarMs": 1905,
-        "errorMs": 236.8,
+        "estBarMs": 1973,
+        "errorMs": 225.8,
         "tier": "fail"
       },
       {
@@ -3428,10 +3428,10 @@
         "bar": 91,
         "timeSec": 174.6,
         "refBpm": 126.57,
-        "estBpm": 125.92,
+        "estBpm": 120.16,
         "refBarMs": 1896.2,
-        "estBarMs": 1906,
-        "errorMs": 201,
+        "estBarMs": 1997.4,
+        "errorMs": 175.4,
         "tier": "fail"
       },
       {
@@ -3439,65 +3439,65 @@
         "bar": 92,
         "timeSec": 176.5,
         "refBpm": 127.65,
-        "estBpm": 125.92,
+        "estBpm": 122.51,
         "refBarMs": 1880.2,
-        "estBarMs": 1906,
-        "errorMs": 195.8,
-        "tier": "fail"
+        "estBarMs": 1959,
+        "errorMs": 78.8,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 96,
         "timeSec": 184,
         "refBpm": 126.76,
-        "estBpm": 125.33,
+        "estBpm": 123.58,
         "refBarMs": 1893.4,
-        "estBarMs": 1915,
-        "errorMs": 87.6,
-        "tier": "close"
+        "estBarMs": 1942,
+        "errorMs": 170.4,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 98,
         "timeSec": 187.8,
         "refBpm": 128.8,
-        "estBpm": 126.25,
+        "estBpm": 124.61,
         "refBarMs": 1863.4,
-        "estBarMs": 1901,
-        "errorMs": 28.8,
-        "tier": "exact"
+        "estBarMs": 1926,
+        "errorMs": 217.8,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 99,
         "timeSec": 189.7,
         "refBpm": 126.39,
-        "estBpm": 126.32,
+        "estBpm": 122.57,
         "refBarMs": 1898.9,
-        "estBarMs": 1900,
-        "errorMs": 5.4,
-        "tier": "exact"
+        "estBarMs": 1958,
+        "errorMs": 158.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 100,
         "timeSec": 191.6,
         "refBpm": 129.59,
-        "estBpm": 126.25,
+        "estBpm": 122.64,
         "refBarMs": 1851.9,
-        "estBarMs": 1901,
-        "errorMs": 2.6,
-        "tier": "exact"
+        "estBarMs": 1957,
+        "errorMs": 103.4,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 101,
         "timeSec": 193.4,
         "refBpm": 127.48,
-        "estBpm": 126.32,
+        "estBpm": 124.61,
         "refBarMs": 1882.7,
-        "estBarMs": 1900,
-        "errorMs": 54,
+        "estBarMs": 1926,
+        "errorMs": 4,
         "tier": "exact"
       },
       {
@@ -3505,10 +3505,10 @@
         "bar": 105,
         "timeSec": 201,
         "refBpm": 122.98,
-        "estBpm": 126.69,
+        "estBpm": 125.72,
         "refBarMs": 1951.5,
-        "estBarMs": 1894.4,
-        "errorMs": 83.8,
+        "estBarMs": 1909,
+        "errorMs": 110.2,
         "tier": "close"
       },
       {
@@ -3516,21 +3516,21 @@
         "bar": 106,
         "timeSec": 202.9,
         "refBpm": 125.07,
-        "estBpm": 126.78,
+        "estBpm": 125.79,
         "refBarMs": 1919,
-        "estBarMs": 1893,
-        "errorMs": 25,
-        "tier": "exact"
+        "estBarMs": 1908,
+        "errorMs": 66,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 107,
         "timeSec": 204.8,
         "refBpm": 122.96,
-        "estBpm": 126.38,
+        "estBpm": 125.72,
         "refBarMs": 1951.9,
-        "estBarMs": 1899,
-        "errorMs": 0.8,
+        "estBarMs": 1909,
+        "errorMs": 55.2,
         "tier": "exact"
       },
       {
@@ -3538,10 +3538,10 @@
         "bar": 108,
         "timeSec": 206.8,
         "refBpm": 125.53,
-        "estBpm": 126.98,
+        "estBpm": 125.72,
         "refBarMs": 1912,
-        "estBarMs": 1890,
-        "errorMs": 55.4,
+        "estBarMs": 1909,
+        "errorMs": 10.6,
         "tier": "exact"
       },
       {
@@ -3549,54 +3549,54 @@
         "bar": 109,
         "timeSec": 208.7,
         "refBpm": 124.11,
-        "estBpm": 127.19,
+        "estBpm": 125.79,
         "refBarMs": 1933.8,
-        "estBarMs": 1887,
-        "errorMs": 71,
-        "tier": "close"
+        "estBarMs": 1908,
+        "errorMs": 14,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 111,
         "timeSec": 212.6,
         "refBpm": 124.33,
-        "estBpm": 129.1,
+        "estBpm": 128.11,
         "refBarMs": 1930.4,
-        "estBarMs": 1859,
-        "errorMs": 165,
-        "tier": "fail"
+        "estBarMs": 1873.4,
+        "errorMs": 18,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 112,
         "timeSec": 214.5,
         "refBpm": 126.8,
-        "estBpm": 127.32,
+        "estBpm": 126.08,
         "refBarMs": 1892.8,
-        "estBarMs": 1885,
-        "errorMs": 234.4,
-        "tier": "fail"
+        "estBarMs": 1903.6,
+        "errorMs": 73,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 113,
         "timeSec": 216.4,
         "refBpm": 125.36,
-        "estBpm": 125.2,
+        "estBpm": 129.24,
         "refBarMs": 1914.5,
-        "estBarMs": 1917,
-        "errorMs": 223.2,
-        "tier": "fail"
+        "estBarMs": 1857,
+        "errorMs": 67.8,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 114,
         "timeSec": 218.3,
         "refBpm": 123.58,
-        "estBpm": 127.39,
+        "estBpm": 132.96,
         "refBarMs": 1942.1,
-        "estBarMs": 1884,
-        "errorMs": 225,
+        "estBarMs": 1805,
+        "errorMs": 126,
         "tier": "fail"
       },
       {
@@ -3604,21 +3604,21 @@
         "bar": 116,
         "timeSec": 222.2,
         "refBpm": 123.07,
-        "estBpm": 126.25,
+        "estBpm": 132.23,
         "refBarMs": 1950.1,
-        "estBarMs": 1901,
-        "errorMs": 157.4,
-        "tier": "fail"
+        "estBarMs": 1815,
+        "errorMs": 34.4,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 117,
         "timeSec": 224.1,
         "refBpm": 124.6,
-        "estBpm": 123.39,
+        "estBpm": 132.16,
         "refBarMs": 1926.2,
-        "estBarMs": 1945,
-        "errorMs": 114.4,
+        "estBarMs": 1816,
+        "errorMs": 94.6,
         "tier": "close"
       },
       {
@@ -3626,10 +3626,10 @@
         "bar": 118,
         "timeSec": 226.1,
         "refBpm": 122.4,
-        "estBpm": 123.58,
+        "estBpm": 133.56,
         "refBarMs": 1960.8,
-        "estBarMs": 1942,
-        "errorMs": 126.2,
+        "estBarMs": 1797,
+        "errorMs": 211.8,
         "tier": "fail"
       },
       {
@@ -3637,10 +3637,10 @@
         "bar": 120,
         "timeSec": 230,
         "refBpm": 124.71,
-        "estBpm": 123.58,
+        "estBpm": 132.09,
         "refBarMs": 1924.5,
-        "estBarMs": 1942,
-        "errorMs": 66,
+        "estBarMs": 1817,
+        "errorMs": 77,
         "tier": "close"
       },
       {
@@ -3648,219 +3648,219 @@
         "bar": 122,
         "timeSec": 233.8,
         "refBpm": 127.34,
-        "estBpm": 125.72,
+        "estBpm": 126.92,
         "refBarMs": 1884.7,
-        "estBarMs": 1909,
-        "errorMs": 62.8,
-        "tier": "close"
+        "estBarMs": 1891,
+        "errorMs": 169.8,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 124,
         "timeSec": 237.6,
         "refBpm": 126.51,
-        "estBpm": 128.89,
+        "estBpm": 127.19,
         "refBarMs": 1897.1,
-        "estBarMs": 1862,
-        "errorMs": 62.2,
-        "tier": "close"
+        "estBarMs": 1887,
+        "errorMs": 180.2,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 125,
         "timeSec": 239.5,
         "refBpm": 127.67,
-        "estBpm": 130.29,
+        "estBpm": 127.19,
         "refBarMs": 1879.9,
-        "estBarMs": 1842,
-        "errorMs": 22.6,
-        "tier": "exact"
+        "estBarMs": 1887,
+        "errorMs": 165.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 126,
         "timeSec": 241.4,
         "refBpm": 128.82,
-        "estBpm": 127.86,
+        "estBpm": 127.19,
         "refBarMs": 1863,
-        "estBarMs": 1877,
-        "errorMs": 15.4,
-        "tier": "exact"
+        "estBarMs": 1887,
+        "errorMs": 172.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 127,
         "timeSec": 243.2,
         "refBpm": 126.64,
-        "estBpm": 129.94,
+        "estBpm": 128.14,
         "refBarMs": 1895.1,
-        "estBarMs": 1847,
-        "errorMs": 3.2,
-        "tier": "exact"
+        "estBarMs": 1873,
+        "errorMs": 201.2,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 128,
         "timeSec": 245.1,
         "refBpm": 128.37,
-        "estBpm": 127.12,
+        "estBpm": 126.78,
         "refBarMs": 1869.6,
-        "estBarMs": 1888,
-        "errorMs": 41.8,
-        "tier": "exact"
+        "estBarMs": 1893,
+        "errorMs": 182.2,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 129,
         "timeSec": 247,
         "refBpm": 127,
-        "estBpm": 123.97,
+        "estBpm": 127.25,
         "refBarMs": 1889.7,
-        "estBarMs": 1936,
-        "errorMs": 25.4,
-        "tier": "exact"
+        "estBarMs": 1886,
+        "errorMs": 203.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 131,
         "timeSec": 250.8,
         "refBpm": 128.86,
-        "estBpm": 126.78,
+        "estBpm": 126.18,
         "refBarMs": 1862.5,
-        "estBarMs": 1893.1,
-        "errorMs": 51,
-        "tier": "exact"
+        "estBarMs": 1902,
+        "errorMs": 191,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 132,
         "timeSec": 252.6,
         "refBpm": 126.65,
-        "estBpm": 126.99,
+        "estBpm": 130.15,
         "refBarMs": 1894.9,
-        "estBarMs": 1889.9,
-        "errorMs": 86.1,
-        "tier": "close"
+        "estBarMs": 1844,
+        "errorMs": 235,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 133,
         "timeSec": 254.5,
         "refBpm": 128.03,
-        "estBpm": 126.18,
+        "estBpm": 127.19,
         "refBarMs": 1874.6,
-        "estBarMs": 1902,
-        "errorMs": 76,
-        "tier": "close"
+        "estBarMs": 1887,
+        "errorMs": 179,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 134,
         "timeSec": 256.4,
         "refBpm": 126.42,
-        "estBpm": 127.52,
+        "estBpm": 127.59,
         "refBarMs": 1898.5,
-        "estBarMs": 1882,
-        "errorMs": 102,
-        "tier": "close"
+        "estBarMs": 1881,
+        "errorMs": 190,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 135,
         "timeSec": 258.3,
         "refBpm": 127.78,
-        "estBpm": 127.73,
+        "estBpm": 127.52,
         "refBarMs": 1878.3,
-        "estBarMs": 1879,
-        "errorMs": 89.6,
-        "tier": "close"
+        "estBarMs": 1882,
+        "errorMs": 176.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 136,
         "timeSec": 260.2,
         "refBpm": 128.91,
-        "estBpm": 130.72,
+        "estBpm": 127.59,
         "refBarMs": 1861.7,
-        "estBarMs": 1836,
-        "errorMs": 89.8,
-        "tier": "close"
+        "estBarMs": 1881,
+        "errorMs": 179.8,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 138,
         "timeSec": 263.9,
         "refBpm": 127.91,
-        "estBpm": 127.62,
+        "estBpm": 128.07,
         "refBarMs": 1876.3,
-        "estBarMs": 1880.6,
-        "errorMs": 100,
-        "tier": "close"
+        "estBarMs": 1874,
+        "errorMs": 220,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 142,
         "timeSec": 271.4,
         "refBpm": 127.46,
-        "estBpm": 127.29,
+        "estBpm": 127.46,
         "refBarMs": 1882.9,
-        "estBarMs": 1885.4,
-        "errorMs": 107.6,
-        "tier": "close"
+        "estBarMs": 1883,
+        "errorMs": 224,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 146,
         "timeSec": 279,
         "refBpm": 127.62,
-        "estBpm": 128.12,
+        "estBpm": 125.52,
         "refBarMs": 1880.6,
-        "estBarMs": 1873.3,
-        "errorMs": 53.1,
-        "tier": "exact"
+        "estBarMs": 1912,
+        "errorMs": 132.6,
+        "tier": "fail"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 147,
         "timeSec": 280.8,
         "refBpm": 128.51,
-        "estBpm": 127,
+        "estBpm": 125.46,
         "refBarMs": 1867.6,
-        "estBarMs": 1889.8,
-        "errorMs": 46,
-        "tier": "exact"
+        "estBarMs": 1913,
+        "errorMs": 101,
+        "tier": "close"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 149,
         "timeSec": 284.6,
         "refBpm": 127.27,
-        "estBpm": 128.08,
+        "estBpm": 126.05,
         "refBarMs": 1885.8,
-        "estBarMs": 1873.9,
-        "errorMs": 86.3,
-        "tier": "close"
+        "estBarMs": 1904,
+        "errorMs": 0,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 151,
         "timeSec": 288.3,
         "refBpm": 128.32,
-        "estBpm": 127.73,
+        "estBpm": 125.72,
         "refBarMs": 1870.3,
-        "estBarMs": 1879,
-        "errorMs": 71.8,
-        "tier": "close"
+        "estBarMs": 1909,
+        "errorMs": 34.8,
+        "tier": "exact"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 152,
         "timeSec": 290.2,
         "refBpm": 125.99,
-        "estBpm": 127.52,
+        "estBpm": 127.19,
         "refBarMs": 1904.9,
-        "estBarMs": 1882,
-        "errorMs": 86.4,
+        "estBarMs": 1887,
+        "errorMs": 79.4,
         "tier": "close"
       },
       {
@@ -3868,10 +3868,10 @@
         "bar": 154,
         "timeSec": 294,
         "refBpm": 123.78,
-        "estBpm": 127.46,
+        "estBpm": 127.73,
         "refBarMs": 1939,
-        "estBarMs": 1883,
-        "errorMs": 35.8,
+        "estBarMs": 1879,
+        "errorMs": 30.8,
         "tier": "exact"
       },
       {
@@ -3879,10 +3879,10 @@
         "bar": 154,
         "timeSec": 295,
         "refBpm": 122.47,
-        "estBpm": 127.46,
+        "estBpm": 127.66,
         "refBarMs": 1959.6,
-        "estBarMs": 1883,
-        "errorMs": 9.2,
+        "estBarMs": 1880,
+        "errorMs": 2.2,
         "tier": "exact"
       }
     ]
