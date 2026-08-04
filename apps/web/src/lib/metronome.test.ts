@@ -285,7 +285,7 @@ describe("metronome", () => {
     );
     // Cursor jumps; no burst of past oscillators; look-ahead schedules up to lookahead window.
     expect(next).toBe(205);
-    expect(oscillators.length).toBe(5);
+    expect(oscillators.length).toBe(6);
     expect(MAX_LATE_CLICK_MS).toBe(40);
   });
 
@@ -402,5 +402,66 @@ describe("metronome", () => {
     // Queue should replenish future beats up to 2500ms ahead without dropping clicks
     expect(lastBeat).toBe(7);
     expect(oscillators.length).toBe(7);
+  });
+
+  it("cancels old scheduled clicks and resets cleanly when manual seek / jump occurs", () => {
+    const { ctx, oscillators } = mockAudioContext("running");
+    const input = {
+      enabled: true,
+      playing: true,
+      displayTicks: 0,
+      bpm: 120,
+      timeSignature: TS_4_4,
+      ppq: 960,
+    };
+
+    // Frame 1: playhead at beat 0, look-ahead queues beat 0 + 5 look-ahead beats (6 total)
+    const beat1 = advanceMetronomeClicks(input, 0, ctx);
+    expect(beat1).toBe(5);
+    expect(oscillators.length).toBe(6);
+    // Verify each scheduled oscillator has its scheduled stop time (1 call)
+    for (const osc of oscillators) {
+      expect(osc.stop).toHaveBeenCalledTimes(1);
+    }
+
+    // Manual seek forward to beat 10 (displayTicks = 9600)
+    // 16ms later (ctx.currentTime slightly advanced)
+    ctx.currentTime = 1.016;
+    input.displayTicks = 9600;
+
+    const beat2 = advanceMetronomeClicks(input, beat1, ctx);
+    // Old 6 oscillators must be canceled immediately (stop called 2nd time)
+    for (const osc of oscillators.slice(0, 6)) {
+      expect(osc.stop).toHaveBeenCalledTimes(2);
+    }
+    // New beat range around beat 10 (beat 10 + 5 look-ahead = beat 15)
+    expect(beat2).toBe(15);
+  });
+
+  it("cancels old scheduled clicks on backward seek within look-ahead window", () => {
+    const { ctx, oscillators } = mockAudioContext("running");
+    const input = {
+      enabled: true,
+      playing: true,
+      displayTicks: 9600, // Beat 10
+      bpm: 120,
+      timeSignature: TS_4_4,
+      ppq: 960,
+    };
+
+    const beat1 = advanceMetronomeClicks(input, 9, ctx);
+    expect(beat1).toBe(15);
+    const initialOscCount = oscillators.length;
+
+    // Manual seek backward by 2 beats (to beat 8: displayTicks = 7680)
+    ctx.currentTime = 1.016;
+    input.displayTicks = 7680;
+
+    const beat2 = advanceMetronomeClicks(input, beat1, ctx);
+    // Previously queued oscillators should be stopped
+    for (let i = 0; i < initialOscCount; i++) {
+      expect(oscillators[i]!.stop).toHaveBeenCalled();
+    }
+    expect(beat2).toBe(13);
   });
 });

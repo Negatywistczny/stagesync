@@ -225,6 +225,7 @@ import {
 } from "../lib/draftHistory.js";
 import {
   advanceMetronomeClicks,
+  cancelScheduledMetronomeClicks,
   getMetronomeAudioContext,
   metronomeBeatIndex,
   resumeMetronomeAudio,
@@ -2172,6 +2173,7 @@ export function TimelineShell() {
 
   useEffect(() => {
     if (!metronomeOn || !state.playing) {
+      cancelScheduledMetronomeClicks();
       metroBeatRef.current =
         metronomeBeatIndex(displayTicks, meterAtPlayhead, state.ppq) - 1;
       return;
