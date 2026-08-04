@@ -547,13 +547,21 @@ export function CombinedUsUgImportForm({
         setAudioFile(file);
         setLocalBuffer(buffer);
         setAudioAnalysis(analysis);
-        setDraftTempoNodes([]);
+        const smartRes = runAudioDrivenSmartTempo({
+          analysis,
+          durationMs: meta.durationMs,
+          audioStartOffsetMs: offsetMs,
+        });
         let assetId = `local-${Date.now()}`;
         setSmartTempoAudio({
           assetId,
           durationMs: meta.durationMs,
           peaks: meta.peaks,
           audioStartOffsetMs: offsetMs,
+          estimatedBpm: analysis.estimatedBpm,
+          tempoMap: smartRes.tempoMap,
+          tempoNodes: smartRes.tempoNodes,
+          analysis,
         });
         const baseNotice = `Wczytano ${file.name} (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
         setStepNotice(
@@ -682,11 +690,20 @@ export function CombinedUsUgImportForm({
         setAudioFile(null);
         setAudioAnalysis(analysis);
         setDraftTempoNodes([]);
+        const smartRes = runAudioDrivenSmartTempo({
+          analysis,
+          durationMs: meta.durationMs,
+          audioStartOffsetMs: offsetMs,
+        });
         setSmartTempoAudio({
           assetId: job.assetId,
           durationMs: meta.durationMs,
           peaks: meta.peaks,
           audioStartOffsetMs: offsetMs,
+          estimatedBpm: analysis.estimatedBpm,
+          tempoMap: smartRes.tempoMap,
+          tempoNodes: smartRes.tempoNodes,
+          analysis,
         });
         const ytNotice = `Audio z YouTube gotowe (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
         setStepNotice(
@@ -762,12 +779,21 @@ export function CombinedUsUgImportForm({
       setLocalBuffer(buffer);
       setAudioAnalysis(analysis);
       setDraftTempoNodes([]);
-      setSmartTempoAudio({
-        assetId: `local-${Date.now()}`,
-        durationMs: meta.durationMs,
-        peaks: meta.peaks,
-        audioStartOffsetMs: offsetMs,
-      });
+        const smartRes = runAudioDrivenSmartTempo({
+          analysis,
+          durationMs: meta.durationMs,
+          audioStartOffsetMs: offsetMs,
+        });
+        setSmartTempoAudio({
+          assetId: `local-${Date.now()}`,
+          durationMs: meta.durationMs,
+          peaks: meta.peaks,
+          audioStartOffsetMs: offsetMs,
+          estimatedBpm: analysis.estimatedBpm,
+          tempoMap: smartRes.tempoMap,
+          tempoNodes: smartRes.tempoNodes,
+          analysis,
+        });
       const sessionNotice = `Audio z YouTube gotowe (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
       setStepNotice(
         analysisWarning ? `${sessionNotice} — ${analysisWarning}` : sessionNotice,
