@@ -109,9 +109,15 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       const anchor = toTransportAnchor(next, tempoMapsRef.current);
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
+      const isStartOrSeek =
+        !playingRef.current ||
+        !next.playing ||
+        Math.abs(anchor.positionTicks - anchorRef.current.positionTicks) > 100;
       playingRef.current = next.playing;
       setState(next);
-      commitDisplayTicks(anchor.positionTicks);
+      if (isStartOrSeek) {
+        commitDisplayTicks(anchor.positionTicks);
+      }
     },
     [commitDisplayTicks],
   );

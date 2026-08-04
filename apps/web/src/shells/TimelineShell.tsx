@@ -51,6 +51,7 @@ import {
   projectContentEqual,
   scrollCanvasToStart,
   snapEditTicks,
+  snapLocatorTicks,
   tickToPx,
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
@@ -2171,11 +2172,8 @@ export function TimelineShell() {
 
   useEffect(() => {
     if (!metronomeOn || !state.playing) {
-      metroBeatRef.current = metronomeBeatIndex(
-        displayTicks,
-        meterAtPlayhead,
-        state.ppq,
-      );
+      metroBeatRef.current =
+        metronomeBeatIndex(displayTicks, meterAtPlayhead, state.ppq) - 1;
       return;
     }
     metroBeatRef.current = advanceMetronomeClicks(
@@ -2240,12 +2238,7 @@ export function TimelineShell() {
       stopAudioPlayback();
       return;
     }
-    const leadTicks = ticksFromSyncLeadAlongMap(
-      latencyCompMs,
-      displayTicks,
-      draftProject,
-    );
-    let audioTicks = displayTicks + leadTicks;
+    let audioTicks = displayTicks;
     const loopRange = usableLoopRange(state.loop);
     if (loopOn && loopRange) {
       audioTicks = wrapDisplayTicks(audioTicks, {
@@ -2492,9 +2485,7 @@ export function TimelineShell() {
       restartAudioPlayback(projectId, {
         project: draftProject,
         playing: true,
-        displayTicks:
-          locatorTicks +
-          ticksFromSyncLeadAlongMap(latencyCompMs, locatorTicks, draftProject),
+        displayTicks: locatorTicks,
         soloTrackIds: soloAudioTrackIds,
         soloBusIds,
       });
@@ -3985,7 +3976,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   ) {
     if (!draftRef.current) return;
     const mode = mapSnapMode(opts?.metaKey ?? false, opts?.ctrlKey ?? false);
-    const snapped = snapEditTicks(draftRef.current, ticks, mode);
+    const snapped = snapLocatorTicks(draftRef.current, ticks, mode);
     setLocatorTicks(snapped);
     if (opts?.seekTransport !== false) {
       void seek(snapped);
@@ -4867,23 +4858,35 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         trackId,
         startTicks: opts?.startTicks,
       });
-      // Prefer the uploaded clip on the chosen track when server put it on track 0
-      let project = next;
+      // Merge any client-side audio tracks that might not be on server yet
+      const mergedTracks = [...next.audioTracks];
+      for (const dt of draftProject.audioTracks) {
+        if (!mergedTracks.some((t) => t.id === dt.id)) {
+          mergedTracks.push(dt);
+        }
+      }
+      let project = { ...next, audioTracks: mergedTracks };
       let targetTrackId = trackId;
       let lastClipId: string | null = null;
-      if (trackId && next.audioClips.length) {
-        const last = next.audioClips[next.audioClips.length - 1]!;
-        lastClipId = last.id;
-        if (last.trackId !== trackId) {
+      if (next.assets.length && next.audioClips.length) {
+        const uploadedAsset = next.assets
+          .filter((a) => a.kind === "audio")
+          .at(-1);
+        const uploadedClip = uploadedAsset
+          ? next.audioClips.find((c) => c.assetId === uploadedAsset.id) ??
+            next.audioClips[next.audioClips.length - 1]!
+          : next.audioClips[next.audioClips.length - 1]!;
+        lastClipId = uploadedClip.id;
+        if (trackId && uploadedClip.trackId !== trackId) {
           project = {
-            ...next,
-            audioClips: next.audioClips.map((c) =>
-              c.id === last.id ? { ...c, trackId } : c,
+            ...project,
+            audioClips: project.audioClips.map((c) =>
+              c.id === uploadedClip.id ? { ...c, trackId } : c,
             ),
           };
         }
-        targetTrackId = trackId || last.trackId;
-        const buf = await loadAudioBuffer(projectId, last.assetId);
+        targetTrackId = trackId || uploadedClip.trackId;
+        const buf = await loadAudioBuffer(projectId, uploadedClip.assetId);
         if (buf) {
           project = setAudioTrackChannelMode(
             project,
@@ -4906,7 +4909,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           project = placeImportedAudioClipAt(
             project,
             lastClipId,
-            last.startTicks,
+            uploadedClip.startTicks,
             { durationMs: buf.duration * 1000 },
           );
         }

@@ -311,6 +311,46 @@ describe("metronome", () => {
     // Audible catch-up blocks same-frame look-ahead.
   });
 
+  it("schedules clicks on transport loop wrap (when currentBeat < lastScheduledBeat)", () => {
+    const { ctx, oscillators } = mockAudioContext("running");
+    // Transport was at beat 32, then wrapped back to beat 16 (displayTicks = 960 * 16 = 15360)
+    const next = advanceMetronomeClicks(
+      {
+        enabled: true,
+        playing: true,
+        displayTicks: 960 * 16,
+        bpm: 120,
+        timeSignature: TS_4_4,
+        ppq: 960,
+      },
+      32,
+      ctx,
+    );
+    expect(next).toBe(16);
+    expect(oscillators).toHaveLength(1);
+  });
+
+  it("does not schedule duplicate clicks when look-ahead pre-scheduled the next beat", () => {
+    const { ctx, oscillators } = mockAudioContext("running");
+    const input = {
+      enabled: true,
+      playing: true,
+      displayTicks: 10, // In beat 0
+      bpm: 120,
+      timeSignature: TS_4_4,
+      ppq: 960,
+    };
+    // Frame 1: look-ahead schedules beat 1 and returns 1
+    const frame1 = advanceMetronomeClicks(input, 0, ctx);
+    expect(frame1).toBe(1);
+    expect(oscillators).toHaveLength(1);
+
+    // Frame 2: displayTicks still in beat 0 (15 ticks), lastScheduledBeat=1
+    const frame2 = advanceMetronomeClicks({ ...input, displayTicks: 15 }, frame1, ctx);
+    expect(frame2).toBe(1);
+    expect(oscillators).toHaveLength(1); // STILL 1! No duplicate oscillator created!
+  });
+
   it("resumeMetronomeAudio resumes suspended context and unlocks", async () => {
     const { ctx } = mockAudioContext("suspended");
     await resumeMetronomeAudio(ctx);

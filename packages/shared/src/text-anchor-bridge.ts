@@ -290,6 +290,8 @@ type UgSectionParsed = {
   /** Pipe-bar grid events (`| G | G B7 |`); empty when section has no pipe rows. */
   pipeEvents: UgPipeChordEvent[];
   pipeBarCount: number;
+  /** Optional structural bar count from UG layout. */
+  structuralBars?: number;
   /** Lyric lines that produced words (for barsPerLine length fallback). */
   lyricLineCount: number;
   /** Raw section lines (for pipe re-parse / debug). */
@@ -2457,6 +2459,7 @@ export function bridgeUsUgImport(
       ugSections.map((sec, si) => ({
         name: sec.name,
         pipeBarCount: sec.pipeBarCount,
+        structuralBars: sec.structuralBars,
         firstWordTicks: sectionFirstLastTicks[si]!.first,
         lastWordTicks: sectionFirstLastTicks[si]!.last,
       })),

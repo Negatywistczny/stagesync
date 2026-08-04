@@ -260,10 +260,12 @@ export function advanceMetronomeClicks(
   // Keep the beat cursor aligned while the context is unlocking so the first
   // running frame does not dump a burst of late clicks (or stay mute forever).
   if (ctx.state !== "running") {
+    void ctx.resume().catch(() => {});
     return currentBeat;
   }
 
-  let beat = lastScheduledBeat;
+  let beat =
+    lastScheduledBeat > currentBeat + 1 ? currentBeat - 1 : lastScheduledBeat;
   const now = ctx.currentTime;
   const MAX_BEATS_PER_ADVANCE = 64;
   let advanced = 0;
