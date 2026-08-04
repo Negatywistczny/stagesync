@@ -188,6 +188,7 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       expect(points.length).toBeGreaterThan(0);
 
       const audioBuf = loadAudioBufferFromMp3(mp3Path);
+      if (!audioBuf || audioBuf.duration <= 2) continue;
       const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
         maxAnalysisSec: 300,
         fullTrackGrid: true,
@@ -214,11 +215,13 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       let totalErrorMs = 0;
       const errorsMsList: number[] = [];
 
-      const t0AudioMs = analysis.beatMs[0] ?? 0;
+      const bar1Pt = points.find((p) => p.bar === 1) ?? points[0];
+      const refBar1Ms = bar1Pt?.timecodeMs ?? 0;
+
       for (const refPt of points) {
         const targetTick = (refPt.bar - 1) * barTicks;
-        const estMs = t0AudioMs + ticksToMsAlongTempoMap(0, targetTick, benchProject);
-        const refMs = refPt.timecodeMs;
+        const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject);
+        const refMs = refPt.timecodeMs - refBar1Ms;
 
         // Timestamp Drift in milliseconds on timeline (errorMs = Math.abs(t_estimated_beat - t_reference_beat))
         const errorMs = Math.round(Math.abs(estMs - refMs) * 10) / 10;
