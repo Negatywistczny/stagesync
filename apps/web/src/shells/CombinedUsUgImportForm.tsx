@@ -501,6 +501,7 @@ export function CombinedUsUgImportForm({
       setStepNotice("Dekodowanie audio…");
       setIngestProgress(pipelinePct("decode", 0, false));
       setBusyNet(true);
+      await yieldToUi();
       try {
         const buffer = await decodeAudioFile(file);
         setIngestProgress(pipelinePct("decode", 1, false));
@@ -785,6 +786,7 @@ export function CombinedUsUgImportForm({
     setBusyNet(true);
     setStepNotice(null);
     setApplyError(null);
+    await yieldToUi();
     try {
       const fetched = await fetchUltrastarFromServer(hit.url);
       setUsText(fetched.content);
@@ -811,6 +813,7 @@ export function CombinedUsUgImportForm({
     setBusyNet(true);
     setStepNotice(null);
     setApplyError(null);
+    await yieldToUi();
     try {
       const fetched = await fetchUgTabFromServer(hit.url);
       setUgText(fetched.content);
@@ -833,6 +836,7 @@ export function CombinedUsUgImportForm({
   async function searchUs() {
     setStepNotice(null);
     setBusyNet(true);
+    await yieldToUi();
     try {
       const data = await searchUltrastarSongs(usTitle, usArtist);
       setUsHits(data.results);
@@ -853,6 +857,7 @@ export function CombinedUsUgImportForm({
   async function searchUg() {
     setStepNotice(null);
     setBusyNet(true);
+    await yieldToUi();
     try {
       const data = await searchUgTabs(ugTitle, ugArtist);
       setUgHits(data.results);
@@ -880,6 +885,7 @@ export function CombinedUsUgImportForm({
     }
     setApplyError(null);
     setBusyApply(true);
+    await yieldToUi();
     try {
       const audioPayload: SmartTempoAudioRef | undefined = smartTempoAudio
         ? {
