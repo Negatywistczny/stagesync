@@ -345,6 +345,8 @@ export type FormaGesturePreview = {
   fadeOutMs?: number;
   /** Live clip gain while dragging Gain tool. */
   gainDb?: number;
+  /** Target lane if gesture moves clip across tracks / lanes. */
+  targetLane?: string;
 };
 
 export function cursorForHitZone(

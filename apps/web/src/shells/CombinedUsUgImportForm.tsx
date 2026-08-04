@@ -267,10 +267,21 @@ export function CombinedUsUgImportForm({
   const [ingestProgress, setIngestProgress] = useState<number | null>(null);
   const [usHits, setUsHits] = useState<UltrastarSearchHit[]>([]);
   const [ugHits, setUgHits] = useState<UgSearchHit[]>([]);
+  const [ugHitScores, setUgHitScores] = useState<Record<string, number>>({});
+  const [ugHitScoresBusy, setUgHitScoresBusy] = useState(false);
   const [selectedUsUrl, setSelectedUsUrl] = useState<string | null>(null);
   const [selectedUgUrl, setSelectedUgUrl] = useState<string | null>(null);
   const [youtubeUrlDraft, setYoutubeUrlDraft] = useState("");
   const beatPlayToggleRef = useRef<(() => void) | null>(null);
+
+  const sortedUgHits = useMemo(() => {
+    if (!ugHits.length) return [];
+    return ugHits.slice().sort((a, b) => {
+      const scoreA = a.url ? (ugHitScores[a.url] ?? -1) : -1;
+      const scoreB = b.url ? (ugHitScores[b.url] ?? -1) : -1;
+      return scoreB - scoreA;
+    });
+  }, [ugHits, ugHitScores]);
 
   // Hold decoded import PCM in the memory-pressure ledger while Beat Mapper is open.
   useEffect(() => {
@@ -1166,6 +1177,18 @@ export function CombinedUsUgImportForm({
         fetched.metadata?.artist?.trim() || hit.artist?.trim() || "";
       if (metaTitle) setUgTitle(metaTitle);
       if (metaArtist) setUgArtist(metaArtist);
+
+      if (usText.trim()) {
+        const res = bridgeUsUgFromTexts(usText, fetched.content, {
+          idPrefix: "preview",
+        });
+        if (res.ok) {
+          setUgHitScores((prev) => ({
+            ...prev,
+            [hit.url!]: res.alignScore,
+          }));
+        }
+      }
       setStepNotice(`Załadowano zakładkę: ${metaTitle || "UG"}`);
     } catch (err) {
       setStepNotice(err instanceof Error ? err.message : String(err));
@@ -1198,6 +1221,7 @@ export function CombinedUsUgImportForm({
   async function searchUg() {
     setStepNotice(null);
     setBusyNet(true);
+    setUgHitScores({});
     await yieldToUi();
     try {
       const data = await searchUgTabs(ugTitle, ugArtist);
@@ -1207,7 +1231,35 @@ export function CombinedUsUgImportForm({
         setStepNotice(data.message ?? "Brak wyników Ultimate Guitar.");
         return;
       }
-      setStepNotice(`Znaleziono ${data.results.length} zakładek — wybierz kartę.`);
+
+      if (usText.trim()) {
+        setStepNotice(`Znaleziono ${data.results.length} zakładek — obliczanie zgodności…`);
+        setUgHitScoresBusy(true);
+        void Promise.allSettled(
+          data.results.map(async (hit) => {
+            if (!hit.url) return;
+            try {
+              const fetched = await fetchUgTabFromServer(hit.url);
+              const res = bridgeUsUgFromTexts(usText, fetched.content, {
+                idPrefix: "preview",
+              });
+              if (res.ok) {
+                setUgHitScores((prev) => ({
+                  ...prev,
+                  [hit.url!]: res.alignScore,
+                }));
+              }
+            } catch {
+              // Ignore background fetch errors
+            }
+          }),
+        ).finally(() => {
+          setUgHitScoresBusy(false);
+          setStepNotice(`Znaleziono ${data.results.length} zakładek — wybierz kartę.`);
+        });
+      } else {
+        setStepNotice(`Znaleziono ${data.results.length} zakładek — wybierz kartę.`);
+      }
     } catch (err) {
       setUgHits([]);
       setStepNotice(err instanceof Error ? err.message : String(err));
@@ -1415,9 +1467,9 @@ export function CombinedUsUgImportForm({
                     </Button>
                   </div>
                 </div>
-                {ugHits.length > 0 ? (
+                {sortedUgHits.length > 0 ? (
                   <ul className={styles.resultList} aria-label="Wyniki UG">
-                    {ugHits.map((hit, i) => {
+                    {sortedUgHits.map((hit, i) => {
                       const label =
                         [hit.title, hit.artist].filter(Boolean).join(" — ") ||
                         `Wersja ${i + 1}`;
@@ -1430,6 +1482,17 @@ export function CombinedUsUgImportForm({
                       const selected = Boolean(
                         hit.url && hit.url === selectedUgUrl,
                       );
+                      const score = hit.url ? ugHitScores[hit.url] : undefined;
+                      const scorePct = score != null ? Math.round(score * 100) : null;
+                      const alignClass =
+                        score != null
+                          ? score >= 0.7
+                            ? styles.alignHigh
+                            : score >= 0.4
+                              ? styles.alignMedium
+                              : styles.alignLow
+                          : "";
+
                       return (
                         <li key={`${hit.url ?? i}-${i}`}>
                           <button
@@ -1443,9 +1506,21 @@ export function CombinedUsUgImportForm({
                             disabled={locked || !hit.url}
                             onClick={() => void pickUgHit(hit)}
                           >
-                            <span className={styles.resultTitle}>
-                              UG: {label}
-                            </span>
+                            <div className={styles.resultCardHeader}>
+                              <span className={styles.resultTitle}>
+                                UG: {label}
+                              </span>
+                              {scorePct != null ? (
+                                <span
+                                  className={`${styles.alignBadge} ${alignClass}`}
+                                  title={`Zgodność tekstu z UltraStar: ${scorePct}%`}
+                                >
+                                  Zgodność: {scorePct}%
+                                </span>
+                              ) : ugHitScoresBusy ? (
+                                <span className={styles.resultMeta}>Liczenie…</span>
+                              ) : null}
+                            </div>
                             {meta ? (
                               <span className={styles.resultMeta}>{meta}</span>
                             ) : null}
@@ -1474,7 +1549,25 @@ export function CombinedUsUgImportForm({
                     setGridBpmDraft(null);
                   }}
                 />
-                {stepNotice ? (
+                {ugText.trim() && bridged?.ok ? (
+                  <p className={styles.notice} role="status">
+                    Zgodność z UltraStar:{" "}
+                    <span
+                      className={`${styles.alignBadge} ${
+                        bridged.alignScore >= 0.7
+                          ? styles.alignHigh
+                          : bridged.alignScore >= 0.4
+                            ? styles.alignMedium
+                            : styles.alignLow
+                      }`}
+                    >
+                      {Math.round(bridged.alignScore * 100)}%
+                    </span>
+                    {bridged.alignScore < TEXT_ANCHOR_WEAK_ALIGN
+                      ? " (Słabe dopasowanie)"
+                      : " (Dobre dopasowanie)"}
+                  </p>
+                ) : stepNotice ? (
                   <p className={styles.notice} role="status">
                     {stepNotice}
                   </p>
@@ -1486,16 +1579,11 @@ export function CombinedUsUgImportForm({
 
         {step === "audio" ? (
           <div className={styles.stepPanel}>
-            {hasAudio ? (
-              <p className={styles.notice} role="status">
-                Audio gotowe: {Math.round(smartTempoAudio!.durationMs / 1000)} s
-                {localBuffer ? " · podgląd fali dostępny" : ""}
-              </p>
-            ) : null}
-            <div className={styles.audioSplit}>
-              {/* Left Panel: Project Audio Selection + Separator + Compact DnD */}
+            {/* Top Row: 3 equal sections (Project Files, Disk File / DnD, YouTube) */}
+            <div className={styles.audioSplit3Col}>
+              {/* Card 1: Project Audio Files */}
               <div className={styles.audioCard}>
-                <h4 className={styles.audioCardTitle}>Plik audio w projekcie</h4>
+                <h4 className={styles.audioCardTitle}>Pliki w projekcie</h4>
                 <div className={styles.projectFilesSection}>
                   {projectAudioAssets.length > 0 ? (
                     <ul
@@ -1560,28 +1648,20 @@ export function CombinedUsUgImportForm({
                     </p>
                   )}
                 </div>
+              </div>
 
-                <div className={styles.divider}>
-                  <div className={styles.dividerLine} />
-                  <span className={styles.dividerText}>LUB</span>
-                  <div className={styles.dividerLine} />
-                </div>
-
+              {/* Card 2: Disk File / DnD */}
+              <div className={styles.audioCard}>
+                <h4 className={styles.audioCardTitle}>Plik z dysku</h4>
                 <AudioDropzone
                   compact
                   disabled={locked}
                   busy={busyNet && !ytJobBusy && !selectedAssetId}
-                  progressLabel={
-                    busyNet && !ytJobBusy && !selectedAssetId ? stepNotice : null
-                  }
-                  progressValue={
-                    busyNet && !ytJobBusy && !selectedAssetId ? ingestProgress : null
-                  }
                   onSelectFile={(f) => void ingestLocalFile(f)}
                 />
               </div>
 
-              {/* Right Panel: Clean YouTube Header + Inline Input Group + Pipeline Progress */}
+              {/* Card 3: YouTube */}
               <div className={styles.audioCard}>
                 <h4 className={styles.audioCardTitle}>YouTube</h4>
                 <div className={styles.ytInlineGroup}>
@@ -1605,62 +1685,63 @@ export function CombinedUsUgImportForm({
                     Pobierz z YouTube
                   </Button>
                 </div>
-
-                {/* Pipeline Progress Checklist */}
-                {ytJobBusy || busyNet || hasAudio || pipelineStages.some((s) => s.status !== "pending") ? (
-                  <div className={styles.pipelineSection}>
-                    <h5 className={styles.pipelineTitle}>Potok przetwarzania audio</h5>
-                    <ul className={styles.pipelineList}>
-                      {pipelineStages.map((s) => {
-                        const isDone = s.status === "done";
-                        const isActive = s.status === "running";
-
-                        return (
-                          <li key={s.id} className={styles.pipelineStep}>
-                            <div
-                              className={[
-                                styles.pipelineStepHeader,
-                                isDone
-                                  ? styles.pipelineStepDone
-                                  : isActive
-                                    ? styles.pipelineStepActive
-                                    : styles.pipelineStepPending,
-                              ]
-                                .filter(Boolean)
-                                .join(" ")}
-                            >
-                              <span
-                                className={[
-                                  styles.pipelineBadge,
-                                  isDone
-                                    ? styles.pipelineBadgeDone
-                                    : isActive
-                                      ? styles.pipelineBadgeActive
-                                      : styles.pipelineBadgePending,
-                                ]
-                                  .filter(Boolean)
-                                  .join(" ")}
-                              >
-                                {isDone ? <Check size={12} strokeWidth={3} /> : null}
-                              </span>
-                              <span>{s.label}</span>
-                            </div>
-                            {isActive && s.progress != null && s.progress >= 0 ? (
-                              <div className={styles.pipelineProgressWrapper}>
-                                <ImportProgress
-                                  label={`${Math.round(s.progress)}%`}
-                                  value={s.progress}
-                                />
-                              </div>
-                            ) : null}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ) : null}
               </div>
             </div>
+
+            {/* Bottom Section: Pipeline Progress Checklist */}
+
+            {ytJobBusy || busyNet || hasAudio || pipelineStages.some((s) => s.status !== "pending") ? (
+              <div className={styles.pipelineSection}>
+                <h5 className={styles.pipelineTitle}>Postęp przygotowania audio</h5>
+                <ul className={styles.pipelineList}>
+                  {pipelineStages.map((s) => {
+                    const isDone = s.status === "done";
+                    const isActive = s.status === "running";
+
+                    return (
+                      <li key={s.id} className={styles.pipelineStep}>
+                        <div
+                          className={[
+                            styles.pipelineStepHeader,
+                            isDone
+                              ? styles.pipelineStepDone
+                              : isActive
+                                ? styles.pipelineStepActive
+                                : styles.pipelineStepPending,
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          <span
+                            className={[
+                              styles.pipelineBadge,
+                              isDone
+                                ? styles.pipelineBadgeDone
+                                : isActive
+                                  ? styles.pipelineBadgeActive
+                                  : styles.pipelineBadgePending,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          >
+                            {isDone ? <Check size={12} strokeWidth={3} /> : null}
+                          </span>
+                          <span>{s.label}</span>
+                        </div>
+                        {isActive && s.progress != null && s.progress >= 0 ? (
+                          <div className={styles.pipelineProgressWrapper}>
+                            <ImportProgress
+                              label={`${Math.round(s.progress)}%`}
+                              value={s.progress}
+                            />
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

@@ -143,14 +143,55 @@
   background: color-mix(in srgb, var(--ss-color-primary) 10%, var(--ss-color-elevated));
 }
 
+.resultCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--ss-space-2);
+}
+
 .resultTitle {
   font-weight: var(--ss-font-weight-semibold);
   color: var(--ss-color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .resultMeta {
   color: var(--ss-color-text-muted);
   font-size: var(--ss-text-xs);
+}
+
+.alignBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.alignHigh {
+  background: color-mix(in srgb, var(--ss-color-primary, #10b981) 15%, transparent);
+  color: var(--ss-color-primary, #10b981);
+  border: 1px solid color-mix(in srgb, var(--ss-color-primary, #10b981) 35%, transparent);
+}
+
+.alignMedium {
+  background: color-mix(in srgb, var(--ss-color-warning, #f59e0b) 15%, transparent);
+  color: var(--ss-color-warning, #f59e0b);
+  border: 1px solid color-mix(in srgb, var(--ss-color-warning, #f59e0b) 35%, transparent);
+}
+
+.alignLow {
+  background: color-mix(in srgb, var(--ss-color-danger, #ef4444) 15%, transparent);
+  color: var(--ss-color-danger, #ef4444);
+  border: 1px solid color-mix(in srgb, var(--ss-color-danger, #ef4444) 35%, transparent);
 }
 
 .previewLabel {
@@ -171,14 +212,14 @@
   flex: 0 0 auto;
 }
 
-/* Step 3: equal audio cards */
-.audioSplit {
+/* Step 3: 3 equal audio cards in one horizontal row */
+.audioSplit3Col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ss-space-6);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ss-space-4);
   min-height: 0;
-  flex: 1 1 auto;
-  align-items: flex-start;
+  flex: 0 0 auto;
+  align-items: stretch;
 }
 
 .audioCard {
@@ -309,22 +350,21 @@
   white-space: nowrap;
 }
 
-/* Inline Input Group for YouTube */
+/* Input & Button Group for YouTube */
 .ytInlineGroup {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: var(--ss-space-2);
+  gap: var(--ss-space-3);
   width: 100%;
 }
 
 .ytInput {
-  flex: 1 1 auto;
-  min-width: 0;
+  width: 100%;
 }
 
 .ytButton {
-  flex: 0 0 auto;
+  align-self: center;
   white-space: nowrap;
 }
 
@@ -494,7 +534,8 @@
     grid-column: auto;
   }
 
-  .audioSplit {
+  .audioSplit,
+  .audioSplit3Col {
     grid-template-columns: 1fr;
     overflow-y: auto;
   }

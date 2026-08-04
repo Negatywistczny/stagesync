@@ -1005,35 +1005,55 @@ export function commitAudioGesture(
   preview: FormaGesturePreview,
   metaKey: boolean,
   ctrlKey: boolean,
+  targetLane?: AudioLaneId,
 ): Project {
   if (!isAudioLaneId(lane)) return project;
-  const trackId = audioTrackIdFromLane(lane);
+  const sourceTrackId = audioTrackIdFromLane(lane);
+  const destLane = targetLane && isAudioLaneId(targetLane) ? targetLane : lane;
+  const destTrackId = audioTrackIdFromLane(destLane);
   const mode = contentSnapModeFromModifiers(metaKey, ctrlKey);
   switch (session.kind) {
-    case "move":
+    case "move": {
       if (!session.clipId) return project;
-      if (session.moveIds && session.moveIds.length > 1) {
+      const moveIds =
+        session.moveIds && session.moveIds.length > 0
+          ? session.moveIds
+          : [session.clipId];
+
+      let updatedProject = project;
+      if (destTrackId !== sourceTrackId) {
+        const idSet = new Set(moveIds);
+        updatedProject = {
+          ...project,
+          audioClips: project.audioClips.map((c) =>
+            idSet.has(c.id) ? { ...c, trackId: destTrackId } : c,
+          ),
+        };
+      }
+
+      if (moveIds.length > 1) {
         return commitMoveAudioClips(
-          project,
-          trackId,
-          session.moveIds,
+          updatedProject,
+          destTrackId,
+          moveIds,
           session.clipId,
           preview.startTicks,
           mode,
         );
       }
       return commitMoveAudioClip(
-        project,
-        trackId,
+        updatedProject,
+        destTrackId,
         session.clipId,
         preview.startTicks,
         mode,
       );
+    }
     case "resize-start":
       if (!session.clipId) return project;
       return commitResizeAudioClip(
         project,
-        trackId,
+        sourceTrackId,
         session.clipId,
         "start",
         preview.startTicks,
@@ -1043,7 +1063,7 @@ export function commitAudioGesture(
       if (!session.clipId) return project;
       return commitResizeAudioClip(
         project,
-        trackId,
+        sourceTrackId,
         session.clipId,
         "end",
         preview.startTicks + preview.lengthTicks,
@@ -1074,6 +1094,7 @@ export function previewAudioFromSession(
   metaKey: boolean,
   ctrlKey: boolean,
   clientY?: number,
+  targetLane?: AudioLaneId,
 ): FormaGesturePreview {
   const mode = contentSnapModeFromModifiers(metaKey, ctrlKey);
   const floor = contentFloorTicks(project.forma.clips);
@@ -1166,6 +1187,7 @@ export function previewAudioFromSession(
       clipId: session.clipId,
       startTicks: snapped,
       lengthTicks: session.originClipLength,
+      targetLane: targetLane && isAudioLaneId(targetLane) ? targetLane : (session.lane as AudioLaneId | undefined),
     };
   }
 

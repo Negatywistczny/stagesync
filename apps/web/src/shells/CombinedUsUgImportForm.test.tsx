@@ -18,6 +18,24 @@ vi.mock("../lib/ugImportApi.js", () => ({
   searchUgTabs: vi.fn(),
 }));
 
+vi.mock("../lib/libraryApi.js", () => ({
+  fetchProject: vi.fn(async () => ({
+    id: "p1",
+    name: "Test Project",
+    assets: [
+      {
+        id: "a1",
+        storageName: "test.mp3",
+        originalName: "Test Song.mp3",
+        kind: "audio",
+        mimeType: "audio/mpeg",
+        sizeBytes: 3500000,
+        durationMs: 180000,
+      },
+    ],
+  })),
+}));
+
 const FIX = join(
   dirname(fileURLToPath(import.meta.url)),
   "../../../../packages/shared/src/fixtures/us-ug/demo-simple",
@@ -104,5 +122,109 @@ describe("CombinedUsUgImportForm", () => {
     expect(arg.bridge.tekst.clips.length).toBeGreaterThan(0);
     expect(arg.bridge.akordy.clips.length).toBeGreaterThan(0);
     expect(arg.bridge.tempoMap.length).toBeGreaterThan(0);
+  });
+
+  it("renders Step 3 project audio assets list, separator, compact dropzone and YouTube inline input", async () => {
+    const us = readFileSync(join(FIX, "song.txt"), "utf8");
+    const ug = readFileSync(join(FIX, "chords.txt"), "utf8");
+
+    render(
+      <CombinedUsUgImportForm
+        applyLabel="Importuj do projektu"
+        projectId="p1"
+        onCancel={() => {}}
+        onApply={() => {}}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Tekst UltraStar"), {
+      target: { value: us },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
+
+    fireEvent.change(screen.getByLabelText("Tekst Ultimate Guitar"), {
+      target: { value: ug },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
+
+    expect(screen.getByText("Krok 3 z 4: Ścieżka Audio")).toBeTruthy();
+    expect(await screen.findByText("Test Song.mp3")).toBeTruthy();
+    expect(screen.getByText("Plik z dysku")).toBeTruthy();
+    expect(
+      screen.getByPlaceholderText("https://www.youtube.com/watch?v=…"),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Pobierz z YouTube" }),
+    ).toBeTruthy();
+  });
+
+  it("displays US match percentage in Step 2 preview", async () => {
+    const us = readFileSync(join(FIX, "song.txt"), "utf8");
+    const ug = readFileSync(join(FIX, "chords.txt"), "utf8");
+
+    render(
+      <CombinedUsUgImportForm
+        applyLabel="Importuj do projektu"
+        onCancel={() => {}}
+        onApply={() => {}}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Tekst UltraStar"), {
+      target: { value: us },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
+
+    fireEvent.change(screen.getByLabelText("Tekst Ultimate Guitar"), {
+      target: { value: ug },
+    });
+
+    expect(
+      await screen.findByText(/Zgodność z UltraStar:/i),
+    ).toBeTruthy();
+  });
+
+  it("sorts UG search hits descending by alignScore", async () => {
+    const us = readFileSync(join(FIX, "song.txt"), "utf8");
+    const ug = readFileSync(join(FIX, "chords.txt"), "utf8");
+
+    const { searchUgTabs, fetchUgTabFromServer } = await import("../lib/ugImportApi.js");
+    const searchUgTabsMock = vi.mocked(searchUgTabs);
+    const fetchUgTabFromServerMock = vi.mocked(fetchUgTabFromServer);
+
+    searchUgTabsMock.mockResolvedValueOnce({
+      results: [
+        { id: 1, title: "Low Match Version", artist: "ABBA", type: "Chords", rating: 4, url: "https://ug.com/tab1" },
+        { id: 2, title: "High Match Version", artist: "ABBA", type: "Chords", rating: 5, url: "https://ug.com/tab2" },
+      ],
+    });
+
+    fetchUgTabFromServerMock.mockImplementation(async (url) => {
+      if (url === "https://ug.com/tab1") {
+        return { content: "[Verse]\nRandom unrelated text", metadata: { title: "Low Match Version" } };
+      }
+      return { content: ug, metadata: { title: "High Match Version" } };
+    });
+
+    render(
+      <CombinedUsUgImportForm
+        applyLabel="Importuj do projektu"
+        initialTitle="The Winner Takes It All"
+        initialArtist="ABBA"
+        onCancel={() => {}}
+        onApply={() => {}}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Tekst UltraStar"), {
+      target: { value: us },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Szukaj w UG" }));
+
+    const cards = await screen.findAllByRole("button", { name: /UG:/i });
+    expect(cards[0]?.textContent).toContain("High Match Version");
+    expect(cards[1]?.textContent).toContain("Low Match Version");
   });
 });

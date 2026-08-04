@@ -2799,6 +2799,17 @@ export function TimelineShell() {
     if (!session || !draft) return;
     const lane = session.lane ?? "forma";
     if (isAudioLaneId(lane)) {
+      let targetAudioLane: AudioLaneId | undefined = undefined;
+      if (typeof window !== "undefined" && clientX != null && clientY != null) {
+        const elem = document.elementFromPoint(clientX, clientY);
+        const laneElem = elem?.closest("[data-audio-lane]");
+        if (laneElem) {
+          const laneId = laneElem.getAttribute("data-audio-lane");
+          if (laneId && isAudioLaneId(laneId)) {
+            targetAudioLane = laneId as AudioLaneId;
+          }
+        }
+      }
       const preview = previewAudioFromSession(
         draft,
         session,
@@ -2806,6 +2817,7 @@ export function TimelineShell() {
         metaKey,
         ctrlKey,
         clientY,
+        targetAudioLane,
       );
       gesturePreviewRef.current = preview;
       setGesturePreview(preview);
@@ -2891,28 +2903,34 @@ export function TimelineShell() {
     }
 
     if (isAudioLaneId(lane)) {
+      const destLane = (
+        preview.targetLane && isAudioLaneId(preview.targetLane)
+          ? preview.targetLane
+          : lane
+      ) as AudioLaneId;
       const next = commitAudioGesture(
         draft,
-        lane,
+        lane as AudioLaneId,
         session,
         preview,
         metaKey,
         ctrlKey,
+        destLane,
       );
       commitDraft(next);
       if (session.kind === "move" && session.moveIds?.length) {
         setClipSelection((prev) =>
           setSelection(
             [
-              ...prev.items.filter((i) => i.lane !== lane),
-              ...session.moveIds!.map((id) => ({ id, lane })),
+              ...prev.items.filter((i) => i.lane !== lane && i.lane !== destLane),
+              ...session.moveIds!.map((id) => ({ id, lane: destLane })),
             ],
             session.clipId,
           ),
         );
         return;
       }
-      if (session.clipId) selectLaneClip(lane, session.clipId);
+      if (session.clipId) selectLaneClip(destLane, session.clipId);
       return;
     }
 
@@ -3023,7 +3041,7 @@ export function TimelineShell() {
       if (!gestureSessionRef.current) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX);
+      updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX, e.clientY);
     }
 
     function onUp(e: PointerEvent) {
@@ -5663,39 +5681,58 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       const trackColor = resolveTrackColor(
         draftProject.audioTracks.find((t) => t.id === trackUuid)?.color,
       );
+
+      const isAudioMoving =
+        gestureSession?.kind === "move" && isAudioLaneId(gestureSession.lane ?? "");
+      const sourceAudioLane = isAudioMoving ? (gestureSession!.lane as AudioLaneId) : null;
+      const targetAudioLane = isAudioMoving
+        ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ?? sourceAudioLane)
+        : null;
+      const moveIds = isAudioMoving
+        ? gestureSession!.moveIds?.length
+          ? gestureSession!.moveIds
+          : gestureSession!.clipId
+            ? [gestureSession!.clipId]
+            : []
+        : [];
+      const moveDelta =
+        gesturePreview && isAudioMoving
+          ? gesturePreview.startTicks - gestureSession!.originClipStart
+          : 0;
+
+      const isTargetLane = isAudioMoving && targetAudioLane === lane && targetAudioLane !== sourceAudioLane;
+      const ghostClips = isTargetLane
+        ? moveIds
+            .map((id) => draftProject.audioClips.find((c) => c.id === id))
+            .filter(Boolean)
+        : [];
+
       return (
         <>
           {clips.map((clip) => {
             const asset = assetById.get(clip.assetId);
-            const moveIds =
-              gestureSession?.kind === "move" && gestureSession.lane === lane
-                ? gestureSession.moveIds?.length
-                  ? gestureSession.moveIds
-                  : gestureSession.clipId
-                    ? [gestureSession.clipId]
-                    : []
-                : [];
-            const moveDelta =
-              gesturePreview &&
-              gestureSession?.kind === "move" &&
-              moveIds.includes(clip.id)
-                ? gesturePreview.startTicks - gestureSession.originClipStart
-                : 0;
+            const isBeingMoved = isAudioMoving && moveIds.includes(clip.id);
+            const isSourceLane = isAudioMoving && sourceAudioLane === lane;
+
             const previewing =
               Boolean(gesturePreview) &&
-              gestureSession?.lane === lane &&
-              ((gestureSession.kind === "move" && moveIds.includes(clip.id)) ||
-                (gesturePreview!.clipId === clip.id &&
+              ((isSourceLane && isBeingMoved) ||
+                (gestureSession?.lane === lane &&
+                  gesturePreview!.clipId === clip.id &&
                   gesturePreview!.kind !== "move"));
+
             const styleClip: FormaClip = {
               id: clip.id,
               name: asset?.originalName ?? "Audio",
               kind: "section",
-              startTicks: previewing
-                ? gestureSession?.kind === "move"
-                  ? clip.startTicks + moveDelta
-                  : gesturePreview!.startTicks
-                : clip.startTicks,
+              startTicks:
+                previewing && isSourceLane && isBeingMoved
+                  ? targetAudioLane === sourceAudioLane
+                    ? clip.startTicks + moveDelta
+                    : clip.startTicks
+                  : previewing
+                    ? gesturePreview!.startTicks
+                    : clip.startTicks,
               lengthTicks: previewing
                 ? gestureSession?.kind === "move"
                   ? clip.lengthTicks
@@ -5766,6 +5803,71 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 ) : null}
                 {(clip.fadeOutMs ?? 0) > 0 ? (
+                  <span
+                    className={styles.audioFadeOut}
+                    style={{
+                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
+                    }}
+                  />
+                ) : null}
+                {poly ? (
+                  <svg
+                    className={styles.audioWaveform}
+                    viewBox={`0 0 ${Math.max(8, widthPx)} 28`}
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <polygon points={poly} />
+                  </svg>
+                ) : null}
+                <span className={styles.audioClipLabel}>
+                  {asset?.originalName ?? "Audio"}
+                </span>
+              </button>
+            );
+          })}
+
+          {ghostClips.map((ghostClip) => {
+            if (!ghostClip) return null;
+            const asset = assetById.get(ghostClip.assetId);
+            const styleClip: FormaClip = {
+              id: `ghost-${ghostClip.id}`,
+              name: asset?.originalName ?? "Audio",
+              kind: "section",
+              startTicks: ghostClip.startTicks + moveDelta,
+              lengthTicks: ghostClip.lengthTicks,
+            };
+            const style = clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH);
+            const widthPx = Number.parseFloat(String(style.width)) || 0;
+            const peaks = asset?.waveformPeaks;
+            const poly =
+              peaks && peaks.length
+                ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
+                : "";
+            return (
+              <button
+                key={`ghost-${ghostClip.id}`}
+                type="button"
+                className={[
+                  styles.clip,
+                  styles.audioClip,
+                  styles.formaClipDim,
+                ].join(" ")}
+                style={{
+                  ...style,
+                  ["--tl-track-color" as string]: trackColor,
+                }}
+                disabled
+              >
+                {(ghostClip.fadeInMs ?? 0) > 0 ? (
+                  <span
+                    className={styles.audioFadeIn}
+                    style={{
+                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
+                    }}
+                  />
+                ) : null}
+                {(ghostClip.fadeOutMs ?? 0) > 0 ? (
                   <span
                     className={styles.audioFadeOut}
                     style={{
@@ -6840,6 +6942,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ) : null}
                     </div>
                     <div
+                      data-audio-lane={isAudioLaneId(track.id) ? track.id : undefined}
                       onPointerDown={
                         track.id === "forma"
                           ? onFormaLanePointerDown

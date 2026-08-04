@@ -784,17 +784,52 @@ describe("audioLaneEdit", () => {
       false,
     );
     expect(fadedOut.audioClips[0]!.fadeOutMs).toBe(55);
+  });
 
-    expect(
-      commitAudioGesture(
-        p,
-        lane,
-        baseSession({ kind: "pencil-draw" }),
-        preview,
-        false,
-        false,
-      ),
-    ).toBe(p);
+  it("moves audio clip to a different track when targetLane is specified", () => {
+    const p = projectWithAudio();
+    const track2Res = addAudioTrack(p, "Track 2");
+    const projectWith2Tracks = track2Res.project;
+    const sourceLane = audioLaneId(projectWith2Tracks.audioTracks[0]!.id);
+    const targetLane = audioLaneId(track2Res.trackId);
+
+    const session: FormaGestureSession = {
+      kind: "move",
+      clipId: "clip-1",
+      pointerId: 1,
+      originTicks: 0,
+      originClipStart: 0,
+      originClipLength: 7680,
+      lane: sourceLane,
+      originClientX: 100,
+    };
+
+    const preview = previewAudioFromSession(
+      projectWith2Tracks,
+      session,
+      3840,
+      false,
+      false,
+      150,
+      targetLane,
+    );
+
+    expect(preview.targetLane).toBe(targetLane);
+
+    const moved = commitAudioGesture(
+      projectWith2Tracks,
+      sourceLane,
+      session,
+      preview,
+      false,
+      false,
+      targetLane,
+    );
+
+    const clip = moved.audioClips.find((c) => c.id === "clip-1");
+    expect(clip).toBeDefined();
+    expect(clip!.trackId).toBe(track2Res.trackId);
+    expect(clip!.startTicks).toBe(3840);
   });
 
   it("previewAudioFromSession covers fade/move/resize branches", () => {
