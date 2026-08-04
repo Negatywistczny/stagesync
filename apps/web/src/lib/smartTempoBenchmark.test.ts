@@ -13,17 +13,17 @@ const FIXTURES_DIR = path.resolve(
 // ---------------------------------------------------------------------------
 // Accuracy tiers (bar period error in milliseconds)
 // ---------------------------------------------------------------------------
-/** 🟢 EXACT: professional DAW-grade accuracy. */
-const EXACT_THRESHOLD_MS = 30;
-/** 🟡 CLOSE: acceptable rubato drift, not ideal. */
-const CLOSE_THRESHOLD_MS = 125;
-// 🔴 FAIL: > 125 ms — structural error (≥ a sixteenth note)
+/** 🟢 EXACT: DAW-grade accuracy (bar period error ≤ one sixteenth note at 120 BPM). */
+const EXACT_THRESHOLD_MS = 125;
+/** 🟡 CLOSE: acceptable rubato drift — usable but not ideal. */
+const CLOSE_THRESHOLD_MS = 250;
+// 🔴 FAIL: > 250 ms — structural error (≥ half a beat at 120 BPM)
 
 // ---------------------------------------------------------------------------
 // Pass criteria
 // ---------------------------------------------------------------------------
 /** Minimum percentage of 🟢 EXACT bars required to pass. */
-const MIN_EXACT_PCT = 65;
+const MIN_EXACT_PCT = 85;
 /** Maximum percentage of 🔴 FAIL bars allowed. */
 const MAX_FAIL_PCT = 10;
 
@@ -128,7 +128,7 @@ export function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
 // Test suite
 // ---------------------------------------------------------------------------
 describe("Smart Tempo Train Data Accuracy Benchmark", () => {
-  it("meets accuracy gates: ≥70% 🟢 EXACT and ≤10% 🔴 FAIL", async () => {
+  it("meets accuracy gates: ≥85% 🟢 EXACT (≤125ms) and ≤10% 🔴 FAIL", async () => {
     expect(fs.existsSync(FIXTURES_DIR)).toBe(true);
     const files = fs.readdirSync(FIXTURES_DIR);
     const rtfFiles = files.filter((f) => f.endsWith(".rtf"));

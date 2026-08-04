@@ -29,7 +29,6 @@ let sharedCtx: AudioContext | null = null;
 let clickAnalyser: AnalyserNode | null = null;
 let clickAnalyserBuf: Float32Array | null = null;
 let lastDisplayTicks: number | null = null;
-let lastCtxTime: number | null = null;
 
 /**
  * Options for the shared realtime AudioContext.
@@ -158,7 +157,6 @@ export function cancelScheduledMetronomeClicks(): void {
   }
   scheduledClickNodes.length = 0;
   lastDisplayTicks = null;
-  lastCtxTime = null;
 }
 
 function scheduleClick(
@@ -322,7 +320,6 @@ export function advanceMetronomeClicks(
 
   let beat = isSeekOrWrap ? currentBeat - 1 : lastScheduledBeat;
   lastDisplayTicks = input.displayTicks;
-  lastCtxTime = now;
   let advanced = 0;
 
   while (beat < currentBeat && advanced < MAX_BEATS_PER_ADVANCE) {

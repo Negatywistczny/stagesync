@@ -264,7 +264,7 @@ export function CombinedUsUgImportForm({
 
   const [ytJobBusy, setYtJobBusy] = useState(false);
   /** 0…100 continuous ingest bar (YouTube + decode + tempo analysis). */
-  const [ingestProgress, setIngestProgress] = useState<number | null>(null);
+  const [, setIngestProgress] = useState<number | null>(null);
   const [usHits, setUsHits] = useState<UltrastarSearchHit[]>([]);
   const [ugHits, setUgHits] = useState<UgSearchHit[]>([]);
   const [ugHitScores, setUgHitScores] = useState<Record<string, number>>({});
