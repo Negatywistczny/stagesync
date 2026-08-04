@@ -158,6 +158,32 @@ describe("placeUsUgBackingAudioClip", () => {
     expect(second.audioClips[0]!.assetId).toBe("asset-2");
   });
 
+  it("reuses pre-existing server-created Audio 1 track and clip without creating a second track", () => {
+    const seed = createProjectSeed("p1", "x", "2026-08-03T12:00:00.000Z");
+    const serverProject = {
+      ...seed,
+      audioTracks: [{ id: "tr-server-1", name: "Audio 1" }],
+      audioClips: [
+        {
+          id: "clip-server-1",
+          trackId: "tr-server-1",
+          assetId: "asset-1",
+          startTicks: 0,
+          lengthTicks: 7680,
+        },
+      ],
+    };
+    const next = placeUsUgBackingAudioClip(serverProject, {
+      assetId: "asset-1",
+      durationMs: 180_000,
+    });
+    expect(next.audioTracks).toHaveLength(1);
+    expect(next.audioTracks[0]!.id).toBe("tr-server-1");
+    expect(next.audioClips).toHaveLength(1);
+    expect(next.audioClips[0]!.trackId).toBe("tr-server-1");
+    expect(next.audioClips[0]!.lengthTicks).toBeGreaterThan(7680);
+  });
+
   it("lengthTicks follows variable TempoMap along playable duration", () => {
     const seed = createProjectSeed("p1", "x", "2026-08-03T12:00:00.000Z");
     const withMap = {

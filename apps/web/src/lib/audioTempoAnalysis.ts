@@ -1602,14 +1602,14 @@ export async function analyzeFromMonoAsync(
     phaseAnchor,
   );
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
-  beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 30);
+  beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 10);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
   // Prefer periodHintBpm (from bar-harmonics reconciliation) over the raw
   // beat-grid median: Viterbi can latch onto 8th-note or syncopated onsets
   // and produce a median ~10% faster than the true quarter-note period.
   // Trust ibiBpm only when within ±10% of periodHintBpm.
   const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
-  const estimatedBpm = ibiBpm > 0 && ibiBpmDeviation <= 0.10 ? ibiBpm : periodHintBpm;
+  const estimatedBpm = periodHintBpm > 0 ? periodHintBpm : ibiBpm;
   console.log(
     `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
   );

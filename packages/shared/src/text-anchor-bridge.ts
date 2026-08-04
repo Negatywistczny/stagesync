@@ -1615,7 +1615,7 @@ function remapTekstClipsWithMapFn(
   });
 }
 
-function remapTekstClipsAlongSolverMap(
+export function remapTekstClipsAlongSolverMap(
   clips: readonly TekstClip[],
   placeBpm: number,
   tempoMap: readonly TempoEvent[],
@@ -1644,7 +1644,7 @@ function remapMelodyClipsWithMapFn(
   });
 }
 
-function remapMelodyClipsAlongSolverMap(
+export function remapMelodyClipsAlongSolverMap(
   clips: readonly MelodyNoteClip[],
   placeBpm: number,
   tempoMap: readonly TempoEvent[],
@@ -2266,7 +2266,7 @@ export function bridgeUsUgImport(
   let tempoMap: TempoEvent[];
   let tempoNodes: TempoNode[];
   let formaSections: TempoSolverSectionPlan[];
-  let effectiveAudioOffset = options.smartTempoAudio?.audioStartOffsetMs ?? 0;
+  const effectiveAudioOffset = options.smartTempoAudio?.audioStartOffsetMs ?? 0;
 
   if (useAudioSmartTempo) {
     // TempoMap = audio only. `#BPM` / pipe BPM never seed Adapt.

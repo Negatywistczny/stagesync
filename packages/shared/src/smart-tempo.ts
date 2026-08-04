@@ -13,7 +13,6 @@ import type {
 import { BPM_MAX } from "./schema.js";
 import {
   DEFAULT_PPQ,
-  elapsedToTicks,
   localTicksPerBeat,
   ticksPerBar,
   ticksToMs,
@@ -97,6 +96,7 @@ export function beatGridToContentEpoch(
   beatMs: readonly number[],
   _audioStartOffsetMs: number,
 ): number[] {
+  void _audioStartOffsetMs;
   return beatMs.length > 0 ? [...beatMs] : [];
 }
 
@@ -105,6 +105,7 @@ export function tempoNodesToContentEpoch(
   nodes: readonly TempoNode[],
   _audioStartOffsetMs: number,
 ): TempoNode[] {
+  void _audioStartOffsetMs;
   return nodes.map((n) => ({ ...n }));
 }
 
@@ -113,6 +114,7 @@ export function tempoNodesToFileEpoch(
   nodes: readonly TempoNode[],
   _audioStartOffsetMs: number,
 ): TempoNode[] {
+  void _audioStartOffsetMs;
   return nodes.map((n) => ({ ...n }));
 }
 
@@ -856,7 +858,11 @@ export function sparsifyTempoNodesFromBeatGrid(
     .slice()
     .sort((a, b) => a.targetTick - b.targetTick || a.wallMs - b.wallMs);
 
-  const inst: number[] = [seed];
+  const firstBpm =
+    sorted.length > 1
+      ? instantaneousBpmBetweenNodes(sorted[0]!, sorted[1]!, meter, ppq)
+      : 0;
+  const inst: number[] = [firstBpm > 0 ? firstBpm : seed];
   for (let i = 1; i < sorted.length; i++) {
     const bpm = instantaneousBpmBetweenNodes(
       sorted[i - 1]!,
@@ -1650,9 +1656,18 @@ export function placeUsUgBackingAudioClip(
     assets = [...assets, stub];
   }
 
-  let track = project.audioTracks.find(
-    (t) => t.name === US_UG_BACKING_TRACK_NAME,
-  );
+  const existingClip = project.audioClips.find((c) => c.assetId === assetId);
+  let track = existingClip
+    ? project.audioTracks.find((t) => t.id === existingClip.trackId)
+    : undefined;
+  if (!track) {
+    track = project.audioTracks.find(
+      (t) => t.id === US_UG_BACKING_TRACK_ID || t.name === US_UG_BACKING_TRACK_NAME,
+    );
+  }
+  if (!track && project.audioTracks.length > 0) {
+    track = project.audioTracks[0];
+  }
   let audioTracks = project.audioTracks;
   if (!track) {
     track = { id: US_UG_BACKING_TRACK_ID, name: US_UG_BACKING_TRACK_NAME };
@@ -1679,7 +1694,7 @@ export function placeUsUgBackingAudioClip(
   const floor = Math.max(0, Math.floor(startTicks));
 
   const clipPayload: AudioClip = {
-    id: US_UG_BACKING_CLIP_ID,
+    id: existingClip?.id ?? US_UG_BACKING_CLIP_ID,
     trackId: track.id,
     assetId,
     startTicks: floor,
@@ -1688,7 +1703,7 @@ export function placeUsUgBackingAudioClip(
     trimOutMs: undefined,
   };
   const otherClips = project.audioClips.filter(
-    (c) => c.id !== US_UG_BACKING_CLIP_ID && c.trackId !== track!.id,
+    (c) => c.id !== clipPayload.id && c.assetId !== assetId,
   );
   const audioClips = [...otherClips, clipPayload];
 

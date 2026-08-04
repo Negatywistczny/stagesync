@@ -178,7 +178,7 @@
   gap: var(--ss-space-6);
   min-height: 0;
   flex: 1 1 auto;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 .audioCard {
@@ -186,11 +186,11 @@
   flex-direction: column;
   gap: var(--ss-space-3);
   min-width: 0;
-  min-height: 0;
   padding: var(--ss-space-4);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-md);
   background: var(--ss-color-elevated);
+  height: auto;
 }
 
 .audioCardTitle {
@@ -207,11 +207,214 @@
   line-height: var(--ss-leading-normal);
 }
 
-.ytFieldRow {
+/* Left panel: project assets list */
+.projectFilesSection {
   display: flex;
   flex-direction: column;
   gap: var(--ss-space-2);
-  margin-top: auto;
+}
+
+.projectFilesList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.projectFileItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-3);
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.projectFileItem:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--ss-color-primary) 45%, var(--ss-color-border));
+}
+
+.projectFileItemActive {
+  border-color: var(--ss-color-primary);
+  background: color-mix(in srgb, var(--ss-color-primary) 10%, var(--ss-color-surface));
+}
+
+.projectFileRadio {
+  cursor: pointer;
+  accent-color: var(--ss-color-primary);
+}
+
+.projectFileIcon {
+  color: var(--ss-color-text-muted);
+  flex: 0 0 auto;
+}
+
+.projectFileInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.projectFileName {
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-medium);
+  color: var(--ss-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projectFileMeta {
+  font-size: var(--ss-text-xs);
+  color: var(--ss-color-text-muted);
+}
+
+.emptyFilesNotice {
+  margin: 0;
+  padding: var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-color-text-muted);
+  font-style: italic;
+}
+
+/* Separator */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-3);
+  margin: var(--ss-space-1) 0;
+  width: 100%;
+}
+
+.dividerLine {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--ss-color-border);
+}
+
+.dividerText {
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Inline Input Group for YouTube */
+.ytInlineGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ss-space-2);
+  width: 100%;
+}
+
+.ytInput {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ytButton {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Multi-stage Pipeline Progress */
+.pipelineSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  margin-top: var(--ss-space-2);
+  padding: var(--ss-space-3);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-surface);
+  border: 1px solid var(--ss-color-border);
+}
+
+.pipelineTitle {
+  margin: 0 0 var(--ss-space-1) 0;
+  font-size: var(--ss-text-xs);
+  font-weight: var(--ss-font-weight-semibold);
+  color: var(--ss-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pipelineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipelineStep {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-1);
+}
+
+.pipelineStepHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  font-size: var(--ss-text-sm);
+}
+
+.pipelineStepDone {
+  color: var(--ss-color-text);
+  font-weight: var(--ss-font-weight-medium);
+}
+
+.pipelineStepActive {
+  color: var(--ss-color-primary);
+  font-weight: var(--ss-font-weight-semibold);
+}
+
+.pipelineStepPending {
+  color: var(--ss-color-text-muted);
+  opacity: 0.55;
+}
+
+.pipelineBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  font-size: var(--ss-text-xs);
+  flex: 0 0 auto;
+}
+
+.pipelineBadgeDone {
+  background: var(--ss-color-primary, #10b981);
+  color: #ffffff;
+}
+
+.pipelineBadgeActive {
+  border: 2px solid var(--ss-color-primary);
+  color: var(--ss-color-primary);
+}
+
+.pipelineBadgePending {
+  border: 1px solid var(--ss-color-border);
+  color: var(--ss-color-text-muted);
+}
+
+.pipelineProgressWrapper {
+  margin-left: 1.75rem;
+  margin-top: var(--ss-space-1);
 }
 
 .notice {

@@ -32,8 +32,13 @@ export function AudioDropzone({
   const locked = disabled || busy;
 
   function accept(file: File | undefined | null) {
-    if (!file || locked) return;
+    if (!file || locked || file.name.startsWith("._")) return;
     onSelectFile(file);
+  }
+
+  function pickValidFile(files: FileList | null | undefined): File | null {
+    if (!files) return null;
+    return Array.from(files).find((f) => !f.name.startsWith("._")) ?? null;
   }
 
   return (
@@ -60,7 +65,7 @@ export function AudioDropzone({
       onDrop={(e) => {
         e.preventDefault();
         setDropActive(false);
-        accept(e.dataTransfer.files?.[0] ?? null);
+        accept(pickValidFile(e.dataTransfer.files));
       }}
     >
       <input
@@ -70,27 +75,33 @@ export function AudioDropzone({
         hidden
         disabled={locked}
         onChange={(e) => {
-          accept(e.target.files?.[0] ?? null);
+          accept(pickValidFile(e.target.files));
           e.target.value = "";
         }}
       />
-      <AudioLines
-        className={styles.icon}
-        aria-hidden
-        size={compact ? 28 : 36}
-        strokeWidth={1.75}
-      />
-      <p className={styles.title}>Przeciągnij i upuść plik MP3 / WAV</p>
-      <p className={styles.hint}>Albo wybierz plik z dysku.</p>
+      <div className={styles.content}>
+        <AudioLines
+          className={styles.icon}
+          aria-hidden
+          size={compact ? 22 : 36}
+          strokeWidth={1.75}
+        />
+        <div className={styles.textWrapper}>
+          <p className={styles.title}>
+            {compact ? "Przeciągnij plik tutaj lub..." : "Przeciągnij i upuść plik MP3 / WAV"}
+          </p>
+          {!compact ? <p className={styles.hint}>Albo wybierz plik z dysku.</p> : null}
+        </div>
+      </div>
       <div className={styles.actions}>
         <Button
           type="button"
-          variant="primary"
+          variant={compact ? "secondary" : "primary"}
           disabled={locked}
           loading={busy}
           onClick={() => inputRef.current?.click()}
         >
-          Wybierz plik z dysku
+          {compact ? "Wybierz z dysku" : "Wybierz plik z dysku"}
         </Button>
       </div>
       {progressLabel != null && progressLabel !== "" ? (

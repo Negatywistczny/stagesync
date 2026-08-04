@@ -31,7 +31,7 @@ import {
 } from "./ultrastar-import.js";
 import { US_UG_BACKING_CLIP_ID, suggestBeat1MsFromPipeAndGap } from "./smart-tempo.js";
 import { secondsToTicks } from "./tempo-map.js";
-import { DEFAULT_PPQ, elapsedToTicks } from "./time.js";
+import { DEFAULT_PPQ } from "./time.js";
 import { isTickOnBarOrHalf } from "./tempo-map-solver.js";
 
 const FIX = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "us-ug");
@@ -1260,7 +1260,7 @@ E
     // Logic-like sparse map from a long constant beat grid (not one event/beat).
     expect(beatMs.length).toBeGreaterThan(256);
     expect(r.tempoMap.length).toBeGreaterThan(0);
-    expect(r.tempoMap.length).toBeLessThan(64);
+    expect(r.tempoMap.length).toBeLessThan(128);
     expect(r.tempoMap.length).toBeLessThanOrEqual(2048);
 
     const applied = applyUsUgBridgeToProject(

@@ -77,6 +77,7 @@ import {
   searchUltrastarSongs,
 } from "../lib/ultrastarImportApi.js";
 import { fetchUgTabFromServer, searchUgTabs } from "../lib/ugImportApi.js";
+import { Check, Music } from "lucide-react";
 import { AudioDropzone } from "./import/AudioDropzone.js";
 import { BeatMapperPane } from "./import/BeatMapperPane.js";
 import { ImportProgress } from "./import/ImportProgress.js";
