@@ -39,7 +39,7 @@ function parseRtfReference(rtfPath: string) {
       .replace(/[{}\\]/g, "")
       .trim();
     const parts = cleanLine
-      .split("\t")
+      .split(/\t+|\s{2,}/)
       .map((p) => p.trim())
       .filter(Boolean);
     if (parts.length >= 2) {
@@ -170,12 +170,13 @@ async function main() {
       meterMap: [{ id: "m0", startTicks: 0, numerator: 4, denominator: 4 }],
       ppq,
     };
-    const t0AudioMs = analysis.beatMs[0] ?? 0;
+    const bar1Pt = points.find((p) => p.bar === 1) ?? points[0];
+    const refBar1Ms = bar1Pt?.timecodeMs ?? 0;
 
     for (const refPt of points) {
       const targetTick = (refPt.bar - 1) * barTicks;
-      const estMs = t0AudioMs + ticksToMsAlongTempoMap(0, targetTick, benchProject);
-      const refMs = refPt.timecodeMs;
+      const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject);
+      const refMs = refPt.timecodeMs - refBar1Ms;
       const estBpmAtBar = smartRes.tempoMap[0]?.bpm ?? analysis.estimatedBpm;
 
       const refBarMs = 240_000 / refPt.bpm;

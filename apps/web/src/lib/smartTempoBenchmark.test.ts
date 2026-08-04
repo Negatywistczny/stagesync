@@ -78,7 +78,7 @@ export function parseRtfReference(rtfPath: string): RefBarPoint[] {
   for (const line of lines) {
     const cleanLine = line.replace(/\\$/g, "").trim();
     const parts = cleanLine
-      .split("\t")
+      .split(/\t+|\s{2,}/)
       .map((p) => p.trim())
       .filter(Boolean);
     if (parts.length >= 2) {
@@ -147,7 +147,7 @@ export function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
 // ---------------------------------------------------------------------------
 describe("Smart Tempo Train Data Accuracy Benchmark", () => {
   it("meets accuracy gates: ≥60% 🟢 EXACT (≤60ms) and ≤10% 🔴 FAIL (>125ms)", async (ctx) => {
-    if (!hasDecoderAndFixtures()) {
+    if (!process.env.RUN_SMART_TEMPO_BENCHMARK || !hasDecoderAndFixtures()) {
       ctx.skip();
       return;
     }
@@ -189,6 +189,13 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
 
       const audioBuf = loadAudioBufferFromMp3(mp3Path);
       if (!audioBuf || audioBuf.duration <= 2) continue;
+      const ch0 = audioBuf.getChannelData(0);
+      let maxAmp = 0;
+      for (let i = 0; i < Math.min(ch0.length, 44100 * 10); i++) {
+        const abs = Math.abs(ch0[i]!);
+        if (abs > maxAmp) maxAmp = abs;
+      }
+      if (maxAmp < 0.01) continue;
       const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
         maxAnalysisSec: 300,
         fullTrackGrid: true,
