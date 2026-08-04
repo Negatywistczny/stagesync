@@ -5,7 +5,17 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [Unreleased]
+## [5.4.3](https://github.com/Negatywistczny/stagesync/compare/v5.4.2...v5.4.3) - 2026-08-05
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Admin — Smart Tempo:** strona `/smart-tempo` z pulpitem dokładności analizy (benchmark) — otwierana z Systemu; wykresy porównawcze bez zbędnych linii łączących ścieżki.
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo:** siatka beatów silniej premiuje downbeaty i fazę względem onsetów — mapa tempa lepiej trzyma się nagrania; Import US+UG przy układzie Beat 1 / siatki bierze BPM z analizy audio, gdy jest dostępny (zamiast samego metronomu pliku).
 
 ## [5.4.2](https://github.com/Negatywistczny/stagesync/compare/v5.4.1...v5.4.2) - 2026-08-04 — Smart Tempo
 

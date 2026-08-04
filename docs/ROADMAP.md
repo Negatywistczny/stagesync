@@ -28,6 +28,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.4.0** | **Syllables** — Lyrics AST (ticks) + UltraStar → Karaoke | **Wydane 2026-08-02** — tag `v5.4.0`; format V6 + import UltraStar + highlight Karaoke | [CHANGELOG](../CHANGELOG.md) · [report-scope-5.4](./analysis/reports/report-scope-5.4.md) |
 | **5.4.1** | Syllables patch — US+UG eksperymentalny, transport AlongMap… | **Wydane 2026-08-03** — tag `v5.4.1` | [CHANGELOG](../CHANGELOG.md) |
 | **5.4.2** | **Smart Tempo** — mapa tempa z audio (nie z sylab US) | **Wydane 2026-08-04** — tag `v5.4.2`; Import US+UG stable (etykieta „eksperymentalny" usunięta) | [CHANGELOG](../CHANGELOG.md) |
+| **5.4.3** | Smart Tempo polish — downbeat/faza, `/smart-tempo` | **Wydane 2026-08-05** — tag `v5.4.3` | [CHANGELOG](../CHANGELOG.md) |
 | **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
 | **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
@@ -53,6 +54,10 @@ Tag `v5.4.1`. Import US+UG w UI jako **eksperymentalny** (sync MP3 przybliżony)
 Tag `v5.4.2`. Historia: [CHANGELOG.md](../CHANGELOG.md).
 
 **Dostarczone:** mapa tempa z **pliku audio** (wall-clock + Beat Mapper, Drift Gate); seed BPM z mediany IBI siatki (nie z peak ACF); metronom nieprzerwany przy przełączaniu zakładek; jawne anulowanie kliknięcia przy seeku (bez podwójnego kliknięcia); benchmark 3-tier ms + pasek postępu importu; sortowanie UG wg zgodności; 3-kolumnowy import audio z DnD; Import US+UG bez etykiety „eksperymentalny" — **stable**.
+
+### 5.4.3 — Smart Tempo polish — **wydane 2026-08-05**
+
+Tag `v5.4.3`. Historia: [CHANGELOG.md](../CHANGELOG.md). Downbeat/faza w siatce beatów; strona `/smart-tempo` w Adminie; BPM z analizy audio w układzie Beat 1 przy US+UG.
 
 ### 5.5 — **Pitch & FX**
 

@@ -59,7 +59,7 @@ export type SystemViewProps = {
   onAutoCheckUpdateConsumed?: () => void;
 };
 
-type HostCardId = "network" | "about" | "logs" | "midi";
+type HostCardId = "network" | "about" | "logs" | "midi" | "smart-tempo";
 
 /** Admin Host — two-column content-height layout (Sieć+APK | Logi / About | MIDI). */
 export function SystemView({
@@ -611,20 +611,39 @@ export function SystemView({
         </AdminAccordionCard>
 
         <AdminAccordionCard
-          title="Analiza Smart Tempo vs Logic Pro — Wizualizacja Dokładności Siatki Taktowej"
-          summary="Dedykowany panel wizualizacji dokładności tempa, histogramów, wykresu CDF i timeline drift"
-          badge="Dedykowana Strona"
+          id="smart-tempo"
+          title="Smart Tempo — dokładność siatki"
+          ariaLabel="Smart Tempo dokładność siatki"
+          mobile={compactMobile}
+          openId={openCard}
+          onOpen={setOpenCard}
+          className={styles.card}
+          bodyClassName={styles.cardBody}
         >
-          <div style={{ padding: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "flex-start" }}>
+          <div
+            style={{
+              padding: "0.5rem 0",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem",
+              alignItems: "flex-start",
+            }}
+          >
             <p className={shell.muted} style={{ margin: 0 }}>
-              Dedykowana strona analizy i porównywania benchmarków Smart Tempo dostępna jest pod adresem <code style={{ color: "#60a5fa" }}>/smart-tempo</code>.
+              Strona analizy i porównywania benchmarków Smart Tempo:{" "}
+              <code>/smart-tempo</code>.
             </p>
             <Link
               to="/smart-tempo"
               className={shell.primaryButton}
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                textDecoration: "none",
+              }}
             >
-              📊 Otwórz Stronę Benchmarku Smart Tempo (/smart-tempo) ➔
+              Otwórz benchmark Smart Tempo
             </Link>
           </div>
         </AdminAccordionCard>
