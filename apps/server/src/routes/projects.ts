@@ -6,6 +6,7 @@ import {
 import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "../transport/engine.js";
 import { createAssetsRouter } from "./assets.js";
+import { createYoutubeAudioRouter } from "./youtube-audio.js";
 import { handleRouteError } from "./errors.js";
 
 export function createProjectsRouter(
@@ -28,6 +29,7 @@ export function createProjectsRouter(
   });
 
   router.use("/:id/assets", createAssetsRouter(stores));
+  router.use("/:id/assets", createYoutubeAudioRouter(stores));
 
   router.get("/:id", async (req, res) => {
     try {

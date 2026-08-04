@@ -87,4 +87,26 @@ describe("wrapDisplayTicks", () => {
     expect(wrapDisplayTicks(250, loop)).toBe(150);
     expect(wrapDisplayTicks(399, loop)).toBe(199);
   });
+
+  it("never lets displayTicks reach exclusive loop.end (overshoot guard)", () => {
+    // 1-bar loop [0, 3840) at 120 BPM 4/4 PPQ 960.
+    // Anchor near end; elapsed would push past loop.end without wrap.
+    const barLoop = { enabled: true, startTicks: 0, endTicks: 3840 };
+    const nearEnd: TransportAnchor = {
+      positionTicks: 3800,
+      bpm: 120,
+      timeSignature: { numerator: 4, denominator: 4 },
+      ppq: DEFAULT_PPQ,
+    };
+    // 500ms at 120 BPM = 960 ticks → 3800 + 960 = 4760, well past 3840
+    const result = getDisplayTicks(nearEnd, 1500, 1000, true, barLoop);
+    expect(result).toBeLessThan(barLoop.endTicks);
+    expect(result).toBeGreaterThanOrEqual(barLoop.startTicks);
+  });
+
+  it("wraps exactly at loop.endTicks (exclusive boundary)", () => {
+    const loop = { enabled: true, startTicks: 0, endTicks: 3840 };
+    expect(wrapDisplayTicks(3840, loop)).toBe(0);
+    expect(wrapDisplayTicks(3839, loop)).toBe(3839);
+  });
 });

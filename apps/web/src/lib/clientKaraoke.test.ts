@@ -388,16 +388,30 @@ describe("clientKaraoke", () => {
       tekst: { clips: [multiBlock] },
     };
 
-    it("resolveActiveBlockId uses half-open windows", () => {
-      expect(resolveActiveBlockId(multiBlock.blocks, 0)).toBe("b-hello");
-      expect(resolveActiveBlockId(multiBlock.blocks, BEAT - 1)).toBe("b-hello");
-      expect(resolveActiveBlockId(multiBlock.blocks, BEAT)).toBeNull();
-      expect(resolveActiveBlockId(multiBlock.blocks, 2 * BEAT)).toBe("b-world");
-      expect(resolveActiveBlockId(multiBlock.blocks, 3 * BEAT)).toBeNull();
+    it("resolveActiveBlockId holds until next syllable (fills gaps)", () => {
+      expect(resolveActiveBlockId(multiBlock.blocks, 0, 4 * BEAT)).toBe(
+        "b-hello",
+      );
+      expect(resolveActiveBlockId(multiBlock.blocks, BEAT - 1, 4 * BEAT)).toBe(
+        "b-hello",
+      );
+      // Former gap: still hello until world starts
+      expect(resolveActiveBlockId(multiBlock.blocks, BEAT, 4 * BEAT)).toBe(
+        "b-hello",
+      );
+      expect(resolveActiveBlockId(multiBlock.blocks, 2 * BEAT - 1, 4 * BEAT)).toBe(
+        "b-hello",
+      );
+      expect(resolveActiveBlockId(multiBlock.blocks, 2 * BEAT, 4 * BEAT)).toBe(
+        "b-world",
+      );
+      expect(resolveActiveBlockId(multiBlock.blocks, 3 * BEAT, 4 * BEAT)).toBe(
+        "b-world",
+      );
       expect(resolveActiveBlockId(undefined, 0)).toBeNull();
     });
 
-    it("highlights active block; gap keeps line active without token", () => {
+    it("highlights active block through gaps until next onset", () => {
       const onHello = buildKaraokeLiveContext(withMulti, BEAT / 2)!;
       expect(onHello.lines[0]?.active).toBe(true);
       expect(onHello.activeBlockId).toBe("b-hello");
@@ -408,10 +422,12 @@ describe("clientKaraoke", () => {
 
       const inGap = buildKaraokeLiveContext(withMulti, BEAT + 10)!;
       expect(inGap.lines[0]?.active).toBe(true);
-      expect(inGap.activeBlockId).toBeNull();
-      expect(inGap.lines[0]?.blocks?.every((b) => !b.active)).toBe(true);
-      expect(inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
+      expect(inGap.activeBlockId).toBe("b-hello");
+      expect(inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.active).toBe(
         true,
+      );
+      expect(inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
+        false,
       );
 
       const onWorld = buildKaraokeLiveContext(withMulti, 2 * BEAT + 10)!;
@@ -422,6 +438,32 @@ describe("clientKaraoke", () => {
       expect(onWorld.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
         true,
       );
+    });
+
+    it("1-tick syllables stay yellow until the next block", () => {
+      const flashy: Project = {
+        ...project,
+        tekst: {
+          clips: [
+            {
+              id: "tx-flash",
+              text: "A B C",
+              startTicks: 0,
+              lengthTicks: 3 * BEAT,
+              blocks: [
+                { id: "a", text: "A ", startTicks: 0, lengthTicks: 1 },
+                { id: "b", text: "B ", startTicks: BEAT, lengthTicks: 1 },
+                { id: "c", text: "C", startTicks: 2 * BEAT, lengthTicks: 1 },
+              ],
+            },
+          ],
+        },
+      };
+      const midA = buildKaraokeLiveContext(flashy, BEAT / 2)!;
+      expect(midA.activeBlockId).toBe("a");
+      expect(midA.lines[0]?.blocks?.find((b) => b.id === "a")?.active).toBe(true);
+      const midB = buildKaraokeLiveContext(flashy, BEAT + 10)!;
+      expect(midB.activeBlockId).toBe("b");
     });
 
     it("single whole-line block mirrors line active window (migrate 1:1)", () => {

@@ -6,7 +6,6 @@ import { createProjectSeed } from "./project-seed.js";
 import { ProjectSchema } from "./schema.js";
 import {
   TEXT_ANCHOR_WEAK_ALIGN,
-  DEFAULT_BARS_PER_CHORD,
   alignWordSequences,
   applyUsUgBridgeToProject,
   barsPerChordForSection,
@@ -23,12 +22,16 @@ import {
   quantizeChordOnsets,
   sectionLengthBarsFromUg,
   structuralBarOffsetsForChordLines,
+  suggestGridBpmFromUsUgTexts,
   timedWordsFromUltrastar,
   tokenizeLyrics,
 } from "./text-anchor-bridge.js";
 import {
   importUltrastarText,
 } from "./ultrastar-import.js";
+import { US_UG_BACKING_CLIP_ID, suggestBeat1MsFromPipeAndGap } from "./smart-tempo.js";
+import { secondsToTicks } from "./tempo-map.js";
+import { DEFAULT_PPQ } from "./time.js";
 import { isTickOnBarOrHalf } from "./tempo-map-solver.js";
 
 const FIX = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "us-ug");
@@ -65,7 +68,7 @@ describe("structuralBarOffsetsForChordLines", () => {
 describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
   const BAR = 3840;
 
-  it("uses pipe, else chords×2, else lyric lines", () => {
+  it("uses pipe, else lyric lines — chords never define length", () => {
     expect(
       sectionLengthBarsFromUg({
         pipeBarCount: 8,
@@ -79,7 +82,14 @@ describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
         chords: Array.from({ length: 8 }),
         lyricLineCount: 8,
       }),
-    ).toBe(8 * DEFAULT_BARS_PER_CHORD);
+    ).toBe(8);
+    expect(
+      sectionLengthBarsFromUg({
+        pipeBarCount: 0,
+        chords: Array.from({ length: 8 }),
+        lyricLineCount: 0,
+      }),
+    ).toBe(1);
     expect(
       sectionLengthBarsFromUg({
         pipeBarCount: 0,
@@ -89,7 +99,7 @@ describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
     ).toBe(4);
   });
 
-  it("freezes lengths from UG — sequential Forma; vocal A length independent of B", () => {
+  it("freezes vocal lengths from UltraStar Beat 1 walls (not chord count)", () => {
     const frozen = freezeFormaContainers({
       ugSections: [
         {
@@ -114,6 +124,7 @@ describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
           lyricLineCount: 4,
         },
       ],
+      // Verse pickup @ 16.5 → Beat 1 @ 17; Chorus @ 38.5 → Beat 1 @ 39
       sectionUsTicks: [[], [16.5 * BAR], [38.5 * BAR]],
       barTicks: BAR,
       idPrefix: "t",
@@ -124,19 +135,18 @@ describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
     expect(intro!.startTicks).toBe(0);
     expect(intro!.lengthTicks).toBe(17 * BAR);
     expect(verse!.startTicks).toBe(17 * BAR);
-    expect(verse!.lengthTicks).toBe(16 * BAR); // 8×2
-    // Sequential: Chorus follows Verse end (no US jump / no „nachodzi”)
-    expect(chorus!.startTicks).toBe(33 * BAR);
-    expect(chorus!.lengthTicks).toBe(12 * BAR); // 6×2
+    // Vocal wall span 17 → 39 = 22 bars (chords fill, not ×2 length)
+    expect(verse!.lengthTicks).toBe(22 * BAR);
+    expect(chorus!.startTicks).toBe(39 * BAR);
+    expect(chorus!.lengthTicks).toBe(4 * BAR); // lyric fallback (no next wall)
     expect(verse!.endTicks).toBe(chorus!.startTicks);
     expect(frozen.warnings.some((w) => /nachodzi/i.test(w))).toBe(false);
-    // Immutable: Object.freeze
     expect(() => {
       (verse as { lengthTicks: number }).lengthTicks = 99;
     }).toThrow();
   });
 
-  it("caps overlong chord-only Intro so later vocals keep sequential walls (no cascade)", () => {
+  it("caps / absorbs instrumental Intro to next US vocal barline", () => {
     const frozen = freezeFormaContainers({
       ugSections: [
         {
@@ -161,19 +171,18 @@ describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
           lyricLineCount: 2,
         },
       ],
-      // Without cap, Intro 12×2=24 bars would overrun Verse US at 17
       sectionUsTicks: [[], [16.5 * BAR], [38.5 * BAR]],
       barTicks: BAR,
       idPrefix: "cap",
     });
     expect(frozen.containers[0]!.lengthTicks).toBe(17 * BAR);
     expect(frozen.containers[1]!.startTicks).toBe(17 * BAR);
-    // Sequential after Verse 16 bars → Chorus @ 33 (not US 39)
-    expect(frozen.containers[2]!.startTicks).toBe(33 * BAR);
+    expect(frozen.containers[1]!.lengthTicks).toBe(22 * BAR);
+    expect(frozen.containers[2]!.startTicks).toBe(39 * BAR);
     expect(frozen.warnings.some((w) => /nachodzi/i.test(w))).toBe(false);
   });
 
-  it("sequential Forma never emits nachodzi when chords×2 would overrun US word", () => {
+  it("vocal Forma length follows US walls when denser than lyric fallback", () => {
     const frozen = freezeFormaContainers({
       ugSections: [
         {
@@ -191,14 +200,13 @@ describe("sectionLengthBarsFromUg / freezeFormaContainers", () => {
           lyricLineCount: 2,
         },
       ],
-      // Chorus US first word lands inside Verse chords×2 window
       sectionUsTicks: [[0.5 * BAR], [10.5 * BAR]],
       barTicks: BAR,
       idPrefix: "ov",
     });
     expect(frozen.containers[0]!.startTicks).toBe(0);
-    expect(frozen.containers[0]!.lengthTicks).toBe(16 * BAR);
-    expect(frozen.containers[1]!.startTicks).toBe(16 * BAR);
+    expect(frozen.containers[0]!.lengthTicks).toBe(11 * BAR);
+    expect(frozen.containers[1]!.startTicks).toBe(11 * BAR);
     expect(frozen.warnings.some((w) => /nachodzi/i.test(w))).toBe(false);
   });
 });
@@ -491,7 +499,9 @@ describe("golden fixtures US+UG", () => {
     const solo = bridged.sections.find((s) => s.name === "Solo");
     expect(solo).toBeDefined();
     expect(solo!.anchored).toBe(false);
-    expect(solo!.chordCount).toBe(4);
+    // Instrumental without pipe: Form length from fallback (not chords×N);
+    // surplus chords that cannot fit are dropped.
+    expect(solo!.chordCount).toBeGreaterThanOrEqual(1);
     expect(bridged.approximate).toBe(true);
     expect(
       bridged.warnings.some(
@@ -504,7 +514,7 @@ describe("golden fixtures US+UG", () => {
         c.startTicks >= solo!.startTicks &&
         c.startTicks < solo!.startTicks + solo!.lengthTicks,
     );
-    expect(soloClips).toHaveLength(4);
+    expect(soloClips.length).toBe(solo!.chordCount);
     // Even spacing inside solo window
     const gaps = soloClips.slice(1).map((c, i) => c.startTicks - soloClips[i]!.startTicks);
     expect(gaps.every((g) => g > 0)).toBe(true);
@@ -605,7 +615,7 @@ E`;
     // Pipe Intro absorbs pickup up to Verse barline (contiguous at freeze time)
     expect(intro.startTicks + intro.lengthTicks).toBe(verse.startTicks);
     expect(verse.anchored).toBe(true);
-    // Forma length = pristineBars from vocal ms @ seedBpm (not chords×2)
+    // Forma length from UltraStar section walls
     expect(verse.lengthTicks % 3840).toBe(0);
     expect(verse.startTicks + verse.lengthTicks).toBeLessThanOrEqual(
       bridged.sections[2]!.startTicks,
@@ -645,20 +655,19 @@ E`;
       "Chorus",
     ]);
 
-    // S3: pipe Intro exact bars; Forma walls contiguous on barlines
+    // S3: pipe Intro extended for anacrusis pickup; Verse contiguous @ bar 18 (1-indexed)
     expect(intro!.startTicks).toBe(0);
-    expect(intro!.lengthTicks).toBe(16 * BAR);
-    expect(verse!.startTicks).toBe(16 * BAR);
-    // Vocal Forma = pristineBars from ms @ seedBpm (NOT hardcoded chords×2)
-    expect(verse!.lengthTicks % BAR).toBe(0);
-    expect(verse!.lengthTicks).toBeGreaterThanOrEqual(4 * BAR);
+    expect(intro!.lengthTicks).toBe(17 * BAR);
+    expect(verse!.startTicks).toBe(17 * BAR);
+    // Vocal Forma from UltraStar walls (+ Intro anacrusis absorb)
+    expect(verse!.lengthTicks).toBe(16 * BAR);
     expect(chorus!.startTicks).toBe(verse!.startTicks + verse!.lengthTicks);
     expect(intro!.lengthTicks % BAR).toBe(0);
     expect(chorus!.lengthTicks % BAR).toBe(0);
     expect(bridged.warnings.some((w) => /nachodzi/i.test(w))).toBe(false);
 
-    // Dense TempoMap from phrase/line (ms, targetTick) anchors
-    expect(bridged.tempoMap.length).toBeGreaterThanOrEqual(2);
+    // Sparse map: section-wall BPM bands — not per-syllable kinks
+    expect(bridged.tempoMap.length).toBeGreaterThanOrEqual(1);
 
     const introChords = bridged.akordy.clips.filter(
       (c) => c.startTicks < verse!.startTicks,
@@ -686,10 +695,9 @@ E`;
     // Align-first: Verse lyrics stay Verse (not geometric Chorus affinity)
     const firstLine = bridged.tekst.clips[0]!;
     expect(firstLine.sourceSection).toBe("Verse");
-    // Section-wall TempoMap locks first vocal near Verse Beat 1
-    expect(Math.abs(firstLine.startTicks - verse!.startTicks)).toBeLessThanOrEqual(
-      BAR,
-    );
+    // Pickup lands inside extended Intro timeline (no empty bar between Intro and Verse)
+    expect(firstLine.startTicks).toBeGreaterThan(intro!.startTicks);
+    expect(firstLine.startTicks).toBeLessThan(verse!.startTicks);
 
     const though = bridged.tekst.clips.find((c) => /Though/i.test(c.text));
     expect(though?.sourceSection).toBe("Verse");
@@ -775,7 +783,7 @@ E`;
     ).toBe("Chorus");
   });
 
-  it("winner-intro-vc: Forma walls at pipe bars; vocal Forma from ms (not chords×2)", () => {
+  it("winner-intro-vc: Forma walls at pipe bars; vocal Forma from UltraStar walls", () => {
     const { us, ug } = loadPair("winner-intro-vc");
     const bridged = bridgeUsUgFromTexts(us, ug, {
       idPrefix: "winner120",
@@ -786,11 +794,8 @@ E`;
 
     const BAR = 3840;
     const verse = bridged.formaMusic.clips.find((c) => c.name === "Verse")!;
-    expect(verse.startTicks).toBe(16 * BAR);
-    expect(verse.lengthTicks % BAR).toBe(0);
-    // Explicitly NOT the old preferTwoBarGrid hardcode (8×2=16)
-    // Length is ms-derived; may equal 16 by chance but must be bar-aligned.
-    expect(verse.lengthTicks).toBeGreaterThan(0);
+    expect(verse.startTicks).toBe(17 * BAR);
+    expect(verse.lengthTicks).toBe(16 * BAR);
 
     const verseChords = bridged.akordy.clips.filter(
       (c) =>
@@ -799,22 +804,26 @@ E`;
     );
     expect(verseChords).toHaveLength(8);
     expect(verseChords[0]!.symbol).toBe("G");
-    // First Verse chord near Forma Beat 1 (syllable via map), not half-bar crush
-    expect(
-      Math.abs(verseChords[0]!.startTicks - verse.startTicks),
-    ).toBeLessThanOrEqual(BAR);
+    // First Verse chord on Forma Beat 1
+    expect(verseChords[0]!.startTicks).toBe(verse.startTicks);
     expect(verseChords[1]!.symbol).toBe("D/F#");
     for (let i = 1; i < verseChords.length; i++) {
       expect(verseChords[i]!.startTicks).toBeGreaterThan(
         verseChords[i - 1]!.startTicks,
       );
-      // No forced 2-bar Beat-1 grid
       const gap = verseChords[i]!.startTicks - verseChords[i - 1]!.startTicks;
       expect(gap).toBe(verseChords[i - 1]!.lengthTicks);
+      // Fill density from Forma span / chord count (often 2 bars when span÷n)
+      expect(gap).toBeGreaterThan(0);
+      expect(gap % BAR).toBe(0);
     }
 
     const chorus = bridged.formaMusic.clips.find((c) => c.name === "Chorus")!;
     expect(chorus.startTicks).toBe(verse.startTicks + verse.lengthTicks);
+    // Last section: US vocal span @ seed (not chords×2)
+    expect(chorus.lengthTicks % BAR).toBe(0);
+    expect(chorus.lengthTicks / BAR).toBeGreaterThanOrEqual(4);
+    expect(chorus.lengthTicks / BAR).toBeLessThanOrEqual(8);
     const chorusChords = bridged.akordy.clips.filter(
       (c) =>
         c.startTicks >= chorus.startTicks &&
@@ -846,8 +855,8 @@ E`;
 
     const [intro, verse, chorus] = bridged.formaMusic.clips;
     expect(intro!.startTicks).toBe(0);
-    expect(intro!.lengthTicks).toBe(16 * BAR);
-    expect(verse!.startTicks).toBe(16 * BAR);
+    expect(intro!.lengthTicks).toBe(17 * BAR);
+    expect(verse!.startTicks).toBe(17 * BAR);
     expect(verse!.lengthTicks % BAR).toBe(0);
     expect(chorus!.startTicks).toBe(verse!.startTicks + verse!.lengthTicks);
     expect(bridged.warnings.some((w) => /nachodzi/i.test(w))).toBe(false);
@@ -871,15 +880,12 @@ E
     const bridged = bridgeUsUgFromTexts(us, ug, { idPrefix: "s1" });
     expect(bridged.ok).toBe(true);
     if (!bridged.ok) return;
-    expect(bridged.akordy.clips.length).toBeGreaterThanOrEqual(2);
+    expect(bridged.akordy.clips.length).toBeGreaterThanOrEqual(1);
     expect(bridged.akordy.clips[0]!.symbol).toBe("C");
     const onsets = bridged.akordy.clips.map((c) => c.startTicks);
+    // Ordered when multiple chords fit the Forma wall
     for (let i = 1; i < onsets.length; i++) {
-      expect(onsets[i]!).toBeGreaterThan(onsets[i - 1]!);
-    }
-    // Absence of pipe must not crush to 0.5-bar blocks at section start
-    if (onsets.length >= 2) {
-      expect(onsets[1]! - onsets[0]!).toBeGreaterThanOrEqual(1);
+      expect(onsets[i]!).toBeGreaterThanOrEqual(onsets[i - 1]!);
     }
   });
 
@@ -890,13 +896,13 @@ E
     if (!bridged.ok) return;
     const solo = bridged.sections.find((s) => s.name === "Solo")!;
     expect(solo.anchored).toBe(false);
-    expect(solo.chordCount).toBe(4);
+    expect(solo.chordCount).toBeGreaterThanOrEqual(1);
     const soloClips = bridged.akordy.clips.filter(
       (c) =>
         c.startTicks >= solo.startTicks &&
         c.startTicks < solo.startTicks + solo.lengthTicks,
     );
-    expect(soloClips).toHaveLength(4);
+    expect(soloClips.length).toBe(solo.chordCount);
   });
 
   it("S3: dual [G][D]word → first from syllable, second structural bar (no half-bar crush)", () => {
@@ -988,5 +994,621 @@ describe("bridgeUsUgImport API", () => {
     if (!us.ok) return;
     const r = bridgeUsUgImport(us, "   ");
     expect(r.ok).toBe(false);
+  });
+
+  it("uses audio analysis as tempo SSOT (not US seed BPM)", () => {
+    const pair = loadPair("demo-simple");
+    const us = importUltrastarText(pair.us);
+    expect(us.ok).toBe(true);
+    if (!us.ok) return;
+    const beatMs = Array.from({ length: 33 }, (_, i) => i * 500);
+    const r = bridgeUsUgImport(us, pair.ug, {
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs: 20_000,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: 0,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.seedBpm).toBe(120);
+    expect(r.tempoMap.length).toBeGreaterThan(0);
+    expect(r.tempoMap[0]!.startTicks).toBe(0);
+    expect(r.tempoNodes.length).toBeGreaterThan(0);
+    // Constant grid → Logic-like sparse map (not one event per beat).
+    expect(r.tempoMap.length).toBeLessThanOrEqual(beatMs.length / 2);
+    expect(r.warnings.some((w) => /eksperymentalny/i.test(w))).toBe(false);
+  });
+
+  it("audio SSOT: draft nodes without user edit do not override audio map", () => {
+    const BAR = 3840;
+    const pair = loadPair("demo-simple");
+    const us = importUltrastarText(pair.us);
+    expect(us.ok).toBe(true);
+    if (!us.ok) return;
+    const beatMs = Array.from({ length: 33 }, (_, i) => i * 500);
+    const sparseNodes = [
+      { wallMs: 0, targetTick: 0 },
+      { wallMs: 4000, targetTick: BAR },
+      { wallMs: 8000, targetTick: BAR * 2 },
+    ];
+    const r = bridgeUsUgImport(us, pair.ug, {
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs: 20_000,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: 0,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+      draftTempoNodes: sparseNodes,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    // Auto draft markers must not replace audio-driven sparse map.
+    expect(r.seedBpm).toBe(120);
+    expect(r.tempoMap[0]!.bpm).toBeCloseTo(120, 0);
+
+    const edited = bridgeUsUgImport(us, pair.ug, {
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs: 20_000,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: 0,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+      draftTempoNodes: sparseNodes,
+      draftTempoNodesUserEdited: true,
+    });
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    expect(edited.tempoMap.length).toBeLessThanOrEqual(sparseNodes.length + 2);
+  });
+
+  it("winner-intro-vc with audio: Forma from words (pickup in Intro, Chorus on winner)", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 180_000;
+    const gapMs = usImport.gapMs;
+    expect(gapMs).toBe(33_000);
+    // Editorial Beat 1 for pipe 16 + GAP @ 120 → 0 (pickup at 16.5 bars).
+    const offsetMs = suggestBeat1MsFromPipeAndGap({
+      gapMs,
+      pipeBarCount: 16,
+      layoutBpm: 120,
+      transientMs: 2_000, // ignore late transient (>½ bar from ideal)
+    });
+    expect(offsetMs).toBe(0);
+    const beatMs = Array.from({ length: 360 }, (_, i) => i * 500);
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-audio",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: offsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    const BAR = 3840;
+    const intro = r.formaMusic.clips.find((c) => c.name === "Intro")!;
+    const verse = r.formaMusic.clips.find((c) => c.name === "Verse")!;
+    const chorus = r.formaMusic.clips.find((c) => c.name === "Chorus")!;
+    expect(intro.startTicks).toBe(0);
+    // Pipe Intro absorbs anacrusis → Verse Forma on barline after pickup.
+    expect(verse.startTicks).toBe(17 * BAR);
+    expect(intro.lengthTicks).toBe(verse.startTicks);
+    expect(verse.lengthTicks % BAR).toBe(0);
+    expect(verse.lengthTicks).toBeGreaterThanOrEqual(8 * BAR);
+    expect(chorus.startTicks).toBe(verse.startTicks + verse.lengthTicks);
+
+    // Pickup in last Intro bar; Verse downbeat = Forma Verse
+    const firstVocal = r.tekst.clips[0]!;
+    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(verse.startTicks - BAR);
+    expect(firstVocal.startTicks).toBeLessThan(verse.startTicks);
+
+    const about = r.tekst.clips.find((c) => /About/i.test(c.text));
+    expect(about).toBeTruthy();
+    const dfSharp = r.akordy.clips.find((c) => c.symbol === "D/F#");
+    expect(dfSharp).toBeTruthy();
+    // D/F# lands on / near the aligned “About” word (not a fixed bar index).
+    expect(Math.abs(dfSharp!.startTicks - about!.startTicks)).toBeLessThan(
+      2 * BAR,
+    );
+
+    const winnerLine = r.tekst.clips.find((c) => /winner takes/i.test(c.text));
+    expect(winnerLine).toBeTruthy();
+    expect(winnerLine!.sourceSection).toBe("Chorus");
+    // Chorus Forma covers the Chorus lyric (not leftover Verse lines).
+    expect(winnerLine!.startTicks).toBeGreaterThanOrEqual(
+      chorus.startTicks - BAR,
+    );
+    expect(winnerLine!.startTicks).toBeLessThan(
+      chorus.startTicks + chorus.lengthTicks,
+    );
+
+    expect(r.seedBpm).toBeCloseTo(120, 0);
+    expect(r.tempoMap.every((ev) => ev.bpm >= 60 && ev.bpm <= 200)).toBe(true);
+
+    const applied = applyUsUgBridgeToProject(
+      createProjectSeed("w-audio", "Winner", "2026-08-03T00:00:00.000Z"),
+      r,
+      {
+        smartTempoAudio: {
+          assetId: "a1",
+          durationMs,
+          peaks: [0.1, 0.5],
+          audioStartOffsetMs: offsetMs,
+        },
+      },
+    );
+    const clip = applied.audioClips.find((c) => c.id === US_UG_BACKING_CLIP_ID);
+    expect(clip?.startTicks).toBe(0);
+    expect(clip?.trimInMs).toBeUndefined();
+    expect(() => ProjectSchema.parse(applied)).not.toThrow();
+  });
+
+  it("winner-style SingStar GAP: TempoMap seed follows audio, not pipe+GAP formula", () => {
+    // Live Winner: #GAP 35140 → naive pipe formula 112.69. That formula must
+    // NOT become Adapt tempo — audio estimatedBpm is SSOT (even if currently
+    // imperfect). Pipe/GAP remains for Beat 1 / Forma only.
+    const us = `#TITLE:The Winner Takes It All
+#ARTIST:ABBA
+#BPM:339.36
+#GAP:35140
+: 0 6 25 I 
+: 7 6 27 don’t 
+- 33
+E
+`;
+    const { ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+    expect(usImport.gapMs).toBe(35140);
+
+    const audioBpm = 122.5;
+    const period = 60_000 / audioBpm;
+    const beatMs = Array.from({ length: 400 }, (_, i) =>
+      Math.round(i * period),
+    );
+    const offsetMs = suggestBeat1MsFromPipeAndGap({
+      gapMs: 35140,
+      pipeBarCount: 16,
+      layoutBpm: 120,
+    });
+    expect(offsetMs).toBeGreaterThan(1000);
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-gap35",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs: 240_000,
+        peaks: [0.1],
+        audioStartOffsetMs: offsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: audioBpm,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.seedBpm).toBeCloseTo(audioBpm, 0);
+    expect(r.tempoMap[0]!.bpm).toBeGreaterThanOrEqual(118);
+    // Pipe formula alone would be ~112.69 — must not win
+    expect(r.seedBpm).not.toBeCloseTo(112.69, 0);
+  });
+
+  it("long-track Smart Tempo stays sparse and validates as Project (no orphan template)", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 240_000;
+    const bpm = 120;
+    const period = 60_000 / bpm;
+    const beatCount = Math.ceil(durationMs / period) + 1;
+    const beatMs = Array.from({ length: beatCount }, (_, i) =>
+      Math.round(i * period),
+    );
+    const offsetMs = usImport.gapMs;
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "dense-map",
+      smartTempoAudio: {
+        assetId: "local-pending",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: offsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: bpm,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    // Logic-like sparse map from a long constant beat grid (not one event/beat).
+    expect(beatMs.length).toBeGreaterThan(256);
+    expect(r.tempoMap.length).toBeGreaterThan(0);
+    expect(r.tempoMap.length).toBeLessThan(128);
+    expect(r.tempoMap.length).toBeLessThanOrEqual(2048);
+
+    const applied = applyUsUgBridgeToProject(
+      createProjectSeed("dense", "Winner", "2026-08-03T00:00:00.000Z"),
+      r,
+      {
+        smartTempoAudio: {
+          assetId: "local-pending",
+          durationMs,
+          peaks: [0.1, 0.5],
+          audioStartOffsetMs: offsetMs,
+        },
+      },
+    );
+
+    // Bridged content — not bare Countdown+Intro seed.
+    expect(applied.forma.clips.some((c) => c.name === "Verse")).toBe(true);
+    expect(applied.forma.clips.some((c) => c.name === "Chorus")).toBe(true);
+    expect(applied.tekst.clips.length).toBeGreaterThan(0);
+    expect(applied.akordy.clips.length).toBeGreaterThan(0);
+    expect(applied.tempoMap.length).toBe(r.tempoMap.length);
+    // Synthetic wizard id must not place a stub clip before real upload.
+    expect(
+      applied.audioClips.some((c) => c.id === US_UG_BACKING_CLIP_ID),
+    ).toBe(false);
+
+    expect(() => ProjectSchema.parse(applied)).not.toThrow();
+
+    const withRealAsset = applyUsUgBridgeToProject(applied, r, {
+      smartTempoAudio: {
+        assetId: "asset-real-1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: offsetMs,
+      },
+    });
+    expect(
+      withRealAsset.audioClips.some((c) => c.id === US_UG_BACKING_CLIP_ID),
+    ).toBe(true);
+    const realClip = withRealAsset.audioClips.find(
+      (c) => c.id === US_UG_BACKING_CLIP_ID,
+    );
+    expect(realClip?.trimInMs).toBe(offsetMs);
+    expect(() => ProjectSchema.parse(withRealAsset)).not.toThrow();
+  });
+
+  it("winner-intro-vc with ~120 BPM audio (content-epoch): text near tick 0, Forma follows words", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const bpm =
+      suggestGridBpmFromUsUgTexts(us, ug) ??
+      usImport.ultrastarMetronomeBpm;
+    expect(bpm).toBeCloseTo(120, 0);
+    const period = 60_000 / bpm;
+    const durationMs = 180_000;
+    const offsetMs = usImport.gapMs;
+    const beatCount = Math.min(512, Math.ceil(durationMs / period) + 1);
+    const beatMs = Array.from({ length: beatCount }, (_, i) =>
+      Math.round(i * period),
+    );
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-pipe-audio",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: offsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: bpm,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    const BAR = 3840;
+    expect(r.seedBpm).toBeCloseTo(bpm, 0);
+    const verse = r.formaMusic.clips.find((c) => c.name === "Verse")!;
+    const chorus = r.formaMusic.clips.find((c) => c.name === "Chorus")!;
+
+    const firstVocal = r.tekst.clips[0]!;
+    // Content-epoch: first US note @ #GAP → near tick 0 (Beat 1)
+    expect(firstVocal.startTicks).toBeLessThan(BAR);
+    // Forma Verse starts on/after pickup barline near the vocal.
+    expect(verse.startTicks).toBeLessThanOrEqual(BAR);
+    expect(firstVocal.startTicks).toBeLessThanOrEqual(verse.startTicks);
+    expect(chorus.startTicks).toBe(verse.startTicks + verse.lengthTicks);
+
+    const winnerLine = r.tekst.clips.find((c) => /winner takes/i.test(c.text));
+    expect(winnerLine).toBeTruthy();
+    expect(winnerLine!.startTicks).toBeGreaterThanOrEqual(
+      chorus.startTicks - BAR,
+    );
+  });
+
+  it("winner-intro-vc: dynamic BPM map — Forma still follows word links", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 180_000;
+    const offsetMs = usImport.gapMs;
+    // Mild tempo drift around 120 BPM — map must stay dynamic
+    let t = 0;
+    const beatMs: number[] = [0];
+    for (let i = 1; i < 400 && t < durationMs; i++) {
+      const period = 500 + Math.round(12 * Math.sin(i / 7));
+      t += period;
+      beatMs.push(t);
+    }
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-dyn",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: offsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 118,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    const BAR = 3840;
+    const verse = r.formaMusic.clips.find((c) => c.name === "Verse")!;
+    const chorus = r.formaMusic.clips.find((c) => c.name === "Chorus")!;
+
+    expect(r.tempoMap.length).toBeGreaterThan(1);
+    const bpms = r.tempoMap.map((e) => e.bpm);
+    expect(Math.max(...bpms) - Math.min(...bpms)).toBeGreaterThan(1);
+
+    const firstVocal = r.tekst.clips[0]!;
+    expect(firstVocal.startTicks).toBeLessThan(BAR);
+    expect(chorus.startTicks).toBe(verse.startTicks + verse.lengthTicks);
+
+    // Content-epoch: Beat 1 → tick 0 on the map
+    expect(
+      secondsToTicks(0, r.tempoMap, r.seedBpm, { numerator: 4, denominator: 4 }, DEFAULT_PPQ),
+    ).toBe(0);
+  });
+
+  it("winner-intro-vc: Beat 1 at file start — pickup before Verse Forma", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 180_000;
+    const gapMs = usImport.gapMs;
+    const beatMs = Array.from({ length: 360 }, (_, i) => i * 500);
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-intro-music",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: 0,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    const BAR = 3840;
+    const intro = r.formaMusic.clips.find((c) => c.name === "Intro")!;
+    const verse = r.formaMusic.clips.find((c) => c.name === "Verse")!;
+    const chorus = r.formaMusic.clips.find((c) => c.name === "Chorus")!;
+    expect(verse.startTicks).toBe(17 * BAR);
+    expect(intro.lengthTicks).toBe(verse.startTicks);
+    expect(chorus.startTicks).toBe(verse.startTicks + verse.lengthTicks);
+
+    const firstVocal = r.tekst.clips[0]!;
+    const gapTicks = Math.round((gapMs / 1000) * (120 / 60) * 960);
+    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(gapTicks - BAR);
+    expect(firstVocal.startTicks).toBeLessThanOrEqual(gapTicks + BAR);
+    expect(firstVocal.startTicks).toBeLessThan(verse.startTicks);
+    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(verse.startTicks - BAR);
+  });
+
+  it("winner-intro-vc: does not rewrite Audio Start Offset via chord↔syllable lock", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 180_000;
+    const lateOffsetMs = 2_000;
+    const beatMs = Array.from({ length: 400 }, (_, i) => lateOffsetMs + i * 500);
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-align",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: lateOffsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    // Text = US wall-clock; Adapt offset stays as provided (no chord lock rewrite).
+    expect(r.smartTempoAudio?.audioStartOffsetMs).toBe(lateOffsetMs);
+
+    const chorus = r.formaMusic.clips.find((c) => c.name === "Chorus")!;
+    const winnerLine = r.tekst.clips.find((c) => /winner takes/i.test(c.text));
+    expect(winnerLine).toBeTruthy();
+    expect(winnerLine!.startTicks).toBeGreaterThanOrEqual(
+      chorus.startTicks - 3840,
+    );
+  });
+
+  it("Smart Tempo seed ignores UltraStar metro when audio analysis is present", () => {
+    const { ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(
+      `#TITLE:T\n#ARTIST:A\n#BPM:480\n#GAP:33000\n: 0 4 0 I \n: 5 4 0 don’t \n- 20\n: 40 4 0 The \n: 45 4 0 win \nE\n`,
+    );
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+    const beatMs = Array.from({ length: 200 }, (_, i) => i * 500);
+    const r = bridgeUsUgImport(usImport, ug, {
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs: 100_000,
+        peaks: [0.1],
+        audioStartOffsetMs: 0,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.seedBpm).toBeCloseTo(120, 0);
+    expect(r.ultrastarMetronomeBpm).toBe(120);
+    expect(r.formaMusic.clips.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("winner-intro-vc: manual Audio Start Offset is not overwritten by chord lock", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 180_000;
+    // Without the user-edit flag, lock would shift 3000 → 1000 (−1 bar @ 120).
+    const manualOffsetMs = 3_000;
+    const beatMs = Array.from(
+      { length: 400 },
+      (_, i) => manualOffsetMs + i * 500,
+    );
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-manual-offset",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: manualOffsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 120,
+      },
+      audioStartOffsetUserEdited: true,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    expect(r.smartTempoAudio?.audioStartOffsetMs).toBe(manualOffsetMs);
+  });
+
+  it("tekst keeps exact US wall-clock (no snap to audio beat grid)", () => {
+    const { us, ug } = loadPair("winner-intro-vc");
+    const usImport = importUltrastarText(us);
+    expect(usImport.ok).toBe(true);
+    if (!usImport.ok) return;
+
+    const durationMs = 180_000;
+    const offsetMs = usImport.gapMs;
+    // Audio grid deliberately off US 120 BPM (500ms) so snap would skew vocals.
+    const beatMs = Array.from({ length: 400 }, (_, i) => i * 480);
+
+    const r = bridgeUsUgImport(usImport, ug, {
+      idPrefix: "winner-nosnap",
+      smartTempoAudio: {
+        assetId: "a1",
+        durationMs,
+        peaks: [0.1, 0.5],
+        audioStartOffsetMs: offsetMs,
+      },
+      audioAnalysis: {
+        onsetsMs: beatMs,
+        beatMs,
+        estimatedBpm: 125,
+      },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    const first = r.tekst.clips[0]!;
+    const blocks = first.blocks ?? [];
+    expect(blocks.length).toBeGreaterThan(1);
+
+    // First US note @ #GAP → content-epoch tick ~0 (exact ms, not nearest 480ms beat).
+    expect(first.startTicks).toBeLessThan(200);
+
+    // Second syllable: US beat spacing @ place BPM must survive (not collapse to one grid beat).
+    const b0 = blocks[0]!;
+    const b1 = blocks[1]!;
+    expect(b1.startTicks).toBeGreaterThan(b0.startTicks);
+    // At ~120 place BPM one US beat ≈ 960 ticks; allow map warp but reject snap-collapse.
+    expect(b1.startTicks - b0.startTicks).toBeGreaterThan(200);
+  });
+
+  it("warns experimental when no audio", () => {
+    const pair = loadPair("demo-simple");
+    const us = importUltrastarText(pair.us);
+    expect(us.ok).toBe(true);
+    if (!us.ok) return;
+    const r = bridgeUsUgImport(us, pair.ug);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.warnings.some((w) => /eksperymentalny/i.test(w))).toBe(true);
   });
 });

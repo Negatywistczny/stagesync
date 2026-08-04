@@ -32,7 +32,12 @@ import { sendError } from "./routes/errors.js";
 import { createStores, type Stores } from "./storage/index.js";
 import { defaultDataDir, resolveDataPaths } from "./storage/paths.js";
 import { mountApkDownloads } from "./downloads.js";
-import { mountStaticWeb, resolveStaticDir } from "./static-web.js";
+import {
+  mountDevUiRedirect,
+  mountStaticWeb,
+  resolveDevUiOrigin,
+  resolveStaticDir,
+} from "./static-web.js";
 import { loadUiMeta, mountUiMetaRoutes } from "./ui-meta.js";
 import {
   createTransportEngine,
@@ -179,6 +184,10 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss: http: https:;",
+    );
     if (_req.method === "OPTIONS") {
       res.sendStatus(200);
       return;
@@ -278,6 +287,15 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
           ? ` console=${uiMeta.uiHashConsole.slice(0, 12)}…`
           : ""),
     );
+  } else {
+    const devUiOrigin = resolveDevUiOrigin();
+    if (devUiOrigin) {
+      mountDevUiRedirect(app);
+      logBuffer.push(
+        "info",
+        `dev UI redirect: loopback → ${devUiOrigin} (API-only on this port)`,
+      );
+    }
   }
 
   const midiStatus = midi.getStatus();

@@ -28,6 +28,102 @@ export type TempoMapProject = Pick<
 
 const DEFAULT_METER: TimeSignature = { numerator: 4, denominator: 4 };
 
+/** Dense-map fast path — ms from tick 0 at tempo/meter boundaries. */
+type IntegrationAnchor = { tick: number; ms: number };
+
+const INTEGRATION_PREFIX_MAX = 12;
+const integrationPrefixByKey = new Map<string, IntegrationAnchor[]>();
+
+function projectIntegrationKey(project: TempoMapProject): string {
+  const parts = [
+    String(project.defaultBpm),
+    String(project.ppq),
+    `${project.defaultMeter.numerator}/${project.defaultMeter.denominator}`,
+  ];
+  for (const e of project.tempoMap) parts.push(`${e.startTicks}:${e.bpm}`);
+  for (const e of project.meterMap) {
+    parts.push(`m${e.startTicks}:${e.numerator}/${e.denominator}`);
+  }
+  return parts.join("|");
+}
+
+function buildIntegrationAnchors(
+  project: TempoMapProject,
+): IntegrationAnchor[] {
+  const tickSet = new Set<number>([0]);
+  for (const ev of project.tempoMap) {
+    if (ev.startTicks >= 0) tickSet.add(ev.startTicks);
+  }
+  for (const ev of project.meterMap) {
+    if (ev.startTicks >= 0) tickSet.add(ev.startTicks);
+  }
+  const ticks = [...tickSet].sort((a, b) => a - b);
+  const anchors: IntegrationAnchor[] = [];
+  let ms = 0;
+  for (let i = 0; i < ticks.length; i++) {
+    const tick = ticks[i]!;
+    anchors.push({ tick, ms });
+    const next = ticks[i + 1];
+    if (next == null) break;
+    const bpm = resolveTempoAt(project, tick);
+    const meter = resolveMeterAt(project, tick);
+    ms += ticksToMs(next - tick, bpm, meter, project.ppq);
+  }
+  return anchors;
+}
+
+function integrationAnchors(project: TempoMapProject): IntegrationAnchor[] {
+  const key = projectIntegrationKey(project);
+  const hit = integrationPrefixByKey.get(key);
+  if (hit) return hit;
+  const built = buildIntegrationAnchors(project);
+  if (integrationPrefixByKey.size >= INTEGRATION_PREFIX_MAX) {
+    const oldest = integrationPrefixByKey.keys().next().value;
+    if (oldest !== undefined) integrationPrefixByKey.delete(oldest);
+  }
+  integrationPrefixByKey.set(key, built);
+  return built;
+}
+
+function msFromZeroToTick(toTicks: number, project: TempoMapProject): number {
+  if (toTicks === 0) return 0;
+  if (toTicks < 0) return -msFromZeroToTick(-toTicks, project);
+  const anchors = integrationAnchors(project);
+  let lo = 0;
+  let hi = anchors.length - 1;
+  let idx = 0;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const t = anchors[mid]?.tick ?? 0;
+    if (t <= toTicks) {
+      idx = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  const anchor = anchors[idx]!;
+  if (anchor.tick === toTicks) return anchor.ms;
+  const bpm = resolveTempoAt(project, anchor.tick);
+  const meter = resolveMeterAt(project, anchor.tick);
+  return (
+    anchor.ms +
+    ticksToMs(toTicks - anchor.tick, bpm, meter, project.ppq)
+  );
+}
+
+function ticksToMsAlongDenseMap(
+  fromTicks: number,
+  toTicks: number,
+  project: TempoMapProject,
+): number {
+  if (fromTicks === toTicks) return 0;
+  const sign = toTicks >= fromTicks ? 1 : -1;
+  const lo = Math.min(fromTicks, toTicks);
+  const hi = Math.max(fromTicks, toTicks);
+  return sign * (msFromZeroToTick(hi, project) - msFromZeroToTick(lo, project));
+}
+
 function asProject(
   tempoMap: readonly TempoMapEventLike[],
   defaultBpm: number,
@@ -83,6 +179,12 @@ export function ticksToMsAlongTempoMap(
     throw new RangeError("ticks must be finite");
   }
   if (fromTicks === toTicks) return 0;
+  if (
+    project.tempoMap.length > 24 ||
+    project.meterMap.length > 8
+  ) {
+    return ticksToMsAlongDenseMap(fromTicks, toTicks, project);
+  }
   const sign = toTicks >= fromTicks ? 1 : -1;
   const marks = boundariesBetween(fromTicks, toTicks, project);
   let ms = 0;

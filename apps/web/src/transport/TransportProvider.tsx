@@ -44,6 +44,7 @@ import {
   shouldAcceptServerTick,
   stageCueFromWs,
   toTransportAnchor,
+  transportLoopForSoftClock,
   transportWsUrl,
   upsertStageCue,
 } from "./transportReducer.js";
@@ -68,6 +69,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
   const tempoMapsRef = useRef<TempoMapProject | null>(null);
+  const loopRef = useRef(transportLoopForSoftClock(defaultTransportState().loop));
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
@@ -80,10 +82,16 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     roles: string[];
   } | null>(null);
 
+  const fallbackIntervalRef = useRef<number | null>(null);
+
   const stopRaf = useCallback(() => {
     if (rafIdRef.current !== 0) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = 0;
+    }
+    if (fallbackIntervalRef.current !== null) {
+      clearInterval(fallbackIntervalRef.current);
+      fallbackIntervalRef.current = null;
     }
   }, []);
 
@@ -102,12 +110,20 @@ export function TransportProvider({ children }: { children: ReactNode }) {
       if (serverTimeMs !== undefined) {
         lastServerTimeMsRef.current = serverTimeMs;
       }
+      const softLoop = transportLoopForSoftClock(next.loop);
+      loopRef.current = softLoop;
       const anchor = toTransportAnchor(next, tempoMapsRef.current);
       anchorRef.current = anchor;
       receiptMsRef.current = receiptMs;
+      const isStartOrSeek =
+        !playingRef.current ||
+        !next.playing ||
+        Math.abs(anchor.positionTicks - anchorRef.current.positionTicks) > 100;
       playingRef.current = next.playing;
       setState(next);
-      commitDisplayTicks(anchor.positionTicks);
+      if (isStartOrSeek) {
+        commitDisplayTicks(anchor.positionTicks);
+      }
     },
     [commitDisplayTicks],
   );
@@ -117,22 +133,34 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
     // Equality bail when integer ticks unchanged; opt-in probe: ?ss_perf=h01
     // (docs/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
+    const tick = (timeMs: number) => {
+      if (!playingRef.current) return;
+      const next = getDisplayTicks(
+        anchorRef.current,
+        timeMs,
+        receiptMsRef.current,
+        true,
+        loopRef.current,
+      );
+      const committed = commitDisplayTicks(next);
+      noteH01Raf(next, committed);
+    };
+
     const loop = (frameTime: number) => {
       if (!playingRef.current) {
         rafIdRef.current = 0;
         return;
       }
-      const next = getDisplayTicks(
-        anchorRef.current,
-        frameTime,
-        receiptMsRef.current,
-        true,
-      );
-      const committed = commitDisplayTicks(next);
-      noteH01Raf(next, committed);
+      tick(frameTime);
       rafIdRef.current = requestAnimationFrame(loop);
     };
     rafIdRef.current = requestAnimationFrame(loop);
+
+    fallbackIntervalRef.current = window.setInterval(() => {
+      if (playingRef.current) {
+        tick(performance.now());
+      }
+    }, 200);
   }, [commitDisplayTicks, stopRaf]);
 
   const sendHello = useCallback(() => {

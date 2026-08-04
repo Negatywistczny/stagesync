@@ -350,6 +350,38 @@ E
   it("rejects empty input", () => {
     expect(importUltrastarText("").ok).toBe(false);
   });
+
+  it("parses #MP3 and #VIDEO headers", () => {
+    const src = `#TITLE:Video
+#ARTIST:Band
+#BPM:400
+#GAP:0
+#MP3:song.mp3
+#VIDEO:https://www.youtube.com/watch?v=dQw4w9WgXcQ
+: 0 4 0 Hi 
+E
+`;
+    const r = importUltrastarText(src);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.mp3Hint).toBe("song.mp3");
+    expect(r.videoUrl).toContain("youtube.com");
+    expect(r.youtubeVideoId).toBe("dQw4w9WgXcQ");
+  });
+
+  it("parses bare YouTube id in #VIDEO", () => {
+    const src = `#TITLE:X
+#BPM:400
+#GAP:0
+#VIDEO:dQw4w9WgXcQ
+: 0 4 0 Hi 
+E
+`;
+    const r = importUltrastarText(src);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.youtubeVideoId).toBe("dQw4w9WgXcQ");
+  });
 });
 
 describe("applyUltrastarImportToProject", () => {
@@ -412,7 +444,7 @@ describe("wall-clock + editorial grid BPM", () => {
   });
 
   it("suggestGridBpmFromPipeAndFirstVocal locks pipe + pickup to first vocal", () => {
-    // 16 bars + 0.5 pickup @ 33s → 120 BPM
+    // 16 bars + 0.5 pickup @ 33s → 120 BPM (Beat 1 at file 0)
     expect(
       suggestGridBpmFromPipeAndFirstVocal({
         pipeBarCount: 16,
@@ -425,6 +457,33 @@ describe("wall-clock + editorial grid BPM", () => {
         firstVocalMs: 33000,
       }),
     ).toBeNull();
+  });
+
+  it("suggestGridBpmFromPipeAndFirstVocal is content-relative to Beat 1", () => {
+    // SingStar-style GAP 35140 with Beat 1 @ 2140 → same 16.5 bars @ 120
+    expect(
+      suggestGridBpmFromPipeAndFirstVocal({
+        pipeBarCount: 16,
+        firstVocalMs: 35140,
+        beat1Ms: 2140,
+      }),
+    ).toBe(120);
+    // Absolute GAP without Beat 1 underestimates (~113) — callers must pass beat1
+    expect(
+      suggestGridBpmFromPipeAndFirstVocal({
+        pipeBarCount: 16,
+        firstVocalMs: 35140,
+        beat1Ms: 0,
+      }),
+    ).toBeCloseTo(112.69, 1);
+    // trimIn ~3014 → ~123 (Logic Adapt band)
+    expect(
+      suggestGridBpmFromPipeAndFirstVocal({
+        pipeBarCount: 16,
+        firstVocalMs: 35140,
+        beat1Ms: 3014,
+      }),
+    ).toBeCloseTo(123.3, 0);
   });
 
   it("gridBpm override keeps wall-clock onsets (no beat-lock drift)", () => {

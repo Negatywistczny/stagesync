@@ -279,7 +279,7 @@ function collectLegacyAudioFileNames(song: LegacySong): string[] {
   const out: string[] = [];
   const push = (raw: unknown) => {
     const s = basenameOnly(asString(raw));
-    if (!s) return;
+    if (!s || s.startsWith("._")) return;
     if (!AUDIO_EXT.has(extOf(s))) return;
     if (!out.includes(s)) out.push(s);
   };

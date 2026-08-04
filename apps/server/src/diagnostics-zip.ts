@@ -191,7 +191,11 @@ export function parseZipArchive(buf: Buffer): ZipEntry[] {
     ) {
       throw new Error(`Niedozwolona ścieżka w ZIP: ${name}`);
     }
-    if (name.startsWith("__MACOSX/") || /(^|\/)\.DS_Store$/i.test(name)) {
+    if (
+      name.startsWith("__MACOSX/") ||
+      /(^|\/)\.DS_Store$/i.test(name) ||
+      /(^|\/)\._/i.test(name)
+    ) {
       continue;
     }
     if (method !== 0 && method !== 8) {

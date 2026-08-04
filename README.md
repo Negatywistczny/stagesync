@@ -67,6 +67,8 @@ pnpm install
 pnpm dev
 ```
 
+Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/INSTALL.md](docs/INSTALL.md).
+
 > 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📦 Monorepo
@@ -93,7 +95,7 @@ pnpm dev
 | 🔌 **[docs/api](docs/api/)** | Specyfikacja powierzchni REST API i punktów końcowych |
 | 💡 **[ADR](docs/adr/)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
 | 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
-| 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań (`5.3` Colors & Channels, …) |
+| 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań (`5.4` Syllables, …) |
 | 🎨 **[UI](docs/ui/README.md)** | Przewodnik po Design Systemie i tokenach CSS |
 | 🔒 **[SECURITY](SECURITY.md)** | Polityka bezpieczeństwa i zgłaszanie podatności |
 | 🤝 **[CONTRIBUTING](CONTRIBUTING.md)** | Standardy commitów, obsługa PR-ów i praca na gałęziach |

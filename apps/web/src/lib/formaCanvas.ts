@@ -343,8 +343,38 @@ export function snapEditTicks(
     return atTicks < floor ? floor : atTicks;
   }
 
-  // Forma / bar mode: musical barlines via meterMap (v4 snapAbsToBarStart),
-  // not floorDiv on a single resolveMeterAt length (breaks after mid-song meter change).
+  if (mode === "bar") {
+    return snapToMusicalBarStart(project, atTicks, floor);
+  }
+
+  const meter = resolveMeterAt(project, atTicks);
+  return quantizeTicks(atTicks, mode, {
+    meter,
+    ppq: project.ppq,
+    contentFloorTicks: floor,
+    defaultMeter: project.defaultMeter,
+    meterMap: project.meterMap,
+  });
+}
+
+/**
+ * Snap locator / playhead position (allows Countdown pre-roll down to cd.startTicks).
+ */
+export function snapLocatorTicks(
+  project: Project,
+  atTicks: number,
+  mode: SnapMode = DEFAULT_SNAP_MODE,
+): number {
+  const cdClip = project.forma?.clips?.find((c) => c.kind === "countdown");
+  const floor =
+    cdClip != null && Number.isFinite(cdClip.startTicks) && cdClip.startTicks < 0
+      ? cdClip.startTicks
+      : 0;
+
+  if (mode === "off") {
+    return atTicks < floor ? floor : atTicks;
+  }
+
   if (mode === "bar") {
     return snapToMusicalBarStart(project, atTicks, floor);
   }
@@ -364,11 +394,33 @@ export function snapEditTicks(
  * Pre-roll (< 0) clamps to content floor like v4 `Math.max(0, …)`.
  */
 function snapToMusicalBarStart(
-  project: MeterMapProject,
+  project: MeterMapProject & { forma?: { clips: FormaClip[] } },
   atTicks: number,
   floor: number,
 ): number {
-  const t = Math.max(0, atTicks);
+  const cdClip = project.forma?.clips.find((c) => c.kind === "countdown");
+  const minFloor = cdClip != null && cdClip.startTicks < 0 ? cdClip.startTicks : 0;
+  if (atTicks < 0) {
+    const bars = iterPreRollBarBoundariesTicks(project, minFloor, 0);
+    if (bars.length === 0) return Math.max(minFloor, atTicks);
+    let best = bars[0]!.startTicks;
+    let minDiff = Math.abs(atTicks - best);
+    for (const b of bars) {
+      const dStart = Math.abs(atTicks - b.startTicks);
+      if (dStart < minDiff) {
+        minDiff = dStart;
+        best = b.startTicks;
+      }
+      const dEnd = Math.abs(atTicks - b.endTicks);
+      if (dEnd < minDiff) {
+        minDiff = dEnd;
+        best = b.endTicks;
+      }
+    }
+    return Math.max(minFloor, best);
+  }
+
+  const t = atTicks;
   const meterHere = meterAtTicks(project, t);
   let searchEnd = Math.max(
     t + 1,

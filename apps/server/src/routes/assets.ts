@@ -92,6 +92,11 @@ export function createAssetsRouter(stores: Stores): Router {
         return;
       }
       const originalName = file.originalname || "audio.bin";
+      const baseName = originalName.split("/").pop() ?? originalName;
+      if (baseName.startsWith("._") || originalName.includes("__MACOSX/")) {
+        sendError(res, 400, "Ignored macOS metadata file (AppleDouble)");
+        return;
+      }
       const ext = extFromName(originalName);
       const isMusicXml = MUSICXML_EXT.has(ext);
       const isAudio = AUDIO_EXT.has(ext);

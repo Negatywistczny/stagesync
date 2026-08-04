@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** cut **`5.4.1`** (Syllables patch) — Import US+UG oznaczony jako **eksperymentalny**; następny patch **5.4.2**: **Smart Tempo z audio**. Potem fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
+**Stan:** cut **`5.4.2`** (Smart Tempo) — Import US+UG **stable** (etykieta eksperymentalny usunięta); następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -10,11 +10,11 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** — patch **5.4.2** = Smart Tempo.
+**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** zamknięta — patch **5.4.2** = Smart Tempo wydane.
 
-## Must (najbliższy patch 5.4.2)
+## Must (najbliższy cut 5.5 Pitch & FX)
 
-- [ ] **Smart Tempo (audio → TempoMap):** mapa tempa / wyrównanie do MP3 z analizy podkładu (kierunek Logic Smart Tempo), nie z niedokładnych timingów sylab UltraStar; Import US+UG przestaje być autorem „protezy” TempoMap — US = treść + orientacja, audio = SSOT wall-clock↔takt. Import US+UG pozostaje **eksperymentalny** do domknięcia tej pozycji.
+- [ ] **5.5 — Pitch & FX:** Track Pitch Shift + expanded busses / send-return FX (WebAudio; bez VST in-process) — [ADR 0018](./adr/0018-future-audio-architecture.md); scope report przed kodem hero
 
 ## Must (operator residual)
 

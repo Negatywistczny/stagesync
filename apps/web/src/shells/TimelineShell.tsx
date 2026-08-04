@@ -30,15 +30,16 @@ import {
   resolveTrackColor,
   channelModeFromChannelCount,
   isHwOutRepatchBlockedWhilePlaying,
+  wrapDisplayTicks,
   type FormaClip,
   type Project,
-  type TextAnchorBridgeOk,
   type UgImportOk,
   type UgTabMetadata,
   type UltrastarImportOk,
   type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
+import { yieldToUi } from "../lib/audioTempoAnalysis.js";
 import {
   buildBarMarks,
   buildRulerBeatMarks,
@@ -50,6 +51,7 @@ import {
   projectContentEqual,
   scrollCanvasToStart,
   snapEditTicks,
+  snapLocatorTicks,
   tickToPx,
   ticksFromPointer,
 } from "../lib/formaCanvas.js";
@@ -223,6 +225,7 @@ import {
 } from "../lib/draftHistory.js";
 import {
   advanceMetronomeClicks,
+  cancelScheduledMetronomeClicks,
   getMetronomeAudioContext,
   metronomeBeatIndex,
   resumeMetronomeAudio,
@@ -454,7 +457,7 @@ import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { UgImportForm } from "./UgImportForm.js";
 import { UltrastarImportForm } from "./UltrastarImportForm.js";
-import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
+import { CombinedUsUgImportForm, type UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
 import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
 import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
@@ -1552,6 +1555,10 @@ export function TimelineShell() {
       if (isEditableKeyboardTarget(e.target)) {
         return;
       }
+      // Import overlays own Space & shortcuts — don't drive Timeline transport.
+      if (combinedImportModalOpen || ugModalOpen || ultrastarModalOpen) {
+        return;
+      }
       const h = keyHandlersRef.current;
       const action = resolveTimelineShortcut({
         key: e.key,
@@ -1790,6 +1797,7 @@ export function TimelineShell() {
     clearMapSelection,
     closeContextMenu,
     closeMobileInspector,
+    combinedImportModalOpen,
     commitDraft,
     copyClipSelection,
     cutClipSelection,
@@ -1808,6 +1816,8 @@ export function TimelineShell() {
     toggleInspectorPanel,
     toolMenu,
     toolsVisOpen,
+    ugModalOpen,
+    ultrastarModalOpen,
   ]);
 
   useEffect(() => {
@@ -2163,11 +2173,9 @@ export function TimelineShell() {
 
   useEffect(() => {
     if (!metronomeOn || !state.playing) {
-      metroBeatRef.current = metronomeBeatIndex(
-        displayTicks,
-        state.timeSignature,
-        state.ppq,
-      );
+      cancelScheduledMetronomeClicks();
+      metroBeatRef.current =
+        metronomeBeatIndex(displayTicks, meterAtPlayhead, state.ppq) - 1;
       return;
     }
     metroBeatRef.current = advanceMetronomeClicks(
@@ -2175,19 +2183,29 @@ export function TimelineShell() {
         enabled: metronomeOn,
         playing: state.playing,
         displayTicks,
-        bpm: state.bpm,
-        timeSignature: state.timeSignature,
+        bpm: tempoAtPlayhead,
+        timeSignature: meterAtPlayhead,
         ppq: state.ppq,
+        tempoMaps: draftProject
+          ? {
+              defaultBpm: draftProject.defaultBpm,
+              defaultMeter: draftProject.defaultMeter,
+              tempoMap: draftProject.tempoMap,
+              meterMap: draftProject.meterMap,
+              ppq: draftProject.ppq,
+            }
+          : null,
       },
       metroBeatRef.current,
     );
   }, [
     displayTicks,
+    draftProject,
     metronomeOn,
-    state.bpm,
+    meterAtPlayhead,
     state.playing,
     state.ppq,
-    state.timeSignature,
+    tempoAtPlayhead,
   ]);
 
   // Soft-clock AlongMap — same TempoMap math as server engine / audio (P3).
@@ -2208,6 +2226,9 @@ export function TimelineShell() {
 
   // WebAudio clip playback — sync to server ticks (ADR 0008 / 0002).
   // Latency compensation is a client-only tick offset (Preferences); SSOT unchanged.
+  // Soft-clock + lead must stay inside the transport loop (exclusive end) so a
+  // clip starting on the loop end (e.g. bar 2.1 while cycling bar 1) never
+  // arms early at the wrap boundary.
   useEffect(() => {
     if (!projectId || !draftProject) {
       stopAudioPlayback();
@@ -2219,9 +2240,15 @@ export function TimelineShell() {
       stopAudioPlayback();
       return;
     }
-    const audioTicks =
-      displayTicks +
-      ticksFromSyncLeadAlongMap(latencyCompMs, displayTicks, draftProject);
+    let audioTicks = displayTicks;
+    const loopRange = usableLoopRange(state.loop);
+    if (loopOn && loopRange) {
+      audioTicks = wrapDisplayTicks(audioTicks, {
+        enabled: true,
+        startTicks: loopRange.startTicks,
+        endTicks: loopRange.endTicks,
+      });
+    }
     syncAudioPlayback(projectId, {
       project: draftProject,
       playing: state.playing,
@@ -2237,6 +2264,7 @@ export function TimelineShell() {
     displayTicks,
     state.bpm,
     state.ppq,
+    state.loop,
     latencyCompMs,
     loopOn,
     soloAudioTrackIds,
@@ -2272,7 +2300,11 @@ export function TimelineShell() {
       let changed = false;
       for (const asset of missing) {
         if (cancelled) return;
-        const buf = await loadAudioBuffer(projectId, asset.id);
+        // Waveform meta only — do not pin full PCM into the playback cache
+        // (eager decode of every asset used to retain multi-GB of AudioBuffers).
+        const buf = await loadAudioBuffer(projectId, asset.id, undefined, {
+          cache: false,
+        });
         if (cancelled) return;
         setFailedAudioAssetIds(getFailedAudioAssetIds(projectId));
         if (!buf) continue;
@@ -2455,9 +2487,7 @@ export function TimelineShell() {
       restartAudioPlayback(projectId, {
         project: draftProject,
         playing: true,
-        displayTicks:
-          locatorTicks +
-          ticksFromSyncLeadAlongMap(latencyCompMs, locatorTicks, draftProject),
+        displayTicks: locatorTicks,
         soloTrackIds: soloAudioTrackIds,
         soloBusIds,
       });
@@ -2647,21 +2677,48 @@ export function TimelineShell() {
     setSongMetaOpen(false);
   }
 
-  async function onImportUsUgBridge(result: TextAnchorBridgeOk) {
+  async function onImportUsUgBridge(payload: UsUgApplyPayload) {
+    const result = payload.bridge;
+    const smartAudio = payload.smartTempoAudio;
+    const pendingFile = payload.pendingAudioFile;
     const warn =
       result.approximate || result.warnings.length > 0
         ? " · sprawdź Formę / akordy"
         : "";
     const summary = `${result.sections.length} sekcji · ${result.akordy.clips.length} akordów · dopasowanie ${Math.round(result.alignScore * 100)}%${warn}`;
+    setImportApplying(true);
+    await yieldToUi();
     if (importAsNewSong) {
-      setImportApplying(true);
       try {
         const name =
           result.title?.trim() ||
           `Import US+UG ${new Date().toLocaleTimeString("pl")}`;
-        const saved = await createSongWithContent(name, (shell) =>
-          applyUsUgBridgeToProject(shell, result),
+        let saved = await createSongWithContent(name, (shell) =>
+          applyUsUgBridgeToProject(shell, result, {
+            // Place clip only after real upload (skip synthetic local-* ids).
+            smartTempoAudio: pendingFile ? undefined : smartAudio,
+          }),
         );
+        if (pendingFile && saved.id) {
+          saved = await uploadProjectAudio(saved.id, pendingFile, {
+            startTicks: 0,
+          });
+          const asset = saved.assets.at(-1);
+          if (asset && smartAudio) {
+            const withClip = applyUsUgBridgeToProject(saved, result, {
+              smartTempoAudio: {
+                ...smartAudio,
+                assetId: asset.id,
+              },
+            });
+            saved = await putProject(saved.id, {
+              ...withClip,
+              id: saved.id,
+              updatedAt: saved.updatedAt,
+              midiProgramId: saved.midiProgramId,
+            });
+          }
+        }
         closeImportModals();
         setSongScreenOpen(false);
         setSongMetaOpen(false);
@@ -2678,9 +2735,36 @@ export function TimelineShell() {
       return;
     }
     if (!draftProject) return;
-    const next = applyUsUgBridgeToProject(draftProject, result);
+    const baseDraft = payload.serverProjectSnapshot
+      ? {
+          ...draftProject,
+          updatedAt: payload.serverProjectSnapshot.updatedAt,
+          assets: payload.serverProjectSnapshot.assets,
+          audioTracks: payload.serverProjectSnapshot.audioTracks,
+          audioClips: payload.serverProjectSnapshot.audioClips,
+        }
+      : draftProject;
+    let next = applyUsUgBridgeToProject(baseDraft, result, {
+      smartTempoAudio: smartAudio,
+    });
+    if (pendingFile && projectId) {
+      next = await uploadProjectAudio(projectId, pendingFile, { startTicks: 0 });
+      const asset = next.assets.at(-1);
+      if (asset && smartAudio) {
+        next = applyUsUgBridgeToProject(next, result, {
+          smartTempoAudio: { ...smartAudio, assetId: asset.id },
+        });
+      }
+    }
+    if (projectId) {
+      try {
+        next = await putProject(projectId, next);
+      } catch (err) {
+        console.warn("[TimelineShell] Auto-save on import failed, keeping draft:", err);
+      }
+    }
     commitDraft(next);
-    flashCanvasNotice(`Import US+UG: ${summary} — Zapisz (⌘S)`);
+    flashCanvasNotice(`Import US+UG: ${summary}`);
     closeImportModals();
     setSongScreenOpen(false);
     setSongMetaOpen(false);
@@ -2717,6 +2801,17 @@ export function TimelineShell() {
     if (!session || !draft) return;
     const lane = session.lane ?? "forma";
     if (isAudioLaneId(lane)) {
+      let targetAudioLane: AudioLaneId | undefined = undefined;
+      if (typeof window !== "undefined" && clientX != null && clientY != null) {
+        const elem = document.elementFromPoint(clientX, clientY);
+        const laneElem = elem?.closest("[data-audio-lane]");
+        if (laneElem) {
+          const laneId = laneElem.getAttribute("data-audio-lane");
+          if (laneId && isAudioLaneId(laneId)) {
+            targetAudioLane = laneId as AudioLaneId;
+          }
+        }
+      }
       const preview = previewAudioFromSession(
         draft,
         session,
@@ -2724,6 +2819,7 @@ export function TimelineShell() {
         metaKey,
         ctrlKey,
         clientY,
+        targetAudioLane,
       );
       gesturePreviewRef.current = preview;
       setGesturePreview(preview);
@@ -2809,28 +2905,34 @@ export function TimelineShell() {
     }
 
     if (isAudioLaneId(lane)) {
+      const destLane = (
+        preview.targetLane && isAudioLaneId(preview.targetLane)
+          ? preview.targetLane
+          : lane
+      ) as AudioLaneId;
       const next = commitAudioGesture(
         draft,
-        lane,
+        lane as AudioLaneId,
         session,
         preview,
         metaKey,
         ctrlKey,
+        destLane,
       );
       commitDraft(next);
       if (session.kind === "move" && session.moveIds?.length) {
         setClipSelection((prev) =>
           setSelection(
             [
-              ...prev.items.filter((i) => i.lane !== lane),
-              ...session.moveIds!.map((id) => ({ id, lane })),
+              ...prev.items.filter((i) => i.lane !== lane && i.lane !== destLane),
+              ...session.moveIds!.map((id) => ({ id, lane: destLane })),
             ],
             session.clipId,
           ),
         );
         return;
       }
-      if (session.clipId) selectLaneClip(lane, session.clipId);
+      if (session.clipId) selectLaneClip(destLane, session.clipId);
       return;
     }
 
@@ -2941,7 +3043,7 @@ export function TimelineShell() {
       if (!gestureSessionRef.current) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX);
+      updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX, e.clientY);
     }
 
     function onUp(e: PointerEvent) {
@@ -3902,7 +4004,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
   ) {
     if (!draftRef.current) return;
     const mode = mapSnapMode(opts?.metaKey ?? false, opts?.ctrlKey ?? false);
-    const snapped = snapEditTicks(draftRef.current, ticks, mode);
+    const snapped = snapLocatorTicks(draftRef.current, ticks, mode);
     setLocatorTicks(snapped);
     if (opts?.seekTransport !== false) {
       void seek(snapped);
@@ -4784,23 +4886,35 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         trackId,
         startTicks: opts?.startTicks,
       });
-      // Prefer the uploaded clip on the chosen track when server put it on track 0
-      let project = next;
+      // Merge any client-side audio tracks that might not be on server yet
+      const mergedTracks = [...next.audioTracks];
+      for (const dt of draftProject.audioTracks) {
+        if (!mergedTracks.some((t) => t.id === dt.id)) {
+          mergedTracks.push(dt);
+        }
+      }
+      let project = { ...next, audioTracks: mergedTracks };
       let targetTrackId = trackId;
       let lastClipId: string | null = null;
-      if (trackId && next.audioClips.length) {
-        const last = next.audioClips[next.audioClips.length - 1]!;
-        lastClipId = last.id;
-        if (last.trackId !== trackId) {
+      if (next.assets.length && next.audioClips.length) {
+        const uploadedAsset = next.assets
+          .filter((a) => a.kind === "audio")
+          .at(-1);
+        const uploadedClip = uploadedAsset
+          ? next.audioClips.find((c) => c.assetId === uploadedAsset.id) ??
+            next.audioClips[next.audioClips.length - 1]!
+          : next.audioClips[next.audioClips.length - 1]!;
+        lastClipId = uploadedClip.id;
+        if (trackId && uploadedClip.trackId !== trackId) {
           project = {
-            ...next,
-            audioClips: next.audioClips.map((c) =>
-              c.id === last.id ? { ...c, trackId } : c,
+            ...project,
+            audioClips: project.audioClips.map((c) =>
+              c.id === uploadedClip.id ? { ...c, trackId } : c,
             ),
           };
         }
-        targetTrackId = trackId || last.trackId;
-        const buf = await loadAudioBuffer(projectId, last.assetId);
+        targetTrackId = trackId || uploadedClip.trackId;
+        const buf = await loadAudioBuffer(projectId, uploadedClip.assetId);
         if (buf) {
           project = setAudioTrackChannelMode(
             project,
@@ -4823,7 +4937,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           project = placeImportedAudioClipAt(
             project,
             lastClipId,
-            last.startTicks,
+            uploadedClip.startTicks,
             { durationMs: buf.duration * 1000 },
           );
         }
@@ -5569,39 +5683,58 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       const trackColor = resolveTrackColor(
         draftProject.audioTracks.find((t) => t.id === trackUuid)?.color,
       );
+
+      const isAudioMoving =
+        gestureSession?.kind === "move" && isAudioLaneId(gestureSession.lane ?? "");
+      const sourceAudioLane = isAudioMoving ? (gestureSession!.lane as AudioLaneId) : null;
+      const targetAudioLane = isAudioMoving
+        ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ?? sourceAudioLane)
+        : null;
+      const moveIds = isAudioMoving
+        ? gestureSession!.moveIds?.length
+          ? gestureSession!.moveIds
+          : gestureSession!.clipId
+            ? [gestureSession!.clipId]
+            : []
+        : [];
+      const moveDelta =
+        gesturePreview && isAudioMoving
+          ? gesturePreview.startTicks - gestureSession!.originClipStart
+          : 0;
+
+      const isTargetLane = isAudioMoving && targetAudioLane === lane && targetAudioLane !== sourceAudioLane;
+      const ghostClips = isTargetLane
+        ? moveIds
+            .map((id) => draftProject.audioClips.find((c) => c.id === id))
+            .filter(Boolean)
+        : [];
+
       return (
         <>
           {clips.map((clip) => {
             const asset = assetById.get(clip.assetId);
-            const moveIds =
-              gestureSession?.kind === "move" && gestureSession.lane === lane
-                ? gestureSession.moveIds?.length
-                  ? gestureSession.moveIds
-                  : gestureSession.clipId
-                    ? [gestureSession.clipId]
-                    : []
-                : [];
-            const moveDelta =
-              gesturePreview &&
-              gestureSession?.kind === "move" &&
-              moveIds.includes(clip.id)
-                ? gesturePreview.startTicks - gestureSession.originClipStart
-                : 0;
+            const isBeingMoved = isAudioMoving && moveIds.includes(clip.id);
+            const isSourceLane = isAudioMoving && sourceAudioLane === lane;
+
             const previewing =
               Boolean(gesturePreview) &&
-              gestureSession?.lane === lane &&
-              ((gestureSession.kind === "move" && moveIds.includes(clip.id)) ||
-                (gesturePreview!.clipId === clip.id &&
+              ((isSourceLane && isBeingMoved) ||
+                (gestureSession?.lane === lane &&
+                  gesturePreview!.clipId === clip.id &&
                   gesturePreview!.kind !== "move"));
+
             const styleClip: FormaClip = {
               id: clip.id,
               name: asset?.originalName ?? "Audio",
               kind: "section",
-              startTicks: previewing
-                ? gestureSession?.kind === "move"
-                  ? clip.startTicks + moveDelta
-                  : gesturePreview!.startTicks
-                : clip.startTicks,
+              startTicks:
+                previewing && isSourceLane && isBeingMoved
+                  ? targetAudioLane === sourceAudioLane
+                    ? clip.startTicks + moveDelta
+                    : clip.startTicks
+                  : previewing
+                    ? gesturePreview!.startTicks
+                    : clip.startTicks,
               lengthTicks: previewing
                 ? gestureSession?.kind === "move"
                   ? clip.lengthTicks
@@ -5672,6 +5805,71 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   />
                 ) : null}
                 {(clip.fadeOutMs ?? 0) > 0 ? (
+                  <span
+                    className={styles.audioFadeOut}
+                    style={{
+                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
+                    }}
+                  />
+                ) : null}
+                {poly ? (
+                  <svg
+                    className={styles.audioWaveform}
+                    viewBox={`0 0 ${Math.max(8, widthPx)} 28`}
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <polygon points={poly} />
+                  </svg>
+                ) : null}
+                <span className={styles.audioClipLabel}>
+                  {asset?.originalName ?? "Audio"}
+                </span>
+              </button>
+            );
+          })}
+
+          {ghostClips.map((ghostClip) => {
+            if (!ghostClip) return null;
+            const asset = assetById.get(ghostClip.assetId);
+            const styleClip: FormaClip = {
+              id: `ghost-${ghostClip.id}`,
+              name: asset?.originalName ?? "Audio",
+              kind: "section",
+              startTicks: ghostClip.startTicks + moveDelta,
+              lengthTicks: ghostClip.lengthTicks,
+            };
+            const style = clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH);
+            const widthPx = Number.parseFloat(String(style.width)) || 0;
+            const peaks = asset?.waveformPeaks;
+            const poly =
+              peaks && peaks.length
+                ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
+                : "";
+            return (
+              <button
+                key={`ghost-${ghostClip.id}`}
+                type="button"
+                className={[
+                  styles.clip,
+                  styles.audioClip,
+                  styles.formaClipDim,
+                ].join(" ")}
+                style={{
+                  ...style,
+                  ["--tl-track-color" as string]: trackColor,
+                }}
+                disabled
+              >
+                {(ghostClip.fadeInMs ?? 0) > 0 ? (
+                  <span
+                    className={styles.audioFadeIn}
+                    style={{
+                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
+                    }}
+                  />
+                ) : null}
+                {(ghostClip.fadeOutMs ?? 0) > 0 ? (
                   <span
                     className={styles.audioFadeOut}
                     style={{
@@ -6746,6 +6944,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ) : null}
                     </div>
                     <div
+                      data-audio-lane={isAudioLaneId(track.id) ? track.id : undefined}
                       onPointerDown={
                         track.id === "forma"
                           ? onFormaLanePointerDown
@@ -7313,7 +7512,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       variant="primary"
                       onClick={() => openImportUsUg(false)}
                     >
-                      Import US+UG (eksperymentalny)
+                      Import US+UG
                     </Button>
                     <Button
                       type="button"
@@ -8460,7 +8659,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   variant="primary"
                   onClick={() => openImportUsUg(true)}
                 >
-                  Import US+UG (eksperymentalny)
+                  Import US+UG
                 </Button>
                 <Button
                   variant="secondary"
@@ -8589,25 +8788,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             aria-label="Zamknij"
             onClick={closeImportModals}
           />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="us-ug-import-title">
-                {importAsNewSong
-                  ? "Import US+UG (eksperymentalny) — nowy utwór"
-                  : "Import US+UG (eksperymentalny)"}
-              </h2>
+          <div
+            className={[styles.overlayPanel, styles.usUgOverlayPanel]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            <div className={styles.usUgOverlayHead}>
+              <h2 id="us-ug-import-title">Import US+UG</h2>
               <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
               </ShellIconButton>
             </div>
-            <div className={styles.overlayBody}>
+            <div className={styles.usUgOverlayBody}>
               <CombinedUsUgImportForm
-                applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do draftu"
-                }
+                applyLabel="Importuj do projektu"
                 applying={importApplying}
+                projectId={importAsNewSong ? undefined : projectId ?? undefined}
                 importOptions={importPreviewOptions}
                 initialTitle={
                   importAsNewSong ? undefined : draftProject?.name

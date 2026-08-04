@@ -2,12 +2,37 @@
  * Managed .env settings for Admin Ustawienia (v4 Server Settings parity, v5 keys).
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { REPO_ROOT } from "./storage/paths.js";
 import { validateHostDisplayName } from "./network-info.js";
 
-export const ENV_PATH = join(REPO_ROOT, ".env");
+/** Dev / compose bootstrap file at monorepo (or image) root. */
+export const REPO_ENV_PATH = join(REPO_ROOT, ".env");
+
+/**
+ * Writable path for Admin / Import USDB managed settings.
+ *
+ * When `STAGESYNC_DATA_DIR` is set (Desktop launcher, Docker), persist under
+ * `{dataDir}/host/.env` — never under a read-only install tree (e.g. Windows
+ * `Program Files\\…\\resources`). Otherwise fall back to repo-root `.env`.
+ */
+export function resolveEnvPath(): string {
+  const fromEnv = process.env.STAGESYNC_DATA_DIR?.trim();
+  if (fromEnv) {
+    const dataDir = isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv);
+    return join(dataDir, "host", ".env");
+  }
+  return REPO_ENV_PATH;
+}
+
+/** @deprecated Prefer `resolveEnvPath()` — path depends on `STAGESYNC_DATA_DIR`. */
+export const ENV_PATH = REPO_ENV_PATH;
 
 export type SettingType = "string" | "number" | "boolean" | "enum";
 
@@ -259,7 +284,7 @@ function toFormValue(
   return String(storedValue);
 }
 
-export function loadDotenvIntoProcess(envPath = ENV_PATH): void {
+function applyEnvFile(envPath: string): void {
   if (!existsSync(envPath)) return;
   const parsed = parseEnvContent(readFileSync(envPath, "utf8"));
   for (const [key, value] of Object.entries(parsed)) {
@@ -269,7 +294,25 @@ export function loadDotenvIntoProcess(envPath = ENV_PATH): void {
   }
 }
 
-export function readManagedSettings(envPath = ENV_PATH): {
+/**
+ * Load dotenv into `process.env` (unset keys only).
+ *
+ * Without an explicit path: load repo-root `.env` first (may define
+ * `STAGESYNC_DATA_DIR`), then `{dataDir}/host/.env` when that path differs.
+ */
+export function loadDotenvIntoProcess(envPath?: string): void {
+  if (envPath != null) {
+    applyEnvFile(envPath);
+    return;
+  }
+  applyEnvFile(REPO_ENV_PATH);
+  const managed = resolveEnvPath();
+  if (managed !== REPO_ENV_PATH) {
+    applyEnvFile(managed);
+  }
+}
+
+export function readManagedSettings(envPath = resolveEnvPath()): {
   values: ManagedSettingsValues;
   envExists: boolean;
 } {
@@ -288,7 +331,7 @@ export function readManagedSettings(envPath = ENV_PATH): {
 
 export function writeManagedSettings(
   updates: Partial<Record<string, unknown>>,
-  envPath = ENV_PATH,
+  envPath = resolveEnvPath(),
 ): { values: ManagedSettingsValues; envExists: boolean } {
   const normalized: Record<string, string | null> = {};
   for (const [key, rawValue] of Object.entries(updates || {})) {
@@ -343,6 +386,7 @@ export function writeManagedSettings(
   }
 
   const output = nextLines.join("\n").replace(/\n+$/, "");
+  mkdirSync(dirname(envPath), { recursive: true });
   writeFileSync(envPath, output ? `${output}\n` : "", "utf8");
 
   for (const [key, value] of Object.entries(normalized)) {

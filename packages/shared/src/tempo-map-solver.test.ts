@@ -4,6 +4,7 @@ import {
   applySeedMetronomeFallback,
   computeSeedBpmFromAnchors,
   isAnacrusisMs,
+  layoutContiguousFormaPlans,
   pristineBarsFromMsSpan,
   resolveAnchorTargetTicks,
   runMultiPassTempoSolver,
@@ -12,7 +13,7 @@ import {
   type TempoSolverAnchor,
   type TempoSolverSectionPlan,
 } from "./tempo-map-solver.js";
-import { DEFAULT_PPQ, ticksPerBar } from "./time.js";
+import { DEFAULT_PPQ, ticksPerBar, ticksToMs } from "./time.js";
 
 const METER = { numerator: 4, denominator: 4 } as const;
 const BAR = ticksPerBar(METER, DEFAULT_PPQ);
@@ -47,6 +48,27 @@ describe("computeSeedBpmFromAnchors (Pass 1)", () => {
       },
     ];
     expect(computeSeedBpmFromAnchors(anchors, 90)).toBe(120);
+  });
+
+  it("accepts slow ballad seed ~45 BPM (floor 40, not 60)", () => {
+    // 4 bars in ~21.33s @ 4/4 → 45 BPM
+    const anchors: TempoSolverAnchor[] = [
+      {
+        ms: 0,
+        sectionIndex: 0,
+        kind: "section",
+        weight: 1,
+        ugBarsHint: 4,
+      },
+      {
+        ms: 21_333.333,
+        sectionIndex: 1,
+        kind: "section",
+        weight: 1,
+        ugBarsHint: 4,
+      },
+    ];
+    expect(computeSeedBpmFromAnchors(anchors, 120)).toBeCloseTo(45, 0);
   });
 
   it("falls back to per-section first/last high-weight span", () => {
@@ -114,6 +136,170 @@ describe("pristineBarsFromMsSpan", () => {
     // 8s @ 120 → 4 bars
     expect(pristineBarsFromMsSpan(0, 8000, 120, METER, DEFAULT_PPQ)).toBe(4);
     expect(pristineBarsFromMsSpan(0, 0, 120)).toBe(1);
+  });
+});
+
+describe("anacrusis pickup / layoutContiguousFormaPlans", () => {
+  it("extends pipe Intro by one bar for anacrusis pickup (no empty GAP bar)", () => {
+    const BAR = 3840;
+    const plans = [
+      {
+        sectionIndex: 0,
+        name: "Intro",
+        startMs: 0,
+        endMs: 0,
+        pristineBars: 16,
+        fromPipe: true,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+      {
+        sectionIndex: 1,
+        name: "Verse",
+        startMs: 34_000,
+        endMs: 0,
+        pristineBars: 8,
+        fromPipe: false,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+    ];
+    layoutContiguousFormaPlans(
+      plans,
+      [
+        { pipeBarCount: 16, vocalMsRange: null },
+        { pipeBarCount: 0, vocalMsRange: { startMs: 33_000, endMs: 40_000 } },
+      ],
+      0,
+      BAR,
+      120,
+      METER,
+      DEFAULT_PPQ,
+    );
+    expect(plans[0]!.startTicks).toBe(0);
+    expect(plans[0]!.lengthTicks).toBe(17 * BAR);
+    expect(plans[0]!.pristineBars).toBe(17);
+    expect(plans[1]!.startTicks).toBe(17 * BAR);
+  });
+
+  it("short pipe Intro (4 bars) still absorbs anacrusis — no ≥12 gate", () => {
+    const plans = [
+      {
+        sectionIndex: 0,
+        name: "Intro",
+        startMs: 0,
+        endMs: 0,
+        pristineBars: 4,
+        fromPipe: true,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+      {
+        sectionIndex: 1,
+        name: "Verse",
+        startMs: 10_000,
+        endMs: 0,
+        pristineBars: 8,
+        fromPipe: false,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+    ];
+    // @ 120: bar=2s; pipe end 8s; Beat 1 @ 10s; vocal pickup @ 9s (¾ bar before Beat 1)
+    layoutContiguousFormaPlans(
+      plans,
+      [
+        { pipeBarCount: 4, vocalMsRange: null },
+        { pipeBarCount: 0, vocalMsRange: { startMs: 9_000, endMs: 20_000 } },
+      ],
+      0,
+      BAR,
+      120,
+      METER,
+      DEFAULT_PPQ,
+    );
+    expect(plans[0]!.pristineBars).toBe(5);
+    expect(plans[1]!.startTicks).toBe(5 * BAR);
+  });
+
+  it("¾-bar pickup before Beat 1 is anacrusis (not only +0.5 target)", () => {
+    const plans = [
+      {
+        sectionIndex: 0,
+        name: "Intro",
+        startMs: 0,
+        endMs: 0,
+        pristineBars: 8,
+        fromPipe: true,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+      {
+        sectionIndex: 1,
+        name: "Verse",
+        startMs: 18_000,
+        endMs: 0,
+        pristineBars: 8,
+        fromPipe: false,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+    ];
+    // @ 120: bar=2s; nominal pipe end 16s; Beat 1 18s; vocal at 16.5s (= ¾ bar before Beat 1)
+    layoutContiguousFormaPlans(
+      plans,
+      [
+        { pipeBarCount: 8, vocalMsRange: null },
+        { pipeBarCount: 0, vocalMsRange: { startMs: 16_500, endMs: 30_000 } },
+      ],
+      0,
+      BAR,
+      120,
+      METER,
+      DEFAULT_PPQ,
+    );
+    expect(plans[0]!.pristineBars).toBe(9);
+    expect(plans[1]!.startTicks).toBe(9 * BAR);
+  });
+
+  it("vocal→vocal with US walls does not double-count anacrusis bar", () => {
+    const plans = [
+      {
+        sectionIndex: 0,
+        name: "Verse",
+        startMs: 0,
+        endMs: 16_000,
+        pristineBars: 8,
+        fromPipe: false,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+      {
+        sectionIndex: 1,
+        name: "Chorus",
+        startMs: 16_000,
+        endMs: 24_000,
+        pristineBars: 4,
+        fromPipe: false,
+        startTicks: 0,
+        lengthTicks: 0,
+      },
+    ];
+    // Chorus pickup before Beat 1 — walls already sized Beat1→Beat1
+    layoutContiguousFormaPlans(
+      plans,
+      [
+        { pipeBarCount: 0, vocalMsRange: { startMs: 0, endMs: 15_500 } },
+        { pipeBarCount: 0, vocalMsRange: { startMs: 15_500, endMs: 24_000 } },
+      ],
+      0,
+      BAR,
+      120,
+      METER,
+      DEFAULT_PPQ,
+    );
+    expect(plans[0]!.pristineBars).toBe(8);
+    expect(plans[1]!.startTicks).toBe(8 * BAR);
   });
 });
 
@@ -212,8 +398,8 @@ describe("runMultiPassTempoSolver E2 prune + Forma walls", () => {
     );
   });
 
-  it("Forma pristineBars from vocal ms @ seedBpm — never preferTwoBarGrid", () => {
-    // 12s vocal @ 120 → 6 bars (not chords×2 = 8)
+  it("Forma pristineBars from vocal ms @ seedBpm when no structuralBars", () => {
+    // 12s vocal @ 120 → 6 bars (legacy path without UG structuralBars)
     const result = runMultiPassTempoSolver({
       fallbackBpm: 120,
       meter: METER,
@@ -262,6 +448,69 @@ describe("runMultiPassTempoSolver E2 prune + Forma walls", () => {
     // Section-wall map (sparse) — not per-phrase BPM kinks
     expect(result.tempoMap.length).toBeGreaterThanOrEqual(1);
     expect(result.tempoMap[0]!.startTicks).toBe(0);
+  });
+
+  it("Forma pristineBars prefer US-wall structuralBars over ms span", () => {
+    const result = runMultiPassTempoSolver({
+      fallbackBpm: 120,
+      meter: METER,
+      ppq: DEFAULT_PPQ,
+      idPrefix: "ug",
+      anchors: [
+        {
+          ms: 0,
+          sectionIndex: 0,
+          kind: "section",
+          weight: 1,
+          ugBarsHint: 4,
+          barOffset: 0,
+        },
+        {
+          ms: 8000,
+          sectionIndex: 1,
+          kind: "section",
+          weight: 1,
+          barOffset: 0,
+        },
+      ],
+      sections: [
+        {
+          name: "Intro",
+          pipeBarCount: 4,
+          chordCount: 0,
+          vocalMsRange: null,
+        },
+        {
+          name: "Verse",
+          pipeBarCount: 0,
+          chordCount: 8,
+          structuralBars: 16,
+          vocalMsRange: { startMs: 8000, endMs: 20_000 },
+        },
+      ],
+    });
+    expect(result.sections[1]!.pristineBars).toBe(16);
+    expect(result.sections[1]!.lengthTicks).toBe(16 * BAR);
+  });
+
+  it("exact tick↔ms map keeps ballad ~45 BPM (not clamped up to 60)", () => {
+    // 1 bar of ticks vs duration of one bar @ 45 BPM
+    const barMsAt45 = ticksToMs(BAR, 45, METER, DEFAULT_PPQ);
+    const events = tempoEventsFromMsTickAnchors(
+      [
+        { ms: 0, targetTick: 0 },
+        { ms: barMsAt45, targetTick: BAR },
+      ],
+      0,
+      45,
+      METER,
+      DEFAULT_PPQ,
+      BAR,
+      { soft: false },
+    );
+    expect(events[0]!.bpm).toBeGreaterThan(40);
+    expect(events[0]!.bpm).toBeLessThan(50);
+    expect(events[0]!.bpm).toBeCloseTo(45, 0);
   });
 });
 
@@ -317,5 +566,51 @@ describe("tempoEventsFromMsTickAnchors / resolveAnchorTargetTicks", () => {
     expect(msTick[1]!.targetTick).toBe(3 * BAR);
     // Oversized offset clamps to last barline — does NOT squash 0→3→7 into mid-grid
     expect(msTick[msTick.length - 1]!.targetTick).toBe(3 * BAR);
+  });
+});
+
+describe("Smart Tempo tempoNodes + audio duration", () => {
+  it("emits tempoNodes and warns when map exceeds audio", () => {
+    const result = runMultiPassTempoSolver({
+      fallbackBpm: 120,
+      meter: METER,
+      ppq: DEFAULT_PPQ,
+      idPrefix: "t",
+      audioDurationMs: 1000,
+      anchors: [
+        {
+          ms: 0,
+          sectionIndex: 0,
+          kind: "section",
+          weight: 1,
+          ugBarsHint: 8,
+        },
+        {
+          ms: 20_000,
+          sectionIndex: 1,
+          kind: "section",
+          weight: 1,
+          ugBarsHint: 8,
+        },
+      ],
+      sections: [
+        {
+          name: "A",
+          pipeBarCount: 8,
+          chordCount: 0,
+          vocalMsRange: { startMs: 0, endMs: 20_000 },
+        },
+        {
+          name: "B",
+          pipeBarCount: 8,
+          chordCount: 0,
+          vocalMsRange: { startMs: 20_000, endMs: 40_000 },
+        },
+      ],
+    });
+    expect(result.tempoNodes.length).toBeGreaterThan(0);
+    expect(
+      result.warnings.some((w) => /długość audio/i.test(w)),
+    ).toBe(true);
   });
 });

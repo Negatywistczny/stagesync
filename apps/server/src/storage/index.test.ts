@@ -554,6 +554,30 @@ describe("storage/index", () => {
     const placed = atBeat.audioClips.find((c) => c.assetId === "asset-audio-2");
     expect(placed?.startTicks).toBe(1920);
 
+    const onSecondTrack = await stores.addProjectAsset(
+      audio.id,
+      {
+        id: "asset-audio-3",
+        kind: "audio",
+        originalName: "c.wav",
+        storageName: "c.wav",
+        mimeType: "audio/wav",
+        sizeBytes: 3,
+      },
+      Buffer.from([7, 8, 9]),
+      {
+        audioTrackId: "track-second",
+        startTicks: 0,
+      },
+    );
+    const placed3 = onSecondTrack.audioClips.find(
+      (c) => c.assetId === "asset-audio-3",
+    );
+    expect(placed3?.trackId).toBe("track-second");
+    expect(onSecondTrack.audioTracks.some((t) => t.id === "track-second")).toBe(
+      true,
+    );
+
     const withXml = await stores.addProjectAsset(
       audio.id,
       {

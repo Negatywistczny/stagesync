@@ -37,6 +37,7 @@ commands.allow = [
   "launcher_get_ignored_version",
   "launcher_set_ignored_version",
   "get_sidecar_log_tail",
+  "save_launcher_log",
   "cancel_local_host",
   "discover_lan_hosts",
   "probe_host_health",

@@ -56,6 +56,7 @@ W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia
 | Pencil na ścieżce **audio** | Jak Logic: klik w pustym + Pencil → Import → wstawienie w miejscu kliknięcia (**wdrożone**) |
 | No Overlap only; bez time-stretch w MVP | Bez zmiany względem [ADR 0008](./0008-timeline-clip-editing.md) |
 | Flex Time / MIDI recording / Take Folders / join bounce | **Permanent OUT dla całej linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5). Powrót rejestracji + proste edit = major **6.0** ([ADR 0018](./0018-future-audio-architecture.md)); Flex / Takes nadal nie must 6.0 |
+| **Smart Tempo (5.4.2)** | Mapa tempa **podąża za nagraniem** (wall-clock + Beat Mapper) — **nie** time-stretch / warp audio do siatki (to nie Flex Time). Import US+UG: audio = ground truth na krawędzi importu; ticks SSOT bez zmian ([ADR 0002](./0002-timebase-ssot.md)) |
 | Locator vs playhead | Osobne pojęcia (jak Logic); kolory: locator `primary`, playhead `info`; scrub/seek = komenda do serwera (SSOT) |
 
 ### 5. MIDI / transport

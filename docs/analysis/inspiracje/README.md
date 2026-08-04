@@ -126,6 +126,7 @@ Specyfikacje intro feature linii **5.2** (Pocket Stage) i residual **5.2+** — 
 | [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `closed` |
 | [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `partial` |
 | [Architektura-Ingestii-Danych-Muzycznych-StageSync.md](./spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md) | `open` |
+| [Dynamic-Tempo-Mapping-Technical-Blueprint.md](./spec-5.2+/Dynamic-Tempo-Mapping-Technical-Blueprint.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md) | `partial` |
 
 ### www/
 

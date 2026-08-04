@@ -19,6 +19,7 @@ import {
   searchUltrastarSongs,
   testUltrastarAccount,
 } from "../lib/ultrastarImportApi.js";
+import { yieldToUi } from "../lib/audioTempoAnalysis.js";
 import styles from "./UgImportForm.module.css";
 
 export type UltrastarImportFormProps = {
@@ -180,6 +181,7 @@ export function UltrastarImportForm({
     if (!preview?.ok) return;
     setApplyError(null);
     setBusyApply(true);
+    await yieldToUi();
     try {
       await onApply(preview);
     } catch (err) {

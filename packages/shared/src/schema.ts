@@ -621,7 +621,11 @@ const ProjectSchemaV5Object = z
     forma: z.object({
       clips: z.array(FormaClipSchema).max(256),
     }),
-    tempoMap: z.array(TempoEventSchema).max(256),
+    /**
+     * Smart Tempo (US+UG) may emit one event per beat for long songs
+     * (`SMART_TEMPO_MAX_BEATS` = 2048). Keep in sync with that ceiling.
+     */
+    tempoMap: z.array(TempoEventSchema).max(2048),
     meterMap: z.array(MeterEventSchema).max(256),
     keyMap: z.array(KeyEventSchema).max(256),
     assets: z.array(ProjectAssetSchema).max(256),
