@@ -548,6 +548,7 @@ export function CombinedUsUgImportForm({
         setAudioFile(file);
         setLocalBuffer(buffer);
         setAudioAnalysis(analysis);
+        setGridBpmDraft(null);
         const smartRes = runAudioDrivenSmartTempo({
           analysis,
           durationMs: meta.durationMs,
@@ -690,6 +691,7 @@ export function CombinedUsUgImportForm({
         setLocalBuffer(buffer);
         setAudioFile(null);
         setAudioAnalysis(analysis);
+        setGridBpmDraft(null);
         setDraftTempoNodes([]);
         const smartRes = runAudioDrivenSmartTempo({
           analysis,
@@ -779,6 +781,7 @@ export function CombinedUsUgImportForm({
       setAudioFile(file);
       setLocalBuffer(buffer);
       setAudioAnalysis(analysis);
+      setGridBpmDraft(null);
       setDraftTempoNodes([]);
         const smartRes = runAudioDrivenSmartTempo({
           analysis,

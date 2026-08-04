@@ -658,9 +658,14 @@ export function applyUltrastarImportToProject(
   options: ApplyUltrastarOptions = {},
 ): Project {
   const applyBpm = options.applyBpm !== false;
+  const hasAudioTempoMap =
+    project.tempoMap.length > 1 ||
+    project.assets.some((a) => a.kind === "audio") ||
+    project.audioClips.length > 0;
+  const shouldApplyBpm = applyBpm && !hasAudioTempoMap;
   return {
     ...project,
-    ...(applyBpm
+    ...(shouldApplyBpm
       ? {
           defaultBpm: imported.metronomeBpm,
           tempoMap: tempoMapWithImportedBpm(
