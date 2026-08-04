@@ -662,8 +662,14 @@ export function reconcileEstimatedBpm(
       const candidate = bpm * factor;
       const ratio = candidate / seedBpm;
       if (ratio >= 1 / 1.2 && ratio <= 1.2) {
+        const value =
+          factor === 1
+            ? bpm
+            : Math.abs(candidate - seedBpm) / seedBpm <= 0.05
+              ? candidate
+              : seedBpm;
         return {
-          value: factor === 1 ? bpm : seedBpm,
+          value,
           sameOctave: factor === 1,
         };
       }
