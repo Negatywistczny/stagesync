@@ -668,13 +668,21 @@ export function createStores(dataDir?: string) {
         let audioClips = [...project.audioClips];
 
         if (opts?.createAudioClip !== false && asset.kind === "audio") {
-          let track =
-            (opts?.audioTrackId
-              ? audioTracks.find((t) => t.id === opts.audioTrackId)
-              : undefined) ?? audioTracks[0];
-          if (!track) {
-            track = { id: randomUUID(), name: "Audio 1" };
-            audioTracks = [track];
+          let track = opts?.audioTrackId
+            ? audioTracks.find((t) => t.id === opts.audioTrackId)
+            : undefined;
+          if (!track && opts?.audioTrackId) {
+            track = {
+              id: opts.audioTrackId,
+              name: `Audio ${audioTracks.length + 1}`,
+            };
+            audioTracks = [...audioTracks, track];
+          } else if (!track) {
+            track = audioTracks[0];
+            if (!track) {
+              track = { id: randomUUID(), name: "Audio 1" };
+              audioTracks = [track];
+            }
           }
           const explicitStart =
             opts?.startTicks != null &&
