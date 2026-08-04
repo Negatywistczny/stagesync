@@ -5,6 +5,22 @@ import { describe, expect, it } from "vitest";
 import { analyzeAudioTempoAsync } from "./audioTempoAnalysis.js";
 import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
+// ---------------------------------------------------------------------------
+// Environment guard — skip on runners without an audio decoder
+// ---------------------------------------------------------------------------
+function hasDecoder(): boolean {
+  for (const cmd of ["afconvert", "ffmpeg"]) {
+    try {
+      execSync(`which ${cmd}`, { stdio: "ignore" });
+      return true;
+    } catch {
+      // not found, try next
+    }
+  }
+  return false;
+}
+
+
 const FIXTURES_DIR = path.resolve(
   __dirname,
   "../../test/fixtures/smart-tempo-train-data",
@@ -128,7 +144,11 @@ export function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
 // Test suite
 // ---------------------------------------------------------------------------
 describe("Smart Tempo Train Data Accuracy Benchmark", () => {
-  it("meets accuracy gates: ≥85% 🟢 EXACT (≤125ms) and ≤10% 🔴 FAIL", async () => {
+  it("meets accuracy gates: ≥85% 🟢 EXACT (≤125ms) and ≤10% 🔴 FAIL", async (ctx) => {
+    if (!hasDecoder()) {
+      ctx.skip();
+      return;
+    }
     expect(fs.existsSync(FIXTURES_DIR)).toBe(true);
     const files = fs.readdirSync(FIXTURES_DIR);
     const rtfFiles = files.filter((f) => f.endsWith(".rtf"));
