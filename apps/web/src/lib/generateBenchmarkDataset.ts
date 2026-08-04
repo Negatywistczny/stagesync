@@ -157,7 +157,7 @@ async function main() {
     const smartRes = runAudioDrivenSmartTempo({
       analysis,
       durationMs: Math.round(audioBuf.duration * 1000),
-      audioStartOffsetMs: points[0]?.timecodeMs ?? 0,
+      audioStartOffsetMs: 0,
     });
 
     const barPoints: BarDataPoint[] = [];

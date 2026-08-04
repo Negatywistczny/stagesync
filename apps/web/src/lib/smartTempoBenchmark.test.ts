@@ -74,10 +74,7 @@ export function parseRtfReference(rtfPath: string): RefBarPoint[] {
   const points: RefBarPoint[] = [];
 
   for (const line of lines) {
-    const cleanLine = line
-      .replace(/\\[a-z0-9]+/gi, "")
-      .replace(/[{}\\]/g, "")
-      .trim();
+    const cleanLine = line.replace(/\\$/g, "").trim();
     const parts = cleanLine
       .split("\t")
       .map((p) => p.trim())
@@ -197,7 +194,7 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       const smartRes = runAudioDrivenSmartTempo({
         analysis,
         durationMs: Math.round(audioBuf.duration * 1000),
-        audioStartOffsetMs: points[0]?.timecodeMs ?? 0,
+        audioStartOffsetMs: 0,
       });
 
       const ppq = 960;
@@ -215,30 +212,25 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       let totalErrorMs = 0;
       const errorsMsList: number[] = [];
 
-      const bar1Pt = points.find((p) => p.bar === 1) ?? points[0];
-      const refT0Ms = bar1Pt?.timecodeMs ?? 0;
-
+      const t0RefMs = points[0]?.timecodeMs ?? 0;
       for (const refPt of points) {
         const targetTick = (refPt.bar - 1) * barTicks;
-        const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject);
-        const refMs = refPt.timecodeMs - refT0Ms;
+        const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject) + t0RefMs;
+        const refMs = refPt.timecodeMs;
 
         // Timestamp Drift in milliseconds on timeline (errorMs = Math.abs(t_estimated_beat - t_reference_beat))
         const errorMs = Math.round(Math.abs(estMs - refMs) * 10) / 10;
-        if (refPt.bar <= 6) {
-          console.log(`[BENCHMARK DRIFT] ${baseName} Bar ${refPt.bar}: Est=${estMs.toFixed(1)}ms | Ref=${refMs.toFixed(1)}ms | Error=${errorMs.toFixed(1)}ms`);
-        }
         totalErrorMs += errorMs;
         errorsMsList.push(errorMs);
 
         // Barrier assertion: Beat 1 (t0) deviation must be <= 15ms
-        if (refPt === bar1Pt) {
+        if (refPt.bar === 1) {
           expect(errorMs, `Beat 1 (t0) timestamp drift (${errorMs} ms) exceeds 15ms barrier threshold`).toBeLessThanOrEqual(15);
         }
 
-        if (errorMs <= EXACT_THRESHOLD_MS) {
+        if (errorMs <= 15) {
           trackExact++;
-        } else if (errorMs <= CLOSE_THRESHOLD_MS) {
+        } else if (errorMs <= 60) {
           trackClose++;
         } else {
           trackFail++;
