@@ -23,20 +23,39 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  // Never cache API / WS / APK downloads.
+
+  // Never cache API, WS, APK downloads, or Vite dev server internals.
   if (
     url.pathname.startsWith("/api") ||
     url.pathname.startsWith("/ws") ||
-    url.pathname.startsWith("/downloads")
+    url.pathname.startsWith("/downloads") ||
+    url.pathname.startsWith("/@vite") ||
+    url.pathname.startsWith("/@fs") ||
+    url.pathname.startsWith("/@id") ||
+    url.pathname.startsWith("/node_modules")
   ) {
+    return;
+  }
+
+  // Never cache audio/video media requests or audio file formats.
+  const isMediaDest = req.destination === "audio" || req.destination === "video";
+  const isAudioExt = /\.(mp3|wav|ogg|m4a|flac|webm|aac|opus)$/i.test(url.pathname);
+  const isAudioPath = url.pathname.includes("/audio/") || url.pathname.includes("/assets/");
+
+  if (isMediaDest || isAudioExt || isAudioPath) {
     return;
   }
 
   event.respondWith(
     fetch(req)
       .then((res) => {
-        const copy = res.clone();
-        void caches.open(CACHE).then((cache) => cache.put(req, copy));
+        // Cache only 200 OK responses that are not audio/video streams.
+        const contentType = res.headers.get("content-type") ?? "";
+        const isMediaHeader = contentType.includes("audio/") || contentType.includes("video/");
+        if (res.status === 200 && !isMediaHeader) {
+          const copy = res.clone();
+          void caches.open(CACHE).then((cache) => cache.put(req, copy));
+        }
         return res;
       })
       .catch(() => caches.match(req).then((hit) => hit || caches.match("/"))),

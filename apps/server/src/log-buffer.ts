@@ -63,12 +63,25 @@ export function createLogBuffer(
     },
     addSseClient(res: Response): () => void {
       clients.add(res);
-      for (const line of lines) {
-        res.write(`data: ${JSON.stringify(line)}\n\n`);
-      }
-      return () => {
+      const onDone = () => {
         clients.delete(res);
+        res.off?.("close", onDone);
+        res.off?.("finish", onDone);
+        res.off?.("error", onDone);
       };
+      res.on?.("close", onDone);
+      res.on?.("finish", onDone);
+      res.on?.("error", onDone);
+
+      try {
+        for (const line of lines) {
+          res.write(`data: ${JSON.stringify(line)}\n\n`);
+        }
+      } catch {
+        onDone();
+      }
+
+      return onDone;
     },
     clientCount(): number {
       return clients.size;

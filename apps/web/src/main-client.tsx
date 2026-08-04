@@ -12,11 +12,23 @@ initAppearance();
 bootHostThemeDefault();
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("/sw.js").catch((err) => {
-      console.warn("[PWA] service worker registration failed", err);
+  if (
+    import.meta.env.DEV ||
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+  ) {
+    void navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const reg of registrations) {
+        void reg.unregister();
+      }
     });
-  });
+  } else {
+    window.addEventListener("load", () => {
+      void navigator.serviceWorker.register("/sw.js").catch((err) => {
+        console.warn("[PWA] service worker registration failed", err);
+      });
+    });
+  }
 }
 
 window.addEventListener("unhandledrejection", (event) => {

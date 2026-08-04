@@ -114,9 +114,12 @@ export async function importLibraryFile(file: File): Promise<{
 export async function downloadLibraryExport(): Promise<void> {
   const blob = await exportLibraryPack();
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `stagesync-export-${Date.now()}.stagesync.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `stagesync-export-${Date.now()}.stagesync.json`;
+    a.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
