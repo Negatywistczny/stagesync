@@ -187,6 +187,21 @@ async function decodeAudioFile(file: File): Promise<AudioBuffer> {
   return buffer;
 }
 
+type PipelineStageId = "download" | "analyze" | "build";
+
+type PipelineStage = {
+  id: PipelineStageId;
+  label: string;
+  status: "pending" | "running" | "done" | "error";
+  progress?: number | null;
+};
+
+const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
+  { id: "download", label: "Pobieranie audio z YouTube", status: "pending" },
+  { id: "analyze", label: "Analiza Smart Tempo & Viterbi", status: "pending" },
+  { id: "build", label: "Budowanie siatki taktowej i waveformu", status: "pending" },
+];
+
 export function CombinedUsUgImportForm({
   applyLabel,
   disabled = false,
@@ -230,6 +245,23 @@ export function CombinedUsUgImportForm({
   const deferredTempoNodes = useDeferredValue(draftTempoNodes);
   const [serverProjectSnapshot, setServerProjectSnapshot] =
     useState<Project | null>(null);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [pipelineStages, setPipelineStages] =
+    useState<PipelineStage[]>(DEFAULT_PIPELINE_STAGES);
+
+  useEffect(() => {
+    if (!projectId || serverProjectSnapshot) return;
+    fetchProject(projectId)
+      .then((p) => setServerProjectSnapshot(p))
+      .catch(() => {});
+  }, [projectId, serverProjectSnapshot]);
+
+  const projectAudioAssets = useMemo(
+    () =>
+      serverProjectSnapshot?.assets?.filter((a) => a.kind === "audio") ?? [],
+    [serverProjectSnapshot],
+  );
+
   const [ytJobBusy, setYtJobBusy] = useState(false);
   /** 0…100 continuous ingest bar (YouTube + decode + tempo analysis). */
   const [ingestProgress, setIngestProgress] = useState<number | null>(null);
@@ -484,11 +516,165 @@ export function CombinedUsUgImportForm({
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, []);
 
+  const ingestProjectAsset = useCallback(
+    async (assetId: string) => {
+      if (!projectId) return;
+      const asset = projectAudioAssets.find((a) => a.id === assetId);
+      if (!asset) return;
+
+      setApplyError(null);
+      setStepNotice("Odczytywanie pliku z projektu…");
+      setBusyNet(true);
+      setSelectedAssetId(assetId);
+      setPipelineStages([
+        {
+          id: "download",
+          label: `Zasób z projektu (${asset.originalName || asset.storageName})`,
+          status: "done",
+        },
+        {
+          id: "analyze",
+          label: "Analiza Smart Tempo & Viterbi",
+          status: "running",
+          progress: 0,
+        },
+        {
+          id: "build",
+          label: "Budowanie siatki taktowej i waveformu",
+          status: "pending",
+        },
+      ]);
+      await yieldToUi();
+
+      try {
+        const buffer = await loadAudioBuffer(projectId, assetId);
+        if (!buffer) {
+          throw new Error("Nie udało się zdekodować zasobu audio z projektu.");
+        }
+        const meta = computeWaveformFromAudioBuffer(buffer, 384);
+        const gapMs =
+          usPreview?.ok === true && usPreview.gapMs > 0
+            ? usPreview.gapMs
+            : null;
+        const editorialOffsetMs = resolveInitialAudioStartOffsetMs(
+          buffer,
+          gapMs,
+          beat1ResolveOpts,
+        );
+
+        setStepNotice("Analiza tempa…");
+        const { result: analysis, warning: analysisWarning } =
+          await analyzeAudioTempoAsync(buffer, {
+            ...buildImportTempoAnalysisOptions({
+              gapMs,
+              seedBpm: suggestedGridBpm ?? 120,
+              durationMs: Math.round(buffer.duration * 1000),
+            }),
+            onProgress: (ratio) => {
+              setPipelineStages((prev) =>
+                prev.map((s) =>
+                  s.id === "analyze" ? { ...s, progress: ratio * 100 } : s,
+                ),
+              );
+              setStepNotice(`Analiza tempa… ${Math.round(ratio * 100)}%`);
+            },
+          });
+
+        const offsetMs = refineBeat1OffsetMs(
+          editorialOffsetMs,
+          analysis,
+          beat1ResolveOpts.layoutBpm ?? 120,
+        );
+        setAudioStartOffsetUserEdited(false);
+        setAudioStartOffsetMs(offsetMs);
+        setAudioFile(null);
+        setLocalBuffer(buffer);
+        setAudioAnalysis(analysis);
+        setGridBpmDraft(null);
+
+        const smartRes = runAudioDrivenSmartTempo({
+          analysis,
+          durationMs: meta.durationMs,
+          audioStartOffsetMs: offsetMs,
+        });
+
+        setSmartTempoAudio({
+          assetId,
+          durationMs: meta.durationMs,
+          peaks: meta.peaks,
+          audioStartOffsetMs: offsetMs,
+          estimatedBpm: analysis.estimatedBpm,
+          tempoMap: smartRes.tempoMap,
+          tempoNodes: smartRes.tempoNodes,
+          analysis,
+        });
+
+        setPipelineStages([
+          {
+            id: "download",
+            label: `Zasób z projektu (${asset.originalName || asset.storageName})`,
+            status: "done",
+          },
+          {
+            id: "analyze",
+            label: "Analiza Smart Tempo & Viterbi",
+            status: "done",
+          },
+          {
+            id: "build",
+            label: "Budowanie siatki taktowej i waveformu",
+            status: "done",
+          },
+        ]);
+
+        const notice = `Wczytano ${asset.originalName || asset.storageName} (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
+        setStepNotice(
+          analysisWarning ? `${notice} — ${analysisWarning}` : notice,
+        );
+      } catch (err) {
+        setPipelineStages((prev) =>
+          prev.map((s) =>
+            s.status === "running" ? { ...s, status: "error" } : s,
+          ),
+        );
+        setApplyError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setBusyNet(false);
+      }
+    },
+    [
+      projectId,
+      projectAudioAssets,
+      usPreview,
+      beat1ResolveOpts,
+      suggestedGridBpm,
+    ],
+  );
+
   const ingestLocalFile = useCallback(
     async (file: File) => {
+      setSelectedAssetId(null);
       setApplyError(null);
       setStepNotice("Dekodowanie audio…");
       setIngestProgress(pipelinePct("decode", 0, false));
+      setPipelineStages([
+        {
+          id: "download",
+          label: `Plik z dysku (${file.name})`,
+          status: "done",
+        },
+        {
+          id: "analyze",
+          label: "Analiza Smart Tempo & Viterbi",
+          status: "running",
+          progress: 0,
+        },
+        {
+          id: "build",
+          label: "Budowanie siatki taktowej i waveformu",
+          status: "pending",
+        },
+      ]);
       setBusyNet(true);
       await yieldToUi();
       try {
@@ -520,6 +706,11 @@ export function CombinedUsUgImportForm({
             }),
             onProgress: (ratio) => {
               setIngestProgress(pipelinePct("analyze", ratio, false));
+              setPipelineStages((prev) =>
+                prev.map((s) =>
+                  s.id === "analyze" ? { ...s, progress: ratio * 100 } : s,
+                ),
+              );
               setStepNotice(`Analiza tempa… ${Math.round(ratio * 100)}%`);
             },
           });
@@ -551,6 +742,23 @@ export function CombinedUsUgImportForm({
           tempoNodes: smartRes.tempoNodes,
           analysis,
         });
+        setPipelineStages([
+          {
+            id: "download",
+            label: `Plik z dysku (${file.name})`,
+            status: "done",
+          },
+          {
+            id: "analyze",
+            label: "Analiza Smart Tempo & Viterbi",
+            status: "done",
+          },
+          {
+            id: "build",
+            label: "Budowanie siatki taktowej i waveformu",
+            status: "done",
+          },
+        ]);
         const baseNotice = `Wczytano ${file.name} (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
         setStepNotice(
           analysisWarning ? `${baseNotice} — ${analysisWarning}` : baseNotice,
@@ -579,6 +787,9 @@ export function CombinedUsUgImportForm({
           }
         }
       } catch (err) {
+        setPipelineStages((prev) =>
+          prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
+        );
         setApplyError(err instanceof Error ? err.message : String(err));
       } finally {
         setBusyNet(false);
@@ -599,9 +810,28 @@ export function CombinedUsUgImportForm({
       );
       return;
     }
+    setSelectedAssetId(null);
     setYtJobBusy(true);
     setStepNotice("Pobieranie z YouTube…");
     setIngestProgress(pipelinePct("download", 0, true));
+    setPipelineStages([
+      {
+        id: "download",
+        label: "Pobieranie audio z YouTube",
+        status: "running",
+        progress: 0,
+      },
+      {
+        id: "analyze",
+        label: "Analiza Smart Tempo & Viterbi",
+        status: "pending",
+      },
+      {
+        id: "build",
+        label: "Budowanie siatki taktowej i waveformu",
+        status: "pending",
+      },
+    ]);
     setApplyError(null);
     try {
       if (projectId) {
@@ -616,6 +846,11 @@ export function CombinedUsUgImportForm({
           job = await pollYoutubeAudioJob(projectId, started.jobId);
           const dlRatio = Math.max(0, Math.min(100, job.progress)) / 100;
           setIngestProgress(pipelinePct("download", dlRatio, true));
+          setPipelineStages((prev) =>
+            prev.map((s) =>
+              s.id === "download" ? { ...s, progress: job.progress } : s,
+            ),
+          );
           setStepNotice(
             job.status === "downloading"
               ? `Pobieranie z YouTube… ${Math.round(job.progress)}%`
@@ -632,6 +867,24 @@ export function CombinedUsUgImportForm({
         setServerProjectSnapshot(serverProject);
         setStepNotice("Dekodowanie audio…");
         setIngestProgress(pipelinePct("decode", 0, true));
+        setPipelineStages([
+          {
+            id: "download",
+            label: "Pobieranie audio z YouTube",
+            status: "done",
+          },
+          {
+            id: "analyze",
+            label: "Analiza Smart Tempo & Viterbi",
+            status: "running",
+            progress: 0,
+          },
+          {
+            id: "build",
+            label: "Budowanie siatki taktowej i waveformu",
+            status: "pending",
+          },
+        ]);
         const buffer = await loadAudioBuffer(projectId, job.assetId);
         if (!buffer) {
           throw new Error("Nie udało się zdekodować pobranego audio.");
@@ -663,6 +916,11 @@ export function CombinedUsUgImportForm({
             }),
             onProgress: (ratio) => {
               setIngestProgress(pipelinePct("analyze", ratio, true));
+              setPipelineStages((prev) =>
+                prev.map((s) =>
+                  s.id === "analyze" ? { ...s, progress: ratio * 100 } : s,
+                ),
+              );
               setStepNotice(`Analiza tempa… ${Math.round(ratio * 100)}%`);
             },
           });
@@ -694,6 +952,23 @@ export function CombinedUsUgImportForm({
           tempoNodes: smartRes.tempoNodes,
           analysis,
         });
+        setPipelineStages([
+          {
+            id: "download",
+            label: "Pobieranie audio z YouTube",
+            status: "done",
+          },
+          {
+            id: "analyze",
+            label: "Analiza Smart Tempo & Viterbi",
+            status: "done",
+          },
+          {
+            id: "build",
+            label: "Budowanie siatki taktowej i waveformu",
+            status: "done",
+          },
+        ]);
         const ytNotice = `Audio z YouTube gotowe (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
         setStepNotice(
           analysisWarning ? `${ytNotice} — ${analysisWarning}` : ytNotice,
@@ -713,6 +988,11 @@ export function CombinedUsUgImportForm({
         job = await pollSessionYoutubeJob(started.jobId);
         const dlRatio = Math.max(0, Math.min(100, job.progress)) / 100;
         setIngestProgress(pipelinePct("download", dlRatio, true));
+        setPipelineStages((prev) =>
+          prev.map((s) =>
+            s.id === "download" ? { ...s, progress: job.progress } : s,
+          ),
+        );
         setStepNotice(
           job.status === "downloading"
             ? `Pobieranie z YouTube… ${Math.round(job.progress)}%`
@@ -724,6 +1004,24 @@ export function CombinedUsUgImportForm({
       }
       setStepNotice("Dekodowanie audio…");
       setIngestProgress(pipelinePct("decode", 0, true));
+      setPipelineStages([
+        {
+          id: "download",
+          label: "Pobieranie audio z YouTube",
+          status: "done",
+        },
+        {
+          id: "analyze",
+          label: "Analiza Smart Tempo & Viterbi",
+          status: "running",
+          progress: 0,
+        },
+        {
+          id: "build",
+          label: "Budowanie siatki taktowej i waveformu",
+          status: "pending",
+        },
+      ]);
       const file = await fetchSessionYoutubeFile(started.jobId);
       const buffer = await decodeAudioFile(file);
       setIngestProgress(pipelinePct("decode", 1, true));
@@ -753,6 +1051,11 @@ export function CombinedUsUgImportForm({
           }),
           onProgress: (ratio) => {
             setIngestProgress(pipelinePct("analyze", ratio, true));
+            setPipelineStages((prev) =>
+              prev.map((s) =>
+                s.id === "analyze" ? { ...s, progress: ratio * 100 } : s,
+              ),
+            );
             setStepNotice(`Analiza tempa… ${Math.round(ratio * 100)}%`);
           },
         });
@@ -769,26 +1072,46 @@ export function CombinedUsUgImportForm({
       setAudioAnalysis(analysis);
       setGridBpmDraft(null);
       setDraftTempoNodes([]);
-        const smartRes = runAudioDrivenSmartTempo({
-          analysis,
-          durationMs: meta.durationMs,
-          audioStartOffsetMs: offsetMs,
-        });
-        setSmartTempoAudio({
-          assetId: `local-${Date.now()}`,
-          durationMs: meta.durationMs,
-          peaks: meta.peaks,
-          audioStartOffsetMs: offsetMs,
-          estimatedBpm: analysis.estimatedBpm,
-          tempoMap: smartRes.tempoMap,
-          tempoNodes: smartRes.tempoNodes,
-          analysis,
-        });
+      const smartRes = runAudioDrivenSmartTempo({
+        analysis,
+        durationMs: meta.durationMs,
+        audioStartOffsetMs: offsetMs,
+      });
+      setSmartTempoAudio({
+        assetId: `local-${Date.now()}`,
+        durationMs: meta.durationMs,
+        peaks: meta.peaks,
+        audioStartOffsetMs: offsetMs,
+        estimatedBpm: analysis.estimatedBpm,
+        tempoMap: smartRes.tempoMap,
+        tempoNodes: smartRes.tempoNodes,
+        analysis,
+      });
+      setPipelineStages([
+        {
+          id: "download",
+          label: "Pobieranie audio z YouTube",
+          status: "done",
+        },
+        {
+          id: "analyze",
+          label: "Analiza Smart Tempo & Viterbi",
+          status: "done",
+        },
+        {
+          id: "build",
+          label: "Budowanie siatki taktowej i waveformu",
+          status: "done",
+        },
+      ]);
       const sessionNotice = `Audio z YouTube gotowe (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
       setStepNotice(
         analysisWarning ? `${sessionNotice} — ${analysisWarning}` : sessionNotice,
       );
     } catch (err) {
+      setPipelineStages((prev) =>
+        prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
+      );
       setApplyError(err instanceof Error ? err.message : String(err));
     } finally {
       setYtJobBusy(false);
@@ -1170,30 +1493,101 @@ export function CombinedUsUgImportForm({
               </p>
             ) : null}
             <div className={styles.audioSplit}>
+              {/* Left Panel: Project Audio Selection + Separator + Compact DnD */}
               <div className={styles.audioCard}>
-                <h4 className={styles.audioCardTitle}>Plik z dysku</h4>
-                <p className={styles.audioCardHint}>
-                  MP3, WAV lub inny plik audio na Beat Mapper.
-                </p>
+                <h4 className={styles.audioCardTitle}>Plik audio w projekcie</h4>
+                <div className={styles.projectFilesSection}>
+                  {projectAudioAssets.length > 0 ? (
+                    <ul
+                      className={styles.projectFilesList}
+                      aria-label="Pliki audio w projekcie"
+                    >
+                      {projectAudioAssets.map((asset) => {
+                        const isSelected =
+                          selectedAssetId === asset.id ||
+                          smartTempoAudio?.assetId === asset.id;
+                        const durationLabel = asset.durationMs
+                          ? `${Math.floor(asset.durationMs / 60000)}:${String(
+                              Math.floor((asset.durationMs % 60000) / 1000),
+                            ).padStart(2, "0")}`
+                          : null;
+                        const sizeLabel = asset.sizeBytes
+                          ? formatBytesMb(asset.sizeBytes)
+                          : null;
+                        const metaLabel = [durationLabel, sizeLabel]
+                          .filter(Boolean)
+                          .join(" · ");
+
+                        return (
+                          <li key={asset.id}>
+                            <button
+                              type="button"
+                              className={[
+                                styles.projectFileItem,
+                                isSelected ? styles.projectFileItemActive : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                              disabled={locked}
+                              onClick={() => void ingestProjectAsset(asset.id)}
+                            >
+                              <input
+                                type="radio"
+                                name="projectAudioSelect"
+                                checked={isSelected}
+                                readOnly
+                                className={styles.projectFileRadio}
+                              />
+                              <Music className={styles.projectFileIcon} size={18} />
+                              <div className={styles.projectFileInfo}>
+                                <span className={styles.projectFileName}>
+                                  {asset.originalName || asset.storageName}
+                                </span>
+                                {metaLabel ? (
+                                  <span className={styles.projectFileMeta}>
+                                    {metaLabel}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className={styles.emptyFilesNotice}>
+                      Brak wgranych plików audio w projekcie.
+                    </p>
+                  )}
+                </div>
+
+                <div className={styles.divider}>
+                  <div className={styles.dividerLine} />
+                  <span className={styles.dividerText}>LUB</span>
+                  <div className={styles.dividerLine} />
+                </div>
+
                 <AudioDropzone
                   compact
                   disabled={locked}
-                  busy={busyNet && !ytJobBusy}
-                  progressLabel={busyNet && !ytJobBusy ? stepNotice : null}
+                  busy={busyNet && !ytJobBusy && !selectedAssetId}
+                  progressLabel={
+                    busyNet && !ytJobBusy && !selectedAssetId ? stepNotice : null
+                  }
                   progressValue={
-                    busyNet && !ytJobBusy ? ingestProgress : null
+                    busyNet && !ytJobBusy && !selectedAssetId ? ingestProgress : null
                   }
                   onSelectFile={(f) => void ingestLocalFile(f)}
                 />
               </div>
+
+              {/* Right Panel: Clean YouTube Header + Inline Input Group + Pipeline Progress */}
               <div className={styles.audioCard}>
                 <h4 className={styles.audioCardTitle}>YouTube</h4>
-                <p className={styles.audioCardHint}>
-                  Link lub ID z #VIDEO UltraStar — działa też przy nowym utworze.
-                </p>
-                <div className={styles.ytFieldRow}>
+                <div className={styles.ytInlineGroup}>
                   <Input
                     type="url"
+                    className={styles.ytInput}
                     value={youtubeUrlDraft}
                     aria-label="Link YouTube"
                     placeholder="https://www.youtube.com/watch?v=…"
@@ -1202,6 +1596,7 @@ export function CombinedUsUgImportForm({
                   />
                   <Button
                     type="button"
+                    className={styles.ytButton}
                     variant="secondary"
                     disabled={locked || !youtubeAvailable}
                     loading={ytJobBusy}
@@ -1209,17 +1604,61 @@ export function CombinedUsUgImportForm({
                   >
                     Pobierz z YouTube
                   </Button>
-                  {ytJobBusy && stepNotice && ingestProgress != null ? (
-                    <ImportProgress
-                      label={stepNotice}
-                      value={ingestProgress}
-                    />
-                  ) : stepNotice && hasAudio ? (
-                    <p className={styles.notice} role="status">
-                      {stepNotice}
-                    </p>
-                  ) : null}
                 </div>
+
+                {/* Pipeline Progress Checklist */}
+                {ytJobBusy || busyNet || hasAudio || pipelineStages.some((s) => s.status !== "pending") ? (
+                  <div className={styles.pipelineSection}>
+                    <h5 className={styles.pipelineTitle}>Potok przetwarzania audio</h5>
+                    <ul className={styles.pipelineList}>
+                      {pipelineStages.map((s) => {
+                        const isDone = s.status === "done";
+                        const isActive = s.status === "running";
+
+                        return (
+                          <li key={s.id} className={styles.pipelineStep}>
+                            <div
+                              className={[
+                                styles.pipelineStepHeader,
+                                isDone
+                                  ? styles.pipelineStepDone
+                                  : isActive
+                                    ? styles.pipelineStepActive
+                                    : styles.pipelineStepPending,
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              <span
+                                className={[
+                                  styles.pipelineBadge,
+                                  isDone
+                                    ? styles.pipelineBadgeDone
+                                    : isActive
+                                      ? styles.pipelineBadgeActive
+                                      : styles.pipelineBadgePending,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
+                                {isDone ? <Check size={12} strokeWidth={3} /> : null}
+                              </span>
+                              <span>{s.label}</span>
+                            </div>
+                            {isActive && s.progress != null && s.progress >= 0 ? (
+                              <div className={styles.pipelineProgressWrapper}>
+                                <ImportProgress
+                                  label={`${Math.round(s.progress)}%`}
+                                  value={s.progress}
+                                />
+                              </div>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
