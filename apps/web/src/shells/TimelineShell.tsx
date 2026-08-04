@@ -2755,8 +2755,15 @@ export function TimelineShell() {
         });
       }
     }
+    if (projectId) {
+      try {
+        next = await putProject(projectId, next);
+      } catch (err) {
+        console.warn("[TimelineShell] Auto-save on import failed, keeping draft:", err);
+      }
+    }
     commitDraft(next);
-    flashCanvasNotice(`Import US+UG: ${summary} — Zapisz (⌘S)`);
+    flashCanvasNotice(`Import US+UG: ${summary}`);
     closeImportModals();
     setSongScreenOpen(false);
     setSongMetaOpen(false);
