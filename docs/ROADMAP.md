@@ -48,12 +48,11 @@ Tag `v5.4.0`. Historia: [CHANGELOG.md](../CHANGELOG.md). Scope: [report-scope-5.
 
 Tag `v5.4.1`. Import US+UG w UI jako **eksperymentalny** (sync MP3 przybliżony). Historia: [CHANGELOG.md](../CHANGELOG.md).
 
-### 5.4.2 — Smart Tempo (w toku)
+### 5.4.2 — Smart Tempo — **wydane 2026-08-04**
 
-- Mapa tempa z **pliku audio** (wall-clock + Beat Mapper), nie z gęstych timingów sylab US; Drift Gate ≤1 takt
-- Wizard: DnD/upload, Visual Beat Mapper (fala, odsłuch + klik, offset Beat 1), yt-dlp async na hoście (binary z PATH)
-- Zamknięcie „eksperymentalny” US+UG po green sync z MP3 (PO)
-- Referencja MIR / Logic Keep·Adapt·Auto (bez Flex): [Dynamic Tempo Mapping triage](./analysis/inspiracje/spec-5.2+/Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md)
+Tag `v5.4.2`. Historia: [CHANGELOG.md](../CHANGELOG.md).
+
+**Dostarczone:** mapa tempa z **pliku audio** (wall-clock + Beat Mapper, Drift Gate); seed BPM z mediany IBI siatki (nie z peak ACF); metronom nieprzerwany przy przełączaniu zakładek; jawne anulowanie kliknięcia przy seeku (bez podwójnego kliknięcia); benchmark 3-tier ms + pasek postępu importu; sortowanie UG wg zgodności; 3-kolumnowy import audio z DnD; Import US+UG bez etykiety „eksperymentalny" — **stable**.
 
 ### 5.5 — **Pitch & FX**
 
