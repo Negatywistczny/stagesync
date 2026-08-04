@@ -748,17 +748,10 @@ export function preferAudioTempoSeed(
   const fallback = fallbackBpm > 0 ? fallbackBpm : 0;
 
   let chosen = 120;
-  if (grid > 0 && median > 0) {
-    const ratio = median / grid;
-    if (ratio >= 0.85 && ratio <= 1.20) {
-      chosen = Math.round(median * 100) / 100;
-    } else {
-      chosen = Math.round(grid * 100) / 100;
-    }
+  if (grid > 0) {
+    chosen = Math.round(grid * 100) / 100;
   } else if (median > 0) {
     chosen = Math.round(median * 100) / 100;
-  } else if (grid > 0) {
-    chosen = Math.round(grid * 100) / 100;
   } else if (fallback > 0) {
     chosen = Math.round(fallback * 100) / 100;
   }
@@ -1028,20 +1021,13 @@ export function tempoNodesFromBeatGrid(
   }
 
   // ── Standalone audio (offset === 0): wallMs=0 = Bar 1 Beat 1 ──
-  const gridPeriod = bpm > 0 ? 60_000 / bpm : 500;
-  const firstBeatMs = source[0] ?? 0;
-  const pickupBeats = firstBeatMs / gridPeriod;
-
   let nodes: TempoNode[] = [];
-  if (firstBeatMs > 30) {
-    nodes.push({ wallMs: 0, targetTick: floorTicks });
-  }
 
   // Each detected beat in the Viterbi grid corresponds to exactly 1 beat (perBeat ticks),
   // preserving section-level tempo changes (rubato intro, verse/chorus transitions).
   for (let i = 0; i < source.length; i++) {
     const ms = source[i]!;
-    const tick = floorTicks + Math.round((i + pickupBeats) * perBeat);
+    const tick = floorTicks + i * perBeat;
     nodes.push({ wallMs: Math.max(0, ms), targetTick: tick });
   }
 
@@ -1215,13 +1201,16 @@ export function runAudioDrivenSmartTempo(
     const prev = rawDense[i - 1]!;
     return n.wallMs - prev.wallMs >= 200 || n.targetTick === prev.targetTick;
   });
-  const sparseNodes = sparsifyTempoNodesFromBeatGrid(denseNodes, {
+  const tempoNodes = tempoNodesAtBarBoundaries(
+    beatMs,
+    offset,
     seedBpm,
+    floor,
     meter,
     ppq,
-  });
+  );
   const tempoMap = tempoMapFromTempoNodes(
-    sparseNodes,
+    tempoNodes.length > 0 ? tempoNodes : denseNodes,
     seedBpm,
     floor,
     meter,
@@ -1230,14 +1219,6 @@ export function runAudioDrivenSmartTempo(
     {
       audioDurationMs: input.durationMs > 0 ? input.durationMs : undefined,
     },
-  );
-  const tempoNodes = tempoNodesAtBarBoundaries(
-    beatMs,
-    offset,
-    seedBpm,
-    floor,
-    meter,
-    ppq,
   );
 
   const lastWall = beatMs[beatMs.length - 1] ?? 0;

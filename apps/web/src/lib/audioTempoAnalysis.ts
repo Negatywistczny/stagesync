@@ -848,31 +848,6 @@ function resolveBeatGridPhase(
     }
   }
 
-  // Standalone audio (phaseAnchorMs === 0): if 0 ms has strong onset support
-  // once the main groove starts (beats b >= 2), prefer 0 ms as Bar 1 Beat 1
-  // over a pickup/count-in offset (e.g. 246 ms hi-hat pickup).
-  if (phaseAnchorMs === 0 && bestPhase > 0) {
-    let score0 = 0;
-    for (let b = 2; b < 32; b++) {
-      const target = b * period;
-      if (onsetsMs.length > 0 && target > (onsetsMs[onsetsMs.length - 1] ?? 0) + 500) break;
-      const near = nearestOnsetMs(onsetsMs, target);
-      const dist = Math.abs(near - target);
-      if (dist <= win) score0 += 1 - dist / win;
-    }
-    let scoreBest = 0;
-    for (let b = 2; b < 32; b++) {
-      const target = bestPhase + b * period;
-      if (onsetsMs.length > 0 && target > (onsetsMs[onsetsMs.length - 1] ?? 0) + 500) break;
-      const near = nearestOnsetMs(onsetsMs, target);
-      const dist = Math.abs(near - target);
-      if (dist <= win) scoreBest += 1 - dist / win;
-    }
-    if (score0 >= scoreBest * 0.70 || bestPhase < win || Math.abs(bestPhase - period) < win) {
-      return 0;
-    }
-  }
-
   return bestPhase;
 }
 
@@ -889,19 +864,19 @@ const LOCAL_PERIOD_IBI_WINDOW = 8;
  * Tighter than the old 0.7–1.35 band so a dense 8th-note cluster cannot
  * yank the tracker into double-time in one hop.
  */
-const LOCAL_PERIOD_STEP_LO = 0.85;
-const LOCAL_PERIOD_STEP_HI = 1.18;
+const LOCAL_PERIOD_STEP_LO = 0.94;
+const LOCAL_PERIOD_STEP_HI = 1.06;
 /**
  * Hard gate vs stable quarter-note reference (median IBI + period hint).
  * Rejects half-beat / double-time snaps and 1.5-beat syncopation traps.
  */
-const STABLE_PERIOD_STEP_LO = 0.82;
-const STABLE_PERIOD_STEP_HI = 1.22;
+const STABLE_PERIOD_STEP_LO = 0.94;
+const STABLE_PERIOD_STEP_HI = 1.06;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
 const PERIOD_HINT_STABLE_WEIGHT = 0.15;
 /** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band. */
-const PERIOD_HINT_CLAMP_LO = 0.85;
-const PERIOD_HINT_CLAMP_HI = 1.18;
+const PERIOD_HINT_CLAMP_LO = 0.94;
+const PERIOD_HINT_CLAMP_HI = 1.06;
 
 function estimateInitialLocalPeriod(
   onsetsMs: readonly number[],
@@ -988,7 +963,9 @@ function buildBeatGridViterbi(
     if (relDiff >= 0.25 && relDiff <= 0.75) {
       return 0;
     }
-    return 1 - dist / win;
+    const phaseOffset = Math.abs((t - t0) % localPeriod);
+    const downbeatBonus = phaseOffset <= win || Math.abs(phaseOffset - localPeriod) <= win ? 0.35 : 0;
+    return (1 - dist / win) + downbeatBonus;
   };
 
   type Cell = {
@@ -1126,7 +1103,7 @@ function buildBeatGridViterbi(
   let idx = endIdx;
   for (let li = layers.length - 1; li >= 0; li--) {
     const cell = layers[li]![idx]!;
-    path.push(Math.round(cell.t));
+    path.push(cell.t);
     idx = cell.prevIdx;
     if (idx < 0 && li > 0) break;
   }
@@ -1151,60 +1128,25 @@ export function buildBeatGrid(
   phaseAnchorMs: number = 0,
 ): number[] {
   if (!(gridDurationMs > 0) || !(estimatedBpm > 0)) return [];
-  const viterbi = buildBeatGridViterbi(
-    onsetsMs,
-    estimatedBpm,
-    gridDurationMs,
-    maxBeats,
-    phaseAnchorMs,
-  );
-  if (viterbi) return viterbi;
 
-  const periodHint = 60_000 / estimatedBpm;
-  const minPeriod = periodHint * PERIOD_HINT_CLAMP_LO;
-  const maxPeriod = periodHint * PERIOD_HINT_CLAMP_HI;
-  let period = periodHint;
-  let t = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, period);
-  const beats: number[] = [Math.round(t)];
-  const recentIbis: number[] = [];
-  while (t + period * 0.5 < gridDurationMs && beats.length < maxBeats) {
-    const expected = t + period;
-    const snapWindow = period * BEAT_SNAP_FRAC;
-    const nearest = nearestOnsetMs(onsetsMs, expected);
-    let nextT = expected;
-    if (
-      onsetsMs.length > 0 &&
-      Math.abs(nearest - expected) < snapWindow
-    ) {
-      const snapDt = nearest - t;
-      const stable =
-        recentIbis.length >= 3 ? medianOfPositive(recentIbis) : period;
-      const stableRef =
-        (1 - PERIOD_HINT_STABLE_WEIGHT) * stable +
-        PERIOD_HINT_STABLE_WEIGHT * periodHint;
-      // Ignore subdivision onsets that would look like double-time.
-      if (
-        snapDt >= stableRef * STABLE_PERIOD_STEP_LO &&
-        snapDt <= stableRef * STABLE_PERIOD_STEP_HI &&
-        snapDt >= period * LOCAL_PERIOD_STEP_LO &&
-        snapDt <= period * LOCAL_PERIOD_STEP_HI
-      ) {
-        nextT = expected * (1 - BEAT_ONSET_BLEND) + nearest * BEAT_ONSET_BLEND;
-      }
-    }
-    const dt = nextT - t;
-    if (dt > 0) {
-      recentIbis.push(dt);
-      if (recentIbis.length > LOCAL_PERIOD_IBI_WINDOW) recentIbis.shift();
-      const med = medianOfPositive(recentIbis);
-      period = Math.max(
-        minPeriod,
-        Math.min(maxPeriod, 0.78 * period + 0.22 * med),
-      );
-    }
-    t = nextT;
-    beats.push(Math.round(t));
+  const period = 60_000 / estimatedBpm;
+  const t0 = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, period);
+
+  const nBeats = Math.min(
+    maxBeats,
+    Math.floor((gridDurationMs - t0) / period) + 1,
+  );
+  const beats: number[] = [];
+
+  for (let k = 0; k < nBeats; k++) {
+    const ideal = t0 + k * period;
+    if (ideal > gridDurationMs) break;
+    const near = nearestOnsetMs(onsetsMs, ideal);
+    const snapWindow = Math.min(30, period * 0.10);
+    const beatTime = Math.abs(near - ideal) <= snapWindow ? near : ideal;
+    beats.push(beatTime);
   }
+
   return beats;
 }
 
@@ -1544,19 +1486,33 @@ export async function analyzeFromMonoAsync(
         ? Math.floor((mono.length - FRAME_SIZE) / hopSize) + 1
         : 0,
     );
-    let prevEnergy = 0;
+    let prevWideEnergy = 0;
+    let prevLowEnergy = 0;
+    let lowState = 0;
+    const alpha = (2 * Math.PI * 250 / sampleRate) / (1 + (2 * Math.PI * 250 / sampleRate));
     let hopsSinceYield = 0;
     const fluxLen = Math.max(1, asyncFlux.length);
     for (let fi = 0, i = 0; fi < asyncFlux.length; fi++, i += hopSize) {
       throwIfAborted(signal);
-      let energy = 0;
+      let wideEnergy = 0;
+      let lowEnergy = 0;
       for (let j = 0; j < FRAME_SIZE; j++) {
         const v = mono[i + j] ?? 0;
-        energy += v * v;
+        lowState += alpha * (v - lowState);
+        lowEnergy += lowState * lowState;
+        wideEnergy += v * v;
       }
-      energy = Math.sqrt(energy / FRAME_SIZE);
-      asyncFlux[fi] = Math.max(0, energy - prevEnergy);
-      prevEnergy = energy * 0.85 + prevEnergy * 0.15;
+      wideEnergy = Math.sqrt(wideEnergy / FRAME_SIZE);
+      lowEnergy = Math.sqrt(lowEnergy / FRAME_SIZE);
+
+      const wideFlux = Math.max(0, wideEnergy - prevWideEnergy);
+      const lowFlux = Math.max(0, lowEnergy - prevLowEnergy);
+
+      asyncFlux[fi] = 3.0 * lowFlux + 1.0 * wideFlux;
+
+      prevWideEnergy = wideEnergy * 0.85 + prevWideEnergy * 0.15;
+      prevLowEnergy = lowEnergy * 0.85 + prevLowEnergy * 0.15;
+
       hopsSinceYield += 1;
       if (hopsSinceYield >= ONSET_CHUNK_HOPS) {
         hopsSinceYield = 0;

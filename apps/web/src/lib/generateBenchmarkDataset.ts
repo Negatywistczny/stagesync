@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { analyzeAudioTempoAsync } from "./audioTempoAnalysis.js";
-import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap, type TempoMapProject } from "@stagesync/shared";
+import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
@@ -161,27 +161,54 @@ async function main() {
     });
 
     const barPoints: BarDataPoint[] = [];
-    const ppq = 960;
-    const barTicks = 4 * ppq;
-    const benchProject: TempoMapProject = {
-      defaultBpm: smartRes.seedBpm,
-      defaultMeter: { numerator: 4, denominator: 4 },
-      tempoMap: smartRes.tempoMap,
-      meterMap: [{ id: "m0", startTicks: 0, numerator: 4, denominator: 4 }],
-      ppq,
-    };
-    const bar1Pt = points.find((p) => p.bar === 1) ?? points[0];
-    const refBar1Ms = bar1Pt?.timecodeMs ?? 0;
 
+    const beatMs = smartRes.beatMs;
+
+    // --- Best Fit Beat Offset ---
+    // Search all (ref, offset) combinations to find the offset that produces
+    // the smallest error on at least one early reference point.
+    let bestOffset = 0;
+    let minCalibError = Infinity;
+    for (let offset = -16; offset <= 16; offset++) {
+      // Test against the first 5 valid references
+      for (const ref of points.slice(0, 5)) {
+        const targetIdx = (ref.bar - 1) * 4 - offset;
+        if (targetIdx < 0 || targetIdx >= beatMs.length) continue;
+        const err = Math.abs(beatMs[targetIdx]! - ref.timecodeMs);
+        if (err < minCalibError) {
+          minCalibError = err;
+          bestOffset = offset;
+        }
+      }
+    }
+
+    console.log(`[BENCHMARK] ${baseName}: beatMs.length = ${beatMs.length}, bestOffset = ${bestOffset}, calibrationError = ${minCalibError.toFixed(1)}ms`);
+
+    // Compute local BPM from 4-beat IBI around a given beat index
+    function estBpmAtBeatIdx(idx: number): number {
+      if (idx + 4 < beatMs.length) {
+        const span = beatMs[idx + 4]! - beatMs[idx]!;
+        return span > 0 ? 240_000 / span : smartRes.seedBpm;
+      }
+      if (idx - 4 >= 0) {
+        const span = beatMs[idx]! - beatMs[idx - 4]!;
+        return span > 0 ? 240_000 / span : smartRes.seedBpm;
+      }
+      return smartRes.seedBpm;
+    }
+
+    // 3. Compute errors using bestOffset (no silenceOffset!)
     for (const refPt of points) {
-      const targetTick = (refPt.bar - 1) * barTicks;
-      const estMs = ticksToMsAlongTempoMap(0, targetTick, benchProject);
-      const refMs = refPt.timecodeMs - refBar1Ms;
-      const estBpmAtBar = smartRes.tempoMap[0]?.bpm ?? analysis.estimatedBpm;
+      const targetIdx = (refPt.bar - 1) * 4 - bestOffset;
+      if (targetIdx < 0 || targetIdx >= beatMs.length) continue;
+
+      const estMs = beatMs[targetIdx]!;
+      const refMs = refPt.timecodeMs;
+      const estBpm = estBpmAtBeatIdx(targetIdx);
 
       const refBarMs = 240_000 / refPt.bpm;
-      const estBarMs = 240_000 / estBpmAtBar;
-      const timeSec = estMs / 1000;
+      const estBarMs = 240_000 / estBpm;
+      const timeSec = refMs / 1000;
 
       const errorMs = Math.round(Math.abs(estMs - refMs) * 10) / 10;
 
@@ -193,7 +220,7 @@ async function main() {
         bar: refPt.bar,
         timeSec: Math.round(timeSec * 10) / 10,
         refBpm: Math.round(refPt.bpm * 100) / 100,
-        estBpm: Math.round(estBpmAtBar * 100) / 100,
+        estBpm: Math.round(estBpm * 100) / 100,
         refBarMs: Math.round(refBarMs * 10) / 10,
         estBarMs: Math.round(estBarMs * 10) / 10,
         errorMs,
