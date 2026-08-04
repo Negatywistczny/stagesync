@@ -32,6 +32,8 @@ build
 dist
 dist-performer
 dist-console
+*.tsbuildinfo
+apps/server/tools/
 
 # Runtime data (keep directory structure via .gitkeep / templates)
 data/projects/*
