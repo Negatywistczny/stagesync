@@ -33,6 +33,23 @@ export interface ReleaseSpotlight {
 
 export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
   {
+    line: "5.4",
+    badge: "v5.4",
+    name: "Syllables",
+    date: "sierpień 2026",
+    dateIso: "2026-08-02",
+    era: "current",
+    summary:
+      "Timed Lyrics w syncie z transportem, podświetlanie sylab w Karaoke, bezpośredni import UltraStar (wklejenie, pliki .txt, USDB) oraz hybrydowy import US+UG z podglądem tempa i sekcji.",
+    highlights: [
+      { icon: "mic-2", label: "Timed Lyrics & Karaoke sylaba po sylabie" },
+      { icon: "download", label: "Import UltraStar (wklejenie, .txt, pobieranie USDB)" },
+      { icon: "music", label: "Import US+UG — tekst, akordy i Forma na jednej osi" },
+      { icon: "sliders", label: "Smart Tempo z analizą audio i precyzyjną siatką" },
+    ],
+    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.4.0",
+  },
+  {
     line: "5.3",
     badge: "v5.3",
     name: "Colors & Channels",

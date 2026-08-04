@@ -7512,7 +7512,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       variant="primary"
                       onClick={() => openImportUsUg(false)}
                     >
-                      Import US+UG (eksperymentalny)
+                      Import US+UG
                     </Button>
                     <Button
                       type="button"
@@ -8659,7 +8659,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   variant="primary"
                   onClick={() => openImportUsUg(true)}
                 >
-                  Import US+UG (eksperymentalny)
+                  Import US+UG
                 </Button>
                 <Button
                   variant="secondary"
