@@ -325,11 +325,13 @@ export function CombinedUsUgImportForm({
 
   const gridBpmDisplay =
     gridBpmDraft ??
-    (suggestedGridBpm != null
-      ? String(Math.round(suggestedGridBpm * 100) / 100)
-      : fileMetroBpm != null
-        ? String(Math.round(fileMetroBpm * 100) / 100)
-        : "");
+    (smartTempoAudio?.estimatedBpm != null && smartTempoAudio.estimatedBpm > 0
+      ? String(Math.round(smartTempoAudio.estimatedBpm * 100) / 100)
+      : suggestedGridBpm != null
+        ? String(Math.round(suggestedGridBpm * 100) / 100)
+        : fileMetroBpm != null
+          ? String(Math.round(fileMetroBpm * 100) / 100)
+          : "");
   const gridBpmForBridge = parseGridBpmInput(gridBpmDisplay);
 
   const audioRefForBridge = smartTempoAudio
