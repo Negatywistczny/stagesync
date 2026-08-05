@@ -926,30 +926,12 @@ function resolveBeatGridPhase(
     return phaseAnchorMs;
   }
 
-  const steps = 16;
-  let bestPhase = 0;
-  let bestScore = -1;
-  const win = period * 0.15;
-
-  for (let k = 0; k < steps; k++) {
-    const phi = (k / steps) * period;
-    let score = 0;
-    for (let b = 0; b < 32; b++) {
-      const target = phi + b * period;
-      if (onsetsMs.length > 0 && target > (onsetsMs[onsetsMs.length - 1] ?? 0) + 500) break;
-      const near = nearestOnsetMs(onsetsMs, target);
-      const dist = Math.abs(near - target);
-      if (dist <= win) {
-        score += 1 - dist / win;
-      }
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      bestPhase = phi;
-    }
+  const firstOnset = onsetsMs[0] ?? 0;
+  let rawAnchor = firstOnset;
+  while (rawAnchor - period >= -snapWindow) {
+    rawAnchor -= period;
   }
-
-  return bestPhase;
+  return Math.max(0, Math.round(rawAnchor));
 }
 
 function medianOfPositive(values: readonly number[]): number {
@@ -975,15 +957,31 @@ const STABLE_PERIOD_STEP_HI = 1.06;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
 const PERIOD_HINT_STABLE_WEIGHT = 0.15;
 /** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band (+/- 6%). */
-const PERIOD_HINT_CLAMP_LO = 0.94;
-const PERIOD_HINT_CLAMP_HI = 1.06;
+const PERIOD_HINT_CLAMP_LO = 0.88;
+const PERIOD_HINT_CLAMP_HI = 1.12;
 
 function estimateInitialLocalPeriod(
   onsetsMs: readonly number[],
   periodHint: number,
+  spikeOnsetsMs?: readonly number[],
 ): number {
   if (onsetsMs.length < 3) return periodHint;
   const startMs = onsetsMs[0] ?? 0;
+  const clampLo = periodHint * 0.88;
+  const clampHi = periodHint * 1.12;
+
+  if (spikeOnsetsMs && spikeOnsetsMs.length > 0) {
+    const firstSpike = spikeOnsetsMs.find((s) => s >= startMs + periodHint * 3.0 && s <= startMs + periodHint * 18.0);
+    if (firstSpike) {
+      const dt = firstSpike - startMs;
+      const numBeats = Math.max(4, Math.round(dt / (periodHint * 4)) * 4);
+      const spikePeriod = dt / numBeats;
+      if (spikePeriod >= clampLo && spikePeriod <= clampHi) {
+        return spikePeriod;
+      }
+    }
+  }
+
   const introOnsets = onsetsMs
     .filter((ms) => ms <= startMs + 30_000)
     .slice(0, 30);
@@ -1005,10 +1003,6 @@ function estimateInitialLocalPeriod(
       }
     }
   }
-  // Clamp result to ±5% of periodHint: intro-onset pairs can yield a sub-beat
-  // period (e.g. 8th-note gaps) which causes Viterbi to latch onto a 2× tempo.
-  const clampLo = periodHint * 0.95;
-  const clampHi = periodHint * 1.05;
   if (barDiffs.length >= 2) {
     const v = medianOfPositive(barDiffs);
     return Math.max(clampLo, Math.min(clampHi, v));
@@ -1031,6 +1025,8 @@ export function detectEnergySpikesMs(
   flux: Float32Array,
   sampleRate: number,
   hopSize: number,
+  lowFluxArray?: Float32Array,
+  wideFluxArray?: Float32Array,
 ): number[] {
   if (flux.length === 0) return [];
   const windowHops = Math.max(10, Math.round((3.0 * sampleRate) / hopSize));
@@ -1040,10 +1036,14 @@ export function detectEnergySpikesMs(
 
   for (let fi = 0; fi < flux.length; fi++) {
     const val = flux[fi] ?? 0;
+    const lowVal = lowFluxArray ? (lowFluxArray[fi] ?? 0) : val;
+    const wideVal = wideFluxArray ? (wideFluxArray[fi] ?? 0) : val;
     const tMs = Math.round((((fi * hopSize + FRAME_SIZE / 2) / sampleRate) * 1000) * 10) / 10;
     const avg = windowCount > 10 ? windowSum / windowCount : 0.02;
 
-    if (val > 0.08 && val > 2.2 * avg) {
+    const isDualBandPeak = lowVal > 0.015 && wideVal > 0.015;
+
+    if (val > 0.08 && val > 2.2 * avg && isDualBandPeak) {
       spikes.push(tMs);
     }
 
@@ -1089,7 +1089,7 @@ function buildBeatGridViterbi(
     return rawPeriodHint;
   };
 
-  const initialLocalPeriod = estimateInitialLocalPeriod(onsetsMs, rawPeriodHint);
+  const initialLocalPeriod = estimateInitialLocalPeriod(onsetsMs, rawPeriodHint, spikeOnsetsMs);
   const periodHint = initialLocalPeriod > 0 ? initialLocalPeriod : rawPeriodHint;
   console.log(
     `[SMART TEMPO DIAGNOSTICS] buildBeatGridViterbi -> initialLocalPeriod: ${initialLocalPeriod.toFixed(1)} ms (${(60_000 / initialLocalPeriod).toFixed(2)} BPM), rawPeriodHint: ${rawPeriodHint.toFixed(1)} ms (${estimatedBpm.toFixed(2)} BPM)`,
@@ -1120,7 +1120,7 @@ function buildBeatGridViterbi(
 
     const nearestSpike = spikeOnsetsMs && spikeOnsetsMs.length > 0 ? nearestOnsetMs(spikeOnsetsMs, t) : -1;
     const isEnergySpike = nearestSpike >= 0 && Math.abs(nearestSpike - t) <= 40;
-    const spikeBonus = isEnergySpike ? 3.0 : 0;
+    const spikeBonus = isEnergySpike ? (isDownbeat ? 12.0 : 6.0) : 0;
 
     return (1 - dist / win) + downbeatBonus + onsetBonus + spikeBonus;
   };
@@ -1195,15 +1195,16 @@ function buildBeatGridViterbi(
         }
         const periodRatio = dt / stableRef;
         const shrinkPen = periodRatio < 0.85 ? 12.0 * (0.85 - periodRatio) ** 2 : 0;
-        const tempoPen =
-          ((dt - p.localPeriod) / p.localPeriod) ** 2 +
-          ((dt - stableRef) / stableRef) ** 2 * 3.0 +
-          shrinkPen;
         const nextRecent = [...p.recentIbis, dt];
         if (nextRecent.length > LOCAL_PERIOD_IBI_WINDOW) {
           nextRecent.shift();
         }
         const med = medianOfPositive(nextRecent);
+        const tempoRef = med > 0 ? med : stableRef;
+        const tempoPen =
+          ((dt - p.localPeriod) / p.localPeriod) ** 2 +
+          ((dt - tempoRef) / tempoRef) ** 2 * 2.0 +
+          shrinkPen;
         const candNearOnset = nearestOnsetMs(onsetsMs, t);
         const hasOnset = Math.abs(candNearOnset - t) <= 30;
         let newLocal = hasOnset
@@ -1789,6 +1790,8 @@ export async function analyzeFromMonoAsync(
         ? Math.floor((mono.length - FRAME_SIZE) / hopSize) + 1
         : 0,
     );
+    const lowFluxArr = new Float32Array(asyncFlux.length);
+    const wideFluxArr = new Float32Array(asyncFlux.length);
     let prevWideEnergy = 0;
     let prevLowEnergy = 0;
     let lowState = 0;
@@ -1811,6 +1814,8 @@ export async function analyzeFromMonoAsync(
       const wideFlux = Math.max(0, wideEnergy - prevWideEnergy);
       const lowFlux = Math.max(0, lowEnergy - prevLowEnergy);
 
+      lowFluxArr[fi] = lowFlux;
+      wideFluxArr[fi] = wideFlux;
       asyncFlux[fi] = 1.2 * lowFlux + 1.0 * wideFlux;
 
       prevWideEnergy = wideEnergy * 0.85 + prevWideEnergy * 0.15;
@@ -1828,7 +1833,7 @@ export async function analyzeFromMonoAsync(
       ? externalOnsetsMs
       : pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
     throwIfAborted(signal);
-    spikeOnsetsMs = detectEnergySpikesMs(asyncFlux, sampleRate, hopSize);
+    spikeOnsetsMs = detectEnergySpikesMs(asyncFlux, sampleRate, hopSize, lowFluxArr, wideFluxArr);
     const bpmHop = acfHopSize(hopSize, sampleRate);
     let acfFlux: Float32Array = asyncFlux;
     if (bpmHop !== hopSize) {

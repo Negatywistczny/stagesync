@@ -276,11 +276,12 @@ async function recordBenchmark() {
       tier: DawTier;
       stageTier: StageTier;
     }> = [];
-    // Enforce hard zero t0 alignment
-    const shiftMs = (points[0]?.timecodeMs ?? 0) - (analysis.beatMs[0] ?? 0);
+    // Enforce Bar 1 Downbeat Alignment (ADR 0002)
+    const firstMusicalOnsetMs = analysis.onsetsMs[0] ?? analysis.beatMs[0] ?? 0;
+    const shiftMs = (points[0]?.timecodeMs ?? 0) - firstMusicalOnsetMs;
     const alignedBeatMs = analysis.beatMs.map((t) => t + shiftMs);
     console.log(
-      `   [HARD ZERO T0 ALIGNMENT] ${baseName}: pts[0].timecodeMs=${points[0]?.timecodeMs ?? 0}, beatMs[0]=${analysis.beatMs[0] ?? 0} -> shiftMs=${shiftMs.toFixed(1)}`,
+      `   [BAR 1 DOWNBEAT ALIGNMENT] ${baseName}: pts[0].timecodeMs=${points[0]?.timecodeMs ?? 0}, firstMusicalOnsetMs=${firstMusicalOnsetMs.toFixed(1)} -> shiftMs=${shiftMs.toFixed(1)}`,
     );
 
     let cumMs = 0;
