@@ -18,8 +18,8 @@ import {
   putUltrastarAccount,
   searchUltrastarSongs,
   testUltrastarAccount,
-} from "../lib/ultrastarImportApi.js";
-import { yieldToUi } from "../lib/audioTempoAnalysis.js";
+} from "@lib/shell-operator/ultrastarImportApi.js";
+import { yieldToUi } from "@lib/audio/audioTempoAnalysis.js";
 import styles from "./UgImportForm.module.css";
 
 export type UltrastarImportFormProps = {

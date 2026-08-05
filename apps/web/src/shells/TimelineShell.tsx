@@ -39,7 +39,7 @@ import {
   type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
-import { yieldToUi } from "../lib/audioTempoAnalysis.js";
+import { yieldToUi } from "@lib/audio/audioTempoAnalysis.js";
 import {
   buildBarMarks,
   buildRulerBeatMarks,
@@ -54,7 +54,7 @@ import {
   snapLocatorTicks,
   tickToPx,
   ticksFromPointer,
-} from "../lib/formaCanvas.js";
+} from "@lib/timeline-edit/formaCanvas.js";
 import {
   cascadeFormaMoveIds,
   commitGesture,
@@ -63,7 +63,7 @@ import {
   joinFormaAtClick,
   previewFromSession,
   splitFormaClipAt,
-} from "../lib/formaEdit.js";
+} from "@lib/timeline-edit/formaEdit.js";
 import {
   buildClipboardFromClips,
   deleteClipsOnLane,
@@ -71,7 +71,7 @@ import {
   pasteClipboardWithDelta,
   selectionMaxEndTicks,
   type TimelineClipboard,
-} from "../lib/timelineClipboard.js";
+} from "@lib/timeline/timelineClipboard.js";
 import {
   applySoloButtonClick,
   clearSelection,
@@ -104,8 +104,8 @@ import {
   type ClipSelectionLane,
   type TimelineSurface,
   type TrackSelection,
-} from "../lib/timelineSelection.js";
-import { resolveTimelineShortcut } from "../lib/timelineKeyboardShortcuts.js";
+} from "@lib/timeline/timelineSelection.js";
+import { resolveTimelineShortcut } from "@lib/timeline/timelineKeyboardShortcuts.js";
 import {
   isToolbarToolId,
   loadToolbarVisibleTools,
@@ -113,10 +113,10 @@ import {
   toggleToolbarVisibleTool,
   TOOLBAR_ALWAYS_VISIBLE,
   type ToolbarToolId,
-} from "../lib/timelineToolbarTools.js";
+} from "@lib/timeline/timelineToolbarTools.js";
 import {
   subsectionRanges,
-} from "../lib/formaSubsections.js";
+} from "@lib/timeline-edit/formaSubsections.js";
 import {
   deleteMapEvents,
   insertMapEventAt,
@@ -129,13 +129,13 @@ import {
   upsertMeterAt,
   upsertTempoAt,
   type MapLaneId,
-} from "../lib/mapLaneEdit.js";
+} from "@lib/timeline/mapLaneEdit.js";
 import {
   keyMapSegments,
   meterMapSegments,
   segmentStylePx,
   tempoMapSegments,
-} from "../lib/mapSegments.js";
+} from "@lib/timeline/mapSegments.js";
 import { FormaClipPreview } from "./timeline/FormaClipPreview.js";
 import { TimelineHelp } from "./timeline/TimelineHelp.js";
 import {
@@ -146,19 +146,19 @@ import {
   renameFormaClip,
   setCountdownBars,
   setFormaSubsectionStartBar,
-} from "../lib/formaInspector.js";
+} from "@lib/timeline-edit/formaInspector.js";
 import {
   deleteTekstClip,
   pencilTekstClick,
   setTekstClipStart,
   setTekstClipText,
-} from "../lib/tekstEdit.js";
+} from "@lib/timeline-edit/tekstEdit.js";
 import {
   deleteAkordyClip,
   pencilAkordyClick,
   commitAkordyClipSymbol,
   setAkordyClipSymbol,
-} from "../lib/akordyEdit.js";
+} from "@lib/timeline-edit/akordyEdit.js";
 import {
   deleteCueClip,
   pencilCueClick,
@@ -167,7 +167,7 @@ import {
   setCueClipPriority,
   setCueClipSample,
   CUE_ROLES,
-} from "../lib/cueEdit.js";
+} from "@lib/timeline-edit/cueEdit.js";
 import {
   commitContentGesture,
   contentClipCoveringTicks,
@@ -176,7 +176,7 @@ import {
   previewContentFromSession,
   splitContentClipAt,
   type ContentLaneId,
-} from "../lib/contentLaneEdit.js";
+} from "@lib/timeline-edit/contentLaneEdit.js";
 import {
   buildAudioTrackContextMenuItems,
   buildClipContextMenuItems,
@@ -187,14 +187,14 @@ import {
   mapSegmentSelectionAriaLabel,
   type ClipMenuLane,
   type EmptyLaneMenuKind,
-} from "../lib/timelineContextMenus.js";
+} from "@lib/timeline/timelineContextMenus.js";
 import {
   applyTimelineNudge,
   nudgeShowsLeftEdge,
   shouldShowTouchNudge,
   type NudgeAction,
-} from "../lib/timelineTouchNudge.js";
-import { useTimelineTouchGestures } from "../lib/useTimelineTouchGestures.js";
+} from "@lib/timeline/timelineTouchNudge.js";
+import { useTimelineTouchGestures } from "@lib/timeline/useTimelineTouchGestures.js";
 import {
   anchorBarWidthTicks,
   canEditKotwice,
@@ -204,14 +204,14 @@ import {
   scoreAnchors,
   ticksFromLogicBar,
   updateScoreAnchor,
-} from "../lib/scoreBarEdit.js";
+} from "@lib/timeline-edit/scoreBarEdit.js";
 import {
   snapLoopRange,
   snapMovedLoopRange,
   ticksInLoopRegion,
   usableLoopRange,
   type LoopRange,
-} from "../lib/timelineLocator.js";
+} from "@lib/timeline/timelineLocator.js";
 import {
   canRedo,
   canUndo,
@@ -222,18 +222,18 @@ import {
   syncPresentAfterSave,
   undoDraft,
   type DraftHistory,
-} from "../lib/draftHistory.js";
+} from "@lib/client/draftHistory.js";
 import {
   advanceMetronomeClicks,
   cancelScheduledMetronomeClicks,
   getMetronomeAudioContext,
   metronomeBeatIndex,
   resumeMetronomeAudio,
-} from "../lib/metronome.js";
+} from "@lib/audio/metronome.js";
 import {
   getMetronomeOn,
   setMetronomeOn as persistMetronomeOn,
-} from "../lib/metronomePrefs.js";
+} from "@lib/audio/metronomePrefs.js";
 import {
   addAudioTrack,
   duplicateAudioTrack,
@@ -268,17 +268,17 @@ import {
   placeImportedAudioClipAt,
   splitAudioClipAt,
   toggleAudioClipMute,
-} from "../lib/audioLaneEdit.js";
+} from "@lib/audio/audioLaneEdit.js";
 import {
   addAudioHardwareOutput,
   canAddHardwareOutput,
   removeAudioHardwareOutput,
   setMasterOutputRouting,
   updateAudioHardwareOutput,
-} from "../lib/audioHwEdit.js";
+} from "@lib/audio/audioHwEdit.js";
 import {
   getAudioHwCapability,
-} from "../lib/audioHwCapability.js";
+} from "@lib/audio/audioHwCapability.js";
 import {
   ChannelStripControls,
   TaperGainSlider,
@@ -300,27 +300,27 @@ import {
   stopAudioPlayback,
   suppressAudioPlayback,
   syncAudioPlayback,
-} from "../lib/audioPlayback.js";
+} from "@lib/audio/audioPlayback.js";
 import {
   AUDIO_LATENCY_CHANGED_EVENT,
   getStoredLatencyCompensationMs,
-} from "../lib/audioLatencyPrefs.js";
+} from "@lib/audio/audioLatencyPrefs.js";
 import {
   CLOCK_DISPLAY_CHANGED_EVENT,
   formatClockDisplay,
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
-} from "../lib/clockDisplayPrefs.js";
-import { ticksFromSyncLeadAlongMap } from "../lib/syncLead.js";
+} from "@lib/client/clockDisplayPrefs.js";
+import { ticksFromSyncLeadAlongMap } from "@lib/timeline/syncLead.js";
 import {
   hasNonCollapsedDomTextSelection,
   isEditableKeyboardTarget,
-} from "../lib/isEditableKeyboardTarget.js";
-import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
+} from "@lib/client/isEditableKeyboardTarget.js";
+import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
 import {
   computeWaveformFromAudioBuffer,
   peaksToPolylinePoints,
-} from "../lib/waveformPeaks.js";
+} from "@lib/audio/waveformPeaks.js";
 import {
   detectTimelineTier,
   TIMELINE_COARSE_MQ,
@@ -329,14 +329,14 @@ import {
   timelineGesturesAllowed,
   TOUCH_FULL_EDIT_MSG,
   type TimelineTouchTier,
-} from "../lib/timelineTouchTier.js";
-import { APP_VERSION } from "../lib/appVersion.js";
-import { createSongWithContent } from "../lib/desktopFileMenu.js";
-import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
+} from "@lib/timeline/timelineTouchTier.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
+import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
+import { fetchLibrary, fetchProject, putProject } from "@lib/shell-operator/libraryApi.js";
 import {
   fetchSetlist,
   patchSetlistAutoAdvance,
-} from "../lib/setlistApi.js";
+} from "@lib/shell-operator/setlistApi.js";
 import {
   contentSnapModeFromModifiers,
   cursorForHitZone,
@@ -356,19 +356,19 @@ import {
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
-} from "../lib/timelineGesture.js";
+} from "@lib/timeline/timelineGesture.js";
 import {
   applyVocalTap,
   vocalTapMarkTicks,
   vocalTapQueue,
-} from "../lib/clientVocalTap.js";
+} from "@lib/client/clientVocalTap.js";
 import {
   clampBeatForProject,
   formatStartBarBeat,
   moveClipStartKeepLength,
   parseStartBarBeat,
   ticksFromDisplayBarBeat,
-} from "../lib/clipStartEdit.js";
+} from "@lib/timeline/clipStartEdit.js";
 import {
   audioTrackIdFromLane,
   buildTrackList,
@@ -379,7 +379,7 @@ import {
   TRACKS,
   type AudioLaneId,
   type TrackVisibilityMap,
-} from "../lib/timelineTracks.js";
+} from "@lib/timeline/timelineTracks.js";
 import {
   clearLaneHeightOverride,
   DEFAULT_LANE_PX,
@@ -393,12 +393,12 @@ import {
   scaleLaneHeights,
   setLaneHeightOverride,
   type LaneHeightsMap,
-} from "../lib/timelineLaneHeights.js";
+} from "@lib/timeline/timelineLaneHeights.js";
 import {
   clampDockWidth,
   loadDockWidth,
   saveDockWidth,
-} from "../lib/timelineDockWidth.js";
+} from "@lib/timeline/timelineDockWidth.js";
 import {
   clampZoomUi,
   loadZoomPrefs,
@@ -407,26 +407,26 @@ import {
   ZOOM_H_MIN as PREFS_ZOOM_H_MIN,
   ZOOM_UI_MAX,
   ZOOM_UI_MIN,
-} from "../lib/timelineZoomPrefs.js";
+} from "@lib/timeline/timelineZoomPrefs.js";
 import {
   toggleAppFullscreen,
   syncEditHistoryState,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
-} from "../lib/desktopBridge.js";
-import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
+} from "@lib/client/desktopBridge.js";
+import { useAnnounceDevicePresence } from "@lib/client/useAnnounceDevicePresence.js";
 import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
-} from "../lib/desktopMenuEvents.js";
-import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
-import { markOperatorSession } from "../lib/operatorSession.js";
-import { openPreferences } from "../lib/preferencesEvents.js";
+} from "@lib/client/desktopMenuEvents.js";
+import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";

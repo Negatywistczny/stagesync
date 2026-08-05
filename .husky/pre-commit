@@ -1,1 +1,8 @@
-# Reserved for lint-staged / typecheck later
+# StageSync pre-commit sanity gate
+# - Fast: no tests (run in CI / manually via pnpm test)
+# - Guards: type errors + lint warnings + dead code / broken imports (knip)
+
+set -e
+pnpm --filter @stagesync/shared --filter @stagesync/server --filter @stagesync/web run check-types
+pnpm --filter @stagesync/shared --filter @stagesync/server --filter @stagesync/web run lint --max-warnings 0
+pnpm lint:knip

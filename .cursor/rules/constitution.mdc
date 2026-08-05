@@ -1,92 +1,45 @@
 ---
-description: Konstytucja StageSync v5 — SSOT, granice monorepo, tokeny, zakres alpha
+description: Konstytucja StageSync v5 — Cursor wrapper nad SSOT .clinerules
 alwaysApply: true
 ---
 
-# StageSync v5 — Konstytucja
+# StageSync v5 — Konstytucja (Cursor spec)
 
-Reguły egzekwowane przy pracy w tym repo.  
-Język docs / workflow commitów / gałęzie → [CONTRIBUTING.md](../../CONTRIBUTING.md).  
-Mapa dokumentacji → [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).  
-Standardy zewnętrzne → [docs/STANDARDS.md](../../docs/STANDARDS.md).
+## 🗜️ Kanoniczna treść konstytucji (SSOT poza Cursor)
+→ **[.clinerules](../../../.clinerules)** — pełna, skonsolidowana wersja reguł dla **wszystkich narzędzi** (Cline, Cursor, Trae, ludzie). Jest to źródło prawdy.
+→ **[docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md)** — mapa architektury i indeks ADR.
+→ **[docs/STANDARDS.md](../../../docs/STANDARDS.md)** — standardy zewnętrzne.
+→ **[.agents/AGENTS.md](../../../.agents/AGENTS.md)** — specjalistyczne reguły per-zadanie (obecnie: Smart Tempo DSP Benchmark Gate).
 
-Trunk-based: domyślnie **`main`** (małe kroki). Gałąź / PR tylko na prośbę użytkownika — [todo-hygiene.mdc](todo-hygiene.mdc), [CONTRIBUTING.md](../../CONTRIBUTING.md).
+## Specyficzne dla Cursor (tylko tutaj)
+- Pliki `.mdc` obok (`todo-hygiene`, `changelog`, `ui-density`, `ui-parity`, `root-layout`, `versioning`, `docs-analysis-naming`) rozszerzają reguły w .clinerules o Cursor-specific frontmatter (`alwaysApply`, `description`)
+- Trunk-based: domyślnie **`main`** (małe kroki). Gałąź / PR tylko na prośbę użytkownika — zob. [todo-hygiene.mdc](todo-hygiene.mdc) oraz [CONTRIBUTING.md](../../../CONTRIBUTING.md)
+- Przy wątpliwościach UX / logiki edycji: **Logic Pro** jako pierwsza referencja mechanik;
+  konflikt: SSOT czasu + brak stubów (ADR 0011) **>** Logic; gdy brak własnej spec → Logic (nie pixel-clone chrome)
 
-## Jedno źródło prawdy (SSOT)
+## Szybkie odwołania do najważniejszych punktów z SSOT .clinerules
+**Twarde Zakazy (podstawa):**
+- ❌ Stubów / atrap funkcji w UI (brak funkcji = brak UI, nie `disabled` na zapas)
+- ❌ Tailwind CSS / inline-styles (poza dynamicznymi wartościami jak playhead %)
+- ❌ Kopiowania HTML/CSS z legacy v4 (tylko `@stagesync/ui` + tokeny `--ss-*`)
+- ❌ Samodzielnych redesignów UI bez uzasadnienia / prośby PO
 
-- **Autorytet serwera** (`apps/server`): transport, stan projektu, timing.
-- **Playhead klienta** (`apps/web`): wygładzanie **tylko między tickami serwera** — bez własnego zegara muzycznego.
+**Architektura SSOT:**
+- 🏛️ Autorytet serwera (transport, timing, stan projektu)
+- 🌊 Playhead klienta: wygładzanie **tylko między tickami serwera** — bez własnego zegara
+- 🧮 Czysty czas w `@stagesync/shared`: integer ticks + PPQ; BBT tylko jako widok
+- 📦 Granice monorepo: apps → packages, nigdy odwrotnie; shared bez DOM/FS
 
-Szczegóły decyzji: `docs/adr/0002-timebase-ssot.md`.
+**UI & Tokeny:**
+- 🎨 Tylko `--ss-*` (kolory, odstępy, typografia); bez HEX / font-size w komponentach
+- 🪑 Button = zamknięty zbiór 7 stanów (default, hover, focus, active, disabled, loading, selected)
+- 📏 Siatka 4pt/8pt; minimalna strefa dotykowa: 36x36px desktop / 44x44px mobile
 
-**Granica 0** (aksjomaty domenowe: czas + foldery projektów; ACL na krawędziach):
-`docs/adr/0005-domain-axioms.md`.
+**Proces & Dokumentacja:**
+- 📜 Changelog = tylko zmiany widoczne dla użytkownika (Keep a Changelog)
+- 🧹 TODO Hygiena: `docs/TODO.md` tylko aktywne zadania
+- ✅ Przed zmianą: ADR → TODO → ostatnie raporty (`docs/analysis/reports/`)
+- 🔢 Versioning: SemVer w root `package.json`, tag `vMAJOR.MINOR.PATCH`
 
-## Decyzje produktowe vs backlog
-
-- **Backlog ≠ decyzja** — pozycja w TODO / triage bez PO nie jest permanent OUT.
-- Residual / „do wprowadzenia” → tylko TODO / ROADMAP / inspiracje / ADR decyzji — nie CHANGELOG ani docs operatorskie ([todo-hygiene.mdc](todo-hygiene.mdc)).
-- Stałe decyzje PO (Logic jako referencja DAW, multi-out, MIDI PC, auto-update NIE, menubar OUT, …):
-  `docs/adr/0015-daw-reference-and-product-decisions.md`.
-- Przy wątpliwości UX / logiki edycji: **Logic Pro** jako pierwsza referencja mechanik;
-  konflikt: SSOT czasu + brak stubów (ADR 0011) **>** Logic; gdy brak własnej spec → Logic
-  (nie pixel-clone chrome).
-
-## Granice monorepo
-
-| Ścieżka | Rola |
-|---------|------|
-| `apps/server` | API, persystencja, transport SSOT |
-| `apps/web` | UI (bez autorytatywnego czasu) |
-| `packages/shared` | Zod + czysty czas — bez DOM, bez Node FS |
-| `packages/ui` | Design system — bez logiki biznesowej |
-| `packages/eslint-config` / `typescript-config` | Tooling |
-| `data/` | Runtime (szablony + gitkeep; treść użytkownika w gitignore) |
-
-UI nie importuje servera; shared zostaje czyste; apps → packages, nie odwrotnie.
-
-Układ katalogów `data/`: `docs/adr/0001-storage-layout.md` (nie duplikować drzewa tutaj).
-
-## Czysty czas
-
-- Helpery w `@stagesync/shared` = **czyste funkcje**.
-- Bez `Date.now()` / `performance.now()` wewnątrz konwersji domenowej — clock/ticki od callera.
-- **Kanon pozycji:** integer **ticks** + stałe **PPQ**; **BBT** tylko jako widok/API (nie storage silnika). Float `absBeat` = przejściowy szkic.
-- Semantyka: takt 1 = start utworu; pre-roll ≤ 0. Szczegóły: `docs/adr/0002-timebase-ssot.md`.
-- Aksjomaty / Granica 0 (immutable core + ACL checklist): `docs/adr/0005-domain-axioms.md`.
-
-## Walidacja (Zod)
-
-- Na **krawędziach** (HTTP, plik, IPC).
-- **Fail fast** — bez cichej naprawy wymaganego kształtu.
-
-## UI — Button i tokeny
-
-- `Button`: zamknięty zbiór 7 stanów (default, hover, focus, active, disabled, loading, selected).
-- Kolory / odstępy / **typografia** tylko `--ss-*` w `packages/ui` — bez HEX i bez ad-hoc wartości typograficznych (`font-size` / `font-weight` / `line-height` / `letter-spacing`) w komponentach i shellach.
-- Typografia: `--ss-text-xs|sm|control|md|lg|xl|2xl|3xl`, `--ss-font-weight-*`, `--ss-leading-*`, `--ss-tracking-*` (Button: `--ss-font-size` = control, weight semibold, leading compact).
-- Gęstość / spacing / kontrast dark → [`.cursor/rules/ui-density.mdc`](ui-density.mdc).
-
-## UI — parity i redesign (alpha rebuild)
-
-- **Parity = zachowanie v4**, nie lista ikon / clone toolbara.
-- **Zakaz** kopiowania chrome HTML/CSS z legacy; tylko `@stagesync/ui` + Modules + `--ss-*`.
-- Review: gest / workflow → gęstość → inventarz (wtórny).
-- Admin: IA (Set + wybór utworów w jednym flow); Client: treść roli > dekoracyjny header.
-- Minimalizm: jedna barwa akcentu (`primary`/`selected`); **zakaz** tęczy ról z tokenów statusu.
-- Szczegóły: `docs/adr/0011-ui-parity-behavior.md`, reguła `ui-parity.mdc`, `docs/ui/colors.md`.
-- **Zakaz β** do green PO smoke wg ADR 0011.
-
-## Poza zakresem (alpha / do decyzji)
-
-Bez jawnej decyzji produktowej nie dodawaj:
-
-- Admin / hygiene HTTP do scrubbingu storage
-- Dual-write do kształtów bazy legacy 4.x
-- Wariantów Button poza zamkniętym zbiorem
-- Transportu / MIDI clock z autorytetem klienta
-- Sekretów, `data/projects/*` użytkownika, `node_modules` w gicie
-- Klonowania paska narzędzi / chrome z 4.x „dla parity”
-- **Stubów / atrap** funkcji dostępnych w v4 — do tagu `5.0.0` muszą wrócić jako
-  zachowanie ([ADR 0011 §1a](../../docs/adr/0011-ui-parity-behavior.md)); brak funkcji =
-  brak UI, nie `disabled` „na zapas”
+---
+*Treść powyżej to warstwa-wrapper dla Cursor. Jeśli coś w tym pliku jest sprzeczne z SSOT w `.clinerules`, **zawsze pierwszeństwo ma .clinerules**.*

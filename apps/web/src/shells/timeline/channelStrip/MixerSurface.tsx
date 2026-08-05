@@ -5,27 +5,27 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Button } from "@stagesync/ui";
 import { emptyPeakHold, listMasterStereoPairOptions, resolveMasterOutputRouting, type Project } from "@stagesync/shared";
-import type { TrackSelection } from "../../../lib/timelineSelection.js";
+import type { TrackSelection } from "@lib/timeline/timelineSelection.js";
 import {
   AUDIO_HW_CAPABILITY_EVENT,
   getAudioHwCapability,
   refreshAudioHwCapability,
   type AudioHwCapability,
-} from "../../../lib/audioHwCapability.js";
-import { canAddHardwareOutput } from "../../../lib/audioHwEdit.js";
+} from "@lib/audio/audioHwCapability.js";
+import { canAddHardwareOutput } from "@lib/audio/audioHwEdit.js";
 import {
   getMetronomePrefs,
   METRONOME_PREFS_CHANGED_EVENT,
   setMetronomePrefs,
   type MetronomePrefs,
-} from "../../../lib/metronomePrefs.js";
+} from "@lib/audio/metronomePrefs.js";
 import {
   loadMixerZoneVisibility,
   saveMixerZoneVisibility,
   toggleMixerZoneVisibility,
   type MixerZoneId,
   type MixerZoneVisibility,
-} from "../../../lib/mixerZoneVisibility.js";
+} from "@lib/client/mixerZoneVisibility.js";
 import { IconEye, IconEyeOff } from "../../icons.js";
 import { ChannelStripControls } from "./ChannelStripControls.js";
 import type {

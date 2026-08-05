@@ -5,7 +5,7 @@ import {
   fetchOperatorPinRequired,
   getStoredOperatorPin,
   unlockOperatorPin,
-} from "../lib/operatorPin.js";
+} from "@lib/shell-operator/operatorPin.js";
 import styles from "./DeviceNameFields.module.css";
 
 /**

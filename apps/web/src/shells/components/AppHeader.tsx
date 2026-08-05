@@ -3,13 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import {
   getOperatorAppJumpLinks,
   type OperatorAppId,
-} from "../../lib/operatorNavRoutes.js";
+} from "@lib/shell-operator/operatorNavRoutes.js";
 import {
   isOsMenuDesktopShell,
   shouldShowOperatorNav,
-} from "../../lib/operatorSurface.js";
-import { openPreferences } from "../../lib/preferencesEvents.js";
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/operatorSurface.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import {
   IconDiscard,
   IconFullscreen,

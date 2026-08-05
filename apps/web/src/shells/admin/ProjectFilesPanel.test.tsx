@@ -6,16 +6,16 @@ import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ProjectFilesPanel } from "./ProjectFilesPanel.js";
 
-vi.mock("../../lib/libraryApi.js", () => ({
+vi.mock("@lib/shell-operator/libraryApi.js", () => ({
   fetchProject: vi.fn(),
 }));
 
-vi.mock("../../lib/projectAssetsApi.js", () => ({
+vi.mock("@lib/shell-operator/projectAssetsApi.js", () => ({
   deleteProjectAsset: vi.fn(),
   uploadProjectAudio: vi.fn(),
 }));
 
-import { fetchProject } from "../../lib/libraryApi.js";
+import { fetchProject } from "@lib/shell-operator/libraryApi.js";
 
 afterEach(() => {
   cleanup();

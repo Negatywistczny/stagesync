@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { captureWebException } from "../lib/sentry.js";
+import { captureWebException } from "@lib/client/sentry.js";
 import { AppCrashFallback } from "./AppCrashFallback.js";
 
 type Props = { children: ReactNode };

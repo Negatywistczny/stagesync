@@ -31,8 +31,8 @@ export function resolveEnvPath(): string {
   return REPO_ENV_PATH;
 }
 
-/** @deprecated Prefer `resolveEnvPath()` — path depends on `STAGESYNC_DATA_DIR`. */
-export const ENV_PATH = REPO_ENV_PATH;
+/** @deprecated Prefer `resolveEnvPath()` — path depends on `STAGESYNC_DATA_DIR`. Kept for call-site migration. */
+export { REPO_ENV_PATH as ENV_PATH };
 
 export type SettingType = "string" | "number" | "boolean" | "enum";
 

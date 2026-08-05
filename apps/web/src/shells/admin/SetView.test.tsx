@@ -4,7 +4,7 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../lib/setlistApi.js", () => ({
+vi.mock("@lib/shell-operator/setlistApi.js", () => ({
   fetchSetlist: vi.fn(async () => ({
     items: [],
     enabled: false,

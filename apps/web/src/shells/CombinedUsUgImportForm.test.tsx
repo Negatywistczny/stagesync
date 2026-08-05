@@ -8,17 +8,17 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
 
-vi.mock("../lib/ultrastarImportApi.js", () => ({
+vi.mock("@lib/shell-operator/ultrastarImportApi.js", () => ({
   fetchUltrastarFromServer: vi.fn(),
   searchUltrastarSongs: vi.fn(),
 }));
 
-vi.mock("../lib/ugImportApi.js", () => ({
+vi.mock("@lib/shell-operator/ugImportApi.js", () => ({
   fetchUgTabFromServer: vi.fn(),
   searchUgTabs: vi.fn(),
 }));
 
-vi.mock("../lib/libraryApi.js", () => ({
+vi.mock("@lib/shell-operator/libraryApi.js", () => ({
   fetchProject: vi.fn(async () => ({
     id: "p1",
     name: "Test Project",
@@ -188,7 +188,7 @@ describe("CombinedUsUgImportForm", () => {
     const us = readFileSync(join(FIX, "song.txt"), "utf8");
     const ug = readFileSync(join(FIX, "chords.txt"), "utf8");
 
-    const { searchUgTabs, fetchUgTabFromServer } = await import("../lib/ugImportApi.js");
+    const { searchUgTabs, fetchUgTabFromServer } = await import("@lib/shell-operator/ugImportApi.js");
     const searchUgTabsMock = vi.mocked(searchUgTabs);
     const fetchUgTabFromServerMock = vi.mocked(fetchUgTabFromServer);
 

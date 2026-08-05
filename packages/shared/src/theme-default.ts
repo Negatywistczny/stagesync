@@ -57,7 +57,7 @@ export const APPEARANCE_PROFILE_SWATCHES: Record<
  * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
  * dark/light/*-high aliases.
  */
-export const ThemeDefaultIdSchema = AppearanceProfileIdSchema;
+export { AppearanceProfileIdSchema as ThemeDefaultIdSchema };
 
 export type ThemeDefaultId = AppearanceProfileId;
 

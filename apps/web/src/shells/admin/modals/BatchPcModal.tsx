@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Input } from "@stagesync/ui";
 import { type Library } from "@stagesync/shared";
-import { batchMidiProgramIds } from "../../../lib/libraryApi.js";
+import { batchMidiProgramIds } from "@lib/shell-operator/libraryApi.js";
 import { Modal } from "./Modal.js";
 import styles from "../../AdminShell.module.css";
 

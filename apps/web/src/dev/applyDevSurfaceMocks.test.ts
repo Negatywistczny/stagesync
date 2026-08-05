@@ -11,9 +11,9 @@ import {
   isWebBrowserSurface,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
-import { clearOperatorSession, hasOperatorSession } from "../lib/operatorSession.js";
-import { isDesktopShell } from "../lib/desktopBridge.js";
+} from "@lib/shell-operator/operatorSurface.js";
+import { clearOperatorSession, hasOperatorSession } from "@lib/shell-operator/operatorSession.js";
+import { isDesktopShell } from "@lib/client/desktopBridge.js";
 
 function setPreviewSearch(search: string): void {
   window.history.replaceState({}, "", `/_dev/preview${search}`);

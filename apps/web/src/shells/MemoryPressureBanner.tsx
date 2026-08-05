@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@stagesync/ui";
-import { ensureAudioMemoryContributor } from "../lib/audioPlayback.js";
+import { ensureAudioMemoryContributor } from "@lib/audio/audioPlayback.js";
 import {
   getLastElevatedMemoryPressure,
   startMemoryPressureMonitor,
@@ -8,7 +8,7 @@ import {
   subscribeMemoryPressure,
   userFacingMemoryPressureMessage,
   type MemoryPressureSnapshot,
-} from "../lib/memoryPressure.js";
+} from "@lib/client/memoryPressure.js";
 import styles from "./MemoryPressureBanner.module.css";
 
 /**

@@ -5,11 +5,11 @@ import { renderSVG } from "uqr";
 import {
   getLastTimelineProjectId,
   getRecentTimelineProjects,
-} from "../lib/lastTimelineProject.js";
+} from "@lib/client/lastTimelineProject.js";
 import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
-} from "../lib/desktopMenuEvents.js";
+} from "@lib/client/desktopMenuEvents.js";
 import {
   createSongAndOpen,
   currentTimelineProjectId,
@@ -17,14 +17,14 @@ import {
   importLibraryFile,
   listTemplateIds,
   saveProjectAs,
-} from "../lib/desktopFileMenu.js";
+} from "@lib/client/desktopFileMenu.js";
 import {
   isDesktopShell,
   prepareHostRestart,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
-} from "../lib/desktopBridge.js";
-import { shouldAllowNativeTextClipboard } from "../lib/isEditableKeyboardTarget.js";
+} from "@lib/client/desktopBridge.js";
+import { shouldAllowNativeTextClipboard } from "@lib/client/isEditableKeyboardTarget.js";
 import {
   downloadDiagnosticsExport,
   fetchNetworkInfo,
@@ -33,13 +33,13 @@ import {
   apkDownloadUrlsFromJoin,
   probeApkAvailable,
   postSystemRestart,
-} from "../lib/setlistApi.js";
-import { suppressAudioPlayback } from "../lib/audioPlayback.js";
-import { restoreAudioOutputSink } from "../lib/audioOutputPrefs.js";
+} from "@lib/shell-operator/setlistApi.js";
+import { suppressAudioPlayback } from "@lib/audio/audioPlayback.js";
+import { restoreAudioOutputSink } from "@lib/audio/audioOutputPrefs.js";
 import {
   OPEN_PREFERENCES_EVENT,
   parseOpenPreferencesDetail,
-} from "../lib/preferencesEvents.js";
+} from "@lib/client/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellPromptDialog } from "./ShellBlockingDialog.js";

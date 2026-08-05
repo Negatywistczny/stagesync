@@ -7,7 +7,7 @@ import {
   formatSectionNameForDisplay,
   type Project,
 } from "@stagesync/shared";
-import { buildFormaLiveContext } from "../../lib/clientForma.js";
+import { buildFormaLiveContext } from "@lib/client/clientForma.js";
 import styles from "../ClientShell.module.css";
 
 type DrumsPaneProps = {

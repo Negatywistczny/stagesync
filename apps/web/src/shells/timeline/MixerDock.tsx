@@ -1,5 +1,5 @@
 import { type Project } from "@stagesync/shared";
-import { type TrackSelection } from "../../lib/timelineSelection.js";
+import { type TrackSelection } from "@lib/timeline/timelineSelection.js";
 import {
   MixerSurface,
 } from "./channelStrip/index.js";

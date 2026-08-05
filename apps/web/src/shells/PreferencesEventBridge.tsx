@@ -4,7 +4,7 @@ import {
   OPEN_PREFERENCES_EVENT,
   parseOpenPreferencesDetail,
   type PreferencesTab,
-} from "../lib/preferencesEvents.js";
+} from "@lib/client/preferencesEvents.js";
 import { ServerSettingsModal } from "../shells/ServerSettingsModal.js";
 
 /**

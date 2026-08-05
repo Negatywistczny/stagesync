@@ -6,7 +6,7 @@ import {
   requestNotificationPermission,
   setPushEnabledPreference,
   syncPushRegistration,
-} from "../lib/pushNotifications.js";
+} from "@lib/client/pushNotifications.js";
 import styles from "./ShellNotificationFields.module.css";
 
 /**

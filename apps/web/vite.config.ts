@@ -78,6 +78,16 @@ export default defineConfig(({ mode }) => {
     define: {
       __STAGESYNC_UI_TARGET__: JSON.stringify(target),
     },
+    resolve: {
+      alias: {
+        "@lib/audio": resolve(rootDir, "src/lib/audio"),
+        "@lib/timeline": resolve(rootDir, "src/lib/timeline"),
+        "@lib/timeline-edit": resolve(rootDir, "src/lib/timeline-edit"),
+        "@lib/client": resolve(rootDir, "src/lib/client"),
+        "@lib/shell-operator": resolve(rootDir, "src/lib/shell-operator"),
+        "@lib": resolve(rootDir, "src/lib"),
+      },
+    },
     plugins: [react(), stagesyncUiMetaPlugin(target, distAbs)],
     build: {
       outDir,

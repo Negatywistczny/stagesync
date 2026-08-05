@@ -13,13 +13,13 @@ vi.mock("../transport/useTransport.js", () => ({
   }),
 }));
 
-vi.mock("../lib/operatorPin.js", () => ({
+vi.mock("@lib/shell-operator/operatorPin.js", () => ({
   fetchOperatorPinRequired: vi.fn(async () => true),
   getStoredOperatorPin: vi.fn(() => null),
   unlockOperatorPin: vi.fn(),
 }));
 
-vi.mock("../lib/desktopBridge.js", () => ({
+vi.mock("@lib/client/desktopBridge.js", () => ({
   canReturnToLauncher: () => false,
   returnToLauncher: vi.fn(),
 }));
@@ -48,7 +48,7 @@ describe("OperatorPinGate", () => {
   });
 
   it("renders children when PIN is not required", async () => {
-    const { fetchOperatorPinRequired } = await import("../lib/operatorPin.js");
+    const { fetchOperatorPinRequired } = await import("@lib/shell-operator/operatorPin.js");
     vi.mocked(fetchOperatorPinRequired).mockResolvedValueOnce(false);
 
     render(

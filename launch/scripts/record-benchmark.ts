@@ -1,7 +1,7 @@
 /**
  * scripts/record-benchmark.ts — Smart Tempo Benchmark Snapshot Recorder CLI
  * Runs accuracy analysis on train data, extracts Git commit, and appends a snapshot
- * to apps/web/src/lib/smartTempoBenchmarkHistory.json for regression tracking.
+ * to apps/web/src/lib/audio/smartTempoBenchmarkHistory.json for regression tracking.
  * Computes both DAW Grade (60ms/125ms) and Stage-Ready Grade (15ms/35ms) metrics.
  *
  * Usage:
@@ -11,7 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { analyzeAudioTempoAsync } from "../../apps/web/src/lib/audioTempoAnalysis.js";
+import { analyzeAudioTempoAsync } from "../../apps/web/src/lib/audio/audioTempoAnalysis.js";
 import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
@@ -20,11 +20,11 @@ const FIXTURES_DIR = path.resolve(
 );
 const HISTORY_FILE = path.resolve(
   process.cwd(),
-  "apps/web/src/lib/smartTempoBenchmarkHistory.json",
+  "apps/web/src/lib/audio/smartTempoBenchmarkHistory.json",
 );
 const DATASET_FILE = path.resolve(
   process.cwd(),
-  "apps/web/src/lib/smartTempoBenchmarkData.json",
+  "apps/web/src/lib/audio/smartTempoBenchmarkData.json",
 );
 
 export type StageTier = "stage-perfect" | "stage-acceptable" | "stage-unusable";

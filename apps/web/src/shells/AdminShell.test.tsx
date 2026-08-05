@@ -5,36 +5,36 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../lib/useMqMobileCompact.js", () => ({
+vi.mock("@lib/client/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-vi.mock("../lib/useMqTablet.js", () => ({
+vi.mock("@lib/client/useMqTablet.js", () => ({
   useMqTablet: vi.fn(() => false),
 }));
 
-vi.mock("../lib/operatorSurface.js", () => ({
+vi.mock("@lib/shell-operator/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
   shouldShowFullscreenControl: vi.fn(() => false),
   isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
-vi.mock("../lib/useAnnounceDevicePresence.js", () => ({
+vi.mock("@lib/client/useAnnounceDevicePresence.js", () => ({
   useAnnounceDevicePresence: vi.fn(),
 }));
 
-vi.mock("../lib/desktopBridge.js", () => ({
+vi.mock("@lib/client/desktopBridge.js", () => ({
   prepareHostRestart: vi.fn(),
   syncNavRecentProjects: vi.fn(),
   syncNavTimelineProjectId: vi.fn(),
   toggleAppFullscreen: vi.fn(),
 }));
 
-vi.mock("../lib/nativeShell.js", () => ({
+vi.mock("@lib/client/nativeShell.js", () => ({
   getStageSyncNative: () => null,
 }));
 
-vi.mock("../lib/libraryApi.js", () => ({
+vi.mock("@lib/shell-operator/libraryApi.js", () => ({
   fetchLibrary: vi.fn(async () => ({ projects: [] })),
   fetchProject: vi.fn(),
   createProject: vi.fn(),
@@ -46,16 +46,16 @@ vi.mock("../lib/libraryApi.js", () => ({
   batchMidiProgramIds: vi.fn(),
 }));
 
-vi.mock("../lib/setlistApi.js", () => ({
+vi.mock("@lib/shell-operator/setlistApi.js", () => ({
   postSystemRestart: vi.fn(),
   postSystemShutdown: vi.fn(),
 }));
 
-vi.mock("../lib/operatorNavShortcuts.js", () => ({
+vi.mock("@lib/shell-operator/operatorNavShortcuts.js", () => ({
   useOperatorNavShortcuts: vi.fn(),
 }));
 
-vi.mock("../lib/useMqTablet.js", () => ({
+vi.mock("@lib/client/useMqTablet.js", () => ({
   useMqTablet: vi.fn(() => false),
 }));
 
@@ -76,12 +76,12 @@ vi.mock("../transport/useTransport.js", () => ({
 }));
 
 import { AdminShell } from "./AdminShell.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
-import { useMqTablet } from "../lib/useMqTablet.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
+import { useMqTablet } from "@lib/client/useMqTablet.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
+} from "@lib/shell-operator/operatorSurface.js";
 
 function html(): string {
   return renderToStaticMarkup(

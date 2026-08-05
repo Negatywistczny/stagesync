@@ -8,8 +8,8 @@ import {
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
-import { mergeApiHeaders } from "../lib/operatorPin.js";
-import { transportStateFromTick } from "../lib/timelineLocator.js";
+import { mergeApiHeaders } from "@lib/shell-operator/operatorPin.js";
+import { transportStateFromTick } from "@lib/timeline/timelineLocator.js";
 
 export type TransportCommandResult = {
   state: TransportState;

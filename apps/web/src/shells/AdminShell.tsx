@@ -22,33 +22,33 @@ import {
   importLibraryPack,
   putProject,
   updateProject,
-} from "../lib/libraryApi.js";
-import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
-import { prepareHostRestart } from "../lib/desktopBridge.js";
-import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
-import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
-import { useMqTablet } from "../lib/useMqTablet.js";
-import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
-import { APP_VERSION } from "../lib/appVersion.js";
+} from "@lib/shell-operator/libraryApi.js";
+import { postSystemRestart, postSystemShutdown } from "@lib/shell-operator/setlistApi.js";
+import { prepareHostRestart } from "@lib/client/desktopBridge.js";
+import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "@lib/client/desktopBridge.js";
+import { useAnnounceDevicePresence } from "@lib/client/useAnnounceDevicePresence.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
+import { useMqTablet } from "@lib/client/useMqTablet.js";
+import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
 import {
   CLOCK_DISPLAY_CHANGED_EVENT,
   formatClockDisplay,
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
-} from "../lib/clockDisplayPrefs.js";
-import { openPreferences } from "../lib/preferencesEvents.js";
-import { markOperatorSession } from "../lib/operatorSession.js";
+} from "@lib/client/clockDisplayPrefs.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
   ADMIN_SECTIONS,
   isAdminSectionId,
   type AdminSectionId,
-} from "../lib/operatorNavRoutes.js";
+} from "@lib/shell-operator/operatorNavRoutes.js";
 import {
   isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
+} from "@lib/shell-operator/operatorSurface.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
 import {

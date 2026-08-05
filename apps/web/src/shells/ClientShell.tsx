@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { toggleAppFullscreen } from "../lib/desktopBridge.js";
+import { toggleAppFullscreen } from "@lib/client/desktopBridge.js";
 import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
-} from "../lib/desktopMenuEvents.js";
+} from "@lib/client/desktopMenuEvents.js";
 import {
   releaseScreenWakeLock,
   requestScreenWakeLock,
-} from "../lib/screenWakeLock.js";
+} from "@lib/client/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
-import { getOperatorAppJumpLinks } from "../lib/operatorNavRoutes.js";
+import { getOperatorAppJumpLinks } from "@lib/shell-operator/operatorNavRoutes.js";
 import {
   isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 import { OperatorPinFields } from "./OperatorPinFields.js";
 import { OperatorNav } from "./components/OperatorNav.js";
@@ -25,7 +25,7 @@ import {
   DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
-} from "../lib/deviceNamePrefs.js";
+} from "@lib/client/deviceNamePrefs.js";
 import {
   INSTRUMENT_PITCH_MANUAL_MAX,
   INSTRUMENT_PITCH_MANUAL_MIN,
@@ -48,11 +48,11 @@ import {
   setLiteralQuality,
   setSectionNamesPolish,
   type ClientDisplayPrefs,
-} from "../lib/clientDisplayPrefs.js";
-import { applyVocalTap, vocalTapQueue } from "../lib/clientVocalTap.js";
-import { putProject } from "../lib/libraryApi.js";
-import { ticksFromSyncLeadAlongMap, ticksFromSyncLeadMs } from "../lib/syncLead.js";
-import { useActiveProject } from "../lib/useActiveProject.js";
+} from "@lib/client/clientDisplayPrefs.js";
+import { applyVocalTap, vocalTapQueue } from "@lib/client/clientVocalTap.js";
+import { putProject } from "@lib/shell-operator/libraryApi.js";
+import { ticksFromSyncLeadAlongMap, ticksFromSyncLeadMs } from "@lib/timeline/syncLead.js";
+import { useActiveProject } from "@lib/shell-operator/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import { noteH01ConsumerRender } from "../transport/h01PerfProbe.js";
@@ -70,14 +70,14 @@ import {
   saveScoreOctave,
   type ScoreOctave,
   type ScorePartInfo,
-} from "../lib/scoreOsmd.js";
+} from "@lib/timeline-edit/scoreOsmd.js";
 import {
   SCORE_ZOOM_DEFAULT,
   SCORE_ZOOM_MAX,
   SCORE_ZOOM_MIN,
   SCORE_ZOOM_STEP,
   clampScoreZoom,
-} from "../lib/scorePlayhead.js";
+} from "@lib/timeline-edit/scorePlayhead.js";
 import {
   IconFullscreen,
   IconMixer,

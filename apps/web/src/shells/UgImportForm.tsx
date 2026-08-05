@@ -16,7 +16,7 @@ import {
 import {
   fetchUgTabFromServer,
   searchUgTabs,
-} from "../lib/ugImportApi.js";
+} from "@lib/shell-operator/ugImportApi.js";
 import styles from "./UgImportForm.module.css";
 
 export type UgImportApplyPayload = {

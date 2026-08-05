@@ -6,8 +6,8 @@ import {
   type Project,
   type TimeSignature,
 } from "@stagesync/shared";
-import type { MapLaneId } from "../../lib/mapLaneEdit.js";
-import type { FormaToolId } from "../../lib/timelineGesture.js";
+import type { MapLaneId } from "@lib/timeline/mapLaneEdit.js";
+import type { FormaToolId } from "@lib/timeline/timelineGesture.js";
 import {
   IconAutoAdvance,
   IconChevronLeft,

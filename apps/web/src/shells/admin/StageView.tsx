@@ -12,8 +12,8 @@ import {
   type LiveDeskSettingsDto,
   type PresenceClient,
   type SessionStageMessage,
-} from "../../lib/setlistApi.js";
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/setlistApi.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import shell from "../AdminShell.module.css";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";

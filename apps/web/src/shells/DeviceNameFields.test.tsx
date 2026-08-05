@@ -8,7 +8,7 @@ import { DeviceNameFields } from "./DeviceNameFields.js";
 const getStored = vi.fn(() => "Ania");
 const setStored = vi.fn((v: string) => v.trim());
 
-vi.mock("../lib/deviceNamePrefs.js", () => ({
+vi.mock("@lib/client/deviceNamePrefs.js", () => ({
   DEVICE_DISPLAY_NAME_MAX: 40,
   getStoredDeviceDisplayName: () => getStored(),
   setStoredDeviceDisplayName: (v: string) => setStored(v),

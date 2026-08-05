@@ -825,7 +825,7 @@ export type ProjectV6 = z.infer<typeof ProjectSchemaV6>;
 export type Project = ProjectV6;
 
 /** Canonical project schema (v6). */
-export const ProjectSchema = ProjectSchemaV6;
+export { ProjectSchemaV6 as ProjectSchema };
 
 /**
  * Full-document PUT. `updatedAt` is the client's known version (OCC token);
@@ -874,7 +874,7 @@ export const ExportLibraryBodySchema = z.object({
 export type ExportLibraryBody = z.infer<typeof ExportLibraryBodySchema>;
 
 /** @deprecated Use PutProjectBodySchema for full-document PUT. */
-export const UpdateProjectBodySchema = PutProjectBodySchema;
+export { PutProjectBodySchema as UpdateProjectBodySchema };
 
 export type UpdateProjectBody = PutProjectBody;
 

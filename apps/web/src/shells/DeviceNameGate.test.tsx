@@ -12,7 +12,7 @@ vi.mock("../transport/useTransport.js", () => ({
   }),
 }));
 
-vi.mock("../lib/desktopBridge.js", () => ({
+vi.mock("@lib/client/desktopBridge.js", () => ({
   canReturnToLauncher: () => false,
   returnToLauncher: vi.fn(),
 }));
@@ -20,7 +20,7 @@ vi.mock("../lib/desktopBridge.js", () => ({
 const getStored = vi.fn(() => null as string | null);
 const setStored = vi.fn((v: string) => v.trim());
 
-vi.mock("../lib/deviceNamePrefs.js", () => ({
+vi.mock("@lib/client/deviceNamePrefs.js", () => ({
   DEVICE_DISPLAY_NAME_MAX: 40,
   getStoredDeviceDisplayName: () => getStored(),
   setStoredDeviceDisplayName: (v: string) => setStored(v),

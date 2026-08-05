@@ -13,7 +13,7 @@ const SAMPLE = `#TITLE:Smoke
 E
 `;
 
-vi.mock("../lib/ultrastarImportApi.js", () => ({
+vi.mock("@lib/shell-operator/ultrastarImportApi.js", () => ({
   fetchUltrastarAccount: vi.fn(async () => ({
     configured: false,
     user: "",
@@ -60,7 +60,7 @@ import {
   fetchUltrastarFromServer,
   putUltrastarAccount,
   searchUltrastarSongs,
-} from "../lib/ultrastarImportApi.js";
+} from "@lib/shell-operator/ultrastarImportApi.js";
 
 describe("UltrastarImportForm", () => {
   beforeEach(() => {

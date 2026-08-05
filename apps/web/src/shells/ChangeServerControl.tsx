@@ -3,8 +3,8 @@ import { Button, Input } from "@stagesync/ui";
 import {
   canChangeServer,
   requestNativeChangeServer,
-} from "../lib/nativeShell.js";
-import { clearOperatorSession } from "../lib/operatorSession.js";
+} from "@lib/client/nativeShell.js";
+import { clearOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import styles from "./ChangeServerControl.module.css";
 
 /**

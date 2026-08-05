@@ -3,7 +3,7 @@ import {
   AUDIO_LATENCY_MAX_MS,
   AUDIO_LATENCY_MIN_MS,
   clampLatencyCompensationMs,
-} from "../../../lib/audioLatencyPrefs.js";
+} from "@lib/audio/audioLatencyPrefs.js";
 import styles from "../../ServerSettingsModal.module.css";
 
 interface AudioSettingsTabProps {

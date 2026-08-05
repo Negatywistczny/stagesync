@@ -24,7 +24,7 @@ import {
   type HostUpdateStatus,
   type MidiHostStatus,
   type SafetyNetStatus,
-} from "../../lib/setlistApi.js";
+} from "@lib/shell-operator/setlistApi.js";
 import {
   canUseDesktopUpdater,
   checkDesktopUpdate,
@@ -32,20 +32,20 @@ import {
   openExternalUrl,
   formatUnknownError,
   type DesktopUpdateInfo,
-} from "../../lib/desktopBridge.js";
+} from "@lib/client/desktopBridge.js";
 import {
   DOCS_INSTALL_URL,
   DOCS_ISSUES_URL,
   DOCS_RELEASES_URL,
-} from "../../lib/docsLinks.js";
-import { APP_VERSION } from "../../lib/appVersion.js";
+} from "@lib/client/docsLinks.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
 import {
   fetchAndroidLatestManifest,
   isSemverNewer,
-} from "../../lib/androidLatest.js";
-import { isAndroidUpdateSurface } from "../../lib/nativeShell.js";
+} from "@lib/client/androidLatest.js";
+import { isAndroidUpdateSurface } from "@lib/client/nativeShell.js";
 
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import { BrandName } from "../BrandName.js";
 import { Link } from "react-router-dom";

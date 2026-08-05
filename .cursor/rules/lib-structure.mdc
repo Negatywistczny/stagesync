@@ -1,0 +1,44 @@
+---
+description: apps/web/src/lib — struktura 5 kategorii, zakaz flat root, obowiązkowe aliasy @lib/kategoria/*
+alwaysApply: true
+---
+
+# StageSync: `apps/web/src/lib` — struktura + importy
+
+Uzupełnia [constitution.mdc](constitution.mdc) → `.clinerules` jako SSOT.
+
+## Twardy zakaz: 0 plików w `src/lib/` (root)
+
+**Nigdy nie twórz nowych plików bezpośrednio w `apps/web/src/lib/`.** Wszystko musi należeć do jednej z 5 kategorii poniżej. Po tej regule lib/ jest teraz 0 plików flat.
+
+## 5 kategorii plików (SSOT) + obowiązkowa przynależność):
+
+| Katalog | Prefiks / wzorzec nazwy | Alias importu |
+|---|---|---|
+| `src/lib/audio/ | audio*, beatMapper*, metronome*, tapTempo, waveformPeaks, smartTempoBenchmark*.json | `@lib/audio/*` |
+| `src/lib/timeline/ | timeline*, breakpoints, clientBar, clientGrid, mapSegments, mapLane, syncLead, clipStartEdit, gridHeroMotion, useTimelineTouchGestures | `@lib/timeline/*` |
+| `src/lib/timeline-edit/ | *Edit (akordyEdit, cueEdit, forma*, score*, tekst*), setlistBudget, contentLaneEdit | `@lib/timeline-edit/*` |
+| `src/lib/client/ | client*, *Prefs*, appearance, androidLatest, appVersion, docsLinks, deviceName, screenWakeLock, memoryPressure, sentry, push, useMq*, useKeepTileAboveIme, lastTimelineProject, truncateMiddle, draftHistory, desktopBridge*, nativeShell, clientForma/Karaoke/VocalTap, mixerZoneVisibility, preferencesEvents, isEditableKeyboardTarget, useAnnounceDevicePresence | `@lib/client/*` |
+| `src/lib/shell-operator/ | operator*, libraryApi, setlistApi, projectAssetsApi, ugImportApi, ultrastarImportApi, useActiveProject | `@lib/shell-operator/*` |
+
+## Zasady importu — BEZ względnych do `../lib/`
+
+- **Wszyscy konsumenci poza `lib/`** (shells, pages, transport, dev itd.) importują **TYLKO przez aliasy `@lib/kategoria/...`. **Nigdy** `../lib/nazwa` ani `../../src/lib/nazwa` — te ścieżki nie istnieją (lib root jest pusty).
+- **Wewnątrz `lib/` między kategoriami**: też używaj `@lib/innaKategoria/...` zamiast `../innaKategoria/...` dla czytelności i stabilności przy przenoszeniu.
+- **Wewnątrz tej samej kategorii**: `./sąsiedniPlik.js` jest OK (relative).
+
+## Sprawdź przed zapisaniem
+
+1. Czy plik, który dodałem, jest w dokładnie jednym z 5 katalogów (nie w lib root).
+2. Czy wszystkie nowe importy używają `@lib/kategoria/` a nie względnych `../lib/`.
+3. Jeśli nie wiesz do jakiej kategorii kwalifikuje się nowy plik:
+   - **Zadaj sobie pytanie: „czy dotyczy DSP / audio-context?` → audio
+   - Czy dotyczy silnika renderowania timeline (bez edycji) → timeline
+   - Czy dotyczy mutacji treści klipów (edycja) → timeline-edit
+   - Czy dotyczy prefów / UI shell / integracji z OS / mostka desktop → client
+   - Czy to operatory CRUD po API / stan aktywnego projektu → shell-operator
+4. W wątpliwościach: client jest bezpieczniejszy wybór (łatwiej przenieść później).
+
+## Konsekwencja złamania reguły
+
+Jeśli dodasz plik do `src/lib/` root → knip + check-types przejdą, ale łamiesz SSOT struktury i będziesz musiał przenieść zanim PR zostanie zmergowany.

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Button } from "@stagesync/ui";
-import { uploadProjectMusicXml } from "../../../lib/projectAssetsApi.js";
+import { uploadProjectMusicXml } from "@lib/shell-operator/projectAssetsApi.js";
 import { Modal } from "./Modal.js";
 import styles from "../../AdminShell.module.css";
 

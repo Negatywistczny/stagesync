@@ -34,5 +34,3 @@ export function SmartTempoPage() {
     </div>
   );
 }
-
-export default SmartTempoPage;

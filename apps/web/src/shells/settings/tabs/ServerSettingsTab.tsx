@@ -1,5 +1,5 @@
 import { Button, Input, Select } from "@stagesync/ui";
-import { browseServerPath, type BrowseResult, type ServerSettingsValues, type ServerSettingsResponse } from "../../../lib/setlistApi.js";
+import { browseServerPath, type BrowseResult, type ServerSettingsValues, type ServerSettingsResponse } from "@lib/shell-operator/setlistApi.js";
 import styles from "../../ServerSettingsModal.module.css";
 
 interface ServerSettingsTabProps {

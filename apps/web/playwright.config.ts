@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
-import { DEVICE_DISPLAY_NAME_STORAGE_KEY } from "./src/lib/deviceNamePrefs.js";
+import { DEVICE_DISPLAY_NAME_STORAGE_KEY } from "./src/lib/client/deviceNamePrefs.js";
 
 /**
  * Isolated data dir so e2e never touches the developer's `data/` tree.

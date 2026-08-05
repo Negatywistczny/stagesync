@@ -7,7 +7,7 @@ import {
   HEAP_WARN_BYTES,
   noteMemoryCheckpoint,
   resetMemoryPressureForTests,
-} from "../lib/memoryPressure.js";
+} from "@lib/client/memoryPressure.js";
 import { MemoryPressureBanner } from "./MemoryPressureBanner.js";
 
 function stubHeap(used: number, limit = 4 * 1024 * 1024 * 1024) {

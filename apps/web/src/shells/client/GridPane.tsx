@@ -22,13 +22,13 @@ import {
   buildGridLiveContext,
   cycleTotalBars,
   type GridCycleStep,
-} from "../../lib/clientGrid.js";
-import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
+} from "@lib/timeline/clientGrid.js";
+import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 import {
   PHRASE_CAROUSEL_MS,
   prefersReducedMotion,
   runHeroChordTransition,
-} from "../../lib/gridHeroMotion.js";
+} from "@lib/timeline/gridHeroMotion.js";
 import {
   ChordName,
   serializeChordNameHtml,

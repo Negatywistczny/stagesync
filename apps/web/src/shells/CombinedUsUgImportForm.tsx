@@ -24,25 +24,25 @@ import {
   type UgSearchHit,
   type UltrastarSearchHit,
 } from "@stagesync/shared";
-import { fetchProject } from "../lib/libraryApi.js";
+import { fetchProject } from "@lib/shell-operator/libraryApi.js";
 import {
   estimateAudioBufferBytes,
   loadAudioBuffer,
-} from "../lib/audioPlayback.js";
+} from "@lib/audio/audioPlayback.js";
 import {
   formatBytesMb,
   noteMemoryCheckpoint,
   registerMemoryContributor,
-} from "../lib/memoryPressure.js";
+} from "@lib/client/memoryPressure.js";
 import {
   analyzeAudioTempoAsync,
   buildImportTempoAnalysisOptions,
   yieldToUi,
-} from "../lib/audioTempoAnalysis.js";
+} from "@lib/audio/audioTempoAnalysis.js";
 import {
   computeWaveformFromAudioBuffer,
   resolveInitialAudioStartOffsetMs,
-} from "../lib/waveformPeaks.js";
+} from "@lib/audio/waveformPeaks.js";
 import {
   fetchSessionYoutubeFile,
   pollSessionYoutubeJob,
@@ -50,11 +50,11 @@ import {
   startSessionYoutubeImport,
   startYoutubeAudioImport,
   uploadProjectAudio,
-} from "../lib/projectAssetsApi.js";
+} from "@lib/shell-operator/projectAssetsApi.js";
 import {
   getMetronomeAudioContext,
   resumeMetronomeAudio,
-} from "../lib/metronome.js";
+} from "@lib/audio/metronome.js";
 
 /** Editorial Beat 1, then snap to nearby onset so the attack sits on the barline. */
 function refineBeat1OffsetMs(
@@ -75,8 +75,8 @@ function refineBeat1OffsetMs(
 import {
   fetchUltrastarFromServer,
   searchUltrastarSongs,
-} from "../lib/ultrastarImportApi.js";
-import { fetchUgTabFromServer, searchUgTabs } from "../lib/ugImportApi.js";
+} from "@lib/shell-operator/ultrastarImportApi.js";
+import { fetchUgTabFromServer, searchUgTabs } from "@lib/shell-operator/ugImportApi.js";
 import { Check, Music } from "lucide-react";
 import { AudioDropzone } from "./import/AudioDropzone.js";
 import { BeatMapperPane } from "./import/BeatMapperPane.js";

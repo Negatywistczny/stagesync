@@ -1,5 +1,5 @@
-import { type AppearanceState } from "../../../lib/appearance.js";
-import { type ClockDisplayFormat } from "../../../lib/clockDisplayPrefs.js";
+import { type AppearanceState } from "@lib/client/appearance.js";
+import { type ClockDisplayFormat } from "@lib/client/clockDisplayPrefs.js";
 import { ShellAppearanceFields } from "../../ShellAppearanceFields.js";
 import { ShellNotificationFields } from "../../ShellNotificationFields.js";
 import { DeviceNameFields } from "../../DeviceNameFields.js";

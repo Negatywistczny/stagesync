@@ -18,19 +18,19 @@ import {
 import {
   computeEnvelopeBins,
   type EnvelopeBin,
-} from "../../lib/waveformPeaks.js";
+} from "@lib/audio/waveformPeaks.js";
 import {
   auditionBeatIndex,
   beatPeriodMsFromBpm,
   parseAuditionBpm,
   stopBeatMapperAudition,
   type BeatMapperAuditionVoice,
-} from "../../lib/beatMapperAudition.js";
+} from "@lib/audio/beatMapperAudition.js";
 import {
   getMetronomeAudioContext,
   resumeMetronomeAudio,
   scheduleMetronomeClickAt,
-} from "../../lib/metronome.js";
+} from "@lib/audio/metronome.js";
 import { IconPause, IconPlay } from "../icons.js";
 import {
   BEAT_MAPPER_ZOOM_MAX,
@@ -38,7 +38,7 @@ import {
   beatMapperWheelPanDelta,
   defaultBeatMapperZoom,
   isBeatMapperHorizontalWheel,
-} from "../../lib/beatMapperView.js";
+} from "@lib/audio/beatMapperView.js";
 import { AudioDropzone } from "./AudioDropzone.js";
 import styles from "./BeatMapperPane.module.css";
 

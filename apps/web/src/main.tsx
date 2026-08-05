@@ -4,8 +4,8 @@ import App from "./App";
 import {
   bootHostThemeDefault,
   initAppearance,
-} from "./lib/appearance.js";
-import { captureWebException, initWebSentry } from "./lib/sentry.js";
+} from "@lib/client/appearance.js";
+import { captureWebException, initWebSentry } from "@lib/client/sentry.js";
 import { AppErrorBoundary } from "./shells/AppErrorBoundary.js";
 import "./index.css";
 

@@ -4,8 +4,8 @@ import {
   DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
-} from "../lib/deviceNamePrefs.js";
-import { useKeepTileAboveIme } from "../lib/useKeepTileAboveIme.js";
+} from "@lib/client/deviceNamePrefs.js";
+import { useKeepTileAboveIme } from "@lib/client/useKeepTileAboveIme.js";
 import { BrandName } from "./BrandName.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";

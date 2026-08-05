@@ -8,8 +8,8 @@
 
 import React, { useMemo, useState } from "react";
 import styles from "./SmartTempoAccuracyDashboard.module.css";
-import benchmarkDataRaw from "../../lib/smartTempoBenchmarkData.json";
-import benchmarkHistoryRaw from "../../lib/smartTempoBenchmarkHistory.json";
+import benchmarkDataRaw from "@lib/audio/smartTempoBenchmarkData.json";
+import benchmarkHistoryRaw from "@lib/audio/smartTempoBenchmarkHistory.json";
 
 export type StageTier = "stage-perfect" | "stage-acceptable" | "stage-unusable";
 export type DawTier = "exact" | "close" | "fail";

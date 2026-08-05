@@ -35,7 +35,7 @@ vi.mock("./api.js", () => ({
   setTransportLoop,
 }));
 
-vi.mock("../lib/setlistApi.js", () => ({
+vi.mock("@lib/shell-operator/setlistApi.js", () => ({
   fetchLiveDesk,
 }));
 

@@ -1,8 +1,8 @@
 import {
   clearOperatorSession,
   markOperatorSession,
-} from "../lib/operatorSession.js";
-import { setStoredDeviceDisplayName } from "../lib/deviceNamePrefs.js";
+} from "@lib/shell-operator/operatorSession.js";
+import { setStoredDeviceDisplayName } from "@lib/client/deviceNamePrefs.js";
 import type { DevSurface } from "./devSurfaceTypes.js";
 import {
   getDevPreviewConfig,

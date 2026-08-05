@@ -14,7 +14,7 @@ import {
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
-import { transportStateFromTick } from "../lib/timelineLocator.js";
+import { transportStateFromTick } from "@lib/timeline/timelineLocator.js";
 import {
   getTransport,
   pauseTransport,
@@ -34,7 +34,7 @@ import {
 } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 import { wsReconnectDelayMs } from "./wsReconnect.js";
-import { fetchLiveDesk, fetchSetlist } from "../lib/setlistApi.js";
+import { fetchLiveDesk, fetchSetlist } from "@lib/shell-operator/setlistApi.js";
 import {
   dismissStageCues,
   formatTransportError,

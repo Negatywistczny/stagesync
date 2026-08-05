@@ -5,43 +5,43 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DESKTOP_MENU_EVENT } from "../lib/desktopMenuEvents.js";
-import { OPEN_PREFERENCES_EVENT } from "../lib/preferencesEvents.js";
+import { DESKTOP_MENU_EVENT } from "@lib/client/desktopMenuEvents.js";
+import { OPEN_PREFERENCES_EVENT } from "@lib/client/preferencesEvents.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ClientShell } from "./ClientShell.js";
 
-vi.mock("../lib/desktopBridge.js", () => ({
+vi.mock("@lib/client/desktopBridge.js", () => ({
   toggleAppFullscreen: vi.fn(),
 }));
 
-vi.mock("../lib/nativeShell.js", () => ({
+vi.mock("@lib/client/nativeShell.js", () => ({
   canChangeServer: () => false,
   getStageSyncNative: () => null,
 }));
 
-vi.mock("../lib/operatorSurface.js", () => ({
+vi.mock("@lib/shell-operator/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => false),
   shouldShowFullscreenControl: vi.fn(() => false),
   isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
-vi.mock("../lib/useMqMobileCompact.js", () => ({
+vi.mock("@lib/client/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-vi.mock("../lib/operatorNavShortcuts.js", () => ({
+vi.mock("@lib/shell-operator/operatorNavShortcuts.js", () => ({
   useOperatorNavShortcuts: vi.fn(),
 }));
 
-vi.mock("../lib/lastTimelineProject.js", () => ({
+vi.mock("@lib/client/lastTimelineProject.js", () => ({
   getLastTimelineProjectId: vi.fn(() => "proj-1"),
 }));
 
-vi.mock("../lib/screenWakeLock.js", () => ({
+vi.mock("@lib/client/screenWakeLock.js", () => ({
   requestScreenWakeLock: vi.fn(async () => null),
   releaseScreenWakeLock: vi.fn(async () => undefined),
 }));
@@ -62,7 +62,7 @@ vi.mock("./client/DrumsPane.js", () => ({
   DrumsPane: () => <div data-testid="drums-pane">drums</div>,
 }));
 
-vi.mock("../lib/deviceNamePrefs.js", () => ({
+vi.mock("@lib/client/deviceNamePrefs.js", () => ({
   DEVICE_DISPLAY_NAME_CHANGED_EVENT: "stagesync:device-name",
   DEVICE_DISPLAY_NAME_MAX: 40,
   getStoredDeviceDisplayName: () => "Test Performer",
@@ -76,7 +76,7 @@ project.keyMap = [
   { id: "k0", startTicks: 0, key: { tonic: "G", mode: "major" } },
 ];
 
-vi.mock("../lib/useActiveProject.js", () => ({
+vi.mock("@lib/shell-operator/useActiveProject.js", () => ({
   useActiveProject: () => ({
     activeProject: project,
     setActiveProject: vi.fn(),

@@ -15,7 +15,7 @@
     "sync-version": "node launch/scripts/sync-version.mjs",
     "sync:launcher-ui": "node launch/scripts/sync-launcher-ui.mjs",
     "lint:ss-css": "node launch/scripts/lint-ss-css.mjs",
-    "lint:knip": "knip --no-exit-code",
+    "lint:knip": "knip --exclude files,dependencies,devDependencies,unlisted,binaries,exports,types,nsExports,nsTypes,enumMembers,namespaceMembers,catalog,catalogReferences",
     "benchmark:record": "npx tsx launch/scripts/record-benchmark.ts",
     "prepare": "node -e \"try{require('child_process').execSync('husky',{stdio:'inherit'})}catch{}\""
   },

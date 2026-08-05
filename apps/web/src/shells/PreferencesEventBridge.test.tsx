@@ -7,7 +7,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import {
   OPEN_PREFERENCES_EVENT,
   openPreferences,
-} from "../lib/preferencesEvents.js";
+} from "@lib/client/preferencesEvents.js";
 import { PreferencesEventBridge } from "./PreferencesEventBridge.js";
 
 vi.mock("./ServerSettingsModal.js", () => ({

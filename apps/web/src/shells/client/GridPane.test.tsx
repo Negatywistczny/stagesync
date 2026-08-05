@@ -3,7 +3,7 @@
  */
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
+import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 import { GridPane } from "./GridPane.js";
 
 const prefs: ClientDisplayPrefs = {
