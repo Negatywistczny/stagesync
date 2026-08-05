@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** cut **`5.4.3`** (Smart Tempo polish) — następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
+**Stan:** cut **`5.4.4`** (Smart Tempo accuracy + YouTube download resilience) — następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -10,7 +10,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
-**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** zamknięta — Smart Tempo w **5.4.2**, polish **5.4.3**.
+**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** zamknięta — Smart Tempo w **5.4.2**, polish **5.4.3** / **5.4.4**.
 
 ## Must (najbliższy cut 5.5 Pitch & FX)
 
