@@ -52,7 +52,7 @@ describe("AppHeader", () => {
     expect(out).toContain('data-ss-level="1"');
   });
 
-  it("returns null on OS-menu desktop shell by default", () => {
+  it("hides chrome actions on OS-menu desktop shell by default", () => {
     vi.mocked(isOsMenuDesktopShell).mockReturnValue(true);
     const out = html(
       <AppHeader
@@ -60,7 +60,9 @@ describe("AppHeader", () => {
         appJump={[{ to: "/client", label: "Klient" }]}
       />,
     );
-    expect(out).toBe("");
+    expect(out).toContain("Admin");
+    expect(out).toContain("Klient");
+    expect(out).not.toContain('aria-label="Ustawienia"');
   });
 
   it("keeps settings gear when only :4000 desktop heuristic matches", () => {
