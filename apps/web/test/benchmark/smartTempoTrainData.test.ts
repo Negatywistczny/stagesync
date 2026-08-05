@@ -59,19 +59,17 @@ function parseTimecodeToMs(tc: string): number {
   if (parts.length >= 3) {
     const hrs = parseInt(parts[0]!, 10);
     const mins = parseInt(parts[1]!, 10);
-    let extraMs = 0;
-    let secs = 0;
     if (parts.length >= 4) {
-      secs = parseInt(parts[2]!, 10);
+      const secs = parseInt(parts[2]!, 10);
       const val = parseFloat(parts[3]!);
-      extraMs = (val / 25) * 1000;
+      const extraMs = (val / 25) * 1000;
+      return (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs - 3_600_000;
     } else {
       const secParts = parts[2]!.split(",");
-      secs = parseInt(secParts[0]!, 10);
-      extraMs = secParts[1] ? parseInt(secParts[1], 10) : 0;
+      const secs = parseInt(secParts[0]!, 10);
+      const extraMs = secParts[1] ? parseInt(secParts[1], 10) : 0;
+      return (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs - 3_600_000;
     }
-    const totalMs = (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs;
-    return totalMs - 3_600_000;
   }
   return 0;
 }
@@ -85,7 +83,7 @@ export function parseRtfReference(rtfPath: string): RefBarPoint[] {
     const cleanLine = line
       .replace(/\\tab\s?/g, "\t")
       .replace(/\\[a-z0-9]+\s?/gi, "")
-      .replace(/[\{\}]/g, "")
+      .replace(/[{}]/g, "")
       .replace(/\\$/g, "")
       .trim();
     const parts = cleanLine

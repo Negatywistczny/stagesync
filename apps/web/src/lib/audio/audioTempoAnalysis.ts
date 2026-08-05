@@ -300,8 +300,6 @@ export function estimateWindowedBpmMap(
   if (!onsetsMs || onsetsMs.length < 4 || !(globalBpm > 0)) {
     return [{ timeMs: 0, bpm: globalBpm > 0 ? globalBpm : 120 }];
   }
-
-  const rawPeriod = 60_000 / globalBpm;
   const points: WindowedBpmPoint[] = [];
 
   for (let center = 7500; center <= gridDurationMs; center += stepMs) {
@@ -1804,7 +1802,6 @@ export async function analyzeFromMonoAsync(
   let onsetsMs: number[] = [];
   let spikeOnsetsMs: number[] | undefined;
   let acfFlux: Float32Array | undefined;
-  let bpmHop = hopSize;
   let rawEstimate: number;
   let competitors: number[] = [];
   if (skipOnsets) {
@@ -1863,7 +1860,7 @@ export async function analyzeFromMonoAsync(
       : pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
     throwIfAborted(signal);
     spikeOnsetsMs = detectEnergySpikesMs(asyncFlux, sampleRate, hopSize, lowFluxArr, wideFluxArr);
-    bpmHop = acfHopSize(hopSize, sampleRate);
+    const bpmHop = acfHopSize(hopSize, sampleRate);
     acfFlux = asyncFlux;
     if (bpmHop !== hopSize) {
       acfFlux = computeOnsetStrengthEnvelope(mono, bpmHop);
@@ -1901,7 +1898,6 @@ export async function analyzeFromMonoAsync(
     hopSize,
     onsetsMs,
   );
-  const windowedMap = estimateWindowedBpmMap(onsetsMs, gridDurationMs, periodHintBpm);
   const traceContainer: { trace?: ViterbiBeatTrace[] } = {};
   let beatMs = await buildBeatGridAsync(
     onsetsMs,
