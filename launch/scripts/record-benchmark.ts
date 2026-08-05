@@ -11,7 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { analyzeAudioTempoAsync } from "../apps/web/src/lib/audioTempoAnalysis.js";
+import { analyzeAudioTempoAsync } from "../../apps/web/src/lib/audioTempoAnalysis.js";
 import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
@@ -261,20 +261,6 @@ async function recordBenchmark() {
       tier: DawTier;
       stageTier: StageTier;
     }> = [];
-    // Find matching reference downbeat in Logic Pro that corresponds to StageSync beatMs[0]
-    let matchingRef = points[0]!;
-    let minRefDist = Infinity;
-    for (const pt of points) {
-      const dist = Math.abs(pt.timecodeMs - (analysis.beatMs[0] ?? 0));
-      if (dist < minRefDist) {
-        minRefDist = dist;
-        matchingRef = pt;
-      }
-    }
-    const matchingBeatIdx = (matchingRef.bar - 1) * 4;
-    const estFirstMs = analysis.beatMs[matchingBeatIdx] ?? analysis.beatMs[0] ?? 0;
-    const downbeatShift = matchingRef.timecodeMs - estFirstMs;
-
     let cumMs = 0;
     for (let i = 0; i < points.length; i++) {
       const refPt = points[i]!;
@@ -290,8 +276,19 @@ async function recordBenchmark() {
 
       const refBarMs = 240_000 / refPt.bpm;
       const estBarMs = 240_000 / estBpmAtBar;
-      const errorMsRaw = Math.abs(estBarMs - refBarMs);
-      const timeSec = refPt.timecodeMs > 0 ? Math.round((refPt.timecodeMs / 1000) * 10) / 10 : Math.round((cumMs / 1000) * 10) / 10;
+
+      const beatIdx = (refPt.bar - 1) * 4;
+      const estBarTimeMs =
+        analysis.beatMs[beatIdx] ??
+        (analysis.beatMs[analysis.beatMs.length - 1] ?? 0) +
+          (beatIdx - Math.max(0, analysis.beatMs.length - 1)) * (60_000 / estBpmAtBar);
+
+      // Absolute timeline position error: difference between estimated bar timestamp and reference timestamp
+      const errorMsRaw = Math.abs(estBarTimeMs - refPt.timecodeMs);
+      const timeSec =
+        refPt.timecodeMs > 0
+          ? Math.round((refPt.timecodeMs / 1000) * 10) / 10
+          : Math.round((cumMs / 1000) * 10) / 10;
       cumMs += refBarMs;
 
       // Round errorMs BEFORE computing tiers to guarantee written value matches tier
