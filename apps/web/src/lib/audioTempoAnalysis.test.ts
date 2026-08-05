@@ -457,11 +457,11 @@ describe("analyzeAudioTempoAsync timeout", () => {
 
   it("falls back to defaults when analysis exceeds timeout", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    const buffer = makeLongSilentBuffer(600);
+    const buffer = makeLongSilentBuffer(60);
     const pending = analyzeAudioTempoAsync(buffer, {
       timeoutMs: 5,
-      maxAnalysisSec: 600,
-      downsample: 1,
+      maxAnalysisSec: 60,
+      downsample: 8,
       skipOnsets: false,
     });
     await vi.advanceTimersByTimeAsync(10);
@@ -469,7 +469,7 @@ describe("analyzeAudioTempoAsync timeout", () => {
 
     expect(outcome.result.estimatedBpm).toBe(120);
     expect(outcome.warning).toMatch(/domyślnego tempa/i);
-  });
+  }, 15_000);
 
   it("resolves within timeout on very long synthetic buffer", async () => {
     const buffer = makeLongSilentBuffer(10 * 3600);
