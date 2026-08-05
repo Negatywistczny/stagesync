@@ -65,8 +65,8 @@ export type AppHeaderProps = {
   wordmarkOnClick?: () => void;
   wordmarkTitle?: string;
   /**
-   * When true (default), hide on real Tauri OS-menu desktop — OS menubar owns these actions (Timeline).
-   * Admin keeps Level 1 always visible (`hideOnDesktop={false}`).
+   * When true (default), hide only chrome actions (gear, undo/redo, fullscreen, help, appearance)
+   * on real Tauri OS-menu desktop. Shell wordmark + app jump nav stay visible (no platform exception).
    * Plain browser on `:4000` keeps the in-app gear (`isOsMenuDesktopShell` is false).
    */
   hideOnDesktop?: boolean;
@@ -190,8 +190,9 @@ export function AppHeaderActions({
 
 /**
  * Level 1 app chrome — Wordmark, shell jump, global actions.
- * By default hidden on real Tauri OS-menu desktop (`isOsMenuDesktopShell`) —
- * not the bare `:4000` hostname heuristic (plain browser must keep the gear).
+ * When `hideOnDesktop` + Tauri OS-menu desktop, only skips chrome action buttons
+ * (undo/redo/gear/fullscreen/help) — OS menubar owns them. Shell wordmark stays visible
+ * (no platform exception vs browser / LAN operator).
  */
 export function AppHeader({
   suffix,
@@ -230,7 +231,7 @@ export function AppHeader({
     resolvedAppJump.length > 0 &&
     (!showOperatorNav || !isCompactMobile);
 
-  if (hideOnDesktop && isOsMenuDesktopShell()) return null;
+  const isDesktopShell = hideOnDesktop && isOsMenuDesktopShell();
   if (operatorNavExternal && isCompactMobile) return null;
 
   const handleSettings = onSettings ?? (() => openPreferences());
@@ -277,23 +278,25 @@ export function AppHeader({
           </nav>
         ) : null}
 
-        <AppHeaderActions
-          history={history}
-          helpPressed={helpPressed}
-          onHelp={onHelp}
-          appearancePressed={appearancePressed}
-          onAppearance={onAppearance}
-          onFullscreen={onFullscreen}
-          connection={connection}
-          extraActions={extraActions}
-          afterAppearance={
-            !operatorNavOnExternalBar ? (
-              <ShellIconButton label={settingsLabel} onClick={handleSettings}>
-                <IconSettings />
-              </ShellIconButton>
-            ) : null
-          }
-        />
+        {!isDesktopShell ? (
+          <AppHeaderActions
+            history={history}
+            helpPressed={helpPressed}
+            onHelp={onHelp}
+            appearancePressed={appearancePressed}
+            onAppearance={onAppearance}
+            onFullscreen={onFullscreen}
+            connection={connection}
+            extraActions={extraActions}
+            afterAppearance={
+              !operatorNavOnExternalBar ? (
+                <ShellIconButton label={settingsLabel} onClick={handleSettings}>
+                  <IconSettings />
+                </ShellIconButton>
+              ) : null
+            }
+          />
+        ) : null}
       </div>
     </header>
   );

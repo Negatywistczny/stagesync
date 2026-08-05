@@ -30,6 +30,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.4.2** | **Smart Tempo** — mapa tempa z audio (nie z sylab US) | **Wydane 2026-08-04** — tag `v5.4.2`; Import US+UG stable (etykieta „eksperymentalny" usunięta) | [CHANGELOG](../CHANGELOG.md) |
 | **5.4.3** | Smart Tempo polish — downbeat/faza, `/smart-tempo` | **Wydane 2026-08-05** — tag `v5.4.3` | [CHANGELOG](../CHANGELOG.md) |
 | **5.4.4** | Smart Tempo accuracy + YouTube download resilience | **Wydane 2026-08-05** — tag `v5.4.4` | [CHANGELOG](../CHANGELOG.md) |
+| **5.4.5** | Smart Tempo dev polish — Dev panel, benchmark history, chrome cleanup | **Wydane 2026-08-05** — tag `v5.4.5` | [CHANGELOG](../CHANGELOG.md) |
 | **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
 | **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
@@ -63,6 +64,10 @@ Tag `v5.4.3`. Historia: [CHANGELOG.md](../CHANGELOG.md). Downbeat/faza w siatce 
 ### 5.4.4 — Smart Tempo accuracy + YouTube — **wydane 2026-08-05**
 
 Tag `v5.4.4`. Historia: [CHANGELOG.md](../CHANGELOG.md). Lepsze kotwiczenie downbeatu / kolce energii w siatce; wykres konturu tempa na `/smart-tempo`; wielostopniowy fallback yt-dlp przy imporcie YouTube.
+
+### 5.4.5 — Smart Tempo dev polish — **wydane 2026-08-05**
+
+Tag `v5.4.5`. Historia: [CHANGELOG.md](../CHANGELOG.md). Sekcja `Dev` w Adminie dla buildów deweloperskich; historia benchmarków Smart Tempo; odświeżony chrome shelli na desktopie; ujednolicona diagnostyka analizy.
 
 ### 5.5 — **Pitch & FX**
 

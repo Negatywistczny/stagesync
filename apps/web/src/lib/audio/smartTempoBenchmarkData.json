@@ -5,21 +5,21 @@
     "artist": "Michael Jackson",
     "durationSec": 296,
     "barsCount": 113,
-    "exactPct": 85,
-    "closePct": 0,
-    "failPct": 15,
-    "avgErrorMs": 227.6,
-    "medianErrorMs": 13.1,
-    "p95ErrorMs": 1933.4,
+    "exactPct": 91.2,
+    "closePct": 2.7,
+    "failPct": 6.2,
+    "avgErrorMs": 31.5,
+    "medianErrorMs": 12.7,
+    "p95ErrorMs": 141.1,
     "dawGrade": {
-      "exactPct": 85,
-      "closePct": 0,
-      "failPct": 15
+      "exactPct": 91.2,
+      "closePct": 2.7,
+      "failPct": 6.2
     },
     "stageGrade": {
-      "perfectPct": 54,
-      "acceptablePct": 27.4,
-      "unusablePct": 18.6
+      "perfectPct": 56.6,
+      "acceptablePct": 30.1,
+      "unusablePct": 13.3
     },
     "bars": [
       {
@@ -1182,9 +1182,9 @@
         "estBpm": 116.22,
         "refBarMs": 2016.9,
         "estBarMs": 2065,
-        "errorMs": 132.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 12.1,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Billie Jean",
@@ -1194,9 +1194,9 @@
         "estBpm": 116.22,
         "refBarMs": 2074,
         "estBarMs": 2065,
-        "errorMs": 210.7,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 29.6,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Billie Jean",
@@ -1206,9 +1206,9 @@
         "estBpm": 117.27,
         "refBarMs": 2053.4,
         "estBarMs": 2046.6,
-        "errorMs": 437.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 5,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Billie Jean",
@@ -1218,9 +1218,9 @@
         "estBpm": 116.23,
         "refBarMs": 2063.6,
         "estBarMs": 2064.9,
-        "errorMs": 619.6,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 29.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Billie Jean",
@@ -1230,9 +1230,9 @@
         "estBpm": 116.67,
         "refBarMs": 2031.3,
         "estBarMs": 2057.1,
-        "errorMs": 726.8,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 25.4,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Billie Jean",
@@ -1242,8 +1242,8 @@
         "estBpm": 116.67,
         "refBarMs": 2048.6,
         "estBarMs": 2057.1,
-        "errorMs": 800.4,
-        "tier": "fail",
+        "errorMs": 55.1,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -1254,8 +1254,8 @@
         "estBpm": 117.57,
         "refBarMs": 2062.8,
         "estBarMs": 2041.3,
-        "errorMs": 974.7,
-        "tier": "fail",
+        "errorMs": 87.4,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -1266,8 +1266,8 @@
         "estBpm": 115.51,
         "refBarMs": 2037.7,
         "estBarMs": 2077.7,
-        "errorMs": 1180.3,
-        "tier": "fail",
+        "errorMs": 88.4,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -1278,8 +1278,8 @@
         "estBpm": 118.15,
         "refBarMs": 2057.4,
         "estBarMs": 2031.3,
-        "errorMs": 1258.7,
-        "tier": "fail",
+        "errorMs": 113.4,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -1290,7 +1290,7 @@
         "estBpm": 115.95,
         "refBarMs": 2056,
         "estBarMs": 2069.9,
-        "errorMs": 1651.9,
+        "errorMs": 133.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1302,7 +1302,7 @@
         "estBpm": 116.83,
         "refBarMs": 2048.5,
         "estBarMs": 2054.3,
-        "errorMs": 1846.2,
+        "errorMs": 145.7,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1314,7 +1314,7 @@
         "estBpm": 116.83,
         "refBarMs": 2072.3,
         "estBarMs": 2054.3,
-        "errorMs": 1933.4,
+        "errorMs": 161.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1326,7 +1326,7 @@
         "estBpm": 117.39,
         "refBarMs": 2199.7,
         "estBarMs": 2044.5,
-        "errorMs": 2047.4,
+        "errorMs": 151.2,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1338,9 +1338,9 @@
         "estBpm": 117.39,
         "refBarMs": 2279.4,
         "estBarMs": 2044.5,
-        "errorMs": 2287.8,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 14.1,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Billie Jean",
@@ -1350,7 +1350,7 @@
         "estBpm": 117.39,
         "refBarMs": 2199.7,
         "estBarMs": 2044.5,
-        "errorMs": 2775.8,
+        "errorMs": 473.9,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1362,7 +1362,7 @@
         "estBpm": 116.68,
         "refBarMs": 2279.4,
         "estBarMs": 2056.9,
-        "errorMs": 2541.8,
+        "errorMs": 141.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1374,7 +1374,7 @@
         "estBpm": 116.68,
         "refBarMs": 2000,
         "estBarMs": 2056.9,
-        "errorMs": 3029.4,
+        "errorMs": 628.7,
         "tier": "fail",
         "stageTier": "stage-unusable"
       }
@@ -1386,21 +1386,21 @@
     "artist": "Logic Pro Benchmark",
     "durationSec": 261,
     "barsCount": 86,
-    "exactPct": 67.4,
-    "closePct": 4.7,
-    "failPct": 27.9,
-    "avgErrorMs": 473.5,
-    "medianErrorMs": 14.4,
-    "p95ErrorMs": 3493.4,
+    "exactPct": 41.9,
+    "closePct": 0,
+    "failPct": 58.1,
+    "avgErrorMs": 566.1,
+    "medianErrorMs": 391.6,
+    "p95ErrorMs": 3184.8,
     "dawGrade": {
-      "exactPct": 67.4,
-      "closePct": 4.7,
-      "failPct": 27.9
+      "exactPct": 41.9,
+      "closePct": 0,
+      "failPct": 58.1
     },
     "stageGrade": {
-      "perfectPct": 52.3,
-      "acceptablePct": 10.5,
-      "unusablePct": 37.2
+      "perfectPct": 37.2,
+      "acceptablePct": 3.5,
+      "unusablePct": 59.3
     },
     "bars": [
       {
@@ -1420,47 +1420,47 @@
         "bar": 3,
         "timeSec": 3.9,
         "refBpm": 118.38,
-        "estBpm": 122.6,
+        "estBpm": 127.83,
         "refBarMs": 2027.4,
-        "estBarMs": 1957.6,
-        "errorMs": 0.8,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "estBarMs": 1877.5,
+        "errorMs": 139.4,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
         "bar": 4,
         "timeSec": 6,
         "refBpm": 115.25,
-        "estBpm": 122.6,
+        "estBpm": 127.83,
         "refBarMs": 2082.4,
-        "estBarMs": 1957.6,
-        "errorMs": 8.2,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "estBarMs": 1877.5,
+        "errorMs": 250.2,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
         "bar": 5,
         "timeSec": 8,
         "refBpm": 118.83,
-        "estBpm": 117.79,
+        "estBpm": 125.06,
         "refBarMs": 2019.7,
-        "estBarMs": 2037.5,
-        "errorMs": 14.4,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "estBarMs": 1919.1,
+        "errorMs": 313.5,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
         "bar": 7,
         "timeSec": 12.1,
         "refBpm": 121.64,
-        "estBpm": 114.95,
+        "estBpm": 118.91,
         "refBarMs": 1973.1,
-        "estBarMs": 2087.9,
-        "errorMs": 103,
-        "tier": "close",
+        "estBarMs": 2018.3,
+        "errorMs": 281.6,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -1468,11 +1468,11 @@
         "bar": 8,
         "timeSec": 14.1,
         "refBpm": 125.07,
-        "estBpm": 114.95,
+        "estBpm": 118.91,
         "refBarMs": 1919,
-        "estBarMs": 2087.9,
-        "errorMs": 119.1,
-        "tier": "close",
+        "estBarMs": 2018.3,
+        "errorMs": 194.4,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -1480,9 +1480,9 @@
         "bar": 9,
         "timeSec": 16,
         "refBpm": 122.57,
-        "estBpm": 120.25,
+        "estBpm": 119.19,
         "refBarMs": 1958.1,
-        "estBarMs": 1995.8,
+        "estBarMs": 2013.6,
         "errorMs": 29.7,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -1492,45 +1492,45 @@
         "bar": 10,
         "timeSec": 17.9,
         "refBpm": 116.22,
-        "estBpm": 120.25,
+        "estBpm": 119.19,
         "refBarMs": 2065.1,
-        "estBarMs": 1995.8,
-        "errorMs": 7.5,
+        "estBarMs": 2013.6,
+        "errorMs": 40.4,
         "tier": "exact",
-        "stageTier": "stage-perfect"
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
         "bar": 12,
         "timeSec": 22.1,
         "refBpm": 118.07,
-        "estBpm": 124.59,
+        "estBpm": 116.62,
         "refBarMs": 2032.6,
-        "estBarMs": 1926.3,
-        "errorMs": 47.3,
+        "estBarMs": 2058,
+        "errorMs": 8.8,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "I will survive",
         "bar": 13,
         "timeSec": 24.1,
         "refBpm": 120.67,
-        "estBpm": 122.8,
+        "estBpm": 116.64,
         "refBarMs": 1988.9,
-        "estBarMs": 1954.4,
-        "errorMs": 26.4,
+        "estBarMs": 2057.6,
+        "errorMs": 0.2,
         "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "I will survive",
         "bar": 14,
         "timeSec": 26.1,
         "refBpm": 119.72,
-        "estBpm": 122.8,
+        "estBpm": 116.64,
         "refBarMs": 2004.7,
-        "estBarMs": 1954.4,
+        "estBarMs": 2057.6,
         "errorMs": 7.8,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -1540,9 +1540,9 @@
         "bar": 18,
         "timeSec": 34.1,
         "refBpm": 120.13,
-        "estBpm": 120.24,
+        "estBpm": 118.29,
         "refBarMs": 1997.9,
-        "estBarMs": 1996,
+        "estBarMs": 2028.9,
         "errorMs": 7.8,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -1552,9 +1552,9 @@
         "bar": 20,
         "timeSec": 38.1,
         "refBpm": 118.87,
-        "estBpm": 117.92,
+        "estBpm": 113.54,
         "refBarMs": 2019,
-        "estBarMs": 2035.3,
+        "estBarMs": 2113.8,
         "errorMs": 8.2,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -1564,9 +1564,9 @@
         "bar": 21,
         "timeSec": 40.1,
         "refBpm": 120.14,
-        "estBpm": 117.77,
+        "estBpm": 121.05,
         "refBarMs": 1997.7,
-        "estBarMs": 2037.9,
+        "estBarMs": 1982.7,
         "errorMs": 6.3,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -1576,9 +1576,9 @@
         "bar": 25,
         "timeSec": 48.1,
         "refBpm": 119.21,
-        "estBpm": 119.41,
+        "estBpm": 120.99,
         "refBarMs": 2013.3,
-        "estBarMs": 2009.9,
+        "estBarMs": 1983.6,
         "errorMs": 10,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -1903,8 +1903,8 @@
         "estBpm": 120.01,
         "refBarMs": 2081.6,
         "estBarMs": 1999.8,
-        "errorMs": 68.5,
-        "tier": "close",
+        "errorMs": 181,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -1915,7 +1915,7 @@
         "estBpm": 120.71,
         "refBarMs": 1991.4,
         "estBarMs": 1988.2,
-        "errorMs": 131.1,
+        "errorMs": 353.4,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -1927,8 +1927,8 @@
         "estBpm": 119.49,
         "refBarMs": 2010,
         "estBarMs": 2008.5,
-        "errorMs": 46.5,
-        "tier": "exact",
+        "errorMs": 482.3,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -1939,9 +1939,9 @@
         "estBpm": 119.91,
         "refBarMs": 1992.3,
         "estBarMs": 2001.5,
-        "errorMs": 0.9,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 508.4,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -1951,9 +1951,9 @@
         "estBpm": 120.11,
         "refBarMs": 1993.8,
         "estBarMs": 1998.2,
-        "errorMs": 0.6,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 502,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -1963,9 +1963,9 @@
         "estBpm": 120.11,
         "refBarMs": 2006.4,
         "estBarMs": 1998.2,
-        "errorMs": 13.3,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 490.5,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -1975,8 +1975,8 @@
         "estBpm": 120.39,
         "refBarMs": 1996.3,
         "estBarMs": 1993.5,
-        "errorMs": 37.5,
-        "tier": "exact",
+        "errorMs": 502.8,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -1987,9 +1987,9 @@
         "estBpm": 119.64,
         "refBarMs": 1987.7,
         "estBarMs": 2006,
-        "errorMs": 8.3,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 509.3,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -1999,9 +1999,9 @@
         "estBpm": 120.65,
         "refBarMs": 2030.9,
         "estBarMs": 1989.2,
-        "errorMs": 6.2,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 510.4,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2011,9 +2011,9 @@
         "estBpm": 118.5,
         "refBarMs": 2003.8,
         "estBarMs": 2025.3,
-        "errorMs": 16.3,
-        "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "errorMs": 504.1,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2023,9 +2023,9 @@
         "estBpm": 118.5,
         "refBarMs": 2022.4,
         "estBarMs": 2025.3,
-        "errorMs": 13.9,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 489.1,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2035,9 +2035,9 @@
         "estBpm": 119.96,
         "refBarMs": 1981.8,
         "estBarMs": 2000.7,
-        "errorMs": 6.6,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 502.6,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2047,9 +2047,9 @@
         "estBpm": 119.96,
         "refBarMs": 2014.2,
         "estBarMs": 2000.7,
-        "errorMs": 8.2,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 494.5,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2059,9 +2059,9 @@
         "estBpm": 120.18,
         "refBarMs": 1993.3,
         "estBarMs": 1997,
-        "errorMs": 5.8,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 506.4,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2071,9 +2071,9 @@
         "estBpm": 120.18,
         "refBarMs": 2018,
         "estBarMs": 1997,
-        "errorMs": 17.9,
-        "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "errorMs": 495.1,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2083,9 +2083,9 @@
         "estBpm": 120.61,
         "refBarMs": 1984.6,
         "estBarMs": 1989.9,
-        "errorMs": 20.9,
-        "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "errorMs": 502.5,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2095,9 +2095,9 @@
         "estBpm": 120.61,
         "refBarMs": 2017.1,
         "estBarMs": 1989.9,
-        "errorMs": 6.9,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 492.2,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2107,9 +2107,9 @@
         "estBpm": 119.21,
         "refBarMs": 2000.1,
         "estBarMs": 2013.3,
-        "errorMs": 0.4,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
+        "errorMs": 508.2,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2119,9 +2119,9 @@
         "estBpm": 120.23,
         "refBarMs": 1983.7,
         "estBarMs": 1996.2,
-        "errorMs": 15.5,
-        "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "errorMs": 485.6,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2131,9 +2131,9 @@
         "estBpm": 120.23,
         "refBarMs": 2007.4,
         "estBarMs": 1996.2,
-        "errorMs": 32.9,
-        "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "errorMs": 468.3,
+        "tier": "fail",
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "I will survive",
@@ -2143,8 +2143,8 @@
         "estBpm": 119.83,
         "refBarMs": 1969.5,
         "estBarMs": 2002.8,
-        "errorMs": 58.8,
-        "tier": "exact",
+        "errorMs": 470.8,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -2155,8 +2155,8 @@
         "estBpm": 119.83,
         "refBarMs": 2014.8,
         "estBarMs": 2002.8,
-        "errorMs": 104.6,
-        "tier": "close",
+        "errorMs": 441.9,
+        "tier": "fail",
         "stageTier": "stage-unusable"
       },
       {
@@ -2167,7 +2167,7 @@
         "estBpm": 119.83,
         "refBarMs": 1997.2,
         "estBarMs": 2002.8,
-        "errorMs": 141.1,
+        "errorMs": 449.3,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2179,7 +2179,7 @@
         "estBpm": 120.16,
         "refBarMs": 2027.8,
         "estBarMs": 1997.3,
-        "errorMs": 163.1,
+        "errorMs": 442.4,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2191,7 +2191,7 @@
         "estBpm": 120.16,
         "refBarMs": 1991.1,
         "estBarMs": 1997.3,
-        "errorMs": 218,
+        "errorMs": 468.3,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2203,7 +2203,7 @@
         "estBpm": 119.76,
         "refBarMs": 2002.9,
         "estBarMs": 2004,
-        "errorMs": 244.6,
+        "errorMs": 436.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2215,7 +2215,7 @@
         "estBpm": 119.93,
         "refBarMs": 1982.1,
         "estBarMs": 2001.2,
-        "errorMs": 298.4,
+        "errorMs": 432.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2227,7 +2227,7 @@
         "estBpm": 119.78,
         "refBarMs": 2010,
         "estBarMs": 2003.7,
-        "errorMs": 308.5,
+        "errorMs": 413.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2239,7 +2239,7 @@
         "estBpm": 119.68,
         "refBarMs": 1984.2,
         "estBarMs": 2005.3,
-        "errorMs": 446.5,
+        "errorMs": 435.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2251,7 +2251,7 @@
         "estBpm": 119.68,
         "refBarMs": 2007.6,
         "estBarMs": 2005.3,
-        "errorMs": 450.2,
+        "errorMs": 410.2,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2263,7 +2263,7 @@
         "estBpm": 118.11,
         "refBarMs": 1992.1,
         "estBarMs": 2032,
-        "errorMs": 519.6,
+        "errorMs": 421.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2275,7 +2275,7 @@
         "estBpm": 118.97,
         "refBarMs": 2016,
         "estBarMs": 2017.3,
-        "errorMs": 547.8,
+        "errorMs": 391.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2287,7 +2287,7 @@
         "estBpm": 120.55,
         "refBarMs": 2560,
         "estBarMs": 1990.9,
-        "errorMs": 630.4,
+        "errorMs": 416.2,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2299,7 +2299,7 @@
         "estBpm": 120.55,
         "refBarMs": 2640,
         "estBarMs": 1990.9,
-        "errorMs": 922.6,
+        "errorMs": 693.9,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2311,7 +2311,7 @@
         "estBpm": 121.07,
         "refBarMs": 2800,
         "estBarMs": 1982.3,
-        "errorMs": 1254.9,
+        "errorMs": 1011.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2323,7 +2323,7 @@
         "estBpm": 121.07,
         "refBarMs": 2880.3,
         "estBarMs": 1982.3,
-        "errorMs": 2079.4,
+        "errorMs": 1807.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2335,7 +2335,7 @@
         "estBpm": 121.07,
         "refBarMs": 2800,
         "estBarMs": 1982.3,
-        "errorMs": 2769.8,
+        "errorMs": 2497.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2347,7 +2347,7 @@
         "estBpm": 119.82,
         "refBarMs": 2880.3,
         "estBarMs": 2003,
-        "errorMs": 2927.1,
+        "errorMs": 2625.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2359,7 +2359,7 @@
         "estBpm": 119.82,
         "refBarMs": 2046,
         "estBarMs": 2003,
-        "errorMs": 3617.9,
+        "errorMs": 3316.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2371,7 +2371,7 @@
         "estBpm": 119.83,
         "refBarMs": 2050,
         "estBarMs": 2002.8,
-        "errorMs": 3218.6,
+        "errorMs": 2910.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2383,7 +2383,7 @@
         "estBpm": 118.97,
         "refBarMs": 2249.8,
         "estBarMs": 2017.3,
-        "errorMs": 3254.7,
+        "errorMs": 2946.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2395,7 +2395,7 @@
         "estBpm": 118.97,
         "refBarMs": 2240.5,
         "estBarMs": 2017.3,
-        "errorMs": 3493.4,
+        "errorMs": 3184.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2407,7 +2407,7 @@
         "estBpm": 118.97,
         "refBarMs": 2249.8,
         "estBarMs": 2017.3,
-        "errorMs": 3894.2,
+        "errorMs": 3585.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2419,7 +2419,7 @@
         "estBpm": 120.42,
         "refBarMs": 2240.5,
         "estBarMs": 1993,
-        "errorMs": 3862.1,
+        "errorMs": 3553.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2431,7 +2431,7 @@
         "estBpm": 120.42,
         "refBarMs": 2000,
         "estBarMs": 1993,
-        "errorMs": 4264.1,
+        "errorMs": 3955.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       }
@@ -2443,21 +2443,21 @@
     "artist": "Nirvana",
     "durationSec": 278,
     "barsCount": 114,
-    "exactPct": 63.2,
-    "closePct": 7.9,
-    "failPct": 28.9,
-    "avgErrorMs": 113.9,
-    "medianErrorMs": 35.8,
+    "exactPct": 74.6,
+    "closePct": 5.3,
+    "failPct": 20.2,
+    "avgErrorMs": 93.4,
+    "medianErrorMs": 26.7,
     "p95ErrorMs": 470.6,
     "dawGrade": {
-      "exactPct": 63.2,
-      "closePct": 7.9,
-      "failPct": 28.9
+      "exactPct": 74.6,
+      "closePct": 5.3,
+      "failPct": 20.2
     },
     "stageGrade": {
-      "perfectPct": 19.3,
-      "acceptablePct": 29.8,
-      "unusablePct": 50.9
+      "perfectPct": 27.2,
+      "acceptablePct": 36.8,
+      "unusablePct": 36
     },
     "bars": [
       {
@@ -2480,7 +2480,7 @@
         "estBpm": 116.64,
         "refBarMs": 2130.8,
         "estBarMs": 2057.6,
-        "errorMs": 22.6,
+        "errorMs": 30.5,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -2489,9 +2489,9 @@
         "bar": 3,
         "timeSec": 4.3,
         "refBpm": 109.85,
-        "estBpm": 110.73,
+        "estBpm": 110.33,
         "refBarMs": 2184.8,
-        "estBarMs": 2167.4,
+        "estBarMs": 2175.3,
         "errorMs": 16.4,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2501,47 +2501,47 @@
         "bar": 4,
         "timeSec": 6.5,
         "refBpm": 114.27,
-        "estBpm": 110.73,
+        "estBpm": 110.33,
         "refBarMs": 2100.4,
-        "estBarMs": 2167.4,
-        "errorMs": 48.4,
+        "estBarMs": 2175.3,
+        "errorMs": 8.3,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 5,
         "timeSec": 8.6,
         "refBpm": 117.35,
-        "estBpm": 113.04,
+        "estBpm": 110.1,
         "refBarMs": 2045.1,
-        "estBarMs": 2123.1,
-        "errorMs": 47.8,
+        "estBarMs": 2179.8,
+        "errorMs": 34.7,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 7,
         "timeSec": 12.7,
         "refBpm": 119.52,
-        "estBpm": 114.45,
+        "estBpm": 113.06,
         "refBarMs": 2008,
-        "estBarMs": 2097,
-        "errorMs": 5,
+        "estBarMs": 2122.8,
+        "errorMs": 52.9,
         "tier": "exact",
-        "stageTier": "stage-perfect"
+        "stageTier": "stage-unusable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 8,
         "timeSec": 14.7,
         "refBpm": 118.31,
-        "estBpm": 114.45,
+        "estBpm": 113.06,
         "refBarMs": 2028.6,
-        "estBarMs": 2097,
-        "errorMs": 143.3,
-        "tier": "fail",
+        "estBarMs": 2122.8,
+        "errorMs": 122,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -2549,10 +2549,10 @@
         "bar": 9,
         "timeSec": 16.8,
         "refBpm": 115.18,
-        "estBpm": 116.81,
+        "estBpm": 117.37,
         "refBarMs": 2083.8,
-        "estBarMs": 2054.6,
-        "errorMs": 197.9,
+        "estBarMs": 2044.8,
+        "errorMs": 150.2,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -2561,59 +2561,59 @@
         "bar": 10,
         "timeSec": 18.8,
         "refBpm": 116.58,
-        "estBpm": 116.81,
+        "estBpm": 117.37,
         "refBarMs": 2058.7,
-        "estBarMs": 2054.6,
-        "errorMs": 207.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2044.8,
+        "errorMs": 33.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 11,
         "timeSec": 20.9,
         "refBpm": 114.19,
-        "estBpm": 114.6,
+        "estBpm": 115.98,
         "refBarMs": 2101.7,
-        "estBarMs": 2094.2,
-        "errorMs": 281.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2069.3,
+        "errorMs": 22.4,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 12,
         "timeSec": 23,
         "refBpm": 115.68,
-        "estBpm": 114.6,
+        "estBpm": 115.98,
         "refBarMs": 2074.7,
-        "estBarMs": 2094.2,
-        "errorMs": 263.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2069.3,
+        "errorMs": 5.2,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 16,
         "timeSec": 31.3,
         "refBpm": 117.09,
-        "estBpm": 115.51,
+        "estBpm": 116.99,
         "refBarMs": 2049.6,
-        "estBarMs": 2077.7,
-        "errorMs": 220.7,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2051.5,
+        "errorMs": 12,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 17,
         "timeSec": 33.3,
         "refBpm": 113.68,
-        "estBpm": 114.28,
+        "estBpm": 121.6,
         "refBarMs": 2111.1,
-        "estBarMs": 2100.1,
-        "errorMs": 262.9,
-        "tier": "fail",
+        "estBarMs": 1973.7,
+        "errorMs": 43,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -2621,69 +2621,69 @@
         "bar": 18,
         "timeSec": 35.5,
         "refBpm": 116.28,
-        "estBpm": 114.28,
+        "estBpm": 121.6,
         "refBarMs": 2064,
-        "estBarMs": 2100.1,
-        "errorMs": 203.1,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1973.7,
+        "errorMs": 12.5,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 19,
         "timeSec": 37.5,
         "refBpm": 115.42,
-        "estBpm": 112.72,
+        "estBpm": 117.39,
         "refBarMs": 2079.3,
-        "estBarMs": 2129.2,
-        "errorMs": 227.7,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2044.5,
+        "errorMs": 10.9,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 21,
         "timeSec": 41.7,
         "refBpm": 116.08,
-        "estBpm": 114.95,
+        "estBpm": 114.94,
         "refBarMs": 2067.5,
-        "estBarMs": 2087.9,
-        "errorMs": 248.5,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2088,
+        "errorMs": 26.6,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 23,
         "timeSec": 45.8,
         "refBpm": 115.95,
-        "estBpm": 116.04,
+        "estBpm": 115.67,
         "refBarMs": 2069.9,
-        "estBarMs": 2068.3,
-        "errorMs": 154.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2074.9,
+        "errorMs": 7.3,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 24,
         "timeSec": 47.9,
         "refBpm": 117.53,
-        "estBpm": 116.04,
+        "estBpm": 115.67,
         "refBarMs": 2042,
-        "estBarMs": 2068.3,
-        "errorMs": 59.3,
+        "estBarMs": 2074.9,
+        "errorMs": 12.9,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 25,
         "timeSec": 49.9,
         "refBpm": 116.04,
-        "estBpm": 115.39,
+        "estBpm": 115.66,
         "refBarMs": 2068.2,
-        "estBarMs": 2079.9,
+        "estBarMs": 2075,
         "errorMs": 21.5,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2693,9 +2693,9 @@
         "bar": 26,
         "timeSec": 52,
         "refBpm": 118.68,
-        "estBpm": 115.39,
+        "estBpm": 115.66,
         "refBarMs": 2022.2,
-        "estBarMs": 2079.9,
+        "estBarMs": 2075,
         "errorMs": 13.7,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -2705,9 +2705,9 @@
         "bar": 27,
         "timeSec": 54,
         "refBpm": 116.9,
-        "estBpm": 118.55,
+        "estBpm": 116.04,
         "refBarMs": 2053,
-        "estBarMs": 2024.5,
+        "estBarMs": 2068.3,
         "errorMs": 29,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2717,9 +2717,9 @@
         "bar": 29,
         "timeSec": 58.1,
         "refBpm": 119.9,
-        "estBpm": 115.42,
+        "estBpm": 115.17,
         "refBarMs": 2001.8,
-        "estBarMs": 2079.4,
+        "estBarMs": 2083.9,
         "errorMs": 17.7,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2729,9 +2729,9 @@
         "bar": 30,
         "timeSec": 60.1,
         "refBpm": 116.53,
-        "estBpm": 115.42,
+        "estBpm": 115.17,
         "refBarMs": 2059.6,
-        "estBarMs": 2079.4,
+        "estBarMs": 2083.9,
         "errorMs": 11.9,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -2741,34 +2741,34 @@
         "bar": 32,
         "timeSec": 64.2,
         "refBpm": 118.3,
-        "estBpm": 114.84,
+        "estBpm": 115.46,
         "refBarMs": 2028.7,
-        "estBarMs": 2089.9,
-        "errorMs": 47.2,
+        "estBarMs": 2078.6,
+        "errorMs": 8.2,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 33,
         "timeSec": 66.3,
         "refBpm": 116.68,
-        "estBpm": 116.9,
+        "estBpm": 115.26,
         "refBarMs": 2056.9,
-        "estBarMs": 2053,
-        "errorMs": 16.3,
+        "estBarMs": 2082.2,
+        "errorMs": 9.6,
         "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 35,
         "timeSec": 70.4,
         "refBpm": 119.35,
-        "estBpm": 114.73,
+        "estBpm": 116.19,
         "refBarMs": 2010.8,
-        "estBarMs": 2091.9,
-        "errorMs": 115.7,
+        "estBarMs": 2065.6,
+        "errorMs": 119.6,
         "tier": "close",
         "stageTier": "stage-unusable"
       },
@@ -2777,9 +2777,9 @@
         "bar": 36,
         "timeSec": 72.4,
         "refBpm": 118,
-        "estBpm": 114.73,
+        "estBpm": 116.19,
         "refBarMs": 2033.9,
-        "estBarMs": 2091.9,
+        "estBarMs": 2065.6,
         "errorMs": 126.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
@@ -2789,9 +2789,9 @@
         "bar": 40,
         "timeSec": 80.5,
         "refBpm": 117.19,
-        "estBpm": 117.33,
+        "estBpm": 115.03,
         "refBarMs": 2048,
-        "estBarMs": 2045.5,
+        "estBarMs": 2086.4,
         "errorMs": 74.3,
         "tier": "close",
         "stageTier": "stage-unusable"
@@ -2801,9 +2801,9 @@
         "bar": 41,
         "timeSec": 82.6,
         "refBpm": 114.98,
-        "estBpm": 116.8,
+        "estBpm": 116.71,
         "refBarMs": 2087.3,
-        "estBarMs": 2054.8,
+        "estBarMs": 2056.4,
         "errorMs": 24.9,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2813,21 +2813,21 @@
         "bar": 42,
         "timeSec": 84.7,
         "refBpm": 117.25,
-        "estBpm": 116.8,
+        "estBpm": 116.71,
         "refBarMs": 2047,
-        "estBarMs": 2054.8,
-        "errorMs": 2,
+        "estBarMs": 2056.4,
+        "errorMs": 33.2,
         "tier": "exact",
-        "stageTier": "stage-perfect"
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 43,
         "timeSec": 86.7,
         "refBpm": 115.87,
-        "estBpm": 121.04,
+        "estBpm": 116.71,
         "refBarMs": 2071.4,
-        "estBarMs": 1982.8,
+        "estBarMs": 2056.4,
         "errorMs": 15.8,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2837,9 +2837,9 @@
         "bar": 44,
         "timeSec": 88.8,
         "refBpm": 119.65,
-        "estBpm": 121.04,
+        "estBpm": 116.71,
         "refBarMs": 2005.8,
-        "estBarMs": 1982.8,
+        "estBarMs": 2056.4,
         "errorMs": 1.9,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -2849,9 +2849,9 @@
         "bar": 45,
         "timeSec": 90.8,
         "refBpm": 115.7,
-        "estBpm": 121.39,
+        "estBpm": 115.52,
         "refBarMs": 2074.4,
-        "estBarMs": 1977.1,
+        "estBarMs": 2077.6,
         "errorMs": 12.6,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -2861,9 +2861,9 @@
         "bar": 46,
         "timeSec": 92.9,
         "refBpm": 117.41,
-        "estBpm": 121.39,
+        "estBpm": 115.52,
         "refBarMs": 2044.2,
-        "estBarMs": 1977.1,
+        "estBarMs": 2077.6,
         "errorMs": 15.7,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2873,9 +2873,9 @@
         "bar": 47,
         "timeSec": 94.9,
         "refBpm": 113.99,
-        "estBpm": 119.77,
+        "estBpm": 117.06,
         "refBarMs": 2105.4,
-        "estBarMs": 2003.8,
+        "estBarMs": 2050.2,
         "errorMs": 33.3,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2885,9 +2885,9 @@
         "bar": 48,
         "timeSec": 97,
         "refBpm": 116.14,
-        "estBpm": 119.77,
+        "estBpm": 117.06,
         "refBarMs": 2066.5,
-        "estBarMs": 2003.8,
+        "estBarMs": 2050.2,
         "errorMs": 28.7,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -2993,9 +2993,9 @@
         "bar": 61,
         "timeSec": 124,
         "refBpm": 117.86,
-        "estBpm": 120.16,
+        "estBpm": 116.91,
         "refBarMs": 2036.3,
-        "estBarMs": 1997.3,
+        "estBarMs": 2052.9,
         "errorMs": 9.9,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -3005,9 +3005,9 @@
         "bar": 62,
         "timeSec": 126,
         "refBpm": 116.37,
-        "estBpm": 120.16,
+        "estBpm": 116.91,
         "refBarMs": 2062.4,
-        "estBarMs": 1997.3,
+        "estBarMs": 2052.9,
         "errorMs": 25.4,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -3017,9 +3017,9 @@
         "bar": 63,
         "timeSec": 128.1,
         "refBpm": 121.1,
-        "estBpm": 116.86,
+        "estBpm": 119.7,
         "refBarMs": 1981.9,
-        "estBarMs": 2053.7,
+        "estBarMs": 2005,
         "errorMs": 21.5,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -3029,9 +3029,9 @@
         "bar": 64,
         "timeSec": 130.1,
         "refBpm": 119.56,
-        "estBpm": 116.86,
+        "estBpm": 119.7,
         "refBarMs": 2007.4,
-        "estBarMs": 2053.7,
+        "estBarMs": 2005,
         "errorMs": 35.8,
         "tier": "exact",
         "stageTier": "stage-unusable"
@@ -3041,9 +3041,9 @@
         "bar": 65,
         "timeSec": 132.1,
         "refBpm": 117.27,
-        "estBpm": 120.93,
+        "estBpm": 121.1,
         "refBarMs": 2046.5,
-        "estBarMs": 1984.6,
+        "estBarMs": 1981.8,
         "errorMs": 17.1,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -3053,10 +3053,10 @@
         "bar": 67,
         "timeSec": 136.2,
         "refBpm": 117.96,
-        "estBpm": 118.15,
+        "estBpm": 118.62,
         "refBarMs": 2034.6,
-        "estBarMs": 2031.3,
-        "errorMs": 31.2,
+        "estBarMs": 2023.3,
+        "errorMs": 26.2,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -3065,9 +3065,9 @@
         "bar": 68,
         "timeSec": 138.2,
         "refBpm": 115.99,
-        "estBpm": 118.15,
+        "estBpm": 118.62,
         "refBarMs": 2069.2,
-        "estBarMs": 2031.3,
+        "estBarMs": 2023.3,
         "errorMs": 33.3,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -3077,9 +3077,9 @@
         "bar": 70,
         "timeSec": 142.3,
         "refBpm": 120.34,
-        "estBpm": 119.66,
+        "estBpm": 119.43,
         "refBarMs": 1994.4,
-        "estBarMs": 2005.7,
+        "estBarMs": 2009.5,
         "errorMs": 15,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -3104,7 +3104,7 @@
         "estBpm": 119.06,
         "refBarMs": 2021,
         "estBarMs": 2015.8,
-        "errorMs": 29.9,
+        "errorMs": 19.9,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -3116,9 +3116,9 @@
         "estBpm": 119.06,
         "refBarMs": 2084.2,
         "estBarMs": 2015.8,
-        "errorMs": 35.9,
+        "errorMs": 14.1,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -3128,8 +3128,8 @@
         "estBpm": 118.44,
         "refBarMs": 1782.8,
         "estBarMs": 2026.3,
-        "errorMs": 80,
-        "tier": "close",
+        "errorMs": 38.6,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -3140,9 +3140,9 @@
         "estBpm": 118.44,
         "refBarMs": 1939.5,
         "estBarMs": 2026.3,
-        "errorMs": 55.2,
+        "errorMs": 25.6,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -3152,9 +3152,9 @@
         "estBpm": 118.44,
         "refBarMs": 2067.7,
         "estBarMs": 2026.3,
-        "errorMs": 36.9,
+        "errorMs": 31.4,
         "tier": "exact",
-        "stageTier": "stage-unusable"
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -3164,9 +3164,9 @@
         "estBpm": 118.44,
         "refBarMs": 1982.8,
         "estBarMs": 2026.3,
-        "errorMs": 32.3,
+        "errorMs": 14.2,
         "tier": "exact",
-        "stageTier": "stage-acceptable"
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -3188,9 +3188,9 @@
         "estBpm": 115.24,
         "refBarMs": 2006.1,
         "estBarMs": 2082.6,
-        "errorMs": 113,
-        "tier": "close",
-        "stageTier": "stage-unusable"
+        "errorMs": 16.9,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -3200,9 +3200,9 @@
         "estBpm": 115.24,
         "refBarMs": 1977.5,
         "estBarMs": 2082.6,
-        "errorMs": 92.4,
-        "tier": "close",
-        "stageTier": "stage-unusable"
+        "errorMs": 26.7,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
@@ -3212,7 +3212,7 @@
         "estBpm": 114.52,
         "refBarMs": 2097.9,
         "estBarMs": 2095.7,
-        "errorMs": 86.4,
+        "errorMs": 105.6,
         "tier": "close",
         "stageTier": "stage-unusable"
       },
@@ -3224,7 +3224,7 @@
         "estBpm": 114.52,
         "refBarMs": 2057,
         "estBarMs": 2095.7,
-        "errorMs": 83.6,
+        "errorMs": 75,
         "tier": "close",
         "stageTier": "stage-unusable"
       },
@@ -3236,30 +3236,30 @@
         "estBpm": 114.52,
         "refBarMs": 1994,
         "estBarMs": 2095.7,
-        "errorMs": 73.4,
-        "tier": "close",
-        "stageTier": "stage-unusable"
+        "errorMs": 14.1,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 81,
         "timeSec": 164.6,
         "refBpm": 117.52,
-        "estBpm": 113.61,
+        "estBpm": 111.96,
         "refBarMs": 2042.1,
-        "estBarMs": 2112.5,
-        "errorMs": 3.3,
+        "estBarMs": 2143.6,
+        "errorMs": 27.4,
         "tier": "exact",
-        "stageTier": "stage-perfect"
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "Smells Like Teen Spirit",
         "bar": 82,
         "timeSec": 166.7,
         "refBpm": 120.3,
-        "estBpm": 113.61,
+        "estBpm": 111.96,
         "refBarMs": 1995,
-        "estBarMs": 2112.5,
+        "estBarMs": 2143.6,
         "errorMs": 6.5,
         "tier": "exact",
         "stageTier": "stage-perfect"
@@ -3269,9 +3269,9 @@
         "bar": 83,
         "timeSec": 168.7,
         "refBpm": 117.78,
-        "estBpm": 116.54,
+        "estBpm": 118.33,
         "refBarMs": 2037.7,
-        "estBarMs": 2059.4,
+        "estBarMs": 2028.2,
         "errorMs": 32.2,
         "tier": "exact",
         "stageTier": "stage-acceptable"
@@ -3737,9 +3737,9 @@
         "bar": 130,
         "timeSec": 264.5,
         "refBpm": 120.52,
-        "estBpm": 119.72,
+        "estBpm": 116.75,
         "refBarMs": 1991.3,
-        "estBarMs": 2004.7,
+        "estBarMs": 2055.7,
         "errorMs": 513,
         "tier": "fail",
         "stageTier": "stage-unusable"
@@ -3749,9 +3749,9 @@
         "bar": 131,
         "timeSec": 266.5,
         "refBpm": 117.68,
-        "estBpm": 117.34,
+        "estBpm": 116.97,
         "refBarMs": 2039.5,
-        "estBarMs": 2045.3,
+        "estBarMs": 2051.8,
         "errorMs": 577.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
@@ -3761,9 +3761,9 @@
         "bar": 133,
         "timeSec": 270.5,
         "refBpm": 117.07,
-        "estBpm": 114.28,
+        "estBpm": 117.49,
         "refBarMs": 2050,
-        "estBarMs": 2100.1,
+        "estBarMs": 2042.7,
         "errorMs": 596.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
@@ -3835,22 +3835,22 @@
     "name": "The Winner Takes It All",
     "artist": "ABBA",
     "durationSec": 297,
-    "barsCount": 99,
-    "exactPct": 11.1,
-    "closePct": 1,
-    "failPct": 87.9,
-    "avgErrorMs": 655.7,
-    "medianErrorMs": 507.8,
-    "p95ErrorMs": 1402.2,
+    "barsCount": 98,
+    "exactPct": 69.4,
+    "closePct": 7.1,
+    "failPct": 23.5,
+    "avgErrorMs": 157.8,
+    "medianErrorMs": 30.3,
+    "p95ErrorMs": 904.3,
     "dawGrade": {
-      "exactPct": 11.1,
-      "closePct": 1,
-      "failPct": 87.9
+      "exactPct": 69.4,
+      "closePct": 7.1,
+      "failPct": 23.5
     },
     "stageGrade": {
-      "perfectPct": 4,
-      "acceptablePct": 6.1,
-      "unusablePct": 89.9
+      "perfectPct": 12.2,
+      "acceptablePct": 45.9,
+      "unusablePct": 41.8
     },
     "bars": [
       {
@@ -3862,18 +3862,6 @@
         "refBarMs": 1956.3,
         "estBarMs": 1943.9,
         "errorMs": 0,
-        "tier": "exact",
-        "stageTier": "stage-perfect"
-      },
-      {
-        "trackName": "The Winner Takes It All",
-        "bar": 1,
-        "timeSec": 0.5,
-        "refBpm": 122.68,
-        "estBpm": 123.46,
-        "refBarMs": 1956.3,
-        "estBarMs": 1943.9,
-        "errorMs": 6.8,
         "tier": "exact",
         "stageTier": "stage-perfect"
       },
@@ -3897,7 +3885,7 @@
         "estBpm": 121.53,
         "refBarMs": 1948.4,
         "estBarMs": 1974.8,
-        "errorMs": 17.7,
+        "errorMs": 17.9,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -3921,7 +3909,7 @@
         "estBpm": 122.94,
         "refBarMs": 1951.6,
         "estBarMs": 1952.2,
-        "errorMs": 8.3,
+        "errorMs": 7.3,
         "tier": "exact",
         "stageTier": "stage-perfect"
       },
@@ -3933,7 +3921,7 @@
         "estBpm": 123.33,
         "refBarMs": 1934.1,
         "estBarMs": 1946,
-        "errorMs": 13.3,
+        "errorMs": 12.5,
         "tier": "exact",
         "stageTier": "stage-perfect"
       },
@@ -3957,7 +3945,7 @@
         "estBpm": 123.82,
         "refBarMs": 1924.9,
         "estBarMs": 1938.3,
-        "errorMs": 16.6,
+        "errorMs": 15.6,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -3969,9 +3957,9 @@
         "estBpm": 123.06,
         "refBarMs": 1963.6,
         "estBarMs": 1950.3,
-        "errorMs": 63.7,
-        "tier": "close",
-        "stageTier": "stage-unusable"
+        "errorMs": 19.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -3981,7 +3969,7 @@
         "estBpm": 125.12,
         "refBarMs": 1938,
         "estBarMs": 1918.2,
-        "errorMs": 27.3,
+        "errorMs": 25.4,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -3993,7 +3981,7 @@
         "estBpm": 125.12,
         "refBarMs": 1986.6,
         "estBarMs": 1918.2,
-        "errorMs": 21,
+        "errorMs": 20.2,
         "tier": "exact",
         "stageTier": "stage-acceptable"
       },
@@ -4005,9 +3993,9 @@
         "estBpm": 122.78,
         "refBarMs": 1989.7,
         "estBarMs": 1954.7,
-        "errorMs": 250.1,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 20.8,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -4017,9 +4005,9 @@
         "estBpm": 124.99,
         "refBarMs": 1968.8,
         "estBarMs": 1920.2,
-        "errorMs": 396,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 11.9,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -4029,9 +4017,9 @@
         "estBpm": 124.2,
         "refBarMs": 2002.8,
         "estBarMs": 1932.4,
-        "errorMs": 566.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 9.7,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
@@ -4041,20 +4029,20 @@
         "estBpm": 124.2,
         "refBarMs": 1958.5,
         "estBarMs": 1932.4,
-        "errorMs": 632.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "errorMs": 18.6,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 26,
         "timeSec": 48.9,
         "refBpm": 119.19,
-        "estBpm": 121.7,
+        "estBpm": 125.25,
         "refBarMs": 2013.5,
-        "estBarMs": 1972.1,
-        "errorMs": 692.9,
-        "tier": "fail",
+        "estBarMs": 1916.2,
+        "errorMs": 46.2,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4062,23 +4050,23 @@
         "bar": 27,
         "timeSec": 50.9,
         "refBpm": 120.74,
-        "estBpm": 124.67,
+        "estBpm": 123.93,
         "refBarMs": 1987.8,
-        "estBarMs": 1925.1,
-        "errorMs": 713.3,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1936.6,
+        "errorMs": 6.6,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 28,
         "timeSec": 52.9,
         "refBpm": 122.28,
-        "estBpm": 124.67,
+        "estBpm": 123.93,
         "refBarMs": 1962.7,
-        "estBarMs": 1925.1,
-        "errorMs": 738.8,
-        "tier": "fail",
+        "estBarMs": 1936.6,
+        "errorMs": 94.4,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -4086,11 +4074,11 @@
         "bar": 29,
         "timeSec": 54.8,
         "refBpm": 123.14,
-        "estBpm": 123.32,
+        "estBpm": 120.58,
         "refBarMs": 1949,
-        "estBarMs": 1946.2,
-        "errorMs": 752.3,
-        "tier": "fail",
+        "estBarMs": 1990.4,
+        "errorMs": 78.3,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -4098,35 +4086,35 @@
         "bar": 31,
         "timeSec": 58.7,
         "refBpm": 123.17,
-        "estBpm": 123.42,
+        "estBpm": 123.47,
         "refBarMs": 1948.6,
-        "estBarMs": 1944.6,
-        "errorMs": 599.5,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1943.8,
+        "errorMs": 2.1,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 32,
         "timeSec": 60.7,
         "refBpm": 122.22,
-        "estBpm": 123.42,
+        "estBpm": 123.47,
         "refBarMs": 1963.7,
-        "estBarMs": 1944.6,
-        "errorMs": 480.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1943.8,
+        "errorMs": 30.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 34,
         "timeSec": 64.6,
         "refBpm": 124.6,
-        "estBpm": 124.24,
+        "estBpm": 124.17,
         "refBarMs": 1926.2,
-        "estBarMs": 1931.7,
-        "errorMs": 377.3,
-        "tier": "fail",
+        "estBarMs": 1932.8,
+        "errorMs": 38.3,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4134,35 +4122,35 @@
         "bar": 35,
         "timeSec": 66.5,
         "refBpm": 123.04,
-        "estBpm": 130.08,
+        "estBpm": 118.71,
         "refBarMs": 1950.6,
-        "estBarMs": 1845,
-        "errorMs": 207.5,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2021.7,
+        "errorMs": 26.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 36,
         "timeSec": 68.5,
         "refBpm": 124.76,
-        "estBpm": 130.08,
+        "estBpm": 118.71,
         "refBarMs": 1923.7,
-        "estBarMs": 1845,
-        "errorMs": 126.7,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2021.7,
+        "errorMs": 10.2,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 38,
         "timeSec": 72.3,
         "refBpm": 122.49,
-        "estBpm": 129.27,
+        "estBpm": 122.96,
         "refBarMs": 1959.4,
-        "estBarMs": 1856.6,
-        "errorMs": 139.7,
-        "tier": "fail",
+        "estBarMs": 1951.9,
+        "errorMs": 56.7,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4170,11 +4158,11 @@
         "bar": 39,
         "timeSec": 74.3,
         "refBpm": 123.8,
-        "estBpm": 130.15,
+        "estBpm": 121.21,
         "refBarMs": 1938.7,
-        "estBarMs": 1844,
-        "errorMs": 232.2,
-        "tier": "fail",
+        "estBarMs": 1980,
+        "errorMs": 37.4,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4182,11 +4170,11 @@
         "bar": 40,
         "timeSec": 76.2,
         "refBpm": 122.22,
-        "estBpm": 130.15,
+        "estBpm": 121.21,
         "refBarMs": 1963.7,
-        "estBarMs": 1844,
-        "errorMs": 334.2,
-        "tier": "fail",
+        "estBarMs": 1980,
+        "errorMs": 95.5,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -4194,71 +4182,71 @@
         "bar": 42,
         "timeSec": 80.2,
         "refBpm": 123.79,
-        "estBpm": 129.88,
+        "estBpm": 121.21,
         "refBarMs": 1938.8,
-        "estBarMs": 1847.9,
-        "errorMs": 481.1,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1980,
+        "errorMs": 33.5,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 44,
         "timeSec": 84,
         "refBpm": 126.92,
-        "estBpm": 125,
+        "estBpm": 122.66,
         "refBarMs": 1890.9,
-        "estBarMs": 1920,
-        "errorMs": 494.1,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1956.6,
+        "errorMs": 19.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 45,
         "timeSec": 85.9,
         "refBpm": 124.37,
-        "estBpm": 123.94,
+        "estBpm": 119.35,
         "refBarMs": 1929.7,
-        "estBarMs": 1936.4,
-        "errorMs": 503.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2010.9,
+        "errorMs": 33.7,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 46,
-        "timeSec": 87.8,
+        "timeSec": 87.9,
         "refBpm": 125.33,
-        "estBpm": 123.94,
+        "estBpm": 119.35,
         "refBarMs": 1915,
-        "estBarMs": 1936.4,
-        "errorMs": 506.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 2010.9,
+        "errorMs": 15.8,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 48,
         "timeSec": 91.7,
         "refBpm": 125.96,
-        "estBpm": 125.94,
+        "estBpm": 122.54,
         "refBarMs": 1905.4,
-        "estBarMs": 1905.7,
-        "errorMs": 478.6,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1958.5,
+        "errorMs": 16.8,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 50,
         "timeSec": 95.5,
         "refBpm": 124.45,
-        "estBpm": 123,
+        "estBpm": 120.84,
         "refBarMs": 1928.5,
-        "estBarMs": 1951.2,
-        "errorMs": 521.2,
-        "tier": "fail",
+        "estBarMs": 1986.1,
+        "errorMs": 39.2,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4266,251 +4254,251 @@
         "bar": 51,
         "timeSec": 97.4,
         "refBpm": 125.82,
-        "estBpm": 120.43,
+        "estBpm": 121.55,
         "refBarMs": 1907.4,
-        "estBarMs": 1992.9,
-        "errorMs": 490.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1974.5,
+        "errorMs": 15.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 53,
         "timeSec": 101.2,
         "refBpm": 125.35,
-        "estBpm": 122.29,
+        "estBpm": 127.25,
         "refBarMs": 1914.7,
-        "estBarMs": 1962.5,
-        "errorMs": 491.1,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1886.1,
+        "errorMs": 28.2,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 54,
         "timeSec": 103.1,
         "refBpm": 126.99,
-        "estBpm": 122.29,
+        "estBpm": 127.25,
         "refBarMs": 1889.8,
-        "estBarMs": 1962.5,
-        "errorMs": 489.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1886.1,
+        "errorMs": 28.5,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 56,
         "timeSec": 106.9,
         "refBpm": 124.97,
-        "estBpm": 123.12,
+        "estBpm": 121.27,
         "refBarMs": 1920.5,
-        "estBarMs": 1949.3,
-        "errorMs": 524.5,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1979.1,
+        "errorMs": 30.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 58,
         "timeSec": 110.8,
         "refBpm": 125.81,
-        "estBpm": 118.79,
+        "estBpm": 120.34,
         "refBarMs": 1907.6,
-        "estBarMs": 2020.4,
-        "errorMs": 484.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1994.3,
+        "errorMs": 16.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 60,
         "timeSec": 114.6,
         "refBpm": 126.59,
-        "estBpm": 118.2,
+        "estBpm": 121.21,
         "refBarMs": 1895.9,
-        "estBarMs": 2030.5,
-        "errorMs": 495.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1980,
+        "errorMs": 27.2,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 62,
         "timeSec": 118.4,
         "refBpm": 126.86,
-        "estBpm": 116.13,
+        "estBpm": 121.14,
         "refBarMs": 1891.9,
-        "estBarMs": 2066.6,
-        "errorMs": 488,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1981.2,
+        "errorMs": 21.7,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 63,
         "timeSec": 120.3,
         "refBpm": 128.23,
-        "estBpm": 120.23,
+        "estBpm": 122.51,
         "refBarMs": 1871.7,
-        "estBarMs": 1996.2,
-        "errorMs": 476.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1959,
+        "errorMs": 18.2,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 64,
         "timeSec": 122.1,
         "refBpm": 126.82,
-        "estBpm": 120.23,
+        "estBpm": 122.51,
         "refBarMs": 1892.5,
-        "estBarMs": 1996.2,
-        "errorMs": 512,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1959,
+        "errorMs": 25.2,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 68,
         "timeSec": 129.7,
         "refBpm": 126.31,
-        "estBpm": 114.47,
+        "estBpm": 125.39,
         "refBarMs": 1900.1,
-        "estBarMs": 2096.6,
-        "errorMs": 501.7,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1914,
+        "errorMs": 34.4,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 69,
         "timeSec": 131.6,
         "refBpm": 127.5,
-        "estBpm": 118.18,
+        "estBpm": 124.04,
         "refBarMs": 1882.3,
-        "estBarMs": 2030.8,
-        "errorMs": 477.8,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1934.9,
+        "errorMs": 16.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 71,
         "timeSec": 135.4,
         "refBpm": 128.1,
-        "estBpm": 117.84,
+        "estBpm": 122.54,
         "refBarMs": 1873.6,
-        "estBarMs": 2036.7,
-        "errorMs": 494.3,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1958.5,
+        "errorMs": 17.2,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 72,
         "timeSec": 137.2,
         "refBpm": 125.58,
-        "estBpm": 117.84,
+        "estBpm": 122.54,
         "refBarMs": 1911.1,
-        "estBarMs": 2036.7,
-        "errorMs": 500.8,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1958.5,
+        "errorMs": 34.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 76,
         "timeSec": 144.9,
         "refBpm": 127.2,
-        "estBpm": 116.98,
+        "estBpm": 123.79,
         "refBarMs": 1886.8,
-        "estBarMs": 2051.6,
-        "errorMs": 497.3,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1938.8,
+        "errorMs": 24.8,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 77,
         "timeSec": 146.8,
         "refBpm": 125.24,
-        "estBpm": 117.6,
+        "estBpm": 120.17,
         "refBarMs": 1916.3,
-        "estBarMs": 2040.8,
-        "errorMs": 502.3,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1997.2,
+        "errorMs": 30.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 78,
         "timeSec": 148.7,
         "refBpm": 126.24,
-        "estBpm": 117.6,
+        "estBpm": 120.17,
         "refBarMs": 1901.1,
-        "estBarMs": 2040.8,
-        "errorMs": 508,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1997.2,
+        "errorMs": 31.9,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 79,
         "timeSec": 150.6,
         "refBpm": 124.88,
-        "estBpm": 120.07,
+        "estBpm": 125.7,
         "refBarMs": 1921.9,
-        "estBarMs": 1998.8,
-        "errorMs": 492.7,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1909.3,
+        "errorMs": 10.5,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 80,
         "timeSec": 152.5,
         "refBpm": 126.44,
-        "estBpm": 120.07,
+        "estBpm": 125.7,
         "refBarMs": 1898.2,
-        "estBarMs": 1998.8,
-        "errorMs": 506.1,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1909.3,
+        "errorMs": 29,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 81,
         "timeSec": 154.4,
         "refBpm": 123.85,
-        "estBpm": 115.65,
+        "estBpm": 122.72,
         "refBarMs": 1937.8,
-        "estBarMs": 2075.2,
-        "errorMs": 518.4,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1955.7,
+        "errorMs": 28.7,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 82,
         "timeSec": 156.4,
         "refBpm": 125.01,
-        "estBpm": 115.65,
+        "estBpm": 122.72,
         "refBarMs": 1919.8,
-        "estBarMs": 2075.2,
-        "errorMs": 509.5,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1955.7,
+        "errorMs": 30.7,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 84,
         "timeSec": 160.2,
         "refBpm": 125.86,
-        "estBpm": 122.11,
+        "estBpm": 123.3,
         "refBarMs": 1906.9,
-        "estBarMs": 1965.4,
-        "errorMs": 504.6,
-        "tier": "fail",
+        "estBarMs": 1946.5,
+        "errorMs": 39.5,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4518,23 +4506,23 @@
         "bar": 86,
         "timeSec": 164,
         "refBpm": 126.92,
-        "estBpm": 124.64,
+        "estBpm": 125.11,
         "refBarMs": 1891,
-        "estBarMs": 1925.5,
-        "errorMs": 501.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1918.3,
+        "errorMs": 18.5,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 87,
         "timeSec": 165.9,
         "refBpm": 125.31,
-        "estBpm": 126.28,
+        "estBpm": 125.96,
         "refBarMs": 1915.2,
-        "estBarMs": 1900.5,
-        "errorMs": 500.9,
-        "tier": "fail",
+        "estBarMs": 1905.4,
+        "errorMs": 35.7,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4542,119 +4530,119 @@
         "bar": 88,
         "timeSec": 167.8,
         "refBpm": 126.54,
-        "estBpm": 126.28,
+        "estBpm": 125.96,
         "refBarMs": 1896.6,
-        "estBarMs": 1900.5,
-        "errorMs": 502.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1905.4,
+        "errorMs": 29.4,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 89,
         "timeSec": 169.7,
         "refBpm": 125.36,
-        "estBpm": 124.21,
+        "estBpm": 125.58,
         "refBarMs": 1914.5,
-        "estBarMs": 1932.2,
-        "errorMs": 511.9,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1911.1,
+        "errorMs": 31.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 90,
         "timeSec": 171.6,
         "refBpm": 126.74,
-        "estBpm": 124.21,
+        "estBpm": 125.58,
         "refBarMs": 1893.6,
-        "estBarMs": 1932.2,
-        "errorMs": 495,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1911.1,
+        "errorMs": 24.1,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 91,
         "timeSec": 173.5,
         "refBpm": 128.01,
-        "estBpm": 127.08,
+        "estBpm": 125.47,
         "refBarMs": 1874.8,
-        "estBarMs": 1888.6,
-        "errorMs": 476.6,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1912.8,
+        "errorMs": 17.3,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 93,
         "timeSec": 177.3,
         "refBpm": 126.66,
-        "estBpm": 125.44,
+        "estBpm": 125.12,
         "refBarMs": 1894.8,
-        "estBarMs": 1913.3,
-        "errorMs": 507.8,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1918.2,
+        "errorMs": 29.5,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 95,
         "timeSec": 181.1,
         "refBpm": 127.92,
-        "estBpm": 125.26,
+        "estBpm": 125.77,
         "refBarMs": 1876.2,
-        "estBarMs": 1916,
-        "errorMs": 483,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1908.2,
+        "errorMs": 10.5,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 97,
         "timeSec": 184.8,
         "refBpm": 127.17,
-        "estBpm": 123.88,
+        "estBpm": 124.73,
         "refBarMs": 1887.2,
-        "estBarMs": 1937.4,
-        "errorMs": 501.2,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1924.2,
+        "errorMs": 25.8,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 99,
         "timeSec": 188.6,
         "refBpm": 127.9,
-        "estBpm": 126.52,
+        "estBpm": 125.98,
         "refBarMs": 1876.4,
-        "estBarMs": 1896.9,
-        "errorMs": 560.8,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1905.1,
+        "errorMs": 18.6,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 101,
         "timeSec": 192.3,
         "refBpm": 128.99,
-        "estBpm": 124.95,
+        "estBpm": 125.08,
         "refBarMs": 1860.5,
-        "estBarMs": 1920.8,
-        "errorMs": 674.4,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1918.8,
+        "errorMs": 11.8,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 102,
         "timeSec": 194.2,
         "refBpm": 127.59,
-        "estBpm": 124.95,
+        "estBpm": 125.08,
         "refBarMs": 1881,
-        "estBarMs": 1920.8,
-        "errorMs": 728,
-        "tier": "fail",
+        "estBarMs": 1918.8,
+        "errorMs": 38.1,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4662,35 +4650,35 @@
         "bar": 104,
         "timeSec": 198,
         "refBpm": 125.97,
-        "estBpm": 126.63,
+        "estBpm": 125.71,
         "refBarMs": 1905.2,
-        "estBarMs": 1895.3,
-        "errorMs": 751.6,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1909.2,
+        "errorMs": 27,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 105,
         "timeSec": 199.9,
         "refBpm": 123.29,
-        "estBpm": 125.46,
+        "estBpm": 125.37,
         "refBarMs": 1946.6,
-        "estBarMs": 1913,
-        "errorMs": 761.5,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1914.3,
+        "errorMs": 14.9,
+        "tier": "exact",
+        "stageTier": "stage-perfect"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 106,
         "timeSec": 201.8,
         "refBpm": 124.99,
-        "estBpm": 125.46,
+        "estBpm": 125.37,
         "refBarMs": 1920.1,
-        "estBarMs": 1913,
-        "errorMs": 743.8,
-        "tier": "fail",
+        "estBarMs": 1914.3,
+        "errorMs": 61.8,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -4698,10 +4686,10 @@
         "bar": 107,
         "timeSec": 203.7,
         "refBpm": 123.81,
-        "estBpm": 126.03,
+        "estBpm": 126.62,
         "refBarMs": 1938.4,
-        "estBarMs": 1904.3,
-        "errorMs": 733.2,
+        "estBarMs": 1895.4,
+        "errorMs": 146.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4710,10 +4698,10 @@
         "bar": 108,
         "timeSec": 205.7,
         "refBpm": 125.5,
-        "estBpm": 126.03,
+        "estBpm": 126.62,
         "refBarMs": 1912.3,
-        "estBarMs": 1904.3,
-        "errorMs": 722.2,
+        "estBarMs": 1895.4,
+        "errorMs": 241.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4722,10 +4710,10 @@
         "bar": 109,
         "timeSec": 207.6,
         "refBpm": 124.1,
-        "estBpm": 125.59,
+        "estBpm": 127.25,
         "refBarMs": 1934,
-        "estBarMs": 1911,
-        "errorMs": 730.5,
+        "estBarMs": 1886.1,
+        "errorMs": 278.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4734,10 +4722,10 @@
         "bar": 111,
         "timeSec": 211.5,
         "refBpm": 124.38,
-        "estBpm": 129.02,
+        "estBpm": 125.8,
         "refBarMs": 1929.6,
-        "estBarMs": 1860.2,
-        "errorMs": 752.1,
+        "estBarMs": 1907.8,
+        "errorMs": 480.2,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4746,10 +4734,10 @@
         "bar": 112,
         "timeSec": 213.4,
         "refBpm": 126.68,
-        "estBpm": 129.02,
+        "estBpm": 125.8,
         "refBarMs": 1894.5,
-        "estBarMs": 1860.2,
-        "errorMs": 716.6,
+        "estBarMs": 1907.8,
+        "errorMs": 539.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4758,10 +4746,10 @@
         "bar": 113,
         "timeSec": 215.3,
         "refBpm": 124.47,
-        "estBpm": 123.62,
+        "estBpm": 125.05,
         "refBarMs": 1928.2,
-        "estBarMs": 1941.4,
-        "errorMs": 771.6,
+        "estBarMs": 1919.2,
+        "errorMs": 489.7,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4770,10 +4758,10 @@
         "bar": 115,
         "timeSec": 219.1,
         "refBpm": 123.41,
-        "estBpm": 125.28,
+        "estBpm": 125.35,
         "refBarMs": 1944.8,
-        "estBarMs": 1915.7,
-        "errorMs": 832.4,
+        "estBarMs": 1914.6,
+        "errorMs": 462.5,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4782,10 +4770,10 @@
         "bar": 119,
         "timeSec": 226.9,
         "refBpm": 122.49,
-        "estBpm": 126.43,
+        "estBpm": 126.24,
         "refBarMs": 1959.3,
-        "estBarMs": 1898.3,
-        "errorMs": 1125.6,
+        "estBarMs": 1901.1,
+        "errorMs": 760.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4794,10 +4782,10 @@
         "bar": 120,
         "timeSec": 228.9,
         "refBpm": 124.74,
-        "estBpm": 126.43,
+        "estBpm": 126.24,
         "refBarMs": 1924.1,
-        "estBarMs": 1898.3,
-        "errorMs": 1215,
+        "estBarMs": 1901.1,
+        "errorMs": 917.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4806,10 +4794,10 @@
         "bar": 122,
         "timeSec": 232.7,
         "refBpm": 125.8,
-        "estBpm": 127.27,
+        "estBpm": 127.29,
         "refBarMs": 1907.9,
-        "estBarMs": 1885.8,
-        "errorMs": 1370.7,
+        "estBarMs": 1885.5,
+        "errorMs": 915.9,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4818,10 +4806,10 @@
         "bar": 123,
         "timeSec": 234.6,
         "refBpm": 127.69,
-        "estBpm": 127.65,
+        "estBpm": 127.02,
         "refBarMs": 1879.6,
-        "estBarMs": 1880.1,
-        "errorMs": 1418.5,
+        "estBarMs": 1889.5,
+        "errorMs": 932.6,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4830,10 +4818,10 @@
         "bar": 127,
         "timeSec": 242.1,
         "refBpm": 128.13,
-        "estBpm": 127.65,
+        "estBpm": 127.26,
         "refBarMs": 1873.1,
-        "estBarMs": 1880.1,
-        "errorMs": 1435.1,
+        "estBarMs": 1885.9,
+        "errorMs": 922,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4842,10 +4830,10 @@
         "bar": 129,
         "timeSec": 245.9,
         "refBpm": 127.03,
-        "estBpm": 125.03,
+        "estBpm": 125.58,
         "refBarMs": 1889.4,
-        "estBarMs": 1919.5,
-        "errorMs": 1408.5,
+        "estBarMs": 1911.1,
+        "errorMs": 904.3,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4854,10 +4842,10 @@
         "bar": 131,
         "timeSec": 249.7,
         "refBpm": 127.74,
-        "estBpm": 129.25,
+        "estBpm": 127.36,
         "refBarMs": 1878.8,
-        "estBarMs": 1856.9,
-        "errorMs": 1368.3,
+        "estBarMs": 1884.4,
+        "errorMs": 843.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4866,10 +4854,10 @@
         "bar": 133,
         "timeSec": 253.4,
         "refBpm": 126.4,
-        "estBpm": 126.06,
+        "estBpm": 126.46,
         "refBarMs": 1898.7,
-        "estBarMs": 1903.9,
-        "errorMs": 1368.6,
+        "estBarMs": 1897.8,
+        "errorMs": 761.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4878,10 +4866,10 @@
         "bar": 134,
         "timeSec": 255.3,
         "refBpm": 127.92,
-        "estBpm": 126.06,
+        "estBpm": 126.46,
         "refBarMs": 1876.2,
-        "estBarMs": 1903.9,
-        "errorMs": 1348.9,
+        "estBarMs": 1897.8,
+        "errorMs": 741.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4890,10 +4878,10 @@
         "bar": 136,
         "timeSec": 259.1,
         "refBpm": 129.17,
-        "estBpm": 127.92,
+        "estBpm": 127.54,
         "refBarMs": 1858,
-        "estBarMs": 1876.2,
-        "errorMs": 1355.2,
+        "estBarMs": 1881.8,
+        "errorMs": 654.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4902,10 +4890,10 @@
         "bar": 137,
         "timeSec": 260.9,
         "refBpm": 127.33,
-        "estBpm": 126.58,
+        "estBpm": 126.26,
         "refBarMs": 1884.9,
-        "estBarMs": 1896,
-        "errorMs": 1376.4,
+        "estBarMs": 1900.8,
+        "errorMs": 592.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4914,10 +4902,10 @@
         "bar": 139,
         "timeSec": 264.7,
         "refBpm": 127.96,
-        "estBpm": 127.28,
+        "estBpm": 128.67,
         "refBarMs": 1875.5,
-        "estBarMs": 1885.6,
-        "errorMs": 1364.7,
+        "estBarMs": 1865.2,
+        "errorMs": 522.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4926,10 +4914,10 @@
         "bar": 141,
         "timeSec": 268.5,
         "refBpm": 129.74,
-        "estBpm": 127.71,
+        "estBpm": 126.91,
         "refBarMs": 1849.8,
-        "estBarMs": 1879.3,
-        "errorMs": 1371.8,
+        "estBarMs": 1891.1,
+        "errorMs": 434.4,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4938,10 +4926,10 @@
         "bar": 142,
         "timeSec": 270.3,
         "refBpm": 127.48,
-        "estBpm": 127.71,
+        "estBpm": 126.91,
         "refBarMs": 1882.7,
-        "estBarMs": 1879.3,
-        "errorMs": 1402.2,
+        "estBarMs": 1891.1,
+        "errorMs": 364.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4950,10 +4938,10 @@
         "bar": 146,
         "timeSec": 277.8,
         "refBpm": 127.39,
-        "estBpm": 126.68,
+        "estBpm": 125.03,
         "refBarMs": 1884,
-        "estBarMs": 1894.5,
-        "errorMs": 1387.6,
+        "estBarMs": 1919.5,
+        "errorMs": 217.1,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4962,10 +4950,10 @@
         "bar": 148,
         "timeSec": 281.6,
         "refBpm": 128.59,
-        "estBpm": 124.02,
+        "estBpm": 126.27,
         "refBarMs": 1866.3,
-        "estBarMs": 1935.2,
-        "errorMs": 1377.9,
+        "estBarMs": 1900.7,
+        "errorMs": 145.8,
         "tier": "fail",
         "stageTier": "stage-unusable"
       },
@@ -4974,11 +4962,11 @@
         "bar": 150,
         "timeSec": 285.3,
         "refBpm": 126.09,
-        "estBpm": 127.15,
+        "estBpm": 125.51,
         "refBarMs": 1903.4,
-        "estBarMs": 1887.5,
-        "errorMs": 1403.5,
-        "tier": "fail",
+        "estBarMs": 1912.2,
+        "errorMs": 38.4,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -4986,23 +4974,23 @@
         "bar": 151,
         "timeSec": 287.2,
         "refBpm": 129.13,
-        "estBpm": 126.92,
+        "estBpm": 126.82,
         "refBarMs": 1858.6,
-        "estBarMs": 1891,
-        "errorMs": 1379.4,
-        "tier": "fail",
-        "stageTier": "stage-unusable"
+        "estBarMs": 1892.4,
+        "errorMs": 22.7,
+        "tier": "exact",
+        "stageTier": "stage-acceptable"
       },
       {
         "trackName": "The Winner Takes It All",
         "bar": 152,
         "timeSec": 289.1,
         "refBpm": 127.73,
-        "estBpm": 126.92,
+        "estBpm": 126.82,
         "refBarMs": 1879,
-        "estBarMs": 1891,
-        "errorMs": 1399.8,
-        "tier": "fail",
+        "estBarMs": 1892.4,
+        "errorMs": 37.9,
+        "tier": "exact",
         "stageTier": "stage-unusable"
       },
       {
@@ -5010,11 +4998,11 @@
         "bar": 153,
         "timeSec": 291,
         "refBpm": 124.28,
-        "estBpm": 124.89,
+        "estBpm": 125.16,
         "refBarMs": 1931.1,
-        "estBarMs": 1921.7,
-        "errorMs": 1399.7,
-        "tier": "fail",
+        "estBarMs": 1917.5,
+        "errorMs": 79.6,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -5022,11 +5010,11 @@
         "bar": 154,
         "timeSec": 292.9,
         "refBpm": 126.37,
-        "estBpm": 124.89,
+        "estBpm": 125.16,
         "refBarMs": 1899.3,
-        "estBarMs": 1921.7,
-        "errorMs": 1357.5,
-        "tier": "fail",
+        "estBarMs": 1917.5,
+        "errorMs": 67.3,
+        "tier": "close",
         "stageTier": "stage-unusable"
       },
       {
@@ -5034,11 +5022,11 @@
         "bar": 154,
         "timeSec": 293.9,
         "refBpm": 127.73,
-        "estBpm": 124.89,
+        "estBpm": 125.16,
         "refBarMs": 1878.9,
-        "estBarMs": 1921.7,
-        "errorMs": 1369.6,
-        "tier": "fail",
+        "estBarMs": 1917.5,
+        "errorMs": 78.1,
+        "tier": "close",
         "stageTier": "stage-unusable"
       }
     ]

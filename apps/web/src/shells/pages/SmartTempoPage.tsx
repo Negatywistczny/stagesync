@@ -9,11 +9,16 @@ import { SmartTempoAccuracyDashboard } from "../components/SmartTempoAccuracyDas
 import styles from "./SmartTempoPage.module.css";
 
 export function SmartTempoPage() {
+  const adminBackUrl = import.meta.env.DEV ? "/admin?section=dev" : "/admin";
   return (
     <div className={styles.pageContainer}>
       <header className={styles.topBar}>
         <div className={styles.leftSection}>
-          <Link to="/admin" className={styles.backBtn} title="Wróć do panelu sterowania">
+          <Link
+            to={adminBackUrl}
+            className={styles.backBtn}
+            title="Wróć do panelu sterowania"
+          >
             ← Wróć do Panelu Admina
           </Link>
           <div className={styles.pageHeaderInfo}>

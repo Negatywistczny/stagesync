@@ -5,6 +5,24 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [5.4.5](https://github.com/Negatywistczny/stagesync/compare/v5.4.4...v5.4.5) - 2026-08-05
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Admin — Dev:** w buildach deweloperskich pojawiła się sekcja `Dev` w Adminie (`/admin?section=dev`) z kafelkami na Smart Tempo, Dev Preview multi-surface, Layout Matrix i planowane narzędzia diagnostyczne.
+- **Smart Tempo — benchmark history:** panel `/smart-tempo` korzysta z historii regresji benchmarków, a recorder dopisuje kolejne snapshoty do JSON historycznego.
+
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Chrome Admin / Timeline / Klient:** na desktopie z menu OS znikają tylko przyciski chrome; wordmark i nawigacja shelli zostają widoczne, a Admin pokazuje tylko aktywne sekcje (`Dev` wyłącznie w DEV buildach).
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo:** diagnostyka analizy jest teraz liczona i logowana bez warunków wokół debug flag, a analiza korzysta z ujednoliconej siatki BPM i historii benchmarków dla regresji.
+
 ## [5.4.4](https://github.com/Negatywistczny/stagesync/compare/v5.4.3...v5.4.4) - 2026-08-05
 
 ### Dodano

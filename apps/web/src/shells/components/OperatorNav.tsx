@@ -3,9 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { Button, Select } from "@stagesync/ui";
 import { openPreferences } from "@lib/client/preferencesEvents.js";
 import {
-  ADMIN_SECTIONS,
   getClientNavUrl,
   getTimelineNavUrl,
+  getVisibleAdminSections,
   OPERATOR_APP_SEGMENTS,
   type AdminSectionId,
   type OperatorAppId,
@@ -170,7 +170,7 @@ function AdminSectionNav({
           }}
           aria-label="Sekcja Admin"
         >
-          {ADMIN_SECTIONS.map((item) => (
+          {getVisibleAdminSections().map((item) => (
             <option key={item.id} value={item.id}>
               {item.label}
             </option>
@@ -182,7 +182,7 @@ function AdminSectionNav({
 
   return (
     <div className={styles.sections} aria-label="Sekcje Admin">
-      {ADMIN_SECTIONS.map((item) => (
+      {getVisibleAdminSections().map((item) => (
         <Button
           key={item.id}
           variant="ghost"

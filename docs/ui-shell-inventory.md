@@ -26,7 +26,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 | − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) — **nigdy** |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
 | React + CSS Modules + `--ss-*` | Stack v5; SSOT warstw: [docs/ui/README.md](./ui/README.md) |
-| Admin: Utwory · Set · Scena · Host | IA v5 — **Set + wybór utworów w jednym flow** ([ADR 0011](./adr/0011-ui-parity-behavior.md)) |
+| Admin: Utwory · Set · Scena · Host · Dev (DEV) | IA v5 — **Set + wybór utworów w jednym flow**; `Dev` tylko w buildach deweloperskich ([ADR 0011](./adr/0011-ui-parity-behavior.md)) |
 | Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
 | Backup restore / path picker FS | Admin Ustawienia → Serwer → Przywróć… (`.bak` / bulk / ZIP + confirm + PIN) |
 | Mixer — fizyczne Out 3–4 / bus→bus | [TODO.md](./TODO.md) § 5.2+ (bez atrap) |
@@ -82,6 +82,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 - [x] Wygląd: jasny / wysoki kontrast (`data-theme` / `data-contrast`)
 - [x] Sprawdź aktualizacje / Aktualizuj host (Watchtower) + Aktualizuj aplikację (Tauri updater) — [ADR 0004](./adr/0004-updates-docker.md)
 - [x] Backup Przywróć — Admin Ustawienia → Przywróć… (`.bak` / bulk / ZIP)
+- [x] Dev (DEV): Smart Tempo benchmark, Dev Preview multi-surface, Layout Matrix, planowane narzędzia diagnostyczne
 
 ## Client
 

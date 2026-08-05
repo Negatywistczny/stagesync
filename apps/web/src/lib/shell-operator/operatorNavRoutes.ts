@@ -1,6 +1,6 @@
 import { getLastTimelineProjectId } from "@lib/client/lastTimelineProject.js";
 
-export type AdminSectionId = "songs" | "set" | "stage" | "host";
+export type AdminSectionId = "songs" | "set" | "stage" | "host" | "dev";
 
 export const ADMIN_SECTIONS: readonly {
   id: AdminSectionId;
@@ -12,12 +12,32 @@ export const ADMIN_SECTIONS: readonly {
   { id: "host", label: "Host" },
 ] as const;
 
-export const ADMIN_SECTION_IDS = new Set<AdminSectionId>(
-  ADMIN_SECTIONS.map((s) => s.id),
-);
+export const ADMIN_SECTION_DEV: {
+  id: AdminSectionId;
+  label: string;
+} = { id: "dev", label: "Dev" };
+
+/**
+ * Admin sections visible in the current build (Vite env-dependent).
+ * Adds the 5th "Dev" section only in `import.meta.env.DEV` builds — never in production.
+ */
+export function getVisibleAdminSections(): readonly {
+  id: AdminSectionId;
+  label: string;
+}[] {
+  if (import.meta.env.DEV) {
+    return [...ADMIN_SECTIONS, ADMIN_SECTION_DEV];
+  }
+  return ADMIN_SECTIONS;
+}
+
+const ALL_ADMIN_SECTION_IDS = new Set<AdminSectionId>([
+  ...ADMIN_SECTIONS.map((s) => s.id),
+  "dev",
+]);
 
 export function isAdminSectionId(value: string): value is AdminSectionId {
-  return ADMIN_SECTION_IDS.has(value as AdminSectionId);
+  return ALL_ADMIN_SECTION_IDS.has(value as AdminSectionId);
 }
 
 /** Mirrors Tauri `timeline_nav_url` — last project or Admin fallback. */

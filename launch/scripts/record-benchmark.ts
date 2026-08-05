@@ -11,7 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { analyzeAudioTempoAsync } from "../../apps/web/src/lib/audio/audioTempoAnalysis.js";
+import { analyzeFromMono, analyzeAudioTempoAsync, mixToMonoCapped } from "../../apps/web/src/lib/audio/audioTempoAnalysis.js";
 import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
@@ -71,15 +71,21 @@ export type BenchmarkHistoryEntry = {
 function parseTimecodeToMs(tc: string): number {
   const parts = tc.trim().split(":");
   if (parts.length >= 3) {
-    const hrs = parseInt(parts[0]!, 10) - 1;
+    const hrs = parseInt(parts[0]!, 10);
     const mins = parseInt(parts[1]!, 10);
-    const secs = parseInt(parts[2]!, 10);
     let extraMs = 0;
-    if (parts[3]) {
-      const val = parseFloat(parts[3]);
+    let secs = 0;
+    if (parts.length >= 4) {
+      secs = parseInt(parts[2]!, 10);
+      const val = parseFloat(parts[3]!);
       extraMs = (val / 25) * 1000;
+    } else {
+      const secParts = parts[2]!.split(",");
+      secs = parseInt(secParts[0]!, 10);
+      extraMs = secParts[1] ? parseInt(secParts[1], 10) : 0;
     }
-    return (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs;
+    const totalMs = (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs;
+    return totalMs - 3_600_000;
   }
   return 0;
 }
@@ -91,6 +97,7 @@ function parseRtfReference(rtfPath: string) {
 
   for (const line of lines) {
     const cleanLine = line
+      .replace(/\\tab\s?/g, "\t")
       .replace(/\\[a-z0-9]+\s?/gi, "")
       .replace(/[\{\}]/g, "")
       .replace(/\\$/g, "")
@@ -255,8 +262,10 @@ async function recordBenchmark() {
 
     const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
       maxAnalysisSec: 300,
+      downsample: 2,
       fullTrackGrid: true,
       enableTrace: shouldTraceTrack,
+      timeoutMs: 60_000,
     });
 
     const smartRes = runAudioDrivenSmartTempo({
@@ -278,7 +287,7 @@ async function recordBenchmark() {
       stageTier: StageTier;
     }> = [];
     // Enforce Bar 1 Downbeat Alignment (ADR 0002)
-    const firstMusicalOnsetMs = analysis.onsetsMs[0] ?? analysis.beatMs[0] ?? 0;
+    const firstMusicalOnsetMs = analysis.beatMs[0] ?? analysis.onsetsMs[0] ?? 0;
     const shiftMs = (points[0]?.timecodeMs ?? 0) - firstMusicalOnsetMs;
     const alignedBeatMs = analysis.beatMs.map((t) => t + shiftMs);
     console.log(

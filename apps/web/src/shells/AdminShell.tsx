@@ -26,7 +26,6 @@ import {
 import { postSystemRestart, postSystemShutdown } from "@lib/shell-operator/setlistApi.js";
 import { prepareHostRestart } from "@lib/client/desktopBridge.js";
 import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "@lib/client/desktopBridge.js";
-import { useAnnounceDevicePresence } from "@lib/client/useAnnounceDevicePresence.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { useMqTablet } from "@lib/client/useMqTablet.js";
 import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
@@ -40,12 +39,11 @@ import {
 import { openPreferences } from "@lib/client/preferencesEvents.js";
 import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
-  ADMIN_SECTIONS,
+  getVisibleAdminSections,
   isAdminSectionId,
   type AdminSectionId,
 } from "@lib/shell-operator/operatorNavRoutes.js";
 import {
-  isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "@lib/shell-operator/operatorSurface.js";
@@ -70,6 +68,7 @@ import {
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
 import { SystemView } from "./admin/SystemView.js";
+import { DevView } from "./admin/DevView.js";
 import { UgImportForm } from "./UgImportForm.js";
 import { Modal } from "./admin/modals/Modal.js";
 import { MusicXmlModal } from "./admin/modals/MusicXmlModal.js";
@@ -83,8 +82,20 @@ function errMessage(err: unknown): string {
 }
 
 
+const ADMIN_LAST_SECTION_KEY = "stagesync:admin:last-section-v1";
+
+function readStoredAdminSection(): AdminSectionId {
+  if (typeof window === "undefined") return "songs";
+  try {
+    const raw = window.localStorage.getItem(ADMIN_LAST_SECTION_KEY);
+    if (raw && isAdminSectionId(raw)) return raw;
+  } catch {
+    /* storage unavailable (private mode etc.) */
+  }
+  return "songs";
+}
+
 export function AdminShell() {
-  useAnnounceDevicePresence();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isCompactMobile = useMqMobileCompact();
@@ -93,7 +104,7 @@ export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [section, setSection] = useState<AdminSectionId>("songs");
+  const [section, setSection] = useState<AdminSectionId>(() => readStoredAdminSection());
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
@@ -174,6 +185,14 @@ export function AdminShell() {
   useEffect(() => {
     markOperatorSession();
   }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ADMIN_LAST_SECTION_KEY, section);
+    } catch {
+      /* storage unavailable (private mode etc.) */
+    }
+  }, [section]);
 
   useEffect(() => {
     const sectionParam = searchParams.get("section");
@@ -375,7 +394,7 @@ export function AdminShell() {
             .filter(Boolean)
             .join(" ")}
         >
-          {!isCompactMobile && !isOsMenuDesktopShell() ? (
+          {!isCompactMobile ? (
             <div className={styles.chromeBrand}>
               <ShellWordmark
                 suffix="Admin"
@@ -410,7 +429,7 @@ export function AdminShell() {
                     }}
                     aria-label="Sekcja Admin"
                   >
-                    {ADMIN_SECTIONS.map((item) => (
+                    {getVisibleAdminSections().map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label}
                       </option>
@@ -419,7 +438,7 @@ export function AdminShell() {
                 </div>
               ) : (
                 <nav className={styles.sections} aria-label="Sekcje">
-                  {ADMIN_SECTIONS.map((item) => (
+                  {getVisibleAdminSections().map((item) => (
                     <Button
                       key={item.id}
                       variant="ghost"
@@ -594,6 +613,7 @@ export function AdminShell() {
             onAutoCheckUpdateConsumed={() => setMenuCheckUpdate(false)}
           />
         ) : null}
+        {section === "dev" ? (import.meta.env.DEV ? <DevView /> : null) : null}
       </main>
 
       <footer className={styles.status} aria-label="Status koncertu">

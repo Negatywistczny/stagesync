@@ -13,10 +13,9 @@ import {
 import {
   noteMemoryCheckpoint,
   registerMemoryContributor,
-} from "@lib/client/memoryPressure.js";
+} from "../client/memoryPressure.js";
 
-const DSP_DIAG = import.meta.env.DEV;
-
+const DSP_DIAG = Boolean(import.meta.env?.DEV);
 const FRAME_SIZE = 1024;
 const BASE_HOP_SIZE = 256;
 const ONSET_THRESHOLD = 0.02;
@@ -292,54 +291,49 @@ export type WindowedBpmPoint = { timeMs: number; bpm: number };
  * Returns a time-varying sequence of local section BPM points.
  */
 export function estimateWindowedBpmMap(
-  flux: Float32Array,
-  sampleRate: number,
-  hopSize: number,
-  seedHint?: number,
-  globalBpm?: number,
+  onsetsMs: readonly number[],
+  gridDurationMs: number,
+  globalBpm: number,
 ): WindowedBpmPoint[] {
-  const windowSec = 15;
-  const stepSec = 5;
-  const windowHops = Math.round((windowSec * sampleRate) / hopSize);
-  const stepHops = Math.round((stepSec * sampleRate) / hopSize);
-
-  const baseBpm = globalBpm && globalBpm > 0 ? globalBpm : estimateBpmFromOnsetStrength(flux, sampleRate, hopSize, seedHint);
-
-  if (flux.length < windowHops || stepHops <= 0) {
-    return [{ timeMs: 0, bpm: baseBpm > 0 ? baseBpm : 120 }];
+  const windowMs = 15_000;
+  const stepMs = 5_000;
+  if (!onsetsMs || onsetsMs.length < 4 || !(globalBpm > 0)) {
+    return [{ timeMs: 0, bpm: globalBpm > 0 ? globalBpm : 120 }];
   }
 
-  const rawPoints: WindowedBpmPoint[] = [];
-  for (let start = 0; start + windowHops <= flux.length; start += stepHops) {
-    const slice = flux.subarray(start, start + windowHops);
-    const res = estimateBpmFromOnsetStrengthDetailed(slice, sampleRate, hopSize, seedHint ?? baseBpm);
-    const centerMs = Math.round((((start + windowHops / 2) * hopSize) / sampleRate) * 1000);
-    let bpm = res.bpm > 0 ? res.bpm : baseBpm;
+  const rawPeriod = 60_000 / globalBpm;
+  const points: WindowedBpmPoint[] = [];
 
-    if (baseBpm > 0 && bpm > 0) {
-      if (bpm < baseBpm * 0.70) bpm *= 2;
-      else if (bpm > baseBpm * 1.40) bpm /= 2;
-      // Clamp outliers to max +/- 5% of overall baseBpm
-      bpm = Math.max(baseBpm * 0.95, Math.min(baseBpm * 1.05, bpm));
+  for (let center = 7500; center <= gridDurationMs; center += stepMs) {
+    const minT = center - windowMs / 2;
+    const maxT = center + windowMs / 2;
+    const windowOnsets = onsetsMs.filter((t) => t >= minT && t <= maxT);
+    let localBpm = globalBpm;
+
+    if (windowOnsets.length >= 8) {
+      const ibis: number[] = [];
+      for (let i = 1; i < windowOnsets.length; i++) {
+        const dt = windowOnsets[i]! - windowOnsets[i - 1]!;
+        if (dt >= 350 && dt <= 650) {
+          ibis.push(dt);
+        } else if (dt >= 180 && dt < 350) {
+          ibis.push(dt * 2);
+        }
+      }
+      if (ibis.length >= 3) {
+        const medIbi = medianOfPositive(ibis);
+        if (medIbi > 0) {
+          const calcBpm = 60_000 / medIbi;
+          if (calcBpm >= 100 && calcBpm <= 145) {
+            localBpm = calcBpm;
+          }
+        }
+      }
     }
-
-    rawPoints.push({ timeMs: centerMs, bpm });
+    points.push({ timeMs: center, bpm: localBpm });
   }
 
-  if (rawPoints.length === 0) {
-    return [{ timeMs: 0, bpm: baseBpm > 0 ? baseBpm : 120 }];
-  }
-
-  const smoothed: WindowedBpmPoint[] = [];
-  for (let i = 0; i < rawPoints.length; i++) {
-    const lo = Math.max(0, i - 1);
-    const hi = Math.min(rawPoints.length, i + 2);
-    const windowBpms = rawPoints.slice(lo, hi).map((p) => p.bpm).sort((a, b) => a - b);
-    const medBpm = windowBpms[Math.floor(windowBpms.length / 2)] ?? rawPoints[i]!.bpm;
-    smoothed.push({ timeMs: rawPoints[i]!.timeMs, bpm: medBpm });
-  }
-
-  return smoothed;
+  return points.length > 0 ? points : [{ timeMs: 0, bpm: globalBpm }];
 }
 
 function estimateBpmFromOnsetStrengthDetailed(
@@ -544,18 +538,16 @@ function pickBestAcfBpmDetailed(
 
   scored.sort((a, b) => b.metric - a.metric);
 
-  if (DSP_DIAG) {
-    console.log("[SMART TEMPO DIAGNOSTICS] Top 5 szczytów ACF (po prior + seed):");
-    console.table(
-      scored.slice(0, 5).map((c) => ({
-        BPM: c.bpm.toFixed(2),
-        "Surowy Score": c.score.toFixed(4),
-        Metric: c.metric.toFixed(4),
-        OctaveMate: c.octaveMate ? "tak" : "nie",
-        Lag: c.lag ?? "—",
-      })),
-    );
-  }
+  console.log("[SMART TEMPO DIAGNOSTICS] Top 5 szczytów ACF (po prior + seed):");
+  console.table(
+    scored.slice(0, 5).map((c) => ({
+      BPM: c.bpm.toFixed(2),
+      "Surowy Score": c.score.toFixed(4),
+      Metric: c.metric.toFixed(4),
+      OctaveMate: c.octaveMate ? "tak" : "nie",
+      Lag: c.lag ?? "—",
+    })),
+  );
 
   let best = scored[0]!;
   const anchor = seedHint != null && seedHint > 0 ? seedHint : 120;
@@ -596,16 +588,15 @@ function pickBestAcfBpmDetailed(
         !c.octaveMate &&
         Math.abs(c.bpm - seedHint) / seedHint <= ACF_SEED_SOFT_RADIUS,
     );
-    if (DSP_DIAG) {
-      console.log(
-        `[SMART TEMPO DIAGNOSTICS] ACF vs seed: wybrany ${finalAcfBpm.toFixed(2)} ` +
-          `(Δ ${(((finalAcfBpm - seedHint) / seedHint) * 100).toFixed(1)}%); ` +
-          `szczyty w ±20% seeda: ${
-            nearSeed.length === 0
-              ? "brak (rozdzielczość lagu / downsample — nie wymyślamy BPM)"
-              : nearSeed
-                  .slice(0, 5)
-                  .map(
+    console.log(
+      `[SMART TEMPO DIAGNOSTICS] ACF vs seed: wybrany ${finalAcfBpm.toFixed(2)} ` +
+        `(Δ ${(((finalAcfBpm - seedHint) / seedHint) * 100).toFixed(1)}%); ` +
+        `szczyty w ±20% seeda: ${
+          nearSeed.length === 0
+            ? "brak (rozdzielczość lagu / downsample — nie wymyślamy BPM)"
+            : nearSeed
+                .slice(0, 5)
+                .map(
                   (c) =>
                     `${c.bpm.toFixed(1)}@${c.metric.toFixed(3)}${
                       c.metric >= best.metric * ACF_COMPARABLE_METRIC_RATIO
@@ -617,19 +608,16 @@ function pickBestAcfBpmDetailed(
         }`,
     );
   }
-  }
 
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsetStrength -> wybrany peak ACF: ${finalAcfBpm.toFixed(2)} BPM` +
-        (seedHint != null && seedHint > 0
-          ? ` (seedHint ${seedHint.toFixed(2)})`
-          : "") +
-        (competitorBpms.length > 0
-          ? `; konkurenci porównywalni: ${competitorBpms.map((b) => b.toFixed(2)).join(", ")}`
-          : "; brak porównywalnych konkurentów"),
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsetStrength -> wybrany peak ACF: ${finalAcfBpm.toFixed(2)} BPM` +
+      (seedHint != null && seedHint > 0
+        ? ` (seedHint ${seedHint.toFixed(2)})`
+        : "") +
+      (competitorBpms.length > 0
+        ? `; konkurenci porównywalni: ${competitorBpms.map((b) => b.toFixed(2)).join(", ")}`
+        : "; brak porównywalnych konkurentów"),
+  );
   return { bpm: finalAcfBpm, competitorBpms };
 }
 
@@ -646,11 +634,9 @@ function estimateBpmFromOnsets(onsetsMs: readonly number[]): number {
   const bpm = 60_000 / median;
   const finalBpm =
     Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsets (IBI) -> Mediana IBI: ${median.toFixed(1)} ms, Wyliczone surowe BPM: ${finalBpm.toFixed(2)}`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsets (IBI) -> Mediana IBI: ${median.toFixed(1)} ms, Wyliczone surowe BPM: ${finalBpm.toFixed(2)}`,
+  );
   return finalBpm;
 }
 
@@ -707,11 +693,9 @@ export function estimateBpmFromOnsetPeriodHistogram(
   const bpm = 60_000 / medianPeriod;
   const finalBpm =
     Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsetPeriodHistogram -> okres ${medianPeriod.toFixed(1)} ms → ${finalBpm.toFixed(2)} BPM (n=${bestCount})`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromOnsetPeriodHistogram -> okres ${medianPeriod.toFixed(1)} ms → ${finalBpm.toFixed(2)} BPM (n=${bestCount})`,
+  );
   return finalBpm;
 }
 
@@ -742,11 +726,9 @@ export function reconcileEstimatedBpm(
 ): number {
   const fallback = seedBpm != null && seedBpm > 0 ? seedBpm : 120;
   if (!(estimated > 0)) {
-    if (DSP_DIAG) {
-      console.log(
-        `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated?.toFixed(2) ?? "brak"}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, ostateczny wynik: ${fallback.toFixed(2)} (powód: brak ACF → seed/fallback)`,
-      );
-    }
+    console.log(
+      `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated?.toFixed(2) ?? "brak"}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, ostateczny wynik: ${fallback.toFixed(2)} (powód: brak ACF → seed/fallback)`,
+    );
     return fallback;
   }
   let finalResult: number;
@@ -865,11 +847,9 @@ export function reconcileEstimatedBpm(
     }
   }
 
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated.toFixed(2)}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, comps: [${(competingBpms ?? []).map((b) => b.toFixed(2)).join(", ")}], ostateczny wynik: ${finalResult.toFixed(2)} (powód: ${reason})`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] reconcileEstimatedBpm -> acfBpm: ${estimated.toFixed(2)}, seedBpm (sugestia): ${seedBpm ? seedBpm.toFixed(2) : "brak"}, comps: [${(competingBpms ?? []).map((b) => b.toFixed(2)).join(", ")}], ostateczny wynik: ${finalResult.toFixed(2)} (powód: ${reason})`,
+  );
   return finalResult;
 }
 
@@ -929,91 +909,16 @@ const BEAT_SNAP_FRAC = 0.08;
  * Returns the exact timestamp of Bar 1 Beat 1 (Downbeat Anchor).
  */
 /**
- * Sub-bass / kick-aware downbeat anchor for beat-grid phase.
- * Scores intro onsets, back-projects bar boundaries when kick is late.
+ * Clean phase anchor for beat grid synthesis.
+ * Uses earliest detected musical onset (onsetsMs[0]) without artificial heuristics.
  */
 export function detectFirstMusicalDownbeatMs(
-  mono: Float32Array,
-  sampleRate: number,
-  hopSize: number,
+  _mono: Float32Array,
+  _sampleRate: number,
+  _hopSize: number,
   onsetsMs: readonly number[],
-  maxIntroSec = 15,
-  periodHintBpm = 120,
 ): number {
-  if (mono.length === 0 || onsetsMs.length === 0) return 0;
-
-  const introOnsets = onsetsMs.filter((ms) => ms <= maxIntroSec * 1000);
-  const alpha =
-    (2 * Math.PI * 80 / sampleRate) /
-    (1 + (2 * Math.PI * 80 / sampleRate));
-
-  const onsetScores: number[] = [];
-  let maxScore = 0;
-
-  for (const o of introOnsets) {
-    const centerSample = Math.round((o / 1000) * sampleRate);
-    const winLen = Math.round(0.05 * sampleRate);
-    const start = Math.max(0, centerSample - Math.floor(winLen / 2));
-    const end = Math.min(mono.length, centerSample + Math.floor(winLen / 2));
-    let state1 = 0;
-    let state2 = 0;
-    let lowE = 0;
-    let wideE = 0;
-    for (let i = start; i < end; i++) {
-      const v = mono[i] ?? 0;
-      state1 += alpha * (v - state1);
-      state2 += alpha * (state1 - state2);
-      lowE += state2 * state2;
-      wideE += v * v;
-    }
-    const lowRms = Math.sqrt(lowE / Math.max(1, end - start));
-    const wideRms = Math.sqrt(wideE / Math.max(1, end - start));
-    const score = lowRms * wideRms;
-    onsetScores.push(score);
-    if (score > maxScore) maxScore = score;
-  }
-
-  let firstKickMs = onsetsMs[0] ?? 0;
-  if (maxScore > 1e-8) {
-    const kickThr = maxScore * 0.40;
-    for (let idx = 0; idx < introOnsets.length; idx++) {
-      if ((onsetScores[idx] ?? 0) >= kickThr) {
-        firstKickMs = introOnsets[idx]!;
-        break;
-      }
-    }
-  }
-
-  const earLiestOnset = onsetsMs[0] ?? 0;
-  const periodMs = 60_000 / (periodHintBpm > 0 ? periodHintBpm : 120);
-  const barMs = periodMs * 4;
-
-  if (firstKickMs > earLiestOnset + periodMs * 1.5) {
-    let bestT0 = firstKickMs;
-    let minErr = Infinity;
-
-    for (let k = 1; k <= 4; k++) {
-      const candT0 = firstKickMs - k * barMs;
-      if (candT0 < Math.max(0, earLiestOnset - periodMs * 0.5)) break;
-      const nearProjected = nearestOnsetMs(onsetsMs, candT0);
-      const err = Math.abs(nearProjected - candT0);
-      if (err < minErr && err <= periodMs * 0.40) {
-        minErr = err;
-        bestT0 = nearProjected;
-      }
-    }
-
-    if (bestT0 !== firstKickMs) {
-      return bestT0;
-    }
-  }
-
-  const nearOnset = nearestOnsetMs(onsetsMs, firstKickMs);
-  if (Math.abs(nearOnset - firstKickMs) <= 60) {
-    return nearOnset;
-  }
-
-  return firstKickMs;
+  return onsetsMs[0] ?? 0;
 }
 
 function resolveBeatGridPhase(
@@ -1031,7 +936,11 @@ function resolveBeatGridPhase(
   }
 
   const firstOnset = onsetsMs[0] ?? 0;
-  return Math.max(0, Math.round(firstOnset));
+  let rawAnchor = firstOnset;
+  while (rawAnchor - period >= -snapWindow) {
+    rawAnchor -= period;
+  }
+  return Math.max(0, Math.round(rawAnchor));
 }
 
 function medianOfPositive(values: readonly number[]): number {
@@ -1052,8 +961,8 @@ const LOCAL_PERIOD_STEP_HI = 1.06;
  * Hard gate vs stable quarter-note reference (median IBI + period hint).
  * Rejects half-beat / double-time snaps and 1.5-beat syncopation traps.
  */
-const STABLE_PERIOD_STEP_LO = 0.94;
-const STABLE_PERIOD_STEP_HI = 1.06;
+const STABLE_PERIOD_STEP_LO = 0.92;
+const STABLE_PERIOD_STEP_HI = 1.08;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
 const PERIOD_HINT_STABLE_WEIGHT = 0.15;
 /** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band (+/- 6%). */
@@ -1141,9 +1050,9 @@ export function detectEnergySpikesMs(
     const tMs = Math.round((((fi * hopSize + FRAME_SIZE / 2) / sampleRate) * 1000) * 10) / 10;
     const avg = windowCount > 10 ? windowSum / windowCount : 0.02;
 
-    const isDualBandPeak = (lowVal > 0.015 && wideVal > 0.015) || wideVal > 0.035;
+    const isDualBandPeak = lowVal > 0.015 && wideVal > 0.015;
 
-    if (val > 0.06 && val > 2.0 * avg && isDualBandPeak) {
+    if (val > 0.08 && val > 2.2 * avg && isDualBandPeak) {
       spikes.push(tMs);
     }
 
@@ -1173,11 +1082,7 @@ function buildBeatGridViterbi(
   const rawPeriodHint = 60_000 / estimatedBpm;
 
   const getPeriodHintAt = (tMs: number): number => {
-    if (!windowedMap || windowedMap.length === 0) {
-      // Without a windowed map, trust onset-derived local period over a
-      // mismatched global hint (e.g. UltraStar seed vs true groove).
-      return periodHint;
-    }
+    if (!windowedMap || windowedMap.length === 0) return rawPeriodHint;
     if (tMs <= windowedMap[0]!.timeMs) return 60_000 / windowedMap[0]!.bpm;
     const last = windowedMap[windowedMap.length - 1]!;
     if (tMs >= last.timeMs) return 60_000 / last.bpm;
@@ -1195,11 +1100,9 @@ function buildBeatGridViterbi(
 
   const initialLocalPeriod = estimateInitialLocalPeriod(onsetsMs, rawPeriodHint, spikeOnsetsMs);
   const periodHint = initialLocalPeriod > 0 ? initialLocalPeriod : rawPeriodHint;
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] buildBeatGridViterbi -> initialLocalPeriod: ${initialLocalPeriod.toFixed(1)} ms (${(60_000 / initialLocalPeriod).toFixed(2)} BPM), rawPeriodHint: ${rawPeriodHint.toFixed(1)} ms (${estimatedBpm.toFixed(2)} BPM)`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] buildBeatGridViterbi -> initialLocalPeriod: ${initialLocalPeriod.toFixed(1)} ms (${(60_000 / initialLocalPeriod).toFixed(2)} BPM), rawPeriodHint: ${rawPeriodHint.toFixed(1)} ms (${estimatedBpm.toFixed(2)} BPM)`,
+  );
   const t0 = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, initialLocalPeriod);
   const minPeriod = rawPeriodHint * PERIOD_HINT_CLAMP_LO;
   const maxPeriod = rawPeriodHint * PERIOD_HINT_CLAMP_HI;
@@ -1311,12 +1214,11 @@ function buildBeatGridViterbi(
         ) {
           continue;
         }
-        const localHint = getPeriodHintAt(t);
         const periodRatio = dt / stableRef;
         const shrinkPen = periodRatio < 0.85 ? 12.0 * (0.85 - periodRatio) ** 2 : 0;
         const isTempoShift =
           Math.abs(dt - p.localPeriod) / p.localPeriod >= 0.045 &&
-          Math.abs(dt - localHint) / localHint <= 0.03;
+          Math.abs(dt - rawPeriodHint) / rawPeriodHint <= 0.03;
         const resetRecent = isSpikeCand && isTempoShift;
         const nextRecent = resetRecent ? [dt, dt, dt, dt] : [...p.recentIbis, dt];
         if (!resetRecent && nextRecent.length > LOCAL_PERIOD_IBI_WINDOW) {
@@ -1324,9 +1226,12 @@ function buildBeatGridViterbi(
         }
         const med = medianOfPositive(nextRecent);
         const tempoRef = med > 0 ? med : stableRef;
+        const localHint = getPeriodHintAt(t);
+        const globalPen = ((dt - localHint) / localHint) ** 2;
         const tempoPen =
           ((dt - p.localPeriod) / p.localPeriod) ** 2 +
           ((dt - tempoRef) / tempoRef) ** 2 * 2.0 +
+          globalPen * 1.5 +
           shrinkPen;
         const candNearOnset = nearestOnsetMs(onsetsMs, t);
         const hasOnset = Math.abs(candNearOnset - t) <= 30;
@@ -1360,7 +1265,7 @@ function buildBeatGridViterbi(
     layers.push(cur);
     prev = cur;
 
-    if (DSP_DIAG && beat <= 3) {
+    if (beat <= 3) {
       console.log(`[SMART TEMPO DIAGNOSTICS] Kroki Viterbiego (Krok ${beat}):`);
       const logs = cur.map((c, idx) => {
         const pCell = layers[beat - 1]?.[c.prevIdx];
@@ -1524,7 +1429,6 @@ async function buildBeatGridAsync(
   enableTrace?: boolean,
   outTraceContainer?: { trace?: ViterbiBeatTrace[] },
   spikeOnsetsMs?: readonly number[],
-  windowedMap?: readonly WindowedBpmPoint[],
 ): Promise<number[]> {
   throwIfAborted(signal);
   const sync = buildBeatGrid(
@@ -1533,7 +1437,7 @@ async function buildBeatGridAsync(
     gridDurationMs,
     maxBeats,
     phaseAnchorMs,
-    windowedMap,
+    undefined,
     enableTrace,
     outTraceContainer,
     spikeOnsetsMs,
@@ -1650,11 +1554,9 @@ function estimateBpmFromBarHarmonics(onsetsMs: readonly number[]): number {
 
   if (bestP <= 0) return 0;
   const bpm = 60_000 / bestP;
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] barHarmonics best candidate -> bestP: ${bestP.toFixed(1)} ms (${bpm.toFixed(2)} BPM)`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] barHarmonics best candidate -> bestP: ${bestP.toFixed(1)} ms (${bpm.toFixed(2)} BPM)`,
+  );
   return Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 100) / 100;
 }
 
@@ -1675,11 +1577,9 @@ function refineRawBpmWithOnsetEvidence(
   }
 
   const barBpm = estimateBpmFromBarHarmonics(onsetsMs);
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] estimateBpmFromBarHarmonics -> ${barBpm > 0 ? barBpm.toFixed(2) + " BPM" : "brak"}`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] estimateBpmFromBarHarmonics -> ${barBpm > 0 ? barBpm.toFixed(2) + " BPM" : "brak"}`,
+  );
   if (barBpm > 0) {
     if (estimate > 0 && Math.abs(barBpm - estimate) / estimate <= 0.15) {
       competitors.push(barBpm);
@@ -1689,11 +1589,9 @@ function refineRawBpmWithOnsetEvidence(
   const histRaw = estimateBpmFromOnsetPeriodHistogram(onsetsMs);
   const histBpm = foldHistogramBpmToMusicalOctave(histRaw, estimate, seedBpm);
   if (histRaw > 0 && histBpm > 0 && Math.abs(histBpm - histRaw) >= 0.5) {
-    if (DSP_DIAG) {
-      console.log(
-        `[SMART TEMPO DIAGNOSTICS] histogram octave fold: ${histRaw.toFixed(2)} → ${histBpm.toFixed(2)} (acf=${estimate.toFixed(2)}, seed=${seedBpm != null && seedBpm > 0 ? seedBpm.toFixed(2) : "brak"})`,
-      );
-    }
+    console.log(
+      `[SMART TEMPO DIAGNOSTICS] histogram octave fold: ${histRaw.toFixed(2)} → ${histBpm.toFixed(2)} (acf=${estimate.toFixed(2)}, seed=${seedBpm != null && seedBpm > 0 ? seedBpm.toFixed(2) : "brak"})`,
+    );
   }
   if (histBpm > 0) {
     competitors.push(histBpm);
@@ -1706,9 +1604,7 @@ function refineRawBpmWithOnsetEvidence(
 
   const adjBpm = estimateBpmFromOnsets(onsetsMs);
   if (adjBpm > 0 && estimate > 0 && Math.abs(adjBpm - estimate) / estimate <= 0.05) {
-    if (DSP_DIAG) {
-      console.log(`[SMART TEMPO DIAGNOSTICS] IBI median refinement: ${estimate.toFixed(2)} → ${adjBpm.toFixed(2)} BPM`);
-    }
+    console.log(`[SMART TEMPO DIAGNOSTICS] IBI median refinement: ${estimate.toFixed(2)} → ${adjBpm.toFixed(2)} BPM`);
     estimate = adjBpm;
   } else if (histBpm > 0 && adjBpm > 0) {
     const ratio = adjBpm / histBpm;
@@ -1860,16 +1756,14 @@ export function analyzeFromMono(
   const estimatedBpm = periodHintBpm > 0 ? periodHintBpm : ibiBpm;
 
   if (estimatedBpm > 0 && Math.abs(estimatedBpm - periodHintBpm) >= 0.05) {
-    let refinedGrid = buildBeatGrid(onsetsMs, estimatedBpm, gridDurationMs, maxBeats, phaseAnchor, windowedMap, undefined, undefined, spikeOnsetsMs);
+    let refinedGrid = buildBeatGrid(onsetsMs, estimatedBpm, gridDurationMs, maxBeats, phaseAnchor);
     refinedGrid = refineBeatGridWithWindowedOnsets(refinedGrid, onsetsMs, estimatedBpm);
     refinedGrid = snapBeatGridToOnsets(refinedGrid, onsetsMs, 20);
     if (refinedGrid.length >= 4) beatMs = refinedGrid;
   }
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
+  );
   return { onsetsMs, beatMs, estimatedBpm };
 }
 
@@ -1909,10 +1803,10 @@ export async function analyzeFromMonoAsync(
   const gridDurationMs = fullTrackGrid ? bufferDurationMs : analysisWindowMs;
   const maxBeats = fullTrackGrid ? MAX_BEATS_FULL_TRACK : MAX_BEATS_WINDOW;
   const hopSize = effectiveHopSize(mono.length);
-  const bpmHop = acfHopSize(hopSize, sampleRate);
-  let acfFlux: Float32Array | undefined;
   let onsetsMs: number[] = [];
   let spikeOnsetsMs: number[] | undefined;
+  let acfFlux: Float32Array | undefined;
+  let bpmHop = hopSize;
   let rawEstimate: number;
   let competitors: number[] = [];
   if (skipOnsets) {
@@ -1971,6 +1865,7 @@ export async function analyzeFromMonoAsync(
       : pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
     throwIfAborted(signal);
     spikeOnsetsMs = detectEnergySpikesMs(asyncFlux, sampleRate, hopSize, lowFluxArr, wideFluxArr);
+    bpmHop = acfHopSize(hopSize, sampleRate);
     acfFlux = asyncFlux;
     if (bpmHop !== hopSize) {
       acfFlux = computeOnsetStrengthEnvelope(mono, bpmHop);
@@ -1986,20 +1881,12 @@ export async function analyzeFromMonoAsync(
     competitors = refined.competitors;
     const kickBarBpm = estimateBpmFromBarHarmonics(onsetsMs);
     if (
-      DSP_DIAG &&
       kickBarBpm >= 90 &&
       kickBarBpm <= 155 &&
       (seedBpm == null || seedBpm <= 0) &&
       (!(rawEstimate > 0) || rawEstimate < 85 || rawEstimate > 160)
     ) {
       console.log(`[SMART TEMPO LOW-END LOCK] Refined rawEstimate ${rawEstimate?.toFixed(2) ?? "brak"} -> ${kickBarBpm.toFixed(2)} BPM from bar harmonics`);
-    }
-    if (
-      kickBarBpm >= 90 &&
-      kickBarBpm <= 155 &&
-      (seedBpm == null || seedBpm <= 0) &&
-      (!(rawEstimate > 0) || rawEstimate < 85 || rawEstimate > 160)
-    ) {
       rawEstimate = kickBarBpm;
     }
     report(0.94);
@@ -2018,7 +1905,7 @@ export async function analyzeFromMonoAsync(
     15,
     periodHintBpm,
   );
-  const windowedMap = acfFlux ? estimateWindowedBpmMap(acfFlux, sampleRate, bpmHop, seedBpm, periodHintBpm) : undefined;
+  const windowedMap = estimateWindowedBpmMap(onsetsMs, gridDurationMs, periodHintBpm);
   const traceContainer: { trace?: ViterbiBeatTrace[] } = {};
   let beatMs = await buildBeatGridAsync(
     onsetsMs,
@@ -2037,11 +1924,9 @@ export async function analyzeFromMonoAsync(
   const ibiBpm = medianBpmFromBeatMs(beatMs);
   const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
   const estimatedBpm = periodHintBpm > 0 ? periodHintBpm : ibiBpm;
-  if (DSP_DIAG) {
-    console.log(
-      `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
-    );
-  }
+  console.log(
+    `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
+  );
   report(1);
   return { onsetsMs, beatMs, estimatedBpm, viterbiTrace: traceContainer.trace };
 }

@@ -48,7 +48,6 @@ import { isAndroidUpdateSurface } from "@lib/client/nativeShell.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import { BrandName } from "../BrandName.js";
-import { Link } from "react-router-dom";
 import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import styles from "./SystemView.module.css";
@@ -59,7 +58,7 @@ export type SystemViewProps = {
   onAutoCheckUpdateConsumed?: () => void;
 };
 
-type HostCardId = "network" | "about" | "logs" | "midi" | "smart-tempo";
+type HostCardId = "network" | "about" | "logs" | "midi";
 
 /** Admin Host — two-column content-height layout (Sieć+APK | Logi / About | MIDI). */
 export function SystemView({
@@ -610,43 +609,6 @@ export function SystemView({
             </div>
         </AdminAccordionCard>
 
-        <AdminAccordionCard
-          id="smart-tempo"
-          title="Smart Tempo — dokładność siatki"
-          ariaLabel="Smart Tempo dokładność siatki"
-          mobile={compactMobile}
-          openId={openCard}
-          onOpen={setOpenCard}
-          className={styles.card}
-          bodyClassName={styles.cardBody}
-        >
-          <div
-            style={{
-              padding: "0.5rem 0",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.75rem",
-              alignItems: "flex-start",
-            }}
-          >
-            <p className={shell.muted} style={{ margin: 0 }}>
-              Strona analizy i porównywania benchmarków Smart Tempo:{" "}
-              <code>/smart-tempo</code>.
-            </p>
-            <Link
-              to="/smart-tempo"
-              className={shell.primaryButton}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                textDecoration: "none",
-              }}
-            >
-              Otwórz benchmark Smart Tempo
-            </Link>
-          </div>
-        </AdminAccordionCard>
       </div>
       {apkQrDialog ? (
         <div
