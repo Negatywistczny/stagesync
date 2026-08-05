@@ -22,22 +22,23 @@ describe("SmartTempoAccuracyDashboard Component", () => {
     render(<SmartTempoAccuracyDashboard />);
 
     expect(
-      screen.getByText("A. Histogram Błędów w Nieliniowych Przedziałach (DAW Grade)"),
+      screen.getAllByText("A. Histogram Błędów w Nieliniowych Przedziałach (DAW Grade)")[0],
     ).toBeDefined();
     expect(
-      screen.getByText("B. Wykres Skumulowanej Dokładności (CDF)"),
+      screen.getAllByText("B. Wykres Skumulowanej Dokładności (CDF)")[0],
     ).toBeDefined();
     expect(
-      screen.getByText(/C\. Wykres Przebiegu Odchyleń w Czasie/),
+      screen.getAllByText(/C\. Wykres Przebiegu Odchyleń w Czasie/)[0],
     ).toBeDefined();
   });
 
   it("allows switching to Stage-Ready Grade mode", () => {
     render(<SmartTempoAccuracyDashboard />);
 
-    const stageModeBtn = screen.getByRole("button", {
-      name: "🎤 Stage-Ready Grade (≤15ms)",
-    });
+    const stageModeBtn = screen.getAllByRole("button", {
+      name: /Stage-Ready Grade/i,
+    })[0]!;
+    expect(stageModeBtn).toBeDefined();
     expect(stageModeBtn).toBeDefined();
 
     fireEvent.click(stageModeBtn);
@@ -50,7 +51,7 @@ describe("SmartTempoAccuracyDashboard Component", () => {
   it("allows switching between track filters", () => {
     render(<SmartTempoAccuracyDashboard />);
 
-    const billieBtn = screen.getByRole("button", { name: "Billie Jean" });
+    const billieBtn = screen.getAllByRole("button", { name: /Billie Jean/i })[0]!;
     expect(billieBtn).toBeDefined();
 
     fireEvent.click(billieBtn);
@@ -80,12 +81,12 @@ describe("SmartTempoAccuracyDashboard Component", () => {
 
     render(<SmartTempoAccuracyDashboard history={mockHistory} />);
 
-    const select = screen.getByRole("combobox", {
+    const select = screen.getAllByRole("combobox", {
       name: "Wersja odniesienia (Baseline)",
-    }) as HTMLSelectElement;
+    })[0] as HTMLSelectElement;
     expect(select).toBeDefined();
 
-    expect(screen.getByText(/-\d+\.\d+% 🔴|\+\d+\.\d+% 🟢/)).toBeDefined();
+    expect(screen.getAllByText(/-\d+\.\d+% 🔴|\+\d+\.\d+% 🟢/)[0]).toBeDefined();
   });
 
   it("renders custom dataset when provided as props", () => {

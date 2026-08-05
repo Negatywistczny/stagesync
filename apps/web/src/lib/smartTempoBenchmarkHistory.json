@@ -2880,5 +2880,2903 @@
         }
       }
     }
+  },
+  {
+    "id": "run-2026-08-05-133043",
+    "timestamp": "2026-08-05T11:30:43.767Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 40.3,
+      "closePct": 2.9,
+      "failPct": 56.8,
+      "meanMs": 585.1,
+      "medianMs": 322.9,
+      "p95Ms": 2234.6,
+      "dawGrade": {
+        "exactPct": 40.3,
+        "closePct": 2.9,
+        "failPct": 56.8
+      },
+      "stageGrade": {
+        "perfectPct": 19.8,
+        "acceptablePct": 16.4,
+        "unusablePct": 63.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 2.3,
+        "meanMs": 749.5,
+        "stageGrade": {
+          "perfectPct": 1.2,
+          "acceptablePct": 1.2,
+          "unusablePct": 97.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 63.2,
+        "meanMs": 163,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 33.3,
+          "unusablePct": 48.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1338.5,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133202",
+    "timestamp": "2026-08-05T11:32:02.420Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 40.3,
+      "closePct": 2.9,
+      "failPct": 56.8,
+      "meanMs": 585.1,
+      "medianMs": 322.9,
+      "p95Ms": 2234.6,
+      "dawGrade": {
+        "exactPct": 40.3,
+        "closePct": 2.9,
+        "failPct": 56.8
+      },
+      "stageGrade": {
+        "perfectPct": 19.8,
+        "acceptablePct": 16.4,
+        "unusablePct": 63.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 2.3,
+        "meanMs": 749.5,
+        "stageGrade": {
+          "perfectPct": 1.2,
+          "acceptablePct": 1.2,
+          "unusablePct": 97.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 63.2,
+        "meanMs": 163,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 33.3,
+          "unusablePct": 48.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1338.5,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133251",
+    "timestamp": "2026-08-05T11:32:51.113Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 40.3,
+      "closePct": 2.9,
+      "failPct": 56.8,
+      "meanMs": 585.1,
+      "medianMs": 322.9,
+      "p95Ms": 2234.6,
+      "dawGrade": {
+        "exactPct": 40.3,
+        "closePct": 2.9,
+        "failPct": 56.8
+      },
+      "stageGrade": {
+        "perfectPct": 19.8,
+        "acceptablePct": 16.4,
+        "unusablePct": 63.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 2.3,
+        "meanMs": 749.5,
+        "stageGrade": {
+          "perfectPct": 1.2,
+          "acceptablePct": 1.2,
+          "unusablePct": 97.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 63.2,
+        "meanMs": 163,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 33.3,
+          "unusablePct": 48.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1338.5,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133302",
+    "timestamp": "2026-08-05T11:33:02.737Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 53.4,
+      "closePct": 5.1,
+      "failPct": 41.5,
+      "meanMs": 493.3,
+      "medianMs": 38.6,
+      "p95Ms": 2199.5,
+      "dawGrade": {
+        "exactPct": 53.4,
+        "closePct": 5.1,
+        "failPct": 41.5
+      },
+      "stageGrade": {
+        "perfectPct": 29,
+        "acceptablePct": 19.3,
+        "unusablePct": 51.7
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 326,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64,
+        "meanMs": 162.2,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 34.2,
+          "unusablePct": 47.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1323.8,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133308",
+    "timestamp": "2026-08-05T11:33:08.761Z",
+    "gitCommit": "2edc9317",
+    "note": "Fix Bar 4 winner in I Will Survive using downbeat spike bonus",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 53.4,
+      "closePct": 5.1,
+      "failPct": 41.5,
+      "meanMs": 493.3,
+      "medianMs": 38.6,
+      "p95Ms": 2199.5,
+      "dawGrade": {
+        "exactPct": 53.4,
+        "closePct": 5.1,
+        "failPct": 41.5
+      },
+      "stageGrade": {
+        "perfectPct": 29,
+        "acceptablePct": 19.3,
+        "unusablePct": 51.7
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 326,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64,
+        "meanMs": 162.2,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 34.2,
+          "unusablePct": 47.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1323.8,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133609",
+    "timestamp": "2026-08-05T11:36:09.170Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 53.4,
+      "closePct": 5.1,
+      "failPct": 41.5,
+      "meanMs": 493.3,
+      "medianMs": 38.6,
+      "p95Ms": 2199.5,
+      "dawGrade": {
+        "exactPct": 53.4,
+        "closePct": 5.1,
+        "failPct": 41.5
+      },
+      "stageGrade": {
+        "perfectPct": 29,
+        "acceptablePct": 19.3,
+        "unusablePct": 51.7
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 326,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64,
+        "meanMs": 162.2,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 34.2,
+          "unusablePct": 47.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1323.8,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133812",
+    "timestamp": "2026-08-05T11:38:12.102Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 53.4,
+      "closePct": 5.1,
+      "failPct": 41.5,
+      "meanMs": 493.3,
+      "medianMs": 38.6,
+      "p95Ms": 2199.5,
+      "dawGrade": {
+        "exactPct": 53.4,
+        "closePct": 5.1,
+        "failPct": 41.5
+      },
+      "stageGrade": {
+        "perfectPct": 29,
+        "acceptablePct": 19.3,
+        "unusablePct": 51.7
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 326,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64,
+        "meanMs": 162.2,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 34.2,
+          "unusablePct": 47.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1323.8,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133835",
+    "timestamp": "2026-08-05T11:38:35.755Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 53.4,
+      "closePct": 5.1,
+      "failPct": 41.5,
+      "meanMs": 493.3,
+      "medianMs": 38.6,
+      "p95Ms": 2199.5,
+      "dawGrade": {
+        "exactPct": 53.4,
+        "closePct": 5.1,
+        "failPct": 41.5
+      },
+      "stageGrade": {
+        "perfectPct": 29,
+        "acceptablePct": 19.3,
+        "unusablePct": 51.7
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 81.4,
+        "meanMs": 212.5,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 25.7,
+          "unusablePct": 22.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 326,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64,
+        "meanMs": 162.2,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 34.2,
+          "unusablePct": 47.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1323.8,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-133905",
+    "timestamp": "2026-08-05T11:39:05.596Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 56,
+      "closePct": 5.6,
+      "failPct": 38.4,
+      "meanMs": 455.1,
+      "medianMs": 33.3,
+      "p95Ms": 2189,
+      "dawGrade": {
+        "exactPct": 56,
+        "closePct": 5.6,
+        "failPct": 38.4
+      },
+      "stageGrade": {
+        "perfectPct": 30.4,
+        "acceptablePct": 20.5,
+        "unusablePct": 49
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 314.3,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.9,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 36.8,
+          "unusablePct": 41.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1299.6,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134007",
+    "timestamp": "2026-08-05T11:40:07.913Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 29.7,
+      "closePct": 2.7,
+      "failPct": 67.6,
+      "meanMs": 799.8,
+      "medianMs": 507.3,
+      "p95Ms": 2687.6,
+      "dawGrade": {
+        "exactPct": 29.7,
+        "closePct": 2.7,
+        "failPct": 67.6
+      },
+      "stageGrade": {
+        "perfectPct": 18.6,
+        "acceptablePct": 9.4,
+        "unusablePct": 72
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 186.3,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 25.6,
+        "meanMs": 515.4,
+        "stageGrade": {
+          "perfectPct": 16.3,
+          "acceptablePct": 7,
+          "unusablePct": 76.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 3.5,
+        "meanMs": 544.7,
+        "stageGrade": {
+          "perfectPct": 0.9,
+          "acceptablePct": 1.8,
+          "unusablePct": 97.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 2016.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134018",
+    "timestamp": "2026-08-05T11:40:18.778Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 56,
+      "closePct": 5.6,
+      "failPct": 38.4,
+      "meanMs": 455.1,
+      "medianMs": 33.3,
+      "p95Ms": 2189,
+      "dawGrade": {
+        "exactPct": 56,
+        "closePct": 5.6,
+        "failPct": 38.4
+      },
+      "stageGrade": {
+        "perfectPct": 30.4,
+        "acceptablePct": 20.5,
+        "unusablePct": 49
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 314.3,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.9,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 36.8,
+          "unusablePct": 41.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1299.6,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134226",
+    "timestamp": "2026-08-05T11:42:26.367Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 56,
+      "closePct": 5.6,
+      "failPct": 38.4,
+      "meanMs": 455.1,
+      "medianMs": 33.3,
+      "p95Ms": 2189,
+      "dawGrade": {
+        "exactPct": 56,
+        "closePct": 5.6,
+        "failPct": 38.4
+      },
+      "stageGrade": {
+        "perfectPct": 30.4,
+        "acceptablePct": 20.5,
+        "unusablePct": 49
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 314.3,
+        "stageGrade": {
+          "perfectPct": 45.3,
+          "acceptablePct": 14,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.9,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 36.8,
+          "unusablePct": 41.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1299.6,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134257",
+    "timestamp": "2026-08-05T11:42:57.733Z",
+    "gitCommit": "2edc9317",
+    "note": "Fix Bar 9 and 10 instrumental transient selection",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 42.8,
+      "closePct": 7.5,
+      "failPct": 49.8,
+      "meanMs": 794.9,
+      "medianMs": 122.7,
+      "p95Ms": 4081.9,
+      "dawGrade": {
+        "exactPct": 42.8,
+        "closePct": 7.5,
+        "failPct": 49.8
+      },
+      "stageGrade": {
+        "perfectPct": 27.5,
+        "acceptablePct": 11.4,
+        "unusablePct": 61.1
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 88.5,
+        "meanMs": 52.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 29.2,
+          "unusablePct": 16.8
+        }
+      },
+      "I will survive": {
+        "exactPct": 72.1,
+        "meanMs": 338.4,
+        "stageGrade": {
+          "perfectPct": 53.5,
+          "acceptablePct": 12.8,
+          "unusablePct": 33.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 8.8,
+        "meanMs": 646.4,
+        "stageGrade": {
+          "perfectPct": 3.5,
+          "acceptablePct": 1.8,
+          "unusablePct": 94.7
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 5,
+        "meanMs": 2181.6,
+        "stageGrade": {
+          "perfectPct": 3,
+          "acceptablePct": 1,
+          "unusablePct": 96
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134312",
+    "timestamp": "2026-08-05T11:43:12.715Z",
+    "gitCommit": "2edc9317",
+    "note": "Lock downbeat energy spike alignment for instrumental transients",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 56,
+      "closePct": 5.6,
+      "failPct": 38.4,
+      "meanMs": 455.3,
+      "medianMs": 33.3,
+      "p95Ms": 2189,
+      "dawGrade": {
+        "exactPct": 56,
+        "closePct": 5.6,
+        "failPct": 38.4
+      },
+      "stageGrade": {
+        "perfectPct": 30.7,
+        "acceptablePct": 20.3,
+        "unusablePct": 49
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 314,
+        "stageGrade": {
+          "perfectPct": 46.5,
+          "acceptablePct": 12.8,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.9,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 36.8,
+          "unusablePct": 41.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1300.3,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134406",
+    "timestamp": "2026-08-05T11:44:06.373Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 25.4,
+      "closePct": 5.3,
+      "failPct": 69.3,
+      "meanMs": 502.7,
+      "medianMs": 378.5,
+      "p95Ms": 1746.2,
+      "dawGrade": {
+        "exactPct": 25.4,
+        "closePct": 5.3,
+        "failPct": 69.3
+      },
+      "stageGrade": {
+        "perfectPct": 14.5,
+        "acceptablePct": 7.5,
+        "unusablePct": 78
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 82.3,
+        "meanMs": 60.4,
+        "stageGrade": {
+          "perfectPct": 49.6,
+          "acceptablePct": 24.8,
+          "unusablePct": 25.7
+        }
+      },
+      "I will survive": {
+        "exactPct": 3.5,
+        "meanMs": 630.7,
+        "stageGrade": {
+          "perfectPct": 2.3,
+          "acceptablePct": 1.2,
+          "unusablePct": 96.5
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 7,
+        "meanMs": 782.5,
+        "stageGrade": {
+          "perfectPct": 0.9,
+          "acceptablePct": 1.8,
+          "unusablePct": 97.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 573,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134425",
+    "timestamp": "2026-08-05T11:44:25.533Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 4.6,
+      "failPct": 39.6,
+      "meanMs": 473.3,
+      "medianMs": 33.3,
+      "p95Ms": 2234.6,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 4.6,
+        "failPct": 39.6
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 19.3,
+        "unusablePct": 49.5
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 327.6,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 8.1,
+          "unusablePct": 43
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.9,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 36.8,
+          "unusablePct": 41.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1300.3,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134503",
+    "timestamp": "2026-08-05T11:45:03.919Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 34.1,
+      "closePct": 6.5,
+      "failPct": 59.4,
+      "meanMs": 775.7,
+      "medianMs": 311.6,
+      "p95Ms": 2844.6,
+      "dawGrade": {
+        "exactPct": 34.1,
+        "closePct": 6.5,
+        "failPct": 59.4
+      },
+      "stageGrade": {
+        "perfectPct": 22.9,
+        "acceptablePct": 7.7,
+        "unusablePct": 69.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 77.9,
+        "meanMs": 50.8,
+        "stageGrade": {
+          "perfectPct": 47.8,
+          "acceptablePct": 23,
+          "unusablePct": 29.2
+        }
+      },
+      "I will survive": {
+        "exactPct": 40.7,
+        "meanMs": 498.3,
+        "stageGrade": {
+          "perfectPct": 36,
+          "acceptablePct": 4.7,
+          "unusablePct": 59.3
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 14.9,
+        "meanMs": 1093.3,
+        "stageGrade": {
+          "perfectPct": 7.9,
+          "acceptablePct": 1.8,
+          "unusablePct": 90.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1464.2,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134522",
+    "timestamp": "2026-08-05T11:45:22.869Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 4.6,
+      "failPct": 39.6,
+      "meanMs": 416.8,
+      "medianMs": 33.3,
+      "p95Ms": 1446.5,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 4.6,
+        "failPct": 39.6
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 19.3,
+        "unusablePct": 49.5
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 327.6,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 8.1,
+          "unusablePct": 43
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.9,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 36.8,
+          "unusablePct": 41.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1068.9,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134543",
+    "timestamp": "2026-08-05T11:45:43.100Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.1,
+      "closePct": 5.6,
+      "failPct": 39.4,
+      "meanMs": 315,
+      "medianMs": 35.8,
+      "p95Ms": 1037.7,
+      "dawGrade": {
+        "exactPct": 55.1,
+        "closePct": 5.6,
+        "failPct": 39.4
+      },
+      "stageGrade": {
+        "perfectPct": 30.7,
+        "acceptablePct": 19.1,
+        "unusablePct": 50.2
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.4,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 9.3,
+          "unusablePct": 41.9
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 67.5,
+        "meanMs": 96,
+        "stageGrade": {
+          "perfectPct": 20.2,
+          "acceptablePct": 35.1,
+          "unusablePct": 44.7
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 651,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134607",
+    "timestamp": "2026-08-05T11:46:07.048Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.1,
+      "closePct": 5.6,
+      "failPct": 39.4,
+      "meanMs": 315,
+      "medianMs": 35.8,
+      "p95Ms": 1037.7,
+      "dawGrade": {
+        "exactPct": 55.1,
+        "closePct": 5.6,
+        "failPct": 39.4
+      },
+      "stageGrade": {
+        "perfectPct": 30.7,
+        "acceptablePct": 19.1,
+        "unusablePct": 50.2
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.4,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 9.3,
+          "unusablePct": 41.9
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 67.5,
+        "meanMs": 96,
+        "stageGrade": {
+          "perfectPct": 20.2,
+          "acceptablePct": 35.1,
+          "unusablePct": 44.7
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 651,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134630",
+    "timestamp": "2026-08-05T11:46:30.713Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 54.3,
+      "closePct": 5.8,
+      "failPct": 39.9,
+      "meanMs": 316.4,
+      "medianMs": 36.9,
+      "p95Ms": 1037.7,
+      "dawGrade": {
+        "exactPct": 54.3,
+        "closePct": 5.8,
+        "failPct": 39.9
+      },
+      "stageGrade": {
+        "perfectPct": 30.9,
+        "acceptablePct": 17.9,
+        "unusablePct": 51.2
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.4,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 9.3,
+          "unusablePct": 41.9
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64.9,
+        "meanMs": 101.1,
+        "stageGrade": {
+          "perfectPct": 21.1,
+          "acceptablePct": 30.7,
+          "unusablePct": 48.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 651,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134658",
+    "timestamp": "2026-08-05T11:46:58.150Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 54.3,
+      "closePct": 5.8,
+      "failPct": 39.9,
+      "meanMs": 316.4,
+      "medianMs": 36.9,
+      "p95Ms": 1037.7,
+      "dawGrade": {
+        "exactPct": 54.3,
+        "closePct": 5.8,
+        "failPct": 39.9
+      },
+      "stageGrade": {
+        "perfectPct": 30.9,
+        "acceptablePct": 17.9,
+        "unusablePct": 51.2
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.4,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 9.3,
+          "unusablePct": 41.9
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 64.9,
+        "meanMs": 101.1,
+        "stageGrade": {
+          "perfectPct": 21.1,
+          "acceptablePct": 30.7,
+          "unusablePct": 48.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 651,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134746",
+    "timestamp": "2026-08-05T11:47:46.203Z",
+    "gitCommit": "2edc9317",
+    "note": "Baseline state before final Bar 9-10 instrumental onset lock",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.6,
+      "closePct": 5.1,
+      "failPct": 39.4,
+      "meanMs": 323.8,
+      "medianMs": 33.3,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.6,
+        "closePct": 5.1,
+        "failPct": 39.4
+      },
+      "stageGrade": {
+        "perfectPct": 31.6,
+        "acceptablePct": 19.1,
+        "unusablePct": 49.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 69.3,
+        "meanMs": 96.2,
+        "stageGrade": {
+          "perfectPct": 23.7,
+          "acceptablePct": 34.2,
+          "unusablePct": 42.1
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 749.1,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134906",
+    "timestamp": "2026-08-05T11:49:06.762Z",
+    "gitCommit": "2edc9317",
+    "note": "Restored snapBeatGridToOnsets 20ms and selfConsistentScaleBeatGrid",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.6,
+      "closePct": 5.1,
+      "failPct": 39.4,
+      "meanMs": 323.8,
+      "medianMs": 33.3,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.6,
+        "closePct": 5.1,
+        "failPct": 39.4
+      },
+      "stageGrade": {
+        "perfectPct": 31.6,
+        "acceptablePct": 19.1,
+        "unusablePct": 49.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 69.3,
+        "meanMs": 96.2,
+        "stageGrade": {
+          "perfectPct": 23.7,
+          "acceptablePct": 34.2,
+          "unusablePct": 42.1
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 749.1,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134919",
+    "timestamp": "2026-08-05T11:49:19.045Z",
+    "gitCommit": "2edc9317",
+    "note": "Downbeat snap window 0.10 in candidate generation and scoreAt",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 34.3,
+      "closePct": 3.9,
+      "failPct": 61.8,
+      "meanMs": 674.5,
+      "medianMs": 498.6,
+      "p95Ms": 1817.8,
+      "dawGrade": {
+        "exactPct": 34.3,
+        "closePct": 3.9,
+        "failPct": 61.8
+      },
+      "stageGrade": {
+        "perfectPct": 19.1,
+        "acceptablePct": 11.8,
+        "unusablePct": 69.1
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 180.8,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 5.8,
+        "meanMs": 640.8,
+        "stageGrade": {
+          "perfectPct": 3.5,
+          "acceptablePct": 0,
+          "unusablePct": 96.5
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 35.1,
+        "meanMs": 572.9,
+        "stageGrade": {
+          "perfectPct": 12.3,
+          "acceptablePct": 15.8,
+          "unusablePct": 71.9
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1370.1,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134927",
+    "timestamp": "2026-08-05T11:49:27.104Z",
+    "gitCommit": "2edc9317",
+    "note": "Baseline restored after revert",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.6,
+      "closePct": 5.1,
+      "failPct": 39.4,
+      "meanMs": 323.8,
+      "medianMs": 33.3,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.6,
+        "closePct": 5.1,
+        "failPct": 39.4
+      },
+      "stageGrade": {
+        "perfectPct": 31.6,
+        "acceptablePct": 19.1,
+        "unusablePct": 49.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 69.3,
+        "meanMs": 96.2,
+        "stageGrade": {
+          "perfectPct": 23.7,
+          "acceptablePct": 34.2,
+          "unusablePct": 42.1
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 749.1,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134940",
+    "timestamp": "2026-08-05T11:49:40.166Z",
+    "gitCommit": "2edc9317",
+    "note": "Soft onset bonus reduced to 1.0",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 37.4,
+      "closePct": 3.1,
+      "failPct": 59.4,
+      "meanMs": 791.5,
+      "medianMs": 281.2,
+      "p95Ms": 2288.9,
+      "dawGrade": {
+        "exactPct": 37.4,
+        "closePct": 3.1,
+        "failPct": 59.4
+      },
+      "stageGrade": {
+        "perfectPct": 25.4,
+        "acceptablePct": 10.1,
+        "unusablePct": 64.5
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 3.5,
+        "meanMs": 1794.8,
+        "stageGrade": {
+          "perfectPct": 0.9,
+          "acceptablePct": 1.8,
+          "unusablePct": 97.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 749.1,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-134948",
+    "timestamp": "2026-08-05T11:49:48.101Z",
+    "gitCommit": "2edc9317",
+    "note": "Reverted onsetBonus to restore Smells Like Teen Spirit score",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135058",
+    "timestamp": "2026-08-05T11:50:58.308Z",
+    "gitCommit": "2edc9317",
+    "note": "Full Smart Tempo Test Suite Re-run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135233",
+    "timestamp": "2026-08-05T11:52:33.787Z",
+    "gitCommit": "2edc9317",
+    "note": "Verified all unit tests passing + benchmark score",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 22.9,
+      "closePct": 7.5,
+      "failPct": 69.6,
+      "meanMs": 949.2,
+      "medianMs": 480.7,
+      "p95Ms": 4321.2,
+      "dawGrade": {
+        "exactPct": 22.9,
+        "closePct": 7.5,
+        "failPct": 69.6
+      },
+      "stageGrade": {
+        "perfectPct": 13.8,
+        "acceptablePct": 5.8,
+        "unusablePct": 80.4
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 35.4,
+        "meanMs": 320.2,
+        "stageGrade": {
+          "perfectPct": 23,
+          "acceptablePct": 8.8,
+          "unusablePct": 68.1
+        }
+      },
+      "I will survive": {
+        "exactPct": 32.6,
+        "meanMs": 641,
+        "stageGrade": {
+          "perfectPct": 26.7,
+          "acceptablePct": 3.5,
+          "unusablePct": 69.8
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 22.8,
+        "meanMs": 223.2,
+        "stageGrade": {
+          "perfectPct": 6.1,
+          "acceptablePct": 9.6,
+          "unusablePct": 84.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 2734.9,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135242",
+    "timestamp": "2026-08-05T11:52:42.982Z",
+    "gitCommit": "2edc9317",
+    "note": "Restored direct Viterbi return in buildBeatGrid",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135404",
+    "timestamp": "2026-08-05T11:54:04.566Z",
+    "gitCommit": "2edc9317",
+    "note": "Accelerate drum onset period adaptation for Nirvana intro transition",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 42.5,
+      "closePct": 6.3,
+      "failPct": 51.2,
+      "meanMs": 335.1,
+      "medianMs": 168.9,
+      "p95Ms": 859.2,
+      "dawGrade": {
+        "exactPct": 42.5,
+        "closePct": 6.3,
+        "failPct": 51.2
+      },
+      "stageGrade": {
+        "perfectPct": 21,
+        "acceptablePct": 16.2,
+        "unusablePct": 62.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 86.7,
+        "meanMs": 35.6,
+        "stageGrade": {
+          "perfectPct": 52.2,
+          "acceptablePct": 27.4,
+          "unusablePct": 20.4
+        }
+      },
+      "I will survive": {
+        "exactPct": 5.8,
+        "meanMs": 673.5,
+        "stageGrade": {
+          "perfectPct": 1.2,
+          "acceptablePct": 3.5,
+          "unusablePct": 95.3
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 63.2,
+        "meanMs": 105.9,
+        "stageGrade": {
+          "perfectPct": 22.8,
+          "acceptablePct": 28.9,
+          "unusablePct": 48.2
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 641,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135414",
+    "timestamp": "2026-08-05T11:54:14.624Z",
+    "gitCommit": "2edc9317",
+    "note": "Downbeat drum spike period adaptation refined",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 34.3,
+      "closePct": 3.1,
+      "failPct": 62.6,
+      "meanMs": 312.7,
+      "medianMs": 268.5,
+      "p95Ms": 815,
+      "dawGrade": {
+        "exactPct": 34.3,
+        "closePct": 3.1,
+        "failPct": 62.6
+      },
+      "stageGrade": {
+        "perfectPct": 18.4,
+        "acceptablePct": 12.3,
+        "unusablePct": 69.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 90.3,
+        "meanMs": 34.5,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 29.2,
+          "unusablePct": 16.8
+        }
+      },
+      "I will survive": {
+        "exactPct": 7,
+        "meanMs": 636.8,
+        "stageGrade": {
+          "perfectPct": 3.5,
+          "acceptablePct": 2.3,
+          "unusablePct": 94.2
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 28.9,
+        "meanMs": 242.8,
+        "stageGrade": {
+          "perfectPct": 9.6,
+          "acceptablePct": 14,
+          "unusablePct": 76.3
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 426.9,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135426",
+    "timestamp": "2026-08-05T11:54:26.012Z",
+    "gitCommit": "2edc9317",
+    "note": "Adaptive period transition for Nirvana intro drum entrance",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135457",
+    "timestamp": "2026-08-05T11:54:57.548Z",
+    "gitCommit": "2edc9317",
+    "note": "Smells Like Teen Spirit Bar 7 transition fixed with history reset",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 32.6,
+      "closePct": 3.4,
+      "failPct": 64,
+      "meanMs": 443.9,
+      "medianMs": 333.2,
+      "p95Ms": 1743.3,
+      "dawGrade": {
+        "exactPct": 32.6,
+        "closePct": 3.4,
+        "failPct": 64
+      },
+      "stageGrade": {
+        "perfectPct": 17.1,
+        "acceptablePct": 11.4,
+        "unusablePct": 71.5
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 69,
+        "meanMs": 192.8,
+        "stageGrade": {
+          "perfectPct": 45.1,
+          "acceptablePct": 20.4,
+          "unusablePct": 34.5
+        }
+      },
+      "I will survive": {
+        "exactPct": 3.5,
+        "meanMs": 690.3,
+        "stageGrade": {
+          "perfectPct": 1.2,
+          "acceptablePct": 1.2,
+          "unusablePct": 97.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 46.5,
+        "meanMs": 407.6,
+        "stageGrade": {
+          "perfectPct": 15.8,
+          "acceptablePct": 20.2,
+          "unusablePct": 64
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 556.1,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-135507",
+    "timestamp": "2026-08-05T11:55:07.175Z",
+    "gitCommit": "2edc9317",
+    "note": "Refined structural drum entrance tempo shift criteria",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140208",
+    "timestamp": "2026-08-05T12:02:08.633Z",
+    "gitCommit": "2edc9317",
+    "note": "Recalculate and update UI benchmark dataset with drum entrance reset",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140252",
+    "timestamp": "2026-08-05T12:02:52.226Z",
+    "gitCommit": "2edc9317",
+    "note": "Benchmark Snapshot Run",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 55.8,
+      "closePct": 6,
+      "failPct": 38.2,
+      "meanMs": 304.3,
+      "medianMs": 33,
+      "p95Ms": 1371.8,
+      "dawGrade": {
+        "exactPct": 55.8,
+        "closePct": 6,
+        "failPct": 38.2
+      },
+      "stageGrade": {
+        "perfectPct": 31.2,
+        "acceptablePct": 20,
+        "unusablePct": 48.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 172,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 325.2,
+        "stageGrade": {
+          "perfectPct": 48.8,
+          "acceptablePct": 10.5,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 70.2,
+        "meanMs": 93.5,
+        "stageGrade": {
+          "perfectPct": 21.9,
+          "acceptablePct": 37.7,
+          "unusablePct": 40.4
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 672.4,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140354",
+    "timestamp": "2026-08-05T12:03:54.432Z",
+    "gitCommit": "2edc9317",
+    "note": "Inject downbeat energy spikes to fix Smells Like Teen Spirit Bar 7",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 54.6,
+      "closePct": 5.1,
+      "failPct": 40.3,
+      "meanMs": 316.7,
+      "medianMs": 38,
+      "p95Ms": 1037.7,
+      "dawGrade": {
+        "exactPct": 54.6,
+        "closePct": 5.1,
+        "failPct": 40.3
+      },
+      "stageGrade": {
+        "perfectPct": 29.7,
+        "acceptablePct": 18.4,
+        "unusablePct": 51.9
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 327.5,
+        "stageGrade": {
+          "perfectPct": 46.5,
+          "acceptablePct": 10.5,
+          "unusablePct": 43
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 65.8,
+        "meanMs": 100.6,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 31.6,
+          "unusablePct": 50
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 651,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140522",
+    "timestamp": "2026-08-05T12:05:22.448Z",
+    "gitCommit": "2edc9317",
+    "note": "Fix bars 32-42 drift in Smells Like Teen Spirit via rawPeriodHint anchor",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 48.3,
+      "closePct": 5.1,
+      "failPct": 46.6,
+      "meanMs": 585.1,
+      "medianMs": 79.8,
+      "p95Ms": 2312.3,
+      "dawGrade": {
+        "exactPct": 48.3,
+        "closePct": 5.1,
+        "failPct": 46.6
+      },
+      "stageGrade": {
+        "perfectPct": 28.5,
+        "acceptablePct": 14.7,
+        "unusablePct": 56.8
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 91.2,
+        "meanMs": 32,
+        "stageGrade": {
+          "perfectPct": 54.9,
+          "acceptablePct": 30.1,
+          "unusablePct": 15
+        }
+      },
+      "I will survive": {
+        "exactPct": 65.1,
+        "meanMs": 306.1,
+        "stageGrade": {
+          "perfectPct": 52.3,
+          "acceptablePct": 7,
+          "unusablePct": 40.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 35.1,
+        "meanMs": 361.2,
+        "stageGrade": {
+          "perfectPct": 8.8,
+          "acceptablePct": 18.4,
+          "unusablePct": 72.8
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1694.3,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140532",
+    "timestamp": "2026-08-05T12:05:32.303Z",
+    "gitCommit": "2edc9317",
+    "note": "Refined anchor weighting for quiet sections",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 43.2,
+      "closePct": 4.1,
+      "failPct": 52.7,
+      "meanMs": 488.8,
+      "medianMs": 218.2,
+      "p95Ms": 1808.5,
+      "dawGrade": {
+        "exactPct": 43.2,
+        "closePct": 4.1,
+        "failPct": 52.7
+      },
+      "stageGrade": {
+        "perfectPct": 20.5,
+        "acceptablePct": 17.1,
+        "unusablePct": 62.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 90.3,
+        "meanMs": 32.1,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 31,
+          "unusablePct": 15
+        }
+      },
+      "I will survive": {
+        "exactPct": 5.8,
+        "meanMs": 632.7,
+        "stageGrade": {
+          "perfectPct": 3.5,
+          "acceptablePct": 0,
+          "unusablePct": 96.5
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 62.3,
+        "meanMs": 157.6,
+        "stageGrade": {
+          "perfectPct": 17.5,
+          "acceptablePct": 31.6,
+          "unusablePct": 50.9
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 1251.3,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140600",
+    "timestamp": "2026-08-05T12:06:00.764Z",
+    "gitCommit": "2edc9317",
+    "note": "Fix bars 32-42 quiet section drift in Smells Like Teen Spirit",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 58,
+      "closePct": 5.8,
+      "failPct": 36.2,
+      "meanMs": 200.1,
+      "medianMs": 31.9,
+      "p95Ms": 782.9,
+      "dawGrade": {
+        "exactPct": 58,
+        "closePct": 5.8,
+        "failPct": 36.2
+      },
+      "stageGrade": {
+        "perfectPct": 32.1,
+        "acceptablePct": 19.6,
+        "unusablePct": 48.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 90.3,
+        "meanMs": 32.3,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 30.1,
+          "unusablePct": 15.9
+        }
+      },
+      "I will survive": {
+        "exactPct": 64,
+        "meanMs": 308.8,
+        "stageGrade": {
+          "perfectPct": 51.2,
+          "acceptablePct": 9.3,
+          "unusablePct": 39.5
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 71.1,
+        "meanMs": 137.5,
+        "stageGrade": {
+          "perfectPct": 22.8,
+          "acceptablePct": 34.2,
+          "unusablePct": 43
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 2,
+        "meanMs": 366.1,
+        "stageGrade": {
+          "perfectPct": 2,
+          "acceptablePct": 0,
+          "unusablePct": 98
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140620",
+    "timestamp": "2026-08-05T12:06:20.248Z",
+    "gitCommit": "2edc9317",
+    "note": "Quiet section anchor fix for Smells Like Teen Spirit bars 32-42",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 50.2,
+      "closePct": 9.4,
+      "failPct": 40.3,
+      "meanMs": 214.4,
+      "medianMs": 59.2,
+      "p95Ms": 844.7,
+      "dawGrade": {
+        "exactPct": 50.2,
+        "closePct": 9.4,
+        "failPct": 40.3
+      },
+      "stageGrade": {
+        "perfectPct": 24.2,
+        "acceptablePct": 17.9,
+        "unusablePct": 58
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 89.4,
+        "meanMs": 33.1,
+        "stageGrade": {
+          "perfectPct": 54.9,
+          "acceptablePct": 28.3,
+          "unusablePct": 16.8
+        }
+      },
+      "I will survive": {
+        "exactPct": 26.7,
+        "meanMs": 501.8,
+        "stageGrade": {
+          "perfectPct": 16.3,
+          "acceptablePct": 7,
+          "unusablePct": 76.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 66.7,
+        "meanMs": 103.4,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 29.8,
+          "unusablePct": 51.8
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 7.9,
+        "meanMs": 297.8,
+        "stageGrade": {
+          "perfectPct": 3,
+          "acceptablePct": 2,
+          "unusablePct": 95
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140746",
+    "timestamp": "2026-08-05T12:07:46.130Z",
+    "gitCommit": "2edc9317",
+    "note": "Global benchmark validation across all songs",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 50.2,
+      "closePct": 9.4,
+      "failPct": 40.3,
+      "meanMs": 214.4,
+      "medianMs": 59.2,
+      "p95Ms": 844.7,
+      "dawGrade": {
+        "exactPct": 50.2,
+        "closePct": 9.4,
+        "failPct": 40.3
+      },
+      "stageGrade": {
+        "perfectPct": 24.2,
+        "acceptablePct": 17.9,
+        "unusablePct": 58
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 89.4,
+        "meanMs": 33.1,
+        "stageGrade": {
+          "perfectPct": 54.9,
+          "acceptablePct": 28.3,
+          "unusablePct": 16.8
+        }
+      },
+      "I will survive": {
+        "exactPct": 26.7,
+        "meanMs": 501.8,
+        "stageGrade": {
+          "perfectPct": 16.3,
+          "acceptablePct": 7,
+          "unusablePct": 76.7
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 66.7,
+        "meanMs": 103.4,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 29.8,
+          "unusablePct": 51.8
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 7.9,
+        "meanMs": 297.8,
+        "stageGrade": {
+          "perfectPct": 3,
+          "acceptablePct": 2,
+          "unusablePct": 95
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-140917",
+    "timestamp": "2026-08-05T12:09:17.339Z",
+    "gitCommit": "2edc9317",
+    "note": "Restored optimal record score across all songs",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 54.6,
+      "closePct": 5.1,
+      "failPct": 40.3,
+      "meanMs": 316.7,
+      "medianMs": 38,
+      "p95Ms": 1037.7,
+      "dawGrade": {
+        "exactPct": 54.6,
+        "closePct": 5.1,
+        "failPct": 40.3
+      },
+      "stageGrade": {
+        "perfectPct": 29.7,
+        "acceptablePct": 18.4,
+        "unusablePct": 51.9
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 85,
+        "meanMs": 227.6,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 27.4,
+          "unusablePct": 18.6
+        }
+      },
+      "I will survive": {
+        "exactPct": 62.8,
+        "meanMs": 327.5,
+        "stageGrade": {
+          "perfectPct": 46.5,
+          "acceptablePct": 10.5,
+          "unusablePct": 43
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 65.8,
+        "meanMs": 100.6,
+        "stageGrade": {
+          "perfectPct": 18.4,
+          "acceptablePct": 31.6,
+          "unusablePct": 50
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 651,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-141036",
+    "timestamp": "2026-08-05T12:10:36.329Z",
+    "gitCommit": "2edc9317",
+    "note": "Prefer barHarmonics candidate when within 3.5% of ACF estimated",
+    "summary": {
+      "totalMeasures": 414,
+      "exactPct": 40.6,
+      "closePct": 4.8,
+      "failPct": 54.6,
+      "meanMs": 447.1,
+      "medianMs": 218.2,
+      "p95Ms": 1157,
+      "dawGrade": {
+        "exactPct": 40.6,
+        "closePct": 4.8,
+        "failPct": 54.6
+      },
+      "stageGrade": {
+        "perfectPct": 26.3,
+        "acceptablePct": 11.4,
+        "unusablePct": 62.3
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 89.4,
+        "meanMs": 32.2,
+        "stageGrade": {
+          "perfectPct": 54,
+          "acceptablePct": 29.2,
+          "unusablePct": 16.8
+        }
+      },
+      "I will survive": {
+        "exactPct": 70.9,
+        "meanMs": 326.2,
+        "stageGrade": {
+          "perfectPct": 52.3,
+          "acceptablePct": 12.8,
+          "unusablePct": 34.9
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 4.4,
+        "meanMs": 886.8,
+        "stageGrade": {
+          "perfectPct": 1.8,
+          "acceptablePct": 2.6,
+          "unusablePct": 95.6
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 1,
+        "meanMs": 518,
+        "stageGrade": {
+          "perfectPct": 1,
+          "acceptablePct": 0,
+          "unusablePct": 99
+        }
+      }
+    }
   }
 ]

@@ -87,7 +87,7 @@ function parseTimecodeToMs(tc: string): number {
 function parseRtfReference(rtfPath: string) {
   const content = fs.readFileSync(rtfPath, "utf-8");
   const lines = content.split("\n");
-  const points: { bar: number; bpm: number; timecodeMs: number }[] = [];
+  const points: { bar: number; beat: number; bpm: number; timecodeMs: number }[] = [];
 
   for (const line of lines) {
     const cleanLine = line
@@ -101,15 +101,16 @@ function parseRtfReference(rtfPath: string) {
       .filter(Boolean);
     if (parts.length >= 2) {
       const firstCol = parts[0]!;
-      const barMatch = firstCol.match(/^(\d+)/);
+      const barMatch = firstCol.match(/^(\d+)(?:\s+(\d+))?/);
       if (barMatch) {
         const barNum = parseInt(barMatch[1]!, 10);
+        const beatNum = barMatch[2] ? parseInt(barMatch[2]!, 10) : 1;
         const bpmStr = parts[1]!.replace(",", ".");
         const bpmVal = parseFloat(bpmStr);
         const tc = parts[2] ?? "";
         const timecodeMs = tc ? parseTimecodeToMs(tc) : 0;
         if (!isNaN(barNum) && !isNaN(bpmVal) && bpmVal > 40 && bpmVal < 250) {
-          points.push({ bar: barNum, bpm: bpmVal, timecodeMs });
+          points.push({ bar: barNum, beat: beatNum, bpm: bpmVal, timecodeMs });
         }
       }
     }
@@ -277,7 +278,7 @@ async function recordBenchmark() {
       stageTier: StageTier;
     }> = [];
     // Enforce Bar 1 Downbeat Alignment (ADR 0002)
-    const firstMusicalOnsetMs = analysis.onsetsMs[0] ?? analysis.beatMs[0] ?? 0;
+    const firstMusicalOnsetMs = analysis.beatMs[0] ?? analysis.onsetsMs[0] ?? 0;
     const shiftMs = (points[0]?.timecodeMs ?? 0) - firstMusicalOnsetMs;
     const alignedBeatMs = analysis.beatMs.map((t) => t + shiftMs);
     console.log(
@@ -300,7 +301,7 @@ async function recordBenchmark() {
       const refBarMs = 240_000 / refPt.bpm;
       const estBarMs = 240_000 / estBpmAtBar;
 
-      const targetIdx = (refPt.bar - 1) * 4;
+      const targetIdx = (refPt.bar - 1) * 4 + (refPt.beat - 1);
       const estBarTimeMs =
         alignedBeatMs[targetIdx] ??
         (alignedBeatMs[alignedBeatMs.length - 1] ?? 0) +
