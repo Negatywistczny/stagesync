@@ -44,6 +44,19 @@ export const UI_TEMPO_ANALYSIS_OPTIONS: AnalyzeAudioTempoOptions = {
   fullTrackGrid: false,
 };
 
+export type ViterbiBeatTrace = {
+  beatIdx: number;
+  selectedMs: number;
+  candidates: Array<{
+    tMs: number;
+    rawScore: number;
+    tempoPen: number;
+    totalScore: number;
+    status: "WINNER" | "REJECTED";
+    rejectReason?: string;
+  }>;
+};
+
 export type AnalyzeAudioTempoOptions = {
   maxAnalysisSec?: number;
   downsample?: number;
@@ -58,6 +71,8 @@ export type AnalyzeAudioTempoOptions = {
   seedBpm?: number;
   /** When true, beat grid spans the full decoded buffer (import path). */
   fullTrackGrid?: boolean;
+  /** When true, populates decision trace for Explainable DSP debugging. */
+  enableTrace?: boolean;
   /** 0…1 progress for UI bars (throttled to whole-percent steps). */
   onProgress?: (ratio: number) => void;
 };
@@ -220,6 +235,10 @@ function pickOnsetsFromFlux(
     const prev = flux[i - 1] ?? 0;
     const next = flux[i + 1] ?? 0;
     if (cur < thr || cur < prev || cur < next) continue;
+
+    // Phase 2: Reject brief 1-hop isolated muted string scratches ("scratchy")
+    const area = cur + (next ?? 0);
+    if (cur < thr * 1.2 && area < thr * 1.4) continue;
     const alpha = prev;
     const beta = cur;
     const gamma = next;
@@ -1008,6 +1027,37 @@ function estimateInitialLocalPeriod(
  * Period updates use a long median IBI window and reject double-time hops
  * relative to that stable reference (dense fills must not accelerate Adapt).
  */
+export function detectEnergySpikesMs(
+  flux: Float32Array,
+  sampleRate: number,
+  hopSize: number,
+): number[] {
+  if (flux.length === 0) return [];
+  const windowHops = Math.max(10, Math.round((3.0 * sampleRate) / hopSize));
+  const spikes: number[] = [];
+  let windowSum = 0;
+  let windowCount = 0;
+
+  for (let fi = 0; fi < flux.length; fi++) {
+    const val = flux[fi] ?? 0;
+    const tMs = Math.round((((fi * hopSize + FRAME_SIZE / 2) / sampleRate) * 1000) * 10) / 10;
+    const avg = windowCount > 10 ? windowSum / windowCount : 0.02;
+
+    if (val > 0.08 && val > 2.2 * avg) {
+      spikes.push(tMs);
+    }
+
+    windowSum += val;
+    windowCount++;
+    if (windowCount > windowHops) {
+      windowSum -= flux[fi - windowHops] ?? 0;
+      windowCount--;
+    }
+  }
+
+  return spikes;
+}
+
 function buildBeatGridViterbi(
   onsetsMs: readonly number[],
   estimatedBpm: number,
@@ -1015,6 +1065,9 @@ function buildBeatGridViterbi(
   maxBeats: number,
   phaseAnchorMs: number,
   windowedMap?: readonly WindowedBpmPoint[],
+  enableTrace?: boolean,
+  outTraceContainer?: { trace?: ViterbiBeatTrace[] },
+  spikeOnsetsMs?: readonly number[],
 ): number[] | null {
   if (onsetsMs.length < 4) return null;
   const rawPeriodHint = 60_000 / estimatedBpm;
@@ -1042,9 +1095,6 @@ function buildBeatGridViterbi(
     `[SMART TEMPO DIAGNOSTICS] buildBeatGridViterbi -> initialLocalPeriod: ${initialLocalPeriod.toFixed(1)} ms (${(60_000 / initialLocalPeriod).toFixed(2)} BPM), rawPeriodHint: ${rawPeriodHint.toFixed(1)} ms (${estimatedBpm.toFixed(2)} BPM)`,
   );
   const t0 = resolveBeatGridPhase(onsetsMs, phaseAnchorMs, initialLocalPeriod);
-  // Hard octave clamp is anchored to the reconciled rawPeriodHint, NOT initialLocalPeriod.
-  // This ensures Viterbi cannot latch onto 8th-note / syncopated sub-beat periods.
-  // e.g. rawPeriodHint=517ms (115.96 BPM) → minPeriod=476ms → 128 BPM (469ms) is rejected.
   const minPeriod = rawPeriodHint * PERIOD_HINT_CLAMP_LO;
   const maxPeriod = rawPeriodHint * PERIOD_HINT_CLAMP_HI;
   const nBeats = Math.min(
@@ -1067,7 +1117,12 @@ function buildBeatGridViterbi(
     const phaseOffset = Math.abs((t - t0) % localPeriod);
     const downbeatBonus = isDownbeat || phaseOffset <= win || Math.abs(phaseOffset - localPeriod) <= win ? 0.50 : 0;
     const onsetBonus = dist <= 25 ? 5.0 * (1 - dist / 25) : 0;
-    return (1 - dist / win) + downbeatBonus + onsetBonus;
+
+    const nearestSpike = spikeOnsetsMs && spikeOnsetsMs.length > 0 ? nearestOnsetMs(spikeOnsetsMs, t) : -1;
+    const isEnergySpike = nearestSpike >= 0 && Math.abs(nearestSpike - t) <= 40;
+    const spikeBonus = isEnergySpike ? 3.0 : 0;
+
+    return (1 - dist / win) + downbeatBonus + onsetBonus + spikeBonus;
   };
 
   type Cell = {
@@ -1124,9 +1179,11 @@ function buildBeatGridViterbi(
         }
         if (t < 0 || t > gridDurationMs + p.localPeriod * 0.1) continue;
         const dt = t - p.t;
+        const stepLo = beat < 16 ? 0.90 : STABLE_PERIOD_STEP_LO;
+        const stepHi = beat < 16 ? 1.10 : STABLE_PERIOD_STEP_HI;
         if (
-          dt < stableRef * STABLE_PERIOD_STEP_LO ||
-          dt > stableRef * STABLE_PERIOD_STEP_HI
+          dt < stableRef * stepLo ||
+          dt > stableRef * stepHi
         ) {
           continue;
         }
@@ -1215,6 +1272,37 @@ function buildBeatGridViterbi(
     if (idx < 0 && li > 0) break;
   }
   path.reverse();
+
+  if (enableTrace && outTraceContainer) {
+    const traceList: ViterbiBeatTrace[] = [];
+    for (let li = 0; li < layers.length; li++) {
+      const selected = path[li] ?? 0;
+      const layerCells = layers[li] ?? [];
+      const candidateTraces = layerCells.map((c) => {
+        const rawScore = scoreAt(c.t, c.localPeriod, li);
+        const isSelected = Math.abs(c.t - selected) < 1e-3;
+        let rejectReason: string | undefined;
+        if (!isSelected) {
+          if (rawScore === 0) rejectReason = "Brak ataku w okienku \u00b18%";
+          else rejectReason = "Ni\u017csza skumulowana punktacja Viterbiego";
+        }
+        return {
+          tMs: Math.round(c.t * 10) / 10,
+          rawScore: Math.round(rawScore * 100) / 100,
+          tempoPen: 0,
+          totalScore: Math.round(c.score * 100) / 100,
+          status: isSelected ? ("WINNER" as const) : ("REJECTED" as const),
+          rejectReason,
+        };
+      });
+      traceList.push({
+        beatIdx: li,
+        selectedMs: Math.round(selected * 10) / 10,
+        candidates: candidateTraces,
+      });
+    }
+    outTraceContainer.trace = traceList;
+  }
   const out: number[] = [];
   for (const t of path) {
     if (out.length === 0 || t > out[out.length - 1]!) out.push(t);
@@ -1234,6 +1322,9 @@ export function buildBeatGrid(
   maxBeats: number,
   phaseAnchorMs: number = 0,
   windowedMap?: readonly WindowedBpmPoint[],
+  enableTrace?: boolean,
+  outTraceContainer?: { trace?: ViterbiBeatTrace[] },
+  spikeOnsetsMs?: readonly number[],
 ): number[] {
   if (!(gridDurationMs > 0) || !(estimatedBpm > 0)) return [];
   const viterbi = buildBeatGridViterbi(
@@ -1243,6 +1334,9 @@ export function buildBeatGrid(
     maxBeats,
     phaseAnchorMs,
     windowedMap,
+    enableTrace,
+    outTraceContainer,
+    spikeOnsetsMs,
   );
   if (viterbi) return viterbi;
 
@@ -1301,6 +1395,9 @@ async function buildBeatGridAsync(
   maxBeats: number,
   signal?: AbortSignal,
   phaseAnchorMs: number = 0,
+  enableTrace?: boolean,
+  outTraceContainer?: { trace?: ViterbiBeatTrace[] },
+  spikeOnsetsMs?: readonly number[],
 ): Promise<number[]> {
   throwIfAborted(signal);
   const sync = buildBeatGrid(
@@ -1309,6 +1406,10 @@ async function buildBeatGridAsync(
     gridDurationMs,
     maxBeats,
     phaseAnchorMs,
+    undefined,
+    enableTrace,
+    outTraceContainer,
+    spikeOnsetsMs,
   );
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
   throwIfAborted(signal);
@@ -1661,6 +1762,7 @@ export async function analyzeFromMonoAsync(
   signal?: AbortSignal,
   onProgress?: (ratio: number) => void,
   externalOnsetsMs?: number[],
+  enableTrace?: boolean,
 ): Promise<AudioAnalysisResult> {
   const report = makeProgressReporter(onProgress);
   report(0);
@@ -1672,6 +1774,7 @@ export async function analyzeFromMonoAsync(
   const maxBeats = fullTrackGrid ? MAX_BEATS_FULL_TRACK : MAX_BEATS_WINDOW;
   const hopSize = effectiveHopSize(mono.length);
   let onsetsMs: number[] = [];
+  let spikeOnsetsMs: number[] | undefined;
   let rawEstimate: number;
   let competitors: number[] = [];
   if (skipOnsets) {
@@ -1708,7 +1811,7 @@ export async function analyzeFromMonoAsync(
       const wideFlux = Math.max(0, wideEnergy - prevWideEnergy);
       const lowFlux = Math.max(0, lowEnergy - prevLowEnergy);
 
-      asyncFlux[fi] = 3.0 * lowFlux + 1.0 * wideFlux;
+      asyncFlux[fi] = 1.2 * lowFlux + 1.0 * wideFlux;
 
       prevWideEnergy = wideEnergy * 0.85 + prevWideEnergy * 0.15;
       prevLowEnergy = lowEnergy * 0.85 + prevLowEnergy * 0.15;
@@ -1725,6 +1828,7 @@ export async function analyzeFromMonoAsync(
       ? externalOnsetsMs
       : pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
     throwIfAborted(signal);
+    spikeOnsetsMs = detectEnergySpikesMs(asyncFlux, sampleRate, hopSize);
     const bpmHop = acfHopSize(hopSize, sampleRate);
     let acfFlux: Float32Array = asyncFlux;
     if (bpmHop !== hopSize) {
@@ -1765,6 +1869,7 @@ export async function analyzeFromMonoAsync(
     15,
     periodHintBpm,
   );
+  const traceContainer: { trace?: ViterbiBeatTrace[] } = {};
   let beatMs = await buildBeatGridAsync(
     onsetsMs,
     periodHintBpm,
@@ -1772,21 +1877,20 @@ export async function analyzeFromMonoAsync(
     maxBeats,
     signal,
     phaseAnchor,
+    enableTrace,
+    traceContainer,
+    spikeOnsetsMs,
   );
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
   beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 10);
   const ibiBpm = medianBpmFromBeatMs(beatMs);
-  // Prefer periodHintBpm (from bar-harmonics reconciliation) over the raw
-  // beat-grid median: Viterbi can latch onto 8th-note or syncopated onsets
-  // and produce a median ~10% faster than the true quarter-note period.
-  // Trust ibiBpm only when within ±10% of periodHintBpm.
   const ibiBpmDeviation = ibiBpm > 0 ? Math.abs(ibiBpm - periodHintBpm) / periodHintBpm : 1;
   const estimatedBpm = periodHintBpm > 0 ? periodHintBpm : ibiBpm;
   console.log(
     `[SMART TEMPO DIAGNOSTICS] po siatce -> medianBpmFromBeatMs: ${ibiBpm > 0 ? ibiBpm.toFixed(2) : "brak"}, periodHintBpm: ${periodHintBpm.toFixed(2)}, ibiBpmDeviation: ${(ibiBpmDeviation * 100).toFixed(1)}%, estimatedBpm (SSOT): ${estimatedBpm.toFixed(2)}`,
   );
   report(1);
-  return { onsetsMs, beatMs, estimatedBpm };
+  return { onsetsMs, beatMs, estimatedBpm, viterbiTrace: traceContainer.trace };
 }
 
 /**
@@ -1931,6 +2035,7 @@ async function runAnalyzeAudioTempoAsync(
       signal,
       options.onProgress,
       fullRateOnsets,
+      options.enableTrace,
     );
     return { result };
   } finally {

@@ -227,6 +227,12 @@ async function recordBenchmark() {
   let totalStageAcceptableCount = 0;
   let totalStageUnusableCount = 0;
 
+  const trackArg = process.argv
+    .find((a) => a.startsWith("--track="))
+    ?.split("=")[1]
+    ?.replace(/^["']|["']$/g, "")
+    .trim();
+
   for (const rtfFile of rtfFiles) {
     const baseName = rtfFile.replace(/\.rtf$/, "");
     const mp3File = files.find(
@@ -242,9 +248,14 @@ async function recordBenchmark() {
     const points = parseRtfReference(rtfPath);
     const audioBuf = loadAudioBufferFromMp3(mp3Path);
 
+    const shouldTraceTrack = Boolean(
+      trackArg && baseName.toLowerCase().includes(trackArg.toLowerCase()),
+    );
+
     const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
       maxAnalysisSec: 300,
       fullTrackGrid: true,
+      enableTrace: shouldTraceTrack,
     });
 
     const smartRes = runAudioDrivenSmartTempo({
@@ -337,6 +348,51 @@ async function recordBenchmark() {
         tier,
         stageTier,
       });
+    }
+
+    if (shouldTraceTrack) {
+      console.log(`\n================================================================================`);
+      console.log(`🔍 EXPLAINABLE DSP DECISION TRACE: ${baseName}`);
+      console.log(`================================================================================`);
+
+      console.log(`\n--- [INTRO PHASING TRACE: Beats 0..16] ---`);
+      for (let beatIdx = 0; beatIdx <= 16; beatIdx += 4) {
+        const traceLayer = analysis.viterbiTrace?.find((vt) => vt.beatIdx === beatIdx);
+        if (traceLayer) {
+          console.log(`\n[BeatIdx ${beatIdx} (Bar ${beatIdx / 4 + 1})] Selected DSP: ${traceLayer.selectedMs.toFixed(1)} ms`);
+          traceLayer.candidates.slice(0, 5).forEach((cand, cIdx) => {
+            const statusTag = cand.status === "WINNER" ? "🟢 [WINNER]" : "🔴 [REJECTED]";
+            const reasonMsg = cand.rejectReason ? ` -> ${cand.rejectReason}` : "";
+            console.log(`   ${statusTag} #${cIdx + 1} @ ${cand.tMs.toFixed(1)} ms | RawScore: ${cand.rawScore.toFixed(2)}, TotalScore: ${cand.totalScore.toFixed(2)}${reasonMsg}`);
+          });
+        }
+      }
+
+      console.log(`\n--- [FAILING BARS TRACE (DAW FAIL > 60 ms)] ---`);
+      const failingBars = barPoints.filter((bp) => bp.tier === "fail").slice(0, 5);
+      if (failingBars.length === 0) {
+        console.log(`✅ Brak taktów przekraczających 60 ms w tym utworze!`);
+      } else {
+        for (const bp of failingBars) {
+          const targetIdx = (bp.bar - 1) * 4;
+          const refPt = points.find((p) => p.bar === bp.bar);
+          const refMs = refPt?.timecodeMs ?? 0;
+          const estMs = alignedBeatMs[targetIdx] ?? 0;
+          console.log(`\n[Bar ${bp.bar}] Ref RTF: ${refMs.toFixed(1)} ms | Selected DSP: ${estMs.toFixed(1)} ms | Error: ${bp.errorMs.toFixed(1)} ms (DAW FAIL)`);
+          const traceLayer = analysis.viterbiTrace?.find((vt) => vt.beatIdx === targetIdx);
+          if (traceLayer && traceLayer.candidates.length > 0) {
+            console.log(`   Oceniani kandydaci Viterbiego (layer beatIdx ${targetIdx}):`);
+            traceLayer.candidates.slice(0, 5).forEach((cand, cIdx) => {
+              const statusTag = cand.status === "WINNER" ? "🟢 [WINNER]" : "🔴 [REJECTED]";
+              const reasonMsg = cand.rejectReason ? ` -> ${cand.rejectReason}` : "";
+              console.log(`      ${statusTag} #${cIdx + 1} @ ${cand.tMs.toFixed(1)} ms | RawScore: ${cand.rawScore.toFixed(2)}, TotalScore: ${cand.totalScore.toFixed(2)}${reasonMsg}`);
+            });
+          } else {
+            console.log(`   (Brak rejestracji kandydatów dla beatIdx ${targetIdx})`);
+          }
+        }
+      }
+      console.log(`================================================================================\n`);
     }
 
     const songExactCount = barPoints.filter((b) => b.tier === "exact").length;
