@@ -89,8 +89,9 @@ describe("SmartTempoAccuracyDashboard Component", () => {
       name: "Wersja odniesienia (Baseline)",
     })[0] as HTMLSelectElement;
     expect(select).toBeDefined();
+    expect(select.value).toBe("run-baseline-old");
 
-    expect(screen.getAllByText(/-\d+\.\d+% 🔴|\+\d+\.\d+% 🟢/)[0]).toBeDefined();
+    expect(screen.getAllByTitle(/Δ vs baseline/).length).toBeGreaterThan(0);
   });
 
   it("renders custom dataset when provided as props", () => {
