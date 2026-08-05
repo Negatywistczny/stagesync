@@ -1731,10 +1731,8 @@ export function analyzeFromMono(
     sampleRate,
     hopSize,
     onsetsMs,
-    15,
-    periodHintBpm,
   );
-  const windowedMap = acfFlux ? estimateWindowedBpmMap(acfFlux, sampleRate, bpmHop, seedBpm, rawEstimate) : undefined;
+  const windowedMap = acfFlux ? estimateWindowedBpmMap(onsetsMs, gridDurationMs, periodHintBpm) : undefined;
   const spikeOnsetsMs = acfFlux ? detectEnergySpikesMs(acfFlux, sampleRate, bpmHop) : undefined;
 
   let beatMs = buildBeatGrid(
@@ -1902,8 +1900,6 @@ export async function analyzeFromMonoAsync(
     sampleRate,
     hopSize,
     onsetsMs,
-    15,
-    periodHintBpm,
   );
   const windowedMap = estimateWindowedBpmMap(onsetsMs, gridDurationMs, periodHintBpm);
   const traceContainer: { trace?: ViterbiBeatTrace[] } = {};
@@ -1917,7 +1913,6 @@ export async function analyzeFromMonoAsync(
     enableTrace,
     traceContainer,
     spikeOnsetsMs,
-    windowedMap,
   );
   beatMs = selfConsistentScaleBeatGrid(beatMs, onsetsMs);
   beatMs = snapBeatGridToOnsets(beatMs, onsetsMs, 10);
