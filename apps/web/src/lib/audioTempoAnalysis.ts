@@ -875,6 +875,74 @@ function nearestOnsetMs(onsetsMs: readonly number[], targetMs: number): number {
 const BEAT_ONSET_BLEND = 0.3;
 const BEAT_SNAP_FRAC = 0.08;
 
+/**
+ * Scans the intro of the audio buffer (first 15s) for the first sub-bass transient
+ * (250 Hz Low-Pass) exceeding 20% dynamics threshold of maximum sub-bass kick energy.
+ * Returns the exact timestamp of Bar 1 Beat 1 (Downbeat Anchor).
+ */
+export function detectFirstMusicalDownbeatMs(
+  mono: Float32Array,
+  sampleRate: number,
+  hopSize: number,
+  onsetsMs: readonly number[],
+  maxIntroSec = 15,
+): number {
+  if (mono.length === 0 || onsetsMs.length === 0) return 0;
+
+  const frameSize = FRAME_SIZE;
+  const scanSamples = Math.min(mono.length, Math.ceil(maxIntroSec * sampleRate));
+  const nHops = Math.floor((scanSamples - frameSize) / hopSize) + 1;
+  if (nHops <= 0) return onsetsMs[0] ?? 0;
+
+  const alpha =
+    (2 * Math.PI * 250 / sampleRate) /
+    (1 + (2 * Math.PI * 250 / sampleRate));
+
+  let lowState = 0;
+  let prevLowE = 0;
+  const lowFlux = new Float32Array(nHops);
+  let maxFluxInIntro = 0;
+
+  for (let fi = 0, i = 0; fi < nHops; fi++, i += hopSize) {
+    let lowE = 0;
+    for (let j = 0; j < frameSize; j++) {
+      const v = mono[i + j] ?? 0;
+      lowState += alpha * (v - lowState);
+      lowE += lowState * lowState;
+    }
+    lowE = Math.sqrt(lowE / frameSize);
+    const flux = Math.max(0, lowE - prevLowE);
+    lowFlux[fi] = flux;
+    prevLowE = lowE * 0.85 + prevLowE * 0.15;
+    if (flux > maxFluxInIntro) maxFluxInIntro = flux;
+  }
+
+  // Dynamics threshold: 20% of peak sub-bass transient energy in intro
+  const threshold = Math.max(0.005, maxFluxInIntro * 0.20);
+  let targetHop = -1;
+  for (let fi = 0; fi < nHops; fi++) {
+    if ((lowFlux[fi] ?? 0) >= threshold) {
+      targetHop = fi;
+      break;
+    }
+  }
+
+  if (targetHop < 0) return onsetsMs[0] ?? 0;
+
+  const detectedMs =
+    Math.round(
+      (((targetHop * hopSize + frameSize / 2) / sampleRate) * 1000) * 10,
+    ) / 10;
+
+  // Snap to nearest onset within 60ms if available
+  const nearOnset = nearestOnsetMs(onsetsMs, detectedMs);
+  if (Math.abs(nearOnset - detectedMs) <= 60) {
+    return nearOnset;
+  }
+
+  return detectedMs;
+}
+
 function resolveBeatGridPhase(
   onsetsMs: readonly number[],
   phaseAnchorMs: number,
@@ -885,7 +953,8 @@ function resolveBeatGridPhase(
 
   if (phaseAnchorMs > 0) {
     const nearAnchor = nearestOnsetMs(onsetsMs, phaseAnchorMs);
-    if (Math.abs(nearAnchor - phaseAnchorMs) <= snapWindow) return nearAnchor;
+    if (Math.abs(nearAnchor - phaseAnchorMs) <= snapWindow * 2.0) return nearAnchor;
+    return phaseAnchorMs;
   }
 
   const steps = 16;
@@ -1576,7 +1645,13 @@ export function analyzeFromMono(
     onsetsMs.length,
     competitors,
   );
-  const phaseAnchor = 0;
+  const phaseAnchor = detectFirstMusicalDownbeatMs(
+    mono,
+    sampleRate,
+    hopSize,
+    onsetsMs,
+    15,
+  );
   const windowedMap = acfFlux ? estimateWindowedBpmMap(acfFlux, sampleRate, bpmHop, seedBpm, rawEstimate) : undefined;
   let beatMs = buildBeatGrid(
     onsetsMs,
@@ -1729,7 +1804,13 @@ export async function analyzeFromMonoAsync(
     onsetsMs.length,
     competitors,
   );
-  const phaseAnchor = onsetsMs[0] ?? 0;
+  const phaseAnchor = detectFirstMusicalDownbeatMs(
+    mono,
+    sampleRate,
+    hopSize,
+    onsetsMs,
+    15,
+  );
   let beatMs = await buildBeatGridAsync(
     onsetsMs,
     periodHintBpm,

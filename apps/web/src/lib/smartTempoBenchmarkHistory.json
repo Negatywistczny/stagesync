@@ -297,5 +297,68 @@
         }
       }
     }
+  },
+  {
+    "id": "run-2026-08-05-110937",
+    "timestamp": "2026-08-05T09:09:37.530Z",
+    "gitCommit": "3cf39f8b",
+    "note": "Downbeat Anchor Implementation",
+    "summary": {
+      "totalMeasures": 349,
+      "exactPct": 1.7,
+      "closePct": 3.2,
+      "failPct": 95.1,
+      "meanMs": 3266,
+      "medianMs": 4471.6,
+      "p95Ms": 5585.5,
+      "dawGrade": {
+        "exactPct": 1.7,
+        "closePct": 3.2,
+        "failPct": 95.1
+      },
+      "stageGrade": {
+        "perfectPct": 0.9,
+        "acceptablePct": 0.6,
+        "unusablePct": 98.6
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 1.2,
+        "meanMs": 2587.7,
+        "stageGrade": {
+          "perfectPct": 1.2,
+          "acceptablePct": 0,
+          "unusablePct": 98.8
+        }
+      },
+      "I will survive": {
+        "exactPct": 0,
+        "meanMs": 5270.3,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 0,
+        "meanMs": 4831.8,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 5,
+        "meanMs": 941.4,
+        "stageGrade": {
+          "perfectPct": 2,
+          "acceptablePct": 2,
+          "unusablePct": 96
+        }
+      }
+    }
   }
 ]
