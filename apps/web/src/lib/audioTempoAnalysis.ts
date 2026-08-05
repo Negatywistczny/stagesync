@@ -801,9 +801,14 @@ export function reconcileEstimatedBpm(
     reason = "niska pewność onsetów → seed/fallback";
   } else if (!(seedBpm != null && seedBpm > 0)) {
     const barHarmonic = competingBpms?.[0];
-    if (barHarmonic && barHarmonic > 0 && Math.abs(barHarmonic - estimated) / estimated <= 0.035) {
+    if (
+      barHarmonic &&
+      barHarmonic >= 118 &&
+      barHarmonic <= 135 &&
+      Math.abs(barHarmonic - estimated) / estimated <= 0.035
+    ) {
       finalResult = Math.round(barHarmonic * 100) / 100;
-      reason = "brak seeda → wybrano preferowaną harmonikę taktową barHarmonics";
+      reason = "brak seeda → harmonika taktowa barHarmonics (118-135 BPM)";
     } else {
       finalResult = Math.round(preferMusicalOctave(estimated) * 100) / 100;
       reason = "brak seeda → ACF (+ oktawa muzyczna)";
@@ -933,11 +938,7 @@ function resolveBeatGridPhase(
   }
 
   const firstOnset = onsetsMs[0] ?? 0;
-  let rawAnchor = firstOnset;
-  while (rawAnchor - period >= -snapWindow) {
-    rawAnchor -= period;
-  }
-  return Math.max(0, Math.round(rawAnchor));
+  return Math.max(0, Math.round(firstOnset));
 }
 
 function medianOfPositive(values: readonly number[]): number {
@@ -1047,9 +1048,9 @@ export function detectEnergySpikesMs(
     const tMs = Math.round((((fi * hopSize + FRAME_SIZE / 2) / sampleRate) * 1000) * 10) / 10;
     const avg = windowCount > 10 ? windowSum / windowCount : 0.02;
 
-    const isDualBandPeak = lowVal > 0.015 && wideVal > 0.015;
+    const isDualBandPeak = (lowVal > 0.015 && wideVal > 0.015) || wideVal > 0.035;
 
-    if (val > 0.08 && val > 2.2 * avg && isDualBandPeak) {
+    if (val > 0.06 && val > 2.0 * avg && isDualBandPeak) {
       spikes.push(tMs);
     }
 

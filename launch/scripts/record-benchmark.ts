@@ -278,7 +278,7 @@ async function recordBenchmark() {
       stageTier: StageTier;
     }> = [];
     // Enforce Bar 1 Downbeat Alignment (ADR 0002)
-    const firstMusicalOnsetMs = analysis.beatMs[0] ?? analysis.onsetsMs[0] ?? 0;
+    const firstMusicalOnsetMs = analysis.onsetsMs[0] ?? analysis.beatMs[0] ?? 0;
     const shiftMs = (points[0]?.timecodeMs ?? 0) - firstMusicalOnsetMs;
     const alignedBeatMs = analysis.beatMs.map((t) => t + shiftMs);
     console.log(

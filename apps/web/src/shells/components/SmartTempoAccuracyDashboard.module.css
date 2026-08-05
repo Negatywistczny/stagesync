@@ -538,6 +538,18 @@
   stroke-dasharray: 3 3;
 }
 
+.dotRefLine {
+  background: #8B5CF6 !important; /* ss-css-allow */
+}
+
+.refTempoPath {
+  fill: none;
+  stroke: #8B5CF6; /* ss-css-allow */
+  stroke-width: 2px;
+  stroke-dasharray: 5 4;
+  opacity: 0.85;
+}
+
 /* Floating Tooltip */
 .tooltip {
   position: fixed;

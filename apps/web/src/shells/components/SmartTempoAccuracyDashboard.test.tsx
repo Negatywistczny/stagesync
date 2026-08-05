@@ -18,7 +18,7 @@ describe("SmartTempoAccuracyDashboard Component", () => {
     expect(screen.getByText("📈 Statystyki Błędu")).toBeDefined();
   });
 
-  it("renders all 3 requested chart sections (Histogram, CDF, Timeline Drift)", () => {
+  it("renders all 4 requested chart sections (Histogram, CDF, Timeline Drift, Tempo Contour)", () => {
     render(<SmartTempoAccuracyDashboard />);
 
     expect(
@@ -30,6 +30,10 @@ describe("SmartTempoAccuracyDashboard Component", () => {
     expect(
       screen.getAllByText(/C\. Wykres Przebiegu Odchyleń w Czasie/)[0],
     ).toBeDefined();
+    expect(
+      screen.getAllByText(/D\. Wykres Przebiegu Tempa w Czasie/)[0],
+    ).toBeDefined();
+    expect(screen.getByText("🟣 Referencja Logic Pro")).toBeDefined();
   });
 
   it("allows switching to Stage-Ready Grade mode", () => {
