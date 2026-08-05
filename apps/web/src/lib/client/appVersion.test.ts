@@ -9,7 +9,7 @@ import {
   DOCS_RELEASES_URL,
 } from "./docsLinks.js";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
 describe("appVersion + docsLinks", () => {
   it("exposes SemVer app version string", () => {

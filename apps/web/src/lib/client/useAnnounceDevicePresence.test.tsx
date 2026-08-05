@@ -11,7 +11,7 @@ import { useAnnounceDevicePresence } from "./useAnnounceDevicePresence.js";
 
 const announcePresence = vi.fn();
 
-vi.mock("../transport/useTransport.js", () => ({
+vi.mock("../../transport/useTransport.js", () => ({
   useTransport: () => ({ announcePresence }),
 }));
 

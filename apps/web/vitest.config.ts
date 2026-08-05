@@ -6,6 +6,16 @@ const pkgDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(pkgDir, "../..");
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@lib/audio": path.resolve(pkgDir, "src/lib/audio"),
+      "@lib/timeline": path.resolve(pkgDir, "src/lib/timeline"),
+      "@lib/timeline-edit": path.resolve(pkgDir, "src/lib/timeline-edit"),
+      "@lib/client": path.resolve(pkgDir, "src/lib/client"),
+      "@lib/shell-operator": path.resolve(pkgDir, "src/lib/shell-operator"),
+      "@lib": path.resolve(pkgDir, "src/lib"),
+    },
+  },
   test: {
     environment: "node",
     globals: true,

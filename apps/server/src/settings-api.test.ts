@@ -6,6 +6,24 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createApp } from "./app.js";
 
+function resolveTestScratchRoot(): string {
+  const explicit = process.env.STAGESYNC_TEST_SCRATCH_DIR;
+  if (explicit) return explicit;
+  return tmpdir();
+}
+
+async function scratchHomedirOrTmp(prefix: string): Promise<string> {
+  const homeBase = join(homedir(), prefix);
+  try {
+    return await mkdtemp(homeBase);
+  } catch (e) {
+    if (e && typeof e === "object" && "code" in e && (e as { code?: string }).code === "EPERM") {
+      return await mkdtemp(join(resolveTestScratchRoot(), prefix.replace(/^\./, "")));
+    }
+    throw e;
+  }
+}
+
 describe("GET/PUT /api/system/settings + browse", () => {
   const dirs: string[] = [];
   afterEach(async () => {
@@ -109,7 +127,7 @@ describe("GET/PUT /api/system/settings + browse", () => {
   });
 
   it("POST restore restores sibling .bak into dataDir", async () => {
-    const dataDir = await mkdtemp(join(homedir(), ".stagesync-restore-api-"));
+    const dataDir = await scratchHomedirOrTmp(".stagesync-restore-api-");
     dirs.push(dataDir);
     const live = join(dataDir, "library.json");
     await writeFile(live, '{"v":1}', "utf8");
@@ -146,7 +164,7 @@ describe("GET/PUT /api/system/settings + browse", () => {
 
   it("POST restore requires operator PIN when configured", async () => {
     vi.stubEnv("STAGESYNC_OPERATOR_PIN", "4242");
-    const dataDir = await mkdtemp(join(homedir(), ".stagesync-restore-pin-"));
+    const dataDir = await scratchHomedirOrTmp(".stagesync-restore-pin-");
     dirs.push(dataDir);
     const live = join(dataDir, "library.json");
     await writeFile(live, '{"v":1}', "utf8");
@@ -178,7 +196,7 @@ describe("GET/PUT /api/system/settings + browse", () => {
 
   it("POST restore accepts bulk paths and ZIP archive", async () => {
     const { buildStoreZip } = await import("./diagnostics-zip.js");
-    const dataDir = await mkdtemp(join(homedir(), ".stagesync-restore-bulk-api-"));
+    const dataDir = await scratchHomedirOrTmp(".stagesync-restore-bulk-api-");
     dirs.push(dataDir);
     const a = join(dataDir, "a.json");
     const b = join(dataDir, "b.json");
