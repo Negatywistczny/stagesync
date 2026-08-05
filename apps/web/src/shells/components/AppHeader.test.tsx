@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@lib/shell-operator/operatorSurface.js", () => ({
+vi.mock("../../lib/shell-operator/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(
     (pathname: string) =>
       pathname.startsWith("/admin") || pathname.startsWith("/timeline"),
@@ -10,15 +10,12 @@ vi.mock("@lib/shell-operator/operatorSurface.js", () => ({
   isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
-vi.mock("@lib/client/useMqMobileCompact.js", () => ({
+vi.mock("../../lib/client/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-import {
-  isOsMenuDesktopShell,
-  shouldShowOperatorNav,
-} from "@lib/shell-operator/operatorSurface.js";
-import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
+import { isOsMenuDesktopShell, shouldShowOperatorNav } from "../../lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "../../lib/client/useMqMobileCompact.js";
 import { AppHeader } from "./AppHeader.js";
 
 function html(node: React.ReactElement): string {

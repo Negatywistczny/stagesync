@@ -10,7 +10,7 @@
  * In workflow_dispatch (test), pass --version without committing to main.
  *
  * Files updated:
- *   - apps/web/src/lib/appVersion.ts
+ *   - apps/web/src/lib/client/appVersion.ts
  *   - apps/server/src/app.ts (VERSION fallback)
  *   - Dockerfile (APP_VERSION default)
  *   - compose.yml (STAGESYNC_VERSION default)
@@ -72,7 +72,7 @@ if (wixVersion !== version) {
 
 const updates = [
   {
-    path: "apps/web/src/lib/appVersion.ts",
+    path: "apps/web/src/lib/client/appVersion.ts",
     transform: (c) => c.replace(/export const APP_VERSION = "[^"]+";/, `export const APP_VERSION = "${version}";`),
   },
   {
