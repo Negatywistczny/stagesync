@@ -911,16 +911,91 @@ const BEAT_SNAP_FRAC = 0.08;
  * Returns the exact timestamp of Bar 1 Beat 1 (Downbeat Anchor).
  */
 /**
- * Clean phase anchor for beat grid synthesis.
- * Uses earliest detected musical onset (onsetsMs[0]) without artificial heuristics.
+ * Sub-bass / kick-aware downbeat anchor for beat-grid phase.
+ * Scores intro onsets, back-projects bar boundaries when kick is late.
  */
 export function detectFirstMusicalDownbeatMs(
-  _mono: Float32Array,
-  _sampleRate: number,
-  _hopSize: number,
+  mono: Float32Array,
+  sampleRate: number,
+  hopSize: number,
   onsetsMs: readonly number[],
+  maxIntroSec = 15,
+  periodHintBpm = 120,
 ): number {
-  return onsetsMs[0] ?? 0;
+  if (mono.length === 0 || onsetsMs.length === 0) return 0;
+
+  const introOnsets = onsetsMs.filter((ms) => ms <= maxIntroSec * 1000);
+  const alpha =
+    (2 * Math.PI * 80 / sampleRate) /
+    (1 + (2 * Math.PI * 80 / sampleRate));
+
+  const onsetScores: number[] = [];
+  let maxScore = 0;
+
+  for (const o of introOnsets) {
+    const centerSample = Math.round((o / 1000) * sampleRate);
+    const winLen = Math.round(0.05 * sampleRate);
+    const start = Math.max(0, centerSample - Math.floor(winLen / 2));
+    const end = Math.min(mono.length, centerSample + Math.floor(winLen / 2));
+    let state1 = 0;
+    let state2 = 0;
+    let lowE = 0;
+    let wideE = 0;
+    for (let i = start; i < end; i++) {
+      const v = mono[i] ?? 0;
+      state1 += alpha * (v - state1);
+      state2 += alpha * (state1 - state2);
+      lowE += state2 * state2;
+      wideE += v * v;
+    }
+    const lowRms = Math.sqrt(lowE / Math.max(1, end - start));
+    const wideRms = Math.sqrt(wideE / Math.max(1, end - start));
+    const score = lowRms * wideRms;
+    onsetScores.push(score);
+    if (score > maxScore) maxScore = score;
+  }
+
+  let firstKickMs = onsetsMs[0] ?? 0;
+  if (maxScore > 1e-8) {
+    const kickThr = maxScore * 0.40;
+    for (let idx = 0; idx < introOnsets.length; idx++) {
+      if ((onsetScores[idx] ?? 0) >= kickThr) {
+        firstKickMs = introOnsets[idx]!;
+        break;
+      }
+    }
+  }
+
+  const earLiestOnset = onsetsMs[0] ?? 0;
+  const periodMs = 60_000 / (periodHintBpm > 0 ? periodHintBpm : 120);
+  const barMs = periodMs * 4;
+
+  if (firstKickMs > earLiestOnset + periodMs * 1.5) {
+    let bestT0 = firstKickMs;
+    let minErr = Infinity;
+
+    for (let k = 1; k <= 4; k++) {
+      const candT0 = firstKickMs - k * barMs;
+      if (candT0 < Math.max(0, earLiestOnset - periodMs * 0.5)) break;
+      const nearProjected = nearestOnsetMs(onsetsMs, candT0);
+      const err = Math.abs(nearProjected - candT0);
+      if (err < minErr && err <= periodMs * 0.40) {
+        minErr = err;
+        bestT0 = nearProjected;
+      }
+    }
+
+    if (bestT0 !== firstKickMs) {
+      return bestT0;
+    }
+  }
+
+  const nearOnset = nearestOnsetMs(onsetsMs, firstKickMs);
+  if (Math.abs(nearOnset - firstKickMs) <= 60) {
+    return nearOnset;
+  }
+
+  return firstKickMs;
 }
 
 function resolveBeatGridPhase(
@@ -1080,7 +1155,11 @@ function buildBeatGridViterbi(
   const rawPeriodHint = 60_000 / estimatedBpm;
 
   const getPeriodHintAt = (tMs: number): number => {
-    if (!windowedMap || windowedMap.length === 0) return rawPeriodHint;
+    if (!windowedMap || windowedMap.length === 0) {
+      // Without a windowed map, trust onset-derived local period over a
+      // mismatched global hint (e.g. UltraStar seed vs true groove).
+      return periodHint;
+    }
     if (tMs <= windowedMap[0]!.timeMs) return 60_000 / windowedMap[0]!.bpm;
     const last = windowedMap[windowedMap.length - 1]!;
     if (tMs >= last.timeMs) return 60_000 / last.bpm;

@@ -72,6 +72,22 @@ export type SmartTempoAudioRef = {
   analysis?: AudioAnalysisResult;
 };
 
+/** Optional Viterbi decision trace (Explainable DSP / benchmark tooling). */
+export type ViterbiBeatTraceCandidate = {
+  tMs: number;
+  rawScore: number;
+  tempoPen: number;
+  totalScore: number;
+  status: "WINNER" | "REJECTED";
+  rejectReason?: string;
+};
+
+export type ViterbiBeatTrace = {
+  beatIdx: number;
+  selectedMs: number;
+  candidates: readonly ViterbiBeatTraceCandidate[];
+};
+
 /** Precomputed audio analysis (pure data — no AudioBuffer). Produced in apps/web. */
 export type AudioAnalysisResult = {
   /** Detected transient / onset times (ms from audio file start). */
@@ -80,6 +96,8 @@ export type AudioAnalysisResult = {
   beatMs: readonly number[];
   /** Global BPM estimate from inter-onset / beat intervals. */
   estimatedBpm: number;
+  /** Optional per-beat Viterbi trace when analysis runs with tracing enabled. */
+  viterbiTrace?: readonly ViterbiBeatTrace[];
 };
 
 /** Tempo Node = file wall-clock ms ↔ musical tick (tick 0 ≈ file start). */
