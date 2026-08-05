@@ -8,6 +8,7 @@ import {
   chmod,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   stat,
@@ -213,11 +214,46 @@ function parseProgressLine(line: string): number | null {
   return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : null;
 }
 
-/** Download YouTube audio to MP3 bytes via yt-dlp (shared by project + session jobs). */
+function runYtDlpSpawn(
+  command: string,
+  args: string[],
+  onProgress?: (pct: number) => void,
+): Promise<{ code: number | null; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    let stderrOutput = "";
+    let proc: ReturnType<typeof spawn>;
+    try {
+      proc = spawn(command, args, { shell: false });
+    } catch (err) {
+      reject(err);
+      return;
+    }
+    proc.stdout?.on("data", (chunk: Buffer) => {
+      const lines = chunk.toString("utf8").split("\n");
+      for (const line of lines) {
+        const pct = parseProgressLine(line);
+        if (pct != null) onProgress?.(pct);
+      }
+    });
+    proc.stderr?.on("data", (chunk: Buffer) => {
+      const text = chunk.toString("utf8");
+      stderrOutput += text;
+      const pct = parseProgressLine(text);
+      if (pct != null) onProgress?.(pct);
+    });
+    proc.on("error", reject);
+    proc.on("close", (code) => {
+      resolve({ code, stderr: stderrOutput });
+    });
+  });
+}
+
+/** Download YouTube audio to MP3/M4A bytes via yt-dlp (shared by project + session jobs). */
 export async function downloadYoutubeMp3Bytes(
   videoId: string,
   ytDlpCommand: string,
   onProgress?: (pct: number) => void,
+  dataDir?: string,
 ): Promise<Buffer> {
   let tmpDir: string | null = null;
   try {
@@ -225,45 +261,62 @@ export async function downloadYoutubeMp3Bytes(
     const outTemplate = join(tmpDir, `${videoId}.%(ext)s`);
     const url = `https://www.youtube.com/watch?v=${videoId}`;
 
-    await new Promise<void>((resolve, reject) => {
-      const args = [
-        "-x",
-        "--audio-format",
-        "mp3",
-        "--no-playlist",
-        "--newline",
-        "-o",
-        outTemplate,
-        url,
-      ];
-      const proc = spawn(ytDlpCommand, args, { shell: false });
-      let stderrOutput = "";
-      proc.stdout?.on("data", (chunk: Buffer) => {
-        const lines = chunk.toString("utf8").split("\n");
-        for (const line of lines) {
-          const pct = parseProgressLine(line);
-          if (pct != null) onProgress?.(pct);
-        }
-      });
-      proc.stderr?.on("data", (chunk: Buffer) => {
-        const text = chunk.toString("utf8");
-        stderrOutput += text;
-        const pct = parseProgressLine(text);
-        if (pct != null) onProgress?.(pct);
-      });
-      proc.on("error", reject);
-      proc.on("close", (code) => {
-        if (code === 0) resolve();
-        else {
-          const stderrTrimmed = stderrOutput.trim();
-          const detail = stderrTrimmed ? `: ${stderrTrimmed.slice(-300)}` : "";
-          reject(new Error(`yt-dlp zakończył się kodem ${code ?? "?"}${detail}`));
-        }
-      });
-    });
+    // 1. Primary attempt: MP3 post-processing
+    let res = await runYtDlpSpawn(
+      ytDlpCommand,
+      ["-x", "--audio-format", "mp3", "--no-playlist", "--newline", "-o", outTemplate, url],
+      onProgress,
+    );
 
-    const mp3Path = join(tmpDir, `${videoId}.mp3`);
-    const bytes = await readFile(mp3Path);
+    // 2. Fallback: Direct audio stream download (if FFmpeg is missing for MP3 conversion)
+    if (res.code !== 0) {
+      res = await runYtDlpSpawn(
+        ytDlpCommand,
+        ["-f", "bestaudio/best", "--no-playlist", "--newline", "-o", outTemplate, url],
+        onProgress,
+      );
+    }
+
+    // 3. Fallback: Try repo-bundled binary if command was system yt-dlp
+    const repoBundled = ytdlpRepoBundledPath();
+    if (res.code !== 0 && ytDlpCommand !== repoBundled && (await looksLikeYtDlpBinary(repoBundled))) {
+      res = await runYtDlpSpawn(
+        repoBundled,
+        ["-f", "bestaudio/best", "--no-playlist", "--newline", "-o", outTemplate, url],
+        onProgress,
+      );
+    }
+
+    // 4. Fallback: Auto-download fresh binary from GitHub release if available
+    if (res.code !== 0 && dataDir) {
+      try {
+        const freshBundled = await ensureBundledYtDlp(dataDir);
+        if (freshBundled && (await looksLikeYtDlpBinary(freshBundled))) {
+          res = await runYtDlpSpawn(
+            freshBundled,
+            ["-f", "bestaudio/best", "--no-playlist", "--newline", "-o", outTemplate, url],
+            onProgress,
+          );
+        }
+      } catch {
+        // Ignore auto-download errors, throw detailed error below
+      }
+    }
+
+    if (res.code !== 0) {
+      const stderrTrimmed = res.stderr.trim();
+      const detail = stderrTrimmed ? `: ${stderrTrimmed.slice(-300)}` : "";
+      throw new Error(`yt-dlp zakończył się kodem ${res.code ?? "?"}${detail}`);
+    }
+
+    const files = await readdir(tmpDir);
+    const audioFilename = files.find((f) => f.startsWith(videoId));
+    if (!audioFilename) {
+      throw new Error("Brak pliku audio po pobraniu przez yt-dlp.");
+    }
+
+    const audioPath = join(tmpDir, audioFilename);
+    const bytes = await readFile(audioPath);
     if (bytes.length > 100 * 1024 * 1024) {
       throw new Error("Plik audio przekracza limit 100 MB.");
     }
@@ -292,6 +345,7 @@ async function runYoutubeDownloadJob(
       (pct) => {
         jobRef.progress = pct;
       },
+      defaultDataDir(),
     );
     const assetId = randomUUID();
     const project = await stores.addProjectAsset(
@@ -358,6 +412,7 @@ async function runSessionYoutubeJob(
       (pct) => {
         jobRef.progress = pct;
       },
+      defaultDataDir(),
     );
     jobRef.bytes = bytes;
     jobRef.status = "done";
