@@ -881,101 +881,16 @@ const BEAT_SNAP_FRAC = 0.08;
  * Returns the exact timestamp of Bar 1 Beat 1 (Downbeat Anchor).
  */
 /**
- * Scans the intro of the audio buffer (first 15s) for the first sub-bass transient
- * (250 Hz Low-Pass) exceeding 20% dynamics threshold of maximum sub-bass kick energy.
- * If kick is delayed (e.g. after a piano/guitar intro), performs Pre-Kick Back-Projection
- * using estimated bar period (periodMs * 4) to set t0 at the true musical Bar 1 Beat 1.
+ * Clean phase anchor for beat grid synthesis.
+ * Uses earliest detected musical onset (onsetsMs[0]) without artificial heuristics.
  */
 export function detectFirstMusicalDownbeatMs(
-  mono: Float32Array,
-  sampleRate: number,
-  hopSize: number,
+  _mono: Float32Array,
+  _sampleRate: number,
+  _hopSize: number,
   onsetsMs: readonly number[],
-  maxIntroSec = 15,
-  periodHintBpm = 120,
 ): number {
-  if (mono.length === 0 || onsetsMs.length === 0) return 0;
-
-  // Compute percussive kick score (lowRms * wideRms) directly around each onset in intro
-  const introOnsets = onsetsMs.filter((ms) => ms <= maxIntroSec * 1000);
-  const alpha =
-    (2 * Math.PI * 80 / sampleRate) /
-    (1 + (2 * Math.PI * 80 / sampleRate));
-
-  const onsetScores: number[] = [];
-  let maxScore = 0;
-
-  for (const o of introOnsets) {
-    const centerSample = Math.round((o / 1000) * sampleRate);
-    const winLen = Math.round(0.05 * sampleRate);
-    const start = Math.max(0, centerSample - Math.floor(winLen / 2));
-    const end = Math.min(mono.length, centerSample + Math.floor(winLen / 2));
-    let state1 = 0;
-    let state2 = 0;
-    let lowE = 0;
-    let wideE = 0;
-    for (let i = start; i < end; i++) {
-      const v = mono[i] ?? 0;
-      state1 += alpha * (v - state1);
-      state2 += alpha * (state1 - state2);
-      lowE += state2 * state2;
-      wideE += v * v;
-    }
-    const lowRms = Math.sqrt(lowE / Math.max(1, end - start));
-    const wideRms = Math.sqrt(wideE / Math.max(1, end - start));
-    const score = lowRms * wideRms;
-    onsetScores.push(score);
-    if (score > maxScore) maxScore = score;
-  }
-
-  let firstKickMs = onsetsMs[0] ?? 0;
-  if (maxScore > 1e-8) {
-    const kickThr = maxScore * 0.40;
-    for (let idx = 0; idx < introOnsets.length; idx++) {
-      if ((onsetScores[idx] ?? 0) >= kickThr) {
-        firstKickMs = introOnsets[idx]!;
-        break;
-      }
-    }
-  }
-
-  const earLiestOnset = onsetsMs[0] ?? 0;
-  const periodMs = 60_000 / (periodHintBpm > 0 ? periodHintBpm : 120);
-  const barMs = periodMs * 4;
-
-  // PRE-KICK BACK-PROJECTION:
-  // If first strong kick drum is delayed (>1.8s) because of an earlier musical intro (piano/guitar/count-in),
-  // test integer bar offsets (k * barMs) backward from firstKickMs to find the best Bar 1 Beat 1 downbeat.
-  if (firstKickMs > earLiestOnset + periodMs * 1.5) {
-    let bestT0 = firstKickMs;
-    let minErr = Infinity;
-
-    for (let k = 1; k <= 4; k++) {
-      const candT0 = firstKickMs - k * barMs;
-      if (candT0 < Math.max(0, earLiestOnset - periodMs * 0.5)) break;
-      const nearProjected = nearestOnsetMs(onsetsMs, candT0);
-      const err = Math.abs(nearProjected - candT0);
-      if (err < minErr && err <= periodMs * 0.40) {
-        minErr = err;
-        bestT0 = nearProjected;
-      }
-    }
-
-    if (bestT0 !== firstKickMs) {
-      console.log(
-        `[PRE-KICK BACK-PROJECTION] firstKickMs: ${firstKickMs.toFixed(1)}ms, earLiestOnset: ${earLiestOnset.toFixed(1)}ms -> t0: ${bestT0.toFixed(1)}ms`,
-      );
-      return bestT0;
-    }
-  }
-
-  // Snap to nearest onset within 60ms if available
-  const nearOnset = nearestOnsetMs(onsetsMs, firstKickMs);
-  if (Math.abs(nearOnset - firstKickMs) <= 60) {
-    return nearOnset;
-  }
-
-  return firstKickMs;
+  return onsetsMs[0] ?? 0;
 }
 
 function resolveBeatGridPhase(
@@ -1027,22 +942,22 @@ function medianOfPositive(values: readonly number[]): number {
 /** Running IBI window for period inertia (≈2 bars @ 4/4). */
 const LOCAL_PERIOD_IBI_WINDOW = 8;
 /**
- * Context-aware step vs current local period (gradual rubato).
- * Relaxed to 0.88–1.12 (+/- 12%) so Viterbi smoothly tracks drummer rubato.
+ * Soft step vs current local period (gradual rubato only).
+ * Tighter 0.94–1.06 band (+/- 6%).
  */
-const LOCAL_PERIOD_STEP_LO = 0.88;
-const LOCAL_PERIOD_STEP_HI = 1.12;
+const LOCAL_PERIOD_STEP_LO = 0.94;
+const LOCAL_PERIOD_STEP_HI = 1.06;
 /**
- * Gate vs stable quarter-note reference.
- * Relaxed to 0.88–1.12 (+/- 12%).
+ * Hard gate vs stable quarter-note reference (median IBI + period hint).
+ * Rejects half-beat / double-time snaps and 1.5-beat syncopation traps.
  */
-const STABLE_PERIOD_STEP_LO = 0.88;
-const STABLE_PERIOD_STEP_HI = 1.12;
+const STABLE_PERIOD_STEP_LO = 0.94;
+const STABLE_PERIOD_STEP_HI = 1.06;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
 const PERIOD_HINT_STABLE_WEIGHT = 0.15;
-/** Clamp local period vs hint — relaxed to +/- 12%. */
-const PERIOD_HINT_CLAMP_LO = 0.88;
-const PERIOD_HINT_CLAMP_HI = 1.12;
+/** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band (+/- 6%). */
+const PERIOD_HINT_CLAMP_LO = 0.94;
+const PERIOD_HINT_CLAMP_HI = 1.06;
 
 function estimateInitialLocalPeriod(
   onsetsMs: readonly number[],
@@ -1745,6 +1660,7 @@ export async function analyzeFromMonoAsync(
   fullTrackGrid: boolean,
   signal?: AbortSignal,
   onProgress?: (ratio: number) => void,
+  externalOnsetsMs?: number[],
 ): Promise<AudioAnalysisResult> {
   const report = makeProgressReporter(onProgress);
   report(0);
@@ -1805,7 +1721,9 @@ export async function analyzeFromMonoAsync(
       }
     }
     report(0.88);
-    onsetsMs = pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
+    onsetsMs = externalOnsetsMs && externalOnsetsMs.length > 0
+      ? externalOnsetsMs
+      : pickOnsetsFromFlux(asyncFlux, sampleRate, hopSize);
     throwIfAborted(signal);
     const bpmHop = acfHopSize(hopSize, sampleRate);
     let acfFlux: Float32Array = asyncFlux;
@@ -1896,6 +1814,71 @@ export function analyzeAudioTempo(buffer: AudioBuffer): AudioAnalysisResult {
   );
 }
 
+/**
+ * Full Sample-Rate 44.1 kHz ODF combining sub-bass kick flux (< 250 Hz) and
+ * high-frequency transient flux (> 1.5 kHz) prior to decimation for sub-millisecond precision.
+ */
+export function computeFullSampleRateOnsets(
+  buffer: AudioBuffer,
+  maxSec: number,
+  maxOnsets = MAX_ONSETS,
+): number[] {
+  const sampleRate = buffer.sampleRate;
+  if (!(sampleRate > 0) || buffer.length === 0) return [];
+  const maxSamples = Math.min(buffer.length, Math.ceil(maxSec * sampleRate));
+  const chs = buffer.numberOfChannels;
+  const frameSize = 1024;
+  const hopSize = 512;
+  const nHops = Math.floor((maxSamples - frameSize) / hopSize) + 1;
+  if (nHops <= 0) return [];
+
+  // Low-pass filter for kick (< 250 Hz) and High-pass for snare/cymbals (> 1.5 kHz)
+  const alphaLow =
+    (2 * Math.PI * 250 / sampleRate) /
+    (1 + (2 * Math.PI * 250 / sampleRate));
+  const fcHigh = 1500;
+  const dt = 1 / sampleRate;
+  const rc = 1 / (2 * Math.PI * fcHigh);
+  const alphaHigh = rc / (rc + dt);
+
+  const flux = new Float32Array(nHops);
+  let prevLowE = 0;
+  let prevHighE = 0;
+  let lowState = 0;
+  let hpState = 0;
+  let prevSample = 0;
+
+  for (let fi = 0, i = 0; fi < nHops; fi++, i += hopSize) {
+    let lowE = 0;
+    let highE = 0;
+    for (let j = 0; j < frameSize; j++) {
+      let sum = 0;
+      for (let ch = 0; ch < chs; ch++) {
+        sum += buffer.getChannelData(ch)[i + j] ?? 0;
+      }
+      const val = sum / chs;
+      lowState += alphaLow * (val - lowState);
+      lowE += lowState * lowState;
+
+      hpState = alphaHigh * (hpState + val - prevSample);
+      prevSample = val;
+      highE += hpState * hpState;
+    }
+    lowE = Math.sqrt(lowE / frameSize);
+    highE = Math.sqrt(highE / frameSize);
+
+    const lowFlux = Math.max(0, lowE - prevLowE);
+    const highFlux = Math.max(0, highE - prevHighE);
+
+    flux[fi] = 3.0 * lowFlux + 1.0 * highFlux;
+
+    prevLowE = lowE * 0.85 + prevLowE * 0.15;
+    prevHighE = highE * 0.85 + prevHighE * 0.15;
+  }
+
+  return pickOnsetsFromFlux(flux, sampleRate, hopSize, maxOnsets);
+}
+
 async function runAnalyzeAudioTempoAsync(
   buffer: AudioBuffer,
   options: AnalyzeAudioTempoOptions,
@@ -1911,6 +1894,10 @@ async function runAnalyzeAudioTempoAsync(
   const fullTrackGrid = options.fullTrackGrid ?? false;
   const signal = options.signal;
   throwIfAborted(signal);
+
+  // 1. Full Sample-Rate 44.1 kHz High-Frequency (>1.5 kHz) ODF for sub-millisecond onset precision
+  const fullRateOnsets = computeFullSampleRateOnsets(buffer, maxSec);
+
   const { mono, effectiveSampleRate } = mixToMonoCapped(
     buffer,
     maxSec,
@@ -1943,6 +1930,7 @@ async function runAnalyzeAudioTempoAsync(
       fullTrackGrid,
       signal,
       options.onProgress,
+      fullRateOnsets,
     );
     return { result };
   } finally {

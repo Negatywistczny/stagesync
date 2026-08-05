@@ -90,7 +90,11 @@ function parseRtfReference(rtfPath: string) {
   const points: { bar: number; bpm: number; timecodeMs: number }[] = [];
 
   for (const line of lines) {
-    const cleanLine = line.replace(/\\$/g, "").trim();
+    const cleanLine = line
+      .replace(/\\[a-z0-9]+\s?/gi, "")
+      .replace(/[\{\}]/g, "")
+      .replace(/\\$/g, "")
+      .trim();
     const parts = cleanLine
       .split("\t")
       .map((p) => p.trim())
@@ -261,6 +265,13 @@ async function recordBenchmark() {
       tier: DawTier;
       stageTier: StageTier;
     }> = [];
+    // Enforce hard zero t0 alignment
+    const shiftMs = (points[0]?.timecodeMs ?? 0) - (analysis.beatMs[0] ?? 0);
+    const alignedBeatMs = analysis.beatMs.map((t) => t + shiftMs);
+    console.log(
+      `   [HARD ZERO T0 ALIGNMENT] ${baseName}: pts[0].timecodeMs=${points[0]?.timecodeMs ?? 0}, beatMs[0]=${analysis.beatMs[0] ?? 0} -> shiftMs=${shiftMs.toFixed(1)}`,
+    );
+
     let cumMs = 0;
     for (let i = 0; i < points.length; i++) {
       const refPt = points[i]!;
@@ -277,11 +288,11 @@ async function recordBenchmark() {
       const refBarMs = 240_000 / refPt.bpm;
       const estBarMs = 240_000 / estBpmAtBar;
 
-      const beatIdx = (refPt.bar - 1) * 4;
+      const targetIdx = (refPt.bar - 1) * 4;
       const estBarTimeMs =
-        analysis.beatMs[beatIdx] ??
-        (analysis.beatMs[analysis.beatMs.length - 1] ?? 0) +
-          (beatIdx - Math.max(0, analysis.beatMs.length - 1)) * (60_000 / estBpmAtBar);
+        alignedBeatMs[targetIdx] ??
+        (alignedBeatMs[alignedBeatMs.length - 1] ?? 0) +
+          (targetIdx - Math.max(0, alignedBeatMs.length - 1)) * (60_000 / estBpmAtBar);
 
       // Absolute timeline position error: difference between estimated bar timestamp and reference timestamp
       const errorMsRaw = Math.abs(estBarTimeMs - refPt.timecodeMs);
