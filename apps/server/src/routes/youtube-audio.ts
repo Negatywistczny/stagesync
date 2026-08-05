@@ -237,6 +237,7 @@ export async function downloadYoutubeMp3Bytes(
         url,
       ];
       const proc = spawn(ytDlpCommand, args, { shell: false });
+      let stderrOutput = "";
       proc.stdout?.on("data", (chunk: Buffer) => {
         const lines = chunk.toString("utf8").split("\n");
         for (const line of lines) {
@@ -245,13 +246,19 @@ export async function downloadYoutubeMp3Bytes(
         }
       });
       proc.stderr?.on("data", (chunk: Buffer) => {
-        const pct = parseProgressLine(chunk.toString("utf8"));
+        const text = chunk.toString("utf8");
+        stderrOutput += text;
+        const pct = parseProgressLine(text);
         if (pct != null) onProgress?.(pct);
       });
       proc.on("error", reject);
       proc.on("close", (code) => {
         if (code === 0) resolve();
-        else reject(new Error(`yt-dlp zakończył się kodem ${code ?? "?"}`));
+        else {
+          const stderrTrimmed = stderrOutput.trim();
+          const detail = stderrTrimmed ? `: ${stderrTrimmed.slice(-300)}` : "";
+          reject(new Error(`yt-dlp zakończył się kodem ${code ?? "?"}${detail}`));
+        }
       });
     });
 

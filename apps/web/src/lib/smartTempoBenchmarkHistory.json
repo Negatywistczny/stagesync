@@ -360,5 +360,257 @@
         }
       }
     }
+  },
+  {
+    "id": "run-2026-08-05-111111",
+    "timestamp": "2026-08-05T09:11:11.279Z",
+    "gitCommit": "563841e0",
+    "note": "Step 2: Pre-Kick Back-Projection & Relaxed Clamping",
+    "summary": {
+      "totalMeasures": 349,
+      "exactPct": 0,
+      "closePct": 1.1,
+      "failPct": 98.9,
+      "meanMs": 4220.4,
+      "medianMs": 3912.7,
+      "p95Ms": 10035.2,
+      "dawGrade": {
+        "exactPct": 0,
+        "closePct": 1.1,
+        "failPct": 98.9
+      },
+      "stageGrade": {
+        "perfectPct": 0,
+        "acceptablePct": 0,
+        "unusablePct": 100
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 0,
+        "meanMs": 3472.1,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "I will survive": {
+        "exactPct": 0,
+        "meanMs": 5419,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 0,
+        "meanMs": 6585.3,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 0,
+        "meanMs": 1864.5,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-111125",
+    "timestamp": "2026-08-05T09:11:25.344Z",
+    "gitCommit": "563841e0",
+    "note": "Refined Step 2",
+    "summary": {
+      "totalMeasures": 349,
+      "exactPct": 0,
+      "closePct": 1.1,
+      "failPct": 98.9,
+      "meanMs": 4220.4,
+      "medianMs": 3912.7,
+      "p95Ms": 10035.2,
+      "dawGrade": {
+        "exactPct": 0,
+        "closePct": 1.1,
+        "failPct": 98.9
+      },
+      "stageGrade": {
+        "perfectPct": 0,
+        "acceptablePct": 0,
+        "unusablePct": 100
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 0,
+        "meanMs": 3472.1,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "I will survive": {
+        "exactPct": 0,
+        "meanMs": 5419,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 0,
+        "meanMs": 6585.3,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 0,
+        "meanMs": 1864.5,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-111309",
+    "timestamp": "2026-08-05T09:13:09.804Z",
+    "gitCommit": "563841e0",
+    "note": "Step 2: Dynamic Viterbi Clamping & Pre-Kick Back-Projection",
+    "summary": {
+      "totalMeasures": 349,
+      "exactPct": 0,
+      "closePct": 0.3,
+      "failPct": 99.7,
+      "meanMs": 5347.6,
+      "medianMs": 5462.8,
+      "p95Ms": 9520.6,
+      "dawGrade": {
+        "exactPct": 0,
+        "closePct": 0.3,
+        "failPct": 99.7
+      },
+      "stageGrade": {
+        "perfectPct": 0,
+        "acceptablePct": 0,
+        "unusablePct": 100
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 0,
+        "meanMs": 3472.1,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "I will survive": {
+        "exactPct": 0,
+        "meanMs": 7374.5,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 0,
+        "meanMs": 6321.4,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 0,
+        "meanMs": 4544.4,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      }
+    }
+  },
+  {
+    "id": "run-2026-08-05-111339",
+    "timestamp": "2026-08-05T09:13:39.968Z",
+    "gitCommit": "563841e0",
+    "note": "Step 2: Pre-Kick Back-Projection & Relaxed Viterbi Clamping (+/-12%)",
+    "summary": {
+      "totalMeasures": 349,
+      "exactPct": 0,
+      "closePct": 0.3,
+      "failPct": 99.7,
+      "meanMs": 5347.6,
+      "medianMs": 5462.8,
+      "p95Ms": 9520.6,
+      "dawGrade": {
+        "exactPct": 0,
+        "closePct": 0.3,
+        "failPct": 99.7
+      },
+      "stageGrade": {
+        "perfectPct": 0,
+        "acceptablePct": 0,
+        "unusablePct": 100
+      }
+    },
+    "perSong": {
+      "Billie Jean": {
+        "exactPct": 0,
+        "meanMs": 3472.1,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "I will survive": {
+        "exactPct": 0,
+        "meanMs": 7374.5,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "Smells Like Teen Spirit": {
+        "exactPct": 0,
+        "meanMs": 6321.4,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      },
+      "The Winner Takes It All": {
+        "exactPct": 0,
+        "meanMs": 4544.4,
+        "stageGrade": {
+          "perfectPct": 0,
+          "acceptablePct": 0,
+          "unusablePct": 100
+        }
+      }
+    }
   }
 ]

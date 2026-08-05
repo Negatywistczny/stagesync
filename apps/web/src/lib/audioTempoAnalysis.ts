@@ -880,67 +880,102 @@ const BEAT_SNAP_FRAC = 0.08;
  * (250 Hz Low-Pass) exceeding 20% dynamics threshold of maximum sub-bass kick energy.
  * Returns the exact timestamp of Bar 1 Beat 1 (Downbeat Anchor).
  */
+/**
+ * Scans the intro of the audio buffer (first 15s) for the first sub-bass transient
+ * (250 Hz Low-Pass) exceeding 20% dynamics threshold of maximum sub-bass kick energy.
+ * If kick is delayed (e.g. after a piano/guitar intro), performs Pre-Kick Back-Projection
+ * using estimated bar period (periodMs * 4) to set t0 at the true musical Bar 1 Beat 1.
+ */
 export function detectFirstMusicalDownbeatMs(
   mono: Float32Array,
   sampleRate: number,
   hopSize: number,
   onsetsMs: readonly number[],
   maxIntroSec = 15,
+  periodHintBpm = 120,
 ): number {
   if (mono.length === 0 || onsetsMs.length === 0) return 0;
 
-  const frameSize = FRAME_SIZE;
-  const scanSamples = Math.min(mono.length, Math.ceil(maxIntroSec * sampleRate));
-  const nHops = Math.floor((scanSamples - frameSize) / hopSize) + 1;
-  if (nHops <= 0) return onsetsMs[0] ?? 0;
-
+  // Compute percussive kick score (lowRms * wideRms) directly around each onset in intro
+  const introOnsets = onsetsMs.filter((ms) => ms <= maxIntroSec * 1000);
   const alpha =
-    (2 * Math.PI * 250 / sampleRate) /
-    (1 + (2 * Math.PI * 250 / sampleRate));
+    (2 * Math.PI * 80 / sampleRate) /
+    (1 + (2 * Math.PI * 80 / sampleRate));
 
-  let lowState = 0;
-  let prevLowE = 0;
-  const lowFlux = new Float32Array(nHops);
-  let maxFluxInIntro = 0;
+  const onsetScores: number[] = [];
+  let maxScore = 0;
 
-  for (let fi = 0, i = 0; fi < nHops; fi++, i += hopSize) {
+  for (const o of introOnsets) {
+    const centerSample = Math.round((o / 1000) * sampleRate);
+    const winLen = Math.round(0.05 * sampleRate);
+    const start = Math.max(0, centerSample - Math.floor(winLen / 2));
+    const end = Math.min(mono.length, centerSample + Math.floor(winLen / 2));
+    let state1 = 0;
+    let state2 = 0;
     let lowE = 0;
-    for (let j = 0; j < frameSize; j++) {
-      const v = mono[i + j] ?? 0;
-      lowState += alpha * (v - lowState);
-      lowE += lowState * lowState;
+    let wideE = 0;
+    for (let i = start; i < end; i++) {
+      const v = mono[i] ?? 0;
+      state1 += alpha * (v - state1);
+      state2 += alpha * (state1 - state2);
+      lowE += state2 * state2;
+      wideE += v * v;
     }
-    lowE = Math.sqrt(lowE / frameSize);
-    const flux = Math.max(0, lowE - prevLowE);
-    lowFlux[fi] = flux;
-    prevLowE = lowE * 0.85 + prevLowE * 0.15;
-    if (flux > maxFluxInIntro) maxFluxInIntro = flux;
+    const lowRms = Math.sqrt(lowE / Math.max(1, end - start));
+    const wideRms = Math.sqrt(wideE / Math.max(1, end - start));
+    const score = lowRms * wideRms;
+    onsetScores.push(score);
+    if (score > maxScore) maxScore = score;
   }
 
-  // Dynamics threshold: 20% of peak sub-bass transient energy in intro
-  const threshold = Math.max(0.005, maxFluxInIntro * 0.20);
-  let targetHop = -1;
-  for (let fi = 0; fi < nHops; fi++) {
-    if ((lowFlux[fi] ?? 0) >= threshold) {
-      targetHop = fi;
-      break;
+  let firstKickMs = onsetsMs[0] ?? 0;
+  if (maxScore > 1e-8) {
+    const kickThr = maxScore * 0.40;
+    for (let idx = 0; idx < introOnsets.length; idx++) {
+      if ((onsetScores[idx] ?? 0) >= kickThr) {
+        firstKickMs = introOnsets[idx]!;
+        break;
+      }
     }
   }
 
-  if (targetHop < 0) return onsetsMs[0] ?? 0;
+  const earLiestOnset = onsetsMs[0] ?? 0;
+  const periodMs = 60_000 / (periodHintBpm > 0 ? periodHintBpm : 120);
+  const barMs = periodMs * 4;
 
-  const detectedMs =
-    Math.round(
-      (((targetHop * hopSize + frameSize / 2) / sampleRate) * 1000) * 10,
-    ) / 10;
+  // PRE-KICK BACK-PROJECTION:
+  // If first strong kick drum is delayed (>1.8s) because of an earlier musical intro (piano/guitar/count-in),
+  // test integer bar offsets (k * barMs) backward from firstKickMs to find the best Bar 1 Beat 1 downbeat.
+  if (firstKickMs > earLiestOnset + periodMs * 1.5) {
+    let bestT0 = firstKickMs;
+    let minErr = Infinity;
+
+    for (let k = 1; k <= 4; k++) {
+      const candT0 = firstKickMs - k * barMs;
+      if (candT0 < Math.max(0, earLiestOnset - periodMs * 0.5)) break;
+      const nearProjected = nearestOnsetMs(onsetsMs, candT0);
+      const err = Math.abs(nearProjected - candT0);
+      if (err < minErr && err <= periodMs * 0.40) {
+        minErr = err;
+        bestT0 = nearProjected;
+      }
+    }
+
+    if (bestT0 !== firstKickMs) {
+      console.log(
+        `[PRE-KICK BACK-PROJECTION] firstKickMs: ${firstKickMs.toFixed(1)}ms, earLiestOnset: ${earLiestOnset.toFixed(1)}ms -> t0: ${bestT0.toFixed(1)}ms`,
+      );
+      return bestT0;
+    }
+  }
 
   // Snap to nearest onset within 60ms if available
-  const nearOnset = nearestOnsetMs(onsetsMs, detectedMs);
-  if (Math.abs(nearOnset - detectedMs) <= 60) {
+  const nearOnset = nearestOnsetMs(onsetsMs, firstKickMs);
+  if (Math.abs(nearOnset - firstKickMs) <= 60) {
     return nearOnset;
   }
 
-  return detectedMs;
+  return firstKickMs;
 }
 
 function resolveBeatGridPhase(
@@ -992,23 +1027,22 @@ function medianOfPositive(values: readonly number[]): number {
 /** Running IBI window for period inertia (≈2 bars @ 4/4). */
 const LOCAL_PERIOD_IBI_WINDOW = 8;
 /**
- * Soft step vs current local period (gradual rubato only).
- * Tighter than the old 0.7–1.35 band so a dense 8th-note cluster cannot
- * yank the tracker into double-time in one hop.
+ * Context-aware step vs current local period (gradual rubato).
+ * Relaxed to 0.88–1.12 (+/- 12%) so Viterbi smoothly tracks drummer rubato.
  */
-const LOCAL_PERIOD_STEP_LO = 0.94;
-const LOCAL_PERIOD_STEP_HI = 1.06;
+const LOCAL_PERIOD_STEP_LO = 0.88;
+const LOCAL_PERIOD_STEP_HI = 1.12;
 /**
- * Hard gate vs stable quarter-note reference (median IBI + period hint).
- * Rejects half-beat / double-time snaps and 1.5-beat syncopation traps.
+ * Gate vs stable quarter-note reference.
+ * Relaxed to 0.88–1.12 (+/- 12%).
  */
-const STABLE_PERIOD_STEP_LO = 0.94;
-const STABLE_PERIOD_STEP_HI = 1.06;
+const STABLE_PERIOD_STEP_LO = 0.88;
+const STABLE_PERIOD_STEP_HI = 1.12;
 /** Weight of `periodHint` inside `stableRef` (rest = recent median IBI). */
 const PERIOD_HINT_STABLE_WEIGHT = 0.15;
-/** Clamp local period vs hint — keeps tracking strictly within quarter-note tempo band. */
-const PERIOD_HINT_CLAMP_LO = 0.94;
-const PERIOD_HINT_CLAMP_HI = 1.06;
+/** Clamp local period vs hint — relaxed to +/- 12%. */
+const PERIOD_HINT_CLAMP_LO = 0.88;
+const PERIOD_HINT_CLAMP_HI = 1.12;
 
 function estimateInitialLocalPeriod(
   onsetsMs: readonly number[],
@@ -1651,6 +1685,7 @@ export function analyzeFromMono(
     hopSize,
     onsetsMs,
     15,
+    periodHintBpm,
   );
   const windowedMap = acfFlux ? estimateWindowedBpmMap(acfFlux, sampleRate, bpmHop, seedBpm, rawEstimate) : undefined;
   let beatMs = buildBeatGrid(
@@ -1810,6 +1845,7 @@ export async function analyzeFromMonoAsync(
     hopSize,
     onsetsMs,
     15,
+    periodHintBpm,
   );
   let beatMs = await buildBeatGridAsync(
     onsetsMs,
