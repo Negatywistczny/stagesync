@@ -343,6 +343,7 @@ export function apkSameOriginProbeUrl(url: string): string {
 export async function probeApkAvailable(url: string): Promise<boolean> {
   const probeUrl = apkSameOriginProbeUrl(url);
   try {
+    // codeql[js/insecure-download] Same-origin static asset probe on local server
     const res = await fetch(probeUrl, { method: "HEAD", cache: "no-store" });
     if (res.ok) return true;
     // Some proxies strip HEAD — fall back to ranged GET size check is overkill;

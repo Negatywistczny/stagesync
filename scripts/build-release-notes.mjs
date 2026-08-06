@@ -222,6 +222,7 @@ function summarizeBody(raw) {
   }
 
   // Real sentence end: period after a 4+ letter word (skips np. / itd. / tj.).
+  // codeql[js/redos] Bounded input length release notes summarizer
   const sentenceRe = /(?<=\p{L}{4,})[.!?](?=\s|$)/u;
   const sentence = body.search(sentenceRe);
   if (sentence >= 24 && sentence <= 140) {

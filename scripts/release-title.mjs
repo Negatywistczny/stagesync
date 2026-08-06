@@ -21,11 +21,14 @@ if (!version) {
 }
 
 const text = readFileSync(changelogPath, "utf8");
-const escaped = version.replace(/\./g, "\\.");
+// codeql[js/regex-injection] CodeQL false positive on controlled version string
+// codeql[js/incomplete-sanitization] Version string escape
+const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const re = new RegExp(
   `## \\[${escaped}\\][^\\n]*?—\\s*(.+?)\\s*$`,
   "m",
 );
+// codeql[js/regex-injection]
 const match = text.match(re);
 const hero = match?.[1]?.trim();
 process.stdout.write(hero ? `${version} — ${hero}` : version);
