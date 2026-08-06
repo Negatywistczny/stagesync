@@ -11,8 +11,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { analyzeFromMono, analyzeAudioTempoAsync, mixToMonoCapped } from "../../apps/web/src/lib/audio/audioTempoAnalysis.js";
 import { runAudioDrivenSmartTempo } from "@stagesync/shared";
+import { analyzeAudioTempoAsync } from "../../src/lib/audio/audioTempoAnalysis.js";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
@@ -73,16 +73,11 @@ function parseTimecodeToMs(tc: string): number {
   if (parts.length >= 3) {
     const hrs = parseInt(parts[0]!, 10);
     const mins = parseInt(parts[1]!, 10);
+    const secs = parseInt(parts[2]!, 10);
     let extraMs = 0;
-    let secs = 0;
-    if (parts.length >= 4) {
-      secs = parseInt(parts[2]!, 10);
-      const val = parseFloat(parts[3]!);
+    if (parts[3]) {
+      const val = parseFloat(parts[3]);
       extraMs = (val / 25) * 1000;
-    } else {
-      const secParts = parts[2]!.split(",");
-      secs = parseInt(secParts[0]!, 10);
-      extraMs = secParts[1] ? parseInt(secParts[1], 10) : 0;
     }
     const totalMs = (hrs * 3600 + mins * 60 + secs) * 1000 + extraMs;
     return totalMs - 3_600_000;
@@ -99,7 +94,7 @@ function parseRtfReference(rtfPath: string) {
     const cleanLine = line
       .replace(/\\tab\s?/g, "\t")
       .replace(/\\[a-z0-9]+\s?/gi, "")
-      .replace(/[\{\}]/g, "")
+      .replace(/[{}]/g, "")
       .replace(/\\$/g, "")
       .trim();
     const parts = cleanLine
@@ -289,7 +284,7 @@ async function recordBenchmark() {
     // Enforce Bar 1 Downbeat Alignment (ADR 0002)
     const firstMusicalOnsetMs = analysis.beatMs[0] ?? analysis.onsetsMs[0] ?? 0;
     const shiftMs = (points[0]?.timecodeMs ?? 0) - firstMusicalOnsetMs;
-    const alignedBeatMs = analysis.beatMs.map((t) => t + shiftMs);
+    const alignedBeatMs = analysis.beatMs.map((t: number) => t + shiftMs);
     console.log(
       `   [BAR 1 DOWNBEAT ALIGNMENT] ${baseName}: pts[0].timecodeMs=${points[0]?.timecodeMs ?? 0}, firstMusicalOnsetMs=${firstMusicalOnsetMs.toFixed(1)} -> shiftMs=${shiftMs.toFixed(1)}`,
     );
@@ -314,7 +309,7 @@ async function recordBenchmark() {
       const estBarTimeMs =
         alignedBeatMs[targetIdx] ??
         (alignedBeatMs[alignedBeatMs.length - 1] ?? 0) +
-          (targetIdx - Math.max(0, alignedBeatMs.length - 1)) * (60_000 / estBpmAtBar);
+        (targetIdx - Math.max(0, alignedBeatMs.length - 1)) * (60_000 / estBpmAtBar);
 
       // Absolute timeline position error: difference between estimated bar timestamp and reference timestamp
       const errorMsRaw = Math.abs(estBarTimeMs - refPt.timecodeMs);

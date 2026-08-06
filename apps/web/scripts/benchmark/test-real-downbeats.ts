@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { analyzeAudioTempoAsync } from "../../apps/web/src/lib/audio/audioTempoAnalysis.js";
+import { analyzeAudioTempoAsync } from "../../src/lib/audio/audioTempoAnalysis.js";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
@@ -54,7 +54,11 @@ function loadAudio(mp3Path: string) {
   try { execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, { stdio: "ignore" }); }
   catch { execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" }); }
   const buf = fs.readFileSync(tmpWav);
-  try { fs.unlinkSync(tmpWav); } catch {}
+  try {
+    fs.unlinkSync(tmpWav);
+  } catch (err) {
+    void err;
+  }
   const floatData = new Float32Array(buf.buffer, buf.byteOffset + 44, Math.floor((buf.byteLength - 44) / 4));
   return {
     length: floatData.length,
@@ -91,7 +95,7 @@ async function main() {
     const estFirstMs = analysis.beatMs[firstRefBarIdx] ?? analysis.beatMs[0] ?? 0;
     const downbeatShift = firstRef.timecodeMs - estFirstMs;
 
-    const alignedBeats = analysis.beatMs.map((b) => b + downbeatShift);
+    const alignedBeats = analysis.beatMs.map((b: number) => b + downbeatShift);
 
     let songExact = 0;
     let songErrSum = 0;
@@ -115,15 +119,15 @@ async function main() {
       }
     }
 
-    console.log(`🎵 ${baseName}: Exact <= 60ms = ${songExact}/${points.length} (${((songExact/points.length)*100).toFixed(1)}%), Mean Err = ${(songErrSum/points.length).toFixed(1)} ms`);
+    console.log(`🎵 ${baseName}: Exact <= 60ms = ${songExact}/${points.length} (${((songExact / points.length) * 100).toFixed(1)}%), Mean Err = ${(songErrSum / points.length).toFixed(1)} ms`);
   }
 
   console.log(`\n==========================================`);
   console.log(`TOTAL BARS: ${totalBars}`);
-  console.log(`🟢 Exact <= 60ms: ${exact60Count}/${totalBars} (${((exact60Count/totalBars)*100).toFixed(1)}%)`);
-  console.log(`🟡 Close 60-125ms: ${close125Count}/${totalBars} (${((close125Count/totalBars)*100).toFixed(1)}%)`);
-  console.log(`🔴 Fail > 125ms: ${failCount}/${totalBars} (${((failCount/totalBars)*100).toFixed(1)}%)`);
-  console.log(`📈 Mean Error: ${(sumErr/totalBars).toFixed(1)} ms`);
+  console.log(`🟢 Exact <= 60ms: ${exact60Count}/${totalBars} (${((exact60Count / totalBars) * 100).toFixed(1)}%)`);
+  console.log(`🟡 Close 60-125ms: ${close125Count}/${totalBars} (${((close125Count / totalBars) * 100).toFixed(1)}%)`);
+  console.log(`🔴 Fail > 125ms: ${failCount}/${totalBars} (${((failCount / totalBars) * 100).toFixed(1)}%)`);
+  console.log(`📈 Mean Error: ${(sumErr / totalBars).toFixed(1)} ms`);
 }
 
 main().catch(console.error);

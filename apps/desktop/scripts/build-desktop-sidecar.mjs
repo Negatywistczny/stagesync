@@ -882,7 +882,7 @@ async function main() {
   if (patchApp) {
     if (!target) {
       console.error(
-        "Usage: node launch/scripts/build-desktop-sidecar.mjs --target <triple> --patch-app </path/StageSync.app>",
+        "Usage: node apps/desktop/scripts/build-desktop-sidecar.mjs --target <triple> --patch-app </path/StageSync.app>",
       );
       process.exit(2);
     }
@@ -893,9 +893,9 @@ async function main() {
 
   if (!target) {
     console.error(
-      "Usage: node launch/scripts/build-desktop-sidecar.mjs --target <tauri-target-triple>\n" +
-        "       node launch/scripts/build-desktop-sidecar.mjs --fix-app </path/StageSync.app>\n" +
-        "       node launch/scripts/build-desktop-sidecar.mjs --self-test",
+      "Usage: node apps/desktop/scripts/build-desktop-sidecar.mjs --target <tauri-target-triple>\n" +
+      "       node apps/desktop/scripts/build-desktop-sidecar.mjs --fix-app </path/StageSync.app>\n" +
+      "       node apps/desktop/scripts/build-desktop-sidecar.mjs --self-test",
     );
     process.exit(2);
   }

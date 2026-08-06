@@ -110,9 +110,7 @@ function loadAudioSamples(mp3Path: string): { samples: Float32Array; sampleRate:
     execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" });
   }
   const buf = fs.readFileSync(tmpWav);
-  try {
-    fs.unlinkSync(tmpWav);
-  } catch {
+  try { fs.unlinkSync(tmpWav); } catch {
     // ignore
   }
 
@@ -149,7 +147,7 @@ async function main() {
   const rtfFiles = files.filter((f) => f.endsWith(".rtf")).sort();
 
   const allInspectionResults: InspectionResult[] = [];
-  const trackSummaries: Record<string, any> = {};
+  const trackSummaries: Record<string, Record<string, unknown>> = {};
 
   for (const rtfFile of rtfFiles) {
     const baseName = rtfFile.replace(/\.rtf$/, "");
@@ -378,7 +376,13 @@ async function main() {
 
   console.log("\n🎵 PER-TRACK DETAILED BREAKDOWN:");
   console.log("-------------------------------------------------------------------------");
-  for (const [trackName, summary] of Object.entries(trackSummaries)) {
+  for (const [trackName, rawSummary] of Object.entries(trackSummaries)) {
+    const summary = rawSummary as {
+      measures: number;
+      lowBand: { mean: number; std: number; within15msPct: number };
+      fluxBand: { mean: number; std: number; within15msPct: number };
+      bestBand: { mean: number; std: number; within15msPct: number };
+    };
     console.log(`\n📌 ${trackName} (${summary.measures} bars):`);
     console.log(`   Low-Band Kick  : Mean Δt = ${summary.lowBand.mean}ms (σ=${summary.lowBand.std}ms) | ≤15ms: ${summary.lowBand.within15msPct}%`);
     console.log(`   Spectral Flux  : Mean Δt = ${summary.fluxBand.mean}ms (σ=${summary.fluxBand.std}ms) | ≤15ms: ${summary.fluxBand.within15msPct}%`);

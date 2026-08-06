@@ -68,8 +68,28 @@ try {
     });
     gitFiles = output.split('\n').filter(Boolean);
 } catch (error) {
-    console.error('❌ Błąd podczas wykonywania git ls-files:', error.message);
-    process.exit(1);
+    console.warn('⚠️ Ostrzeżenie: git ls-files nie powiódł się (brak repozytorium git lub środowisko bez git). Przechodzę na rekurencyjne czytanie katalogu przez fs...');
+    function walkDir(dir, base = '') {
+        let results = [];
+        const list = fs.readdirSync(dir, { withFileTypes: true });
+        for (const file of list) {
+            if (file.name === '.git' || file.name === 'node_modules' || file.name === '.turbo' || file.name === 'dist' || file.name === 'build' || file.name === 'coverage') continue;
+            const resPath = path.join(dir, file.name);
+            const relPath = base ? `${base}/${file.name}` : file.name;
+            if (file.isDirectory()) {
+                results = results.concat(walkDir(resPath, relPath));
+            } else {
+                results.push(relPath);
+            }
+        }
+        return results;
+    }
+    try {
+        gitFiles = walkDir(ROOT_DIR);
+    } catch (fallbackError) {
+        console.error('❌ Błąd podczas fallbacku przeszukiwania plików:', fallbackError.message);
+        process.exit(1);
+    }
 }
 
 // Budujemy drzewo folderów w pamięci

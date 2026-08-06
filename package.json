@@ -12,13 +12,13 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "migrate:legacy": "pnpm --filter @stagesync/server migrate:legacy",
-    "sync-version": "node launch/scripts/sync-version.mjs",
-    "sync:launcher-ui": "node launch/scripts/sync-launcher-ui.mjs",
-    "lint:ss-css": "node launch/scripts/lint-ss-css.mjs",
+    "sync-version": "node scripts/sync-version.mjs",
+    "sync:launcher-ui": "node apps/desktop/scripts/sync-launcher-ui.mjs",
+    "lint:ss-css": "node scripts/lint-ss-css.mjs",
     "lint:knip": "knip --exclude files,dependencies,devDependencies,unlisted,binaries,exports,types,nsExports,nsTypes,enumMembers,namespaceMembers,catalog,catalogReferences",
-    "benchmark:record": "npx tsx launch/scripts/record-benchmark.ts",
+    "benchmark:record": "npx tsx apps/web/scripts/benchmark/record-benchmark.ts",
     "prepare": "node -e \"try{require('child_process').execSync('husky',{stdio:'inherit'})}catch{}\"",
-    "generate:map": "node launch/scripts/generate-repo-map.mjs"
+    "generate:map": "node scripts/generate-repo-map.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",

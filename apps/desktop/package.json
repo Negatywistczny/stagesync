@@ -6,11 +6,11 @@
   "description": "StageSync Tauri thin shell — WebView to local server (ADR 0010)",
   "type": "module",
   "scripts": {
-    "dev": "node ../../launch/scripts/sync-launcher-ui.mjs && node ../../launch/scripts/sync-sidecar-server.mjs && tauri dev",
+    "dev": "node ./scripts/sync-launcher-ui.mjs && node ./scripts/sync-sidecar-server.mjs && tauri dev",
     "build": "node -e \"console.log('@stagesync/desktop: skip turbo build — use pnpm tauri build')\"",
-    "sync-ui": "node ../../launch/scripts/sync-launcher-ui.mjs",
+    "sync-ui": "node ./scripts/sync-launcher-ui.mjs",
     "tauri": "tauri",
-    "tauri:build": "node ../../launch/scripts/sync-launcher-ui.mjs && tauri build",
+    "tauri:build": "node ./scripts/sync-launcher-ui.mjs && tauri build",
     "check-types": "node -e \"process.exit(0)\"",
     "lint": "node -e \"process.exit(0)\"",
     "test": "node --test launcher/*.test.js"

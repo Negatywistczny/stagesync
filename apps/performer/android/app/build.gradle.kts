@@ -23,7 +23,7 @@ android {
     // made every Release APK unsigned-upgrade-incompatible with the previous cut.
     val sideloadKeystore =
         rootProject.projectDir.parentFile!!.parentFile!!.parentFile!!.resolve(
-            "launch/android/sideload.keystore",
+            "packages/android-keystore/sideload.keystore",
         )
     signingConfigs {
         create("sideload") {

@@ -42,7 +42,7 @@ async function main() {
   // Experiment 3: Adaptive Spectral Weights + Padding Correction
   let adaptPerfCount = 0, adaptAcceptCount = 0, adaptErrSum = 0;
 
-  const trackBreakdown: Record<string, any> = {};
+  const trackBreakdown: Record<string, Record<string, unknown>> = {};
 
   for (const tName of Object.keys(profiles)) {
     const tFeats = features.filter((f) => f.trackName === tName);
@@ -136,7 +136,16 @@ async function main() {
 
   console.log("\n📌 PER-TRACK DETAILED COMPARISON:");
   console.log("-------------------------------------------------------------------------");
-  for (const [tName, b] of Object.entries(trackBreakdown)) {
+  for (const [tName, rawB] of Object.entries(trackBreakdown)) {
+    const b = rawB as {
+      measures: number;
+      rawPerfPct: number;
+      rawMeanMs: number;
+      padCorrectedPerfPct: number;
+      padMeanMs: number;
+      adaptivePerfPct: number;
+      adaptMeanMs: number;
+    };
     console.log(`   📌 ${tName} (${b.measures} bars):`);
     console.log(`      • Raw Stage Perfect         : ${b.rawPerfPct}% (Mean: ${b.rawMeanMs}ms)`);
     console.log(`      • MP3 Padding Corrected     : ${b.padCorrectedPerfPct}% (Mean: ${b.padMeanMs}ms)`);

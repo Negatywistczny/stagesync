@@ -86,7 +86,7 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 | -> 📐 **[`shared`](packages/shared/README.md)** | Czysta logika i czas | Walidacja Zod, helpery ticks/PPQ |
 | -> 🎨 **[`ui`](packages/ui/README.md)** | Design System | Komponenty bez logiki, CSS Modules |
 | 📂 **[`data/`](data/README.md)** | Dane operacyjne | Magazyn runtime, projekty v3 i logi *(w `.gitignore`)* |
-| 🚀 **[`launch/`](launch/README.md)** | Narzędzia i automatyzacja | Skrypty deweloperskie, klucze Android, kolejki integracyjne |
+| 🛠️ **[`scripts/`](scripts/README.md)** | Narzędzia i automatyzacja | Skrypty release, build i generowania mapy |
 | 📚 **[`docs/`](docs/README.md)** | Baza wiedzy | Dokumentacja techniczna, specyfikacje i decyzje ADR |
 
 ## 📚 Dokumentacja

@@ -8,8 +8,8 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 - **`ARCHITECTURE.md`** — Mapa architektury całego monorepo, zasada transportu SSOT oraz przepływy danych.
 - **`STANDARDS.md`** — Standardy zewnętrzne, ergonomia oraz przyjęte konwencje deweloperskie.
 - **`REPO_MAP.md`** — Automatycznie generowana mapa kodu źródłowego, ułatwiająca analizę projektu przez systemy AI (agenci LLM).
-- **`ROADMAP.md`** — Długoterminowa ścieżka rozwoju i etapy wydań linii 5.x/6.x.
-- **`TODO.md`** — Dynamiczny plik zadań do wykonania (higiena zadań bez zrobionych pozycji `[x]`).
+- **`ROADMAP.md`** — Długoterminowa ścieżka rozwoju.
+- **`TODO.md`** — Dynamiczny plik zadań do wykonania.
 
 ### Podręczniki operacyjne:
 - **`INSTALL.md`** — Instrukcja wdrożenia produkcyjnego w środowisku Docker (Docker Compose, rejestr GHCR, porty, zmienne środowiskowe).
