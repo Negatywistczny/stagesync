@@ -43,21 +43,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Inicjalizacja CodeQL z zestawem reguł security-extended oraz wykluczeniami ścieżek
+    # Inicjalizacja CodeQL z zestawem reguł security-extended oraz zewnętrzne pliki konfiguracyjne / config-file
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         queries: security-extended
-        config: |
-          paths-ignore:
-            - 'data'
-            - 'docs'
-            - '**/dist'
-            - '**/build'
-            - '**/coverage'
-            - '**/node_modules'
-            - '**/.turbo'
+        config-file: .github/codeql/codeql-config.yml
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
