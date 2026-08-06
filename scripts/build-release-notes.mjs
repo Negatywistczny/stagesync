@@ -223,8 +223,10 @@ function summarizeBody(raw) {
 
   // Real sentence end: period after a 4+ letter word (skips np. / itd. / tj.).
   // codeql[js/redos] Bounded input length release notes summarizer
+  // Bound body length to avoid catastrophic backtracking / polynomial re dos in CodeQL analysis
+  const boundedBody = body.length > 500 ? body.slice(0, 500) : body;
   const sentenceRe = /(?<=\p{L}{4,})[.!?](?=\s|$)/u;
-  const sentence = body.search(sentenceRe);
+  const sentence = boundedBody.search(sentenceRe);
   if (sentence >= 24 && sentence <= 140) {
     return body.slice(0, sentence).replace(/[.!?;:,]+\s*$/, "").trim();
   }

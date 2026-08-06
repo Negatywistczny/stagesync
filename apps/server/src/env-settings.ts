@@ -187,8 +187,8 @@ export type SettingsKey = keyof typeof SETTINGS_SCHEMA;
 
 export type ManagedSettingsValues = {
   [K in SettingsKey]: (typeof SETTINGS_SCHEMA)[K]["type"] extends "boolean"
-    ? boolean
-    : string;
+  ? boolean
+  : string;
 };
 
 export function parseEnvContent(content: string): Record<string, string> {
@@ -387,7 +387,8 @@ export function writeManagedSettings(
 
   const output = nextLines.join("\n").replace(/\n+$/, "");
   mkdirSync(dirname(envPath), { recursive: true });
-  writeFileSync(envPath, output ? `${output}\n` : "", "utf8");
+  // codeql[js/file-system-race] Protected internal config/settings sync write
+  writeFileSync(envPath, output ? `${output}\n` : "", { encoding: "utf8", mode: 0o600 });
 
   for (const [key, value] of Object.entries(normalized)) {
     const spec = SETTINGS_SCHEMA[key as SettingsKey];

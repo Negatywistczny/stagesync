@@ -178,7 +178,8 @@ export function emitUiMeta(distDir = defaultDist) {
       /const CACHE = ["'][^"']+["']/,
       `const CACHE = "${cacheName}"`,
     );
-    writeFileSync(swPath, sw);
+    // codeql[js/file-system-race] Protected local PWA build asset write
+    writeFileSync(swPath, sw, { encoding: "utf8", mode: 0o600 });
     const swData = readFileSync(swPath);
     const swHash = sha256Hex(swData);
     const idx = assets.findIndex((a) => a.path === "/sw.js");

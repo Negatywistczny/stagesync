@@ -24,8 +24,9 @@ const text = readFileSync(changelogPath, "utf8");
 // codeql[js/regex-injection] CodeQL false positive on controlled version string
 // codeql[js/incomplete-sanitization] Version string escape
 const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapedVersion = escaped.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 const re = new RegExp(
-  `## \\[${escaped}\\][^\\n]*?—\\s*(.+?)\\s*$`,
+  `## \\[${escapedVersion}\\][^\\n]*?—\\s*(.+?)\\s*$`,
   "m",
 );
 // codeql[js/regex-injection]

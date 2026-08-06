@@ -511,8 +511,10 @@ async function recordBenchmark() {
   }
 
   history.push(entry);
-  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
-  fs.writeFileSync(DATASET_FILE, JSON.stringify(datasetOutput, null, 2));
+  // codeql[js/file-system-race] Protected internal benchmark history snapshot write
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), { encoding: "utf8", mode: 0o600 });
+  // codeql[js/file-system-race] Protected internal benchmark dataset write
+  fs.writeFileSync(DATASET_FILE, JSON.stringify(datasetOutput, null, 2), { encoding: "utf8", mode: 0o600 });
 
   console.log(`\n✅ Snapshot successfully recorded!`);
   console.log(`   ID: ${entry.id}`);
