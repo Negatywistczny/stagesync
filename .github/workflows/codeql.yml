@@ -41,11 +41,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up JDK 17
       if: matrix.language == 'java-kotlin'
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -58,17 +58,22 @@ jobs:
         queries: security-extended
         config-file: .github/codeql/codeql-config.yml
 
+    # Kotlin requires a traced build (build-mode none skips Kotlin). Compile sources only —
+    # skip CMake/libnode.so (gitignored JNI deps that break `assemble` on CI).
     - name: Build Java/Kotlin (Gradle)
       if: matrix.language == 'java-kotlin'
       run: |
-        if [ -f "gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assemble
-        elif [ -f "apps/console/android/gradlew" ]; then
-          cd apps/console/android
-          chmod +x gradlew
-          ./gradlew assemble
-        fi
+        set -euo pipefail
+        for dir in apps/console/android apps/performer/android; do
+          if [ -f "$dir/gradlew" ]; then
+            echo "==> Compiling Kotlin in $dir"
+            (
+              cd "$dir"
+              chmod +x gradlew
+              ./gradlew :app:compileDebugKotlin --no-daemon
+            )
+          fi
+        done
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
