@@ -8,14 +8,14 @@
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
 | [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.3.0`) | Odhaczone / historia wydań |
 | [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → 5.1 → 5.2 → 5.3 → …) | Bieżąca checklista (→ TODO) |
-| [docs/ui/](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
+| [docs/ui/README.md](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [ui-shell-inventory](./ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
-| [docs/api/](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
+| [docs/api/README.md](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
 | [MOBILE.md](./MOBILE.md) | Performer / Console (Android sideload, QR, PWA) | Implementacja Kotlin (→ `apps/performer`, `apps/console`) |
-| [docs/analysis/](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
+| [docs/analysis/README.md](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
-| [docs/adr/](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
+| [docs/adr/README.md](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
 | [ADR 0013](./adr/0013-in-app-vs-github-docs.md) | In-app help vs dokumentacja GitHub / bundle | Treść tutoriali w `.dmg` |
 | `.cursor/rules/` | Reguły egzekwowane przez agenta | Długie tutoriale |
 
@@ -70,7 +70,7 @@ Snap / kwantyzacja: [ADR 0007](./adr/0007-snap-grid.md).
 
 ## API biblioteki (REST + WS)
 
-Kontrakt endpointów, kształt błędów i ticków WS: [docs/api/](./api/README.md).
+Kontrakt endpointów, kształt błędów i ticków WS: [docs/api/README.md](./api/README.md).
 Schematy Zod: `@stagesync/shared`. Nie JSON:API — [ADR 0006](./adr/0006-no-json-api.md).
 Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 

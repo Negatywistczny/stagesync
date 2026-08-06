@@ -1,32 +1,22 @@
-# `@stagesync/ui`
+# 🎨 @stagesync/ui — Scentralizowany Design System i Komponenty
 
-Design system StageSync: tokeny CSS (`--ss-*`) i prymitywy prezentacji
-(`Button`, `Slider`, `Input` / `Select` / `Textarea` / `Field`, `Badge`,
-`SegmentedControl`, `ContextMenu`).
+Pakiet `@stagesync/ui` (lokalizowany w `packages/ui/`) to biblioteka graficzna oraz zbiór reużywalnych komponentów UI, stanowiący podstawę wizualną wszystkich widoków webowych w monorepo.
 
-## Użycie
+## 🚀 Główne wytyczne i standardy projektu
 
-```ts
-import { Button, Input, Field } from "@stagesync/ui";
-import "@stagesync/ui/tokens.css";
-```
+1. **Brak logiki biznesowej:** Wszystkie komponenty zawarte w tym pakiecie są komponentami prezentacyjnymi (tzw. "głupimi komponentami"). Nie mogą one zawierać specyficznych dla domen referencji ani logiki synchronizacji czasu.
+2. **Kategoryczny zakaz Tailwind CSS oraz inline-styles:** Stylizacja opiera się wyłącznie o **CSS Modules** (`*.module.css`). Inline-styles są dozwolone wyłącznie do dynamicznego pozycjonowania (np. playhead w %).
+3. **Tokeny `--ss-*` (Strict Spacing):** Wszystkie marginesy, paddingi, kolory i typografia są przypisywane ze zmiennych globalnych zdefiniowanych w `tokens.css`. Standardem jest siatka przestrzenna **4pt/8pt**.
+4. **Zamknięte stany kontrolek:** Interfejsy przycisków i kontrolek posiadają dokładnie zdefiniowane stany interakcji: domyślny, hover, focus (zabezpieczony przed ucinaniem ramki focusa poprzez `outline-offset`), active, disabled, loading oraz selected.
 
-Desktop launcher (statyczny HTML, bez React) bierze te same pliki przez
-`pnpm sync:launcher-ui` → `apps/desktop/launcher/vendor/{tokens,button}.css`
-i klasy `ss-btn*`.
+## 📁 Struktura projektu
 
-## Eksporty
+- **`src/`** — Pliki komponentów React, arkusze stylów CSS Modules oraz pliki definicji tokenów systemowych.
+- **`vitest.setup.ts`** — Konfiguracja środowiska testowego.
 
-| Ścieżka | Zawartość |
-|---------|-----------|
-| `@stagesync/ui` | komponenty + typy |
-| `@stagesync/ui/tokens.css` | `:root` — kolory, spacing, typografia |
-| `@stagesync/ui/button.css` | klasy `.ss-btn*` (także dla launchera) |
+## ⚙️ Testy i budowanie
 
-## Dokumentacja
+Praca deweloperska z pakietem:
 
-- [docs/ui/](../../docs/ui/README.md) — warstwy SSOT, Button, Field, Badge, Segmented
-- [ADR 0003](../../docs/adr/0003-ui-direction-booth.md) — black / amber
-- [ui-density.mdc](../../.cursor/rules/ui-density.mdc) — gęstość / hover
-
-Bez logiki biznesowej i bez I/O — tylko prezentacja.
+- `pnpm test` — uruchamia testy wizualne i integracyjne komponentów z użyciem **Vitest**.
+- `pnpm build` — kompiluje zestaw komponentów i stylów do dystrybucji produkcyjnej.

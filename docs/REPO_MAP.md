@@ -5,15 +5,15 @@
 ---
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
-* **Liczba wszystkich plików:** 1218
+* **Liczba wszystkich plików:** 1227
 * **Liczba katalogów:** 185
-* **Data aktualizacji:** 2026-08-06T11:23:17.347Z
+* **Data aktualizacji:** 2026-08-06T12:21:33.464Z
 
 ### Podział według rozszerzeń
 | Rozszerzenie | Liczba plików |
 | :--- | :--- |
 | `.ts` | 458 |
-| `.md` | 175 |
+| `.md` | 184 |
 | `.tsx` | 154 |
 | `.png` | 94 |
 | `.kt` | 69 |
@@ -374,7 +374,8 @@ stagesync/
 │   │   │   └── tauri.conf.json
 │   │   ├── ui-placeholder/
 │   │   │   └── index.html
-│   │   └── package.json
+│   │   ├── package.json
+│   │   └── README.md
 │   ├── performer/
 │   │   ├── android/
 │   │   │   ├── app/
@@ -619,6 +620,7 @@ stagesync/
 │   │   │   └── update-status.test.ts
 │   │   ├── eslint.config.js
 │   │   ├── package.json
+│   │   ├── README.md
 │   │   ├── tsconfig.json
 │   │   └── vitest.config.ts
 │   ├── web/
@@ -1078,45 +1080,48 @@ stagesync/
 │   │   ├── index.html
 │   │   ├── package.json
 │   │   ├── playwright.config.ts
+│   │   ├── README.md
 │   │   ├── tsconfig.json
 │   │   ├── vite.config.ts
 │   │   └── vitest.config.ts
-│   └── www/
-│       ├── aktualnosci/
-│       │   └── index.html
-│       ├── public/
-│       │   ├── brand/
-│       │   │   ├── stagesync-logo-light.svg
-│       │   │   ├── stagesync-logo.svg
-│       │   │   └── stagesync-mark.svg
-│       │   ├── config/
-│       │   │   └── channels.json
-│       │   ├── media/
-│       │   │   ├── preview-admin.png
-│       │   │   ├── preview-chords.png
-│       │   │   ├── preview-lyrics.png
-│       │   │   ├── preview-mixer.png
-│       │   │   └── preview-timeline.png
-│       │   ├── og-image.jpg
-│       │   ├── og-image.png
-│       │   └── og-image.svg
-│       ├── src/
-│       │   ├── news/
-│       │   │   └── content.ts
-│       │   ├── brand.ts
-│       │   ├── channels.ts
-│       │   ├── icons.ts
-│       │   ├── installationGuideModal.ts
-│       │   ├── main.ts
-│       │   ├── news-list.ts
-│       │   ├── previewLightbox.ts
-│       │   ├── releases.ts
-│       │   ├── site.ts
-│       │   └── styles.css
-│       ├── index.html
-│       ├── package.json
-│       ├── tsconfig.json
-│       └── vite.config.ts
+│   ├── www/
+│   │   ├── aktualnosci/
+│   │   │   └── index.html
+│   │   ├── public/
+│   │   │   ├── brand/
+│   │   │   │   ├── stagesync-logo-light.svg
+│   │   │   │   ├── stagesync-logo.svg
+│   │   │   │   └── stagesync-mark.svg
+│   │   │   ├── config/
+│   │   │   │   └── channels.json
+│   │   │   ├── media/
+│   │   │   │   ├── preview-admin.png
+│   │   │   │   ├── preview-chords.png
+│   │   │   │   ├── preview-lyrics.png
+│   │   │   │   ├── preview-mixer.png
+│   │   │   │   └── preview-timeline.png
+│   │   │   ├── og-image.jpg
+│   │   │   ├── og-image.png
+│   │   │   └── og-image.svg
+│   │   ├── src/
+│   │   │   ├── news/
+│   │   │   │   └── content.ts
+│   │   │   ├── brand.ts
+│   │   │   ├── channels.ts
+│   │   │   ├── icons.ts
+│   │   │   ├── installationGuideModal.ts
+│   │   │   ├── main.ts
+│   │   │   ├── news-list.ts
+│   │   │   ├── previewLightbox.ts
+│   │   │   ├── releases.ts
+│   │   │   ├── site.ts
+│   │   │   └── styles.css
+│   │   ├── index.html
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   └── README.md
 ├── data/
 │   ├── downloads/
 │   │   ├── .gitkeep
@@ -1132,8 +1137,9 @@ stagesync/
 │   │   └── library.template.json
 │   ├── logs/
 │   │   └── .gitkeep
-│   └── projects/
-│       └── .gitkeep
+│   ├── projects/
+│   │   └── .gitkeep
+│   └── README.md
 ├── docs/
 │   ├── adr/
 │   │   ├── 0001-storage-layout.md
@@ -1301,6 +1307,7 @@ stagesync/
 │   ├── INSTALL.md
 │   ├── MIGRATION.md
 │   ├── MOBILE.md
+│   ├── README.md
 │   ├── REPO_MAP.md
 │   ├── ROADMAP.md
 │   ├── STANDARDS.md
@@ -1310,31 +1317,32 @@ stagesync/
 │   ├── android/
 │   │   ├── README.md
 │   │   └── sideload.keystore
-│   └── scripts/
-│       ├── build-desktop-sidecar.mjs
-│       ├── build-release-notes.mjs
-│       ├── build-release-notes.test.mjs
-│       ├── debug-bar-alignment.ts
-│       ├── debug-winner-beats.ts
-│       ├── extract-changelog-section.mjs
-│       ├── extract-changelog-section.test.mjs
-│       ├── extract-logic-features.ts
-│       ├── generate-repo-map.mjs
-│       ├── generate-smart-tempo-benchmark.ts
-│       ├── inspect-logic-onsets.ts
-│       ├── integrate-pr.sh
-│       ├── lint-ss-css.mjs
-│       ├── merge-train.sh
-│       ├── optimize-logic-weights.ts
-│       ├── record-benchmark.ts
-│       ├── release-title.mjs
-│       ├── run-merge-train.sh
-│       ├── run-train-batch.sh
-│       ├── sync-launcher-ui.mjs
-│       ├── sync-sidecar-server.mjs
-│       ├── sync-version.mjs
-│       ├── test-real-downbeats.ts
-│       └── tsconfig.json
+│   ├── scripts/
+│   │   ├── build-desktop-sidecar.mjs
+│   │   ├── build-release-notes.mjs
+│   │   ├── build-release-notes.test.mjs
+│   │   ├── debug-bar-alignment.ts
+│   │   ├── debug-winner-beats.ts
+│   │   ├── extract-changelog-section.mjs
+│   │   ├── extract-changelog-section.test.mjs
+│   │   ├── extract-logic-features.ts
+│   │   ├── generate-repo-map.mjs
+│   │   ├── generate-smart-tempo-benchmark.ts
+│   │   ├── inspect-logic-onsets.ts
+│   │   ├── integrate-pr.sh
+│   │   ├── lint-ss-css.mjs
+│   │   ├── merge-train.sh
+│   │   ├── optimize-logic-weights.ts
+│   │   ├── record-benchmark.ts
+│   │   ├── release-title.mjs
+│   │   ├── run-merge-train.sh
+│   │   ├── run-train-batch.sh
+│   │   ├── sync-launcher-ui.mjs
+│   │   ├── sync-sidecar-server.mjs
+│   │   ├── sync-version.mjs
+│   │   ├── test-real-downbeats.ts
+│   │   └── tsconfig.json
+│   └── README.md
 ├── packages/
 │   ├── eslint-config/
 │   │   ├── acl.js
@@ -1454,33 +1462,34 @@ stagesync/
 │   │   ├── node-library.json
 │   │   ├── package.json
 │   │   └── react-library.json
-│   └── ui/
-│       ├── src/
-│       │   ├── badge.css
-│       │   ├── badge.tsx
-│       │   ├── button.css
-│       │   ├── button.test.tsx
-│       │   ├── button.tsx
-│       │   ├── context-menu.css
-│       │   ├── context-menu.test.tsx
-│       │   ├── context-menu.tsx
-│       │   ├── field.css
-│       │   ├── field.test.tsx
-│       │   ├── field.tsx
-│       │   ├── index.ts
-│       │   ├── segmented.css
-│       │   ├── segmented.tsx
-│       │   ├── slider.css
-│       │   ├── slider.test.tsx
-│       │   ├── slider.tsx
-│       │   ├── tokens.css
-│       │   └── vite-env.d.ts
-│       ├── eslint.config.mjs
-│       ├── package.json
-│       ├── README.md
-│       ├── tsconfig.json
-│       ├── vitest.config.ts
-│       └── vitest.setup.ts
+│   ├── ui/
+│   │   ├── src/
+│   │   │   ├── badge.css
+│   │   │   ├── badge.tsx
+│   │   │   ├── button.css
+│   │   │   ├── button.test.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── context-menu.css
+│   │   │   ├── context-menu.test.tsx
+│   │   │   ├── context-menu.tsx
+│   │   │   ├── field.css
+│   │   │   ├── field.test.tsx
+│   │   │   ├── field.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── segmented.css
+│   │   │   ├── segmented.tsx
+│   │   │   ├── slider.css
+│   │   │   ├── slider.test.tsx
+│   │   │   ├── slider.tsx
+│   │   │   ├── tokens.css
+│   │   │   └── vite-env.d.ts
+│   │   ├── eslint.config.mjs
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── tsconfig.json
+│   │   ├── vitest.config.ts
+│   │   └── vitest.setup.ts
+│   └── README.md
 ├── .clineignore
 ├── .clinerules
 ├── .cursorignore

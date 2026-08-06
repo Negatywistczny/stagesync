@@ -6,7 +6,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
 **Decyzje PO ≠ backlog:** [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) · [ADR 0017](./adr/0017-live-show-control-contracts.md). Mobile: [ADR 0016](./adr/0016-android-performer-console.md) · [MOBILE.md](./MOBILE.md).  
 **Kierunek audio 6.0+ (Zaakceptowany):** [ADR 0018](./adr/0018-future-audio-architecture.md) · [ROADMAP](./ROADMAP.md).  
-**Specy 5.2+ (hipotezy):** [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
+**Specy 5.2+ (hipotezy):** [inspiracje/spec-5.2+/](./analysis/inspiracje/README.md).
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).
 
@@ -46,5 +46,3 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 ### 6.1 Karaoke & Jukebox (Later)
 
 - [ ] [#824](https://github.com/Negatywistczny/stagesync/issues/824) **Karaoke & Jukebox** — **6.1** (po 6.0 Live Suite; dawne „7.0” **nie istnieje**): `/karaoke`, `/request`, tryby Gig/Jukebox + kolejka; 100 % LAN; zależności: Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** — szczegóły w epiku ([ROADMAP](./ROADMAP.md))
-
-**OUT (nie wraca do TODO):** natywny **StageSync Performer na iOS** (Swift/WKWebView / TestFlight) — ścieżka iOS = **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)); natywne APK = Android only ([ADR 0016](./adr/0016-android-performer-console.md)).

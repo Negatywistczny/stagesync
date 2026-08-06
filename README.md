@@ -73,17 +73,21 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 
 ## 📦 Monorepo
 
-| Ścieżka | Rola |
-| :--- | :--- |
-| `apps/server` | ⚙️ API, persystencja danych, transport SSOT |
-| `apps/web` | 💻 UI Admina / Timeline / Client muzyka |
-| `apps/desktop` | 🖥️ Shell Tauri + sidecar Node.js |
-| `apps/performer` | 📱 Android Performer (Client na scenie) |
-| `apps/console` | 📱 Android Console (WebView shell dla /admin) |
-| `apps/www` | 🌐 Strona domowa, portal informacyjny i aktualności |
-| `packages/shared` | 📐 Schematy Zod, logika SSOT + helpery czasu |
-| `packages/ui` | 🎨 Design system (tokeny `--ss-*`) |
-| `data/` | 📂 Magazyn runtime i projekty użytkownika *(w `.gitignore`)* |
+| Ścieżka | Rola | Opis |
+| :--- | :--- | :--- |
+| 📱 **[`apps/`](apps/README.md)** | **Kontener aplikacji** | Główny katalog aplikacji monorepo |
+| **[`-> ⚙️ server`](apps/server/README.md)** | API i transport SSOT | Serwer czasu, persystencja |
+| **[`-> 💻 web`](apps/web/README.md)** | UI Admin / Client / Timeline | Oś czasu, panele, sterowanie |
+| **[`-> 🖥️ desktop`](apps/desktop/README.md)** | Tauri Shell | Natywne paczkowanie i autowykrywanie |
+| **[`-> 📱 performer`](apps/performer/README.md)** | Android Client | Lekki klient sceniczny |
+| **[`-> 📱 console`](apps/console/README.md)** | Android Admin Shell | Zarządzanie z tabletu |
+| **[`-> 🌐 www`](apps/www/README.md)** | Publiczne WWW | Portal i aktualności |
+| 📦 **[`packages/`](packages/README.md)** | **Pakiety współdzielone** | Biblioteki, konfiguracje i design system |
+| **[`-> 📐 shared`](packages/shared/README.md)** | Czysta logika i czas | Walidacja Zod, helpery ticks/PPQ |
+| **[`-> 🎨 ui`](packages/ui/README.md)** | Design System | Komponenty bez logiki, CSS Modules |
+| 📂 **[`data/`](data/README.md)** | 📂 Dane operacyjne | Magazyn runtime, projekty v3 i logi *(w `.gitignore`)* |
+| 🚀 **[`launch/`](launch/README.md)** | 🚀 Narzędzia i automatyzacja | Skrypty deweloperskie, klucze Android, kolejki integracyjne |
+| 📚 **[`docs/`](docs/README.md)** | 📚 Baza wiedzy | Dokumentacja techniczna, specyfikacje i decyzje ADR |
 
 ## 📚 Dokumentacja
 
@@ -94,8 +98,8 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 | 📱 **[MOBILE](docs/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
 | 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
 | 🗺️ **[REPO_MAP](docs/REPO_MAP.md)** | Automatycznie generowana mapa struktury i statystyki kodu dla LLM |
-| 🔌 **[docs/api](docs/api/)** | Specyfikacja powierzchni REST API i punktów końcowych |
-| 💡 **[ADR](docs/adr/)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
+| 🔌 **[API](docs/api/README.md)** | Specyfikacja powierzchni REST API i punktów końcowych |
+| 💡 **[ADR](docs/adr/README.md)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
 | 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
 | 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań (`5.4` Syllables, …) |
 | 🎨 **[UI](docs/ui/README.md)** | Przewodnik po Design Systemie i tokenach CSS |

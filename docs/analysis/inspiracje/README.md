@@ -54,11 +54,11 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 
 | Katalog | Po co | Typowy status dokumentu |
 |---------|--------|-------------------------|
-| [`audyty-silnik/`](./audyty-silnik/) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
-| [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
-| [`spec-5.2+/`](./spec-5.2+/) | Specyfikacje wprowadzenia feature linii **5.2+** (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer HW) — hipotezy / design, nie claim Done | `open` → … |
-| [`www/`](./www/) | Audyt / strategia witryny marketingowej `apps/www` | `closed` |
-| [`testy-pokrycie/`](./testy-pokrycie/) | Plany uzupełnienia testów Vitest (luki coverage, mocki, priorytety P0–P2) — **nie** zastępują audytów bugów w `audyty-silnik/` | `partial` |
+| [`audyty-silnik/`](./audyty-silnik/README.md) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
+| [`referencje-daw/`](./referencje-daw/README.md) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
+| [`spec-5.2+/`](./spec-5.2+/README.md) | Specyfikacje wprowadzenia feature linii **5.2+** (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer HW) — hipotezy / design, nie claim Done | `open` → … |
+| [`www/`](./www/README.md) | Audyt / strategia witryny marketingowej `apps/www` | `closed` |
+| [`testy-pokrycie/`](./testy-pokrycie/README.md) | Plany uzupełnienia testów Vitest (luki coverage, mocki, priorytety P0–P2) — **nie** zastępują audytów bugów w `audyty-silnik/` | `partial` |
 
 ## Zasady
 

@@ -23,7 +23,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane** — Audio 0…N; MIDI serwera; menu B+C; Countdown; updater | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0** | **Overture** — stabilne + parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; G1–G10 residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/report-scope-5.0.0.md) |
 | **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0` | [CHANGELOG](../CHANGELOG.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
-| **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [spec-5.2+](./analysis/inspiracje/README.md) |
 | **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **5.4.0** | **Syllables** — Lyrics AST (ticks) + UltraStar → Karaoke | **Wydane 2026-08-02** — tag `v5.4.0`; format V6 + import UltraStar + highlight Karaoke | [CHANGELOG](../CHANGELOG.md) · [report-scope-5.4](./analysis/reports/report-scope-5.4.md) |
 | **5.4.1** | Syllables patch — US+UG eksperymentalny, transport AlongMap… | **Wydane 2026-08-03** — tag `v5.4.1` | [CHANGELOG](../CHANGELOG.md) |
@@ -34,7 +34,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
 | **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
 | **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
-| **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/spec-5.2+/) |
+| **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [spec-5.2+](./analysis/inspiracje/README.md) |
 
 Zamknięte cuty (α3–5.4): hero w tabeli; historia wydań w [CHANGELOG.md](../CHANGELOG.md);
 scope reports w `docs/analysis/reports/`. Aktywny plan tylko poniżej + [TODO.md](./TODO.md).
@@ -88,7 +88,7 @@ Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (
 
 **Zero-Crash:** native DSP w WebAudio/Worklet/WASM; ciężkie VST tylko jako zewnętrzne procesy MIDI. **SSOT czasu** bez zmian ([ADR 0002](./adr/0002-timebase-ssot.md)). Recording OUT w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5); **IN w 6.0** z prostymi narzędziami edycji ([ADR 0018](./adr/0018-future-audio-architecture.md) §5). Flex / Take Folders = nie must 6.0.
 
-Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/spec-5.2+/).
+Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/README.md).
 
 ### 6.1 — **Karaoke & Jukebox**
 

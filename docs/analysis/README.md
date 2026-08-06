@@ -4,9 +4,9 @@ Trzy typy artefaktów:
 
 | Typ | Katalog | Git | Wzorzec nazwy |
 |-----|---------|-----|---------------|
-| Raport kanoniczny | [`reports/`](./reports/) | tak | `report-<temat>.md` |
-| Inspiracja (zewn. audyt) | [`inspiracje/`](./inspiracje/) | tak | `Audyt-<Temat>.md` + `Audyt-<Temat>.triage.md` |
-| Notatka robocza | [`working/`](./working/) | nie | `working-<temat>.md` |
+| Raport kanoniczny | [`reports/`](./reports/README.md) | tak | `report-<temat>.md` |
+| Inspiracja (zewn. audyt) | [`inspiracje/`](./inspiracje/README.md) | tak | `Audyt-<Temat>.md` + `Audyt-<Temat>.triage.md` |
+| Notatka robocza | [`working/`](./working/README.md) | nie | `working-<temat>.md` |
 
 ## reports/
 
