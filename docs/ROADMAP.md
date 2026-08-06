@@ -69,32 +69,68 @@ Tag `v5.4.4`. Historia: [CHANGELOG.md](../CHANGELOG.md). Lepsze kotwiczenie down
 
 Tag `v5.4.5`. Historia: [CHANGELOG.md](../CHANGELOG.md). Sekcja `Dev` w Adminie dla buildów deweloperskich; historia benchmarków Smart Tempo; odświeżony chrome shelli na desktopie; ujednolicona diagnostyka analizy.
 
-### 5.5 — **Pitch & FX**
+### 5.5.0 — **Desk & Audio Polish**
+Hero: Szybka organizacja miksu scenicznego, odsłuch realizatora i płynny transport.
+- Solo / Mute Off for All (globalny przycisk resetujący wyciszenia/solo w Mikserze)
+- Odsłuch podglądowy realizatora (Audition Window / PFL na dedykowane wyjście słuchawkowe)
+- Kopiowanie właściwości klipów (Paste Properties: routing, gain, fade, wyjścia HW Out)
+- Śledzenie trwających nut MIDI po skoku (Chase MIDI Notes po operacji Seek)
+- Szybkie przełączanie / rozłączanie hostów w sieci LAN
 
-- Track Pitch Shift (sync z Chord AST / OSMD — residual w [ADR 0018](./adr/0018-future-audio-architecture.md) §7)
-- Expanded busses / send-return FX (WebAudio; bez in-process VST)
-- Cel: przygotowanie grafu pod **Live Suite 6.0** **bez** InputStrip / automation / recording
+### 5.6.0 — **Studio Shell & Multi-Window**
+Hero: Ergonomia pracy na wielu monitorach, wygoda muzyków i raportowanie.
+- Obsługa wielu okien na Desktopie (Multi-Window via Tauri: odpinanie Timeline/Mikser/Klient)
+- Synchronizacja nieaktywnych okien i kart przeglądarki (Web Worker + performance.now)
+- Obsługa pedałów Bluetooth (AirTurn / PageFlip / HID keydown debounced)
+- Generowanie raportów odtworzeń dla ZAiKS (Setlist History CSV export)
 
-### 6.0 — **Live Suite**
+### 5.7.0 — **Extended Notation & Chords**
+Hero: Personalizacja widoków partytur i tekstu na ekranach wykonawców.
+- Filtry widoczności w Partyturze (Selection Filter ukrywające warstwy w OSMD)
+- Wybór notacji akordów (English / German / Solfege per klient)
+- Dwukolumnowy układ tekstu (Two Column Layout w module Karaoke)
+- Litery orientacyjne na osi czasu i partyturze (Rehearsal Marks [A], [B], [C])
 
-Kierunek architektoniczny: [ADR 0018](./adr/0018-future-audio-architecture.md) (**Zaakceptowany**).
+### 5.8.0 — **Advanced Timeline Editing**
+Hero: Szybkie i bezpieczne zarządzanie zawartością osi czasu.
+- Globalne wstawianie ciszy i wycinanie czasu (Insert Silence / Delete Time na wszystkich warstwach)
+- Szturchanie klipów i sylab z klawiatury (Nudge skróty Alt + Strzałki)
+- Zaznaczanie ciągłe od kursora (Select All Following skrót Shift + F)
+- Rozcinanie klipów pod playheadem (Split at Playhead skrót Cmd/Ctrl + S)
+- Wyszukiwarka i zamiana fraz (Find & Replace dla tekstu i akordów)
+- Pakowanie projektu i zbieranie zasobów (Collect All and Save do folderu assets/)
 
-| Filar | Zakres (docelowy) |
-|-------|-------------------|
-| 1 | Input & Live Processing (InputStrip, `getUserMedia`, mapowanie wejść) + **recording + proste narzędzia edycji** |
-| 2 | StageSync Audio Suite (Worklet / WASM — Limiter, EQ, Comp, Pitch, Reverb, Delay, LUFS…) + **STEM / mute lead** (kontrakt Mixer pod Karaoke **6.1**) |
-| 3 | Real-Time Automation (lane’y; **host Tick Engine** SSOT — bez client musical clock) |
-| 4 | MIDI Tracks + **Standalone VSTi Controller** (PC/CC); **MIDI Patch Matrix**; wbudowane synthy WebAudio = Later 6.x+ |
+### 6.0.0 — **Dual Engine: Studio vs Live** (MAJOR RELEASE)
+Hero: Bezpieczny podział na pancerną Scenę i produkcyjne Studio z obsługą VST.
+- Dwa tryby pracy aplikacji – Live (Scena z blokadą PIN) vs Studio (Edycja)
+- Wtyczki VST/AU z funkcją automatycznego "Freeze" (wymóg renderu do WAV przed wejściem w Live)
+- Blokowanie warstw kłódką (Toggle Lock Lane przed przypadkową edycją)
 
-**Zero-Crash:** native DSP w WebAudio/Worklet/WASM; ciężkie VST tylko jako zewnętrzne procesy MIDI. **SSOT czasu** bez zmian ([ADR 0002](./adr/0002-timebase-ssot.md)). Recording OUT w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5); **IN w 6.0** z prostymi narzędziami edycji ([ADR 0018](./adr/0018-future-audio-architecture.md) §5). Flex / Take Folders = nie must 6.0.
+### 6.1.0 — **Live Show Automation & DMX**
+Hero: Pełna kontrola nad światłem i czasową mikro-synchronizacją.
+- Kompensacja opóźnień na pojedynczych ścieżkach (Track Delays w ms)
+- Dedykowana warstwa sterowania oświetleniem DMX / Art-Net (UDP 30 Hz na osi czasu)
 
-Specy design (nie SSOT): [inspiracje/spec-5.2+/](./analysis/inspiracje/README.md).
+### 6.2.0 — **Pre-flight & Hardware Setup**
+Hero: Pewność przed wejściem na scenę, uniwersalne mapowanie i wsparcie wykonawcy.
+- Warstwa abstrakcji sprzętu MIDI (Rig Manager – aliasy portów)
+- Tryb przypisywania kontrolerów (MIDI Learn)
+- Tuner instrumentalny w widoku Performera (`/client`)
+- Globalne nadpisania wysyłek sygnałów (Override Controls w Admin Host)
+- Zbiorczy raport gotowości setlisty (Setlist Pre-flight Check)
 
-### 6.1 — **Karaoke & Jukebox**
+### 6.3.0 — **Karaoke & Jukebox**
+Hero: Ekosystem rozrywkowy w lokalnej sieci Wi-Fi.
+- Moduł publiczny LAN (`/karaoke` & `/request` z moderacją w Adminie)
 
-Minor **po 6.0** ([#824](https://github.com/Negatywistczny/stagesync/issues/824)): lokalny ekosystem karaoke / jukebox na LAN. **Linia 7.0 nie istnieje** (PO 2026-08-02 — dawne „7.0” = **6.1**).
+### 7.0.0 — **Integrated Notation Studio** (MAJOR RELEASE)
+Hero: Wbudowany, lekki edytor partytur nutowych MusicXML.
+- Podstawowa edycja i korekta nut (Studio Notation Edit bezpośrednio w drzewie XML)
 
-Kierunek: multi-role Lyrics AST (fundament w **5.4 Syllables**); widok publiczny `/karaoke`; guest `/request` na lokalnym Wi‑Fi; tryby setlisty Gig vs Jukebox + moderacja kolejki. Zależności: Syllables (**5.4**), Pitch (**5.5**), Suite/STEM (**6.0**). Polityka: 100 % LAN, zero cloud; izolacja wydajności `/karaoke` i `/request` względem `/client`.
+### 7.1.0 — **Enterprise Rig & OSC**
+Hero: Zaawansowany podgląd sygnałów, pełna diagnostyka i redundancja.
+- Podgląd logów MIDI / OSC w czasie rzeczywistym z wirtualizacją
+- Redundancja i integracja mikserów (OSC Matrix & Zero-Glitch HA Master/Spare 50ms heartbeat)
 
 ## Zasady operacyjne
 
