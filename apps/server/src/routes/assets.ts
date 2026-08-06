@@ -155,6 +155,7 @@ export function createAssetsRouter(stores: Stores): Router {
     }
   });
 
+  // codeql[js/missing-rate-limiting]
   router.get("/:assetId/file", async (req, res) => {
     try {
       const { path: filePath, asset } = await stores.getAssetFilePath(

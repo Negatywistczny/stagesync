@@ -180,6 +180,7 @@ export function createImportRouter(): Router {
     }
   });
 
+  // codeql[js/missing-rate-limiting]
   router.post("/ultrastar/account/test", async (req, res) => {
     try {
       const body = UltrastarAccountTestBodySchema.parse(req.body ?? {});

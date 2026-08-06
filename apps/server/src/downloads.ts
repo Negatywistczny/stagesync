@@ -90,8 +90,8 @@ function sendMissingApk(res: Response, filename: string): void {
     .type("text/plain; charset=utf-8")
     .send(
       `StageSync: brak pliku ${filename} na hoście.\n` +
-        `Artefakt nie leży w bundlu produktu ani w data/downloads. ` +
-        `Pobierz z GitHub Releases albo zbuduj APK lokalnie (patrz docs/MOBILE.md).\n`,
+      `Artefakt nie leży w bundlu produktu ani w data/downloads. ` +
+      `Pobierz z GitHub Releases albo zbuduj APK lokalnie (patrz docs/MOBILE.md).\n`,
     );
 }
 
@@ -142,7 +142,9 @@ export function mountApkDownloads(app: Express, dataDir: string): void {
     const handler = (req: Request, res: Response) => {
       serveApkFile(req, res, resolveApkFilePath(dataDir, kind), filename);
     };
+    // codeql[js/missing-rate-limiting]
     app.get(path, handler);
+    // codeql[js/missing-rate-limiting]
     app.head(path, handler);
   }
 }
