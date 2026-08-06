@@ -102,9 +102,8 @@ function stripBracketChords(line: string): string {
 
 function extractBracketChords(line: string): string[] {
   const out: string[] = [];
-  const re = /\[([^\]]+)\]/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(line)) !== null) {
+  const matches = line.matchAll(/\[([^\]]+)\]/g);
+  for (const m of matches) {
     const accepted = acceptChordToken(m[1] ?? "");
     if (accepted) out.push(accepted);
   }
@@ -146,6 +145,7 @@ function distributeChordBeatIndices(
 
 /**
  * Onsets inside `[barStart, barStart + barTicks)` — unique & increasing.
+>>>>>>>
  * Dense lines (> beatsPerBar) use even fractional ticks (legacy scrub note).
  */
 export function chordOnsetsInBar(
