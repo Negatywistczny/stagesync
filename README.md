@@ -76,15 +76,15 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 | Ścieżka | Rola | Opis |
 | :--- | :--- | :--- |
 | 📱 **[`apps/`](apps/README.md)** | **Kontener aplikacji** | Główny katalog aplikacji monorepo |
-| **[`-> ⚙️ server`](apps/server/README.md)** | API i transport SSOT | Serwer czasu, persystencja |
-| **[`-> 💻 web`](apps/web/README.md)** | UI Admin / Client / Timeline | Oś czasu, panele, sterowanie |
-| **[`-> 🖥️ desktop`](apps/desktop/README.md)** | Tauri Shell | Natywne paczkowanie i autowykrywanie |
-| **[`-> 📱 performer`](apps/performer/README.md)** | Android Client | Lekki klient sceniczny |
-| **[`-> 📱 console`](apps/console/README.md)** | Android Admin Shell | Zarządzanie z tabletu |
-| **[`-> 🌐 www`](apps/www/README.md)** | Publiczne WWW | Portal i aktualności |
+| -> ⚙️ **[`server`](apps/server/README.md)** | API i transport SSOT | Serwer czasu, persystencja |
+| -> 💻 **[`web`](apps/web/README.md)** | UI Admin / Client / Timeline | Oś czasu, panele, sterowanie |
+| -> 🖥️ **[`desktop`](apps/desktop/README.md)** | Tauri Shell | Natywne paczkowanie i autowykrywanie |
+| -> 📱 **[`performer`](apps/performer/README.md)** | Android Client | Lekki klient sceniczny |
+| -> 📱 **[`console`](apps/console/README.md)** | Android Admin Shell | Zarządzanie z tabletu |
+| -> 🌐 **[`www`](apps/www/README.md)** | Publiczne WWW | Portal i aktualności |
 | 📦 **[`packages/`](packages/README.md)** | **Pakiety współdzielone** | Biblioteki, konfiguracje i design system |
-| **[`-> 📐 shared`](packages/shared/README.md)** | Czysta logika i czas | Walidacja Zod, helpery ticks/PPQ |
-| **[`-> 🎨 ui`](packages/ui/README.md)** | Design System | Komponenty bez logiki, CSS Modules |
+| -> 📐 **[`shared`](packages/shared/README.md)** | Czysta logika i czas | Walidacja Zod, helpery ticks/PPQ |
+| -> 🎨 **[`ui`](packages/ui/README.md)** | Design System | Komponenty bez logiki, CSS Modules |
 | 📂 **[`data/`](data/README.md)** | Dane operacyjne | Magazyn runtime, projekty v3 i logi *(w `.gitignore`)* |
 | 🚀 **[`launch/`](launch/README.md)** | Narzędzia i automatyzacja | Skrypty deweloperskie, klucze Android, kolejki integracyjne |
 | 📚 **[`docs/`](docs/README.md)** | Baza wiedzy | Dokumentacja techniczna, specyfikacje i decyzje ADR |
