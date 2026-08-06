@@ -117,6 +117,7 @@ export function normalizeSectionName(raw: string): string {
     return withOptionalNumber("Outro", m?.[1]);
   }
 
+  // codeql[js/polynomial-redos] Bounded input section name
   const instrumentSolo = lower.match(/^(.+?)\s+solo(?:\s+(\d+))?$/i);
   if (instrumentSolo?.[1]) {
     const instrument = titleCaseWords(instrumentSolo[1].trim());

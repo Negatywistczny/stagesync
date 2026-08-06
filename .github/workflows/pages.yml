@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
+  contents: write
   id-token: write
+  pages: write
 
 concurrency:
   group: pages-www
@@ -22,8 +22,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build:
-    name: build-www
+  build-and-deploy:
+    name: Build and Deploy to GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,19 +46,10 @@ jobs:
           VITE_BASE: /stagesync/
         run: pnpm --filter @stagesync/www build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: apps/www/dist
-
-  deploy:
-    name: deploy
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apps/www/dist
+          publish_branch: gh-pages
+          force_orphan: true
