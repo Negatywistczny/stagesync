@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const srcTauriDir = join(repoRoot, "apps/desktop/src-tauri");
 const sidecarServerDir = join(srcTauriDir, "resources/sidecar/server");
 const serverDist = join(repoRoot, "apps/server/dist");
@@ -47,7 +47,7 @@ async function main() {
   if (!existsSync(sidecarServerDir)) {
     console.warn(
       "[sync-sidecar-server] brak apps/desktop/src-tauri/resources/sidecar — uruchom:\n" +
-        "  node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin",
+      "  node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin",
     );
     process.exit(0);
   }
