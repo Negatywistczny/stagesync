@@ -9,9 +9,9 @@
 | [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.3.0`) | Odhaczone / historia wydań |
 | [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → 5.1 → 5.2 → 5.3 → …) | Bieżąca checklista (→ TODO) |
 | [docs/ui/README.md](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
-| [ui-shell-inventory](./ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
+| [ui-shell-inventory](./ui/ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/README.md](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
-| [MOBILE.md](./MOBILE.md) | Performer / Console (Android sideload, QR, PWA) | Implementacja Kotlin (→ `apps/performer`, `apps/console`) |
+| [MOBILE.md](./guides/MOBILE.md) | Performer / Console (Android sideload, QR, PWA) | Implementacja Kotlin (→ `apps/performer`, `apps/console`) |
 | [docs/analysis/README.md](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
@@ -55,7 +55,7 @@ Transport (alpha): pozycja z **anchor + elapsed** (nie akumulacja na timerze); b
 **UI:** nowy layout paneli; tokeny black/amber `--ss-*` / CSS Modules; `TransportProvider`
 nad routerem. Parity = **zachowanie** v4 (nie inventarz-first, nie clone chrome) —
 [ADR 0011](./adr/0011-ui-parity-behavior.md); kierunek wizualny [ADR 0003](./adr/0003-ui-direction-booth.md);
-checklista wtórna [ui-shell-inventory.md](./ui-shell-inventory.md).
+checklista wtórna [ui-shell-inventory.md](./ui/ui-shell-inventory.md).
 Stałe decyzje PO + reguła Logic: [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md).
 Live Show Control (kontrakty 1–8): [ADR 0017](./adr/0017-live-show-control-contracts.md).
 Przyszła architektura audio / Live Processing 6.0+ (Zaakceptowany): [ADR 0018](./adr/0018-future-audio-architecture.md).
@@ -76,4 +76,4 @@ Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 
 ## Legacy
 
-**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → [MIGRATION.md](./MIGRATION.md) (`pnpm migrate:legacy`).
+**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → [MIGRATION.md](./guides/MIGRATION.md) (`pnpm migrate:legacy`).

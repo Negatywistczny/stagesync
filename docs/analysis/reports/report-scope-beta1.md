@@ -33,7 +33,7 @@ Feature **Should** z wcześniejszego szkicu TODO (Help, wand, P1) → **β2 / 5.
 | # | Wycinek | Uwagi |
 |---|---------|--------|
 | H1 | Scope report (ten plik) + TODO/ROADMAP hygiene | Faza 0 |
-| H2 | `Dockerfile` + `compose.yml`; volume `./data` → `/app/data` — ścieżka drugorzędna (rack/server) | [ADR 0004](../../adr/0004-updates-docker.md); [INSTALL.md](../../INSTALL.md) |
+| H2 | `Dockerfile` + `compose.yml`; volume `./data` → `/app/data` — ścieżka drugorzędna (rack/server) | [ADR 0004](../../adr/0004-updates-docker.md); [INSTALL.md](../../guides/INSTALL.md) |
 | H3 | Serwer serwuje static `apps/web` w obrazie (`STAGESYNC_STATIC_DIR`) | Jeden proces HTTP/WS |
 | H4 | OCC: `PUT /api/projects/:id` z `updatedAt` klienta → mismatch **409** | Fail-fast; bez last-write-wins |
 | H5 | Shadow backup przed destrukcyjnym overwrite / migracją na volume | `.bak` / timestamped |

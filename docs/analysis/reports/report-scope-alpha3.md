@@ -48,7 +48,7 @@ Da się **wybrać utwór**, **załadować Formę w ticks (z Countdown ≤ 0)**, 
 
 ## Odłożone do alpha.4 (dług UI po release α3)
 
-Po smoke α3 potwierdzono: wiring treści OK, **layout Timeline niedokończony** (dock ≠ lane, eye uproszczone, specjalne pod treścią). To **nie** jest świadoma delta względem v4 — patrz [report-scope-alpha4](./report-scope-alpha4.md) i [ui-shell-inventory.md](../../ui-shell-inventory.md) § wymagania layoutu.
+Po smoke α3 potwierdzono: wiring treści OK, **layout Timeline niedokończony** (dock ≠ lane, eye uproszczone, specjalne pod treścią). To **nie** jest świadoma delta względem v4 — patrz [report-scope-alpha4](./report-scope-alpha4.md) i [ui-shell-inventory.md](../../ui/ui-shell-inventory.md) § wymagania layoutu.
 
 ## Korekty względem hipotezy v0
 

@@ -17,7 +17,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.0.0-alpha.10** | Standalone desktop (β1 spike) | **Wydane** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi` | [report-standalone-spike-beta1](./analysis/reports/report-standalone-spike-beta1.md) |
 | **5.0.0-alpha.11** | Desktop shell polish | **Wydane** — menu OS Widok, shell detect, draft updater | [report-beta-gate](./analysis/reports/report-beta-gate.md) |
 | **5.0.0-alpha.12** | OS menu Faza A + hotfixy shella | **Wydane** — StageSync/Widok/Pomoc; sidecar fail-fast | [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
-| **5.0.0-alpha.13** | Hotfix Windows sidecar `EISDIR` / `C:` | **Wydane** — MSI: Node bez `\\?\…` jako main module | [DESKTOP.md](./DESKTOP.md) |
+| **5.0.0-alpha.13** | Hotfix Windows sidecar `EISDIR` / `C:` | **Wydane** — MSI: Node bez `\\?\…` jako main module | [DESKTOP.md](./guides/DESKTOP.md) |
 | **5.0.0-beta.1** | Host / dystrybucja | **Wydane** — H1–H12; residual → β2 | [report-scope-beta1](./analysis/reports/report-scope-beta1.md) |
 | **5.0.0-beta.1.1** | Docs cut residual | **Wydane** — residual β1 → must β2 | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |
 | **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane** — Audio 0…N; MIDI serwera; menu B+C; Countdown; updater | [report-scope-beta2](./analysis/reports/report-scope-beta2.md) |

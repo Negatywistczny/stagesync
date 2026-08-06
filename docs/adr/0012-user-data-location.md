@@ -59,4 +59,4 @@ kopiuje plik jako `.env` i nie musi nic zmieniać. Docker i Compose zawsze ustaw
 - Windows: `USERPROFILE\Documents\StageSync` (`C:\Users\nazwa\Documents\StageSync`).
 - Migracja istniejących danych (jeśli ktoś miał dane w `repo/data`):
   `cp -a data ~/Documents/StageSync` (macOS/Linux) lub przenieś folder ręcznie.
-  Patrz [INSTALL.md](../INSTALL.md) § Folder danych użytkownika.
+  Patrz [INSTALL.md](../guides/INSTALL.md) § Folder danych użytkownika.

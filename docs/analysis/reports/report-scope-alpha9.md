@@ -20,7 +20,7 @@
 | M5 | Zod fail-fast na wyjściu (`ProjectSchema`) | ✓ |
 | M6 | Vitest happy + broken path | ✓ |
 | M7 | CLI `--dry-run` / `--apply` + shadow `.bak` | ✓ |
-| M8 | Docs użytkownika [MIGRATION.md](../../MIGRATION.md) | ✓ |
+| M8 | Docs użytkownika [MIGRATION.md](../../guides/MIGRATION.md) | ✓ |
 | M9 | Fixtures / smoke na typowej bazie 4.x + regresja Admin import | ✓ |
 
 ## IN (must) — Residual parity (z α8 freeze)

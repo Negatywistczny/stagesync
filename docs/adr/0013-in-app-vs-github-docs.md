@@ -30,7 +30,7 @@ Treść operatorska = **React / stringi w kodzie**, nie pliki `.md` w bundlu.
 
 | Zawartość | Lokalizacja |
 |-----------|-------------|
-| Instrukcje instalacji / Docker / desktop | [`INSTALL.md`](../INSTALL.md), [`DESKTOP.md`](../DESKTOP.md) |
+| Instrukcje instalacji / Docker / desktop | [`INSTALL.md`](../guides/INSTALL.md), [`DESKTOP.md`](../guides/DESKTOP.md) |
 | ADR, architektura, roadmap, audyty | [`docs/`](./), [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
 | Kontrakt API (krótko) | [`docs/api/`](../api/README.md) |
 

@@ -42,4 +42,4 @@ Nazwa release CI: `StageSync-Console-vX.Y.Z.apk`
 
 ## Docs
 
-[docs/MOBILE.md](../../docs/MOBILE.md)
+[docs/MOBILE.md](../../docs/guides/MOBILE.md)

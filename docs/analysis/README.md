@@ -26,7 +26,7 @@ Finalne dokumenty, do których można linkować z `TODO`, `ROADMAP` i PR.
 
 Zamknięte plany PR / QA sign-off α3–α7 / briefy α3–α4 usunięte po cutcie β2 — źródło historii: [CHANGELOG.md](../../CHANGELOG.md) + `report-scope-*`.
 
-Powiązane: [ui-shell-inventory.md](../ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0011](../adr/0011-ui-parity-behavior.md).
+Powiązane: [ui-shell-inventory.md](../ui/ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0011](../adr/0011-ui-parity-behavior.md).
 
 ## inspiracje/
 

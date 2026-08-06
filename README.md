@@ -56,8 +56,8 @@
 ## 🚀 Szybki start
 
 * 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.msi` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
-  *Instrukcja krok po kroku: [docs/DESKTOP.md](docs/DESKTOP.md)*
-* 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/INSTALL.md](docs/INSTALL.md) *(Compose, GHCR, porty)*.
+  *Instrukcja krok po kroku: [docs/DESKTOP.md](./docs/guides/DESKTOP.md)*
+* 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/INSTALL.md](./docs/guides/INSTALL.md) *(Compose, GHCR, porty)*.
 * 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 22** + **pnpm 11** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*.
 
 ```bash
@@ -67,7 +67,7 @@ pnpm install
 pnpm dev
 ```
 
-Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/INSTALL.md](docs/INSTALL.md).
+Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/INSTALL.md](./docs/guides/INSTALL.md).
 
 > 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -93,9 +93,9 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 
 | Dokument | Opis |
 | :--- | :--- |
-| 🚀 **[INSTALL](docs/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw) |
-| 🖥️ **[DESKTOP](docs/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`), Launcher i aktualizacja |
-| 📱 **[MOBILE](docs/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
+| 🚀 **[INSTALL](./docs/guides/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw) |
+| 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`), Launcher i aktualizacja |
+| 📱 **[MOBILE](./docs/guides/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
 | 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
 | 🗺️ **[REPO_MAP](docs/REPO_MAP.md)** | Automatycznie generowana mapa struktury i statystyki kodu dla LLM |
 | 🔌 **[API](docs/api/README.md)** | Specyfikacja powierzchni REST API i punktów końcowych |

@@ -22,7 +22,7 @@
 
 ## Konsekwencje
 
-- Dokumentacja operatora: [MOBILE.md](../MOBILE.md).
+- Dokumentacja operatora: [MOBILE.md](../guides/MOBILE.md).
 - CI release może budować APK (`StageSync-Performer-vX.Y.Z.apk`, `StageSync-Console-vX.Y.Z.apk`) gdy Android SDK dostępne — wymaga wcześniejszego buildu `apps/web` (ui-hash / www assets).
 - H-01 (throttle / split `displayTicks`) — najpierw profil HW, potem kod ([ADR 0015](./0015-daw-reference-and-product-decisions.md)).
 

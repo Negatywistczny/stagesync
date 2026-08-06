@@ -114,7 +114,7 @@ Kod CL-01/04/05 = **done**; tu weryfikacja PO przy żywym transporcie:
 Po green:
 
 1. [TODO.md](../../TODO.md) — odhacz must PO smoke + release gate wg procedury
-2. [ui-shell-inventory.md](../../ui-shell-inventory.md) — dopisz „PO verified” gdzie dotyczy
+2. [ui-shell-inventory.md](../../ui/ui-shell-inventory.md) — dopisz „PO verified” gdzie dotyczy
 3. [parity-blocker](./report-parity-blocker-alpha8.md) + [QA α8](./report-qa-signoff-alpha8.md) — P8 → green
 4. Ten plik — tabela Podsumowanie → wszystkie ☑
 

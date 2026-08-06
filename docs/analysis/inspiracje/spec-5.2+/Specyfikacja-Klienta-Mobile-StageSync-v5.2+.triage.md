@@ -22,7 +22,7 @@
 | MOB-04 dystrybucja APK z hosta / Releases (bez Play) | `on-tree` | `/downloads/stagesync-*.apk` + QR Admin + release.yml; lokalne `data/downloads/*.apk` (debug) — **bez claim HW green** / signed store |
 | Discovery QR + mDNS + manual URL | `on-tree` | Launcher Android: CameraX + ML Kit + mDNS + recent + ręczny URL |
 | Offline-First UI hybrid (#692 MVP) | `on-tree` | Role hash + `ui-bundle-{performer\|console}.zip` + dialog „Zastosuj” + `UiSyncChecker` unit tests; delta/CacheStorage = follow-up |
-| Split context / throttle `displayTicks` (H-01) | `partial` | Equality bail + sonda `?ss_perf=h01` **on-tree**; split/throttle **hypothesis** do profilu HW ([MOBILE.md](../../../MOBILE.md)) |
+| Split context / throttle `displayTicks` (H-01) | `partial` | Equality bail + sonda `?ss_perf=h01` **on-tree**; split/throttle **hypothesis** do profilu HW (../../../guides/MOBILE.md)) |
 | OSMD cursor-only (bez full re-render) | `hypothesis` | TODO Should / Perf — nie claim fixed |
 | Console pełne SPA → `/admin` (+ Client) | `on-tree` | `AppConsole` = trasy desktopu; `dist-console` / `ui-bundle-console` = pełne SPA |
 | Console lokalny host | `on-tree` | `prepare-local-host` + NDK JNI + `LocalHostService` → health `127.0.0.1:4000` → Admin; native MIDI N/A na Androidzie; **bez claim HW green** |

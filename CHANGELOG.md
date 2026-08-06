@@ -607,7 +607,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Motyw domyślny:** health może zwracać `themeDefault` z `STAGESYNC_THEME_DEFAULT` (dla klientów bez lokalnej preferencji).
 
 #### 📚 Dokumentacja
-- **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).
+- **Mobile:** podręcznik [MOBILE.md](./docs/guides/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Android:** sideload **StageSync Performer** (Client na scenie) i **StageSync Console** (pełne SPA: Admin + Timeline + Client; link „Klient” działa z lokalnego bundla) — bez Google Play; mniejsze APK tylko pod ARM (`arm64-v8a` / `armeabi-v7a`).
@@ -938,7 +938,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
-- **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](docs/DESKTOP.md).
+- **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](./docs/guides/DESKTOP.md).
 
 ## [5.0.0-alpha.11](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
@@ -971,7 +971,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Standalone desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** Tauri spawnuje wbudowany Node sidecar (`stagesync-host`), czeka na `GET /api/health`, ładuje UI; shutdown przy zamknięciu okna; czytelny ekran błędu przy konflikcie portu `4000`; dev fallback przez `STAGESYNC_URL` gdy brak bundla sidecara.
 - **Desktop sidecar packaging:** `launch/scripts/build-desktop-sidecar.mjs` — Node runtime per architektura, `pnpm deploy --prod @stagesync/server`, web `dist`, seed `library.template.json`; `bundle.externalBin` + `bundle.resources` w Tauri; `STAGESYNC_SEED_DIR` w serwerze; CI `--smoke` (health + higiena docs).
-- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](docs/INSTALL.md) / [DESKTOP.md](docs/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
+- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](./docs/guides/INSTALL.md) / [DESKTOP.md](./docs/guides/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
 - **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/adr/0012-user-data-location.md)).
 - **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); `compose.prod.yml` + Watchtower HTTP-only (update na żądanie, bez auto-poll).
 - **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; `desktopBridge.ts` + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
@@ -1017,7 +1017,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Wygląd:** jasny motyw + wysoki kontrast (`data-theme` / `data-contrast`) w Admin / Timeline / Client.
 - **Client:** skala tekstu karaoke, auto-scroll, score zoom lokalny; appearance w drawerze globalnym.
 - **Timeline parity follow-up:** Metadane (tytuł / defaultBpm), Loop (region na linijce + `POST /api/transport/loop` SSOT), Follow playhead, Tekst/Akordy/Cue move/resize/pencil, Kotwice (`scoreBarMap`), scissors content, Client H/B + Tap wokalu + notatki Formy.
-- **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` ([MIGRATION.md](docs/MIGRATION.md)); drop legacy `vl-cd-`* (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
+- **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` (./docs/guides/MIGRATION.md)); drop legacy `vl-cd-`* (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
 - **Admin:** Host logi SSE (`/api/system/logs/stream` + Pauza/Wyczyść); Scena **presence** (`GET /api/stage/clients` + WS `client_hello`).
 
 ### Zmieniono
@@ -1191,7 +1191,7 @@ tekst na amber CTA.
 - Admin — tworzenie / usuwanie / zmiana nazwy projektu z UI (Zod body przed
 fetch; `commandPending` blokuje listę i panel).
 - Shelle UI: Admin — własny layout (chrome + sekcje + status), inventarz
-funkcji v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)); Client /
+funkcji v4 (./docs/ui/ui-shell-inventory.md)); Client /
 Timeline — inventarz (osobny redesign); tokeny black/amber + CSS Modules;
 `TransportProvider` nad routerem; Audio 0…N; bez git-apply
 ([ADR 0004](docs/adr/0004-updates-docker.md)).
@@ -1208,7 +1208,7 @@ helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
 `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
 `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
 ([CONTRIBUTING.md](CONTRIBUTING.md)).
-inventarz kontrolek = parity v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)).
+inventarz kontrolek = parity v4 (./docs/ui/ui-shell-inventory.md)).
 
 ### Usunięto
 

@@ -174,7 +174,7 @@ Tray nie otwiera menu po lewym kliknięciu ikony, bo `show_menu_on_left_click(fa
 > (`.bak` pojedynczo / zaznaczenie / katalog; albo archiwum `.zip` z drzewem danych;
 > PIN gdy włączony). Szczegóły: [INSTALL.md](./INSTALL.md) § Backup volume.
 >
-> **Sentry (opcjonalnie):** ustaw `SENTRY_DSN` / `VITE_SENTRY_DSN` w `.env` hosta — bez DSN brak raportowania ([INSTALL.md](./INSTALL.md) § Sentry).
+> **Sentry (opcjonalnie):** ustaw `SENTRY_DSN` / `VITE_SENTRY_DSN` w `.env` hosta — bez DSN brak raportowania (./INSTALL.md) § Sentry).
 
 ## Instalacja (gotowe instalatory)
 

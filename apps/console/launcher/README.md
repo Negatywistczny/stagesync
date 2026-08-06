@@ -17,4 +17,4 @@ Console → health → `{origin}/admin`
 ## Lokalny host
 
 Przycisk **widoczny i aktywny**. Domyślny APK: `LocalHostService` + JNI + `libnode` + `assets/host`
-→ `127.0.0.1:4000/api/health` → Admin. Szczegóły: [MOBILE.md](../../../docs/MOBILE.md).
+→ `127.0.0.1:4000/api/health` → Admin. Szczegóły: [MOBILE.md](../../../docs/guides/MOBILE.md).
