@@ -37,11 +37,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript-typescript' ]
+        language: [ 'javascript-typescript', 'java-kotlin' ]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      if: matrix.language == 'java-kotlin'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
     # Inicjalizacja CodeQL z zestawem reguł security-extended oraz zewnętrzne pliki konfiguracyjne / config-file (aktualizacja do Action v4)
     - name: Initialize CodeQL
@@ -51,7 +58,20 @@ jobs:
         queries: security-extended
         config-file: .github/codeql/codeql-config.yml
 
+    - name: Build Java/Kotlin (Gradle)
+      if: matrix.language == 'java-kotlin'
+      run: |
+        if [ -f "gradlew" ]; then
+          chmod +x gradlew
+          ./gradlew assemble
+        elif [ -f "apps/console/android/gradlew" ]; then
+          cd apps/console/android
+          chmod +x gradlew
+          ./gradlew assemble
+        fi
+
     - name: Perform CodeQL Analysis
+>>>>>>>
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{ matrix.language }}"
