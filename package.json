@@ -5,7 +5,7 @@
   "license": "BUSL-1.1",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "pnpm generate:map && turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
@@ -17,7 +17,8 @@
     "lint:ss-css": "node launch/scripts/lint-ss-css.mjs",
     "lint:knip": "knip --exclude files,dependencies,devDependencies,unlisted,binaries,exports,types,nsExports,nsTypes,enumMembers,namespaceMembers,catalog,catalogReferences",
     "benchmark:record": "npx tsx launch/scripts/record-benchmark.ts",
-    "prepare": "node -e \"try{require('child_process').execSync('husky',{stdio:'inherit'})}catch{}\""
+    "prepare": "node -e \"try{require('child_process').execSync('husky',{stdio:'inherit'})}catch{}\"",
+    "generate:map": "node launch/scripts/generate-repo-map.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",

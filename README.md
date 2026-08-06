@@ -78,11 +78,12 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 | `apps/server` | ⚙️ API, persystencja danych, transport SSOT |
 | `apps/web` | 💻 UI Admina / Timeline / Client muzyka |
 | `apps/desktop` | 🖥️ Shell Tauri + sidecar Node.js |
-| `apps/performer` | 📱 Android Performer (Client na scenie, sideload) |
-| `apps/console` | 📱 Android Console (pełne SPA; łączenie z hostem LAN) |
-| `packages/shared` | 📐 Schematy Zod + czyste helpery czasu |
+| `apps/performer` | 📱 Android Performer (Client na scenie) |
+| `apps/console` | 📱 Android Console (WebView shell dla /admin) |
+| `apps/www` | 🌐 Strona domowa, portal informacyjny i aktualności |
+| `packages/shared` | 📐 Schematy Zod, logika SSOT + helpery czasu |
 | `packages/ui` | 🎨 Design system (tokeny `--ss-*`) |
-| `data/` | 📂 Szablony runtime *(pliki projektów użytkownika w `.gitignore`)* |
+| `data/` | 📂 Magazyn runtime i projekty użytkownika *(w `.gitignore`)* |
 
 ## 📚 Dokumentacja
 
@@ -92,6 +93,7 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 | 🖥️ **[DESKTOP](docs/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`), Launcher i aktualizacja |
 | 📱 **[MOBILE](docs/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
 | 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
+| 🗺️ **[REPO_MAP](docs/REPO_MAP.md)** | Automatycznie generowana mapa struktury i statystyki kodu dla LLM |
 | 🔌 **[docs/api](docs/api/)** | Specyfikacja powierzchni REST API i punktów końcowych |
 | 💡 **[ADR](docs/adr/)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
 | 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
@@ -104,4 +106,3 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 
 StageSync jest **source-available** na [Business Source License 1.1](LICENSE) (SPDX: `BUSL-1.1`).
 Domyślnie dozwolone jest użycie **nieprodukcyjne** (dev / test / ewaluacja). **Produkcja** (w tym własny host sceniczny) wymaga osobnej licencji komercyjnej — szczegóły i kontakt w `LICENSE`.
-Od **Change Date** `2030-07-23` ta linia przechodzi na **Apache License 2.0**.
