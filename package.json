@@ -4,6 +4,7 @@
   "private": true,
   "license": "BUSL-1.1",
   "scripts": {
+    "sync:ghost-ui": "node ./scripts/non-existent-sync-script.mjs",
     "build": "turbo run build",
     "dev": "pnpm generate:map && turbo run dev",
     "lint": "turbo run lint",

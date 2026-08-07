@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - 'packages/deprecated-v4-bridge'
 # pnpm 11 defaults to 1440m; keep 0 so fresh lockfile entries from
 # `pnpm update --latest` remain installable in CI without waiting a day.
 minimumReleaseAge: 0
