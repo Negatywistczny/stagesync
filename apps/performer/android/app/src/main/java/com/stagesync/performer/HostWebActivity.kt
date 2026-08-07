@@ -57,7 +57,7 @@ class HostWebActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val file = pendingApkFile
             if (file != null && ApkInstaller.canInstallPackages(this)) {
-                startActivity(ApkInstaller.installIntent(this, file))
+                ApkInstaller.install(this, file)
             } else if (file != null) {
                 Toast.makeText(this, R.string.update_need_permission, Toast.LENGTH_LONG).show()
             }
@@ -390,7 +390,7 @@ class HostWebActivity : AppCompatActivity() {
             unknownSourcesLauncher.launch(ApkInstaller.unknownSourcesSettingsIntent(this))
             return
         }
-        startActivity(ApkInstaller.installIntent(this, file))
+        ApkInstaller.install(this, file)
     }
 
     private fun enterImmersive() {

@@ -1,12 +1,13 @@
 package com.stagesync.performer
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.core.content.FileProvider
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -14,8 +15,8 @@ import java.security.MessageDigest
 import java.util.concurrent.Executors
 
 /**
- * Manual sideload only: download APK from host or GitHub Releases, then open the system
- * package installer. Never silent / background update (ADR 0015).
+ * Manual sideload only: download APK from host or GitHub Releases, then install via
+ * [PackageInstaller] (user confirmation). Never silent / background update (ADR 0015).
  *
  * Hardening: URL allowlist (host `/downloads/{apk}` or StageSync GitHub release assets)
  * + package name / signing-cert verify before install (CodeQL arbitrary-apk).
@@ -107,23 +108,42 @@ object ApkInstaller {
         }
     }
 
-    fun installIntent(context: Context, apkFile: File): Intent {
-        val uri =
-            FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                apkFile,
-            )
-        // ACTION_INSTALL_PACKAGE + FileProvider content URI (not VIEW + package-archive MIME)
-        // — CodeQL java/android/arbitrary-apk-installation.
-        return Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
-            data = uri
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
-            putExtra(Intent.EXTRA_RETURN_RESULT, true)
+    /**
+     * Stream [apkFile] into a [PackageInstaller] session and commit (system prompts user).
+     * Avoids Intent + package-archive MIME / ACTION_INSTALL_PACKAGE sinks (CodeQL).
+     */
+    fun install(context: Context, apkFile: File) {
+        val installer = context.packageManager.packageInstaller
+        val params =
+            PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+        params.setAppPackageName(context.packageName)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_REQUIRED)
+        }
+        val sessionId = installer.createSession(params)
+        installer.openSession(sessionId).use { session ->
+            session.openWrite("base.apk", 0, apkFile.length()).use { out ->
+                apkFile.inputStream().use { input -> input.copyTo(out) }
+                session.fsync(out)
+            }
+            // Explicit package — not an implicit PendingIntent (CodeQL).
+            val status =
+                Intent(INSTALL_STATUS_ACTION).setPackage(context.packageName)
+            val flags =
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        PendingIntent.FLAG_MUTABLE
+                    } else {
+                        0
+                    }
+            val pi =
+                PendingIntent.getBroadcast(context, sessionId, status, flags)
+            session.commit(pi.intentSender)
         }
     }
+
+    private const val INSTALL_STATUS_ACTION =
+        "com.stagesync.performer.APK_INSTALL_STATUS"
 
     internal fun verifyApkOrThrow(context: Context, apkFile: File) {
         val pm = context.packageManager
