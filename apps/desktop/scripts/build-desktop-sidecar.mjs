@@ -19,7 +19,13 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const repoRoot = join(__dirname, "../..");
+// apps/desktop/scripts → repo root (same depth as sync-sidecar-server.mjs)
+const repoRoot = join(__dirname, "../../..");
+if (!existsSync(join(repoRoot, "pnpm-workspace.yaml"))) {
+  throw new Error(
+    `[sidecar] repoRoot misresolved: expected pnpm-workspace.yaml under ${repoRoot}`,
+  );
+}
 
 function getArg(name) {
   const idx = process.argv.indexOf(name);
