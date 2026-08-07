@@ -85,7 +85,10 @@ export const DEFAULT_BARS_PER_CHORD = 2;
 export const DEFAULT_BARS_PER_LINE = 1;
 
 const CHORD_TOKEN =
-  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]+\))?(?:\/[A-H](?:#|b)?)?$/i;
+  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]{0,32}\))?(?:\/[A-H](?:#|b)?)?$/i;
+
+/** Reject pathological tokens before CHORD_TOKEN (ReDoS bound). */
+const CHORD_TOKEN_MAX = 64;
 
 export type TimedWord = {
   raw: string;
@@ -193,7 +196,7 @@ export type TextAnchorBridgeOptions = {
 
 function acceptChordToken(raw: string): string | null {
   const t = raw.trim();
-  if (!t || !CHORD_TOKEN.test(t)) return null;
+  if (!t || t.length > CHORD_TOKEN_MAX || !CHORD_TOKEN.test(t)) return null;
   return toLiteralStorage(t);
 }
 
@@ -319,7 +322,9 @@ function defaultSectionName(index: number, named: string | null): string {
 function isChordOnlyLine(line: string): boolean {
   const tokens = line.split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return false;
-  return tokens.every((t) => CHORD_TOKEN.test(t));
+  return tokens.every(
+    (t) => t.length <= CHORD_TOKEN_MAX && CHORD_TOKEN.test(t),
+  );
 }
 
 function parseChordOnlyLine(line: string): string[] {
@@ -387,9 +392,11 @@ export function isUgBridgeNoiseLine(line: string): boolean {
   if (/\[[^\]]+\]\s*\/\s*\[[^\]]+\]/.test(t)) return true;
   if (/^transpose\b/i.test(t)) return true;
   if (/\bcapo\b/i.test(t) && /\b(transpose|to)\b/i.test(t)) return true;
-  // "1 + 2 + 3 + 4 +" counting grids
+  // "1 + 2 + 3 + 4 +" counting grids (bounded length — ReDoS)
   const compact = t.replace(/\s+/g, " ");
-  if (/^(\d+\s*\+\s*)+\d*\+?$/.test(compact)) return true;
+  if (compact.length <= 64 && /^(\d+\s*\+\s*){1,16}\d*\+?$/.test(compact)) {
+    return true;
+  }
   // Bare "%"" repeat marker
   if (t === "%") return true;
   return false;

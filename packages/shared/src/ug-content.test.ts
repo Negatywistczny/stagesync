@@ -92,5 +92,8 @@ I czeka na tw&oacute;j mały znak
     expect(isUgAuthorNoteLine("U stóp ci złożę")).toBe(false);
     expect(isUgAsciiTabLine("e|-0-2-3-|")).toBe(true);
     expect(isUgAsciiTabLine("[Am]Hello")).toBe(false);
+    // Pathological length must not hang (ReDoS bound).
+    expect(typeof isUgAuthorNoteLine(`(${"a".repeat(10_000)})`)).toBe("boolean");
+    expect(isUgAuthorNoteLine(`(${"x".repeat(50)})`)).toBe(true);
   });
 });

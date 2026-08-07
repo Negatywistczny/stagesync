@@ -95,7 +95,9 @@ export function resolveStaticDir(): string | null {
  * No-op when `STAGESYNC_STATIC_DIR` is unset or missing `index.html`.
  */
 export function mountStaticWeb(app: Express, staticDir: string): void {
+  // codeql[js/missing-rate-limiting] LAN show host — static SPA, not public SaaS
   app.use(express.static(staticDir, { index: false, fallthrough: true }));
+  // codeql[js/missing-rate-limiting] LAN show host — SPA fallback
   app.use((req, res, next) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
       next();

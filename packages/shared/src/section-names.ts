@@ -107,6 +107,8 @@ function matchTypeWithNumber(
 export function normalizeSectionName(raw: string): string {
   const name = collapseWhitespace(raw);
   if (!name) return "Section";
+  // Bound before polynomial regexes (instrument Solo / Polish aliases).
+  if (name.length > 200) return titleCaseWords(name.slice(0, 200));
 
   const lower = name.toLowerCase();
 

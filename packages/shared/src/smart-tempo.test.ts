@@ -70,6 +70,17 @@ describe("extractYoutubeVideoId", () => {
     expect(extractYoutubeVideoId("short")).toBeNull();
     expect(extractYoutubeVideoId("")).toBeNull();
   });
+
+  it("bounds pathological URL length", () => {
+    const long = `${"x".repeat(5000)}https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+    // Must not hang; may be null after slice drops the id.
+    expect(typeof extractYoutubeVideoId(long)).toBe("object");
+    expect(
+      extractYoutubeVideoId(
+        `https://www.youtube.com/watch?${"x=1&".repeat(100)}v=dQw4w9WgXcQ`,
+      ),
+    ).toBe("dQw4w9WgXcQ");
+  });
 });
 
 describe("evaluateDriftGate", () => {

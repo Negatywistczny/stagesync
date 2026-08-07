@@ -11,6 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📚 Dokumentacja
 - **Podręczniki operatorskie:** INSTALL / DESKTOP / MOBILE / MIGRATION żyją w `docs/guides/`; linki z aplikacji, witryny download oraz komunikatów hosta wskazują nowe ścieżki na GitHub.
+- **Mobile:** opis jawnej aktualizacji APK — allowlista hosta/GitHub StageSync oraz weryfikacja package/podpisu przed instalatorem.
 
 ### Naprawiono
 
@@ -18,6 +19,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Import USDB:** przy czyszczeniu HTML ze szczegółów utworu zagnieżdżone tagi `<script>` / `<style>` są usuwane w pętli — tekst importu nie zostawia już osadzonego HTML ze „włożonych” tagów.
 
 ### Bezpieczeństwo
+- **Android (Console / Performer):** aktualizacja APK tylko z allowlisty URL (host `/downloads/stagesync-*.apk` lub GitHub Releases StageSync) oraz weryfikacja package name i certyfikatu podpisu przed otwarciem instalatora.
 - **Ustawienia hosta:** zapis zarządzanego pliku ustawień (`.env`) z uprawnieniami tylko dla właściciela (mode `0600`).
 
 ## [5.4.5](https://github.com/Negatywistczny/stagesync/compare/v5.4.4...v5.4.5) - 2026-08-05

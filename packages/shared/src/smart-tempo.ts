@@ -207,8 +207,10 @@ export type LayoutFormaFromUgBarCountsOpts = {
  * Prefer `a=` for audio ingest when both are present.
  */
 export function extractYoutubeVideoId(raw: string): string | null {
-  const trimmed = raw.trim();
+  let trimmed = raw.trim();
   if (!trimmed) return null;
+  // Bound before polynomial URL regexes (ReDoS).
+  if (trimmed.length > 2048) trimmed = trimmed.slice(0, 2048);
   if (YOUTUBE_VIDEO_ID_RE.test(trimmed)) return trimmed;
 
   const usdbPrefixed = [
@@ -224,7 +226,7 @@ export function extractYoutubeVideoId(raw: string): string | null {
   if (csvHead && YOUTUBE_VIDEO_ID_RE.test(csvHead)) return csvHead;
 
   const patterns = [
-    /(?:youtube\.com\/watch\?[^#]*v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/i,
+    /(?:youtube\.com\/watch\?[^#]{0,512}v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/i,
     /[?&]v=([a-zA-Z0-9_-]{11})/i,
   ];
   for (const re of patterns) {

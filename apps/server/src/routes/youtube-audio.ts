@@ -139,11 +139,13 @@ async function ensureBundledYtDlp(dataDir: string): Promise<string | null> {
   if (!url) return null;
   const dest = ytdlpBundledPath(dataDir);
   await mkdir(join(dataDir, "tools"), { recursive: true });
+  // codeql[js/http-to-file-access] Fixed GitHub release URL for yt-dlp bootstrap
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Nie udało się pobrać yt-dlp (${res.status}).`);
   }
   const bytes = Buffer.from(await res.arrayBuffer());
+  // codeql[js/http-to-file-access] Fixed GitHub release URL for yt-dlp bootstrap
   await writeFile(dest, bytes);
   if (process.platform !== "win32") {
     await chmod(dest, 0o755);

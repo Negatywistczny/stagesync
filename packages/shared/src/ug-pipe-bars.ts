@@ -8,7 +8,10 @@
 import { toLiteralStorage } from "./chord-display.js";
 
 const CHORD_TOKEN =
-  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]+\))?(?:\/[A-H](?:#|b)?)?$/i;
+  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]{0,32}\))?(?:\/[A-H](?:#|b)?)?$/i;
+
+/** Reject pathological tokens before CHORD_TOKEN (ReDoS bound). */
+const CHORD_TOKEN_MAX = 64;
 
 const REST_TOKEN = /^(?:N\.?C\.?|NC|N\.C|—|-)$/i;
 
@@ -30,7 +33,7 @@ export type UgPipeBarsParse = {
 
 function acceptChordToken(raw: string): string | null {
   const t = raw.trim();
-  if (!t || !CHORD_TOKEN.test(t)) return null;
+  if (!t || t.length > CHORD_TOKEN_MAX || !CHORD_TOKEN.test(t)) return null;
   return toLiteralStorage(t);
 }
 
@@ -53,7 +56,11 @@ export function isUgPipeBarLine(line: string): boolean {
     if (cell === "%") return true;
     const parts = cell.split(/\s+/).filter(Boolean);
     if (parts.length === 0) return false;
-    return parts.every((p) => isRestToken(p) || CHORD_TOKEN.test(p));
+    return parts.every(
+      (p) =>
+        isRestToken(p) ||
+        (p.length <= CHORD_TOKEN_MAX && CHORD_TOKEN.test(p)),
+    );
   });
 }
 

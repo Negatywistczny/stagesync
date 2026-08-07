@@ -112,7 +112,16 @@ class HostWebActivity : AppCompatActivity() {
                 override fun shouldOverrideUrlLoading(
                     view: WebView,
                     request: WebResourceRequest,
-                ): Boolean = false
+                ): Boolean {
+                    val host = request.url.host ?: return true
+                    if (host.equals(hostAuthority, ignoreCase = true) ||
+                        host == "127.0.0.1" ||
+                        host.equals("localhost", ignoreCase = true)
+                    ) {
+                        return false
+                    }
+                    return true
+                }
 
                 override fun shouldInterceptRequest(
                     view: WebView,
@@ -431,11 +440,13 @@ class HostWebActivity : AppCompatActivity() {
 
         @android.webkit.JavascriptInterface
         fun showLocalNotification(title: String, body: String, channel: String?) {
+            val safeTitle = title.take(120)
+            val safeBody = body.take(500)
             runOnUiThread {
                 PushNotifications.showLocal(
                     this@HostWebActivity,
-                    title,
-                    body,
+                    safeTitle,
+                    safeBody,
                     channel ?: PushNotifications.CHANNEL_CRITICAL,
                     "/client",
                 )

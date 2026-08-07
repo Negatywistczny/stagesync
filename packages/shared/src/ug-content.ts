@@ -6,8 +6,11 @@
 const UG_SECTION_START_RE =
   /\[(?:Intro|Verse|Chorus|Bridge|Outro|Pre-Chorus|Pre-chorus|Pre Chorus|Refrain|Coda|Solo|Hook|Zwrotka|Refren|Mostek|Wstęp|Zakończenie)/i;
 
+/** Max chars for author-note / chrome line checks (ReDoS bound). */
+const UG_NOTE_LINE_MAX = 512;
+
 const UG_AUTHOR_NOTE_RE =
-  /^(?:\(.*\)$|capo\s+\d|tuning:|key:|strumming:|no capo|fade out|submitting|tabs\.|ultimate guitar|http|you can (?:also )?play|play .+ instead|throughout the (?:whole )?song)/i;
+  /^(?:\([^)]{0,200}\)$|capo\s+\d|tuning:|key:|strumming:|no capo|fade out|submitting|tabs\.|ultimate guitar|http|you can (?:also )?play|play .{1,80} instead|throughout the (?:whole )?song)/i;
 
 /** String names used in ASCII guitar/bass tab (high e … low E). */
 const UG_TAB_STRING_RE = /^[eEBGDAa]\s*\|/;
@@ -166,19 +169,22 @@ export function normalizeUgWikiMarkup(raw: string): string {
 }
 
 export function isUgAuthorNoteLine(line: string): boolean {
-  const trimmed = String(line || "").trim();
+  let trimmed = String(line || "").trim();
   if (!trimmed) return false;
+  if (trimmed.length > UG_NOTE_LINE_MAX) {
+    trimmed = trimmed.slice(0, UG_NOTE_LINE_MAX);
+  }
   if (UG_AUTHOR_NOTE_RE.test(trimmed)) return true;
-  if (/^\[?.+\]?\s*=\s*x[0-9]+\s*$/i.test(trimmed)) return true;
+  if (/^\[?.{1,120}\]?\s*=\s*x[0-9]+\s*$/i.test(trimmed)) return true;
   if (
-    /^\(.*(?:feel free|measures|bassline|palm mute|shorten|counted).*\)$/i.test(
+    /^\([^)]{0,200}(?:feel free|measures|bassline|palm mute|shorten|counted)[^)]{0,200}\)$/i.test(
       trimmed,
     )
   ) {
     return true;
   }
   // Paired markdown emphasis: *note* / **note** / _note_
-  if (/^(?:\*\*|__|\*|_).*(?:\*\*|__|\*|_)$/.test(trimmed)) return true;
+  if (/^(?:\*\*|__|\*|_)[^*_]{0,200}(?:\*\*|__|\*|_)$/.test(trimmed)) return true;
   // UG tip / performance notes: "*you can play E7 instead of E..."
   if (/^\*+$/.test(trimmed) || /^\*[^*]/.test(trimmed)) return true;
   return false;

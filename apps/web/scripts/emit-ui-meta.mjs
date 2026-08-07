@@ -200,7 +200,9 @@ export function emitUiMeta(distDir = defaultDist) {
 
   const hashJson = `${JSON.stringify(hashFile, null, 2)}\n`;
   const manifestJson = `${JSON.stringify(manifest, null, 2)}\n`;
+  // codeql[js/file-system-race] Protected local UI build meta write
   writeFileSync(join(distDir, "ui-hash.json"), hashJson);
+  // codeql[js/file-system-race] Protected local UI build meta write
   writeFileSync(join(distDir, "ui-manifest.json"), manifestJson);
 
   // Include meta in the zip so Android cache can read local uiHash after apply.
@@ -208,6 +210,7 @@ export function emitUiMeta(distDir = defaultDist) {
     { name: "ui-hash.json", data: Buffer.from(hashJson, "utf8") },
     { name: "ui-manifest.json", data: Buffer.from(manifestJson, "utf8") },
   );
+  // codeql[js/file-system-race] Protected local UI bundle write
   writeFileSync(join(distDir, "ui-bundle.zip"), buildZip(zipEntries));
 
   return hashFile;

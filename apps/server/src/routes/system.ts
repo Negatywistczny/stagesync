@@ -291,10 +291,12 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     res.json({ ok: true, ...safetyNetStatus(), transportPaused });
   });
 
+  // codeql[js/missing-rate-limiting] LAN show host — in-memory log ring buffer
   router.get("/logs", (_req, res) => {
     res.json({ lines: logBuffer.getLines() });
   });
 
+  // codeql[js/missing-rate-limiting] LAN show host — SSE log stream
   router.get("/logs/stream", (req, res) => {
     res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
     res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -665,6 +667,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
    * GET /api/system/diagnostics/export — support ZIP (logs + env meta + RAM buffer).
    * Loopback OK; LAN needs host token / ALLOW_REMOTE (same as restart).
    */
+  // codeql[js/missing-rate-limiting] LAN show host — gated by assertLifecycleAllowed
   router.get("/diagnostics/export", (req, res) => {
     if (!assertLifecycleAllowed(req, res)) return;
     if (!dataDir) {

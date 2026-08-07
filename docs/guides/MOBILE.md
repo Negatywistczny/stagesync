@@ -1,6 +1,6 @@
 # StageSync — Mobile (Performer + Console)
 
-Operator sketch for Android APK install and PWA (**v5.3** Colors & Channels). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](../adr/0016-android-performer-console.md)).
+Operator sketch for Android APK install and PWA (**v5.4** Syllables). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](../adr/0016-android-performer-console.md)).
 
 ## Performer vs Console
 
@@ -102,6 +102,12 @@ Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz 
 1. **Launcher (internet):** przy starcie / `onResume` powłoka pobiera `android-latest.json` z GitHub Releases (`…/releases/latest/download/android-latest.json`, ten sam kanał co Desktop `latest.json`). Gdy `version` jest nowszy od `versionName` APK, pojawia się dialog **Dostępna wersja …** → **Aktualizuj** / **Przypomnij później** (snooze do tej wersji). **Bez** auto-update w tle ([ADR 0015](../adr/0015-daw-reference-and-product-decisions.md)).
 2. **Admin → Sprawdź aktualizacje (Console):** ten sam manifest — pokazuje `vAKTUALNA → vNOWSZA` i **Pobierz APK** (otwarcie URL z Releases), nie Watchtower.
 3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host jest **nowszy** **oraz** APK leży pod `/downloads/stagesync-*.apk`, dialog z hosta; jeśli host nie oferuje APK — fallback do Releases jak w (1).
+
+**Źródła URL (allowlista):** powłoka pobiera APK wyłącznie z
+- hosta sesji: `{origin}/downloads/stagesync-console.apk` albo `…/stagesync-performer.apk`, albo
+- HTTPS GitHub Releases StageSync (`github.com/Negatywistczny/stagesync/…` oraz CDN `objects.githubusercontent.com` / `release-assets.githubusercontent.com`).
+
+Inne URL z manifestu są odrzucane. Przed otwarciem instalatora systemowego APK jest weryfikowany: **package name** musi zgadzać się z zainstalowaną powłoką, a **certyfikat podpisu** z aktualnie zainstalowaną aplikacją. Błędny plik → komunikat błędu, bez sideloadu.
 
 **Bez** auto-update w tle ([ADR 0015](../adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../adr/0016-android-performer-console.md)).
 

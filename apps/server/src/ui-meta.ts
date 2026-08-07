@@ -225,7 +225,9 @@ export function mountUiMetaRoutes(
       }
       serveUiBundle(req, res, bundlePath, filename);
     };
+    // codeql[js/missing-rate-limiting] LAN show host — not public SaaS
     app.get(route, handler);
+    // codeql[js/missing-rate-limiting] LAN show host — not public SaaS
     app.head(route, handler);
   };
 

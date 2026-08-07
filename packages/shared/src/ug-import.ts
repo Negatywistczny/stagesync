@@ -76,7 +76,10 @@ export type UgImportOptions = {
  * Allows sus2/4, parenthetical alterations, alt — then `toLiteralStorage` canonicalizes.
  */
 const CHORD_TOKEN =
-  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]+\))?(?:\/[A-H](?:#|b)?)?$/i;
+  /^[A-H](?:#|b)?(?:maj|min|m|sus|dim|aug|add|alt)?[0-9]*(?:sus[0-9]*)?(?:\/[24])?(?:(?:#|b)(?:5|9|11|13))*(?:\([^)]{0,32}\))?(?:\/[A-H](?:#|b)?)?$/i;
+
+/** Reject pathological tokens before CHORD_TOKEN (ReDoS bound). */
+const CHORD_TOKEN_MAX = 64;
 
 const SECTION_BRACKET =
   /^\[(Verse|Chorus|Bridge|Intro|Outro|Pre-?Chorus|Solo|Instrumental|Interlude|Tag|Ending|Hook|Refrain|Coda|Break|Prechorus)(?:\s*\d*)?\]$/i;
@@ -92,7 +95,7 @@ export function canonicalizePolishH(symbol: string): string {
 
 function acceptChordToken(raw: string): string | null {
   const t = raw.trim();
-  if (!t || !CHORD_TOKEN.test(t)) return null;
+  if (!t || t.length > CHORD_TOKEN_MAX || !CHORD_TOKEN.test(t)) return null;
   return toLiteralStorage(t);
 }
 
@@ -113,7 +116,9 @@ function extractBracketChords(line: string): string[] {
 function isChordOnlyLine(line: string): boolean {
   const tokens = line.split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return false;
-  return tokens.every((t) => CHORD_TOKEN.test(t));
+  return tokens.every(
+    (t) => t.length <= CHORD_TOKEN_MAX && CHORD_TOKEN.test(t),
+  );
 }
 
 function parseChordOnlyLine(line: string): string[] {
@@ -242,7 +247,12 @@ function parseSectionHeader(line: string): string | null {
   }
   if (/^\[[^\]]+\]$/.test(line) && !extractBracketChords(line).length) {
     const inner = line.slice(1, -1).trim();
-    if (inner && !CHORD_TOKEN.test(inner)) return inner.slice(0, 120);
+    if (
+      inner &&
+      (inner.length > CHORD_TOKEN_MAX || !CHORD_TOKEN.test(inner))
+    ) {
+      return inner.slice(0, 120);
+    }
   }
   const meta = line.match(/^\{(?:comment|c)\s*:\s*(.+)\}$/i);
   if (meta?.[1]) return meta[1].trim().slice(0, 120);

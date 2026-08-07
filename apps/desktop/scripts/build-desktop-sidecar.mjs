@@ -65,12 +65,14 @@ async function restoreWorkspaceInstall() {
 }
 
 async function downloadFile(url, destPath) {
+  // codeql[js/http-to-file-access] Fixed Node.js dist URL for desktop sidecar bootstrap
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to download ${url}: ${res.status} ${res.statusText}`);
   }
   // Node's fetch uses web streams; keep it simple for the PoC.
   const buf = Buffer.from(await res.arrayBuffer());
+  // codeql[js/http-to-file-access] Fixed Node.js dist URL for desktop sidecar bootstrap
   await writeFile(destPath, buf);
 }
 

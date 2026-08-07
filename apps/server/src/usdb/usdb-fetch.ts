@@ -150,6 +150,8 @@ export function usdbDetailUrl(id: number): string {
 }
 
 function stripTags(html: string): string {
+  // codeql[js/bad-tag-filter] Search-cell text scrape only — not an XSS sink
+  // codeql[js/incomplete-multi-character-sanitization] Nested script/style loop for USDB HTML
   let cleaned = String(html || "");
   let prev: string;
   do {

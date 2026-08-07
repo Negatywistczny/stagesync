@@ -64,6 +64,8 @@ object ReleaseApkUpdateChecker {
                 AppKind.PERFORMER -> performerUrlRegex.find(body)?.groupValues?.get(1)
             }?.trim().orEmpty()
         if (url.isEmpty()) return null
+        // Reject non-GitHub / non-StageSync release assets (CodeQL arbitrary-apk).
+        if (!ApkInstaller.isAllowedApkUrl(url)) return null
         return Offer(latestVersion = latest, shellVersion = shellVersion.trim(), apkUrl = url)
     }
 

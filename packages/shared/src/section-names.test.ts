@@ -67,4 +67,9 @@ describe("section-names", () => {
       "Solo (perkusja) 2",
     );
   });
+
+  it("bounds pathological section name length", () => {
+    const long = `piano ${"solo ".repeat(80)}`;
+    expect(normalizeSectionName(long).length).toBeLessThanOrEqual(200);
+  });
 });
