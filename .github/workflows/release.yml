@@ -177,7 +177,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: apps/desktop
-          includeUpdaterJson: true
+          uploadUpdaterJson: true
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
       - name: Upload dmg artifact
@@ -247,7 +247,7 @@ jobs:
           RUST_LOG: tauri_bundler=debug
         with:
           projectPath: apps/desktop
-          includeUpdaterJson: true
+          uploadUpdaterJson: true
           args: --verbose
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
