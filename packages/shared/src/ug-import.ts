@@ -11,6 +11,11 @@
  */
 
 import { z } from "zod";
+import {
+  collapseAsciiSpaces,
+  forEachBracketSpan,
+  stripBracketSpans,
+} from "./bracket-spans.js";
 import { toLiteralStorage } from "./chord-display.js";
 import { withWholeLineTekstBlocks } from "./project-seed.js";
 import { cleanUgTabContent } from "./ug-content.js";
@@ -100,16 +105,15 @@ function acceptChordToken(raw: string): string | null {
 }
 
 function stripBracketChords(line: string): string {
-  return line.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();
+  return collapseAsciiSpaces(stripBracketSpans(line)).trim();
 }
 
 function extractBracketChords(line: string): string[] {
   const out: string[] = [];
-  const matches = line.matchAll(/\[([^\]]+)\]/g);
-  for (const m of matches) {
-    const accepted = acceptChordToken(m[1] ?? "");
+  forEachBracketSpan(line, (inner) => {
+    const accepted = acceptChordToken(inner);
     if (accepted) out.push(accepted);
-  }
+  });
   return out;
 }
 
@@ -245,7 +249,12 @@ function parseSectionHeader(line: string): string | null {
   if (bracket?.[1]) {
     return bracket[1].replace(/prechorus/i, "Pre-Chorus");
   }
-  if (/^\[[^\]]+\]$/.test(line) && !extractBracketChords(line).length) {
+  if (
+    line.startsWith("[") &&
+    line.endsWith("]") &&
+    line.indexOf("]") === line.length - 1 &&
+    !extractBracketChords(line).length
+  ) {
     const inner = line.slice(1, -1).trim();
     if (
       inner &&
@@ -254,14 +263,21 @@ function parseSectionHeader(line: string): string | null {
       return inner.slice(0, 120);
     }
   }
-  const meta = line.match(/^\{(?:comment|c)\s*:\s*(.+)\}$/i);
-  if (meta?.[1]) return meta[1].trim().slice(0, 120);
-  const startOf = line.match(/^\{start_of_([a-z_]+)(?:\s*:\s*(.+))?\}$/i);
-  if (startOf?.[1]) {
-    const kind = startOf[1].replace(/_/g, " ");
-    const label = startOf[2]?.trim();
-    const title = label || kind.replace(/\b\w/g, (c) => c.toUpperCase());
-    return title.slice(0, 120);
+  // ChordPro `{comment:…}` / `{c:…}` / `{start_of_*:…}` — indexOf parse (no ReDoS).
+  if (line.startsWith("{") && line.endsWith("}")) {
+    const body = line.slice(1, -1);
+    const colon = body.indexOf(":");
+    const keyRaw = (colon >= 0 ? body.slice(0, colon) : body).trim();
+    const key = keyRaw.toLowerCase();
+    const value = colon >= 0 ? body.slice(colon + 1).trim() : "";
+    if (key === "comment" || key === "c") {
+      if (value) return value.slice(0, 120);
+    } else if (key.startsWith("start_of_")) {
+      const kind = key.slice("start_of_".length).replace(/_/g, " ");
+      const title =
+        value || kind.replace(/\b\w/g, (c) => c.toUpperCase());
+      return title.slice(0, 120);
+    }
   }
   return null;
 }
@@ -311,7 +327,7 @@ export function splitUgSections(
       continue;
     }
     // Keep leading indent — UG chord-above columns (Chorus „    G”) are musical.
-    current.lines.push(lineRaw.replace(/\s+$/u, ""));
+    current.lines.push(lineRaw.trimEnd());
   }
   flush();
   return out.filter((s) => s.lines.length > 0);

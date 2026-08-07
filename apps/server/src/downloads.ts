@@ -142,9 +142,7 @@ export function mountApkDownloads(app: Express, dataDir: string): void {
     const handler = (req: Request, res: Response) => {
       serveApkFile(req, res, resolveApkFilePath(dataDir, kind), filename);
     };
-    // codeql[js/missing-rate-limiting]
     app.get(path, handler);
-    // codeql[js/missing-rate-limiting]
     app.head(path, handler);
   }
 }

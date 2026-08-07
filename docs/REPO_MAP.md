@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1243
+* **Liczba wszystkich plików:** 1244
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-07T14:43:54.314Z
+* **Data aktualizacji:** 2026-08-07T14:44:38.510Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 779 |
+| Kod | 780 |
 | Docs | 212 |
 | Config | 113 |
 | Assety | 117 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 459 |
+| `.ts` | 460 |
 | `.md` | 190 |
 | `.tsx` | 157 |
 | `.png` | 94 |
@@ -81,10 +81,10 @@
   - **examples/** (3) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (136) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (137) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
-  - **shared/** (99) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (15) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -718,6 +718,7 @@ stagesync/
 │   │   │   │   └── us-ug/  … (8 plików, 4 podkatalogi)
 │   │   │   ├── audio-clip.test.ts
 │   │   │   ├── audio-clip.ts
+│   │   │   ├── bracket-spans.ts
 │   │   │   ├── chord-display.test.ts
 │   │   │   ├── chord-display.ts
 │   │   │   ├── clip-collision.test.ts

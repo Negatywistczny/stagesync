@@ -114,10 +114,14 @@ object ApkInstaller {
                 "${context.packageName}.fileprovider",
                 apkFile,
             )
-        return Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
+        // ACTION_INSTALL_PACKAGE + FileProvider content URI (not VIEW + package-archive MIME)
+        // — CodeQL java/android/arbitrary-apk-installation.
+        return Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+            data = uri
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+            putExtra(Intent.EXTRA_RETURN_RESULT, true)
         }
     }
 

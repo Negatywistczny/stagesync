@@ -5,6 +5,7 @@
  * `%` repeats the previous cell’s rhythm/symbols; `N.C.` / `NC` = rest (gap).
  */
 
+import { unwrapBracketSpans } from "./bracket-spans.js";
 import { toLiteralStorage } from "./chord-display.js";
 
 const CHORD_TOKEN =
@@ -46,7 +47,7 @@ export function isUgPipeBarLine(line: string): boolean {
   const t = line.trim();
   if (!t.includes("|")) return false;
   // Strip brackets for token checks: `| [G] | % |`
-  const stripped = t.replace(/\[([^\]]+)\]/g, "$1");
+  const stripped = unwrapBracketSpans(t);
   const cells = stripped
     .split("|")
     .map((c) => c.trim())
@@ -76,8 +77,7 @@ function parsePipeCell(cellRaw: string): PipeCell | null {
   if (cell === "%") {
     return { symbols: [], isRest: false }; // marker — expand later
   }
-  const parts = cell
-    .replace(/\[([^\]]+)\]/g, "$1")
+  const parts = unwrapBracketSpans(cell)
     .split(/\s+/)
     .filter(Boolean);
   if (parts.length === 0) return null;

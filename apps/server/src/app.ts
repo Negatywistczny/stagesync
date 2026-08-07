@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import rateLimit from "express-rate-limit";
 import { join } from "node:path";
 import {
   PROTOCOL_VERSION,
@@ -176,6 +177,20 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   wireSetlistAutoAdvance(transport, stores);
   wireMidiProgramChangeOut(transport, stores, midi);
   const app: Express = express();
+
+  // CodeQL js/missing-rate-limiting: protect FS/auth routes. LAN show host —
+  // generous ceiling so SPA asset bursts and multi-client stages stay smooth.
+  app.use(
+    rateLimit({
+      windowMs: 60_000,
+      limit: 5_000,
+      standardHeaders: true,
+      legacyHeaders: false,
+      validate: { xForwardedForHeader: false },
+      // Vitest hits createApp many times from one IP; limit:0 blocks all requests.
+      skip: () => process.env.NODE_ENV === "test",
+    }),
+  );
 
   app.use(express.json({ limit: "2mb" }));
 

@@ -42,6 +42,11 @@ import {
   type TempoNode,
 } from "./smart-tempo.js";
 import { splitUgSections } from "./ug-import.js";
+import {
+  collapseAsciiSpaces,
+  isDualBracketSlashHeader,
+  splitKeepingBracketSpans,
+} from "./bracket-spans.js";
 import { cleanUgTabContent } from "./ug-content.js";
 import {
   findHarmonicAccentSyllable,
@@ -215,10 +220,28 @@ export function normalizeLyricToken(raw: string): string {
 export function tokenizeLyrics(text: string): { raw: string; norm: string }[] {
   return text
     .split(/\s+/)
-    .map((w) => w.replace(/^[^a-zA-Z0-9À-ž]+|[^a-zA-Z0-9À-ž]+$/g, ""))
+    .map((w) => stripEdgeNonAlnum(w))
     .filter(Boolean)
     .map((raw) => ({ raw, norm: normalizeLyricToken(raw) }))
     .filter((t) => t.norm.length > 0);
+}
+
+/** Strip leading/trailing non-alnum (ASCII + Latin-1 supplement À–ž) without regex. */
+function stripEdgeNonAlnum(w: string): string {
+  let start = 0;
+  let end = w.length;
+  while (start < end && !isLyricEdgeChar(w.charCodeAt(start))) start += 1;
+  while (end > start && !isLyricEdgeChar(w.charCodeAt(end - 1))) end -= 1;
+  return w.slice(start, end);
+}
+
+function isLyricEdgeChar(code: number): boolean {
+  return (
+    (code >= 48 && code <= 57) || // 0-9
+    (code >= 65 && code <= 90) || // A-Z
+    (code >= 97 && code <= 122) || // a-z
+    (code >= 0xc0 && code <= 0x17e) // À–ž
+  );
 }
 
 /**
@@ -262,7 +285,7 @@ export function timedWordsFromUltrastar(us: UltrastarImportOk): TimedWord[] {
       }
       endTicks = b.startTicks + b.lengthTicks;
       const endsWord = /\s$/.test(b.text);
-      buf += b.text.replace(/\s+$/g, "");
+      buf += b.text.trimEnd();
       if (endsWord) flush();
     }
     if (open && buf.trim()) flush();
@@ -346,7 +369,7 @@ export function parseChordProLyricLine(line: string): {
   let lyric = "";
   let pending: string[] = [];
   let wordIndex = 0;
-  const parts = line.split(/(\[[^\]]+\])/);
+  const parts = splitKeepingBracketSpans(line);
 
   for (const part of parts) {
     if (!part) continue;
@@ -378,7 +401,7 @@ export function parseChordProLyricLine(line: string): {
       chords.push({ symbol: sym, wordIndex: -1 });
     }
   }
-  return { lyric: lyric.replace(/\s+/g, " ").trim(), chords };
+  return { lyric: collapseAsciiSpaces(lyric).trim(), chords };
 }
 
 /**
@@ -389,11 +412,11 @@ export function isUgBridgeNoiseLine(line: string): boolean {
   const t = line.trim();
   if (!t) return true;
   // [Intro] / [Chorus] and [Bridge] — not a single section header
-  if (/\[[^\]]+\]\s*\/\s*\[[^\]]+\]/.test(t)) return true;
+  if (isDualBracketSlashHeader(t)) return true;
   if (/^transpose\b/i.test(t)) return true;
   if (/\bcapo\b/i.test(t) && /\b(transpose|to)\b/i.test(t)) return true;
   // "1 + 2 + 3 + 4 +" counting grids (bounded length — ReDoS)
-  const compact = t.replace(/\s+/g, " ");
+  const compact = collapseAsciiSpaces(t);
   if (compact.length <= 64 && /^(\d+\s*\+\s*){1,16}\d*\+?$/.test(compact)) {
     return true;
   }
@@ -684,7 +707,7 @@ export function timedSyllablesFromUltrastar(
   const out: HarmonicSyllable[] = [];
   us.tekst.clips.forEach((clip, phraseIndex) => {
     for (const b of clip.blocks ?? []) {
-      const raw = b.text.replace(/\s+$/g, "");
+      const raw = b.text.trimEnd();
       if (!raw || !normalizeLyricToken(raw)) continue;
       const durationTicks = Math.max(1, b.lengthTicks);
       out.push({
