@@ -81,6 +81,10 @@ import { Check, Music } from "lucide-react";
 import { AudioDropzone } from "./import/AudioDropzone.js";
 import { BeatMapperPane } from "./import/BeatMapperPane.js";
 import { ImportProgress } from "./import/ImportProgress.js";
+import {
+  UsdbAccountPanel,
+  shouldOpenUsdbAccount,
+} from "./import/UsdbAccountPanel.js";
 import styles from "./CombinedUsUgImportForm.module.css";
 
 /** Continuous 0…100 bar across download → decode → prepare → analyze. */
@@ -132,33 +136,44 @@ export type CombinedUsUgImportFormProps = {
   projectId?: string;
   initialTitle?: string;
   initialArtist?: string;
+  /** When false, skip the audio step (UG → Beat Mapper). Default true. */
+  includeAudioStep?: boolean;
   onCancel: () => void;
   onApply: (payload: UsUgApplyPayload) => void | Promise<void>;
 };
 
 type Step = "us" | "ug" | "audio" | "beatmap";
 
-const STEP_META: Record<
-  Step,
-  { title: string; subtitle: string }
-> = {
-  us: {
-    title: "Krok 1 z 4: Plik UltraStar (.txt)",
-    subtitle: "Wklej tekst UltraStar albo wyszukaj utwór w USDB.",
-  },
-  ug: {
-    title: "Krok 2 z 4: Tabulatura Ultimate Guitar",
-    subtitle: "Wklej ChordPro / UG albo wyszukaj zakładkę online.",
-  },
-  audio: {
-    title: "Krok 3 z 4: Ścieżka Audio",
-    subtitle: "Dodaj nagranie audio, aby zsynchronizować siatkę taktową.",
-  },
-  beatmap: {
-    title: "Krok 4 z 4: Weryfikacja Siatki i Tempa",
-    subtitle: "Sprawdź Beat 1, tempo i sekcje przed importem.",
-  },
-};
+function stepMeta(
+  step: Step,
+  steps: Step[],
+): { title: string; subtitle: string } {
+  const n = steps.indexOf(step) + 1;
+  const total = steps.length;
+  const prefix = `Krok ${n} z ${total}: `;
+  switch (step) {
+    case "us":
+      return {
+        title: `${prefix}Plik UltraStar (.txt)`,
+        subtitle: "Wklej tekst UltraStar albo wyszukaj utwór w USDB.",
+      };
+    case "ug":
+      return {
+        title: `${prefix}Tabulatura Ultimate Guitar`,
+        subtitle: "Wklej ChordPro / UG albo wyszukaj zakładkę online.",
+      };
+    case "audio":
+      return {
+        title: `${prefix}Ścieżka Audio`,
+        subtitle: "Dodaj nagranie audio, aby zsynchronizować siatkę taktową.",
+      };
+    case "beatmap":
+      return {
+        title: `${prefix}Weryfikacja Siatki i Tempa`,
+        subtitle: "Sprawdź Beat 1, tempo i sekcje przed importem.",
+      };
+  }
+}
 
 function parseGridBpmInput(raw: string): number | undefined {
   const n = Number.parseFloat(raw.replace(",", "."));
@@ -210,11 +225,19 @@ export function CombinedUsUgImportForm({
   projectId,
   initialTitle = "",
   initialArtist = "",
+  includeAudioStep = true,
   onCancel,
   onApply,
 }: CombinedUsUgImportFormProps) {
   const seedTitle = initialTitle.trim();
   const seedArtist = initialArtist.trim();
+  const wizardSteps = useMemo<Step[]>(
+    () =>
+      includeAudioStep
+        ? ["us", "ug", "audio", "beatmap"]
+        : ["us", "ug", "beatmap"],
+    [includeAudioStep],
+  );
   const [step, setStep] = useState<Step>("us");
   const [usText, setUsText] = useState("");
   const [ugText, setUgText] = useState("");
@@ -229,6 +252,8 @@ export function CombinedUsUgImportForm({
   const [applyError, setApplyError] = useState<string | null>(null);
   const [busyApply, setBusyApply] = useState(false);
   const [confirmWeak, setConfirmWeak] = useState(false);
+  const [showUsdbAccount, setShowUsdbAccount] = useState(false);
+  const [accountBusy, setAccountBusy] = useState(false);
 
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [localBuffer, setLocalBuffer] = useState<AudioBuffer | null>(null);
@@ -295,7 +320,8 @@ export function CombinedUsUgImportForm({
     });
   }, [localBuffer]);
 
-  const locked = disabled || applying || busyNet || busyApply || ytJobBusy;
+  const locked =
+    disabled || applying || busyNet || busyApply || ytJobBusy || accountBusy;
 
   const usPreview = useMemo(() => {
     if (!usText.trim()) return null;
@@ -1162,7 +1188,11 @@ export function CombinedUsUgImportForm({
       if (metaArtist) setUsArtist(metaArtist);
       setStepNotice(`Załadowano: ${metaTitle || "utwór"}`);
     } catch (err) {
-      setStepNotice(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      setStepNotice(message);
+      if (shouldOpenUsdbAccount(message)) {
+        setShowUsdbAccount(true);
+      }
     } finally {
       setBusyNet(false);
     }
@@ -1223,7 +1253,11 @@ export function CombinedUsUgImportForm({
       setStepNotice(`Znaleziono ${data.results.length} wersji — wybierz kartę.`);
     } catch (err) {
       setUsHits([]);
-      setStepNotice(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      setStepNotice(message);
+      if (shouldOpenUsdbAccount(message)) {
+        setShowUsdbAccount(true);
+      }
     } finally {
       setBusyNet(false);
     }
@@ -1315,7 +1349,7 @@ export function CombinedUsUgImportForm({
     }
   }
 
-  const meta = STEP_META[step];
+  const meta = stepMeta(step, wizardSteps);
   const canGoNextUs = Boolean(usPreview?.ok);
   const canGoNextUg = Boolean(ugPreview?.ok && usPreview?.ok);
   const canGoNextAudio = Boolean(bridgeOk);
@@ -1325,6 +1359,18 @@ export function CombinedUsUgImportForm({
     setApplyError(null);
     setStepNotice(null);
     setStep(next);
+  }
+
+  function stepAfterUg(): Step {
+    return includeAudioStep ? "audio" : "beatmap";
+  }
+
+  function stepBeforeBeatmap(): Step {
+    return includeAudioStep ? "audio" : "ug";
+  }
+
+  function stepBeforeAudio(): Step {
+    return "ug";
   }
 
   return (
@@ -1337,6 +1383,12 @@ export function CombinedUsUgImportForm({
 
         {step === "us" ? (
           <div className={styles.stepPanel}>
+            <UsdbAccountPanel
+              open={showUsdbAccount}
+              onOpenChange={setShowUsdbAccount}
+              disabled={disabled || applying}
+              onBusyChange={setAccountBusy}
+            />
             <div className={styles.studioSplit}>
               <div className={styles.studioColLeft}>
                 <div className={styles.fieldStack}>
@@ -1588,7 +1640,7 @@ export function CombinedUsUgImportForm({
           </div>
         ) : null}
 
-        {step === "audio" ? (
+        {step === "audio" && includeAudioStep ? (
           <div className={styles.stepPanel}>
             {/* Top Row: 3 equal sections (Project Files, Disk File / DnD, YouTube) */}
             <div className={styles.audioSplit3Col}>
@@ -1837,8 +1889,8 @@ export function CombinedUsUgImportForm({
                   step === "ug"
                     ? "us"
                     : step === "audio"
-                      ? "ug"
-                      : "audio",
+                      ? stepBeforeAudio()
+                      : stepBeforeBeatmap(),
                 )
               }
             >
@@ -1882,7 +1934,7 @@ export function CombinedUsUgImportForm({
               disabled={locked || !canGoNextUg}
               onClick={() => {
                 setConfirmWeak(false);
-                go("audio");
+                go(stepAfterUg());
               }}
             >
               Dalej

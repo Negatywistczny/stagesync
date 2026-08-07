@@ -11,6 +11,7 @@ export type DesktopMenuAction =
   | "file-open"
   | "file-save-as"
   | "file-import"
+  | "file-import-song"
   | "file-export"
   | "transport-play"
   | "transport-stop"
@@ -45,6 +46,7 @@ const KNOWN: ReadonlySet<string> = new Set([
   "file-open",
   "file-save-as",
   "file-import",
+  "file-import-song",
   "file-export",
   "transport-play",
   "transport-stop",

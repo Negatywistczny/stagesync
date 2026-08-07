@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1237
+* **Liczba wszystkich plików:** 1243
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-07T11:52:10.793Z
+* **Data aktualizacji:** 2026-08-07T14:42:04.323Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 773 |
+| Kod | 779 |
 | Docs | 212 |
 | Config | 113 |
 | Assety | 117 |
@@ -24,12 +24,12 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 458 |
+| `.ts` | 459 |
 | `.md` | 190 |
-| `.tsx` | 154 |
+| `.tsx` | 157 |
 | `.png` | 94 |
 | `.kt` | 69 |
-| `.css` | 49 |
+| `.css` | 51 |
 | `.xml` | 35 |
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
@@ -40,26 +40,26 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (855) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (861) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (83) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (438) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **web/** (444) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2)
     - **public/** (8)
       - **brand/** (3)
     - **scripts/** (10)
       - **benchmark/** (8)
-    - **src/** (399) — Kod źródłowy UI i logiki klienta
+    - **src/** (405) — Kod źródłowy UI i logiki klienta
       - **dev/** (18)
-      - **lib/** (181) — Biblioteki klienta (5 kategorii — bez plików w lib root)
+      - **lib/** (182) — Biblioteki klienta (5 kategorii — bez plików w lib root)
         - **audio/** (30) — DSP, AudioContext, tempo, waveform
-        - **client/** (56) — Preferencje, mostek desktop, i18n shell, utilities UI
+        - **client/** (57) — Preferencje, mostek desktop, i18n shell, utilities UI
         - **shell-operator/** (23) — Operatory CRUD API / aktywny projekt
         - **timeline/** (46) — Silnik renderowania timeline (bez mutacji treści)
         - **timeline-edit/** (26) — Mutacje treści klipów (akordy, cue, forma, tekst)
-      - **shells/** (179) — Powłoki Admin / Client / Timeline
+      - **shells/** (184) — Powłoki Admin / Client / Timeline
       - **transport/** (13) — Transport WS, playhead, probe wydajności
     - **test/** (9)
       - **benchmark/** (1)
@@ -464,7 +464,7 @@ stagesync/
 │   │   │   │   └── devSurfaceTypes.ts
 │   │   │   ├── lib/
 │   │   │   │   ├── audio/  … (30 plików)
-│   │   │   │   ├── client/  … (56 plików)
+│   │   │   │   ├── client/  … (57 plików)
 │   │   │   │   ├── shell-operator/  … (23 pliki)
 │   │   │   │   ├── timeline/  … (46 plików)
 │   │   │   │   └── timeline-edit/  … (26 plików)
@@ -472,7 +472,7 @@ stagesync/
 │   │   │   │   ├── admin/  … (24 pliki, 2 podkatalogi; 19 plików bezpośrednio)
 │   │   │   │   ├── client/  … (10 plików)
 │   │   │   │   ├── components/  … (9 plików)
-│   │   │   │   ├── import/  … (6 plików)
+│   │   │   │   ├── import/  … (11 plików)
 │   │   │   │   ├── pages/  … (3 pliki)
 │   │   │   │   ├── settings/  … (5 plików, 1 podkatalog)
 │   │   │   │   ├── shared/  … (2 pliki)

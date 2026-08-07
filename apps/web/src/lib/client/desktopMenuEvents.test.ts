@@ -16,6 +16,7 @@ describe("desktopMenuEvents", () => {
     expect(isDesktopMenuAction("file-open")).toBe(true);
     expect(isDesktopMenuAction("file-save-as")).toBe(true);
     expect(isDesktopMenuAction("file-import")).toBe(true);
+    expect(isDesktopMenuAction("file-import-song")).toBe(true);
     expect(isDesktopMenuAction("file-export")).toBe(true);
     expect(isDesktopMenuAction("appearance")).toBe(true);
     expect(isDesktopMenuAction("edit-cut")).toBe(true);

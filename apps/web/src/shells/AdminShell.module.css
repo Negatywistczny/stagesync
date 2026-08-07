@@ -1262,6 +1262,21 @@
   background: var(--ss-color-elevated);
 }
 
+.modalPanelWide {
+  position: relative;
+  z-index: var(--ss-z-lane);
+  width: min(72rem, 100%);
+  max-height: min(90dvh, 56rem);
+  overflow: auto;
+  padding: var(--ss-space-4);
+  border: 1px solid var(--ss-color-border);
+  border-radius: calc(var(--ss-radius-sm) + 2px);
+  background: var(--ss-color-elevated);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .modalHead {
   display: flex;
   align-items: center;

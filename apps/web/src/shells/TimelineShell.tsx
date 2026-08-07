@@ -455,9 +455,14 @@ import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
-import { UgImportForm } from "./UgImportForm.js";
-import { UltrastarImportForm } from "./UltrastarImportForm.js";
-import { CombinedUsUgImportForm, type UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
+import {
+  SongImportWizard,
+} from "./import/SongImportWizard.js";
+import type { UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
+import {
+  SONG_IMPORT_EVENT,
+  parseSongImportDetail,
+} from "@lib/client/songImportEvents.js";
 import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
 import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
@@ -689,12 +694,10 @@ export function TimelineShell() {
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [ugModalOpen, setUgModalOpen] = useState(false);
-  const [ultrastarModalOpen, setUltrastarModalOpen] = useState(false);
+  const [songImportOpen, setSongImportOpen] = useState(false);
   /** Song picker → new library song; Metadane (ⓘ) → overwrite current draft. */
   const [importAsNewSong, setImportAsNewSong] = useState(false);
   const [importApplying, setImportApplying] = useState(false);
-  const [combinedImportModalOpen, setCombinedImportModalOpen] = useState(false);
   const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
@@ -1556,7 +1559,7 @@ export function TimelineShell() {
         return;
       }
       // Import overlays own Space & shortcuts — don't drive Timeline transport.
-      if (combinedImportModalOpen || ugModalOpen || ultrastarModalOpen) {
+      if (songImportOpen) {
         return;
       }
       const h = keyHandlersRef.current;
@@ -1797,7 +1800,7 @@ export function TimelineShell() {
     clearMapSelection,
     closeContextMenu,
     closeMobileInspector,
-    combinedImportModalOpen,
+    songImportOpen,
     commitDraft,
     copyClipSelection,
     cutClipSelection,
@@ -1816,8 +1819,6 @@ export function TimelineShell() {
     toggleInspectorPanel,
     toolMenu,
     toolsVisOpen,
-    ugModalOpen,
-    ultrastarModalOpen,
   ]);
 
   useEffect(() => {
@@ -2542,27 +2543,30 @@ export function TimelineShell() {
   }
 
   function closeImportModals() {
-    setUgModalOpen(false);
-    setUltrastarModalOpen(false);
-    setCombinedImportModalOpen(false);
+    setSongImportOpen(false);
     setImportAsNewSong(false);
     setImportApplying(false);
   }
 
-  function openImportUg(asNew: boolean) {
+  function openSongImportWizard(asNew: boolean) {
     setImportAsNewSong(asNew);
-    setUgModalOpen(true);
+    setSongImportOpen(true);
   }
 
-  function openImportUltrastar(asNew: boolean) {
-    setImportAsNewSong(asNew);
-    setUltrastarModalOpen(true);
-  }
-
-  function openImportUsUg(asNew: boolean) {
-    setImportAsNewSong(asNew);
-    setCombinedImportModalOpen(true);
-  }
+  useEffect(() => {
+    function onSongImport(ev: Event) {
+      const detail = parseSongImportDetail(ev);
+      if (detail?.asNew === true) {
+        openSongImportWizard(true);
+      } else if (detail?.asNew === false) {
+        openSongImportWizard(false);
+      } else {
+        openSongImportWizard(!draftProject);
+      }
+    }
+    window.addEventListener(SONG_IMPORT_EVENT, onSongImport);
+    return () => window.removeEventListener(SONG_IMPORT_EVENT, onSongImport);
+  }, [draftProject]);
 
   const importPreviewOptions = importAsNewSong
     ? {
@@ -7510,23 +7514,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     <Button
                       type="button"
                       variant="primary"
-                      onClick={() => openImportUsUg(false)}
+                      onClick={() => openSongImportWizard(false)}
                     >
-                      Import US+UG
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => openImportUg(false)}
-                    >
-                      Importuj UG
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => openImportUltrastar(false)}
-                    >
-                      Importuj UltraStar
+                      Importuj…
                     </Button>
                   </div>
                 </div>
@@ -8657,21 +8647,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <div className={styles.overlayActions}>
                 <Button
                   variant="primary"
-                  onClick={() => openImportUsUg(true)}
+                  onClick={() => openSongImportWizard(true)}
                 >
-                  Import US+UG
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => openImportUg(true)}
-                >
-                  Importuj UG
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => openImportUltrastar(true)}
-                >
-                  Importuj UltraStar
+                  Importuj…
                 </Button>
               </div>
             </div>
@@ -8679,108 +8657,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
       ) : null}
 
-      {ugModalOpen && (importAsNewSong || draftProject) ? (
+      {songImportOpen && (importAsNewSong || draftProject) ? (
         <div
           className={styles.overlay}
           role="dialog"
           aria-modal
-          aria-labelledby="ug-import-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={closeImportModals}
-          />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="ug-import-title">
-                {importAsNewSong
-                  ? "Importuj Ultimate Guitar — nowy utwór"
-                  : "Importuj Ultimate Guitar"}
-              </h2>
-              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div className={styles.overlayBody}>
-              <UgImportForm
-                applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do draftu"
-                }
-                applying={importApplying}
-                importOptions={importPreviewOptions}
-                initialTitle={
-                  importAsNewSong ? undefined : draftProject?.name
-                }
-                initialArtist={
-                  importAsNewSong ? undefined : draftProject?.artist
-                }
-                onCancel={closeImportModals}
-                onApply={({ result, runWand, metadata }) =>
-                  onImportUg(result, runWand, metadata)
-                }
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {ultrastarModalOpen && (importAsNewSong || draftProject) ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="ultrastar-import-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={closeImportModals}
-          />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="ultrastar-import-title">
-                {importAsNewSong
-                  ? "Importuj UltraStar — nowy utwór"
-                  : "Importuj UltraStar"}
-              </h2>
-              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div className={styles.overlayBody}>
-              <UltrastarImportForm
-                applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do draftu"
-                }
-                applying={importApplying}
-                importOptions={importPreviewOptions}
-                initialTitle={
-                  importAsNewSong ? undefined : draftProject?.name
-                }
-                initialArtist={
-                  importAsNewSong ? undefined : draftProject?.artist
-                }
-                onCancel={closeImportModals}
-                onApply={onImportUltrastar}
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {combinedImportModalOpen && (importAsNewSong || draftProject) ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="us-ug-import-title"
+          aria-labelledby="song-import-title"
         >
           <button
             type="button"
@@ -8794,14 +8676,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
           >
             <div className={styles.usUgOverlayHead}>
-              <h2 id="us-ug-import-title">Import US+UG</h2>
+              <h2 id="song-import-title">
+                {importAsNewSong
+                  ? "Importuj utwór — nowy"
+                  : "Importuj utwór"}
+              </h2>
               <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
               </ShellIconButton>
             </div>
             <div className={styles.usUgOverlayBody}>
-              <CombinedUsUgImportForm
-                applyLabel="Importuj do projektu"
+              <SongImportWizard
+                applyLabel={
+                  importAsNewSong
+                    ? "Utwórz nowy utwór"
+                    : "Importuj do projektu"
+                }
                 applying={importApplying}
                 projectId={importAsNewSong ? undefined : projectId ?? undefined}
                 importOptions={importPreviewOptions}
@@ -8812,7 +8702,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   importAsNewSong ? undefined : draftProject?.artist
                 }
                 onCancel={closeImportModals}
-                onApply={onImportUsUgBridge}
+                onApplyUsUg={onImportUsUgBridge}
+                onApplyUltrastar={onImportUltrastar}
+                onApplyUg={({ result, runWand, metadata }) =>
+                  onImportUg(result, runWand, metadata)
+                }
               />
             </div>
           </div>

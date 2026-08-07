@@ -11,6 +11,20 @@ import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
 vi.mock("@lib/shell-operator/ultrastarImportApi.js", () => ({
   fetchUltrastarFromServer: vi.fn(),
   searchUltrastarSongs: vi.fn(),
+  fetchUltrastarAccount: vi.fn(async () => ({
+    configured: false,
+    user: "",
+  })),
+  putUltrastarAccount: vi.fn(async () => ({
+    ok: true as const,
+    configured: false,
+    user: "",
+    message: "Usunięto konto USDB z hosta.",
+  })),
+  testUltrastarAccount: vi.fn(async () => ({
+    ok: true as const,
+    message: "Połączenie z USDB OK.",
+  })),
 }));
 
 vi.mock("@lib/shell-operator/ugImportApi.js", () => ({
@@ -182,6 +196,35 @@ describe("CombinedUsUgImportForm", () => {
     expect(
       await screen.findByText(/Zgodność z UltraStar:/i),
     ).toBeTruthy();
+  });
+
+  it("opens Konto USDB when search reports missing credentials", async () => {
+    const { searchUltrastarSongs } = await import(
+      "@lib/shell-operator/ultrastarImportApi.js"
+    );
+    vi.mocked(searchUltrastarSongs).mockRejectedValueOnce(
+      new Error(
+        "Brak konta USDB. Ustaw je w Import UltraStar → Konto USDB albo w Ustawieniach serwera.",
+      ),
+    );
+
+    render(
+      <CombinedUsUgImportForm
+        applyLabel="Importuj do projektu"
+        onCancel={() => {}}
+        onApply={() => {}}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Tytuł USDB"), {
+      target: { value: "Smoke" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Szukaj w USDB/i }));
+
+    expect(
+      await screen.findByTestId("ultrastar-usdb-account"),
+    ).toBeTruthy();
+    expect(screen.getByText(/Brak konta USDB/i)).toBeTruthy();
   });
 
   it("sorts UG search hits descending by alignScore", async () => {

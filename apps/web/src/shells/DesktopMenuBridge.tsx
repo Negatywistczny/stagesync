@@ -10,6 +10,7 @@ import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
 } from "@lib/client/desktopMenuEvents.js";
+import { openSongImport } from "@lib/client/songImportEvents.js";
 import {
   createSongAndOpen,
   currentTimelineProjectId,
@@ -575,6 +576,13 @@ export function DesktopMenuBridge() {
         }
         case "file-import":
           importInputRef.current?.click();
+          break;
+        case "file-import-song":
+          if (onTimeline) {
+            openSongImport({});
+          } else {
+            navigate("/admin?section=songs&action=import");
+          }
           break;
         case "file-export":
           if (fileBusy) break;
