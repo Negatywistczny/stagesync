@@ -5,6 +5,26 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Import utworu:** w Adminie (Zarządzaj bazą → Importuj utwór…) oraz w menu Plik Desktop (**Importuj utwór…**) ten sam kreator co w Timeline — wybór źródeł UltraStar / UG / Audio; import biblioteki JSON zostaje osobno („Importuj bibliotekę…” / Z pliku…).
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Import:** zamiast trzech osobnych przycisków (US+UG / UG / UltraStar) jeden **Importuj…** z chipami źródeł i pomijaniem etapów (w tym audio przy US+UG).
+
+#### 📚 Dokumentacja
+- **Pomoc Timeline:** jedna karta „Import utworu” zamiast osobnych wpisów US+UG / UG / UltraStar.
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Import USDB:** w kreatorze z UltraStar (także ścieżka US+UG) przy braku konta lub błędzie sesji otwiera się formularz **Konto USDB**, nie tylko komunikat o konieczności logowania.
+
 ## [5.4.6](https://github.com/Negatywistczny/stagesync/compare/v5.4.5...v5.4.6) - 2026-08-07
 
 ### Zmieniono
