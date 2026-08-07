@@ -1,6 +1,7 @@
----
+﻿---
 description: apps/web/src/lib — struktura 5 kategorii, zakaz flat root, obowiązkowe aliasy @lib/kategoria/*
-alwaysApply: true
+globs: apps/web/**,packages/**
+alwaysApply: false
 ---
 
 # StageSync: `apps/web/src/lib` — struktura + importy

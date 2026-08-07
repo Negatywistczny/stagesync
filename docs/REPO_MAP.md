@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1236
+* **Liczba wszystkich plików:** 1237
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-07T00:45:36.377Z
+* **Data aktualizacji:** 2026-08-07T10:07:28.086Z
 
 ### Kategorie
 
@@ -18,7 +18,7 @@
 | Docs | 212 |
 | Config | 113 |
 | Assety | 117 |
-| Inne | 21 |
+| Inne | 22 |
 
 ### Top rozszerzenia
 
@@ -32,7 +32,7 @@
 | `.css` | 49 |
 | `.xml` | 35 |
 | `.json` | 34 |
-| `brak rozszerzenia` | 21 |
+| `brak rozszerzenia` | 22 |
 | `.mjs` | 17 |
 | _(pozostałe)_ | 115 |
 
@@ -113,6 +113,7 @@
 - `.clineignore`
 - `.clinerules`
 - `.cursorignore`
+- `.cursorindexingignore`
 - `.dockerignore`
 - `.editorconfig`
 - `.env.example`
@@ -858,6 +859,7 @@ stagesync/
 ├── .clineignore
 ├── .clinerules
 ├── .cursorignore
+├── .cursorindexingignore
 ├── .dockerignore
 ├── .editorconfig
 ├── .env.example

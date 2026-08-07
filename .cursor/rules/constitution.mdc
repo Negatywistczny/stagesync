@@ -40,6 +40,7 @@ alwaysApply: true
 - 🧹 TODO Hygiena: `docs/TODO.md` tylko aktywne zadania
 - ✅ Przed zmianą: ADR → TODO → ostatnie raporty (`docs/analysis/reports/`)
 - 🔢 Versioning: SemVer w root `package.json`, tag `vMAJOR.MINOR.PATCH`
+- 📁 **Root:** nowe pliki/foldery w katalogu głównym — tylko po prośbie użytkownika (szczegóły: [root-layout.mdc](root-layout.mdc))
 
 ---
 *Treść powyżej to warstwa-wrapper dla Cursor. Jeśli coś w tym pliku jest sprzeczne z SSOT w `.clinerules`, **zawsze pierwszeństwo ma .clinerules**.*

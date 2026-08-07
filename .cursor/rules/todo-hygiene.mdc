@@ -1,6 +1,7 @@
 ---
 description: Higiena docs/TODO.md — tylko aktywne zadania; trunk-based; parity first; bez fałszywych Done
-alwaysApply: true
+globs: docs/TODO.md
+alwaysApply: false
 ---
 
 # TODO hygiene + trunk-based
