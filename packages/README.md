@@ -20,6 +20,10 @@ Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską 
 4. **`typescript-config` (`packages/typescript-config/`)**
    - **Rola:** Bazowe pliki konfiguracyjne TypeScript (`tsconfig.json`) dla różnych środowisk (aplikacje webowe, biblioteki, środowisko Node.js).
 
+5. **[`android-keystore`](android-keystore/README.md) (`packages/android-keystore/`)**
+   - **Rola:** Stały klucz sideload (`sideload.keystore`) dla APK Console / Performer (Releases + lokalny `assembleDebug` / `assembleRelease`).
+   - **Główna zasada:** Wspólny certyfikat debug/release sideload — nie klucz Google Play.
+
 ## ⚙️ Wykorzystanie w monorepo
 
 Dzięki pnpm workspaces pakiety z tego katalogu są linkowane lokalnie i mogą być importowane w aplikacjach (`apps/`) bez konieczności publikowania ich w rejestrze npm:

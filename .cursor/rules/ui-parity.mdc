@@ -1,6 +1,6 @@
 ---
 description: UI parity — zachowanie v4, zakaz clone chrome, IA Admin/Client
-globs: apps/web/**/*.{tsx,css}, packages/ui/**/*.{tsx,css}, docs/ui-shell-inventory.md, docs/adr/0003*.md, docs/adr/0011*.md
+globs: apps/web/**/*.{tsx,css}, packages/ui/**/*.{tsx,css}, docs/ui/ui-shell-inventory.md, docs/adr/0003*.md, docs/adr/0011*.md
 alwaysApply: false
 ---
 

@@ -36,4 +36,4 @@ Nazwa release CI: `StageSync-Performer-vX.Y.Z.apk`
 
 ## Docs
 
-[docs/MOBILE.md](../../docs/guides/MOBILE.md)
+[docs/guides/MOBILE.md](../../docs/guides/MOBILE.md)

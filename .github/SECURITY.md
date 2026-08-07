@@ -26,5 +26,5 @@ warunków licencji.
 ## Monitoring (opcjonalnie)
 
 Crash reporting (Sentry) jest wyłączony, dopóki nie ustawisz `SENTRY_DSN` /
-`VITE_SENTRY_DSN` — zob. [docs/INSTALL.md](../docs/guides/INSTALL.md) § Sentry. Nie
+`VITE_SENTRY_DSN` — zob. [docs/guides/INSTALL.md](../docs/guides/INSTALL.md) § Sentry. Nie
 commituj prawdziwych DSN; raporty nie powinny zawierać PIN-u / tokenów hosta.

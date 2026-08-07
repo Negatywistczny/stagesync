@@ -20,4 +20,4 @@ Do budowania i testowania wymagane jest posiadanie zainstalowanego kompilatora *
 - `pnpm dev` (z poziomu folderu głównego lub bezpośrednio) — uruchamia proces Tauri w trybie deweloperskim wraz z hot-reloadingiem.
 - `pnpm build` — kompiluje produkcyjną aplikację Tauri i tworzy gotowe instalatory (np. `.dmg` na macOS, `.msi` na Windows).
 
-Więcej szczegółów technicznych oraz konfigurację systemową opisano w **[docs/DESKTOP.md](../../docs/guides/DESKTOP.md)**.
+Więcej szczegółów technicznych oraz konfigurację systemową opisano w **[docs/guides/DESKTOP.md](../../docs/guides/DESKTOP.md)**.

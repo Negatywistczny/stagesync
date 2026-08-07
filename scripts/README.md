@@ -16,3 +16,4 @@ Ten katalog zawiera skrypty narzędziowe i automatyzacje poziomu monorepo (przen
 | `run-merge-train.sh` | Skrypt uruchamiający automatyzację kolejki mergowania. |
 | `run-train-batch.sh` | Przetwarzanie wsadowe pociągu merge'y. |
 | `sync-version.mjs` | Synchronizuje wersję SemVer z głównego `package.json` do plików konfiguracyjnych i paczek podrzędnych. |
+| `check-docs-links.mjs` | Weryfikuje względne linki markdown w repo (pomija `inspiracje/` według konfiguracji skryptu). |

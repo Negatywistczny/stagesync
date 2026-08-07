@@ -91,7 +91,7 @@ Pracując z tym kodem, pamiętaj o:
 2. **Higienie TODO:** Plik `docs/TODO.md` zawiera wyłącznie aktywne zadania. Zadania wykonane są z niego usuwane (nie oznaczane jako `[x]`).
 3. **Higienie CHANGELOG:** Wpisy w `CHANGELOG.md` są przeznaczone dla użytkownika końcowego. Nie mogą zawierać żargonu technicznego (np. "G1-G10", "soft-gate", "residual"). Dodajemy wpis tylko wtedy, gdy zmiana jest bezpośrednio odczuwalna dla użytkownika.
 4. **Testach:** Przed zakończeniem pracy uruchom pełny zestaw testów (`pnpm test`) oraz weryfikację typów i lintera (`pnpm check-types && pnpm lint`).
-5. **Nazewnictwie w Docs:** Raporty kanoniczne trafiają do `docs/analysis/reports/report-<nazwa>.md` (są commitowane), a notatki robocze do `docs/analysis/working/working-<nazwa>.md` (są w `.gitignore`).
+5. **Nazewnictwie w Docs:** Raporty kanoniczne trafiają do `docs/analysis/reports/{current,milestones,hygiene}/report-<nazwa>.md` (są commitowane), a notatki robocze do `docs/analysis/working/working-<nazwa>.md` (są w `.gitignore`).
 
 ---
 

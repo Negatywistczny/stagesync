@@ -69,8 +69,8 @@ Tag `v5.4.4`. Historia: [CHANGELOG.md](../CHANGELOG.md). Lepsze kotwiczenie down
 
 Tag `v5.4.5`. Historia: [CHANGELOG.md](../CHANGELOG.md). Sekcja `Dev` w Adminie dla buildów deweloperskich; historia benchmarków Smart Tempo; odświeżony chrome shelli na desktopie; ujednolicona diagnostyka analizy.
 
-### 5.5.0 — **Desk & Audio Polish**
-Hero: Szybka organizacja miksu scenicznego, odsłuch realizatora i płynny transport.
+### 5.5.0 — **Pitch & FX**
+Hero: Track Pitch + expanded send-return; szybka organizacja miksu scenicznego, odsłuch realizatora i płynny transport.
 - Solo / Mute Off for All (globalny przycisk resetujący wyciszenia/solo w Mikserze)
 - Odsłuch podglądowy realizatora (Audition Window / PFL na dedykowane wyjście słuchawkowe)
 - Kopiowanie właściwości klipów (Paste Properties: routing, gain, fade, wyjścia HW Out)

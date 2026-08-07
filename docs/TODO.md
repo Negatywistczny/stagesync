@@ -12,9 +12,9 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** — Smart Tempo **5.4.2**, polish do **5.4.6**.
 
-## Must (najbliższy cut 5.5 Desk & Audio Polish)
+## Must (najbliższy cut 5.5 Pitch & FX)
 
-- [ ] **5.5 — Desk & Audio Polish:** Solo / Mute Off for All, Audition Window / PFL podgląd realizatora, Paste Properties, Chase MIDI Notes po operacji Seek — [ROADMAP.md](./ROADMAP.md)
+- [ ] **5.5 — Pitch & FX:** Solo / Mute Off for All, Audition Window / PFL podgląd realizatora, Paste Properties, Chase MIDI Notes po operacji Seek — [ROADMAP.md](./ROADMAP.md)
 
 ## Must (operator residual)
 

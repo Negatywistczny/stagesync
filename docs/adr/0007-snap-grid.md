@@ -102,7 +102,7 @@ chwilowy tryb **`off`** (brak kwantyzacji do siatki).
 
 - Testy Vitest w shared: 4/4, 5/8, 6/8; granice taktu; pre-roll; subdivision.
 - [ADR 0002](./0002-timebase-ssot.md): odsyłacz do tego ADR dla warstwy edycji.
-- Refactor `apps/web/src/lib/formaCanvas.ts` → delegacja do `quantizeTicks` (faza 1).
+- Refactor `apps/web/src/lib/timeline-edit/formaCanvas.ts` → delegacja do `quantizeTicks` (faza 1).
 - ROADMAP / TODO: fazy UI snap; semantyka tylko tutaj.
 
 ## Fazy implementacji

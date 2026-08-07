@@ -5,9 +5,10 @@ Aplikacja `apps/web` to główny projekt kliencki zrealizowany w technologii **R
 ## 📁 Struktura projektu
 
 - **`src/`** — Kod źródłowy aplikacji klienckiej:
-  - **`src/lib/`** — Moduły pomocnicze, podzielone na 5 ścisłych kategorii zgodnie z regułą `.clinerules` / `lib-structure.mdc` (np. `@lib/audio`, `@lib/timeline`, `@lib/client`, `@lib/timeline-edit`, `@lib/shell-operator`). W katalogu `src/lib/` bezpośrednio obowiązuje zakaz umieszczania plików.
-  - **`src/components/`** — Komponenty interfejsu (np. przyciski, modale, paski narzędziowe).
-  - **`src/pages/`** — Główne ekrany aplikacji (Admin, Client, Timeline).
+  - **`src/shells/`** — Shelle UI (Admin, Client, Timeline), wspólny chrome i strony w `shells/pages/`.
+  - **`src/lib/`** — Moduły pomocnicze w 5 kategoriach zgodnie z `.clinerules` / `lib-structure.mdc` (`@lib/audio`, `@lib/timeline`, `@lib/timeline-edit`, `@lib/client`, `@lib/shell-operator`). W root `src/lib/` obowiązuje zakaz umieszczania plików.
+  - **`src/transport/`** — Klient transportu / WebSocket (playhead między tickami serwera).
+  - **`src/dev/`** — Narzędzia deweloperskie (np. podgląd layoutów).
 - **`public/`** — Zasoby statyczne, w tym oficjalne logotypy, ikony i czcionki.
 - **`scripts/`** — Skrypty budowania dedykowane dla poszczególnych platform docelowych (np. dystrybucje Performer i Console na Androida).
 - **`e2e/`** — Testy end-to-end realizowane przy użyciu narzędzia **Playwright**.
