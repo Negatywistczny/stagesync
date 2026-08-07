@@ -1,5 +1,5 @@
 import { Button } from "@stagesync/ui";
-import { isRouteErrorResponse } from "react-router-dom";
+import { isRouteErrorResponse } from "react-router";
 import styles from "./AppCrashFallback.module.css";
 
 export type AppCrashFallbackProps = {

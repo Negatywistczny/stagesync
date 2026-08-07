@@ -1,4 +1,4 @@
-import { useRouteError } from "react-router-dom";
+import { useRouteError } from "react-router";
 import { AppCrashFallback } from "./AppCrashFallback.js";
 
 /** React Router `errorElement` — catches route render / loader / action throws. */

@@ -1,4 +1,5 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { TransportProvider } from "./transport/TransportProvider.js";
 import { ClientShell } from "./shells/ClientShell.js";
 import { DeviceNameGate } from "./shells/DeviceNameGate.js";

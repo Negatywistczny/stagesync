@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { createPortal, flushSync } from "react-dom";
-import { Link, useBlocker, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useBlocker, useLocation, useNavigate, useParams } from "react-router";
 import { Button, Slider, Select, useContextMenu } from "@stagesync/ui";
 import {
   resolveMeterAt,

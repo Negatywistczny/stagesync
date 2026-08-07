@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { createMemoryRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, Outlet } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { ContextMenuProvider } from "@stagesync/ui";
 import { AdminShell } from "../shells/AdminShell.js";
 import { ClientShell } from "../shells/ClientShell.js";

@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 
 /** Default entry: performer / browser landing on Client (not Admin). */
 export function DesktopRootRedirect() {

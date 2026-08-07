@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const navigateTo = vi.fn();
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   Navigate: ({ to }: { to: string }) => {
     navigateTo(to);
     return <div data-testid="navigate">{to}</div>;

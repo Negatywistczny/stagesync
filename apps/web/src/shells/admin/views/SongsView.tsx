@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Button, Input, Select } from "@stagesync/ui";
 import { type Library, type Project, formatSetDurationMs } from "@stagesync/shared";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";

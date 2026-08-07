@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { Button, Select } from "@stagesync/ui";
 import { openPreferences } from "@lib/client/preferencesEvents.js";
 import {

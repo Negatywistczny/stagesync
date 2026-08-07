@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@lib/client/useMqMobileCompact.js", () => ({

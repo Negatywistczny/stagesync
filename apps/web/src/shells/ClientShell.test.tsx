@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { createProjectSeed } from "@stagesync/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DESKTOP_MENU_EVENT } from "@lib/client/desktopMenuEvents.js";

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { toggleAppFullscreen } from "@lib/client/desktopBridge.js";
 import {
   DESKTOP_MENU_EVENT,
