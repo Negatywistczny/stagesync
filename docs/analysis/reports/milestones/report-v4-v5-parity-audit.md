@@ -2,7 +2,7 @@
 
 **Data:** 2026-07-20  
 **Repo v5:** `stagesync` · **Referencja v4:** `STAGESYNC-APP-LEGACY`  
-**Polityka:** [ADR 0011](../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz / clone chrome  
+**Polityka:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz / clone chrome  
 **SSOT luk:** [report-v4-v5-gap-audit.md](./report-v4-v5-gap-audit.md) — katalog TE/KB/AD/CL (P0/P1)  
 **Aneks UI-diff:** [report-v4-v5-ui-diff-inventory.md](./report-v4-v5-ui-diff-inventory.md)  
 **Bramka β:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md) — **P8 green 2026-07-21**; ten raport historyczny **nie** uprawnia sam do tagu `5.0.0-beta.*` (β1 na prośbę)
@@ -36,9 +36,9 @@
 
 | Obszar | v4 (fakt) | v5 (fakt) | Klasa | Uwagi |
 |--------|-----------|-----------|-------|-------|
-| Timebase storage | float `absBeat` + song maps | integer **ticks** + PPQ ([ADR 0002](../../adr/0002-timebase-ssot.md)) | **Delta** | Kanon v5; BBT tylko widok |
+| Timebase storage | float `absBeat` + song maps | integer **ticks** + PPQ ([ADR 0002](../../../adr/0002-timebase-ssot.md)) | **Delta** | Kanon v5; BBT tylko widok |
 | Transport SSOT | serwer + lokalny preview clock | serwer WS/REST; playhead UI między tickami | **Adaptacja** | Follow/seek — smoke T-loc |
-| Snap edycji Forma | `snapAbsToBarStart` | `snapEditTicks` / `quantizeTicks` @ `bar` ([ADR 0007](../../adr/0007-snap-grid.md)) | **Adaptacja** | Kod blisko; wymaga PO smoke |
+| Snap edycji Forma | `snapAbsToBarStart` | `snapEditTicks` / `quantizeTicks` @ `bar` ([ADR 0007](../../../adr/0007-snap-grid.md)) | **Adaptacja** | Kod blisko; wymaga PO smoke |
 | Snap locator / seek | `quantizeAbsBeat` (siatka beatu) | `snapEditTicks` @ **`beat`** (+ Cmd/Ctrl off) | **Adaptacja** | **fixed** aneks TL-R-03 — PO smoke |
 | Snap loop region | `quantizeAbsBeat` na bounds | `snapLoopRange` → mode **`beat`** | **Adaptacja** | **fixed** aneks TL-R-04 — PO smoke |
 | Mapy T/M/K | `song-maps.js` pełny workflow | insert/edit/drag + beat snap; eraser chroni seed @ 0 | **Adaptacja** | parity-blocker T-maps |
@@ -78,7 +78,7 @@
 
 | Obszar | v4 | v5 | Klasa | Uwagi |
 |--------|----|----|-------|-------|
-| Projekt na dysku | `database.json` monolit | `data/projects/<id>/` ([ADR 0001](../../adr/0001-storage-layout.md)) | **Delta** | |
+| Projekt na dysku | `database.json` monolit | `data/projects/<id>/` ([ADR 0001](../../../adr/0001-storage-layout.md)) | **Delta** | |
 | Format projektu | legacy song shape | `formatVersion` **5** kanoniczny (`ProjectSchemaV5`) | **Delta** | ADR 0009 opisał **v3** (assets) — patrz §5 |
 | Setlista | w bazie / admin | `data/library/setlist.json` | **Delta** | ADR 0009 |
 | Migrator 4.x → v5 | — | α9 MVP | **OUT** α8 | nie zastępuje PO smoke |
@@ -133,7 +133,7 @@
 - Aneks wierszowy: [report-v4-v5-ui-diff-inventory.md](./report-v4-v5-ui-diff-inventory.md)
 - Bramka: [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md)
 - Freeze: [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md)
-- Kontrakt UI: [ADR 0011](../../adr/0011-ui-parity-behavior.md)
-- Roadmapa / TODO: [ROADMAP.md](../../ROADMAP.md), [TODO.md](../../TODO.md)
+- Kontrakt UI: [ADR 0011](../../../adr/0011-ui-parity-behavior.md)
+- Roadmapa / TODO: [ROADMAP.md](../../../ROADMAP.md), [TODO.md](../../../TODO.md)
 
 **Status parity:** **P8 green (2026-07-21)** — α9 must domknięte. Tag `5.0.0-beta.*` tylko na prośbę.

@@ -1,14 +1,14 @@
 # Scope 5.0.0 — Kompletny parytet v4 (bez stubów) + polish / Faza D
 
 **Wersja:** `5.0.0` — **Overture** (wydane 2026-07-23, tag `v5.0.0`)  
-**Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [ADR 0007](../../adr/0007-snap-grid.md) · [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [ADR 0011](../../adr/0011-ui-parity-behavior.md) · [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2.md](./report-scope-beta2.md)  
+**Podstawa:** [ROADMAP.md](../../../ROADMAP.md) · [TODO.md](../../../TODO.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0005](../../../adr/0005-domain-axioms.md) · [ADR 0007](../../../adr/0007-snap-grid.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) · [ADR 0011](../../../adr/0011-ui-parity-behavior.md) · [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2.md](./report-scope-beta2.md)  
 **Bramka wejścia:** `v5.0.0-beta.2` wydane (2026-07-21); P8 green  
 **Status (2026-07-23):** must **A–E** + Faza D + mobile + help/i18n + OSMD/migration/wand — **wydane** jako `v5.0.0` (**Overture**). **G1–G10** = ⬜ soft-gate operator HW (bez claim green).
 
 ## Cel
 
 Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
-([ADR 0011 §1a](../../adr/0011-ui-parity-behavior.md)):
+([ADR 0011 §1a](../../../adr/0011-ui-parity-behavior.md)):
 
 1. **Polish UI** na żywych kontrolkach — bez clone chrome v4.
 2. **Timeline** zoom/help/snap + residual parity (wand, tool menu, metrum/CD/grid, MIDI overlay).
@@ -24,16 +24,16 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 | IN 5.0.0 | OUT 5.0.0 |
 |----------|-----------|
 | Pełny parytet **zachowania v4** (bez stubów) | Stub / „poza 5.0” / atrapa inventarza |
-| Polish UI; zoom/help/snap; audio fade/loop | Clone chrome ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) |
-| Score/OSMD sync; Live Desk AD-01…03; wand UI; Panic | Flex Time / stretch / pencil audio ([ADR 0008](../../adr/0008-timeline-clip-editing.md)) |
-| Menu OS Faza D residual; migrator bez milczącej utraty krytycznych metadanych | MIDI w procesie Tauri ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) |
-| Sampler / Safety Net **jeśli były w v4** | git-apply (nigdy) ([ADR 0004](../../adr/0004-updates-docker.md)) |
+| Polish UI; zoom/help/snap; audio fade/loop | Clone chrome ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) |
+| Score/OSMD sync; Live Desk AD-01…03; wand UI; Panic | Flex Time / stretch / pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) |
+| Menu OS Faza D residual; migrator bez milczącej utraty krytycznych metadanych | MIDI w procesie Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) |
+| Sampler / Safety Net **jeśli były w v4** | git-apply (nigdy) ([ADR 0004](../../../adr/0004-updates-docker.md)) |
 | Soft-gate G1–G10 (HW = operator) | Motywy systemowe / auth multi-user / Android (**nowości** → 5.1+) |
 | Tag `5.0.0` + nazwa hero | Tag przy otwartych stubach funkcji v4 |
 
 ## IN (must) — A: Polish UI — **done (kod)**
 
-Źródło: [TODO](../../TODO.md) · [ui-density](../../../.cursor/rules/ui-density.mdc) · [ADR 0011](../../adr/0011-ui-parity-behavior.md).
+Źródło: [TODO](../../../TODO.md) · [ui-density](../../../../.cursor/rules/ui-density.mdc) · [ADR 0011](../../../adr/0011-ui-parity-behavior.md).
 
 | # | Wycinek | Status |
 |---|---------|--------|
@@ -46,7 +46,7 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 ## IN (must) — B: Timeline zoom / Help / snap picker — **done (kod)**
 
-Źródło: [ADR 0007](../../adr/0007-snap-grid.md) faza 2 · `TimelineShell` (stan `zoomH`/`zoomV`/`zoomUi`).
+Źródło: [ADR 0007](../../../adr/0007-snap-grid.md) faza 2 · `TimelineShell` (stan `zoomH`/`zoomV`/`zoomUi`).
 
 | # | Wycinek | Status |
 |---|---------|--------|
@@ -57,7 +57,7 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 ## IN (must) — C: Audio polish (fade / crossfade / loop-region) — **done (kod)**
 
-Źródło: [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [#462](https://github.com/Negatywistczny/stagesync/pull/462).
+Źródło: [ADR 0008](../../../adr/0008-timeline-clip-editing.md) · [#462](https://github.com/Negatywistczny/stagesync/pull/462).
 
 | # | Wycinek | Status |
 |---|---------|--------|
@@ -70,7 +70,7 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 ## IN (must) — D: Desktop OS menu Faza D — **done (kod)**
 
-Źródło: [ROADMAP](../../ROADMAP.md) · [#460](https://github.com/Negatywistczny/stagesync/pull/460).
+Źródło: [ROADMAP](../../../ROADMAP.md) · [#460](https://github.com/Negatywistczny/stagesync/pull/460).
 
 | # | Wycinek | Status |
 |---|---------|--------|
@@ -105,10 +105,10 @@ Zob. sekcja „Sekwencja weryfikacji” w [report-beta-gate.md](./report-beta-ga
 |-------|------|
 | Motywy / auth / multi-user | **5.1+** |
 | Android / store auto-update | Poza 5.0.0 |
-| MIDI I/O w procesie Tauri | **Nigdy** ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) |
+| MIDI I/O w procesie Tauri | **Nigdy** ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) |
 | Flex Time / pencil audio / stretch poza plik | OUT |
-| Clone chrome v4 | **Zakaz** ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) |
-| git-apply | Nigdy ([ADR 0004](../../adr/0004-updates-docker.md)) |
+| Clone chrome v4 | **Zakaz** ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) |
+| git-apply | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
 | Tag/bump `5.0.0` bez prośby | Zakaz overnight |
 | Merge PR → `main` przez agenta overnight | Zakaz overnight (historyczne) — residual closeout PR docs OK |
 | Draft OSMD / migration / wand bez green CI | Residual — nie claim w must A–E |
@@ -126,13 +126,13 @@ Zob. sekcja „Sekwencja weryfikacji” w [report-beta-gate.md](./report-beta-ga
 
 | Aksjomat | Status w tym scope |
 |----------|-------------------|
-| SSOT czasu = serwer; klient wygładza między tickami ([ADR 0002](../../adr/0002-timebase-ssot.md)) | ✓ C2, D4 |
+| SSOT czasu = serwer; klient wygładza między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md)) | ✓ C2, D4 |
 | Kanon = integer ticks + PPQ; ms na krawędzi audio | ✓ C* |
-| Snap faza 2 = UI picker; default `bar`; nie w `project.json` ([ADR 0007](../../adr/0007-snap-grid.md)) | ✓ B2, B4 |
-| Fade/crossfade/loop-region = 5.0.0; no pencil audio ([ADR 0008](../../adr/0008-timeline-clip-editing.md)) | ✓ C* |
-| MIDI / clock nie w Tauri ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) | ✓ D4, OUT |
-| Faza D = 5.0.0 ([ROADMAP](../../ROADMAP.md)) | ✓ D* |
-| Parity = zachowanie, nie clone ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) | ✓ A*, B1 |
+| Snap faza 2 = UI picker; default `bar`; nie w `project.json` ([ADR 0007](../../../adr/0007-snap-grid.md)) | ✓ B2, B4 |
+| Fade/crossfade/loop-region = 5.0.0; no pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) | ✓ C* |
+| MIDI / clock nie w Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) | ✓ D4, OUT |
+| Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md)) | ✓ D* |
+| Parity = zachowanie, nie clone ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) | ✓ A*, B1 |
 | G1–G10 = operator HW; CI nie zastępuje | ✓ soft-gate |
 
 ## Architektura (domyślna)

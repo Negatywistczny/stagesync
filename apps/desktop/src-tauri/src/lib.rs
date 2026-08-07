@@ -357,7 +357,7 @@ fn timeline_nav_url(state: &NavState) -> String {
 
 /// Keep in sync with `apps/web/src/lib/docsLinks.ts`.
 const DOCS_INSTALL_URL: &str =
-    "https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md";
+    "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md";
 const DOCS_ISSUES_URL: &str = "https://github.com/Negatywistczny/stagesync/issues";
 
 fn navigate_main(app: &tauri::AppHandle, path: &str) {

@@ -2,7 +2,7 @@
 
 **Wersja docelowa:** `5.0.0-beta.2` (tag / bump **tylko na prośbę**)  
 **Docs cut residual:** `5.0.0-beta.1.1` (2026-07-21) — menu B + G1–G10 = must, nie soft carry  
-**Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0008](../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [report-beta-gate.md](./report-beta-gate.md)  
+**Podstawa:** [ROADMAP.md](../../../ROADMAP.md) · [TODO.md](../../../TODO.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) · [report-beta-gate.md](./report-beta-gate.md)  
 **Bramka wejścia:** β1 / β1.1 wydane; P8 green
 
 ## Cel
@@ -29,7 +29,7 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 ## IN (must) — Audio (A)
 
-Źródło: [ADR 0008](../../adr/0008-timeline-clip-editing.md) §4–5 · [ROADMAP](../../ROADMAP.md) § Beta 2 · [ADR 0002](../../adr/0002-timebase-ssot.md) (ticks → ms na krawędzi).
+Źródło: [ADR 0008](../../../adr/0008-timeline-clip-editing.md) §4–5 · [ROADMAP](../../../ROADMAP.md) § Beta 2 · [ADR 0002](../../../adr/0002-timebase-ssot.md) (ticks → ms na krawędzi).
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|
@@ -46,7 +46,7 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 ## IN (must) — Transport Countdown (T)
 
-Źródło: issue [#41](https://github.com/Negatywistczny/stagesync/issues/41) · [ADR 0002](../../adr/0002-timebase-ssot.md) (pre-roll ≤ 0; takt 1 = start utworu).
+Źródło: issue [#41](https://github.com/Negatywistczny/stagesync/issues/41) · [ADR 0002](../../../adr/0002-timebase-ssot.md) (pre-roll ≤ 0; takt 1 = start utworu).
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|
@@ -58,7 +58,7 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 ## IN (must) — MIDI serwera (M)
 
-Źródło: [ROADMAP](../../ROADMAP.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) (zakaz I/O tylko w Tauri) · [ADR 0002](../../adr/0002-timebase-ssot.md) (MIDI → serwer).
+Źródło: [ROADMAP](../../../ROADMAP.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) (zakaz I/O tylko w Tauri) · [ADR 0002](../../../adr/0002-timebase-ssot.md) (MIDI → serwer).
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|
@@ -69,7 +69,7 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 ## IN (must) — Menu OS Faza B (B)
 
-Źródło: [ADR 0010](../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop · residual β1.
+Źródło: [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop · residual β1.
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|
@@ -86,7 +86,7 @@ Reuse Faza A: `install_desktop_menu` + navigate / eventy WebView.
 
 ## IN (must) — Menu OS Faza C (C)
 
-Źródło: [ADR 0010](../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop.
+Źródło: [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop.
 
 | # | Wycinek | Uwagi |
 |---|---------|--------|
@@ -113,19 +113,19 @@ Reuse Faza A: `install_desktop_menu` + navigate / eventy WebView.
 | Flex Time / time-stretch / pencil audio | OUT |
 | Android / store auto-update | Poza β2 |
 | AD-01…03 / wand / Timeline Help feature | **5.0.0** (chyba że pull-forward) |
-| git-apply | Nigdy ([ADR 0004](../../adr/0004-updates-docker.md)) |
+| git-apply | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
 
 ## Weryfikacja vs ADR / ROADMAP (zero sprzeczności)
 
 | Aksjomat | Status w tym scope |
 |----------|-------------------|
-| SSOT czasu = serwer; klient wygładza tylko między tickami ([ADR 0002](../../adr/0002-timebase-ssot.md)) | ✓ A3, C1–C3, T* |
-| Pre-roll ≤ 0; Stop/home = Countdown gdy obecny ([ADR 0002](../../adr/0002-timebase-ssot.md), [#41](https://github.com/Negatywistczny/stagesync/issues/41)) | ✓ T1–T3 |
+| SSOT czasu = serwer; klient wygładza tylko między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md)) | ✓ A3, C1–C3, T* |
+| Pre-roll ≤ 0; Stop/home = Countdown gdy obecny ([ADR 0002](../../../adr/0002-timebase-ssot.md), [#41](https://github.com/Negatywistczny/stagesync/issues/41)) | ✓ T1–T3 |
 | Kanon = integer ticks + PPQ; ms tylko na krawędzi audio | ✓ A3, A7 |
-| Audio no-overlap; zakaz pencil; bez stretch poza plik ([ADR 0008](../../adr/0008-timeline-clip-editing.md)) | ✓ A2, A4 |
+| Audio no-overlap; zakaz pencil; bez stretch poza plik ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) | ✓ A2, A4 |
 | Fade/crossfade → 5.0.0 (nie β2) | ✓ OUT |
-| MIDI / clock nie w procesie Tauri ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) | ✓ M*, C3, OUT |
-| Faza B+C = β2; Faza D = 5.0.0 ([ROADMAP](../../ROADMAP.md)) | ✓ B*, C*, OUT |
+| MIDI / clock nie w procesie Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) | ✓ M*, C3, OUT |
+| Faza B+C = β2; Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md)) | ✓ B*, C*, OUT |
 | Residual β1 (B + G1–G10) = must β2 (`β1.1`) | ✓ B*, G* |
 
 ## Architektura (domyślna)

@@ -8,7 +8,7 @@ Ten katalog zawiera skrypty narzędziowe i automatyzacje poziomu monorepo (przen
 | :--- | :--- |
 | `build-release-notes.mjs` | Generuje informacje o wydaniu (Release Notes) na podstawie historii zmian i konwencji. |
 | `extract-changelog-section.mjs` | Wyciąga konkretną sekcję z pliku `CHANGELOG.md` dla zadanej wersji. |
-| `generate-repo-map.mjs` | Generuje automatyczną mapę struktury monorepo (`docs/REPO_MAP.md`) dla LLM oraz dokumentacji. |
+| `generate-repo-map.mjs` | Generuje mapę monorepo (`docs/REPO_MAP.md`): domyślnie slim (kolaps assetów, limit głębokości). Flagi: `--full`, `--include-untracked`. |
 | `integrate-pr.sh` | Skrypt pomocniczy do integracji Pull Requestów w trunk-based development. |
 | `lint-ss-css.mjs` | Linter sprawdzający poprawność użycia tokenów CSS (`--ss-*`) i reguł stylów. |
 | `merge-train.sh` | Zarządzanie kolejką merge (Merge Train) dla CI/CD. |

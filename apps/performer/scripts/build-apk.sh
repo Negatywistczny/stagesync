@@ -8,7 +8,7 @@ ANDROID_DIR="$ROOT/android"
 
 if [[ -z "${ANDROID_HOME:-}" && -z "${ANDROID_SDK_ROOT:-}" ]]; then
   echo "Set ANDROID_HOME or ANDROID_SDK_ROOT to your Android SDK." >&2
-  echo "See apps/performer/README.md and docs/MOBILE.md" >&2
+  echo "See apps/performer/README.md and docs/guides/MOBILE.md" >&2
   exit 1
 fi
 

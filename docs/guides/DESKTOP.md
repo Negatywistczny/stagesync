@@ -1,8 +1,8 @@
 # StageSync — aplikacja desktop
 
 Okno desktopowe (Admin / Timeline / Client) z wbudowanym lokalnym hostem albo połączeniem z hostem w sieci.
-Szczegóły decyzji: [ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md).  
-Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
+Szczegóły decyzji: [ADR 0010](../adr/0010-desktop-shell-tauri.md), [ADR 0014](../adr/0014-desktop-launcher.md).  
+Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](../adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
 
 ## Start — Launcher
 
@@ -165,7 +165,7 @@ Tray nie otwiera menu po lewym kliknięciu ikony, bo `show_menu_on_left_click(fa
 
 > **MIDI i zegar muzyczny** obsługuje wyłącznie host (serwer) — nie proces okna desktop. Status MIDI widać w Admin → Host.
 >
-> **Dane projektów** — lokalny host zapisuje w `~/Documents/StageSync` ([ADR 0012](./adr/0012-user-data-location.md)).
+> **Dane projektów** — lokalny host zapisuje w `~/Documents/StageSync` ([ADR 0012](../adr/0012-user-data-location.md)).
 > Przy pierwszym starcie aplikacja może jednorazowo skopiować dane z poprzedniej lokalizacji
 > Application Support / AppData (bez nadpisywania Dokumentów).
 > Lista ostatnich hostów Launchera zostaje w katalogu aplikacji OS.
@@ -238,7 +238,7 @@ Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji**
 - Rust toolchain (`rustup`) + zależności platformowe Tauri 2 — https://v2.tauri.app/start/prerequisites/
 - Lokalny host uruchamia się automatycznie przy wyborze lokalnego hosta w Launcherze.
 - Dev / cienki shell: zewnętrzny host przez `STAGESYNC_URL`.
-- Pełny build `.dmg` / `.msi` jest w [Release workflow](../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
+- Pełny build `.dmg` / `.msi` jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
 
 ## Dev
 
@@ -271,11 +271,11 @@ pnpm --filter @stagesync/desktop tauri build
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 
 - **Mixer bus→bus:** wyjście busa na Master albo inny bus (bez pętli).
-- **Mixer multi-out (HW):** gdy urządzenie audio ma ≥ 4 kanały (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**. Master domyślnie idzie na CH 1–2 (można przemapować na inną wolną parę w selektorze Out na pasku Master — zablokowane w Play). Patchy HW: **+ Dodaj** (wyłącza się po wyczerpaniu kanałów), M/ST, dual L/R przy stereo, usuwanie przez PPM albo Delete/Backspace (bez × przy Mute). Ścieżka / bus / próbka Cue mogą iść na HW. Przy stereo-only strefa HW Out jest ukryta. Zmiana wyjścia fizycznego zablokowana w trakcie Play ([ADR 0017](./adr/0017-live-show-control-contracts.md) §7).
+- **Mixer multi-out (HW):** gdy urządzenie audio ma ≥ 4 kanały (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**. Master domyślnie idzie na CH 1–2 (można przemapować na inną wolną parę w selektorze Out na pasku Master — zablokowane w Play). Patchy HW: **+ Dodaj** (wyłącza się po wyczerpaniu kanałów), M/ST, dual L/R przy stereo, usuwanie przez PPM albo Delete/Backspace (bez × przy Mute). Ścieżka / bus / próbka Cue mogą iść na HW. Przy stereo-only strefa HW Out jest ukryta. Zmiana wyjścia fizycznego zablokowana w trakcie Play ([ADR 0017](../adr/0017-live-show-control-contracts.md) §7).
 - **Mixer — widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy strefy (nagłówek zostaje); wybór w przeglądarce.
-- **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
-- **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
-- **Panic:** globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s). Performer / Client bez globalnego Panic ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8b).
+- **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8a).
+- **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](../adr/0017-live-show-control-contracts.md) §2–§3).
+- **Panic:** globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s). Performer / Client bez globalnego Panic ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8b).
 - **Cues Sampler** — Inspector klipu Cue: próbka, tryb one-shot/gated, GO, Master/Bus/HW.
 - **Motyw:** picker 5 skór (Booth / Daylight / Midnight / Matrix / Neon); `STAGESYNC_THEME_DEFAULT` dla urządzeń bez lokalnej preferencji.
 

@@ -2,7 +2,7 @@
 
 **Data:** 2026-07-20 (rewizja — α8 code freeze; residual → α9)  
 **Repo v5:** `stagesync` · **Referencja v4:** `STAGESYNC-APP-LEGACY`  
-**Polityka:** [ADR 0011](../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz / clone chrome  
+**Polityka:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz / clone chrome  
 **Rola:** **SSOT luk** (P0/P1/P2). Inventarz wierszowy ([ui-diff](./report-v4-v5-ui-diff-inventory.md)) jest **wtórny**.  
 **Freeze:** [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md)
 
@@ -190,4 +190,4 @@ flowchart LR
 - Aneks inventarz: [report-v4-v5-ui-diff-inventory.md](./report-v4-v5-ui-diff-inventory.md)  
 - Bramka: [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md)  
 - Freeze: [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md)  
-- Kontrakt: [ADR 0011](../../adr/0011-ui-parity-behavior.md) §4 — zakaz disabled-for-inventory.
+- Kontrakt: [ADR 0011](../../../adr/0011-ui-parity-behavior.md) §4 — zakaz disabled-for-inventory.

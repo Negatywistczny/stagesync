@@ -13,8 +13,8 @@ Nie dodawaj nowych plików/folderów w root bez wcześniejszej zgody użytkownik
 - Dokumenty repo: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `SECURITY.md`.
 - CI/GitHub: `.github/`.
 - Kontenery/deploy: `Dockerfile`, `compose.yml`, `compose.prod.yml`, `.dockerignore`.
-- Skrypty operacyjne: `launch/scripts/*` (release/host tooling).
-- Główne katalogi monorepo: `apps/`, `packages/`, `docs/`, `data/`, `.cursor/`.
+- Skrypty operacyjne: `scripts/*` (release / mapa repo / tooling monorepo); `apps/desktop/scripts/*` (sidecar / launcher sync).
+- Główne katalogi monorepo: `apps/`, `packages/`, `docs/`, `data/`, `scripts/`, `.cursor/`.
 
 ## Wymóg zgody (przed utworzeniem)
 

@@ -69,7 +69,7 @@ Stan obecny (od **5.3.0**): Mixer Master\|Bus + bus→bus DAG; multi-out HW Out 
 | **6.0** | **Live Suite** | Filary 1–4; STEM / mute lead; recording + proste edit; MIDI Patch Matrix; fokus standalone VSTi | In-process VST; wbudowane synthy WebAudio (→ 6.x+); Flex / Take Folders jako must 6.0 |
 | **6.1** | **Karaoke & Jukebox** | `/karaoke`, `/request`, Gig/Jukebox — [#824](https://github.com/Negatywistczny/stagesync/issues/824) | Cloud karaoke; zależność od 5.4–5.5 + 6.0 STEM/pitch |
 
-Szczegóły checklisty: [ROADMAP](../ROADMAP.md), [TODO](../TODO.md), [report-scope-5.4](../analysis/reports/report-scope-5.4.md). Implementacja filarów 6.0 = dopiero po osobnym scope report + akceptacji PO przed kodem.
+Szczegóły checklisty: [ROADMAP](../ROADMAP.md), [TODO](../TODO.md), [report-scope-5.4](../analysis/reports/current/report-scope-5.4.md). Implementacja filarów 6.0 = dopiero po osobnym scope report + akceptacji PO przed kodem.
 
 ### 5. Decyzje PO zamknięte (sesja 2026-07-27)
 
@@ -98,7 +98,7 @@ Szczegóły checklisty: [ROADMAP](../ROADMAP.md), [TODO](../TODO.md), [report-sc
 1. Automation: tylko parametry Mixer/DSP, czy też clip gain / Forma?
 2. Track Pitch (5.5): globalny vs per-track; szczegóły sync Chord AST + OSMD
 3. Desktop low-latency: czy wystarczy WebAudio + preferencje bufora, czy kiedykolwiek natywny sidecar audio (**bez** VST) — konflikt z thin shell?
-4. Hot-unplug wejść / wyjść i fail-safe (FOH): mute vs fold-to-Master — kontynuacja Q z [Recenzja Live FOH](../analysis/inspiracje/spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.triage.md)
+4. Hot-unplug wejść / wyjść i fail-safe (FOH): mute vs fold-to-Master — kontynuacja Q z [Recenzja Live FOH](../analysis/inspiracje/specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md)
 5. STEM / mute lead w 6.0: kontrakt Mixer vs osobne ścieżki assetów — needed dla Karaoke **6.1** ([#824](https://github.com/Negatywistczny/stagesync/issues/824))
 
 ### 8. Parity v4 (nie wymyślać wstecz)
@@ -111,10 +111,10 @@ v4 / parytet 5.0: Host MIDI I/O, clock, Program Change, odtwarzanie audio, Mixer
 - [ADR 0017](./0017-live-show-control-contracts.md) §5: historia **5.x OUT** bez zmiany; przy major **6.0** rejestracja + proste edit wracają **zgodnie z tym ADR** (supersedes „permanent” poza linią 5.x).
 - [ARCHITECTURE](../ARCHITECTURE.md): wskaźnik do tego ADR przy mapie decyzji audio.
 - CHANGELOG: **brak** wpisu za sam ADR / ROADMAP / TODO (changelog.mdc — docs deweloperskie).
-- Inspiracje FOH ([Recenzja-Decyzji-Live-FOH-Audio](../analysis/inspiracje/spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.triage.md)): zgodne — multi-out tylko przy `maxChannelCount`, DAG, zakaz atrap; ten ADR **nie** cofa tych bramek.
+- Inspiracje FOH ([Recenzja-Decyzji-Live-FOH-Audio](../analysis/inspiracje/specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md)): zgodne — multi-out tylko przy `maxChannelCount`, DAG, zakaz atrap; ten ADR **nie** cofa tych bramek.
 
 ## Powiązane
 
 - [ADR 0002](./0002-timebase-ssot.md), [0005](./0005-domain-axioms.md), [0008](./0008-timeline-clip-editing.md), [0010](./0010-desktop-shell-tauri.md), [0011](./0011-ui-parity-behavior.md), [0015](./0015-daw-reference-and-product-decisions.md), [0017](./0017-live-show-control-contracts.md)
 - Spec źródłowy (sesja PO / plan): Future Architecture Spec 6.0 (ten ADR = kanon w repo)
-- Triage FOH / mixer: `docs/analysis/inspiracje/spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.triage.md`, `…/Specyfikacja-StageSync-dla-miksera-DAW.triage.md`
+- Triage FOH / mixer: `docs/analysis/inspiracje/specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md`, `…/Specyfikacja-StageSync-dla-miksera-DAW.triage.md`

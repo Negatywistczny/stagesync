@@ -44,7 +44,7 @@
 ## Kontekst
 
 - [TODO.md](../../../TODO.md) — G1–G10 Must residual po 5.1.0 (**⬜**, bez green z tej fali).
-- [report-beta-gate.md](../../reports/report-beta-gate.md) — kanon bramek.
+- [report-beta-gate.md](../../reports/milestones/report-beta-gate.md) — kanon bramek.
 
 ## Następny krok eng
 

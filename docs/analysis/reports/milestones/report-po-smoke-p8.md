@@ -2,11 +2,11 @@
 
 **Cel:** ludzki sign-off zachowania v4→v5 przed β.  
 **Status:** **green** — PO sign-off **2026-07-21**.  
-**Polityka:** [ADR 0011](../../adr/0011-ui-parity-behavior.md) · bramka: [parity-blocker](./report-parity-blocker-alpha8.md).  
+**Polityka:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md) · bramka: [parity-blocker](./report-parity-blocker-alpha8.md).  
 **Kod:** α8 freeze + CL-P0 (CL-01/04/05) = **done**; ten dokument = checklista PO.
 
 Uruchom lokalnie **Admin** / **Timeline** / **Client** na zmergowanym drzewie (`pnpm` dev jak w README).  
-Po green: odhacz [TODO.md](../../TODO.md) R1/R5 + inventarz „PO verified”; zaktualizuj ten plik i QA.
+Po green: odhacz [TODO.md](../../../TODO.md) R1/R5 + inventarz „PO verified”; zaktualizuj ten plik i QA.
 
 ---
 
@@ -113,8 +113,8 @@ Kod CL-01/04/05 = **done**; tu weryfikacja PO przy żywym transporcie:
 
 Po green:
 
-1. [TODO.md](../../TODO.md) — odhacz must PO smoke + release gate wg procedury
-2. [ui-shell-inventory.md](../../ui/ui-shell-inventory.md) — dopisz „PO verified” gdzie dotyczy
+1. [TODO.md](../../../TODO.md) — odhacz must PO smoke + release gate wg procedury
+2. [ui-shell-inventory.md](../../../ui/ui-shell-inventory.md) — dopisz „PO verified” gdzie dotyczy
 3. [parity-blocker](./report-parity-blocker-alpha8.md) + [QA α8](./report-qa-signoff-alpha8.md) — P8 → green
 4. Ten plik — tabela Podsumowanie → wszystkie ☑
 

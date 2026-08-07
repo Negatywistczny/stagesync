@@ -4,7 +4,7 @@
 **Część A:** [report-v4-v5-parity-audit.md](./report-v4-v5-parity-audit.md)  
 **SSOT luk behawioralnych:** [report-v4-v5-gap-audit.md](./report-v4-v5-gap-audit.md) — inventarz wierszowy jest **wtórny** wobec gap-audit  
 **Freeze α8:** [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md) — engineering zamknięty; PO smoke + CL-P0 → α9  
-**Polityka werdyktów:** [ADR 0011](../../adr/0011-ui-parity-behavior.md)  
+**Polityka werdyktów:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md)  
 **Metodologia:** każdy wiersz zweryfikowany w kodzie (ścieżka); brak TBD.  
 `requires-PO-smoke` = behawior z handlerów; potwierdzenie runtime u PO.
 

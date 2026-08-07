@@ -8,7 +8,7 @@ import {
 describe("docsLinks", () => {
   it("points at canonical GitHub docs surfaces", () => {
     expect(DOCS_INSTALL_URL).toBe(
-      "https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md",
+      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
     );
     expect(DOCS_RELEASES_URL).toBe(
       "https://github.com/Negatywistczny/stagesync/releases",

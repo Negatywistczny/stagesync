@@ -184,10 +184,10 @@ describe("openExternalUrl", () => {
     });
     vi.stubGlobal("document", { querySelector: () => null });
 
-    await openExternalUrl("https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md");
+    await openExternalUrl("https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md");
 
     expect(invoke).toHaveBeenCalledWith("open_external_url", {
-      url: "https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md",
+      url: "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
     });
     expect(open).not.toHaveBeenCalled();
   });

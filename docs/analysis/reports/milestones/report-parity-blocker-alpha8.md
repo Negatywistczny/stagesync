@@ -1,7 +1,7 @@
 # Parity blocker — przed β (rebuild wg ADR 0011)
 
 **Data:** 2026-07-21 (rewizja — **P8 green**)  
-**Polityka:** [ADR 0011](../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz.  
+**Polityka:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md) — parity = **zachowanie**, nie inventarz.  
 **Freeze α8:** [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md) — engineering zamknięty.  
 **SSOT luk:** [report-v4-v5-gap-audit.md](./report-v4-v5-gap-audit.md) — P0 TE/AD/CL poniżej.  
 **Referencja:** `STAGESYNC-APP-LEGACY` (`timeline.js`, `timeline.css`, `song-maps.js`, `timeline-touch.js`).  

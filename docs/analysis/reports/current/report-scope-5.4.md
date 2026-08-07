@@ -1,7 +1,7 @@
 # Scope 5.4 — Syllables (fundament timed lyrics + Ingest)
 
 **Wersja:** `5.4.x` — **Syllables**  
-**Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0002](../../adr/0002-timebase-ssot.md) · [ADR 0005](../../adr/0005-domain-axioms.md) · [ADR 0011](../../adr/0011-ui-parity-behavior.md) · [ADR 0018](../../adr/0018-future-audio-architecture.md) §4 · triage [Architektura ingestii](../inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)  
+**Podstawa:** [ROADMAP.md](../../../ROADMAP.md) · [TODO.md](../../../TODO.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0005](../../../adr/0005-domain-axioms.md) · [ADR 0011](../../../adr/0011-ui-parity-behavior.md) · [ADR 0018](../../../adr/0018-future-audio-architecture.md) §4 · triage [Architektura ingestii](../../inspiracje/specyfikacje/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)  
 **Bramka wejścia:** linia **5.3** Colors & Channels wydana (`v5.3.0`+); residual ops / G1–G10 nie blokują startu schemy  
 **Status (2026-08-05):** **wydane `v5.4.5`** — Smart Tempo 5.5 MIR engine (Multi-Window Section Mapping, Sub-frame Parabolic Peak Interpolation, Downbeat Kick Lock, >99.5% reduction in cumulative phase drift) + Schema V6 + UltraStar Ingest.
 
@@ -10,7 +10,7 @@
 Jeden hero **Syllables**: timed lyrics (sylaby w tickach) + **widoczny** import UltraStar → Karaoke — bez powierzchni imprezowej (`/karaoke` TV) i bez nowego silnika audio.
 
 1. **Bump `formatVersion`** + migrator V5→V6 w storage / API / Zod (**done na `main`**).
-2. **Lyrics AST w tickach** — kanon pozycji = integer ticks + PPQ ([ADR 0002](../../adr/0002-timebase-ssot.md)); ms tylko na krawędzi parsera.
+2. **Lyrics AST w tickach** — kanon pozycji = integer ticks + PPQ ([ADR 0002](../../../adr/0002-timebase-ssot.md)); ms tylko na krawędzi parsera.
 3. **Opcjonalne role** wokalu w schemacie (`vocal_1` / `vocal_2` / `backing` / `all`) — UI Client filter może być minimalny.
 4. **Opcjonalna melodia** (pitch MIDI) jako domena danych — pełny render Client = Later jeśli nie must cutu.
 5. Client Karaoke / Grid: **highlight po sylabach** gdy dane są (zachowanie, nie nowe okno TV) (**done na `main`**).
@@ -25,8 +25,8 @@ Jeden hero **Syllables**: timed lyrics (sylaby w tickach) + **widoczny** import 
 | Opcjonalne `role` na liniach / blokach | Widok publiczny `/karaoke` (TV) — **6.1** |
 | Opcjonalna ścieżka melodii w schemacie | Guest `/request` / Jukebox queue — **6.1** |
 | Provenance opcjonalnie (`isAutoPlaced` / `isUserOverridden`) — gdy PO chce re-import | Cloud AI / zewnętrzne API ingestii |
-| Client: highlight timed lyrics na istniejącym `/client` Karaoke | InputStrip / Audio Suite / automation / recording ([ADR 0018](../../adr/0018-future-audio-architecture.md)) |
-| UltraStar → ticks → `tekst` (+ melody); bridging US+UG gdy fixtures | Atrapy UI „na zapas” ([ADR 0011](../../adr/0011-ui-parity-behavior.md) §1a) |
+| Client: highlight timed lyrics na istniejącym `/client` Karaoke | InputStrip / Audio Suite / automation / recording ([ADR 0018](../../../adr/0018-future-audio-architecture.md)) |
+| UltraStar → ticks → `tekst` (+ melody); bridging US+UG gdy fixtures | Atrapy UI „na zapas” ([ADR 0011](../../../adr/0011-ui-parity-behavior.md) §1a) |
 | Testy shared Zod + migrator golden (+ ścieżka importu przy cutcie) | Osobny hero / tag tylko za schema V6 |
 
 ## IN (must) — orientacja
@@ -69,6 +69,6 @@ Cut **5.4.0** dopiero gdy operator widzi UltraStar → Karaoke. Po cutcie: scope
 
 ## Powiązane
 
-- [ROADMAP](../../ROADMAP.md) · [TODO](../../TODO.md) · [ADR 0018](../../adr/0018-future-audio-architecture.md)
+- [ROADMAP](../../../ROADMAP.md) · [TODO](../../../TODO.md) · [ADR 0018](../../../adr/0018-future-audio-architecture.md)
 - Epik Karaoke: [#824](https://github.com/Negatywistczny/stagesync/issues/824) (**6.1**, nie 7.0)
-- Triage ingestii: [Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md](../inspiracje/spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)
+- Triage ingestii: [Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md](../../inspiracje/specyfikacje/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)

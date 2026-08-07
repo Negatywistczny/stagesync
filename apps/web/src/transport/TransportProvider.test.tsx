@@ -401,7 +401,7 @@ describe("TransportProvider", () => {
 
     // H-01 (Audyt-Architektury): setDisplayTicks every rAF → context consumers re-render
     // at display refresh rate while playing (equality bail when ticks unchanged;
-    // no throttle / split context until HW profiler — docs/MOBILE.md § H-01).
+    // no throttle / split context until HW profiler — docs/guides/MOBILE.md § H-01).
     it("re-renders useTransport consumers on each rAF while ticks advance", async () => {
       let renderCount = 0;
       const { result } = renderHook(

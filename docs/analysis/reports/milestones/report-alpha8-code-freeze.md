@@ -2,7 +2,7 @@
 
 **Data:** 2026-07-20  
 **Wersja w `package.json`:** `5.0.0-alpha.8` (bez bumpu / tagu w tej sesji)  
-**Polityka:** [ADR 0011](../../adr/0011-ui-parity-behavior.md)  
+**Polityka:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md)  
 **Bramka β:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md) — **nadal open**
 
 ---
@@ -54,12 +54,12 @@
 
 1. Commit working tree (feat + docs freeze).
 2. Opcjonalnie tag `v5.0.0-alpha.8` jeśli chcesz zamrozić punkt w historii **albo** od razu bump → `5.0.0-alpha.9` z Unreleased.
-3. TODO już wskazuje **tylko α9** ([TODO.md](../../TODO.md)).
+3. TODO już wskazuje **tylko α9** ([TODO.md](../../../TODO.md)).
 4. **Zakaz** `5.0.0-beta.*` do green P8 + CL-P0.
 
 ## Cross-link
 
-- ROADMAP: [ROADMAP.md](../../ROADMAP.md)  
+- ROADMAP: [ROADMAP.md](../../../ROADMAP.md)  
 - Gap SSOT: [report-v4-v5-gap-audit.md](./report-v4-v5-gap-audit.md)  
 - Scope α9: [report-scope-alpha9.md](./report-scope-alpha9.md)  
 - QA α8: [report-qa-signoff-alpha8.md](./report-qa-signoff-alpha8.md)

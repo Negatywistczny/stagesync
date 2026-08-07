@@ -4,17 +4,18 @@
 
 | Plik | Tylko to | Nie tu |
 |------|----------|--------|
-| [README](../README.md) | Uruchomienie | Historia, backlog, pełne reguły |
+| [README](./README.md) | Uruchomienie | Historia, backlog, pełne reguły |
 | [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
-| [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.3.0`) | Odhaczone / historia wydań |
-| [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → 5.1 → 5.2 → 5.3 → …) | Bieżąca checklista (→ TODO) |
+| [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.4.x` → 5.5+) | Odhaczone / historia wydań |
+| [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → … → 5.5 → 6.0 → …) | Bieżąca checklista (→ TODO) |
 | [docs/ui/README.md](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
 | [ui-shell-inventory](./ui/ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/README.md](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
-| [MOBILE.md](./guides/MOBILE.md) | Performer / Console (Android sideload, QR, PWA) | Implementacja Kotlin (→ `apps/performer`, `apps/console`) |
-| [docs/analysis/README.md](./analysis/README.md) | `reports/` (kanon) + `inspiracje/` (zewn. audyty + triage) + `working/` (scratch) | Scratch / inspiracje jako SSOT lub claim Done |
+| [INSTALL](./guides/INSTALL.md) / [DESKTOP](./guides/DESKTOP.md) / [MOBILE](./guides/MOBILE.md) / [MIGRATION](./guides/MIGRATION.md) | Podręczniki operatorskie | Implementacja w `apps/*` |
+| [docs/analysis/README.md](./analysis/README.md) | `reports/{current,milestones,hygiene}/` + `inspiracje/` + `working/` | Scratch / inspiracje jako SSOT lub claim Done |
 | [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
-| [CONTRIBUTING](../CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
+| [CONTRIBUTING](../.github/CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
+| [SECURITY](../.github/SECURITY.md) | Zgłoszenia bezpieczeństwa | Treść ADR / backlog |
 | [docs/adr/README.md](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
 | [ADR 0013](./adr/0013-in-app-vs-github-docs.md) | In-app help vs dokumentacja GitHub / bundle | Treść tutoriali w `.dmg` |
 | `.cursor/rules/` | Reguły egzekwowane przez agenta | Długie tutoriale |

@@ -34,7 +34,7 @@ izolacji `assets/` i `setlist.json`.
 w `packages/shared/src/schema.ts`. Odczyt starszych v2/v3/v4 = upgrade path w
 storage / migratorze — nie osobny „powrót do v3” w UI.
 
-Audyt: [report-v4-v5-parity-audit.md](../analysis/reports/report-v4-v5-parity-audit.md) §5.
+Audyt: [report-v4-v5-parity-audit.md](../analysis/reports/milestones/report-v4-v5-parity-audit.md) §5.
 
 ## Konsekwencje
 

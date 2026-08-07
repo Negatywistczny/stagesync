@@ -5,7 +5,7 @@
  * build-release-notes.mjs (Highlights), not the full section.
  *
  * Usage:
- *   node launch/scripts/extract-changelog-section.mjs <version> [changelogPath]
+ *   node scripts/extract-changelog-section.mjs <version> [changelogPath]
  *
  * Prints the section body (everything under `## [version]…` until the next `## [`)
  * without the H2 heading itself. Exit 1 if the section is missing.

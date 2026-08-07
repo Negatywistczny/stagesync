@@ -3,7 +3,7 @@
  * sync-version.mjs — propagate a single version string to all version-bearing files.
  *
  * Usage:
- *   node launch/scripts/sync-version.mjs [--version <semver>] [--dry-run]
+ *   node scripts/sync-version.mjs [--version <semver>] [--dry-run]
  *
  * If --version is omitted, the version is read from root package.json.
  * In CI release workflow, pass the tag-derived version via --version.
@@ -25,7 +25,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 function arg(flag) {
   const idx = process.argv.indexOf(flag);

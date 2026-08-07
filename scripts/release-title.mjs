@@ -3,7 +3,7 @@
  * Release title from CHANGELOG hero name when present.
  *
  * Usage:
- *   node launch/scripts/release-title.mjs <version> [changelogPath]
+ *   node scripts/release-title.mjs <version> [changelogPath]
  *
  * Examples:
  *   5.1.0 + "— Launch & Mix" → "5.1.0 — Launch & Mix"

@@ -1,7 +1,7 @@
 # Scope alpha.5 — IN / OUT / ryzyka
 
 **Wersja docelowa:** `5.0.0-alpha.5`  
-**Podstawa:** hero Client roles poza Formą/`drums` ([TODO.md](../../TODO.md), [ROADMAP.md](../../ROADMAP.md)).  
+**Podstawa:** hero Client roles poza Formą/`drums` ([TODO.md](../../../TODO.md), [ROADMAP.md](../../../ROADMAP.md)).  
 **Schema:** Project v2 — `forma`, `tempoMap`, `meterMap` tylko; **brak** lane Tekst/Akordy/Cue w storage.
 
 ## Cel (jedno zdanie)

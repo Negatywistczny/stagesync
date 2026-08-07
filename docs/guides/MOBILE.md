@@ -1,6 +1,6 @@
 # StageSync — Mobile (Performer + Console)
 
-Operator sketch for Android APK install and PWA (**v5.3** Colors & Channels). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](./adr/0016-android-performer-console.md)).
+Operator sketch for Android APK install and PWA (**v5.3** Colors & Channels). Product names: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](../adr/0016-android-performer-console.md)).
 
 ## Performer vs Console
 
@@ -12,7 +12,7 @@ Operator sketch for Android APK install and PWA (**v5.3** Colors & Channels). Pr
 | Audio / MIDI w procesie | **Zakaz** | SSOT na hoście (LAN albo lokalny, gdy silnik w APK działa) |
 | Katalog | `apps/performer` | `apps/console` |
 
-Performer pozostaje read-only Client-only ([ADR 0016](./adr/0016-android-performer-console.md)).
+Performer pozostaje read-only Client-only ([ADR 0016](../adr/0016-android-performer-console.md)).
 
 ## Nawigacja operatora (OperatorNav)
 
@@ -99,11 +99,11 @@ Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz 
 
 ## Aktualizacja APK w aplikacji (jawna)
 
-1. **Launcher (internet):** przy starcie / `onResume` powłoka pobiera `android-latest.json` z GitHub Releases (`…/releases/latest/download/android-latest.json`, ten sam kanał co Desktop `latest.json`). Gdy `version` jest nowszy od `versionName` APK, pojawia się dialog **Dostępna wersja …** → **Aktualizuj** / **Przypomnij później** (snooze do tej wersji). **Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md)).
+1. **Launcher (internet):** przy starcie / `onResume` powłoka pobiera `android-latest.json` z GitHub Releases (`…/releases/latest/download/android-latest.json`, ten sam kanał co Desktop `latest.json`). Gdy `version` jest nowszy od `versionName` APK, pojawia się dialog **Dostępna wersja …** → **Aktualizuj** / **Przypomnij później** (snooze do tej wersji). **Bez** auto-update w tle ([ADR 0015](../adr/0015-daw-reference-and-product-decisions.md)).
 2. **Admin → Sprawdź aktualizacje (Console):** ten sam manifest — pokazuje `vAKTUALNA → vNOWSZA` i **Pobierz APK** (otwarcie URL z Releases), nie Watchtower.
 3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host jest **nowszy** **oraz** APK leży pod `/downloads/stagesync-*.apk`, dialog z hosta; jeśli host nie oferuje APK — fallback do Releases jak w (1).
 
-**Bez** auto-update w tle ([ADR 0015](./adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](./adr/0016-android-performer-console.md)).
+**Bez** auto-update w tle ([ADR 0015](../adr/0015-daw-reference-and-product-decisions.md), [ADR 0016](../adr/0016-android-performer-console.md)).
 
 ## Offline-First UI hybrid (#692)
 
@@ -117,11 +117,11 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 ## Operator: PIN, motyw, Safety Net, Sampler
 
-- **PIN:** gdy host ma `STAGESYNC_OPERATOR_PIN`, Console (Admin/Timeline) prosi o odblokowanie przed edycją; Performer może odblokować edycję notatek w ustawieniach Client. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy zablokowaniu ekranu OS / `onPause` oraz po **15 min** bezczynności ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8a).
+- **PIN:** gdy host ma `STAGESYNC_OPERATOR_PIN`, Console (Admin/Timeline) prosi o odblokowanie przed edycją; Performer może odblokować edycję notatek w ustawieniach Client. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy zablokowaniu ekranu OS / `onPause` oraz po **15 min** bezczynności ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8a).
 - **Motyw:** lokalna preferencja urządzenia albo `STAGESYNC_THEME_DEFAULT` z hosta (gdy urządzenie nie ma zapisanego motywu).
-- **Safety Net:** **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). Rola Master/Spare na hoście — MIDI OUT hosta, nie APK; Console na Spare jak desktop Admin. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](./adr/0017-live-show-control-contracts.md) §2–§3).
-- **Panic:** globalny Mute/Stop All bez PIN tylko na **Console/Admin** (hold ~1 s). Performer **bez** globalnego Panic ([ADR 0017](./adr/0017-live-show-control-contracts.md) §8b).
-- **Zastosuj UI:** przy `PLAYING` — Performer: twardy block; Console: ostrzeżenie + potwierdzenie ([ADR 0017](./adr/0017-live-show-control-contracts.md) §6).
+- **Safety Net:** **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). Rola Master/Spare na hoście — MIDI OUT hosta, nie APK; Console na Spare jak desktop Admin. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](../adr/0017-live-show-control-contracts.md) §2–§3).
+- **Panic:** globalny Mute/Stop All bez PIN tylko na **Console/Admin** (hold ~1 s). Performer **bez** globalnego Panic ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8b).
+- **Zastosuj UI:** przy `PLAYING` — Performer: twardy block; Console: ostrzeżenie + potwierdzenie ([ADR 0017](../adr/0017-live-show-control-contracts.md) §6).
 - **Cues Sampler:** próbki na klipach Cue działają w Timeline (Console / desktop); Performer tylko wyświetla banery Cue.
 
 ### Smoke (ręczne) — UI apply
@@ -142,7 +142,7 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 
 `apps/web` wystawia manifest (`display: standalone`) + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”; Safari (iOS) → Udostępnij → „Do ekranu początkowego” (pełny ekran, status bar `black-translucent`, `viewport-fit=cover`). Wake Lock API w przeglądarce (+ cichy fallback wideo gdy API niedostępne) oraz `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock). Po uśpieniu Safari Client wznawia WebSocket od razu po powrocie do karty. Gestami: `overscroll-behavior-y: none` i `touch-action: manipulation` na shellu Client.
 
-**iOS:** brak natywnego APK / App Store Performer — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)). Natywne powłoki Performer/Console = **tylko Android** ([ADR 0016](./adr/0016-android-performer-console.md)).
+**iOS:** brak natywnego APK / App Store Performer — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)). Natywne powłoki Performer/Console = **tylko Android** ([ADR 0016](../adr/0016-android-performer-console.md)).
 ## H-01 (perf Client) — sonda
 
 Opt-in sonda w Client (PWA / Performer WebView):
@@ -175,7 +175,7 @@ Kryteria **Console** (nie mylić z pasywnym Performerem):
 
 ## Lokalny host na Console
 
-W launcherze Console **Uruchom lokalny host** uruchamia wbudowany serwer StageSync na urządzeniu (nodejs-mobile + JNI), czeka na `GET http://127.0.0.1:4000/api/health`, potem otwiera Admin — ten sam tor co desktop (./DESKTOP.md), [ADR 0014](./adr/0014-desktop-launcher.md)).
+W launcherze Console **Uruchom lokalny host** uruchamia wbudowany serwer StageSync na urządzeniu (nodejs-mobile + JNI), czeka na `GET http://127.0.0.1:4000/api/health`, potem otwiera Admin — ten sam tor co desktop (./DESKTOP.md), [ADR 0014](../adr/0014-desktop-launcher.md)).
 
 Domyślny `./apps/console/scripts/build-apk.sh` pakuje `libnode.so` (arm64-v8a + armeabi-v7a), most `stagesync-host-bridge` oraz `assets/host` (server jak sidecar desktop + web + seed). Dane projektów: katalog aplikacji (`filesDir/stagesync-data`). Silnik Node działa w **osobnym procesie** (`:host`) i wątku z 8 MB sterty — awaria natywna nie zabija launchera; status błędu / śmierci procesu trafia po polsku (logcat: tag `SsLocalHost`). Podczas działania utrzymuje się **trwałe** powiadomienie foreground (`ongoing` / bez swipe-dismiss) z **Otwórz aplikację** i **Zatrzymaj Host** (dotknięcie treści też wraca do Console; tylko ta akcja gasi silnik i zdejmuje FG); po powrocie do launchera przy działającym hoście przycisk to **Połącz z localhostem**. Native MIDI na Androidzie jest niedostępne (serwer startuje z `STAGESYNC_MIDI_BACKEND=none`); lokalny host **reklamuje** `_stagesync._tcp` przez Android NSD (`NsdManager` + multicast lock) — Node `bonjour` pozostaje wyłączony pod nodejs-mobile. Inne urządzenia (Performer / Console / desktop launcher) wykrywają ten host w LAN jak desktopowy. Host nasłuchuje na `0.0.0.0:4000` (Admin na pętli zwrotnej `127.0.0.1:4000`).
 
@@ -205,4 +205,4 @@ Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` albo uszkodzony build), UI pokazu
 
 ## Powiązane
 
-- [DESKTOP.md](./DESKTOP.md) · [ADR 0014](./adr/0014-desktop-launcher.md) · [ADR 0015](./adr/0015-daw-reference-and-product-decisions.md) · [ADR 0016](./adr/0016-android-performer-console.md)
+- [DESKTOP.md](./DESKTOP.md) · [ADR 0014](../adr/0014-desktop-launcher.md) · [ADR 0015](../adr/0015-daw-reference-and-product-decisions.md) · [ADR 0016](../adr/0016-android-performer-console.md)

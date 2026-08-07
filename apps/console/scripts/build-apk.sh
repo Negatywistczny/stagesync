@@ -9,7 +9,7 @@ SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
 
 if [[ -z "$SDK" ]]; then
   echo "Set ANDROID_HOME or ANDROID_SDK_ROOT to your Android SDK." >&2
-  echo "See apps/console/README.md and docs/MOBILE.md" >&2
+  echo "See apps/console/README.md and docs/guides/MOBILE.md" >&2
   exit 1
 fi
 

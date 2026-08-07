@@ -1,7 +1,7 @@
 # Scope alpha.6 — IN / OUT / ryzyka
 
 **Wersja docelowa:** `5.0.0-alpha.6`  
-**Podstawa:** hero Admin Live Desk — setlista, scena, pliki ([TODO.md](../../TODO.md), [ROADMAP.md](../../ROADMAP.md)).  
+**Podstawa:** hero Admin Live Desk — setlista, scena, pliki ([TODO.md](../../../TODO.md), [ROADMAP.md](../../../ROADMAP.md)).  
 **Schema:** Project **v3** — assets + audio track/clip refs; setlista w `data/library/setlist.json`.
 
 ## Cel (jedno zdanie)
@@ -35,7 +35,7 @@ Admin **Set** i **inspector plików** są podłączone do serwera; użytkownik i
 
 | Temat | Powód |
 |-------|--------|
-| Silnik odtwarzania audio, waveform, `ticksToMs` sync | **β1** ([ADR 0008](../../adr/0008-timeline-clip-editing.md)) |
+| Silnik odtwarzania audio, waveform, `ticksToMs` sync | **β1** ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) |
 | Edycja geometryczna Forma / Smart Tool | **α7** |
 | Pełna partytura OSMD / MusicXML ingest | **α7** |
 | Paczki `.stagesync` / eksport ZIP | β1+ |
@@ -64,4 +64,4 @@ Admin **Set** i **inspector plików** są podłączone do serwera; użytkownik i
 
 ## Kolejność PR
 
-Zamknięte — historia w [CHANGELOG.md](../../../CHANGELOG.md).
+Zamknięte — historia w [CHANGELOG.md](../../../../CHANGELOG.md).

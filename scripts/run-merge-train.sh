@@ -2,7 +2,7 @@
 # Run a full merge train: integrate PRs, test, push, create PR, wait CI, merge, close originals.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 BRANCH="$1"

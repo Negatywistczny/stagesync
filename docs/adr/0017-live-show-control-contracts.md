@@ -7,7 +7,7 @@
 
 ## Kontekst
 
-Sesja PO (dumpy `docs/analysis/inspiracje/spec-5.2+`, konfrontacja z ADR) domknęła spory tożsamościowe i operatorskie dla linii **Playback & Show Control**. Ten ADR jest **zbiorczym kontraktem** — decyzja ≠ kod. Implementacja = backlog (prompt: [product-contracts-5.2-impl-prompt.md](../analysis/product-contracts-5.2-impl-prompt.md)).
+Sesja PO (dumpy `docs/analysis/inspiracje/specyfikacje/`, konfrontacja z ADR) domknęła spory tożsamościowe i operatorskie dla linii **Playback & Show Control**. Ten ADR jest **zbiorczym kontraktem** — decyzja ≠ kod. Implementacja = backlog (ten ADR = SSOT decyzji; lokalny prompt scratch w `docs/analysis/working/` nie jest linkowany z zewnątrz).
 
 **Tożsamość produktu:** StageSync 5.x = odtwarzanie, synchroniczny transport, sterowanie widowiskiem i niezawodność sceniczna. **Nie** jest wielośladem studyjnym / DAW-em rejestracji.
 
@@ -48,5 +48,4 @@ Sesja PO (dumpy `docs/analysis/inspiracje/spec-5.2+`, konfrontacja z ADR) domkn�
 ## Powiązane
 
 - [ADR 0002](./0002-timebase-ssot.md), [0008](./0008-timeline-clip-editing.md), [0015](./0015-daw-reference-and-product-decisions.md), [0016](./0016-android-performer-console.md), [0018](./0018-future-audio-architecture.md)
-- Prompt wdrożenia: [product-contracts-5.2-impl-prompt.md](../analysis/product-contracts-5.2-impl-prompt.md)
-- Inspiracje / triage: `docs/analysis/inspiracje/spec-5.2+/`
+- Inspiracje / triage: [`docs/analysis/inspiracje/specyfikacje/`](../analysis/inspiracje/specyfikacje/README.md)

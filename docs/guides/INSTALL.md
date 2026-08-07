@@ -1,10 +1,10 @@
 # StageSync — instalacja produkcyjna (Docker — ścieżka drugorzędna)
 
 Host na scenie (rack/server): **Docker Compose** + volume `data/`.
-Aktualizacja bez git-apply — [ADR 0004](./adr/0004-updates-docker.md).
+Aktualizacja bez git-apply — [ADR 0004](../adr/0004-updates-docker.md).
 
-Desktop operatora (standalone): [DESKTOP.md](./DESKTOP.md) · [ADR 0010](./adr/0010-desktop-shell-tauri.md).  
-Android Performer / Console: [MOBILE.md](./MOBILE.md) · [ADR 0016](./adr/0016-android-performer-console.md).
+Desktop operatora (standalone): [DESKTOP.md](./DESKTOP.md) · [ADR 0010](../adr/0010-desktop-shell-tauri.md).  
+Android Performer / Console: [MOBILE.md](./MOBILE.md) · [ADR 0016](../adr/0016-android-performer-console.md).
 
 ## Wymagania
 
@@ -261,7 +261,7 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 | `SENTRY_DSN` | — | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII) |
 | `VITE_SENTRY_DSN` | — | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania) |
 
-Wzór: [`.env.example`](../.env.example). Decyzja: [ADR 0012](./adr/0012-user-data-location.md).
+Wzór: [`.env.example`](../../.env.example). Decyzja: [ADR 0012](../adr/0012-user-data-location.md).
 
 **Host restart/shutdown:** z `localhost` zawsze dozwolone (desktop / Tauri). Z innej maszyny w LAN —
 ustaw `STAGESYNC_HOST_TOKEN` (Admin: `localStorage.stagesync.hostToken`) albo świadomie

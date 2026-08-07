@@ -46,7 +46,7 @@ Poniższe zostają wyłącznie w `git log` / docs wewnętrznych:
 - Raporty, planowanie, audyty (`report-*.md`, `ROADMAP.md`, `TODO.md`).
 - Komentarze w kodzie, JSDoc/TSDoc.
 
-**Wyjątek (📚 Dokumentacja):** zmiana **oficjalnego podręcznika wbudowanego w aplikację** (np. Pomoc Timeline) **albo** publicznej docs instalacji / API dla operatora lub integratora (`docs/INSTALL.md`, `docs/DESKTOP.md`, `docs/api/`). Zwykłe `.md` repo (CONTRIBUTING, ADR, reporty, DS notes) — **wykluczone**.
+**Wyjątek (📚 Dokumentacja):** zmiana **oficjalnego podręcznika wbudowanego w aplikację** (np. Pomoc Timeline) **albo** publicznej docs instalacji / API dla operatora lub integratora (`docs/guides/INSTALL.md`, `docs/guides/DESKTOP.md`, `docs/api/`). Zwykłe `.md` repo (CONTRIBUTING, ADR, reporty, DS notes) — **wykluczone**.
 
 Korekta literówki w loginie GitHub / URL właściciela org w docs (nawet INSTALL/DESKTOP) — **bez** wpisu CHANGELOG (nawet pod 📚).
 
@@ -62,7 +62,7 @@ Link do ADR na końcu **produktowego** bulletu (kontekst decyzji) — OK. Bullet
 ### 3. Infrastruktura, automatyzacja i CI/CD (`ci:` / `build:`)
 
 - Workflowy GitHub Actions (`.github/workflows/*.yml`) oraz cały katalog `.github/` tooling.
-- Skrypty budowania / pakowania / podpisywania / sync wersji (`launch/scripts/*`, np. `sync-version.mjs`, `build-desktop-sidecar.mjs`).
+- Skrypty budowania / pakowania / podpisywania / sync wersji (`scripts/*`, `apps/desktop/scripts/*`, np. `sync-version.mjs`, `build-desktop-sidecar.mjs`).
 - Konfiguracja monorepo (`turbo.json`, `pnpm-workspace.yaml`) bez wpływu na UX.
 
 **Wyjątek:** zmiana sposobu instalacji / aktualizacji **widoczna dla użytkownika** (np. natywny instalator `.msi` / `.dmg`, updater w UI, obraz Docker do uruchomienia hosta) → wpis produktowy pod `📦 Packaging & Desktop`.

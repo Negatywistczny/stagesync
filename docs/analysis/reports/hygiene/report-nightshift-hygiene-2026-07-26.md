@@ -116,7 +116,7 @@ Night wave (open at handoff, created ~22:31 UTC 2025-07-25 → ~00:52 UTC 2026-0
 1. **Merge review train (human)** — triage open #693–#806; prefer independent `test/*` first, then `fix(a11y)`; watch title collisions (e.g. ClickStrip #722 vs #799).
 2. **Post-merge smoke** — Admin/Client/System/Mixer a11y labels from night fixes (#696–#706 cluster, #725/#727/#741/#751/#758/#763/#765/#786/#788/#798/#806).
 3. **Carry from evening 2026-07-25** — clip multi inspector optional grey-out when N>1; OSMD / WebMidi `any` adapters still deferred; Tonika ≠ Tonacja preserve.
-4. **Perf observe-only** ([docs/TODO.md](../../TODO.md) Should) — chord-hero `prefers-reduced-motion`; Mixer meter DOM batch; OSMD cursor-only — no code until profiler.
+4. **Perf observe-only** ([docs/TODO.md](../../../TODO.md) Should) — chord-hero `prefers-reduced-motion`; Mixer meter DOM batch; OSMD cursor-only — no code until profiler.
 5. **Dead CSS / knip** — residual Client/Admin only with knip (#602) if still open.
 6. **i18n residual** — keep English DAW jargon (Bus / Out / Snap / Mixer / Fade In/Out / Clip tool names); PL for dialogs only.
 7. **Must residual** — G1–G10 HW on `v5.2.1` installers — **no claim green** without HW proof.

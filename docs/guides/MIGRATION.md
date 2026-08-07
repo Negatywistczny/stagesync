@@ -5,8 +5,8 @@ Import monolitycznego `database.json` z **STAGESYNC-APP-LEGACY** do układu v5
 (`migrateLegacySong` / `migrateLegacyDatabase` / `normalizeLibraryImport`) + CLI
 oraz **Admin → Utwory** (kafelek Pliki pod Wybrany; auto-detect formatu przy uploadzie).
 
-Zob. [report-scope-alpha9.md](./analysis/reports/report-scope-alpha9.md),
-[ADR 0002](./adr/0002-timebase-ssot.md) (ticks + shift osi).
+Zob. [report-scope-alpha9.md](../analysis/reports/milestones/report-scope-alpha9.md),
+[ADR 0002](../adr/0002-timebase-ssot.md) (ticks + shift osi).
 
 ## Wymagania
 

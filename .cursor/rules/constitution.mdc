@@ -6,14 +6,14 @@ alwaysApply: true
 # StageSync v5 — Konstytucja (Cursor spec)
 
 ## 🗜️ Kanoniczna treść konstytucji (SSOT poza Cursor)
-→ **[.clinerules](../../../.clinerules)** — pełna, skonsolidowana wersja reguł dla **wszystkich narzędzi** (Cline, Cursor, Trae, ludzie). Jest to źródło prawdy.
-→ **[docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md)** — mapa architektury i indeks ADR.
-→ **[docs/STANDARDS.md](../../../docs/STANDARDS.md)** — standardy zewnętrzne.
-→ **[.agents/AGENTS.md](../../../.agents/AGENTS.md)** — specjalistyczne reguły per-zadanie (obecnie: Smart Tempo DSP Benchmark Gate).
+→ **[.clinerules](../../.clinerules)** — pełna, skonsolidowana wersja reguł dla **wszystkich narzędzi** (Cline, Cursor, Trae, ludzie). Jest to źródło prawdy.
+→ **[docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md)** — mapa architektury i indeks ADR.
+→ **[docs/STANDARDS.md](../../docs/STANDARDS.md)** — standardy zewnętrzne.
+→ **[.agents/AGENTS.md](../../.agents/AGENTS.md)** — specjalistyczne reguły per-zadanie (obecnie: Smart Tempo DSP Benchmark Gate).
 
 ## Specyficzne dla Cursor (tylko tutaj)
 - Pliki `.mdc` obok (`todo-hygiene`, `changelog`, `ui-density`, `ui-parity`, `root-layout`, `versioning`, `docs-analysis-naming`) rozszerzają reguły w .clinerules o Cursor-specific frontmatter (`alwaysApply`, `description`)
-- Trunk-based: domyślnie **`main`** (małe kroki). Gałąź / PR tylko na prośbę użytkownika — zob. [todo-hygiene.mdc](todo-hygiene.mdc) oraz [CONTRIBUTING.md](../../../CONTRIBUTING.md)
+- Trunk-based: domyślnie **`main`** (małe kroki). Gałąź / PR tylko na prośbę użytkownika — zob. [todo-hygiene.mdc](todo-hygiene.mdc) oraz [CONTRIBUTING.md](../../.github/CONTRIBUTING.md)
 - Przy wątpliwościach UX / logiki edycji: **Logic Pro** jako pierwsza referencja mechanik;
   konflikt: SSOT czasu + brak stubów (ADR 0011) **>** Logic; gdy brak własnej spec → Logic (nie pixel-clone chrome)
 

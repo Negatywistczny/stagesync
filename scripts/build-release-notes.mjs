@@ -7,7 +7,7 @@
  *   short intro → one narrative bullet per domain (aggregated) → link to CHANGELOG.md
  *
  * Usage:
- *   node launch/scripts/build-release-notes.mjs <version> [changelogPath]
+ *   node scripts/build-release-notes.mjs <version> [changelogPath]
  *
  * Prints markdown to stdout.
  */
@@ -41,6 +41,7 @@ const nextHeader = /^## \[/m.exec(afterHeader);
 const section = (
   nextHeader ? afterHeader.slice(0, nextHeader.index) : afterHeader
 )
+  .replace(/\r\n/g, "\n")
   .replace(/^\n+/, "")
   .replace(/\n+$/, "\n");
 
@@ -180,6 +181,7 @@ function buildIntro(quoteIntro, heroName, ver, domains) {
 function domainLabel(raw) {
   const withoutEmoji = raw
     .replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]+\s*/u, "")
+    .replace(/^[^\p{L}\p{N}*]+\s*/u, "")
     .trim();
   if (/^Packaging & Desktop/i.test(withoutEmoji)) return "Desktop / Android";
   if (/^Dokumentacja/i.test(withoutEmoji)) return "Dokumentacja";

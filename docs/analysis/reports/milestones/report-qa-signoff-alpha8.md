@@ -32,7 +32,7 @@
 
 ## Świadome delty (nie bloker α8)
 
-Zob. tabela w [ui-shell-inventory.md](../../ui/ui-shell-inventory.md).
+Zob. tabela w [ui-shell-inventory.md](../../../ui/ui-shell-inventory.md).
 
 ### Follow-up po α8 (dead-controls restore)
 
@@ -79,7 +79,7 @@ Dead-controls restore + rebuild TE-P0/CD/Admin: **code freeze** 2026-07-20 ([rep
 | C1 | Karaoke fill, Grid cycle, Forma strip | ☑ |
 | P8 | Sign-off | ☑ |
 
-Inventarz: [ui-shell-inventory.md](../../ui/ui-shell-inventory.md) — **PO verified 2026-07-21**.
+Inventarz: [ui-shell-inventory.md](../../../ui/ui-shell-inventory.md) — **PO verified 2026-07-21**.
 
 Tag `v5.0.0-alpha.8` (freeze) + bump/tag `v5.0.0-alpha.9` — **done 2026-07-21**.  
-**P8 green 2026-07-21** — tag `5.0.0-beta.*` / start β1 **na prośbę** — [ROADMAP](../../ROADMAP.md).
+**P8 green 2026-07-21** — tag `5.0.0-beta.*` / start β1 **na prośbę** — [ROADMAP](../../../ROADMAP.md).

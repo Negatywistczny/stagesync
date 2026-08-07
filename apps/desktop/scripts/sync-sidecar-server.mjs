@@ -47,7 +47,7 @@ async function main() {
   if (!existsSync(sidecarServerDir)) {
     console.warn(
       "[sync-sidecar-server] brak apps/desktop/src-tauri/resources/sidecar — uruchom:\n" +
-      "  node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin",
+      "  node apps/desktop/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin",
     );
     process.exit(0);
   }

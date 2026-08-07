@@ -1,7 +1,7 @@
 # Beta gate — bramka przed / po `5.0.0-beta.*`
 
 **Data:** 2026-07-21  
-**Podstawa:** [report-scope-beta1.md](./report-scope-beta1.md) · [report-scope-beta2.md](./report-scope-beta2.md) · [ADR 0004](../../adr/0004-updates-docker.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md)
+**Podstawa:** [report-scope-beta1.md](./report-scope-beta1.md) · [report-scope-beta2.md](./report-scope-beta2.md) · [ADR 0004](../../../adr/0004-updates-docker.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md)
 
 ## Decyzja release
 
@@ -26,7 +26,7 @@ Tag na jawną prośbę po merge feature PR (#44 Countdown, #45 MIDI, #47 menu B+
 - **G1–G10:** nadal **⬜** — residual **operatorski** na HW przy cutcie (brak pełnego green na mac/Win przy tagu). Nie udajemy green.
 - Krytyczne G1–G5 / G7: brak czerwonego raportu z HW; CI green na `main` + Release buduje instalatory.
 - G6 ścieżka kodowa: `latest.json` z **darwin-aarch64 + windows-x86_64** (target `app` + merge platform) — weryfikacja flow relaunch = **Operator** po artefaktach β2 (baseline β1.1 → β2).
-- Następny etap: **5.0.0** — [TODO.md](../../TODO.md); G1–G10 green = must przed / przy stable.
+- Następny etap: **5.0.0** — [TODO.md](../../../TODO.md); G1–G10 green = must przed / przy stable.
 
 ### `v5.0.0` (2026-07-23) — **Overture** (stable cut)
 
@@ -36,7 +36,7 @@ Tag na jawną prośbę po closeout kodu 5.0.0 na `main`:
 - **G1–G10:** nadal **⬜** — residual **operatorski** na HW przy cutcie (brak pełnego green na mac/Win przy tagu). Nie udajemy green.
 - Krytyczne G1–G5 / G7: brak czerwonego raportu z HW; CI green na `main` + Release buduje instalatory `v5.0.0`.
 - G6: baseline β2 → **5.0.0** po artefaktach Release; relaunch = **Operator**.
-- Następny etap: **5.2+** residual — [TODO.md](../../TODO.md); G1–G10 pozostaje checklistą operatorską (baseline instalatorów: `v5.2.0`).
+- Następny etap: **5.2+** residual — [TODO.md](../../../TODO.md); G1–G10 pozostaje checklistą operatorską (baseline instalatorów: `v5.2.0`).
 
 ## Checklista G1–G10
 
@@ -100,15 +100,15 @@ Wykonane (2026-07-21):
 
 ## Ograniczenia beta
 
-- Instalatory **unsigned** (brak notaryzacji Apple / cert EV Windows) — obejście w [DESKTOP.md](../../guides/DESKTOP.md).
-- GHCR **prywatny** — operator potrzebuje PAT `read:packages` — instrukcja w [INSTALL.md](../../guides/INSTALL.md).
+- Instalatory **unsigned** (brak notaryzacji Apple / cert EV Windows) — obejście w [DESKTOP.md](../../../guides/DESKTOP.md).
+- GHCR **prywatny** — operator potrzebuje PAT `read:packages` — instrukcja w [INSTALL.md](../../../guides/INSTALL.md).
 - Windows G2/G6: wymaga ręcznej maszyny Win (CI nie weryfikuje instalacji/relauch w środowisku operatora).
 - Desktop update (G6): wymaga tag push z `latest.json` (pełny publish Release).
 - Jeśli Actions `github-release` padnie na limicie wydatków GitHub — dokończ publish ręcznie przez `gh` (jak przy α13).
 
 ## Po tagu `v5.2.0` (Pocket Stage)
 
-Aktywny backlog w [TODO.md](../../TODO.md) = **5.2+ residual** + **G1–G10** operator.  
+Aktywny backlog w [TODO.md](../../../TODO.md) = **5.2+ residual** + **G1–G10** operator.  
 Linia 5.2: PIN, Safety Net (manual), Sampler, bus→bus, Performer/Console, motyw hosta — **wydane** (`v5.2.0`).
 
 | Reguła | Status |

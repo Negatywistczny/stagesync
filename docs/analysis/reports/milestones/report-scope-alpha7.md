@@ -1,8 +1,8 @@
 # Scope alpha.7 — IN / OUT / ryzyka
 
 **Wersja docelowa:** `5.0.0-alpha.7`  
-**Podstawa:** hero Edycja Timeline — Forma + lane’y treści ([TODO.md](../../TODO.md), [ROADMAP.md](../../ROADMAP.md)).  
-**ADR:** [0008](../../adr/0008-timeline-clip-editing.md) (Zaakceptowany), [0007](../../adr/0007-snap-grid.md) faza 3.
+**Podstawa:** hero Edycja Timeline — Forma + lane’y treści ([TODO.md](../../../TODO.md), [ROADMAP.md](../../../ROADMAP.md)).  
+**ADR:** [0008](../../../adr/0008-timeline-clip-editing.md) (Zaakceptowany), [0007](../../../adr/0007-snap-grid.md) faza 3.
 
 ## Cel (jedno zdanie)
 
@@ -65,4 +65,4 @@ Na Timeline można **edytować geometrię Formy** (pencil drag, move/resize, Del
 
 ## Kolejność PR
 
-Zamknięte — historia w [CHANGELOG.md](../../../CHANGELOG.md).
+Zamknięte — historia w [CHANGELOG.md](../../../../CHANGELOG.md).

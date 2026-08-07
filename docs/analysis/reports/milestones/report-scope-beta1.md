@@ -1,7 +1,7 @@
 # Scope beta.1 — Desktop standalone-first host / dystrybucja
 
 **Wersja:** `5.0.0-beta.1` — **wydana 2026-07-21** (milestone dystrybucyjny); residual → **must β2** w cutcie `5.0.0-beta.1.1`  
-**Podstawa:** [ROADMAP.md](../../ROADMAP.md) · [TODO.md](../../TODO.md) · [ADR 0004](../../adr/0004-updates-docker.md) · [ADR 0010](../../adr/0010-desktop-shell-tauri.md) · [ADR 0002](../../adr/0002-timebase-ssot.md)  
+**Podstawa:** [ROADMAP.md](../../../ROADMAP.md) · [TODO.md](../../../TODO.md) · [ADR 0004](../../../adr/0004-updates-docker.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md)  
 **Bramka wejścia:** α9 wydane + P8 green ([report-po-smoke-p8.md](./report-po-smoke-p8.md))  
 **Następny scope:** [report-scope-beta2.md](./report-scope-beta2.md)
 
@@ -33,14 +33,14 @@ Feature **Should** z wcześniejszego szkicu TODO (Help, wand, P1) → **β2 / 5.
 | # | Wycinek | Uwagi |
 |---|---------|--------|
 | H1 | Scope report (ten plik) + TODO/ROADMAP hygiene | Faza 0 |
-| H2 | `Dockerfile` + `compose.yml`; volume `./data` → `/app/data` — ścieżka drugorzędna (rack/server) | [ADR 0004](../../adr/0004-updates-docker.md); [INSTALL.md](../../guides/INSTALL.md) |
+| H2 | `Dockerfile` + `compose.yml`; volume `./data` → `/app/data` — ścieżka drugorzędna (rack/server) | [ADR 0004](../../../adr/0004-updates-docker.md); [INSTALL.md](../../../guides/INSTALL.md) |
 | H3 | Serwer serwuje static `apps/web` w obrazie (`STAGESYNC_STATIC_DIR`) | Jeden proces HTTP/WS |
 | H4 | OCC: `PUT /api/projects/:id` z `updatedAt` klienta → mismatch **409** | Fail-fast; bez last-write-wins |
 | H5 | Shadow backup przed destrukcyjnym overwrite / migracją na volume | `.bak` / timestamped |
 | H6 | Migracja schematu library/projects **przy starcie** (write-back v5) | Zod fail-fast; bez cichej naprawy |
 | H7 | ESLint ACL: web ↛ server; shared ↛ DOM / Node FS | `no-restricted-imports` |
 | H8 | API błędy Zod: `{ ok: false, error, details? }` | Shared `ApiErrorSchema` |
-| H9 | `apps/desktop` Tauri standalone: startuje **Node sidecar** → `http://127.0.0.1:<port>`; health-check przed WebView; przy konflikt portu 4000 pokazuje czytelny błąd; kill sidecara przy zamknięciu okna | [ADR 0010](../../adr/0010-desktop-shell-tauri.md) |
+| H9 | `apps/desktop` Tauri standalone: startuje **Node sidecar** → `http://127.0.0.1:<port>`; health-check przed WebView; przy konflikt portu 4000 pokazuje czytelny błąd; kill sidecara przy zamknięciu okna | [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) |
 | H10 | CI: build/packaging sidecara + Tauri smoke (mac lub docs manual Win) | Release tag tylko na prośbę |
 | H11 | Node runtime per architektura: build dociąga właściwy binary Node i pakuje go do `apps/desktop/src-tauri/bin/` | Unika problemów z cross-arch |
 | H12 | Read-only assets vs user storage: seed (`library.template.json`, web dist) pochodzi z resources (read-only), a dane runtime idą do `STAGESYNC_DATA_DIR` | Brak zapisu do katalogu instalacji |
@@ -63,9 +63,9 @@ Feature **Should** z wcześniejszego szkicu TODO (Help, wand, P1) → **β2 / 5.
 | Różdżka (wand) przywrócenie | β2 / 5.0.0 |
 | P1 Timeline gaps (np. TE-13) | β2 / 5.0.0 |
 | Tauri thin-shell przez `STAGESYNC_URL` | OUT β1 (dev / thin-shell tylko) |
-| git-apply / „Zaktualizuj teraz” | Nigdy ([ADR 0004](../../adr/0004-updates-docker.md)) |
+| git-apply / „Zaktualizuj teraz” | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
 | Android / store auto-update | Poza β1 |
-| Clone chrome v4 | Zakaz ([ADR 0011](../../adr/0011-ui-parity-behavior.md)) |
+| Clone chrome v4 | Zakaz ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) |
 
 ## Architektura (domyślna)
 

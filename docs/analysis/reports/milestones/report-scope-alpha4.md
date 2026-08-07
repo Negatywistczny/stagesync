@@ -22,7 +22,7 @@ Alpha.3 dostarczyła **pion treści** (Forma + mapy + PUT + transport + sekcja).
 | Pomoc: szkielet treści | **Placeholder shella** | **5.0.0** (copy) |
 | Admin „Ukryj panel” w nagłówku karty Utwory | **Layout v5** — słaby UX | **α4 should** |
 | „Pliki projektu” statyczna lista bez plików | **Placeholder inventarza** | **α6** (+ empty state wcześniej) |
-| Set vs Utwory — osobne zakładki | **Świadoma IA v5** ([ADR 0003](../../adr/0003-ui-direction-booth.md)) | **α6** wiring |
+| Set vs Utwory — osobne zakładki | **Świadoma IA v5** ([ADR 0003](../../../adr/0003-ui-direction-booth.md)) | **α6** wiring |
 
 ## IN (must)
 
@@ -99,7 +99,7 @@ Cut order przy sporze: **1 → 4 → 2 → 3 → 5 → 6**.
 
 ## Stan po audycie (2026-07-20)
 
-**Werdykt (historyczny):** tag `5.0.0-alpha.4` był **przedwczesny** w momencie audytu — repo gotowe jako **alpha.3**; bramka release α4 zamknięta do must #1–#6. Etap α4 później **wydany** — szczegóły w [CHANGELOG.md](../../../CHANGELOG.md).
+**Werdykt (historyczny):** tag `5.0.0-alpha.4` był **przedwczesny** w momencie audytu — repo gotowe jako **alpha.3**; bramka release α4 zamknięta do must #1–#6. Etap α4 później **wydany** — szczegóły w [CHANGELOG.md](../../../../CHANGELOG.md).
 
 | # | Kryterium must | Status | Notatka audytu |
 |---|----------------|--------|----------------|

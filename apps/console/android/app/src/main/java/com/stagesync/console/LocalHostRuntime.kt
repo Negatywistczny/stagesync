@@ -144,7 +144,7 @@ object LocalHostRuntime {
                 append(": ")
                 append(missing.joinToString("; "))
             }
-            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/MOBILE.md.")
+            append(". Połącz się z hostem LAN albo przebuduj Console APK (`prepare-local-host` + NDK) — docs/guides/MOBILE.md.")
             if (context != null && isPageAlignMismatch(context)) {
                 val page = devicePageSize()
                 val align = libnodePtLoadAlign(context)

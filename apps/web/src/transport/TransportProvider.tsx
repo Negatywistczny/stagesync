@@ -132,7 +132,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     stopRaf();
     // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
     // Equality bail when integer ticks unchanged; opt-in probe: ?ss_perf=h01
-    // (docs/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
+    // (docs/guides/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
     const tick = (timeMs: number) => {
       if (!playingRef.current) return;
       const next = getDisplayTicks(

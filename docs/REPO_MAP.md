@@ -1,19 +1,31 @@
 # 🗺️ REPO MAP & CONTEXT (Automatycznie wygenerowano)
 
-> ⚠️ **Uwaga dla Agentów AI / LLM:** Ten plik zawiera wygenerowaną mapę struktury wyłącznie nieignorowanych plików w repozytorium StageSync (zgodnie z .gitignore). Nie edytuj go ręcznie.
+> ⚠️ **Uwaga dla Agentów AI / LLM:** Ten plik zawiera wygenerowaną mapę struktury wyłącznie plików śledzonych w Git (bez untracked) w repozytorium StageSync (drzewo slim (kolaps assetów, limit głębokości; `--full` = bez skrótów)). Nie edytuj go ręcznie.
 
 ---
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
-* **Liczba wszystkich plików:** 1227
-* **Liczba katalogów:** 185
-* **Data aktualizacji:** 2026-08-06T12:31:04.263Z
 
-### Podział według rozszerzeń
+* **Liczba wszystkich plików:** 1236
+* **Liczba katalogów:** 191
+* **Data aktualizacji:** 2026-08-07T00:45:36.377Z
+
+### Kategorie
+
+| Kategoria | Liczba plików |
+| :--- | ---: |
+| Kod | 773 |
+| Docs | 212 |
+| Config | 113 |
+| Assety | 117 |
+| Inne | 21 |
+
+### Top rozszerzenia
+
 | Rozszerzenie | Liczba plików |
-| :--- | :--- |
+| :--- | ---: |
 | `.ts` | 458 |
-| `.md` | 184 |
+| `.md` | 190 |
 | `.tsx` | 154 |
 | `.png` | 94 |
 | `.kt` | 69 |
@@ -21,82 +33,109 @@
 | `.xml` | 35 |
 | `.json` | 34 |
 | `brak rozszerzenia` | 21 |
-| `.mjs` | 16 |
-| `.js` | 14 |
-| `.yml` | 11 |
-| `.mdc` | 9 |
-| `.txt` | 9 |
-| `.svg` | 9 |
-| `.sh` | 8 |
-| `.html` | 7 |
-| `.kts` | 6 |
-| `.rs` | 5 |
-| `.properties` | 4 |
-| `.rtf` | 4 |
-| `.mp3` | 4 |
-| `.example` | 3 |
-| `.pro` | 2 |
-| `.jar` | 2 |
-| `.toml` | 2 |
-| `.bmp` | 2 |
-| `.apk` | 2 |
-| `.yaml` | 2 |
-| `.cpp` | 1 |
-| `.lock` | 1 |
-| `.icns` | 1 |
-| `.ico` | 1 |
-| `.webmanifest` | 1 |
-| `.jpg` | 1 |
-| `.jsonc` | 1 |
-| `.keystore` | 1 |
+| `.mjs` | 17 |
+| _(pozostałe)_ | 115 |
 
 ---
 
-## 🏛️ Przegląd Architektury (Poziomy 1 i 2)
+## 🏛️ Przegląd Architektury
 
-- **apps/** — Aplikacje wykonawcze i powłoki klienckie w monorepo
-  - **console/** — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
-  - **performer/** — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
-  - **www/** — Strona domowa, portal informacyjny oraz aktualności StageSync
-- **data/** — Lokalne dane uruchomieniowe, projekty, pakiety i logi systemowe
-  - **downloads/** — Lokalne pliki wyjściowe i instalatory APK
-  - **host/** — Lokalne pliki środowiska uruchomieniowego Hosta
-  - **library/** — Główny plik bazy utworów (library.json) oraz szablony projektów
-  - **logs/** — Buffer logów systemowych, diagnostyka i ślady wykonania
-  - **projects/** — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
-  - **adr/** — Architectural Decision Records (Decyzje architektoniczne)
-  - **analysis/** — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
-  - **api/** — Specyfikacje interfejsów programistycznych REST i WebSocket
-  - **examples/** — Przykładowe pliki baz danych i pakiety projektowe v5
-  - **ui/** — Dokumentacja systemu designu, tokenów i komponentów UI
-- **launch/** — Narzędzia odpaleniowe, skrypty budowania oraz zasoby platformowe
-  - **android/** — Pliki keystore i zasoby do budowania wydań Android
-  - **scripts/** — Skrypty automatyzacji budowania, synchronizacji i generowania mapy
-- **packages/** — Współdzielone pakiety wewnętrzne monorepo
-  - **eslint-config/** — Wspólne reguły ESLint dla całego repozytorium
-  - **shared/** — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
-  - **typescript-config/** — Bazowe pliki tsconfig.json dla pism i aplikacji
-  - **ui/** — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-
+- **apps/** (855) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+  - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
+  - **desktop/** (83) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
+  - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **web/** (438) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+    - **e2e/** (2)
+    - **public/** (8)
+      - **brand/** (3)
+    - **scripts/** (10)
+      - **benchmark/** (8)
+    - **src/** (399) — Kod źródłowy UI i logiki klienta
+      - **dev/** (18)
+      - **lib/** (181) — Biblioteki klienta (5 kategorii — bez plików w lib root)
+        - **audio/** (30) — DSP, AudioContext, tempo, waveform
+        - **client/** (56) — Preferencje, mostek desktop, i18n shell, utilities UI
+        - **shell-operator/** (23) — Operatory CRUD API / aktywny projekt
+        - **timeline/** (46) — Silnik renderowania timeline (bez mutacji treści)
+        - **timeline-edit/** (26) — Mutacje treści klipów (akordy, cue, forma, tekst)
+      - **shells/** (179) — Powłoki Admin / Client / Timeline
+      - **transport/** (13) — Transport WS, playhead, probe wydajności
+    - **test/** (9)
+      - **benchmark/** (1)
+      - **fixtures/** (8)
+  - **www/** (29) — Strona domowa, portal informacyjny oraz aktualności StageSync
+- **data/** (10) — Lokalne dane uruchomieniowe, projekty, pakiety i logi systemowe
+  - **downloads/** (3) — Lokalne pliki wyjściowe i instalatory APK
+  - **host/** (1) — Lokalne pliki środowiska uruchomieniowego Hosta
+  - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
+  - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
+  - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
+- **docs/** (163) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+  - **adr/** (19) — Architectural Decision Records (Decyzje architektoniczne)
+  - **analysis/** (121) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
+    - **inspiracje/** (90) — Dumpy zewnętrzne + triage (nie SSOT produktu)
+    - **reports/** (28) — Raporty kanoniczne (current / milestones / hygiene)
+    - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
+  - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
+  - **examples/** (3) — Przykładowe pliki baz danych i pakiety projektowe v5
+  - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
+  - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
+- **packages/** (136) — Współdzielone pakiety wewnętrzne monorepo
+  - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
+  - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
+  - **shared/** (99) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
+  - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
+- **scripts/** (15) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
 
 ---
 
 ## ⚙️ Konfiguracja i Środowisko (Katalogi Narzędziowe)
 
-- **.agents/** — Instrukcje i kontekst operacyjny dla autonomicznych agentów AI
-- **.cursor/** — Konfiguracja środowiska Cursor (agenci, komendy, reguły MDC, umiejętności)
-- **.github/** — Szablony zgłoszeń GitHub, wytyczne społeczności oraz workflows CI/CD
-- **.husky/** — Haki Git (m.in. pre-commit sanity gate do walidacji typów i mapy)
-- **.vscode/** — Ustawienia przestrzeni roboczej VS Code / Cursor (np. explorer file nesting)
-
+- **.agents/** (1) — Instrukcje i kontekst operacyjny dla autonomicznych agentów AI
+- **.cursor/** (16) — Konfiguracja środowiska Cursor (agenci, komendy, reguły MDC, umiejętności)
+  - **agents/** (1) — Definicje agentów Cursor (np. night-auditor)
+  - **commands/** (3) — Komendy slash / prompt templates
+  - **rules/** (9) — Reguły MDC (konstytucja, changelog, parity, layout)
+  - **skills/** (3) — Umiejętności agentów (night-audit, triage-verify)
+- **.github/** (15) — Szablony zgłoszeń GitHub, wytyczne społeczności oraz workflows CI/CD
+  - **ISSUE_TEMPLATE/** (3) — Szablony issue
+  - **codeql/** (1)
+  - **workflows/** (4) — Pipeline’y GitHub Actions (CI, release, codeql)
+- **.husky/** (2) — Haki Git (m.in. pre-commit sanity gate do walidacji typów i mapy)
+- **.vscode/** (1) — Ustawienia przestrzeni roboczej VS Code / Cursor (np. explorer file nesting)
 
 ---
 
-## 📂 Pełne Drzewo Katalogów i Plików
+## 📎 Pliki w root monorepo
+
+- `.clineignore`
+- `.clinerules`
+- `.cursorignore`
+- `.dockerignore`
+- `.editorconfig`
+- `.env.example`
+- `.gitignore`
+- `.npmrc`
+- `.nvmrc`
+- `CHANGELOG.md`
+- `codecov.yml`
+- `commitlint.config.js`
+- `compose.prod.yml`
+- `compose.yml`
+- `Dockerfile`
+- `knip.jsonc`
+- `LICENSE`
+- `package.json`
+- `pnpm-lock.yaml`
+- `pnpm-workspace.yaml`
+- `README.md`
+- `turbo.json`
+
+---
+
+## 📂 Drzewo Katalogów i Plików
 
 ```text
 stagesync/
@@ -127,12 +166,15 @@ stagesync/
 │       └── turn-red/
 │           └── SKILL.md
 ├── .github/
+│   ├── codeql/
+│   │   └── codeql-config.yml
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.yml
 │   │   ├── config.yml
 │   │   └── feature_request.yml
 │   ├── workflows/
 │   │   ├── ci.yml
+│   │   ├── codeql.yml
 │   │   ├── pages.yml
 │   │   └── release.yml
 │   ├── CODE_OF_CONDUCT.md
@@ -151,117 +193,12 @@ stagesync/
 │   ├── console/
 │   │   ├── android/
 │   │   │   ├── app/
-│   │   │   │   ├── src/
-│   │   │   │   │   ├── main/
-│   │   │   │   │   │   ├── cpp/
-│   │   │   │   │   │   │   ├── CMakeLists.txt
-│   │   │   │   │   │   │   └── native-lib.cpp
-│   │   │   │   │   │   ├── java/
-│   │   │   │   │   │   │   └── com/
-│   │   │   │   │   │   │       └── stagesync/
-│   │   │   │   │   │   │           └── console/
-│   │   │   │   │   │   │               ├── ApkInstaller.kt
-│   │   │   │   │   │   │               ├── ApkUpdateChecker.kt
-│   │   │   │   │   │   │               ├── ElfLoadAlign.kt
-│   │   │   │   │   │   │               ├── FcmTokenHolder.kt
-│   │   │   │   │   │   │               ├── HealthProbe.kt
-│   │   │   │   │   │   │               ├── HostAssetExtractor.kt
-│   │   │   │   │   │   │               ├── HostDiscovery.kt
-│   │   │   │   │   │   │               ├── HostProcessLog.kt
-│   │   │   │   │   │   │               ├── HostWebActivity.kt
-│   │   │   │   │   │   │               ├── LauncherActivity.kt
-│   │   │   │   │   │   │               ├── LocalHostButtonMode.kt
-│   │   │   │   │   │   │               ├── LocalHostErrorActions.kt
-│   │   │   │   │   │   │               ├── LocalHostNative.kt
-│   │   │   │   │   │   │               ├── LocalHostNsdAdvertiser.kt
-│   │   │   │   │   │   │               ├── LocalHostNsdTxt.kt
-│   │   │   │   │   │   │               ├── LocalHostOffer.kt
-│   │   │   │   │   │   │               ├── LocalHostRuntime.kt
-│   │   │   │   │   │   │               ├── LocalHostService.kt
-│   │   │   │   │   │   │               ├── LocalHostStatus.kt
-│   │   │   │   │   │   │               ├── LocalUiStore.kt
-│   │   │   │   │   │   │               ├── MdnsBrowser.kt
-│   │   │   │   │   │   │               ├── PushNotifications.kt
-│   │   │   │   │   │   │               ├── QrJoinUrl.kt
-│   │   │   │   │   │   │               ├── QrScanActivity.kt
-│   │   │   │   │   │   │               ├── RecentHosts.kt
-│   │   │   │   │   │   │               ├── ReleaseApkUpdateChecker.kt
-│   │   │   │   │   │   │               ├── SemVer.kt
-│   │   │   │   │   │   │               ├── ShellConfig.kt
-│   │   │   │   │   │   │               └── UiSyncChecker.kt
-│   │   │   │   │   │   ├── res/
-│   │   │   │   │   │   │   ├── drawable/
-│   │   │   │   │   │   │   │   ├── bg_card.xml
-│   │   │   │   │   │   │   │   ├── bg_input.xml
-│   │   │   │   │   │   │   │   ├── bg_scan_frame.xml
-│   │   │   │   │   │   │   │   ├── bg_status_dot.xml
-│   │   │   │   │   │   │   │   ├── bg_tile.xml
-│   │   │   │   │   │   │   │   ├── ic_file_text.xml
-│   │   │   │   │   │   │   │   ├── ss_brand.png
-│   │   │   │   │   │   │   │   └── ss_wordmark.png
-│   │   │   │   │   │   │   ├── layout/
-│   │   │   │   │   │   │   │   ├── activity_host_web.xml
-│   │   │   │   │   │   │   │   ├── activity_launcher.xml
-│   │   │   │   │   │   │   │   ├── activity_qr_scan.xml
-│   │   │   │   │   │   │   │   └── item_host_card.xml
-│   │   │   │   │   │   │   ├── mipmap-anydpi-v26/
-│   │   │   │   │   │   │   │   └── ic_launcher.xml
-│   │   │   │   │   │   │   ├── mipmap-hdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-mdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-xhdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-xxhdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-xxxhdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── values/
-│   │   │   │   │   │   │   │   ├── colors.xml
-│   │   │   │   │   │   │   │   ├── strings.xml
-│   │   │   │   │   │   │   │   └── themes.xml
-│   │   │   │   │   │   │   └── xml/
-│   │   │   │   │   │   │       ├── file_paths.xml
-│   │   │   │   │   │   │       └── network_security_config.xml
-│   │   │   │   │   │   └── AndroidManifest.xml
-│   │   │   │   │   └── test/
-│   │   │   │   │       └── java/
-│   │   │   │   │           └── com/
-│   │   │   │   │               └── stagesync/
-│   │   │   │   │                   └── console/
-│   │   │   │   │                       ├── ApkHealthVersionParseTest.kt
-│   │   │   │   │                       ├── ElfLoadAlignTest.kt
-│   │   │   │   │                       ├── HostDiscoveryTest.kt
-│   │   │   │   │                       ├── HostProcessLogTest.kt
-│   │   │   │   │                       ├── LocalHostButtonModeTest.kt
-│   │   │   │   │                       ├── LocalHostErrorActionsTest.kt
-│   │   │   │   │                       ├── LocalHostNsdTxtTest.kt
-│   │   │   │   │                       ├── LocalHostOfferTest.kt
-│   │   │   │   │                       ├── LocalHostRuntimeTest.kt
-│   │   │   │   │                       ├── LocalHostStatusTest.kt
-│   │   │   │   │                       ├── LocalUiHashParseTest.kt
-│   │   │   │   │                       ├── QrJoinUrlTest.kt
-│   │   │   │   │                       ├── RecentHostsNormalizeTest.kt
-│   │   │   │   │                       ├── ReleaseApkUpdateCheckerTest.kt
-│   │   │   │   │                       ├── SemVerTest.kt
-│   │   │   │   │                       └── UiSyncCheckerTest.kt
+│   │   │   │   ├── src/  … (81 plików, 2 podkatalogi)
 │   │   │   │   ├── build.gradle.kts
 │   │   │   │   ├── google-services.json.example
 │   │   │   │   └── proguard-rules.pro
 │   │   │   ├── gradle/
-│   │   │   │   └── wrapper/
-│   │   │   │       ├── gradle-wrapper.jar
-│   │   │   │       └── gradle-wrapper.properties
+│   │   │   │   └── wrapper/  … (2 pliki)
 │   │   │   ├── build.gradle.kts
 │   │   │   ├── gradle.properties
 │   │   │   ├── gradlew
@@ -287,80 +224,16 @@ stagesync/
 │   │   │   ├── styles.css
 │   │   │   ├── updateDialog.js
 │   │   │   └── updateDialog.test.js
+│   │   ├── scripts/
+│   │   │   ├── build-desktop-sidecar.mjs
+│   │   │   ├── sync-launcher-ui.mjs
+│   │   │   └── sync-sidecar-server.mjs
 │   │   ├── src-tauri/
 │   │   │   ├── assets/
-│   │   │   │   └── installer/
-│   │   │   │       ├── wiz-banner.bmp
-│   │   │   │       └── wiz-dialog.bmp
+│   │   │   │   └── installer/  … (2 pliki)
 │   │   │   ├── capabilities/
 │   │   │   │   └── default.json
-│   │   │   ├── icons/
-│   │   │   │   ├── android/
-│   │   │   │   │   ├── mipmap-anydpi-v26/
-│   │   │   │   │   │   └── ic_launcher.xml
-│   │   │   │   │   ├── mipmap-hdpi/
-│   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   ├── mipmap-mdpi/
-│   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   ├── mipmap-xhdpi/
-│   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   ├── mipmap-xxhdpi/
-│   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   ├── mipmap-xxxhdpi/
-│   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   └── values/
-│   │   │   │   │       └── ic_launcher_background.xml
-│   │   │   │   ├── ios/
-│   │   │   │   │   ├── AppIcon-20x20@1x.png
-│   │   │   │   │   ├── AppIcon-20x20@2x-1.png
-│   │   │   │   │   ├── AppIcon-20x20@2x.png
-│   │   │   │   │   ├── AppIcon-20x20@3x.png
-│   │   │   │   │   ├── AppIcon-29x29@1x.png
-│   │   │   │   │   ├── AppIcon-29x29@2x-1.png
-│   │   │   │   │   ├── AppIcon-29x29@2x.png
-│   │   │   │   │   ├── AppIcon-29x29@3x.png
-│   │   │   │   │   ├── AppIcon-40x40@1x.png
-│   │   │   │   │   ├── AppIcon-40x40@2x-1.png
-│   │   │   │   │   ├── AppIcon-40x40@2x.png
-│   │   │   │   │   ├── AppIcon-40x40@3x.png
-│   │   │   │   │   ├── AppIcon-512@2x.png
-│   │   │   │   │   ├── AppIcon-60x60@2x.png
-│   │   │   │   │   ├── AppIcon-60x60@3x.png
-│   │   │   │   │   ├── AppIcon-76x76@1x.png
-│   │   │   │   │   ├── AppIcon-76x76@2x.png
-│   │   │   │   │   └── AppIcon-83.5x83.5@2x.png
-│   │   │   │   ├── tray/
-│   │   │   │   │   ├── base.png
-│   │   │   │   │   ├── dot_error.png
-│   │   │   │   │   ├── dot_running.png
-│   │   │   │   │   └── dot_starting.png
-│   │   │   │   ├── 128x128.png
-│   │   │   │   ├── 128x128@2x.png
-│   │   │   │   ├── 32x32.png
-│   │   │   │   ├── 64x64.png
-│   │   │   │   ├── icon.icns
-│   │   │   │   ├── icon.ico
-│   │   │   │   ├── icon.png
-│   │   │   │   ├── Square107x107Logo.png
-│   │   │   │   ├── Square142x142Logo.png
-│   │   │   │   ├── Square150x150Logo.png
-│   │   │   │   ├── Square284x284Logo.png
-│   │   │   │   ├── Square30x30Logo.png
-│   │   │   │   ├── Square310x310Logo.png
-│   │   │   │   ├── Square44x44Logo.png
-│   │   │   │   ├── Square71x71Logo.png
-│   │   │   │   ├── Square89x89Logo.png
-│   │   │   │   └── StoreLogo.png
+│   │   │   ├── icons/  … (56 plików: .png ×52, .xml ×2, .icns ×1, .ico ×1)
 │   │   │   ├── permissions/
 │   │   │   │   └── desktop-bridge.toml
 │   │   │   ├── src/
@@ -379,92 +252,12 @@ stagesync/
 │   ├── performer/
 │   │   ├── android/
 │   │   │   ├── app/
-│   │   │   │   ├── src/
-│   │   │   │   │   ├── main/
-│   │   │   │   │   │   ├── java/
-│   │   │   │   │   │   │   └── com/
-│   │   │   │   │   │   │       └── stagesync/
-│   │   │   │   │   │   │           └── performer/
-│   │   │   │   │   │   │               ├── ApkInstaller.kt
-│   │   │   │   │   │   │               ├── ApkUpdateChecker.kt
-│   │   │   │   │   │   │               ├── FcmTokenHolder.kt
-│   │   │   │   │   │   │               ├── HealthProbe.kt
-│   │   │   │   │   │   │               ├── HostDiscovery.kt
-│   │   │   │   │   │   │               ├── HostWebActivity.kt
-│   │   │   │   │   │   │               ├── LauncherActivity.kt
-│   │   │   │   │   │   │               ├── LocalUiStore.kt
-│   │   │   │   │   │   │               ├── MdnsBrowser.kt
-│   │   │   │   │   │   │               ├── PushNotifications.kt
-│   │   │   │   │   │   │               ├── QrJoinUrl.kt
-│   │   │   │   │   │   │               ├── QrScanActivity.kt
-│   │   │   │   │   │   │               ├── RecentHosts.kt
-│   │   │   │   │   │   │               ├── ReleaseApkUpdateChecker.kt
-│   │   │   │   │   │   │               ├── SemVer.kt
-│   │   │   │   │   │   │               ├── ShellConfig.kt
-│   │   │   │   │   │   │               └── UiSyncChecker.kt
-│   │   │   │   │   │   ├── res/
-│   │   │   │   │   │   │   ├── drawable/
-│   │   │   │   │   │   │   │   ├── bg_card.xml
-│   │   │   │   │   │   │   │   ├── bg_input.xml
-│   │   │   │   │   │   │   │   ├── bg_scan_frame.xml
-│   │   │   │   │   │   │   │   ├── bg_status_dot.xml
-│   │   │   │   │   │   │   │   ├── bg_tile.xml
-│   │   │   │   │   │   │   │   ├── ss_brand.png
-│   │   │   │   │   │   │   │   └── ss_wordmark.png
-│   │   │   │   │   │   │   ├── layout/
-│   │   │   │   │   │   │   │   ├── activity_host_web.xml
-│   │   │   │   │   │   │   │   ├── activity_launcher.xml
-│   │   │   │   │   │   │   │   ├── activity_qr_scan.xml
-│   │   │   │   │   │   │   │   └── item_host_card.xml
-│   │   │   │   │   │   │   ├── mipmap-anydpi-v26/
-│   │   │   │   │   │   │   │   └── ic_launcher.xml
-│   │   │   │   │   │   │   ├── mipmap-hdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-mdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-xhdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-xxhdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── mipmap-xxxhdpi/
-│   │   │   │   │   │   │   │   ├── ic_launcher_foreground.png
-│   │   │   │   │   │   │   │   ├── ic_launcher_round.png
-│   │   │   │   │   │   │   │   └── ic_launcher.png
-│   │   │   │   │   │   │   ├── values/
-│   │   │   │   │   │   │   │   ├── colors.xml
-│   │   │   │   │   │   │   │   ├── strings.xml
-│   │   │   │   │   │   │   │   └── themes.xml
-│   │   │   │   │   │   │   └── xml/
-│   │   │   │   │   │   │       ├── file_paths.xml
-│   │   │   │   │   │   │       └── network_security_config.xml
-│   │   │   │   │   │   └── AndroidManifest.xml
-│   │   │   │   │   └── test/
-│   │   │   │   │       └── java/
-│   │   │   │   │           └── com/
-│   │   │   │   │               └── stagesync/
-│   │   │   │   │                   └── performer/
-│   │   │   │   │                       ├── ApkHealthVersionParseTest.kt
-│   │   │   │   │                       ├── LocalUiHashParseTest.kt
-│   │   │   │   │                       ├── QrJoinUrlTest.kt
-│   │   │   │   │                       ├── RecentHostsNormalizeTest.kt
-│   │   │   │   │                       ├── ReleaseApkUpdateCheckerTest.kt
-│   │   │   │   │                       ├── SemVerTest.kt
-│   │   │   │   │                       └── UiSyncCheckerTest.kt
+│   │   │   │   ├── src/  … (57 plików, 2 podkatalogi)
 │   │   │   │   ├── build.gradle.kts
 │   │   │   │   ├── google-services.json.example
 │   │   │   │   └── proguard-rules.pro
 │   │   │   ├── gradle/
-│   │   │   │   └── wrapper/
-│   │   │   │       ├── gradle-wrapper.jar
-│   │   │   │       └── gradle-wrapper.properties
+│   │   │   │   └── wrapper/  … (2 pliki)
 │   │   │   ├── build.gradle.kts
 │   │   │   ├── gradle.properties
 │   │   │   ├── gradlew
@@ -540,8 +333,7 @@ stagesync/
 │   │   │   │   ├── ws.integration.test.ts
 │   │   │   │   └── ws.ts
 │   │   │   ├── ug/
-│   │   │   │   ├── fixtures/
-│   │   │   │   │   └── ug-tab-sample.json
+│   │   │   │   ├── fixtures/  … (1 plik)
 │   │   │   │   ├── ug-fetch.test.ts
 │   │   │   │   └── ug-fetch.ts
 │   │   │   ├── usdb/
@@ -638,6 +430,15 @@ stagesync/
 │   │   │   ├── pwa-icon-512.png
 │   │   │   └── sw.js
 │   │   ├── scripts/
+│   │   │   ├── benchmark/
+│   │   │   │   ├── debug-bar-alignment.ts
+│   │   │   │   ├── debug-winner-beats.ts
+│   │   │   │   ├── extract-logic-features.ts
+│   │   │   │   ├── generate-smart-tempo-benchmark.ts
+│   │   │   │   ├── inspect-logic-onsets.ts
+│   │   │   │   ├── optimize-logic-weights.ts
+│   │   │   │   ├── record-benchmark.ts
+│   │   │   │   └── test-real-downbeats.ts
 │   │   │   ├── aggregate-role-ui.mjs
 │   │   │   └── emit-ui-meta.mjs
 │   │   ├── src/
@@ -661,307 +462,20 @@ stagesync/
 │   │   │   │   ├── devSurfaceState.ts
 │   │   │   │   └── devSurfaceTypes.ts
 │   │   │   ├── lib/
-│   │   │   │   ├── audio/
-│   │   │   │   │   ├── audioHwCapability.test.ts
-│   │   │   │   │   ├── audioHwCapability.ts
-│   │   │   │   │   ├── audioHwEdit.test.ts
-│   │   │   │   │   ├── audioHwEdit.ts
-│   │   │   │   │   ├── audioLaneEdit.test.ts
-│   │   │   │   │   ├── audioLaneEdit.ts
-│   │   │   │   │   ├── audioLatencyPrefs.test.ts
-│   │   │   │   │   ├── audioLatencyPrefs.ts
-│   │   │   │   │   ├── audioLeadInResolver.test.ts
-│   │   │   │   │   ├── audioLeadInResolver.ts
-│   │   │   │   │   ├── audioOutputPrefs.test.ts
-│   │   │   │   │   ├── audioOutputPrefs.ts
-│   │   │   │   │   ├── audioPlayback.test.ts
-│   │   │   │   │   ├── audioPlayback.ts
-│   │   │   │   │   ├── audioTempoAnalysis.test.ts
-│   │   │   │   │   ├── audioTempoAnalysis.ts
-│   │   │   │   │   ├── beatMapperAudition.test.ts
-│   │   │   │   │   ├── beatMapperAudition.ts
-│   │   │   │   │   ├── beatMapperView.test.ts
-│   │   │   │   │   ├── beatMapperView.ts
-│   │   │   │   │   ├── metronome.test.ts
-│   │   │   │   │   ├── metronome.ts
-│   │   │   │   │   ├── metronomePrefs.test.ts
-│   │   │   │   │   ├── metronomePrefs.ts
-│   │   │   │   │   ├── smartTempoBenchmarkData.json
-│   │   │   │   │   ├── smartTempoBenchmarkHistory.json
-│   │   │   │   │   ├── tapTempo.test.ts
-│   │   │   │   │   ├── tapTempo.ts
-│   │   │   │   │   ├── waveformPeaks.test.ts
-│   │   │   │   │   └── waveformPeaks.ts
-│   │   │   │   ├── client/
-│   │   │   │   │   ├── androidLatest.test.ts
-│   │   │   │   │   ├── androidLatest.ts
-│   │   │   │   │   ├── appearance.test.ts
-│   │   │   │   │   ├── appearance.ts
-│   │   │   │   │   ├── appVersion.test.ts
-│   │   │   │   │   ├── appVersion.ts
-│   │   │   │   │   ├── clientDisplayPrefs.test.ts
-│   │   │   │   │   ├── clientDisplayPrefs.ts
-│   │   │   │   │   ├── clientForma.test.ts
-│   │   │   │   │   ├── clientForma.ts
-│   │   │   │   │   ├── clientKaraoke.test.ts
-│   │   │   │   │   ├── clientKaraoke.ts
-│   │   │   │   │   ├── clientVocalTap.test.ts
-│   │   │   │   │   ├── clientVocalTap.ts
-│   │   │   │   │   ├── clockDisplayPrefs.test.ts
-│   │   │   │   │   ├── clockDisplayPrefs.ts
-│   │   │   │   │   ├── desktopBridge.test.ts
-│   │   │   │   │   ├── desktopBridge.ts
-│   │   │   │   │   ├── desktopFileMenu.test.ts
-│   │   │   │   │   ├── desktopFileMenu.ts
-│   │   │   │   │   ├── desktopMenuEvents.test.ts
-│   │   │   │   │   ├── desktopMenuEvents.ts
-│   │   │   │   │   ├── deviceNamePrefs.test.ts
-│   │   │   │   │   ├── deviceNamePrefs.ts
-│   │   │   │   │   ├── docsLinks.test.ts
-│   │   │   │   │   ├── docsLinks.ts
-│   │   │   │   │   ├── draftHistory.test.ts
-│   │   │   │   │   ├── draftHistory.ts
-│   │   │   │   │   ├── isEditableKeyboardTarget.test.ts
-│   │   │   │   │   ├── isEditableKeyboardTarget.ts
-│   │   │   │   │   ├── lastTimelineProject.test.ts
-│   │   │   │   │   ├── lastTimelineProject.ts
-│   │   │   │   │   ├── memoryPressure.test.ts
-│   │   │   │   │   ├── memoryPressure.ts
-│   │   │   │   │   ├── mixerZoneVisibility.test.ts
-│   │   │   │   │   ├── mixerZoneVisibility.ts
-│   │   │   │   │   ├── nativeShell.test.ts
-│   │   │   │   │   ├── nativeShell.ts
-│   │   │   │   │   ├── preferencesEvents.test.ts
-│   │   │   │   │   ├── preferencesEvents.ts
-│   │   │   │   │   ├── pushNotifications.test.ts
-│   │   │   │   │   ├── pushNotifications.ts
-│   │   │   │   │   ├── screenWakeLock.test.ts
-│   │   │   │   │   ├── screenWakeLock.ts
-│   │   │   │   │   ├── sentry.test.ts
-│   │   │   │   │   ├── sentry.ts
-│   │   │   │   │   ├── truncateMiddle.dom.test.ts
-│   │   │   │   │   ├── truncateMiddle.test.ts
-│   │   │   │   │   ├── truncateMiddle.ts
-│   │   │   │   │   ├── useAnnounceDevicePresence.test.tsx
-│   │   │   │   │   ├── useAnnounceDevicePresence.ts
-│   │   │   │   │   ├── useKeepTileAboveIme.test.ts
-│   │   │   │   │   ├── useKeepTileAboveIme.ts
-│   │   │   │   │   ├── useMqMobileCompact.test.ts
-│   │   │   │   │   ├── useMqMobileCompact.ts
-│   │   │   │   │   └── useMqTablet.ts
-│   │   │   │   ├── shell-operator/
-│   │   │   │   │   ├── libraryApi.test.ts
-│   │   │   │   │   ├── libraryApi.ts
-│   │   │   │   │   ├── operatorNavRoutes.ts
-│   │   │   │   │   ├── operatorNavShortcuts.test.ts
-│   │   │   │   │   ├── operatorNavShortcuts.ts
-│   │   │   │   │   ├── operatorPin.test.ts
-│   │   │   │   │   ├── operatorPin.ts
-│   │   │   │   │   ├── operatorPinSession.test.ts
-│   │   │   │   │   ├── operatorPinSession.ts
-│   │   │   │   │   ├── operatorSession.test.ts
-│   │   │   │   │   ├── operatorSession.ts
-│   │   │   │   │   ├── operatorSurface.test.ts
-│   │   │   │   │   ├── operatorSurface.ts
-│   │   │   │   │   ├── projectAssetsApi.test.ts
-│   │   │   │   │   ├── projectAssetsApi.ts
-│   │   │   │   │   ├── setlistApi.test.ts
-│   │   │   │   │   ├── setlistApi.ts
-│   │   │   │   │   ├── ugImportApi.test.ts
-│   │   │   │   │   ├── ugImportApi.ts
-│   │   │   │   │   ├── ultrastarImportApi.test.ts
-│   │   │   │   │   ├── ultrastarImportApi.ts
-│   │   │   │   │   ├── useActiveProject.test.ts
-│   │   │   │   │   └── useActiveProject.ts
-│   │   │   │   ├── timeline/
-│   │   │   │   │   ├── breakpoints.test.ts
-│   │   │   │   │   ├── breakpoints.ts
-│   │   │   │   │   ├── clientBarCells.test.ts
-│   │   │   │   │   ├── clientBarCells.ts
-│   │   │   │   │   ├── clientGrid.test.ts
-│   │   │   │   │   ├── clientGrid.ts
-│   │   │   │   │   ├── clipStartEdit.test.ts
-│   │   │   │   │   ├── clipStartEdit.ts
-│   │   │   │   │   ├── gridHeroMotion.test.ts
-│   │   │   │   │   ├── gridHeroMotion.ts
-│   │   │   │   │   ├── mapLaneEdit.test.ts
-│   │   │   │   │   ├── mapLaneEdit.ts
-│   │   │   │   │   ├── mapSegments.test.ts
-│   │   │   │   │   ├── mapSegments.ts
-│   │   │   │   │   ├── syncLead.test.ts
-│   │   │   │   │   ├── syncLead.ts
-│   │   │   │   │   ├── timelineClipboard.test.ts
-│   │   │   │   │   ├── timelineClipboard.ts
-│   │   │   │   │   ├── timelineContextMenus.test.ts
-│   │   │   │   │   ├── timelineContextMenus.ts
-│   │   │   │   │   ├── timelineDockWidth.test.ts
-│   │   │   │   │   ├── timelineDockWidth.ts
-│   │   │   │   │   ├── timelineGesture.test.ts
-│   │   │   │   │   ├── timelineGesture.ts
-│   │   │   │   │   ├── timelineKeyboardShortcuts.test.ts
-│   │   │   │   │   ├── timelineKeyboardShortcuts.ts
-│   │   │   │   │   ├── timelineLaneHeights.test.ts
-│   │   │   │   │   ├── timelineLaneHeights.ts
-│   │   │   │   │   ├── timelineLocator.test.ts
-│   │   │   │   │   ├── timelineLocator.ts
-│   │   │   │   │   ├── timelineSelection.test.ts
-│   │   │   │   │   ├── timelineSelection.ts
-│   │   │   │   │   ├── timelineToolbarTools.test.ts
-│   │   │   │   │   ├── timelineToolbarTools.ts
-│   │   │   │   │   ├── timelineTouchGestures.test.ts
-│   │   │   │   │   ├── timelineTouchGestures.ts
-│   │   │   │   │   ├── timelineTouchNudge.test.ts
-│   │   │   │   │   ├── timelineTouchNudge.ts
-│   │   │   │   │   ├── timelineTouchTier.test.ts
-│   │   │   │   │   ├── timelineTouchTier.ts
-│   │   │   │   │   ├── timelineTracks.test.ts
-│   │   │   │   │   ├── timelineTracks.ts
-│   │   │   │   │   ├── timelineZoomPrefs.test.ts
-│   │   │   │   │   ├── timelineZoomPrefs.ts
-│   │   │   │   │   ├── useTimelineTouchGestures.test.ts
-│   │   │   │   │   └── useTimelineTouchGestures.ts
-│   │   │   │   └── timeline-edit/
-│   │   │   │       ├── akordyEdit.test.ts
-│   │   │   │       ├── akordyEdit.ts
-│   │   │   │       ├── contentLaneEdit.test.ts
-│   │   │   │       ├── contentLaneEdit.ts
-│   │   │   │       ├── cueEdit.test.ts
-│   │   │   │       ├── cueEdit.ts
-│   │   │   │       ├── formaCanvas.test.ts
-│   │   │   │       ├── formaCanvas.ts
-│   │   │   │       ├── formaEdit.test.ts
-│   │   │   │       ├── formaEdit.ts
-│   │   │   │       ├── formaInspector.test.ts
-│   │   │   │       ├── formaInspector.ts
-│   │   │   │       ├── formaSubsections.test.ts
-│   │   │   │       ├── formaSubsections.ts
-│   │   │   │       ├── scoreBarEdit.test.ts
-│   │   │   │       ├── scoreBarEdit.ts
-│   │   │   │       ├── scoreOsmd.test.ts
-│   │   │   │       ├── scoreOsmd.ts
-│   │   │   │       ├── scorePlayhead.test.ts
-│   │   │   │       ├── scorePlayhead.ts
-│   │   │   │       ├── setlistBudget.test.ts
-│   │   │   │       ├── setlistBudget.ts
-│   │   │   │       ├── tekstBlocks.test.ts
-│   │   │   │       ├── tekstBlocks.ts
-│   │   │   │       ├── tekstEdit.test.ts
-│   │   │   │       └── tekstEdit.ts
+│   │   │   │   ├── audio/  … (30 plików)
+│   │   │   │   ├── client/  … (56 plików)
+│   │   │   │   ├── shell-operator/  … (23 pliki)
+│   │   │   │   ├── timeline/  … (46 plików)
+│   │   │   │   └── timeline-edit/  … (26 plików)
 │   │   │   ├── shells/
-│   │   │   │   ├── admin/
-│   │   │   │   │   ├── modals/
-│   │   │   │   │   │   ├── BatchPcModal.tsx
-│   │   │   │   │   │   ├── Modal.tsx
-│   │   │   │   │   │   └── MusicXmlModal.tsx
-│   │   │   │   │   ├── views/
-│   │   │   │   │   │   ├── LibraryFilesCard.tsx
-│   │   │   │   │   │   └── SongsView.tsx
-│   │   │   │   │   ├── AdminAccordionCard.test.tsx
-│   │   │   │   │   ├── AdminAccordionCard.tsx
-│   │   │   │   │   ├── DevView.module.css
-│   │   │   │   │   ├── DevView.tsx
-│   │   │   │   │   ├── filterLibrarySongs.test.ts
-│   │   │   │   │   ├── filterLibrarySongs.ts
-│   │   │   │   │   ├── ProjectFilesPanel.test.tsx
-│   │   │   │   │   ├── ProjectFilesPanel.tsx
-│   │   │   │   │   ├── SetView.module.css
-│   │   │   │   │   ├── SetView.test.tsx
-│   │   │   │   │   ├── SetView.tsx
-│   │   │   │   │   ├── songCatalogBadges.test.ts
-│   │   │   │   │   ├── songCatalogBadges.ts
-│   │   │   │   │   ├── StageView.module.css
-│   │   │   │   │   ├── StageView.test.tsx
-│   │   │   │   │   ├── StageView.tsx
-│   │   │   │   │   ├── SystemView.module.css
-│   │   │   │   │   ├── SystemView.test.tsx
-│   │   │   │   │   └── SystemView.tsx
-│   │   │   │   ├── client/
-│   │   │   │   │   ├── ChordName.test.tsx
-│   │   │   │   │   ├── ChordName.tsx
-│   │   │   │   │   ├── DrumsPane.test.tsx
-│   │   │   │   │   ├── DrumsPane.tsx
-│   │   │   │   │   ├── GridPane.test.tsx
-│   │   │   │   │   ├── GridPane.tsx
-│   │   │   │   │   ├── KaraokePane.test.tsx
-│   │   │   │   │   ├── KaraokePane.tsx
-│   │   │   │   │   ├── ScorePane.test.tsx
-│   │   │   │   │   └── ScorePane.tsx
-│   │   │   │   ├── components/
-│   │   │   │   │   ├── AppHeader.module.css
-│   │   │   │   │   ├── AppHeader.test.tsx
-│   │   │   │   │   ├── AppHeader.tsx
-│   │   │   │   │   ├── OperatorNav.module.css
-│   │   │   │   │   ├── OperatorNav.test.tsx
-│   │   │   │   │   ├── OperatorNav.tsx
-│   │   │   │   │   ├── SmartTempoAccuracyDashboard.module.css
-│   │   │   │   │   ├── SmartTempoAccuracyDashboard.test.tsx
-│   │   │   │   │   └── SmartTempoAccuracyDashboard.tsx
-│   │   │   │   ├── import/
-│   │   │   │   │   ├── AudioDropzone.module.css
-│   │   │   │   │   ├── AudioDropzone.tsx
-│   │   │   │   │   ├── BeatMapperPane.module.css
-│   │   │   │   │   ├── BeatMapperPane.tsx
-│   │   │   │   │   ├── ImportProgress.module.css
-│   │   │   │   │   └── ImportProgress.tsx
-│   │   │   │   ├── pages/
-│   │   │   │   │   ├── SmartTempoPage.module.css
-│   │   │   │   │   ├── SmartTempoPage.test.tsx
-│   │   │   │   │   └── SmartTempoPage.tsx
-│   │   │   │   ├── settings/
-│   │   │   │   │   └── tabs/
-│   │   │   │   │       ├── AudioSettingsTab.tsx
-│   │   │   │   │       ├── GeneralSettingsTab.tsx
-│   │   │   │   │       ├── MetronomeSettingsTab.tsx
-│   │   │   │   │       ├── MidiSettingsTab.tsx
-│   │   │   │   │       └── ServerSettingsTab.tsx
-│   │   │   │   ├── shared/
-│   │   │   │   │   ├── index.tsx
-│   │   │   │   │   └── shellChrome.module.css
-│   │   │   │   ├── timeline/
-│   │   │   │   │   ├── channelStrip/
-│   │   │   │   │   │   ├── ChannelStripControls.module.css
-│   │   │   │   │   │   ├── ChannelStripControls.test.tsx
-│   │   │   │   │   │   ├── ChannelStripControls.tsx
-│   │   │   │   │   │   ├── channelStripTypes.ts
-│   │   │   │   │   │   ├── ClickStrip.test.tsx
-│   │   │   │   │   │   ├── ClickStrip.tsx
-│   │   │   │   │   │   ├── DualDbReadout.test.tsx
-│   │   │   │   │   │   ├── DualDbReadout.tsx
-│   │   │   │   │   │   ├── HwOutStrip.test.tsx
-│   │   │   │   │   │   ├── HwOutStrip.tsx
-│   │   │   │   │   │   ├── index.ts
-│   │   │   │   │   │   ├── MasterStrip.test.tsx
-│   │   │   │   │   │   ├── MasterStrip.tsx
-│   │   │   │   │   │   ├── meterPaint.test.ts
-│   │   │   │   │   │   ├── meterPaint.ts
-│   │   │   │   │   │   ├── MiddleTruncateLabel.test.tsx
-│   │   │   │   │   │   ├── MiddleTruncateLabel.tsx
-│   │   │   │   │   │   ├── mixerStrip.test.ts
-│   │   │   │   │   │   ├── MixerSurface.module.css
-│   │   │   │   │   │   ├── MixerSurface.test.tsx
-│   │   │   │   │   │   ├── MixerSurface.tsx
-│   │   │   │   │   │   ├── OutputSelector.test.ts
-│   │   │   │   │   │   ├── OutputSelector.tsx
-│   │   │   │   │   │   ├── PanKnob.test.tsx
-│   │   │   │   │   │   ├── PanKnob.tsx
-│   │   │   │   │   │   ├── PeakMeter.module.css
-│   │   │   │   │   │   ├── PeakMeter.styles.test.ts
-│   │   │   │   │   │   ├── PeakMeter.test.tsx
-│   │   │   │   │   │   ├── PeakMeter.tsx
-│   │   │   │   │   │   ├── TaperGainSlider.test.tsx
-│   │   │   │   │   │   ├── TaperGainSlider.tsx
-│   │   │   │   │   │   ├── TrackAppearancePicker.test.tsx
-│   │   │   │   │   │   ├── TrackAppearancePicker.tsx
-│   │   │   │   │   │   ├── useMixerMeterLevels.ts
-│   │   │   │   │   │   ├── VerticalFader.test.tsx
-│   │   │   │   │   │   └── VerticalFader.tsx
-│   │   │   │   │   ├── FormaClipPreview.test.tsx
-│   │   │   │   │   ├── FormaClipPreview.tsx
-│   │   │   │   │   ├── MixerDock.tsx
-│   │   │   │   │   ├── TimelineHelp.module.css
-│   │   │   │   │   ├── TimelineHelp.test.tsx
-│   │   │   │   │   ├── TimelineHelp.tsx
-│   │   │   │   │   └── TimelineToolbar.tsx
+│   │   │   │   ├── admin/  … (24 pliki, 2 podkatalogi; 19 plików bezpośrednio)
+│   │   │   │   ├── client/  … (10 plików)
+│   │   │   │   ├── components/  … (9 plików)
+│   │   │   │   ├── import/  … (6 plików)
+│   │   │   │   ├── pages/  … (3 pliki)
+│   │   │   │   ├── settings/  … (5 plików, 1 podkatalog)
+│   │   │   │   ├── shared/  … (2 pliki)
+│   │   │   │   ├── timeline/  … (43 pliki, 1 podkatalog; 7 plików bezpośrednio)
 │   │   │   │   ├── AdminShell.module.css
 │   │   │   │   ├── AdminShell.test.tsx
 │   │   │   │   ├── AdminShell.tsx
@@ -1065,15 +579,7 @@ stagesync/
 │   │   │   ├── benchmark/
 │   │   │   │   └── smartTempoTrainData.test.ts
 │   │   │   └── fixtures/
-│   │   │       └── smart-tempo-train-data/
-│   │   │           ├── Billie Jean.rtf
-│   │   │           ├── I Will Survive.mp3
-│   │   │           ├── I will survive.rtf
-│   │   │           ├── Michael Jackson - Billie Jean (Official Video) (1).mp3
-│   │   │           ├── Nirvana - Smells Like Teen Spirit (Official Music Video).mp3
-│   │   │           ├── Smells Like Teen Spirit.rtf
-│   │   │           ├── The Winner Takes It All.mp3
-│   │   │           └── The Winner Takes It All.rtf
+│   │   │       └── smart-tempo-train-data/  … (8 plików)
 │   │   ├── client.html
 │   │   ├── console.html
 │   │   ├── eslint.config.js
@@ -1087,22 +593,7 @@ stagesync/
 │   ├── www/
 │   │   ├── aktualnosci/
 │   │   │   └── index.html
-│   │   ├── public/
-│   │   │   ├── brand/
-│   │   │   │   ├── stagesync-logo-light.svg
-│   │   │   │   ├── stagesync-logo.svg
-│   │   │   │   └── stagesync-mark.svg
-│   │   │   ├── config/
-│   │   │   │   └── channels.json
-│   │   │   ├── media/
-│   │   │   │   ├── preview-admin.png
-│   │   │   │   ├── preview-chords.png
-│   │   │   │   ├── preview-lyrics.png
-│   │   │   │   ├── preview-mixer.png
-│   │   │   │   └── preview-timeline.png
-│   │   │   ├── og-image.jpg
-│   │   │   ├── og-image.png
-│   │   │   └── og-image.svg
+│   │   ├── public/  … (12 plików: .png ×6, .svg ×4, .json ×1, .jpg ×1)
 │   │   ├── src/
 │   │   │   ├── news/
 │   │   │   │   └── content.ts
@@ -1163,126 +654,24 @@ stagesync/
 │   │   └── README.md
 │   ├── analysis/
 │   │   ├── inspiracje/
-│   │   │   ├── audyty-silnik/
-│   │   │   │   ├── Audyt-Architektury-StageSync-v5.md
-│   │   │   │   ├── Audyt-Architektury-StageSync-v5.triage.md
-│   │   │   │   ├── Audyt-Edytora-Sciezek-Audio.md
-│   │   │   │   ├── Audyt-Edytora-Sciezek-Audio.triage.md
-│   │   │   │   ├── Audyt-Lifecycle-StageSync-v5-Desktop.md
-│   │   │   │   ├── Audyt-Lifecycle-StageSync-v5-Desktop.triage.md
-│   │   │   │   ├── Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.md
-│   │   │   │   ├── Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md
-│   │   │   │   ├── Audyt-Routingu-Miksera-StageSync.md
-│   │   │   │   ├── Audyt-Routingu-Miksera-StageSync.triage.md
-│   │   │   │   ├── Audyt-Silnika-Odtwarzania-Audio-WebAudio.md
-│   │   │   │   ├── Audyt-Silnika-Odtwarzania-Audio-WebAudio.triage.md
-│   │   │   │   ├── Audyt-StageSync-v5-Race-Conditions.md
-│   │   │   │   ├── Audyt-StageSync-v5-Race-Conditions.triage.md
-│   │   │   │   ├── Audyt-Synchronizacji-Transport-SSOT.md
-│   │   │   │   └── Audyt-Synchronizacji-Transport-SSOT.triage.md
-│   │   │   ├── referencje-daw/
-│   │   │   │   ├── Logika-Edycji-Klipow-Logic-Pro.md
-│   │   │   │   ├── Logika-Edycji-Klipow-Logic-Pro.triage.md
-│   │   │   │   ├── Referencja-Zachowan-Live-MIDI.md
-│   │   │   │   ├── Referencja-Zachowan-Live-MIDI.triage.md
-│   │   │   │   ├── Specyfikacja-Referencji-Zachowan-Wyswietlania.md
-│   │   │   │   ├── Specyfikacja-Referencji-Zachowan-Wyswietlania.triage.md
-│   │   │   │   ├── UXLogika-Show-Tools-Referencja-Zachowan.md
-│   │   │   │   └── UXLogika-Show-Tools-Referencja-Zachowan.triage.md
-│   │   │   ├── spec-5.2+/
-│   │   │   │   ├── Architektura-Ingestii-Danych-Muzycznych-StageSync.md
-│   │   │   │   ├── Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md
-│   │   │   │   ├── Dynamic-Tempo-Mapping-Technical-Blueprint.md
-│   │   │   │   ├── Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md
-│   │   │   │   ├── Implementacja-Smart-Tempo-w-Antigravity.md
-│   │   │   │   ├── Implementacja-Smart-Tempo-w-Antigravity.triage.md
-│   │   │   │   ├── Krytyka-strategii-Mobile-for-Live.md
-│   │   │   │   ├── Krytyka-strategii-Mobile-for-Live.triage.md
-│   │   │   │   ├── MotywyAuth-Bezpieczenstwo-UX-Decyzje.md
-│   │   │   │   ├── MotywyAuth-Bezpieczenstwo-UX-Decyzje.triage.md
-│   │   │   │   ├── Ocena-Decyzji-Produktowych-StageSync-v1.md
-│   │   │   │   ├── Ocena-Decyzji-Produktowych-StageSync-v1.triage.md
-│   │   │   │   ├── Ocena-Decyzji-Produktowych-StageSync.md
-│   │   │   │   ├── Ocena-Decyzji-Produktowych-StageSync.triage.md
-│   │   │   │   ├── Ocena-decyzji-Sampler-Cue.md
-│   │   │   │   ├── Ocena-decyzji-Sampler-Cue.triage.md
-│   │   │   │   ├── Ocena-Safety-Net-StageSync-437.md
-│   │   │   │   ├── Ocena-Safety-Net-StageSync-437.triage.md
-│   │   │   │   ├── Ocena-Strategii-Produktu-StageSync-v5.md
-│   │   │   │   ├── Ocena-Strategii-Produktu-StageSync-v5.triage.md
-│   │   │   │   ├── Recenzja-Decyzji-Live-FOH-Audio.md
-│   │   │   │   ├── Recenzja-Decyzji-Live-FOH-Audio.triage.md
-│   │   │   │   ├── Safety-Net-dla-StageSync-v5.2.md
-│   │   │   │   ├── Safety-Net-dla-StageSync-v5.2.triage.md
-│   │   │   │   ├── Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md
-│   │   │   │   ├── Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md
-│   │   │   │   ├── Specyfikacja-Motywow-i-Autentykacji-DAW.md
-│   │   │   │   ├── Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md
-│   │   │   │   ├── Specyfikacja-StageSync-Cues-Sampler.md
-│   │   │   │   ├── Specyfikacja-StageSync-Cues-Sampler.triage.md
-│   │   │   │   ├── Specyfikacja-StageSync-dla-miksera-DAW.md
-│   │   │   │   ├── Specyfikacja-StageSync-dla-miksera-DAW.triage.md
-│   │   │   │   ├── StageSync-v5.2+-MIDI-PC-Referencja.md
-│   │   │   │   └── StageSync-v5.2+-MIDI-PC-Referencja.triage.md
-│   │   │   ├── testy-pokrycie/
-│   │   │   │   ├── Analiza-Importu-ChordProUG.md
-│   │   │   │   ├── Analiza-Importu-ChordProUG.triage.md
-│   │   │   │   ├── Analiza-Luki-Testow-Wand.md
-│   │   │   │   ├── Analiza-Luki-Testow-Wand.triage.md
-│   │   │   │   ├── Analiza-Pokrycia-Audio-Lane-Edit.md
-│   │   │   │   ├── Analiza-Pokrycia-Audio-Lane-Edit.triage.md
-│   │   │   │   ├── Analiza-Testow-API-Assets.md
-│   │   │   │   ├── Analiza-Testow-API-Assets.triage.md
-│   │   │   │   ├── Analiza-Testow-MIDI-Host.md
-│   │   │   │   ├── Analiza-Testow-MIDI-Host.triage.md
-│   │   │   │   ├── Analiza-Testow-System-Routes.md
-│   │   │   │   ├── Analiza-Testow-System-Routes.triage.md
-│   │   │   │   ├── Analiza-Walidacji-Zod-Schema.md
-│   │   │   │   ├── Analiza-Walidacji-Zod-Schema.triage.md
-│   │   │   │   ├── Testowanie-Vitest-AudioPlayback.md
-│   │   │   │   ├── Testowanie-Vitest-AudioPlayback.triage.md
-│   │   │   │   ├── Testy-Desktop-File-Menu.md
-│   │   │   │   ├── Testy-Desktop-File-Menu.triage.md
-│   │   │   │   ├── Testy-UG-Fetch.md
-│   │   │   │   ├── Testy-UG-Fetch.triage.md
-│   │   │   │   ├── Testy-WebSocket-Server.md
-│   │   │   │   └── Testy-WebSocket-Server.triage.md
-│   │   │   ├── www/
-│   │   │   │   ├── Audyt-i-propozycje-dla-StageSync.md
-│   │   │   │   └── Audyt-i-propozycje-dla-StageSync.triage.md
+│   │   │   ├── audyty-silnik/  … (17 plików: .md ×17)
+│   │   │   ├── referencje-daw/  … (9 plików: .md ×9)
+│   │   │   ├── specyfikacje/  … (37 plików: .md ×37)
+│   │   │   ├── testy-pokrycie/  … (23 pliki: .md ×23)
+│   │   │   ├── www/  … (3 pliki: .md ×3)
 │   │   │   └── README.md
 │   │   ├── reports/
-│   │   │   ├── README.md
-│   │   │   ├── report-alpha8-code-freeze.md
-│   │   │   ├── report-audit-2026-07-21.md
-│   │   │   ├── report-beta-gate.md
-│   │   │   ├── report-evening-hygiene-2026-07-24.md
-│   │   │   ├── report-evening-hygiene-2026-07-25.md
-│   │   │   ├── report-nightshift-hygiene-2026-07-24.md
-│   │   │   ├── report-nightshift-hygiene-2026-07-26.md
-│   │   │   ├── report-parity-blocker-alpha8.md
-│   │   │   ├── report-po-smoke-p8.md
-│   │   │   ├── report-project-summary-llm.md
-│   │   │   ├── report-qa-signoff-alpha8.md
-│   │   │   ├── report-scope-5.0.0.md
-│   │   │   ├── report-scope-5.4.md
-│   │   │   ├── report-scope-alpha3.md
-│   │   │   ├── report-scope-alpha4.md
-│   │   │   ├── report-scope-alpha5.md
-│   │   │   ├── report-scope-alpha6.md
-│   │   │   ├── report-scope-alpha7.md
-│   │   │   ├── report-scope-alpha8.md
-│   │   │   ├── report-scope-alpha9.md
-│   │   │   ├── report-scope-beta1.md
-│   │   │   ├── report-scope-beta2.md
-│   │   │   ├── report-standalone-spike-beta1.md
-│   │   │   ├── report-v4-v5-gap-audit.md
-│   │   │   ├── report-v4-v5-parity-audit.md
-│   │   │   └── report-v4-v5-ui-diff-inventory.md
+│   │   │   ├── current/
+│   │   │   │   ├── report-audit-2026-07-21.md
+│   │   │   │   ├── report-build-artifacts-analysis.md
+│   │   │   │   ├── report-project-summary-llm.md
+│   │   │   │   └── report-scope-5.4.md
+│   │   │   ├── hygiene/  … (4 pliki: .md ×4)
+│   │   │   ├── milestones/  … (19 plików: .md ×19)
+│   │   │   └── README.md
 │   │   ├── working/
 │   │   │   ├── .gitignore
 │   │   │   └── README.md
-│   │   ├── product-contracts-5.2-impl-prompt.md
 │   │   └── README.md
 │   ├── api/
 │   │   └── README.md
@@ -1292,6 +681,11 @@ stagesync/
 │   │   │   └── database.typical.json
 │   │   └── v5/
 │   │       └── library.pack.sample.stagesync.json
+│   ├── guides/
+│   │   ├── DESKTOP.md
+│   │   ├── INSTALL.md
+│   │   ├── MIGRATION.md
+│   │   └── MOBILE.md
 │   ├── ui/
 │   │   ├── badge.md
 │   │   ├── button.md
@@ -1300,50 +694,17 @@ stagesync/
 │   │   ├── README.md
 │   │   ├── segmented.md
 │   │   ├── spacing.md
-│   │   └── typography.md
+│   │   ├── typography.md
+│   │   └── ui-shell-inventory.md
 │   ├── ARCHITECTURE.md
-│   ├── DESKTOP.md
-│   ├── github-labels.md
-│   ├── INSTALL.md
-│   ├── MIGRATION.md
-│   ├── MOBILE.md
 │   ├── README.md
-│   ├── REPO_MAP.md
 │   ├── ROADMAP.md
 │   ├── STANDARDS.md
-│   ├── TODO.md
-│   └── ui-shell-inventory.md
-├── launch/
-│   ├── android/
+│   └── TODO.md
+├── packages/
+│   ├── android-keystore/
 │   │   ├── README.md
 │   │   └── sideload.keystore
-│   ├── scripts/
-│   │   ├── build-desktop-sidecar.mjs
-│   │   ├── build-release-notes.mjs
-│   │   ├── build-release-notes.test.mjs
-│   │   ├── debug-bar-alignment.ts
-│   │   ├── debug-winner-beats.ts
-│   │   ├── extract-changelog-section.mjs
-│   │   ├── extract-changelog-section.test.mjs
-│   │   ├── extract-logic-features.ts
-│   │   ├── generate-repo-map.mjs
-│   │   ├── generate-smart-tempo-benchmark.ts
-│   │   ├── inspect-logic-onsets.ts
-│   │   ├── integrate-pr.sh
-│   │   ├── lint-ss-css.mjs
-│   │   ├── merge-train.sh
-│   │   ├── optimize-logic-weights.ts
-│   │   ├── record-benchmark.ts
-│   │   ├── release-title.mjs
-│   │   ├── run-merge-train.sh
-│   │   ├── run-train-batch.sh
-│   │   ├── sync-launcher-ui.mjs
-│   │   ├── sync-sidecar-server.mjs
-│   │   ├── sync-version.mjs
-│   │   ├── test-real-downbeats.ts
-│   │   └── tsconfig.json
-│   └── README.md
-├── packages/
 │   ├── eslint-config/
 │   │   ├── acl.js
 │   │   ├── base.js
@@ -1353,19 +714,7 @@ stagesync/
 │   ├── shared/
 │   │   ├── src/
 │   │   │   ├── fixtures/
-│   │   │   │   └── us-ug/
-│   │   │   │       ├── demo-simple/
-│   │   │   │       │   ├── chords.txt
-│   │   │   │       │   └── song.txt
-│   │   │   │       ├── verse-chorus/
-│   │   │   │       │   ├── chords.txt
-│   │   │   │       │   └── song.txt
-│   │   │   │       ├── winner-intro-vc/
-│   │   │   │       │   ├── chords.txt
-│   │   │   │       │   └── song.txt
-│   │   │   │       └── with-solo/
-│   │   │   │           ├── chords.txt
-│   │   │   │           └── song.txt
+│   │   │   │   └── us-ug/  … (8 plików, 4 podkatalogi)
 │   │   │   ├── audio-clip.test.ts
 │   │   │   ├── audio-clip.ts
 │   │   │   ├── chord-display.test.ts
@@ -1490,6 +839,22 @@ stagesync/
 │   │   ├── vitest.config.ts
 │   │   └── vitest.setup.ts
 │   └── README.md
+├── scripts/
+│   ├── build-release-notes.mjs
+│   ├── build-release-notes.test.mjs
+│   ├── check-docs-links.mjs
+│   ├── extract-changelog-section.mjs
+│   ├── extract-changelog-section.test.mjs
+│   ├── generate-repo-map.mjs
+│   ├── integrate-pr.sh
+│   ├── lint-ss-css.mjs
+│   ├── merge-train.sh
+│   ├── README.md
+│   ├── release-title.mjs
+│   ├── run-merge-train.sh
+│   ├── run-train-batch.sh
+│   ├── sync-version.mjs
+│   └── tsconfig.json
 ├── .clineignore
 ├── .clinerules
 ├── .cursorignore

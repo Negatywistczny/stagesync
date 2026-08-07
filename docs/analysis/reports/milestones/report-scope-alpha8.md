@@ -1,8 +1,8 @@
 # Scope alpha.8 — IN / OUT / ryzyka
 
 **Wersja docelowa:** `5.0.0-alpha.8`  
-**Podstawa:** hero Parity workflow z legacy 4.x — Timeline treści + Admin/Client ([TODO.md](../../TODO.md), [ROADMAP.md](../../ROADMAP.md)).  
-**ADR:** [0008](../../adr/0008-timeline-clip-editing.md), [0007](../../adr/0007-snap-grid.md); autoplay metronomu: Web Audio `resume()` na user gesture.
+**Podstawa:** hero Parity workflow z legacy 4.x — Timeline treści + Admin/Client ([TODO.md](../../../TODO.md), [ROADMAP.md](../../../ROADMAP.md)).  
+**ADR:** [0008](../../../adr/0008-timeline-clip-editing.md), [0007](../../../adr/0007-snap-grid.md); autoplay metronomu: Web Audio `resume()` na user gesture.
 
 ## Cel (jedno zdanie)
 
@@ -48,13 +48,13 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 | MIDI tracks + Host MIDI I/O | **β2** |
 | Migrator legacy 4.x → v5 | **α9** |
 | Docker Compose | **β1** |
-| Tauri desktop shell | **β1** ([ADR 0010](../../adr/0010-desktop-shell-tauri.md)) |
+| Tauri desktop shell | **β1** ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) |
 | Pełna renderacja OSMD (nawigacja nut, sync score) | β2+ / 5.0.0 |
 | Zoom tool (lupa) | **OUT** / świadomie usunięte (suwaki + Ctrl/Meta+wheel) |
 | Suwaki Zoom H/V/UI | **wchłonięte w rebuild α8** (code freeze) — nie 5.0.0 |
 | Snap UI picker | **5.0.0** |
 | Fade / Flex Time | OUT / 5.0.0 |
-| git-apply | nigdy ([ADR 0004](../../adr/0004-updates-docker.md)) |
+| git-apply | nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
 
 ## Smoke gate α8
 
@@ -83,4 +83,4 @@ Po α8 użytkownik 4.x ma w v5 **ten sam workflow edycji treści i Live Desk** (
 
 ## Kolejność PR
 
-Zamknięte — historia w [CHANGELOG.md](../../../CHANGELOG.md) · freeze: [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md).
+Zamknięte — historia w [CHANGELOG.md](../../../../CHANGELOG.md) · freeze: [report-alpha8-code-freeze.md](./report-alpha8-code-freeze.md).

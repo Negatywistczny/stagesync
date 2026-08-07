@@ -56,9 +56,9 @@
 ## 🚀 Szybki start
 
 * 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.msi` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
-  *Instrukcja krok po kroku: [docs/DESKTOP.md](./docs/guides/DESKTOP.md)*
-* 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/INSTALL.md](./docs/guides/INSTALL.md) *(Compose, GHCR, porty)*.
-* 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 22** + **pnpm 11** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*.
+  *Instrukcja krok po kroku: [docs/guides/DESKTOP.md](./docs/guides/DESKTOP.md)*
+* 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/guides/INSTALL.md](./docs/guides/INSTALL.md) *(Compose, GHCR, porty)*.
+* 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 22** + **pnpm 11** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*. Pierwszy raz na Windowsie (winget / Corepack): [CONTRIBUTING — Środowisko](.github/CONTRIBUTING.md#środowisko).
 
 ```bash
 git clone https://github.com/Negatywistczny/stagesync.git
@@ -67,9 +67,9 @@ pnpm install
 pnpm dev
 ```
 
-Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/INSTALL.md](./docs/guides/INSTALL.md).
+Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/guides/INSTALL.md](./docs/guides/INSTALL.md).
 
-> 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](CONTRIBUTING.md).
+> 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## 📦 Monorepo
 
@@ -103,8 +103,8 @@ Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → h
 | 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
 | 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań (`5.4` Syllables, …) |
 | 🎨 **[UI](docs/ui/README.md)** | Przewodnik po Design Systemie i tokenach CSS |
-| 🔒 **[SECURITY](SECURITY.md)** | Polityka bezpieczeństwa i zgłaszanie podatności |
-| 🤝 **[CONTRIBUTING](CONTRIBUTING.md)** | Standardy commitów, obsługa PR-ów i praca na gałęziach |
+| 🔒 **[SECURITY](.github/SECURITY.md)** | Polityka bezpieczeństwa i zgłaszanie podatności |
+| 🤝 **[CONTRIBUTING](.github/CONTRIBUTING.md)** | Standardy commitów, obsługa PR-ów i praca na gałęziach |
 
 ## 📜 Licencja
 

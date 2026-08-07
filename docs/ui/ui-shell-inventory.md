@@ -1,18 +1,18 @@
 # Inventarz kontrolek UI (v4 → v5 shelle)
 
 **Rola:** checklista **wtórna** — aktualizuj **po** działającym geście / flow, nie przed.  
-Parity = **zachowanie** ([ADR 0011](./adr/0011-ui-parity-behavior.md)), nie „jest przycisk”.  
-Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta black/amber; **zakaz** clone chrome z 4.x.
+Parity = **zachowanie** ([ADR 0011](../adr/0011-ui-parity-behavior.md)), nie „jest przycisk”.  
+Layout paneli = **nowy** ([ADR 0003](../adr/0003-ui-direction-booth.md)); paleta black/amber; **zakaz** clone chrome z 4.x.
 
-**Aktywny backlog:** [TODO.md](./TODO.md) (5.2+). Ten plik = stan kontrolek w shellu po **5.1.x**, nie parking lot planu.
+**Aktywny backlog:** [TODO.md](../TODO.md) (5.2+). Ten plik = stan kontrolek w shellu po **5.1.x**, nie parking lot planu.
 
 `[x]` poniżej = „kontrolka istnieje w shellu” — **nie** = green PO smoke. Usunięcie bez „Świadome delty” = blocker dopiero gdy zachowanie jest w scope.
 
-**β gate:** [report-parity-blocker-alpha8.md](./analysis/reports/report-parity-blocker-alpha8.md) — **P8 green 2026-07-21**.  
-**PO smoke playbook:** [report-po-smoke-p8.md](./analysis/reports/report-po-smoke-p8.md).  
+**β gate:** [report-parity-blocker-alpha8.md](../analysis/reports/milestones/report-parity-blocker-alpha8.md) — **P8 green 2026-07-21**.  
+**PO smoke playbook:** [report-po-smoke-p8.md](../analysis/reports/milestones/report-po-smoke-p8.md).  
 **PO C1 / P8:** **PO verified 2026-07-21** (zachowanie; inventarz `[x]` = kontrolka, nie parity).  
-**SSOT luk historycznych:** [report-v4-v5-gap-audit.md](./analysis/reports/report-v4-v5-gap-audit.md).  
-**Audyt UI-diff:** [report-v4-v5-ui-diff-inventory.md](./analysis/reports/report-v4-v5-ui-diff-inventory.md).
+**SSOT luk historycznych:** [report-v4-v5-gap-audit.md](../analysis/reports/milestones/report-v4-v5-gap-audit.md).  
+**Audyt UI-diff:** [report-v4-v5-ui-diff-inventory.md](../analysis/reports/milestones/report-v4-v5-ui-diff-inventory.md).
 
 ### Reguła: brak funkcji = brak UI
 
@@ -23,13 +23,13 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 | Delta | Uwagi |
 |-------|--------|
 | Countdown widoczny; długość = pre-roll ≤ 0 | Semantyka v5 |
-| − git-apply / „Zaktualizuj teraz” | [ADR 0004](./adr/0004-updates-docker.md) — **nigdy** |
+| − git-apply / „Zaktualizuj teraz” | [ADR 0004](../adr/0004-updates-docker.md) — **nigdy** |
 | SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
-| React + CSS Modules + `--ss-*` | Stack v5; SSOT warstw: [docs/ui/README.md](./ui/README.md) |
-| Admin: Utwory · Set · Scena · Host · Dev (DEV) | IA v5 — **Set + wybór utworów w jednym flow**; `Dev` tylko w buildach deweloperskich ([ADR 0011](./adr/0011-ui-parity-behavior.md)) |
+| React + CSS Modules + `--ss-*` | Stack v5; SSOT warstw: [docs/ui/README.md](./README.md) |
+| Admin: Utwory · Set · Scena · Host · Dev (DEV) | IA v5 — **Set + wybór utworów w jednym flow**; `Dev` tylko w buildach deweloperskich ([ADR 0011](../adr/0011-ui-parity-behavior.md)) |
 | Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
 | Backup restore / path picker FS | Admin Ustawienia → Serwer → Przywróć… (`.bak` / bulk / ZIP + confirm + PIN) |
-| Mixer — fizyczne Out 3–4 / bus→bus | [TODO.md](./TODO.md) § 5.2+ (bez atrap) |
+| Mixer — fizyczne Out 3–4 / bus→bus | [TODO.md](../TODO.md) § 5.2+ (bez atrap) |
 | Forma scissors = subsections v4 | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×** |
 
 ## Timeline — wymagania layoutu (parity v4, α4+)
@@ -80,7 +80,7 @@ Layout paneli = **nowy** ([ADR 0003](./adr/0003-ui-direction-booth.md)); paleta 
 - [x] Utwory: import/export `.stagesync.json` (kafelek Pliki pod Wybrany)
 - [x] Host: logi SSE · **Restart / Wyłącz (2×)** · sieć · MIDI I/O
 - [x] Wygląd: jasny / wysoki kontrast (`data-theme` / `data-contrast`)
-- [x] Sprawdź aktualizacje / Aktualizuj host (Watchtower) + Aktualizuj aplikację (Tauri updater) — [ADR 0004](./adr/0004-updates-docker.md)
+- [x] Sprawdź aktualizacje / Aktualizuj host (Watchtower) + Aktualizuj aplikację (Tauri updater) — [ADR 0004](../adr/0004-updates-docker.md)
 - [x] Backup Przywróć — Admin Ustawienia → Przywróć… (`.bak` / bulk / ZIP)
 - [x] Dev (DEV): Smart Tempo benchmark, Dev Preview multi-surface, Layout Matrix, planowane narzędzia diagnostyczne
 

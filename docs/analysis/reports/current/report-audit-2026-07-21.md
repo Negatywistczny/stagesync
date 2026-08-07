@@ -5,7 +5,7 @@
 **Metoda:** deep-read + repro · bez fixów · bez commitów  
 **Runbook:** `working/working-audit-2026-07-21-runbook.md` (notatka robocza, poza git)  
 **Testy @02:08:** lint **PASS** · `pnpm test` **PASS** (server 44 / web 139 / shared+ui) · H03+H04 FIXED  
-**Baza:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md)
+**Baza:** [report-parity-blocker-alpha8.md](../milestones/report-parity-blocker-alpha8.md)
 
 > Evidence: F01–F302 (notatki robocze lokalne, poza git; patrz runbook).
 
@@ -52,7 +52,7 @@
 
 ### Uwaga o zakresie sesji
 
-Subagent [Looped audit until 11:00](74c47aed-d82b-4729-b261-0e5eeeeb174a) zatrzymał się o ~03:07 na **monthly usage limit**. Fale F01–F302 są kompletne; planowane cykle 03:07→11:00 **nie wykonano**. Werdykt opiera się na materiale do F302, nie na pełnym 8h wall-clock.
+Subagent «Looped audit until 11:00» (`74c47aed-d82b-4729-b261-0e5eeeeb174a`) zatrzymał się o ~03:07 na **monthly usage limit**. Fale F01–F302 są kompletne; planowane cykle 03:07→11:00 **nie wykonano**. Werdykt opiera się na materiale do F302, nie na pełnym 8h wall-clock.
 
 ---
 

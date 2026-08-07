@@ -30,7 +30,7 @@ describe("appVersion + docsLinks", () => {
   });
 
   it("points docs links at the GitHub stagesync repo", () => {
-    expect(DOCS_INSTALL_URL).toContain("docs/INSTALL.md");
+    expect(DOCS_INSTALL_URL).toContain("docs/guides/INSTALL.md");
     expect(DOCS_RELEASES_URL).toContain("/releases");
     expect(DOCS_ISSUES_URL).toContain("/issues");
   });

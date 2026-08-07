@@ -5,6 +5,21 @@ Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [5.4.6](https://github.com/Negatywistczny/stagesync/compare/v5.4.5...v5.4.6) - 2026-08-07
+
+### Zmieniono
+
+#### 📚 Dokumentacja
+- **Podręczniki operatorskie:** INSTALL / DESKTOP / MOBILE / MIGRATION żyją w `docs/guides/`; linki z aplikacji, witryny download oraz komunikatów hosta wskazują nowe ścieżki na GitHub.
+
+### Naprawiono
+
+#### ⚙️ Serwer & API
+- **Import USDB:** przy czyszczeniu HTML ze szczegółów utworu zagnieżdżone tagi `<script>` / `<style>` są usuwane w pętli — tekst importu nie zostawia już osadzonego HTML ze „włożonych” tagów.
+
+### Bezpieczeństwo
+- **Ustawienia hosta:** zapis zarządzanego pliku ustawień (`.env`) z uprawnieniami tylko dla właściciela (mode `0600`).
+
 ## [5.4.5](https://github.com/Negatywistczny/stagesync/compare/v5.4.4...v5.4.5) - 2026-08-05
 
 ### Dodano
@@ -1002,7 +1017,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Timeline:** panel narzędzi pod **T** (menu przy kursorze + litery jak v4); **Alt/⌥+drag** = duplikat clipów (TE-07); live preview multi-drag; loop region **snap na podglądzie** (beat; Cmd/Ctrl = off).
-- Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
+- Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/milestones/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
 - **Client stage content (override ADR 0011 — treść tylko):** wizualny port Karaoke / Grid / Forma / Score stub z v4 `client.css` (fonty, kafelki, hero Formy + poziomy strip, pasek taktów karaoke); chrome (header, settings, role buttons) zostaje v5. CL-P0: progress `--beat-progress` w sekcjach bez tekstu, karuzela Grid + hero „nast.”, Forma past/current. Inventarz CL-R-* = content clone.
 - **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` + pack v5 `docs/examples/v5/library.pack.sample.stagesync.json`; smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
@@ -1027,7 +1042,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Scena:** kolumna **Klienci** szersza (`fr` / `minmax`, nie cap MIDI Host) — listy presence mniej ściśnięte.
 - **Admin Host MIDI:** kafelki liczników wypełniają panel (siatka 2×2); wartość pod etykietą, wycentrowane.
 - **Admin Host:** Ustawienia / Restart / Wyłącz w chrome headerze (`ShellIconButton`, kolejność jak v4); Sieć na pełną szerokość rzędu.
-- **Proces:** α8 rebuild = **code freeze** (engineering); α9 must (migrator + **P8 green 2026-07-21**); β1 na prośbę ([report-parity-blocker-alpha8.md](docs/analysis/reports/report-parity-blocker-alpha8.md)).
+- **Proces:** α8 rebuild = **code freeze** (engineering); α9 must (migrator + **P8 green 2026-07-21**); β1 na prośbę ([report-parity-blocker-alpha8.md](docs/analysis/reports/milestones/report-parity-blocker-alpha8.md)).
 - **Admin Wybrany:** przycisk „Zapisz nazwę” w tym samym rzędzie co pole nazwy.
 - **Admin Utwory:** lista pokazuje `tytuł - artysta` (artysta po „-” bez pogrubienia, muted), gdy `artist` jest ustawiony.
 - **Countdown cyfry:** nie są już zapisywane jako clipy Tekst/Akordy (`vl-cd-`*); Client (karaoke / grid) syntetyzuje „2…1” z długości Forma Countdown; migracja / `setCountdownBars` tylko scrubuje stare digit clipy (TE-21).
@@ -1174,7 +1189,7 @@ na helperach czasu / soft playhead (`@stagesync/shared`).
 - Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
 [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [docs/ROADMAP.md](docs/ROADMAP.md);
 checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.
-[LICENSE](LICENSE) (MIT); [SECURITY.md](SECURITY.md).
+[LICENSE](LICENSE) (MIT); [SECURITY.md](.github/SECURITY.md).
 foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
 audio.
 indeks ADR + słownik statusów ([docs/adr/README.md](docs/adr/README.md)).
@@ -1207,7 +1222,7 @@ helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
 - CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
 `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
 `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
-([CONTRIBUTING.md](CONTRIBUTING.md)).
+([CONTRIBUTING.md](.github/CONTRIBUTING.md)).
 inventarz kontrolek = parity v4 (./docs/ui/ui-shell-inventory.md)).
 
 ### Usunięto

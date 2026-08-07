@@ -8,7 +8,7 @@
 ### 1. Packaging PoC: Node runtime + server JS + web resources
 
 - Dodano skrypt budujący i przygotowujący sidecara:
-  - `launch/scripts/build-desktop-sidecar.mjs`
+  - `apps/desktop/scripts/build-desktop-sidecar.mjs`
 - Skrypt tworzy:
   - `apps/desktop/src-tauri/bin/stagesync-host` (bundlowany Node)
   - `apps/desktop/src-tauri/resources/sidecar/server` (`pnpm deploy --prod @stagesync/server` + prune workspace)
@@ -51,7 +51,7 @@ Weryfikacja lokalna wykonana dla targetu `aarch64-apple-darwin` (build + `--smok
 ### Automatyczny smoke (`--smoke`)
 
 ```sh
-node launch/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin --smoke
+node apps/desktop/scripts/build-desktop-sidecar.mjs --target aarch64-apple-darwin --smoke
 ```
 
 Wynik (2026-07-21): **exit 0**, health `200`, brak `docs/` w bundle.
