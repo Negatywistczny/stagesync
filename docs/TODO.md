@@ -19,7 +19,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 ## Must (operator residual)
 
 - [ ] **HW smoke multi-out** na interfejsie ≥ 4 ch (mac/Win) — checklista w [DESKTOP.md](./guides/DESKTOP.md); **bez claim green**
-- [ ] **G1–G10** na instalatorach `v5.3.0` / najnowszy **5.3.x** / **5.4.x** (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
+- [ ] **G1–G10** na instalatorach z najnowszego GitHub Release (mac/Win HW) — bez claim green; G2 skip; G3 re-verify HW; G7–G9 Docker deferred
 
 ## Should / Higiena (nie blokuje)
 

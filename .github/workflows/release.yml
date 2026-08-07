@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to build (e.g. 5.0.0) — no git commit"
-        required: true
-        default: "5.0.0"
+        description: "Version to build (empty = root package.json) — no git commit"
+        required: false
+        type: string
       publish:
         description: "Create/publish GitHub Release (false = build artifacts only)"
         type: boolean
@@ -42,6 +42,9 @@ jobs:
             VERSION="${GITHUB_REF_NAME#v}"
           else
             VERSION="${{ github.event.inputs.version }}"
+            if [ -z "$VERSION" ]; then
+              VERSION="$(node -p "require('./package.json').version")"
+            fi
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building version: $VERSION"
