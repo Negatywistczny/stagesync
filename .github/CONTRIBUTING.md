@@ -109,6 +109,7 @@ Polityka parytetu v4 → `5.0.0`: [ADR 0011 §1a](../docs/adr/0011-ui-parity-beh
 
 ## Checklista przed release
 
+- [ ] Albo ręcznie, albo: `pnpm cut-release <patch|minor|major> --yes [--push]` ([scripts/cut-release.mjs](../scripts/cut-release.mjs))
 - [ ] [CHANGELOG.md](../CHANGELOG.md) — wpisy przeniesione z Unreleased / uzupełnione; **bez** sekcji `[Unreleased]` w trakcie cut release (dopiero po pierwszych zmianach post-release); styl wg [changelog.mdc](../.cursor/rules/changelog.mdc)
 - [ ] [README.md](../README.md) — uruchomienie i wersja nadal zgodne z rzeczywistością
 - [ ] Design System — brak ad-hoc HEX / drugiego Buttona; tokeny `--ss-*` ([docs/ui/](../docs/ui/README.md))

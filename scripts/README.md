@@ -1,19 +1,78 @@
 # StageSync Root Scripts (`scripts/`)
 
-Ten katalog zawiera skrypty narzędziowe i automatyzacje poziomu monorepo (przeniesione z dawnego folderu `launch/scripts/`), wspierające procesy wydaniowe, generowanie dokumentacji oraz lintery specyficzne dla projektu.
+Narzędzia monorepo: release, mapa repo, lint CSS/tokenów, kolejki merge PR oraz weryfikacja linków w docs.
+
+`tsconfig.json` w tym katalogu służy tylko do podpowiedzi IDE dla plików `*.mjs` (bez emit).
 
 ## Spis skryptów
 
+### Release & wersja
+
 | Plik | Opis |
 | :--- | :--- |
-| `build-release-notes.mjs` | Generuje informacje o wydaniu (Release Notes) na podstawie historii zmian i konwencji. |
-| `extract-changelog-section.mjs` | Wyciąga konkretną sekcję z pliku `CHANGELOG.md` dla zadanej wersji. |
-| `generate-repo-map.mjs` | Generuje mapę monorepo (`docs/REPO_MAP.md`): domyślnie slim (kolaps assetów, limit głębokości). Flagi: `--full`, `--include-untracked`. |
-| `integrate-pr.sh` | Skrypt pomocniczy do integracji Pull Requestów w trunk-based development. |
-| `lint-ss-css.mjs` | Linter sprawdzający poprawność użycia tokenów CSS (`--ss-*`) i reguł stylów. |
-| `merge-train.sh` | Zarządzanie kolejką merge (Merge Train) dla CI/CD. |
-| `release-title.mjs` | Formatuje nagłówek/tytuł release'u na podstawie wersji. |
-| `run-merge-train.sh` | Skrypt uruchamiający automatyzację kolejki mergowania. |
-| `run-train-batch.sh` | Przetwarzanie wsadowe pociągu merge'y. |
-| `sync-version.mjs` | Synchronizuje wersję SemVer z głównego `package.json` do plików konfiguracyjnych i paczek podrzędnych. |
-| `check-docs-links.mjs` | Weryfikuje względne linki markdown w repo (pomija `inspiracje/` według konfiguracji skryptu). |
+| `cut-release.mjs` | Pełny cut SemVer: `[Unreleased]` → `## [X.Y.Z]`, bump `package.json`, `sync-version`, smoke notes, commit + annotated tag; `--push` wypycha HEAD i tag (CI Release). Flagi: `--dry-run`, `--yes`, `--no-commit`, `--date`, `--allow-branch`. |
+| `sync-version.mjs` | Propaguje wersję z root `package.json` (lub `--version`) do web/server, Docker/compose, Tauri (`tauri.conf.json` / `Cargo.toml`) oraz `versionName`/`versionCode` Android Console/Performer. |
+| `build-release-notes.mjs` | Buduje ciało GitHub Release: tabela downloadów + Highlights z sekcji CHANGELOG (nie pełny changelog). Użycie: `node scripts/build-release-notes.mjs <version>`. |
+| `release-title.mjs` | Tytuł release’u z hero-nazwy linii w CHANGELOG (`5.1.0 — Launch & Mix`) albo sama wersja. Użycie: `node scripts/release-title.mjs <version>`. |
+| `extract-changelog-section.mjs` | Wypisuje ciało jednej sekcji Keep a Changelog (bez nagłówka H2). Użyteczne w testach / tooling; Release CI korzysta z `build-release-notes.mjs`. |
+
+### Dokumentacja & jakość
+
+| Plik | Opis |
+| :--- | :--- |
+| `generate-repo-map.mjs` | Generuje `docs/REPO_MAP.md` z plików śledzonych w Git. Domyślnie tryb slim (limit głębokości, kolaps assetów); `--full`, `--include-untracked`. Odpalane też z husky / `pnpm generate:map`. |
+| `check-docs-links.mjs` | Sprawdza względne linki w `*.md` / `*.mdc` (pomija m.in. `node_modules`, `inspiracje/` wg konfiguracji w skrypcie). Exit ≠ 0 przy broken links. |
+| `lint-ss-css.mjs` | Gate CSS: zakaz ad-hoc HEX i ułamkowych `rem` w shellu web + launcher Desktop (wyjątki: Timeline geometry, komentarz `ss-css-allow`). `pnpm lint:ss-css`. |
+
+### Merge train (trunk / PR batch)
+
+| Plik | Opis |
+| :--- | :--- |
+| `integrate-pr.sh` | Wkleja diff jednego PR (`gh pr diff` → `git apply`) na bieżącą gałąź i robi commit z tytułu PR (dostosowanym pod commitlint). Przy konfliktach preferuje stronę PR. |
+| `merge-train.sh` | Tworzy gałąź od `origin/main` i po kolei `git merge` headów podanych PR-ów. Użycie: `merge-train.sh <branch> <pr…>`. |
+| `run-merge-train.sh` | Pełny pociąg: `integrate-pr` dla listy PR → lint/types/test/build → push gałęzi → PR zbiorczy → czekanie na CI → squash merge → zamykanie oryginałów. |
+| `run-train-batch.sh` | Lżejszy batch train: integruje tylko otwarte PR-y, buduje/testuje, push, PR „Merge train batch”, merge squash; pomija zamknięte numery. |
+
+### Testy jednostkowe skryptów
+
+| Plik | Opis |
+| :--- | :--- |
+| `cut-release.test.mjs` | Testy bump SemVer, cut CHANGELOG, hero linii, parse args. |
+| `build-release-notes.test.mjs` | Smoke/regresja generatora Highlights. |
+| `extract-changelog-section.test.mjs` | Smoke ekstrakcji sekcji CHANGELOG. |
+
+Uruchomienie: `node scripts/<name>.test.mjs`.
+
+## Cut release
+
+```bash
+# podgląd (bez zapisów)
+pnpm cut-release patch --dry-run --yes
+
+# lokalny commit + tag (bez push)
+pnpm cut-release patch --yes
+
+# pełny cut + push → CI Release na tagu v*
+pnpm cut-release patch --yes --push
+
+# minor / major (pierwszy cut linii X.Y.0 dopina hero-nazwę z versioning.mdc)
+pnpm cut-release minor --yes --push
+```
+
+Wymaga czystego working tree, gałęzi `main`, niepustego `[Unreleased]` oraz poprawnego ownera GitHub (`Negatywistczny`) w CHANGELOG / docs produktowych.
+
+## Inne częste komendy
+
+```bash
+pnpm sync-version
+node scripts/sync-version.mjs --version 5.4.8 --dry-run
+
+node scripts/build-release-notes.mjs 5.4.7
+node scripts/release-title.mjs 5.4.7
+
+pnpm generate:map
+node scripts/generate-repo-map.mjs --full
+
+pnpm lint:ss-css
+node scripts/check-docs-links.mjs
+```

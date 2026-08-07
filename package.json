@@ -13,6 +13,7 @@
     "check-types": "turbo run check-types",
     "migrate:legacy": "pnpm --filter @stagesync/server migrate:legacy",
     "sync-version": "node scripts/sync-version.mjs",
+    "cut-release": "node scripts/cut-release.mjs",
     "sync:launcher-ui": "node apps/desktop/scripts/sync-launcher-ui.mjs",
     "lint:ss-css": "node scripts/lint-ss-css.mjs",
     "lint:knip": "knip --exclude files,dependencies,devDependencies,unlisted,binaries,exports,types,nsExports,nsTypes,enumMembers,namespaceMembers,catalog,catalogReferences",

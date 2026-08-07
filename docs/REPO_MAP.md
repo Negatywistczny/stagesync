@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1244
+* **Liczba wszystkich plików:** 1246
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-07T15:27:08.535Z
+* **Data aktualizacji:** 2026-08-07T20:29:19.820Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 780 |
+| Kod | 782 |
 | Docs | 212 |
 | Config | 113 |
 | Assety | 117 |
@@ -33,7 +33,7 @@
 | `.xml` | 35 |
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
-| `.mjs` | 17 |
+| `.mjs` | 19 |
 | _(pozostałe)_ | 115 |
 
 ---
@@ -87,7 +87,7 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (15) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (17) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
 
 ---
 
@@ -845,6 +845,8 @@ stagesync/
 │   ├── build-release-notes.mjs
 │   ├── build-release-notes.test.mjs
 │   ├── check-docs-links.mjs
+│   ├── cut-release.mjs
+│   ├── cut-release.test.mjs
 │   ├── extract-changelog-section.mjs
 │   ├── extract-changelog-section.test.mjs
 │   ├── generate-repo-map.mjs
