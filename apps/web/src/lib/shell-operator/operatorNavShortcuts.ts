@@ -8,7 +8,7 @@ import {
   type AdminSectionId,
 } from "./operatorNavRoutes.js";
 import { markOperatorSession } from "./operatorSession.js";
-import { shouldShowOperatorNav } from "./operatorSurface.js";
+import { shouldShowOperatorNav, isOsMenuDesktopShell } from "./operatorSurface.js";
 
 export type OperatorNavShortcutInput = {
   key: string;
@@ -79,12 +79,13 @@ export function useOperatorNavShortcuts({
   pathname,
 }: UseOperatorNavShortcutsOptions): void {
   const navigate = useNavigate();
-  const active = enabled && shouldShowOperatorNav(pathname);
+  const active = enabled && (shouldShowOperatorNav(pathname) || isOsMenuDesktopShell());
 
   useEffect(() => {
     if (!active) return;
 
     const onKeyDown = (ev: KeyboardEvent) => {
+      if (ev.defaultPrevented) return;
       if (isEditableKeyboardTarget(ev.target)) return;
       if (isBlockingModalOpen()) return;
 
