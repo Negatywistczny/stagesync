@@ -5,8 +5,24 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.4.7](https://github.com/Negatywistczny/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
+## [5.4.8] - Unreleased
 
+### Dodano
+
+#### 🖥️ App Shell & Desktop
+- **Splashscreen:** dodano natywny ekran ładowania podczas startu launchera, który automatycznie chowa się po inicjalizacji, zapobiegając błyskaniu okna.
+- **Narzędzia pre-build:** dodano skrypty `check-rust.mjs` i `kill-zombies.mjs`, zapewniając odpowiednią wersję środowiska Rust i sprzątając osierocone procesy Tauri przed ponownym buildem (`pnpm dev` / `build`).
+- **Dev Preview:** integracja globalnych skrótów klawiszowych (Alt+1/2/3 itd.) z iframe'ami preview za pomocą `postMessage`.
+
+### Zmieniono
+
+#### 🖥️ App Shell & Desktop
+- **Instalator Windows:** zmieniono format budowania na zoptymalizowany instalator NSIS (.exe) działający w trybie szybkiej, cichej dekompresji ("Minimal Extraction Banner") z automatycznym startem aplikacji, co zastępuje dotychczasowy kreator WiX `.msi`.
+- **Motyw okna:** wymuszono ciemny motyw systemowy (`theme: "Dark"`) dla głównego okna powłoki Tauri, naprawiając tym samym biały pasek tytułowy na Windowsie.
+- **Skróty klawiszowe:** dodano globalne przechwytywanie skrótów `Alt+Left` / `Alt+Right` blokujące nawigację po historii WebView, naprawiając tym samym działanie przesuwania klipów na osi czasu (Timeline) w wersji instalacyjnej (Windows).
+- **Dev:** wymuszony bind `host: "127.0.0.1"` w deweloperskim serwerze Vite.
+
+## [5.4.7](https://github.com/Negatywistczny/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
 ### Dodano
 
 #### 🖥️ App Shell & UI
