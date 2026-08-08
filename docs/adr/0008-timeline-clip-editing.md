@@ -142,6 +142,10 @@ zmiana tylko MAJOR + nowy ADR + decyzja PO:
 - Take Folders
 - Join / Bounce regionów
 
+Przy major **6.0**: rejestracja + **prosta edycja** wracają wg IN/OUT w [ADR 0018](./0018-future-audio-architecture.md) §5;
+Dual Engine / Lock Lane = [ADR 0019](./0019-dual-engine-studio-live.md). Flex / Takes / Comping / DAW Join
+**nie** są must 6.0.
+
 **Odroczone w 5.x** (nie permanent OUT — osobna decyzja PO gdy wrócą):
 
 - Overlap / X-Fade / Shuffle drag modes
@@ -169,3 +173,4 @@ Nadal poza zakresem implementacyjnym (nie backlog produktowy „nigdy”):
 - [0007](./0007-snap-grid.md) — kwantyzacja; Cmd-off w §7 tego ADR
 - [0015](./0015-daw-reference-and-product-decisions.md) — Logic-First (Timeline only) + decyzje PO
 - [0017](./0017-live-show-control-contracts.md) — permanent OUT Flex/Takes/recording (5.x)
+- [0018](./0018-future-audio-architecture.md) §5 — prosta edycja 6.0 (IN/OUT); [0019](./0019-dual-engine-studio-live.md) — Dual Engine / Lock Lane

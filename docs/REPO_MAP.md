@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1260
+* **Liczba wszystkich plików:** 1262
 * **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-08T21:34:52.172Z
+* **Data aktualizacji:** 2026-08-08T22:36:51.526Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
 | Kod | 786 |
-| Docs | 212 |
+| Docs | 214 |
 | Config | 115 |
 | Assety | 119 |
 | Inne | 28 |
@@ -25,7 +25,7 @@
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
 | `.ts` | 461 |
-| `.md` | 190 |
+| `.md` | 192 |
 | `.tsx` | 157 |
 | `.png` | 94 |
 | `.kt` | 69 |
@@ -71,11 +71,11 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (163) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
-  - **adr/** (19) — Architectural Decision Records (Decyzje architektoniczne)
-  - **analysis/** (121) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
+- **docs/** (165) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+  - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
+  - **analysis/** (122) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
     - **inspiracje/** (90) — Dumpy zewnętrzne + triage (nie SSOT produktu)
-    - **reports/** (28) — Raporty kanoniczne (current / milestones / hygiene)
+    - **reports/** (29) — Raporty kanoniczne (current / milestones / hygiene)
     - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
   - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
   - **examples/** (3) — Przykładowe pliki baz danych i pakiety projektowe v5
@@ -666,6 +666,7 @@ stagesync/
 │   │   ├── 0016-android-performer-console.md
 │   │   ├── 0017-live-show-control-contracts.md
 │   │   ├── 0018-future-audio-architecture.md
+│   │   ├── 0019-dual-engine-studio-live.md
 │   │   └── README.md
 │   ├── analysis/
 │   │   ├── inspiracje/
@@ -677,6 +678,7 @@ stagesync/
 │   │   │   └── README.md
 │   │   ├── reports/
 │   │   │   ├── current/
+│   │   │   │   ├── report-adr-dual-engine-vst-align.md
 │   │   │   │   ├── report-audit-2026-07-21.md
 │   │   │   │   ├── report-build-artifacts-analysis.md
 │   │   │   │   ├── report-project-summary-llm.md
