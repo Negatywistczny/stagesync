@@ -5,6 +5,13 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Android (aktualizacja APK):** pobieranie z GitHub Releases znów działa — allowlista akceptuje redirect CDN (`release-assets.githubusercontent.com`) z ścieżką UUID (nazwa `.apk` w query, nie w path).
+
 ## [5.4.8](https://github.com/Negatywistczny/stagesync/compare/v5.4.7...v5.4.8) - 2026-08-08
 
 ### Dodano

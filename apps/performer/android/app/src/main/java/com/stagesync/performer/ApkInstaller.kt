@@ -54,6 +54,11 @@ object ApkInstaller {
     /**
      * True when [apkUrl] is a host download (`/downloads/stagesync-*.apk`) or a HTTPS
      * GitHub release asset for `Negatywistczny/stagesync`.
+     *
+     * GitHub Releases 302 to `release-assets.githubusercontent.com` (or legacy
+     * `objects.githubusercontent.com`) with a UUID path — the `.apk` name lives in
+     * query (`response-content-disposition`), not in [URL.path]. CDN hops therefore
+     * skip the path `.apk` suffix check; entry URLs on `github.com` still require it.
      */
     internal fun isAllowedApkUrl(apkUrl: String): Boolean {
         val url =
@@ -72,10 +77,11 @@ object ApkInstaller {
 
         if (scheme != "https") return false
         if (host !in ALLOWED_RELEASE_HOSTS) return false
-        if (!path.lowercase().endsWith(".apk")) return false
         if (host == "github.com") {
+            if (!path.lowercase().endsWith(".apk")) return false
             return path.contains("/Negatywistczny/stagesync/", ignoreCase = true)
         }
+        // objects / release-assets: CDN for GitHub Releases (redirect target)
         return true
     }
 

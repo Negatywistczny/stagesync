@@ -85,6 +85,14 @@ class ReleaseApkUpdateCheckerTest {
                 "https://objects.githubusercontent.com/github-production-release-asset/123/StageSync-Console.apk",
             ),
         )
+        // Real GitHub Releases 302 Location: UUID path, .apk only in query Disposition.
+        assertTrue(
+            ApkInstaller.isAllowedApkUrl(
+                "https://release-assets.githubusercontent.com/github-production-release-asset/1305704415/" +
+                    "1f9c2c28-ab8e-4ddd-9fa8-3f04894aa507" +
+                    "?sp=r&response-content-disposition=attachment%3B%20filename%3DStageSync-Console-v5.4.8.apk",
+            ),
+        )
         assertTrue(
             ApkInstaller.isAllowedApkUrl("http://192.168.1.10:4100/downloads/stagesync-console.apk"),
         )

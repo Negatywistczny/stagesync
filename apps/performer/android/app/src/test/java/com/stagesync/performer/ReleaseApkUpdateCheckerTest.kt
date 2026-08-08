@@ -69,6 +69,14 @@ class ReleaseApkUpdateCheckerTest {
                 "https://github.com/Negatywistczny/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk",
             ),
         )
+        // Real GitHub Releases 302 Location: UUID path, .apk only in query Disposition.
+        assertTrue(
+            ApkInstaller.isAllowedApkUrl(
+                "https://release-assets.githubusercontent.com/github-production-release-asset/1305704415/" +
+                    "3b863453-713c-4ae3-b10a-13962ae0847c" +
+                    "?sp=r&response-content-disposition=attachment%3B%20filename%3DStageSync-Performer-v5.4.8.apk",
+            ),
+        )
         assertTrue(
             ApkInstaller.isAllowedApkUrl("http://192.168.1.10:4100/downloads/stagesync-performer.apk"),
         )
