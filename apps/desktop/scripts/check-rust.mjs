@@ -13,7 +13,7 @@ try {
   process.exit(0);
 } catch (e) {
   // Cargo nie ma w PATH
-  
+
   if (fs.existsSync(cargoPath)) {
     console.error('\n⚠️ UWAGA: Rust JEST zainstalowany, ale Twój terminal o tym nie wie!');
     console.error('========================================================================');
@@ -27,9 +27,10 @@ try {
     console.error('========================================================================');
     console.error('Środowisko Tauri wymaga języka Rust do zbudowania warstwy desktopowej.');
     console.error('💡 ZALECENIE: Zamknij ten proces i uruchom skrypt walidacji środowiska w głównym folderze:');
-    console.error(isWin ? '   .\\scripts\\setup.ps1' : '   ./scripts/setup.sh');
+    console.error(isWin ? '   .\\dev doctor  (or .\\scripts\\setup\\setup.ps1)' : '   ./dev doctor  (or ./scripts/setup/setup.sh)');
+    console.error('💡 Możesz też zainstalować Rust ręcznie ze strony https://rustup.rs/');
     console.error('Rozpoczynam zautomatyzowaną instalację Rusta jako fallback...\n');
-    
+
     try {
       if (isWin) {
         // Pobieramy instalator i uruchamiamy (pozwoli to użytkownikowi przejść przez kroki, np. doinstalować MSVC)
@@ -43,9 +44,9 @@ try {
     }
     console.error('========================================================================\n');
   }
-  
+
   // Usypiamy proces, omijając uruchomienie samego Tauri, ale nie wywalając kodu 1.
   // Pozwoli to reszcie środowiska monorepo (np. paczkom web czy server) działać poprawnie.
   console.error('Uruchamianie samej aplikacji desktopowej zostało wstrzymane (usypiam).');
-  setInterval(() => {}, 1000 * 60 * 60);
+  setInterval(() => { }, 1000 * 60 * 60);
 }
