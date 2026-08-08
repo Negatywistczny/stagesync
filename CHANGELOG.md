@@ -5,7 +5,7 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.4.8] - Unreleased
+## [Unreleased]
 
 ### Dodano
 
