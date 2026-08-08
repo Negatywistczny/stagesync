@@ -18,6 +18,11 @@ import {
   downloadBlob,
   requestDevPreviewScreenshot,
 } from "./devPreviewScreenshot.js";
+import {
+  resolveOperatorNavShortcut,
+  isBlockingModalOpen,
+} from "@lib/shell-operator/operatorNavShortcuts.js";
+import { isEditableKeyboardTarget } from "@lib/client/isEditableKeyboardTarget.js";
 import styles from "./DevLayoutMatrix.module.css";
 
 const SURFACE_LABELS: Record<DevSurface, string> = {
@@ -99,6 +104,47 @@ export function DevLayoutMatrix() {
       setSession(false);
     }
   };
+
+  useEffect(() => {
+    const onKeyDown = (ev: KeyboardEvent) => {
+      if (isEditableKeyboardTarget(ev.target)) return;
+      if (isBlockingModalOpen()) return;
+
+      const mod = ev.metaKey || ev.ctrlKey;
+      const action = resolveOperatorNavShortcut({
+        key: ev.key,
+        code: ev.code,
+        mod,
+        alt: ev.altKey,
+        shift: ev.shiftKey,
+        ctrl: ev.ctrlKey,
+        meta: ev.metaKey,
+      });
+      if (!action) return;
+
+      ev.preventDefault();
+
+      if (action.path.startsWith("/admin")) setPath("/admin");
+      else if (action.path.startsWith("/client")) setPath("/client");
+      else if (action.path.startsWith("/timeline")) setPath("/timeline");
+
+      if (action.markSession) {
+        setSession(true);
+      }
+
+      Object.values(iframeRefs.current).forEach((iframe) => {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(
+            { type: "stagesync-dev-preview-navigate", path: action.path },
+            "*"
+          );
+        }
+      });
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

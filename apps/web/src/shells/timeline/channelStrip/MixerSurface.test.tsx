@@ -10,7 +10,7 @@ const hwCap = vi.hoisted(() => ({
   uiAllowed: false,
 }));
 
-vi.mock("../../../lib/audioHwCapability.js", () => ({
+vi.mock("@lib/audio/audioHwCapability.js", () => ({
   AUDIO_HW_CAPABILITY_EVENT: "stagesync-audio-hw-capability",
   getAudioHwCapability: () => ({ ...hwCap }),
   refreshAudioHwCapability: () => ({ ...hwCap }),
@@ -39,7 +39,7 @@ vi.mock("./useMixerMeterLevels.js", () => ({
   }),
 }));
 
-import { MIXER_ZONE_VISIBILITY_KEY } from "../../../lib/mixerZoneVisibility.js";
+import { MIXER_ZONE_VISIBILITY_KEY } from "@lib/client/mixerZoneVisibility.js";
 import { MixerSurface } from "./MixerSurface.js";
 import styles from "./MixerSurface.module.css";
 

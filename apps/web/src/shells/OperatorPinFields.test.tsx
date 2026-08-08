@@ -10,7 +10,7 @@ const getStored = vi.fn(() => null as string | null);
 const unlock = vi.fn(async () => undefined);
 const clearStored = vi.fn();
 
-vi.mock("../lib/operatorPin.js", () => ({
+vi.mock("@lib/shell-operator/operatorPin.js", () => ({
   fetchOperatorPinRequired: () => fetchRequired(),
   getStoredOperatorPin: () => getStored(),
   unlockOperatorPin: (pin: string) => unlock(pin),

@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2/capability",
   "identifier": "default",
   "description": "Default StageSync desktop capability (Launcher + local sidecar UI)",
-  "windows": ["main"],
+  "windows": ["main", "splashscreen"],
   "remote": {
     "urls": [
       "http://127.0.0.1:1420",
@@ -12,7 +12,11 @@
       "http://127.0.0.1:4000",
       "http://127.0.0.1:4000/*",
       "http://localhost:4000",
-      "http://localhost:4000/*"
+      "http://localhost:4000/*",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:3000/*",
+      "http://localhost:3000",
+      "http://localhost:3000/*"
     ]
   },
   "permissions": [
@@ -26,6 +30,9 @@
     "core:window:allow-is-maximized",
     "core:window:allow-maximize",
     "core:window:allow-unmaximize",
+    "core:window:allow-close",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
     "allow-toggle-window-fullscreen",
     "allow-open-external-url",
     "allow-nav-timeline-sync",

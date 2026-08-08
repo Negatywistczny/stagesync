@@ -1,0 +1,163 @@
+/* Admin Dev — grid ikon-kafelków, brak accordionów. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-5);
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  padding: var(--ss-space-4);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ss-space-2);
+  min-width: 0;
+}
+
+.groupHead > .tileIcon {
+  width: 22px;
+  height: 22px;
+  color: var(--ss-color-secondary);
+}
+
+.groupTitle {
+  font-size: var(--ss-text-base);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.tileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.shortcutGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ss-space-2);
+  padding: var(--ss-space-4);
+  min-height: 156px;
+  border-radius: calc(var(--ss-radius-sm) + 2px);
+  border: 1px solid var(--ss-color-border);
+  background: var(--ss-color-elevated);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 140ms ease, border-color 140ms ease,
+    background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.tile:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--ss-color-primary) 55%, var(--ss-color-border));
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.55);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--ss-color-primary);
+  outline-offset: 2px;
+}
+
+.tileIcon {
+  width: 28px;
+  height: 28px;
+  color: var(--ss-color-primary);
+  flex: 0 0 auto;
+}
+
+.tileHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ss-space-3);
+  min-width: 0;
+}
+
+.tileTitle {
+  font-size: var(--ss-text-base);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.tileDesc {
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-sm);
+  line-height: var(--ss-leading-tight);
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tilePath {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ss-color-text-muted);
+  font-size: var(--ss-text-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  margin-top: auto;
+}
+
+.tilePlanned {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.92;
+  background: color-mix(in srgb, var(--ss-color-warning) 8%, var(--ss-color-elevated));
+  border-color: color-mix(in srgb, var(--ss-color-warning) 42%, var(--ss-color-border));
+}
+
+.tilePlanned .tileIcon {
+  color: var(--ss-color-warning);
+}
+
+.shortcutTile {
+  min-height: auto;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--ss-space-3);
+  gap: var(--ss-space-3);
+}
+
+.shortcutTile .tileIcon {
+  width: 22px;
+  height: 22px;
+  color: var(--ss-color-secondary);
+}
+
+.shortcutTile .tileTitle {
+  font-size: var(--ss-text-sm);
+  font-weight: 600;
+}
+
+.shortcutTile .tileHead {
+  align-items: center;
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  gap: var(--ss-space-3);
+}

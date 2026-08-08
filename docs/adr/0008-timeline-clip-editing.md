@@ -156,7 +156,7 @@ Nadal poza zakresem implementacyjnym (nie backlog produktowy „nigdy”):
 
 - **ProjectSchema v3** ([ADR 0009](./0009-project-schema-v3.md)): refs plików α6; pola trim/gain/mute silnika → β2.
 - Shared: helpery kolizji no-overlap (Forma + generyczne dla lane) — czyste funkcje, testy Vitest.
-- [ui-shell-inventory.md](../ui-shell-inventory.md): Smart Tool, Gain Tool, Mute Tool, fader ścieżki.
+- [ui-shell-inventory.md](../ui/ui-shell-inventory.md): Smart Tool, Gain Tool, Mute Tool, fader ścieżki.
 - Logic Pro (inspiracja, **nie** SSOT):
   [Logika-Edycji-Klipow-Logic-Pro.md](../analysis/inspiracje/referencje-daw/Logika-Edycji-Klipow-Logic-Pro.md)
   — referencja algorytmiczna; nie checklista implementacji / TODO.

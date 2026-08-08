@@ -11,8 +11,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Keep in sync with root package.json (host /api/health.version).
-        versionCode = 50403
-        versionName = "5.4.3"
+        versionCode = 50408
+        versionName = "5.4.8"
         // Sideload tablets: arm only (drop x86/x86_64 emulator ABIs).
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a")
@@ -23,7 +23,7 @@ android {
     // made every Release APK unsigned-upgrade-incompatible with the previous cut.
     val sideloadKeystore =
         rootProject.projectDir.parentFile!!.parentFile!!.parentFile!!.resolve(
-            "launch/android/sideload.keystore",
+            "packages/android-keystore/sideload.keystore",
         )
     signingConfigs {
         create("sideload") {

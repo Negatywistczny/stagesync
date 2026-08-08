@@ -10,13 +10,13 @@ import {
   fetchOperatorPinRequired,
   getStoredOperatorPin,
   unlockOperatorPin,
-} from "../lib/operatorPin.js";
+} from "@lib/shell-operator/operatorPin.js";
 import {
   createOperatorPinIdleWatchdog,
   lockOperatorPinSession,
   shouldClearOperatorPinOnHide,
-} from "../lib/operatorPinSession.js";
-import { useKeepTileAboveIme } from "../lib/useKeepTileAboveIme.js";
+} from "@lib/shell-operator/operatorPinSession.js";
+import { useKeepTileAboveIme } from "@lib/client/useKeepTileAboveIme.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { useTransport } from "../transport/useTransport.js";

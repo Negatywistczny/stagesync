@@ -30,7 +30,7 @@ Treść operatorska = **React / stringi w kodzie**, nie pliki `.md` w bundlu.
 
 | Zawartość | Lokalizacja |
 |-----------|-------------|
-| Instrukcje instalacji / Docker / desktop | [`INSTALL.md`](../INSTALL.md), [`DESKTOP.md`](../DESKTOP.md) |
+| Instrukcje instalacji / Docker / desktop | [`INSTALL.md`](../guides/INSTALL.md), [`DESKTOP.md`](../guides/DESKTOP.md) |
 | ADR, architektura, roadmap, audyty | [`docs/`](./), [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
 | Kontrakt API (krótko) | [`docs/api/`](../api/README.md) |
 
@@ -41,10 +41,10 @@ Dozwolone w `resources/sidecar/`:
 - `web/` — Vite `dist`
 - `server/dist/` — skompilowany host
 - `seed/` — `library.template.json`
-- `server/node_modules/` — zależności runtime (optymalizacja rozmiaru → `pnpm deploy --prod` w [`build-desktop-sidecar.mjs`](../../launch/scripts/build-desktop-sidecar.mjs); bez `src`/testów workspace)
+- `server/node_modules/` — zależności runtime (optymalizacja rozmiaru → `pnpm deploy --prod` w [`build-desktop-sidecar.mjs`](../../apps/desktop/scripts/build-desktop-sidecar.mjs); bez `src`/testów workspace)
 
 **Zakaz:** katalog `docs/` repo, ADR-y, raporty audytowe, `README.md` produktowy w `web/` lub `server/dist/`.
-Build: [`launch/scripts/build-desktop-sidecar.mjs`](../../launch/scripts/build-desktop-sidecar.mjs) — assert po pakowaniu.
+Build: [`apps/desktop/scripts/build-desktop-sidecar.mjs`](../../apps/desktop/scripts/build-desktop-sidecar.mjs) — assert po pakowaniu.
 
 ## Konsekwencje
 

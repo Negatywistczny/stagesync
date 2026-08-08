@@ -24,7 +24,7 @@ to **błąd procesu**; korekta w [ADR 0011](./0011-ui-parity-behavior.md).
    rytm mają **konkurować z v4 w użyciu**, nie w klonie markup.
 3. **Parity funkcji = zachowanie v4** — gesty Timeline / treść Client / sensowna
    IA Admin. Szczegóły i zakazy: [ADR 0011](./0011-ui-parity-behavior.md).
-4. **Inventarz** ([ui-shell-inventory.md](../ui-shell-inventory.md)) = checklista
+4. **Inventarz** ([ui-shell-inventory.md](../ui/ui-shell-inventory.md)) = checklista
    **wtórna** (po smoke), nie sterownik review. `disabled` bez planu zachowania = dług.
 5. **Model na Timeline:** 1 akord = 1 clip; **Countdown** widoczny; **Audio 0…N**.
 6. **Style shelli:** tylko `*.module.css` + `--ss-*` + `@stagesync/ui`.

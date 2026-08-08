@@ -5,7 +5,7 @@ import {
   clampMetronomeVolume,
   type MetronomePrefs,
   type MetronomeTimbre,
-} from "../../../lib/metronomePrefs.js";
+} from "@lib/audio/metronomePrefs.js";
 import styles from "../../ServerSettingsModal.module.css";
 
 interface MetronomeSettingsTabProps {

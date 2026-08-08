@@ -5,35 +5,35 @@ import {
   readAppearance,
   setAppearance,
   type AppearanceState,
-} from "../lib/appearance.js";
+} from "@lib/client/appearance.js";
 import {
   applyAudioOutputSink,
   getStoredAudioOutputDeviceId,
   listAudioOutputDevices,
   setStoredAudioOutputDeviceId,
-} from "../lib/audioOutputPrefs.js";
-import { refreshAudioHwCapability } from "../lib/audioHwCapability.js";
+} from "@lib/audio/audioOutputPrefs.js";
+import { refreshAudioHwCapability } from "@lib/audio/audioHwCapability.js";
 import {
   clampLatencyCompensationMs,
   getStoredLatencyCompensationMs,
   setStoredLatencyCompensationMs,
-} from "../lib/audioLatencyPrefs.js";
+} from "@lib/audio/audioLatencyPrefs.js";
 import {
   getStoredClockDisplayFormat,
   setStoredClockDisplayFormat,
   type ClockDisplayFormat,
-} from "../lib/clockDisplayPrefs.js";
-import { getMetronomeAudioContext, previewMetronomeClick } from "../lib/metronome.js";
+} from "@lib/client/clockDisplayPrefs.js";
+import { getMetronomeAudioContext, previewMetronomeClick } from "@lib/audio/metronome.js";
 import {
   getMetronomePrefs,
   setMetronomePrefs,
   type MetronomePrefs,
-} from "../lib/metronomePrefs.js";
+} from "@lib/audio/metronomePrefs.js";
 import {
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
-} from "../lib/deviceNamePrefs.js";
-import { type PreferencesTab } from "../lib/preferencesEvents.js";
+} from "@lib/client/deviceNamePrefs.js";
+import { type PreferencesTab } from "@lib/client/preferencesEvents.js";
 import {
   browseServerPath,
   fetchMidiHostStatus,
@@ -46,7 +46,7 @@ import {
   type MidiHostStatus,
   type ServerSettingsResponse,
   type ServerSettingsValues,
-} from "../lib/setlistApi.js";
+} from "@lib/shell-operator/setlistApi.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellConfirmDialog } from "./ShellBlockingDialog.js";
 import { ShellIconButton } from "./ShellIconButton.js";

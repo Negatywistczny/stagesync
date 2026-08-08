@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { createMemoryRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, Outlet } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { ContextMenuProvider } from "@stagesync/ui";
 import { AdminShell } from "../shells/AdminShell.js";
 import { ClientShell } from "../shells/ClientShell.js";
@@ -65,6 +66,16 @@ export function DevPreviewApp() {
       ),
     [entry],
   );
+
+  useEffect(() => {
+    const onMessage = (ev: MessageEvent) => {
+      if (ev.data && ev.data.type === "stagesync-dev-preview-navigate" && ev.data.path) {
+        router.navigate(ev.data.path);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [router]);
 
   return (
     <TransportProvider>

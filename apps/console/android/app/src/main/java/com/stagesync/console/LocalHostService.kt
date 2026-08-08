@@ -503,13 +503,12 @@ class LocalHostService : Service() {
 
     private fun openAppPendingIntent(): PendingIntent {
         val launch =
-            packageManager.getLaunchIntentForPackage(packageName)
-                ?: Intent(this, LauncherActivity::class.java).apply {
-                    action = Intent.ACTION_MAIN
-                    addCategory(Intent.CATEGORY_LAUNCHER)
-                }
-        launch.flags =
-            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+            Intent(this, LauncherActivity::class.java).apply {
+                action = Intent.ACTION_MAIN
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                flags =
+                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+            }
         return PendingIntent.getActivity(
             this,
             REQUEST_OPEN,

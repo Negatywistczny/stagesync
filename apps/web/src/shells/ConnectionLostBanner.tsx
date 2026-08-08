@@ -3,13 +3,13 @@ import { Button } from "@stagesync/ui";
 import {
   canReturnToLauncher,
   returnToLauncher,
-} from "../lib/desktopBridge.js";
+} from "@lib/client/desktopBridge.js";
 import {
   canChangeServer,
   requestNativeChangeServer,
-} from "../lib/nativeShell.js";
-import { maybeNotifyHostDisconnect } from "../lib/pushNotifications.js";
-import { clearOperatorSession } from "../lib/operatorSession.js";
+} from "@lib/client/nativeShell.js";
+import { maybeNotifyHostDisconnect } from "@lib/client/pushNotifications.js";
+import { clearOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import type { WsStatus } from "../transport/transportContext.js";
 import styles from "./ConnectionLostBanner.module.css";
 

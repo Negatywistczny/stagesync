@@ -3,11 +3,11 @@
  */
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router";
 import {
   OPEN_PREFERENCES_EVENT,
   openPreferences,
-} from "../lib/preferencesEvents.js";
+} from "@lib/client/preferencesEvents.js";
 import { PreferencesEventBridge } from "./PreferencesEventBridge.js";
 
 vi.mock("./ServerSettingsModal.js", () => ({

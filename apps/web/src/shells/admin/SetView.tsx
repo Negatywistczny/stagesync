@@ -21,9 +21,9 @@ import {
   fetchSetlist,
   patchSetlistAutoAdvance,
   putSetlist,
-} from "../../lib/setlistApi.js";
-import { setlistBudgetPercent } from "../../lib/setlistBudget.js";
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/setlistApi.js";
+import { setlistBudgetPercent } from "@lib/timeline-edit/setlistBudget.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellSwitchRow } from "../ShellSwitchRow.js";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import { catalogSongBadges } from "./songCatalogBadges.js";

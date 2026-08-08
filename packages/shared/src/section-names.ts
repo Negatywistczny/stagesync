@@ -107,6 +107,8 @@ function matchTypeWithNumber(
 export function normalizeSectionName(raw: string): string {
   const name = collapseWhitespace(raw);
   if (!name) return "Section";
+  // Bound before polynomial regexes (instrument Solo / Polish aliases).
+  if (name.length > 200) return titleCaseWords(name.slice(0, 200));
 
   const lower = name.toLowerCase();
 
@@ -117,6 +119,7 @@ export function normalizeSectionName(raw: string): string {
     return withOptionalNumber("Outro", m?.[1]);
   }
 
+  // codeql[js/polynomial-redos] Bounded input section name
   const instrumentSolo = lower.match(/^(.+?)\s+solo(?:\s+(\d+))?$/i);
   if (instrumentSolo?.[1]) {
     const instrument = titleCaseWords(instrumentSolo[1].trim());

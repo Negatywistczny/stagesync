@@ -24,7 +24,7 @@ import {
   type HostUpdateStatus,
   type MidiHostStatus,
   type SafetyNetStatus,
-} from "../../lib/setlistApi.js";
+} from "@lib/shell-operator/setlistApi.js";
 import {
   canUseDesktopUpdater,
   checkDesktopUpdate,
@@ -32,23 +32,22 @@ import {
   openExternalUrl,
   formatUnknownError,
   type DesktopUpdateInfo,
-} from "../../lib/desktopBridge.js";
+} from "@lib/client/desktopBridge.js";
 import {
   DOCS_INSTALL_URL,
   DOCS_ISSUES_URL,
   DOCS_RELEASES_URL,
-} from "../../lib/docsLinks.js";
-import { APP_VERSION } from "../../lib/appVersion.js";
+} from "@lib/client/docsLinks.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
 import {
   fetchAndroidLatestManifest,
   isSemverNewer,
-} from "../../lib/androidLatest.js";
-import { isAndroidUpdateSurface } from "../../lib/nativeShell.js";
+} from "@lib/client/androidLatest.js";
+import { isAndroidUpdateSurface } from "@lib/client/nativeShell.js";
 
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import { BrandName } from "../BrandName.js";
-import { Link } from "react-router-dom";
 import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
 import styles from "./SystemView.module.css";
@@ -610,24 +609,6 @@ export function SystemView({
             </div>
         </AdminAccordionCard>
 
-        <AdminAccordionCard
-          title="Analiza Smart Tempo vs Logic Pro — Wizualizacja Dokładności Siatki Taktowej"
-          summary="Dedykowany panel wizualizacji dokładności tempa, histogramów, wykresu CDF i timeline drift"
-          badge="Dedykowana Strona"
-        >
-          <div style={{ padding: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "flex-start" }}>
-            <p className={shell.muted} style={{ margin: 0 }}>
-              Dedykowana strona analizy i porównywania benchmarków Smart Tempo dostępna jest pod adresem <code style={{ color: "#60a5fa" }}>/smart-tempo</code>.
-            </p>
-            <Link
-              to="/smart-tempo"
-              className={shell.primaryButton}
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}
-            >
-              📊 Otwórz Stronę Benchmarku Smart Tempo (/smart-tempo) ➔
-            </Link>
-          </div>
-        </AdminAccordionCard>
       </div>
       {apkQrDialog ? (
         <div

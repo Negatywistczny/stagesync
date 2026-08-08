@@ -3,7 +3,7 @@
  */
 
 import { existsSync, lstatSync, readdirSync, statSync } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { REPO_ROOT } from "./storage/paths.js";
 
@@ -25,7 +25,17 @@ export type BrowseResult = {
 };
 
 function getAllowedRoots(): string[] {
-  return [REPO_ROOT, homedir()].map((r) => resolve(r));
+  const explicitScratch = process.env.STAGESYNC_TEST_SCRATCH_DIR;
+  const roots = [REPO_ROOT, homedir()];
+  if (explicitScratch) roots.push(explicitScratch);
+  const tmp = tmpdir();
+  try {
+    statSync(tmp);
+    roots.push(tmp);
+  } catch {
+    // non-writable tmpdir is unlikely but keep defaults only
+  }
+  return Array.from(new Set(roots.map((r) => resolve(r))));
 }
 
 export function isUnderAllowedRoot(absPath: string): boolean {

@@ -1,5 +1,5 @@
 import { mkdtemp, writeFile, readFile, mkdir, rm } from "node:fs/promises";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildStoreZip } from "../diagnostics-zip.js";
@@ -16,10 +16,26 @@ import {
 
 const scratchDirs: string[] = [];
 
+function resolveTestScratchRoot(): string {
+  const explicit = process.env.STAGESYNC_TEST_SCRATCH_DIR;
+  if (explicit) return explicit;
+  return tmpdir();
+}
+
 async function scratchUnderHome(prefix: string): Promise<string> {
-  const dir = await mkdtemp(join(homedir(), prefix));
-  scratchDirs.push(dir);
-  return dir;
+  const homeBase = join(homedir(), prefix);
+  try {
+    const dir = await mkdtemp(homeBase);
+    scratchDirs.push(dir);
+    return dir;
+  } catch (e) {
+    if (e && typeof e === "object" && "code" in e && (e as { code?: string }).code === "EPERM") {
+      const dir = await mkdtemp(join(resolveTestScratchRoot(), prefix.replace(/^\./, "")));
+      scratchDirs.push(dir);
+      return dir;
+    }
+    throw e;
+  }
 }
 
 describe("resolveLiveNameFromBak", () => {

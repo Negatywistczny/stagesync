@@ -725,7 +725,7 @@ async function init() {
     el.btnLocal.disabled = false;
     if (bootstrap.localHostUrl) {
       el.localHint.hidden = false;
-      el.localHint.textContent = `Host już działa (${bootstrap.localHostUrl}). Kliknij „Uruchom lokalny host” albo Połącz ręcznie — UI dev przekieruje z :4000 na :3000.`;
+      el.localHint.innerHTML = `Host już działa (<code>${bootstrap.localHostUrl}</code>). Kliknij „Uruchom lokalny host” albo Połącz ręcznie — UI dev przekieruje z <code>:4000</code> na <code>:3000</code>.`;
       el.manualUrl.value = bootstrap.localHostUrl.replace(/\/$/, "");
     } else {
       el.localHint.hidden = true;
@@ -734,13 +734,13 @@ async function init() {
   } else if (bootstrap.stagesyncUrl) {
     el.btnLocal.disabled = true;
     el.localHint.hidden = false;
-    el.localHint.textContent = `Tryb deweloperski — użyj ${bootstrap.stagesyncUrl} albo wpisz host poniżej.`;
+    el.localHint.innerHTML = `Tryb deweloperski — użyj <code>${bootstrap.stagesyncUrl}</code> albo wpisz host poniżej.`;
     el.manualUrl.value = bootstrap.stagesyncUrl.replace(/\/$/, "");
   } else {
     el.btnLocal.disabled = true;
     el.localHint.hidden = false;
-    el.localHint.textContent =
-      "Brak bundla sidecara. Uruchom `pnpm dev` i połącz ręcznie: http://127.0.0.1:4000 (API; UI na :3000).";
+    el.localHint.innerHTML =
+      "Brak bundla sidecara. Uruchom <code>pnpm dev</code> i połącz ręcznie: <code>http://127.0.0.1:4000</code> (API; UI na <code>:3000</code>).";
     el.manualUrl.placeholder = "http://127.0.0.1:4000";
   }
   syncLocalButtonAria();
@@ -796,6 +796,20 @@ async function init() {
   void refreshDiscovery();
   void refreshRecent();
   void checkForDesktopUpdate();
+  
+  // Ukryj splashscreen i pokaż główne okno jak najszybciej po załadowaniu UI
+  setTimeout(async () => {
+    try {
+      if (window.__TAURI__?.core?.invoke) {
+        // Bezpieczniejsza metoda niskopoziomowa (IPC) niezależna od struktury wtyczek JS
+        await window.__TAURI__.core.invoke("plugin:window|close", { label: "splashscreen" });
+        await window.__TAURI__.core.invoke("plugin:window|show", { label: "main" });
+        await window.__TAURI__.core.invoke("plugin:window|set_focus", { label: "main" });
+      }
+    } catch (e) {
+      console.warn("Failed to manage windows via IPC", e);
+    }
+  }, 200);
 }
 
 void init();

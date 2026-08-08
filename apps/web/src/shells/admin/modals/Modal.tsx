@@ -6,9 +6,11 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  /** Wider panel for multi-step wizards (song import). */
+  wide?: boolean;
 }
 
-export function Modal({ title, children, onClose }: ModalProps) {
+export function Modal({ title, children, onClose, wide = false }: ModalProps) {
   const titleId = useId();
   return (
     <div
@@ -23,7 +25,7 @@ export function Modal({ title, children, onClose }: ModalProps) {
         aria-label="Zamknij"
         onClick={onClose}
       />
-      <div className={styles.modalPanel}>
+      <div className={wide ? styles.modalPanelWide : styles.modalPanel}>
         <div className={styles.modalHead}>
           <h2 id={titleId}>{title}</h2>
           <ShellIconButton label="Zamknij" onClick={onClose}>

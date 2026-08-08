@@ -20,8 +20,8 @@ import {
   readHwOutMeterDb,
   readMasterMeterDb,
   readTrackMeterDb,
-} from "../../../lib/audioPlayback.js";
-import { readClickMeterDb } from "../../../lib/metronome.js";
+} from "@lib/audio/audioPlayback.js";
+import { readClickMeterDb } from "@lib/audio/metronome.js";
 import {
   clearMeterPaintTargets,
   meterPaintKey,

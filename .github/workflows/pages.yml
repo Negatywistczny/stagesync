@@ -11,8 +11,8 @@ on:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
+  pages: write
 
 concurrency:
   group: pages-www
@@ -23,7 +23,7 @@ env:
 
 jobs:
   build:
-    name: build-www
+    name: Build site
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,13 +46,16 @@ jobs:
           VITE_BASE: /stagesync/
         run: pnpm --filter @stagesync/www build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/www/dist
+          path: ./apps/www/dist
 
   deploy:
-    name: deploy
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -61,4 +64,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4

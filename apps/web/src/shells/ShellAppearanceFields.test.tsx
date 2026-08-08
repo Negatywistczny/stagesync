@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { APPEARANCE_PROFILE_SWATCHES } from "@stagesync/shared";
 import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
 
-vi.mock("../lib/appearance.js", () => ({
+vi.mock("@lib/client/appearance.js", () => ({
   applyAppearance: vi.fn(),
   readAppearance: () => ({ profile: "booth" }),
   setAppearance: vi.fn((patch: { profile?: string }) => ({

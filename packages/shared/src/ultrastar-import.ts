@@ -252,7 +252,7 @@ export function ultrastarLyricStartsWord(rawLyric: string): boolean {
  * (call only after boundary checks on the raw lyric).
  */
 export function ultrastarSyllableDisplayText(rawLyric: string): string {
-  return stripUltrastarMelisma(rawLyric).replace(/^\s+/, "").replace(/\s+$/, "");
+  return stripUltrastarMelisma(rawLyric).trim();
 }
 
 /**
@@ -311,8 +311,7 @@ export function ultrastarLineTextFromRawLyrics(
     .map(stripUltrastarMelisma)
     .join("")
     .replace(/[^\S\n]+/g, " ")
-    .replace(/^\s+/, "")
-    .replace(/\s+$/, "");
+    .trim();
 }
 
 /**
@@ -475,8 +474,8 @@ export function importUltrastarText(
   const ultrastarMetronomeBpm = ultrastarHeaderBpmToMetronome(headerBpm);
   const placeBpm =
     options.gridBpm != null &&
-    Number.isFinite(options.gridBpm) &&
-    options.gridBpm > 0
+      Number.isFinite(options.gridBpm) &&
+      options.gridBpm > 0
       ? options.gridBpm
       : ultrastarMetronomeBpm;
 
@@ -668,9 +667,9 @@ export function applyUltrastarImportToProject(
   const bpmUpdates =
     options.applyBpm && bpm && bpm > 0
       ? {
-          defaultBpm: bpm,
-          tempoMap: tempoMapWithImportedBpm(project.tempoMap, bpm),
-        }
+        defaultBpm: bpm,
+        tempoMap: tempoMapWithImportedBpm(project.tempoMap, bpm),
+      }
       : {};
   return {
     ...project,

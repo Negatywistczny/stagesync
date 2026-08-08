@@ -71,7 +71,7 @@ export function LibraryFilesCard({
           Z pliku…
         </Button>
         <Button variant="ghost" disabled={locked} onClick={onOpenImport}>
-          Import UG
+          Importuj utwór…
         </Button>
         <Button variant="ghost" disabled={locked} onClick={onExport}>
           Eksport

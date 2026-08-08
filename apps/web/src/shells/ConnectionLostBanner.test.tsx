@@ -10,12 +10,12 @@ const returnToLauncher = vi.fn(async () => undefined);
 const canChange = vi.fn(() => false);
 const requestNative = vi.fn(() => false);
 
-vi.mock("../lib/desktopBridge.js", () => ({
+vi.mock("@lib/client/desktopBridge.js", () => ({
   canReturnToLauncher: () => canReturn(),
   returnToLauncher: () => returnToLauncher(),
 }));
 
-vi.mock("../lib/nativeShell.js", () => ({
+vi.mock("@lib/client/nativeShell.js", () => ({
   canChangeServer: () => canChange(),
   requestNativeChangeServer: () => requestNative(),
 }));

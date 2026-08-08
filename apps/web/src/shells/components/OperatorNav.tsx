@@ -1,20 +1,20 @@
 import type { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { Button, Select } from "@stagesync/ui";
-import { openPreferences } from "../../lib/preferencesEvents.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
 import {
-  ADMIN_SECTIONS,
   getClientNavUrl,
   getTimelineNavUrl,
+  getVisibleAdminSections,
   OPERATOR_APP_SEGMENTS,
   type AdminSectionId,
   type OperatorAppId,
-} from "../../lib/operatorNavRoutes.js";
-import { markOperatorSession } from "../../lib/operatorSession.js";
-import { shouldShowOperatorNav } from "../../lib/operatorSurface.js";
-import { useOperatorNavShortcuts } from "../../lib/operatorNavShortcuts.js";
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
-import { useMqTablet } from "../../lib/useMqTablet.js";
+} from "@lib/shell-operator/operatorNavRoutes.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
+import { shouldShowOperatorNav } from "@lib/shell-operator/operatorSurface.js";
+import { useOperatorNavShortcuts } from "@lib/shell-operator/operatorNavShortcuts.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
+import { useMqTablet } from "@lib/client/useMqTablet.js";
 import { IconSettings } from "../icons.js";
 import { ShellIconButton } from "../ShellIconButton.js";
 import styles from "./OperatorNav.module.css";
@@ -170,7 +170,7 @@ function AdminSectionNav({
           }}
           aria-label="Sekcja Admin"
         >
-          {ADMIN_SECTIONS.map((item) => (
+          {getVisibleAdminSections().map((item) => (
             <option key={item.id} value={item.id}>
               {item.label}
             </option>
@@ -182,7 +182,7 @@ function AdminSectionNav({
 
   return (
     <div className={styles.sections} aria-label="Sekcje Admin">
-      {ADMIN_SECTIONS.map((item) => (
+      {getVisibleAdminSections().map((item) => (
         <Button
           key={item.id}
           variant="ghost"

@@ -1,8 +1,8 @@
 import {
   clearOperatorSession,
   markOperatorSession,
-} from "../lib/operatorSession.js";
-import { setStoredDeviceDisplayName } from "../lib/deviceNamePrefs.js";
+} from "@lib/shell-operator/operatorSession.js";
+import { setStoredDeviceDisplayName } from "@lib/client/deviceNamePrefs.js";
 import type { DevSurface } from "./devSurfaceTypes.js";
 import {
   getDevPreviewConfig,
@@ -33,9 +33,15 @@ function backupNative(): DevNativeBackup {
   return w[DEV_NATIVE_KEY]!;
 }
 
-function applyNativeShell(surface: DevSurface): void {
+function applyNativeShell(surface: DevSurface | null): void {
   if (typeof window === "undefined") return;
   const backup = backupNative();
+  
+  if (surface === null) {
+    window.StageSyncNative = backup.native;
+    return;
+  }
+
   if (surface === "console") {
     window.StageSyncNative = {
       shellKind: () => "console",
@@ -48,7 +54,8 @@ function applyNativeShell(surface: DevSurface): void {
     };
     return;
   }
-  window.StageSyncNative = backup.native;
+  
+  delete window.StageSyncNative;
 }
 
 function readTauriBackup(): TauriBackup {
@@ -62,44 +69,41 @@ function readTauriBackup(): TauriBackup {
   };
 }
 
-function applyTauriMarkers(surface: DevSurface, backup: TauriBackup): void {
+function applyTauriMarkers(surface: DevSurface | null, backup: TauriBackup): void {
   if (typeof window === "undefined") return;
   const w = window as unknown as Record<string, unknown>;
-  if (surface === "tauri") {
-    w["__STAGESYNC_TAURI_SHELL__"] = true;
-    w["__STAGESYNC_SHELL__"] = "desktop";
-    w["isTauri"] = true;
-    w["__TAURI__"] = {
-      core: {
-        invoke: async () => undefined,
-      },
-    };
+  
+  if (surface === null) {
+    if (backup.tauriShell === true) Reflect.set(w, "__STAGESYNC_TAURI_SHELL__", true);
+    else Reflect.deleteProperty(w, "__STAGESYNC_TAURI_SHELL__");
+
+    if (backup.shell !== undefined) Reflect.set(w, "__STAGESYNC_SHELL__", backup.shell);
+    else Reflect.deleteProperty(w, "__STAGESYNC_SHELL__");
+
+    if (backup.isTauri === true) Reflect.set(w, "isTauri", true);
+    else Reflect.deleteProperty(w, "isTauri");
+
+    if (backup.tauri !== undefined) Reflect.set(w, "__TAURI__", backup.tauri);
+    else Reflect.deleteProperty(w, "__TAURI__");
     return;
   }
 
-  if (backup.tauriShell === true) {
-    w["__STAGESYNC_TAURI_SHELL__"] = true;
-  } else {
-    delete w["__STAGESYNC_TAURI_SHELL__"];
+  if (surface === "tauri") {
+    Reflect.set(w, "__STAGESYNC_TAURI_SHELL__", true);
+    Reflect.set(w, "__STAGESYNC_SHELL__", "desktop");
+    Reflect.set(w, "isTauri", true);
+    Reflect.set(w, "__TAURI__", {
+      core: {
+        invoke: async () => undefined,
+      },
+    });
+    return;
   }
 
-  if (backup.shell !== undefined) {
-    w["__STAGESYNC_SHELL__"] = backup.shell;
-  } else if (w["__STAGESYNC_SHELL__"] === "desktop") {
-    delete w["__STAGESYNC_SHELL__"];
-  }
-
-  if (backup.isTauri === true) {
-    w["isTauri"] = true;
-  } else if (w["isTauri"] === true) {
-    delete w["isTauri"];
-  }
-
-  if (backup.tauri !== undefined) {
-    w["__TAURI__"] = backup.tauri;
-  } else {
-    delete w["__TAURI__"];
-  }
+  Reflect.deleteProperty(w, "__STAGESYNC_TAURI_SHELL__");
+  Reflect.deleteProperty(w, "__STAGESYNC_SHELL__");
+  Reflect.deleteProperty(w, "isTauri");
+  Reflect.deleteProperty(w, "__TAURI__");
 }
 
 export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
@@ -130,8 +134,8 @@ export function applyDevSurfaceMocks(config: DevPreviewConfig): () => void {
 
   return () => {
     setDevSurfaceOverride(null);
-    applyNativeShell("web");
-    applyTauriMarkers("web", tauriBackup);
+    applyNativeShell(null);
+    applyTauriMarkers(null, tauriBackup);
     if (normalized.surface === "web" && normalized.session) {
       clearOperatorSession();
     }

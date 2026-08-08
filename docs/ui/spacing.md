@@ -33,7 +33,7 @@ kontrolek — tylko siatka poniżej.
 
 ## Breakpointy layoutu (v5.0.0)
 
-Źródło JS: [`apps/web/src/lib/breakpoints.ts`](../../apps/web/src/lib/breakpoints.ts).
+Źródło JS: [`apps/web/src/lib/timeline/breakpoints.ts`](../../apps/web/src/lib/timeline/breakpoints.ts).
 
 | Próg | Media query | Typowe użycie |
 |------|-------------|---------------|

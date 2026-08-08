@@ -3,7 +3,7 @@
  * Paste / .txt file remain as offline fallback (same pattern as UG import).
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button, Input, Textarea } from "@stagesync/ui";
 import {
   importUltrastarText,
@@ -13,13 +13,15 @@ import {
   type UltrastarSongMetadata,
 } from "@stagesync/shared";
 import {
-  fetchUltrastarAccount,
   fetchUltrastarFromServer,
-  putUltrastarAccount,
   searchUltrastarSongs,
-  testUltrastarAccount,
-} from "../lib/ultrastarImportApi.js";
-import { yieldToUi } from "../lib/audioTempoAnalysis.js";
+} from "@lib/shell-operator/ultrastarImportApi.js";
+import { yieldToUi } from "@lib/audio/audioTempoAnalysis.js";
+import {
+  UsdbAccountPanel,
+  shouldOpenUsdbAccount,
+  type UsdbAccountStatusInfo,
+} from "./import/UsdbAccountPanel.js";
 import styles from "./UgImportForm.module.css";
 
 export type UltrastarImportFormProps = {
@@ -62,12 +64,12 @@ export function UltrastarImportForm({
   const [busyApply, setBusyApply] = useState(false);
 
   const [showAccount, setShowAccount] = useState(false);
-  const [accountUser, setAccountUser] = useState("");
-  const [accountPass, setAccountPass] = useState("");
-  const [accountConfigured, setAccountConfigured] = useState(false);
-  const [accountStatus, setAccountStatus] = useState<string | null>(null);
   const [accountBusy, setAccountBusy] = useState(false);
-  const [accountLoaded, setAccountLoaded] = useState(false);
+  const [accountInfo, setAccountInfo] = useState<UsdbAccountStatusInfo>({
+    configured: false,
+    user: "",
+    loaded: false,
+  });
 
   const locked =
     disabled || applying || searching || fetching || busyApply || accountBusy;
@@ -81,30 +83,6 @@ export function UltrastarImportForm({
   const parseError =
     text.trim() && preview && !preview.ok ? preview.message : null;
   const error = applyError ?? parseError;
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchUltrastarAccount()
-      .then((status) => {
-        if (cancelled) return;
-        setAccountConfigured(status.configured);
-        setAccountUser(status.user);
-        setAccountLoaded(true);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setAccountLoaded(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  function shouldOpenUsdbAccount(message: string): boolean {
-    return /Brak konta USDB|Konto USDB|Sesja USDB|odnowić sesji USDB|zaloguj|Nieprawidłowe dane logowania|dane konta|ogranicza logowanie|nie udało się połączyć z USDB/i.test(
-      message,
-    );
-  }
 
   async function onSearch() {
     setApplyError(null);
@@ -191,57 +169,6 @@ export function UltrastarImportForm({
     }
   }
 
-  async function onSaveAccount() {
-    setAccountStatus(null);
-    setAccountBusy(true);
-    try {
-      const saved = await putUltrastarAccount(
-        accountUser,
-        accountPass.trim() ? accountPass : undefined,
-      );
-      setAccountConfigured(saved.configured);
-      setAccountUser(saved.user);
-      setAccountPass("");
-      setAccountStatus(saved.message ?? "Zapisano konto USDB.");
-    } catch (err) {
-      setAccountStatus(err instanceof Error ? err.message : String(err));
-    } finally {
-      setAccountBusy(false);
-    }
-  }
-
-  async function onTestAccount() {
-    setAccountStatus(null);
-    setAccountBusy(true);
-    try {
-      const result = await testUltrastarAccount(
-        accountUser.trim() || undefined,
-        accountPass.trim() || undefined,
-      );
-      setAccountStatus(result.message);
-    } catch (err) {
-      setAccountStatus(err instanceof Error ? err.message : String(err));
-    } finally {
-      setAccountBusy(false);
-    }
-  }
-
-  async function onClearAccount() {
-    setAccountStatus(null);
-    setAccountBusy(true);
-    try {
-      const saved = await putUltrastarAccount("", "");
-      setAccountConfigured(saved.configured);
-      setAccountUser("");
-      setAccountPass("");
-      setAccountStatus(saved.message ?? "Usunięto konto USDB.");
-    } catch (err) {
-      setAccountStatus(err instanceof Error ? err.message : String(err));
-    } finally {
-      setAccountBusy(false);
-    }
-  }
-
   const canApply = Boolean(preview?.ok) && !locked && !applying;
 
   return (
@@ -257,101 +184,20 @@ export function UltrastarImportForm({
         Tempo z <code>#BPM</code> to wartość ×4 (metronom = BPM/4). Import trafia
         do draftu — potem Zapisz w nagłówku (⌘S / Ctrl+S), żeby
         utrwalić na hoście. Wyszukiwanie online wymaga konta USDB
-        {accountLoaded
-          ? accountConfigured
-            ? ` (zapisane: ${accountUser || "…"}).`
+        {accountInfo.loaded
+          ? accountInfo.configured
+            ? ` (zapisane: ${accountInfo.user || "…"}).`
             : " — ustaw poniżej albo w Ustawieniach serwera."
           : "."}
       </p>
 
-      <div className={styles.fetchRow}>
-        <Button
-          variant="ghost"
-          disabled={disabled || applying}
-          onClick={() => setShowAccount((v) => !v)}
-        >
-          {showAccount ? "Ukryj konto USDB" : "Konto USDB"}
-        </Button>
-      </div>
-
-      {showAccount ? (
-        <div className={styles.preview} data-testid="ultrastar-usdb-account">
-          <p className={styles.previewTitle}>Konto USDB (host)</p>
-          <p className={styles.status}>
-            Darmowe konto na{" "}
-            <a
-              href="https://usdb.animux.de"
-              target="_blank"
-              rel="noreferrer"
-            >
-              usdb.animux.de
-            </a>
-            . Dane zapisują się na serwerze (wszyscy klienci tego hosta).
-          </p>
-          <label className={styles.urlBlock}>
-            <span>Użytkownik</span>
-            <Input
-              type="text"
-              autoComplete="username"
-              value={accountUser}
-              aria-label="Użytkownik USDB"
-              disabled={locked}
-              onChange={(e) => setAccountUser(e.target.value)}
-            />
-          </label>
-          <label className={styles.urlBlock}>
-            <span>Hasło</span>
-            <Input
-              type="password"
-              autoComplete="current-password"
-              value={accountPass}
-              aria-label="Hasło USDB"
-              placeholder={
-                accountConfigured
-                  ? "Zostaw puste, aby nie zmieniać"
-                  : undefined
-              }
-              disabled={locked}
-              onChange={(e) => setAccountPass(e.target.value)}
-            />
-          </label>
-          <div className={styles.fetchRow}>
-            <Button
-              variant="secondary"
-              disabled={locked || (!accountUser.trim() && !accountConfigured)}
-              loading={accountBusy}
-              onClick={() => void onSaveAccount()}
-            >
-              Zapisz
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={
-                locked ||
-                (!accountConfigured &&
-                  (!accountUser.trim() || !accountPass.trim()))
-              }
-              onClick={() => void onTestAccount()}
-            >
-              Testuj połączenie
-            </Button>
-            {accountConfigured ? (
-              <Button
-                variant="ghost"
-                disabled={locked}
-                onClick={() => void onClearAccount()}
-              >
-                Usuń
-              </Button>
-            ) : null}
-          </div>
-          {accountStatus ? (
-            <p className={styles.status} role="status">
-              {accountStatus}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
+      <UsdbAccountPanel
+        open={showAccount}
+        onOpenChange={setShowAccount}
+        disabled={disabled || applying}
+        onBusyChange={setAccountBusy}
+        onStatusChange={setAccountInfo}
+      />
 
       <div className={styles.searchRow}>
         <Input

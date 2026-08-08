@@ -11,7 +11,7 @@ import {
   readAppearance,
   setAppearance,
   type AppearanceState,
-} from "../lib/appearance.js";
+} from "@lib/client/appearance.js";
 import styles from "./ShellAppearanceFields.module.css";
 
 type Props = {

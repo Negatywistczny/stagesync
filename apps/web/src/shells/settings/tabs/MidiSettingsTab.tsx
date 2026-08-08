@@ -1,5 +1,5 @@
 import { Button, Select } from "@stagesync/ui";
-import { type MidiHostStatus } from "../../../lib/setlistApi.js";
+import { type MidiHostStatus } from "@lib/shell-operator/setlistApi.js";
 import styles from "../../ServerSettingsModal.module.css";
 
 interface MidiDraft {

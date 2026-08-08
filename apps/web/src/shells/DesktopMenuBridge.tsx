@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { Button, ContextMenuProvider } from "@stagesync/ui";
 import { renderSVG } from "uqr";
 import {
   getLastTimelineProjectId,
   getRecentTimelineProjects,
-} from "../lib/lastTimelineProject.js";
+} from "@lib/client/lastTimelineProject.js";
 import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
-} from "../lib/desktopMenuEvents.js";
+} from "@lib/client/desktopMenuEvents.js";
+import { openSongImport } from "@lib/client/songImportEvents.js";
 import {
   createSongAndOpen,
   currentTimelineProjectId,
@@ -17,14 +18,14 @@ import {
   importLibraryFile,
   listTemplateIds,
   saveProjectAs,
-} from "../lib/desktopFileMenu.js";
+} from "@lib/client/desktopFileMenu.js";
 import {
   isDesktopShell,
   prepareHostRestart,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
-} from "../lib/desktopBridge.js";
-import { shouldAllowNativeTextClipboard } from "../lib/isEditableKeyboardTarget.js";
+} from "@lib/client/desktopBridge.js";
+import { shouldAllowNativeTextClipboard } from "@lib/client/isEditableKeyboardTarget.js";
 import {
   downloadDiagnosticsExport,
   fetchNetworkInfo,
@@ -33,16 +34,17 @@ import {
   apkDownloadUrlsFromJoin,
   probeApkAvailable,
   postSystemRestart,
-} from "../lib/setlistApi.js";
-import { suppressAudioPlayback } from "../lib/audioPlayback.js";
-import { restoreAudioOutputSink } from "../lib/audioOutputPrefs.js";
+} from "@lib/shell-operator/setlistApi.js";
+import { suppressAudioPlayback } from "@lib/audio/audioPlayback.js";
+import { restoreAudioOutputSink } from "@lib/audio/audioOutputPrefs.js";
 import {
   OPEN_PREFERENCES_EVENT,
   parseOpenPreferencesDetail,
-} from "../lib/preferencesEvents.js";
+} from "@lib/client/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellPromptDialog } from "./ShellBlockingDialog.js";
+import { useOperatorNavShortcuts } from "@lib/shell-operator/operatorNavShortcuts.js";
 import {
   ServerSettingsModal,
   type PreferencesTab,
@@ -313,6 +315,10 @@ function RestartConfirmModal({
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Global fallback for Windows Tauri WebView2 where native accelerators are swallowed
+  useOperatorNavShortcuts({ pathname: location.pathname });
+
   const { play, stop, state, commandPending } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
   const [restartOpen, setRestartOpen] = useState(false);
@@ -576,6 +582,13 @@ export function DesktopMenuBridge() {
         case "file-import":
           importInputRef.current?.click();
           break;
+        case "file-import-song":
+          if (onTimeline) {
+            openSongImport({});
+          } else {
+            navigate("/admin?section=songs&action=import");
+          }
+          break;
         case "file-export":
           if (fileBusy) break;
           setFileBusy(true);
@@ -602,6 +615,10 @@ export function DesktopMenuBridge() {
           }
           break;
         default:
+          if (detail.action.startsWith("navigate:")) {
+            const dest = detail.action.slice("navigate:".length);
+            navigate(dest);
+          }
           break;
       }
     }
@@ -656,9 +673,20 @@ export function DesktopMenuBridge() {
     }
     window.addEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
     window.addEventListener("keydown", onKey);
+
+    // Global intercept to prevent WebView2 native Alt+Left/Right navigation history,
+    // which otherwise eats the Alt+Left shortcut used in Timeline (Nudge clip left).
+    function preventBrowserHistoryShortcuts(ev: KeyboardEvent) {
+      if (ev.altKey && (ev.key === "ArrowLeft" || ev.key === "ArrowRight")) {
+        ev.preventDefault();
+      }
+    }
+    window.addEventListener("keydown", preventBrowserHistoryShortcuts, { capture: true });
+
     return () => {
       window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
       window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", preventBrowserHistoryShortcuts, { capture: true });
     };
   }, [onClient]);
 

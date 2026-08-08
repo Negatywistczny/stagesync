@@ -50,7 +50,7 @@ export type AudioHardwareOutput = z.infer<typeof AudioHardwareOutputSchema>;
  * Canonical name for a logical HW patch (mono or stereo).
  * Same Zod shape as {@link AudioHardwareOutputSchema}.
  */
-export const HwOutputPatchSchema = AudioHardwareOutputSchema;
+export { AudioHardwareOutputSchema as HwOutputPatchSchema };
 export type HwOutputPatch = AudioHardwareOutput;
 
 /**

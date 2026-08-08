@@ -219,19 +219,9 @@ const TOOL_SECTIONS: ToolSection[] = [
           "nazwa + S/M w pierwszym rzędzie, fader na pełną szerokość w drugim; przeciągnij prawą krawędź kolumny (zapamiętane).",
       },
       {
-        term: "Import US+UG",
+        term: "Import utworu",
         detail:
-          "Wybierz utwór → Import US+UG: UltraStar (czas+tekst) → UG (Forma+akordy) → audio (DnD/MP3 lub YouTube gdy yt-dlp na hoście) → Beat Mapper (fala, Beat 1, odsłuch z klikiem). Tekst/melodia idą dokładnie po czasie UltraStar względem MP3 (bez snapa sylab do siatki); Forma/akordy z powiązań UG↔tekst (pipe tylko dla instrumentali). Smart Tempo = mapa tempa z pliku audio — playback i metronom podążają za nagraniem (nie za stałym BPM). Nadpisanie draftu: Metadane (ⓘ) → Import US+UG → Zapisz (⌘S). Słabe dopasowanie UG↔tekst wymaga potwierdzenia.",
-      },
-      {
-        term: "Import UG",
-        detail:
-          "Wybierz utwór → Importuj UG: tworzy nowy utwór w bibliotece (szukaj / link Ultimate Guitar → podgląd → Utwórz nowy utwór). Nadpisanie bieżącego: Metadane utworu (ⓘ) → Importuj UG. Wklejenie tekstu zostaje jako zapas. Puste linie / [Verse]/[Chorus] → Forma.",
-      },
-      {
-        term: "Import UltraStar",
-        detail:
-          "Wybierz utwór → Importuj UltraStar: tworzy nowy utwór (USDB / link / wklej .txt → Utwórz nowy utwór). Nadpisanie draftu: Metadane (ⓘ) → Importuj UltraStar → Importuj do draftu → Zapisz (⌘S). Konto USDB: Konto USDB w dialogu albo Ustawienia serwera. Melisma „~” nie trafia do tekstu; tempo z pliku aktualizuje metronom.",
+          "Wybierz utwór → Importuj… (albo Metadane ⓘ → Importuj…): wybierz źródła UltraStar / Ultimate Guitar / Audio. US+UG buduje Formę i akordy z powiązań tekstu oraz Smart Tempo z audio (opcjonalnie). Sam UltraStar — timed sylaby i melodia; sam UG — Forma + akordy (+ Różdżka). Konto USDB: Konto USDB w kreatorze albo Ustawienia serwera. Nadpisanie draftu wymaga Zapisz (⌘S) przy samym UltraStar/UG; US+UG często zapisuje od razu.",
       },
       {
         term: "Import",

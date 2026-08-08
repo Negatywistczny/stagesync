@@ -1,0 +1,13 @@
+﻿# .cursorindexingignore
+# Wyklucza z semantic search tylko pliki, które nie wspierają analizy produktu/planu.
+# docs/analysis, ROADMAP, TODO, REPO_MAP, CHANGELOG — celowo INDEKSOWANE (nie dodawaj tutaj).
+
+# Dane statyczne / fixture (binaria, sample JSON — nie decyzje projektowe)
+data/**
+
+# Lockfile (ogromny, zero wartości semantycznej)
+pnpm-lock.yaml
+
+# Artefakty testów / build (backup — głównie w .cursorignore)
+**/coverage/**
+**/*.snap

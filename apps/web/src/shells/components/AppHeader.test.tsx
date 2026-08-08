@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../lib/operatorSurface.js", () => ({
+vi.mock("../../lib/shell-operator/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(
     (pathname: string) =>
       pathname.startsWith("/admin") || pathname.startsWith("/timeline"),
@@ -10,15 +10,12 @@ vi.mock("../../lib/operatorSurface.js", () => ({
   isOsMenuDesktopShell: vi.fn(() => false),
 }));
 
-vi.mock("../../lib/useMqMobileCompact.js", () => ({
+vi.mock("../../lib/client/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-import {
-  isOsMenuDesktopShell,
-  shouldShowOperatorNav,
-} from "../../lib/operatorSurface.js";
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+import { isOsMenuDesktopShell, shouldShowOperatorNav } from "../../lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "../../lib/client/useMqMobileCompact.js";
 import { AppHeader } from "./AppHeader.js";
 
 function html(node: React.ReactElement): string {
@@ -52,7 +49,7 @@ describe("AppHeader", () => {
     expect(out).toContain('data-ss-level="1"');
   });
 
-  it("returns null on OS-menu desktop shell by default", () => {
+  it("hides chrome actions on OS-menu desktop shell by default", () => {
     vi.mocked(isOsMenuDesktopShell).mockReturnValue(true);
     const out = html(
       <AppHeader
@@ -60,7 +57,9 @@ describe("AppHeader", () => {
         appJump={[{ to: "/client", label: "Klient" }]}
       />,
     );
-    expect(out).toBe("");
+    expect(out).toContain("Admin");
+    expect(out).toContain("Klient");
+    expect(out).not.toContain('aria-label="Ustawienia"');
   });
 
   it("keeps settings gear when only :4000 desktop heuristic matches", () => {

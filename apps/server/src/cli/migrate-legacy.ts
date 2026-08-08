@@ -6,7 +6,7 @@
  *   pnpm migrate:legacy -- --input path/to/database.json --data-dir ./data --apply
  *   pnpm migrate:legacy -- --input … --data-dir ./data --uploads-dir ./uploads --apply
  *
- * Docs: docs/MIGRATION.md
+ * Docs: docs/guides/MIGRATION.md
  */
 
 import {

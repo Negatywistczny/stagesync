@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ChangeServerControl } from "./ChangeServerControl.js";
 
-vi.mock("../lib/nativeShell.js", () => ({
+vi.mock("@lib/client/nativeShell.js", () => ({
   canChangeServer: () => false,
   requestNativeChangeServer: vi.fn(),
 }));

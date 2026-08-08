@@ -1,0 +1,11 @@
+name: "StageSync CodeQL Configuration"
+disable-default-queries: false
+
+paths-ignore:
+  - 'data'
+  - 'docs'
+  - '**/dist'
+  - '**/build'
+  - '**/coverage'
+  - '**/node_modules'
+  - '**/.turbo'

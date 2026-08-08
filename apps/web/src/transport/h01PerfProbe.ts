@@ -3,7 +3,7 @@
  *
  * Enable: `?ss_perf=h01` in the Client URL, or `localStorage.stagesync_perf_h01=1`
  * then reload. Read: `window.__stagesyncH01` (rafCalls, displayTicksCommits,
- * consumerRenders, Hz estimates). See docs/MOBILE.md § H-01.
+ * consumerRenders, Hz estimates). See docs/guides/MOBILE.md § H-01.
  *
  * Does not change transport behaviour when disabled.
  */

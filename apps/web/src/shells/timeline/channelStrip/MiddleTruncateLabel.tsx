@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import {
   measurerFromElement,
   truncateMiddle,
-} from "../../../lib/truncateMiddle.js";
+} from "@lib/client/truncateMiddle.js";
 
 export type MiddleTruncateLabelProps = {
   text: string;

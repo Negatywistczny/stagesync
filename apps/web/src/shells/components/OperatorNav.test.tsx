@@ -3,36 +3,36 @@
  */
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../lib/operatorSurface.js", () => ({
+vi.mock("@lib/shell-operator/operatorSurface.js", () => ({
   shouldShowOperatorNav: vi.fn(() => true),
 }));
 
-vi.mock("../../lib/useMqMobileCompact.js", () => ({
+vi.mock("@lib/client/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-vi.mock("../../lib/useMqTablet.js", () => ({
+vi.mock("@lib/client/useMqTablet.js", () => ({
   useMqTablet: vi.fn(() => true),
 }));
 
-vi.mock("../../lib/operatorNavShortcuts.js", () => ({
+vi.mock("@lib/shell-operator/operatorNavShortcuts.js", () => ({
   useOperatorNavShortcuts: vi.fn(),
 }));
 
-vi.mock("../../lib/lastTimelineProject.js", () => ({
+vi.mock("@lib/client/lastTimelineProject.js", () => ({
   getLastTimelineProjectId: vi.fn(() => "proj-1"),
 }));
 
-vi.mock("../../lib/preferencesEvents.js", () => ({
+vi.mock("@lib/client/preferencesEvents.js", () => ({
   openPreferences: vi.fn(),
 }));
 
-import { openPreferences } from "../../lib/preferencesEvents.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
 import { OperatorNav } from "./OperatorNav.js";
-import { useMqMobileCompact } from "../../lib/useMqMobileCompact.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 
 function html(node: React.ReactElement): string {
   return renderToStaticMarkup(<MemoryRouter>{node}</MemoryRouter>);

@@ -72,6 +72,22 @@ export type SmartTempoAudioRef = {
   analysis?: AudioAnalysisResult;
 };
 
+/** Optional Viterbi decision trace (Explainable DSP / benchmark tooling). */
+export type ViterbiBeatTraceCandidate = {
+  tMs: number;
+  rawScore: number;
+  tempoPen: number;
+  totalScore: number;
+  status: "WINNER" | "REJECTED";
+  rejectReason?: string;
+};
+
+export type ViterbiBeatTrace = {
+  beatIdx: number;
+  selectedMs: number;
+  candidates: readonly ViterbiBeatTraceCandidate[];
+};
+
 /** Precomputed audio analysis (pure data — no AudioBuffer). Produced in apps/web. */
 export type AudioAnalysisResult = {
   /** Detected transient / onset times (ms from audio file start). */
@@ -80,6 +96,8 @@ export type AudioAnalysisResult = {
   beatMs: readonly number[];
   /** Global BPM estimate from inter-onset / beat intervals. */
   estimatedBpm: number;
+  /** Optional per-beat Viterbi trace when analysis runs with tracing enabled. */
+  viterbiTrace?: readonly ViterbiBeatTrace[];
 };
 
 /** Tempo Node = file wall-clock ms ↔ musical tick (tick 0 ≈ file start). */
@@ -189,8 +207,10 @@ export type LayoutFormaFromUgBarCountsOpts = {
  * Prefer `a=` for audio ingest when both are present.
  */
 export function extractYoutubeVideoId(raw: string): string | null {
-  const trimmed = raw.trim();
+  let trimmed = raw.trim();
   if (!trimmed) return null;
+  // Bound before polynomial URL regexes (ReDoS).
+  if (trimmed.length > 2048) trimmed = trimmed.slice(0, 2048);
   if (YOUTUBE_VIDEO_ID_RE.test(trimmed)) return trimmed;
 
   const usdbPrefixed = [
@@ -206,7 +226,7 @@ export function extractYoutubeVideoId(raw: string): string | null {
   if (csvHead && YOUTUBE_VIDEO_ID_RE.test(csvHead)) return csvHead;
 
   const patterns = [
-    /(?:youtube\.com\/watch\?[^#]*v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/i,
+    /(?:youtube\.com\/watch\?[^#]{0,512}v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/i,
     /[?&]v=([a-zA-Z0-9_-]{11})/i,
   ];
   for (const re of patterns) {

@@ -8,8 +8,8 @@
 
 import React, { useMemo, useState } from "react";
 import styles from "./SmartTempoAccuracyDashboard.module.css";
-import benchmarkDataRaw from "../../lib/smartTempoBenchmarkData.json";
-import benchmarkHistoryRaw from "../../lib/smartTempoBenchmarkHistory.json";
+import benchmarkDataRaw from "@lib/audio/smartTempoBenchmarkData.json";
+import benchmarkHistoryRaw from "@lib/audio/smartTempoBenchmarkHistory.json";
 
 export type StageTier = "stage-perfect" | "stage-acceptable" | "stage-unusable";
 export type DawTier = "exact" | "close" | "fail";
@@ -288,6 +288,109 @@ export function SmartTempoAccuracyDashboard({
 
     return { path: pathD, area: areaD };
   }, [cdfPoints]);
+
+  // Tempo Range and Curve Calculation for Section D (Tempo Contour & Convergence Plot)
+  const tempoChartData = useMemo(() => {
+    if (activeBars.length === 0) {
+      return { minBpm: 100, maxBpm: 140, bpmRange: 40, refPath: "", estPath: "", segments: [], points: [] };
+    }
+
+    const allBpms = activeBars.flatMap((b) => [b.refBpm, b.estBpm]);
+    let minBpm = Math.floor(Math.min(...allBpms) - 2);
+    let maxBpm = Math.ceil(Math.max(...allBpms) + 2);
+    if (maxBpm - minBpm < 4) {
+      minBpm = Math.max(0, minBpm - 3);
+      maxBpm = maxBpm + 3;
+    }
+    const bpmRange = maxBpm - minBpm;
+
+    const maxTime = Math.max(...activeBars.map((b) => b.timeSec), 1);
+    const width = 780;
+    const xOffset = 10;
+    const height = 200;
+    const yOffset = 10;
+
+    const getY = (bpm: number) => {
+      const norm = (bpm - minBpm) / bpmRange;
+      return height - norm * (height - 20) + yOffset;
+    };
+
+    const getX = (timeSec: number) => {
+      return (timeSec / maxTime) * width + xOffset;
+    };
+
+    // Logic SSOT Ref line path
+    const refPath = activeBars
+      .map((bar, i) => {
+        const x = getX(bar.timeSec);
+        const y = getY(bar.refBpm);
+        const isStartOfTrack = i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
+        return `${isStartOfTrack ? "M" : "L"} ${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+
+    // Smart Tempo Est line path
+    const estPath = activeBars
+      .map((bar, i) => {
+        const x = getX(bar.timeSec);
+        const y = getY(bar.estBpm);
+        const isStartOfTrack = i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
+        return `${isStartOfTrack ? "M" : "L"} ${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+
+    // Segmented lines between consecutive points colored by convergence
+    const segments = [];
+    for (let i = 0; i < activeBars.length - 1; i++) {
+      const curr = activeBars[i]!;
+      const next = activeBars[i + 1]!;
+      if (curr.trackName !== next.trackName) continue;
+
+      const x1 = getX(curr.timeSec);
+      const y1 = getY(curr.estBpm);
+      const x2 = getX(next.timeSec);
+      const y2 = getY(next.estBpm);
+
+      const deltaBpm = Math.abs(curr.estBpm - curr.refBpm);
+      const tier = deltaBpm <= 0.5 ? "high" : deltaBpm <= 2.0 ? "med" : "low";
+
+      segments.push({
+        x1,
+        y1,
+        x2,
+        y2,
+        deltaBpm,
+        tier,
+      });
+    }
+
+    // Individual point markers
+    const points = activeBars.map((bar) => {
+      const x = getX(bar.timeSec);
+      const yEst = getY(bar.estBpm);
+      const yRef = getY(bar.refBpm);
+      const deltaBpm = Math.abs(bar.estBpm - bar.refBpm);
+      const tier = deltaBpm <= 0.5 ? "high" : deltaBpm <= 2.0 ? "med" : "low";
+      return {
+        bar,
+        x,
+        yEst,
+        yRef,
+        deltaBpm,
+        tier,
+      };
+    });
+
+    return {
+      minBpm,
+      maxBpm,
+      bpmRange,
+      refPath,
+      estPath,
+      segments,
+      points,
+    };
+  }, [activeBars]);
 
   return (
     <div className={`${styles.container} ${className ?? ""}`}>
@@ -901,6 +1004,106 @@ export function SmartTempoAccuracyDashboard({
             </svg>
           </div>
         </div>
+
+        {/* Chart D: Tempo Contour & Convergence Plot */}
+        <div className={`${styles.chartCard} ${styles.chartCardFull}`}>
+          <div className={styles.chartTitleRow}>
+            <div>
+              <h3 className={styles.chartTitle}>
+                D. Wykres Przebiegu Tempa w Czasie (Tempo Contour & Convergence Plot)
+              </h3>
+              <p className={styles.chartDesc}>
+                Wartość tempa (BPM) w czasie utworu: linia Smart Tempo (wyliczona) vs Logic Pro SSOT (referencja) z oznaczonym poziomem zbieżności
+              </p>
+            </div>
+
+            <div className={styles.thresholdLegend}>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.dotRefLine}`} />
+                🟣 Referencja Logic Pro
+              </div>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.dotExact}`} />
+                🟢 Wysoka zbieżność (Δ ≤ 0.5 BPM)
+              </div>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.dotClose}`} />
+                🟡 Średnia zbieżność (Δ 0.5–2.0 BPM)
+              </div>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.dotFail}`} />
+                🔴 Rozbieżność (Δ &gt; 2.0 BPM)
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.svgChartWrap} style={{ height: "240px" }}>
+            <svg viewBox="0 0 800 220" className={styles.svgChart} preserveAspectRatio="none">
+              {/* Y-Axis Grid Lines & Tick Labels */}
+              {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+                const bpmVal = (tempoChartData.maxBpm - ratio * tempoChartData.bpmRange).toFixed(1);
+                const y = 10 + ratio * 180;
+                return (
+                  <g key={idx}>
+                    <line x1="0" y1={y} x2="800" y2={y} stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                    <text x="790" y={y - 4} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="500">
+                      {bpmVal} BPM
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Line 1: Logic Pro SSOT Reference Path (Dashed) */}
+              <path d={tempoChartData.refPath} className={styles.refTempoPath} />
+
+              {/* Line 2: Smart Tempo Estimated Path Segments (Colored by Convergence) */}
+              {tempoChartData.segments.map((seg, idx) => {
+                const strokeColor = seg.tier === "high" ? "#34D399" : seg.tier === "med" ? "#FBBF24" : "#F87171";
+                return (
+                  <line
+                    key={idx}
+                    x1={seg.x1}
+                    y1={seg.y1}
+                    x2={seg.x2}
+                    y2={seg.y2}
+                    stroke={strokeColor}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+
+              {/* Data Dots for Calculated Tempo with hover tooltip */}
+              {tempoChartData.points.map((pt, idx) => {
+                const pointClass =
+                  pt.tier === "high"
+                    ? styles.driftPointExact
+                    : pt.tier === "med"
+                      ? styles.driftPointClose
+                      : styles.driftPointFail;
+
+                return (
+                  <circle
+                    key={idx}
+                    cx={pt.x}
+                    cy={pt.yEst}
+                    r={2}
+                    className={`${styles.driftPoint} ${pointClass}`}
+                    onMouseEnter={(e) => {
+                      setHoveredPoint(pt.bar);
+                      const rect = (e.target as SVGElement).getBoundingClientRect();
+                      setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredPoint(null);
+                      setTooltipPos(null);
+                    }}
+                  />
+                );
+              })}
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Floating Tooltip */}
@@ -915,6 +1118,21 @@ export function SmartTempoAccuracyDashboard({
           <div className={styles.tooltipRow}>
             <span>Odchylenie:</span>
             <strong>{hoveredPoint.errorMs} ms</strong>
+          </div>
+          <div className={styles.tooltipRow}>
+            <span>Zbieżność tempa:</span>
+            <span
+              style={{
+                color:
+                  Math.abs(hoveredPoint.estBpm - hoveredPoint.refBpm) <= 0.5
+                    ? "#34D399"
+                    : Math.abs(hoveredPoint.estBpm - hoveredPoint.refBpm) <= 2.0
+                      ? "#FBBF24"
+                      : "#F87171",
+              }}
+            >
+              Δ {Math.abs(hoveredPoint.estBpm - hoveredPoint.refBpm).toFixed(2)} BPM
+            </span>
           </div>
           <div className={styles.tooltipRow}>
             <span>DAW Grade:</span>

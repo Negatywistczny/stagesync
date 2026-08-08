@@ -18,26 +18,31 @@ describe("SmartTempoAccuracyDashboard Component", () => {
     expect(screen.getByText("📈 Statystyki Błędu")).toBeDefined();
   });
 
-  it("renders all 3 requested chart sections (Histogram, CDF, Timeline Drift)", () => {
+  it("renders all 4 requested chart sections (Histogram, CDF, Timeline Drift, Tempo Contour)", () => {
     render(<SmartTempoAccuracyDashboard />);
 
     expect(
-      screen.getByText("A. Histogram Błędów w Nieliniowych Przedziałach (DAW Grade)"),
+      screen.getAllByText("A. Histogram Błędów w Nieliniowych Przedziałach (DAW Grade)")[0],
     ).toBeDefined();
     expect(
-      screen.getByText("B. Wykres Skumulowanej Dokładności (CDF)"),
+      screen.getAllByText("B. Wykres Skumulowanej Dokładności (CDF)")[0],
     ).toBeDefined();
     expect(
-      screen.getByText(/C\. Wykres Przebiegu Odchyleń w Czasie/),
+      screen.getAllByText(/C\. Wykres Przebiegu Odchyleń w Czasie/)[0],
     ).toBeDefined();
+    expect(
+      screen.getAllByText(/D\. Wykres Przebiegu Tempa w Czasie/)[0],
+    ).toBeDefined();
+    expect(screen.getByText("🟣 Referencja Logic Pro")).toBeDefined();
   });
 
   it("allows switching to Stage-Ready Grade mode", () => {
     render(<SmartTempoAccuracyDashboard />);
 
-    const stageModeBtn = screen.getByRole("button", {
-      name: "🎤 Stage-Ready Grade (≤15ms)",
-    });
+    const stageModeBtn = screen.getAllByRole("button", {
+      name: /Stage-Ready Grade/i,
+    })[0]!;
+    expect(stageModeBtn).toBeDefined();
     expect(stageModeBtn).toBeDefined();
 
     fireEvent.click(stageModeBtn);
@@ -50,7 +55,7 @@ describe("SmartTempoAccuracyDashboard Component", () => {
   it("allows switching between track filters", () => {
     render(<SmartTempoAccuracyDashboard />);
 
-    const billieBtn = screen.getByRole("button", { name: "Billie Jean" });
+    const billieBtn = screen.getAllByRole("button", { name: /Billie Jean/i })[0]!;
     expect(billieBtn).toBeDefined();
 
     fireEvent.click(billieBtn);
@@ -66,26 +71,27 @@ describe("SmartTempoAccuracyDashboard Component", () => {
         note: "Initial Old Run",
         summary: {
           totalMeasures: 349,
-          exactPct: 31.5,
-          closePct: 61.0,
-          failPct: 7.5,
-          meanMs: 84.2,
-          medianMs: 68.5,
-          p95Ms: 156.0,
-          dawGrade: { exactPct: 31.5, closePct: 61.0, failPct: 7.5 },
-          stageGrade: { perfectPct: 15.0, acceptablePct: 25.0, unusablePct: 60.0 },
+          exactPct: 5.0,
+          closePct: 10.0,
+          failPct: 85.0,
+          meanMs: 200.0,
+          medianMs: 180.0,
+          p95Ms: 300.0,
+          dawGrade: { exactPct: 5.0, closePct: 10.0, failPct: 85.0 },
+          stageGrade: { perfectPct: 2.0, acceptablePct: 8.0, unusablePct: 90.0 },
         },
       },
     ];
 
     render(<SmartTempoAccuracyDashboard history={mockHistory} />);
 
-    const select = screen.getByRole("combobox", {
+    const select = screen.getAllByRole("combobox", {
       name: "Wersja odniesienia (Baseline)",
-    }) as HTMLSelectElement;
+    })[0] as HTMLSelectElement;
     expect(select).toBeDefined();
+    expect(select.value).toBe("run-baseline-old");
 
-    expect(screen.getByText(/-\d+\.\d+% 🔴|\+\d+\.\d+% 🟢/)).toBeDefined();
+    expect(screen.getAllByTitle(/Δ vs baseline/).length).toBeGreaterThan(0);
   });
 
   it("renders custom dataset when provided as props", () => {

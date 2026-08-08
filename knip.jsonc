@@ -1,9 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
-      "entry": ["launch/scripts/*.{js,mjs,ts}"],
-      "project": ["launch/scripts/**/*.{js,mjs,ts}"]
+      "entry": ["scripts/*.{js,mjs,ts}", "apps/desktop/scripts/*.{js,mjs,ts}"],
+      "project": ["scripts/**/*.{js,mjs,ts}", "apps/desktop/scripts/**/*.{js,mjs,ts}"]
     },
     "apps/server": {
       "entry": ["src/index.ts", "src/**/*.test.ts"],

@@ -38,7 +38,7 @@ Przepływ: `hypothesis` → (`confirmed` → `fixed`) | `rejected` | `limit`.
 ## Status dokumentu
 
 Po fali: `partial` (część priorytetowych ID rozstrzygnięta) albo `closed` (wszystkie priorytetowe).  
-`superseded` tylko gdy powstanie `docs/analysis/reports/report-*.md` jako następca.
+`superseded` tylko gdy powstanie `docs/analysis/reports/{current,milestones}/report-*.md` jako następca.
 
 ## Promocja do backlogu
 

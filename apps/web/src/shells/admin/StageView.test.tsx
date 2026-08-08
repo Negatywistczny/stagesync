@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const fetchStageMessages = vi.fn(async () => [] as unknown[]);
 
-vi.mock("../../lib/setlistApi.js", () => ({
+vi.mock("@lib/shell-operator/setlistApi.js", () => ({
   clearStageMessages: vi.fn(async () => undefined),
   dismissStageMessage: vi.fn(async () => undefined),
   fetchLiveDesk: vi.fn(async () => ({

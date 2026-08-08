@@ -4,7 +4,7 @@ import {
   DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
-} from "../lib/deviceNamePrefs.js";
+} from "@lib/client/deviceNamePrefs.js";
 import styles from "./DeviceNameFields.module.css";
 
 type Props = {

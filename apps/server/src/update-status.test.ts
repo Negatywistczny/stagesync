@@ -13,6 +13,15 @@ afterEach(() => {
   delete process.env.STAGESYNC_GITHUB_TOKEN;
 });
 
+function isGithubApiUrl(input: RequestInfo | URL): boolean {
+  try {
+    const href = typeof input === "string" ? input : String(input);
+    return new URL(href).hostname === "api.github.com";
+  } catch {
+    return false;
+  }
+}
+
 describe("isSemverNewer", () => {
   it("treats equal versions as not newer", () => {
     expect(isSemverNewer("5.0.0", "5.0.0")).toBe(false);
@@ -154,7 +163,7 @@ describe("GET /api/system/update-status", () => {
     const realFetch = globalThis.fetch;
     const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.includes("api.github.com")) {
+      if (isGithubApiUrl(url)) {
         throw new Error("GitHub must not be contacted in desktop shell");
       }
       return realFetch(input, init);
@@ -177,7 +186,7 @@ describe("GET /api/system/update-status", () => {
       expect(body.error).toBeNull();
       expect(body.current.length).toBeGreaterThan(0);
       expect(
-        fetchSpy.mock.calls.some((c) => String(c[0]).includes("api.github.com")),
+        fetchSpy.mock.calls.some((c) => isGithubApiUrl(c[0] as RequestInfo | URL)),
       ).toBe(false);
     } finally {
       await new Promise<void>((resolve, reject) => {
@@ -192,7 +201,7 @@ describe("GET /api/system/update-status", () => {
     const realFetch = globalThis.fetch;
     const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.includes("api.github.com")) {
+      if (isGithubApiUrl(url)) {
         throw new Error("GitHub must not be contacted in console shell");
       }
       return realFetch(input, init);
@@ -233,7 +242,7 @@ describe("GET /api/system/update-status", () => {
       "fetch",
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
-        if (url.includes("api.github.com")) {
+        if (isGithubApiUrl(url)) {
           return new Response(
             JSON.stringify([
               {

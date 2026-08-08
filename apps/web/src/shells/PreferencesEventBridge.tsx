@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import {
   OPEN_PREFERENCES_EVENT,
   parseOpenPreferencesDetail,
   type PreferencesTab,
-} from "../lib/preferencesEvents.js";
+} from "@lib/client/preferencesEvents.js";
 import { ServerSettingsModal } from "../shells/ServerSettingsModal.js";
 
 /**

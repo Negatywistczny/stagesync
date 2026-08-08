@@ -10,7 +10,7 @@ import {
   type Project,
   type TekstClip,
 } from "@stagesync/shared";
-import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
+import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 import { KaraokePane } from "./KaraokePane.js";
 
 const prefs: ClientDisplayPrefs = {

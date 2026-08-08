@@ -8,10 +8,10 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../lib/desktopBridge.js", () => ({
+vi.mock("@lib/client/desktopBridge.js", () => ({
   canUseDesktopUpdater: () => false,
   checkDesktopUpdate: vi.fn(),
   installDesktopUpdate: vi.fn(),
@@ -70,7 +70,7 @@ const setlistMocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../../lib/setlistApi.js", () => ({
+vi.mock("@lib/shell-operator/setlistApi.js", () => ({
   clearHostLogs: setlistMocks.clearHostLogs,
   downloadDiagnosticsExport: setlistMocks.downloadDiagnosticsExport,
   fetchNetworkInfo: setlistMocks.fetchNetworkInfo,

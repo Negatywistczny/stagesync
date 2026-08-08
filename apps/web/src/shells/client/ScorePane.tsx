@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { InstrumentPitchMode, Project } from "@stagesync/shared";
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { assetFileUrl } from "../../lib/audioPlayback.js";
+import { assetFileUrl } from "@lib/audio/audioPlayback.js";
 import {
   applyOsmdZoom,
   applyScorePartVisibility,
@@ -21,12 +21,12 @@ import {
   scrollCursorIntoView,
   type ScoreOctave,
   type ScorePartInfo,
-} from "../../lib/scoreOsmd.js";
-import { logicBarFromTicks } from "../../lib/scoreBarEdit.js";
+} from "@lib/timeline-edit/scoreOsmd.js";
+import { logicBarFromTicks } from "@lib/timeline-edit/scoreBarEdit.js";
 import {
   scoreBarFromDisplayTicks,
   seekTicksFromScoreBar,
-} from "../../lib/scorePlayhead.js";
+} from "@lib/timeline-edit/scorePlayhead.js";
 import styles from "../ClientShell.module.css";
 
 type Props = {

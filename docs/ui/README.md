@@ -12,6 +12,7 @@ komponentów: [`packages/ui`](../../packages/ui/).
 | [field.md](./field.md) | `Input` / `Select` / `Textarea` / `Field` |
 | [badge.md](./badge.md) | `Badge` (meta chip) |
 | [segmented.md](./segmented.md) | `SegmentedControl` |
+| [ui-shell-inventory.md](./ui-shell-inventory.md) | Inventarz shelli Admin / Client / Timeline (checklista parity) |
 
 ## Warstwy SSOT (anty–ad-hoc)
 

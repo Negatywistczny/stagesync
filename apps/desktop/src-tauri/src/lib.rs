@@ -357,15 +357,19 @@ fn timeline_nav_url(state: &NavState) -> String {
 
 /// Keep in sync with `apps/web/src/lib/docsLinks.ts`.
 const DOCS_INSTALL_URL: &str =
-    "https://github.com/Negatywistczny/stagesync/blob/main/docs/INSTALL.md";
+    "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md";
 const DOCS_ISSUES_URL: &str = "https://github.com/Negatywistczny/stagesync/issues";
 
 fn navigate_main(app: &tauri::AppHandle, path: &str) {
-    let Some(window) = app.get_webview_window("main") else {
-        return;
-    };
-    if let Ok(parsed) = nav_url(path).parse() {
-        let _ = window.navigate(parsed);
+    if window_url_is_launcher(app) {
+        let Some(window) = app.get_webview_window("main") else {
+            return;
+        };
+        if let Ok(parsed) = nav_url(path).parse() {
+            let _ = window.navigate(parsed);
+        }
+    } else {
+        dispatch_menu_action(app, &format!("navigate:{}", path));
     }
 }
 
@@ -502,6 +506,13 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
         true,
         None::<&str>,
     )?;
+    let file_import_song = MenuItem::with_id(
+        app,
+        "file_import_song",
+        "Importuj utwór…",
+        true,
+        None::<&str>,
+    )?;
     let file_export = MenuItem::with_id(
         app,
         "file_export",
@@ -531,6 +542,7 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
             &file_save,
             &file_save_as,
             &file_sep_2,
+            &file_import_song,
             &file_import,
             &file_export,
             &file_sep_3,
@@ -846,6 +858,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
             "file_save" => dispatch_menu_action(&app, "file-save"),
             "file_save_as" => dispatch_menu_action(&app, "file-save-as"),
             "file_import" => dispatch_menu_action(&app, "file-import"),
+            "file_import_song" => dispatch_menu_action(&app, "file-import-song"),
             "file_export" => dispatch_menu_action(&app, "file-export"),
             "edit_undo" => dispatch_menu_action(&app, "edit-undo"),
             "edit_redo" => dispatch_menu_action(&app, "edit-redo"),

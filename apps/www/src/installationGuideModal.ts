@@ -32,7 +32,7 @@ const STEPS: Record<InstallGuideTab, InstallStep[]> = {
     },
   ],
   windows: [
-    { text: "Uruchom pobrany plik .msi i przejdź przez instalator." },
+    { text: "Uruchom pobrany plik .exe (NSIS) i przejdź przez instalator." },
     {
       text: "Gdy pojawi się SmartScreen: kliknij Więcej informacji → Uruchom mimo to.",
     },

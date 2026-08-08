@@ -8,17 +8,31 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
 
-vi.mock("../lib/ultrastarImportApi.js", () => ({
+vi.mock("@lib/shell-operator/ultrastarImportApi.js", () => ({
   fetchUltrastarFromServer: vi.fn(),
   searchUltrastarSongs: vi.fn(),
+  fetchUltrastarAccount: vi.fn(async () => ({
+    configured: false,
+    user: "",
+  })),
+  putUltrastarAccount: vi.fn(async () => ({
+    ok: true as const,
+    configured: false,
+    user: "",
+    message: "Usunięto konto USDB z hosta.",
+  })),
+  testUltrastarAccount: vi.fn(async () => ({
+    ok: true as const,
+    message: "Połączenie z USDB OK.",
+  })),
 }));
 
-vi.mock("../lib/ugImportApi.js", () => ({
+vi.mock("@lib/shell-operator/ugImportApi.js", () => ({
   fetchUgTabFromServer: vi.fn(),
   searchUgTabs: vi.fn(),
 }));
 
-vi.mock("../lib/libraryApi.js", () => ({
+vi.mock("@lib/shell-operator/libraryApi.js", () => ({
   fetchProject: vi.fn(async () => ({
     id: "p1",
     name: "Test Project",
@@ -184,11 +198,40 @@ describe("CombinedUsUgImportForm", () => {
     ).toBeTruthy();
   });
 
+  it("opens Konto USDB when search reports missing credentials", async () => {
+    const { searchUltrastarSongs } = await import(
+      "@lib/shell-operator/ultrastarImportApi.js"
+    );
+    vi.mocked(searchUltrastarSongs).mockRejectedValueOnce(
+      new Error(
+        "Brak konta USDB. Ustaw je w Import UltraStar → Konto USDB albo w Ustawieniach serwera.",
+      ),
+    );
+
+    render(
+      <CombinedUsUgImportForm
+        applyLabel="Importuj do projektu"
+        onCancel={() => {}}
+        onApply={() => {}}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Tytuł USDB"), {
+      target: { value: "Smoke" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Szukaj w USDB/i }));
+
+    expect(
+      await screen.findByTestId("ultrastar-usdb-account"),
+    ).toBeTruthy();
+    expect(screen.getByText(/Brak konta USDB/i)).toBeTruthy();
+  });
+
   it("sorts UG search hits descending by alignScore", async () => {
     const us = readFileSync(join(FIX, "song.txt"), "utf8");
     const ug = readFileSync(join(FIX, "chords.txt"), "utf8");
 
-    const { searchUgTabs, fetchUgTabFromServer } = await import("../lib/ugImportApi.js");
+    const { searchUgTabs, fetchUgTabFromServer } = await import("@lib/shell-operator/ugImportApi.js");
     const searchUgTabsMock = vi.mocked(searchUgTabs);
     const fetchUgTabFromServerMock = vi.mocked(fetchUgTabFromServer);
 

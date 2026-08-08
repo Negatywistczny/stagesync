@@ -1,11 +1,118 @@
 # Changelog
 
-Wszystkie istotne zmiany w StageSync **5.x** są dokumentowane w tym pliku.
+Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Android (aktualizacja APK):** pobieranie z GitHub Releases znów działa — allowlista akceptuje redirect CDN (`release-assets.githubusercontent.com`) z ścieżką UUID (nazwa `.apk` w query, nie w path).
+
+## [5.4.8](https://github.com/Negatywistczny/stagesync/compare/v5.4.7...v5.4.8) - 2026-08-08
+
+### Dodano
+
+#### 🔧 Infrastruktura
+- **Skrypty instalacyjne:** nowe w pełni interaktywne skrypty `setup.ps1` (Windows) oraz `setup.sh` (Linux/macOS) automatyzujące instalację środowiska dev (Node.js 22, pnpm, Rust, MSVC, WebView2) bez konieczności ręcznego restartu terminala i wpisywania komend. Skrypty te stają się zalecaną ścieżką startową opisaną w docs.
+
+#### 🖥️ App Shell & Desktop
+- **Splashscreen:** dodano natywny ekran ładowania podczas startu launchera, który automatycznie chowa się po inicjalizacji, zapobiegając błyskaniu okna.
+- **Narzędzia pre-build:** dodano skrypty `check-rust.mjs` i `kill-zombies.mjs`, zapewniając odpowiednią wersję środowiska Rust i sprzątając osierocone procesy Tauri przed ponownym buildem (`pnpm dev` / `build`).
+- **Dev Preview:** integracja globalnych skrótów klawiszowych (Alt+1/2/3 itd.) z iframe'ami preview za pomocą `postMessage`.
+
+### Zmieniono
+
+#### 📚 Dokumentacja
+- **Desktop (dev):** w przewodniku DESKTOP oraz CONTRIBUTING wskazano zautomatyzowane skrypty instalacyjne (`setup.ps1` / `setup.sh`) jako główną (zalecaną) metodę przygotowania toolchainu Tauri, a ręczne komendy `winget` zostały przeniesione do sekcji alternatywnej. Odróżniono też `pnpm dev` (web) od kompilacji shella.
+
+#### 🖥️ App Shell & Desktop
+- **Instalator Windows:** zmieniono format budowania na zoptymalizowany instalator NSIS (.exe) działający w trybie szybkiej, cichej dekompresji ("Minimal Extraction Banner") z automatycznym startem aplikacji, co zastępuje dotychczasowy kreator WiX `.msi`.
+- **Motyw okna:** wymuszono ciemny motyw systemowy (`theme: "Dark"`) dla głównego okna powłoki Tauri, naprawiając tym samym biały pasek tytułowy na Windowsie.
+- **Skróty klawiszowe:** dodano globalne przechwytywanie skrótów `Alt+Left` / `Alt+Right` blokujące nawigację po historii WebView, naprawiając tym samym działanie przesuwania klipów na osi czasu (Timeline) w wersji instalacyjnej (Windows).
+- **Dev:** wymuszony bind `host: "127.0.0.1"` w deweloperskim serwerze Vite.
+
+## [5.4.7](https://github.com/Negatywistczny/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Import utworu:** w Adminie (Zarządzaj bazą → Importuj utwór…) oraz w menu Plik Desktop (**Importuj utwór…**) ten sam kreator co w Timeline — wybór źródeł UltraStar / UG / Audio; import biblioteki JSON zostaje osobno („Importuj bibliotekę…” / Z pliku…).
+
+### Zmieniono
+
+#### ⏱️ Timeline & DAW
+- **Import:** zamiast trzech osobnych przycisków (US+UG / UG / UltraStar) jeden **Importuj…** z chipami źródeł i pomijaniem etapów (w tym audio przy US+UG).
+
+#### 📚 Dokumentacja
+- **Pomoc Timeline:** jedna karta „Import utworu” zamiast osobnych wpisów US+UG / UG / UltraStar.
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Import USDB:** w kreatorze z UltraStar (także ścieżka US+UG) przy braku konta lub błędzie sesji otwiera się formularz **Konto USDB**, nie tylko komunikat o konieczności logowania.
+
+## [5.4.6](https://github.com/Negatywistczny/stagesync/compare/v5.4.5...v5.4.6) - 2026-08-07
+
+### Zmieniono
+
+#### 📚 Dokumentacja
+- **Podręczniki operatorskie:** INSTALL / DESKTOP / MOBILE / MIGRATION żyją w `docs/guides/`; linki z aplikacji, witryny download oraz komunikatów hosta wskazują nowe ścieżki na GitHub.
+- **Mobile:** opis jawnej aktualizacji APK — allowlista hosta/GitHub StageSync oraz weryfikacja package/podpisu przed instalatorem.
+
+### Naprawiono
+
+#### ⚙️ Serwer & API
+- **Import USDB:** przy czyszczeniu HTML ze szczegółów utworu zagnieżdżone tagi `<script>` / `<style>` są usuwane w pętli — tekst importu nie zostawia już osadzonego HTML ze „włożonych” tagów.
+
+### Bezpieczeństwo
+- **Android (Console / Performer):** aktualizacja APK tylko z allowlisty URL (host `/downloads/stagesync-*.apk` lub GitHub Releases StageSync) oraz weryfikacja package name i certyfikatu podpisu przed otwarciem instalatora.
+- **Ustawienia hosta:** zapis zarządzanego pliku ustawień (`.env`) z uprawnieniami tylko dla właściciela (mode `0600`).
+
+## [5.4.5](https://github.com/Negatywistczny/stagesync/compare/v5.4.4...v5.4.5) - 2026-08-05
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Admin — Dev:** w buildach deweloperskich pojawiła się sekcja `Dev` w Adminie (`/admin?section=dev`) z kafelkami na Smart Tempo, Dev Preview multi-surface, Layout Matrix i planowane narzędzia diagnostyczne.
+- **Smart Tempo — benchmark history:** panel `/smart-tempo` korzysta z historii regresji benchmarków, a recorder dopisuje kolejne snapshoty do JSON historycznego.
+
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Chrome Admin / Timeline / Klient:** na desktopie z menu OS znikają tylko przyciski chrome; wordmark i nawigacja shelli zostają widoczne, a Admin pokazuje tylko aktywne sekcje (`Dev` wyłącznie w DEV buildach).
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo:** diagnostyka analizy jest teraz liczona i logowana bez warunków wokół debug flag, a analiza korzysta z ujednoliconej siatki BPM i historii benchmarków dla regresji.
+
+## [5.4.4](https://github.com/Negatywistczny/stagesync/compare/v5.4.3...v5.4.4) - 2026-08-05
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Admin — Smart Tempo:** na `/smart-tempo` wykres przebiegu tempa w czasie (kontur + zbieżność) — porównanie ścieżki referencyjnej z estymacją Smart Tempo.
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo:** kotwiczenie pierwszego downbeatu na transientach kick / sub-bass; siatka beatów premiuje kolce energii (dual-band); lokalny okres śledzenia mniej sztywny względem seeda — mapa tempa lepiej trzyma się żywego groove'u przy Import US+UG.
+- **Import YouTube (US+UG):** gdy konwersja MP3 albo systemowy yt-dlp zawodzi, host próbuje strumień audio, binarkę wbudowaną i świeżą z GitHub — czytelniejsze komunikaty błędów.
+
+## [5.4.3](https://github.com/Negatywistczny/stagesync/compare/v5.4.2...v5.4.3) - 2026-08-05
+
+### Dodano
+
+#### 🖥️ App Shell & UI
+- **Admin — Smart Tempo:** strona `/smart-tempo` z pulpitem dokładności analizy (benchmark) — otwierana z Systemu; wykresy porównawcze bez zbędnych linii łączących ścieżki.
+
+### Naprawiono
+
+#### ⏱️ Timeline & DAW
+- **Smart Tempo:** siatka beatów silniej premiuje downbeaty i fazę względem onsetów — mapa tempa lepiej trzyma się nagrania; Import US+UG przy układzie Beat 1 / siatki bierze BPM z analizy audio, gdy jest dostępny (zamiast samego metronomu pliku).
 
 ## [5.4.2](https://github.com/Negatywistczny/stagesync/compare/v5.4.1...v5.4.2) - 2026-08-04 — Smart Tempo
 
@@ -566,7 +673,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Motyw domyślny:** health może zwracać `themeDefault` z `STAGESYNC_THEME_DEFAULT` (dla klientów bez lokalnej preferencji).
 
 #### 📚 Dokumentacja
-- **Mobile:** podręcznik [MOBILE.md](./docs/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).
+- **Mobile:** podręcznik [MOBILE.md](./docs/guides/MOBILE.md) — Performer vs Console (Console = pełny odpowiednik desktopu; lokalny host w produkcie), sideload, QR dołączenia vs QR APK, Offline-First (dialog „Zastosuj”).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Android:** sideload **StageSync Performer** (Client na scenie) i **StageSync Console** (pełne SPA: Admin + Timeline + Client; link „Klient” działa z lokalnego bundla) — bez Google Play; mniejsze APK tylko pod ARM (`arm64-v8a` / `armeabi-v7a`).
@@ -897,7 +1004,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
-- **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](docs/DESKTOP.md).
+- **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](./docs/guides/DESKTOP.md).
 
 ## [5.0.0-alpha.11](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
@@ -930,7 +1037,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Standalone desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** Tauri spawnuje wbudowany Node sidecar (`stagesync-host`), czeka na `GET /api/health`, ładuje UI; shutdown przy zamknięciu okna; czytelny ekran błędu przy konflikcie portu `4000`; dev fallback przez `STAGESYNC_URL` gdy brak bundla sidecara.
 - **Desktop sidecar packaging:** `launch/scripts/build-desktop-sidecar.mjs` — Node runtime per architektura, `pnpm deploy --prod @stagesync/server`, web `dist`, seed `library.template.json`; `bundle.externalBin` + `bundle.resources` w Tauri; `STAGESYNC_SEED_DIR` w serwerze; CI `--smoke` (health + higiena docs).
-- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](docs/INSTALL.md) / [DESKTOP.md](docs/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
+- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](./docs/guides/INSTALL.md) / [DESKTOP.md](./docs/guides/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
 - **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/adr/0012-user-data-location.md)).
 - **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); `compose.prod.yml` + Watchtower HTTP-only (update na żądanie, bez auto-poll).
 - **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; `desktopBridge.ts` + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
@@ -961,7 +1068,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Timeline:** panel narzędzi pod **T** (menu przy kursorze + litery jak v4); **Alt/⌥+drag** = duplikat clipów (TE-07); live preview multi-drag; loop region **snap na podglądzie** (beat; Cmd/Ctrl = off).
-- Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
+- Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/milestones/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
 - **Client stage content (override ADR 0011 — treść tylko):** wizualny port Karaoke / Grid / Forma / Score stub z v4 `client.css` (fonty, kafelki, hero Formy + poziomy strip, pasek taktów karaoke); chrome (header, settings, role buttons) zostaje v5. CL-P0: progress `--beat-progress` w sekcjach bez tekstu, karuzela Grid + hero „nast.”, Forma past/current. Inventarz CL-R-* = content clone.
 - **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` + pack v5 `docs/examples/v5/library.pack.sample.stagesync.json`; smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
@@ -976,7 +1083,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Wygląd:** jasny motyw + wysoki kontrast (`data-theme` / `data-contrast`) w Admin / Timeline / Client.
 - **Client:** skala tekstu karaoke, auto-scroll, score zoom lokalny; appearance w drawerze globalnym.
 - **Timeline parity follow-up:** Metadane (tytuł / defaultBpm), Loop (region na linijce + `POST /api/transport/loop` SSOT), Follow playhead, Tekst/Akordy/Cue move/resize/pencil, Kotwice (`scoreBarMap`), scissors content, Client H/B + Tap wokalu + notatki Formy.
-- **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` ([MIGRATION.md](docs/MIGRATION.md)); drop legacy `vl-cd-`* (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
+- **Migrator α9 MVP:** `migrateLegacy`* + CLI `pnpm migrate:legacy` (./docs/guides/MIGRATION.md)); drop legacy `vl-cd-`* (cyfry CD = render Client, nie storage) + granice długości Tekst z restami (bez rozciągania „1” w utwór).
 - **Admin:** Host logi SSE (`/api/system/logs/stream` + Pauza/Wyczyść); Scena **presence** (`GET /api/stage/clients` + WS `client_hello`).
 
 ### Zmieniono
@@ -986,7 +1093,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Scena:** kolumna **Klienci** szersza (`fr` / `minmax`, nie cap MIDI Host) — listy presence mniej ściśnięte.
 - **Admin Host MIDI:** kafelki liczników wypełniają panel (siatka 2×2); wartość pod etykietą, wycentrowane.
 - **Admin Host:** Ustawienia / Restart / Wyłącz w chrome headerze (`ShellIconButton`, kolejność jak v4); Sieć na pełną szerokość rzędu.
-- **Proces:** α8 rebuild = **code freeze** (engineering); α9 must (migrator + **P8 green 2026-07-21**); β1 na prośbę ([report-parity-blocker-alpha8.md](docs/analysis/reports/report-parity-blocker-alpha8.md)).
+- **Proces:** α8 rebuild = **code freeze** (engineering); α9 must (migrator + **P8 green 2026-07-21**); β1 na prośbę ([report-parity-blocker-alpha8.md](docs/analysis/reports/milestones/report-parity-blocker-alpha8.md)).
 - **Admin Wybrany:** przycisk „Zapisz nazwę” w tym samym rzędzie co pole nazwy.
 - **Admin Utwory:** lista pokazuje `tytuł - artysta` (artysta po „-” bez pogrubienia, muted), gdy `artist` jest ustawiony.
 - **Countdown cyfry:** nie są już zapisywane jako clipy Tekst/Akordy (`vl-cd-`*); Client (karaoke / grid) syntetyzuje „2…1” z długości Forma Countdown; migracja / `setCountdownBars` tylko scrubuje stare digit clipy (TE-21).
@@ -1133,7 +1240,7 @@ na helperach czasu / soft playhead (`@stagesync/shared`).
 - Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
 [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [docs/ROADMAP.md](docs/ROADMAP.md);
 checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.
-[LICENSE](LICENSE) (MIT); [SECURITY.md](SECURITY.md).
+[LICENSE](LICENSE) (MIT); [SECURITY.md](.github/SECURITY.md).
 foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
 audio.
 indeks ADR + słownik statusów ([docs/adr/README.md](docs/adr/README.md)).
@@ -1150,7 +1257,7 @@ tekst na amber CTA.
 - Admin — tworzenie / usuwanie / zmiana nazwy projektu z UI (Zod body przed
 fetch; `commandPending` blokuje listę i panel).
 - Shelle UI: Admin — własny layout (chrome + sekcje + status), inventarz
-funkcji v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)); Client /
+funkcji v4 (./docs/ui/ui-shell-inventory.md)); Client /
 Timeline — inventarz (osobny redesign); tokeny black/amber + CSS Modules;
 `TransportProvider` nad routerem; Audio 0…N; bez git-apply
 ([ADR 0004](docs/adr/0004-updates-docker.md)).
@@ -1166,8 +1273,8 @@ helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
 - CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
 `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
 `library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
-([CONTRIBUTING.md](CONTRIBUTING.md)).
-inventarz kontrolek = parity v4 ([ui-shell-inventory.md](docs/ui-shell-inventory.md)).
+([CONTRIBUTING.md](.github/CONTRIBUTING.md)).
+inventarz kontrolek = parity v4 (./docs/ui/ui-shell-inventory.md)).
 
 ### Usunięto
 

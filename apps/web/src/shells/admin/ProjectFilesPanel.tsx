@@ -8,11 +8,11 @@ import {
 } from "react";
 import { Button } from "@stagesync/ui";
 import type { Project, ProjectAsset } from "@stagesync/shared";
-import { fetchProject } from "../../lib/libraryApi.js";
+import { fetchProject } from "@lib/shell-operator/libraryApi.js";
 import {
   deleteProjectAsset,
   uploadProjectAudio,
-} from "../../lib/projectAssetsApi.js";
+} from "@lib/shell-operator/projectAssetsApi.js";
 import styles from "../AdminShell.module.css";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 

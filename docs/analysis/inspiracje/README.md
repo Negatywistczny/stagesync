@@ -54,11 +54,11 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 
 | Katalog | Po co | Typowy status dokumentu |
 |---------|--------|-------------------------|
-| [`audyty-silnik/`](./audyty-silnik/) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
-| [`referencje-daw/`](./referencje-daw/) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
-| [`spec-5.2+/`](./spec-5.2+/) | Specyfikacje wprowadzenia feature linii **5.2+** (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer HW) — hipotezy / design, nie claim Done | `open` → … |
-| [`www/`](./www/) | Audyt / strategia witryny marketingowej `apps/www` | `closed` |
-| [`testy-pokrycie/`](./testy-pokrycie/) | Plany uzupełnienia testów Vitest (luki coverage, mocki, priorytety P0–P2) — **nie** zastępują audytów bugów w `audyty-silnik/` | `partial` |
+| [`audyty-silnik/`](./audyty-silnik/README.md) | Audyty kodu: audio, WebAudio, mixer, transport, MIDI, setlista/race, Client sync, Desktop/Tauri | `open` → … |
+| [`referencje-daw/`](./referencje-daw/README.md) | Spec zachowań DAW / show-tools / Client charts vs ADR | `open` → … |
+| [`specyfikacje/`](./specyfikacje/README.md) | Specyfikacje / design hipotez feature (motywy/auth, mobile, sampler, Safety Net, MIDI PC, mixer, tempo, roadmap) — **nie** claim Done | `open` → … |
+| [`www/`](./www/README.md) | Audyt / strategia witryny marketingowej `apps/www` | `closed` |
+| [`testy-pokrycie/`](./testy-pokrycie/README.md) | Plany uzupełnienia testów Vitest (luki coverage, mocki, priorytety P0–P2) — **nie** zastępują audytów bugów w `audyty-silnik/` | `partial` |
 
 ## Zasady
 
@@ -75,7 +75,7 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 ```markdown
 # Triage: <tytuł>
 
-**Źródło:** [<dump>.md](./<dump>.md)
+**Źródło:** `<dump>.md` (ten sam katalog)
 **Status:** `open`
 **Obszar:** …
 **Data triage:** RRRR-MM-DD
@@ -105,29 +105,30 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 | [Specyfikacja-Referencji-Zachowan-Wyswietlania.md](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.md) | Gemini Deep Search | [triage](./referencje-daw/Specyfikacja-Referencji-Zachowan-Wyswietlania.triage.md) | `partial` |
 | [UXLogika-Show-Tools-Referencja-Zachowan.md](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.md) | Gemini Deep Search | [triage](./referencje-daw/UXLogika-Show-Tools-Referencja-Zachowan.triage.md) | `partial` |
 
-### spec-5.2+/
+### specyfikacje/
 
-Specyfikacje intro feature linii **5.2** (Pocket Stage) i residual **5.2+** — companion do [TODO 5.2+](../../TODO.md) / [ROADMAP § 5.2.0 / Po 5.2.0](../../ROADMAP.md). **Nie** SSOT; **nie** CHANGELOG. MVP PIN / Safety Net manual / Sampler / bus→bus / Performer·Console / MIDI PC — **wydane w `5.2.0`**; residual w triage + TODO. MIDI/mixer: cross-link do istniejących audytów / referencji DAW (nie drugi backlog bugów).
+Specyfikacje i oceny produktowe (hipotezy / design) — companion do [TODO.md](../../TODO.md) / [ROADMAP.md](../../ROADMAP.md). **Nie** SSOT; **nie** CHANGELOG. Historycznie dużo materiału z linii **5.2 Pocket Stage** (PIN / Safety Net / Sampler / bus→bus / Performer·Console / MIDI PC — **wydane w `5.2.0`**); katalog obejmuje też residual i późniejsze spece (ingest, Smart Tempo, strategia). MIDI/mixer: cross-link do istniejących audytów / referencji DAW (nie drugi backlog bugów).
 
 | Raport | Źródło | Triage | Status |
 |--------|--------|--------|--------|
-| [Specyfikacja-Motywow-i-Autentykacji-DAW.md](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md) | `partial` |
-| [MotywyAuth-Bezpieczenstwo-UX-Decyzje.md](./spec-5.2+/MotywyAuth-Bezpieczenstwo-UX-Decyzje.md) | Gemini / AI Exporter | [triage](./spec-5.2+/MotywyAuth-Bezpieczenstwo-UX-Decyzje.triage.md) | `partial` |
-| [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) | `partial` |
-| [Krytyka-strategii-Mobile-for-Live.md](./spec-5.2+/Krytyka-strategii-Mobile-for-Live.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Krytyka-strategii-Mobile-for-Live.triage.md) | `partial` |
-| [Specyfikacja-StageSync-Cues-Sampler.md](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-Cues-Sampler.triage.md) | `closed` |
-| [Ocena-decyzji-Sampler-Cue.md](./spec-5.2+/Ocena-decyzji-Sampler-Cue.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-decyzji-Sampler-Cue.triage.md) | `partial` |
-| [Safety-Net-dla-StageSync-v5.2.md](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Safety-Net-dla-StageSync-v5.2.triage.md) | `partial` |
-| [Ocena-Safety-Net-StageSync-437.md](./spec-5.2+/Ocena-Safety-Net-StageSync-437.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Safety-Net-StageSync-437.triage.md) | `partial` |
-| [Ocena-Decyzji-Produktowych-StageSync.md](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync.triage.md) | `partial` |
-| [Ocena-Decyzji-Produktowych-StageSync-v1.md](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync-v1.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Decyzji-Produktowych-StageSync-v1.triage.md) | `open` |
-| [Recenzja-Decyzji-Live-FOH-Audio.md](./spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Recenzja-Decyzji-Live-FOH-Audio.triage.md) | `partial` |
-| [Ocena-Strategii-Produktu-StageSync-v5.md](./spec-5.2+/Ocena-Strategii-Produktu-StageSync-v5.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Ocena-Strategii-Produktu-StageSync-v5.triage.md) | `open` |
-| [StageSync-v5.2+-MIDI-PC-Referencja.md](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./spec-5.2+/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `closed` |
-| [Specyfikacja-StageSync-dla-miksera-DAW.md](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `partial` |
-| [Architektura-Ingestii-Danych-Muzycznych-StageSync.md](./spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md) | `open` |
-| [Dynamic-Tempo-Mapping-Technical-Blueprint.md](./spec-5.2+/Dynamic-Tempo-Mapping-Technical-Blueprint.md) | Gemini / AI Exporter | [triage](./spec-5.2+/Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md) | `partial` |
-| [Implementacja-Smart-Tempo-w-Antigravity.md](./spec-5.2+/Implementacja-Smart-Tempo-w-Antigravity.md) | Gemini / Antigravity / AI Exporter | [triage](./spec-5.2+/Implementacja-Smart-Tempo-w-Antigravity.triage.md) | `partial` |
+| [Specyfikacja-Motywow-i-Autentykacji-DAW.md](./specyfikacje/Specyfikacja-Motywow-i-Autentykacji-DAW.md) | Gemini / AI Exporter | [triage](./specyfikacje/Specyfikacja-Motywow-i-Autentykacji-DAW.triage.md) | `partial` |
+| [MotywyAuth-Bezpieczenstwo-UX-Decyzje.md](./specyfikacje/MotywyAuth-Bezpieczenstwo-UX-Decyzje.md) | Gemini / AI Exporter | [triage](./specyfikacje/MotywyAuth-Bezpieczenstwo-UX-Decyzje.triage.md) | `partial` |
+| [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md](./specyfikacje/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.md) | Gemini / AI Exporter | [triage](./specyfikacje/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) | `partial` |
+| [Krytyka-strategii-Mobile-for-Live.md](./specyfikacje/Krytyka-strategii-Mobile-for-Live.md) | Gemini / AI Exporter | [triage](./specyfikacje/Krytyka-strategii-Mobile-for-Live.triage.md) | `partial` |
+| [Specyfikacja-StageSync-Cues-Sampler.md](./specyfikacje/Specyfikacja-StageSync-Cues-Sampler.md) | Gemini / AI Exporter | [triage](./specyfikacje/Specyfikacja-StageSync-Cues-Sampler.triage.md) | `closed` |
+| [Ocena-decyzji-Sampler-Cue.md](./specyfikacje/Ocena-decyzji-Sampler-Cue.md) | Gemini / AI Exporter | [triage](./specyfikacje/Ocena-decyzji-Sampler-Cue.triage.md) | `partial` |
+| [Safety-Net-dla-StageSync-v5.2.md](./specyfikacje/Safety-Net-dla-StageSync-v5.2.md) | Gemini / AI Exporter | [triage](./specyfikacje/Safety-Net-dla-StageSync-v5.2.triage.md) | `partial` |
+| [Ocena-Safety-Net-StageSync-437.md](./specyfikacje/Ocena-Safety-Net-StageSync-437.md) | Gemini / AI Exporter | [triage](./specyfikacje/Ocena-Safety-Net-StageSync-437.triage.md) | `partial` |
+| [Ocena-Decyzji-Produktowych-StageSync.md](./specyfikacje/Ocena-Decyzji-Produktowych-StageSync.md) | Gemini / AI Exporter | [triage](./specyfikacje/Ocena-Decyzji-Produktowych-StageSync.triage.md) | `partial` |
+| [Ocena-Decyzji-Produktowych-StageSync-v1.md](./specyfikacje/Ocena-Decyzji-Produktowych-StageSync-v1.md) | Gemini / AI Exporter | [triage](./specyfikacje/Ocena-Decyzji-Produktowych-StageSync-v1.triage.md) | `open` |
+| [Recenzja-Decyzji-Live-FOH-Audio.md](./specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.md) | Gemini / AI Exporter | [triage](./specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md) | `partial` |
+| [Ocena-Strategii-Produktu-StageSync-v5.md](./specyfikacje/Ocena-Strategii-Produktu-StageSync-v5.md) | Gemini / AI Exporter | [triage](./specyfikacje/Ocena-Strategii-Produktu-StageSync-v5.triage.md) | `open` |
+| [StageSync-v5.2+-MIDI-PC-Referencja.md](./specyfikacje/StageSync-v5.2+-MIDI-PC-Referencja.md) | Gemini / AI Exporter | [triage](./specyfikacje/StageSync-v5.2+-MIDI-PC-Referencja.triage.md) | `closed` |
+| [Specyfikacja-StageSync-dla-miksera-DAW.md](./specyfikacje/Specyfikacja-StageSync-dla-miksera-DAW.md) | Gemini / AI Exporter | [triage](./specyfikacje/Specyfikacja-StageSync-dla-miksera-DAW.triage.md) | `partial` |
+| [Architektura-Ingestii-Danych-Muzycznych-StageSync.md](./specyfikacje/Architektura-Ingestii-Danych-Muzycznych-StageSync.md) | Gemini / AI Exporter | [triage](./specyfikacje/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md) | `open` |
+| [Dynamic-Tempo-Mapping-Technical-Blueprint.md](./specyfikacje/Dynamic-Tempo-Mapping-Technical-Blueprint.md) | Gemini / AI Exporter | [triage](./specyfikacje/Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md) | `partial` |
+| [Implementacja-Smart-Tempo-w-Antigravity.md](./specyfikacje/Implementacja-Smart-Tempo-w-Antigravity.md) | Gemini / Antigravity / AI Exporter | [triage](./specyfikacje/Implementacja-Smart-Tempo-w-Antigravity.triage.md) | `partial` |
+| [analiza-produktowo-wdrozeniowa-stagesync-roadmap.md](./specyfikacje/analiza-produktowo-wdrozeniowa-stagesync-roadmap.md) | Analiza strategiczna / Roadmap | [triage](./specyfikacje/analiza-produktowo-wdrozeniowa-stagesync-roadmap.triage.md) | `open` |
 
 ### www/
 

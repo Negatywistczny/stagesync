@@ -75,7 +75,7 @@ class HostWebActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val file = pendingApkFile
             if (file != null && ApkInstaller.canInstallPackages(this)) {
-                startActivity(ApkInstaller.installIntent(this, file))
+                ApkInstaller.install(this, file)
             } else if (file != null) {
                 Toast.makeText(this, R.string.update_need_permission, Toast.LENGTH_LONG).show()
             }
@@ -137,7 +137,17 @@ class HostWebActivity : AppCompatActivity() {
                 override fun shouldOverrideUrlLoading(
                     view: WebView,
                     request: WebResourceRequest,
-                ): Boolean = false
+                ): Boolean {
+                    val host = request.url.host ?: return true
+                    // Allow only the connected StageSync host / loopback (SPA).
+                    if (host.equals(hostAuthority, ignoreCase = true) ||
+                        host == "127.0.0.1" ||
+                        host.equals("localhost", ignoreCase = true)
+                    ) {
+                        return false
+                    }
+                    return true
+                }
 
                 override fun shouldInterceptRequest(
                     view: WebView,
@@ -428,7 +438,7 @@ class HostWebActivity : AppCompatActivity() {
             unknownSourcesLauncher.launch(ApkInstaller.unknownSourcesSettingsIntent(this))
             return
         }
-        startActivity(ApkInstaller.installIntent(this, file))
+        ApkInstaller.install(this, file)
     }
 
     private fun enterImmersive() {
@@ -477,11 +487,13 @@ class HostWebActivity : AppCompatActivity() {
 
         @android.webkit.JavascriptInterface
         fun showLocalNotification(title: String, body: String, channel: String?) {
+            val safeTitle = title.take(120)
+            val safeBody = body.take(500)
             runOnUiThread {
                 PushNotifications.showLocal(
                     this@HostWebActivity,
-                    title,
-                    body,
+                    safeTitle,
+                    safeBody,
                     channel ?: PushNotifications.CHANNEL_CRITICAL,
                     "/admin",
                 )

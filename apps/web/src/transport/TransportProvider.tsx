@@ -14,7 +14,7 @@ import {
   type TransportPlayBody,
   type TransportState,
 } from "@stagesync/shared";
-import { transportStateFromTick } from "../lib/timelineLocator.js";
+import { transportStateFromTick } from "@lib/timeline/timelineLocator.js";
 import {
   getTransport,
   pauseTransport,
@@ -34,7 +34,7 @@ import {
 } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
 import { wsReconnectDelayMs } from "./wsReconnect.js";
-import { fetchLiveDesk, fetchSetlist } from "../lib/setlistApi.js";
+import { fetchLiveDesk, fetchSetlist } from "@lib/shell-operator/setlistApi.js";
 import {
   dismissStageCues,
   formatTransportError,
@@ -132,7 +132,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     stopRaf();
     // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
     // Equality bail when integer ticks unchanged; opt-in probe: ?ss_perf=h01
-    // (docs/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
+    // (docs/guides/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
     const tick = (timeMs: number) => {
       if (!playingRef.current) return;
       const next = getDisplayTicks(

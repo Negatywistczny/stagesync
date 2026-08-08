@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { Button, Select } from "@stagesync/ui";
 import {
   applyUgImportToProject,
+  applyUltrastarImportToProject,
+  applyUsUgBridgeToProject,
   importUgText,
   placeContentFromForma,
   reflowUgImportSectionBars,
@@ -22,33 +24,33 @@ import {
   importLibraryPack,
   putProject,
   updateProject,
-} from "../lib/libraryApi.js";
-import { postSystemRestart, postSystemShutdown } from "../lib/setlistApi.js";
-import { prepareHostRestart } from "../lib/desktopBridge.js";
-import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "../lib/desktopBridge.js";
-import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
-import { useMqTablet } from "../lib/useMqTablet.js";
-import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
-import { APP_VERSION } from "../lib/appVersion.js";
+} from "@lib/shell-operator/libraryApi.js";
+import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
+import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
+import { postSystemRestart, postSystemShutdown } from "@lib/shell-operator/setlistApi.js";
+import { prepareHostRestart } from "@lib/client/desktopBridge.js";
+import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "@lib/client/desktopBridge.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
+import { useMqTablet } from "@lib/client/useMqTablet.js";
+import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
 import {
   CLOCK_DISPLAY_CHANGED_EVENT,
   formatClockDisplay,
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
-} from "../lib/clockDisplayPrefs.js";
-import { openPreferences } from "../lib/preferencesEvents.js";
-import { markOperatorSession } from "../lib/operatorSession.js";
+} from "@lib/client/clockDisplayPrefs.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
-  ADMIN_SECTIONS,
+  getVisibleAdminSections,
   isAdminSectionId,
   type AdminSectionId,
-} from "../lib/operatorNavRoutes.js";
+} from "@lib/shell-operator/operatorNavRoutes.js";
 import {
-  isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
+} from "@lib/shell-operator/operatorSurface.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import { useTransport } from "../transport/useTransport.js";
 import {
@@ -70,7 +72,8 @@ import {
 import { SetView } from "./admin/SetView.js";
 import { StageView } from "./admin/StageView.js";
 import { SystemView } from "./admin/SystemView.js";
-import { UgImportForm } from "./UgImportForm.js";
+import { DevView } from "./admin/DevView.js";
+import { SongImportWizard } from "./import/SongImportWizard.js";
 import { Modal } from "./admin/modals/Modal.js";
 import { MusicXmlModal } from "./admin/modals/MusicXmlModal.js";
 import { BatchPcModal } from "./admin/modals/BatchPcModal.js";
@@ -83,8 +86,20 @@ function errMessage(err: unknown): string {
 }
 
 
+const ADMIN_LAST_SECTION_KEY = "stagesync:admin:last-section-v1";
+
+function readStoredAdminSection(): AdminSectionId {
+  if (typeof window === "undefined") return "songs";
+  try {
+    const raw = window.localStorage.getItem(ADMIN_LAST_SECTION_KEY);
+    if (raw && isAdminSectionId(raw)) return raw;
+  } catch {
+    /* storage unavailable (private mode etc.) */
+  }
+  return "songs";
+}
+
 export function AdminShell() {
-  useAnnounceDevicePresence();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isCompactMobile = useMqMobileCompact();
@@ -93,7 +108,7 @@ export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [section, setSection] = useState<AdminSectionId>("songs");
+  const [section, setSection] = useState<AdminSectionId>(() => readStoredAdminSection());
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
@@ -174,6 +189,14 @@ export function AdminShell() {
   useEffect(() => {
     markOperatorSession();
   }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ADMIN_LAST_SECTION_KEY, section);
+    } catch {
+      /* storage unavailable (private mode etc.) */
+    }
+  }, [section]);
 
   useEffect(() => {
     const sectionParam = searchParams.get("section");
@@ -375,7 +398,7 @@ export function AdminShell() {
             .filter(Boolean)
             .join(" ")}
         >
-          {!isCompactMobile && !isOsMenuDesktopShell() ? (
+          {!isCompactMobile ? (
             <div className={styles.chromeBrand}>
               <ShellWordmark
                 suffix="Admin"
@@ -410,7 +433,7 @@ export function AdminShell() {
                     }}
                     aria-label="Sekcja Admin"
                   >
-                    {ADMIN_SECTIONS.map((item) => (
+                    {getVisibleAdminSections().map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label}
                       </option>
@@ -419,7 +442,7 @@ export function AdminShell() {
                 </div>
               ) : (
                 <nav className={styles.sections} aria-label="Sekcje">
-                  {ADMIN_SECTIONS.map((item) => (
+                  {getVisibleAdminSections().map((item) => (
                     <Button
                       key={item.id}
                       variant="ghost"
@@ -594,6 +617,7 @@ export function AdminShell() {
             onAutoCheckUpdateConsumed={() => setMenuCheckUpdate(false)}
           />
         ) : null}
+        {section === "dev" ? (import.meta.env.DEV ? <DevView /> : null) : null}
       </main>
 
       <footer className={styles.status} aria-label="Status koncertu">
@@ -650,25 +674,38 @@ export function AdminShell() {
 
       {importModalOpen ? (
         <Modal
-          title="Importuj Ultimate Guitar"
+          title={
+            selectedId
+              ? "Importuj utwór — nadpisz zaznaczony"
+              : "Importuj utwór — nowy"
+          }
+          wide
           onClose={() => {
             setImportModalOpen(false);
           }}
         >
-          {!selectedId ? (
-            <p className={styles.muted}>Wybierz utwór.</p>
-          ) : (
-            <UgImportForm
-              applyLabel="Importuj do utworu"
-              disabled={commandPending}
-              applying={commandPending}
-              initialTitle={selected?.name}
-              initialArtist={selected?.artist}
-              onCancel={() => setImportModalOpen(false)}
-              onApply={async ({ text, barsPerLine, sectionBars, runWand }) => {
-                if (!selectedId) return;
-                setCommandPending(true);
-                try {
+          <SongImportWizard
+            applyLabel={
+              selectedId ? "Importuj do utworu" : "Utwórz nowy utwór"
+            }
+            disabled={commandPending}
+            applying={commandPending}
+            projectId={selectedId ?? undefined}
+            initialTitle={selected?.name}
+            initialArtist={selected?.artist}
+            importOptions={
+              selectedId && activeProject
+                ? {
+                    ppq: activeProject.ppq,
+                    meter: resolveMeterAt(activeProject, 0),
+                  }
+                : undefined
+            }
+            onCancel={() => setImportModalOpen(false)}
+            onApplyUg={async ({ text, barsPerLine, sectionBars, runWand, metadata }) => {
+              setCommandPending(true);
+              try {
+                if (selectedId) {
                   const project = await fetchProject(selectedId);
                   const meter = resolveMeterAt(project, 0);
                   const parsed = importUgText(text, {
@@ -676,17 +713,18 @@ export function AdminShell() {
                     meter,
                     barsPerLine,
                   });
-                  if (!parsed.ok) {
-                    throw new Error(parsed.message);
-                  }
-                  const reflowed = reflowUgImportSectionBars(parsed, sectionBars, {
-                    ppq: project.ppq,
-                    meter,
-                  });
-                  if (!reflowed.ok) {
-                    throw new Error(reflowed.message);
-                  }
+                  if (!parsed.ok) throw new Error(parsed.message);
+                  const reflowed = reflowUgImportSectionBars(
+                    parsed,
+                    sectionBars,
+                    { ppq: project.ppq, meter },
+                  );
+                  if (!reflowed.ok) throw new Error(reflowed.message);
                   let next = applyUgImportToProject(project, reflowed);
+                  const title = metadata?.title?.trim();
+                  const artist = metadata?.artist?.trim();
+                  if (title) next = { ...next, name: title.slice(0, 200) };
+                  if (artist) next = { ...next, artist: artist.slice(0, 200) };
                   if (runWand) {
                     const wand = placeContentFromForma(next, "both");
                     if (wand.ok) next = wand.project;
@@ -699,12 +737,151 @@ export function AdminShell() {
                       : `Import UG: ${reflowed.sections.length} sekcji — w Timeline Różdżka (W) po dopracowaniu Formy.`,
                   );
                   await refreshLibrary(selectedId);
-                } finally {
-                  setCommandPending(false);
+                  return;
                 }
-              }}
-            />
-          )}
+                const name =
+                  metadata?.title?.trim() ||
+                  `Import UG ${new Date().toLocaleTimeString("pl")}`;
+                const saved = await createSongWithContent(name, (shell) => {
+                  const meter = resolveMeterAt(shell, 0);
+                  const parsed = importUgText(text, {
+                    ppq: shell.ppq,
+                    meter,
+                    barsPerLine,
+                  });
+                  if (!parsed.ok) throw new Error(parsed.message);
+                  const reflowed = reflowUgImportSectionBars(
+                    parsed,
+                    sectionBars,
+                    { ppq: shell.ppq, meter },
+                  );
+                  if (!reflowed.ok) throw new Error(reflowed.message);
+                  let next = applyUgImportToProject(shell, reflowed);
+                  const title = metadata?.title?.trim();
+                  const artist = metadata?.artist?.trim();
+                  if (title) next = { ...next, name: title.slice(0, 200) };
+                  if (artist) next = { ...next, artist: artist.slice(0, 200) };
+                  if (runWand) {
+                    const wand = placeContentFromForma(next, "both");
+                    if (wand.ok) next = wand.project;
+                  }
+                  return next;
+                });
+                setImportModalOpen(false);
+                setActionNotice(`Nowy utwór „${saved.name}”: Import UG`);
+                await refreshLibrary(saved.id);
+                navigate(`/timeline/${saved.id}`);
+              } finally {
+                setCommandPending(false);
+              }
+            }}
+            onApplyUltrastar={async (result) => {
+              setCommandPending(true);
+              try {
+                if (selectedId) {
+                  const project = await fetchProject(selectedId);
+                  const next = applyUltrastarImportToProject(project, result);
+                  await putProject(selectedId, next);
+                  setImportModalOpen(false);
+                  setActionNotice(
+                    `Import UltraStar: ${result.syllableCount} sylab. Sprawdź w Timeline.`,
+                  );
+                  await refreshLibrary(selectedId);
+                  return;
+                }
+                const name =
+                  result.title?.trim() ||
+                  `Import UltraStar ${new Date().toLocaleTimeString("pl")}`;
+                const saved = await createSongWithContent(name, (shell) =>
+                  applyUltrastarImportToProject(shell, result),
+                );
+                setImportModalOpen(false);
+                setActionNotice(`Nowy utwór „${saved.name}”: Import UltraStar`);
+                await refreshLibrary(saved.id);
+                navigate(`/timeline/${saved.id}`);
+              } finally {
+                setCommandPending(false);
+              }
+            }}
+            onApplyUsUg={async (payload) => {
+              const result = payload.bridge;
+              const smartAudio = payload.smartTempoAudio;
+              const pendingFile = payload.pendingAudioFile;
+              setCommandPending(true);
+              try {
+                if (selectedId) {
+                  let project = await fetchProject(selectedId);
+                  if (payload.serverProjectSnapshot) {
+                    project = {
+                      ...project,
+                      updatedAt: payload.serverProjectSnapshot.updatedAt,
+                      assets: payload.serverProjectSnapshot.assets,
+                      audioTracks: payload.serverProjectSnapshot.audioTracks,
+                      audioClips: payload.serverProjectSnapshot.audioClips,
+                    };
+                  }
+                  let next = applyUsUgBridgeToProject(project, result, {
+                    smartTempoAudio: smartAudio,
+                  });
+                  if (pendingFile) {
+                    next = await uploadProjectAudio(selectedId, pendingFile, {
+                      startTicks: 0,
+                    });
+                    const asset = next.assets.at(-1);
+                    if (asset && smartAudio) {
+                      next = applyUsUgBridgeToProject(next, result, {
+                        smartTempoAudio: {
+                          ...smartAudio,
+                          assetId: asset.id,
+                        },
+                      });
+                    }
+                  }
+                  await putProject(selectedId, next);
+                  setImportModalOpen(false);
+                  setActionNotice(
+                    `Import US+UG: ${result.sections.length} sekcji. Sprawdź w Timeline.`,
+                  );
+                  await refreshLibrary(selectedId);
+                  return;
+                }
+                const name =
+                  result.title?.trim() ||
+                  `Import US+UG ${new Date().toLocaleTimeString("pl")}`;
+                let saved = await createSongWithContent(name, (shell) =>
+                  applyUsUgBridgeToProject(shell, result, {
+                    smartTempoAudio: pendingFile ? undefined : smartAudio,
+                  }),
+                );
+                if (pendingFile && saved.id) {
+                  saved = await uploadProjectAudio(saved.id, pendingFile, {
+                    startTicks: 0,
+                  });
+                  const asset = saved.assets.at(-1);
+                  if (asset && smartAudio) {
+                    const withClip = applyUsUgBridgeToProject(saved, result, {
+                      smartTempoAudio: {
+                        ...smartAudio,
+                        assetId: asset.id,
+                      },
+                    });
+                    saved = await putProject(saved.id, {
+                      ...withClip,
+                      id: saved.id,
+                      updatedAt: saved.updatedAt,
+                      midiProgramId: saved.midiProgramId,
+                    });
+                  }
+                }
+                setImportModalOpen(false);
+                setActionNotice(`Nowy utwór „${saved.name}”: Import US+UG`);
+                await refreshLibrary(saved.id);
+                navigate(`/timeline/${saved.id}`);
+              } finally {
+                setCommandPending(false);
+              }
+            }}
+          />
         </Modal>
       ) : null}
 

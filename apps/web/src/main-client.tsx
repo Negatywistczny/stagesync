@@ -4,7 +4,7 @@ import AppClient from "./AppClient";
 import {
   bootHostThemeDefault,
   initAppearance,
-} from "./lib/appearance.js";
+} from "@lib/client/appearance.js";
 import { AppErrorBoundary } from "./shells/AppErrorBoundary.js";
 import "./index.css";
 

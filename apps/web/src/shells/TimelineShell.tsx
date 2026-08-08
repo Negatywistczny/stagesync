@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { createPortal, flushSync } from "react-dom";
-import { Link, useBlocker, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useBlocker, useLocation, useNavigate, useParams } from "react-router";
 import { Button, Slider, Select, useContextMenu } from "@stagesync/ui";
 import {
   resolveMeterAt,
@@ -39,7 +39,7 @@ import {
   type SnapMode,
   type WandMode,
 } from "@stagesync/shared";
-import { yieldToUi } from "../lib/audioTempoAnalysis.js";
+import { yieldToUi } from "@lib/audio/audioTempoAnalysis.js";
 import {
   buildBarMarks,
   buildRulerBeatMarks,
@@ -54,7 +54,7 @@ import {
   snapLocatorTicks,
   tickToPx,
   ticksFromPointer,
-} from "../lib/formaCanvas.js";
+} from "@lib/timeline-edit/formaCanvas.js";
 import {
   cascadeFormaMoveIds,
   commitGesture,
@@ -63,7 +63,7 @@ import {
   joinFormaAtClick,
   previewFromSession,
   splitFormaClipAt,
-} from "../lib/formaEdit.js";
+} from "@lib/timeline-edit/formaEdit.js";
 import {
   buildClipboardFromClips,
   deleteClipsOnLane,
@@ -71,7 +71,7 @@ import {
   pasteClipboardWithDelta,
   selectionMaxEndTicks,
   type TimelineClipboard,
-} from "../lib/timelineClipboard.js";
+} from "@lib/timeline/timelineClipboard.js";
 import {
   applySoloButtonClick,
   clearSelection,
@@ -104,8 +104,8 @@ import {
   type ClipSelectionLane,
   type TimelineSurface,
   type TrackSelection,
-} from "../lib/timelineSelection.js";
-import { resolveTimelineShortcut } from "../lib/timelineKeyboardShortcuts.js";
+} from "@lib/timeline/timelineSelection.js";
+import { resolveTimelineShortcut } from "@lib/timeline/timelineKeyboardShortcuts.js";
 import {
   isToolbarToolId,
   loadToolbarVisibleTools,
@@ -113,10 +113,10 @@ import {
   toggleToolbarVisibleTool,
   TOOLBAR_ALWAYS_VISIBLE,
   type ToolbarToolId,
-} from "../lib/timelineToolbarTools.js";
+} from "@lib/timeline/timelineToolbarTools.js";
 import {
   subsectionRanges,
-} from "../lib/formaSubsections.js";
+} from "@lib/timeline-edit/formaSubsections.js";
 import {
   deleteMapEvents,
   insertMapEventAt,
@@ -129,13 +129,13 @@ import {
   upsertMeterAt,
   upsertTempoAt,
   type MapLaneId,
-} from "../lib/mapLaneEdit.js";
+} from "@lib/timeline/mapLaneEdit.js";
 import {
   keyMapSegments,
   meterMapSegments,
   segmentStylePx,
   tempoMapSegments,
-} from "../lib/mapSegments.js";
+} from "@lib/timeline/mapSegments.js";
 import { FormaClipPreview } from "./timeline/FormaClipPreview.js";
 import { TimelineHelp } from "./timeline/TimelineHelp.js";
 import {
@@ -146,19 +146,19 @@ import {
   renameFormaClip,
   setCountdownBars,
   setFormaSubsectionStartBar,
-} from "../lib/formaInspector.js";
+} from "@lib/timeline-edit/formaInspector.js";
 import {
   deleteTekstClip,
   pencilTekstClick,
   setTekstClipStart,
   setTekstClipText,
-} from "../lib/tekstEdit.js";
+} from "@lib/timeline-edit/tekstEdit.js";
 import {
   deleteAkordyClip,
   pencilAkordyClick,
   commitAkordyClipSymbol,
   setAkordyClipSymbol,
-} from "../lib/akordyEdit.js";
+} from "@lib/timeline-edit/akordyEdit.js";
 import {
   deleteCueClip,
   pencilCueClick,
@@ -167,7 +167,7 @@ import {
   setCueClipPriority,
   setCueClipSample,
   CUE_ROLES,
-} from "../lib/cueEdit.js";
+} from "@lib/timeline-edit/cueEdit.js";
 import {
   commitContentGesture,
   contentClipCoveringTicks,
@@ -176,7 +176,7 @@ import {
   previewContentFromSession,
   splitContentClipAt,
   type ContentLaneId,
-} from "../lib/contentLaneEdit.js";
+} from "@lib/timeline-edit/contentLaneEdit.js";
 import {
   buildAudioTrackContextMenuItems,
   buildClipContextMenuItems,
@@ -187,14 +187,14 @@ import {
   mapSegmentSelectionAriaLabel,
   type ClipMenuLane,
   type EmptyLaneMenuKind,
-} from "../lib/timelineContextMenus.js";
+} from "@lib/timeline/timelineContextMenus.js";
 import {
   applyTimelineNudge,
   nudgeShowsLeftEdge,
   shouldShowTouchNudge,
   type NudgeAction,
-} from "../lib/timelineTouchNudge.js";
-import { useTimelineTouchGestures } from "../lib/useTimelineTouchGestures.js";
+} from "@lib/timeline/timelineTouchNudge.js";
+import { useTimelineTouchGestures } from "@lib/timeline/useTimelineTouchGestures.js";
 import {
   anchorBarWidthTicks,
   canEditKotwice,
@@ -204,14 +204,14 @@ import {
   scoreAnchors,
   ticksFromLogicBar,
   updateScoreAnchor,
-} from "../lib/scoreBarEdit.js";
+} from "@lib/timeline-edit/scoreBarEdit.js";
 import {
   snapLoopRange,
   snapMovedLoopRange,
   ticksInLoopRegion,
   usableLoopRange,
   type LoopRange,
-} from "../lib/timelineLocator.js";
+} from "@lib/timeline/timelineLocator.js";
 import {
   canRedo,
   canUndo,
@@ -222,18 +222,18 @@ import {
   syncPresentAfterSave,
   undoDraft,
   type DraftHistory,
-} from "../lib/draftHistory.js";
+} from "@lib/client/draftHistory.js";
 import {
   advanceMetronomeClicks,
   cancelScheduledMetronomeClicks,
   getMetronomeAudioContext,
   metronomeBeatIndex,
   resumeMetronomeAudio,
-} from "../lib/metronome.js";
+} from "@lib/audio/metronome.js";
 import {
   getMetronomeOn,
   setMetronomeOn as persistMetronomeOn,
-} from "../lib/metronomePrefs.js";
+} from "@lib/audio/metronomePrefs.js";
 import {
   addAudioTrack,
   duplicateAudioTrack,
@@ -268,17 +268,17 @@ import {
   placeImportedAudioClipAt,
   splitAudioClipAt,
   toggleAudioClipMute,
-} from "../lib/audioLaneEdit.js";
+} from "@lib/audio/audioLaneEdit.js";
 import {
   addAudioHardwareOutput,
   canAddHardwareOutput,
   removeAudioHardwareOutput,
   setMasterOutputRouting,
   updateAudioHardwareOutput,
-} from "../lib/audioHwEdit.js";
+} from "@lib/audio/audioHwEdit.js";
 import {
   getAudioHwCapability,
-} from "../lib/audioHwCapability.js";
+} from "@lib/audio/audioHwCapability.js";
 import {
   ChannelStripControls,
   TaperGainSlider,
@@ -300,27 +300,27 @@ import {
   stopAudioPlayback,
   suppressAudioPlayback,
   syncAudioPlayback,
-} from "../lib/audioPlayback.js";
+} from "@lib/audio/audioPlayback.js";
 import {
   AUDIO_LATENCY_CHANGED_EVENT,
   getStoredLatencyCompensationMs,
-} from "../lib/audioLatencyPrefs.js";
+} from "@lib/audio/audioLatencyPrefs.js";
 import {
   CLOCK_DISPLAY_CHANGED_EVENT,
   formatClockDisplay,
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
-} from "../lib/clockDisplayPrefs.js";
-import { ticksFromSyncLeadAlongMap } from "../lib/syncLead.js";
+} from "@lib/client/clockDisplayPrefs.js";
+import { ticksFromSyncLeadAlongMap } from "@lib/timeline/syncLead.js";
 import {
   hasNonCollapsedDomTextSelection,
   isEditableKeyboardTarget,
-} from "../lib/isEditableKeyboardTarget.js";
-import { uploadProjectAudio } from "../lib/projectAssetsApi.js";
+} from "@lib/client/isEditableKeyboardTarget.js";
+import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
 import {
   computeWaveformFromAudioBuffer,
   peaksToPolylinePoints,
-} from "../lib/waveformPeaks.js";
+} from "@lib/audio/waveformPeaks.js";
 import {
   detectTimelineTier,
   TIMELINE_COARSE_MQ,
@@ -329,14 +329,14 @@ import {
   timelineGesturesAllowed,
   TOUCH_FULL_EDIT_MSG,
   type TimelineTouchTier,
-} from "../lib/timelineTouchTier.js";
-import { APP_VERSION } from "../lib/appVersion.js";
-import { createSongWithContent } from "../lib/desktopFileMenu.js";
-import { fetchLibrary, fetchProject, putProject } from "../lib/libraryApi.js";
+} from "@lib/timeline/timelineTouchTier.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
+import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
+import { fetchLibrary, fetchProject, putProject } from "@lib/shell-operator/libraryApi.js";
 import {
   fetchSetlist,
   patchSetlistAutoAdvance,
-} from "../lib/setlistApi.js";
+} from "@lib/shell-operator/setlistApi.js";
 import {
   contentSnapModeFromModifiers,
   cursorForHitZone,
@@ -356,19 +356,19 @@ import {
   type FormaGesturePreview,
   type FormaGestureSession,
   type FormaToolId,
-} from "../lib/timelineGesture.js";
+} from "@lib/timeline/timelineGesture.js";
 import {
   applyVocalTap,
   vocalTapMarkTicks,
   vocalTapQueue,
-} from "../lib/clientVocalTap.js";
+} from "@lib/client/clientVocalTap.js";
 import {
   clampBeatForProject,
   formatStartBarBeat,
   moveClipStartKeepLength,
   parseStartBarBeat,
   ticksFromDisplayBarBeat,
-} from "../lib/clipStartEdit.js";
+} from "@lib/timeline/clipStartEdit.js";
 import {
   audioTrackIdFromLane,
   buildTrackList,
@@ -379,7 +379,7 @@ import {
   TRACKS,
   type AudioLaneId,
   type TrackVisibilityMap,
-} from "../lib/timelineTracks.js";
+} from "@lib/timeline/timelineTracks.js";
 import {
   clearLaneHeightOverride,
   DEFAULT_LANE_PX,
@@ -393,12 +393,12 @@ import {
   scaleLaneHeights,
   setLaneHeightOverride,
   type LaneHeightsMap,
-} from "../lib/timelineLaneHeights.js";
+} from "@lib/timeline/timelineLaneHeights.js";
 import {
   clampDockWidth,
   loadDockWidth,
   saveDockWidth,
-} from "../lib/timelineDockWidth.js";
+} from "@lib/timeline/timelineDockWidth.js";
 import {
   clampZoomUi,
   loadZoomPrefs,
@@ -407,26 +407,26 @@ import {
   ZOOM_H_MIN as PREFS_ZOOM_H_MIN,
   ZOOM_UI_MAX,
   ZOOM_UI_MIN,
-} from "../lib/timelineZoomPrefs.js";
+} from "@lib/timeline/timelineZoomPrefs.js";
 import {
   toggleAppFullscreen,
   syncEditHistoryState,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
-} from "../lib/desktopBridge.js";
-import { useAnnounceDevicePresence } from "../lib/useAnnounceDevicePresence.js";
+} from "@lib/client/desktopBridge.js";
+import { useAnnounceDevicePresence } from "@lib/client/useAnnounceDevicePresence.js";
 import {
   DESKTOP_MENU_EVENT,
   parseDesktopMenuDetail,
-} from "../lib/desktopMenuEvents.js";
-import { pushRecentTimelineProject } from "../lib/lastTimelineProject.js";
-import { markOperatorSession } from "../lib/operatorSession.js";
-import { openPreferences } from "../lib/preferencesEvents.js";
+} from "@lib/client/desktopMenuEvents.js";
+import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
-} from "../lib/operatorSurface.js";
-import { useMqMobileCompact } from "../lib/useMqMobileCompact.js";
+} from "@lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellAlertDialog } from "./ShellBlockingDialog.js";
 import { loadTransport } from "../transport/api.js";
 import { useTransport } from "../transport/useTransport.js";
@@ -455,9 +455,14 @@ import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
-import { UgImportForm } from "./UgImportForm.js";
-import { UltrastarImportForm } from "./UltrastarImportForm.js";
-import { CombinedUsUgImportForm, type UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
+import {
+  SongImportWizard,
+} from "./import/SongImportWizard.js";
+import type { UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
+import {
+  SONG_IMPORT_EVENT,
+  parseSongImportDetail,
+} from "@lib/client/songImportEvents.js";
 import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
 import { MixerDock } from "./timeline/MixerDock.js";
 import styles from "./TimelineShell.module.css";
@@ -689,12 +694,10 @@ export function TimelineShell() {
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const [helpOpen, setHelpOpen] = useState(false);
   const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [ugModalOpen, setUgModalOpen] = useState(false);
-  const [ultrastarModalOpen, setUltrastarModalOpen] = useState(false);
+  const [songImportOpen, setSongImportOpen] = useState(false);
   /** Song picker → new library song; Metadane (ⓘ) → overwrite current draft. */
   const [importAsNewSong, setImportAsNewSong] = useState(false);
   const [importApplying, setImportApplying] = useState(false);
-  const [combinedImportModalOpen, setCombinedImportModalOpen] = useState(false);
   const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
   const [followPlayhead, setFollowPlayhead] = useState(() => {
     try {
@@ -1556,7 +1559,7 @@ export function TimelineShell() {
         return;
       }
       // Import overlays own Space & shortcuts — don't drive Timeline transport.
-      if (combinedImportModalOpen || ugModalOpen || ultrastarModalOpen) {
+      if (songImportOpen) {
         return;
       }
       const h = keyHandlersRef.current;
@@ -1797,7 +1800,7 @@ export function TimelineShell() {
     clearMapSelection,
     closeContextMenu,
     closeMobileInspector,
-    combinedImportModalOpen,
+    songImportOpen,
     commitDraft,
     copyClipSelection,
     cutClipSelection,
@@ -1816,8 +1819,6 @@ export function TimelineShell() {
     toggleInspectorPanel,
     toolMenu,
     toolsVisOpen,
-    ugModalOpen,
-    ultrastarModalOpen,
   ]);
 
   useEffect(() => {
@@ -2542,27 +2543,30 @@ export function TimelineShell() {
   }
 
   function closeImportModals() {
-    setUgModalOpen(false);
-    setUltrastarModalOpen(false);
-    setCombinedImportModalOpen(false);
+    setSongImportOpen(false);
     setImportAsNewSong(false);
     setImportApplying(false);
   }
 
-  function openImportUg(asNew: boolean) {
+  function openSongImportWizard(asNew: boolean) {
     setImportAsNewSong(asNew);
-    setUgModalOpen(true);
+    setSongImportOpen(true);
   }
 
-  function openImportUltrastar(asNew: boolean) {
-    setImportAsNewSong(asNew);
-    setUltrastarModalOpen(true);
-  }
-
-  function openImportUsUg(asNew: boolean) {
-    setImportAsNewSong(asNew);
-    setCombinedImportModalOpen(true);
-  }
+  useEffect(() => {
+    function onSongImport(ev: Event) {
+      const detail = parseSongImportDetail(ev);
+      if (detail?.asNew === true) {
+        openSongImportWizard(true);
+      } else if (detail?.asNew === false) {
+        openSongImportWizard(false);
+      } else {
+        openSongImportWizard(!draftProject);
+      }
+    }
+    window.addEventListener(SONG_IMPORT_EVENT, onSongImport);
+    return () => window.removeEventListener(SONG_IMPORT_EVENT, onSongImport);
+  }, [draftProject]);
 
   const importPreviewOptions = importAsNewSong
     ? {
@@ -7510,23 +7514,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     <Button
                       type="button"
                       variant="primary"
-                      onClick={() => openImportUsUg(false)}
+                      onClick={() => openSongImportWizard(false)}
                     >
-                      Import US+UG
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => openImportUg(false)}
-                    >
-                      Importuj UG
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => openImportUltrastar(false)}
-                    >
-                      Importuj UltraStar
+                      Importuj…
                     </Button>
                   </div>
                 </div>
@@ -8657,21 +8647,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               <div className={styles.overlayActions}>
                 <Button
                   variant="primary"
-                  onClick={() => openImportUsUg(true)}
+                  onClick={() => openSongImportWizard(true)}
                 >
-                  Import US+UG
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => openImportUg(true)}
-                >
-                  Importuj UG
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => openImportUltrastar(true)}
-                >
-                  Importuj UltraStar
+                  Importuj…
                 </Button>
               </div>
             </div>
@@ -8679,108 +8657,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
       ) : null}
 
-      {ugModalOpen && (importAsNewSong || draftProject) ? (
+      {songImportOpen && (importAsNewSong || draftProject) ? (
         <div
           className={styles.overlay}
           role="dialog"
           aria-modal
-          aria-labelledby="ug-import-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={closeImportModals}
-          />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="ug-import-title">
-                {importAsNewSong
-                  ? "Importuj Ultimate Guitar — nowy utwór"
-                  : "Importuj Ultimate Guitar"}
-              </h2>
-              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div className={styles.overlayBody}>
-              <UgImportForm
-                applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do draftu"
-                }
-                applying={importApplying}
-                importOptions={importPreviewOptions}
-                initialTitle={
-                  importAsNewSong ? undefined : draftProject?.name
-                }
-                initialArtist={
-                  importAsNewSong ? undefined : draftProject?.artist
-                }
-                onCancel={closeImportModals}
-                onApply={({ result, runWand, metadata }) =>
-                  onImportUg(result, runWand, metadata)
-                }
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {ultrastarModalOpen && (importAsNewSong || draftProject) ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="ultrastar-import-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={closeImportModals}
-          />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="ultrastar-import-title">
-                {importAsNewSong
-                  ? "Importuj UltraStar — nowy utwór"
-                  : "Importuj UltraStar"}
-              </h2>
-              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div className={styles.overlayBody}>
-              <UltrastarImportForm
-                applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do draftu"
-                }
-                applying={importApplying}
-                importOptions={importPreviewOptions}
-                initialTitle={
-                  importAsNewSong ? undefined : draftProject?.name
-                }
-                initialArtist={
-                  importAsNewSong ? undefined : draftProject?.artist
-                }
-                onCancel={closeImportModals}
-                onApply={onImportUltrastar}
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {combinedImportModalOpen && (importAsNewSong || draftProject) ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="us-ug-import-title"
+          aria-labelledby="song-import-title"
         >
           <button
             type="button"
@@ -8794,14 +8676,22 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               .join(" ")}
           >
             <div className={styles.usUgOverlayHead}>
-              <h2 id="us-ug-import-title">Import US+UG</h2>
+              <h2 id="song-import-title">
+                {importAsNewSong
+                  ? "Importuj utwór — nowy"
+                  : "Importuj utwór"}
+              </h2>
               <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
               </ShellIconButton>
             </div>
             <div className={styles.usUgOverlayBody}>
-              <CombinedUsUgImportForm
-                applyLabel="Importuj do projektu"
+              <SongImportWizard
+                applyLabel={
+                  importAsNewSong
+                    ? "Utwórz nowy utwór"
+                    : "Importuj do projektu"
+                }
                 applying={importApplying}
                 projectId={importAsNewSong ? undefined : projectId ?? undefined}
                 importOptions={importPreviewOptions}
@@ -8812,7 +8702,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   importAsNewSong ? undefined : draftProject?.artist
                 }
                 onCancel={closeImportModals}
-                onApply={onImportUsUgBridge}
+                onApplyUsUg={onImportUsUgBridge}
+                onApplyUltrastar={onImportUltrastar}
+                onApplyUg={({ result, runWand, metadata }) =>
+                  onImportUg(result, runWand, metadata)
+                }
               />
             </div>
           </div>

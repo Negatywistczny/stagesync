@@ -168,8 +168,7 @@ Kanon: `formatVersion: 5`, `ppq: 960` (stała), `defaultBpm`, `defaultMeter`,
 `midiProgramId`, `isTemplate`, meta (`artist` / `genre` / `year` / `coverUrl`).
 
 Create seed (`createProjectV5Seed`): Countdown w pre-rollu + Intro @ `0`.
-Odczyt starszych plików: upgrade do v5 na krawędzi storage (shadow `.bak` przy
-destrukcyjnym rewrite — patrz [INSTALL.md](../INSTALL.md)).
+Odczyt starszych plików: upgrade do v5 na krawędzi storage (../guides/INSTALL.md)).
 
 ## Transport (body / snapshot)
 

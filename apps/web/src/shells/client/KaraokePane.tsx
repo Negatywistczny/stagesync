@@ -8,9 +8,9 @@ import {
   TEKST_BLOCK_ROLE_LABELS,
   type KaraokeLine,
   type KaraokeSectionGroup,
-} from "../../lib/clientKaraoke.js";
-import type { ClientDisplayPrefs } from "../../lib/clientDisplayPrefs.js";
-import { isEditableKeyboardTarget } from "../../lib/isEditableKeyboardTarget.js";
+} from "@lib/client/clientKaraoke.js";
+import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
+import { isEditableKeyboardTarget } from "@lib/client/isEditableKeyboardTarget.js";
 import styles from "../ClientShell.module.css";
 import { Button } from "@stagesync/ui";
 import { useEffect, useRef, useState, type CSSProperties } from "react";

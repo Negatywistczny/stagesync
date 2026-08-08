@@ -5,9 +5,27 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+function resolveTestScratchRoot(): string {
+  const explicit = process.env.STAGESYNC_TEST_SCRATCH_DIR;
+  if (explicit) return explicit;
+  return tmpdir();
+}
+
+function scratchUnderHomeSync(): string {
+  const homeBase = join(homedir(), ".stagesync-browse-");
+  try {
+    return mkdtempSync(homeBase);
+  } catch (e) {
+    if (e && typeof e === "object" && "code" in e && (e as { code?: string }).code === "EPERM") {
+      return mkdtempSync(join(resolveTestScratchRoot(), "stagesync-browse-"));
+    }
+    throw e;
+  }
+}
 
 const fsHooks = vi.hoisted(() => ({
   actual: null as null | typeof import("node:fs"),
@@ -70,7 +88,7 @@ describe("path-browser", () => {
   });
 
   function scratchUnderHome(): string {
-    const dir = mkdtempSync(join(homedir(), ".stagesync-browse-"));
+    const dir = scratchUnderHomeSync();
     dirs.push(dir);
     return dir;
   }
@@ -83,7 +101,7 @@ describe("path-browser", () => {
   it("toEnvPath uses relative ./ for repo paths and absolute outside", () => {
     expect(toEnvPath(REPO_ROOT)).toBe("./");
     expect(toEnvPath(join(REPO_ROOT, "data"))).toMatch(/^\.\//);
-    expect(toEnvPath(join(homedir(), "somewhere-outside-repo"))).not.toMatch(
+    expect(toEnvPath(join(resolveTestScratchRoot(), "somewhere-outside-repo"))).not.toMatch(
       /^\.\//,
     );
   });
@@ -194,13 +212,15 @@ describe("path-browser", () => {
     expect(multiNames).not.toContain("keep.json");
   });
 
-  it("returns null parent at home root and throws ENOENT / not-dir", () => {
-    const home = listBrowseDirectory(homedir(), { mode: "dir" });
-    expect(home.parent).toBeNull();
-    expect(home.parentEnvPath).toBeNull();
+  it("returns null parent at an allowed root and throws ENOENT / not-dir under scratch", () => {
+    const allowedRoot = tmpdir();
+    const rootList = listBrowseDirectory(allowedRoot, { mode: "dir" });
+    expect(rootList.parent).toBeNull();
+    expect(rootList.parentEnvPath).toBeNull();
 
+    const scratchBase = resolveTestScratchRoot();
     expect(() =>
-      listBrowseDirectory(join(homedir(), "no-such-ss-browse-dir-xyz"), {
+      listBrowseDirectory(join(scratchBase, "no-such-ss-browse-dir-xyz"), {
         mode: "dir",
       }),
     ).toThrow(/nie istnieje/i);
