@@ -6,32 +6,44 @@
 </picture>
 
 <br />
+<br />
 
-[![Release](https://img.shields.io/github/v/release/Negatywistczny/stagesync?include_prereleases&label=release)](https://github.com/Negatywistczny/stagesync/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/Negatywistczny/stagesync/ci.yml?branch=main&label=CI)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
-[![Codecov](https://img.shields.io/codecov/c/github/Negatywistczny/stagesync)](https://codecov.io/gh/Negatywistczny/stagesync)
-[![Downloads](https://img.shields.io/github/downloads/Negatywistczny/stagesync/total?label=downloads)](https://github.com/Negatywistczny/stagesync/releases)
-[![Stars](https://img.shields.io/github/stars/Negatywistczny/stagesync)](https://github.com/Negatywistczny/stagesync/stargazers)
-[![Forks](https://img.shields.io/github/forks/Negatywistczny/stagesync)](https://github.com/Negatywistczny/stagesync/network/members)
-[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-informational)](LICENSE)
+<a href="https://negatywistczny.github.io/stagesync/">
+  <img src="apps/web/public/brand/btn-official-website.svg" alt="Oficjalna Strona WWW" height="42" />
+</a>
+&nbsp;&nbsp;
+<a href="https://github.com/Negatywistczny/stagesync/releases">
+  <img src="apps/web/public/brand/btn-download-stagesync.svg" alt="Pobierz StageSync" height="42" />
+</a>
+
+<br />
+<br />
+
+[![Release](https://img.shields.io/github/v/release/Negatywistczny/stagesync?include_prereleases&color=FFB700&labelColor=18181b)](https://github.com/Negatywistczny/stagesync/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/Negatywistczny/stagesync/ci.yml?branch=main&label=CI&color=FFB700&labelColor=18181b)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/Negatywistczny/stagesync?color=FFB700&labelColor=18181b)](https://codecov.io/gh/Negatywistczny/stagesync)
+[![Downloads](https://img.shields.io/github/downloads/Negatywistczny/stagesync/total?label=downloads&color=FFB700&labelColor=18181b)](https://github.com/Negatywistczny/stagesync/releases)
+[![License](https://img.shields.io/badge/License-BUSL--1.1-FFB700?labelColor=18181b)](LICENSE)
+
+<br />
 
 **Języki i frameworki**
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
-![Rust](https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white)
-![Tauri](https://img.shields.io/badge/Tauri-24C8D8?logo=tauri&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
-![CSS Modules](https://img.shields.io/badge/CSS_Modules-0B7285?logo=css&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-18181b?logo=typescript&logoColor=FFB700)
+![React](https://img.shields.io/badge/React-18181b?logo=react&logoColor=FFB700)
+![Rust](https://img.shields.io/badge/Rust-18181b?logo=rust&logoColor=FFB700)
+![Tauri](https://img.shields.io/badge/Tauri-18181b?logo=tauri&logoColor=FFB700)
+![Node.js](https://img.shields.io/badge/Node.js-18181b?logo=nodedotjs&logoColor=FFB700)
+![CSS Modules](https://img.shields.io/badge/CSS_Modules-18181b?logo=css&logoColor=FFB700)
 
 **Infrastruktura i tooling**
 
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white)
-![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
-![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
-![pnpm](https://img.shields.io/badge/pnpm-F69220?logo=pnpm&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-18181b?logo=docker&logoColor=FFB700)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-18181b?logo=githubactions&logoColor=FFB700)
+![Zod](https://img.shields.io/badge/Zod-18181b?logo=zod&logoColor=FFB700)
+![Vite](https://img.shields.io/badge/Vite-18181b?logo=vite&logoColor=FFB700)
+![Vitest](https://img.shields.io/badge/Vitest-18181b?logo=vite&logoColor=FFB700)
+![pnpm](https://img.shields.io/badge/pnpm-18181b?logo=pnpm&logoColor=FFB700)
 
 <br />
 
@@ -49,36 +61,38 @@
 
 * ⏱️ **Pancerny silnik transportu (SSOT):** Jedno źródło prawdy dla zegara, tempa, metrum i osi czasu, gwarantujące idealne zsynchronizowanie całego zespołu.
 * 🎼 **Dedykowane widoki muzyków (Client Shell):** Automatyczne renderowanie i synchroniczne przewijanie partytur (OSMD), widoków akordowych, tekstów oraz sekcji perkusyjnych na tabletach i ekranach wykonawców.
-* 🎛️ **Reżyseria i zarządzanie setlistą:** Błyskawiczne przełączanie utworów, elastyczne szablony występów oraz pełna kontrola nad przebiegiem koncertu z poziomu panelu Admina.
+* 🎛️ **Reżyseria i zarządzanie setlistą:** Błyskawiczne przełączanie utworów, elasteczne szablony występów oraz pełna kontrola nad przebiegiem koncertu z poziomu panelu Admina.
 * 🔌 **Automatyzacja MIDI:** Wysyłanie komunikatów *Program Change* i *Control Change* do zewnętrznych procesorów efektów, instrumentów oraz DAW.
 * 📡 **Zero-config w sieci LAN:** Automatyczne wykrywanie urządzeń w sieci lokalnej (mDNS/WebSockets) bez konieczności dostępu do Internetu.
 
 ## 🚀 Szybki start
 
-* 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.exe` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
-  *Instrukcja krok po kroku: [docs/guides/DESKTOP.md](./docs/guides/DESKTOP.md)*
-* 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/guides/INSTALL.md](./docs/guides/INSTALL.md) *(Compose, GHCR, porty)*.
-* 🛠️ **Ze źródeł (Dev):**
-  * **Web + API:** **Node.js 22** + **pnpm 11** → `pnpm install` / `pnpm dev` (przeglądarka).
-  * **Shell desktop (Tauri):** dodatkowo **Rust (rustup)** oraz na Windowsie **MSVC C++ Build Tools** + **WebView2** — bez tego `tauri` / `cargo` padają od razu. Skrót: [CONTRIBUTING — Środowisko](.github/CONTRIBUTING.md#środowisko); szczegóły: [DESKTOP — Wymagania](./docs/guides/DESKTOP.md#wymagania-dev--build).
+### 🛠️ Uruchomienie ze źródeł (Dla deweloperów)
 
 ```bash
+# 1. Sklonuj repozytorium
 git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 
-# KROK 1: Automatyczna weryfikacja i instalacja środowiska (Node, pnpm, Rust, MSVC)
-.\scripts\setup.ps1                           # Windows (PowerShell)
-# ./scripts/setup.sh                          # macOS/Linux (Bash)
+# 2. Skonfiguruj środowisko i zależności
+powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1   # Windows
+# ./scripts/setup.sh                                           # macOS / Linux
 
-# KROK 2: Uruchomienie
-pnpm install
-pnpm dev                                      # Vite :3000 + API :4000
-pnpm --filter @stagesync/desktop dev          # wymaga Rust (+ MSVC na Windows)
+# 3. Uruchom projekt
+pnpm dev                                 # Aplikacja Web (Vite UI: :3000 + Serwer API/WS: :4000)
+pnpm --filter @stagesync/desktop dev     # Powłoka Desktopowa (Tauri + Serwer local host)
 ```
 
-Po `pnpm dev`: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/guides/INSTALL.md](./docs/guides/INSTALL.md).
+Po `pnpm dev`: **Admin UI** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`).
 
-> 💡 Komendy test/build/lint i reguły współpracy: [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+> 💡 Komendy test/build/lint, podgląd wymagań kompilacji Tauri/Rust oraz reguły współpracy: [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
+---
+
+### 📦 Dla użytkowników i wdrożeń produkcyjnych
+
+* 💻 **Aplikacja Desktop (Windows / macOS):** Pobierz gotowy instalator z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases).
+* 🐳 **Serwer Dedykowany (Docker):** Zobacz [Instrukcję wdrożenia serwerowego](./docs/guides/INSTALL.md).
 
 ## 📦 Monorepo
 
@@ -105,7 +119,7 @@ Po `pnpm dev`: **Admin** → http://localhost:3000/admin (Vite); **API / WS** �
 | 🚀 **[INSTALL](./docs/guides/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw) |
 | 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja |
 | 📱 **[MOBILE](./docs/guides/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
-| 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
+| 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektura monorepo i przepływ danych SSOT |
 | 🗺️ **[REPO_MAP](docs/REPO_MAP.md)** | Automatycznie generowana mapa struktury i statystyki kodu dla LLM |
 | 🔌 **[API](docs/api/README.md)** | Specyfikacja powierzchni REST API i punktów końcowych |
 | 💡 **[ADR](docs/adr/README.md)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |

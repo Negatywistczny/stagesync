@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1254
+* **Liczba wszystkich plików:** 1256
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-08T17:53:03.314Z
+* **Data aktualizacji:** 2026-08-08T18:28:17.176Z
 
 ### Kategorie
 
@@ -17,7 +17,7 @@
 | Kod | 785 |
 | Docs | 212 |
 | Config | 115 |
-| Assety | 117 |
+| Assety | 119 |
 | Inne | 25 |
 
 ### Top rozszerzenia
@@ -34,21 +34,21 @@
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
 | `.mjs` | 22 |
-| _(pozostałe)_ | 120 |
+| _(pozostałe)_ | 122 |
 
 ---
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (867) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (869) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (89) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (444) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **web/** (446) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2)
-    - **public/** (8)
-      - **brand/** (3)
+    - **public/** (10)
+      - **brand/** (5)
     - **scripts/** (10)
       - **benchmark/** (8)
     - **src/** (405) — Kod źródłowy UI i logiki klienta
@@ -427,6 +427,8 @@ stagesync/
 │   │   │   └── README.md
 │   │   ├── public/
 │   │   │   ├── brand/
+│   │   │   │   ├── btn-download-stagesync.svg
+│   │   │   │   ├── btn-official-website.svg
 │   │   │   │   ├── stagesync-logo-light.svg
 │   │   │   │   ├── stagesync-logo.svg
 │   │   │   │   └── stagesync-mark.svg
