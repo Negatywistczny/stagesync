@@ -1,7 +1,9 @@
 Add-Type -AssemblyName System.Drawing
 
-$outDir = "C:\Users\kacpe\Documents\GitHub\stagesync\apps\desktop\src-tauri\assets\installer"
-if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir }
+$outDir = Join-Path $PSScriptRoot "..\src-tauri\assets\installer"
+if (-not (Test-Path $outDir)) {
+    New-Item -ItemType Directory -Path $outDir | Out-Null
+}
 
 $sidebar = New-Object System.Drawing.Bitmap(164, 314)
 $sgraph = [System.Drawing.Graphics]::FromImage($sidebar)
