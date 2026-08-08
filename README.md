@@ -67,21 +67,23 @@
 
 ### 🛠️ Uruchomienie ze źródeł (Dla deweloperów)
 
+Wszystko w jednej komendzie (automatyczny setup środowiska + interaktywne centrum sterowania):
+
 ```bash
 # 1. Sklonuj repozytorium
 git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 
-# 2. Skonfiguruj środowisko i zależności
-powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1   # Windows
-# ./scripts/setup.sh                                           # macOS / Linux
+# 2. Uruchom natywny DX Suite (Windows: PowerShell / CMD)
+.\dev
 
-# 3. Uruchom projekt
-pnpm dev                                 # Aplikacja Web (Vite UI: :3000 + Serwer API/WS: :4000)
-pnpm --filter @stagesync/desktop dev     # Powłoka Desktopowa (Tauri + Serwer local host)
+# Dla użytkowników macOS / Linux:
+./dev
 ```
 
-Po `pnpm dev`: **Admin UI** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`).
+Skrypt weryfikuje środowisko (Node/pnpm) i uruchamia **Dev Hub**:
+* **Admin UI:** http://localhost:3000/admin
+* **API / WS:** http://localhost:4000 (`/api/health`)
 
 > 💡 Komendy test/build/lint, podgląd wymagań kompilacji Tauri/Rust oraz reguły współpracy: [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
