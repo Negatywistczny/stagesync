@@ -7,8 +7,8 @@
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
 * **Liczba wszystkich plików:** 1256
-* **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-08T18:30:59.969Z
+* **Liczba katalogów:** 195
+* **Data aktualizacji:** 2026-08-08T20:01:22.577Z
 
 ### Kategorie
 
@@ -88,6 +88,10 @@
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (19) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+  - **merge-train/** (4)
+  - **quality/** (3)
+  - **release/** (8)
+  - **setup/** (2)
 
 ---
 
@@ -849,24 +853,28 @@ stagesync/
 │   │   └── vitest.setup.ts
 │   └── README.md
 ├── scripts/
-│   ├── build-release-notes.mjs
-│   ├── build-release-notes.test.mjs
-│   ├── check-docs-links.mjs
-│   ├── cut-release.mjs
-│   ├── cut-release.test.mjs
-│   ├── extract-changelog-section.mjs
-│   ├── extract-changelog-section.test.mjs
-│   ├── generate-repo-map.mjs
-│   ├── integrate-pr.sh
-│   ├── lint-ss-css.mjs
-│   ├── merge-train.sh
+│   ├── merge-train/
+│   │   ├── integrate-pr.sh
+│   │   ├── merge-train.sh
+│   │   ├── run-merge-train.sh
+│   │   └── run-train-batch.sh
+│   ├── quality/
+│   │   ├── check-docs-links.mjs
+│   │   ├── generate-repo-map.mjs
+│   │   └── lint-ss-css.mjs
+│   ├── release/
+│   │   ├── build-release-notes.mjs
+│   │   ├── build-release-notes.test.mjs
+│   │   ├── cut-release.mjs
+│   │   ├── cut-release.test.mjs
+│   │   ├── extract-changelog-section.mjs
+│   │   ├── extract-changelog-section.test.mjs
+│   │   ├── release-title.mjs
+│   │   └── sync-version.mjs
+│   ├── setup/
+│   │   ├── setup.ps1
+│   │   └── setup.sh
 │   ├── README.md
-│   ├── release-title.mjs
-│   ├── run-merge-train.sh
-│   ├── run-train-batch.sh
-│   ├── setup.ps1
-│   ├── setup.sh
-│   ├── sync-version.mjs
 │   └── tsconfig.json
 ├── .clineignore
 ├── .clinerules

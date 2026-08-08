@@ -335,8 +335,8 @@ function assertNoOwnerTypo() {
     "--",
     ".",
     ":!.cursor/**",
-    ":!scripts/cut-release.mjs",
-    ":!scripts/cut-release.test.mjs",
+    ":!scripts/release/cut-release.mjs",
+    ":!scripts/release/cut-release.test.mjs",
   ]);
   // exit 0 = matches · 1 = none · other = error
   if (grepped.status === 0 && grepped.stdout.trim()) {
@@ -472,7 +472,7 @@ async function main() {
 
   log("4/8", "sync-version.mjs");
   try {
-    run(process.execPath, [resolve(ROOT, "scripts/sync-version.mjs")]);
+    run(process.execPath, [resolve(ROOT, "scripts/release/sync-version.mjs")]);
   } catch (e) {
     fail(2, e.message);
   }
@@ -481,14 +481,14 @@ async function main() {
     log("5/8", "Smoke: build-release-notes.mjs");
     try {
       const notes = runCapture(process.execPath, [
-        resolve(ROOT, "scripts/build-release-notes.mjs"),
+        resolve(ROOT, "scripts/release/build-release-notes.mjs"),
         nextVersion,
       ]);
       if (notes.status !== 0) {
         throw new Error(notes.stderr || `exit ${notes.status}`);
       }
       const title = runCapture(process.execPath, [
-        resolve(ROOT, "scripts/release-title.mjs"),
+        resolve(ROOT, "scripts/release/release-title.mjs"),
         nextVersion,
       ]);
       if (title.status !== 0) {

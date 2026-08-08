@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ROOT_DIR = path.resolve(__dirname, '../');
+const ROOT_DIR = path.resolve(__dirname, '../../');
 const OUTPUT_REL = 'docs/REPO_MAP.md';
 
 const INCLUDE_UNTRACKED = process.argv.includes('--include-untracked');
