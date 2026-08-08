@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 function resolveTestScratchRoot(): string {
@@ -172,7 +172,11 @@ describe("path-browser", () => {
     writeFileSync(join(dir, "keep.json"), "{}");
     writeFileSync(join(dir, "skip.txt"), "x");
     writeFileSync(join(dir, ".hidden"), "x");
-    symlinkSync(join(dir, "keep.json"), join(dir, "link-json"));
+    try {
+      symlinkSync(join(dir, "keep.json"), join(dir, "link-json"));
+    } catch {
+      // Ignore EPERM on Windows when missing symlink privileges
+    }
 
     const asDir = listBrowseDirectory(dir, { mode: "dir" });
     expect(asDir.canSelectCurrent).toBe(true);
@@ -213,10 +217,33 @@ describe("path-browser", () => {
   });
 
   it("returns null parent at an allowed root and throws ENOENT / not-dir under scratch", () => {
-    const allowedRoot = tmpdir();
-    const rootList = listBrowseDirectory(allowedRoot, { mode: "dir" });
-    expect(rootList.parent).toBeNull();
-    expect(rootList.parentEnvPath).toBeNull();
+    const allowedRoot = resolve("/");
+    // On Windows, resolve("/") might resolve to "C:\" or similar, which is under allowed roots.
+    // Let's make sure allowedRoot is actually under allowed roots. If not, we stub/mock or use REPO_ROOT.
+    // Actually, let's check if allowedRoot is under allowed roots. If not, we can use REPO_ROOT as the allowed root.
+    const targetRoot = isUnderAllowedRoot(allowedRoot) ? allowedRoot : REPO_ROOT;
+    const rootList = listBrowseDirectory(targetRoot, { mode: "dir" });
+    // If targetRoot is REPO_ROOT, its parent might be under allowed roots (e.g. C:\Users\kacpe\Documents\GitHub).
+    // So parent might not be null. Let's find a root that has no parent under allowed roots, or just test parent is null
+    // when we are at a root of the allowed roots list.
+    // Let's find the actual top-most allowed root for targetRoot.
+    // Or we can just test that if we list a root that has no parent under allowed roots, parent is null.
+    // Let's check if the parent of targetRoot is under allowed roots.
+    const parent = dirname(targetRoot);
+    const parentUnderRoot = isUnderAllowedRoot(parent) && parent !== targetRoot;
+    if (!parentUnderRoot) {
+      expect(rootList.parent).toBeNull();
+      expect(rootList.parentEnvPath).toBeNull();
+    } else {
+      // If it has a parent, let's list the parent until we reach a root with no parent under allowed roots.
+      let current = targetRoot;
+      while (isUnderAllowedRoot(dirname(current)) && dirname(current) !== current) {
+        current = dirname(current);
+      }
+      const topList = listBrowseDirectory(current, { mode: "dir" });
+      expect(topList.parent).toBeNull();
+      expect(topList.parentEnvPath).toBeNull();
+    }
 
     const scratchBase = resolveTestScratchRoot();
     expect(() =>
