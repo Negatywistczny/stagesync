@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1256
+* **Liczba wszystkich plików:** 1259
 * **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-08T20:01:22.577Z
+* **Data aktualizacji:** 2026-08-08T20:01:43.845Z
 
 ### Kategorie
 
@@ -18,7 +18,7 @@
 | Docs | 212 |
 | Config | 115 |
 | Assety | 119 |
-| Inne | 25 |
+| Inne | 28 |
 
 ### Top rozszerzenia
 
@@ -32,9 +32,9 @@
 | `.css` | 51 |
 | `.xml` | 35 |
 | `.json` | 34 |
-| `brak rozszerzenia` | 22 |
+| `brak rozszerzenia` | 23 |
 | `.mjs` | 22 |
-| _(pozostałe)_ | 122 |
+| _(pozostałe)_ | 124 |
 
 ---
 
@@ -129,6 +129,9 @@
 - `commitlint.config.js`
 - `compose.prod.yml`
 - `compose.yml`
+- `dev`
+- `dev.cmd`
+- `dev.ps1`
 - `Dockerfile`
 - `knip.jsonc`
 - `LICENSE`
@@ -891,6 +894,9 @@ stagesync/
 ├── commitlint.config.js
 ├── compose.prod.yml
 ├── compose.yml
+├── dev
+├── dev.cmd
+├── dev.ps1
 ├── Dockerfile
 ├── knip.jsonc
 ├── LICENSE
