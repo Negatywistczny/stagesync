@@ -16,7 +16,11 @@ const serverDist = join(repoRoot, "apps/server/dist");
 const sharedDist = join(repoRoot, "packages/shared/dist");
 
 function run(cmd, args) {
-  const res = spawnSync(cmd, args, { cwd: repoRoot, stdio: "inherit" });
+  const res = spawnSync(cmd, args, { 
+    cwd: repoRoot, 
+    stdio: "inherit",
+    shell: process.platform === "win32" 
+  });
   if (res.status !== 0) {
     process.exit(res.status ?? 1);
   }

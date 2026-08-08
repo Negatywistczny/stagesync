@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1249
+* **Liczba wszystkich plików:** 1252
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-08T01:34:52.693Z
+* **Data aktualizacji:** 2026-08-08T01:35:08.049Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 782 |
+| Kod | 785 |
 | Docs | 212 |
 | Config | 114 |
 | Assety | 117 |
@@ -33,16 +33,16 @@
 | `.xml` | 35 |
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
-| `.mjs` | 19 |
+| `.mjs` | 22 |
 | _(pozostałe)_ | 118 |
 
 ---
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (864) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (867) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (86) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (89) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (444) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -228,7 +228,10 @@ stagesync/
 │   │   │   └── updateDialog.test.js
 │   │   ├── scripts/
 │   │   │   ├── build-desktop-sidecar.mjs
+│   │   │   ├── check-rust.mjs
 │   │   │   ├── generate-bmps.ps1
+│   │   │   ├── kill-zombies.mjs
+│   │   │   ├── parse-schema.mjs
 │   │   │   ├── sync-launcher-ui.mjs
 │   │   │   └── sync-sidecar-server.mjs
 │   │   ├── src-tauri/
