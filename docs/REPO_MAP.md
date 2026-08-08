@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1259
+* **Liczba wszystkich plików:** 1260
 * **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-08T20:01:43.845Z
+* **Data aktualizacji:** 2026-08-08T20:02:05.736Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 785 |
+| Kod | 786 |
 | Docs | 212 |
 | Config | 115 |
 | Assety | 119 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 460 |
+| `.ts` | 461 |
 | `.md` | 190 |
 | `.tsx` | 157 |
 | `.png` | 94 |
@@ -87,7 +87,7 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (19) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (20) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
   - **merge-train/** (4)
   - **quality/** (3)
   - **release/** (8)
@@ -877,6 +877,7 @@ stagesync/
 │   ├── setup/
 │   │   ├── setup.ps1
 │   │   └── setup.sh
+│   ├── dev-hub.ts
 │   ├── README.md
 │   └── tsconfig.json
 ├── .clineignore
