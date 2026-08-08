@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ROOT_DIR = path.resolve(__dirname, '../../');
+const ROOT_DIR = path.resolve(__dirname, '../..');
 const OUTPUT_REL = 'docs/REPO_MAP.md';
 
 const INCLUDE_UNTRACKED = process.argv.includes('--include-untracked');
@@ -393,7 +393,9 @@ try {
     });
     gitFiles = output.split(/\r?\n/).filter(Boolean);
 } catch (error) {
-    console.error('❌ git ls-files nie powiódł się (wymagane repozytorium git).', error.message);
+    console.error('❌ generate-repo-map: error running git ls-files. Ensure git is installed and you are in a git repository.');
+    console.error('💡 Tip: run .\\dev doctor (or ./dev doctor) to verify environment prerequisites.');
+    console.error(error);
     process.exit(1);
 }
 

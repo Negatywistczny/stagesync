@@ -8,7 +8,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
+const root = join(fileURLToPath(new URL(".", import.meta.url)), "../..");
 
 const SCAN_ROOTS = [
   join(root, "apps/web/src"),

@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [[ ! -d "$REPO_ROOT/.git" || ! -f "$REPO_ROOT/package.json" ]]; then
+  echo "Error: could not locate StageSync repo root from $(dirname "$0")" >&2
+  exit 1
+fi
 cd "$REPO_ROOT"
+
+if ! command -v git &>/dev/null; then
+  echo "Error: 'git' is required but not installed. Run .\dev doctor or see docs/guides/INSTALL.md" >&2
+  exit 1
+fi
+
+if ! command -v gh &>/dev/null; then
+  echo "Error: GitHub CLI ('gh') is required but not installed. Run .\dev doctor or see docs/guides/INSTALL.md" >&2
+  exit 1
+fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 BRANCH="$1"

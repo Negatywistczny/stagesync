@@ -26,7 +26,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GITHUB_OWNER = "Negatywistczny";
 const GITHUB_REPO = `${GITHUB_OWNER}/stagesync`;
 const OWNER_TYPO = "Negatywistyczny";
