@@ -183,7 +183,7 @@ Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/N
 | Platforma | Plik |
 |-----------|------|
 | macOS | `StageSync_x.y.z_aarch64.dmg` lub `x64.dmg` |
-| Windows | `StageSync_x.y.z_x64.msi` |
+| Windows | `StageSync_x.y.z_x64.msi` lub zoptymalizowany instalator `.exe` (NSIS) |
 
 ### Instalacja bez podpisu cyfrowego
 
@@ -238,7 +238,7 @@ Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji**
 - Rust toolchain (`rustup`) + zależności platformowe Tauri 2 — https://v2.tauri.app/start/prerequisites/
 - Lokalny host uruchamia się automatycznie przy wyborze lokalnego hosta w Launcherze.
 - Dev / cienki shell: zewnętrzny host przez `STAGESYNC_URL`.
-- Pełny build `.dmg` / `.msi` jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
+- Pełny build `.dmg` / `.msi` / `.exe` (NSIS) jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
 
 ## Dev
 
@@ -249,24 +249,24 @@ docker compose up --build
 
 # Terminal B — shell
 pnpm install
-pnpm --filter @stagesync/desktop tauri dev
+pnpm --filter @stagesync/desktop dev
 ```
 
 Opcjonalnie (cienki shell bez sidecara):
 
-- `pnpm dev`: `STAGESYNC_URL=http://127.0.0.1:3000/admin pnpm --filter @stagesync/desktop tauri dev`
+- `pnpm dev`: `STAGESYNC_URL=http://127.0.0.1:3000/admin pnpm --filter @stagesync/desktop dev`
 - Docker Compose (UI + API na :4000): `STAGESYNC_URL=http://127.0.0.1:4000/admin …`
 
 ## Build lokalny (macOS / Windows)
 
 ```sh
-pnpm --filter @stagesync/desktop tauri build
+pnpm --filter @stagesync/desktop build
 ```
 
 | Platforma | Artefakt |
 |-----------|----------|
 | macOS | `.dmg` |
-| Windows | `.msi` |
+| Windows | `.msi` oraz instalator `.exe` (NSIS) |
 
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 

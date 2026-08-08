@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1246
+* **Liczba wszystkich plików:** 1248
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-07T23:17:25.129Z
+* **Data aktualizacji:** 2026-08-08T01:34:37.603Z
 
 ### Kategorie
 
@@ -18,7 +18,7 @@
 | Docs | 212 |
 | Config | 113 |
 | Assety | 117 |
-| Inne | 22 |
+| Inne | 24 |
 
 ### Top rozszerzenia
 
@@ -34,15 +34,15 @@
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
 | `.mjs` | 19 |
-| _(pozostałe)_ | 115 |
+| _(pozostałe)_ | 117 |
 
 ---
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (861) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (863) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (83) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (85) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (444) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -227,11 +227,12 @@ stagesync/
 │   │   │   └── updateDialog.test.js
 │   │   ├── scripts/
 │   │   │   ├── build-desktop-sidecar.mjs
+│   │   │   ├── generate-bmps.ps1
 │   │   │   ├── sync-launcher-ui.mjs
 │   │   │   └── sync-sidecar-server.mjs
 │   │   ├── src-tauri/
 │   │   │   ├── assets/
-│   │   │   │   └── installer/  … (2 pliki)
+│   │   │   │   └── installer/  … (3 pliki)
 │   │   │   ├── capabilities/
 │   │   │   │   └── default.json
 │   │   │   ├── icons/  … (56 plików: .png ×52, .xml ×2, .icns ×1, .ico ×1)

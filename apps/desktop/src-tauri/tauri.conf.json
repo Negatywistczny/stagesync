@@ -15,12 +15,25 @@
       {
         "label": "main",
         "title": "StageSync",
+        "theme": "Dark",
         "width": 1280,
         "height": 800,
         "resizable": true,
         "fullscreen": false,
         "url": "index.html",
-        "dragDropEnabled": false
+        "dragDropEnabled": false,
+        "visible": false
+      },
+      {
+        "label": "splashscreen",
+        "url": "splash.html",
+        "width": 520,
+        "height": 320,
+        "decorations": false,
+        "transparent": true,
+        "center": true,
+        "resizable": false,
+        "alwaysOnTop": true
       }
     ],
     "security": {
@@ -33,7 +46,7 @@
     "targets": [
       "app",
       "dmg",
-      "msi"
+      "nsis"
     ],
     "externalBin": [
       "bin/stagesync-host"
@@ -55,12 +68,12 @@
     },
     "windows": {
       "digestAlgorithm": "sha256",
-      "wix": {
-        "bannerPath": "assets/installer/wiz-banner.bmp",
-        "dialogImagePath": "assets/installer/wiz-dialog.bmp",
-        "language": [
-          "pl-PL"
-        ]
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false,
+        "installerHooks": "assets/installer/installer.nsh",
+        "sidebarImage": "assets/installer/sidebar.bmp",
+        "headerImage": "assets/installer/header.bmp"
       }
     }
   },
