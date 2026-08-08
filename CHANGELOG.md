@@ -9,12 +9,18 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
+#### 🔧 Infrastruktura
+- **Skrypty instalacyjne:** nowe w pełni interaktywne skrypty `setup.ps1` (Windows) oraz `setup.sh` (Linux/macOS) automatyzujące instalację środowiska dev (Node.js 22, pnpm, Rust, MSVC, WebView2) bez konieczności ręcznego restartu terminala i wpisywania komend. Skrypty te stają się zalecaną ścieżką startową opisaną w docs.
+
 #### 🖥️ App Shell & Desktop
 - **Splashscreen:** dodano natywny ekran ładowania podczas startu launchera, który automatycznie chowa się po inicjalizacji, zapobiegając błyskaniu okna.
 - **Narzędzia pre-build:** dodano skrypty `check-rust.mjs` i `kill-zombies.mjs`, zapewniając odpowiednią wersję środowiska Rust i sprzątając osierocone procesy Tauri przed ponownym buildem (`pnpm dev` / `build`).
 - **Dev Preview:** integracja globalnych skrótów klawiszowych (Alt+1/2/3 itd.) z iframe'ami preview za pomocą `postMessage`.
 
 ### Zmieniono
+
+#### 📚 Dokumentacja
+- **Desktop (dev):** w przewodniku DESKTOP oraz CONTRIBUTING wskazano zautomatyzowane skrypty instalacyjne (`setup.ps1` / `setup.sh`) jako główną (zalecaną) metodę przygotowania toolchainu Tauri, a ręczne komendy `winget` zostały przeniesione do sekcji alternatywnej. Odróżniono też `pnpm dev` (web) od kompilacji shella.
 
 #### 🖥️ App Shell & Desktop
 - **Instalator Windows:** zmieniono format budowania na zoptymalizowany instalator NSIS (.exe) działający w trybie szybkiej, cichej dekompresji ("Minimal Extraction Banner") z automatycznym startem aplikacji, co zastępuje dotychczasowy kreator WiX `.msi`.

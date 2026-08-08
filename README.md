@@ -58,18 +58,27 @@
 * 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.msi` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
   *Instrukcja krok po kroku: [docs/guides/DESKTOP.md](./docs/guides/DESKTOP.md)*
 * 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/guides/INSTALL.md](./docs/guides/INSTALL.md) *(Compose, GHCR, porty)*.
-* 🛠️ **Ze źródeł (Dev):** Wymagany **Node.js 22** + **pnpm 11** *(do buildów desktopowych wymagany jest również **Rust** / Tauri)*. Pierwszy raz na Windowsie (winget / Corepack): [CONTRIBUTING — Środowisko](.github/CONTRIBUTING.md#środowisko).
+* 🛠️ **Ze źródeł (Dev):**
+  * **Web + API:** **Node.js 22** + **pnpm 11** → `pnpm install` / `pnpm dev` (przeglądarka).
+  * **Shell desktop (Tauri):** dodatkowo **Rust (rustup)** oraz na Windowsie **MSVC C++ Build Tools** + **WebView2** — bez tego `tauri` / `cargo` padają od razu. Skrót: [CONTRIBUTING — Środowisko](.github/CONTRIBUTING.md#środowisko); szczegóły: [DESKTOP — Wymagania](./docs/guides/DESKTOP.md#wymagania-dev--build).
 
 ```bash
 git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
+
+# KROK 1: Automatyczna weryfikacja i instalacja środowiska (Node, pnpm, Rust, MSVC)
+.\scripts\setup.ps1                           # Windows (PowerShell)
+# ./scripts/setup.sh                          # macOS/Linux (Bash)
+
+# KROK 2: Uruchomienie
 pnpm install
-pnpm dev
+pnpm dev                                      # Vite :3000 + API :4000
+pnpm --filter @stagesync/desktop dev          # wymaga Rust (+ MSVC na Windows)
 ```
 
-Po starcie: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/guides/INSTALL.md](./docs/guides/INSTALL.md).
+Po `pnpm dev`: **Admin** → http://localhost:3000/admin (Vite); **API / WS** → http://localhost:4000 (`/api/health`). W Dockerze / desktop sidecarze UI i API są na tym samym porcie `:4000` — [docs/guides/INSTALL.md](./docs/guides/INSTALL.md).
 
-> 💡 Pełną listę komend (test, build, lint) oraz reguły współpracy znajdziesz w pliku [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+> 💡 Komendy test/build/lint i reguły współpracy: [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## 📦 Monorepo
 

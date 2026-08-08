@@ -235,7 +235,46 @@ Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji**
 
 ## Wymagania (dev / build)
 
-- Rust toolchain (`rustup`) + zależności platformowe Tauri 2 — https://v2.tauri.app/start/prerequisites/
+Powłoka `apps/desktop` to **Tauri 2 (Rust)**. `pnpm install` / `pnpm dev` w root wystarczą do UI w przeglądarce; **nie** zbudują shella desktop bez poniższych zależności.
+
+Kanoniczna lista upstream: https://v2.tauri.app/start/prerequisites/
+
+### Windows
+
+1. **MSVC** — Visual Studio 2022 Build Tools z workloadem *Desktop development with C++* (bez tego `cargo` / linkowanie pada od razu).
+2. **WebView2** Evergreen Runtime (często już zainstalowany z Edge).
+3. **Rust** przez [rustup](https://rustup.rs/) (`cargo` w `PATH` po nowym terminalu).
+4. **Node 22 + pnpm 11** — [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md#środowisko).
+
+**Najprostsza metoda (Zalecane):**
+Po sklonowaniu repozytorium, uruchom w głównym folderze skrypt:
+```powershell
+.\scripts\setup.ps1
+```
+Skrypt interaktywnie sprawdzi obecność Node.js, pnpm, Rust, MSVC oraz WebView2 i zaoferuje ich automatyczną instalację w razie braków (zwracając kod błędu, jeśli coś pójdzie nie tak).
+
+**Ręczna instalacja (winget):**
+Jeśli wolisz zainstalować wymagania ręcznie (po instalacji wymagany **nowy** terminal):
+
+```powershell
+winget install -e --id OpenJS.NodeJS.22
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools `
+  --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+winget install -e --id Microsoft.EdgeWebView2Runtime
+winget install -e --id Rustlang.Rustup
+```
+
+Weryfikacja: `rustc -V`, `cargo -V`, `node -v` oraz że w Installerze VS widać workload C++. Skrypt `apps/desktop/scripts/check-rust.mjs` (uruchamiany przy `pnpm --filter @stagesync/desktop dev`) przypomni o użyciu `setup.ps1` w razie braku Rusta.
+
+MSI: jeśli `light.exe` / VBSCRIPT pada przy buildzie instalatora — włącz funkcję opcjonalną VBSCRIPT (Ustawienia → Funkcje opcjonalne / „Więcej funkcji systemu Windows”); szczegóły w docs Tauri.
+
+### macOS
+
+- Xcode Command Line Tools: `xcode-select --install`
+- rustup + Node/pnpm jak wyżej
+
+### Po toolchainie
+
 - Lokalny host uruchamia się automatycznie przy wyborze lokalnego hosta w Launcherze.
 - Dev / cienki shell: zewnętrzny host przez `STAGESYNC_URL`.
 - Pełny build `.dmg` / `.msi` / `.exe` (NSIS) jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.

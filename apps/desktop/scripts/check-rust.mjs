@@ -26,7 +26,9 @@ try {
     console.error('\n⚠️ UWAGA: Brak środowiska Rust i Cargo!');
     console.error('========================================================================');
     console.error('Środowisko Tauri wymaga języka Rust do zbudowania warstwy desktopowej.');
-    console.log('Rozpoczynam zautomatyzowaną instalację Rusta (rustup)...\n');
+    console.error('💡 ZALECENIE: Zamknij ten proces i uruchom skrypt walidacji środowiska w głównym folderze:');
+    console.error(isWin ? '   .\\scripts\\setup.ps1' : '   ./scripts/setup.sh');
+    console.error('Rozpoczynam zautomatyzowaną instalację Rusta jako fallback...\n');
     
     try {
       if (isWin) {

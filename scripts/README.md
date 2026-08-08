@@ -16,6 +16,13 @@ Narzędzia monorepo: release, mapa repo, lint CSS/tokenów, kolejki merge PR ora
 | `release-title.mjs` | Tytuł release’u z hero-nazwy linii w CHANGELOG (`5.1.0 — Launch & Mix`) albo sama wersja. Użycie: `node scripts/release-title.mjs <version>`. |
 | `extract-changelog-section.mjs` | Wypisuje ciało jednej sekcji Keep a Changelog (bez nagłówka H2). Użyteczne w testach / tooling; Release CI korzysta z `build-release-notes.mjs`. |
 
+### Przygotowanie środowiska (Setup)
+
+| Plik | Opis |
+| :--- | :--- |
+| `setup.ps1` | Interaktywny skrypt dla systemu Windows, który weryfikuje i instaluje wymagane środowisko uruchomieniowe i kompilatory (Node.js 22, pnpm, Rust, MSVC C++ Build Tools, WebView2 Runtime) używając `winget`. |
+| `setup.sh` | Odpowiednik setupu dla systemów Linux/macOS. Weryfikuje Node.js, używa `fnm` do instalacji brakującej wersji Node, sprawdza zależności Tauri (`apt-get`, `xcode-select`) i pobiera Rusta. |
+
 ### Dokumentacja & jakość
 
 | Plik | Opis |

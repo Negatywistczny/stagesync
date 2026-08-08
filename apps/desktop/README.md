@@ -17,9 +17,9 @@ Aplikacja `apps/desktop` to natywna powłoka desktopowa dla systemu macOS i Wind
 
 ## ⚙️ Budowanie i uruchamianie
 
-Do budowania i testowania wymagane jest posiadanie zainstalowanego kompilatora **Rust** i narzędzia Cargo:
+Do budowania i testowania wymagane są **Rust/Cargo** oraz zależności platformowe Tauri (na Windowsie zwłaszcza **MSVC C++ Build Tools** + **WebView2** — sam Node tego nie doinstaluje). Lista i komendy winget: **[DESKTOP — Wymagania](../../docs/guides/DESKTOP.md#wymagania-dev--build)**.
 
-- `pnpm dev` (z poziomu folderu głównego lub bezpośrednio) — automatycznie uruchamia skrypty z folderu `scripts/` (przygotowanie środowiska) i uruchamia proces Tauri w trybie deweloperskim wraz z hot-reloadingiem.
-- `pnpm build` — wykonuje zadania pre-build, kompiluje produkcyjną aplikację Tauri i tworzy gotowe instalatory (np. `.dmg` na macOS, zoptymalizowane `.exe` / NSIS na Windows).
+- `pnpm --filter @stagesync/desktop dev` — skrypty z `scripts/` (`check-rust`, sync UI/sidecar) + `tauri dev`.
+- `pnpm --filter @stagesync/desktop tauri:build` — pre-build + instalator (`.dmg` / `.exe` NSIS itd.).
 
-Więcej szczegółów technicznych oraz konfigurację systemową opisano w **[docs/guides/DESKTOP.md](../../docs/guides/DESKTOP.md)**.
+Konfiguracja operatorska i updater: **[docs/guides/DESKTOP.md](../../docs/guides/DESKTOP.md)**.

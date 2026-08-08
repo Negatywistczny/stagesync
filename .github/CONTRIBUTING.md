@@ -2,26 +2,60 @@
 
 ## Środowisko
 
-- **Node.js 22** — [`.nvmrc`](../.nvmrc) (`nvm use` / `fnm use`); root `engines`: `>=22 <23`.
-- **pnpm 11** — pole `packageManager` w root `package.json` (np. `pnpm@11.18.0`). Po instalacji Node:
+StageSync to monorepo **web + serwer Node** oraz powłoka **desktop Tauri (Rust)**. Same Node/pnpm wystarczą do pracy w przeglądarce; build / `tauri dev` wymaga toolchainu natywnego.
+
+### 1) Warstwa JS (web + API) — zawsze
+
+- **Node.js 22** — [`.nvmrc`](../.nvmrc); root `engines`: `>=22 <23`.
+- **pnpm 11** — pole `packageManager` w root `package.json` (np. `pnpm@11.18.0`). **Bez** `npm install` w tym monorepo.
 
 ```bash
 corepack enable
 corepack prepare pnpm@11.18.0 --activate   # wersja = packageManager
 pnpm install
-pnpm dev
+pnpm dev   # Vite :3000 + API :4000 — bez kompilacji Rusta
 ```
 
-Tylko **pnpm** — nie używaj `npm install` w tym monorepo.
+### 2) Warstwa desktop (Tauri) — gdy budujesz shell
 
-### Windows (pierwszy raz)
+Poza Node potrzebujesz:
+
+| | Windows | macOS |
+|--|---------|--------|
+| Kompilator C/C++ | **MSVC** — Visual Studio Build Tools, workload *Desktop development with C++* | **Xcode CLT** (`xcode-select --install`) |
+| Runtime WebView | **WebView2** (Evergreen; często już jest z Edge) | (WebKit systemowy) |
+| Rust | **rustup** + `cargo` w PATH | to samo |
+
+Kanoniczna lista Tauri 2: https://v2.tauri.app/start/prerequisites/  
+Konkretne komendy i weryfikacja: [docs/guides/DESKTOP.md — Wymagania](../docs/guides/DESKTOP.md#wymagania-dev--build).
+
+```bash
+pnpm --filter @stagesync/desktop dev
+```
+
+`apps/desktop/scripts/check-rust.mjs` może dograć **rustup**, ale **nie** instaluje MSVC ani WebView2 — na czystym Windowsie to najczęstsza przyczyna padu `tauri` / `cargo`.
+
+### Windows (pierwszy raz) — skrót
+
+Uruchom poniższy skrypt po sklonowaniu repozytorium. Automatycznie (po potwierdzeniu) zainstaluje Node 22, włączy pnpm i dogra MSVC/Rust dla aplikacji Tauri:
 
 ```powershell
-winget install OpenJS.NodeJS.22
-# nowy terminal, potem Corepack + pnpm jak wyżej
+.\scripts\setup.ps1
 ```
 
-Alternatywa pinu Node: [fnm](https://github.com/Schniz/fnm) (`fnm install` / `fnm use` czyta `.nvmrc`).
+*(Opcjonalnie) Instalacja ręczna (winget):*
+```powershell
+winget install -e --id OpenJS.NodeJS.22
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+winget install -e --id Microsoft.EdgeWebView2Runtime
+winget install -e --id Rustlang.Rustup
+```
+
+Po instalacji VS Build Tools / rustup (lub po zakończeniu `setup.ps1`) **zamknij i otwórz** terminal (oraz Cursor), żeby odświeżyć `PATH`. Następnie:
+```bash
+pnpm --filter @stagesync/desktop dev
+```
+Alternatywa pinu Node: [fnm](https://github.com/Schniz/fnm) + `.nvmrc`.
 
 ## Język (kanon)
 

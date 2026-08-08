@@ -191,7 +191,7 @@ jobs:
           if-no-files-found: error
 
   tauri-windows:
-    name: tauri-windows-msi
+    name: tauri-windows-exe
     runs-on: windows-latest
     needs: [resolve-version, create-draft-release]
     if: always() && needs.resolve-version.result == 'success' && (needs.create-draft-release.result == 'success' || needs.create-draft-release.result == 'skipped')
@@ -241,7 +241,7 @@ jobs:
           rm -f node_modules/.pnpm-workspace-state-v1.json
           pnpm install --frozen-lockfile
 
-      - name: Build Tauri (Windows — msi + updater)
+      - name: Build Tauri (Windows — exe + updater)
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -254,30 +254,30 @@ jobs:
           args: --verbose
           releaseId: ${{ (github.event_name == 'push' || inputs.publish) && needs.create-draft-release.outputs.release_id || '' }}
 
-      - name: Rename MSI without locale suffix
+      - name: Rename EXE without locale suffix
         shell: bash
         run: |
           set -euo pipefail
-          MSI_DIR="apps/desktop/src-tauri/target/release/bundle/msi"
+          EXE_DIR="apps/desktop/src-tauri/target/release/bundle/nsis"
           shopt -s nullglob
-          # WiX/Tauri may emit StageSync_*_x64_en-US.msi or *_x64_pl-PL.msi
-          for f in "$MSI_DIR"/*.msi; do
+          # NSIS may emit StageSync_*_x64_en-US-setup.exe or *_x64_pl-PL-setup.exe
+          for f in "$EXE_DIR"/*.exe; do
             base="$(basename "$f")"
-            # Strip trailing _xx-YY locale before .msi
-            dest_base="$(echo "$base" | sed -E 's/_[a-z]{2}-[A-Z]{2}\.msi$/.msi/')"
+            # Strip trailing _xx-YY locale before -setup.exe
+            dest_base="$(echo "$base" | sed -E 's/_[a-z]{2}-[A-Z]{2}-setup\.exe$/-setup.exe/')"
             # Normalize arch token if present as x86_64
-            dest_base="${dest_base/_x86_64./_x64.}"
+            dest_base="${dest_base/_x86_64-setup./_x64-setup.}"
             if [ "$base" != "$dest_base" ]; then
-              mv "$f" "$MSI_DIR/$dest_base"
+              mv "$f" "$EXE_DIR/$dest_base"
               echo "Renamed $base → $dest_base"
             fi
           done
 
-      - name: Upload msi artifact
+      - name: Upload exe artifact
         uses: actions/upload-artifact@v7
         with:
-          name: windows-msi
-          path: apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+          name: windows-exe
+          path: apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
           if-no-files-found: error
 
   android-performer:
@@ -488,7 +488,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v8
         with:
-          name: windows-msi
+          name: windows-exe
           path: dist/
 
       - name: Download Performer APK
@@ -505,62 +505,62 @@ jobs:
           name: android-console-apk
           path: dist/
 
-      - name: Rename MSI and align release assets
+      - name: Rename EXE and align release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           TAG="v${{ env.VERSION }}"
           REPO="${{ github.repository }}"
-          MSI_NAME="StageSync_${{ env.VERSION }}_x64.msi"
+          EXE_NAME="StageSync_${{ env.VERSION }}_x64-setup.exe"
           cd dist
           shopt -s nullglob
-          # Normalize any WiX locale / arch suffix → canonical StageSync_VERSION_x64.msi
-          for f in *.msi; do
+          # Normalize any locale / arch suffix → canonical StageSync_VERSION_x64-setup.exe
+          for f in *.exe; do
             case "$f" in
               *.sig) continue ;;
             esac
-            normalized="$(echo "$f" | sed -E 's/_[a-z]{2}-[A-Z]{2}\.msi$/.msi/; s/_x86_64\./_x64./')"
+            normalized="$(echo "$f" | sed -E 's/_[a-z]{2}-[A-Z]{2}-setup\.exe$/-setup.exe/; s/_x86_64-setup\./_x64-setup./')"
             if [ "$normalized" != "$f" ]; then
               mv "$f" "$normalized"
               echo "Renamed $f → $normalized"
               f="$normalized"
             fi
-            if [ "$f" != "$MSI_NAME" ]; then
-              mv "$f" "$MSI_NAME"
-              echo "Canonicalized → $MSI_NAME"
+            if [ "$f" != "$EXE_NAME" ]; then
+              mv "$f" "$EXE_NAME"
+              echo "Canonicalized → $EXE_NAME"
             fi
           done
           # Drop stale locale-suffixed assets Tauri may have uploaded earlier.
           for stale in \
-            "StageSync_${{ env.VERSION }}_x64_en-US.msi" \
-            "StageSync_${{ env.VERSION }}_x64_pl-PL.msi" \
-            "StageSync_${{ env.VERSION }}_x86_64.msi" \
-            "StageSync_${{ env.VERSION }}_x86_64_en-US.msi" \
-            "StageSync_${{ env.VERSION }}_x86_64_pl-PL.msi"
+            "StageSync_${{ env.VERSION }}_x64_en-US-setup.exe" \
+            "StageSync_${{ env.VERSION }}_x64_pl-PL-setup.exe" \
+            "StageSync_${{ env.VERSION }}_x86_64-setup.exe" \
+            "StageSync_${{ env.VERSION }}_x86_64_en-US-setup.exe" \
+            "StageSync_${{ env.VERSION }}_x86_64_pl-PL-setup.exe"
           do
             gh release delete-asset "$TAG" "$stale" -R "$REPO" --yes 2>/dev/null || true
             gh release delete-asset "$TAG" "${stale}.sig" -R "$REPO" --yes 2>/dev/null || true
           done
-          if [ -f "$MSI_NAME" ]; then
-            gh release upload "$TAG" "$MSI_NAME" -R "$REPO" --clobber
-            echo "Uploaded $MSI_NAME"
-            if [ -f "${MSI_NAME}.sig" ]; then
-              gh release upload "$TAG" "${MSI_NAME}.sig" -R "$REPO" --clobber
+          if [ -f "$EXE_NAME" ]; then
+            gh release upload "$TAG" "$EXE_NAME" -R "$REPO" --clobber
+            echo "Uploaded $EXE_NAME"
+            if [ -f "${EXE_NAME}.sig" ]; then
+              gh release upload "$TAG" "${EXE_NAME}.sig" -R "$REPO" --clobber
             fi
           else
-            echo "ERROR: $MSI_NAME missing after rename" >&2
-            ls -la *.msi || true
+            echo "ERROR: $EXE_NAME missing after rename" >&2
+            ls -la *.exe || true
             exit 1
           fi
-          # Point latest.json Windows updater URLs at the friendly MSI asset
-          # (Tauri uploads locale-suffixed MSI first; rewrite after canonicalize).
+          # Point latest.json Windows updater URLs at the friendly EXE asset
+          # (Tauri uploads locale-suffixed EXE first; rewrite after canonicalize).
           if gh release download "$TAG" -R "$REPO" -p latest.json -D . 2>/dev/null; then
-            MSI_ID=$(gh release view "$TAG" -R "$REPO" --json assets \
-              --jq ".assets[] | select(.name==\"$MSI_NAME\") | .apiUrl" \
+            EXE_ID=$(gh release view "$TAG" -R "$REPO" --json assets \
+              --jq ".assets[] | select(.name==\"$EXE_NAME\") | .apiUrl" \
               | sed 's#.*/assets/##')
-            if [ -n "$MSI_ID" ]; then
-              NEW_URL="https://api.github.com/repos/${REPO}/releases/assets/${MSI_ID}"
+            if [ -n "$EXE_ID" ]; then
+              NEW_URL="https://api.github.com/repos/${REPO}/releases/assets/${EXE_ID}"
               # jq (not a column-0 heredoc) — unindented <<'PY' breaks Actions YAML parse
               jq --arg url "$NEW_URL" '
                 .platforms |= with_entries(
@@ -573,13 +573,13 @@ jobs:
               if ! cmp -s latest.json latest.json.tmp; then
                 mv latest.json.tmp latest.json
                 gh release upload "$TAG" latest.json -R "$REPO" --clobber
-                echo "Updated latest.json MSI asset URLs -> $NEW_URL"
+                echo "Updated latest.json EXE asset URLs -> $NEW_URL"
               else
                 rm -f latest.json.tmp
                 echo "latest.json windows urls already current"
               fi
             else
-              echo "WARN: $MSI_NAME not found on release — latest.json unchanged"
+              echo "WARN: $EXE_NAME not found on release — latest.json unchanged"
             fi
           fi
 
@@ -599,7 +599,7 @@ jobs:
       - name: Generate SHA256 checksums
         run: |
           cd dist
-          sha256sum *.dmg *.msi *.apk 2>/dev/null | tee SHA256SUMS.txt || sha256sum *.dmg *.msi > SHA256SUMS.txt
+          sha256sum *.dmg *.exe *.apk 2>/dev/null | tee SHA256SUMS.txt || sha256sum *.dmg *.exe > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Publish GitHub Release

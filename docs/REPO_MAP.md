@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1252
+* **Liczba wszystkich plików:** 1254
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-08T01:58:37.554Z
+* **Data aktualizacji:** 2026-08-08T17:26:13.973Z
 
 ### Kategorie
 
@@ -16,9 +16,9 @@
 | :--- | ---: |
 | Kod | 785 |
 | Docs | 212 |
-| Config | 114 |
+| Config | 115 |
 | Assety | 117 |
-| Inne | 24 |
+| Inne | 25 |
 
 ### Top rozszerzenia
 
@@ -34,7 +34,7 @@
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
 | `.mjs` | 22 |
-| _(pozostałe)_ | 118 |
+| _(pozostałe)_ | 120 |
 
 ---
 
@@ -87,7 +87,7 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (17) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (19) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
 
 ---
 
@@ -862,6 +862,8 @@ stagesync/
 │   ├── release-title.mjs
 │   ├── run-merge-train.sh
 │   ├── run-train-batch.sh
+│   ├── setup.ps1
+│   ├── setup.sh
 │   ├── sync-version.mjs
 │   └── tsconfig.json
 ├── .clineignore
