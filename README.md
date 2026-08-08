@@ -55,7 +55,7 @@
 
 ## 🚀 Szybki start
 
-* 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.msi` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
+* 💻 **Desktop (zalecane):** Pobierz gotowy instalator `.dmg` / `.exe` z zakładki [Releases](https://github.com/Negatywistczny/stagesync/releases).  
   *Instrukcja krok po kroku: [docs/guides/DESKTOP.md](./docs/guides/DESKTOP.md)*
 * 🐳 **Docker / Host rackowy:** Produkcyjne uruchomienie w chmurze lub na serwerze rackowym — zobacz [docs/guides/INSTALL.md](./docs/guides/INSTALL.md) *(Compose, GHCR, porty)*.
 * 🛠️ **Ze źródeł (Dev):**
@@ -103,7 +103,7 @@ Po `pnpm dev`: **Admin** → http://localhost:3000/admin (Vite); **API / WS** �
 | Dokument | Opis |
 | :--- | :--- |
 | 🚀 **[INSTALL](./docs/guides/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw) |
-| 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.msi`), Launcher i aktualizacja |
+| 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja |
 | 📱 **[MOBILE](./docs/guides/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
 | 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektury monorepo i przepływ danych SSOT |
 | 🗺️ **[REPO_MAP](docs/REPO_MAP.md)** | Automatycznie generowana mapa struktury i statystyki kodu dla LLM |

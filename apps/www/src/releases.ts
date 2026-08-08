@@ -43,7 +43,7 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     icon: "windows",
     title: "Windows",
     subtitle: "Aplikacja główna (stacja robocza)",
-    detail: "Wersja 64-bit · instalator .msi",
+    detail: "Wersja 64-bit · instalator .exe",
     cta: "Pobierz dla Windows",
   },
   "macos-arm": {
@@ -88,7 +88,7 @@ function classifyAsset(name: string): DownloadKind | null {
   if (lower.endsWith(".dmg") && (lower.includes("x64") || lower.includes("x86_64"))) {
     return "macos-x64";
   }
-  if (lower.endsWith(".msi") && !lower.includes("_en-us")) {
+  if ((lower.endsWith(".msi") || lower.endsWith("-setup.exe")) && !lower.includes("_en-us")) {
     return "windows";
   }
   if (lower.includes("console") && lower.endsWith(".apk")) {

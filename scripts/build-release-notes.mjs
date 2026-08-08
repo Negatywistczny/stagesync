@@ -82,8 +82,8 @@ const repo = process.env.GITHUB_REPOSITORY ?? "Negatywistczny/stagesync";
 const tag = `v${version}`;
 const base = `https://github.com/${repo}/releases/download/${tag}`;
 const dmgUrl = `${base}/StageSync_${version}_aarch64.dmg`;
-/** Canonical Windows asset — see release.yml rename (strips WiX locale suffix). */
-const msiUrl = `${base}/StageSync_${toWixVersion(version)}_x64.msi`;
+/** Canonical Windows asset — see release.yml rename (strips locale suffix). */
+const exeUrl = `${base}/StageSync_${version}_x64-setup.exe`;
 const performerApkUrl = `${base}/StageSync-Performer-v${version}.apk`;
 const consoleApkUrl = `${base}/StageSync-Console-v${version}.apk`;
 const changelogUrl = changelogPermalink(repo, tag, version, date, hero);
@@ -101,7 +101,7 @@ process.stdout.write(`### 📦 Pobierz StageSync
 | System operacyjny | Plik instalacyjny |
 | :--- | :--- |
 | 🍎 **macOS** (Apple Silicon) | [macOS (Apple Silicon)](${dmgUrl}) |
-| 🪟 **Windows** (64-bit) | [Windows (64-bit)](${msiUrl}) |
+| 💻 **Windows** (64-bit) | [Windows (64-bit)](${exeUrl}) |
 ${androidRows}
 ---
 

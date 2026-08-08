@@ -20,7 +20,7 @@ function Write-Warn {
     Write-Host "⚠️ $Text" -ForegroundColor Yellow
 }
 
-function Ask-Confirm {
+function Confirm-Choice {
     param([string]$Message)
     if ($AutoConfirm) { return $true }
     $response = Read-Host "$Message [T/n]"
@@ -39,7 +39,7 @@ Write-Step "Weryfikacja Node.js..."
 $nodeExists = Get-Command "node" -ErrorAction SilentlyContinue
 if (-not $nodeExists) {
     Write-Warn "Nie znaleziono Node.js w systemie."
-    if (Ask-Confirm "Czy chcesz zainstalować Node.js 22 (LTS) przez winget?") {
+    if (Confirm-Choice "Czy chcesz zainstalować Node.js 22 (LTS) przez winget?") {
         Write-Host "Pobieranie i instalowanie Node.js 22 (OpenJS.NodeJS.22)..."
         winget install -e --id OpenJS.NodeJS.22
         if ($LASTEXITCODE -ne 0) {
@@ -86,13 +86,13 @@ try {
 
 # 3. Zapytanie o Desktop/Tauri
 Write-Step "Weryfikacja wymagań dla aplikacji Desktopowej (Tauri)"
-if (Ask-Confirm "Czy planujesz pracować nad aplikacją Desktop (Tauri)? Wymaga to Rusta i MSVC.") {
+if (Confirm-Choice "Czy planujesz pracować nad aplikacją Desktop (Tauri)? Wymaga to Rusta i MSVC.") {
     
     # 3.1. Rust
     $rustExists = Get-Command "cargo" -ErrorAction SilentlyContinue
     if (-not $rustExists) {
         Write-Warn "Nie znaleziono kompilatora Rust (cargo)."
-        if (Ask-Confirm "Czy chcesz zainstalować Rust (rustup) przez winget?") {
+        if (Confirm-Choice "Czy chcesz zainstalować Rust (rustup) przez winget?") {
             Write-Host "Instalacja Rusta..."
             winget install -e --id Rustlang.Rustup
             if ($LASTEXITCODE -ne 0) {
@@ -135,7 +135,7 @@ if (Ask-Confirm "Czy planujesz pracować nad aplikacją Desktop (Tauri)? Wymaga 
     
     if (-not $hasMsvc) {
         Write-Warn "Nie znaleziono MSVC C++ Build Tools (niezbędne do budowania Tauri na Windows)."
-        if (Ask-Confirm "Czy chcesz zainstalować MSVC C++ Build Tools (pobierze ok. ~5-10 GB) w tle?") {
+        if (Confirm-Choice "Czy chcesz zainstalować MSVC C++ Build Tools (pobierze ok. ~5-10 GB) w tle?") {
             Write-Host "Instalacja MSVC Build Tools..."
             winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
             if ($LASTEXITCODE -ne 0) {
@@ -158,7 +158,7 @@ if (Ask-Confirm "Czy planujesz pracować nad aplikacją Desktop (Tauri)? Wymaga 
         Write-Ok "WebView2 Runtime jest obecne w systemie."
     } else {
         Write-Warn "Nie wykryto WebView2 Runtime."
-        if (Ask-Confirm "Czy chcesz zainstalować WebView2 Runtime przez winget?") {
+        if (Confirm-Choice "Czy chcesz zainstalować WebView2 Runtime przez winget?") {
             Write-Host "Instalacja WebView2..."
             winget install -e --id Microsoft.EdgeWebView2Runtime
             if ($LASTEXITCODE -ne 0) {

@@ -183,7 +183,7 @@ Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/N
 | Platforma | Plik |
 |-----------|------|
 | macOS | `StageSync_x.y.z_aarch64.dmg` lub `x64.dmg` |
-| Windows | `StageSync_x.y.z_x64.msi` lub zoptymalizowany instalator `.exe` (NSIS) |
+| Windows | `StageSync_x.y.z_x64-setup.exe` (NSIS) |
 
 ### Instalacja bez podpisu cyfrowego
 
@@ -277,7 +277,7 @@ MSI: jeśli `light.exe` / VBSCRIPT pada przy buildzie instalatora — włącz fu
 
 - Lokalny host uruchamia się automatycznie przy wyborze lokalnego hosta w Launcherze.
 - Dev / cienki shell: zewnętrzny host przez `STAGESYNC_URL`.
-- Pełny build `.dmg` / `.msi` / `.exe` (NSIS) jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
+- Pełny build `.dmg` / `.exe` (NSIS) jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
 
 ## Dev
 
@@ -305,7 +305,7 @@ pnpm --filter @stagesync/desktop build
 | Platforma | Artefakt |
 |-----------|----------|
 | macOS | `.dmg` |
-| Windows | `.msi` oraz instalator `.exe` (NSIS) |
+| Windows | zoptymalizowany instalator `.exe` (NSIS) |
 
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 
