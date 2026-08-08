@@ -3,38 +3,48 @@
   "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
-      "entry": ["scripts/*.{js,mjs,ts}", "apps/desktop/scripts/*.{js,mjs,ts}"],
-      "project": ["scripts/**/*.{js,mjs,ts}", "apps/desktop/scripts/**/*.{js,mjs,ts}"]
+      "entry": [
+        "scripts/*.{js,mjs,ts}"
+      ],
+      "project": [
+        "scripts/**/*.{js,mjs,ts}"
+      ]
     },
     "apps/server": {
-      "entry": ["src/index.ts", "src/**/*.test.ts"],
-      "project": ["src/**/*.{ts,tsx}"]
+      "entry": [
+        "src/**/*.test.ts"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}"
+      ]
     },
     "apps/web": {
       "entry": [
-        "src/main.tsx",
         "src/main-client.tsx",
         "src/main-console.tsx",
         "src/**/*.{test,spec}.{ts,tsx}",
         "scripts/*.{js,mjs}"
       ],
-      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.{js,mjs}"]
-    },
-    "apps/desktop": {
-      "entry": ["src-tauri/src/main.rs", "src/**/*.{ts,tsx}"],
-      "project": ["src/**/*.{ts,tsx}"]
-    },
-    "apps/www": {
-      "entry": ["src/main.ts", "vite.config.ts"],
-      "project": ["src/**/*.ts", "vite.config.ts"]
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "scripts/**/*.{js,mjs}"
+      ]
     },
     "packages/shared": {
-      "entry": ["src/index.ts", "src/**/*.test.ts"],
-      "project": ["src/**/*.ts"]
+      "entry": [
+        "src/**/*.test.ts"
+      ],
+      "project": [
+        "src/**/*.ts"
+      ]
     },
     "packages/ui": {
-      "entry": ["src/index.ts", "src/**/*.{test,spec}.{ts,tsx}"],
-      "project": ["src/**/*.{ts,tsx}"]
+      "entry": [
+        "src/**/*.{test,spec}.{ts,tsx}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}"
+      ]
     }
   },
   "ignore": [
@@ -43,6 +53,5 @@
     "apps/www/dist/**",
     "**/dist/**",
     "**/.turbo/**"
-  ],
-  "ignoreDependencies": ["@stagesync/eslint-config", "@stagesync/typescript-config"]
+  ]
 }
