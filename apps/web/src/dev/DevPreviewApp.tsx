@@ -67,6 +67,16 @@ export function DevPreviewApp() {
     [entry],
   );
 
+  useEffect(() => {
+    const onMessage = (ev: MessageEvent) => {
+      if (ev.data && ev.data.type === "stagesync-dev-preview-navigate" && ev.data.path) {
+        router.navigate(ev.data.path);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [router]);
+
   return (
     <TransportProvider>
       <ContextMenuProvider>

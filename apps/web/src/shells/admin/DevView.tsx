@@ -112,7 +112,7 @@ export function DevView() {
             label: "Dev Preview — multi-surface",
             description:
               "Osadzone preview wszystkich platform (web/tauri/console/performer) w jednym ekranie, z przełączaniem dróg i flagą sesji.",
-            to: "/_dev/preview",
+            to: "/_dev/layouts",
             icon: Satellite,
           },
           {
