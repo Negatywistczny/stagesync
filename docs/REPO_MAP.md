@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1248
+* **Liczba wszystkich plików:** 1249
 * **Liczba katalogów:** 191
-* **Data aktualizacji:** 2026-08-08T01:34:37.603Z
+* **Data aktualizacji:** 2026-08-08T01:34:52.693Z
 
 ### Kategorie
 
@@ -16,7 +16,7 @@
 | :--- | ---: |
 | Kod | 782 |
 | Docs | 212 |
-| Config | 113 |
+| Config | 114 |
 | Assety | 117 |
 | Inne | 24 |
 
@@ -34,15 +34,15 @@
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
 | `.mjs` | 19 |
-| _(pozostałe)_ | 117 |
+| _(pozostałe)_ | 118 |
 
 ---
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (863) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (864) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (85) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (86) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (444) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -222,6 +222,7 @@ stagesync/
 │   │   │   ├── index.html
 │   │   │   ├── localErrorActions.js
 │   │   │   ├── localErrorActions.test.js
+│   │   │   ├── splash.html
 │   │   │   ├── styles.css
 │   │   │   ├── updateDialog.js
 │   │   │   └── updateDialog.test.js

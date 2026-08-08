@@ -361,11 +361,15 @@ const DOCS_INSTALL_URL: &str =
 const DOCS_ISSUES_URL: &str = "https://github.com/Negatywistczny/stagesync/issues";
 
 fn navigate_main(app: &tauri::AppHandle, path: &str) {
-    let Some(window) = app.get_webview_window("main") else {
-        return;
-    };
-    if let Ok(parsed) = nav_url(path).parse() {
-        let _ = window.navigate(parsed);
+    if window_url_is_launcher(app) {
+        let Some(window) = app.get_webview_window("main") else {
+            return;
+        };
+        if let Ok(parsed) = nav_url(path).parse() {
+            let _ = window.navigate(parsed);
+        }
+    } else {
+        dispatch_menu_action(app, &format!("navigate:{}", path));
     }
 }
 

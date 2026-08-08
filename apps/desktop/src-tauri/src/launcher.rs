@@ -532,7 +532,7 @@ pub(crate) fn perform_return_to_launcher(app: &AppHandle) -> Result<(), String> 
 pub fn return_to_launcher_plugin() -> TauriPlugin<tauri::Wry> {
     PluginBuilder::new("stagesync-return-launcher")
         .js_init_script(
-            r#"try{Object.defineProperty(window,"__STAGESYNC_TAURI_SHELL__",{value:!0,configurable:!0})}catch(_e){window.__STAGESYNC_TAURI_SHELL__=!0}"#,
+            r#"try{Object.defineProperty(window,"__STAGESYNC_TAURI_SHELL__",{value:!0,configurable:!0,writable:!0})}catch(_e){window.__STAGESYNC_TAURI_SHELL__=!0}"#,
         )
         .on_navigation(|webview, url| {
             if !is_return_to_launcher_url(url) {
