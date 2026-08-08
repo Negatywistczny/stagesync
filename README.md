@@ -9,12 +9,10 @@
 <br />
 
 <a href="https://negatywistczny.github.io/stagesync/">
-  <img src="apps/web/public/brand/btn-official-website.svg" alt="Oficjalna Strona WWW" height="42" />
-</a>
+  <img src="apps/web/public/brand/btn-official-website.svg" alt="Oficjalna Strona WWW" height="42" /></a>
 &nbsp;&nbsp;
 <a href="https://github.com/Negatywistczny/stagesync/releases">
-  <img src="apps/web/public/brand/btn-download-stagesync.svg" alt="Pobierz StageSync" height="42" />
-</a>
+  <img src="apps/web/public/brand/btn-download-stagesync.svg" alt="Pobierz StageSync" height="42" /></a>
 
 <br />
 <br />
