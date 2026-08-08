@@ -45,7 +45,7 @@
 
 <br />
 
-**StageSync** — scentralizowany transport sceniczny, Timeline oraz synchronizacja stanowisk muzyków na żywo.
+**StageSync** — scentralizowana oś czasu, sterowanie odtwarzaniem oraz synchronizacja stanowisk muzyków na żywo.
 
 </div>
 
