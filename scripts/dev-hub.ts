@@ -53,7 +53,12 @@ function enableClackFullRedrawOnResize() {
     require.resolve("@clack/prompts/package.json"),
   );
   const coreEntry = require.resolve("@clack/core", { paths: [promptsPkg] });
-  const { Prompt } = require(coreEntry.replace(/index\.mjs$/, "index.cjs")) as {
+  // Wersja 1.x biblioteki może mieć inną strukturę plików niż 0.x
+  const corePath = fs.existsSync(coreEntry) 
+    ? coreEntry 
+    : coreEntry.replace(/index\.mjs$/, "index.cjs");
+    
+  const { Prompt } = require(corePath) as {
     Prompt: {
       prototype: {
         state: string;
@@ -609,25 +614,26 @@ async function menuTesting() {
   const choice = await clack.select({
     message: "Testy & Jakość Kodów:",
     options: [
-      { value: "map", label: "1. 🗺   Wygeneruj mapę kodu" },
-      { value: "types", label: "2. 🔍  Sprawdź typy TypeScript" },
-      { value: "ss-css", label: "3. 🎨  CSS Token Guard (ss-css)" },
-      { value: "knip", label: "4. 📦  Dead Code & Dependency Detector (knip)" },
-      { value: "links", label: "5. 🔗  Weryfikacja linków w dokumentacji" },
-      { value: "unlinked", label: "6. 🔍  Znajdź niepodlinkowane pliki" },
-      { value: "fix-unlinked", label: "7. 🛠   Napraw niepodlinkowane linki" },
-      { value: "shared", label: "8. ⚡  Testy PPQ/Ticks (@stagesync/shared)" },
+      { value: "verify", label: "1. ✅  One-Click Full Verify" },
+      { value: "map", label: "2. 🗺   Wygeneruj mapę kodu" },
+      { value: "types", label: "3. 🔍  Sprawdź typy TypeScript" },
+      { value: "ss-css", label: "4. 🎨  CSS Token Guard (ss-css)" },
+      { value: "knip", label: "5. 📦  Dead Code & Dependency Detector (knip)" },
+      { value: "links", label: "6. 🔗  Weryfikacja linków w dokumentacji" },
+      { value: "unlinked", label: "7. 🔍  Znajdź niepodlinkowane pliki" },
+      { value: "fix-unlinked", label: "8. 🛠   Napraw niepodlinkowane linki" },
+      { value: "shared", label: "9. ⚡  Testy PPQ/Ticks (@stagesync/shared)" },
       {
         value: "server",
-        label: "9. 🎼  Testy serwera transportu (@stagesync/server)",
+        label: "10.🎼  Testy serwera transportu (@stagesync/server)",
       },
-      { value: "web", label: "10.🎨  Testy UI Admin/Client (@stagesync/web)" },
-      { value: "benchmark", label: "11.🎯  Smart Tempo DSP Benchmark" },
-      { value: "fix", label: "12.🧹  Auto-Fixer (Format & Lint)" },
-      { value: "build", label: "13.🏗   Pełny Build (Turbo)" },
-      { value: "test-cov", label: "14.📊  Testy z pokryciem (Coverage)" },
-      { value: "migrate", label: "15.💾  Migracja Legacy" },
-      { value: "sync-ui", label: "16.🔄  Sync Launcher UI" },
+      { value: "web", label: "11.🎨  Testy UI Admin/Client (@stagesync/web)" },
+      { value: "benchmark", label: "12.🎯  Smart Tempo DSP Benchmark" },
+      { value: "fix", label: "13.🧹  Auto-Fixer (Format & Lint)" },
+      { value: "build", label: "14.🏗   Pełny Build (Turbo)" },
+      { value: "test-cov", label: "15.📊  Testy z pokryciem (Coverage)" },
+      { value: "migrate", label: "16.💾  Migracja Legacy" },
+      { value: "sync-ui", label: "17.🔄  Sync Launcher UI" },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
@@ -692,6 +698,18 @@ async function menuTesting() {
     runCommand("pnpm", ["benchmark:record"], {
       env: { RUN_SMART_TEMPO_BENCHMARK: "1" },
     });
+    await waitReturn();
+  } else if (choice === "verify") {
+    clack.note("Uruchamianie pełnej weryfikacji (Full Verify)...");
+    const typesOk = runCommand("pnpm", ["check-types"]);
+    const lintOk = runCommand("pnpm", ["lint"]);
+    const knipOk = runCommand("pnpm", ["lint:knip"]);
+    const testOk = runCommand("pnpm", ["test"]);
+    if (typesOk && lintOk && knipOk && testOk) {
+      clack.log.success("✅ Pełna weryfikacja zakończona sukcesem!");
+    } else {
+      clack.log.error("❌ Wykryto błędy w weryfikacji! Przejrzyj logi powyżej.");
+    }
     await waitReturn();
   } else if (choice === "fix") {
     clack.note(
@@ -874,9 +892,9 @@ async function menuDependencies() {
     await waitReturn();
   } else if (choice === "up") {
     clack.note(
-      "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r)...",
+      "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r --latest)...",
     );
-    runCommand("pnpm", ["up", "-i", "-r"]);
+    runCommand("pnpm", ["up", "-i", "-r", "--latest"]);
     await waitReturn();
   } else if (choice === "install") {
     clack.note(
@@ -952,9 +970,9 @@ async function main() {
     }
     if (flag === "up" || flag === "update") {
       clack.note(
-        "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r)...",
+        "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r --latest)...",
       );
-      runCommand("pnpm", ["up", "-i", "-r"]);
+      runCommand("pnpm", ["up", "-i", "-r", "--latest"]);
       return;
     }
     if (flag === "audit") {
