@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1264
+* **Liczba wszystkich plików:** 1265
 * **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-09T15:32:23.005Z
+* **Data aktualizacji:** 2026-08-09T15:54:44.435Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 788 |
+| Kod | 789 |
 | Docs | 214 |
 | Config | 115 |
 | Assety | 119 |
@@ -32,7 +32,7 @@
 | `.css` | 51 |
 | `.xml` | 35 |
 | `.json` | 34 |
-| `.mjs` | 24 |
+| `.mjs` | 25 |
 | `brak rozszerzenia` | 23 |
 | _(pozostałe)_ | 124 |
 
@@ -87,10 +87,10 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (22) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
   - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
   - **quality/** (5) — Narzędzia jakości kodu, linków i generator mapy repozytorium
-  - **release/** (8) — Skrypty wydań SemVer, budowania paczek i release notes
+  - **release/** (9) — Skrypty wydań SemVer, budowania paczek i release notes
   - **setup/** (2) — Skrypty inicjalizacyjne i setupu środowiska deweloperskiego
 
 ---
@@ -883,6 +883,7 @@ stagesync/
 │   │   ├── build-release-notes.test.mjs
 │   │   ├── cut-release.mjs
 │   │   ├── cut-release.test.mjs
+│   │   ├── exec-release.mjs
 │   │   ├── extract-changelog-section.mjs
 │   │   ├── extract-changelog-section.test.mjs
 │   │   ├── release-title.mjs

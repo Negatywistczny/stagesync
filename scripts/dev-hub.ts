@@ -458,7 +458,7 @@ async function menuTesting() {
       { value: 'server', label: '7. 🎼  Testy serwera transportu (@stagesync/server)' },
       { value: 'web', label: '8. 🎨  Testy UI Admin/Client (@stagesync/web)' },
       { value: 'benchmark', label: '9. 🎯  Smart Tempo DSP Benchmark' },
-      { value: 'fix', label: '10.🧹  Auto-Fixer (Format & Lint)' },
+      { value: 'fix', label: '10. 🧹  Auto-Fixer (Format & Lint)' },
       { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });
@@ -511,11 +511,12 @@ async function menuRelease() {
   const choice = await clack.select({
     message: 'GitHub & Wydania / Release Hub:',
     options: [
-      { value: 'sync', label: '1. 🏷   Synchronizacja Wersji Monorepo' },
-      { value: 'checklist', label: '2. 📋  Pre-Release Checklist 2.0' },
-      { value: 'preview', label: '3. 👁   Podgląd Information o Wydaniu (Preview Notes)' },
-      { value: 'cut', label: '4. 🚀  Przygotowanie Taga / Cut Release' },
-      { value: 'git', label: '5. 🔍  Status Git & Hygiene' },
+      { value: 'git', label: '1. 🔍  Status Git & Hygiene' },
+      { value: 'sync', label: '2. 🏷   Synchronizacja Wersji Monorepo' },
+      { value: 'checklist', label: '3. 📋  Pre-Release Checklist 2.0' },
+      { value: 'preview', label: '4. 👁   Podgląd Information o Wydaniu' },
+      { value: 'cut', label: '5. 🚀  Przygotowanie Taga' },
+      { value: 'exec', label: '6. ⚡  Release' },
       { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });
@@ -525,6 +526,10 @@ async function menuRelease() {
   if (choice === 'sync') {
     clack.note('Synchronizowanie wersji w monorepo (node scripts/release/sync-version.mjs)...');
     runCommand('node', ['scripts/release/sync-version.mjs']);
+    await waitReturn();
+  } else if (choice === 'exec') {
+    clack.note('Wykonywanie właściwego release (node scripts/release/exec-release.mjs)...');
+    runCommand('node', ['scripts/release/exec-release.mjs']);
     await waitReturn();
   } else if (choice === 'checklist') {
     clack.note('Uruchamianie Pre-Release Checklist 2.0...');
@@ -585,7 +590,7 @@ async function menuDependencies() {
       { value: 'outdated', label: '1. 🔍  Sprawdź nieaktualne pakiety' },
       { value: 'up', label: '2. 🆙  Interaktywna aktualizacja pakietów' },
       { value: 'install', label: '3. 📥  Wymuś ponowną instalację' },
-      { value: 'audit', label: '4. 🛡️  Audyt bezpieczeństwa' },
+      { value: 'audit', label: '4. 🛡️   Audyt bezpieczeństwa' },
       { value: 'prune', label: '5. 🧹  Czyszczenie pnpm store' },
       { value: 'back', label: '0. ↩️   Powrót' },
     ],
