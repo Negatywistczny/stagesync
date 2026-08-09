@@ -1371,7 +1371,8 @@ async fn install_windows_update_via_setup(
     fs::write(&payload, &bytes).map_err(|e| format!("write payload: {e}"))?;
 
     let setup = resolve_stagesync_setup_bin(app)?;
-    let launch = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
+    // Kanoniczny produkt StageSync — nie current_exe (np. lokalny „NSIS Smoke”).
+    let launch = windows_product_launch_path();
     let pid = std::process::id().to_string();
 
     let mut cmd = Command::new(&setup);
@@ -1395,6 +1396,20 @@ async fn install_windows_update_via_setup(
     cmd.spawn()
         .map_err(|e| format!("Nie uruchomiono stagesync-setup: {e}"))?;
     Ok(())
+}
+
+/// Ścieżka relaunch po NSIS: zawsze produkt `StageSync` (currentUser), nie smoke / stary PF.
+#[cfg(target_os = "windows")]
+fn windows_product_launch_path() -> PathBuf {
+    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+        let product = PathBuf::from(local)
+            .join("StageSync")
+            .join("stagesync-desktop.exe");
+        // Po cichym NSIS plik będzie istniał; podajemy kanon nawet gdy jeszcze go nie ma
+        // (stary stagesync-setup honoruje --launch dopiero po instalacji, gdy is_file).
+        return product;
+    }
+    std::env::current_exe().unwrap_or_else(|_| PathBuf::from("stagesync-desktop.exe"))
 }
 
 #[cfg(target_os = "windows")]

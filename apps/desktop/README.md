@@ -21,6 +21,6 @@ Do budowania i testowania wymagane są **Rust/Cargo** oraz zależności platform
 
 - `pnpm --filter @stagesync/desktop dev` — skrypty z `scripts/` (`check-rust`, sync launcher / server / **web**) + `tauri dev`.
 - `pnpm --filter @stagesync/desktop tauri:build` — pre-build + instalator (`.dmg` / `.exe` NSIS itd.).
-- `pnpm --filter @stagesync/desktop tauri:build:nsis-smoke` — szybki smoke instalatora Windows (`target/*/nsis-smoke/StageSync-Setup.exe`).
+- `pnpm --filter @stagesync/desktop tauri:build:nsis-smoke` — szybki smoke instalatora Windows (`target/*/nsis-smoke/StageSync-Setup.exe`). Instaluje osobny produkt **StageSync NSIS Smoke** (nie używaj go zamiast release `StageSync-Setup.exe`).
 
 Konfiguracja operatorska i updater: **[docs/guides/DESKTOP.md](../../docs/guides/DESKTOP.md)**.

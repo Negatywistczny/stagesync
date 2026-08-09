@@ -8,6 +8,9 @@
 //!
 //! Update (z zainstalowanej appki):
 //!   stagesync-setup --payload <verified-nsis.exe> --update --wait-pid <pid> --launch <app.exe>
+//!
+//! Po NSIS relaunch idzie do produktu `StageSync` (`%LOCALAPPDATA%\StageSync\…`),
+//! nie ślepo w `--launch` (np. lokalny „StageSync NSIS Smoke”).
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 use std::env;
@@ -209,13 +212,8 @@ fn run_install_flow(cli: &Cli, self_exe: &Path, dir: &Path) -> Result<PathBuf, S
         ));
     }
 
-    if let Some(launch) = cli.launch.as_ref() {
-        if launch.is_file() {
-            return Ok(launch.clone());
-        }
-    }
-
-    find_installed_app(dir)
+    // Po NSIS zawsze preferuj produkt StageSync (nie `--launch` ze smoke / starej lokalizacji).
+    resolve_launch_target(cli.launch.as_deref(), dir)
 }
 
 /// Wyciąga osadzony payload, bierze `--payload`, albo luźny plik obok (dev fallback).
@@ -299,16 +297,56 @@ fn extract_embedded_payload(self_exe: &Path) -> Result<Option<PathBuf>, String> 
     Ok(Some(out))
 }
 
-fn find_installed_app(dir: &Path) -> Result<PathBuf, String> {
-    let local = env::var_os("LOCALAPPDATA").map(PathBuf::from);
-    let mut guesses = Vec::new();
-    if let Some(local) = local {
-        guesses.push(local.join("StageSync NSIS Smoke\\stagesync-desktop.exe"));
-        guesses.push(local.join("StageSync\\stagesync-desktop.exe"));
-    }
-    guesses.push(dir.join("stagesync-desktop.exe"));
+const PRODUCT_EXE: &str = "stagesync-desktop.exe";
+const PRODUCT_DIR: &str = "StageSync";
+/// Lokalny artefakt `tauri:build:nsis-smoke` — nigdy nie ma pierwszeństwa przed produktem.
+const SMOKE_DIR: &str = "StageSync NSIS Smoke";
 
+fn parent_dir_named(path: &Path, name: &str) -> bool {
+    path.parent()
+        .and_then(|p| p.file_name())
+        .is_some_and(|n| n == name)
+}
+
+/// Po udanym NSIS: uruchom świeżo zainstalowany produkt StageSync.
+///
+/// `--launch` (stary `current_exe` z updatera) jest tylko podpowiedzią dla tej samej
+/// lokalizacji produktu. Nie wolno wracać do „StageSync NSIS Smoke” ani starego
+/// Program Files, gdy `currentUser` właśnie wgrał `%LOCALAPPDATA%\StageSync`.
+fn resolve_launch_target(launch: Option<&Path>, dir: &Path) -> Result<PathBuf, String> {
+    let mut guesses: Vec<PathBuf> = Vec::new();
+
+    if let Some(local) = env::var_os("LOCALAPPDATA").map(PathBuf::from) {
+        guesses.push(local.join(PRODUCT_DIR).join(PRODUCT_EXE));
+    }
+
+    if let Some(path) = launch {
+        if path.is_file() && parent_dir_named(path, PRODUCT_DIR) {
+            guesses.push(path.to_path_buf());
+        }
+    }
+
+    if let Some(pf) = env::var_os("ProgramFiles").map(PathBuf::from) {
+        guesses.push(pf.join(PRODUCT_DIR).join(PRODUCT_EXE));
+    }
+    guesses.push(dir.join(PRODUCT_EXE));
+
+    // Smoke wyłącznie gdy brak instalacji produktowej (bootstrap nsis-smoke).
+    if let Some(local) = env::var_os("LOCALAPPDATA").map(PathBuf::from) {
+        guesses.push(local.join(SMOKE_DIR).join(PRODUCT_EXE));
+    }
+    if let Some(path) = launch {
+        if path.is_file() && parent_dir_named(path, SMOKE_DIR) {
+            guesses.push(path.to_path_buf());
+        }
+    }
+
+    let mut seen = std::collections::HashSet::new();
     for g in guesses {
+        let key = g.to_string_lossy().to_lowercase();
+        if !seen.insert(key) {
+            continue;
+        }
         if g.is_file() {
             return Ok(g);
         }
@@ -318,6 +356,26 @@ fn find_installed_app(dir: &Path) -> Result<PathBuf, String> {
         "Zainstalowano, ale nie znaleziono stagesync-desktop.exe — sprawdź folder instalacji."
             .into(),
     )
+}
+
+#[cfg(test)]
+mod launch_target_tests {
+    use super::parent_dir_named;
+    use std::path::Path;
+
+    #[test]
+    fn detects_production_install_dir() {
+        let p = Path::new(r"C:\Users\x\AppData\Local\StageSync\stagesync-desktop.exe");
+        assert!(parent_dir_named(p, "StageSync"));
+        assert!(!parent_dir_named(p, "StageSync NSIS Smoke"));
+    }
+
+    #[test]
+    fn detects_smoke_install_dir() {
+        let p = Path::new(r"C:\Users\x\AppData\Local\StageSync NSIS Smoke\stagesync-desktop.exe");
+        assert!(parent_dir_named(p, "StageSync NSIS Smoke"));
+        assert!(!parent_dir_named(p, "StageSync"));
+    }
 }
 
 fn wait_for_process_exit(pid: u32, timeout: Duration) {

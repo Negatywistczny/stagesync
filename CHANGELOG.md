@@ -11,6 +11,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Android (aktualizacja APK):** po „Pobieranie APK…” znów pojawia się systemowe potwierdzenie instalacji (Console / Performer) — wcześniej sesja `PackageInstaller` kończyła się bez odbiornika statusu.
+- **Windows (aktualizacja):** po instalacji z Launchera / Admina uruchamiana jest właściwa aplikacja StageSync — nie lokalny instalator testowy „NSIS Smoke”, który zostawał na starej wersji i ciągle pokazywał dostępność aktualizacji.
 
 ## [5.4.10](https://github.com/Negatywistczny/stagesync/compare/v5.4.9...v5.4.10) - 2026-08-09
 
