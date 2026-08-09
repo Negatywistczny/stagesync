@@ -24,6 +24,9 @@ Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską 
    - **Rola:** Stały klucz sideload ([`sideload.keystore`](./android-keystore/sideload.keystore)) dla APK Console / Performer (Releases + lokalny `assembleDebug` / `assembleRelease`).
    - **Główna zasada:** Wspólny certyfikat debug/release sideload — nie klucz Google Play.
 
+6. **[`plugins`](./plugins/README.md) (`packages/plugins/`)**
+   - **Rola:** Wtyczki zewnętrzne dla DAW (np. MuseScore).
+
 ## ⚙️ Wykorzystanie w monorepo
 
 Dzięki pnpm workspaces pakiety z tego katalogu są linkowane lokalnie i mogą być importowane w aplikacjach (`apps/`) bez konieczności publikowania ich w rejestrze npm:

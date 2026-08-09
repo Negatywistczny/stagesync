@@ -1,0 +1,6 @@
+{
+  "name": "@stagesync/musescore-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MuseScore plugin for StageSync integration"
+}

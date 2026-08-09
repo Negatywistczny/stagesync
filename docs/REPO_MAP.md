@@ -6,35 +6,35 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1284
-* **Liczba katalogów:** 196
-* **Data aktualizacji:** 2026-08-09T21:27:18.559Z
+* **Liczba wszystkich plików:** 1288
+* **Liczba katalogów:** 198
+* **Data aktualizacji:** 2026-08-09T22:56:21.857Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
 | Kod | 802 |
-| Docs | 214 |
-| Config | 119 |
+| Docs | 216 |
+| Config | 120 |
 | Assety | 120 |
-| Inne | 29 |
+| Inne | 30 |
 
 ### Top rozszerzenia
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
 | `.ts` | 464 |
-| `.md` | 192 |
+| `.md` | 194 |
 | `.tsx` | 161 |
 | `.png` | 94 |
 | `.kt` | 69 |
 | `.css` | 52 |
-| `.json` | 37 |
+| `.json` | 38 |
 | `.xml` | 35 |
 | `.mjs` | 29 |
 | `brak rozszerzenia` | 23 |
-| _(pozostałe)_ | 128 |
+| _(pozostałe)_ | 129 |
 
 ---
 
@@ -81,9 +81,10 @@
   - **examples/** (3) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (137) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (141) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
+  - **plugins/** (4)
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
@@ -749,6 +750,12 @@ stagesync/
 │   │   ├── base.js
 │   │   ├── package.json
 │   │   ├── react-internal.js
+│   │   └── README.md
+│   ├── plugins/
+│   │   ├── musescore/
+│   │   │   ├── package.json
+│   │   │   ├── README.md
+│   │   │   └── StageSyncPush.qml
 │   │   └── README.md
 │   ├── shared/
 │   │   ├── src/

@@ -115,6 +115,7 @@ Skrypt weryfikuje środowisko (Node/pnpm) i uruchamia **Dev Hub**:
 | 📦 **[`packages/`](packages/README.md)**          | **Pakiety współdzielone**    | Biblioteki, konfiguracje i design system               |
 | -> 📐 **[`shared`](packages/shared/README.md)**   | Czysta logika i czas         | Walidacja Zod, helpery ticks/PPQ                       |
 | -> 🎨 **[`ui`](packages/ui/README.md)**           | Design System                | Komponenty bez logiki, CSS Modules                     |
+| -> 🔌 **[`plugins`](packages/plugins/README.md)** | Wtyczki zewnętrzne           | Integracje z oprogramowaniem muzycznym (np. MuseScore) |
 | 📂 **[`data/`](data/README.md)**                  | Dane operacyjne              | Magazyn runtime, projekty v3 i logi _(w `.gitignore`)_ |
 | 🛠️ **[`scripts/`](scripts/README.md)**            | Narzędzia i automatyzacja    | Skrypty release, build i generowania mapy              |
 | 📚 **[`docs/`](docs/README.md)**                  | Baza wiedzy                  | Dokumentacja techniczna, specyfikacje i decyzje ADR    |
