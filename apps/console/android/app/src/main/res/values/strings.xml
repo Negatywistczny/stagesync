@@ -66,6 +66,8 @@
     <string name="update_later">Przypomnij później</string>
     <string name="update_downloading">Pobieranie APK…</string>
     <string name="update_download_failed">Nie udało się pobrać APK: %1$s</string>
+    <string name="update_install_failed">Nie udało się zainstalować APK: %1$s</string>
+    <string name="update_install_failed_generic">Nie udało się zainstalować APK.</string>
     <string name="update_need_permission">Zezwól na instalację z tej aplikacji, a następnie wróć — instalator uruchomi się ponownie.</string>
     <string name="ui_apply_title">Odświeżyć interfejs?</string>
     <string name="ui_apply_message">Host ma inną wersję ekranów niż aplikacja. Odświeży wygląd z hosta — bez nowego APK.</string>

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -117,41 +118,53 @@ object ApkInstaller {
     }
 
     /**
-     * Stream [apkFile] into a [PackageInstaller] session and commit (system prompts user).
+     * Stream [apkFile] into a [PackageInstaller] session and commit.
+     * Status (including user-confirm Intent) is delivered to [ApkInstallStatusReceiver].
      * Avoids Intent + package-archive MIME / ACTION_INSTALL_PACKAGE sinks (CodeQL).
      */
     fun install(context: Context, apkFile: File) {
-        val installer = context.packageManager.packageInstaller
-        val params =
-            PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-        params.setAppPackageName(context.packageName)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_REQUIRED)
-        }
-        val sessionId = installer.createSession(params)
-        installer.openSession(sessionId).use { session ->
-            session.openWrite("base.apk", 0, apkFile.length()).use { out ->
-                apkFile.inputStream().use { input -> input.copyTo(out) }
-                session.fsync(out)
+        try {
+            val installer = context.packageManager.packageInstaller
+            val params =
+                PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+            params.setAppPackageName(context.packageName)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_REQUIRED)
             }
-            // Explicit package — not an implicit PendingIntent (CodeQL).
-            val status =
-                Intent(INSTALL_STATUS_ACTION).setPackage(context.packageName)
-            val flags =
-                PendingIntent.FLAG_UPDATE_CURRENT or
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        PendingIntent.FLAG_MUTABLE
-                    } else {
-                        0
-                    }
-            val pi =
-                PendingIntent.getBroadcast(context, sessionId, status, flags)
-            session.commit(pi.intentSender)
+            val sessionId = installer.createSession(params)
+            installer.openSession(sessionId).use { session ->
+                session.openWrite("base.apk", 0, apkFile.length()).use { out ->
+                    apkFile.inputStream().use { input -> input.copyTo(out) }
+                    session.fsync(out)
+                }
+                // Explicit package — not an implicit PendingIntent (CodeQL).
+                val status =
+                    Intent(INSTALL_STATUS_ACTION).setPackage(context.packageName)
+                val flags =
+                    PendingIntent.FLAG_UPDATE_CURRENT or
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            PendingIntent.FLAG_MUTABLE
+                        } else {
+                            0
+                        }
+                val pi =
+                    PendingIntent.getBroadcast(context, sessionId, status, flags)
+                session.commit(pi.intentSender)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                context.getString(
+                    R.string.update_install_failed,
+                    e.message ?: e.javaClass.simpleName,
+                ),
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
 
-    private const val INSTALL_STATUS_ACTION =
-        "com.stagesync.console.APK_INSTALL_STATUS"
+    /** Must match `<receiver>` intent-filter in AndroidManifest. */
+    const val INSTALL_STATUS_ACTION = "com.stagesync.console.APK_INSTALL_STATUS"
 
     /**
      * Reject APK whose package name or signing certs do not match this app.

@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1288
+* **Liczba wszystkich plików:** 1290
 * **Liczba katalogów:** 198
-* **Data aktualizacji:** 2026-08-09T22:56:21.857Z
+* **Data aktualizacji:** 2026-08-09T23:07:48.137Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 802 |
+| Kod | 804 |
 | Docs | 216 |
 | Config | 120 |
 | Assety | 120 |
@@ -28,7 +28,7 @@
 | `.md` | 194 |
 | `.tsx` | 161 |
 | `.png` | 94 |
-| `.kt` | 69 |
+| `.kt` | 71 |
 | `.css` | 52 |
 | `.json` | 38 |
 | `.xml` | 35 |
@@ -40,10 +40,10 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (888) — Aplikacje wykonawcze i powłoki klienckie w monorepo
-  - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
+- **apps/** (890) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+  - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
-  - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
+  - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (454) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
@@ -211,7 +211,7 @@ stagesync/
 │   ├── console/
 │   │   ├── android/
 │   │   │   ├── app/
-│   │   │   │   ├── src/  … (81 plików, 2 podkatalogi)
+│   │   │   │   ├── src/  … (82 pliki, 2 podkatalogi)
 │   │   │   │   ├── build.gradle.kts
 │   │   │   │   ├── google-services.json.example
 │   │   │   │   └── proguard-rules.pro
@@ -283,7 +283,7 @@ stagesync/
 │   ├── performer/
 │   │   ├── android/
 │   │   │   ├── app/
-│   │   │   │   ├── src/  … (57 plików, 2 podkatalogi)
+│   │   │   │   ├── src/  … (58 plików, 2 podkatalogi)
 │   │   │   │   ├── build.gradle.kts
 │   │   │   │   ├── google-services.json.example
 │   │   │   │   └── proguard-rules.pro
